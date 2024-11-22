@@ -8,6 +8,7 @@ import { IConfigurationRegistry, Extensions as ConfigurationExtensions, Configur
 import { ThemeSettings } from '../common/workbenchThemeService.js';
 import { COLOR_THEME_CONFIGURATION_SETTINGS_TAG, formatSettingAsLink } from '../common/themeConfiguration.js';
 import { isLinux } from '../../../../base/common/platform.js';
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 configurationRegistry.registerConfiguration({
     properties: {

@@ -20,6 +20,7 @@ export const NON_EMPTY_WORKSPACE_ID_LENGTH = 128 / 4;
 export function getWorkspaceIdentifier(configPath: URI): IWorkspaceIdentifier {
     function getWorkspaceId(): string {
         let configPathStr = configPath.scheme === Schemas.file ? originalFSPath(configPath) : configPath.toString();
+
         if (!isLinux) {
             configPathStr = configPathStr.toLowerCase(); // sanitize for platform file system
         }
@@ -51,6 +52,7 @@ export function getSingleFolderWorkspaceIdentifier(folderUri: URI, folderStat?: 
             return undefined;
         }
         let ctime: number | undefined;
+
         if (isLinux) {
             ctime = folderStat.ino; // Linux: birthtime is ctime, so we cannot use it! We use the ino instead!
         }
@@ -68,6 +70,7 @@ export function getSingleFolderWorkspaceIdentifier(folderUri: URI, folderStat?: 
         return createHash('md5').update(folderUri.fsPath).update(ctime ? String(ctime) : '').digest('hex'); // CodeQL [SM04514] Using MD5 to convert a file path to a fixed length
     }
     const folderId = getFolderId();
+
     if (typeof folderId === 'string') {
         return {
             id: folderId,

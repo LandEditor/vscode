@@ -9,6 +9,7 @@ export class SecretStorageCachePlugin implements ICachePlugin {
     readonly onDidChange = this._onDidChange.event;
     private _disposable: Disposable;
     private _value: string | undefined;
+
     constructor(private readonly _secretStorage: SecretStorage, private readonly _key: string) {
         this._disposable = Disposable.from(this._onDidChange, this._registerChangeHandler());
     }
@@ -22,6 +23,7 @@ export class SecretStorageCachePlugin implements ICachePlugin {
     async beforeCacheAccess(tokenCacheContext: TokenCacheContext): Promise<void> {
         const data = await this._secretStorage.get(this._key);
         this._value = data;
+
         if (data) {
             tokenCacheContext.tokenCache.deserialize(data);
         }
@@ -29,6 +31,7 @@ export class SecretStorageCachePlugin implements ICachePlugin {
     async afterCacheAccess(tokenCacheContext: TokenCacheContext): Promise<void> {
         if (tokenCacheContext.cacheHasChanged) {
             const value = tokenCacheContext.tokenCache.serialize();
+
             if (value !== this._value) {
                 await this._secretStorage.store(this._key, value);
             }

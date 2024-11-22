@@ -36,23 +36,33 @@ registerTerminalAction({
 	precondition: ContextKeyExpr.or(TerminalContextKeys.isOpen),
 	run: async (c, accessor) => {
 		const fileService = accessor.get(IFileService);
+
 		const openerService = accessor.get(IOpenerService);
+
 		const workspaceContextService = accessor.get(IWorkspaceContextService);
+
 		const bitmap = await c.service.activeInstance?.xterm?.textureAtlas;
+
 		if (!bitmap) {
 			return;
 		}
 		const cwdUri = workspaceContextService.getWorkspace().folders[0].uri;
+
 		const fileUri = URI.joinPath(cwdUri, 'textureAtlas.png');
+
 		const canvas = document.createElement('canvas');
 		canvas.width = bitmap.width;
 		canvas.height = bitmap.height;
+
 		const ctx = canvas.getContext('bitmaprenderer');
+
 		if (!ctx) {
 			return;
 		}
 		ctx.transferFromImageBitmap(bitmap);
+
 		const blob = await new Promise<Blob | null>((res) => canvas.toBlob(res));
+
 		if (!blob) {
 			return;
 		}
@@ -67,9 +77,11 @@ registerTerminalAction({
 	category: Categories.Developer,
 	run: async (c, accessor) => {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const instance = await c.service.getActiveOrCreateInstance();
 		await c.service.revealActiveTerminal();
 		await instance.processReady;
+
 		if (!instance.xterm) {
 			throw new Error('Cannot write data to terminal if xterm isn\'t initialized');
 		}
@@ -78,14 +90,17 @@ registerTerminalAction({
 			placeHolder: 'Enter data, use \\x to escape',
 			prompt: localize('workbench.action.terminal.writeDataToTerminal.prompt', "Enter data to write directly to the terminal, bypassing the pty"),
 		});
+
 		if (!data) {
 			return;
 		}
 		let escapedData = data
 			.replace(/\\n/g, '\n')
 			.replace(/\\r/g, '\r');
+
 		while (true) {
 			const match = escapedData.match(/\\x([0-9a-fA-F]{2})/);
+
 			if (match === null || match.index === undefined || match.length < 2) {
 				break;
 			}
@@ -102,18 +117,23 @@ registerTerminalAction({
 	category: Categories.Developer,
 	run: async (c, accessor) => {
 		const clipboardService = accessor.get(IClipboardService);
+
 		const commandService = accessor.get(ICommandService);
+
 		const statusbarService = accessor.get(IStatusbarService);
+
 		const store = new DisposableStore();
 
 		// Set up status bar entry
 		const text = localize('workbench.action.terminal.recordSession.recording', "Recording terminal session...");
+
 		const statusbarEntry: IStatusbarEntry = {
 			text,
 			name: text,
 			ariaLabel: text,
 			showProgress: true
 		};
+
 		const statusbarHandle = statusbarService.addEntry(statusbarEntry, 'recordSession', StatusbarAlignment.LEFT);
 		store.add(statusbarHandle);
 
@@ -129,6 +149,7 @@ registerTerminalAction({
 		// Record session
 		return new Promise<void>(resolve => {
 			const events: unknown[] = [];
+
 			const endRecording = () => {
 				const session = JSON.stringify(events, null, 2);
 				clipboardService.writeText(session);
@@ -174,12 +195,14 @@ registerTerminalAction({
 				});
 				timer.trigger(endRecording);
 			}));
+
 			let commandDetectedRegistered = false;
 			store.add(Event.runAndSubscribe(instance.capabilities.onDidAddCapability, e => {
 				if (commandDetectedRegistered) {
 					return;
 				}
 				const commandDetection = instance.capabilities.get(TerminalCapability.CommandDetection);
+
 				if (!commandDetection) {
 					return;
 				}
@@ -203,10 +226,13 @@ registerTerminalAction({
 	category: Categories.Developer,
 	run: async (c, accessor) => {
 		const logService = accessor.get(ITerminalLogService);
+
 		const backends = Array.from(c.instanceService.getRegisteredBackends());
+
 		const unresponsiveBackends = backends.filter(e => !e.isResponsive);
 		// Restart only unresponsive backends if there are any
 		const restartCandidates = unresponsiveBackends.length > 0 ? unresponsiveBackends : backends;
+
 		for (const backend of restartCandidates) {
 			logService.warn(`Restarting pty host for authority "${backend.remoteAuthority}"`);
 			backend.restartPtyHost();
@@ -254,13 +280,16 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 		this._xterm?.raw.element?.classList.toggle('dev-mode', devMode);
 
 		const commandDetection = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection);
+
 		if (devMode) {
 			if (commandDetection) {
 				if (this._state === DevModeContributionState.On) {
 					return;
 				}
 				this._state = DevModeContributionState.On;
+
 				const commandDecorations = new DisposableMap<ITerminalCommand, IDisposable>();
+
 				const otherDisposables = new DisposableStore();
 				this._activeDevModeDisposables.value = combinedDisposable(
 					commandDecorations,
@@ -272,12 +301,15 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 					// Sequence markers
 					commandDetection.onCommandFinished(command => {
 						const colorClass = `color-${this._currentColor}`;
+
 						const decorations: IDisposable[] = [];
 						commandDecorations.set(command, combinedDisposable(...decorations));
+
 						if (command.promptStartMarker) {
 							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
 								marker: command.promptStartMarker
 							});
+
 							if (d) {
 								decorations.push(d);
 								otherDisposables.add(d.onRender(e => {
@@ -291,6 +323,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								marker: command.marker,
 								x: command.startX
 							});
+
 							if (d) {
 								decorations.push(d);
 								otherDisposables.add(d.onRender(e => {
@@ -304,6 +337,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 								marker: command.executedMarker,
 								x: command.executedX
 							});
+
 							if (d) {
 								decorations.push(d);
 								otherDisposables.add(d.onRender(e => {
@@ -316,6 +350,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
 								marker: command.endMarker
 							});
+
 							if (d) {
 								decorations.push(d);
 								otherDisposables.add(d.onRender(e => {
@@ -329,6 +364,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 					commandDetection.onCommandInvalidated(commands => {
 						for (const c of commands) {
 							const decorations = commandDecorations.get(c);
+
 							if (decorations) {
 								dispose(decorations);
 							}

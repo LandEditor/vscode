@@ -14,13 +14,19 @@ export function resolveContentAndKeybindingItems(keybindingService: IKeybindingS
         return;
     }
     const configureKeybindingItems: IPickerQuickAccessItem[] = [];
+
     const configuredKeybindingItems: IPickerQuickAccessItem[] = [];
+
     const matches = value.matchAll(/(\<keybinding:(?<commandId>[^\<]*)\>)/gm);
+
     for (const match of [...matches]) {
         const commandId = match?.groups?.commandId;
+
         let kbLabel;
+
         if (match?.length && commandId) {
             const keybinding = keybindingService.lookupKeybinding(commandId)?.getAriaLabel();
+
             if (!keybinding) {
                 kbLabel = ` (unassigned keybinding)`;
                 configureKeybindingItems.push({
@@ -40,5 +46,6 @@ export function resolveContentAndKeybindingItems(keybindingService: IKeybindingS
     }
     const content = new MarkdownString(value);
     content.isTrusted = true;
+
     return { content, configureKeybindingItems: configureKeybindingItems.length ? configureKeybindingItems : undefined, configuredKeybindingItems: configuredKeybindingItems.length ? configuredKeybindingItems : undefined };
 }

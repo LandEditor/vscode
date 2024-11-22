@@ -20,9 +20,11 @@ export abstract class AbstractSignService implements ISignService {
     public async createNewMessage(value: string): Promise<IMessage> {
         try {
             const validator = await this.getValidator();
+
             if (validator) {
                 const id = String(AbstractSignService._nextId++);
                 this.validators.set(id, validator);
+
                 return {
                     id: id,
                     data: validator.createNewMessage(value)
@@ -39,10 +41,12 @@ export abstract class AbstractSignService implements ISignService {
             return true;
         }
         const validator = this.validators.get(message.id);
+
         if (!validator) {
             return false;
         }
         this.validators.delete(message.id);
+
         try {
             return (validator.validate(value) === 'ok');
         }

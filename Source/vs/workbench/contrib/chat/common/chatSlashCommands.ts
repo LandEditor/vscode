@@ -44,6 +44,7 @@ export interface IChatSlashCommandService {
     executeCommand(id: string, prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], location: ChatAgentLocation, token: CancellationToken): Promise<{
         followUp: IChatFollowup[];
     } | void>;
+
     getCommands(location: ChatAgentLocation): Array<IChatSlashData>;
     hasCommand(id: string): boolean;
 }
@@ -56,6 +57,7 @@ export class ChatSlashCommandService extends Disposable implements IChatSlashCom
     private readonly _commands = new Map<string, Tuple>();
     private readonly _onDidChangeCommands = this._register(new Emitter<void>());
     readonly onDidChangeCommands: Event<void> = this._onDidChangeCommands.event;
+
     constructor(
     @IExtensionService
     private readonly _extensionService: IExtensionService) {
@@ -71,6 +73,7 @@ export class ChatSlashCommandService extends Disposable implements IChatSlashCom
         }
         this._commands.set(data.command, { data, command });
         this._onDidChangeCommands.fire();
+
         return toDisposable(() => {
             if (this._commands.delete(data.command)) {
                 this._onDidChangeCommands.fire();
@@ -87,6 +90,7 @@ export class ChatSlashCommandService extends Disposable implements IChatSlashCom
         followUp: IChatFollowup[];
     } | void> {
         const data = this._commands.get(id);
+
         if (!data) {
             throw new Error('No command with id ${id} NOT registered');
         }

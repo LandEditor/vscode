@@ -26,6 +26,7 @@ interface IViewQuickPickItem extends IPickerQuickAccessItem {
 }
 export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuickPickItem> {
     static PREFIX = 'view ';
+
     constructor(
     @IViewDescriptorService
     private readonly viewDescriptorService: IViewDescriptorService, 
@@ -62,6 +63,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
         });
         // Map entries to container labels
         const mapEntryToContainer = new Map<string, string>();
+
         for (const entry of filteredViewEntries) {
             if (!mapEntryToContainer.has(entry.label)) {
                 mapEntryToContainer.set(entry.label, entry.containerLabel);
@@ -69,13 +71,16 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
         }
         // Add separators for containers
         const filteredViewEntriesWithSeparators: Array<IViewQuickPickItem | IQuickPickSeparator> = [];
+
         let lastContainer: string | undefined = undefined;
+
         for (const entry of filteredViewEntries) {
             if (lastContainer !== entry.containerLabel) {
                 lastContainer = entry.containerLabel;
                 // When the entry container has a parent container, set container
                 // label as Parent / Child. For example, `Views / Explorer`.
                 let separatorLabel: string;
+
                 if (mapEntryToContainer.has(lastContainer)) {
                     separatorLabel = `${mapEntryToContainer.get(lastContainer)} / ${lastContainer}`;
                 }
@@ -90,9 +95,12 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
     }
     private doGetViewPickItems(): Array<IViewQuickPickItem> {
         const viewEntries: Array<IViewQuickPickItem> = [];
+
         const getViewEntriesForPaneComposite = (paneComposite: PaneCompositeDescriptor, viewContainer: ViewContainer): IViewQuickPickItem[] => {
             const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
             const result: IViewQuickPickItem[] = [];
+
             for (const view of viewContainerModel.allViewDescriptors) {
                 if (this.contextKeyService.contextMatchesRules(view.when)) {
                     result.push({
@@ -104,12 +112,16 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
             }
             return result;
         };
+
         const addPaneComposites = (location: ViewContainerLocation, containerLabel: string) => {
             const paneComposites = this.paneCompositeService.getPaneComposites(location);
+
             const visiblePaneCompositeIds = this.paneCompositeService.getVisiblePaneCompositeIds(location);
             paneComposites.sort((a, b) => {
                 let aIndex = visiblePaneCompositeIds.findIndex(id => a.id === id);
+
                 let bIndex = visiblePaneCompositeIds.findIndex(id => b.id === id);
+
                 if (aIndex < 0) {
                     aIndex = paneComposites.indexOf(a) + visiblePaneCompositeIds.length;
                 }
@@ -118,9 +130,11 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
                 }
                 return aIndex - bIndex;
             });
+
             for (const paneComposite of paneComposites) {
                 if (this.includeViewContainer(paneComposite)) {
                     const viewContainer = this.viewDescriptorService.getViewContainerById(paneComposite.id);
+
                     if (viewContainer) {
                         viewEntries.push({
                             label: this.viewDescriptorService.getViewContainerModel(viewContainer).title,
@@ -135,10 +149,13 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
         addPaneComposites(ViewContainerLocation.Sidebar, localize('views', "Side Bar"));
         addPaneComposites(ViewContainerLocation.Panel, localize('panels', "Panel"));
         addPaneComposites(ViewContainerLocation.AuxiliaryBar, localize('secondary side bar', "Secondary Side Bar"));
+
         const addPaneCompositeViews = (location: ViewContainerLocation) => {
             const paneComposites = this.paneCompositeService.getPaneComposites(location);
+
             for (const paneComposite of paneComposites) {
                 const viewContainer = this.viewDescriptorService.getViewContainerById(paneComposite.id);
+
                 if (viewContainer) {
                     viewEntries.push(...getViewEntriesForPaneComposite(paneComposite, viewContainer));
                 }
@@ -170,6 +187,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
                 containerLabel: localize('debugConsoles', "Debug Console"),
                 accept: async () => {
                     await this.debugService.focusStackFrame(undefined, undefined, session, { explicit: true });
+
                     if (!this.viewsService.isViewVisible(REPL_VIEW_ID)) {
                         await this.viewsService.openView(REPL_VIEW_ID, true);
                     }
@@ -178,6 +196,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
         });
         // Output Channels
         const channels = this.outputService.getChannelDescriptors();
+
         for (const channel of channels) {
             viewEntries.push({
                 label: channel.label,
@@ -189,6 +208,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
     }
     private includeViewContainer(container: PaneCompositeDescriptor): boolean {
         const viewContainer = this.viewDescriptorService.getViewContainerById(container.id);
+
         if (viewContainer?.hideIfEmpty) {
             return this.viewDescriptorService.getViewContainerModel(viewContainer).activeViewDescriptors.length > 0;
         }
@@ -198,6 +218,7 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 //#region Actions
 export class OpenViewPickerAction extends Action2 {
     static readonly ID = 'workbench.action.openView';
+
     constructor() {
         super({
             id: OpenViewPickerAction.ID,
@@ -217,6 +238,7 @@ export class QuickAccessViewPickerAction extends Action2 {
         mac: { primary: KeyMod.WinCtrl | KeyCode.KeyQ },
         linux: { primary: 0 }
     };
+
     constructor() {
         super({
             id: QuickAccessViewPickerAction.ID,
@@ -232,7 +254,9 @@ export class QuickAccessViewPickerAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const keybindingService = accessor.get(IKeybindingService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const keys = keybindingService.lookupKeybindings(QuickAccessViewPickerAction.ID);
         quickInputService.quickAccess.show(ViewQuickAccessProvider.PREFIX, { quickNavigateConfiguration: { keybindings: keys }, itemActivation: ItemActivation.FIRST });
     }

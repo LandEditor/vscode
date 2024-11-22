@@ -293,7 +293,9 @@ export interface InlineValueText {
 export interface InlineValueVariableLookup {
 	type: 'variable';
 	range: IRange;
+
 	variableName?: string;
+
 	caseSensitiveLookup: boolean;
 }
 
@@ -406,6 +408,7 @@ export namespace CompletionItemKinds {
 	 */
 	export function toIcon(kind: CompletionItemKind): ThemeIcon {
 		let codicon = byKind.get(kind);
+
 		if (!codicon) {
 			console.info('No codicon found for CompletionItemKind ' + kind);
 			codicon = Codicon.symbolProperty;
@@ -458,6 +461,7 @@ export namespace CompletionItemKinds {
 	 */
 	export function fromString(value: string, strict?: boolean): CompletionItemKind | undefined {
 		let res = data.get(value);
+
 		if (typeof res === 'undefined' && !strict) {
 			res = CompletionItemKind.Property;
 		}
@@ -1393,6 +1397,7 @@ export namespace SymbolKinds {
 	 */
 	export function toIcon(kind: SymbolKind): ThemeIcon {
 		let icon = byKind.get(kind);
+
 		if (!icon) {
 			console.info('No codicon found for SymbolKind ' + kind);
 			icon = Codicon.symbolProperty;
@@ -1701,7 +1706,9 @@ export class FoldingRangeKind {
 	static fromValue(value: string) {
 		switch (value) {
 			case 'comment': return FoldingRangeKind.Comment;
+
 			case 'imports': return FoldingRangeKind.Imports;
+
 			case 'region': return FoldingRangeKind.Region;
 		}
 		return new FoldingRangeKind(value);
@@ -2125,6 +2132,7 @@ export interface SemanticTokensEdits {
 
 export interface DocumentSemanticTokensProvider {
 	onDidChange?: Event<void>;
+
 	getLegend(): SemanticTokensLegend;
 	provideDocumentSemanticTokens(model: model.ITextModel, lastResultId: string | null, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
 	releaseDocumentSemanticTokens(resultId: string | undefined): void;

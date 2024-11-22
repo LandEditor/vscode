@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { createSingleCallFunction } from '../../../../base/common/functional.js';
+
 const charTable: {
     [hex: string]: number;
 } = {
@@ -23,8 +24,10 @@ const charTable: {
     E: 14,
     F: 15
 };
+
 const decodeData = (str: string) => {
     const output = new Uint8ClampedArray(str.length / 2);
+
     for (let i = 0; i < str.length; i += 2) {
         output[i >> 1] = (charTable[str[i]] << 4) | (charTable[str[i + 1]] & 0xF);
     }
@@ -33,7 +36,9 @@ const decodeData = (str: string) => {
 /*
 const encodeData = (data: Uint8ClampedArray, length: string) => {
     const chars = '0123456789ABCDEF';
+
     let output = '';
+
     for (let i = 0; i < data.length; i++) {
         output += chars[data[i] >> 4] + chars[data[i] & 0xf];
     }

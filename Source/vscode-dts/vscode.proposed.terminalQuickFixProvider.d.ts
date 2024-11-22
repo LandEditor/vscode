@@ -46,6 +46,7 @@ declare module 'vscode' {
 		 * Whether the command should be executed or just inserted (default)
 		 */
 		shouldExecute?: boolean;
+
 		constructor(terminalCommand: string, shouldExecute?: boolean);
 	}
 	export class TerminalQuickFixOpener {
@@ -53,6 +54,7 @@ declare module 'vscode' {
 		 * The uri to open
 		 */
 		uri: Uri;
+
 		constructor(uri: Uri);
 	}
 

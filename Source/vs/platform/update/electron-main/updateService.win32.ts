@@ -47,6 +47,7 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
     @memoize
     get cachePath(): Promise<string> {
         const result = path.join(tmpdir(), `vscode-${this.productService.quality}-${this.productService.target}-${process.arch}`);
+
         return fs.promises.mkdir(result, { recursive: true }).then(() => result);
     }
     constructor(
@@ -80,18 +81,21 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
         }
         this.logService.trace('update#handleRelaunch(): running raw#quitAndInstall()');
         this.doQuitAndInstall();
+
         return true;
     }
     protected override async initialize(): Promise<void> {
         if (this.productService.target === 'user' && await this.nativeHostMainService.isAdmin(undefined)) {
             this.setState(State.Disabled(DisablementReason.RunningAsAdmin));
             this.logService.info('update#ctor - updates are disabled due to running as Admin in user setup');
+
             return;
         }
         await super.initialize();
     }
     protected buildUpdateFeedUrl(quality: string): string | undefined {
         let platform = `win32-${process.arch}`;
+
         if (getUpdateType() === UpdateType.Archive) {
             platform += '-archive';
         }
@@ -109,18 +113,22 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
             .then<IUpdate | null>(asJson)
             .then(update => {
             const updateType = getUpdateType();
+
             if (!update || !update.url || !update.version || !update.productVersion) {
                 this.telemetryService.publicLog2<{
                     explicit: boolean;
                 }, UpdateNotAvailableClassification>('update:notAvailable', { explicit: !!context });
                 this.setState(State.Idle(updateType));
+
                 return Promise.resolve(null);
             }
             if (updateType === UpdateType.Archive) {
                 this.setState(State.AvailableForDownload(update));
+
                 return Promise.resolve(null);
             }
             this.setState(State.Downloading);
+
             return this.cleanup(update.version).then(() => {
                 return this.getUpdatePackagePath(update.version).then(updatePackagePath => {
                     return pfs.Promises.exists(updatePackagePath).then(exists => {
@@ -128,6 +136,7 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
                             return Promise.resolve(updatePackagePath);
                         }
                         const downloadPath = `${updatePackagePath}.tmp`;
+
                         return this.requestService.request({ url: update.url }, CancellationToken.None)
                             .then(context => this.fileService.writeFile(URI.file(downloadPath), context.stream))
                             .then(update.sha256hash ? () => checksum(downloadPath, update.sha256hash) : () => undefined)
@@ -137,7 +146,9 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
                 }).then(packagePath => {
                     this.availableUpdate = { packagePath };
                     this.setState(State.Downloaded(update));
+
                     const fastUpdatesEnabled = this.configurationService.getValue('update.enableWindowsBackgroundUpdates');
+
                     if (fastUpdatesEnabled) {
                         if (this.productService.target === 'user') {
                             this.doApplyUpdate();
@@ -167,12 +178,16 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
     }
     private async getUpdatePackagePath(version: string): Promise<string> {
         const cachePath = await this.cachePath;
+
         return path.join(cachePath, `CodeSetup-${this.productService.quality}-${version}.exe`);
     }
     private async cleanup(exceptVersion: string | null = null): Promise<void> {
         const filter = exceptVersion ? (one: string) => !(new RegExp(`${this.productService.quality}-${exceptVersion}\\.exe$`).test(one)) : () => true;
+
         const cachePath = await this.cachePath;
+
         const versions = await pfs.Promises.readdir(cachePath);
+
         const promises = versions.filter(filter).map(async (one) => {
             try {
                 await fs.promises.unlink(path.join(cachePath, one));
@@ -192,9 +207,11 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
         }
         const update = this.state.update;
         this.setState(State.Updating(update));
+
         const cachePath = await this.cachePath;
         this.availableUpdate.updateFilePath = path.join(cachePath, `CodeSetup-${this.productService.quality}-${update.version}.flag`);
         await pfs.Promises.writeFile(this.availableUpdate.updateFilePath, 'flag');
+
         const child = spawn(this.availableUpdate.packagePath, ['/verysilent', '/log', `/update="${this.availableUpdate.updateFilePath}"`, '/nocloseapplications', '/mergetasks=runcode,!desktopicon,!quicklaunchicon'], {
             detached: true,
             stdio: ['ignore', 'ignore', 'ignore'],
@@ -204,7 +221,9 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
             this.availableUpdate = undefined;
             this.setState(State.Idle(getUpdateType()));
         });
+
         const readyMutexName = `${this.productService.win32MutexName}-ready`;
+
         const mutex = await import('@vscode/windows-mutex');
         // poll for mutex-ready
         pollUntil(() => mutex.isActive(readyMutexName))
@@ -215,6 +234,7 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
             return;
         }
         this.logService.trace('update#quitAndInstall(): running raw#quitAndInstall()');
+
         if (this.availableUpdate.updateFilePath) {
             fs.unlinkSync(this.availableUpdate.updateFilePath);
         }
@@ -233,10 +253,12 @@ export class Win32UpdateService extends AbstractUpdateService implements IRelaun
             return;
         }
         const fastUpdatesEnabled = this.configurationService.getValue('update.enableWindowsBackgroundUpdates');
+
         const update: IUpdate = { version: 'unknown', productVersion: 'unknown' };
         this.setState(State.Downloading);
         this.availableUpdate = { packagePath };
         this.setState(State.Downloaded(update));
+
         if (fastUpdatesEnabled) {
             if (this.productService.target === 'user') {
                 this.doApplyUpdate();

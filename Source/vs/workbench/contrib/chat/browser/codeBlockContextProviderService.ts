@@ -7,11 +7,13 @@ import { ICodeBlockActionContextProvider, IChatCodeBlockContextProviderService }
 export class ChatCodeBlockContextProviderService implements IChatCodeBlockContextProviderService {
     declare _serviceBrand: undefined;
     private readonly _providers = new Map<string, ICodeBlockActionContextProvider>();
+
     get providers(): ICodeBlockActionContextProvider[] {
         return [...this._providers.values()];
     }
     registerProvider(provider: ICodeBlockActionContextProvider, id: string): IDisposable {
         this._providers.set(id, provider);
+
         return toDisposable(() => this._providers.delete(id));
     }
 }

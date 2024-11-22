@@ -67,7 +67,9 @@ interface GruntTaskDefinition extends vscode.TaskDefinition {
 }
 async function findGruntCommand(rootPath: string): Promise<string> {
     let command: string;
+
     const platform = process.platform;
+
     if (platform === 'win32' && await exists(path.join(rootPath!, 'node_modules', '.bin', 'grunt.cmd'))) {
         command = path.join('.', 'node_modules', '.bin', 'grunt.cmd');
     }
@@ -82,6 +84,7 @@ async function findGruntCommand(rootPath: string): Promise<string> {
 class FolderDetector {
     private fileWatcher: vscode.FileSystemWatcher | undefined;
     private promise: Thenable<vscode.Task[]> | undefined;
+
     constructor(private _workspaceFolder: vscode.WorkspaceFolder, private _gruntCommand: Promise<string>) {
     }
     public get workspaceFolder(): vscode.WorkspaceFolder {
@@ -110,20 +113,27 @@ class FolderDetector {
     }
     public async getTask(_task: vscode.Task): Promise<vscode.Task | undefined> {
         const taskDefinition = <any>_task.definition;
+
         const gruntTask = taskDefinition.task;
+
         if (gruntTask) {
             const options: vscode.ShellExecutionOptions = { cwd: this.workspaceFolder.uri.fsPath };
+
             const source = 'grunt';
+
             const task = gruntTask.indexOf(' ') === -1
                 ? new vscode.Task(taskDefinition, this.workspaceFolder, gruntTask, source, new vscode.ShellExecution(`${await this._gruntCommand}`, [gruntTask, ...taskDefinition.args], options))
                 : new vscode.Task(taskDefinition, this.workspaceFolder, gruntTask, source, new vscode.ShellExecution(`${await this._gruntCommand}`, [`"${gruntTask}"`, ...taskDefinition.args], options));
+
             return task;
         }
         return undefined;
     }
     private async computeTasks(): Promise<vscode.Task[]> {
         const rootPath = this._workspaceFolder.uri.scheme === 'file' ? this._workspaceFolder.uri.fsPath : undefined;
+
         const emptyTasks: vscode.Task[] = [];
+
         if (!rootPath) {
             return emptyTasks;
         }
@@ -131,13 +141,16 @@ class FolderDetector {
             return emptyTasks;
         }
         const commandLine = `${await this._gruntCommand} --help --no-color`;
+
         try {
             const { stdout, stderr } = await exec(commandLine, { cwd: rootPath });
+
             if (stderr) {
                 getOutputChannel().appendLine(stderr);
                 showError();
             }
             const result: vscode.Task[] = [];
+
             if (stdout) {
                 // grunt lists tasks as follows (description is wrapped into a new line if too long):
                 // ...
@@ -151,8 +164,11 @@ class FolderDetector {
                 //
                 // Tasks run in the order specified
                 const lines = stdout.split(/\r{0,1}\n/);
+
                 let tasksStart = false;
+
                 let tasksEnd = false;
+
                 for (const line of lines) {
                     if (line.length === 0) {
                         continue;
@@ -168,20 +184,28 @@ class FolderDetector {
                         }
                         else {
                             const regExp = /^\s*(\S.*\S)  \S/g;
+
                             const matches = regExp.exec(line);
+
                             if (matches && matches.length === 2) {
                                 const name = matches[1];
+
                                 const kind: GruntTaskDefinition = {
                                     type: 'grunt',
                                     task: name
                                 };
+
                                 const source = 'grunt';
+
                                 const options: vscode.ShellExecutionOptions = { cwd: this.workspaceFolder.uri.fsPath };
+
                                 const task = name.indexOf(' ') === -1
                                     ? new vscode.Task(kind, this.workspaceFolder, name, source, new vscode.ShellExecution(`${await this._gruntCommand} ${name}`, options))
                                     : new vscode.Task(kind, this.workspaceFolder, name, source, new vscode.ShellExecution(`${await this._gruntCommand} "${name}"`, options));
                                 result.push(task);
+
                                 const lowerCaseTaskName = name.toLowerCase();
+
                                 if (isBuildTask(lowerCaseTaskName)) {
                                     task.group = vscode.TaskGroup.Build;
                                 }
@@ -197,6 +221,7 @@ class FolderDetector {
         }
         catch (err) {
             const channel = getOutputChannel();
+
             if (err.stderr) {
                 channel.appendLine(err.stderr);
             }
@@ -205,11 +230,13 @@ class FolderDetector {
             }
             channel.appendLine(vscode.l10n.t("Auto detecting Grunt for folder {0} failed with error: {1}', this.workspaceFolder.name, err.error ? err.error.toString() : 'unknown"));
             showError();
+
             return emptyTasks;
         }
     }
     public dispose() {
         this.promise = undefined;
+
         if (this.fileWatcher) {
             this.fileWatcher.dispose();
         }
@@ -218,10 +245,12 @@ class FolderDetector {
 class TaskDetector {
     private taskProvider: vscode.Disposable | undefined;
     private detectors: Map<string, FolderDetector> = new Map();
+
     constructor() {
     }
     public start(): void {
         const folders = vscode.workspace.workspaceFolders;
+
         if (folders) {
             this.updateWorkspaceFolders(folders, []);
         }
@@ -238,6 +267,7 @@ class TaskDetector {
     private updateWorkspaceFolders(added: readonly vscode.WorkspaceFolder[], removed: readonly vscode.WorkspaceFolder[]): void {
         for (const remove of removed) {
             const detector = this.detectors.get(remove.uri.toString());
+
             if (detector) {
                 detector.dispose();
                 this.detectors.delete(remove.uri.toString());
@@ -246,6 +276,7 @@ class TaskDetector {
         for (const add of added) {
             const detector = new FolderDetector(add, findGruntCommand(add.uri.fsPath));
             this.detectors.set(add.uri.toString(), detector);
+
             if (detector.isEnabled()) {
                 detector.start();
             }
@@ -258,11 +289,13 @@ class TaskDetector {
             this.detectors.delete(detector.workspaceFolder.uri.toString());
         }
         const folders = vscode.workspace.workspaceFolders;
+
         if (folders) {
             for (const folder of folders) {
                 if (!this.detectors.has(folder.uri.toString())) {
                     const detector = new FolderDetector(folder, findGruntCommand(folder.uri.fsPath));
                     this.detectors.set(folder.uri.toString(), detector);
+
                     if (detector.isEnabled()) {
                         detector.start();
                     }
@@ -300,11 +333,13 @@ class TaskDetector {
         }
         else {
             const promises: Promise<vscode.Task[]>[] = [];
+
             for (const detector of this.detectors.values()) {
                 promises.push(detector.getTasks().then((value) => value, () => []));
             }
             return Promise.all(promises).then((values) => {
                 const result: vscode.Task[] = [];
+
                 for (const tasks of values) {
                     if (tasks && tasks.length > 0) {
                         result.push(...tasks);
@@ -327,6 +362,7 @@ class TaskDetector {
             }
             else if (task.scope) {
                 const detector = this.detectors.get(task.scope.uri.toString());
+
                 if (detector) {
                     return detector.getTask(task);
                 }

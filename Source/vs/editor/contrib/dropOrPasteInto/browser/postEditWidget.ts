@@ -116,6 +116,7 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit> extends Dis
 
 	showSelector() {
 		const pos = dom.getDomNodePagePosition(this.button.element);
+
 		const anchor = { x: pos.left + pos.width, y: pos.top + pos.height };
 
 		this._actionWidgetService.show('postEditWidget', false, [
@@ -137,6 +138,7 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit> extends Dis
 				this._actionWidgetService.hide(false);
 
 				const i = this.edits.allEdits.findIndex(edit => edit === item);
+
 				if (i !== this.edits.activeEditIndex) {
 					return this.onSelectNewEdit(i);
 				}
@@ -169,17 +171,20 @@ export class PostEditWidgetManager<T extends DocumentPasteEdit | DocumentDropEdi
 
 	public async applyEditAndShowIfNeeded(ranges: readonly Range[], edits: EditSet<T>, canShowWidget: boolean, resolve: (edit: T, token: CancellationToken) => Promise<T>, token: CancellationToken) {
 		const model = this._editor.getModel();
+
 		if (!model || !ranges.length) {
 			return;
 		}
 
 		const edit = edits.allEdits.at(edits.activeEditIndex);
+
 		if (!edit) {
 			return;
 		}
 
 		const onDidSelectEdit = async (newEditIndex: number) => {
 			const model = this._editor.getModel();
+
 			if (!model) {
 				return;
 			}
@@ -194,12 +199,14 @@ export class PostEditWidgetManager<T extends DocumentPasteEdit | DocumentDropEdi
 			}
 
 			this._notificationService.error(message);
+
 			if (canShowWidget) {
 				this.show(ranges[0], edits, onDidSelectEdit);
 			}
 		};
 
 		let resolvedEdit: T;
+
 		try {
 			resolvedEdit = await resolve(edit, token);
 		} catch (e) {
@@ -214,14 +221,18 @@ export class PostEditWidgetManager<T extends DocumentPasteEdit | DocumentDropEdi
 
 		// Use a decoration to track edits around the trigger range
 		const primaryRange = ranges[0];
+
 		const editTrackingDecoration = model.deltaDecorations([], [{
 			range: primaryRange,
 			options: { description: 'paste-line-suffix', stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges }
 		}]);
 
 		this._editor.focus();
+
 		let editResult: IBulkEditResult;
+
 		let editRange: Range | null;
+
 		try {
 			editResult = await this._bulkEditService.apply(combinedWorkspaceEdit, { editor: this._editor, token });
 			editRange = model.getDecorationRange(editTrackingDecoration[0]);

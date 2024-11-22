@@ -10,5 +10,6 @@ export interface IPaneComposite extends IComposite {
      */
     getOptimalWidth(): number | undefined;
     openView<T extends IView>(id: string, focus?: boolean): T | undefined;
+
     getViewPaneContainer(): IViewPaneContainer | undefined;
 }

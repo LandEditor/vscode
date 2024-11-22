@@ -15,6 +15,7 @@ import * as monarchCommon from './monarchCommon.js';
 import { IStandaloneThemeService } from '../standaloneTheme.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { LanguageId, MetadataConsts } from '../../../common/encodedTokenAttributes.js';
+
 const CACHE_STACK_DEPTH = 5;
 /**
  * Reuse the same stack elements up to a certain depth.
@@ -28,6 +29,7 @@ class MonarchStackElementFactory {
     private readonly _entries: {
         [stackElementId: string]: MonarchStackElement;
     };
+
     constructor(maxCacheDepth: number) {
         this._maxCacheDepth = maxCacheDepth;
         this._entries = Object.create(null);
@@ -38,16 +40,20 @@ class MonarchStackElementFactory {
             return new MonarchStackElement(parent, state);
         }
         let stackElementId = MonarchStackElement.getStackElementId(parent);
+
         if (stackElementId.length > 0) {
             stackElementId += '|';
         }
         stackElementId += state;
+
         let result = this._entries[stackElementId];
+
         if (result) {
             return result;
         }
         result = new MonarchStackElement(parent, state);
         this._entries[stackElementId] = result;
+
         return result;
     }
 }
@@ -55,6 +61,7 @@ class MonarchStackElement {
     public readonly parent: MonarchStackElement | null;
     public readonly state: string;
     public readonly depth: number;
+
     constructor(parent: MonarchStackElement | null, state: string) {
         this.parent = parent;
         this.state = state;
@@ -62,6 +69,7 @@ class MonarchStackElement {
     }
     public static getStackElementId(element: MonarchStackElement | null): string {
         let result = '';
+
         while (element !== null) {
             if (result.length > 0) {
                 result += '|';
@@ -98,6 +106,7 @@ class MonarchStackElement {
     }
     public popall(): MonarchStackElement {
         let result: MonarchStackElement = this;
+
         while (result.parent) {
             result = result.parent;
         }
@@ -110,6 +119,7 @@ class MonarchStackElement {
 class EmbeddedLanguageData {
     public readonly languageId: string;
     public readonly state: languages.IState;
+
     constructor(languageId: string, state: languages.IState) {
         this.languageId = languageId;
         this.state = state;
@@ -139,6 +149,7 @@ class MonarchLineStateFactory {
     private readonly _entries: {
         [stackElementId: string]: MonarchLineState;
     };
+
     constructor(maxCacheDepth: number) {
         this._maxCacheDepth = maxCacheDepth;
         this._entries = Object.create(null);
@@ -153,18 +164,22 @@ class MonarchLineStateFactory {
             return new MonarchLineState(stack, embeddedLanguageData);
         }
         const stackElementId = MonarchStackElement.getStackElementId(stack);
+
         let result = this._entries[stackElementId];
+
         if (result) {
             return result;
         }
         result = new MonarchLineState(stack, null);
         this._entries[stackElementId] = result;
+
         return result;
     }
 }
 class MonarchLineState implements languages.IState {
     public readonly stack: MonarchStackElement;
     public readonly embeddedLanguageData: EmbeddedLanguageData | null;
+
     constructor(stack: MonarchStackElement, embeddedLanguageData: EmbeddedLanguageData | null) {
         this.stack = stack;
         this.embeddedLanguageData = embeddedLanguageData;
@@ -203,6 +218,7 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
     private _languageId: string | null;
     private _lastTokenType: string | null;
     private _lastTokenLanguage: string | null;
+
     constructor() {
         this._tokens = [];
         this._languageId = null;
@@ -222,14 +238,19 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
     }
     public nestedLanguageTokenize(embeddedLanguageLine: string, hasEOL: boolean, embeddedLanguageData: EmbeddedLanguageData, offsetDelta: number): languages.IState {
         const nestedLanguageId = embeddedLanguageData.languageId;
+
         const embeddedModeState = embeddedLanguageData.state;
+
         const nestedLanguageTokenizationSupport = languages.TokenizationRegistry.get(nestedLanguageId);
+
         if (!nestedLanguageTokenizationSupport) {
             this.enterLanguage(nestedLanguageId);
             this.emit(offsetDelta, '');
+
             return embeddedModeState;
         }
         const nestedResult = nestedLanguageTokenizationSupport.tokenize(embeddedLanguageLine, hasEOL, embeddedModeState);
+
         if (offsetDelta !== 0) {
             for (const token of nestedResult.tokens) {
                 this._tokens.push(new languages.Token(token.offset + offsetDelta, token.type, token.language));
@@ -241,6 +262,7 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
         this._lastTokenType = null;
         this._lastTokenLanguage = null;
         this._languageId = null;
+
         return nestedResult.endState;
     }
     public finalize(endState: MonarchLineState): languages.TokenizationResult {
@@ -254,6 +276,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
     private _tokens: number[];
     private _currentLanguageId: LanguageId;
     private _lastTokenMetadata: number;
+
     constructor(languageService: ILanguageService, theme: TokenTheme) {
         this._languageService = languageService;
         this._theme = theme;
@@ -267,6 +290,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
     }
     public emit(startOffset: number, type: string): void {
         const metadata = this._theme.match(this._currentLanguageId, type) | MetadataConsts.BALANCED_BRACKETS_MASK;
+
         if (this._lastTokenMetadata === metadata) {
             return;
         }
@@ -276,8 +300,11 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
     }
     private static _merge(a: Uint32Array | null, b: number[], c: Uint32Array | null): Uint32Array {
         const aLen = (a !== null ? a.length : 0);
+
         const bLen = b.length;
+
         const cLen = (c !== null ? c.length : 0);
+
         if (aLen === 0 && bLen === 0 && cLen === 0) {
             return new Uint32Array(0);
         }
@@ -288,6 +315,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
             return a!;
         }
         const result = new Uint32Array(aLen + bLen + cLen);
+
         if (a !== null) {
             result.set(a);
         }
@@ -301,14 +329,19 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
     }
     public nestedLanguageTokenize(embeddedLanguageLine: string, hasEOL: boolean, embeddedLanguageData: EmbeddedLanguageData, offsetDelta: number): languages.IState {
         const nestedLanguageId = embeddedLanguageData.languageId;
+
         const embeddedModeState = embeddedLanguageData.state;
+
         const nestedLanguageTokenizationSupport = languages.TokenizationRegistry.get(nestedLanguageId);
+
         if (!nestedLanguageTokenizationSupport) {
             this.enterLanguage(nestedLanguageId);
             this.emit(offsetDelta, '');
+
             return embeddedModeState;
         }
         const nestedResult = nestedLanguageTokenizationSupport.tokenizeEncoded(embeddedLanguageLine, hasEOL, embeddedModeState);
+
         if (offsetDelta !== 0) {
             for (let i = 0, len = nestedResult.tokens.length; i < len; i += 2) {
                 nestedResult.tokens[i] += offsetDelta;
@@ -318,6 +351,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
         this._tokens = [];
         this._currentLanguageId = 0;
         this._lastTokenMetadata = 0;
+
         return nestedResult.endState;
     }
     public finalize(endState: MonarchLineState): languages.EncodedTokenizationResult {
@@ -340,6 +374,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     };
     public embeddedLoaded: Promise<void>;
     private _maxTokenizationLineLength: number;
+
     constructor(languageService: ILanguageService, standaloneThemeService: IStandaloneThemeService, languageId: string, lexer: monarchCommon.ILexer, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService) {
@@ -357,10 +392,13 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                 return;
             }
             let isOneOfMyEmbeddedModes = false;
+
             for (let i = 0, len = e.changedLanguages.length; i < len; i++) {
                 const language = e.changedLanguages[i];
+
                 if (this._embeddedLanguages[language]) {
                     isOneOfMyEmbeddedModes = true;
+
                     break;
                 }
             }
@@ -383,12 +421,15 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     }
     public getLoadStatus(): ILoadStatus {
         const promises: Thenable<any>[] = [];
+
         for (const nestedLanguageId in this._embeddedLanguages) {
             const tokenizationSupport = languages.TokenizationRegistry.get(nestedLanguageId);
+
             if (tokenizationSupport) {
                 // The nested language is already loaded
                 if (tokenizationSupport instanceof MonarchTokenizer) {
                     const nestedModeStatus = tokenizationSupport.getLoadStatus();
+
                     if (nestedModeStatus.loaded === false) {
                         promises.push(nestedModeStatus.promise);
                     }
@@ -412,6 +453,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     }
     public getInitialState(): languages.IState {
         const rootState = MonarchStackElementFactory.create(null, this._lexer.start!);
+
         return MonarchLineStateFactory.create(rootState, null);
     }
     public tokenize(line: string, hasEOL: boolean, lineState: languages.IState): languages.TokenizationResult {
@@ -419,7 +461,9 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
             return nullTokenize(this._languageId, lineState);
         }
         const tokensCollector = new MonarchClassicTokensCollector();
+
         const endLineState = this._tokenize(line, hasEOL, <MonarchLineState>lineState, tokensCollector);
+
         return tokensCollector.finalize(endLineState);
     }
     public tokenizeEncoded(line: string, hasEOL: boolean, lineState: languages.IState): languages.EncodedTokenizationResult {
@@ -427,7 +471,9 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
             return nullTokenizeEncoded(this._languageService.languageIdCodec.encodeLanguageId(this._languageId), lineState);
         }
         const tokensCollector = new MonarchModernTokensCollector(this._languageService, this._standaloneThemeService.getColorTheme().tokenTheme);
+
         const endLineState = this._tokenize(line, hasEOL, <MonarchLineState>lineState, tokensCollector);
+
         return tokensCollector.finalize(endLineState);
     }
     private _tokenize(line: string, hasEOL: boolean, lineState: MonarchLineState, collector: IMonarchTokensCollector): MonarchLineState {
@@ -440,6 +486,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     }
     private _findLeavingNestedLanguageOffset(line: string, state: MonarchLineState): number {
         let rules: monarchCommon.IRule[] | null = this._lexer.tokenizer[state.stack.state];
+
         if (!rules) {
             rules = monarchCommon.findRules(this._lexer, state.stack.state); // do parent matching
             if (!rules) {
@@ -447,19 +494,25 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
             }
         }
         let popOffset = -1;
+
         let hasEmbeddedPopRule = false;
+
         for (const rule of rules) {
             if (!monarchCommon.isIAction(rule.action) || rule.action.nextEmbedded !== '@pop') {
                 continue;
             }
             hasEmbeddedPopRule = true;
+
             let regex = rule.resolveRegex(state.stack.state);
+
             const regexSource = regex.source;
+
             if (regexSource.substr(0, 4) === '^(?:' && regexSource.substr(regexSource.length - 1, 1) === ')') {
                 const flags = (regex.ignoreCase ? 'i' : '') + (regex.unicode ? 'u' : '');
                 regex = new RegExp(regexSource.substr(4, regexSource.length - 5), flags);
             }
             const result = line.search(regex);
+
             if (result === -1 || (result !== 0 && rule.matchOnlyAtLineStart)) {
                 continue;
             }
@@ -474,17 +527,21 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     }
     private _nestedTokenize(line: string, hasEOL: boolean, lineState: MonarchLineState, offsetDelta: number, tokensCollector: IMonarchTokensCollector): MonarchLineState {
         const popOffset = this._findLeavingNestedLanguageOffset(line, lineState);
+
         if (popOffset === -1) {
             // tokenization will not leave nested language
             const nestedEndState = tokensCollector.nestedLanguageTokenize(line, hasEOL, lineState.embeddedLanguageData!, offsetDelta);
+
             return MonarchLineStateFactory.create(lineState.stack, new EmbeddedLanguageData(lineState.embeddedLanguageData!.languageId, nestedEndState));
         }
         const nestedLanguageLine = line.substring(0, popOffset);
+
         if (nestedLanguageLine.length > 0) {
             // tokenize with the nested language
             tokensCollector.nestedLanguageTokenize(nestedLanguageLine, false, lineState.embeddedLanguageData!, offsetDelta);
         }
         const restOfTheLine = line.substring(popOffset);
+
         return this._myTokenize(restOfTheLine, hasEOL, lineState, offsetDelta + popOffset, tokensCollector);
     }
     private _safeRuleName(rule: monarchCommon.IRule | null): string {
@@ -495,11 +552,17 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
     }
     private _myTokenize(lineWithoutLF: string, hasEOL: boolean, lineState: MonarchLineState, offsetDelta: number, tokensCollector: IMonarchTokensCollector): MonarchLineState {
         tokensCollector.enterLanguage(this._languageId);
+
         const lineWithoutLFLength = lineWithoutLF.length;
+
         const line = (hasEOL && this._lexer.includeLF ? lineWithoutLF + '\n' : lineWithoutLF);
+
         const lineLength = line.length;
+
         let embeddedLanguageData = lineState.embeddedLanguageData;
+
         let stack = lineState.stack;
+
         let pos = 0;
         // regular expression group matching
         // these never need cloning or equality since they are only used within a line match
@@ -515,19 +578,29 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
         // See https://github.com/microsoft/monaco-editor/issues/1235
         // Evaluate rules at least once for an empty line
         let forceEvaluation = true;
+
         while (forceEvaluation || pos < lineLength) {
             const pos0 = pos;
+
             const stackLen0 = stack.depth;
+
             const groupLen0 = groupMatching ? groupMatching.groups.length : 0;
+
             const state = stack.state;
+
             let matches: string[] | null = null;
+
             let matched: string | null = null;
+
             let action: monarchCommon.FuzzyAction | monarchCommon.FuzzyAction[] | null = null;
+
             let rule: monarchCommon.IRule | null = null;
+
             let enteringEmbeddedLanguage: string | null = null;
             // check if we need to process group matches first
             if (groupMatching) {
                 matches = groupMatching.matches;
+
                 const groupEntry = groupMatching.groups.shift()!;
                 matched = groupEntry.matched;
                 action = groupEntry.action;
@@ -546,6 +619,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                 forceEvaluation = false;
                 // get the rules for this state
                 let rules: monarchCommon.IRule[] | null = this._lexer.tokenizer[state];
+
                 if (!rules) {
                     rules = monarchCommon.findRules(this._lexer, state); // do parent matching
                     if (!rules) {
@@ -554,12 +628,15 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                 }
                 // try each rule until we match
                 const restOfLine = line.substr(pos);
+
                 for (const rule of rules) {
                     if (pos === 0 || !rule.matchOnlyAtLineStart) {
                         matches = restOfLine.match(rule.resolveRegex(state));
+
                         if (matches) {
                             matched = matches[0];
                             action = rule.action;
+
                             break;
                         }
                     }
@@ -662,6 +739,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                     }
                     else {
                         let nextState = monarchCommon.substituteMatches(this._lexer, action.next, matched, matches, state);
+
                         if (nextState[0] === '@') {
                             nextState = nextState.substr(1); // peel off starting '@'
                         }
@@ -686,10 +764,13 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                 const languageId = (this._languageService.getLanguageIdByLanguageName(enteringEmbeddedLanguage)
                     || this._languageService.getLanguageIdByMimeType(enteringEmbeddedLanguage)
                     || enteringEmbeddedLanguage);
+
                 const embeddedLanguageData = this._getNestedEmbeddedLanguageData(languageId);
+
                 if (pos < lineLength) {
                     // there is content from the embedded language on this line
                     const restOfLine = lineWithoutLF.substr(pos);
+
                     return this._nestedTokenize(restOfLine, hasEOL, MonarchLineStateFactory.create(stack, embeddedLanguageData), offsetDelta + pos, tokensCollector);
                 }
                 else {
@@ -705,6 +786,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                     throw monarchCommon.createError(this._lexer, 'matched number of groups does not match the number of actions in rule: ' + this._safeRuleName(rule));
                 }
                 let totalLen = 0;
+
                 for (let i = 1; i < matches.length; i++) {
                     totalLen += matches[i].length;
                 }
@@ -716,6 +798,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                     matches: matches,
                     groups: []
                 };
+
                 for (let i = 0; i < result.length; i++) {
                     groupMatching.groups[i] = {
                         action: result[i],
@@ -752,9 +835,12 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
                 // return the result (and check for brace matching)
                 // todo: for efficiency we could pre-sanitize tokenPostfix and substitutions
                 let tokenType: string | null = null;
+
                 if (monarchCommon.isString(result) && result.indexOf('@brackets') === 0) {
                     const rest = result.substr('@brackets'.length);
+
                     const bracket = findBracket(this._lexer, matched);
+
                     if (!bracket) {
                         throw monarchCommon.createError(this._lexer, '@brackets token returned but no bracket defined as: ' + matched);
                     }
@@ -785,6 +871,7 @@ export class MonarchTokenizer extends Disposable implements languages.ITokenizat
             this._embeddedLanguages[languageId] = true;
         }
         const tokenizationSupport = languages.TokenizationRegistry.get(languageId);
+
         if (tokenizationSupport) {
             return new EmbeddedLanguageData(languageId, tokenizationSupport.getInitialState());
         }
@@ -799,7 +886,9 @@ function findBracket(lexer: monarchCommon.ILexer, matched: string) {
         return null;
     }
     matched = monarchCommon.fixCase(lexer, matched);
+
     const brackets = lexer.brackets;
+
     for (const bracket of brackets) {
         if (bracket.open === matched) {
             return { token: bracket.token, bracketType: monarchCommon.MonarchBracket.Open };

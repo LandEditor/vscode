@@ -142,15 +142,18 @@ export interface ITerminalGroup {
 	focusNextPane(): void;
 	resizePane(direction: Direction): void;
 	resizePanes(relativeSizes: number[]): void;
+
 	setActiveInstanceByIndex(index: number, force?: boolean): void;
 	attachToElement(element: HTMLElement): void;
 	addInstance(instance: ITerminalInstance): void;
 	removeInstance(instance: ITerminalInstance): void;
 	moveInstance(instances: ITerminalInstance | ITerminalInstance[], index: number, position: 'before' | 'after'): void;
+
 	setVisible(visible: boolean): void;
 	layout(width: number, height: number): void;
 	addDisposable(disposable: IDisposable): void;
 	split(shellLaunchConfig: IShellLaunchConfig): ITerminalInstance;
+
 	getLayoutInfo(isActive: boolean): ITerminalTabLayoutInfoById;
 }
 
@@ -294,6 +297,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 * Creates a raw terminal instance, this should not be used outside of the terminal part.
 	 */
 	getInstanceFromId(terminalId: number): ITerminalInstance | undefined;
+
 	getInstanceFromIndex(terminalIndex: number): ITerminalInstance;
 
 	/**
@@ -308,6 +312,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	moveToEditor(source: ITerminalInstance, group?: GroupIdentifier | SIDE_GROUP_TYPE | ACTIVE_GROUP_TYPE | AUX_WINDOW_GROUP_TYPE): void;
 	moveIntoNewEditor(source: ITerminalInstance): void;
 	moveToTerminalView(source: ITerminalInstance | URI): Promise<void>;
+
 	getPrimaryBackend(): ITerminalBackend | undefined;
 
 	/**
@@ -324,18 +329,23 @@ export interface ITerminalService extends ITerminalInstanceHost {
 
 	requestStartExtensionTerminal(proxy: ITerminalProcessExtHostProxy, cols: number, rows: number): Promise<ITerminalLaunchError | undefined>;
 	isAttachedToTerminal(remoteTerm: IRemoteTerminalAttachTarget): boolean;
+
 	getEditableData(instance: ITerminalInstance): IEditableData | undefined;
+
 	setEditable(instance: ITerminalInstance, data: IEditableData | null): void;
 	isEditable(instance: ITerminalInstance | undefined): boolean;
 	safeDisposeTerminal(instance: ITerminalInstance): Promise<void>;
 
 	getDefaultInstanceHost(): ITerminalInstanceHost;
+
 	getInstanceHost(target: ITerminalLocationOptions | undefined): Promise<ITerminalInstanceHost>;
 
 	resolveLocation(location?: ITerminalLocationOptions): Promise<TerminalLocation | undefined>;
+
 	setNativeDelegate(nativeCalls: ITerminalServiceNativeDelegate): void;
 
 	getEditingTerminal(): ITerminalInstance | undefined;
+
 	setEditingTerminal(instance: ITerminalInstance | undefined): void;
 
 	/**
@@ -372,6 +382,7 @@ export interface ITerminalConfigurationService {
 
 	setPanelContainer(panelContainer: HTMLElement): void;
 	configFontIsMonospace(): boolean;
+
 	getFont(w: Window, xtermCore?: IXtermCore, excludeDimensions?: boolean): ITerminalFont;
 }
 
@@ -398,6 +409,7 @@ export interface ITerminalEditorService extends ITerminalInstanceHost {
 	revealActiveEditor(preserveFocus?: boolean): Promise<void>;
 	resolveResource(instance: ITerminalInstance): URI;
 	reviveInput(deserializedInput: IDeserializedTerminalEditorInput): EditorInput;
+
 	getInputFromResource(resource: URI): EditorInput;
 }
 
@@ -487,6 +499,7 @@ export interface ITerminalGroupService extends ITerminalInstanceHost {
 
 	createGroup(shellLaunchConfig?: IShellLaunchConfig): ITerminalGroup;
 	createGroup(instance?: ITerminalInstance): ITerminalGroup;
+
 	getGroupForInstance(instance: ITerminalInstance): ITerminalGroup | undefined;
 
 	/**
@@ -503,8 +516,11 @@ export interface ITerminalGroupService extends ITerminalInstanceHost {
 	instanceIsSplit(instance: ITerminalInstance): boolean;
 
 	getGroupLabels(): string[];
+
 	setActiveGroupByIndex(index: number): void;
+
 	setActiveGroupToNext(): void;
+
 	setActiveGroupToPrevious(): void;
 
 	setActiveInstanceByIndex(terminalIndex: number): void;

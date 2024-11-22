@@ -83,6 +83,7 @@ export class ReleaseNotesManager {
             return;
         }
         const html = await this.renderBody(this._lastMeta);
+
         if (this._currentReleaseNotes) {
             this._currentReleaseNotes.webview.setHtml(html);
         }
@@ -90,6 +91,7 @@ export class ReleaseNotesManager {
     private async getBase(useCurrentFile: boolean) {
         if (useCurrentFile) {
             const currentFileUri = this._codeEditorService.getActiveCodeEditor()?.getModel()?.uri;
+
             if (currentFileUri) {
                 return dirname(currentFileUri);
             }
@@ -98,11 +100,16 @@ export class ReleaseNotesManager {
     }
     public async show(version: string, useCurrentFile: boolean): Promise<boolean> {
         const releaseNoteText = await this.loadReleaseNotes(version, useCurrentFile);
+
         const base = await this.getBase(useCurrentFile);
         this._lastMeta = { text: releaseNoteText, base };
+
         const html = await this.renderBody(this._lastMeta);
+
         const title = nls.localize('releaseNotesInputName', "Release Notes: {0}", version);
+
         const activeEditorPane = this._editorService.activeEditorPane;
+
         if (this._currentReleaseNotes) {
             this._currentReleaseNotes.setName(title);
             this._currentReleaseNotes.webview.setHtml(html);
@@ -123,6 +130,7 @@ export class ReleaseNotesManager {
                 extension: undefined
             }, 'releaseNotes', title, { group: ACTIVE_GROUP, preserveFocus: false });
             this._currentReleaseNotes.webview.onDidClickLink(uri => this.onDidClickLink(URI.parse(uri)));
+
             const disposables = new DisposableStore();
             disposables.add(this._currentReleaseNotes.webview.onMessage(e => {
                 if (e.message.type === 'showReleaseNotes') {
@@ -130,6 +138,7 @@ export class ReleaseNotesManager {
                 }
                 else if (e.message.type === 'clickSetting') {
                     const x = this._currentReleaseNotes?.webview.container.offsetLeft + e.message.value.x;
+
                     const y = this._currentReleaseNotes?.webview.container.offsetTop + e.message.value.y;
                     this._simpleSettingRenderer.updateSetting(URI.parse(e.message.value.uri), x, y);
                 }
@@ -144,51 +153,68 @@ export class ReleaseNotesManager {
     }
     private async loadReleaseNotes(version: string, useCurrentFile: boolean): Promise<string> {
         const match = /^(\d+\.\d+)\./.exec(version);
+
         if (!match) {
             throw new Error('not found');
         }
         const versionLabel = match[1].replace(/\./g, '_');
+
         const baseUrl = 'https://code.visualstudio.com/raw';
+
         const url = `${baseUrl}/v${versionLabel}.md`;
+
         const unassigned = nls.localize('unassigned', "unassigned");
+
         const escapeMdHtml = (text: string): string => {
             return escape(text).replace(/\\/g, '\\\\');
         };
+
         const patchKeybindings = (text: string): string => {
             const kb = (match: string, kb: string) => {
                 const keybinding = this._keybindingService.lookupKeybinding(kb);
+
                 if (!keybinding) {
                     return unassigned;
                 }
                 return keybinding.getLabel() || unassigned;
             };
+
             const kbstyle = (match: string, kb: string) => {
                 const keybinding = KeybindingParser.parseKeybinding(kb);
+
                 if (!keybinding) {
                     return unassigned;
                 }
                 const resolvedKeybindings = this._keybindingService.resolveKeybinding(keybinding);
+
                 if (resolvedKeybindings.length === 0) {
                     return unassigned;
                 }
                 return resolvedKeybindings[0].getLabel() || unassigned;
             };
+
             const kbCode = (match: string, binding: string) => {
                 const resolved = kb(match, binding);
+
                 return resolved ? `<code title="${binding}">${escapeMdHtml(resolved)}</code>` : resolved;
             };
+
             const kbstyleCode = (match: string, binding: string) => {
                 const resolved = kbstyle(match, binding);
+
                 return resolved ? `<code title="${binding}">${escapeMdHtml(resolved)}</code>` : resolved;
             };
+
             return text
                 .replace(/`kb\(([a-z.\d\-]+)\)`/gi, kbCode)
                 .replace(/`kbstyle\(([^\)]+)\)`/gi, kbstyleCode)
                 .replace(/kb\(([a-z.\d\-]+)\)/gi, (match, binding) => escapeMarkdownSyntaxTokens(kb(match, binding)))
                 .replace(/kbstyle\(([^\)]+)\)/gi, (match, binding) => escapeMarkdownSyntaxTokens(kbstyle(match, binding)));
         };
+
         const fetchReleaseNotes = async () => {
             let text;
+
             try {
                 if (useCurrentFile) {
                     const file = this._codeEditorService.getActiveCodeEditor()?.getModel()?.getValue();
@@ -217,6 +243,7 @@ export class ReleaseNotesManager {
                 }
                 catch (err) {
                     this._releaseNotesCache.delete(version);
+
                     throw err;
                 }
             })());
@@ -246,6 +273,7 @@ export class ReleaseNotesManager {
         base: URI;
     }) {
         const nonce = generateUuid();
+
         const content = await renderMarkdownDocument(fileContent.text, this._extensionService, this._languageService, {
             shouldSanitize: false,
             markedExtensions: [{
@@ -255,9 +283,13 @@ export class ReleaseNotesManager {
                     }
                 }]
         });
+
         const colorMap = TokenizationRegistry.getColorMap();
+
         const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
+
         const showReleaseNotes = Boolean(this._configurationService.getValue<boolean>('update.showReleaseNotes'));
+
         return `<!DOCTYPE html>
 		<html>
 			<head>
@@ -359,6 +391,7 @@ export class ReleaseNotesManager {
 				${content}
 				<script nonce="${nonce}">
 					const vscode = acquireVsCodeApi();
+
 					const container = document.createElement('p');
 					container.style.display = 'flex';
 					container.style.alignItems = 'center';
@@ -375,6 +408,7 @@ export class ReleaseNotesManager {
 					container.appendChild(label);
 
 					const beforeElement = document.querySelector("body > h1")?.nextElementSibling;
+
 					if (beforeElement) {
 						document.body.insertBefore(container, beforeElement);
 					} else {
@@ -389,6 +423,7 @@ export class ReleaseNotesManager {
 
 					window.addEventListener('click', event => {
 						const href = event.target.href ?? event.target.parentElement?.href ?? event.target.parentElement?.parentElement?.href;
+
 						if (href && (href.startsWith('${Schemas.codeSetting}'))) {
 							vscode.postMessage({ type: 'clickSetting', value: { uri: href, x: event.clientX, y: event.clientY }});
 						}

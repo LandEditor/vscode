@@ -18,6 +18,7 @@ export class TokenArray {
     private constructor(private readonly _tokenInfo: TokenInfo[]) { }
     public forEach(cb: (range: OffsetRange, tokenInfo: TokenInfo) => void): void {
         let lengthSum = 0;
+
         for (const tokenInfo of this._tokenInfo) {
             const range = new OffsetRange(lengthSum, lengthSum + tokenInfo.length);
             cb(range, tokenInfo);
@@ -26,15 +27,20 @@ export class TokenArray {
     }
     public slice(range: OffsetRange): TokenArray {
         const result: TokenInfo[] = [];
+
         let lengthSum = 0;
+
         for (const tokenInfo of this._tokenInfo) {
             const tokenStart = lengthSum;
+
             const tokenEndEx = tokenStart + tokenInfo.length;
+
             if (tokenEndEx > range.start) {
                 if (tokenStart >= range.endExclusive) {
                     break;
                 }
                 const deltaBefore = Math.max(0, range.start - tokenStart);
+
                 const deltaAfter = Math.max(0, tokenEndEx - range.endExclusive);
                 result.push(new TokenInfo(tokenInfo.length - deltaBefore - deltaAfter, tokenInfo.metadata));
             }

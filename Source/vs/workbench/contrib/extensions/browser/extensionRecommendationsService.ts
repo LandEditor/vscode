@@ -57,6 +57,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     private sessionSeed: number;
     private _onDidChangeRecommendations = this._register(new Emitter<void>());
     readonly onDidChangeRecommendations = this._onDidChangeRecommendations.event;
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -89,9 +90,11 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
         this.webRecommendations = this._register(instantiationService.createInstance(WebRecommendations));
         this.languageRecommendations = this._register(instantiationService.createInstance(LanguageRecommendations));
         this.remoteRecommendations = this._register(instantiationService.createInstance(RemoteRecommendations));
+
         if (!this.isEnabled()) {
             this.sessionSeed = 0;
             this.activationPromise = Promise.resolve();
+
             return;
         }
         this.sessionSeed = +new Date();
@@ -122,6 +125,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
         this._register(this.extensionRecommendationsManagementService.onDidChangeGlobalIgnoredRecommendation(({ extensionId, isRecommended }) => {
             if (!isRecommended) {
                 const reason = this.getAllRecommendationsWithReason()[extensionId];
+
                 if (reason && reason.reasonId) {
                     this.telemetryService.publicLog2<{
                         extensionId: string;
@@ -146,12 +150,14 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     } {
         /* Activate proactive recommendations */
         this.activateProactiveRecommendations();
+
         const output: {
             [id: string]: {
                 reasonId: ExtensionRecommendationReason;
                 reasonText: string;
             };
         } = Object.create(null);
+
         const allRecommendations = [
             ...this.configBasedRecommendations.recommendations,
             ...this.exeBasedRecommendations.recommendations,
@@ -161,6 +167,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
             ...this.languageRecommendations.recommendations,
             ...this.webRecommendations.recommendations,
         ];
+
         for (const { extension, reason } of allRecommendations) {
             if (isString(extension) && this.isExtensionAllowedToBeRecommended(extension)) {
                 output[extension.toLowerCase()] = reason;
@@ -173,6 +180,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
         others: string[];
     }> {
         await this.configBasedRecommendations.activate();
+
         return {
             important: this.toExtensionIds(this.configBasedRecommendations.importantRecommendations),
             others: this.toExtensionIds(this.configBasedRecommendations.otherRecommendations)
@@ -181,24 +189,30 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     async getOtherRecommendations(): Promise<string[]> {
         await this.activationPromise;
         await this.activateProactiveRecommendations();
+
         const recommendations = [
             ...this.configBasedRecommendations.otherRecommendations,
             ...this.exeBasedRecommendations.otherRecommendations,
             ...this.webRecommendations.recommendations
         ];
+
         const extensionIds = this.toExtensionIds(recommendations);
         shuffle(extensionIds, this.sessionSeed);
+
         return extensionIds;
     }
     async getImportantRecommendations(): Promise<string[]> {
         await this.activateProactiveRecommendations();
+
         const recommendations = [
             ...this.fileBasedRecommendations.importantRecommendations,
             ...this.configBasedRecommendations.importantRecommendations,
             ...this.exeBasedRecommendations.importantRecommendations,
         ];
+
         const extensionIds = this.toExtensionIds(recommendations);
         shuffle(extensionIds, this.sessionSeed);
+
         return extensionIds;
     }
     getKeymapRecommendations(): string[] {
@@ -215,7 +229,9 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
             return [];
         }
         await this.workspaceRecommendations.activate();
+
         const result: Array<string | URI> = [];
+
         for (const { extension } of this.workspaceRecommendations.recommendations) {
             if (isString(extension)) {
                 if (!result.includes(extension.toLowerCase()) && this.isExtensionAllowedToBeRecommended(extension)) {
@@ -233,8 +249,10 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
         others: string[];
     }> {
         await this.exeBasedRecommendations.activate();
+
         const { important, others } = exe ? this.exeBasedRecommendations.getRecommendations(exe)
             : { important: this.exeBasedRecommendations.importantRecommendations, others: this.exeBasedRecommendations.otherRecommendations };
+
         return { important: this.toExtensionIds(important), others: this.toExtensionIds(others) };
     }
     getFileBasedRecommendations(): string[] {
@@ -244,7 +262,9 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
         for (const e of results) {
             if (e.source && !URI.isUri(e.source) && e.operation === InstallOperation.Install) {
                 const extRecommendations = this.getAllRecommendationsWithReason() || {};
+
                 const recommendationReason = extRecommendations[e.source.identifier.id.toLowerCase()];
+
                 if (recommendationReason) {
                     /* __GDPR__
                         "extensionGallery:install:recommendations" : {
@@ -262,6 +282,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     }
     private toExtensionIds(recommendations: ReadonlyArray<ExtensionRecommendation>): string[] {
         const extensionIds: string[] = [];
+
         for (const { extension } of recommendations) {
             if (isString(extension) && this.isExtensionAllowedToBeRecommended(extension) && !extensionIds.includes(extension.toLowerCase())) {
                 extensionIds.push(extension.toLowerCase());
@@ -274,12 +295,14 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     }
     private async promptWorkspaceRecommendations(): Promise<void> {
         const installed = await this.extensionsWorkbenchService.queryLocal();
+
         const allowedRecommendations = [
             ...this.workspaceRecommendations.recommendations,
             ...this.configBasedRecommendations.importantRecommendations.filter(recommendation => !recommendation.whenNotInstalled || recommendation.whenNotInstalled.every(id => installed.every(local => !areSameExtensions(local.identifier, { id }))))
         ]
             .map(({ extension }) => extension)
             .filter(extension => !isString(extension) || this.isExtensionAllowedToBeRecommended(extension));
+
         if (allowedRecommendations.length) {
             await this._registerP(timeout(5000));
             await this.extensionRecommendationNotificationService.promptWorkspaceRecommendations(allowedRecommendations);
@@ -287,6 +310,7 @@ export class ExtensionRecommendationsService extends Disposable implements IExte
     }
     private _registerP<T>(o: CancelablePromise<T>): CancelablePromise<T> {
         this._register(toDisposable(() => o.cancel()));
+
         return o;
     }
 }

@@ -33,6 +33,7 @@ export class MovedText {
      * Can be empty if the text didn't change (only moved).
      */
     public readonly changes: readonly DetailedLineRangeMapping[];
+
     constructor(lineRangeMapping: LineRangeMapping, changes: readonly DetailedLineRangeMapping[]) {
         this.lineRangeMapping = lineRangeMapping;
         this.changes = changes;

@@ -70,12 +70,14 @@ export class MarkerController implements IEditorContribution {
 			return this._model;
 		}
 		let reusePosition = false;
+
 		if (this._model) {
 			reusePosition = true;
 			this._cleanUp();
 		}
 
 		this._model = this._markerNavigationService.getMarkerList(uri);
+
 		if (reusePosition) {
 			this._model.move(true, this._editor.getModel()!, this._editor.getPosition()!);
 		}
@@ -100,6 +102,7 @@ export class MarkerController implements IEditorContribution {
 				return;
 			}
 			const info = this._model.find(this._editor.getModel()!.uri, this._widget.position);
+
 			if (info) {
 				this._widget.updateMarker(info.marker);
 			} else {
@@ -122,6 +125,7 @@ export class MarkerController implements IEditorContribution {
 
 	close(focusEditor: boolean = true): void {
 		this._cleanUp();
+
 		if (focusEditor) {
 			this._editor.focus();
 		}
@@ -132,6 +136,7 @@ export class MarkerController implements IEditorContribution {
 			const model = this._getOrCreateModel(this._editor.getModel().uri);
 			model.resetIndex();
 			model.move(true, this._editor.getModel(), new Position(marker.startLineNumber, marker.startColumn));
+
 			if (model.selected) {
 				this._widget!.showAtMarker(model.selected.marker, model.selected.index, model.selected.total);
 			}
@@ -142,12 +147,14 @@ export class MarkerController implements IEditorContribution {
 		if (this._editor.hasModel()) {
 			const model = this._getOrCreateModel(multiFile ? undefined : this._editor.getModel().uri);
 			model.move(next, this._editor.getModel(), this._editor.getPosition());
+
 			if (!model.selected) {
 				return;
 			}
 			if (model.selected.marker.resource.toString() !== this._editor.getModel().uri.toString()) {
 				// show in different editor
 				this._cleanUp();
+
 				const otherEditor = await this._editorService.openCodeEditor({
 					resource: model.selected.marker.resource,
 					options: { pinned: false, revealIfOpened: true, selectionRevealType: TextEditorSelectionRevealType.NearTop, selection: model.selected.marker }
@@ -186,6 +193,7 @@ class MarkerNavigationAction extends EditorAction {
 export class NextMarkerAction extends MarkerNavigationAction {
 	static ID: string = 'editor.action.marker.next';
 	static LABEL = nls.localize2('markerAction.next.label', "Go to Next Problem (Error, Warning, Info)");
+
 	constructor() {
 		super(true, false, {
 			id: NextMarkerAction.ID,
@@ -210,6 +218,7 @@ export class NextMarkerAction extends MarkerNavigationAction {
 class PrevMarkerAction extends MarkerNavigationAction {
 	static ID: string = 'editor.action.marker.prev';
 	static LABEL = nls.localize2('markerAction.previous.label', "Go to Previous Problem (Error, Warning, Info)");
+
 	constructor() {
 		super(false, false, {
 			id: PrevMarkerAction.ID,

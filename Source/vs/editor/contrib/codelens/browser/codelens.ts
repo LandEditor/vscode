@@ -28,6 +28,7 @@ export class CodeLensModel {
     }
     add(list: CodeLensList, provider: CodeLensProvider): void {
         this._disposables.add(list);
+
         for (const symbol of list.lenses) {
             this.lenses.push({ symbol, provider });
         }
@@ -35,12 +36,17 @@ export class CodeLensModel {
 }
 export async function getCodeLensModel(registry: LanguageFeatureRegistry<CodeLensProvider>, model: ITextModel, token: CancellationToken): Promise<CodeLensModel> {
     const provider = registry.ordered(model);
+
     const providerRanks = new Map<CodeLensProvider, number>();
+
     const result = new CodeLensModel();
+
     const promises = provider.map(async (provider, i) => {
         providerRanks.set(provider, i);
+
         try {
             const list = await Promise.resolve(provider.provideCodeLenses(model, token));
+
             if (list) {
                 result.add(list, provider);
             }
@@ -74,6 +80,7 @@ export async function getCodeLensModel(registry: LanguageFeatureRegistry<CodeLen
             return 0;
         }
     });
+
     return result;
 }
 CommandsRegistry.registerCommand('_executeCodeLensProvider', function (accessor, ...args: [
@@ -83,16 +90,23 @@ CommandsRegistry.registerCommand('_executeCodeLensProvider', function (accessor,
     let [uri, itemResolveCount] = args;
     assertType(URI.isUri(uri));
     assertType(typeof itemResolveCount === 'number' || !itemResolveCount);
+
     const { codeLensProvider } = accessor.get(ILanguageFeaturesService);
+
     const model = accessor.get(IModelService).getModel(uri);
+
     if (!model) {
         throw illegalArgument();
     }
     const result: CodeLens[] = [];
+
     const disposables = new DisposableStore();
+
     return getCodeLensModel(codeLensProvider, model, CancellationToken.None).then(value => {
         disposables.add(value);
+
         const resolve: Promise<any>[] = [];
+
         for (const item of value.lenses) {
             if (itemResolveCount === undefined || itemResolveCount === null || Boolean(item.symbol.command)) {
                 result.push(item.symbol);

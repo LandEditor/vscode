@@ -54,13 +54,16 @@ export interface IExtensionHostProfileService {
     lastProfileSavedTo: URI | undefined;
     startProfiling(): void;
     stopProfiling(): void;
+
     getUnresponsiveProfile(extensionId: ExtensionIdentifier): IExtensionHostProfile | undefined;
+
     setUnresponsiveProfile(extensionId: ExtensionIdentifier, profile: IExtensionHostProfile): void;
 }
 export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
     private _profileInfo: IExtensionHostProfile | null;
     private _extensionsHostRecorded: IContextKey<boolean>;
     private _profileSessionState: IContextKey<string>;
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -130,6 +133,7 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 export class StartExtensionHostProfileAction extends Action2 {
     static readonly ID = 'workbench.extensions.action.extensionHostProfile';
     static readonly LABEL = nls.localize('extensionHostProfileStart', "Start Extension Host Profile");
+
     constructor() {
         super({
             id: StartExtensionHostProfileAction.ID,
@@ -150,12 +154,14 @@ export class StartExtensionHostProfileAction extends Action2 {
     run(accessor: ServicesAccessor): Promise<any> {
         const extensionHostProfileService = accessor.get(IExtensionHostProfileService);
         extensionHostProfileService.startProfiling();
+
         return Promise.resolve();
     }
 }
 export class StopExtensionHostProfileAction extends Action2 {
     static readonly ID = 'workbench.extensions.action.stopExtensionHostProfile';
     static readonly LABEL = nls.localize('stopExtensionHostProfileStart', "Stop Extension Host Profile");
+
     constructor() {
         super({
             id: StopExtensionHostProfileAction.ID,
@@ -175,12 +181,14 @@ export class StopExtensionHostProfileAction extends Action2 {
     run(accessor: ServicesAccessor): Promise<any> {
         const extensionHostProfileService = accessor.get(IExtensionHostProfileService);
         extensionHostProfileService.stopProfiling();
+
         return Promise.resolve();
     }
 }
 export class OpenExtensionHostProfileACtion extends Action2 {
     static readonly LABEL = nls.localize('openExtensionHostProfile', "Open Extension Host Profile");
     static readonly ID = 'workbench.extensions.action.openExtensionHostProfile';
+
     constructor() {
         super({
             id: OpenExtensionHostProfileACtion.ID,
@@ -200,8 +208,11 @@ export class OpenExtensionHostProfileACtion extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const extensionHostProfileService = accessor.get(IExtensionHostProfileService);
+
         const commandService = accessor.get(ICommandService);
+
         const editorService = accessor.get(IEditorService);
+
         if (!extensionHostProfileService.lastProfileSavedTo) {
             await commandService.executeCommand(SaveExtensionHostProfileAction.ID);
         }
@@ -220,6 +231,7 @@ export class OpenExtensionHostProfileACtion extends Action2 {
 export class SaveExtensionHostProfileAction extends Action2 {
     static readonly LABEL = nls.localize('saveExtensionHostProfile', "Save Extension Host Profile");
     static readonly ID = 'workbench.extensions.action.saveExtensionHostProfile';
+
     constructor() {
         super({
             id: SaveExtensionHostProfileAction.ID,
@@ -239,9 +251,13 @@ export class SaveExtensionHostProfileAction extends Action2 {
     }
     run(accessor: ServicesAccessor): Promise<any> {
         const environmentService = accessor.get(IWorkbenchEnvironmentService);
+
         const extensionHostProfileService = accessor.get(IExtensionHostProfileService);
+
         const fileService = accessor.get(IFileService);
+
         const fileDialogService = accessor.get(IFileDialogService);
+
         return this._asyncRun(environmentService, extensionHostProfileService, fileService, fileDialogService);
     }
     private async _asyncRun(environmentService: IWorkbenchEnvironmentService, extensionHostProfileService: IExtensionHostProfileService, fileService: IFileService, fileDialogService: IFileDialogService): Promise<any> {
@@ -254,12 +270,16 @@ export class SaveExtensionHostProfileAction extends Action2 {
                     extensions: ['cpuprofile', 'txt']
                 }]
         });
+
         if (!picked) {
             return;
         }
         const profileInfo = extensionHostProfileService.lastProfile;
+
         let dataToWrite: object = profileInfo ? profileInfo.data : {};
+
         let savePath = picked.fsPath;
+
         if (environmentService.isBuilt) {
             // when running from a not-development-build we remove
             // absolute filenames because we don't want to reveal anything
@@ -270,6 +290,7 @@ export class SaveExtensionHostProfileAction extends Action2 {
         }
         const saveURI = URI.file(savePath);
         extensionHostProfileService.lastProfileSavedTo = saveURI;
+
         return fileService.writeFile(saveURI, VSBuffer.fromString(JSON.stringify(profileInfo ? profileInfo.data : {}, null, '\t')));
     }
 }

@@ -54,10 +54,12 @@ export class OutlineViewState implements IOutlineViewState {
     }
     restore(storageService: IStorageService): void {
         const raw = storageService.get('outline/state', StorageScope.WORKSPACE);
+
         if (!raw) {
             return;
         }
         let data: any;
+
         try {
             data = JSON.parse(raw);
         }
@@ -66,6 +68,7 @@ export class OutlineViewState implements IOutlineViewState {
         }
         this.followCursor = data.followCursor;
         this.sortBy = data.sortBy ?? OutlineSortOrder.ByPosition;
+
         if (typeof data.filterOnType === 'boolean') {
             this.filterOnType = data.filterOnType;
         }

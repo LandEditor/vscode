@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 export type ValueCallback<T = unknown> = (value: T | Promise<T>) => void;
+
 const enum DeferredOutcome {
     Resolved,
     Rejected
@@ -33,6 +34,7 @@ export class DeferredPromise<T> {
         return this.outcome?.outcome === DeferredOutcome.Resolved ? this.outcome?.value : undefined;
     }
     public readonly p: Promise<T>;
+
     constructor() {
         this.p = new Promise<T>((c, e) => {
             this.completeCallback = c;

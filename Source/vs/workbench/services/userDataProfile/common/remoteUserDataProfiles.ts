@@ -14,17 +14,21 @@ import { IUserDataProfileService } from './userDataProfile.js';
 import { distinct } from '../../../../base/common/arrays.js';
 import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
 import { UserDataProfilesService } from '../../../../platform/userDataProfile/common/userDataProfileIpc.js';
+
 const associatedRemoteProfilesKey = 'associatedRemoteProfiles';
 export const IRemoteUserDataProfilesService = createDecorator<IRemoteUserDataProfilesService>('IRemoteUserDataProfilesService');
 export interface IRemoteUserDataProfilesService {
     readonly _serviceBrand: undefined;
+
     getRemoteProfiles(): Promise<readonly IUserDataProfile[]>;
+
     getRemoteProfile(localProfile: IUserDataProfile): Promise<IUserDataProfile>;
 }
 class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDataProfilesService {
     readonly _serviceBrand: undefined;
     private readonly initPromise: Promise<void>;
     private remoteUserDataProfilesService: IUserDataProfilesService | undefined;
+
     constructor(
     @IWorkbenchEnvironmentService
     private readonly environmentService: IWorkbenchEnvironmentService, 
@@ -43,10 +47,12 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     }
     private async init(): Promise<void> {
         const connection = this.remoteAgentService.getConnection();
+
         if (!connection) {
             return;
         }
         const environment = await this.remoteAgentService.getEnvironment();
+
         if (!environment) {
             return;
         }
@@ -54,6 +60,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
         this._register(this.userDataProfilesService.onDidChangeProfiles(e => this.onDidChangeLocalProfiles(e)));
         // Associate current local profile with remote profile
         const remoteProfile = await this.getAssociatedRemoteProfile(this.userDataProfileService.currentProfile, this.remoteUserDataProfilesService);
+
         if (!remoteProfile.isDefault) {
             this.setAssociatedRemoteProfiles([...this.getAssociatedRemoteProfiles(), remoteProfile.id]);
         }
@@ -62,6 +69,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     private async onDidChangeLocalProfiles(e: DidChangeProfilesEvent): Promise<void> {
         for (const profile of e.removed) {
             const remoteProfile = this.remoteUserDataProfilesService?.profiles.find(p => p.id === profile.id);
+
             if (remoteProfile) {
                 await this.remoteUserDataProfilesService?.removeProfile(remoteProfile);
             }
@@ -69,6 +77,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     }
     async getRemoteProfiles(): Promise<readonly IUserDataProfile[]> {
         await this.initPromise;
+
         if (!this.remoteUserDataProfilesService) {
             throw new Error('Remote profiles service not available in the current window');
         }
@@ -76,6 +85,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     }
     async getRemoteProfile(localProfile: IUserDataProfile): Promise<IUserDataProfile> {
         await this.initPromise;
+
         if (!this.remoteUserDataProfilesService) {
             throw new Error('Remote profiles service not available in the current window');
         }
@@ -87,6 +97,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
             return remoteUserDataProfilesService.defaultProfile;
         }
         let profile = remoteUserDataProfilesService.profiles.find(p => p.id === localProfile.id);
+
         if (!profile) {
             profile = await remoteUserDataProfilesService.createProfile(localProfile.id, localProfile.name, {
                 transient: localProfile.isTransient,
@@ -99,6 +110,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     private getAssociatedRemoteProfiles(): string[] {
         if (this.environmentService.remoteAuthority) {
             const remotes = this.parseAssociatedRemoteProfiles();
+
             return remotes[this.environmentService.remoteAuthority] ?? [];
         }
         return [];
@@ -107,6 +119,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
         if (this.environmentService.remoteAuthority) {
             const remotes = this.parseAssociatedRemoteProfiles();
             profiles = distinct(profiles);
+
             if (profiles.length) {
                 remotes[this.environmentService.remoteAuthority] = profiles;
             }
@@ -124,6 +137,7 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     private parseAssociatedRemoteProfiles(): IStringDictionary<string[]> {
         if (this.environmentService.remoteAuthority) {
             const value = this.storageService.get(associatedRemoteProfilesKey, StorageScope.APPLICATION);
+
             try {
                 return value ? JSON.parse(value) : {};
             }
@@ -135,17 +149,21 @@ class RemoteUserDataProfilesService extends Disposable implements IRemoteUserDat
     }
     private async cleanUp(): Promise<void> {
         const associatedRemoteProfiles: string[] = [];
+
         for (const profileId of this.getAssociatedRemoteProfiles()) {
             const remoteProfile = this.remoteUserDataProfilesService?.profiles.find(p => p.id === profileId);
+
             if (!remoteProfile) {
                 continue;
             }
             const localProfile = this.userDataProfilesService.profiles.find(p => p.id === profileId);
+
             if (localProfile) {
                 if (localProfile.name !== remoteProfile.name) {
                     await this.remoteUserDataProfilesService?.updateProfile(remoteProfile, { name: localProfile.name });
                 }
                 associatedRemoteProfiles.push(profileId);
+
                 continue;
             }
             if (remoteProfile) {

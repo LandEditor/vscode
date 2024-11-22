@@ -11,6 +11,7 @@ export class MainThreadTheming implements MainThreadThemingShape {
     private readonly _themeService: IThemeService;
     private readonly _proxy: ExtHostThemingShape;
     private readonly _themeChangeListener: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @IThemeService
     themeService: IThemeService) {

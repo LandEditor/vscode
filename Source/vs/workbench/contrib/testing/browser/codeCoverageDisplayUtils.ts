@@ -14,6 +14,7 @@ import { TestId } from '../common/testId.js';
 import { LiveTestResult } from '../common/testResult.js';
 import { ICoverageCount } from '../common/testTypes.js';
 export const percent = (cc: ICoverageCount) => clamp(cc.total === 0 ? 1 : cc.covered / cc.total, 0, 1);
+
 const colorThresholds = [
     { color: `var(${asCssVariableName(chartsRed)})`, key: 'red' },
     { color: `var(${asCssVariableName(chartsYellow)})`, key: 'yellow' },
@@ -22,8 +23,10 @@ const colorThresholds = [
 export const getCoverageColor = (pct: number, thresholds: ITestingCoverageBarThresholds) => {
     let best = colorThresholds[0].color; //  red
     let distance = pct;
+
     for (const { key, color } of colorThresholds) {
         const t = thresholds[key] / 100;
+
         if (t && pct >= t && pct - t < distance) {
             best = color;
             distance = pct - t;
@@ -31,6 +34,7 @@ export const getCoverageColor = (pct: number, thresholds: ITestingCoverageBarThr
     }
     return best;
 };
+
 const epsilon = 10e-8;
 export const displayPercent = (value: number, precision = 2) => {
     const display = (value * 100).toFixed(precision);
@@ -44,8 +48,10 @@ export const calculateDisplayedStat = (coverage: CoverageBarSource, method: Test
     switch (method) {
         case TestingDisplayedCoveragePercent.Statement:
             return percent(coverage.statement);
+
         case TestingDisplayedCoveragePercent.Minimum: {
             let value = percent(coverage.statement);
+
             if (coverage.branch) {
                 value = Math.min(value, percent(coverage.branch));
             }
@@ -56,14 +62,17 @@ export const calculateDisplayedStat = (coverage: CoverageBarSource, method: Test
         }
         case TestingDisplayedCoveragePercent.TotalCoverage:
             return getTotalCoveragePercent(coverage.statement, coverage.branch, coverage.declaration);
+
         default:
             assertNever(method);
     }
 };
 export function getLabelForItem(result: LiveTestResult, testId: TestId, commonPrefixLen: number) {
     const parts: string[] = [];
+
     for (const id of testId.idsFromRoot()) {
         const item = result.getTestById(id.toString());
+
         if (!item) {
             break;
         }
@@ -73,8 +82,12 @@ export function getLabelForItem(result: LiveTestResult, testId: TestId, commonPr
 }
 export namespace labels {
     export const showingFilterFor = (label: string) => localize('testing.coverageForTest', "Showing \"{0}\"", label);
+
     export const clickToChangeFiltering = localize('changePerTestFilter', 'Click to view coverage for a single test');
+
     export const percentCoverage = (percent: number, precision?: number) => localize('testing.percentCoverage', '{0} Coverage', displayPercent(percent, precision));
+
     export const allTests = localize('testing.allTests', 'All tests');
+
     export const pickShowCoverage = localize('testing.pickTest', 'Pick a test to show coverage for');
 }

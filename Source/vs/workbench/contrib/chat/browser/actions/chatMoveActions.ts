@@ -95,21 +95,26 @@ export function registerMoveActions() {
 
 async function executeMoveToAction(accessor: ServicesAccessor, moveTo: MoveToNewLocation, _sessionId?: string) {
 	const widgetService = accessor.get(IChatWidgetService);
+
 	const editorService = accessor.get(IEditorService);
 
 	const widget = (_sessionId ? widgetService.getWidgetBySessionId(_sessionId) : undefined)
 		?? widgetService.lastFocusedWidget;
+
 	if (!widget || !('viewId' in widget.viewContext)) {
 		await editorService.openEditor({ resource: ChatEditorInput.getNewEditorUri(), options: { pinned: true } }, moveTo === MoveToNewLocation.Window ? AUX_WINDOW_GROUP : ACTIVE_GROUP);
+
 		return;
 	}
 
 	const viewModel = widget.viewModel;
+
 	if (!viewModel) {
 		return;
 	}
 
 	const sessionId = viewModel.sessionId;
+
 	const viewState = widget.getViewState();
 	widget.clear();
 
@@ -119,12 +124,17 @@ async function executeMoveToAction(accessor: ServicesAccessor, moveTo: MoveToNew
 
 async function moveToSidebar(accessor: ServicesAccessor): Promise<void> {
 	const viewsService = accessor.get(IViewsService);
+
 	const editorService = accessor.get(IEditorService);
+
 	const editorGroupService = accessor.get(IEditorGroupsService);
 
 	const chatEditor = editorService.activeEditorPane;
+
 	const chatEditorInput = chatEditor?.input;
+
 	let view: ChatViewPane;
+
 	if (chatEditor instanceof ChatEditor && chatEditorInput instanceof ChatEditorInput && chatEditorInput.sessionId) {
 		await editorService.closeEditor({ editor: chatEditor.input, groupId: editorGroupService.activeGroup.id });
 		view = await viewsService.openView(ChatViewId) as ChatViewPane;

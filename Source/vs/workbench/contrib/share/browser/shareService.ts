@@ -31,6 +31,7 @@ export class ShareService implements IShareService {
     readonly _serviceBrand: undefined;
     readonly providerCount: IContextKey<number>;
     private readonly _providers = new Set<IShareProvider>();
+
     constructor(
     @IContextKeyService
     private contextKeyService: IContextKeyService, 
@@ -47,6 +48,7 @@ export class ShareService implements IShareService {
     registerShareProvider(provider: IShareProvider): IDisposable {
         this._providers.add(provider);
         this.providerCount.set(this._providers.size);
+
         return {
             dispose: () => {
                 this._providers.delete(provider);
@@ -60,22 +62,28 @@ export class ShareService implements IShareService {
     }
     async provideShare(item: IShareableItem, token: CancellationToken): Promise<URI | string | undefined> {
         const language = this.codeEditorService.getActiveCodeEditor()?.getModel()?.getLanguageId() ?? '';
+
         const providers = [...this._providers.values()]
             .filter((p) => score(p.selector, item.resourceUri, language, true, undefined, undefined) > 0)
             .sort((a, b) => a.priority - b.priority);
+
         if (providers.length === 0) {
             return undefined;
         }
         if (providers.length === 1) {
             this.telemetryService.publicLog2<ShareEvent, ShareClassification>('shareService.share', { providerId: providers[0].id });
+
             return providers[0].provideShare(item, token);
         }
         const items: (IQuickPickItem & {
             provider: IShareProvider;
         })[] = providers.map((p) => ({ label: p.label, provider: p }));
+
         const selected = await this.quickInputService.pick(items, { canPickMany: false, placeHolder: localize('type to filter', 'Choose how to share {0}', this.labelService.getUriLabel(item.resourceUri)) }, token);
+
         if (selected !== undefined) {
             this.telemetryService.publicLog2<ShareEvent, ShareClassification>('shareService.share', { providerId: selected.provider.id });
+
             return selected.provider.provideShare(item, token);
         }
         return;

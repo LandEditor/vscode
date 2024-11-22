@@ -35,6 +35,7 @@ export class NotificationsListDelegate implements IListVirtualDelegate<INotifica
     private static readonly ROW_HEIGHT = 42;
     private static readonly LINE_HEIGHT = 22;
     private offsetHelper: HTMLElement;
+
     constructor(container: HTMLElement) {
         this.offsetHelper = this.createOffsetHelper(container);
     }
@@ -42,6 +43,7 @@ export class NotificationsListDelegate implements IListVirtualDelegate<INotifica
         const offsetHelper = document.createElement('div');
         offsetHelper.classList.add('notification-offset-helper');
         container.appendChild(offsetHelper);
+
         return offsetHelper;
     }
     getHeight(notification: INotificationViewItem): number {
@@ -52,7 +54,9 @@ export class NotificationsListDelegate implements IListVirtualDelegate<INotifica
         let expandedHeight = NotificationsListDelegate.ROW_HEIGHT;
         // Dynamic height: if message overflows
         const preferredMessageHeight = this.computePreferredHeight(notification);
+
         const messageOverflows = NotificationsListDelegate.LINE_HEIGHT < preferredMessageHeight;
+
         if (messageOverflows) {
             const overflow = preferredMessageHeight - NotificationsListDelegate.LINE_HEIGHT;
             expandedHeight += overflow;
@@ -71,6 +75,7 @@ export class NotificationsListDelegate implements IListVirtualDelegate<INotifica
     private computePreferredHeight(notification: INotificationViewItem): number {
         // Prepare offset helper depending on toolbar actions count
         let actions = 0;
+
         if (!notification.hasProgress) {
             actions++; // close
         }
@@ -88,6 +93,7 @@ export class NotificationsListDelegate implements IListVirtualDelegate<INotifica
         const preferredHeight = Math.max(this.offsetHelper.offsetHeight, this.offsetHelper.scrollHeight);
         // Always clear offset helper after use
         clearNode(this.offsetHelper);
+
         return preferredHeight;
     }
     getTemplateId(element: INotificationViewItem): string {
@@ -117,12 +123,14 @@ interface IMessageActionHandler {
 class NotificationMessageRenderer {
     static render(message: INotificationMessage, actionHandler?: IMessageActionHandler): HTMLElement {
         const messageContainer = document.createElement('span');
+
         for (const node of message.linkedText.nodes) {
             if (typeof node === 'string') {
                 messageContainer.appendChild(document.createTextNode(node));
             }
             else {
                 let title = node.title;
+
                 if (!title && node.href.startsWith('command:')) {
                     title = localize('executeCommand', "Click to execute command '{0}'", node.href.substr('command:'.length));
                 }
@@ -130,6 +138,7 @@ class NotificationMessageRenderer {
                     title = node.href;
                 }
                 const anchor = $('a', { href: node.href, title, tabIndex: 0 }, node.label);
+
                 if (actionHandler) {
                     const handleOpen = (e: unknown) => {
                         if (isEventLike(e)) {
@@ -137,13 +146,18 @@ class NotificationMessageRenderer {
                         }
                         actionHandler.callback(node.href);
                     };
+
                     const onClick = actionHandler.toDispose.add(new DomEmitter(anchor, EventType.CLICK)).event;
+
                     const onKeydown = actionHandler.toDispose.add(new DomEmitter(anchor, EventType.KEY_DOWN)).event;
+
                     const onSpaceOrEnter = Event.chain(onKeydown, $ => $.filter(e => {
                         const event = new StandardKeyboardEvent(e);
+
                         return event.equals(KeyCode.Space) || event.equals(KeyCode.Enter);
                     }));
                     actionHandler.toDispose.add(Gesture.addTarget(anchor));
+
                     const onTap = actionHandler.toDispose.add(new DomEmitter(anchor, GestureEventType.Tap)).event;
                     Event.any(onClick, onTap, onSpaceOrEnter)(handleOpen, null, actionHandler.toDispose);
                 }
@@ -155,6 +169,7 @@ class NotificationMessageRenderer {
 }
 export class NotificationRenderer implements IListRenderer<INotificationViewItem, INotificationTemplateData> {
     static readonly TEMPLATE_ID = 'notification';
+
     constructor(private actionRunner: IActionRunner, 
     @IContextMenuService
     private readonly contextMenuService: IContextMenuService, 
@@ -183,6 +198,7 @@ export class NotificationRenderer implements IListRenderer<INotificationViewItem
         data.message.classList.add('notification-list-item-message');
         // Toolbar
         const that = this;
+
         const toolbarContainer = document.createElement('div');
         toolbarContainer.classList.add('notification-list-item-toolbar-container');
         data.toolbar = new ActionBar(toolbarContainer, {
@@ -192,7 +208,9 @@ export class NotificationRenderer implements IListRenderer<INotificationViewItem
                     return data.toDispose.add(new DropdownMenuActionViewItem(action, {
                         getActions() {
                             const actions: IAction[] = [];
+
                             const source = { id: action.notification.sourceId, label: action.notification.source };
+
                             if (isNotificationSource(source)) {
                                 const isSourceFiltered = that.notificationService.getFilter(source) === NotificationsFilter.ERROR;
                                 actions.push(toAction({
@@ -200,6 +218,7 @@ export class NotificationRenderer implements IListRenderer<INotificationViewItem
                                     label: isSourceFiltered ? localize('turnOnNotifications', "Turn On All Notifications from '{0}'", source.label) : localize('turnOffNotifications', "Turn Off Info and Warning Notifications from '{0}'", source.label),
                                     run: () => that.notificationService.setFilter({ ...source, filter: isSourceFiltered ? NotificationsFilter.OFF : NotificationsFilter.ERROR })
                                 }));
+
                                 if (action.notification.actions?.secondary?.length) {
                                     actions.push(new Separator());
                                 }
@@ -245,6 +264,7 @@ export class NotificationRenderer implements IListRenderer<INotificationViewItem
         // Renderer
         data.renderer = this.instantiationService.createInstance(NotificationTemplateRenderer, data, this.actionRunner);
         data.toDispose.add(data.renderer);
+
         return data;
     }
     renderElement(notification: INotificationViewItem, index: number, data: INotificationTemplateData): void {
@@ -260,6 +280,7 @@ export class NotificationTemplateRenderer extends Disposable {
     private static collapseNotificationAction: CollapseNotificationAction;
     private static readonly SEVERITIES = [Severity.Info, Severity.Warning, Severity.Error];
     private readonly inputDisposables = this._register(new DisposableStore());
+
     constructor(private template: INotificationTemplateData, private actionRunner: IActionRunner, 
     @IOpenerService
     private readonly openerService: IOpenerService, 
@@ -272,6 +293,7 @@ export class NotificationTemplateRenderer extends Disposable {
     @IHoverService
     private readonly hoverService: IHoverService) {
         super();
+
         if (!NotificationTemplateRenderer.closeNotificationAction) {
             NotificationTemplateRenderer.closeNotificationAction = instantiationService.createInstance(ClearNotificationAction, ClearNotificationAction.ID, ClearNotificationAction.LABEL);
             NotificationTemplateRenderer.expandNotificationAction = instantiationService.createInstance(ExpandNotificationAction, ExpandNotificationAction.ID, ExpandNotificationAction.LABEL);
@@ -301,6 +323,7 @@ export class NotificationTemplateRenderer extends Disposable {
         this.renderSeverity(notification);
         // Message
         const messageCustomHover = this.inputDisposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.template.message, ''));
+
         const messageOverflows = this.renderMessage(notification, messageCustomHover);
         // Secondary Actions
         this.renderSecondaryActions(notification, messageOverflows);
@@ -319,12 +342,17 @@ export class NotificationTemplateRenderer extends Disposable {
             switch (event.kind) {
                 case NotificationViewItemContentChangeKind.SEVERITY:
                     this.renderSeverity(notification);
+
                     break;
+
                 case NotificationViewItemContentChangeKind.PROGRESS:
                     this.renderProgress(notification);
+
                     break;
+
                 case NotificationViewItemContentChangeKind.MESSAGE:
                     this.renderMessage(notification, messageCustomHover);
+
                     break;
             }
         }));
@@ -344,8 +372,10 @@ export class NotificationTemplateRenderer extends Disposable {
             callback: link => this.openerService.open(URI.parse(link), { allowCommands: true }),
             toDispose: this.inputDisposables
         }));
+
         const messageOverflows = notification.canCollapse && !notification.expanded && this.template.message.scrollWidth > this.template.message.clientWidth;
         customHover.update(messageOverflows ? this.template.message.textContent + '' : '');
+
         return messageOverflows;
     }
     private renderSecondaryActions(notification: INotificationViewItem, messageOverflows: boolean): void {
@@ -358,6 +388,7 @@ export class NotificationTemplateRenderer extends Disposable {
         }
         // Expand / Collapse
         let showExpandCollapseAction = false;
+
         if (notification.canCollapse) {
             if (notification.expanded) {
                 showExpandCollapseAction = true; // allow to collapse an expanded message
@@ -392,9 +423,12 @@ export class NotificationTemplateRenderer extends Disposable {
     }
     private renderButtons(notification: INotificationViewItem): void {
         clearNode(this.template.buttonsContainer);
+
         const primaryActions = notification.actions ? notification.actions.primary : undefined;
+
         if (notification.expanded && isNonEmptyArray(primaryActions)) {
             const that = this;
+
             const actionRunner: IActionRunner = new class extends ActionRunner {
                 protected override async runAction(action: IAction): Promise<void> {
                     // Run action
@@ -405,15 +439,20 @@ export class NotificationTemplateRenderer extends Disposable {
                     }
                 }
             }();
+
             const buttonToolbar = this.inputDisposables.add(new ButtonBar(this.template.buttonsContainer));
+
             for (let i = 0; i < primaryActions.length; i++) {
                 const action = primaryActions[i];
+
                 const options: IButtonOptions = {
                     title: true, // assign titles to buttons in case they overflow
                     secondary: i > 0,
                     ...defaultButtonStyles
                 };
+
                 const dropdownActions = action instanceof ChoiceAction ? action.menu : undefined;
+
                 const button = this.inputDisposables.add(dropdownActions ?
                     buttonToolbar.addButtonWithDropdown({
                         ...options,
@@ -436,10 +475,12 @@ export class NotificationTemplateRenderer extends Disposable {
         // Return early if the item has no progress
         if (!notification.hasProgress) {
             this.template.progress.stop().hide();
+
             return;
         }
         // Infinite
         const state = notification.progress.state;
+
         if (state.infinite) {
             this.template.progress.infinite().show();
         }
@@ -461,6 +502,7 @@ export class NotificationTemplateRenderer extends Disposable {
         switch (severity) {
             case Severity.Warning:
                 return Codicon.warning;
+
             case Severity.Error:
                 return Codicon.error;
         }
@@ -468,6 +510,7 @@ export class NotificationTemplateRenderer extends Disposable {
     }
     private getKeybindingLabel(action: IAction): string | null {
         const keybinding = this.keybindingService.lookupKeybinding(action.id);
+
         return keybinding ? keybinding.getLabel() : null;
     }
 }

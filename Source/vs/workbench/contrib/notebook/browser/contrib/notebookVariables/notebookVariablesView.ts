@@ -98,6 +98,7 @@ export class NotebookVariablesView extends ViewPane {
 			});
 
 		this.tree.layout();
+
 		if (this.activeNotebook) {
 			this.tree.setInput({ kind: 'root', notebook: this.activeNotebook });
 		}
@@ -129,7 +130,9 @@ export class NotebookVariablesView extends ViewPane {
 			[CONTEXT_VARIABLE_LANGUAGE.key, element.language],
 			[CONTEXT_VARIABLE_EXTENSIONID.key, element.extensionId]
 		]);
+
 		const menuActions = this.menuService.getMenuActions(MenuId.NotebookVariablesContext, overlayedContext, { arg, shouldForwardArgs: true });
+
 		const actions = getFlatContextMenuActions(menuActions);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -164,7 +167,9 @@ export class NotebookVariablesView extends ViewPane {
 
 	private getActiveNotebook() {
 		const notebookEditor = this.editorService.activeEditorPane;
+
 		const notebookDocument = getNotebookEditorFromEditorPane(notebookEditor)?.textModel;
+
 		return notebookDocument && notebookEditor ? { notebookDocument, notebookEditor } : undefined;
 	}
 
@@ -177,6 +182,7 @@ export class NotebookVariablesView extends ViewPane {
 
 	private handleActiveEditorChange(doUpdate = true) {
 		const found = this.getActiveNotebook();
+
 		if (found && found.notebookDocument !== this.activeNotebook) {
 			this.setActiveNotebook(found.notebookDocument, found.notebookEditor, doUpdate);
 		}
@@ -198,6 +204,7 @@ export class NotebookVariablesView extends ViewPane {
 			// check if the updated variables are for a visible notebook
 			this.editorService.visibleEditorPanes.forEach(editor => {
 				const notebookDocument = getNotebookEditorFromEditorPane(editor)?.textModel;
+
 				if (notebookDocument && event.affectsNotebook(notebookDocument.uri)) {
 					this.setActiveNotebook(notebookDocument, editor);
 				}
@@ -212,6 +219,7 @@ export class NotebookVariablesView extends ViewPane {
 			// check if the updated variables are for a visible notebook
 			this.editorService.visibleEditorPanes.forEach(editor => {
 				const notebookDocument = getNotebookEditorFromEditorPane(editor)?.textModel;
+
 				if (notebookDocument && notebookDocument.uri.toString() === notebookUri.toString()) {
 					this.setActiveNotebook(notebookDocument, editor);
 				}

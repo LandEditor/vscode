@@ -17,11 +17,14 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
     public constructor(private readonly client: ITypeScriptServiceClient) { }
     public async prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CallHierarchyItem | vscode.CallHierarchyItem[] | undefined> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, position);
+
         const response = await this.client.execute('prepareCallHierarchy', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
@@ -31,11 +34,14 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
     }
     public async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[] | undefined> {
         const filepath = this.client.toTsFilePath(item.uri);
+
         if (!filepath) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, item.selectionRange.start);
+
         const response = await this.client.execute('provideCallHierarchyIncomingCalls', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
@@ -43,11 +49,14 @@ class TypeScriptCallHierarchySupport implements vscode.CallHierarchyProvider {
     }
     public async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[] | undefined> {
         const filepath = this.client.toTsFilePath(item.uri);
+
         if (!filepath) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, item.selectionRange.start);
+
         const response = await this.client.execute('provideCallHierarchyOutgoingCalls', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
@@ -59,10 +68,15 @@ function isSourceFileItem(item: Proto.CallHierarchyItem) {
 }
 function fromProtocolCallHierarchyItem(item: Proto.CallHierarchyItem): vscode.CallHierarchyItem {
     const useFileName = isSourceFileItem(item);
+
     const name = useFileName ? path.basename(item.file) : item.name;
+
     const detail = useFileName ? vscode.workspace.asRelativePath(path.dirname(item.file)) : item.containerName ?? '';
+
     const result = new vscode.CallHierarchyItem(typeConverters.SymbolKind.fromProtocolScriptElementKind(item.kind), name, detail, vscode.Uri.file(item.file), typeConverters.Range.fromTextSpan(item.span), typeConverters.Range.fromTextSpan(item.selectionSpan));
+
     const kindModifiers = item.kindModifiers ? parseKindModifier(item.kindModifiers) : undefined;
+
     if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
         result.tags = [vscode.SymbolTag.Deprecated];
     }

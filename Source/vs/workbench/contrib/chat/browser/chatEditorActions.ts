@@ -52,19 +52,23 @@ abstract class NavigateAction extends Action2 {
 	override run(accessor: ServicesAccessor) {
 
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const editor = editorService.activeTextEditorControl;
+
 		if (!isCodeEditor(editor) || !editor.hasModel()) {
 			return;
 		}
 
 		const session = chatEditingService.currentEditingSession;
+
 		if (!session) {
 			return;
 		}
 
 		const ctrl = ChatEditorController.get(editor);
+
 		if (!ctrl) {
 			return;
 		}
@@ -78,12 +82,15 @@ abstract class NavigateAction extends Action2 {
 		}
 
 		const entries = session.entries.get();
+
 		const idx = entries.findIndex(e => isEqual(e.modifiedURI, editor.getModel().uri));
+
 		if (idx < 0) {
 			return;
 		}
 
 		const newIdx = (idx + (this.next ? 1 : -1) + entries.length) % entries.length;
+
 		if (idx === newIdx) {
 			// wrap inside the same file
 			if (this.next) {
@@ -95,6 +102,7 @@ abstract class NavigateAction extends Action2 {
 		}
 
 		const entry = entries[newIdx];
+
 		const change = entry.diffInfo.get().changes.at(this.next ? 0 : -1);
 
 		return editorService.openEditor({
@@ -142,9 +150,11 @@ abstract class AcceptDiscardAction extends Action2 {
 
 	override run(accessor: ServicesAccessor) {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
 
 		let uri = getNotebookEditorFromEditorPane(editorService.activeEditorPane)?.textModel?.uri;
+
 		if (!uri) {
 			const editor = editorService.activeTextEditorControl;
 			uri = isCodeEditor(editor) && editor.hasModel() ? editor.getModel().uri : undefined;
@@ -154,6 +164,7 @@ abstract class AcceptDiscardAction extends Action2 {
 		}
 
 		const session = chatEditingService.getEditingSession(uri);
+
 		if (!session) {
 			return;
 		}

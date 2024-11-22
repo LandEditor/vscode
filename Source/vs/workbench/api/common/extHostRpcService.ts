@@ -15,6 +15,7 @@ export class ExtHostRpcService implements IExtHostRpcService {
     readonly dispose: () => void;
     readonly assertRegistered: (identifiers: ProxyIdentifier<any>[]) => void;
     readonly drain: () => Promise<void>;
+
     constructor(rpcProtocol: IRPCProtocol) {
         this.getProxy = rpcProtocol.getProxy.bind(rpcProtocol);
         this.set = rpcProtocol.set.bind(rpcProtocol);

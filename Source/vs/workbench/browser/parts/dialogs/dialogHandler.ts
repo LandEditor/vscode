@@ -29,6 +29,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
         'editor.action.clipboardPasteAction'
     ];
     private readonly markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -46,38 +47,52 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
     }
     async prompt<T>(prompt: IPrompt<T>): Promise<IAsyncPromptResult<T>> {
         this.logService.trace('DialogService#prompt', prompt.message);
+
         const buttons = this.getPromptButtons(prompt);
+
         const { button, checkboxChecked } = await this.doShow(prompt.type, prompt.message, buttons, prompt.detail, prompt.cancelButton ? buttons.length - 1 : -1 /* Disabled */, prompt.checkbox, undefined, typeof prompt?.custom === 'object' ? prompt.custom : undefined);
+
         return this.getPromptResult(prompt, button, checkboxChecked);
     }
     async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
         this.logService.trace('DialogService#confirm', confirmation.message);
+
         const buttons = this.getConfirmationButtons(confirmation);
+
         const { button, checkboxChecked } = await this.doShow(confirmation.type ?? 'question', confirmation.message, buttons, confirmation.detail, buttons.length - 1, confirmation.checkbox, undefined, typeof confirmation?.custom === 'object' ? confirmation.custom : undefined);
+
         return { confirmed: button === 0, checkboxChecked };
     }
     async input(input: IInput): Promise<IInputResult> {
         this.logService.trace('DialogService#input', input.message);
+
         const buttons = this.getInputButtons(input);
+
         const { button, checkboxChecked, values } = await this.doShow(input.type ?? 'question', input.message, buttons, input.detail, buttons.length - 1, input?.checkbox, input.inputs, typeof input.custom === 'object' ? input.custom : undefined);
+
         return { confirmed: button === 0, checkboxChecked, values };
     }
     async about(): Promise<void> {
         const detailString = (useAgo: boolean): string => {
             return localize('aboutDetail', "Version: {0}\nCommit: {1}\nDate: {2}\nBrowser: {3}", this.productService.version || 'Unknown', this.productService.commit || 'Unknown', this.productService.date ? `${this.productService.date}${useAgo ? ' (' + fromNow(new Date(this.productService.date), true) + ')' : ''}` : 'Unknown', navigator.userAgent);
         };
+
         const detail = detailString(true);
+
         const detailToCopy = detailString(false);
+
         const { button } = await this.doShow(Severity.Info, this.productService.nameLong, [
             localize({ key: 'copy', comment: ['&& denotes a mnemonic'] }, "&&Copy"),
             localize('ok', "OK")
         ], detail, 1);
+
         if (button === 0) {
             this.clipboardService.writeText(detailToCopy);
         }
     }
     private async doShow(type: Severity | DialogType | undefined, message: string, buttons?: string[], detail?: string, cancelId?: number, checkbox?: ICheckbox, inputs?: IInputElement[], customOptions?: ICustomDialogOptions): Promise<IDialogResult> {
         const dialogDisposables = new DisposableStore();
+
         const renderBody = customOptions ? (parent: HTMLElement) => {
             parent.classList.add(...(customOptions.classes || []));
             customOptions.markdownDetails?.forEach(markdownDetail => {
@@ -87,12 +102,14 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
                 dialogDisposables.add(result);
             });
         } : undefined;
+
         const dialog = new Dialog(this.layoutService.activeContainer, message, buttons, {
             detail,
             cancelId,
             type: this.getDialogType(type),
             keyEventProcessor: (event: StandardKeyboardEvent) => {
                 const resolved = this.keybindingService.softDispatch(event, this.layoutService.activeContainer);
+
                 if (resolved.kind === ResultKind.KbFound && resolved.commandId) {
                     if (BrowserDialogHandler.ALLOWABLE_COMMANDS.indexOf(resolved.commandId) === -1) {
                         EventHelper.stop(event, true);
@@ -112,8 +129,10 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
             dialogStyles: defaultDialogStyles
         });
         dialogDisposables.add(dialog);
+
         const result = await dialog.show();
         dialogDisposables.dispose();
+
         return result;
     }
 }

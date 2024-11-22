@@ -22,6 +22,7 @@ import { IQuickInputButton } from '../common/quickInput.js';
 import { IAction } from '../../../base/common/actions.js';
 
 const iconPathToClass: Record<string, string> = {};
+
 const iconClassGenerator = new IdGenerator('quick-input-button-icon-');
 
 function getIconClass(iconPath: { dark: URI; light?: URI } | undefined): string | undefined {
@@ -31,11 +32,14 @@ function getIconClass(iconPath: { dark: URI; light?: URI } | undefined): string 
 	let iconClass: string;
 
 	const key = iconPath.dark.toString();
+
 	if (iconPathToClass[key]) {
 		iconClass = iconPathToClass[key];
 	} else {
 		iconClass = iconClassGenerator.nextId();
+
 		domStylesheetsJs.createCSSRule(`.${iconClass}, .hc-light .${iconClass}`, `background-image: ${cssJs.asCSSUrl(iconPath.light || iconPath.dark)}`);
+
 		domStylesheetsJs.createCSSRule(`.vs-dark .${iconClass}, .hc-black .${iconClass}`, `background-image: ${cssJs.asCSSUrl(iconPath.dark)}`);
 		iconPathToClass[key] = iconClass;
 	}
@@ -45,6 +49,7 @@ function getIconClass(iconPath: { dark: URI; light?: URI } | undefined): string 
 
 export function quickInputButtonToAction(button: IQuickInputButton, id: string, run: () => unknown): IAction {
 	let cssClasses = button.iconClass || getIconClass(button.iconPath);
+
 	if (button.alwaysVisible) {
 		cssClasses = cssClasses ? `${cssClasses} always-visible` : 'always-visible';
 	}
@@ -61,8 +66,11 @@ export function quickInputButtonToAction(button: IQuickInputButton, id: string, 
 
 export function renderQuickInputDescription(description: string, container: HTMLElement, actionHandler: { callback: (content: string) => void; disposables: DisposableStore }) {
 	dom.reset(container);
+
 	const parsed = parseLinkedText(description);
+
 	let tabIndex = 0;
+
 	for (const node of parsed.nodes) {
 		if (typeof node === 'string') {
 			container.append(...renderLabelWithIcons(node));
@@ -77,6 +85,7 @@ export function renderQuickInputDescription(description: string, container: HTML
 
 			const anchor = dom.$('a', { href: node.href, title, tabIndex: tabIndex++ }, node.label);
 			anchor.style.textDecoration = 'underline';
+
 			const handleOpen = (e: unknown) => {
 				if (dom.isEventLike(e)) {
 					dom.EventHelper.stop(e, true);
@@ -86,7 +95,9 @@ export function renderQuickInputDescription(description: string, container: HTML
 			};
 
 			const onClick = actionHandler.disposables.add(new DomEmitter(anchor, dom.EventType.CLICK)).event;
+
 			const onKeydown = actionHandler.disposables.add(new DomEmitter(anchor, dom.EventType.KEY_DOWN)).event;
+
 			const onSpaceOrEnter = Event.chain(onKeydown, $ => $.filter(e => {
 				const event = new StandardKeyboardEvent(e);
 
@@ -94,6 +105,7 @@ export function renderQuickInputDescription(description: string, container: HTML
 			}));
 
 			actionHandler.disposables.add(Gesture.addTarget(anchor));
+
 			const onTap = actionHandler.disposables.add(new DomEmitter(anchor, GestureEventType.Tap)).event;
 
 			Event.any(onClick, onTap, onSpaceOrEnter)(handleOpen, null, actionHandler.disposables);

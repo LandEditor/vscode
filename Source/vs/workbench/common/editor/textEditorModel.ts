@@ -25,6 +25,7 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
     private createdEditorModel: boolean | undefined;
     private readonly modelDisposeListener = this._register(new MutableDisposable());
     private readonly autoDetectLanguageThrottler = this._register(new ThrottledDelayer<void>(BaseTextEditorModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY));
+
     constructor(
     @IModelService
     protected modelService: IModelService, 
@@ -35,6 +36,7 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
     @IAccessibilityService
     private readonly accessibilityService: IAccessibilityService, textEditorModelHandle?: URI) {
         super();
+
         if (textEditorModelHandle) {
             this.handleExistingModel(textEditorModelHandle);
         }
@@ -42,6 +44,7 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
     private handleExistingModel(textEditorModelHandle: URI): void {
         // We need the resource to point to an existing model
         const model = this.modelService.getModel(textEditorModelHandle);
+
         if (!model) {
             throw new Error(`Document with resource ${textEditorModelHandle.toString(true)} does not exist`);
         }
@@ -62,6 +65,7 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
         return true;
     }
     private _hasLanguageSetExplicitly: boolean = false;
+
     get hasLanguageSetExplicitly(): boolean { return this._hasLanguageSetExplicitly; }
     setLanguageId(languageId: string, source?: string): void {
         // Remember that an explicit language was set
@@ -101,9 +105,12 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
             return;
         }
         const lang = await this.languageDetectionService.detectLanguage(this.textEditorModelHandle);
+
         const prevLang = this.getLanguageId();
+
         if (lang && lang !== prevLang && !this.isDisposed()) {
             this.setLanguageIdInternal(lang, LanguageDetectionLanguageEventSource);
+
             const languageName = this.languageService.getLanguageName(lang);
             this.accessibilityService.alert(localize('languageAutoDetected', "Language {0} was automatically detected and set as the language mode.", languageName ?? lang));
         }
@@ -114,11 +121,14 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
      */
     protected createTextEditorModel(value: ITextBufferFactory, resource: URI | undefined, preferredLanguageId?: string): ITextModel {
         const firstLineText = this.getFirstLineText(value);
+
         const languageSelection = this.getOrCreateLanguage(resource, this.languageService, preferredLanguageId, firstLineText);
+
         return this.doCreateTextEditorModel(value, languageSelection, resource);
     }
     private doCreateTextEditorModel(value: ITextBufferFactory, languageSelection: ILanguageSelection, resource: URI | undefined): ITextModel {
         let model = resource && this.modelService.getModel(resource);
+
         if (!model) {
             model = this.modelService.createModel(value, languageSelection, resource);
             this.createdEditorModel = true;
@@ -129,16 +139,19 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
             this.updateTextEditorModel(value, languageSelection.languageId);
         }
         this.textEditorModelHandle = model.uri;
+
         return model;
     }
     protected getFirstLineText(value: ITextBufferFactory | ITextModel): string {
         // text buffer factory
         const textBufferFactory = value as ITextBufferFactory;
+
         if (typeof textBufferFactory.getFirstLineText === 'function') {
             return textBufferFactory.getFirstLineText(ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT);
         }
         // text model
         const textSnapshot = value as ITextModel;
+
         return textSnapshot.getLineContent(1).substr(0, ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT);
     }
     /**
@@ -188,6 +201,7 @@ export class BaseTextEditorModel extends EditorModel implements ITextEditorModel
         }
         this.textEditorModelHandle = undefined;
         this.createdEditorModel = false;
+
         super.dispose();
     }
 }

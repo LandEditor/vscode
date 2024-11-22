@@ -9,6 +9,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
     private experimentalSave = vscode.workspace.getConfiguration('ipynb').get('experimental.serialization', false);
     private worker?: Worker;
     private tasks = new Map<string, DeferredPromise<Uint8Array>>();
+
     constructor(context: vscode.ExtensionContext) {
         super(context);
         context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
@@ -55,7 +56,9 @@ export class NotebookSerializer extends NotebookSerializerBase {
                 id: string;
                 data: Uint8Array;
             };
+
             const task = this.tasks.get(result.id);
+
             if (task) {
                 task.complete(result.data);
                 this.tasks.delete(result.id);
@@ -66,14 +69,18 @@ export class NotebookSerializer extends NotebookSerializerBase {
                 console.error(`IPynb Notebook Serializer Worker errored unexpectedly`, err);
             }
         };
+
         return this.worker;
     }
     private async serializeViaWorker(data: vscode.NotebookData): Promise<Uint8Array> {
         const worker = await this.startWorker();
+
         const id = generateUuid();
+
         const deferred = new DeferredPromise<Uint8Array>();
         this.tasks.set(id, deferred);
         worker.postMessage({ data, id });
+
         return deferred.p;
     }
 }

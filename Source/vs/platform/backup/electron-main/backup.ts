@@ -9,6 +9,7 @@ export const IBackupMainService = createDecorator<IBackupMainService>('backupMai
 export interface IBackupMainService {
     readonly _serviceBrand: undefined;
     isHotExitEnabled(): boolean;
+
     getEmptyWindowBackups(): IEmptyWindowBackupInfo[];
     registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo): string;
     registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo, migrateFrom: string): Promise<string>;

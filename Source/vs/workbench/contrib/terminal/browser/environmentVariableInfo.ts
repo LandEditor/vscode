@@ -14,6 +14,7 @@ import { ICommandService } from '../../../../platform/commands/common/commands.j
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
     readonly requiresAction = true;
+
     constructor(private readonly _diff: IMergedEnvironmentVariableCollectionDiff, private readonly _terminalId: number, private readonly _collection: IMergedEnvironmentVariableCollection, 
     @ITerminalService
     private readonly _terminalService: ITerminalService, 
@@ -25,8 +26,10 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
         addExtensionIdentifiers(extSet, this._diff.added.values());
         addExtensionIdentifiers(extSet, this._diff.removed.values());
         addExtensionIdentifiers(extSet, this._diff.changed.values());
+
         let message = localize('extensionEnvironmentContributionInfoStale', "The following extensions want to relaunch the terminal to contribute to its environment:");
         message += getMergedDescription(this._collection, scope, this._extensionService, extSet);
+
         return message;
     }
     private _getActions(): ITerminalStatusHoverAction[] {
@@ -48,6 +51,7 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 }
 export class EnvironmentVariableInfoChangesActive implements IEnvironmentVariableInfo {
     readonly requiresAction = false;
+
     constructor(private readonly _collection: IMergedEnvironmentVariableCollection, 
     @ICommandService
     private readonly _commandService: ICommandService, 
@@ -57,8 +61,10 @@ export class EnvironmentVariableInfoChangesActive implements IEnvironmentVariabl
     private _getInfo(scope: EnvironmentVariableScope | undefined): string {
         const extSet: Set<string> = new Set();
         addExtensionIdentifiers(extSet, this._collection.getVariableMap(scope).values());
+
         let message = localize('extensionEnvironmentContributionInfoActive', "The following extensions have contributed to this terminal's environment:");
         message += getMergedDescription(this._collection, scope, this._extensionService, extSet);
+
         return message;
     }
     private _getActions(scope: EnvironmentVariableScope | undefined): ITerminalStatusHoverAction[] {
@@ -79,15 +85,20 @@ export class EnvironmentVariableInfoChangesActive implements IEnvironmentVariabl
 }
 function getMergedDescription(collection: IMergedEnvironmentVariableCollection, scope: EnvironmentVariableScope | undefined, extensionService: IExtensionService, extSet: Set<string>): string {
     const message = ['\n'];
+
     const globalDescriptions = collection.getDescriptionMap(undefined);
+
     const workspaceDescriptions = collection.getDescriptionMap(scope);
+
     for (const ext of extSet) {
         const globalDescription = globalDescriptions.get(ext);
+
         if (globalDescription) {
             message.push(`\n- \`${getExtensionName(ext, extensionService)}\``);
             message.push(`: ${globalDescription}`);
         }
         const workspaceDescription = workspaceDescriptions.get(ext);
+
         if (workspaceDescription) {
             // Only show '(workspace)' suffix if there is already a description for the extension.
             const workspaceSuffix = globalDescription ? ` (${localize('ScopedEnvironmentContributionInfo', 'workspace')})` : '';

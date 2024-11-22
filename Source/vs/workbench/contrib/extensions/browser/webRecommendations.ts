@@ -9,6 +9,7 @@ import { localize } from '../../../../nls.js';
 import { IExtensionManagementServerService } from '../../../services/extensionManagement/common/extensionManagement.js';
 export class WebRecommendations extends ExtensionRecommendations {
     private _recommendations: ExtensionRecommendation[] = [];
+
     get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
     constructor(
     @IProductService
@@ -19,6 +20,7 @@ export class WebRecommendations extends ExtensionRecommendations {
     }
     protected async doActivate(): Promise<void> {
         const isOnlyWeb = this.extensionManagementServerService.webExtensionManagementServer && !this.extensionManagementServerService.localExtensionManagementServer && !this.extensionManagementServerService.remoteExtensionManagementServer;
+
         if (isOnlyWeb && Array.isArray(this.productService.webExtensionTips)) {
             this._recommendations = this.productService.webExtensionTips.map((extensionId): ExtensionRecommendation => ({
                 extension: extensionId.toLowerCase(),

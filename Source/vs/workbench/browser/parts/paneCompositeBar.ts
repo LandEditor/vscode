@@ -162,11 +162,14 @@ export class PaneCompositeBar extends Disposable {
 		const actions: IAction[] = [new Separator()];
 
 		const viewContainer = this.viewDescriptorService.getViewContainerById(compositeId)!;
+
 		const defaultLocation = this.viewDescriptorService.getDefaultViewContainerLocation(viewContainer)!;
+
 		const currentLocation = this.viewDescriptorService.getViewContainerLocation(viewContainer);
 
 		// Move View Container
 		const moveActions = [];
+
 		for (const location of [ViewContainerLocation.Sidebar, ViewContainerLocation.AuxiliaryBar, ViewContainerLocation.Panel]) {
 			if (currentLocation !== location) {
 				moveActions.push(this.createMoveAction(viewContainer, location, defaultLocation));
@@ -185,9 +188,12 @@ export class PaneCompositeBar extends Disposable {
 			}));
 		} else {
 			const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 			if (viewContainerModel.allViewDescriptors.length === 1) {
 				const viewToReset = viewContainerModel.allViewDescriptors[0];
+
 				const defaultContainer = this.viewDescriptorService.getDefaultContainerById(viewToReset.id)!;
+
 				if (defaultContainer !== viewContainer) {
 					actions.push(toAction({
 						id: 'resetLocationAction', label: localize('resetLocation', "Reset Location"), run: () => {
@@ -208,6 +214,7 @@ export class PaneCompositeBar extends Disposable {
 			label: newLocation === ViewContainerLocation.Panel ? localize('panel', "Panel") : newLocation === ViewContainerLocation.Sidebar ? localize('sidebar', "Primary Side Bar") : localize('auxiliarybar', "Secondary Side Bar"),
 			run: () => {
 				let index: number | undefined;
+
 				if (newLocation !== defaultLocation) {
 					index = this.viewDescriptorService.getViewContainersByLocation(newLocation).length; // move to the end of the location
 				} else {
@@ -273,6 +280,7 @@ export class PaneCompositeBar extends Disposable {
 		// show/hide/remove composites
 		for (const { id } of this.cachedViewContainers) {
 			const viewContainer = this.getViewContainer(id);
+
 			if (viewContainer) {
 				this.showOrHideViewContainer(viewContainer);
 			} else {
@@ -289,6 +297,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private onDidViewContainerVisible(id: string): void {
 		const viewContainer = this.getViewContainer(id);
+
 		if (viewContainer) {
 
 			// Update the composite bar by adding
@@ -297,6 +306,7 @@ export class PaneCompositeBar extends Disposable {
 
 			if (this.shouldBeHidden(viewContainer)) {
 				const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 				if (viewContainerModel.activeViewDescriptors.length === 0) {
 					// Update the composite bar by hiding
 					this.hideComposite(viewContainer.id);
@@ -311,8 +321,10 @@ export class PaneCompositeBar extends Disposable {
 
 	private getCompositeActions(compositeId: string): { activityAction: ViewContainerActivityAction; pinnedAction: ToggleCompositePinnedAction; badgeAction: ToggleCompositeBadgeAction } {
 		let compositeActions = this.compositeActions.get(compositeId);
+
 		if (!compositeActions) {
 			const viewContainer = this.getViewContainer(compositeId);
+
 			if (viewContainer) {
 				const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
 				compositeActions = {
@@ -341,12 +353,14 @@ export class PaneCompositeBar extends Disposable {
 
 			// Pin it by default if it is new
 			const cachedViewContainer = this.cachedViewContainers.filter(({ id }) => id === viewContainer.id)[0];
+
 			if (!cachedViewContainer) {
 				this.compositeBar.pin(viewContainer.id);
 			}
 
 			// Active
 			const visibleViewContainer = this.paneCompositePart.getActivePaneComposite();
+
 			if (visibleViewContainer?.getId() === viewContainer.id) {
 				this.compositeBar.activateComposite(viewContainer.id);
 			}
@@ -370,6 +384,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private updateCompositeBarActionItem(viewContainer: ViewContainer, viewContainerModel: IViewContainerModel): void {
 		const compositeBarActionItem = this.toCompositeBarActionItemFrom(viewContainerModel);
+
 		const { activityAction, pinnedAction } = this.getCompositeActions(viewContainer.id);
 		activityAction.updateCompositeBarActionItem(compositeBarActionItem);
 
@@ -390,15 +405,22 @@ export class PaneCompositeBar extends Disposable {
 
 	private toCompositeBarActionItem(id: string, name: string, icon: URI | ThemeIcon | undefined, keybindingId: string | undefined): ICompositeBarActionItem {
 		let classNames: string[] | undefined = undefined;
+
 		let iconUrl: URI | undefined = undefined;
+
 		if (this.options.icon) {
 			if (URI.isUri(icon)) {
 				iconUrl = icon;
+
 				const cssUrl = asCSSUrl(icon);
+
 				const hash = new StringSHA1();
 				hash.update(cssUrl);
+
 				const iconId = `activity-${id.replace(/\./g, '-')}-${hash.digest()}`;
+
 				const iconClass = `.monaco-workbench .${this.options.partContainerClass} .monaco-action-bar .action-label.${iconId}`;
+
 				classNames = [iconId, 'uri-icon'];
 				createCSSRule(iconClass, `
 				mask: ${cssUrl} no-repeat 50% 50%;
@@ -424,6 +446,7 @@ export class PaneCompositeBar extends Disposable {
 
 			// Activate if this is the active pane composite
 			const activePaneComposite = this.paneCompositePart.getActivePaneComposite();
+
 			if (activePaneComposite?.getId() === viewContainer.id) {
 				this.compositeBar.activateComposite(viewContainer.id);
 			}
@@ -432,6 +455,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private shouldBeHidden(viewContainerOrId: string | ViewContainer, cachedViewContainer?: ICachedViewContainer): boolean {
 		const viewContainer = isString(viewContainerOrId) ? this.getViewContainer(viewContainerOrId) : viewContainerOrId;
+
 		const viewContainerId = isString(viewContainerOrId) ? viewContainerOrId : viewContainerOrId.id;
 
 		if (viewContainer) {
@@ -469,6 +493,7 @@ export class PaneCompositeBar extends Disposable {
 		this.compositeBar.hideComposite(compositeId);
 
 		const compositeActions = this.compositeActions.get(compositeId);
+
 		if (compositeActions) {
 			compositeActions.activityAction.dispose();
 			compositeActions.pinnedAction.dispose();
@@ -480,6 +505,7 @@ export class PaneCompositeBar extends Disposable {
 		this.compositeBar.removeComposite(compositeId);
 
 		const compositeActions = this.compositeActions.get(compositeId);
+
 		if (compositeActions) {
 			compositeActions.activityAction.dispose();
 			compositeActions.pinnedAction.dispose();
@@ -489,6 +515,7 @@ export class PaneCompositeBar extends Disposable {
 
 	getPinnedPaneCompositeIds(): string[] {
 		const pinnedCompositeIds = this.compositeBar.getPinnedComposites().map(v => v.id);
+
 		return this.getViewContainers()
 			.filter(v => this.compositeBar.isPinned(v.id))
 			.sort((v1, v2) => pinnedCompositeIds.indexOf(v1.id) - pinnedCompositeIds.indexOf(v2.id))
@@ -520,6 +547,7 @@ export class PaneCompositeBar extends Disposable {
 
 	private getViewContainer(id: string): ViewContainer | undefined {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(id);
+
 		return viewContainer && this.viewDescriptorService.getViewContainerLocation(viewContainer) === this.location ? viewContainer : undefined;
 	}
 
@@ -537,6 +565,7 @@ export class PaneCompositeBar extends Disposable {
 		this._cachedViewContainers = undefined;
 
 		const newCompositeItems: ICompositeBarItem[] = [];
+
 		const compositeItems = this.compositeBar.getCompositeBarItems();
 
 		for (const cachedViewContainer of this.cachedViewContainers) {
@@ -553,6 +582,7 @@ export class PaneCompositeBar extends Disposable {
 			// Add missing view containers
 			if (!newCompositeItems.some(({ id }) => id === viewContainer.id)) {
 				const index = compositeItems.findIndex(({ id }) => id === viewContainer.id);
+
 				if (index !== -1) {
 					const compositeItem = compositeItems[index];
 					newCompositeItems.splice(index, 0, {
@@ -577,6 +607,7 @@ export class PaneCompositeBar extends Disposable {
 		if (retainExisting) {
 			for (const compositeItem of compositeItems) {
 				const newCompositeItem = newCompositeItems.find(({ id }) => id === compositeItem.id);
+
 				if (!newCompositeItem) {
 					newCompositeItems.push(compositeItem);
 				}
@@ -590,11 +621,15 @@ export class PaneCompositeBar extends Disposable {
 		const state: ICachedViewContainer[] = [];
 
 		const compositeItems = this.compositeBar.getCompositeBarItems();
+
 		for (const compositeItem of compositeItems) {
 			const viewContainer = this.getViewContainer(compositeItem.id);
+
 			if (viewContainer) {
 				const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 				const views: { when: string | undefined }[] = [];
+
 				for (const { when } of viewContainerModel.allViewDescriptors) {
 					views.push({ when: when ? when.serialize() : undefined });
 				}
@@ -620,13 +655,16 @@ export class PaneCompositeBar extends Disposable {
 	private get cachedViewContainers(): ICachedViewContainer[] {
 		if (this._cachedViewContainers === undefined) {
 			this._cachedViewContainers = this.getPinnedViewContainers();
+
 			for (const placeholderViewContainer of this.getPlaceholderViewContainers()) {
 				const cachedViewContainer = this._cachedViewContainers.find(cached => cached.id === placeholderViewContainer.id);
+
 				if (cachedViewContainer) {
 					cachedViewContainer.visible = placeholderViewContainer.visible ?? cachedViewContainer.visible;
 					cachedViewContainer.name = placeholderViewContainer.name;
 					cachedViewContainer.icon = placeholderViewContainer.themeIcon ? placeholderViewContainer.themeIcon :
 						placeholderViewContainer.iconUrl ? URI.revive(placeholderViewContainer.iconUrl) : undefined;
+
 					if (URI.isUri(cachedViewContainer.icon) && this.environmentService.remoteAuthority) {
 						cachedViewContainer.icon = undefined; // Do not cache uri icons with remote connection
 					}
@@ -636,6 +674,7 @@ export class PaneCompositeBar extends Disposable {
 			}
 			for (const viewContainerWorkspaceState of this.getViewContainersWorkspaceState()) {
 				const cachedViewContainer = this._cachedViewContainers.find(cached => cached.id === viewContainerWorkspaceState.id);
+
 				if (cachedViewContainer) {
 					cachedViewContainer.visible = viewContainerWorkspaceState.visible ?? cachedViewContainer.visible;
 				}
@@ -806,6 +845,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 
 		// prevent accident trigger on a doubleclick (to help nervous people)
 		const now = Date.now();
+
 		if (now > this.lastRun /* https://github.com/microsoft/vscode/issues/25830 */ && now - this.lastRun < ViewContainerActivityAction.preventDoubleClickDelay) {
 			return;
 		}
@@ -815,7 +855,9 @@ class ViewContainerActivityAction extends CompositeBarAction {
 
 		if (this.part === Parts.ACTIVITYBAR_PART) {
 			const sideBarVisible = this.layoutService.isVisible(Parts.SIDEBAR_PART);
+
 			const activeViewlet = this.paneCompositePart.getActivePaneComposite();
+
 			const focusBehavior = this.configurationService.getValue<string>('workbench.activityBar.iconClickBehavior');
 
 			if (sideBarVisible && activeViewlet?.getId() === this.compositeBarActionItem.id) {
@@ -823,12 +865,15 @@ class ViewContainerActivityAction extends CompositeBarAction {
 					case 'focus':
 						this.logAction('refocus');
 						this.paneCompositePart.openPaneComposite(this.compositeBarActionItem.id, focus);
+
 						break;
+
 					case 'toggle':
 					default:
 						// Hide sidebar if selected viewlet already visible
 						this.logAction('hide');
 						this.layoutService.setPartHidden(true, Parts.SIDEBAR_PART);
+
 						break;
 				}
 
@@ -839,6 +884,7 @@ class ViewContainerActivityAction extends CompositeBarAction {
 		}
 
 		await this.paneCompositePart.openPaneComposite(this.compositeBarActionItem.id, focus);
+
 		return this.activate();
 	}
 

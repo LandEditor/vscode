@@ -67,5 +67,6 @@ export interface IResolvedTextEditorModel extends ITextEditorModel {
 }
 export function isResolvedTextEditorModel(model: ITextEditorModel): model is IResolvedTextEditorModel {
     const candidate = model as IResolvedTextEditorModel;
+
     return !!candidate.textEditorModel;
 }

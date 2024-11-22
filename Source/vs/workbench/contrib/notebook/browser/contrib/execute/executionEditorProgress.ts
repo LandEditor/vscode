@@ -12,6 +12,7 @@ import { IUserActivityService } from '../../../../../services/userActivity/commo
 export class ExecutionEditorProgressController extends Disposable implements INotebookEditorContribution {
     static id: string = 'workbench.notebook.executionEditorProgress';
     private readonly _activityMutex = this._register(new MutableDisposable());
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @INotebookExecutionStateService
     private readonly _notebookExecutionStateService: INotebookExecutionStateService, 
@@ -34,12 +35,15 @@ export class ExecutionEditorProgressController extends Disposable implements INo
         }
         const cellExecutions = this._notebookExecutionStateService.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
             .filter(exe => exe.state === NotebookCellExecutionState.Executing);
+
         const notebookExecution = this._notebookExecutionStateService.getExecution(this._notebookEditor.textModel?.uri);
+
         const executionIsVisible = (exe: INotebookCellExecution) => {
             for (const range of this._notebookEditor.visibleRanges) {
                 for (const cell of this._notebookEditor.getCellsInRange(range)) {
                     if (cell.handle === exe.cellHandle) {
                         const top = this._notebookEditor.getAbsoluteTopOfElement(cell);
+
                         if (this._notebookEditor.scrollTop < top + 5) {
                             return true;
                         }
@@ -48,7 +52,9 @@ export class ExecutionEditorProgressController extends Disposable implements INo
             }
             return false;
         };
+
         const hasAnyExecution = cellExecutions.length || notebookExecution;
+
         if (hasAnyExecution && !this._activityMutex.value) {
             this._activityMutex.value = this._userActivity.markActive();
         }
@@ -56,7 +62,9 @@ export class ExecutionEditorProgressController extends Disposable implements INo
             this._activityMutex.clear();
         }
         const shouldShowEditorProgressbarForCellExecutions = cellExecutions.length && !cellExecutions.some(executionIsVisible) && !cellExecutions.some(e => e.isPaused);
+
         const showEditorProgressBar = !!notebookExecution || shouldShowEditorProgressbarForCellExecutions;
+
         if (showEditorProgressBar) {
             this._notebookEditor.showProgress();
         }

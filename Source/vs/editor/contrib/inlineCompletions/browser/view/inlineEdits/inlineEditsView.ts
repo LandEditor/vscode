@@ -97,8 +97,10 @@ export class InlineEditsView extends Disposable {
 			allowEditorOverflow: false,
 			minContentWidthInPx: derived(reader => {
 				const x = this._previewEditorLeft.read(reader)?.left;
+
 				if (x === undefined) { return 0; }
 				const width = this._previewEditorWidth.read(reader);
+
 				return x + width;
 			}),
 		}));
@@ -108,12 +110,15 @@ export class InlineEditsView extends Disposable {
 
 		this._register(autorun(reader => {
 			const layoutInfo = this._previewEditorLayoutInfo.read(reader);
+
 			if (!layoutInfo) {
 				this._elements.svg.replaceChildren();
+
 				return;
 			}
 
 			const topEdit = layoutInfo.edit1;
+
 			const editHeight = layoutInfo.editHeight;
 
 			const width = this._previewEditorWidth.read(reader) + 10;
@@ -188,15 +193,19 @@ export class InlineEditsView extends Disposable {
 
 	private readonly _uiState = derived(this, reader => {
 		const edit = this._edit.read(reader);
+
 		if (!edit) { return undefined; }
 
 		this._model.get()?.handleInlineCompletionShown(edit.inlineCompletion);
 
 		let mappings = RangeMapping.fromEdit(edit.edit);
+
 		let newText = edit.edit.apply(edit.originalText);
+
 		let diff = lineRangeMappingFromRangeMappings(mappings, edit.originalText, new StringText(newText));
 
 		let state: 'collapsed' | 'mixedLines' | 'interleavedLines' | 'sideBySide';
+
 		if (edit.isCollapsed) {
 			state = 'collapsed';
 		} else if (diff.every(m => OriginalEditorInlineDiffView.supportsInlineDiffRendering(m)) &&
@@ -256,8 +265,11 @@ export class InlineEditsView extends Disposable {
 	protected readonly _updateToolbarAutorun = this._register(autorun(reader => {
 		/** @description extra commands */
 		const extraCommands = this._extraCommands.read(reader);
+
 		const primaryExtraActions: IAction[] = [];
+
 		const secondaryExtraActions: IAction[] = [];
+
 		for (const c of extraCommands) {
 			const action: IAction = {
 				class: undefined,
@@ -337,13 +349,16 @@ export class InlineEditsView extends Disposable {
 		this._updatePreviewEditorRootVisibility.read(reader);
 
 		const uiState = this._uiState.read(reader);
+
 		if (!uiState) { return; }
 
 
 		this._previewTextModel.setValue(uiState.newText);
+
 		const range = uiState.edit.originalLineRange;
 
 		const hiddenAreas: Range[] = [];
+
 		if (range.startLineNumber > 1) {
 			hiddenAreas.push(new Range(1, 1, range.startLineNumber - 1, 1));
 		}
@@ -357,6 +372,7 @@ export class InlineEditsView extends Disposable {
 
 	private readonly _previewEditorWidth = derived(this, reader => {
 		const edit = this._edit.read(reader);
+
 		if (!edit) { return 0; }
 		this._updatePreviewEditor.read(reader);
 
@@ -365,9 +381,11 @@ export class InlineEditsView extends Disposable {
 
 	private readonly _previewEditorLeft = derived(this, reader => {
 		const state = this._uiState.read(reader);
+
 		if (!state) { return null; }
 
 		const maxLeft = maxLeftInRange(this._editorObs, state.originalDisplayRange, reader);
+
 		const contentLeft = this._editorObs.layoutInfoContentLeft.read(reader);
 
 		const editorLayoutInfo = this._editorObs.layoutInfo.read(reader);
@@ -384,6 +402,7 @@ export class InlineEditsView extends Disposable {
 	*/
 	private readonly _previewEditorLayoutInfo = derived(this, (reader) => {
 		const inlineEdit = this._edit.read(reader);
+
 		if (!inlineEdit) { return null; }
 
 		const range = inlineEdit.originalLineRange;
@@ -393,20 +412,27 @@ export class InlineEditsView extends Disposable {
 		const left = this._previewEditorLeft.read(reader)!.left + 20 - scrollLeft;
 
 		const selectionTop = this._editor.getTopForLineNumber(range.startLineNumber) - this._editorObs.scrollTop.read(reader);
+
 		const selectionBottom = this._editor.getTopForLineNumber(range.endLineNumberExclusive) - this._editorObs.scrollTop.read(reader);
 
 		const codeLeft = this._editorObs.layoutInfoContentLeft.read(reader);
 
 		const code1 = new Point(left, selectionTop);
+
 		const codeStart1 = new Point(codeLeft, selectionTop);
+
 		const code2 = new Point(left, selectionBottom);
+
 		const codeStart2 = new Point(codeLeft, selectionBottom);
+
 		const codeHeight = selectionBottom - selectionTop;
 
 		const codeEditDist = 60;
+
 		const editHeight = this._editor.getOption(EditorOption.lineHeight) * inlineEdit.modifiedLineRange.length;
 
 		const edit1 = new Point(left + codeEditDist, selectionTop);
+
 		const edit2 = new Point(left + codeEditDist, selectionTop + editHeight);
 
 		return {
@@ -426,6 +452,7 @@ export class InlineEditsView extends Disposable {
 
 	private readonly _inlineDiffViewState = derived<IOriginalEditorInlineDiffViewState | undefined>(this, reader => {
 		const e = this._uiState.read(reader);
+
 		if (!e) { return undefined; }
 
 		return {
@@ -441,7 +468,9 @@ export class InlineEditsView extends Disposable {
 		this._editorObs,
 		derived<IInlineEditsIndicatorState | undefined>(reader => {
 			const state = this._uiState.read(reader);
+
 			const edit1 = this._previewEditorLayoutInfo.read(reader)?.edit1;
+
 			if (!edit1 || !state) { return undefined; }
 			return { editTopLeft: edit1, showAlways: state.state !== 'sideBySide' };
 		}),

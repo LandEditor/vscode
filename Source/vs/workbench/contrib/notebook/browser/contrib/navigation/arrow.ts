@@ -25,15 +25,24 @@ import { CellKind, NOTEBOOK_EDITOR_CURSOR_BOUNDARY } from '../../../common/noteb
 import { NOTEBOOK_CELL_HAS_OUTPUTS, NOTEBOOK_CELL_MARKDOWN_EDIT_MODE, NOTEBOOK_CELL_TYPE, NOTEBOOK_CURSOR_NAVIGATION_MODE, NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_OUTPUT_INPUT_FOCUSED, NOTEBOOK_OUTPUT_FOCUSED, NOTEBOOK_CELL_EDITOR_FOCUSED, IS_COMPOSITE_NOTEBOOK } from '../../../common/notebookContextKeys.js';
 
 const NOTEBOOK_FOCUS_TOP = 'notebook.focusTop';
+
 const NOTEBOOK_FOCUS_BOTTOM = 'notebook.focusBottom';
+
 const NOTEBOOK_FOCUS_PREVIOUS_EDITOR = 'notebook.focusPreviousEditor';
+
 const NOTEBOOK_FOCUS_NEXT_EDITOR = 'notebook.focusNextEditor';
+
 const FOCUS_IN_OUTPUT_COMMAND_ID = 'notebook.cell.focusInOutput';
+
 const FOCUS_OUT_OUTPUT_COMMAND_ID = 'notebook.cell.focusOutOutput';
 export const CENTER_ACTIVE_CELL = 'notebook.centerActiveCell';
+
 const NOTEBOOK_CURSOR_PAGEUP_COMMAND_ID = 'notebook.cell.cursorPageUp';
+
 const NOTEBOOK_CURSOR_PAGEUP_SELECT_COMMAND_ID = 'notebook.cell.cursorPageUpSelect';
+
 const NOTEBOOK_CURSOR_PAGEDOWN_COMMAND_ID = 'notebook.cell.cursorPageDown';
+
 const NOTEBOOK_CURSOR_PAGEDOWN_SELECT_COMMAND_ID = 'notebook.cell.cursorPageDownSelect';
 
 registerAction2(class extends Action2 {
@@ -115,9 +124,11 @@ registerAction2(class FocusNextCellAction extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		const activeCell = context.cell;
 
 		const idx = editor.getCellIndex(activeCell);
+
 		if (typeof idx !== 'number') {
 			return;
 		}
@@ -128,13 +139,16 @@ registerAction2(class FocusNextCellAction extends NotebookCellAction {
 		}
 
 		const focusEditorLine = activeCell.textBuffer.getLineCount();
+
 		const targetCell = (context.cell ?? context.selectedCells?.[0]);
+
 		const foundEditor: ICodeEditor | undefined = targetCell ? findTargetCellEditor(context, targetCell) : undefined;
 
 		if (foundEditor && foundEditor.hasTextFocus() && InlineChatController.get(foundEditor)?.getWidgetPosition()?.lineNumber === focusEditorLine) {
 			InlineChatController.get(foundEditor)?.focus();
 		} else {
 			const newCell = editor.cellAt(idx + 1);
+
 			const newFocusMode = newCell.cellKind === CellKind.Markup && newCell.getEditState() === CellEditState.Preview ? 'container' : 'editor';
 			await editor.focusNotebookCell(newCell, newFocusMode, { focusEditorLine: 1 });
 		}
@@ -191,9 +205,11 @@ registerAction2(class FocusPreviousCellAction extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		const activeCell = context.cell;
 
 		const idx = editor.getCellIndex(activeCell);
+
 		if (typeof idx !== 'number') {
 			return;
 		}
@@ -204,7 +220,9 @@ registerAction2(class FocusPreviousCellAction extends NotebookCellAction {
 		}
 
 		const newCell = editor.cellAt(idx - 1);
+
 		const newFocusMode = newCell.cellKind === CellKind.Markup && newCell.getEditState() === CellEditState.Preview ? 'container' : 'editor';
+
 		const focusEditorLine = newCell.textBuffer.getLineCount();
 		await editor.focusNotebookCell(newCell, newFocusMode, { focusEditorLine: focusEditorLine });
 
@@ -239,6 +257,7 @@ registerAction2(class extends NotebookAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		if (editor.getLength() === 0) {
 			return;
 		}
@@ -271,12 +290,15 @@ registerAction2(class extends NotebookAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		if (!editor.hasModel() || editor.getLength() === 0) {
 			return;
 		}
 
 		const lastIdx = editor.getLength() - 1;
+
 		const lastVisibleIdx = editor.getPreviousVisibleCellIndex(lastIdx);
+
 		if (lastVisibleIdx) {
 			const cell = editor.cellAt(lastVisibleIdx);
 			await editor.focusNotebookCell(cell, 'container');
@@ -305,7 +327,9 @@ registerAction2(class extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		const activeCell = context.cell;
+
 		return timeout(0).then(() => editor.focusNotebookCell(activeCell, 'output'));
 	}
 });
@@ -326,6 +350,7 @@ registerAction2(class extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const editor = context.notebookEditor;
+
 		const activeCell = context.cell;
 		await editor.focusNotebookCell(activeCell, 'editor');
 	}
@@ -453,8 +478,11 @@ registerAction2(class extends NotebookCellAction {
 
 function getPageSize(context: INotebookCellActionContext) {
 	const editor = context.notebookEditor;
+
 	const layoutInfo = editor.getViewModel().layoutInfo;
+
 	const lineHeight = layoutInfo?.fontInfo.lineHeight || 17;
+
 	return Math.max(1, Math.floor((layoutInfo?.height || 0) / lineHeight) - 2);
 }
 

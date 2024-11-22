@@ -8,6 +8,7 @@ declare const globalThis: {
         now(): number;
     };
 };
+
 const hasPerformanceNow = (globalThis.performance && typeof globalThis.performance.now === 'function');
 export class StopWatch {
     private _startTime: number;

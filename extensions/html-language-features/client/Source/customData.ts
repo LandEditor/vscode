@@ -7,15 +7,20 @@ import { Runtime } from './htmlClient';
 import { Utils } from 'vscode-uri';
 export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
     let localExtensionUris = new Set<string>();
+
     let externalExtensionUris = new Set<string>();
+
     const workspaceUris = new Set<string>();
     collectInWorkspaces(workspaceUris);
     collectInExtensions(localExtensionUris, externalExtensionUris);
+
     const onChange = new EventEmitter<void>();
     toDispose.push(extensions.onDidChange(_ => {
         const newLocalExtensionUris = new Set<string>();
+
         const newExternalExtensionUris = new Set<string>();
         collectInExtensions(newLocalExtensionUris, newExternalExtensionUris);
+
         if (hasChanges(newLocalExtensionUris, localExtensionUris) || hasChanges(newExternalExtensionUris, externalExtensionUris)) {
             localExtensionUris = newLocalExtensionUris;
             externalExtensionUris = newExternalExtensionUris;
@@ -31,10 +36,12 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
     }));
     toDispose.push(workspace.onDidChangeTextDocument(e => {
         const path = e.document.uri.toString();
+
         if (externalExtensionUris.has(path) || workspaceUris.has(path)) {
             onChange.fire();
         }
     }));
+
     return {
         get uris() {
             return [...localExtensionUris].concat([...externalExtensionUris], [...workspaceUris]);
@@ -44,6 +51,7 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
         },
         getContent(uriString: string): Thenable<string> {
             const uri = Uri.parse(uriString);
+
             if (localExtensionUris.has(uriString)) {
                 return workspace.fs.readFile(uri).then(buffer => {
                     return new runtime.TextDecoder().decode(buffer);
@@ -71,7 +79,9 @@ function isURI(uriOrPath: string) {
 }
 function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
     const workspaceFolders = workspace.workspaceFolders;
+
     const dataPaths = new Set<string>();
+
     if (!workspaceFolders) {
         return dataPaths;
     }
@@ -91,12 +101,17 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
             }
         }
     };
+
     for (let i = 0; i < workspaceFolders.length; i++) {
         const folderUri = workspaceFolders[i].uri;
+
         const allHtmlConfig = workspace.getConfiguration('html', folderUri);
+
         const customDataInspect = allHtmlConfig.inspect<string[]>('customData');
+
         if (customDataInspect) {
             collect(customDataInspect.workspaceFolderValue, folderUri);
+
             if (i === 0) {
                 if (workspace.workspaceFile) {
                     collect(customDataInspect.workspaceValue, workspace.workspaceFile);
@@ -110,6 +125,7 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 function collectInExtensions(localExtensionUris: Set<string>, externalUris: Set<string>): void {
     for (const extension of extensions.allAcrossExtensionHosts) {
         const customData = extension.packageJSON?.contributes?.html?.customData;
+
         if (Array.isArray(customData)) {
             for (const uriOrPath of customData) {
                 if (!isURI(uriOrPath)) {

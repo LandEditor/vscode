@@ -25,14 +25,18 @@ const ExtensionKeyRegex = /^([^.]+\..+)-(\d+\.\d+\.\d+)(-(.+))?$/;
 export class ExtensionKey {
     static create(extension: IExtension | IGalleryExtension): ExtensionKey {
         const version = (extension as IExtension).manifest ? (extension as IExtension).manifest.version : (extension as IGalleryExtension).version;
+
         const targetPlatform = (extension as IExtension).manifest ? (extension as IExtension).targetPlatform : (extension as IGalleryExtension).properties.targetPlatform;
+
         return new ExtensionKey(extension.identifier, version, targetPlatform);
     }
     static parse(key: string): ExtensionKey | null {
         const matches = ExtensionKeyRegex.exec(key);
+
         return matches && matches[1] && matches[2] ? new ExtensionKey({ id: matches[1] }, matches[2], matches[4] as TargetPlatform || undefined) : null;
     }
     readonly id: string;
+
     constructor(readonly identifier: IExtensionIdentifier, readonly version: string, readonly targetPlatform: TargetPlatform = TargetPlatform.UNDEFINED) {
         this.id = identifier.id;
     }
@@ -52,6 +56,7 @@ export function getIdAndVersion(id: string): [
     string | undefined
 ] {
     const matches = EXTENSION_IDENTIFIER_WITH_VERSION_REGEX.exec(id);
+
     if (matches && matches[1]) {
         return [adoptToGalleryExtensionId(matches[1]), matches[2]];
     }
@@ -68,6 +73,7 @@ export function getGalleryExtensionId(publisher: string | undefined, name: strin
 }
 export function groupByExtension<T>(extensions: T[], getExtensionIdentifier: (t: T) => IExtensionIdentifier): T[][] {
     const byExtension: T[][] = [];
+
     const findGroup = (extension: T) => {
         for (const group of byExtension) {
             if (group.some(e => areSameExtensions(getExtensionIdentifier(e), getExtensionIdentifier(extension)))) {
@@ -76,8 +82,10 @@ export function groupByExtension<T>(extensions: T[], getExtensionIdentifier: (t:
         }
         return null;
     };
+
     for (const extension of extensions) {
         const group = findGroup(extension);
+
         if (group) {
             group.push(extension);
         }
@@ -133,11 +141,15 @@ export function getGalleryExtensionTelemetryData(extension: IGalleryExtension) {
 export const BetterMergeId = new ExtensionIdentifier('pprice.better-merge');
 export function getExtensionDependencies(installedExtensions: ReadonlyArray<IExtension>, extension: IExtension): IExtension[] {
     const dependencies: IExtension[] = [];
+
     const extensions = extension.manifest.extensionDependencies?.slice(0) ?? [];
+
     while (extensions.length) {
         const id = extensions.shift();
+
         if (id && dependencies.every(e => !areSameExtensions(e.identifier, { id }))) {
             const ext = installedExtensions.filter(e => areSameExtensions(e.identifier, { id }));
+
             if (ext.length === 1) {
                 dependencies.push(ext[0]);
                 extensions.push(...ext[0].manifest.extensionDependencies?.slice(0) ?? []);
@@ -151,6 +163,7 @@ async function isAlpineLinux(fileService: IFileService, logService: ILogService)
         return false;
     }
     let content: string | undefined;
+
     try {
         const fileContent = await fileService.readFile(URI.file('/etc/os-release'));
         content = fileContent.value.toString();
@@ -169,7 +182,9 @@ async function isAlpineLinux(fileService: IFileService, logService: ILogService)
 }
 export async function computeTargetPlatform(fileService: IFileService, logService: ILogService): Promise<TargetPlatform> {
     const alpineLinux = await isAlpineLinux(fileService, logService);
+
     const targetPlatform = getTargetPlatform(alpineLinux ? 'alpine' : platform, arch);
     logService.debug('ComputeTargetPlatform:', targetPlatform);
+
     return targetPlatform;
 }

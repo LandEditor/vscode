@@ -26,7 +26,9 @@ interface ILanguageAssociationItem extends ILanguageAssociation {
     readonly filepatternOnPath?: boolean;
 }
 let registeredAssociations: ILanguageAssociationItem[] = [];
+
 let nonUserRegisteredAssociations: ILanguageAssociationItem[] = [];
+
 let userRegisteredAssociations: ILanguageAssociationItem[] = [];
 /**
  * Associate a language to the registry (platform).
@@ -48,6 +50,7 @@ function _registerLanguageAssociation(association: ILanguageAssociation, userCon
     // Register
     const associationItem = toLanguageAssociationItem(association, userConfigured);
     registeredAssociations.push(associationItem);
+
     if (!associationItem.userConfigured) {
         nonUserRegisteredAssociations.push(associationItem);
     }
@@ -123,20 +126,26 @@ export function getLanguageIds(resource: URI | null, firstLine?: string): string
 }
 function getAssociations(resource: URI | null, firstLine?: string): IdAndMime[] {
     let path: string | undefined;
+
     if (resource) {
         switch (resource.scheme) {
             case Schemas.file:
                 path = resource.fsPath;
+
                 break;
+
             case Schemas.data: {
                 const metadata = DataUri.parseMetaData(resource);
                 path = metadata.get(DataUri.META_DATA_LABEL);
+
                 break;
             }
             case Schemas.vscodeNotebookCell:
                 // File path not relevant for language detection of cell
                 path = undefined;
+
                 break;
+
             default:
                 path = resource.path;
         }
@@ -145,20 +154,24 @@ function getAssociations(resource: URI | null, firstLine?: string): IdAndMime[] 
         return [{ id: 'unknown', mime: Mimes.unknown }];
     }
     path = path.toLowerCase();
+
     const filename = basename(path);
     // 1.) User configured mappings have highest priority
     const configuredLanguage = getAssociationByPath(path, filename, userRegisteredAssociations);
+
     if (configuredLanguage) {
         return [configuredLanguage, { id: PLAINTEXT_LANGUAGE_ID, mime: Mimes.text }];
     }
     // 2.) Registered mappings have middle priority
     const registeredLanguage = getAssociationByPath(path, filename, nonUserRegisteredAssociations);
+
     if (registeredLanguage) {
         return [registeredLanguage, { id: PLAINTEXT_LANGUAGE_ID, mime: Mimes.text }];
     }
     // 3.) Firstline has lowest priority
     if (firstLine) {
         const firstlineLanguage = getAssociationByFirstline(firstLine);
+
         if (firstlineLanguage) {
             return [firstlineLanguage, { id: PLAINTEXT_LANGUAGE_ID, mime: Mimes.text }];
         }
@@ -167,7 +180,9 @@ function getAssociations(resource: URI | null, firstLine?: string): IdAndMime[] 
 }
 function getAssociationByPath(path: string, filename: string, associations: ILanguageAssociationItem[]): ILanguageAssociationItem | undefined {
     let filenameMatch: ILanguageAssociationItem | undefined = undefined;
+
     let patternMatch: ILanguageAssociationItem | undefined = undefined;
+
     let extensionMatch: ILanguageAssociationItem | undefined = undefined;
     // We want to prioritize associations based on the order they are registered so that the last registered
     // association wins over all other. This is for https://github.com/microsoft/vscode/issues/20074
@@ -176,6 +191,7 @@ function getAssociationByPath(path: string, filename: string, associations: ILan
         // First exact name match
         if (filename === association.filenameLowercase) {
             filenameMatch = association;
+
             break; // take it!
         }
         // Longest pattern match
@@ -219,10 +235,12 @@ function getAssociationByFirstline(firstLine: string): ILanguageAssociationItem 
         // association wins over all other. This is for https://github.com/microsoft/vscode/issues/20074
         for (let i = registeredAssociations.length - 1; i >= 0; i--) {
             const association = registeredAssociations[i];
+
             if (!association.firstline) {
                 continue;
             }
             const matches = firstLine.match(association.firstline);
+
             if (matches && matches.length > 0) {
                 return association;
             }

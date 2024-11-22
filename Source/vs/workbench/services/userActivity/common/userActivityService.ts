@@ -51,6 +51,7 @@ export class UserActivityService extends Disposable implements IUserActivityServ
     public isActive = true;
     /** @inheritdoc */
     onDidChangeIsActive: Event<boolean> = this.changeEmitter.event;
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService) {
@@ -62,6 +63,7 @@ export class UserActivityService extends Disposable implements IUserActivityServ
         if (opts?.whenHeldFor) {
             const store = new DisposableStore();
             store.add(disposableTimeout(() => store.add(this.markActive()), opts.whenHeldFor));
+
             return store;
         }
         if (++this.active === 1) {

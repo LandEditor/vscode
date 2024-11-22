@@ -15,6 +15,7 @@ export function getNodeFileFS(): FileSystemProvider {
     return {
         stat(location: string) {
             ensureFileUri(location);
+
             return new Promise((c, e) => {
                 const uri = Uri.parse(location);
                 fs.stat(uri.fsPath, (err, stats) => {
@@ -27,6 +28,7 @@ export function getNodeFileFS(): FileSystemProvider {
                         }
                     }
                     let type = FileType.Unknown;
+
                     if (stats.isFile()) {
                         type = FileType.File;
                     }
@@ -47,6 +49,7 @@ export function getNodeFileFS(): FileSystemProvider {
         },
         readDirectory(location: string) {
             ensureFileUri(location);
+
             return new Promise((c, e) => {
                 const path = Uri.parse(location).fsPath;
                 fs.readdir(path, { withFileTypes: true }, (err, children) => {

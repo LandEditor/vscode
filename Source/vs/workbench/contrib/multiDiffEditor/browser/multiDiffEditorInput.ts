@@ -36,6 +36,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
             throw new BugIndicatingError('MultiDiffEditorInput requires either multiDiffSource or resources');
         }
         const multiDiffSource = input.multiDiffSource ?? URI.parse(`multi-diff-editor:${new Date().getMilliseconds().toString() + Math.random().toString()}`);
+
         return instantiationService.createInstance(MultiDiffEditorInput, multiDiffSource, input.label, input.resources?.map(resource => {
             return new MultiDiffEditorItem(resource.original.resource, resource.modified.resource, resource.goToFileResource);
         }), input.isTransient ?? false);
@@ -44,6 +45,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
         return instantiationService.createInstance(MultiDiffEditorInput, URI.parse(data.multiDiffSourceUri), data.label, data.resources?.map(resource => new MultiDiffEditorItem(resource.originalUri ? URI.parse(resource.originalUri) : undefined, resource.modifiedUri ? URI.parse(resource.modifiedUri) : undefined, resource.goToFileUri ? URI.parse(resource.goToFileUri) : undefined)), false);
     }
     static readonly ID: string = 'workbench.input.multiDiffEditor';
+
     get resource(): URI | undefined { return this.multiDiffSource; }
     override get capabilities(): EditorInputCapabilities { return EditorInputCapabilities.Readonly; }
     override get typeId(): string { return MultiDiffEditorInput.ID; }
@@ -66,7 +68,9 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
         this._register(autorun((reader) => {
             /** @description Updates name */
             const resources = this.resources.read(reader);
+
             const label = this.label ?? localize('name', "Multi Diff Editor");
+
             if (resources) {
                 this._name = label + localize({
                     key: 'files',
@@ -92,11 +96,14 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
     }
     public setLanguageId(languageId: string, source?: string | undefined): void {
         const activeDiffItem = this._viewModel.requireValue().activeDiffItem.get();
+
         const value = activeDiffItem?.documentDiffItem;
+
         if (!value) {
             return;
         }
         const target = value.modified ?? value.original;
+
         if (!target) {
             return;
         }
@@ -108,24 +115,32 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
     private readonly _viewModel = new LazyStatefulPromise(async () => {
         const model = await this._createModel();
         this._register(model);
+
         const vm = new MultiDiffEditorViewModel(model, this._instantiationService);
         this._register(vm);
         await raceTimeout(vm.waitForDiffs(), 1000);
+
         return vm;
     });
     private async _createModel(): Promise<IMultiDiffEditorModel & IDisposable> {
         const source = await this._resolvedSource.getPromise();
+
         const textResourceConfigurationService = this._textResourceConfigurationService;
+
         const documentsWithPromises = mapObservableArrayCached(this, source.resources, async (r, store) => {
             /** @description documentsWithPromises */
             let original: IReference<IResolvedTextEditorModel> | undefined;
+
             let modified: IReference<IResolvedTextEditorModel> | undefined;
+
             const multiDiffItemStore = new DisposableStore();
+
             try {
                 [original, modified] = await Promise.all([
                     r.originalUri ? this._textModelService.createModelReference(r.originalUri) : undefined,
                     r.modifiedUri ? this._textModelService.createModelReference(r.modifiedUri) : undefined,
                 ]);
+
                 if (original) {
                     multiDiffItemStore.add(original);
                 }
@@ -137,9 +152,11 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
                 // e.g. "File seems to be binary and cannot be opened as text"
                 console.error(e);
                 onUnexpectedError(e);
+
                 return undefined;
             }
             const uri = (r.modifiedUri ?? r.originalUri)!;
+
             const result: IDocumentDiffItemWithMultiDiffEditorItem = {
                 multiDiffEditorItem: r,
                 original: original?.object.textEditorModel,
@@ -157,29 +174,39 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
                     }
                 }),
             };
+
             return store.add(RefCounted.createOfNonDisposable(result, multiDiffItemStore, this));
         }, i => JSON.stringify([i.modifiedUri?.toString(), i.originalUri?.toString()]));
+
         const documents = observableValue<readonly RefCounted<IDocumentDiffItem>[] | 'loading'>('documents', 'loading');
+
         const updateDocuments = derived(async (reader) => {
             /** @description Update documents */
             const docsPromises = documentsWithPromises.read(reader);
+
             const docs = await Promise.all(docsPromises);
+
             const newDocuments = docs.filter(isDefined);
+
             documents.set(newDocuments, undefined);
         });
+
         const a = recomputeInitiallyAndOnChange(updateDocuments);
         await updateDocuments.get();
+
         const result: IMultiDiffEditorModel & IDisposable = {
             dispose: () => a.dispose(),
             documents: new ValueWithChangeEventFromObservable(documents),
             contextKeys: source.source?.contextKeys,
         };
+
         return result;
     }
     private readonly _resolvedSource = new ObservableLazyPromise(async () => {
         const source: IResolvedMultiDiffSource | undefined = this.initialResources
             ? { resources: ValueWithChangeEvent.const(this.initialResources) }
             : await this._multiDiffSourceResolverService.resolve(this.multiDiffSource);
+
         return {
             source,
             resources: source ? observableFromValueWithChangeEvent(this, source.resources) : constObservable([]),
@@ -198,7 +225,9 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
     private readonly textFileServiceOnDidChange = new FastEventDispatcher<ITextFileEditorModel, URI>(this._textFileService.files.onDidChangeDirty, item => item.resource.toString(), uri => uri.toString());
     private readonly _isDirtyObservables = mapObservableArrayCached(this, this.resources.map(r => r ?? []), res => {
         const isModifiedDirty = res.modifiedUri ? isUriDirty(this.textFileServiceOnDidChange, this._textFileService, res.modifiedUri) : constObservable(false);
+
         const isOriginalDirty = res.originalUri ? isUriDirty(this.textFileServiceOnDidChange, this._textFileService, res.originalUri) : constObservable(false);
+
         return derived(reader => /** @description modifiedDirty||originalDirty */ isModifiedDirty.read(reader) || isOriginalDirty.read(reader));
     }, i => i.getKey());
     private readonly _isDirtyObservable = derived(this, reader => this._isDirtyObservables.read(reader).some(isDirty => isDirty.read(reader)))
@@ -207,6 +236,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
     override isDirty() { return this._isDirtyObservable.get(); }
     override async save(group: number, options?: ISaveOptions | undefined): Promise<EditorInput> {
         await this.doSaveOrRevert('save', group, options);
+
         return this;
     }
     override revert(group: GroupIdentifier, options?: IRevertOptions): Promise<void> {
@@ -216,9 +246,11 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
     private async doSaveOrRevert(mode: 'revert', group: GroupIdentifier, options?: IRevertOptions): Promise<void>;
     private async doSaveOrRevert(mode: 'save' | 'revert', group: GroupIdentifier, options?: ISaveOptions | IRevertOptions): Promise<void> {
         const items = this._viewModel.currentValue?.items.get();
+
         if (items) {
             await Promise.all(items.map(async (item) => {
                 const model = item.diffEditorViewModel.model;
+
                 const handleOriginal = model.original.uri.scheme !== Schemas.untitled && this._textFileService.isDirty(model.original.uri); // match diff editor behaviour
                 await Promise.all([
                     handleOriginal ? mode === 'save' ? this._textFileService.save(model.original.uri, options) : this._textFileService.revert(model.original.uri, options) : Promise.resolve(),
@@ -250,28 +282,34 @@ class FastEventDispatcher<T, TKey> {
     private _count = 0;
     private readonly _buckets = new Map<string, Set<(value: T) => void>>();
     private _eventSubscription: IDisposable | undefined;
+
     constructor(private readonly _event: Event<T>, private readonly _getEventArgsKey: (item: T) => string, private readonly _keyToString: (key: TKey) => string) {
     }
     public filteredEvent(filter: TKey): (listener: (e: T) => unknown) => IDisposable {
         return listener => {
             const key = this._keyToString(filter);
+
             let bucket = this._buckets.get(key);
+
             if (!bucket) {
                 bucket = new Set();
                 this._buckets.set(key, bucket);
             }
             bucket.add(listener);
             this._count++;
+
             if (this._count === 1) {
                 this._eventSubscription = this._event(this._handleEventChange);
             }
             return {
                 dispose: () => {
                     bucket!.delete(listener);
+
                     if (bucket!.size === 0) {
                         this._buckets.delete(key);
                     }
                     this._count--;
+
                     if (this._count === 0) {
                         this._eventSubscription?.dispose();
                         this._eventSubscription = undefined;
@@ -282,7 +320,9 @@ class FastEventDispatcher<T, TKey> {
     }
     private readonly _handleEventChange = (e: T) => {
         const key = this._getEventArgsKey(e);
+
         const bucket = this._buckets.get(key);
+
         if (bucket) {
             for (const listener of bucket) {
                 listener(e);
@@ -319,6 +359,7 @@ function computeOptions(configuration: IEditorConfiguration): IDiffEditorOptions
 }
 export class MultiDiffEditorResolverContribution extends Disposable {
     static readonly ID = 'workbench.contrib.multiDiffEditorResolver';
+
     constructor(
     @IEditorResolverService
     editorResolverService: IEditorResolverService, 
@@ -361,10 +402,12 @@ export class MultiDiffEditorSerializer implements IEditorSerializer {
     deserialize(instantiationService: IInstantiationService, serializedEditor: string): EditorInput | undefined {
         try {
             const data = parse(serializedEditor) as ISerializedMultiDiffEditorInput;
+
             return MultiDiffEditorInput.fromSerialized(data, instantiationService);
         }
         catch (err) {
             onUnexpectedError(err);
+
             return undefined;
         }
     }

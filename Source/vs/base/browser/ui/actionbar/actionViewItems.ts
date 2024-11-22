@@ -112,6 +112,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 		this._register(Gesture.addTarget(container));
 
 		const enableDragging = this.options && this.options.draggable;
+
 		if (enableDragging) {
 			container.draggable = true;
 
@@ -262,6 +263,7 @@ export class BaseActionViewItem extends Disposable implements IActionViewItem {
 			this.element = undefined;
 		}
 		this._context = undefined;
+
 		super.dispose();
 	}
 }
@@ -368,6 +370,7 @@ export class ActionViewItem extends BaseActionViewItem {
 
 		} else if (this.action.label) {
 			title = this.action.label;
+
 			if (this.options.keybinding) {
 				title = nls.localize({ key: 'titleLabel', comment: ['action title', 'action keybinding'] }, "{0} ({1})", title, this.options.keybinding);
 			}
@@ -384,6 +387,7 @@ export class ActionViewItem extends BaseActionViewItem {
 
 			if (this.label) {
 				this.label.classList.add('codicon');
+
 				if (this.cssClass) {
 					this.label.classList.add(...this.cssClass.split(' '));
 				}
@@ -424,6 +428,7 @@ export class ActionViewItem extends BaseActionViewItem {
 		if (this.label) {
 			if (this.action.checked !== undefined) {
 				this.label.classList.toggle('checked', this.action.checked);
+
 				if (this.options.isTabList) {
 					this.label.setAttribute('aria-selected', this.action.checked ? 'true' : 'false');
 				} else {

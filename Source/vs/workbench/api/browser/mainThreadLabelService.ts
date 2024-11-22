@@ -9,6 +9,7 @@ import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions
 @extHostNamedCustomer(MainContext.MainThreadLabelService)
 export class MainThreadLabelService extends Disposable implements MainThreadLabelServiceShape {
     private readonly _resourceLabelFormatters = this._register(new DisposableMap<number>());
+
     constructor(_: IExtHostContext, 
     @ILabelService
     private readonly _labelService: ILabelService) {
@@ -17,6 +18,7 @@ export class MainThreadLabelService extends Disposable implements MainThreadLabe
     $registerResourceLabelFormatter(handle: number, formatter: ResourceLabelFormatter): void {
         // Dynamicily registered formatters should have priority over those contributed via package.json
         formatter.priority = true;
+
         const disposable = this._labelService.registerCachedFormatter(formatter);
         this._resourceLabelFormatters.set(handle, disposable);
     }

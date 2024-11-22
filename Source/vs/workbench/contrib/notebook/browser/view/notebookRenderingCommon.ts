@@ -53,7 +53,9 @@ export interface INotebookCellList extends ICoordinatesConverter {
     clear(): void;
     focusElement(element: ICellViewModel): void;
     selectElements(elements: ICellViewModel[]): void;
+
     getFocusedElements(): ICellViewModel[];
+
     getSelectedElements(): ICellViewModel[];
     scrollToBottom(): void;
     revealCell(cell: ICellViewModel, revealType: CellRevealType): Promise<void>;
@@ -61,17 +63,23 @@ export interface INotebookCellList extends ICoordinatesConverter {
     revealRangeInCell(cell: ICellViewModel, range: Selection | Range, revealType: CellRevealRangeType): Promise<void>;
     revealCellOffsetInCenter(element: ICellViewModel, offset: number): void;
     revealOffsetInCenterIfOutsideViewport(offset: number): void;
+
     setHiddenAreas(_ranges: ICellRange[], triggerViewUpdate: boolean): boolean;
     changeViewZones(callback: (accessor: INotebookViewZoneChangeAccessor) => void): void;
+
     domElementOfElement(element: ICellViewModel): HTMLElement | null;
     focusView(): void;
     triggerScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent): void;
     updateElementHeight2(element: ICellViewModel, size: number, anchorElementIndex?: number | null): void;
+
     domFocus(): void;
     focusContainer(clearSelection: boolean): void;
+
     setCellEditorSelection(element: ICellViewModel, range: Range): void;
     style(styles: IListStyles): void;
+
     getRenderHeight(): number;
+
     getScrollHeight(): number;
     updateOptions(options: IWorkbenchListOptionsUpdate): void;
     layout(height?: number, width?: number): void;
@@ -104,11 +112,17 @@ export interface CodeCellRenderTemplate extends BaseCellRenderTemplate {
 }
 export interface ICoordinatesConverter {
     getCellViewScrollTop(cell: ICellViewModel): number;
+
     getCellViewScrollBottom(cell: ICellViewModel): number;
+
     getViewIndex(cell: ICellViewModel): number | undefined;
+
     getViewIndex2(modelIndex: number): number | undefined;
+
     getModelIndex(cell: CellViewModel): number | undefined;
+
     getModelIndex2(viewIndex: number): number | undefined;
+
     getVisibleRangesPlusViewportAboveAndBelow(): ICellRange[];
     modelIndexIsVisible(modelIndex: number): boolean;
     convertModelIndexToViewIndex(modelIndex: number): number;

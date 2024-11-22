@@ -98,6 +98,7 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
     readonly onWillDispose = this._onWillDispose.event;
     //#endregion
     private readonly mapResourceToWorkingCopyListeners = new ResourceMap<IDisposable>();
+
     constructor(private readonly workingCopyTypeId: string, private readonly modelFactory: IUntitledFileWorkingCopyModelFactory<M>, private readonly saveDelegate: IUntitledFileWorkingCopySaveDelegate<M>, 
     @IFileService
     fileService: IFileService, 
@@ -115,9 +116,11 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
     resolve(options?: INewUntitledFileWorkingCopyOptions): Promise<IUntitledFileWorkingCopy<M>>;
     resolve(options?: INewUntitledFileWorkingCopyWithAssociatedResourceOptions): Promise<IUntitledFileWorkingCopy<M>>;
     resolve(options?: INewOrExistingUntitledFileWorkingCopyOptions): Promise<IUntitledFileWorkingCopy<M>>;
+
     async resolve(options?: IInternalUntitledFileWorkingCopyOptions): Promise<IUntitledFileWorkingCopy<M>> {
         const workingCopy = this.doCreateOrGet(options);
         await workingCopy.resolve();
+
         return workingCopy;
     }
     private doCreateOrGet(options: IInternalUntitledFileWorkingCopyOptions = Object.create(null)): IUntitledFileWorkingCopy<M> {
@@ -125,6 +128,7 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
         // Return existing instance if asked for it
         if (massagedOptions.untitledResource) {
             const existingWorkingCopy = this.get(massagedOptions.untitledResource);
+
             if (existingWorkingCopy) {
                 return existingWorkingCopy;
             }
@@ -154,13 +158,16 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
         }
         // Take over initial value
         massagedOptions.contents = options.contents;
+
         return massagedOptions;
     }
     private doCreate(options: IInternalUntitledFileWorkingCopyOptions): IUntitledFileWorkingCopy<M> {
         // Create a new untitled resource if none is provided
         let untitledResource = options.untitledResource;
+
         if (!untitledResource) {
             let counter = 1;
+
             do {
                 untitledResource = URI.from({
                     scheme: Schemas.untitled,
@@ -176,6 +183,7 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
         const workingCopy = new UntitledFileWorkingCopy(this.workingCopyTypeId, untitledResource, this.labelService.getUriBasenameLabel(untitledResource), !!options.associatedResource, !!options.isScratchpad, options.contents, this.modelFactory, this.saveDelegate, this.workingCopyService, this.workingCopyBackupService, this.logService);
         // Register
         this.registerWorkingCopy(workingCopy);
+
         return workingCopy;
     }
     private registerWorkingCopy(workingCopy: IUntitledFileWorkingCopy<M>): void {
@@ -197,6 +205,7 @@ export class UntitledFileWorkingCopyManager<M extends IUntitledFileWorkingCopyMo
         const removed = super.remove(resource);
         // Dispose any existing working copy listeners
         const workingCopyListener = this.mapResourceToWorkingCopyListeners.get(resource);
+
         if (workingCopyListener) {
             dispose(workingCopyListener);
             this.mapResourceToWorkingCopyListeners.delete(resource);

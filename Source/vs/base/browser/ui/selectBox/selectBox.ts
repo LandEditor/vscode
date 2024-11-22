@@ -16,12 +16,16 @@ import './selectBox.css';
 export interface ISelectBoxDelegate extends IDisposable {
     // Public SelectBox Interface
     readonly onDidSelect: Event<ISelectData>;
+
     setOptions(options: ISelectOptionItem[], selected?: number): void;
     select(index: number): void;
+
     setAriaLabel(label: string): void;
     focus(): void;
     blur(): void;
+
     setFocusable(focus: boolean): void;
+
     setEnabled(enabled: boolean): void;
     // Delegated Widget interface
     render(container: HTMLElement): void;
@@ -68,6 +72,7 @@ export interface ISelectData {
 }
 export class SelectBox extends Widget implements ISelectBoxDelegate {
     private selectBoxDelegate: ISelectBoxDelegate;
+
     constructor(options: ISelectOptionItem[], selected: number, contextViewProvider: IContextViewProvider, styles: ISelectBoxStyles, selectBoxOptions?: ISelectBoxOptions) {
         super();
         // Default to native SelectBox for OSX unless overridden

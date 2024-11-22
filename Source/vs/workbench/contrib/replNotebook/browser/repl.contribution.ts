@@ -61,6 +61,7 @@ class ReplEditorSerializer implements IEditorSerializer {
 	}
 	serialize(input: EditorInput): string {
 		assertType(input instanceof ReplEditorInput);
+
 		const data: SerializedNotebookEditorData = {
 			resource: input.resource,
 			preferredResource: input.preferredResource,
@@ -68,19 +69,23 @@ class ReplEditorSerializer implements IEditorSerializer {
 			options: input.options,
 			label: input.getName()
 		};
+
 		return JSON.stringify(data);
 	}
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		const data = <SerializedNotebookEditorData>parse(raw);
+
 		if (!data) {
 			return undefined;
 		}
 		const { resource, viewType } = data;
+
 		if (!data || !URI.isUri(resource) || typeof viewType !== 'string') {
 			return undefined;
 		}
 
 		const input = instantiationService.createInstance(ReplEditorInput, resource, data.label);
+
 		return input;
 	}
 }
@@ -134,6 +139,7 @@ export class ReplDocumentContribution extends Disposable implements IWorkbenchCo
 				createUntitledEditorInput: async ({ resource, options }) => {
 					if (resource) {
 						const editor = this.editorInputCache.get(resource);
+
 						if (editor && !editor.isDisposed()) {
 							return { editor, options };
 						} else if (editor) {
@@ -141,6 +147,7 @@ export class ReplDocumentContribution extends Disposable implements IWorkbenchCo
 						}
 					}
 					const scratchpad = this.configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
+
 					const ref = await this.notebookEditorModelResolverService.resolve({ untitledResource: resource }, 'jupyter-notebook', { scratchpad, viewType: 'repl' });
 
 					const notebookUri = ref.object.notebook.uri;
@@ -150,7 +157,9 @@ export class ReplDocumentContribution extends Disposable implements IWorkbenchCo
 					ref.object.notebook.onWillDispose(() => {
 						ref.dispose();
 					});
+
 					const label = (options as INotebookEditorOptions)?.label ?? undefined;
+
 					const editor = this.instantiationService.createInstance(ReplEditorInput, notebookUri, label);
 					this.editorInputCache.set(notebookUri, editor);
 					Event.once(editor.onWillDispose)(() => this.editorInputCache.delete(notebookUri));
@@ -163,6 +172,7 @@ export class ReplDocumentContribution extends Disposable implements IWorkbenchCo
 					}
 
 					const label = (options as INotebookEditorOptions)?.label ?? undefined;
+
 					const editor = this.instantiationService.createInstance(ReplEditorInput, resource, label);
 					this.editorInputCache.set(resource, editor);
 					Event.once(editor.onWillDispose)(() => this.editorInputCache.delete(resource));
@@ -191,6 +201,7 @@ class ReplWindowWorkingCopyEditorHandler extends Disposable implements IWorkbenc
 
 	async handles(workingCopy: IWorkingCopyIdentifier) {
 		const notebookType = this._getNotebookType(workingCopy);
+
 		if (!notebookType) {
 			return false;
 		}
@@ -248,14 +259,18 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor, context?: UriComponents): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
+
 		const contextKeyService = accessor.get(IContextKeyService);
 
 		let notebookEditor: NotebookEditorWidget | undefined;
+
 		if (editorControl && isReplEditorControl(editorControl)) {
 			notebookEditor = editorControl.notebookEditor;
 		} else {
 			const uriString = MOST_RECENT_REPL_EDITOR.getValue(contextKeyService);
+
 			const uri = uriString ? URI.parse(uriString) : undefined;
 
 			if (!uri) {
@@ -265,6 +280,7 @@ registerAction2(class extends Action2 {
 
 			if (replEditor) {
 				const editor = await editorService.openEditor(replEditor.editor, replEditor.groupId);
+
 				const editorControl = editor?.getControl();
 
 				if (editorControl && isReplEditorControl(editorControl)) {
@@ -274,9 +290,11 @@ registerAction2(class extends Action2 {
 		}
 
 		const viewModel = notebookEditor?.getViewModel();
+
 		if (notebookEditor && viewModel) {
 			// last cell of the viewmodel is the last cell history
 			const lastCellIndex = viewModel.length - 1;
+
 			if (lastCellIndex >= 0) {
 				const cell = viewModel.viewCells[lastCellIndex];
 				notebookEditor.focusNotebookCell(cell, 'container');
@@ -309,7 +327,9 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
+
 		const contextKeyService = accessor.get(IContextKeyService);
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
@@ -317,6 +337,7 @@ registerAction2(class extends Action2 {
 		}
 		else {
 			const uriString = MOST_RECENT_REPL_EDITOR.getValue(contextKeyService);
+
 			const uri = uriString ? URI.parse(uriString) : undefined;
 
 			if (!uri) {
@@ -383,17 +404,25 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor, context?: UriComponents): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const bulkEditService = accessor.get(IBulkEditService);
+
 		const historyService = accessor.get(IInteractiveHistoryService);
+
 		const notebookEditorService = accessor.get(INotebookEditorService);
+
 		let editorControl: IEditorControl | undefined;
+
 		if (context) {
 			const resourceUri = URI.revive(context);
+
 			const editors = editorService.findEditors(resourceUri);
+
 			for (const found of editors) {
 				if (found.editor.typeId === ReplEditorInput.ID) {
 					const editor = await editorService.openEditor(found.editor, found.groupId);
 					editorControl = editor?.getControl();
+
 					break;
 				}
 			}
@@ -416,12 +445,16 @@ async function executeReplInput(
 
 	if (editorControl && editorControl.notebookEditor && editorControl.activeCodeEditor) {
 		const notebookDocument = editorControl.notebookEditor.textModel;
+
 		const textModel = editorControl.activeCodeEditor.getModel();
+
 		const activeKernel = editorControl.notebookEditor.activeKernel;
+
 		const language = activeKernel?.supportedLanguages[0] ?? PLAINTEXT_LANGUAGE_ID;
 
 		if (notebookDocument && textModel) {
 			const index = notebookDocument.length - 1;
+
 			const value = textModel.getValue();
 
 			if (isFalsyOrWhitespace(value)) {
@@ -430,6 +463,7 @@ async function executeReplInput(
 
 			// Just accept any existing inline chat hunk
 			const ctrl = InlineChatController.get(editorControl.activeCodeEditor);
+
 			if (ctrl) {
 				ctrl.acceptHunk();
 			}
@@ -472,6 +506,7 @@ async function executeReplInput(
 
 			// update the selection and focus in the extension host model
 			const editor = notebookEditorService.getNotebookEditor(editorControl.notebookEditor.getId());
+
 			if (editor) {
 				editor.setSelections([range]);
 				editor.setFocus(range);

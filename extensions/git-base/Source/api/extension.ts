@@ -11,9 +11,12 @@ export class GitBaseExtensionImpl implements GitBaseExtension {
     private _onDidChangeEnablement = new EventEmitter<boolean>();
     readonly onDidChangeEnablement: Event<boolean> = this._onDidChangeEnablement.event;
     private _model: Model | undefined = undefined;
+
     set model(model: Model | undefined) {
         this._model = model;
+
         const enabled = !!model;
+
         if (this.enabled === enabled) {
             return;
         }

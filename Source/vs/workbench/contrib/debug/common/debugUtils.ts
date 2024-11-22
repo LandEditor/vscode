@@ -16,6 +16,7 @@ import { IRange, Range } from '../../../../editor/common/core/range.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { coalesce } from '../../../../base/common/arrays.js';
 import { ILanguageFeaturesService } from '../../../../editor/common/services/languageFeatures.js';
+
 const _formatPIIRegexp = /{([^}]+)}/g;
 export function formatPII(value: string, excludePII: boolean, args: {
     [key: string]: string;
@@ -37,6 +38,7 @@ export function filterExceptionsFromTelemetry<T extends {
     [key: string]: unknown;
 }>(data: T): Partial<T> {
     const output: Partial<T> = {};
+
     for (const key of Object.keys(data) as (keyof T & string)[]) {
         if (!key.startsWith('!')) {
             output[key] = data[key];
@@ -53,6 +55,7 @@ export function isSessionAttach(session: IDebugSession): boolean {
  */
 export function getExtensionHostDebugSession(session: IDebugSession): IDebugSession | void {
     let type = session.configuration.type;
+
     if (!type) {
         return;
     }
@@ -73,18 +76,23 @@ export function getExactExpressionStartAndEnd(lineContent: string, looseStart: n
     end: number;
 } {
     let matchingExpression: string | undefined = undefined;
+
     let startOffset = 0;
     // Some example supported expressions: myVar.prop, a.b.c.d, myVar?.prop, myVar->prop, MyClass::StaticProp, *myVar
     // Match any character except a set of characters which often break interesting sub-expressions
     const expression: RegExp = /([^()\[\]{}<>\s+\-/%~#^;=|,`!]|\->)+/g;
+
     let result: RegExpExecArray | null = null;
     // First find the full expression under the cursor
     while (result = expression.exec(lineContent)) {
         const start = result.index + 1;
+
         const end = start + result[0].length;
+
         if (start <= looseStart && end >= looseEnd) {
             matchingExpression = result[0];
             startOffset = start;
+
             break;
         }
     }
@@ -92,9 +100,12 @@ export function getExactExpressionStartAndEnd(lineContent: string, looseStart: n
     // For example in expression 'a.b.c.d', if the focus was under 'b', 'a.b' would be evaluated.
     if (matchingExpression) {
         const subExpression: RegExp = /(\w|\p{L})+/gu;
+
         let subExpressionResult: RegExpExecArray | null = null;
+
         while (subExpressionResult = subExpression.exec(matchingExpression)) {
             const subEnd = subExpressionResult.index + 1 + startOffset + subExpressionResult[0].length;
+
             if (subEnd >= looseEnd) {
                 break;
             }
@@ -113,6 +124,7 @@ export async function getEvaluatableExpressionAtPosition(languageFeaturesService
 } | null> {
     if (languageFeaturesService.evaluatableExpressionProvider.has(model)) {
         const supports = languageFeaturesService.evaluatableExpressionProvider.ordered(model);
+
         const results = coalesce(await Promise.all(supports.map(async (support) => {
             try {
                 return await support.provideEvaluatableExpression(model, position, token ?? CancellationToken.None);
@@ -121,9 +133,12 @@ export async function getEvaluatableExpressionAtPosition(languageFeaturesService
                 return undefined;
             }
         })));
+
         if (results.length > 0) {
             let matchingExpression = results[0].expression;
+
             const range = results[0].range;
+
             if (!matchingExpression) {
                 const lineContent = model.getLineContent(position.lineNumber);
                 matchingExpression = lineContent.substring(range.startColumn - 1, range.endColumn - 1);
@@ -133,9 +148,11 @@ export async function getEvaluatableExpressionAtPosition(languageFeaturesService
     }
     else { // old one-size-fits-all strategy
         const lineContent = model.getLineContent(position.lineNumber);
+
         const { start, end } = getExactExpressionStartAndEnd(lineContent, position.column, position.column);
         // use regex to extract the sub-expression #9821
         const matchingExpression = lineContent.substring(start - 1, end);
+
         return {
             matchingExpression,
             range: new Range(position.lineNumber, start, position.lineNumber, start + matchingExpression.length)
@@ -175,6 +192,7 @@ function stringToUri(source: PathContainer): string | undefined {
 function uriToString(source: PathContainer): string | undefined {
     if (typeof source.path === 'object') {
         const u = uri.revive(source.path);
+
         if (u) {
             if (u.scheme === Schemas.file) {
                 return u.fsPath;
@@ -200,6 +218,7 @@ export function convertToDAPaths(message: DebugProtocol.ProtocolMessage, toUri: 
             source.path = fixPath(source);
         }
     });
+
     return msg;
 }
 export function convertToVSCPaths(message: DebugProtocol.ProtocolMessage, toUri: boolean): DebugProtocol.ProtocolMessage {
@@ -211,22 +230,30 @@ export function convertToVSCPaths(message: DebugProtocol.ProtocolMessage, toUri:
             source.path = fixPath(source);
         }
     });
+
     return msg;
 }
 function convertPaths(msg: DebugProtocol.ProtocolMessage, fixSourcePath: (toDA: boolean, source: PathContainer | undefined) => void): void {
     switch (msg.type) {
         case 'event': {
             const event = <DebugProtocol.Event>msg;
+
             switch (event.event) {
                 case 'output':
                     fixSourcePath(false, (<DebugProtocol.OutputEvent>event).body.source);
+
                     break;
+
                 case 'loadedSource':
                     fixSourcePath(false, (<DebugProtocol.LoadedSourceEvent>event).body.source);
+
                     break;
+
                 case 'breakpoint':
                     fixSourcePath(false, (<DebugProtocol.BreakpointEvent>event).body.breakpoint.source);
+
                     break;
+
                 default:
                     break;
             }
@@ -234,22 +261,33 @@ function convertPaths(msg: DebugProtocol.ProtocolMessage, fixSourcePath: (toDA: 
         }
         case 'request': {
             const request = <DebugProtocol.Request>msg;
+
             switch (request.command) {
                 case 'setBreakpoints':
                     fixSourcePath(true, (<DebugProtocol.SetBreakpointsArguments>request.arguments).source);
+
                     break;
+
                 case 'breakpointLocations':
                     fixSourcePath(true, (<DebugProtocol.BreakpointLocationsArguments>request.arguments).source);
+
                     break;
+
                 case 'source':
                     fixSourcePath(true, (<DebugProtocol.SourceArguments>request.arguments).source);
+
                     break;
+
                 case 'gotoTargets':
                     fixSourcePath(true, (<DebugProtocol.GotoTargetsArguments>request.arguments).source);
+
                     break;
+
                 case 'launchVSCode':
                     request.arguments.args.forEach((arg: PathContainer | undefined) => fixSourcePath(false, arg));
+
                     break;
+
                 default:
                     break;
             }
@@ -257,32 +295,46 @@ function convertPaths(msg: DebugProtocol.ProtocolMessage, fixSourcePath: (toDA: 
         }
         case 'response': {
             const response = <DebugProtocol.Response>msg;
+
             if (response.success && response.body) {
                 switch (response.command) {
                     case 'stackTrace':
                         (<DebugProtocol.StackTraceResponse>response).body.stackFrames.forEach(frame => fixSourcePath(false, frame.source));
+
                         break;
+
                     case 'loadedSources':
                         (<DebugProtocol.LoadedSourcesResponse>response).body.sources.forEach(source => fixSourcePath(false, source));
+
                         break;
+
                     case 'scopes':
                         (<DebugProtocol.ScopesResponse>response).body.scopes.forEach(scope => fixSourcePath(false, scope.source));
+
                         break;
+
                     case 'setFunctionBreakpoints':
                         (<DebugProtocol.SetFunctionBreakpointsResponse>response).body.breakpoints.forEach(bp => fixSourcePath(false, bp.source));
+
                         break;
+
                     case 'setBreakpoints':
                         (<DebugProtocol.SetBreakpointsResponse>response).body.breakpoints.forEach(bp => fixSourcePath(false, bp.source));
+
                         break;
+
                     case 'disassemble':
                         {
                             const di = <DebugProtocol.DisassembleResponse>response;
                             di.body?.instructions.forEach(di => fixSourcePath(false, di.location));
                         }
                         break;
+
                     case 'locations':
                         fixSourcePath(false, (<DebugProtocol.LocationsResponse>response).body?.source);
+
                         break;
+
                     default:
                         break;
                 }
@@ -333,10 +385,13 @@ function compareOrders(first: number | undefined, second: number | undefined): n
 }
 export async function saveAllBeforeDebugStart(configurationService: IConfigurationService, editorService: IEditorService): Promise<void> {
     const saveBeforeStartConfig: string = configurationService.getValue('debug.saveBeforeStart', { overrideIdentifier: editorService.activeTextEditorLanguageId });
+
     if (saveBeforeStartConfig !== 'none') {
         await editorService.saveAll();
+
         if (saveBeforeStartConfig === 'allEditorsInActiveGroup') {
             const activeEditor = editorService.activeEditorPane;
+
             if (activeEditor && activeEditor.input.resource?.scheme === Schemas.untitled) {
                 // Make sure to save the active editor in case it is in untitled file it wont be saved as part of saveAll #111850
                 await editorService.save({ editor: activeEditor.input, groupId: activeEditor.group.id });

@@ -181,6 +181,7 @@ export class SuggestEnabledInput extends Widget {
 			if (e.affectsConfiguration('editor.accessibilitySupport') ||
 				e.affectsConfiguration('editor.cursorBlinking')) {
 				const accessibilitySupport = configurationService.getValue<'auto' | 'off' | 'on'>('editor.accessibilitySupport');
+
 				const cursorBlinking = configurationService.getValue<'blink' | 'smooth' | 'phase' | 'expand' | 'solid'>('editor.cursorBlinking');
 				this.inputWidget.updateOptions({
 					accessibilitySupport,
@@ -212,11 +213,14 @@ export class SuggestEnabledInput extends Widget {
 		this._register(Event.chain(this.inputWidget.onKeyDown, $ => $.filter(e => e.keyCode === KeyCode.DownArrow && (isMacintosh ? e.metaKey : e.ctrlKey)))(() => this._onShouldFocusResults.fire(), this));
 
 		let preexistingContent = this.getValue();
+
 		const inputWidgetModel = this.inputWidget.getModel();
+
 		if (inputWidgetModel) {
 			this._register(inputWidgetModel.onDidChangeContent(() => {
 				const content = this.getValue();
 				this.placeholderText.style.visibility = content ? 'hidden' : 'visible';
+
 				if (preexistingContent.trim() === content.trim()) { return; }
 				this._onInputDidChange.fire(undefined);
 				preexistingContent = content;
@@ -240,6 +244,7 @@ export class SuggestEnabledInput extends Widget {
 				const query = model.getValue();
 
 				const zeroIndexedColumn = position.column - 1;
+
 				let alreadyTypedCount = 0, zeroIndexedWordStart = 0;
 
 				if (validatedSuggestProvider.wordDefinition) {
@@ -259,7 +264,9 @@ export class SuggestEnabledInput extends Widget {
 				return {
 					suggestions: suggestionProvider.provideResults(query).map((result): languages.CompletionItem => {
 						let label: string;
+
 						let rest: Partial<languages.CompletionItem> | undefined;
+
 						if (typeof result === 'string') {
 							label = result;
 						} else {
@@ -293,6 +300,7 @@ export class SuggestEnabledInput extends Widget {
 
 	public setValue(val: string) {
 		val = val.replace(/\s/g, ' ');
+
 		const fullRange = this.inputModel.getFullModelRange();
 		this.inputWidget.executeEdits('suggestEnabledInput.setValue', [EditOperation.replace(fullRange, val)]);
 		this.inputWidget.setScrollTop(0);
@@ -312,6 +320,7 @@ export class SuggestEnabledInput extends Widget {
 		this.stylingContainer.style.borderColor = asCssVariableWithDefault(styleOverrides.inputBorder ?? inputBorder, 'transparent');
 
 		const cursor = this.stylingContainer.getElementsByClassName('cursor')[0] as HTMLDivElement;
+
 		if (cursor) {
 			cursor.style.backgroundColor = asCssVariable(styleOverrides.inputForeground ?? inputForeground);
 		}
@@ -366,6 +375,7 @@ export class SuggestEnabledInputWithHistory extends SuggestEnabledInput implemen
 
 	public addToHistory(): void {
 		const value = this.getValue();
+
 		if (value && value !== this.getCurrentValue()) {
 			this.history.add(value);
 		}
@@ -381,6 +391,7 @@ export class SuggestEnabledInputWithHistory extends SuggestEnabledInput implemen
 		}
 
 		let next = this.getNextValue();
+
 		if (next) {
 			next = next === this.getValue() ? this.getNextValue() : next;
 		}
@@ -394,6 +405,7 @@ export class SuggestEnabledInputWithHistory extends SuggestEnabledInput implemen
 		}
 
 		let previous = this.getPreviousValue();
+
 		if (previous) {
 			previous = previous === this.getValue() ? this.getPreviousValue() : previous;
 		}
@@ -410,6 +422,7 @@ export class SuggestEnabledInputWithHistory extends SuggestEnabledInput implemen
 
 	private getCurrentValue(): string | null {
 		let currentValue = this.history.current();
+
 		if (!currentValue) {
 			currentValue = this.history.last();
 			this.history.next();
@@ -442,8 +455,11 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 		const { historyNavigationBackwardsEnablement, historyNavigationForwardsEnablement } = this.historyContext;
 		this._register(this.inputWidget.onDidChangeCursorPosition(({ position }) => {
 			const viewModel = this.inputWidget._getViewModel()!;
+
 			const lastLineNumber = viewModel.getLineCount();
+
 			const lastLineCol = viewModel.getLineLength(lastLineNumber) + 1;
+
 			const viewPosition = viewModel.coordinatesConverter.convertModelPositionToViewPosition(position);
 			historyNavigationBackwardsEnablement.set(viewPosition.lineNumber === 1 && viewPosition.column === 1);
 			historyNavigationForwardsEnablement.set(viewPosition.lineNumber === lastLineNumber && viewPosition.column === lastLineCol);

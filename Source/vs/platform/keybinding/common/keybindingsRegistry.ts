@@ -66,8 +66,10 @@ export interface ICommandAndKeybindingRule extends IKeybindingRule {
 }
 export interface IKeybindingsRegistry {
     registerKeybindingRule(rule: IKeybindingRule): IDisposable;
+
     setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void;
     registerCommandAndKeybindingRule(desc: ICommandAndKeybindingRule): IDisposable;
+
     getDefaultKeybindings(): IKeybindingItem[];
 }
 /**
@@ -77,6 +79,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
     private _coreKeybindings: LinkedList<IKeybindingItem>;
     private _extensionKeybindings: IKeybindingItem[];
     private _cachedMergedKeybindings: IKeybindingItem[] | null;
+
     constructor() {
         this._coreKeybindings = new LinkedList();
         this._extensionKeybindings = [];
@@ -108,9 +111,12 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
     }
     public registerKeybindingRule(rule: IKeybindingRule): IDisposable {
         const actualKb = KeybindingsRegistryImpl.bindToCurrentPlatform(rule);
+
         const result = new DisposableStore();
+
         if (actualKb && actualKb.primary) {
             const kk = decodeKeybinding(actualKb.primary, OS);
+
             if (kk) {
                 result.add(this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, 0, rule.when));
             }
@@ -118,7 +124,9 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
         if (actualKb && Array.isArray(actualKb.secondary)) {
             for (let i = 0, len = actualKb.secondary.length; i < len; i++) {
                 const k = actualKb.secondary[i];
+
                 const kk = decodeKeybinding(k, OS);
+
                 if (kk) {
                     result.add(this._registerDefaultKeybinding(kk, rule.id, rule.args, rule.weight, -i - 1, rule.when));
                 }
@@ -128,7 +136,9 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
     }
     public setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void {
         const result: IKeybindingItem[] = [];
+
         let keybindingsLen = 0;
+
         for (const rule of rules) {
             if (rule.keybinding) {
                 result[keybindingsLen++] = {
@@ -161,6 +171,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
             isBuiltinExtension: false
         });
         this._cachedMergedKeybindings = null;
+
         return toDisposable(() => {
             remove();
             this._cachedMergedKeybindings = null;

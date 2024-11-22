@@ -29,7 +29,9 @@ import { ActionBar } from '../../../../../base/browser/ui/actionbar/actionbar.js
 import { toAction } from '../../../../../base/common/actions.js';
 import { ThemeIcon } from '../../../../../base/common/themables.js';
 import { isWindows } from '../../../../../base/common/platform.js';
+
 const EDITOR_DICTATION_IN_PROGRESS = new RawContextKey<boolean>('editorDictation.inProgress', false);
+
 const VOICE_CATEGORY = localize2('voiceCategory', "Voice");
 export class EditorDictationStartAction extends EditorAction2 {
     constructor() {
@@ -52,14 +54,18 @@ export class EditorDictationStartAction extends EditorAction2 {
     }
     override runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor): void {
         const keybindingService = accessor.get(IKeybindingService);
+
         const holdMode = keybindingService.enableKeybindingHoldMode(this.desc.id);
+
         if (holdMode) {
             let shouldCallStop = false;
+
             const handle = setTimeout(() => {
                 shouldCallStop = true;
             }, 500);
             holdMode.finally(() => {
                 clearTimeout(handle);
+
                 if (shouldCallStop) {
                     EditorDictation.get(editor)?.stop();
                 }
@@ -70,6 +76,7 @@ export class EditorDictationStartAction extends EditorAction2 {
 }
 export class EditorDictationStopAction extends EditorAction2 {
     static readonly ID = 'workbench.action.editorDictation.stop';
+
     constructor() {
         super({
             id: EditorDictationStopAction.ID,
@@ -91,9 +98,12 @@ export class DictationWidget extends Disposable implements IContentWidget {
     readonly suppressMouseDown = true;
     readonly allowEditorOverflow = true;
     private readonly domNode = document.createElement('div');
+
     constructor(private readonly editor: ICodeEditor, keybindingService: IKeybindingService) {
         super();
+
         const actionBar = this._register(new ActionBar(this.domNode));
+
         const stopActionKeybinding = keybindingService.lookupKeybinding(EditorDictationStopAction.ID)?.getLabel();
         actionBar.push(toAction({
             id: EditorDictationStopAction.ID,
@@ -115,6 +125,7 @@ export class DictationWidget extends Disposable implements IContentWidget {
             return null;
         }
         const selection = this.editor.getSelection();
+
         return {
             position: selection.getPosition(),
             preference: [
@@ -125,9 +136,11 @@ export class DictationWidget extends Disposable implements IContentWidget {
     }
     beforeRender(): IDimension | null {
         const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
         const width = this.editor.getLayoutInfo().contentWidth * 0.7;
         this.domNode.style.setProperty('--vscode-editor-dictation-widget-height', `${lineHeight}px`);
         this.domNode.style.setProperty('--vscode-editor-dictation-widget-width', `${width}px`);
+
         return null;
     }
     show() {
@@ -152,6 +165,7 @@ export class EditorDictation extends Disposable implements IEditorContribution {
     private readonly widget = this._register(new DictationWidget(this.editor, this.keybindingService));
     private readonly editorDictationInProgress = EDITOR_DICTATION_IN_PROGRESS.bindTo(this.contextKeyService);
     private readonly sessionDisposables = this._register(new MutableDisposable());
+
     constructor(private readonly editor: ICodeEditor, 
     @ISpeechService
     private readonly speechService: ISpeechService, 
@@ -168,11 +182,15 @@ export class EditorDictation extends Disposable implements IEditorContribution {
         disposables.add(toDisposable(() => this.widget.hide()));
         this.editorDictationInProgress.set(true);
         disposables.add(toDisposable(() => this.editorDictationInProgress.reset()));
+
         const collection = this.editor.createDecorationsCollection();
         disposables.add(toDisposable(() => collection.clear()));
         disposables.add(this.editor.onDidChangeCursorPosition(() => this.widget.layout()));
+
         let previewStart: Position | undefined = undefined;
+
         let lastReplaceTextLength = 0;
+
         const replaceText = (text: string, isPreview: boolean) => {
             if (!previewStart) {
                 previewStart = assertIsDefined(this.editor.getPosition());
@@ -183,6 +201,7 @@ export class EditorDictation extends Disposable implements IEditorContribution {
             ], [
                 Selection.fromPositions(endPosition)
             ]);
+
             if (isPreview) {
                 collection.set([
                     {
@@ -198,14 +217,17 @@ export class EditorDictation extends Disposable implements IEditorContribution {
                 collection.clear();
             }
             lastReplaceTextLength = text.length;
+
             if (!isPreview) {
                 previewStart = undefined;
                 lastReplaceTextLength = 0;
             }
             this.editor.revealPositionInCenterIfOutsideViewport(endPosition);
         };
+
         const cts = new CancellationTokenSource();
         disposables.add(toDisposable(() => cts.dispose(true)));
+
         const session = await this.speechService.createSpeechToTextSession(cts.token, 'editor');
         disposables.add(session.onDidChange(e => {
             if (cts.token.isCancellationRequested) {
@@ -214,15 +236,20 @@ export class EditorDictation extends Disposable implements IEditorContribution {
             switch (e.status) {
                 case SpeechToTextStatus.Started:
                     this.widget.active();
+
                     break;
+
                 case SpeechToTextStatus.Stopped:
                     disposables.dispose();
+
                     break;
+
                 case SpeechToTextStatus.Recognizing: {
                     if (!e.text) {
                         return;
                     }
                     replaceText(e.text, true);
+
                     break;
                 }
                 case SpeechToTextStatus.Recognized: {
@@ -230,6 +257,7 @@ export class EditorDictation extends Disposable implements IEditorContribution {
                         return;
                     }
                     replaceText(`${e.text} `, false);
+
                     break;
                 }
             }

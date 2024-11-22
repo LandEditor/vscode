@@ -48,7 +48,9 @@ class LayoutInfo {
 
 	static retrieve(storageService: IStorageService): LayoutInfo {
 		const value = storageService.get('callHierarchyPeekLayout', StorageScope.PROFILE, '{}');
+
 		const defaultInfo: LayoutInfo = { ratio: 0.7, height: 17 };
+
 		try {
 			return { ...defaultInfo, ...JSON.parse(value) };
 		} catch {
@@ -105,6 +107,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		this._splitView.dispose();
 		this._tree.dispose();
 		this._editor.dispose();
+
 		super.dispose();
 	}
 
@@ -127,6 +130,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		super._fillHead(container, true);
 
 		const menu = this._menuService.createMenu(CallHierarchyTreePeekWidget.TitleMenu, this._contextKeyService);
+
 		const updateToolbar = () => {
 			const actions = getFlatActionBarActions(menu.getActions());
 			this._actionbarWidget!.clear();
@@ -161,6 +165,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const editorContainer = document.createElement('div');
 		editorContainer.classList.add('editor');
 		container.appendChild(editorContainer);
+
 		const editorOptions: IEditorOptions = {
 			scrollBeyondLastLine: false,
 			scrollbar: {
@@ -189,6 +194,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const treeContainer = document.createElement('div');
 		treeContainer.classList.add('tree');
 		container.appendChild(treeContainer);
+
 		const options: IWorkbenchAsyncDataTreeOptions<callHTree.Call, FuzzyScore> = {
 			sorter: new callHTree.Sorter(),
 			accessibilityProvider: new callHTree.AccessibilityProvider(() => this._direction),
@@ -244,10 +250,12 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		this._disposables.add(this._editor.onMouseDown(e => {
 			const { event, target } = e;
+
 			if (event.detail !== 2) {
 				return;
 			}
 			const [focus] = this._tree.getFocus();
+
 			if (!focus) {
 				return;
 			}
@@ -288,6 +296,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 	private async _updatePreview() {
 		const [element] = this._tree.getFocus();
+
 		if (!element) {
 			return;
 		}
@@ -306,6 +315,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		};
 
 		let previewUri: URI;
+
 		if (this._direction === CallHierarchyDirection.CallsFrom) {
 			// outgoing calls: show caller and highlight focused calls
 			previewUri = element.parent ? element.parent.item.uri : element.model.root.uri;
@@ -320,8 +330,11 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		// set decorations for caller ranges (if in the same file)
 		const decorations: IModelDeltaDecoration[] = [];
+
 		let fullRange: IRange | undefined;
+
 		let locations = element.locations;
+
 		if (!locations) {
 			locations = [{ uri: element.item.uri, range: element.item.selectionRange }];
 		}
@@ -333,6 +346,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		}
 		if (fullRange) {
 			this._editor.revealRangeInCenter(fullRange, ScrollType.Immediate);
+
 			const decorationsCollection = this._editor.createDecorationsCollection(decorations);
 			this._previewDisposable.add(toDisposable(() => decorationsCollection.clear()));
 		}
@@ -363,6 +377,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	async showModel(model: CallHierarchyModel): Promise<void> {
 
 		this._show();
+
 		const viewState = this._treeViewStates.get(this._direction);
 
 		await this._tree.setInput(model, viewState);
@@ -378,6 +393,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		} else {
 			this._parent.dataset['state'] = State.Data;
+
 			if (!viewState || this._tree.getFocus().length === 0) {
 				this._tree.setFocus([root.children[0].element]);
 			}
@@ -396,6 +412,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 	async updateDirection(newDirection: CallHierarchyDirection): Promise<void> {
 		const model = this._tree.getInput();
+
 		if (model && newDirection !== this._direction) {
 			this._treeViewStates.set(this._direction, this._tree.getViewState());
 			this._direction = newDirection;
@@ -406,6 +423,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	private _show() {
 		if (!this._isShowing) {
 			this.editor.revealLineInCenterIfOutsideViewport(this._where.lineNumber, ScrollType.Smooth);
+
 			super.show(Range.fromPositions(this._where), this._layoutInfo.height);
 		}
 	}

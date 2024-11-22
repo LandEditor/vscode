@@ -32,14 +32,18 @@ class BaseDropdown extends ActionRunner {
     private _onDidChangeVisibility = this._register(new Emitter<boolean>());
     readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
     private hover: IManagedHover | undefined;
+
     constructor(container: HTMLElement, options: IBaseDropdownOptions) {
         super();
         this._element = append(container, $('.monaco-dropdown'));
         this._label = append(this._element, $('.dropdown-label'));
+
         let labelRenderer = options.labelRenderer;
+
         if (!labelRenderer) {
             labelRenderer = (container: HTMLElement): IDisposable | null => {
                 container.textContent = options.label || '';
+
                 return null;
             };
         }
@@ -63,6 +67,7 @@ class BaseDropdown extends ActionRunner {
         }
         this._register(addDisposableListener(this._label, EventType.KEY_UP, e => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
                 EventHelper.stop(e, true); // https://github.com/microsoft/vscode/issues/57997
                 if (this.visible) {
@@ -73,7 +78,9 @@ class BaseDropdown extends ActionRunner {
                 }
             }
         }));
+
         const cleanupFn = labelRenderer(this._label);
+
         if (cleanupFn) {
             this._register(cleanupFn);
         }
@@ -116,6 +123,7 @@ class BaseDropdown extends ActionRunner {
     override dispose(): void {
         super.dispose();
         this.hide();
+
         if (this.boxContainer) {
             this.boxContainer.remove();
             this.boxContainer = undefined;
@@ -144,6 +152,7 @@ export interface IDropdownMenuOptions extends IBaseDropdownOptions {
 export class DropdownMenu extends BaseDropdown {
     private _menuOptions: IMenuOptions | undefined;
     private _actions: readonly IAction[] = [];
+
     constructor(container: HTMLElement, private readonly _options: IDropdownMenuOptions) {
         super(container, _options);
         this.actions = _options.actions || [];

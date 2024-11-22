@@ -24,10 +24,12 @@ interface ITasksResourcePreview extends IFileResourcePreview {
 export function getTasksContentFromSyncContent(syncContent: string, logService: ILogService): string | null {
     try {
         const parsed = <ITasksSyncContent>JSON.parse(syncContent);
+
         return parsed.tasks ?? null;
     }
     catch (e) {
         logService.error(e);
+
         return null;
     }
 }
@@ -38,6 +40,7 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
     private readonly localResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'local' });
     private readonly remoteResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'remote' });
     private readonly acceptedResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'accepted' });
+
     constructor(profile: IUserDataProfile, collection: string | undefined, 
     @IUserDataSyncStoreService
     userDataSyncStoreService: IUserDataSyncStoreService, 
@@ -65,20 +68,28 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
         const remoteContent = remoteUserData.syncData ? getTasksContentFromSyncContent(remoteUserData.syncData.content, this.logService) : null;
         // Use remote data as last sync data if last sync data does not exist and remote data is from same machine
         lastSyncUserData = lastSyncUserData === null && isRemoteDataFromCurrentMachine ? remoteUserData : lastSyncUserData;
+
         const lastSyncContent: string | null = lastSyncUserData?.syncData ? getTasksContentFromSyncContent(lastSyncUserData.syncData.content, this.logService) : null;
         // Get file content last to get the latest
         const fileContent = await this.getLocalFileContent();
+
         let content: string | null = null;
+
         let hasLocalChanged: boolean = false;
+
         let hasRemoteChanged: boolean = false;
+
         let hasConflicts: boolean = false;
+
         if (remoteUserData.syncData) {
             const localContent = fileContent ? fileContent.value.toString() : null;
+
             if (!lastSyncContent // First time sync
                 || lastSyncContent !== localContent // Local has forwarded
                 || lastSyncContent !== remoteContent // Remote has forwarded
             ) {
                 this.logService.trace(`${this.syncResourceLogLabel}: Merging remote tasks with local tasks...`);
+
                 const result = merge(localContent, remoteContent, lastSyncContent);
                 content = result.content;
                 hasConflicts = result.hasConflicts;
@@ -98,7 +109,9 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
             remoteChange: hasRemoteChanged ? Change.Modified : Change.None,
             hasConflicts
         };
+
         const localContent = fileContent ? fileContent.value.toString() : null;
+
         return [{
                 fileContent,
                 baseResource: this.baseResource,
@@ -116,12 +129,16 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
     }
     protected async hasRemoteChanged(lastSyncUserData: IRemoteUserData): Promise<boolean> {
         const lastSyncContent: string | null = lastSyncUserData?.syncData ? getTasksContentFromSyncContent(lastSyncUserData.syncData.content, this.logService) : null;
+
         if (lastSyncContent === null) {
             return true;
         }
         const fileContent = await this.getLocalFileContent();
+
         const localContent = fileContent ? fileContent.value.toString() : null;
+
         const result = merge(localContent, lastSyncContent, lastSyncContent);
+
         return result.hasLocalChanged || result.hasRemoteChanged;
     }
     protected async getMergeResult(resourcePreview: ITasksResourcePreview, token: CancellationToken): Promise<IMergeResult> {
@@ -168,12 +185,15 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
         IAcceptResult
     ][], force: boolean): Promise<void> {
         const { fileContent } = resourcePreviews[0][0];
+
         const { content, localChange, remoteChange } = resourcePreviews[0][1];
+
         if (localChange === Change.None && remoteChange === Change.None) {
             this.logService.info(`${this.syncResourceLogLabel}: No changes found during synchronizing tasks.`);
         }
         if (localChange !== Change.None) {
             this.logService.trace(`${this.syncResourceLogLabel}: Updating local tasks...`);
+
             if (fileContent) {
                 await this.backupLocal(JSON.stringify(this.toTasksSyncContent(fileContent.value.toString())));
             }
@@ -187,6 +207,7 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
         }
         if (remoteChange !== Change.None) {
             this.logService.trace(`${this.syncResourceLogLabel}: Updating remote tasks...`);
+
             const remoteContents = JSON.stringify(this.toTasksSyncContent(content));
             remoteUserData = await this.updateRemoteUserData(remoteContents, force ? null : remoteUserData.ref);
             this.logService.info(`${this.syncResourceLogLabel}: Updated remote tasks`);
@@ -220,6 +241,7 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
 }
 export class TasksInitializer extends AbstractInitializer {
     private tasksResource = this.userDataProfilesService.defaultProfile.tasksResource;
+
     constructor(
     @IFileService
     fileService: IFileService, 
@@ -237,13 +259,17 @@ export class TasksInitializer extends AbstractInitializer {
     }
     protected async doInitialize(remoteUserData: IRemoteUserData): Promise<void> {
         const tasksContent = remoteUserData.syncData ? getTasksContentFromSyncContent(remoteUserData.syncData.content, this.logService) : null;
+
         if (!tasksContent) {
             this.logService.info('Skipping initializing tasks because remote tasks does not exist.');
+
             return;
         }
         const isEmpty = await this.isEmpty();
+
         if (!isEmpty) {
             this.logService.info('Skipping initializing tasks because local tasks exist.');
+
             return;
         }
         await this.fileService.writeFile(this.tasksResource, VSBuffer.fromString(tasksContent));
@@ -268,6 +294,7 @@ function merge(originalLocalContent: string | null, originalRemoteContent: strin
         return { content: null, hasLocalChanged: false, hasRemoteChanged: false, hasConflicts: false };
     }
     const localForwarded = baseContent !== originalLocalContent;
+
     const remoteForwarded = baseContent !== originalRemoteContent;
     /* no changes */
     if (!localForwarded && !remoteForwarded) {

@@ -23,6 +23,7 @@ export interface IAnchor {
 }
 export function isAnchor(obj: unknown): obj is IAnchor | OmitOptional<IAnchor> {
     const anchor = obj as IAnchor | OmitOptional<IAnchor> | undefined;
+
     return !!anchor && typeof anchor.x === 'number' && typeof anchor.y === 'number';
 }
 export const enum AnchorAlignment {
@@ -93,7 +94,9 @@ export interface ILayoutAnchor {
  */
 export function layout(viewportSize: number, viewSize: number, anchor: ILayoutAnchor): number {
     const layoutAfterAnchorBoundary = anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset : anchor.offset + anchor.size;
+
     const layoutBeforeAnchorBoundary = anchor.mode === LayoutAnchorMode.ALIGN ? anchor.offset + anchor.size : anchor.offset;
+
     if (anchor.position === LayoutAnchorPosition.Before) {
         if (viewSize <= viewportSize - layoutAfterAnchorBoundary) {
             return layoutAfterAnchorBoundary; // happy case, lay it out after the anchor
@@ -125,6 +128,7 @@ export class ContextView extends Disposable {
     private toDisposeOnSetContainer: IDisposable = Disposable.None;
     private shadowRoot: ShadowRoot | null = null;
     private shadowRootHostElement: HTMLElement | null = null;
+
     constructor(container: HTMLElement, domPosition: ContextViewDOMPosition) {
         super();
         this.view = DOM.$('.context-view');
@@ -134,14 +138,17 @@ export class ContextView extends Disposable {
     }
     setContainer(container: HTMLElement | null, domPosition: ContextViewDOMPosition): void {
         this.useFixedPosition = domPosition !== ContextViewDOMPosition.ABSOLUTE;
+
         const usedShadowDOM = this.useShadowDOM;
         this.useShadowDOM = domPosition === ContextViewDOMPosition.FIXED_SHADOW;
+
         if (container === this.container && usedShadowDOM === this.useShadowDOM) {
             return; // container is the same and no shadow DOM usage has changed
         }
         if (this.container) {
             this.toDisposeOnSetContainer.dispose();
             this.view.remove();
+
             if (this.shadowRoot) {
                 this.shadowRoot = null;
                 this.shadowRootHostElement?.remove();
@@ -151,10 +158,12 @@ export class ContextView extends Disposable {
         }
         if (container) {
             this.container = container;
+
             if (this.useShadowDOM) {
                 this.shadowRootHostElement = DOM.$('.shadow-root-host');
                 this.container.appendChild(this.shadowRootHostElement);
                 this.shadowRoot = this.shadowRootHostElement.attachShadow({ mode: 'open' });
+
                 const style = document.createElement('style');
                 style.textContent = SHADOW_ROOT_CSS;
                 this.shadowRoot.appendChild(style);
@@ -208,6 +217,7 @@ export class ContextView extends Disposable {
         }
         if (this.delegate!.canRelayout === false && !(platform.isIOS && BrowserFeatures.pointerEvents)) {
             this.hide();
+
             return;
         }
         this.delegate?.layout?.();
@@ -257,15 +267,24 @@ export class ContextView extends Disposable {
             };
         }
         const viewSizeWidth = DOM.getTotalWidth(this.view);
+
         const viewSizeHeight = DOM.getTotalHeight(this.view);
+
         const anchorPosition = this.delegate!.anchorPosition ?? AnchorPosition.BELOW;
+
         const anchorAlignment = this.delegate!.anchorAlignment ?? AnchorAlignment.LEFT;
+
         const anchorAxisAlignment = this.delegate!.anchorAxisAlignment ?? AnchorAxisAlignment.VERTICAL;
+
         let top: number;
+
         let left: number;
+
         const activeWindow = DOM.getActiveWindow();
+
         if (anchorAxisAlignment === AnchorAxisAlignment.VERTICAL) {
             const verticalAnchor: ILayoutAnchor = { offset: around.top - activeWindow.pageYOffset, size: around.height, position: anchorPosition === AnchorPosition.BELOW ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After };
+
             const horizontalAnchor: ILayoutAnchor = { offset: around.left, size: around.width, position: anchorAlignment === AnchorAlignment.LEFT ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After, mode: LayoutAnchorMode.ALIGN };
             top = layout(activeWindow.innerHeight, viewSizeHeight, verticalAnchor) + activeWindow.pageYOffset;
             // if view intersects vertically with anchor,  we must avoid the anchor
@@ -276,6 +295,7 @@ export class ContextView extends Disposable {
         }
         else {
             const horizontalAnchor: ILayoutAnchor = { offset: around.left, size: around.width, position: anchorAlignment === AnchorAlignment.LEFT ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After };
+
             const verticalAnchor: ILayoutAnchor = { offset: around.top, size: around.height, position: anchorPosition === AnchorPosition.BELOW ? LayoutAnchorPosition.Before : LayoutAnchorPosition.After, mode: LayoutAnchorMode.ALIGN };
             left = layout(activeWindow.innerWidth, viewSizeWidth, horizontalAnchor);
             // if view intersects horizontally with anchor, we must avoid the anchor
@@ -288,6 +308,7 @@ export class ContextView extends Disposable {
         this.view.classList.add(anchorPosition === AnchorPosition.BELOW ? 'bottom' : 'top');
         this.view.classList.add(anchorAlignment === AnchorAlignment.LEFT ? 'left' : 'right');
         this.view.classList.toggle('fixed', this.useFixedPosition);
+
         const containerPosition = DOM.getDomNodePagePosition(this.container!);
         this.view.style.top = `${top - (this.useFixedPosition ? DOM.getDomNodePagePosition(this.view).top : containerPosition.top)}px`;
         this.view.style.left = `${left - (this.useFixedPosition ? DOM.getDomNodePagePosition(this.view).left : containerPosition.left)}px`;
@@ -296,6 +317,7 @@ export class ContextView extends Disposable {
     hide(data?: unknown): void {
         const delegate = this.delegate;
         this.delegate = null;
+
         if (delegate?.onHide) {
             delegate.onHide(data);
         }
@@ -317,6 +339,7 @@ export class ContextView extends Disposable {
     }
     override dispose(): void {
         this.hide();
+
         super.dispose();
     }
 }

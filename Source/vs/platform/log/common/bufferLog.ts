@@ -13,6 +13,7 @@ export class BufferLogger extends AbstractMessageLogger {
     private buffer: ILog[] = [];
     private _logger: ILogger | undefined = undefined;
     private readonly _logLevelDisposable = this._register(new MutableDisposable());
+
     constructor(logLevel: LogLevel = DEFAULT_LOG_LEVEL) {
         super();
         this.setLevel(logLevel);
@@ -21,6 +22,7 @@ export class BufferLogger extends AbstractMessageLogger {
         this._logger = logger;
         this.setLevel(logger.getLevel());
         this._logLevelDisposable.value = logger.onDidChangeLogLevel(this.setLevel, this);
+
         for (const { level, message } of this.buffer) {
             log(logger, level, message);
         }
@@ -36,6 +38,7 @@ export class BufferLogger extends AbstractMessageLogger {
     }
     override dispose(): void {
         this._logger?.dispose();
+
         super.dispose();
     }
     override flush(): void {

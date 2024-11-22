@@ -44,6 +44,7 @@ export class ViewController {
     private readonly viewModel: IViewModel;
     private readonly userInputEvents: ViewUserInputEvents;
     private readonly commandDelegate: ICommandDelegate;
+
     constructor(configuration: IEditorConfiguration, viewModel: IViewModel, userInputEvents: ViewUserInputEvents, commandDelegate: ICommandDelegate) {
         this.configuration = configuration;
         this.viewModel = viewModel;
@@ -76,6 +77,7 @@ export class ViewController {
     }
     private _validateViewColumn(viewPosition: Position): Position {
         const minColumn = this.viewModel.getLineMinColumn(viewPosition.lineNumber);
+
         if (viewPosition.column < minColumn) {
             return new Position(viewPosition.lineNumber, minColumn);
         }
@@ -85,10 +87,13 @@ export class ViewController {
         switch (this.configuration.options.get(EditorOption.multiCursorModifier)) {
             case 'altKey':
                 return data.altKey;
+
             case 'ctrlKey':
                 return data.ctrlKey;
+
             case 'metaKey':
                 return data.metaKey;
+
             default:
                 return false;
         }
@@ -97,18 +102,24 @@ export class ViewController {
         switch (this.configuration.options.get(EditorOption.multiCursorModifier)) {
             case 'altKey':
                 return data.ctrlKey || data.metaKey;
+
             case 'ctrlKey':
                 return data.altKey || data.metaKey;
+
             case 'metaKey':
                 return data.ctrlKey || data.altKey;
+
             default:
                 return false;
         }
     }
     public dispatchMouse(data: IMouseDispatchData): void {
         const options = this.configuration.options;
+
         const selectionClipboardIsOn = (platform.isLinux && options.get(EditorOption.selectionClipboard));
+
         const columnSelection = options.get(EditorOption.columnSelection);
+
         if (data.middleButton && !selectionClipboardIsOn) {
             this._columnSelect(data.position, data.mouseColumn, data.inSelectionMode);
         }
@@ -206,6 +217,7 @@ export class ViewController {
     }
     private _usualArgs(viewPosition: Position, revealType: NavigationCommandRevealType): CoreNavigationCommands.MoveCommandOptions {
         viewPosition = this._validateViewColumn(viewPosition);
+
         return {
             source: 'mouse',
             position: this._convertViewToModelPosition(viewPosition),

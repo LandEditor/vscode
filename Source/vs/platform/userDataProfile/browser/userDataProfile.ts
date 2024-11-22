@@ -13,6 +13,7 @@ import { DidChangeProfilesEvent, IUserDataProfile, IUserDataProfilesService, rev
 type BroadcastedProfileChanges = UriDto<Omit<DidChangeProfilesEvent, 'all'>>;
 export class BrowserUserDataProfilesService extends UserDataProfilesService implements IUserDataProfilesService {
     private readonly changesBroadcastChannel: BroadcastDataChannel<BroadcastedProfileChanges>;
+
     constructor(
     @IEnvironmentService
     environmentService: IEnvironmentService, 
@@ -27,8 +28,11 @@ export class BrowserUserDataProfilesService extends UserDataProfilesService impl
         this._register(this.changesBroadcastChannel.onDidReceiveData(changes => {
             try {
                 this._profilesObject = undefined;
+
                 const added = changes.added.map(p => reviveProfile(p, this.profilesHome.scheme));
+
                 const removed = changes.removed.map(p => reviveProfile(p, this.profilesHome.scheme));
+
                 const updated = changes.updated.map(p => reviveProfile(p, this.profilesHome.scheme));
                 this.updateTransientProfiles(added.filter(a => a.isTransient), removed.filter(a => a.isTransient), updated.filter(a => a.isTransient));
                 this._onDidChangeProfiles.fire({
@@ -48,6 +52,7 @@ export class BrowserUserDataProfilesService extends UserDataProfilesService impl
         if (removed.length || updated.length) {
             const allTransientProfiles = this.transientProfilesObject.profiles;
             this.transientProfilesObject.profiles = [];
+
             for (const profile of allTransientProfiles) {
                 if (removed.some(p => profile.id === p.id)) {
                     continue;
@@ -59,6 +64,7 @@ export class BrowserUserDataProfilesService extends UserDataProfilesService impl
     protected override getStoredProfiles(): StoredUserDataProfile[] {
         try {
             const value = localStorage.getItem(UserDataProfilesService.PROFILES_KEY);
+
             if (value) {
                 return revive(JSON.parse(value));
             }
@@ -79,6 +85,7 @@ export class BrowserUserDataProfilesService extends UserDataProfilesService impl
     protected override getStoredProfileAssociations(): StoredProfileAssociations {
         try {
             const value = localStorage.getItem(UserDataProfilesService.PROFILE_ASSOCIATIONS_KEY);
+
             if (value) {
                 return JSON.parse(value);
             }

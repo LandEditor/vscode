@@ -77,6 +77,7 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 			return [];
 		}
 		const colorDetector = ColorDetector.get(this._editor);
+
 		if (!colorDetector) {
 			return [];
 		}
@@ -86,8 +87,10 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 			}
 
 			const colorData = colorDetector.getColorData(d.range.getStartPosition());
+
 			if (colorData) {
 				const colorHover = ColorHover.fromBaseColor(this, await createColorHover(this._editor.getModel(), colorData.colorInfo, colorData.provider));
+
 				return [colorHover];
 			}
 
@@ -97,11 +100,14 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 
 	private _isValidRequest(source: HoverStartSource): boolean {
 		const decoratorActivatedOn = this._editor.getOption(EditorOption.colorDecoratorsActivatedOn);
+
 		switch (source) {
 			case HoverStartSource.Mouse:
 				return decoratorActivatedOn === 'hover' || decoratorActivatedOn === 'clickAndHover';
+
 			case HoverStartSource.Click:
 				return decoratorActivatedOn === 'click' || decoratorActivatedOn === 'clickAndHover';
+
 			case HoverStartSource.Keyboard:
 				return true;
 		}
@@ -109,6 +115,7 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 
 	public renderHoverParts(context: IEditorHoverRenderContext, hoverParts: ColorHover[]): IRenderedHoverParts<ColorHover> {
 		const editor = this._editor;
+
 		if (hoverParts.length === 0 || !editor.hasModel()) {
 			return new RenderedHoverParts([]);
 		}
@@ -118,12 +125,16 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 		}
 
 		const disposables = new DisposableStore();
+
 		const colorHover = hoverParts[0];
+
 		const editorModel = editor.getModel();
+
 		const model = colorHover.model;
 		this._colorPicker = disposables.add(new ColorPickerWidget(context.fragment, model, editor.getOption(EditorOption.pixelRatio), this._themeService, ColorPickerWidgetType.Hover));
 
 		let editorUpdatedByColorPicker = false;
+
 		let range = new Range(colorHover.range.startLineNumber, colorHover.range.startColumn, colorHover.range.endLineNumber, colorHover.range.endColumn);
 
 		disposables.add(model.onColorFlushed(async (color: Color) => {
@@ -142,11 +153,13 @@ export class HoverColorPickerParticipant implements IEditorHoverParticipant<Colo
 				editor.focus();
 			}
 		}));
+
 		const renderedHoverPart: IRenderedHoverPart<ColorHover> = {
 			hoverPart: ColorHover.fromBaseColor(this, colorHover),
 			hoverElement: this._colorPicker.domNode,
 			dispose() { disposables.dispose(); }
 		};
+
 		return new RenderedHoverParts([renderedHoverPart]);
 	}
 

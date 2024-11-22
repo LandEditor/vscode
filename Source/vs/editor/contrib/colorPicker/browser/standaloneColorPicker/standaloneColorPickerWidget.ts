@@ -34,6 +34,7 @@ class StandaloneColorPickerResult {
 }
 
 const PADDING = 8;
+
 const CLOSE_BUTTON_WIDTH = 22;
 
 export class StandaloneColorPickerWidget extends Disposable implements IContentWidget {
@@ -65,7 +66,9 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		this._standaloneColorPickerVisible.set(true);
 		this._standaloneColorPickerParticipant = _instantiationService.createInstance(StandaloneColorPickerParticipant, this._editor);
 		this._position = this._editor._getViewModel()?.getPrimaryCursorState().modelState.position;
+
 		const editorSelection = this._editor.getSelection();
+
 		const selection = editorSelection ?
 			{
 				startLineNumber: editorSelection.startLineNumber,
@@ -73,6 +76,7 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 				endLineNumber: editorSelection.endLineNumber,
 				endColumn: editorSelection.endColumn
 			} : { startLineNumber: 0, endLineNumber: 0, endColumn: 0, startColumn: 0 };
+
 		const focusTracker = this._register(dom.trackFocus(this._body));
 		this._register(focusTracker.onDidBlur(_ => {
 			this.hide();
@@ -91,6 +95,7 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		}));
 		this._register(this._editor.onMouseMove((e) => {
 			const classList = e.target.element?.classList;
+
 			if (classList && classList.contains('colorpicker-color-decoration')) {
 				this.hide();
 			}
@@ -122,6 +127,7 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 			return null;
 		}
 		const positionPreference = this._editor.getOption(EditorOption.hover).above;
+
 		return {
 			position: this._position,
 			secondaryPosition: this._position,
@@ -145,6 +151,7 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 
 	private async _start(selection: IRange) {
 		const computeAsyncResult = await this._computeAsync(selection);
+
 		if (!computeAsyncResult) {
 			return;
 		}
@@ -159,7 +166,9 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 			range: range,
 			color: { red: 0, green: 0, blue: 0, alpha: 1 }
 		};
+
 		const colorHoverResult: { colorHover: StandaloneColorPickerHover; foundInEditor: boolean } | null = await this._standaloneColorPickerParticipant.createColorHover(colorInfo, new DefaultDocumentColorProvider(this._editorWorkerService), this._languageFeaturesService.colorProvider);
+
 		if (!colorHoverResult) {
 			return null;
 		}
@@ -168,6 +177,7 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 
 	private _render(colorHover: StandaloneColorPickerHover, foundInEditor: boolean) {
 		const fragment = document.createDocumentFragment();
+
 		const statusBar = this._register(new EditorHoverStatusBar(this._keybindingService, this._hoverService));
 
 		const context: IEditorHoverRenderContext = {
@@ -178,11 +188,14 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		};
 
 		this._colorHover = colorHover;
+
 		const renderedHoverPart = this._standaloneColorPickerParticipant.renderHoverParts(context, [colorHover]);
+
 		if (!renderedHoverPart) {
 			return;
 		}
 		this._register(renderedHoverPart.disposables);
+
 		const colorPicker = renderedHoverPart.colorPicker;
 		this._body.classList.add('standalone-colorpicker-body');
 		this._body.style.maxHeight = Math.max(this._editor.getLayoutInfo().height / 4, 250) + 'px';
@@ -192,18 +205,25 @@ export class StandaloneColorPickerWidget extends Disposable implements IContentW
 		colorPicker.layout();
 
 		const colorPickerBody = colorPicker.body;
+
 		const saturationBoxWidth = colorPickerBody.saturationBox.domNode.clientWidth;
+
 		const widthOfOriginalColorBox = colorPickerBody.domNode.clientWidth - saturationBoxWidth - CLOSE_BUTTON_WIDTH - PADDING;
+
 		const enterButton: InsertButton | null = colorPicker.body.enterButton;
 		enterButton?.onClicked(() => {
 			this.updateEditor();
 			this.hide();
 		});
+
 		const colorPickerHeader = colorPicker.header;
+
 		const pickedColorNode = colorPickerHeader.pickedColorNode;
 		pickedColorNode.style.width = saturationBoxWidth + PADDING + 'px';
+
 		const originalColorNode = colorPickerHeader.originalColorNode;
 		originalColorNode.style.width = widthOfOriginalColorBox + 'px';
+
 		const closeButton = colorPicker.header.closeButton;
 		closeButton?.onClicked(() => {
 			this.hide();

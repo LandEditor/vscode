@@ -48,10 +48,12 @@ interface ISerializedWindowState {
 }
 export class WindowsStateHandler extends Disposable {
     private static readonly windowsStateStorageKey = 'windowsState';
+
     get state() { return this._state; }
     private readonly _state = restoreWindowsState(this.stateService.getItem<ISerializedWindowsState>(WindowsStateHandler.windowsStateStorageKey));
     private lastClosedState: IWindowState | undefined = undefined;
     private shuttingDown = false;
+
     constructor(
     @IWindowsMainService
     private readonly windowsMainService: IWindowsMainService, 
@@ -136,6 +138,7 @@ export class WindowsStateHandler extends Disposable {
         // on macOS.
         // https://github.com/electron/electron/issues/34367
         const displaysWithFullScreenWindow = new Set<number | undefined>();
+
         const currentWindowsState: IWindowsState = {
             openedWindows: [],
             lastPluginDevelopmentHostWindow: this._state.lastPluginDevelopmentHostWindow,
@@ -144,11 +147,13 @@ export class WindowsStateHandler extends Disposable {
         // 1.) Find a last active window (pick any other first window otherwise)
         if (!currentWindowsState.lastActiveWindow) {
             let activeWindow = this.windowsMainService.getLastActiveWindow();
+
             if (!activeWindow || activeWindow.isExtensionDevelopmentHost) {
                 activeWindow = this.windowsMainService.getWindows().find(window => !window.isExtensionDevelopmentHost);
             }
             if (activeWindow) {
                 currentWindowsState.lastActiveWindow = this.toWindowState(activeWindow);
+
                 if (currentWindowsState.lastActiveWindow.uiState.mode === WindowMode.Fullscreen) {
                     displaysWithFullScreenWindow.add(currentWindowsState.lastActiveWindow.uiState.display); // always allow fullscreen for active window
                 }
@@ -156,8 +161,10 @@ export class WindowsStateHandler extends Disposable {
         }
         // 2.) Find extension host window
         const extensionHostWindow = this.windowsMainService.getWindows().find(window => window.isExtensionDevelopmentHost && !window.isExtensionTestHost);
+
         if (extensionHostWindow) {
             currentWindowsState.lastPluginDevelopmentHostWindow = this.toWindowState(extensionHostWindow);
+
             if (currentWindowsState.lastPluginDevelopmentHostWindow.uiState.mode === WindowMode.Fullscreen) {
                 if (displaysWithFullScreenWindow.has(currentWindowsState.lastPluginDevelopmentHostWindow.uiState.display)) {
                     if (isMacintosh && !extensionHostWindow.win?.isSimpleFullScreen()) {
@@ -177,6 +184,7 @@ export class WindowsStateHandler extends Disposable {
         if (this.windowsMainService.getWindowCount() > 1) {
             currentWindowsState.openedWindows = this.windowsMainService.getWindows().filter(window => !window.isExtensionDevelopmentHost).map(window => {
                 const windowState = this.toWindowState(window);
+
                 if (windowState.uiState.mode === WindowMode.Fullscreen) {
                     if (displaysWithFullScreenWindow.has(windowState.uiState.display)) {
                         if (isMacintosh && windowState.windowId !== currentWindowsState.lastActiveWindow?.windowId && !window.win?.isSimpleFullScreen()) {
@@ -193,6 +201,7 @@ export class WindowsStateHandler extends Disposable {
         // Persist
         const state = getWindowsStateStoreData(currentWindowsState);
         this.stateService.setItem(WindowsStateHandler.windowsStateStorageKey, state);
+
         if (this.shuttingDown) {
             this.logService.trace('[WindowsStateHandler] onBeforeShutdown', state);
         }
@@ -204,6 +213,7 @@ export class WindowsStateHandler extends Disposable {
         }
         // On Window close, update our stored UI state of this window
         const state: IWindowState = this.toWindowState(window);
+
         if (window.isExtensionDevelopmentHost && !window.isExtensionTestHost) {
             this._state.lastPluginDevelopmentHostWindow = state; // do not let test run window state overwrite our extension development state
         }
@@ -211,7 +221,9 @@ export class WindowsStateHandler extends Disposable {
         else if (!window.isExtensionDevelopmentHost && window.openedWorkspace) {
             this._state.openedWindows.forEach(openedWindow => {
                 const sameWorkspace = isWorkspaceIdentifier(window.openedWorkspace) && openedWindow.workspace?.id === window.openedWorkspace.id;
+
                 const sameFolder = isSingleFolderWorkspaceIdentifier(window.openedWorkspace) && openedWindow.folderUri && extUriBiasedIgnorePathCase.isEqual(openedWindow.folderUri, window.openedWorkspace.uri);
+
                 if (sameWorkspace || sameFolder) {
                     openedWindow.uiState = state.uiState;
                 }
@@ -237,11 +249,13 @@ export class WindowsStateHandler extends Disposable {
     }
     getNewWindowState(configuration: INativeWindowConfiguration): INewWindowState {
         const state = this.doGetNewWindowState(configuration);
+
         const windowConfig = this.configurationService.getValue<IWindowSettings | undefined>('window');
         // Fullscreen state gets special treatment
         if (state.mode === WindowMode.Fullscreen) {
             // Window state is not from a previous session: only allow fullscreen if we inherit it or user wants fullscreen
             let allowFullscreen: boolean;
+
             if (state.hasDefaultState) {
                 allowFullscreen = !!(windowConfig?.newWindowDimensions && ['fullscreen', 'inherit', 'offset'].indexOf(windowConfig.newWindowDimensions) >= 0);
             }
@@ -265,8 +279,10 @@ export class WindowsStateHandler extends Disposable {
             }
             // Known Workspace - load from stored settings
             const workspace = configuration.workspace;
+
             if (isWorkspaceIdentifier(workspace)) {
                 const stateForWorkspace = this.state.openedWindows.filter(openedWindow => openedWindow.workspace && openedWindow.workspace.id === workspace.id).map(openedWindow => openedWindow.uiState);
+
                 if (stateForWorkspace.length) {
                     return stateForWorkspace[0];
                 }
@@ -274,6 +290,7 @@ export class WindowsStateHandler extends Disposable {
             // Known Folder - load from stored settings
             if (isSingleFolderWorkspaceIdentifier(workspace)) {
                 const stateForFolder = this.state.openedWindows.filter(openedWindow => openedWindow.folderUri && extUriBiasedIgnorePathCase.isEqual(openedWindow.folderUri, workspace.uri)).map(openedWindow => openedWindow.uiState);
+
                 if (stateForFolder.length) {
                     return stateForFolder[0];
                 }
@@ -281,12 +298,14 @@ export class WindowsStateHandler extends Disposable {
             // Empty windows with backups
             else if (configuration.backupPath) {
                 const stateForEmptyWindow = this.state.openedWindows.filter(openedWindow => openedWindow.backupPath === configuration.backupPath).map(openedWindow => openedWindow.uiState);
+
                 if (stateForEmptyWindow.length) {
                     return stateForEmptyWindow[0];
                 }
             }
             // First Window
             const lastActiveState = this.lastClosedState || this.state.lastActiveWindow;
+
             if (!lastActive && lastActiveState) {
                 return lastActiveState.uiState;
             }
@@ -296,6 +315,7 @@ export class WindowsStateHandler extends Disposable {
         //
         // We want the new window to open on the same display that the last active one is in
         let displayToUse: electron.Display | undefined;
+
         const displays = electron.screen.getAllDisplays();
         // Single Display
         if (displays.length === 1) {
@@ -325,7 +345,9 @@ export class WindowsStateHandler extends Disposable {
         state.y = Math.round(displayToUse.bounds.y + (displayToUse.bounds.height / 2) - (state.height! / 2));
         // Check for newWindowDimensions setting and adjust accordingly
         const windowConfig = this.configurationService.getValue<IWindowSettings | undefined>('window');
+
         let ensureNoOverlap = true;
+
         if (windowConfig?.newWindowDimensions) {
             if (windowConfig.newWindowDimensions === 'maximized') {
                 state.mode = WindowMode.Maximized;
@@ -337,6 +359,7 @@ export class WindowsStateHandler extends Disposable {
             }
             else if ((windowConfig.newWindowDimensions === 'inherit' || windowConfig.newWindowDimensions === 'offset') && lastActive) {
                 const lastActiveState = lastActive.serializeWindowState();
+
                 if (lastActiveState.mode === WindowMode.Fullscreen) {
                     state.mode = WindowMode.Fullscreen; // only take mode (fixes https://github.com/microsoft/vscode/issues/19331)
                 }
@@ -361,7 +384,9 @@ export class WindowsStateHandler extends Disposable {
         }
         state.x = typeof state.x === 'number' ? state.x : 0;
         state.y = typeof state.y === 'number' ? state.y : 0;
+
         const existingWindowBounds = this.windowsMainService.getWindows().map(window => window.getBounds());
+
         while (existingWindowBounds.some(bounds => bounds.x === state.x || bounds.y === state.y)) {
             state.x += 30;
             state.y += 30;
@@ -371,7 +396,9 @@ export class WindowsStateHandler extends Disposable {
 }
 export function restoreWindowsState(data: ISerializedWindowsState | undefined): IWindowsState {
     const result: IWindowsState = { openedWindows: [] };
+
     const windowsState = data || { openedWindows: [] };
+
     if (windowsState.lastActiveWindow) {
         result.lastActiveWindow = restoreWindowState(windowsState.lastActiveWindow);
     }
@@ -385,6 +412,7 @@ export function restoreWindowsState(data: ISerializedWindowsState | undefined): 
 }
 function restoreWindowState(windowState: ISerializedWindowState): IWindowState {
     const result: IWindowState = { uiState: windowState.uiState };
+
     if (windowState.backupPath) {
         result.backupPath = windowState.backupPath;
     }

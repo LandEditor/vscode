@@ -9,6 +9,7 @@ import { DiffEditorOptions } from '../diffEditorOptions.js';
 export class SashLayout {
     public readonly sashLeft = derivedWithSetter(this, reader => {
         const ratio = this._sashRatio.read(reader) ?? this._options.splitViewDefaultRatio.read(reader);
+
         return this._computeSashLeft(ratio, reader);
     }, (value, tx) => {
         const contentWidth = this.dimensions.width.get();
@@ -26,9 +27,13 @@ export class SashLayout {
     /** @pure */
     private _computeSashLeft(desiredRatio: number, reader: IReader | undefined): number {
         const contentWidth = this.dimensions.width.read(reader);
+
         const midPoint = Math.floor(this._options.splitViewDefaultRatio.read(reader) * contentWidth);
+
         const sashLeft = this._options.enableSplitViewResizing.read(reader) ? Math.floor(desiredRatio * contentWidth) : midPoint;
+
         const MINIMUM_EDITOR_WIDTH = 100;
+
         if (contentWidth <= MINIMUM_EDITOR_WIDTH * 2) {
             return midPoint;
         }
@@ -48,6 +53,7 @@ export class DiffEditorSash extends Disposable {
         getVerticalSashHeight: (_sash: Sash): number => this._dimensions.height.get(),
     }, { orientation: Orientation.VERTICAL }));
     private _startSashPosition: number | undefined = undefined;
+
     constructor(private readonly _domNode: HTMLElement, private readonly _dimensions: {
         height: IObservable<number>;
         width: IObservable<number>;
@@ -63,6 +69,7 @@ export class DiffEditorSash extends Disposable {
         this._register(this._sash.onDidReset(() => this._resetSash()));
         this._register(autorun(reader => {
             const sashes = this._boundarySashes.read(reader);
+
             if (sashes) {
                 this._sash.orthogonalEndSash = sashes.bottom;
             }

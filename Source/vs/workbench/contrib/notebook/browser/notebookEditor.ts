@@ -48,6 +48,7 @@ import { INotebookEditorWorkerService } from '../common/services/notebookWorkerS
 import { IPreferencesService } from '../../../services/preferences/common/preferences.js';
 import { IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
+
 const NOTEBOOK_EDITOR_VIEW_STATE_PREFERENCE_KEY = 'NotebookEditorViewState';
 export class NotebookEditor extends EditorPane implements INotebookEditorPane, IEditorPaneWithScrolling {
     static readonly ID: string = NOTEBOOK_EDITOR_ID;
@@ -72,6 +73,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     readonly onDidChangeSelection = this._onDidChangeSelection.event;
     protected readonly _onDidChangeScroll = this._register(new Emitter<void>());
     readonly onDidChangeScroll = this._onDidChangeScroll.event;
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -153,6 +155,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     override setVisible(visible: boolean): void {
         super.setVisible(visible);
+
         if (!visible) {
             this._widget.value?.onWillHide();
         }
@@ -166,8 +169,10 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                 this._widget?.value?.updateEditorFocus();
             }
         }));
+
         if (!visible) {
             this._saveEditorViewState(this.input);
+
             if (this.input && this._widget.value) {
                 // the widget is not transfered to other editor inputs
                 this._widget.value.onWillHide();
@@ -180,6 +185,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     override hasFocus(): boolean {
         const value = this._widget.value;
+
         if (!value) {
             return false;
         }
@@ -188,11 +194,13 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     override async setInput(input: NotebookEditorInput, options: INotebookEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken, noRetry?: boolean): Promise<void> {
         try {
             let perfMarksCaptured = false;
+
             const fileOpenMonitor = timeout(10000);
             fileOpenMonitor.then(() => {
                 perfMarksCaptured = true;
                 this._handlePerfMark(perf, input);
             });
+
             const perf = new NotebookPerfMarks();
             perf.mark('startTime');
             this._inputListener.value = input.onDidChangeCapabilities(() => this._onDidChangeInputCapabilities(input));
@@ -201,18 +209,21 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
             // we need to hide it before getting a new widget
             this._widget.value?.onWillHide();
             this._widget = <IBorrowValue<NotebookEditorWidget>>this._instantiationService.invokeFunction(this._notebookWidgetService.retrieveWidget, this.group.id, input, undefined, this._pagePosition?.dimension, this.window);
+
             if (this._rootElement && this._widget.value!.getDomNode()) {
                 this._rootElement.setAttribute('aria-flowto', this._widget.value!.getDomNode().id || '');
                 DOM.setParentFlowTo(this._widget.value!.getDomNode(), this._rootElement);
             }
             this._widgetDisposableStore.add(this._widget.value!.onDidChangeModel(() => this._onDidChangeModel.fire()));
             this._widgetDisposableStore.add(this._widget.value!.onDidChangeActiveCell(() => this._onDidChangeSelection.fire({ reason: EditorPaneSelectionChangeReason.USER })));
+
             if (this._pagePosition) {
                 this._widget.value!.layout(this._pagePosition.dimension, this._rootElement, this._pagePosition.position);
             }
             // only now `setInput` and yield/await. this is AFTER the actual widget is ready. This is very important
             // so that others synchronously receive a notebook editor with the correct widget being set
             await super.setInput(input, options, context, token);
+
             const model = await input.resolve(options, perf);
             perf.mark('inputLoaded');
             // Check for cancellation
@@ -230,11 +241,14 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
             }
             if (model === null) {
                 const knownProvider = this._notebookService.getViewTypeProvider(input.viewType);
+
                 if (!knownProvider) {
                     throw new Error(localize('fail.noEditor', "Cannot open resource with notebook editor type '{0}', please check if you have the right extension installed and enabled.", input.viewType));
                 }
                 await this._extensionsWorkbenchService.whenInitialized;
+
                 const extensionInfo = this._extensionsWorkbenchService.local.find(e => e.identifier.id === knownProvider);
+
                 throw createEditorOpenError(new Error(localize('fail.noEditor.extensionMissing', "Cannot open resource with notebook editor type '{0}', please check if you have the right extension installed and enabled.", input.viewType)), [
                     toAction({
                         id: 'workbench.notebook.action.installOrEnableMissing', label: extensionInfo
@@ -248,7 +262,9 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                                     d.dispose();
                                 }
                             });
+
                             const extensionInfo = this._extensionsWorkbenchService.local.find(e => e.identifier.id === knownProvider);
+
                             try {
                                 if (extensionInfo) {
                                     await this._extensionsWorkbenchService.setEnablement(extensionInfo, extensionInfo.enablementState === EnablementState.DisabledWorkspace ? EnablementState.EnabledWorkspace : EnablementState.EnabledGlobally);
@@ -266,6 +282,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                     toAction({
                         id: 'workbench.notebook.action.openAsText', label: localize('notebookOpenAsText', "Open As Text"), run: async () => {
                             const backup = await this._workingCopyBackupService.resolve({ resource: input.resource, typeId: NotebookWorkingCopyTypeIdentifier.create(input.viewType) });
+
                             if (backup) {
                                 // with a backup present, we must resort to opening the backup contents
                                 // as untitled text file to not show the wrong data to the user
@@ -281,11 +298,13 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                 ], { allowDialog: true });
             }
             this._widgetDisposableStore.add(model.notebook.onDidChangeContent(() => this._onDidChangeSelection.fire({ reason: EditorPaneSelectionChangeReason.EDIT })));
+
             const viewState = options?.viewState ?? this._loadNotebookEditorViewState(input);
             // We might be moving the notebook widget between groups, and these services are tied to the group
             this._widget.value.setParentContextKeyService(this._contextKeyService);
             this._widget.value.setEditorProgressService(this._editorProgressService);
             await this._widget.value.setModel(model.notebook, viewState, perf);
+
             const isReadOnly = !!input.isReadonly();
             await this._widget.value.setOptions({ ...options, isReadOnly });
             this._widgetDisposableStore.add(this._widget.value.onDidFocusWidget(() => this._onDidFocusWidget.fire()));
@@ -296,6 +315,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
             this._widgetDisposableStore.add(this._widget.value.onDidScroll(() => { this._onDidChangeScroll.fire(); }));
             perf.mark('editorLoaded');
             fileOpenMonitor.cancel();
+
             if (perfMarksCaptured) {
                 return;
             }
@@ -304,12 +324,14 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
         }
         catch (e) {
             this.logService.warn('NotebookEditorWidget#setInput failed', e);
+
             if (isEditorOpenError(e)) {
                 throw e;
             }
             // Handle case where a file is too large to open without confirmation
             if ((<FileOperationError>e).fileOperationResult === FileOperationResult.FILE_TOO_LARGE) {
                 let message: string;
+
                 if (e instanceof TooLargeFileOperationError) {
                     message = localize('notebookTooLargeForHeapErrorWithSize', "The notebook is not displayed in the notebook editor because it is very large ({0}).", ByteSize.formatSize(e.size));
                 }
@@ -322,10 +344,12 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                 toAction({
                     id: 'workbench.notebook.action.openInTextEditor', label: localize('notebookOpenInTextEditor', "Open in Text Editor"), run: async () => {
                         const activeEditorPane = this._editorService.activeEditorPane;
+
                         if (!activeEditorPane) {
                             return;
                         }
                         const activeEditorResource = EditorResourceAccessor.getCanonicalUri(activeEditorPane.input);
+
                         if (!activeEditorResource) {
                             return;
                         }
@@ -343,6 +367,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
                     }
                 })
             ], { allowDialog: true });
+
             throw error;
         }
     }
@@ -444,19 +469,32 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
             markdownLength: number | undefined;
             notebookStatsLoaded: number | undefined;
         };
+
         const startTime = perfMarks['startTime'];
+
         const extensionActivated = perfMarks['extensionActivated'];
+
         const inputLoaded = perfMarks['inputLoaded'];
+
         const webviewCommLoaded = perfMarks['webviewCommLoaded'];
+
         const customMarkdownLoaded = perfMarks['customMarkdownLoaded'];
+
         const editorLoaded = perfMarks['editorLoaded'];
+
         let extensionActivationTimespan = -1;
+
         let inputLoadingTimespan = -1;
+
         let webviewCommLoadingTimespan = -1;
+
         let customMarkdownLoadingTimespan = -1;
+
         let editorLoadingTimespan = -1;
+
         if (startTime !== undefined && extensionActivated !== undefined) {
             extensionActivationTimespan = extensionActivated - startTime;
+
             if (inputLoaded !== undefined) {
                 inputLoadingTimespan = inputLoaded - extensionActivated;
             }
@@ -472,14 +510,22 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
         }
         // Notebook information
         let codeCellCount: number | undefined = undefined;
+
         let mdCellCount: number | undefined = undefined;
+
         let outputCount: number | undefined = undefined;
+
         let outputBytes: number | undefined = undefined;
+
         let codeLength: number | undefined = undefined;
+
         let markdownLength: number | undefined = undefined;
+
         let notebookStatsLoaded: number | undefined = undefined;
+
         if (notebook) {
             const stopWatch = new StopWatch();
+
             for (const cell of notebook.cells) {
                 if (cell.cellKind === CellKind.Code) {
                     codeCellCount = (codeCellCount || 0) + 1;
@@ -534,6 +580,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     override clearInput(): void {
         this._inputListener.clear();
+
         if (this._widget.value) {
             this._saveEditorViewState(this.input);
             this._widget.value.onWillHide();
@@ -542,25 +589,31 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     override setOptions(options: INotebookEditorOptions | undefined): void {
         this._widget.value?.setOptions(options);
+
         super.setOptions(options);
     }
     protected override saveState(): void {
         this._saveEditorViewState(this.input);
+
         super.saveState();
     }
     override getViewState(): INotebookEditorViewState | undefined {
         const input = this.input;
+
         if (!(input instanceof NotebookEditorInput)) {
             return undefined;
         }
         this._saveEditorViewState(input);
+
         return this._loadNotebookEditorViewState(input);
     }
     getSelection(): IEditorPaneSelection | undefined {
         if (this._widget.value) {
             const activeCell = this._widget.value.getActiveCell();
+
             if (activeCell) {
                 const cellUri = activeCell.uri;
+
                 return new NotebookEditorSelection(cellUri, activeCell.getSelections());
             }
         }
@@ -568,6 +621,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     getScrollPosition(): IEditorPaneScrollPosition {
         const widget = this.getControl();
+
         if (!widget) {
             throw new Error('Notebook widget has not yet been initialized');
         }
@@ -578,6 +632,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     setScrollPosition(scrollPosition: IEditorPaneScrollPosition): void {
         const editor = this.getControl();
+
         if (!editor) {
             throw new Error('Control has not yet been initialized');
         }
@@ -594,6 +649,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
     }
     private _loadNotebookEditorViewState(input: NotebookEditorInput): INotebookEditorViewState | undefined {
         const result = this._editorMemento.loadEditorState(this.group, input.resource);
+
         if (result) {
             return result;
         }
@@ -610,6 +666,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
         this._rootElement.classList.toggle('mid-width', dimension.width < 1000 && dimension.width >= 600);
         this._rootElement.classList.toggle('narrow-width', dimension.width < 600);
         this._pagePosition = { dimension, position };
+
         if (!this._widget.value || !(this.input instanceof NotebookEditorInput)) {
             return;
         }
@@ -648,6 +705,7 @@ class NotebookEditorSelection implements IEditorPaneSelection {
             }
         };
         Object.assign(notebookOptions, options);
+
         return notebookOptions;
     }
     log(): string {

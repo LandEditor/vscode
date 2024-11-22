@@ -116,15 +116,19 @@ function isThreadContext(obj: any): obj is CallStackContext {
 }
 async function getThreadAndRun(accessor: ServicesAccessor, sessionAndThreadId: CallStackContext | unknown, run: (thread: IThread) => Promise<void>): Promise<void> {
     const debugService = accessor.get(IDebugService);
+
     let thread: IThread | undefined;
+
     if (isThreadContext(sessionAndThreadId)) {
         const session = debugService.getModel().getSession(sessionAndThreadId.sessionId);
+
         if (session) {
             thread = session.getAllThreads().find(t => t.getId() === sessionAndThreadId.threadId);
         }
     }
     else if (isSessionContext(sessionAndThreadId)) {
         const session = debugService.getModel().getSession(sessionAndThreadId.sessionId);
+
         if (session) {
             const threads = session.getAllThreads();
             thread = threads.length > 0 ? threads[0] : undefined;
@@ -132,8 +136,10 @@ async function getThreadAndRun(accessor: ServicesAccessor, sessionAndThreadId: C
     }
     if (!thread) {
         thread = debugService.getViewModel().focusedThread;
+
         if (!thread) {
             const focusedSession = debugService.getViewModel().focusedSession;
+
             const threads = focusedSession ? focusedSession.getAllThreads() : undefined;
             thread = threads && threads.length ? threads[0] : undefined;
         }
@@ -148,8 +154,10 @@ function isStackFrameContext(obj: any): obj is CallStackContext {
 function getFrame(debugService: IDebugService, context: CallStackContext | unknown): IStackFrame | undefined {
     if (isStackFrameContext(context)) {
         const session = debugService.getModel().getSession(context.sessionId);
+
         if (session) {
             const thread = session.getAllThreads().find(t => t.getId() === context.threadId);
+
             if (thread) {
                 return thread.getCallStack().find(sf => sf.getId() === context.frameId);
             }
@@ -165,16 +173,22 @@ function isSessionContext(obj: any): obj is CallStackContext {
 }
 async function changeDebugConsoleFocus(accessor: ServicesAccessor, next: boolean) {
     const debugService = accessor.get(IDebugService);
+
     const viewsService = accessor.get(IViewsService);
+
     const sessions = debugService.getModel().getSessions(true).filter(s => s.hasSeparateRepl());
+
     let currSession = debugService.getViewModel().focusedSession;
+
     let nextIndex = 0;
+
     if (sessions.length > 0 && currSession) {
         while (currSession && !currSession.hasSeparateRepl()) {
             currSession = currSession.parentSession;
         }
         if (currSession) {
             const currIndex = sessions.indexOf(currSession);
+
             if (next) {
                 nextIndex = (currIndex === (sessions.length - 1) ? 0 : (currIndex + 1));
             }
@@ -184,20 +198,26 @@ async function changeDebugConsoleFocus(accessor: ServicesAccessor, next: boolean
         }
     }
     await debugService.focusStackFrame(undefined, undefined, sessions[nextIndex], { explicit: true });
+
     if (!viewsService.isViewVisible(REPL_VIEW_ID)) {
         await viewsService.openView(REPL_VIEW_ID, true);
     }
 }
 async function navigateCallStack(debugService: IDebugService, down: boolean) {
     const frame = debugService.getViewModel().focusedStackFrame;
+
     if (frame) {
         let callStack = frame.thread.getCallStack();
+
         let index = callStack.findIndex(elem => elem.frameId === frame.frameId);
+
         let nextVisibleFrame;
+
         if (down) {
             if (index >= callStack.length - 1) {
                 if ((<Thread>frame.thread).reachedEndOfCallStack) {
                     goToTopOfCallStack(debugService);
+
                     return;
                 }
                 else {
@@ -211,6 +231,7 @@ async function navigateCallStack(debugService: IDebugService, down: boolean) {
         else {
             if (index <= 0) {
                 goToBottomOfCallStack(debugService);
+
                 return;
             }
             nextVisibleFrame = findNextVisibleFrame(false, callStack, index);
@@ -222,9 +243,12 @@ async function navigateCallStack(debugService: IDebugService, down: boolean) {
 }
 async function goToBottomOfCallStack(debugService: IDebugService) {
     const thread = debugService.getViewModel().focusedThread;
+
     if (thread) {
         await debugService.getModel().fetchCallstack(thread);
+
         const callStack = thread.getCallStack();
+
         if (callStack.length > 0) {
             const nextVisibleFrame = findNextVisibleFrame(false, callStack, 0); // must consider the next frame up first, which will be the last frame
             if (nextVisibleFrame) {
@@ -235,6 +259,7 @@ async function goToBottomOfCallStack(debugService: IDebugService) {
 }
 function goToTopOfCallStack(debugService: IDebugService) {
     const thread = debugService.getViewModel().focusedThread;
+
     if (thread) {
         debugService.focusStackFrame(thread.getTopStackFrame(), undefined, undefined, { preserveFocus: false });
     }
@@ -254,7 +279,9 @@ function findNextVisibleFrame(down: boolean, callStack: readonly IStackFrame[], 
         startIndex = 0;
     }
     let index = startIndex;
+
     let currFrame;
+
     do {
         if (down) {
             if (index === callStack.length - 1) {
@@ -273,6 +300,7 @@ function findNextVisibleFrame(down: boolean, callStack: readonly IStackFrame[], 
             }
         }
         currFrame = callStack[index];
+
         if (!isFrameDeemphasized(currFrame)) {
             return currFrame;
         }
@@ -287,9 +315,13 @@ CommandsRegistry.registerCommand({
     id: COPY_STACK_TRACE_ID,
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const textResourcePropertiesService = accessor.get(ITextResourcePropertiesService);
+
         const clipboardService = accessor.get(IClipboardService);
+
         const debugService = accessor.get(IDebugService);
+
         const frame = getFrame(debugService, context);
+
         if (frame) {
             const eol = textResourcePropertiesService.getEOL(frame.source.uri);
             await clipboardService.writeText(frame.thread.getCallStack().map(sf => sf.toString()).join(eol));
@@ -306,6 +338,7 @@ CommandsRegistry.registerCommand({
     id: STEP_BACK_ID,
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         if (CONTEXT_DISASSEMBLY_VIEW_FOCUS.getValue(contextKeyService)) {
             await getThreadAndRun(accessor, context, (thread: IThread) => thread.stepBack('instruction'));
         }
@@ -324,23 +357,37 @@ CommandsRegistry.registerCommand({
     id: JUMP_TO_CURSOR_ID,
     handler: async (accessor: ServicesAccessor) => {
         const debugService = accessor.get(IDebugService);
+
         const stackFrame = debugService.getViewModel().focusedStackFrame;
+
         const editorService = accessor.get(IEditorService);
+
         const activeEditorControl = editorService.activeTextEditorControl;
+
         const notificationService = accessor.get(INotificationService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         if (stackFrame && isCodeEditor(activeEditorControl) && activeEditorControl.hasModel()) {
             const position = activeEditorControl.getPosition();
+
             const resource = activeEditorControl.getModel().uri;
+
             const source = stackFrame.thread.session.getSourceForUri(resource);
+
             if (source) {
                 const response = await stackFrame.thread.session.gotoTargets(source.raw, position.lineNumber, position.column);
+
                 const targets = response?.body.targets;
+
                 if (targets && targets.length) {
                     let id = targets[0].id;
+
                     if (targets.length > 1) {
                         const picks = targets.map(t => ({ label: t.label, _id: t.id }));
+
                         const pick = await quickInputService.pick(picks, { placeHolder: nls.localize('chooseLocation', "Choose the specific location") });
+
                         if (!pick) {
                             return;
                         }
@@ -418,8 +465,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: CONTEXT_IN_DEBUG_MODE,
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const debugService = accessor.get(IDebugService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         let session: IDebugSession | undefined;
+
         if (isSessionContext(context)) {
             session = debugService.getModel().getSession(context.sessionId);
         }
@@ -448,6 +498,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: CONTEXT_DEBUG_STATE.isEqualTo('stopped'),
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         if (CONTEXT_DISASSEMBLY_VIEW_FOCUS.getValue(contextKeyService)) {
             await getThreadAndRun(accessor, context, (thread: IThread) => thread.next('instruction'));
         }
@@ -466,6 +517,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: CONTEXT_DEBUG_STATE.notEqualsTo('inactive'),
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         if (CONTEXT_DISASSEMBLY_VIEW_FOCUS.getValue(contextKeyService)) {
             await getThreadAndRun(accessor, context, (thread: IThread) => thread.stepIn('instruction'));
         }
@@ -481,6 +533,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: CONTEXT_DEBUG_STATE.isEqualTo('stopped'),
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         if (CONTEXT_DISASSEMBLY_VIEW_FOCUS.getValue(contextKeyService)) {
             await getThreadAndRun(accessor, context, (thread: IThread) => thread.stepOut('instruction'));
         }
@@ -505,9 +558,13 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     weight: KeybindingWeight.WorkbenchContrib,
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const quickInputService = accessor.get(IQuickInputService);
+
         const debugService = accessor.get(IDebugService);
+
         const session = debugService.getViewModel().focusedSession;
+
         const frame = debugService.getViewModel().focusedStackFrame;
+
         if (!frame || !session) {
             return;
         }
@@ -515,9 +572,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
             resource: frame.source.uri,
             options: { revealIfOpened: true }
         });
+
         let codeEditor: ICodeEditor | undefined;
+
         if (editor) {
             const ctrl = editor?.getControl();
+
             if (isCodeEditor(ctrl)) {
                 codeEditor = ctrl;
             }
@@ -526,6 +586,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
             target: DebugProtocol.StepInTarget;
         }
         const disposables = new DisposableStore();
+
         const qp = disposables.add(quickInputService.createQuickPick<ITargetItem>());
         qp.busy = true;
         qp.show();
@@ -548,6 +609,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         disposables.add(qp.onDidHide(() => disposables.dispose()));
         session.stepInTargets(frame.frameId).then(targets => {
             qp.busy = false;
+
             if (targets?.length) {
                 qp.items = targets?.map(target => ({ target, label: target.label }));
             }
@@ -559,7 +621,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 async function stopHandler(accessor: ServicesAccessor, _: string, context: CallStackContext | unknown, disconnect: boolean, suspend?: boolean): Promise<void> {
     const debugService = accessor.get(IDebugService);
+
     let session: IDebugSession | undefined;
+
     if (isSessionContext(context)) {
         session = debugService.getModel().getSession(context.sessionId);
     }
@@ -567,6 +631,7 @@ async function stopHandler(accessor: ServicesAccessor, _: string, context: CallS
         session = debugService.getViewModel().focusedSession;
     }
     const configurationService = accessor.get(IConfigurationService);
+
     const showSubSessions = configurationService.getValue<IDebugConfiguration>('debug').showSubSessionsInToolBar;
     // Stop should be sent to the root parent session
     while (!showSubSessions && session && session.lifecycleManagedByParent && session.parentSession) {
@@ -596,8 +661,11 @@ CommandsRegistry.registerCommand({
     id: RESTART_FRAME_ID,
     handler: async (accessor: ServicesAccessor, _: string, context: CallStackContext | unknown) => {
         const debugService = accessor.get(IDebugService);
+
         const notificationService = accessor.get(INotificationService);
+
         const frame = getFrame(debugService, context);
+
         if (frame) {
             try {
                 await frame.restart();
@@ -641,13 +709,18 @@ CommandsRegistry.registerCommand({
     id: FOCUS_SESSION_ID,
     handler: async (accessor: ServicesAccessor, session: IDebugSession) => {
         const debugService = accessor.get(IDebugService);
+
         const editorService = accessor.get(IEditorService);
+
         const stoppedChildSession = debugService.getModel().getSessions().find(s => s.parentSession === session && s.state === State.Stopped);
+
         if (stoppedChildSession && session.state !== State.Stopped) {
             session = stoppedChildSession;
         }
         await debugService.focusStackFrame(undefined, undefined, session, { explicit: true });
+
         const stackFrame = debugService.getViewModel().focusedStackFrame;
+
         if (stackFrame) {
             await stackFrame.openInEditor(editorService, true);
         }
@@ -659,16 +732,22 @@ CommandsRegistry.registerCommand({
         noDebug?: boolean;
     }) => {
         const quickInputService = accessor.get(IQuickInputService);
+
         const debugService = accessor.get(IDebugService);
+
         if (debugType) {
             const configManager = debugService.getConfigurationManager();
+
             const dynamicProviders = await configManager.getDynamicProviders();
+
             for (const provider of dynamicProviders) {
                 if (provider.type === debugType) {
                     const pick = await provider.pick();
+
                     if (pick) {
                         await configManager.selectConfiguration(pick.launch, pick.config.name, pick.config, { type: provider.type });
                         debugService.startDebugging(pick.launch, pick.config, { noDebug: debugStartOptions?.noDebug, startedByUser: true });
+
                         return;
                     }
                 }
@@ -701,8 +780,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     }) => {
         const debugService = accessor.get(IDebugService);
         await saveAllBeforeDebugStart(accessor.get(IConfigurationService), accessor.get(IEditorService));
+
         const { launch, name, getConfig } = debugService.getConfigurationManager().selectedConfiguration;
+
         const config = await getConfig();
+
         const configOrName = config ? Object.assign(deepClone(config), debugStartOptions?.config) : name;
         await debugService.startDebugging(launch, configOrName, { noDebug: debugStartOptions?.noDebug, startedByUser: true }, false);
     }
@@ -725,10 +807,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Space,
     handler: (accessor) => {
         const listService = accessor.get(IListService);
+
         const debugService = accessor.get(IDebugService);
+
         const list = listService.lastFocusedList;
+
         if (list instanceof List) {
             const focused = <IEnablement[]>list.getFocusedElements();
+
             if (focused && focused.length) {
                 debugService.enableOrDisableBreakpoints(!focused[0].enabled, focused[0]);
             }
@@ -742,14 +828,20 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: EditorContextKeys.editorTextFocus,
     handler: (accessor) => {
         const debugService = accessor.get(IDebugService);
+
         const editorService = accessor.get(IEditorService);
+
         const control = editorService.activeTextEditorControl;
+
         if (isCodeEditor(control)) {
             const model = control.getModel();
+
             if (model) {
                 const position = control.getPosition();
+
                 if (position) {
                     const bps = debugService.getModel().getBreakpoints({ uri: model.uri, lineNumber: position.lineNumber });
+
                     if (bps.length) {
                         debugService.enableOrDisableBreakpoints(!bps[0].enabled, bps[0]);
                     }
@@ -766,11 +858,15 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     mac: { primary: KeyCode.Enter },
     handler: (accessor: ServicesAccessor, expression: Expression | unknown) => {
         const debugService = accessor.get(IDebugService);
+
         if (!(expression instanceof Expression)) {
             const listService = accessor.get(IListService);
+
             const focused = listService.lastFocusedList;
+
             if (focused) {
                 const elements = focused.getFocus();
+
                 if (Array.isArray(elements) && elements[0] instanceof Expression) {
                     expression = elements[0];
                 }
@@ -785,6 +881,7 @@ CommandsRegistry.registerCommand({
     id: SET_EXPRESSION_COMMAND_ID,
     handler: async (accessor: ServicesAccessor, expression: Expression | unknown) => {
         const debugService = accessor.get(IDebugService);
+
         if (expression instanceof Expression || expression instanceof Variable) {
             debugService.getViewModel().setSelectedExpression(expression, true);
         }
@@ -798,10 +895,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     mac: { primary: KeyCode.Enter },
     handler: (accessor) => {
         const listService = accessor.get(IListService);
+
         const debugService = accessor.get(IDebugService);
+
         const focused = listService.lastFocusedList;
+
         if (focused) {
             const elements = focused.getFocus();
+
             if (Array.isArray(elements) && elements[0] instanceof Variable) {
                 debugService.getViewModel().setSelectedExpression(elements[0], false);
             }
@@ -816,16 +917,22 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     mac: { primary: KeyMod.CtrlCmd | KeyCode.Backspace },
     handler: (accessor: ServicesAccessor, expression: Expression | unknown) => {
         const debugService = accessor.get(IDebugService);
+
         if (expression instanceof Expression) {
             debugService.removeWatchExpressions(expression.getId());
+
             return;
         }
         const listService = accessor.get(IListService);
+
         const focused = listService.lastFocusedList;
+
         if (focused) {
             let elements = focused.getFocus();
+
             if (Array.isArray(elements) && elements[0] instanceof Expression) {
                 const selection = focused.getSelection();
+
                 if (selection && selection.indexOf(elements[0]) >= 0) {
                     elements = selection;
                 }
@@ -842,11 +949,16 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     mac: { primary: KeyMod.CtrlCmd | KeyCode.Backspace },
     handler: (accessor) => {
         const listService = accessor.get(IListService);
+
         const debugService = accessor.get(IDebugService);
+
         const list = listService.lastFocusedList;
+
         if (list instanceof List) {
             const focused = list.getFocusedElements();
+
             const element = focused.length ? focused[0] : undefined;
+
             if (element instanceof Breakpoint) {
                 debugService.removeBreakpoints(element.getId());
             }
@@ -866,7 +978,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: undefined,
     handler: async (accessor, query: string) => {
         const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
         let searchFor = `@category:debuggers`;
+
         if (typeof query === 'string') {
             searchFor += ` ${query}`;
         }
@@ -888,11 +1002,15 @@ registerAction2(class AddConfigurationAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, launchUri: string): Promise<void> {
         const manager = accessor.get(IDebugService).getConfigurationManager();
+
         const launch = manager.getLaunches().find(l => l.uri.toString() === launchUri) || manager.selectedConfiguration.launch;
+
         if (launch) {
             const { editor, created } = await launch.openConfigFile({ preserveFocus: false });
+
             if (editor && !created) {
                 const codeEditor = <ICodeEditor>editor.getControl();
+
                 if (codeEditor) {
                     await codeEditor.getContribution<IDebugEditorContribution>(EDITOR_CONTRIBUTION_ID)?.addLaunchConfiguration();
                 }
@@ -900,16 +1018,23 @@ registerAction2(class AddConfigurationAction extends Action2 {
         }
     }
 });
+
 const inlineBreakpointHandler = (accessor: ServicesAccessor) => {
     const debugService = accessor.get(IDebugService);
+
     const editorService = accessor.get(IEditorService);
+
     const control = editorService.activeTextEditorControl;
+
     if (isCodeEditor(control)) {
         const position = control.getPosition();
+
         if (position && control.hasModel() && debugService.canSetBreakpointsIn(control.getModel())) {
             const modelUri = control.getModel().uri;
+
             const breakpointAlreadySet = debugService.getModel().getBreakpoints({ lineNumber: position.lineNumber, uri: modelUri })
                 .some(bp => (bp.sessionAgnosticData.column === position.column || (!bp.column && position.column <= 1)));
+
             if (!breakpointAlreadySet) {
                 debugService.addBreakpoints(modelUri, [{ lineNumber: position.lineNumber, column: position.column > 1 ? position.column : undefined }]);
             }
@@ -941,9 +1066,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     secondary: [KeyMod.Alt | KeyCode.Enter],
     handler: (accessor) => {
         const listService = accessor.get(IListService);
+
         const list = listService.lastFocusedList;
+
         if (list instanceof List) {
             const focus = list.getFocusedElements();
+
             if (focus.length && focus[0] instanceof Breakpoint) {
                 return openBreakpointSource(focus[0], true, false, true, accessor.get(IDebugService), accessor.get(IEditorService));
             }

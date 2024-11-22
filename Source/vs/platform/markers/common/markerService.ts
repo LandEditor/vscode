@@ -20,14 +20,18 @@ export const unsupportedSchemas = new Set([
 class DoubleResourceMap<V> {
     private _byResource = new ResourceMap<Map<string, V>>();
     private _byOwner = new Map<string, ResourceMap<V>>();
+
     set(resource: URI, owner: string, value: V) {
         let ownerMap = this._byResource.get(resource);
+
         if (!ownerMap) {
             ownerMap = new Map();
             this._byResource.set(resource, ownerMap);
         }
         ownerMap.set(owner, value);
+
         let resourceMap = this._byOwner.get(owner);
+
         if (!resourceMap) {
             resourceMap = new ResourceMap();
             this._byOwner.set(owner, resourceMap);
@@ -36,16 +40,21 @@ class DoubleResourceMap<V> {
     }
     get(resource: URI, owner: string): V | undefined {
         const ownerMap = this._byResource.get(resource);
+
         return ownerMap?.get(owner);
     }
     delete(resource: URI, owner: string): boolean {
         let removedA = false;
+
         let removedB = false;
+
         const ownerMap = this._byResource.get(resource);
+
         if (ownerMap) {
             removedA = ownerMap.delete(owner);
         }
         const resourceMap = this._byOwner.get(owner);
+
         if (resourceMap) {
             removedB = resourceMap.delete(resource);
         }
@@ -72,6 +81,7 @@ class MarkerStats implements MarkerStatistics {
     private readonly _data = new ResourceMap<MarkerStatistics>();
     private readonly _service: IMarkerService;
     private readonly _subscription: IDisposable;
+
     constructor(service: IMarkerService) {
         this._service = service;
         this._subscription = service.onMarkerChanged(this._update, this);
@@ -82,6 +92,7 @@ class MarkerStats implements MarkerStatistics {
     private _update(resources: readonly URI[]): void {
         for (const resource of resources) {
             const oldStats = this._data.get(resource);
+
             if (oldStats) {
                 this._substract(oldStats);
             }
@@ -150,6 +161,7 @@ export class MarkerService implements IMarkerService {
         if (isFalsyOrEmpty(markerData)) {
             // remove marker for this (owner,resource)-tuple
             const removed = this._data.delete(resource, owner);
+
             if (removed) {
                 this._onMarkerChanged.fire([resource]);
             }
@@ -157,8 +169,10 @@ export class MarkerService implements IMarkerService {
         else {
             // insert marker for this (owner,resource)-tuple
             const markers: IMarker[] = [];
+
             for (const data of markerData) {
                 const marker = MarkerService._toMarker(owner, resource, data);
+
                 if (marker) {
                     markers.push(marker);
                 }
@@ -169,6 +183,7 @@ export class MarkerService implements IMarkerService {
     }
     private static _toMarker(owner: string, resource: URI, data: IMarkerData): IMarker | undefined {
         let { code, severity, message, source, startLineNumber, startColumn, endLineNumber, endColumn, relatedInformation, tags, } = data;
+
         if (!message) {
             return undefined;
         }
@@ -177,6 +192,7 @@ export class MarkerService implements IMarkerService {
         startColumn = startColumn > 0 ? startColumn : 1;
         endLineNumber = endLineNumber >= startLineNumber ? endLineNumber : startLineNumber;
         endColumn = endColumn > 0 ? endColumn : startColumn;
+
         return {
             resource,
             owner,
@@ -196,9 +212,11 @@ export class MarkerService implements IMarkerService {
         const changes: URI[] = [];
         // remove old marker
         const existing = this._data.values(owner);
+
         if (existing) {
             for (const data of existing) {
                 const first = Iterable.first(data);
+
                 if (first) {
                     changes.push(first.resource);
                     this._data.delete(first.resource, owner);
@@ -209,13 +227,16 @@ export class MarkerService implements IMarkerService {
         if (isNonEmptyArray(data)) {
             // group by resource
             const groups = new ResourceMap<IMarker[]>();
+
             for (const { resource, marker: markerData } of data) {
                 const marker = MarkerService._toMarker(owner, resource, markerData);
+
                 if (!marker) {
                     // filter bad markers
                     continue;
                 }
                 const array = groups.get(resource);
+
                 if (!array) {
                     groups.set(resource, [marker]);
                     changes.push(resource);
@@ -240,20 +261,24 @@ export class MarkerService implements IMarkerService {
         take?: number;
     } = Object.create(null)): IMarker[] {
         let { owner, resource, severities, take } = filter;
+
         if (!take || take < 0) {
             take = -1;
         }
         if (owner && resource) {
             // exactly one owner AND resource
             const data = this._data.get(resource, owner);
+
             if (!data) {
                 return [];
             }
             else {
                 const result: IMarker[] = [];
+
                 for (const marker of data) {
                     if (MarkerService._accept(marker, severities)) {
                         const newLen = result.push(marker);
+
                         if (take > 0 && newLen === take) {
                             break;
                         }
@@ -265,10 +290,12 @@ export class MarkerService implements IMarkerService {
         else if (!owner && !resource) {
             // all
             const result: IMarker[] = [];
+
             for (const markers of this._data.values()) {
                 for (const data of markers) {
                     if (MarkerService._accept(data, severities)) {
                         const newLen = result.push(data);
+
                         if (take > 0 && newLen === take) {
                             return result;
                         }
@@ -280,11 +307,14 @@ export class MarkerService implements IMarkerService {
         else {
             // of one resource OR owner
             const iterable = this._data.values(resource ?? owner!);
+
             const result: IMarker[] = [];
+
             for (const markers of iterable) {
                 for (const data of markers) {
                     if (MarkerService._accept(data, severities)) {
                         const newLen = result.push(data);
+
                         if (take > 0 && newLen === take) {
                             return result;
                         }
@@ -300,6 +330,7 @@ export class MarkerService implements IMarkerService {
     // --- event debounce logic
     private static _merge(all: (readonly URI[])[]): URI[] {
         const set = new ResourceMap<boolean>();
+
         for (const array of all) {
             for (const item of array) {
                 set.set(item, true);

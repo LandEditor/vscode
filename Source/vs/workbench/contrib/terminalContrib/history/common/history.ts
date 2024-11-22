@@ -77,6 +77,7 @@ export class TerminalPersistedHistory<T> extends Disposable implements ITerminal
 
 	get entries(): IterableIterator<[string, T]> {
 		this._ensureUpToDate();
+
 		return this._entries.entries();
 	}
 
@@ -145,6 +146,7 @@ export class TerminalPersistedHistory<T> extends Disposable implements ITerminal
 
 		// Load global entries plus
 		const serialized = this._loadPersistedState();
+
 		if (serialized) {
 			for (const entry of serialized.entries) {
 				this._entries.set(entry.key, entry.value);
@@ -154,10 +156,12 @@ export class TerminalPersistedHistory<T> extends Disposable implements ITerminal
 
 	private _loadPersistedState(): ISerializedCache<T> | undefined {
 		const raw = this._storageService.get(this._getEntriesStorageKey(), StorageScope.APPLICATION);
+
 		if (raw === undefined || raw.length === 0) {
 			return undefined;
 		}
 		let serialized: ISerializedCache<T> | undefined = undefined;
+
 		try {
 			serialized = JSON.parse(raw);
 		} catch {
@@ -177,6 +181,7 @@ export class TerminalPersistedHistory<T> extends Disposable implements ITerminal
 
 	private _getHistoryLimit() {
 		const historyLimit = this._configurationService.getValue(TerminalHistorySettingId.ShellIntegrationCommandHistory);
+
 		return typeof historyLimit === 'number' ? historyLimit : Constants.DefaultHistoryLimit;
 	}
 
@@ -198,6 +203,7 @@ interface IShellFileHistoryEntry {
 const shellFileHistory: Map<TerminalShellType | undefined, IShellFileHistoryEntry | null> = new Map();
 export async function getShellFileHistory(accessor: ServicesAccessor, shellType: TerminalShellType | undefined): Promise<IShellFileHistoryEntry | undefined> {
 	const cached = shellFileHistory.get(shellType);
+
 	if (cached === null) {
 		return undefined;
 	}
@@ -205,29 +211,42 @@ export async function getShellFileHistory(accessor: ServicesAccessor, shellType:
 		return cached;
 	}
 	let result: IShellFileHistoryEntry | undefined;
+
 	switch (shellType) {
 		case PosixShellType.Bash:
 			result = await fetchBashHistory(accessor);
+
 			break;
+
 		case GeneralShellType.PowerShell:
 			result = await fetchPwshHistory(accessor);
+
 			break;
+
 		case PosixShellType.Zsh:
 			result = await fetchZshHistory(accessor);
+
 			break;
+
 		case PosixShellType.Fish:
 			result = await fetchFishHistory(accessor);
+
 			break;
+
 		case GeneralShellType.Python:
 			result = await fetchPythonHistory(accessor);
+
 			break;
+
 		default: return undefined;
 	}
 	if (result === undefined) {
 		shellFileHistory.set(shellType, null);
+
 		return undefined;
 	}
 	shellFileHistory.set(shellType, result);
+
 	return result;
 }
 export function clearShellFileHistory() {
@@ -236,25 +255,36 @@ export function clearShellFileHistory() {
 
 export async function fetchBashHistory(accessor: ServicesAccessor): Promise<IShellFileHistoryEntry | undefined> {
 	const fileService = accessor.get(IFileService);
+
 	const remoteAgentService = accessor.get(IRemoteAgentService);
+
 	const remoteEnvironment = await remoteAgentService.getEnvironment();
+
 	if (remoteEnvironment?.os === OperatingSystem.Windows || !remoteEnvironment && isWindows) {
 		return undefined;
 	}
 	const sourceLabel = '~/.bash_history';
+
 	const resolvedFile = await fetchFileContents(env['HOME'], '.bash_history', false, fileService, remoteAgentService);
+
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
 	// .bash_history does not differentiate wrapped commands from multiple commands. Parse
 	// the output to get the
 	const fileLines = resolvedFile.content.split('\n');
+
 	const result: Set<string> = new Set();
+
 	let currentLine: string;
+
 	let currentCommand: string | undefined = undefined;
+
 	let wrapChar: string | undefined = undefined;
+
 	for (let i = 0; i < fileLines.length; i++) {
 		currentLine = fileLines[i];
+
 		if (currentCommand === undefined) {
 			currentCommand = currentLine;
 		} else {
@@ -288,21 +318,29 @@ export async function fetchBashHistory(accessor: ServicesAccessor): Promise<IShe
 
 export async function fetchZshHistory(accessor: ServicesAccessor): Promise<IShellFileHistoryEntry | undefined> {
 	const fileService = accessor.get(IFileService);
+
 	const remoteAgentService = accessor.get(IRemoteAgentService);
+
 	const remoteEnvironment = await remoteAgentService.getEnvironment();
+
 	if (remoteEnvironment?.os === OperatingSystem.Windows || !remoteEnvironment && isWindows) {
 		return undefined;
 	}
 
 	const sourceLabel = '~/.zsh_history';
+
 	const resolvedFile = await fetchFileContents(env['HOME'], '.zsh_history', false, fileService, remoteAgentService);
+
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
 	const fileLines = resolvedFile.content.split(/\:\s\d+\:\d+;/);
+
 	const result: Set<string> = new Set();
+
 	for (let i = 0; i < fileLines.length; i++) {
 		const sanitized = fileLines[i].replace(/\\\n/g, '\n').trim();
+
 		if (sanitized.length > 0) {
 			result.add(sanitized);
 		}
@@ -317,9 +355,11 @@ export async function fetchZshHistory(accessor: ServicesAccessor): Promise<IShel
 
 export async function fetchPythonHistory(accessor: ServicesAccessor): Promise<IShellFileHistoryEntry | undefined> {
 	const fileService = accessor.get(IFileService);
+
 	const remoteAgentService = accessor.get(IRemoteAgentService);
 
 	const sourceLabel = '~/.python_history';
+
 	const resolvedFile = await fetchFileContents(env['HOME'], '.python_history', false, fileService, remoteAgentService);
 
 	if (resolvedFile === undefined) {
@@ -328,6 +368,7 @@ export async function fetchPythonHistory(accessor: ServicesAccessor): Promise<IS
 
 	// Python history file is a simple text file with one command per line
 	const fileLines = resolvedFile.content.split('\n');
+
 	const result: Set<string> = new Set();
 
 	fileLines.forEach(line => {
@@ -345,12 +386,19 @@ export async function fetchPythonHistory(accessor: ServicesAccessor): Promise<IS
 
 export async function fetchPwshHistory(accessor: ServicesAccessor): Promise<IShellFileHistoryEntry | undefined> {
 	const fileService: Pick<IFileService, 'readFile'> = accessor.get(IFileService);
+
 	const remoteAgentService: Pick<IRemoteAgentService, 'getConnection' | 'getEnvironment'> = accessor.get(IRemoteAgentService);
+
 	let folderPrefix: string | undefined;
+
 	let filePath: string;
+
 	const remoteEnvironment = await remoteAgentService.getEnvironment();
+
 	const isFileWindows = remoteEnvironment?.os === OperatingSystem.Windows || !remoteEnvironment && isWindows;
+
 	let sourceLabel: string;
+
 	if (isFileWindows) {
 		folderPrefix = env['APPDATA'];
 		filePath = 'Microsoft\\Windows\\PowerShell\\PSReadLine\\ConsoleHost_history.txt';
@@ -361,16 +409,23 @@ export async function fetchPwshHistory(accessor: ServicesAccessor): Promise<IShe
 		sourceLabel = `~/${filePath}`;
 	}
 	const resolvedFile = await fetchFileContents(folderPrefix, filePath, isFileWindows, fileService, remoteAgentService);
+
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
 	const fileLines = resolvedFile.content.split('\n');
+
 	const result: Set<string> = new Set();
+
 	let currentLine: string;
+
 	let currentCommand: string | undefined = undefined;
+
 	let wrapChar: string | undefined = undefined;
+
 	for (let i = 0; i < fileLines.length; i++) {
 		currentLine = fileLines[i];
+
 		if (currentCommand === undefined) {
 			currentCommand = currentLine;
 		} else {
@@ -378,10 +433,12 @@ export async function fetchPwshHistory(accessor: ServicesAccessor): Promise<IShe
 		}
 		if (!currentLine.endsWith('`')) {
 			const sanitized = currentCommand.trim();
+
 			if (sanitized.length > 0) {
 				result.add(sanitized);
 			}
 			currentCommand = undefined;
+
 			continue;
 		}
 		// If the line ends with `, the line may be wrapped. Need to also test the case where ` is
@@ -401,6 +458,7 @@ export async function fetchPwshHistory(accessor: ServicesAccessor): Promise<IShe
 		// TODO: This doesn't cover more complicated cases where ` is within quotes
 		if (!wrapChar) {
 			const sanitized = currentCommand.trim();
+
 			if (sanitized.length > 0) {
 				result.add(sanitized);
 			}
@@ -421,8 +479,11 @@ export async function fetchPwshHistory(accessor: ServicesAccessor): Promise<IShe
 
 export async function fetchFishHistory(accessor: ServicesAccessor): Promise<IShellFileHistoryEntry | undefined> {
 	const fileService = accessor.get(IFileService);
+
 	const remoteAgentService = accessor.get(IRemoteAgentService);
+
 	const remoteEnvironment = await remoteAgentService.getEnvironment();
+
 	if (remoteEnvironment?.os === OperatingSystem.Windows || !remoteEnvironment && isWindows) {
 		return undefined;
 	}
@@ -441,8 +502,11 @@ export async function fetchFishHistory(accessor: ServicesAccessor): Promise<IShe
 	// was not exist. Does fish fall back to ~/.local/share/fish/fish_history?
 
 	let folderPrefix: string | undefined;
+
 	let filePath: string;
+
 	let sourceLabel: string;
+
 	if (overridenDataHome) {
 		sourceLabel = '$XDG_DATA_HOME/fish/fish_history';
 		folderPrefix = env['XDG_DATA_HOME'];
@@ -453,6 +517,7 @@ export async function fetchFishHistory(accessor: ServicesAccessor): Promise<IShe
 		filePath = '.local/share/fish/fish_history';
 	}
 	const resolvedFile = await fetchFileContents(folderPrefix, filePath, false, fileService, remoteAgentService);
+
 	if (resolvedFile === undefined) {
 		return undefined;
 	}
@@ -472,11 +537,14 @@ export async function fetchFishHistory(accessor: ServicesAccessor): Promise<IShe
 	 * - If `cmd` value is multiline , it just takes the first line. Also YAML operators like `>-` or `|-` are not supported.
 	 */
 	const result: Set<string> = new Set();
+
 	const cmds = resolvedFile.content.split('\n')
 		.filter(x => x.startsWith('- cmd:'))
 		.map(x => x.substring(6).trimStart());
+
 	for (let i = 0; i < cmds.length; i++) {
 		const sanitized = sanitizeFishHistoryCmd(cmds[i]).trim();
+
 		if (sanitized.length > 0) {
 			result.add(sanitized);
 		}
@@ -506,10 +574,13 @@ export function sanitizeFishHistoryCmd(cmd: string): string {
 
 function repeatedReplace(pattern: RegExp, value: string, replaceValue: string): string {
 	let last;
+
 	let current = value;
+
 	while (true) {
 		last = current;
 		current = current.replace(pattern, replaceValue);
+
 		if (current === last) {
 			return current;
 		}
@@ -527,13 +598,17 @@ async function fetchFileContents(
 		return undefined;
 	}
 	const connection = remoteAgentService.getConnection();
+
 	const isRemote = !!connection?.remoteAuthority;
+
 	const resource = URI.from({
 		scheme: isRemote ? Schemas.vscodeRemote : Schemas.file,
 		authority: isRemote ? connection.remoteAuthority : undefined,
 		path: URI.file(join(folderPrefix, filePath)).path
 	});
+
 	let content: IFileContent;
+
 	try {
 		content = await fileService.readFile(resource);
 	} catch (e: unknown) {

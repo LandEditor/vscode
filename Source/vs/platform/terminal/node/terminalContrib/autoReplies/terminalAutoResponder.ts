@@ -20,6 +20,7 @@ export class TerminalAutoResponder extends Disposable {
      * reprints on Winodws.
      */
     private _throttled = false;
+
     constructor(proc: ITerminalChildProcess, matchWord: string, response: string, logService: ILogService) {
         super();
         this._register(proc.onProcessData(e => {
@@ -27,6 +28,7 @@ export class TerminalAutoResponder extends Disposable {
                 return;
             }
             const data = typeof e === 'string' ? e : e.data;
+
             for (let i = 0; i < data.length; i++) {
                 if (data[i] === matchWord[this._pointer]) {
                     this._pointer++;

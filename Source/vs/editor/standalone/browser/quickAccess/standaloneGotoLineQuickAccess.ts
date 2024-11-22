@@ -15,6 +15,7 @@ import { KeybindingWeight } from '../../../../platform/keybinding/common/keybind
 import { IQuickInputService } from '../../../../platform/quickinput/common/quickInput.js';
 export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvider {
     protected readonly onDidActiveTextEditorControlChange = Event.None;
+
     constructor(
     @ICodeEditorService
     private readonly editorService: ICodeEditorService) {
@@ -26,6 +27,7 @@ export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuick
 }
 export class GotoLineAction extends EditorAction {
     static readonly ID = 'editor.action.gotoLine';
+
     constructor() {
         super({
             id: GotoLineAction.ID,

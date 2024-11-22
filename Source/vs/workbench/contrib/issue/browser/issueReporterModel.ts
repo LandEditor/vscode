@@ -38,6 +38,7 @@ export interface IssueReporterData {
 }
 export class IssueReporterModel {
     private readonly _data: IssueReporterData;
+
     constructor(initialData?: Partial<IssueReporterData>) {
         const defaultData = {
             issueType: IssueType.Bug,
@@ -67,6 +68,7 @@ export class IssueReporterModel {
     }
     serialize(): string {
         const modes = [];
+
         if (this._data.restrictedMode) {
             modes.push('Restricted');
         }
@@ -96,6 +98,7 @@ ${this.getInfos()}
         const fileOnExtensionSupported = this._data.issueType === IssueType.Bug
             || this._data.issueType === IssueType.PerformanceIssue
             || this._data.issueType === IssueType.FeatureRequest;
+
         return fileOnExtensionSupported && this._data.fileOnExtension;
     }
     private getExtensionVersion(): string {
@@ -119,10 +122,12 @@ ${this.getInfos()}
     }
     private getInfos(): string {
         let info = '';
+
         if (this._data.fileOnMarketplace) {
             return info;
         }
         const isBugOrPerformanceIssue = this._data.issueType === IssueType.Bug || this._data.issueType === IssueType.PerformanceIssue;
+
         if (isBugOrPerformanceIssue) {
             if (this._data.includeExtensionData && this._data.extensionData) {
                 info += this.getExtensionData();
@@ -162,6 +167,7 @@ ${this.getInfos()}
 |Item|Value|
 |---|---|
 `;
+
         if (this._data.systemInfo) {
             md += `|CPUs|${this._data.systemInfo.cpus}|
 |GPU Status|${Object.keys(this._data.systemInfo.gpuStatus).map(key => `${key}: ${this._data.systemInfo!.gpuStatus[key]}`).join('<br>')}|
@@ -170,6 +176,7 @@ ${this.getInfos()}
 |Process Argv|${this._data.systemInfo.processArgs.replace(/\\/g, '\\\\')}|
 |Screen Reader|${this._data.systemInfo.screenReader}|
 |VM|${this._data.systemInfo.vmHint}|`;
+
             if (this._data.systemInfo.linuxEnv) {
                 md += `\n|DESKTOP_SESSION|${this._data.systemInfo.linuxEnv.desktopSession}|
 |XDG_CURRENT_DESKTOP|${this._data.systemInfo.linuxEnv.xdgCurrentDesktop}|
@@ -194,6 +201,7 @@ ${this.getInfos()}
             });
         }
         md += '\n</details>';
+
         return md;
     }
     private generateProcessInfoMd(): string {
@@ -234,14 +242,17 @@ ${this._data.experimentInfo}
             return 'Extensions disabled';
         }
         const themeExclusionStr = this._data.numberOfThemeExtesions ? `\n(${this._data.numberOfThemeExtesions} theme extensions excluded)` : '';
+
         if (!this._data.enabledNonThemeExtesions) {
             return 'Extensions: none' + themeExclusionStr;
         }
         const tableHeader = `Extension|Author (truncated)|Version
 ---|---|---`;
+
         const table = this._data.enabledNonThemeExtesions.map(e => {
             return `${e.name}|${e.publisher?.substr(0, 3) ?? 'N/A'}|${e.version}`;
         }).join('\n');
+
         return `<details><summary>Extensions (${this._data.enabledNonThemeExtesions.length})</summary>
 
 ${tableHeader}

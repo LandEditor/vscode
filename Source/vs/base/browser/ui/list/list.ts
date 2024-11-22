@@ -10,9 +10,12 @@ import { ListViewTargetSector } from './listView.js';
 import { IDisposable } from '../../../common/lifecycle.js';
 export interface IListVirtualDelegate<T> {
     getHeight(element: T): number;
+
     getTemplateId(element: T): string;
     hasDynamicHeight?(element: T): boolean;
+
     getDynamicHeight?(element: T): number | null;
+
     setDynamicHeight?(element: T, height: number): void;
 }
 export interface IListRenderer<T, TTemplateData> {
@@ -105,6 +108,7 @@ export const ListDragOverReactions = {
  */
 export interface IListDragAndDrop<T> extends IDisposable {
     getDragURI(element: T): string | null;
+
     getDragLabel?(elements: T[], originalEvent: DragEvent): string | undefined;
     onDragStart?(data: IDragAndDropData, originalEvent: DragEvent): void;
     onDragOver(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, targetSector: ListViewTargetSector | undefined, originalEvent: DragEvent): boolean | IListDragOverReaction;
@@ -119,11 +123,13 @@ export class ListError extends Error {
 }
 export abstract class CachedListVirtualDelegate<T extends object> implements IListVirtualDelegate<T> {
     private cache = new WeakMap<T, number>();
+
     getHeight(element: T): number {
         return this.cache.get(element) ?? this.estimateHeight(element);
     }
     protected abstract estimateHeight(element: T): number;
     abstract getTemplateId(element: T): string;
+
     setDynamicHeight(element: T, height: number): void {
         if (height > 0) {
             this.cache.set(element, height);

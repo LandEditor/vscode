@@ -8,6 +8,7 @@ function detectEncodingByBOM(buffer: Buffer): string | null {
         return null;
     }
     const b0 = buffer.readUInt8(0);
+
     const b1 = buffer.readUInt8(1);
     // UTF-16 BE
     if (b0 === 0xFE && b1 === 0xFF) {
@@ -33,12 +34,14 @@ const IGNORE_ENCODINGS = [
     'utf-16',
     'utf-32'
 ];
+
 const JSCHARDET_TO_ICONV_ENCODINGS: {
     [name: string]: string;
 } = {
     'ibm866': 'cp866',
     'big5': 'cp950'
 };
+
 const MAP_CANDIDATE_GUESS_ENCODING_TO_JSCHARDET: {
     [key: string]: string;
 } = {
@@ -64,11 +67,14 @@ const MAP_CANDIDATE_GUESS_ENCODING_TO_JSCHARDET: {
 };
 export function detectEncoding(buffer: Buffer, candidateGuessEncodings: string[]): string | null {
     const result = detectEncodingByBOM(buffer);
+
     if (result) {
         return result;
     }
     candidateGuessEncodings = candidateGuessEncodings.map(e => MAP_CANDIDATE_GUESS_ENCODING_TO_JSCHARDET[e]).filter(e => !!e);
+
     const detected = jschardet.detect(buffer, candidateGuessEncodings.length > 0 ? { detectEncodings: candidateGuessEncodings } : undefined);
+
     if (!detected || !detected.encoding) {
         return null;
     }
@@ -79,6 +85,8 @@ export function detectEncoding(buffer: Buffer, candidateGuessEncodings: string[]
         return null;
     }
     const normalizedEncodingName = encoding.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
     const mapped = JSCHARDET_TO_ICONV_ENCODINGS[normalizedEncodingName];
+
     return mapped || normalizedEncodingName;
 }

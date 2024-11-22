@@ -74,6 +74,7 @@ export interface ICompositeBarActionItem {
 	id: string;
 	name: string;
 	keybindingId?: string;
+
 	classNames?: string[];
 	iconUrl?: URI;
 }
@@ -188,11 +189,13 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 
 	protected updateStyles(): void {
 		const theme = this.themeService.getColorTheme();
+
 		const colors = this.options.colors(theme);
 
 		if (this.label) {
 			if (this.options.icon) {
 				const foreground = this._action.checked ? colors.activeForegroundColor : colors.inactiveForegroundColor;
+
 				if (this.compositeBarActionItem.iconUrl) {
 					// Apply background color to activity bar item provided with iconUrls
 					this.label.style.backgroundColor = foreground ? foreground.toString() : '';
@@ -204,6 +207,7 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 				}
 			} else {
 				const foreground = this._action.checked ? colors.activeForegroundColor : colors.inactiveForegroundColor;
+
 				const borderBottomColor = this._action.checked ? colors.activeBorderBottomColor : null;
 				this.label.style.color = foreground ? foreground.toString() : '';
 				this.label.style.borderBottomColor = borderBottomColor ? borderBottomColor.toString() : '';
@@ -215,8 +219,11 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 		// Badge
 		if (this.badgeContent) {
 			const badgeStyles = this.getActivity()?.badge.getColors(theme);
+
 			const badgeFg = badgeStyles?.badgeForeground ?? colors.badgeForeground ?? theme.getColor(badgeForeground);
+
 			const badgeBg = badgeStyles?.badgeBackground ?? colors.badgeBackground ?? theme.getColor(badgeBackground);
+
 			const contrastBorderColor = badgeStyles?.badgeBorder ?? theme.getColor(contrastBorder);
 
 			this.badgeContent.style.color = badgeFg ? badgeFg.toString() : '';
@@ -232,6 +239,7 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 		super.render(container);
 
 		this.container = container;
+
 		if (this.options.icon) {
 			this.container.classList.add('icon');
 		}
@@ -324,6 +332,7 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 		if (activity && shouldRenderBadges) {
 
 			const { badge } = activity;
+
 			const classes: string[] = [];
 
 			if (this.options.compact) {
@@ -333,6 +342,7 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 			// Progress
 			if (badge instanceof ProgressBadge) {
 				show(this.badge);
+
 				classes.push('progress-badge');
 			}
 
@@ -340,9 +350,12 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 			else if (badge instanceof NumberBadge) {
 				if (badge.number) {
 					let number = badge.number.toString();
+
 					if (badge.number > 999) {
 						const noOfThousands = badge.number / 1000;
+
 						const floor = Math.floor(noOfThousands);
+
 						if (noOfThousands > floor) {
 							number = `${floor}K+`;
 						} else {
@@ -360,6 +373,7 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 			// Icon
 			else if (badge instanceof IconBadge) {
 				classes.push('icon-badge');
+
 				const badgeContentClassess = ['icon-overlay', ...ThemeIcon.asClassNameArray(badge.icon)];
 				this.badgeContent.classList.add(...badgeContentClassess);
 				this.badgeDisposable.value.add(toDisposable(() => this.badgeContent?.classList.remove(...badgeContentClassess)));
@@ -402,8 +416,11 @@ export class CompositeBarActionViewItem extends BaseActionViewItem {
 
 	protected computeTitle(): string {
 		this.keybindingLabel = this.computeKeybindingLabel();
+
 		let title = this.keybindingLabel ? localize('titleKeybinding', "{0} ({1})", this.compositeBarActionItem.name, this.keybindingLabel) : this.compositeBarActionItem.name;
+
 		const badge = (this.action as CompositeBarAction).activity?.badge;
+
 		if (badge?.getDescription()) {
 			title = localize('badgeTitle', "{0} - {1}", title, badge.getDescription());
 		}
@@ -478,7 +495,9 @@ export class CompositeOverflowActivityActionViewItem extends CompositeBarActionV
 			action.checked = this.getActiveCompositeId() === action.id;
 
 			const badge = this.getBadge(composite.id);
+
 			let suffix: string | number | undefined;
+
 			if (badge instanceof NumberBadge) {
 				suffix = badge.number;
 			}
@@ -599,28 +618,40 @@ export class CompositeActionViewItem extends CompositeBarActionViewItem {
 
 	private updateFromDragging(element: HTMLElement, showFeedback: boolean, event: DragEvent): Before2D | undefined {
 		const rect = element.getBoundingClientRect();
+
 		const posX = event.clientX;
+
 		const posY = event.clientY;
+
 		const height = rect.bottom - rect.top;
+
 		const width = rect.right - rect.left;
 
 		const forceTop = posY <= rect.top + height * 0.4;
+
 		const forceBottom = posY > rect.bottom - height * 0.4;
+
 		const preferTop = posY <= rect.top + height * 0.5;
 
 		const forceLeft = posX <= rect.left + width * 0.4;
+
 		const forceRight = posX > rect.right - width * 0.4;
+
 		const preferLeft = posX <= rect.left + width * 0.5;
 
 		const classes = element.classList;
+
 		const lastClasses = {
 			vertical: classes.contains('top') ? 'top' : (classes.contains('bottom') ? 'bottom' : undefined),
 			horizontal: classes.contains('left') ? 'left' : (classes.contains('right') ? 'right' : undefined)
 		};
 
 		const top = forceTop || (preferTop && !lastClasses.vertical) || (!forceBottom && lastClasses.vertical === 'top');
+
 		const bottom = forceBottom || (!preferTop && !lastClasses.vertical) || (!forceTop && lastClasses.vertical === 'bottom');
+
 		const left = forceLeft || (preferLeft && !lastClasses.horizontal) || (!forceRight && lastClasses.horizontal === 'left');
+
 		const right = forceRight || (!preferLeft && !lastClasses.horizontal) || (!forceLeft && lastClasses.horizontal === 'right');
 
 		element.classList.toggle('top', showFeedback && top);
@@ -645,6 +676,7 @@ export class CompositeActionViewItem extends CompositeBarActionViewItem {
 		actions.push(this.toggleCompositePinnedAction, this.toggleCompositeBadgeAction);
 
 		const compositeContextMenuActions = this.compositeContextMenuActionsProvider(this.compositeBarActionItem.id);
+
 		if (compositeContextMenuActions.length) {
 			actions.push(...compositeContextMenuActions);
 		}
@@ -655,6 +687,7 @@ export class CompositeActionViewItem extends CompositeBarActionViewItem {
 		}
 
 		const isPinned = this.compositeBar.isPinned(this.compositeBarActionItem.id);
+
 		if (isPinned) {
 			this.toggleCompositePinnedAction.label = localize('hide', "Hide '{0}'", this.compositeBarActionItem.name);
 			this.toggleCompositePinnedAction.checked = false;
@@ -665,6 +698,7 @@ export class CompositeActionViewItem extends CompositeBarActionViewItem {
 		}
 
 		const isBadgeEnabled = this.compositeBar.areBadgesEnabled(this.compositeBarActionItem.id);
+
 		if (isBadgeEnabled) {
 			this.toggleCompositeBadgeAction.label = localize('hideBadge', "Hide Badge");
 		} else {
@@ -672,12 +706,14 @@ export class CompositeActionViewItem extends CompositeBarActionViewItem {
 		}
 
 		const otherActions = this.contextMenuActionsProvider();
+
 		if (otherActions.length) {
 			actions.push(new Separator());
 			actions.push(...otherActions);
 		}
 
 		const elementPosition = getDomNodePagePosition(container);
+
 		const anchor = {
 			x: Math.floor(elementPosition.left + (elementPosition.width / 2)),
 			y: elementPosition.top + elementPosition.height
@@ -776,6 +812,7 @@ export class SwitchCompositeViewAction extends Action2 {
 		const paneCompositeService = accessor.get(IPaneCompositePartService);
 
 		const activeComposite = paneCompositeService.getActivePaneComposite(this.location);
+
 		if (!activeComposite) {
 			return;
 		}
@@ -783,9 +820,11 @@ export class SwitchCompositeViewAction extends Action2 {
 		let targetCompositeId: string | undefined;
 
 		const visibleCompositeIds = paneCompositeService.getVisiblePaneCompositeIds(this.location);
+
 		for (let i = 0; i < visibleCompositeIds.length; i++) {
 			if (visibleCompositeIds[i] === activeComposite.getId()) {
 				targetCompositeId = visibleCompositeIds[(i + visibleCompositeIds.length + this.offset) % visibleCompositeIds.length];
+
 				break;
 			}
 		}

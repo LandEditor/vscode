@@ -52,6 +52,7 @@ ModesRegistry.registerLanguage({
 });
 // register output container
 const outputViewIcon = registerIcon('output-view-icon', Codicon.output, nls.localize('outputViewIcon', 'View icon of the output view.'));
+
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
     id: OUTPUT_VIEW_ID,
     title: nls.localize2('output', "Output"),
@@ -116,6 +117,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                 }
             }
         }));
+
         const switchOutputMenu = new MenuId('workbench.output.menu.switchOutput');
         this._register(MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
             submenu: switchOutputMenu,
@@ -125,11 +127,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             order: 1,
             isSelection: true
         }));
+
         const registeredChannels = new Map<string, IDisposable>();
         this._register(toDisposable(() => dispose(registeredChannels.values())));
+
         const registerOutputChannels = (channels: IOutputChannelDescriptor[]) => {
             for (const channel of channels) {
                 const title = channel.label;
+
                 const group = channel.extensionId ? '0_ext_outputchannels' : '1_core_outputchannels';
                 registeredChannels.set(channel.id, registerAction2(class extends Action2 {
                     constructor() {
@@ -150,9 +155,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
         };
         registerOutputChannels(this.outputService.getChannelDescriptors());
+
         const outputChannelRegistry = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels);
         this._register(outputChannelRegistry.onDidRegisterChannel(e => {
             const channel = this.outputService.getChannelDescriptor(e);
+
             if (channel) {
                 registerOutputChannels([channel]);
             }
@@ -174,8 +181,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
             async run(accessor: ServicesAccessor): Promise<void> {
                 const outputService = accessor.get(IOutputService);
+
                 const quickInputService = accessor.get(IQuickInputService);
+
                 const extensionChannels = [], coreChannels = [];
+
                 for (const channel of outputService.getChannelDescriptors()) {
                     if (channel.extensionId) {
                         extensionChannels.push(channel);
@@ -188,6 +198,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                     id: string;
                     label: string;
                 } | IQuickPickSeparator)[] = [];
+
                 for (const { id, label } of extensionChannels) {
                     entries.push({ id, label });
                 }
@@ -198,6 +209,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                     entries.push({ id, label });
                 }
                 const entry = await quickInputService.pick(entries, { placeHolder: nls.localize('selectOutput', "Select Output Channel") });
+
                 if (entry) {
                     return outputService.showChannel(entry.id);
                 }
@@ -227,8 +239,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
             async run(accessor: ServicesAccessor): Promise<void> {
                 const outputService = accessor.get(IOutputService);
+
                 const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
                 const activeChannel = outputService.getActiveChannel();
+
                 if (activeChannel) {
                     activeChannel.clear();
                     accessibilitySignalService.playSignal(AccessibilitySignal.clear);
@@ -311,6 +326,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
     }
     private async openActiveOutoutFile(group?: AUX_WINDOW_GROUP_TYPE): Promise<void> {
         const fileOutputChannelDescriptor = this.getFileOutputChannelDescriptor();
+
         if (fileOutputChannelDescriptor) {
             await this.fileConfigurationService.updateReadonly(fileOutputChannelDescriptor.file, true);
             await this.editorService.openEditor({
@@ -323,8 +339,10 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
     }
     private getFileOutputChannelDescriptor(): IFileOutputChannelDescriptor | null {
         const channel = this.outputService.getActiveChannel();
+
         if (channel) {
             const descriptor = this.outputService.getChannelDescriptors().filter(c => c.id === channel.id)[0];
+
             if (descriptor?.file) {
                 return <IFileOutputChannelDescriptor>descriptor;
             }
@@ -333,6 +351,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
     }
     private registerConfigureActiveOutputLogLevelAction(): void {
         const that = this;
+
         const logLevelMenu = new MenuId('workbench.output.menu.logLevel');
         this._register(MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
             submenu: logLevelMenu,
@@ -342,7 +361,9 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             icon: Codicon.gear,
             order: 6
         }));
+
         let order = 0;
+
         const registerLogLevel = (logLevel: LogLevel) => {
             this._register(registerAction2(class extends Action2 {
                 constructor() {
@@ -359,8 +380,10 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                 }
                 async run(accessor: ServicesAccessor): Promise<void> {
                     const channel = that.outputService.getActiveChannel();
+
                     if (channel) {
                         const channelDescriptor = that.outputService.getChannelDescriptor(channel.id);
+
                         if (channelDescriptor?.log && channelDescriptor.file) {
                             return accessor.get(ILoggerService).setLogLevel(channelDescriptor.file, logLevel);
                         }
@@ -389,10 +412,13 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
             async run(accessor: ServicesAccessor): Promise<void> {
                 const channel = that.outputService.getActiveChannel();
+
                 if (channel) {
                     const channelDescriptor = that.outputService.getChannelDescriptor(channel.id);
+
                     if (channelDescriptor?.log && channelDescriptor.file) {
                         const logLevel = accessor.get(ILoggerService).getLogLevel(channelDescriptor.file);
+
                         return await accessor.get(IDefaultLogLevelsService).setDefaultLogLevel(logLevel, channelDescriptor.extensionId);
                     }
                 }
@@ -413,8 +439,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
             async run(accessor: ServicesAccessor): Promise<void> {
                 const outputService = accessor.get(IOutputService);
+
                 const quickInputService = accessor.get(IQuickInputService);
+
                 const extensionLogs = [], logs = [];
+
                 for (const channel of outputService.getChannelDescriptors()) {
                     if (channel.log) {
                         if (channel.extensionId) {
@@ -429,6 +458,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                     id: string;
                     label: string;
                 } | IQuickPickSeparator)[] = [];
+
                 for (const { id, label } of logs) {
                     entries.push({ id, label });
                 }
@@ -439,6 +469,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                     entries.push({ id, label });
                 }
                 const entry = await quickInputService.pick(entries, { placeHolder: nls.localize('selectlog', "Select Log") });
+
                 if (entry) {
                     return outputService.showChannel(entry.id);
                 }
@@ -472,16 +503,25 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
             }
             async run(accessor: ServicesAccessor, args?: unknown): Promise<void> {
                 const outputService = accessor.get(IOutputService);
+
                 const quickInputService = accessor.get(IQuickInputService);
+
                 const editorService = accessor.get(IEditorService);
+
                 const fileConfigurationService = accessor.get(IFilesConfigurationService);
+
                 let entry: IOutputChannelQuickPickItem | undefined;
+
                 const argName = args && typeof args === 'string' ? args : undefined;
+
                 const extensionChannels: IOutputChannelQuickPickItem[] = [];
+
                 const coreChannels: IOutputChannelQuickPickItem[] = [];
+
                 for (const c of outputService.getChannelDescriptors()) {
                     if (c.file && c.log) {
                         const e = { id: c.id, label: c.label, channel: c };
+
                         if (c.extensionId) {
                             extensionChannels.push(e);
                         }
@@ -495,6 +535,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
                 }
                 if (!entry) {
                     const entries: QuickPickInput[] = [...extensionChannels.sort((a, b) => a.label.localeCompare(b.label))];
+
                     if (entries.length && coreChannels.length) {
                         entries.push({ type: 'separator' });
                         entries.push(...coreChannels.sort((a, b) => a.label.localeCompare(b.label)));

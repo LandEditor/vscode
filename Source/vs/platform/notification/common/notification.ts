@@ -89,6 +89,7 @@ export interface INotificationSource {
 export function isNotificationSource(thing: unknown): thing is INotificationSource {
     if (thing) {
         const candidate = thing as INotificationSource;
+
         return typeof candidate.id === 'string' && typeof candidate.label === 'string';
     }
     return false;

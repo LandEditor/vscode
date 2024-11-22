@@ -23,18 +23,25 @@ import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../pl
 // Center
 export const SHOW_NOTIFICATIONS_CENTER = 'notifications.showList';
 export const HIDE_NOTIFICATIONS_CENTER = 'notifications.hideList';
+
 const TOGGLE_NOTIFICATIONS_CENTER = 'notifications.toggleList';
 // Toasts
 export const HIDE_NOTIFICATION_TOAST = 'notifications.hideToasts';
+
 const FOCUS_NOTIFICATION_TOAST = 'notifications.focusToasts';
+
 const FOCUS_NEXT_NOTIFICATION_TOAST = 'notifications.focusNextToast';
+
 const FOCUS_PREVIOUS_NOTIFICATION_TOAST = 'notifications.focusPreviousToast';
+
 const FOCUS_FIRST_NOTIFICATION_TOAST = 'notifications.focusFirstToast';
+
 const FOCUS_LAST_NOTIFICATION_TOAST = 'notifications.focusLastToast';
 // Notification
 export const COLLAPSE_NOTIFICATION = 'notification.collapse';
 export const EXPAND_NOTIFICATION = 'notification.expand';
 export const ACCEPT_PRIMARY_ACTION_NOTIFICATION = 'notification.acceptPrimaryAction';
+
 const TOGGLE_NOTIFICATION = 'notification.toggle';
 export const CLEAR_NOTIFICATION = 'notification.clear';
 export const CLEAR_ALL_NOTIFICATIONS = 'notifications.clearAll';
@@ -59,8 +66,10 @@ export function getNotificationFromContext(listService: IListService, context?: 
         return context;
     }
     const list = listService.lastFocusedList;
+
     if (list instanceof WorkbenchList) {
         let element = list.getFocusedElements()[0];
+
         if (!isNotificationViewItem(element)) {
             if (list.isDOMFocused()) {
                 // the notification list might have received focus
@@ -95,6 +104,7 @@ export function registerNotificationCommands(center: INotificationsCenterControl
         primary: KeyCode.Escape,
         handler: accessor => {
             const telemetryService = accessor.get(ITelemetryService);
+
             for (const notification of model.notifications) {
                 if (notification.visible) {
                     telemetryService.publicLog2<NotificationMetrics, NotificationMetricsClassification>('notification:hide', notificationToMetrics(notification.message.original, notification.sourceId, notification.priority === NotificationPriority.SILENT));
@@ -124,7 +134,9 @@ export function registerNotificationCommands(center: INotificationsCenterControl
         },
         handler: (accessor, args?) => {
             const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
             const notification = getNotificationFromContext(accessor.get(IListService), args);
+
             if (notification && !notification.hasProgress) {
                 notification.close();
                 accessibilitySignalService.playSignal(AccessibilitySignal.clear);
@@ -150,11 +162,14 @@ export function registerNotificationCommands(center: INotificationsCenterControl
         primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyA,
         handler: (accessor) => {
             const actionRunner = accessor.get(IInstantiationService).createInstance(NotificationActionRunner);
+
             const notification = getNotificationFromContext(accessor.get(IListService)) || model.notifications.at(0);
+
             if (!notification) {
                 return;
             }
             const primaryAction = notification.actions?.primary ? notification.actions.primary.at(0) : undefined;
+
             if (!primaryAction) {
                 return;
             }
@@ -188,6 +203,7 @@ export function registerNotificationCommands(center: INotificationsCenterControl
     // Hide Toasts
     CommandsRegistry.registerCommand(HIDE_NOTIFICATION_TOAST, accessor => {
         const telemetryService = accessor.get(ITelemetryService);
+
         for (const notification of model.notifications) {
             if (notification.visible) {
                 telemetryService.publicLog2<NotificationMetrics, NotificationMetricsClassification>('notification:hide', notificationToMetrics(notification.message.original, notification.sourceId, notification.priority === NotificationPriority.SILENT));
@@ -261,9 +277,13 @@ export function registerNotificationCommands(center: INotificationsCenterControl
     // Configure Do Not Disturb by Source
     CommandsRegistry.registerCommand(TOGGLE_DO_NOT_DISTURB_MODE_BY_SOURCE, accessor => {
         const notificationService = accessor.get(INotificationService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const sortedFilters = notificationService.getFilters().sort((a, b) => a.label.localeCompare(b.label));
+
         const disposables = new DisposableStore();
+
         const picker = disposables.add(quickInputService.createQuickPick<IQuickPickItem & INotificationSourceFilter>());
         picker.items = sortedFilters.map(source => ({
             id: source.id,
@@ -337,6 +357,7 @@ export class NotificationActionRunner extends ActionRunner {
     }
     protected override async runAction(action: IAction, context: unknown): Promise<void> {
         this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: action.id, from: 'message' });
+
         if (isNotificationViewItem(context)) {
             // Log some additional telemetry specifically for actions
             // that are triggered from within notifications.

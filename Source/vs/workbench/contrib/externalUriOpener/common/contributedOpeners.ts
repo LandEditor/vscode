@@ -19,6 +19,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
     private readonly _openers = new Map<string, RegisteredExternalOpener>();
     private readonly _memento: Memento;
     private _mementoObject: OpenersMemento;
+
     constructor(
     @IStorageService
     storageService: IStorageService, 
@@ -27,6 +28,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
         super();
         this._memento = new Memento(ContributedExternalUriOpenersStore.STORAGE_ID, storageService);
         this._mementoObject = this._memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+
         for (const [id, value] of Object.entries(this._mementoObject || {})) {
             this.add(id, value.extensionId, { isCurrentlyRegistered: false });
         }
@@ -43,8 +45,10 @@ export class ContributedExternalUriOpenersStore extends Disposable {
         isCurrentlyRegistered: boolean;
     }): void {
         const existing = this._openers.get(id);
+
         if (existing) {
             existing.isCurrentlyRegistered = existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
+
             return;
         }
         const entry = {
@@ -64,9 +68,12 @@ export class ContributedExternalUriOpenersStore extends Disposable {
     }
     private async invalidateOpenersOnExtensionsChanged() {
         await this._extensionService.whenInstalledExtensionsRegistered();
+
         const registeredExtensions = this._extensionService.extensions;
+
         for (const [id, entry] of this._openers) {
             const extension = registeredExtensions.find(r => r.identifier.value === entry.extensionId);
+
             if (extension) {
                 if (!this._extensionService.canRemoveExtension(extension)) {
                     // The extension is running. We should have registered openers at this point
@@ -83,7 +90,9 @@ export class ContributedExternalUriOpenersStore extends Disposable {
     }
     private updateSchema() {
         const ids: string[] = [];
+
         const descriptions: string[] = [];
+
         for (const [id, entry] of this._openers) {
             ids.push(id);
             descriptions.push(entry.extensionId);

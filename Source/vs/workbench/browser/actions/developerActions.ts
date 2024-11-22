@@ -62,6 +62,7 @@ class InspectContextKeysAction extends Action2 {
 		createCSSRule('*', 'cursor: crosshair !important;', stylesheet);
 
 		const hoverFeedback = document.createElement('div');
+
 		const activeDocument = getActiveDocument();
 		activeDocument.body.appendChild(hoverFeedback);
 		disposables.add(toDisposable(() => hoverFeedback.remove()));
@@ -74,6 +75,7 @@ class InspectContextKeysAction extends Action2 {
 		const onMouseMove = disposables.add(new DomEmitter(activeDocument, 'mousemove', true));
 		disposables.add(onMouseMove.event(e => {
 			const target = e.target as HTMLElement;
+
 			const position = getDomNodePagePosition(target);
 
 			hoverFeedback.style.top = `${position.top}px`;
@@ -123,11 +125,14 @@ class ToggleScreencastModeAction extends Action2 {
 		if (ToggleScreencastModeAction.disposable) {
 			ToggleScreencastModeAction.disposable.dispose();
 			ToggleScreencastModeAction.disposable = undefined;
+
 			return;
 		}
 
 		const layoutService = accessor.get(ILayoutService);
+
 		const configurationService = accessor.get(IConfigurationService);
+
 		const keybindingService = accessor.get(IKeybindingService);
 
 		const disposables = new DisposableStore();
@@ -141,7 +146,9 @@ class ToggleScreencastModeAction extends Action2 {
 		disposables.add(toDisposable(() => keyboardMarker.remove()));
 
 		const onMouseDown = disposables.add(new Emitter<MouseEvent>());
+
 		const onMouseUp = disposables.add(new Emitter<MouseEvent>());
+
 		const onMouseMove = disposables.add(new Emitter<MouseEvent>());
 
 		function registerContainerListeners(container: HTMLElement, disposables: DisposableStore): void {
@@ -166,6 +173,7 @@ class ToggleScreencastModeAction extends Action2 {
 		};
 
 		let mouseIndicatorSize: number;
+
 		const updateMouseIndicatorSize = () => {
 			mouseIndicatorSize = clamp(configurationService.getValue<number>('screencastMode.mouseIndicatorSize') || 20, 20, 100);
 
@@ -204,6 +212,7 @@ class ToggleScreencastModeAction extends Action2 {
 		};
 
 		let keyboardMarkerTimeout!: number;
+
 		const updateKeyboardMarkerTimeout = () => {
 			keyboardMarkerTimeout = clamp(configurationService.getValue<number>('screencastMode.keyboardOverlayTimeout') || 800, 500, 5000);
 		};
@@ -235,8 +244,11 @@ class ToggleScreencastModeAction extends Action2 {
 		}));
 
 		const onKeyDown = disposables.add(new Emitter<KeyboardEvent>());
+
 		const onCompositionStart = disposables.add(new Emitter<CompositionEvent>());
+
 		const onCompositionUpdate = disposables.add(new Emitter<CompositionEvent>());
+
 		const onCompositionEnd = disposables.add(new Emitter<CompositionEvent>());
 
 		function registerWindowListeners(window: Window, disposables: DisposableStore): void {
@@ -253,7 +265,9 @@ class ToggleScreencastModeAction extends Action2 {
 		disposables.add(onDidRegisterWindow(({ window, disposables }) => registerWindowListeners(window, disposables)));
 
 		let length = 0;
+
 		let composing: Element | undefined = undefined;
+
 		let imeBackSpace = false;
 
 		const clearKeyboardScheduler = new RunOnceScheduler(() => {
@@ -297,6 +311,7 @@ class ToggleScreencastModeAction extends Action2 {
 					imeBackSpace = true;
 				}
 				clearKeyboardScheduler.schedule();
+
 				return;
 			}
 
@@ -305,7 +320,9 @@ class ToggleScreencastModeAction extends Action2 {
 			}
 
 			const options = configurationService.getValue<IScreencastKeyboardOptions>('screencastMode.keyboardOptions');
+
 			const event = new StandardKeyboardEvent(e);
+
 			const shortcut = keybindingService.softDispatch(event, event.target);
 
 			// Hide the single arrow key pressed
@@ -327,9 +344,11 @@ class ToggleScreencastModeAction extends Action2 {
 			}
 
 			const keybinding = keybindingService.resolveKeyboardEvent(event);
+
 			const commandDetails = (this._isKbFound(shortcut) && shortcut.commandId) ? this.getCommandDetails(shortcut.commandId) : undefined;
 
 			let commandAndGroupLabel = commandDetails?.title;
+
 			let keyLabel: string | undefined | null = keybinding.getLabel();
 
 			if (commandDetails) {
@@ -405,6 +424,7 @@ class LogStorageAction extends Action2 {
 
 	run(accessor: ServicesAccessor): void {
 		const storageService = accessor.get(IStorageService);
+
 		const dialogService = accessor.get(IDialogService);
 
 		storageService.log();
@@ -426,8 +446,11 @@ class LogWorkingCopiesAction extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const workingCopyService = accessor.get(IWorkingCopyService);
+
 		const workingCopyBackupService = accessor.get(IWorkingCopyBackupService);
+
 		const logService = accessor.get(ILogService);
+
 		const outputService = accessor.get(IOutputService);
 
 		const backups = await workingCopyBackupService.getBackups();
@@ -466,9 +489,13 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const storageService = accessor.get(IStorageService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const userDataProfileService = accessor.get(IUserDataProfileService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const environmentService = accessor.get(IEnvironmentService);
 
 		interface IStorageItem extends IQuickPickItem {
@@ -488,6 +515,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 			for (const target of [StorageTarget.MACHINE, StorageTarget.USER]) {
 				for (const key of storageService.keys(scope, target)) {
 					const value = storageService.get(key, scope);
+
 					if (value && (!environmentService.isBuilt /* show all keys in dev */ || value.length > RemoveLargeStorageEntriesAction.SIZE_THRESHOLD)) {
 						items.push({
 							key,
@@ -547,6 +575,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 		}
 
 		const scopesToOptimize = new Set<StorageScope>();
+
 		for (const item of selectedItems) {
 			storageService.remove(item.key, item.scope);
 			scopesToOptimize.add(item.scope);
@@ -559,6 +588,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 }
 
 let tracker: DisposableTracker | undefined = undefined;
+
 let trackedDisposables = new Set<IDisposable>();
 
 const DisposablesSnapshotStateContext = new RawContextKey<'started' | 'pending' | 'stopped'>('dirtyWorkingCopies', 'stopped');
@@ -582,6 +612,7 @@ class StartTrackDisposables extends Action2 {
 		trackedDisposables.clear();
 
 		tracker = new DisposableTracker();
+
 		setDisposableTracker(tracker);
 	}
 }
@@ -634,6 +665,7 @@ class StopTrackDisposables extends Action2 {
 			}
 
 			const leaks = tracker.computeLeakingDisposables(1000, Array.from(disposableLeaks));
+
 			if (leaks) {
 				editorService.openEditor({ resource: undefined, contents: leaks.details });
 			}

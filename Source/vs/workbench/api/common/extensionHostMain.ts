@@ -35,10 +35,13 @@ export abstract class ErrorHandler {
         // does NOT dependent of extension information, can be installed immediately, and simply forwards
         // to the log service and main thread errors
         const logService = accessor.get(ILogService);
+
         const rpcService = accessor.get(IExtHostRpcService);
+
         const mainThreadErrors = rpcService.getProxy(MainContext.MainThreadErrors);
         errors.setUnexpectedErrorHandler(err => {
             logService.error(err);
+
             const data = errors.transformErrorForSerialization(err);
             mainThreadErrors.$onUnexpectedError(data);
         });
@@ -46,12 +49,19 @@ export abstract class ErrorHandler {
     static async installFullHandler(accessor: ServicesAccessor): Promise<void> {
         // uses extension knowledges to correlate errors with extensions
         const logService = accessor.get(ILogService);
+
         const rpcService = accessor.get(IExtHostRpcService);
+
         const extensionService = accessor.get(IExtHostExtensionService);
+
         const extensionTelemetry = accessor.get(IExtHostTelemetry);
+
         const mainThreadExtensions = rpcService.getProxy(MainContext.MainThreadExtensionService);
+
         const mainThreadErrors = rpcService.getProxy(MainContext.MainThreadErrors);
+
         const map = await extensionService.getExtensionPathIndex();
+
         const extensionErrors = new WeakMap<Error, {
             extensionIdentifier: ExtensionIdentifier | undefined;
             stack: string;
@@ -64,20 +74,26 @@ export abstract class ErrorHandler {
                 return extensionErrors.get(error)!.stack;
             }
             let stackTraceMessage = '';
+
             let extension: IExtensionDescription | undefined;
+
             let fileName: string | null;
+
             for (const call of stackTrace) {
                 stackTraceMessage += `\n\tat ${call.toString()}`;
                 fileName = call.getFileName();
+
                 if (!extension && fileName) {
                     extension = map.findSubstr(URI.file(fileName));
                 }
             }
             const result = `${error.name || 'Error'}: ${error.message || ''}${stackTraceMessage}`;
             extensionErrors.set(error, { extensionIdentifier: extension?.identifier, stack: result });
+
             return result;
         }
         const _wasWrapped = Symbol('prepareStackTrace wrapped');
+
         let _prepareStackTrace = prepareStackTraceAndFindExtension;
         Object.defineProperty(Error, 'prepareStackTrace', {
             configurable: false,
@@ -87,10 +103,12 @@ export abstract class ErrorHandler {
             set(v) {
                 if (v === prepareStackTraceAndFindExtension || !v || v[_wasWrapped]) {
                     _prepareStackTrace = v || prepareStackTraceAndFindExtension;
+
                     return;
                 }
                 _prepareStackTrace = function (error, stackTrace) {
                     prepareStackTraceAndFindExtension(error, stackTrace);
+
                     return v.call(Error, error, stackTrace);
                 };
                 Object.assign(_prepareStackTrace, { [_wasWrapped]: true });
@@ -102,13 +120,18 @@ export abstract class ErrorHandler {
         // below accesses the stack-property which triggers the code above
         errors.setUnexpectedErrorHandler(err => {
             logService.error(err);
+
             const errorData = errors.transformErrorForSerialization(err);
+
             const stackData = extensionErrors.get(err);
+
             if (!stackData?.extensionIdentifier) {
                 mainThreadErrors.$onUnexpectedError(errorData);
+
                 return;
             }
             mainThreadExtensions.$onExtensionRuntimeError(stackData.extensionIdentifier, errorData);
+
             const reported = extensionTelemetry.onExtensionError(stackData.extensionIdentifier, err);
             logService.trace('forwarded error to extension?', reported, stackData);
         });
@@ -119,6 +142,7 @@ export class ExtensionHostMain {
     private readonly _rpcProtocol: RPCProtocol;
     private readonly _extensionService: IExtHostExtensionService;
     private readonly _logService: ILogService;
+
     constructor(protocol: IMessagePassingProtocol, initData: IExtensionHostInitData, hostUtils: IHostUtils, uriTransformer: IURITransformer | null, messagePorts?: ReadonlyMap<string, MessagePort>) {
         this._hostUtils = hostUtils;
         this._rpcProtocol = new RPCProtocol(protocol, null, uriTransformer);
@@ -130,11 +154,13 @@ export class ExtensionHostMain {
         services.set(IExtHostRpcService, new ExtHostRpcService(this._rpcProtocol));
         services.set(IURITransformerService, new URITransformerService(uriTransformer));
         services.set(IHostUtils, hostUtils);
+
         const instaService: IInstantiationService = new InstantiationService(services, true);
         instaService.invokeFunction(ErrorHandler.installEarlyHandler);
         // ugly self - inject
         this._logService = instaService.invokeFunction(accessor => accessor.get(ILogService));
         performance.mark(`code/extHost/didCreateServices`);
+
         if (this._hostUtils.pid) {
             this._logService.info(`Extension host with pid ${this._hostUtils.pid} started`);
         }
@@ -152,6 +178,7 @@ export class ExtensionHostMain {
     }
     async asBrowserUri(uri: URI): Promise<URI> {
         const mainThreadExtensionsProxy = this._rpcProtocol.getProxy(MainContext.MainThreadExtensionService);
+
         return URI.revive(await mainThreadExtensionsProxy.$asBrowserUri(uri));
     }
     terminate(reason: string): void {
@@ -162,7 +189,9 @@ export class ExtensionHostMain {
             (<Mutable<IExtensionDescription>>ext).extensionLocation = URI.revive(rpcProtocol.transformIncomingURIs(ext.extensionLocation));
         });
         initData.environment.appRoot = URI.revive(rpcProtocol.transformIncomingURIs(initData.environment.appRoot));
+
         const extDevLocs = initData.environment.extensionDevelopmentLocationURI;
+
         if (extDevLocs) {
             initData.environment.extensionDevelopmentLocationURI = extDevLocs.map(url => URI.revive(rpcProtocol.transformIncomingURIs(url)));
         }
@@ -173,6 +202,7 @@ export class ExtensionHostMain {
         initData.nlsBaseUrl = URI.revive(rpcProtocol.transformIncomingURIs(initData.nlsBaseUrl));
         initData.logsLocation = URI.revive(rpcProtocol.transformIncomingURIs(initData.logsLocation));
         initData.workspace = rpcProtocol.transformIncomingURIs(initData.workspace);
+
         return initData;
     }
 }

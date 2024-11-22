@@ -29,6 +29,7 @@ import { KeyCode } from '../../../base/common/keyCodes.js';
 import { mainWindow } from '../../../base/browser/window.js';
 
 const DEBUG_FLAGS_PATTERN = /\s--inspect(?:-brk|port)?=(?<port>\d+)?/;
+
 const DEBUG_PORT_PATTERN = /\s--inspect-port=(?<port>\d+)/;
 
 class ProcessListDelegate implements IListVirtualDelegate<MachineProcessInformation | ProcessItem | IRemoteDiagnosticError> {
@@ -111,10 +112,15 @@ class ProcessHeaderTreeRenderer implements ITreeRenderer<ProcessInformation, voi
 
 	renderTemplate(container: HTMLElement): IProcessItemTemplateData {
 		const row = append(container, $('.row'));
+
 		const name = append(row, $('.nameLabel'));
+
 		const CPU = append(row, $('.cpu'));
+
 		const memory = append(row, $('.memory'));
+
 		const PID = append(row, $('.pid'));
+
 		return { name, CPU, memory, PID };
 	}
 
@@ -135,8 +141,10 @@ class MachineRenderer implements ITreeRenderer<MachineProcessInformation, void, 
 	templateId: string = 'machine';
 	renderTemplate(container: HTMLElement): IProcessRowTemplateData {
 		const data = Object.create(null);
+
 		const row = append(container, $('.row'));
 		data.name = append(row, $('.nameLabel'));
+
 		return data;
 	}
 	renderElement(node: ITreeNode<MachineProcessInformation, void>, index: number, templateData: IProcessRowTemplateData, height: number | undefined): void {
@@ -151,8 +159,10 @@ class ErrorRenderer implements ITreeRenderer<IRemoteDiagnosticError, void, IProc
 	templateId: string = 'error';
 	renderTemplate(container: HTMLElement): IProcessRowTemplateData {
 		const data = Object.create(null);
+
 		const row = append(container, $('.row'));
 		data.name = append(row, $('.nameLabel'));
+
 		return data;
 	}
 	renderElement(node: ITreeNode<IRemoteDiagnosticError, void>, index: number, templateData: IProcessRowTemplateData, height: number | undefined): void {
@@ -172,8 +182,11 @@ class ProcessRenderer implements ITreeRenderer<ProcessItem, void, IProcessItemTe
 		const row = append(container, $('.row'));
 
 		const name = append(row, $('.nameLabel'));
+
 		const CPU = append(row, $('.cpu'));
+
 		const memory = append(row, $('.memory'));
+
 		const PID = append(row, $('.pid'));
 
 		return { name, CPU, PID, memory };
@@ -184,6 +197,7 @@ class ProcessRenderer implements ITreeRenderer<ProcessItem, void, IProcessItemTe
 		const pid = element.pid.toFixed(0);
 
 		let name = element.name;
+
 		if (this.mapPidToName.has(element.pid)) {
 			name = this.mapPidToName.get(element.pid)!;
 		}
@@ -301,6 +315,7 @@ class ProcessExplorer {
 
 	private async createProcessTree(processRoots: MachineProcessInformation[]): Promise<void> {
 		const container = mainWindow.document.getElementById('process-list');
+
 		if (!container) {
 			return;
 		}
@@ -347,6 +362,7 @@ class ProcessExplorer {
 		this.tree.layout(mainWindow.innerHeight, mainWindow.innerWidth);
 		this.tree.onKeyDown(e => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.keyCode === KeyCode.KeyE && event.altKey) {
 				const selectionPids = this.getSelectedPids();
 				void Promise.all(selectionPids.map((pid) => this.nativeHostService.killProcess(pid, 'SIGTERM'))).then(() => this.tree?.refresh());
@@ -368,6 +384,7 @@ class ProcessExplorer {
 
 	private isDebuggable(cmd: string): boolean {
 		const matches = DEBUG_FLAGS_PATTERN.exec(cmd);
+
 		return (matches && matches.groups!.port !== '0') || cmd.indexOf('node ') >= 0 || cmd.indexOf('node.exe') >= 0;
 	}
 
@@ -379,6 +396,7 @@ class ProcessExplorer {
 		};
 
 		let matches = DEBUG_FLAGS_PATTERN.exec(item.cmd);
+
 		if (matches) {
 			config.port = Number(matches.groups!.port);
 		} else {
@@ -388,6 +406,7 @@ class ProcessExplorer {
 
 		// a debug-port=n or inspect-port=n overrides the port
 		matches = DEBUG_PORT_PATTERN.exec(item.cmd);
+
 		if (matches) {
 			// override port
 			config.port = Number(matches.groups!.port);
@@ -398,6 +417,7 @@ class ProcessExplorer {
 
 	private applyStyles(styles: ProcessExplorerStyles): void {
 		const styleElement = createStyleSheet();
+
 		const content: string[] = [];
 
 		if (styles.listFocusBackground) {
@@ -484,6 +504,7 @@ class ProcessExplorer {
 
 	private showContextMenu(item: ProcessItem, isLocal: boolean) {
 		const items: IContextMenuItem[] = [];
+
 		const pid = Number(item.pid);
 
 		if (isLocal) {
@@ -519,6 +540,7 @@ class ProcessExplorer {
 					selectionPids.push(pid);
 				}
 				const rows = selectionPids?.map(e => mainWindow.document.getElementById(`pid-${e}`)).filter(e => !!e) as HTMLElement[];
+
 				if (rows) {
 					const text = rows.map(e => e.innerText).filter(e => !!e) as string[];
 					this.nativeHostService.writeClipboardText(text.join('\n'));
@@ -530,6 +552,7 @@ class ProcessExplorer {
 			label: localize('copyAll', "Copy All"),
 			click: () => {
 				const processList = mainWindow.document.getElementById('process-list');
+
 				if (processList) {
 					this.nativeHostService.writeClipboardText(processList.innerText);
 				}
@@ -555,6 +578,7 @@ class ProcessExplorer {
 	private requestProcessList(totalWaitTime: number): void {
 		setTimeout(() => {
 			const nextRequestTime = Date.now();
+
 			const waited = totalWaitTime + nextRequestTime - this.lastRequestTime;
 			this.lastRequestTime = nextRequestTime;
 
@@ -583,6 +607,7 @@ function createCodiconStyleSheet() {
 	codiconStyleSheet.id = 'codiconStyles';
 
 	const iconsStyleSheet = getIconsStyleSheet(undefined);
+
 	function updateAll() {
 		codiconStyleSheet.textContent = iconsStyleSheet.getCSS();
 	}

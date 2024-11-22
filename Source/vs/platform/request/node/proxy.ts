@@ -20,11 +20,14 @@ export interface IOptions {
 }
 export async function getProxyAgent(rawRequestURL: string, env: typeof process.env, options: IOptions = {}): Promise<Agent> {
     const requestURL = parseUrl(rawRequestURL);
+
     const proxyURL = options.proxyUrl || getSystemProxyURI(requestURL, env);
+
     if (!proxyURL) {
         return null;
     }
     const proxyEndpoint = parseUrl(proxyURL);
+
     if (!/^https?:$/.test(proxyEndpoint.protocol || '')) {
         return null;
     }
@@ -34,12 +37,15 @@ export async function getProxyAgent(rawRequestURL: string, env: typeof process.e
         auth: proxyEndpoint.auth,
         rejectUnauthorized: isBoolean(options.strictSSL) ? options.strictSSL : true,
     };
+
     if (requestURL.protocol === 'http:') {
         const { default: mod } = await import('http-proxy-agent');
+
         return new mod.HttpProxyAgent(proxyURL, opts);
     }
     else {
         const { default: mod } = await import('https-proxy-agent');
+
         return new mod.HttpsProxyAgent(proxyURL, opts);
     }
 }

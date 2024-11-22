@@ -25,6 +25,7 @@ export class SharedProcess extends Disposable {
     private utilityProcessLogListener: IDisposable | undefined = undefined;
     private readonly _onDidCrash = this._register(new Emitter<void>());
     readonly onDidCrash = this._onDidCrash.event;
+
     constructor(private readonly machineId: string, private readonly sqmId: string, private readonly devDeviceId: string, 
     @IEnvironmentMainService
     private readonly environmentMainService: IEnvironmentMainService, 
@@ -122,10 +123,14 @@ export class SharedProcess extends Disposable {
                 this.logService.error(e.error);
             }
         });
+
         const inspectParams = parseSharedProcessDebugPort(this.environmentMainService.args, this.environmentMainService.isBuilt);
+
         let execArgv: string[] | undefined = undefined;
+
         if (inspectParams.port) {
             execArgv = ['--nolazy'];
+
             if (inspectParams.break) {
                 execArgv.push(`--inspect-brk=${inspectParams.port}`);
             }
@@ -163,6 +168,7 @@ export class SharedProcess extends Disposable {
         await this.whenIpcReady;
         // Connect and return message port
         const utilityProcess = assertIsDefined(this.utilityProcess);
+
         return utilityProcess.connect(payload);
     }
 }

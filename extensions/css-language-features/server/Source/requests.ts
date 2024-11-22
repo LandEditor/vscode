@@ -68,6 +68,7 @@ export function getRequestService(handledSchemas: string[], connection: Connecti
     const builtInHandlers: {
         [protocol: string]: RequestService | undefined;
     } = {};
+
     for (const protocol of handledSchemas) {
         if (protocol === 'file') {
             builtInHandlers[protocol] = runtime.file;
@@ -79,10 +80,12 @@ export function getRequestService(handledSchemas: string[], connection: Connecti
     return {
         async stat(uri: string): Promise<FileStat> {
             const handler = builtInHandlers[getScheme(uri)];
+
             if (handler) {
                 return handler.stat(uri);
             }
             const res = await connection.sendRequest(FsStatRequest.type, uri.toString());
+
             return res;
         },
         readDirectory(uri: string): Promise<[
@@ -90,6 +93,7 @@ export function getRequestService(handledSchemas: string[], connection: Connecti
             FileType
         ][]> {
             const handler = builtInHandlers[getScheme(uri)];
+
             if (handler) {
                 return handler.readDirectory(uri);
             }
@@ -97,6 +101,7 @@ export function getRequestService(handledSchemas: string[], connection: Connecti
         },
         getContent(uri: string, encoding?: string): Promise<string> {
             const handler = builtInHandlers[getScheme(uri)];
+
             if (handler) {
                 return handler.getContent(uri, encoding);
             }

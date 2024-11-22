@@ -34,6 +34,7 @@ export const loopbackTemplate = `
 			background-position: left center;
 			padding-left: 36px;
 			font-size: 20px;
+
 			letter-spacing: -0.04rem;
 			font-weight: 400;
 			color: white;
@@ -125,11 +126,15 @@ export const loopbackTemplate = `
 	</div>
 	<script>
 		var search = new URLSearchParams(window.location.search);
+
 		var error = search.get('error');
+
 		if (error) {
 			const description = search.get('error_description');
+
 			document.querySelector('.error-text')
 				.textContent = error + ' - ' + description;
+
 			document.querySelector('body')
 				.classList.add('error');
 		}

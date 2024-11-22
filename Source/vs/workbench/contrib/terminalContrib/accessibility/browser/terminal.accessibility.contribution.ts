@@ -39,6 +39,7 @@ class TextAreaSyncContribution extends DisposableStore implements ITerminalContr
         return instance.getContribution<TextAreaSyncContribution>(TextAreaSyncContribution.ID);
     }
     private _addon: TextAreaSyncAddon | undefined;
+
     constructor(private readonly _ctx: ITerminalContributionContext, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService) {
@@ -67,6 +68,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
         raw: Terminal;
     } | undefined;
     private readonly _onDidRunCommand: MutableDisposable<IDisposable> = new MutableDisposable();
+
     constructor(private readonly _ctx: ITerminalContributionContext, 
     @IAccessibilitySignalService
     private readonly _accessibilitySignalService: IAccessibilitySignalService, 
@@ -86,10 +88,12 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
                 return false;
             }
             this.show();
+
             return true;
         }, TerminalContextKeys.focus));
         this._register(this._ctx.instance.onDidExecuteText(() => {
             const focusAfterRun = _configurationService.getValue(TerminalSettingId.FocusAfterRun);
+
             if (focusAfterRun === 'terminal') {
                 this._ctx.instance.focus(true);
             }
@@ -123,6 +127,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
                 this.show();
             }
         }));
+
         const onRequestUpdateEditor = Event.latch(this._xterm.raw.onScroll);
         this._register(onRequestUpdateEditor(() => {
             if (this._terminalService.activeInstance !== this._ctx.instance) {
@@ -139,6 +144,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
         }
         if (!this._configurationService.getValue(TerminalAccessibilitySettingId.AccessibleViewFocusOnCommandExecution)) {
             this._onDidRunCommand.clear();
+
             return;
         }
         else if (this._onDidRunCommand.value) {
@@ -171,16 +177,21 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
     }
     navigateToCommand(type: NavigationType): void {
         const currentLine = this._accessibleViewService.getPosition(AccessibleViewProviderId.Terminal)?.lineNumber;
+
         const commands = this._getCommandsWithEditorLine();
+
         if (!commands?.length || !currentLine) {
             return;
         }
         const filteredCommands = type === NavigationType.Previous ? commands.filter(c => c.lineNumber < currentLine).sort((a, b) => b.lineNumber - a.lineNumber) : commands.filter(c => c.lineNumber > currentLine).sort((a, b) => a.lineNumber - b.lineNumber);
+
         if (!filteredCommands.length) {
             return;
         }
         const command = filteredCommands[0];
+
         const commandLine = command.command.command;
+
         if (!isWindows && commandLine) {
             this._accessibleViewService.setPosition(new Position(command.lineNumber, 1), true);
             alert(commandLine);
@@ -197,14 +208,19 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
     }
     private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
         const capability = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection);
+
         const commands = capability?.commands;
+
         const currentCommand = capability?.currentCommand;
+
         if (!commands?.length) {
             return;
         }
         const result: ICommandWithEditorLine[] = [];
+
         for (const command of commands) {
             const lineNumber = this._getEditorLineForCommand(command);
+
             if (!lineNumber) {
                 continue;
             }
@@ -212,6 +228,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
         }
         if (currentCommand) {
             const lineNumber = this._getEditorLineForCommand(currentCommand);
+
             if (!!lineNumber) {
                 result.push({ command: currentCommand, lineNumber });
             }
@@ -223,6 +240,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
             return;
         }
         let line: number | undefined;
+
         if ('marker' in command) {
             line = command.marker?.line;
         }
@@ -233,6 +251,7 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
             return;
         }
         line = this._bufferTracker.bufferToEditorLineMapping.get(line);
+
         if (line === undefined) {
             return;
         }
@@ -242,15 +261,21 @@ export class TerminalAccessibleViewContribution extends Disposable implements IT
 registerTerminalContribution(TerminalAccessibleViewContribution.ID, TerminalAccessibleViewContribution);
 export class TerminalAccessibilityHelpContribution extends Disposable {
     static ID: 'terminalAccessibilityHelpContribution';
+
     constructor() {
         super();
         this._register(AccessibilityHelpAction.addImplementation(105, 'terminal', async (accessor) => {
             const instantiationService = accessor.get(IInstantiationService);
+
             const terminalService = accessor.get(ITerminalService);
+
             const accessibleViewService = accessor.get(IAccessibleViewService);
+
             const instance = await terminalService.getActiveOrCreateInstance();
             await terminalService.revealActiveTerminal();
+
             const terminal = instance?.xterm;
+
             if (!terminal) {
                 return;
             }
@@ -283,7 +308,9 @@ class FocusAccessibleBufferAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const terminalService = accessor.get(ITerminalService);
+
         const terminal = await terminalService.getActiveOrCreateInstance();
+
         if (!terminal?.xterm) {
             return;
         }
@@ -304,6 +331,7 @@ registerTerminalAction({
     ],
     run: async (c) => {
         const instance = c.service.activeInstance;
+
         if (!instance) {
             return;
         }
@@ -323,6 +351,7 @@ registerTerminalAction({
     ],
     run: async (c) => {
         const instance = c.service.activeInstance;
+
         if (!instance) {
             return;
         }
@@ -341,7 +370,9 @@ registerTerminalAction({
     },
     run: (c, accessor) => {
         const accessibleViewService = accessor.get(IAccessibleViewService);
+
         const lastPosition = accessibleViewService.getLastPosition();
+
         if (!lastPosition) {
             return;
         }

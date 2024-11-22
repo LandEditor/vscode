@@ -53,6 +53,7 @@ export function asWebviewUri(resource: URI, remoteInfo?: WebviewRemoteInfo): URI
 function encodeAuthority(authority: string): string {
     return authority.replace(/./g, char => {
         const code = char.charCodeAt(0);
+
         if ((code >= CharCode.a && code <= CharCode.z)
             || (code >= CharCode.A && code <= CharCode.Z)
             || (code >= CharCode.Digit0 && code <= CharCode.Digit9)) {

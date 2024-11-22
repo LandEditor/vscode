@@ -27,25 +27,31 @@ export function getAriaId(index: number): string {
     return `suggest-aria-id:${index}`;
 }
 const suggestMoreInfoIcon = registerIcon('suggest-more-info', Codicon.chevronRight, nls.localize('suggestMoreInfoIcon', 'Icon for more information in the suggest widget.'));
+
 const _completionItemColor = new class ColorExtractor {
     private static _regexRelaxed = /(#([\da-fA-F]{3}){1,2}|(rgb|hsl)a\(\s*(\d{1,3}%?\s*,\s*){3}(1|0?\.\d+)\)|(rgb|hsl)\(\s*\d{1,3}%?(\s*,\s*\d{1,3}%?){2}\s*\))/;
     private static _regexStrict = new RegExp(`^${ColorExtractor._regexRelaxed.source}$`, 'i');
     extract(item: CompletionItem, out: string[]): boolean {
         if (item.textLabel.match(ColorExtractor._regexStrict)) {
             out[0] = item.textLabel;
+
             return true;
         }
         if (item.completion.detail && item.completion.detail.match(ColorExtractor._regexStrict)) {
             out[0] = item.completion.detail;
+
             return true;
         }
         if (item.completion.documentation) {
             const value = typeof item.completion.documentation === 'string'
                 ? item.completion.documentation
                 : item.completion.documentation.value;
+
             const match = ColorExtractor._regexRelaxed.exec(value);
+
             if (match && (match.index === 0 || match.index + match[0].length === value.length)) {
                 out[0] = match[0];
+
                 return true;
             }
         }
@@ -79,6 +85,7 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
     private readonly _onDidToggleDetails = new Emitter<void>();
     readonly onDidToggleDetails: Event<void> = this._onDidToggleDetails.event;
     readonly templateId = 'suggestion';
+
     constructor(private readonly _editor: ICodeEditor, 
     @IModelService
     private readonly _modelService: IModelService, 
@@ -91,33 +98,57 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
     }
     renderTemplate(container: HTMLElement): ISuggestionTemplateData {
         const disposables = new DisposableStore();
+
         const root = container;
         root.classList.add('show-file-icons');
+
         const icon = append(container, $('.icon'));
+
         const colorspan = append(icon, $('span.colorspan'));
+
         const text = append(container, $('.contents'));
+
         const main = append(text, $('.main'));
+
         const iconContainer = append(main, $('.icon-label.codicon'));
+
         const left = append(main, $('span.left'));
+
         const right = append(main, $('span.right'));
+
         const iconLabel = new IconLabel(left, { supportHighlights: true, supportIcons: true });
         disposables.add(iconLabel);
+
         const parametersLabel = append(left, $('span.signature-label'));
+
         const qualifierLabel = append(left, $('span.qualifier-label'));
+
         const detailsLabel = append(right, $('span.details-label'));
+
         const readMore = append(right, $('span.readMore' + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)));
         readMore.title = nls.localize('readMore', "Read More");
+
         const configureFont = () => {
             const options = this._editor.getOptions();
+
             const fontInfo = options.get(EditorOption.fontInfo);
+
             const fontFamily = fontInfo.getMassagedFontFamily();
+
             const fontFeatureSettings = fontInfo.fontFeatureSettings;
+
             const fontSize = options.get(EditorOption.suggestFontSize) || fontInfo.fontSize;
+
             const lineHeight = options.get(EditorOption.suggestLineHeight) || fontInfo.lineHeight;
+
             const fontWeight = fontInfo.fontWeight;
+
             const letterSpacing = fontInfo.letterSpacing;
+
             const fontSizePx = `${fontSize}px`;
+
             const lineHeightPx = `${lineHeight}px`;
+
             const letterSpacingPx = `${letterSpacing}px`;
             root.style.fontSize = fontSizePx;
             root.style.fontWeight = fontWeight;
@@ -130,18 +161,23 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
             readMore.style.height = lineHeightPx;
             readMore.style.width = lineHeightPx;
         };
+
         return { root, left, right, icon, colorspan, iconLabel, iconContainer, parametersLabel, qualifierLabel, detailsLabel, readMore, disposables, configureFont };
     }
     renderElement(element: CompletionItem, index: number, data: ISuggestionTemplateData): void {
         data.configureFont();
+
         const { completion } = element;
         data.root.id = getAriaId(index);
         data.colorspan.style.backgroundColor = '';
+
         const labelOptions: IIconLabelValueOptions = {
             labelEscapeNewLines: true,
             matches: createMatches(element.score)
         };
+
         const color: string[] = [];
+
         if (completion.kind === CompletionItemKind.Color && _completionItemColor.extract(element, color)) {
             // special logic for 'color' completion items
             data.icon.className = 'icon customcolor';
@@ -152,7 +188,9 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
             // special logic for 'file' completion items
             data.icon.className = 'icon hide';
             data.iconContainer.className = 'icon hide';
+
             const labelClasses = getIconClasses(this._modelService, this._languageService, URI.from({ scheme: 'fake', path: element.textLabel }), FileKind.FILE);
+
             const detailClasses = getIconClasses(this._modelService, this._languageService, URI.from({ scheme: 'fake', path: completion.detail }), FileKind.FILE);
             labelOptions.extraClasses = labelClasses.length > detailClasses.length ? labelClasses : detailClasses;
         }
@@ -176,6 +214,7 @@ export class ItemRenderer implements IListRenderer<CompletionItem, ISuggestionTe
             labelOptions.matches = [];
         }
         data.iconLabel.setLabel(element.textLabel, undefined, labelOptions);
+
         if (typeof completion.label === 'string') {
             data.parametersLabel.textContent = '';
             data.detailsLabel.textContent = stripNewLines(completion.detail || '');

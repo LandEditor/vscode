@@ -21,6 +21,7 @@ declare module 'vscode' {
 		participant: string;
 		// TODO@API validate this against statically-declared slash commands?
 		command?: ChatCommand;
+
 		constructor(participant: string, command?: ChatCommand);
 	}
 
@@ -33,11 +34,13 @@ declare module 'vscode' {
 	export class ChatResponseMarkdownWithVulnerabilitiesPart {
 		value: MarkdownString;
 		vulnerabilities: ChatVulnerability[];
+
 		constructor(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]);
 	}
 
 	export class ChatResponseCodeblockUriPart {
 		value: Uri;
+
 		constructor(value: Uri);
 	}
 
@@ -58,7 +61,9 @@ declare module 'vscode' {
 		uri: Uri;
 		edits: TextEdit[];
 		isDone?: boolean;
+
 		constructor(uri: Uri, done: true);
+
 		constructor(uri: Uri, edits: TextEdit | TextEdit[]);
 	}
 
@@ -67,6 +72,7 @@ declare module 'vscode' {
 		message: string;
 		data: any;
 		buttons?: string[];
+
 		constructor(title: string, message: string, data: any, buttons?: string[]);
 	}
 
@@ -74,6 +80,7 @@ declare module 'vscode' {
 		value: Uri;
 		license: string;
 		snippet: string;
+
 		constructor(value: Uri, license: string, snippet: string);
 	}
 
@@ -81,12 +88,14 @@ declare module 'vscode' {
 
 	export class ChatResponseWarningPart {
 		value: MarkdownString;
+
 		constructor(value: string | MarkdownString);
 	}
 
 	export class ChatResponseProgressPart2 extends ChatResponseProgressPart {
 		value: string;
 		task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>;
+
 		constructor(value: string, task?: (progress: Progress<ChatResponseWarningPart | ChatResponseReferencePart>) => Thenable<string | void>);
 	}
 
@@ -254,6 +263,7 @@ declare module 'vscode' {
 		icon?: ThemeIcon;
 		insertText?: string;
 		detail?: string;
+
 		documentation?: string | MarkdownString;
 		command?: Command;
 

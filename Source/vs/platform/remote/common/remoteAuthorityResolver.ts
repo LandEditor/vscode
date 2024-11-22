@@ -13,6 +13,7 @@ export const enum RemoteConnectionType {
 }
 export class ManagedRemoteConnection {
     public readonly type = RemoteConnectionType.Managed;
+
     constructor(public readonly id: number) { }
     public toString(): string {
         return `Managed(${this.id})`;
@@ -20,6 +21,7 @@ export class ManagedRemoteConnection {
 }
 export class WebSocketRemoteConnection {
     public readonly type = RemoteConnectionType.WebSocket;
+
     constructor(public readonly host: string, public readonly port: number) { }
     public toString(): string {
         return `WebSocket(${this.host}:${this.port})`;
@@ -106,6 +108,7 @@ export class RemoteAuthorityResolverError extends ErrorNoTelemetry {
     public readonly _code: RemoteAuthorityResolverErrorCode;
     public readonly _detail: any;
     public isHandled: boolean;
+
     constructor(message?: string, code: RemoteAuthorityResolverErrorCode = RemoteAuthorityResolverErrorCode.Unknown, detail?: any) {
         super(message);
         this._message = message;
@@ -121,6 +124,7 @@ export interface IRemoteAuthorityResolverService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeConnectionData: Event<void>;
     resolveAuthority(authority: string): Promise<ResolverResult>;
+
     getConnectionData(authority: string): IRemoteConnectionData | null;
     /**
      * Get the canonical URI for a `vscode-remote://` URI.
@@ -138,6 +142,7 @@ export interface IRemoteAuthorityResolverService {
 }
 export function getRemoteAuthorityPrefix(remoteAuthority: string): string {
     const plusIndex = remoteAuthority.indexOf('+');
+
     if (plusIndex === -1) {
         return remoteAuthority;
     }

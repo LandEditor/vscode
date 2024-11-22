@@ -25,12 +25,15 @@ export function maxLeftInRange(editor: ObservableCodeEditor, range: LineRange, r
 	editor.value.read(reader);
 
 	const model = editor.model.read(reader);
+
 	if (!model) { return 0; }
 	let maxLeft = 0;
 
 	editor.scrollTop.read(reader);
+
 	for (let i = range.startLineNumber; i < range.endLineNumberExclusive; i++) {
 		const column = model.getLineMaxColumn(i);
+
 		const left = editor.editor.getOffsetForColumn(i, column);
 		maxLeft = Math.max(maxLeft, left);
 	}
@@ -45,11 +48,13 @@ export function maxLeftInRange(editor: ObservableCodeEditor, range: LineRange, r
 export class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(this._action.id, this._contextKeyService);
+
 		if (!kb) {
 			return super.updateLabel();
 		}
 		if (this.label) {
 			const div = h('div.keybinding').root;
+
 			const keybindingLabel = this._register(new KeybindingLabel(div, OS, { disableTitle: true, ...unthemedKeybindingLabelOptions }));
 			keybindingLabel.set(kb);
 			this.label.textContent = this._action.label;
@@ -91,6 +96,7 @@ export class UniqueUriGenerator {
 }
 export function applyEditToModifiedRangeMappings(rangeMapping: RangeMapping[], edit: TextEdit): RangeMapping[] {
 	const updatedMappings: RangeMapping[] = [];
+
 	for (const m of rangeMapping) {
 		const updatedRange = edit.mapRange(m.modifiedRange);
 		updatedMappings.push(new RangeMapping(m.originalRange, updatedRange));
@@ -114,11 +120,14 @@ function offsetRangeToRange(columnOffsetRange: OffsetRange, startPos: Position):
 
 export function createReindentEdit(text: string, range: LineRange): TextEdit {
 	const newLines = splitLines(text);
+
 	const edits: SingleTextEdit[] = [];
+
 	const minIndent = findFirstMin(range.mapToLineArray(l => getIndentationLength(newLines[l - 1])), numberComparator)!;
 	range.forEach(lineNumber => {
 		edits.push(new SingleTextEdit(offsetRangeToRange(new OffsetRange(0, minIndent), new Position(lineNumber, 1)), ''));
 	});
+
 	return new TextEdit(edits);
 }
 
@@ -127,21 +136,25 @@ export class PathBuilder {
 
 	public moveTo(point: Point): this {
 		this._data += `M ${point.x} ${point.y} `;
+
 		return this;
 	}
 
 	public lineTo(point: Point): this {
 		this._data += `L ${point.x} ${point.y} `;
+
 		return this;
 	}
 
 	public curveTo(cp: Point, to: Point): this {
 		this._data += `Q ${cp.x} ${cp.y} ${to.x} ${to.y} `;
+
 		return this;
 	}
 
 	public curveTo2(cp1: Point, cp2: Point, to: Point): this {
 		this._data += `C ${cp1.x} ${cp1.y} ${cp2.x} ${cp2.y} ${to.x} ${to.y} `;
+
 		return this;
 	}
 

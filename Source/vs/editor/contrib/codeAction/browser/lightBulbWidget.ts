@@ -21,10 +21,15 @@ import * as nls from '../../../../nls.js';
 import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { Range } from '../../../common/core/range.js';
+
 const GUTTER_LIGHTBULB_ICON = registerIcon('gutter-lightbulb', Codicon.lightBulb, nls.localize('gutterLightbulbWidget', 'Icon which spawns code actions menu from the gutter when there is no space in the editor.'));
+
 const GUTTER_LIGHTBULB_AUTO_FIX_ICON = registerIcon('gutter-lightbulb-auto-fix', Codicon.lightbulbAutofix, nls.localize('gutterLightbulbAutoFixWidget', 'Icon which spawns code actions menu from the gutter when there is no space in the editor and a quick fix is available.'));
+
 const GUTTER_LIGHTBULB_AIFIX_ICON = registerIcon('gutter-lightbulb-sparkle', Codicon.lightbulbSparkle, nls.localize('gutterLightbulbAIFixWidget', 'Icon which spawns code actions menu from the gutter when there is no space in the editor and an AI fix is available.'));
+
 const GUTTER_LIGHTBULB_AIFIX_AUTO_FIX_ICON = registerIcon('gutter-lightbulb-aifix-auto-fix', Codicon.lightbulbSparkleAutofix, nls.localize('gutterLightbulbAIFixAutoFixWidget', 'Icon which spawns code actions menu from the gutter when there is no space in the editor and an AI fix and a quick fix is available.'));
+
 const GUTTER_SPARKLE_FILLED_ICON = registerIcon('gutter-lightbulb-sparkle-filled', Codicon.sparkleFilled, nls.localize('gutterLightbulbSparkleFilledWidget', 'Icon which spawns code actions menu from the gutter when there is no space in the editor and an AI fix and a quick fix is available.'));
 namespace LightBulbState {
     export const enum Type {
@@ -32,8 +37,10 @@ namespace LightBulbState {
         Showing
     }
     export const Hidden = { type: Type.Hidden } as const;
+
     export class Showing {
         readonly type = Type.Showing;
+
         constructor(public readonly actions: CodeActionSet, public readonly trigger: CodeActionTrigger, public readonly editorPosition: IPosition, public readonly widgetPosition: IContentWidgetPosition) { }
     }
     export type State = typeof Hidden | Showing;
@@ -69,6 +76,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
     private _preferredKbLabel?: string;
     private _quickFixKbLabel?: string;
     private gutterDecoration: ModelDecorationOptions = LightBulbWidget.GUTTER_DECORATION;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IKeybindingService
     private readonly _keybindingService: IKeybindingService) {
@@ -80,6 +88,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
         this._register(this._editor.onDidChangeModelContent(_ => {
             // cancel when the line in question has been removed
             const editorModel = this._editor.getModel();
+
             if (this.state.type !== LightBulbState.Type.Showing || !editorModel || this.state.editorPosition.lineNumber >= editorModel.getLineCount()) {
                 this.hide();
             }
@@ -97,8 +106,11 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
             // a bit of extra work to make sure the menu
             // doesn't cover the line-text
             const { top, height } = dom.getDomNodePagePosition(this._domNode);
+
             const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+
             let pad = Math.floor(lineHeight / 3);
+
             if (this.state.widgetPosition.position !== null && this.state.widgetPosition.position.lineNumber < this.state.editorPosition.lineNumber) {
                 pad += lineHeight;
             }
@@ -134,8 +146,11 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
             // a bit of extra work to make sure the menu
             // doesn't cover the line-text
             const { top, height } = dom.getDomNodePagePosition(e.target.element);
+
             const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+
             let pad = Math.floor(lineHeight / 3);
+
             if (this.gutterState.widgetPosition.position !== null && this.gutterState.widgetPosition.position.lineNumber < this.gutterState.editorPosition.lineNumber) {
                 pad += lineHeight;
             }
@@ -150,6 +165,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
     override dispose(): void {
         super.dispose();
         this._editor.removeContentWidget(this);
+
         if (this._gutterDecorationID) {
             this._removeGutterDecoration(this._gutterDecorationID);
         }
@@ -166,58 +182,84 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
     public update(actions: CodeActionSet, trigger: CodeActionTrigger, atPosition: IPosition) {
         if (actions.validActions.length <= 0) {
             this.gutterHide();
+
             return this.hide();
         }
         const hasTextFocus = this._editor.hasTextFocus();
+
         if (!hasTextFocus) {
             this.gutterHide();
+
             return this.hide();
         }
         const options = this._editor.getOptions();
+
         if (!options.get(EditorOption.lightbulb).enabled) {
             this.gutterHide();
+
             return this.hide();
         }
         const model = this._editor.getModel();
+
         if (!model) {
             this.gutterHide();
+
             return this.hide();
         }
         const { lineNumber, column } = model.validatePosition(atPosition);
+
         const tabSize = model.getOptions().tabSize;
+
         const fontInfo = this._editor.getOptions().get(EditorOption.fontInfo);
+
         const lineContent = model.getLineContent(lineNumber);
+
         const indent = computeIndentLevel(lineContent, tabSize);
+
         const lineHasSpace = fontInfo.spaceWidth * indent > 22;
+
         const isFolded = (lineNumber: number) => {
             return lineNumber > 2 && this._editor.getTopForLineNumber(lineNumber) === this._editor.getTopForLineNumber(lineNumber - 1);
         };
         // Check for glyph margin decorations of any kind
         const currLineDecorations = this._editor.getLineDecorations(lineNumber);
+
         let hasDecoration = false;
+
         if (currLineDecorations) {
             for (const decoration of currLineDecorations) {
                 const glyphClass = decoration.options.glyphMarginClassName;
+
                 if (glyphClass && !this.lightbulbClasses.some(className => glyphClass.includes(className))) {
                     hasDecoration = true;
+
                     break;
                 }
             }
         }
         let effectiveLineNumber = lineNumber;
+
         let effectiveColumnNumber = 1;
+
         if (!lineHasSpace) {
             // Checks if line is empty or starts with any amount of whitespace
             const isLineEmptyOrIndented = (lineNumber: number): boolean => {
                 const lineContent = model.getLineContent(lineNumber);
+
                 return /^\s*$|^\s+/.test(lineContent) || lineContent.length <= effectiveColumnNumber;
             };
+
             if (lineNumber > 1 && !isFolded(lineNumber - 1)) {
                 const lineCount = model.getLineCount();
+
                 const endLine = lineNumber === lineCount;
+
                 const prevLineEmptyOrIndented = lineNumber > 1 && isLineEmptyOrIndented(lineNumber - 1);
+
                 const nextLineEmptyOrIndented = !endLine && isLineEmptyOrIndented(lineNumber + 1);
+
                 const currLineEmptyOrIndented = isLineEmptyOrIndented(lineNumber);
+
                 const notEmpty = !nextLineEmptyOrIndented && !prevLineEmptyOrIndented;
                 // check above and below. if both are blocked, display lightbulb in the gutter.
                 if (!nextLineEmptyOrIndented && !prevLineEmptyOrIndented && !hasDecoration) {
@@ -226,6 +268,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
                         preference: LightBulbWidget._posPref
                     });
                     this.renderGutterLightbub();
+
                     return this.hide();
                 }
                 else if (prevLineEmptyOrIndented || endLine || (prevLineEmptyOrIndented && !currLineEmptyOrIndented)) {
@@ -241,11 +284,13 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
                     position: { lineNumber: effectiveLineNumber, column: effectiveColumnNumber },
                     preference: LightBulbWidget._posPref
                 });
+
                 if (hasDecoration) {
                     this.gutterHide();
                 }
                 else {
                     this.renderGutterLightbub();
+
                     return this.hide();
                 }
             }
@@ -263,14 +308,18 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
             position: { lineNumber: effectiveLineNumber, column: effectiveColumnNumber },
             preference: LightBulbWidget._posPref
         });
+
         if (this._gutterDecorationID) {
             this._removeGutterDecoration(this._gutterDecorationID);
             this.gutterHide();
         }
         const validActions = actions.validActions;
+
         const actionKind = actions.validActions[0].action.kind;
+
         if (validActions.length !== 1 || !actionKind) {
             this._editor.layoutContentWidget(this);
+
             return;
         }
         this._editor.layoutContentWidget(this);
@@ -304,13 +353,17 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
     private _updateLightBulbTitleAndIcon(): void {
         this._domNode.classList.remove(...this._iconClasses);
         this._iconClasses = [];
+
         if (this.state.type !== LightBulbState.Type.Showing) {
             return;
         }
         let icon: ThemeIcon;
+
         let autoRun = false;
+
         if (this.state.actions.allAIFixes) {
             icon = Codicon.sparkleFilled;
+
             if (this.state.actions.validActions.length === 1) {
                 autoRun = true;
             }
@@ -338,9 +391,12 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
             return;
         }
         let icon: ThemeIcon;
+
         let autoRun = false;
+
         if (this.gutterState.actions.allAIFixes) {
             icon = GUTTER_SPARKLE_FILLED_ICON;
+
             if (this.gutterState.actions.validActions.length === 1) {
                 autoRun = true;
             }
@@ -360,6 +416,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
             icon = GUTTER_LIGHTBULB_ICON;
         }
         this._updateLightbulbTitle(this.gutterState.actions.hasAutoFix, autoRun);
+
         const GUTTER_DECORATION = ModelDecorationOptions.register({
             description: 'codicon-gutter-lightbulb-decoration',
             glyphMarginClassName: ThemeIcon.asClassName(icon),
@@ -371,6 +428,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
     /* Gutter Helper Functions */
     private renderGutterLightbub(): void {
         const selection = this._editor.getSelection();
+
         if (!selection) {
             return;
         }

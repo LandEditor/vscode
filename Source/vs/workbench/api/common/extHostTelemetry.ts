@@ -35,6 +35,7 @@ export class ExtHostTelemetry extends Disposable implements ExtHostTelemetryShap
     private readonly extHostTelemetryLogFile: URI;
     private readonly _outputLogger: ILogger;
     private readonly _telemetryLoggers = new Map<string, ExtHostTelemetryLogger[]>();
+
     constructor(
     @IExtHostInitDataService
     private readonly initData: IExtHostInitDataService, 
@@ -68,9 +69,12 @@ export class ExtHostTelemetry extends Disposable implements ExtHostTelemetryShap
     }
     instantiateLogger(extension: IExtensionDescription, sender: vscode.TelemetrySender, options?: vscode.TelemetryLoggerOptions) {
         const telemetryDetails = this.getTelemetryDetails();
+
         const logger = new ExtHostTelemetryLogger(sender, options, extension, this._outputLogger, this._inLoggingOnlyMode, this.getBuiltInCommonProperties(extension), { isUsageEnabled: telemetryDetails.isUsageEnabled, isErrorsEnabled: telemetryDetails.isErrorsEnabled });
+
         const loggers = this._telemetryLoggers.get(extension.identifier.value) ?? [];
         this._telemetryLoggers.set(extension.identifier.value, [...loggers, logger]);
+
         return logger.apiTelemetryLogger;
     }
     $initializeTelemetryLevel(level: TelemetryLevel, supportsTelemetry: boolean, productConfig?: {
@@ -95,26 +99,34 @@ export class ExtHostTelemetry extends Disposable implements ExtHostTelemetryShap
         commonProperties['common.vscodeversion'] = this.initData.version;
         commonProperties['common.isnewappinstall'] = isNewAppInstall(this.initData.telemetryInfo.firstSessionDate);
         commonProperties['common.product'] = this.initData.environment.appHost;
+
         switch (this.initData.uiKind) {
             case UIKind.Web:
                 commonProperties['common.uikind'] = 'web';
+
                 break;
+
             case UIKind.Desktop:
                 commonProperties['common.uikind'] = 'desktop';
+
                 break;
+
             default:
                 commonProperties['common.uikind'] = 'unknown';
         }
         commonProperties['common.remotename'] = getRemoteName(cleanRemoteAuthority(this.initData.remote.authority));
+
         return commonProperties;
     }
     $onDidChangeTelemetryLevel(level: TelemetryLevel): void {
         this._oldTelemetryEnablement = this.getTelemetryConfiguration();
         this._level = level;
+
         const telemetryDetails = this.getTelemetryDetails();
         // Remove all disposed loggers
         this._telemetryLoggers.forEach((loggers, key) => {
             const newLoggers = loggers.filter(l => !l.isDisposed);
+
             if (newLoggers.length === 0) {
                 this._telemetryLoggers.delete(key);
             }
@@ -128,6 +140,7 @@ export class ExtHostTelemetry extends Disposable implements ExtHostTelemetryShap
                 logger.updateTelemetryEnablements(telemetryDetails.isUsageEnabled, telemetryDetails.isErrorsEnabled);
             }
         });
+
         if (this._oldTelemetryEnablement !== this.getTelemetryConfiguration()) {
             this._onDidChangeTelemetryEnabled.fire(this.getTelemetryConfiguration());
         }
@@ -136,12 +149,16 @@ export class ExtHostTelemetry extends Disposable implements ExtHostTelemetryShap
     }
     onExtensionError(extension: ExtensionIdentifier, error: Error): boolean {
         const loggers = this._telemetryLoggers.get(extension.value);
+
         const nonDisposedLoggers = loggers?.filter(l => !l.isDisposed);
+
         if (!nonDisposedLoggers) {
             this._telemetryLoggers.delete(extension.value);
+
             return false;
         }
         let errorEmitted = false;
+
         for (const logger of nonDisposedLoggers) {
             if (logger.ignoreUnhandledExtHostErrors) {
                 continue;
@@ -177,6 +194,7 @@ export class ExtHostTelemetryLogger {
     };
     private _apiObject: vscode.TelemetryLogger | undefined;
     private _sender: vscode.TelemetrySender | undefined;
+
     constructor(sender: vscode.TelemetrySender, options: vscode.TelemetryLoggerOptions | undefined, private readonly _extension: IExtensionDescription, private readonly _logger: ILogger, private readonly _inLoggingOnlyMode: boolean, private readonly _commonProperties: Record<string, any>, telemetryEnablements: {
         isUsageEnabled: boolean;
         isErrorsEnabled: boolean;
@@ -199,6 +217,7 @@ export class ExtHostTelemetryLogger {
         let updatedData = 'properties' in data ? (data.properties ?? {}) : data;
         // We don't clean measurements since they are just numbers
         updatedData = cleanData(updatedData, []);
+
         if (this._additionalCommonProperties) {
             updatedData = mixin(updatedData, this._additionalCommonProperties);
         }
@@ -226,6 +245,7 @@ export class ExtHostTelemetryLogger {
             eventName = this._extension.identifier.value + '/' + eventName;
         }
         data = this.mixInCommonPropsAndCleanData(data || {});
+
         if (!this._inLoggingOnlyMode) {
             this._sender?.sendEventData(eventName, data);
         }
@@ -251,6 +271,7 @@ export class ExtHostTelemetryLogger {
                 stack: eventNameOrException.stack,
                 cause: eventNameOrException.cause
             };
+
             const cleanedErrorData = cleanData(errorData, []);
             // Reconstruct the error object with the cleaned data
             const cleanedError = new Error(cleanedErrorData.message, {
@@ -259,6 +280,7 @@ export class ExtHostTelemetryLogger {
             cleanedError.stack = cleanedErrorData.stack;
             cleanedError.name = cleanedErrorData.name;
             data = this.mixInCommonPropsAndCleanData(data || {});
+
             if (!this._inLoggingOnlyMode) {
                 this._sender.sendErrorData(cleanedError, data);
             }
@@ -268,6 +290,7 @@ export class ExtHostTelemetryLogger {
     get apiTelemetryLogger(): vscode.TelemetryLogger {
         if (!this._apiObject) {
             const that = this;
+
             const obj: vscode.TelemetryLogger = {
                 logUsage: that.logUsage.bind(that),
                 get isUsageEnabled() {
@@ -301,6 +324,7 @@ export class ExtHostTelemetryLogger {
 }
 export function isNewAppInstall(firstSessionDate: string): boolean {
     const installAge = Date.now() - new Date(firstSessionDate).getTime();
+
     return isNaN(installAge) ? false : installAge < 1000 * 60 * 60 * 24; // install age is less than a day
 }
 export const IExtHostTelemetry = createDecorator<IExtHostTelemetry>('IExtHostTelemetry');

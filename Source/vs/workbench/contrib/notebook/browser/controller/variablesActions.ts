@@ -11,6 +11,7 @@ import { KERNEL_HAS_VARIABLE_PROVIDER } from '../../common/notebookContextKeys.j
 import { NOTEBOOK_VARIABLE_VIEW_ENABLED } from '../contrib/notebookVariables/notebookVariableContextKeys.js';
 import * as icons from '../notebookIcons.js';
 import { INotebookActionContext, NotebookAction } from './coreActions.js';
+
 const OPEN_VARIABLES_VIEW_COMMAND_ID = 'notebook.openVariablesView';
 registerAction2(class OpenVariablesViewAction extends NotebookAction {
     constructor() {

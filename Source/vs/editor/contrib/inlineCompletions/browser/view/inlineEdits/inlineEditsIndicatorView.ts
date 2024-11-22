@@ -63,12 +63,15 @@ export class InlineEditsIndicator extends Disposable {
 
 		this._register(autorun(reader => {
 			const state = this._state.read(reader);
+
 			if (!state) {
 				this._indicator.root.style.visibility = 'hidden';
+
 				return;
 			}
 
 			this._indicator.root.style.visibility = '';
+
 			const i = this._editorObs.layoutInfo.read(reader);
 
 			const range = new OffsetRange(0, i.height - 30);
@@ -76,6 +79,7 @@ export class InlineEditsIndicator extends Disposable {
 			const topEdit = state.editTopLeft;
 			this._indicator.root.classList.toggle('top', topEdit.y < range.start);
 			this._indicator.root.classList.toggle('bottom', topEdit.y > range.endExclusive);
+
 			const showAnyway = state.showAlways;
 			this._indicator.root.classList.toggle('visible', showAnyway);
 			this._indicator.root.classList.toggle('contained', range.contains(topEdit.y));

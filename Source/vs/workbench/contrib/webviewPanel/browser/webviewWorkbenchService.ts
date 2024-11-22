@@ -93,6 +93,7 @@ function canRevive(reviver: WebviewResolver, webview: WebviewInput): boolean {
 export class LazilyResolvedWebviewEditorInput extends WebviewInput {
     private _resolved = false;
     private _resolvePromise?: CancelablePromise<void>;
+
     constructor(init: WebviewInputInitInfo, webview: IOverlayWebview, 
     @IWebviewWorkbenchService
     private readonly _webviewWorkbenchService: IWebviewWorkbenchService) {
@@ -108,6 +109,7 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
         if (!this._resolved) {
             this._resolved = true;
             this._resolvePromise = createCancelablePromise(token => this._webviewWorkbenchService.resolveWebview(this, token));
+
             try {
                 await this._resolvePromise;
             }
@@ -124,6 +126,7 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
             return;
         }
         other._resolved = this._resolved;
+
         return other;
     }
 }
@@ -135,22 +138,27 @@ class RevivalPool {
     }> = [];
     public enqueueForRestoration(input: WebviewInput, token: CancellationToken): Promise<void> {
         const promise = new DeferredPromise<void>();
+
         const remove = () => {
             const index = this._awaitingRevival.findIndex(entry => input === entry.input);
+
             if (index >= 0) {
                 this._awaitingRevival.splice(index, 1);
             }
         };
+
         const disposable = combinedDisposable(input.webview.onDidDispose(remove), token.onCancellationRequested(() => {
             remove();
             promise.cancel();
         }));
         this._awaitingRevival.push({ input, promise, disposable });
+
         return promise.p;
     }
     public reviveFor(reviver: WebviewResolver, token: CancellationToken) {
         const toRevive = this._awaitingRevival.filter(({ input }) => canRevive(reviver, input));
         this._awaitingRevival = this._awaitingRevival.filter(({ input }) => !canRevive(reviver, input));
+
         for (const { input, promise: resolve, disposable } of toRevive) {
             reviver.resolveWebview(input, token).then(x => resolve.complete(x), err => resolve.error(err)).finally(() => {
                 disposable.dispose();
@@ -163,6 +171,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     private readonly _revivers = new Set<WebviewResolver>();
     private readonly _revivalPool = new RevivalPool();
     private readonly _iconManager: WebviewIconManager;
+
     constructor(
     @IEditorGroupsService
     editorGroupsService: IEditorGroupsService, 
@@ -195,6 +204,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     public readonly onDidChangeActiveWebviewEditor = this._onDidChangeActiveWebviewEditor.event;
     private getWebviewId(input: EditorInput | null): string {
         let webviewInput: WebviewInput | undefined;
+
         if (input instanceof WebviewInput) {
             webviewInput = input;
         }
@@ -210,7 +220,9 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     }
     private updateActiveWebview() {
         const activeInput = this._editorService.activeEditor;
+
         let newActiveWebview: WebviewInput | undefined;
+
         if (activeInput instanceof WebviewInput) {
             newActiveWebview = activeInput;
         }
@@ -229,6 +241,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     }
     public openWebview(webviewInitInfo: WebviewInitInfo, viewType: string, title: string, showOptions: IWebViewShowOptions): WebviewInput {
         const webview = this._webviewService.createWebviewOverlay(webviewInitInfo);
+
         const webviewInput = this._instantiationService.createInstance(WebviewInput, { viewType, name: title, providedId: webviewInitInfo.providedViewType }, webview, this.iconManager);
         this._editorService.openEditor(webviewInput, {
             pinned: true,
@@ -237,6 +250,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
             // but make sure to restore the editor to fix https://github.com/microsoft/vscode/issues/79633
             activation: showOptions.preserveFocus ? EditorActivation.RESTORE : undefined
         }, showOptions.group);
+
         return webviewInput;
     }
     public revealWebview(webview: WebviewInput, group: IEditorGroup | GroupIdentifier | ACTIVE_GROUP_TYPE | SIDE_GROUP_TYPE, preserveFocus: boolean): void {
@@ -271,8 +285,10 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     }): WebviewInput {
         const webview = this._webviewService.createWebviewOverlay(options.webviewInitInfo);
         webview.state = options.state;
+
         const webviewInput = this._instantiationService.createInstance(LazilyResolvedWebviewEditorInput, { viewType: options.viewType, providedId: options.webviewInitInfo.providedViewType, name: options.title }, webview);
         webviewInput.iconPath = options.iconPath;
+
         if (typeof options.group === 'number') {
             webviewInput.updateGroup(options.group);
         }
@@ -280,8 +296,10 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     }
     public registerResolver(reviver: WebviewResolver): IDisposable {
         this._revivers.add(reviver);
+
         const cts = new CancellationTokenSource();
         this._revivalPool.reviveFor(reviver, cts.token);
+
         return toDisposable(() => {
             this._revivers.delete(reviver);
             cts.dispose(true);
@@ -299,6 +317,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
         for (const reviver of this._revivers.values()) {
             if (canRevive(reviver, webview)) {
                 await reviver.resolveWebview(webview, token);
+
                 return true;
             }
         }
@@ -306,6 +325,7 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
     }
     public async resolveWebview(webview: WebviewInput, token: CancellationToken): Promise<void> {
         const didRevive = await this.tryRevive(webview, token);
+
         if (!didRevive && !token.isCancellationRequested) {
             // A reviver may not be registered yet. Put into pool and resolve promise when we can revive
             return this._revivalPool.enqueueForRestoration(webview, token);

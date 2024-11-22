@@ -51,9 +51,12 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	}
 
 	getVisibleTextEditors(): vscode.TextEditor[];
+
 	getVisibleTextEditors(internal: true): ExtHostTextEditor[];
+
 	getVisibleTextEditors(internal?: true): ExtHostTextEditor[] | vscode.TextEditor[] {
 		const editors = this._extHostDocumentsAndEditors.allEditors();
+
 		return internal
 			? editors
 			: editors.map(editor => editor.value);
@@ -62,8 +65,10 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	showTextDocument(document: vscode.TextDocument, column: vscode.ViewColumn, preserveFocus: boolean): Promise<vscode.TextEditor>;
 	showTextDocument(document: vscode.TextDocument, options: { column: vscode.ViewColumn; preserveFocus: boolean; pinned: boolean }): Promise<vscode.TextEditor>;
 	showTextDocument(document: vscode.TextDocument, columnOrOptions: vscode.ViewColumn | vscode.TextDocumentShowOptions | undefined, preserveFocus?: boolean): Promise<vscode.TextEditor>;
+
 	async showTextDocument(document: vscode.TextDocument, columnOrOptions: vscode.ViewColumn | vscode.TextDocumentShowOptions | undefined, preserveFocus?: boolean): Promise<vscode.TextEditor> {
 		let options: ITextDocumentShowOptions;
+
 		if (typeof columnOrOptions === 'number') {
 			options = {
 				position: TypeConverters.ViewColumn.from(columnOrOptions),
@@ -83,7 +88,9 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		}
 
 		const editorId = await this._proxy.$tryShowTextDocument(document.uri, options);
+
 		const editor = editorId && this._extHostDocumentsAndEditors.getEditor(editorId);
+
 		if (editor) {
 			return editor.value;
 		}
@@ -104,6 +111,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 
 	$acceptEditorPropertiesChanged(id: string, data: IEditorPropertiesChangeData): void {
 		const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 		if (!textEditor) {
 			throw new Error('unknown text editor');
 		}
@@ -130,6 +138,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		}
 		if (data.selections) {
 			const kind = TextEditorSelectionChangeKind.fromValue(data.selections.source);
+
 			const selections = data.selections.selections.map(TypeConverters.Selection.to);
 			this._onDidChangeTextEditorSelection.fire({
 				textEditor: textEditor.value,
@@ -149,10 +158,12 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 	$acceptEditorPositionData(data: ITextEditorPositionData): void {
 		for (const id in data) {
 			const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 			if (!textEditor) {
 				throw new Error('Unknown text editor');
 			}
 			const viewColumn = TypeConverters.ViewColumn.to(data[id]);
+
 			if (textEditor.value.viewColumn !== viewColumn) {
 				textEditor._acceptViewColumn(viewColumn);
 				this._onDidChangeTextEditorViewColumn.fire({ textEditor: textEditor.value, viewColumn });
@@ -162,6 +173,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 
 	$acceptEditorDiffInformation(id: string, diffInformation: ITextEditorDiffInformation | undefined): void {
 		const textEditor = this._extHostDocumentsAndEditors.getEditor(id);
+
 		if (!textEditor) {
 			throw new Error('unknown text editor');
 		}
@@ -172,10 +184,12 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 				textEditor: textEditor.value,
 				diffInformation: undefined
 			});
+
 			return;
 		}
 
 		const original = URI.revive(diffInformation.original);
+
 		const modified = URI.revive(diffInformation.modified);
 
 		const changes = diffInformation.changes.map(change => {
@@ -194,6 +208,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		});
 
 		const that = this;
+
 		const result = Object.freeze({
 			documentVersion: diffInformation.documentVersion,
 			original,
@@ -201,6 +216,7 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 			changes,
 			get isStale(): boolean {
 				const document = that._extHostDocumentsAndEditors.getDocument(modified);
+
 				return document?.version !== diffInformation.documentVersion;
 			}
 		});

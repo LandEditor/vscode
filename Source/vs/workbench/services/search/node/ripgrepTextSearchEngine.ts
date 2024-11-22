@@ -33,12 +33,14 @@ export class RipgrepTextSearchEngine {
                 maxFileSize: options.maxFileSize,
                 surroundingContext: options.surroundingContext
             };
+
             return this.provideTextSearchResultsWithRgOptions(query, extendedOptions, progress, token);
         })).then((e => {
             const complete: TextSearchComplete2 = {
                 // todo: get this to actually check
                 limitHit: e.some(complete => !!complete && complete.limitHit)
             };
+
             return complete;
         }));
     }
@@ -49,55 +51,71 @@ export class RipgrepTextSearchEngine {
                 folder: options.folderOptions.folder.toString()
             }
         })}`);
+
         return new Promise((resolve, reject) => {
             token.onCancellationRequested(() => cancel());
+
             const extendedOptions: RipgrepTextSearchOptions = {
                 ...options,
                 numThreads: this._numThreads
             };
+
             const rgArgs = getRgArgs(query, extendedOptions);
+
             const cwd = options.folderOptions.folder.fsPath;
+
             const escapedArgs = rgArgs
                 .map(arg => arg.match(/^-/) ? arg : `'${arg}'`)
                 .join(' ');
             this.outputChannel.appendLine(`${rgDiskPath} ${escapedArgs}\n - cwd: ${cwd}`);
+
             let rgProc: Maybe<cp.ChildProcess> = cp.spawn(rgDiskPath, rgArgs, { cwd });
             rgProc.on('error', e => {
                 console.error(e);
                 this.outputChannel.appendLine('Error: ' + (e && e.message));
                 reject(serializeSearchError(new SearchError(e && e.message, SearchErrorCode.rgProcessError)));
             });
+
             let gotResult = false;
+
             const ripgrepParser = new RipgrepParser(options.maxResults ?? DEFAULT_MAX_SEARCH_RESULTS, options.folderOptions.folder, newToOldPreviewOptions(options.previewOptions));
             ripgrepParser.on('result', (match: TextSearchResult2) => {
                 gotResult = true;
                 dataWithoutResult = '';
                 progress.report(match);
             });
+
             let isDone = false;
+
             const cancel = () => {
                 isDone = true;
                 rgProc?.kill();
                 ripgrepParser?.cancel();
             };
+
             let limitHit = false;
             ripgrepParser.on('hitLimit', () => {
                 limitHit = true;
                 cancel();
             });
+
             let dataWithoutResult = '';
             rgProc.stdout!.on('data', data => {
                 ripgrepParser.handleData(data);
+
                 if (!gotResult) {
                     dataWithoutResult += data;
                 }
             });
+
             let gotData = false;
             rgProc.stdout!.once('data', () => gotData = true);
+
             let stderr = '';
             rgProc.stderr!.on('data', data => {
                 const message = data.toString();
                 this.outputChannel.appendLine(message);
+
                 if (stderr.length + message.length < 1e6) {
                     stderr += message;
                 }
@@ -105,10 +123,12 @@ export class RipgrepTextSearchEngine {
             rgProc.on('close', () => {
                 this.outputChannel.appendLine(gotData ? 'Got data from stdout' : 'No data from stdout');
                 this.outputChannel.appendLine(gotResult ? 'Got result from parser' : 'No result from parser');
+
                 if (dataWithoutResult) {
                     this.outputChannel.appendLine(`Got data without result: ${dataWithoutResult}`);
                 }
                 this.outputChannel.appendLine('');
+
                 if (isDone) {
                     resolve({ limitHit });
                 }
@@ -116,7 +136,9 @@ export class RipgrepTextSearchEngine {
                     // Trigger last result
                     ripgrepParser.flush();
                     rgProc = null;
+
                     let searchError: Maybe<SearchError>;
+
                     if (stderr && !gotData && (searchError = rgErrorMsgForDisplay(stderr))) {
                         reject(serializeSearchError(new SearchError(searchError.message, searchError.code)));
                     }
@@ -136,11 +158,14 @@ export class RipgrepTextSearchEngine {
  */
 function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
     const lines = msg.split('\n');
+
     const firstLine = lines[0].trim();
+
     if (lines.some(l => l.startsWith('regex parse error'))) {
         return new SearchError(buildRegexParseError(lines), SearchErrorCode.regexParseError);
     }
     const match = firstLine.match(/grep config error: unknown encoding: (.*)/);
+
     if (match) {
         return new SearchError(`Unknown encoding: ${match[1]}`, SearchErrorCode.unknownEncoding);
     }
@@ -159,9 +184,12 @@ function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
 }
 function buildRegexParseError(lines: string[]): string {
     const errorMessage: string[] = ['Regex parse error'];
+
     const pcre2ErrorLine = lines.filter(l => (l.startsWith('PCRE2:')));
+
     if (pcre2ErrorLine.length >= 1) {
         const pcre2ErrorMessage = pcre2ErrorLine[0].replace('PCRE2:', '');
+
         if (pcre2ErrorMessage.indexOf(':') !== -1 && pcre2ErrorMessage.split(':').length >= 2) {
             const pcre2ActualErrorMessage = pcre2ErrorMessage.split(':')[1];
             errorMessage.push(':' + pcre2ActualErrorMessage);
@@ -175,6 +203,7 @@ export class RipgrepParser extends EventEmitter {
     private hitLimit = false;
     private stringDecoder: StringDecoder;
     private numResults = 0;
+
     constructor(private maxResults: number, private root: URI, private previewOptions: ITextSearchPreviewOptions) {
         super();
         this.stringDecoder = new StringDecoder();
@@ -189,6 +218,7 @@ export class RipgrepParser extends EventEmitter {
     override on(event: 'hitLimit', listener: () => void): this;
     override on(event: string, listener: (...args: any[]) => void): this {
         super.on(event, listener);
+
         return this;
     }
     handleData(data: Buffer | string): void {
@@ -203,15 +233,18 @@ export class RipgrepParser extends EventEmitter {
         let newlineIdx = decodedData.indexOf('\n');
         // If the previous data chunk didn't end in a newline, prepend it to this chunk
         const dataStr = this.remainder + decodedData;
+
         if (newlineIdx >= 0) {
             newlineIdx += this.remainder.length;
         }
         else {
             // Shortcut
             this.remainder = dataStr;
+
             return;
         }
         let prevIdx = 0;
+
         while (newlineIdx >= 0) {
             this.handleLine(dataStr.substring(prevIdx, newlineIdx).trim());
             prevIdx = newlineIdx + 1;
@@ -224,6 +257,7 @@ export class RipgrepParser extends EventEmitter {
             return;
         }
         let parsedLine: IRgMessage;
+
         try {
             parsedLine = JSON.parse(outputLine);
         }
@@ -232,9 +266,12 @@ export class RipgrepParser extends EventEmitter {
         }
         if (parsedLine.type === 'match') {
             const matchPath = bytesOrTextToString(parsedLine.data.path);
+
             const uri = URI.joinPath(this.root, matchPath);
+
             const result = this.createTextSearchMatch(parsedLine.data, uri);
             this.onResult(result);
+
             if (this.hitLimit) {
                 this.cancel();
                 this.emit('hitLimit');
@@ -242,17 +279,24 @@ export class RipgrepParser extends EventEmitter {
         }
         else if (parsedLine.type === 'context') {
             const contextPath = bytesOrTextToString(parsedLine.data.path);
+
             const uri = URI.joinPath(this.root, contextPath);
+
             const result = this.createTextSearchContexts(parsedLine.data, uri);
             result.forEach(r => this.onResult(r));
         }
     }
     private createTextSearchMatch(data: IRgMatch, uri: URI): TextSearchMatch2 {
         const lineNumber = data.line_number - 1;
+
         const fullText = bytesOrTextToString(data.lines);
+
         const fullTextBytes = Buffer.from(fullText);
+
         let prevMatchEnd = 0;
+
         let prevMatchEndCol = 0;
+
         let prevMatchEndLine = lineNumber;
         // it looks like certain regexes can match a line, but cause rg to not
         // emit any specific submatches for that line.
@@ -267,29 +311,41 @@ export class RipgrepParser extends EventEmitter {
                 return null;
             }
             this.numResults++;
+
             if (this.numResults >= this.maxResults) {
                 // Finish the line, then report the result below
                 this.hitLimit = true;
             }
             const matchText = bytesOrTextToString(match.match);
+
             const inBetweenText = fullTextBytes.slice(prevMatchEnd, match.start).toString();
+
             const inBetweenStats = getNumLinesAndLastNewlineLength(inBetweenText);
+
             const startCol = inBetweenStats.numLines > 0 ?
                 inBetweenStats.lastLineLength :
                 inBetweenStats.lastLineLength + prevMatchEndCol;
+
             const stats = getNumLinesAndLastNewlineLength(matchText);
+
             const startLineNumber = inBetweenStats.numLines + prevMatchEndLine;
+
             const endLineNumber = stats.numLines + startLineNumber;
+
             const endCol = stats.numLines > 0 ?
                 stats.lastLineLength :
                 stats.lastLineLength + startCol;
             prevMatchEnd = match.end;
             prevMatchEndCol = endCol;
             prevMatchEndLine = endLineNumber;
+
             return new Range(startLineNumber, startCol, endLineNumber, endCol);
         }));
+
         const searchRange = mapArrayOrNot(<Range[]>ranges, rangeToSearchRange);
+
         const internalResult = new TextSearchMatch(fullText, searchRange, this.previewOptions);
+
         return new TextSearchMatch2(uri, internalResult.rangeLocations.map(e => ({
             sourceRange: searchRangeToRange(e.source),
             previewRange: searchRangeToRange(e.preview),
@@ -297,7 +353,9 @@ export class RipgrepParser extends EventEmitter {
     }
     private createTextSearchContexts(data: IRgMatch, uri: URI): TextSearchContext2[] {
         const text = bytesOrTextToString(data.lines);
+
         const startLine = data.line_number;
+
         return text
             .replace(/\r?\n$/, '')
             .split('\n')
@@ -317,9 +375,13 @@ function getNumLinesAndLastNewlineLength(text: string): {
     lastLineLength: number;
 } {
     const re = /\n/g;
+
     let numLines = 0;
+
     let lastNewlineIdx = -1;
+
     let match: ReturnType<typeof re.exec>;
+
     while (match = re.exec(text)) {
         numLines++;
         lastNewlineIdx = match.index;
@@ -327,13 +389,16 @@ function getNumLinesAndLastNewlineLength(text: string): {
     const lastLineLength = lastNewlineIdx >= 0 ?
         text.length - lastNewlineIdx - 1 :
         text.length;
+
     return { numLines, lastLineLength };
 }
 // exported for testing
 export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOptions): string[] {
     const args = ['--hidden', '--no-require-git'];
     args.push(query.isCaseSensitive ? '--case-sensitive' : '--ignore-case');
+
     const { doubleStarIncludes, otherIncludes } = groupBy(options.folderOptions.includes, (include: string) => include.startsWith('**') ? 'doubleStarIncludes' : 'otherIncludes');
+
     if (otherIncludes && otherIncludes.length) {
         const uniqueOthers = new Set<string>();
         otherIncludes.forEach(other => { uniqueOthers.add(other); });
@@ -355,6 +420,7 @@ export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOpt
     options.folderOptions.excludes.map(e => typeof (e) === 'string' ? e : e.pattern)
         .map(anchorGlob)
         .forEach(rgGlob => args.push('-g', `!${rgGlob}`));
+
     if (options.maxFileSize) {
         args.push('--max-filesize', options.maxFileSize + '');
     }
@@ -391,13 +457,16 @@ export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOpt
     }
     // Allow $ to match /r/n
     args.push('--crlf');
+
     if (query.isRegExp) {
         query.pattern = unicodeEscapesToPCRE2(query.pattern);
         args.push('--engine', 'auto');
     }
     let searchPatternAfterDoubleDashes: Maybe<string>;
+
     if (query.isWordMatch) {
         const regexp = createRegExp(query.pattern, !!query.isRegExp, { wholeWord: query.isWordMatch });
+
         const regexpStr = regexp.source.replace(/\\\//g, '/'); // RegExp.source arbitrarily returns escaped slashes. Search and destroy.
         args.push('--regexp', regexpStr);
     }
@@ -411,10 +480,12 @@ export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOpt
         args.push('--fixed-strings');
     }
     args.push('--no-config');
+
     if (!options.folderOptions.useIgnoreFiles.global) {
         args.push('--no-ignore-global');
     }
     args.push('--json');
+
     if (query.isMultiline) {
         args.push('--multiline');
     }
@@ -424,11 +495,13 @@ export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOpt
     }
     // Folder to search
     args.push('--');
+
     if (searchPatternAfterDoubleDashes) {
         // Put the query after --, in case the query starts with a dash
         args.push(searchPatternAfterDoubleDashes);
     }
     args.push('.');
+
     return args;
 }
 /**
@@ -436,20 +509,24 @@ export function getRgArgs(query: TextSearchQuery2, options: RipgrepTextSearchOpt
  */
 function spreadGlobComponents(globComponent: string): string[] {
     const globComponentWithBraceExpansion = performBraceExpansionForRipgrep(globComponent);
+
     return globComponentWithBraceExpansion.flatMap((globArg) => {
         const components = splitGlobAware(globArg, '/');
+
         return components.map((_, i) => components.slice(0, i + 1).join('/'));
     });
 }
 export function unicodeEscapesToPCRE2(pattern: string): string {
     // Match \u1234
     const unicodePattern = /((?:[^\\]|^)(?:\\\\)*)\\u([a-z0-9]{4})/gi;
+
     while (pattern.match(unicodePattern)) {
         pattern = pattern.replace(unicodePattern, `$1\\x{$2}`);
     }
     // Match \u{1234}
     // \u with 5-6 characters will be left alone because \x only takes 4 characters.
     const unicodePatternWithBraces = /((?:[^\\]|^)(?:\\\\)*)\\u\{([a-z0-9]{4})\}/gi;
+
     while (pattern.match(unicodePatternWithBraces)) {
         pattern = pattern.replace(unicodePatternWithBraces, `$1\\x{$2}`);
     }
@@ -476,10 +553,12 @@ export type IRgBytesOrText = {
 } | {
     text: string;
 };
+
 const isLookBehind = (node: ReAST.Node) => node.type === 'Assertion' && node.kind === 'lookbehind';
 export function fixRegexNewline(pattern: string): string {
     // we parse the pattern anew each tiem
     let re: ReAST.Pattern;
+
     try {
         re = new RegExpParser().parsePattern(pattern);
     }
@@ -487,18 +566,23 @@ export function fixRegexNewline(pattern: string): string {
         return pattern;
     }
     let output = '';
+
     let lastEmittedIndex = 0;
+
     const replace = (start: number, end: number, text: string) => {
         output += pattern.slice(lastEmittedIndex, start) + text;
         lastEmittedIndex = end;
     };
+
     const context: ReAST.Node[] = [];
+
     const visitor = new RegExpVisitor({
         onCharacterEnter(char) {
             if (char.raw !== '\\n') {
                 return;
             }
             const parent = context[0];
+
             if (!parent) {
                 // simple char, \n -> \r?\n
                 replace(char.start, char.end, '\\r?\\n');
@@ -510,6 +594,7 @@ export function fixRegexNewline(pattern: string): string {
                 if (parent.negate) {
                     // negative bracket expr, [^a-z\n] -> (?![a-z]|\r?\n)
                     const otherContent = pattern.slice(parent.start + 2, char.start) + pattern.slice(char.end, parent.end - 1);
+
                     if (parent.parent?.type === 'Quantifier') {
                         // If quantified, we can't use a negative lookahead in a quantifier.
                         // But `.` already doesn't match new lines, so we can just use that
@@ -561,6 +646,7 @@ export function fixRegexNewline(pattern: string): string {
     });
     visitor.visit(re);
     output += pattern.slice(lastEmittedIndex);
+
     return output;
 }
 export function fixNewline(pattern: string): string {
@@ -579,11 +665,16 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
     fixedEnd?: string;
 } {
     let inBraces = false;
+
     let escaped = false;
+
     let fixedStart = '';
+
     let strInBraces = '';
+
     for (let i = 0; i < pattern.length; i++) {
         const char = pattern[i];
+
         switch (char) {
             case '\\':
                 if (escaped) {
@@ -601,6 +692,7 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
                     escaped = true;
                 }
                 break;
+
             case '{':
                 if (escaped) {
                     // if we escaped this opening bracket, then it is to be taken literally. Remove the `\` because we've acknowleged it and add the `{` to the appropriate string
@@ -622,6 +714,7 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
                     }
                 }
                 break;
+
             case '}':
                 if (escaped) {
                     // same as `}`, but for closing bracket
@@ -642,6 +735,7 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
                     fixedStart += char;
                 }
                 break;
+
             default:
                 // similar to the `\\` case, we didn't do anything with the escape, so we should re-insert it into the appropriate string
                 // to be consumed later when individual parts of the glob are processed
@@ -652,6 +746,7 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
                     fixedStart += (escaped ? '\\' : '') + char;
                 }
                 escaped = false;
+
                 break;
         }
     }
@@ -664,17 +759,21 @@ function getEscapeAwareSplitStringForRipgrep(pattern: string): {
  */
 export function performBraceExpansionForRipgrep(pattern: string): string[] {
     const { fixedStart, strInBraces, fixedEnd } = getEscapeAwareSplitStringForRipgrep(pattern);
+
     if (fixedStart === undefined || fixedEnd === undefined) {
         return [strInBraces];
     }
     let arr = splitGlobAware(strInBraces, ',');
+
     if (!arr.length) {
         // occurs if the braces are empty.
         arr = [''];
     }
     const ends = performBraceExpansionForRipgrep(fixedEnd);
+
     return arr.flatMap((elem) => {
         const start = fixedStart + elem;
+
         return ends.map((end) => {
             return start + end;
         });

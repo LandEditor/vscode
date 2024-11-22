@@ -155,6 +155,7 @@ const viewDescriptor: IJSONSchema = {
         }
     }
 };
+
 const remoteViewDescriptor: IJSONSchema = {
     type: 'object',
     required: ['id', 'name'],
@@ -184,6 +185,7 @@ const remoteViewDescriptor: IJSONSchema = {
         }
     }
 };
+
 const viewsContribution: IJSONSchema = {
     description: localize('vscode.extension.contributes.views', "Contributes views to the editor"),
     type: 'object',
@@ -229,6 +231,7 @@ const viewsContribution: IJSONSchema = {
 type ViewContainerExtensionPointType = {
     [loc: string]: IUserFriendlyViewsContainerDescriptor[];
 };
+
 const viewsContainersExtensionPoint: IExtensionPoint<ViewContainerExtensionPointType> = ExtensionsRegistry.registerExtensionPoint<ViewContainerExtensionPointType>({
     extensionPoint: 'viewsContainers',
     jsonSchema: viewsContainersContribution
@@ -236,6 +239,7 @@ const viewsContainersExtensionPoint: IExtensionPoint<ViewContainerExtensionPoint
 type ViewExtensionPointType = {
     [loc: string]: IUserFriendlyViewDescriptor[];
 };
+
 const viewsExtensionPoint: IExtensionPoint<ViewExtensionPointType> = ExtensionsRegistry.registerExtensionPoint<ViewExtensionPointType>({
     extensionPoint: 'views',
     deps: [viewsContainersExtensionPoint],
@@ -252,11 +256,13 @@ const viewsExtensionPoint: IExtensionPoint<ViewExtensionPointType> = ExtensionsR
         }
     }
 });
+
 const CUSTOM_VIEWS_START_ORDER = 7;
 class ViewsExtensionHandler implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.viewsExtensionHandler';
     private viewContainersRegistry: IViewContainersRegistry;
     private viewsRegistry: IViewsRegistry;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -279,8 +285,11 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     }
     private addCustomViewContainers(extensionPoints: readonly IExtensionPointUser<ViewContainerExtensionPointType>[], existingViewContainers: ViewContainer[]): void {
         const viewContainersRegistry = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry);
+
         let activityBarOrder = CUSTOM_VIEWS_START_ORDER + viewContainersRegistry.all.filter(v => !!v.extensionId && viewContainersRegistry.getViewContainerLocation(v) === ViewContainerLocation.Sidebar).length;
+
         let panelOrder = 5 + viewContainersRegistry.all.filter(v => !!v.extensionId && viewContainersRegistry.getViewContainerLocation(v) === ViewContainerLocation.Panel).length + 1;
+
         for (const { value, collector, description } of extensionPoints) {
             Object.entries(value).forEach(([key, value]) => {
                 if (!this.isValidViewsContainer(value, collector)) {
@@ -289,9 +298,12 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
                 switch (key) {
                     case 'activitybar':
                         activityBarOrder = this.registerCustomViewContainers(value, description, activityBarOrder, existingViewContainers, ViewContainerLocation.Sidebar);
+
                         break;
+
                     case 'panel':
                         panelOrder = this.registerCustomViewContainers(value, description, panelOrder, existingViewContainers, ViewContainerLocation.Panel);
+
                         break;
                 }
             });
@@ -299,11 +311,14 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     }
     private removeCustomViewContainers(extensionPoints: readonly IExtensionPointUser<ViewContainerExtensionPointType>[]): void {
         const viewContainersRegistry = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry);
+
         const removedExtensions: ExtensionIdentifierSet = extensionPoints.reduce((result, e) => { result.add(e.description.identifier); return result; }, new ExtensionIdentifierSet());
+
         for (const viewContainer of viewContainersRegistry.all) {
             if (viewContainer.extensionId && removedExtensions.has(viewContainer.extensionId)) {
                 // move all views in this container into default view container
                 const views = this.viewsRegistry.getViews(viewContainer);
+
                 if (views.length) {
                     this.viewsRegistry.moveViews(views, this.getDefaultViewContainer());
                 }
@@ -314,27 +329,33 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     private isValidViewsContainer(viewsContainersDescriptors: IUserFriendlyViewsContainerDescriptor[], collector: ExtensionMessageCollector): boolean {
         if (!Array.isArray(viewsContainersDescriptors)) {
             collector.error(localize('viewcontainer requirearray', "views containers must be an array"));
+
             return false;
         }
         for (const descriptor of viewsContainersDescriptors) {
             if (typeof descriptor.id !== 'string' && isFalsyOrWhitespace(descriptor.id)) {
                 collector.error(localize('requireidstring', "property `{0}` is mandatory and must be of type `string` with non-empty value. Only alphanumeric characters, '_', and '-' are allowed.", 'id'));
+
                 return false;
             }
             if (!(/^[a-z0-9_-]+$/i.test(descriptor.id))) {
                 collector.error(localize('requireidstring', "property `{0}` is mandatory and must be of type `string` with non-empty value. Only alphanumeric characters, '_', and '-' are allowed.", 'id'));
+
                 return false;
             }
             if (typeof descriptor.title !== 'string') {
                 collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'title'));
+
                 return false;
             }
             if (typeof descriptor.icon !== 'string') {
                 collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'icon'));
+
                 return false;
             }
             if (isFalsyOrWhitespace(descriptor.title)) {
                 collector.warn(localize('requirenonemptystring', "property `{0}` is mandatory and must be of type `string` with non-empty value", 'title'));
+
                 return true;
             }
         }
@@ -343,13 +364,18 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     private registerCustomViewContainers(containers: IUserFriendlyViewsContainerDescriptor[], extension: IExtensionDescription, order: number, existingViewContainers: ViewContainer[], location: ViewContainerLocation): number {
         containers.forEach(descriptor => {
             const themeIcon = ThemeIcon.fromString(descriptor.icon);
+
             const icon = themeIcon || resources.joinPath(extension.extensionLocation, descriptor.icon);
+
             const id = `workbench.view.extension.${descriptor.id}`;
+
             const title = descriptor.title || id;
+
             const viewContainer = this.registerCustomViewContainer(id, title, icon, order++, extension.identifier, location);
             // Move those views that belongs to this container
             if (existingViewContainers.length) {
                 const viewsToMove: IViewDescriptor[] = [];
+
                 for (const existingViewContainer of existingViewContainers) {
                     if (viewContainer !== existingViewContainer) {
                         viewsToMove.push(...this.viewsRegistry.getViews(existingViewContainer).filter(view => (view as ICustomViewDescriptor).originalContainerId === descriptor.id));
@@ -360,10 +386,12 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
                 }
             }
         });
+
         return order;
     }
     private registerCustomViewContainer(id: string, title: string, icon: URI | ThemeIcon, order: number, extensionId: ExtensionIdentifier | undefined, location: ViewContainerLocation): ViewContainer {
         let viewContainer = this.viewContainersRegistry.get(id);
+
         if (!viewContainer) {
             viewContainer = this.viewContainersRegistry.registerViewContainer({
                 id,
@@ -393,10 +421,12 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     }
     private addViews(extensions: readonly IExtensionPointUser<ViewExtensionPointType>[]): void {
         const viewIds: Set<string> = new Set<string>();
+
         const allViewDescriptors: {
             views: IViewDescriptor[];
             viewContainer: ViewContainer;
         }[] = [];
+
         for (const extension of extensions) {
             const { value, collector } = extension;
             Object.entries(value).forEach(([key, value]) => {
@@ -405,23 +435,29 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
                 }
                 if (key === 'remote' && !isProposedApiEnabled(extension.description, 'contribViewsRemote')) {
                     collector.warn(localize('ViewContainerRequiresProposedAPI', "View container '{0}' requires 'enabledApiProposals: [\"contribViewsRemote\"]' to be added to 'Remote'.", key));
+
                     return;
                 }
                 const viewContainer = this.getViewContainer(key);
+
                 if (!viewContainer) {
                     collector.warn(localize('ViewContainerDoesnotExist', "View container '{0}' does not exist and all views registered to it will be added to 'Explorer'.", key));
                 }
                 const container = viewContainer || this.getDefaultViewContainer();
+
                 const viewDescriptors: ICustomViewDescriptor[] = [];
+
                 for (let index = 0; index < value.length; index++) {
                     const item = value[index];
                     // validate
                     if (viewIds.has(item.id)) {
                         collector.error(localize('duplicateView1', "Cannot register multiple views with same id `{0}`", item.id));
+
                         continue;
                     }
                     if (this.viewsRegistry.getView(item.id) !== null) {
                         collector.error(localize('duplicateView2', "A view with id `{0}` is already registered.", item.id));
+
                         continue;
                     }
                     const order = ExtensionIdentifier.equals(extension.description.identifier, container.extensionId)
@@ -429,17 +465,23 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
                         : container.viewOrderDelegate
                             ? container.viewOrderDelegate.getOrder(item.group)
                             : undefined;
+
                     let icon: ThemeIcon | URI | undefined;
+
                     if (typeof item.icon === 'string') {
                         icon = ThemeIcon.fromString(item.icon) || resources.joinPath(extension.description.extensionLocation, item.icon);
                     }
                     const initialVisibility = this.convertInitialVisibility(item.visibility);
+
                     const type = this.getViewType(item.type);
+
                     if (!type) {
                         collector.error(localize('unknownViewType', "Unknown view type `{0}`.", item.type));
+
                         continue;
                     }
                     let weight: number | undefined = undefined;
+
                     if (typeof item.initialSize === 'number') {
                         if (container.extensionId?.value === extension.description.identifier.value) {
                             weight = item.initialSize;
@@ -449,6 +491,7 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
                         }
                     }
                     let accessibilityHelpContent;
+
                     if (isProposedApiEnabled(extension.description, 'contribAccessibilityHelpContent') && item.accessibilityHelpContent) {
                         accessibilityHelpContent = new MarkdownString(item.accessibilityHelpContent);
                     }
@@ -497,12 +540,16 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     }
     private removeViews(extensions: readonly IExtensionPointUser<ViewExtensionPointType>[]): void {
         const removedExtensions: ExtensionIdentifierSet = extensions.reduce((result, e) => { result.add(e.description.identifier); return result; }, new ExtensionIdentifierSet());
+
         for (const viewContainer of this.viewContainersRegistry.all) {
             const removedViews = this.viewsRegistry.getViews(viewContainer).filter(v => (v as ICustomViewDescriptor).extensionId && removedExtensions.has((v as ICustomViewDescriptor).extensionId));
+
             if (removedViews.length) {
                 this.viewsRegistry.deregisterViews(removedViews, viewContainer);
+
                 for (const view of removedViews) {
                     const anyView = view as ICustomViewDescriptor;
+
                     if (anyView.treeView) {
                         anyView.treeView.dispose();
                     }
@@ -519,31 +566,38 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     private isValidViewDescriptors(viewDescriptors: IUserFriendlyViewDescriptor[], collector: ExtensionMessageCollector): boolean {
         if (!Array.isArray(viewDescriptors)) {
             collector.error(localize('requirearray', "views must be an array"));
+
             return false;
         }
         for (const descriptor of viewDescriptors) {
             if (typeof descriptor.id !== 'string') {
                 collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'id'));
+
                 return false;
             }
             if (typeof descriptor.name !== 'string') {
                 collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'name'));
+
                 return false;
             }
             if (descriptor.when && typeof descriptor.when !== 'string') {
                 collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'when'));
+
                 return false;
             }
             if (descriptor.icon && typeof descriptor.icon !== 'string') {
                 collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'icon'));
+
                 return false;
             }
             if (descriptor.contextualTitle && typeof descriptor.contextualTitle !== 'string') {
                 collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'contextualTitle'));
+
                 return false;
             }
             if (descriptor.visibility && !this.convertInitialVisibility(descriptor.visibility)) {
                 collector.error(localize('optenum', "property `{0}` can be omitted or must be one of {1}", 'visibility', Object.values(InitialVisibility).join(', ')));
+
                 return false;
             }
         }
@@ -552,9 +606,13 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
     private getViewContainer(value: string): ViewContainer | undefined {
         switch (value) {
             case 'explorer': return this.viewContainersRegistry.get(EXPLORER);
+
             case 'debug': return this.viewContainersRegistry.get(DEBUG);
+
             case 'scm': return this.viewContainersRegistry.get(SCM);
+
             case 'remote': return this.viewContainersRegistry.get(REMOTE);
+
             default: return this.viewContainersRegistry.get(`workbench.view.extension.${value}`);
         }
     }
@@ -575,15 +633,18 @@ class ViewContainersDataRenderer extends Disposable implements IExtensionFeature
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.viewsContainers || {};
+
         const viewContainers = Object.keys(contrib).reduce((result, location) => {
             const viewContainersForLocation = contrib[location];
             result.push(...viewContainersForLocation.map(viewContainer => ({ ...viewContainer, location })));
+
             return result;
         }, [] as Array<{
             id: string;
             title: string;
             location: string;
         }>);
+
         if (!viewContainers.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -592,6 +653,7 @@ class ViewContainersDataRenderer extends Disposable implements IExtensionFeature
             localize('view container title', "Title"),
             localize('view container location', "Where"),
         ];
+
         const rows: IRowData[][] = viewContainers
             .sort((a, b) => a.id.localeCompare(b.id))
             .map(viewContainer => {
@@ -601,6 +663,7 @@ class ViewContainersDataRenderer extends Disposable implements IExtensionFeature
                 viewContainer.location
             ];
         });
+
         return {
             data: {
                 headers,
@@ -617,15 +680,18 @@ class ViewsDataRenderer extends Disposable implements IExtensionFeatureTableRend
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.views || {};
+
         const views = Object.keys(contrib).reduce((result, location) => {
             const viewsForLocation = contrib[location];
             result.push(...viewsForLocation.map(view => ({ ...view, location })));
+
             return result;
         }, [] as Array<{
             id: string;
             name: string;
             location: string;
         }>);
+
         if (!views.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -634,6 +700,7 @@ class ViewsDataRenderer extends Disposable implements IExtensionFeatureTableRend
             localize('view name title', "Name"),
             localize('view container location', "Where"),
         ];
+
         const rows: IRowData[][] = views
             .sort((a, b) => a.id.localeCompare(b.id))
             .map(view => {
@@ -643,6 +710,7 @@ class ViewsDataRenderer extends Disposable implements IExtensionFeatureTableRend
                 view.location
             ];
         });
+
         return {
             data: {
                 headers,

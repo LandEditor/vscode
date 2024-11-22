@@ -19,6 +19,7 @@ export interface IOutputChannelModelService {
 export class OutputChannelModelService {
     declare readonly _serviceBrand: undefined;
     private readonly outputLocation: URI;
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 

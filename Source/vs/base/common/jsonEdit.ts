@@ -9,13 +9,19 @@ export function removeProperty(text: string, path: JSONPath, formattingOptions: 
 }
 export function setProperty(text: string, originalPath: JSONPath, value: any, formattingOptions: FormattingOptions, getInsertionIndex?: (properties: string[]) => number): Edit[] {
     const path = originalPath.slice();
+
     const errors: ParseError[] = [];
+
     const root = parseTree(text, errors);
+
     let parent: Node | undefined = undefined;
+
     let lastSegment: Segment | undefined = undefined;
+
     while (path.length > 0) {
         lastSegment = path.pop();
         parent = findNodeAtLocation(root, path);
+
         if (parent === undefined && value !== undefined) {
             if (typeof lastSegment === 'string') {
                 value = { [lastSegment]: value };
@@ -37,14 +43,18 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
     }
     else if (parent.type === 'object' && typeof lastSegment === 'string' && Array.isArray(parent.children)) {
         const existing = findNodeAtLocation(parent, [lastSegment]);
+
         if (existing !== undefined) {
             if (value === undefined) { // delete
                 if (!existing.parent) {
                     throw new Error('Malformed AST');
                 }
                 const propertyIndex = parent.children.indexOf(existing.parent);
+
                 let removeBegin: number;
+
                 let removeEnd = existing.parent.offset + existing.parent.length;
+
                 if (propertyIndex > 0) {
                     // remove the comma of the previous node
                     const previous = parent.children[propertyIndex - 1];
@@ -52,6 +62,7 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
                 }
                 else {
                     removeBegin = parent.offset + 1;
+
                     if (parent.children.length > 1) {
                         // remove the comma of the next node
                         const next = parent.children[1];
@@ -70,8 +81,11 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
                 return []; // property does not exist, nothing to do
             }
             const newProperty = `${JSON.stringify(lastSegment)}: ${JSON.stringify(value)}`;
+
             const index = getInsertionIndex ? getInsertionIndex(parent.children.map(p => p.children![0].value)) : parent.children.length;
+
             let edit: Edit;
+
             if (index > 0) {
                 const previous = parent.children[index - 1];
                 edit = { offset: previous.offset + previous.length, length: 0, content: ',' + newProperty };
@@ -89,12 +103,15 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
         if (value !== undefined) {
             // Insert
             const newProperty = `${JSON.stringify(value)}`;
+
             let edit: Edit;
+
             if (parent.children.length === 0 || lastSegment === 0) {
                 edit = { offset: parent.offset + 1, length: 0, content: parent.children.length === 0 ? newProperty : newProperty + ',' };
             }
             else {
                 const index = lastSegment === -1 || lastSegment > parent.children.length ? parent.children.length : lastSegment;
+
                 const previous = parent.children[index - 1];
                 edit = { offset: previous.offset + previous.length, length: 0, content: ',' + newProperty };
             }
@@ -103,8 +120,11 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
         else {
             //Removal
             const removalIndex = lastSegment;
+
             const toRemove = parent.children[removalIndex];
+
             let edit: Edit;
+
             if (parent.children.length === 1) {
                 // only item
                 edit = { offset: parent.offset + 1, length: parent.length - 2, content: '' };
@@ -112,7 +132,9 @@ export function setProperty(text: string, originalPath: JSONPath, value: any, fo
             else if (parent.children.length - 1 === removalIndex) {
                 // last item
                 const previous = parent.children[removalIndex - 1];
+
                 const offset = previous.offset + previous.length;
+
                 const parentEndOffset = parent.offset + parent.length;
                 edit = { offset, length: parentEndOffset - 2 - offset, content: '' };
             }
@@ -131,7 +153,9 @@ export function withFormatting(text: string, edit: Edit, formattingOptions: Form
     let newText = applyEdit(text, edit);
     // format the new text
     let begin = edit.offset;
+
     let end = edit.offset + edit.content.length;
+
     if (edit.length === 0 || edit.content.length === 0) { // insert or remove
         while (begin > 0 && !isEOL(newText, begin - 1)) {
             begin--;
@@ -151,6 +175,7 @@ export function withFormatting(text: string, edit: Edit, formattingOptions: Form
     }
     // create a single edit with all changes
     const editLength = text.length - (newText.length - end) - begin;
+
     return [{ offset: begin, length: editLength, content: newText.substring(begin, end) }];
 }
 export function applyEdit(text: string, edit: Edit): string {
@@ -159,14 +184,18 @@ export function applyEdit(text: string, edit: Edit): string {
 export function applyEdits(text: string, edits: Edit[]): string {
     const sortedEdits = edits.slice(0).sort((a, b) => {
         const diff = a.offset - b.offset;
+
         if (diff === 0) {
             return a.length - b.length;
         }
         return diff;
     });
+
     let lastModifiedOffset = text.length;
+
     for (let i = sortedEdits.length - 1; i >= 0; i--) {
         const e = sortedEdits[i];
+
         if (e.offset + e.length <= lastModifiedOffset) {
             text = applyEdit(text, e);
         }

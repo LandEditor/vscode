@@ -10,6 +10,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 export class ToggleRenderControlCharacterAction extends Action2 {
     static readonly ID = 'editor.action.toggleRenderControlCharacter';
+
     constructor() {
         super({
             id: ToggleRenderControlCharacterAction.ID,
@@ -29,7 +30,9 @@ export class ToggleRenderControlCharacterAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const newRenderControlCharacters = !configurationService.getValue<boolean>('editor.renderControlCharacters');
+
         return configurationService.updateValue('editor.renderControlCharacters', newRenderControlCharacters);
     }
 }

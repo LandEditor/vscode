@@ -18,6 +18,7 @@ import { IWorkbenchExtensionEnablementService } from '../../../services/extensio
 import { IIntegrityService } from '../../../services/integrity/common/integrity.js';
 export class NativeIssueService implements IWorkbenchIssueService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IIssueFormService
     private readonly issueFormService: IIssueFormService, 
@@ -37,14 +38,20 @@ export class NativeIssueService implements IWorkbenchIssueService {
     private readonly integrityService: IIntegrityService) { }
     async openReporter(dataOverrides: Partial<IssueReporterData> = {}): Promise<void> {
         const extensionData: IssueReporterExtensionData[] = [];
+
         try {
             const extensions = await this.extensionManagementService.getInstalled();
+
             const enabledExtensions = extensions.filter(extension => this.extensionEnablementService.isEnabled(extension) || (dataOverrides.extensionId && extension.identifier.id === dataOverrides.extensionId));
             extensionData.push(...enabledExtensions.map((extension): IssueReporterExtensionData => {
                 const { manifest } = extension;
+
                 const manifestKeys = manifest.contributes ? Object.keys(manifest.contributes) : [];
+
                 const isTheme = !manifest.main && !manifest.browser && manifestKeys.length === 1 && manifestKeys[0] === 'themes';
+
                 const isBuiltin = extension.type === ExtensionType.System;
+
                 return {
                     name: manifest.name,
                     publisher: manifest.publisher,
@@ -76,9 +83,12 @@ export class NativeIssueService implements IWorkbenchIssueService {
             });
         }
         const experiments = await this.experimentService.getCurrentExperiments();
+
         let githubAccessToken = '';
+
         try {
             const githubSessions = await this.authenticationService.getSessions('github');
+
             const potentialSessions = githubSessions.filter(session => session.scopes.includes('repo'));
             githubAccessToken = potentialSessions[0]?.accessToken;
         }
@@ -87,6 +97,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
         }
         // air on the side of caution and have false be the default
         let isUnsupported = false;
+
         try {
             isUnsupported = !(await this.integrityService.isPure()).isPure;
         }
@@ -94,6 +105,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
             // Ignore
         }
         const theme = this.themeService.getColorTheme();
+
         const issueReporterData: IssueReporterData = Object.assign({
             styles: getIssueReporterStyles(theme),
             zoomLevel: getZoomLevel(mainWindow),
@@ -103,6 +115,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
             isUnsupported,
             githubAccessToken
         }, dataOverrides);
+
         return this.issueFormService.openReporter(issueReporterData);
     }
 }
@@ -129,6 +142,7 @@ export function getIssueReporterStyles(theme: IColorTheme): IssueReporterStyles 
 }
 function getColor(theme: IColorTheme, key: string): string | undefined {
     const color = theme.getColor(key);
+
     return color ? color.toString() : undefined;
 }
 registerSingleton(IWorkbenchIssueService, NativeIssueService, InstantiationType.Delayed);

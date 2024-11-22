@@ -20,6 +20,7 @@ import { SyncDescriptor } from '../../../platform/instantiation/common/descripto
 import { MarkdownString } from '../../../base/common/htmlContent.js';
 
 const jsonRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 
 const configurationEntrySchema: IJSONSchema = {
@@ -157,20 +158,26 @@ defaultConfigurationExtPoint.setHandler((extensions, { added, removed }) => {
 	}
 	if (added.length) {
 		const registeredProperties = configurationRegistry.getConfigurationProperties();
+
 		const allowedScopes = [ConfigurationScope.MACHINE_OVERRIDABLE, ConfigurationScope.WINDOW, ConfigurationScope.RESOURCE, ConfigurationScope.LANGUAGE_OVERRIDABLE];
+
 		const addedDefaultConfigurations = added.map<IConfigurationDefaults>(extension => {
 			const overrides: IStringDictionary<any> = objects.deepClone(extension.value);
+
 			for (const key of Object.keys(overrides)) {
 				const registeredPropertyScheme = registeredProperties[key];
+
 				if (registeredPropertyScheme?.disallowConfigurationDefault) {
 					extension.collector.warn(nls.localize('config.property.preventDefaultConfiguration.warning', "Cannot register configuration defaults for '{0}'. This setting does not allow contributing configuration defaults.", key));
 					delete overrides[key];
+
 					continue;
 				}
 				if (!OVERRIDE_PROPERTY_REGEX.test(key)) {
 					if (registeredPropertyScheme?.scope && !allowedScopes.includes(registeredPropertyScheme.scope)) {
 						extension.collector.warn(nls.localize('config.property.defaultConfiguration.warning', "Cannot register configuration defaults for '{0}'. Only defaults for machine-overridable, window, resource and language overridable scoped settings are supported.", key));
 						delete overrides[key];
+
 						continue;
 					}
 				}
@@ -209,6 +216,7 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 
 	if (removed.length) {
 		const removedConfigurations: IConfigurationNode[] = [];
+
 		for (const extension of removed) {
 			removedConfigurations.push(...(extensionConfigurations.get(extension.description.identifier) || []));
 			extensionConfigurations.delete(extension.description.identifier);
@@ -231,11 +239,13 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 		configuration.extensionInfo = { id: extension.description.identifier.value, displayName: extension.description.displayName };
 		configuration.restrictedProperties = extension.description.capabilities?.untrustedWorkspaces?.supported === 'limited' ? extension.description.capabilities?.untrustedWorkspaces.restrictedConfigurations : undefined;
 		configuration.title = configuration.title || extension.description.displayName || extension.description.identifier.value;
+
 		return configuration;
 	}
 
 	function validateProperties(configuration: IConfigurationNode, extension: IExtensionPointUser<any>): void {
 		const properties = configuration.properties;
+
 		if (properties) {
 			if (typeof properties !== 'object') {
 				extension.collector.error(nls.localize('invalid.properties', "'configuration.properties' must be an object"));
@@ -243,20 +253,25 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 			}
 			for (const key in properties) {
 				const propertyConfiguration = properties[key];
+
 				const message = validateProperty(key, propertyConfiguration);
+
 				if (message) {
 					delete properties[key];
 					extension.collector.warn(message);
+
 					continue;
 				}
 				if (seenProperties.has(key)) {
 					delete properties[key];
 					extension.collector.warn(nls.localize('config.property.duplicate', "Cannot register '{0}'. This property is already registered.", key));
+
 					continue;
 				}
 				if (!isObject(propertyConfiguration)) {
 					delete properties[key];
 					extension.collector.error(nls.localize('invalid.property', "configuration.properties property '{0}' must be an object", key));
+
 					continue;
 				}
 				seenProperties.add(key);
@@ -264,8 +279,10 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 			}
 		}
 		const subNodes = configuration.allOf;
+
 		if (subNodes) {
 			extension.collector.error(nls.localize('invalid.allOf', "'configuration.allOf' is deprecated and should no longer be used. Instead, pass multiple configuration sections as an array to the 'configuration' contribution point."));
+
 			for (const node of subNodes) {
 				validateProperties(node, extension);
 			}
@@ -274,9 +291,12 @@ configurationExtPoint.setHandler((extensions, { added, removed }) => {
 
 	if (added.length) {
 		const addedConfigurations: IConfigurationNode[] = [];
+
 		for (const extension of added) {
 			const configurations: IConfigurationNode[] = [];
+
 			const value = <IConfigurationNode | IConfigurationNode[]>extension.value;
+
 			if (Array.isArray(value)) {
 				value.forEach(v => configurations.push(handleConfiguration(v, extension)));
 			} else {
@@ -397,7 +417,9 @@ class SettingsTableRenderer extends Disposable implements IExtensionFeatureTable
 		const properties = getAllConfigurationProperties(configuration);
 
 		const contrib = properties ? Object.keys(properties) : [];
+
 		const headers = [nls.localize('setting name', "ID"), nls.localize('description', "Description"), nls.localize('default', "Default")];
+
 		const rows: IRowData[][] = contrib.sort((a, b) => a.localeCompare(b))
 			.map(key => {
 				return [

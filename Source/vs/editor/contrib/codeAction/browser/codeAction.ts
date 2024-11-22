@@ -104,6 +104,7 @@ export async function getCodeActions(
 	token: CancellationToken,
 ): Promise<CodeActionSet> {
 	const filter = trigger.filter || {};
+
 	const notebookFilter: CodeActionFilter = {
 		...filter,
 		excludes: [...(filter.excludes || []), CodeActionKind.Notebook],
@@ -117,11 +118,14 @@ export async function getCodeActions(
 	const cts = new TextModelCancellationTokenSource(model, token);
 	// if the trigger is auto (autosave, lightbulb, etc), we should exclude notebook codeActions
 	const excludeNotebookCodeActions = (trigger.type === languages.CodeActionTriggerType.Auto);
+
 	const providers = getCodeActionProviders(registry, model, (excludeNotebookCodeActions) ? notebookFilter : filter);
 
 	const disposables = new DisposableStore();
+
 	const promises = providers.map(async provider => {
 		const handle = setTimeout(() => progress.report(provider), 1250);
+
 		try {
 			const providedCodeActions = await provider.provideCodeActions(model, rangeOrSelection, codeActionContext, cts.token);
 
@@ -134,7 +138,9 @@ export async function getCodeActions(
 			}
 
 			const filteredActions = (providedCodeActions?.actions || []).filter(action => action && filtersAction(filter, action));
+
 			const documentation = getDocumentationFromProvider(provider, filteredActions, filter.include);
+
 			return {
 				actions: filteredActions.map(action => new CodeActionItem(action, provider)),
 				documentation
@@ -144,6 +150,7 @@ export async function getCodeActions(
 				throw err;
 			}
 			onUnexpectedExternalError(err);
+
 			return emptyCodeActionsResponse;
 		} finally {
 			clearTimeout(handle);
@@ -152,6 +159,7 @@ export async function getCodeActions(
 
 	const listener = registry.onDidChange(() => {
 		const newProviders = registry.all(model);
+
 		if (!equals(newProviders, providers)) {
 			cts.cancel();
 		}
@@ -159,11 +167,14 @@ export async function getCodeActions(
 
 	try {
 		const actions = await Promise.all(promises);
+
 		const allActions = actions.map(x => x.actions).flat();
+
 		const allDocumentation = [
 			...coalesce(actions.map(x => x.documentation)),
 			...getAdditionalDocumentationForShowingActions(registry, model, trigger, allActions)
 		];
+
 		return new ManagedCodeActionSet(allActions, allDocumentation, disposables);
 	} finally {
 		listener.dispose();
@@ -215,6 +226,7 @@ function getDocumentationFromProvider(
 
 	if (only) {
 		let currentBest: { readonly kind: HierarchicalKind; readonly command: languages.Command } | undefined;
+
 		for (const entry of documentation) {
 			if (entry.kind.contains(only)) {
 				if (!currentBest) {
@@ -263,9 +275,13 @@ export async function applyCodeAction(
 	token: CancellationToken = CancellationToken.None,
 ): Promise<void> {
 	const bulkEditService = accessor.get(IBulkEditService);
+
 	const commandService = accessor.get(ICommandService);
+
 	const telemetryService = accessor.get(ITelemetryService);
+
 	const notificationService = accessor.get(INotificationService);
+
 	const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
 
 	type ApplyCodeActionEvent = {
@@ -291,6 +307,7 @@ export async function applyCodeAction(
 	});
 	accessibilitySignalService.playSignal(AccessibilitySignal.codeActionTriggered);
 	await item.resolve(token);
+
 	if (token.isCancellationRequested) {
 		return;
 	}
@@ -341,7 +358,9 @@ CommandsRegistry.registerCommand('_executeCodeActionProvider', async function (a
 	}
 
 	const { codeActionProvider } = accessor.get(ILanguageFeaturesService);
+
 	const model = accessor.get(IModelService).getModel(resource);
+
 	if (!model) {
 		throw illegalArgument();
 	}
@@ -357,6 +376,7 @@ CommandsRegistry.registerCommand('_executeCodeActionProvider', async function (a
 	}
 
 	const include = typeof kind === 'string' ? new HierarchicalKind(kind) : undefined;
+
 	const codeActionSet = await getCodeActions(
 		codeActionProvider,
 		model,
@@ -366,13 +386,16 @@ CommandsRegistry.registerCommand('_executeCodeActionProvider', async function (a
 		CancellationToken.None);
 
 	const resolving: Promise<any>[] = [];
+
 	const resolveCount = Math.min(codeActionSet.validActions.length, typeof itemResolveCount === 'number' ? itemResolveCount : 0);
+
 	for (let i = 0; i < resolveCount; i++) {
 		resolving.push(codeActionSet.validActions[i].resolve(CancellationToken.None));
 	}
 
 	try {
 		await Promise.all(resolving);
+
 		return codeActionSet.validActions.map(item => item.action);
 	} finally {
 		setTimeout(() => codeActionSet.dispose(), 100);

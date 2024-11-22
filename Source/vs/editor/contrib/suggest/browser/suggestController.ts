@@ -66,8 +66,10 @@ class LineSuffix {
 		// 1. end of line -> check that it's still end of line
 		// 2. mid of line -> add a marker and compute the delta
 		const maxColumn = _model.getLineMaxColumn(_position.lineNumber);
+
 		if (maxColumn !== _position.column) {
 			const offset = _model.getOffsetAt(_position);
+
 			const end = _model.getPositionAt(offset + 1);
 			_model.changeDecorations(accessor => {
 				if (this._marker) {
@@ -96,7 +98,9 @@ class LineSuffix {
 		// the cursor to the line end.
 		if (this._marker) {
 			const range = this._model.getDecorationRange(this._marker);
+
 			const end = this._model.getOffsetAt(range!.getStartPosition());
+
 			return end - this._model.getOffsetAt(position);
 		} else {
 			return this._model.getLineMaxColumn(position.lineNumber) - position.column;
@@ -170,7 +174,9 @@ export class SuggestController implements IEditorContribution {
 
 			// Wire up makes text edit context key
 			const ctxMakesTextEdit = SuggestContext.MakesTextEdit.bindTo(this._contextKeyService);
+
 			const ctxHasInsertAndReplace = SuggestContext.HasInsertAndReplaceRange.bindTo(this._contextKeyService);
+
 			const ctxCanResolve = SuggestContext.CanResolve.bindTo(this._contextKeyService);
 
 			this._toDispose.add(toDisposable(() => {
@@ -183,9 +189,13 @@ export class SuggestController implements IEditorContribution {
 
 				// (ctx: makesTextEdit)
 				const position = this.editor.getPosition()!;
+
 				const startColumn = item.editStart.column;
+
 				const endColumn = position.column;
+
 				let value = true;
+
 				if (
 					this.editor.getOption(EditorOption.acceptSuggestionOnEnter) === 'smart'
 					&& this.model.state === State.Auto
@@ -217,6 +227,7 @@ export class SuggestController implements IEditorContribution {
 					(platform.isMacintosh && e.toKeyCodeChord().equals(new KeyCodeChord(false, false, false, true, KeyCode.KeyC)))
 				) {
 					e.stopPropagation();
+
 					return;
 				}
 
@@ -248,8 +259,10 @@ export class SuggestController implements IEditorContribution {
 				return;
 			}
 			let index = -1;
+
 			for (const selector of this._selectors.itemsOrderedByPriorityDesc) {
 				index = selector.select(this.editor.getModel()!, this.editor.getPosition()!, e.completionModel.items);
+
 				if (index !== -1) {
 					break;
 				}
@@ -264,9 +277,11 @@ export class SuggestController implements IEditorContribution {
 				return;
 			}
 			let noFocus = false;
+
 			if (e.triggerOptions.auto) {
 				// don't "focus" item when configured to do
 				const options = this.editor.getOption(EditorOption.suggest);
+
 				if (options.selectionMode === 'never' || options.selectionMode === 'always') {
 					// simple: always or never
 					noFocus = options.selectionMode === 'never';
@@ -297,6 +312,7 @@ export class SuggestController implements IEditorContribution {
 
 		// Manage the acceptSuggestionsOnEnter context key
 		const acceptSuggestionsOnEnter = SuggestContext.AcceptSuggestionsOnEnter.bindTo(_contextKeyService);
+
 		const updateFromConfig = () => {
 			const acceptSuggestionOnEnter = this.editor.getOption(EditorOption.acceptSuggestionOnEnter);
 			acceptSuggestionsOnEnter.set(acceptSuggestionOnEnter === 'on' || acceptSuggestionOnEnter === 'smart');
@@ -322,12 +338,14 @@ export class SuggestController implements IEditorContribution {
 			this._alternatives.value.reset();
 			this.model.cancel();
 			this.model.clear();
+
 			return;
 		}
 		if (!this.editor.hasModel()) {
 			return;
 		}
 		const snippetController = SnippetController2.get(this.editor);
+
 		if (!snippetController) {
 			return;
 		}
@@ -335,11 +353,14 @@ export class SuggestController implements IEditorContribution {
 		this._onWillInsertSuggestItem.fire({ item: event.item });
 
 		const model = this.editor.getModel();
+
 		const modelVersionNow = model.getAlternativeVersionId();
+
 		const { item } = event;
 
 		//
 		const tasks: Promise<any>[] = [];
+
 		const cts = new CancellationTokenSource();
 
 		// pushing undo stops *before* additional text edits and
@@ -358,6 +379,7 @@ export class SuggestController implements IEditorContribution {
 
 		// telemetry data points: duration of command execution, info about async additional edits (-1=n/a, -2=none, 1=success, 0=failed)
 		let _commandExectionDuration = -1;
+
 		let _additionalEditsAppliedAsync = -1;
 
 		if (Array.isArray(item.completion.additionalTextEdits)) {
@@ -371,10 +393,13 @@ export class SuggestController implements IEditorContribution {
 				'suggestController.additionalTextEdits.sync',
 				item.completion.additionalTextEdits.map(edit => {
 					let range = Range.lift(edit.range);
+
 					if (range.startLineNumber === item.position.lineNumber && range.startColumn > item.position.column) {
 						// shift additional edit when it is "after" the completion insertion position
 						const columnDelta = this.editor.getPosition()!.column - item.position.column;
+
 						const startColumnDelta = columnDelta;
+
 						const endColumnDelta = Range.spansMultipleLines(range) ? 0 : columnDelta;
 						range = new Range(range.startLineNumber, range.startColumn + startColumnDelta, range.endLineNumber, range.endColumn + endColumnDelta);
 					}
@@ -386,16 +411,20 @@ export class SuggestController implements IEditorContribution {
 		} else if (!isResolved) {
 			// async additional edits
 			const sw = new StopWatch();
+
 			let position: IPosition | undefined;
 
 			const docListener = model.onDidChangeContent(e => {
 				if (e.isFlush) {
 					cts.cancel();
+
 					docListener.dispose();
+
 					return;
 				}
 				for (const change of e.changes) {
 					const thisPosition = Range.getEndPosition(change.range);
+
 					if (!position || Position.isBefore(thisPosition, position)) {
 						position = thisPosition;
 					}
@@ -404,10 +433,13 @@ export class SuggestController implements IEditorContribution {
 
 			const oldFlags = flags;
 			flags |= InsertFlags.NoAfterUndoStop;
+
 			let didType = false;
+
 			const typeListener = this.editor.onWillType(() => {
 				typeListener.dispose();
 				didType = true;
+
 				if (!(oldFlags & InsertFlags.NoAfterUndoStop)) {
 					this.editor.pushUndoStop();
 				}
@@ -429,6 +461,7 @@ export class SuggestController implements IEditorContribution {
 					item.completion.additionalTextEdits.map(edit => EditOperation.replaceMove(Range.lift(edit.range), edit.text))
 				);
 				scrollState.restoreRelativeVerticalPositionOfCursor(this.editor);
+
 				if (didType || !(oldFlags & InsertFlags.NoAfterUndoStop)) {
 					this.editor.pushUndoStop();
 				}
@@ -443,6 +476,7 @@ export class SuggestController implements IEditorContribution {
 		}
 
 		let { insertText } = item.completion;
+
 		if (!(item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet)) {
 			insertText = SnippetParser.escape(insertText);
 		}
@@ -500,6 +534,7 @@ export class SuggestController implements IEditorContribution {
 						next,
 						InsertFlags.NoBeforeUndoStop | InsertFlags.NoAfterUndoStop | (flags & InsertFlags.AlternativeOverwriteConfig ? InsertFlags.AlternativeOverwriteConfig : 0)
 					);
+
 					break;
 				}
 			});
@@ -535,7 +570,9 @@ export class SuggestController implements IEditorContribution {
 		}
 
 		const firstIndexArray = labelMap.get(item.textLabel);
+
 		const hasDuplicates = firstIndexArray && firstIndexArray.length > 1;
+
 		const firstIndex = hasDuplicates ? firstIndexArray[0] : -1;
 
 		type AcceptedSuggestion = {
@@ -583,12 +620,16 @@ export class SuggestController implements IEditorContribution {
 		assertType(this.editor.hasModel());
 
 		let replace = this.editor.getOption(EditorOption.suggest).insertMode === 'replace';
+
 		if (toggleMode) {
 			replace = !replace;
 		}
 		const overwriteBefore = item.position.column - item.editStart.column;
+
 		const overwriteAfter = (replace ? item.editReplaceEnd.column : item.editInsertEnd.column) - item.position.column;
+
 		const columnDelta = this.editor.getPosition().column - item.position.column;
+
 		const suffixDelta = this._lineSuffix.value ? this._lineSuffix.value.delta(this.editor.getPosition()) : 0;
 
 		return {
@@ -634,8 +675,11 @@ export class SuggestController implements IEditorContribution {
 				return true;
 			}
 			const position = this.editor.getPosition()!;
+
 			const startColumn = item.editStart.column;
+
 			const endColumn = position.column;
+
 			if (endColumn - startColumn !== item.completion.insertText.length) {
 				// unequal lengths -> makes edit
 				return true;
@@ -662,14 +706,19 @@ export class SuggestController implements IEditorContribution {
 
 			this.model.onDidSuggest(({ completionModel }) => {
 				dispose(listener);
+
 				if (completionModel.items.length === 0) {
 					fallback();
+
 					return;
 				}
 				const index = this._memoryService.select(this.editor.getModel()!, this.editor.getPosition()!, completionModel.items);
+
 				const item = completionModel.items[index];
+
 				if (!makesTextEdit(item)) {
 					fallback();
+
 					return;
 				}
 				this.editor.pushUndoStop();
@@ -685,7 +734,9 @@ export class SuggestController implements IEditorContribution {
 
 	acceptSelectedSuggestion(keepAlternativeSuggestions: boolean, alternativeOverwriteConfig: boolean): void {
 		const item = this.widget.value.getFocusedItem();
+
 		let flags = 0;
+
 		if (keepAlternativeSuggestions) {
 			flags |= InsertFlags.KeepAlternativeSuggestions;
 		}
@@ -785,6 +836,7 @@ class PriorityRegistry<T> {
 		return {
 			dispose: () => {
 				const idx = this._items.indexOf(value);
+
 				if (idx >= 0) {
 					this._items.splice(idx, 1);
 				}
@@ -824,7 +876,9 @@ export class TriggerSuggestAction extends EditorAction {
 		}
 
 		type TriggerArgs = { auto: boolean };
+
 		let auto: boolean | undefined;
+
 		if (args && typeof args === 'object') {
 			if ((<TriggerArgs>args).auto === true) {
 				auto = true;

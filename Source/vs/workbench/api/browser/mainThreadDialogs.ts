@@ -19,6 +19,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
     }
     async $showOpenDialog(options?: MainThreadDialogOpenOptions): Promise<URI[] | undefined> {
         const convertedOptions = MainThreadDialogs._convertOpenOptions(options);
+
         if (!convertedOptions.defaultUri) {
             convertedOptions.defaultUri = await this._fileDialogService.defaultFilePath();
         }
@@ -26,6 +27,7 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
     }
     async $showSaveDialog(options?: MainThreadDialogSaveOptions): Promise<URI | undefined> {
         const convertedOptions = MainThreadDialogs._convertSaveOptions(options);
+
         if (!convertedOptions.defaultUri) {
             convertedOptions.defaultUri = await this._fileDialogService.defaultFilePath();
         }
@@ -41,8 +43,10 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
             title: options?.title || undefined,
             availableFileSystems: options?.allowUIResources ? [Schemas.vscodeRemote, Schemas.file] : []
         };
+
         if (options?.filters) {
             result.filters = [];
+
             for (const [key, value] of Object.entries(options.filters)) {
                 result.filters.push({ name: key, extensions: value });
             }
@@ -55,8 +59,10 @@ export class MainThreadDialogs implements MainThreadDiaglogsShape {
             saveLabel: options?.saveLabel || undefined,
             title: options?.title || undefined
         };
+
         if (options?.filters) {
             result.filters = [];
+
             for (const [key, value] of Object.entries(options.filters)) {
                 result.filters.push({ name: key, extensions: value });
             }

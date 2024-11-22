@@ -6,6 +6,7 @@ import { Disposable } from '../../base/common/lifecycle.js';
 import * as viewEvents from './viewEvents.js';
 export class ViewEventHandler extends Disposable {
     private _shouldRender: boolean;
+
     constructor() {
         super();
         this._shouldRender = true;
@@ -80,99 +81,119 @@ export class ViewEventHandler extends Disposable {
     // --- end event handlers
     public handleEvents(events: viewEvents.ViewEvent[]): void {
         let shouldRender = false;
+
         for (let i = 0, len = events.length; i < len; i++) {
             const e = events[i];
+
             switch (e.type) {
                 case viewEvents.ViewEventType.ViewCompositionStart:
                     if (this.onCompositionStart(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewCompositionEnd:
                     if (this.onCompositionEnd(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewConfigurationChanged:
                     if (this.onConfigurationChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewCursorStateChanged:
                     if (this.onCursorStateChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewDecorationsChanged:
                     if (this.onDecorationsChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewFlushed:
                     if (this.onFlushed(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewFocusChanged:
                     if (this.onFocusChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewLanguageConfigurationChanged:
                     if (this.onLanguageConfigurationChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewLineMappingChanged:
                     if (this.onLineMappingChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewLinesChanged:
                     if (this.onLinesChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewLinesDeleted:
                     if (this.onLinesDeleted(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewLinesInserted:
                     if (this.onLinesInserted(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewRevealRangeRequest:
                     if (this.onRevealRangeRequest(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewScrollChanged:
                     if (this.onScrollChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewTokensChanged:
                     if (this.onTokensChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewThemeChanged:
                     if (this.onThemeChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewTokensColorsChanged:
                     if (this.onTokensColorsChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 case viewEvents.ViewEventType.ViewZonesChanged:
                     if (this.onZonesChanged(e)) {
                         shouldRender = true;
                     }
                     break;
+
                 default:
                     console.info('View received unknown event: ');
                     console.info(e);

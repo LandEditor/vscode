@@ -27,16 +27,19 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     private readonly _extHostKnownSessions: Set<DebugSessionUUID>;
     private readonly _visualizerHandles = new Map<string, IDisposable>();
     private readonly _visualizerTreeHandles = new Map<string, IDisposable>();
+
     constructor(extHostContext: IExtHostContext, 
     @IDebugService
     private readonly debugService: IDebugService, 
     @IDebugVisualizerService
     private readonly visualizerService: IDebugVisualizerService) {
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDebugService);
+
         const sessionListeners = new DisposableMap<IDebugSession, DisposableStore>();
         this._toDispose.add(sessionListeners);
         this._toDispose.add(debugService.onDidNewSession(session => {
             this._proxy.$acceptDebugSessionStarted(this.getSessionDto(session));
+
             const store = sessionListeners.get(session);
             store?.add(session.onDidChangeName(name => {
                 this._proxy.$acceptDebugSessionNameChanged(this.getSessionDto(session), name);
@@ -45,6 +48,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         // Need to start listening early to new session events because a custom event can come while a session is initialising
         this._toDispose.add(debugService.onWillNewSession(session => {
             let store = sessionListeners.get(session);
+
             if (!store) {
                 store = new DisposableStore();
                 sessionListeners.set(session, store);
@@ -78,10 +82,13 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         this._debugConfigurationProviders = new Map();
         this._debugAdapterDescriptorFactories = new Map();
         this._extHostKnownSessions = new Set();
+
         const viewModel = this.debugService.getViewModel();
         this._toDispose.add(Event.any(viewModel.onDidFocusStackFrame, viewModel.onDidFocusThread)(() => {
             const stackFrame = viewModel.focusedStackFrame;
+
             const thread = viewModel.focusedThread;
+
             if (stackFrame) {
                 this._proxy.$acceptStackFrameFocus({
                     kind: 'stackFrame',
@@ -137,6 +144,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
             // Ignore session only breakpoint events since they should only reflect in the UI
             if (e && !e.sessionOnly) {
                 const delta: IBreakpointsDeltaDto = {};
+
                 if (e.added) {
                     delta.added = this.convertToDto(e.added);
                 }
@@ -153,8 +161,11 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         }));
         // send all breakpoints
         const bps = this.debugService.getModel().getBreakpoints();
+
         const fbps = this.debugService.getModel().getFunctionBreakpoints();
+
         const dbps = this.debugService.getModel().getDataBreakpoints();
+
         if (bps.length > 0 || fbps.length > 0) {
             this._proxy.$acceptBreakpointsDelta({
                 added: this.convertToDto(bps).concat(this.convertToDto(fbps)).concat(this.convertToDto(dbps))
@@ -167,8 +178,10 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     // interface IDebugAdapterProvider
     createDebugAdapter(session: IDebugSession): IDebugAdapter {
         const handle = this._debugAdaptersHandleCounter++;
+
         const da = new ExtensionHostDebugAdapter(this, handle, this._proxy, session);
         this._debugAdapters.set(handle, da);
+
         return da;
     }
     substituteVariables(folder: IWorkspaceFolder | undefined, config: IConfig): Promise<IConfig> {
@@ -221,8 +234,10 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     }
     public $unregisterBreakpoints(breakpointIds: string[], functionBreakpointIds: string[], dataBreakpointIds: string[]): Promise<void> {
         breakpointIds.forEach(id => this.debugService.removeBreakpoints(id));
+
         functionBreakpointIds.forEach(id => this.debugService.removeFunctionBreakpoints(id));
         dataBreakpointIds.forEach(id => this.debugService.removeDataBreakpoints(id));
+
         return Promise.resolve();
     }
     public $registerDebugConfigurationProvider(debugType: string, providerTriggerKind: DebugConfigurationProviderTriggerKind, hasProvide: boolean, hasResolve: boolean, hasResolve2: boolean, handle: number): Promise<void> {
@@ -230,6 +245,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
             type: debugType,
             triggerKind: providerTriggerKind
         };
+
         if (hasProvide) {
             provider.provideDebugConfigurations = (folder, token) => {
                 return this._proxy.$provideDebugConfigurations(handle, folder, token);
@@ -247,10 +263,12 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         }
         this._debugConfigurationProviders.set(handle, provider);
         this._toDispose.add(this.debugService.getConfigurationManager().registerDebugConfigurationProvider(provider));
+
         return Promise.resolve(undefined);
     }
     public $unregisterDebugConfigurationProvider(handle: number): void {
         const provider = this._debugConfigurationProviders.get(handle);
+
         if (provider) {
             this._debugConfigurationProviders.delete(handle);
             this.debugService.getConfigurationManager().unregisterDebugConfigurationProvider(provider);
@@ -265,10 +283,12 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         };
         this._debugAdapterDescriptorFactories.set(handle, provider);
         this._toDispose.add(this.debugService.getAdapterManager().registerDebugAdapterDescriptorFactory(provider));
+
         return Promise.resolve(undefined);
     }
     public $unregisterDebugAdapterDescriptorFactory(handle: number): void {
         const provider = this._debugAdapterDescriptorFactories.get(handle);
+
         if (provider) {
             this._debugAdapterDescriptorFactories.delete(handle);
             this.debugService.getAdapterManager().unregisterDebugAdapterDescriptorFactory(provider);
@@ -282,9 +302,13 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     }
     public async $startDebugging(folder: UriComponents | undefined, nameOrConfig: string | IDebugConfiguration, options: IStartDebuggingOptions): Promise<boolean> {
         const folderUri = folder ? uri.revive(folder) : undefined;
+
         const launch = this.debugService.getConfigurationManager().getLaunch(folderUri);
+
         const parentSession = this.getSession(options.parentSessionID);
+
         const saveBeforeStart = typeof options.suppressSaveBeforeStart === 'boolean' ? !options.suppressSaveBeforeStart : undefined;
+
         const debugOptions: IDebugSessionOptions = {
             noDebug: options.noDebug,
             parentSession,
@@ -298,6 +322,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
             suppressDebugToolbar: options.suppressDebugToolbar,
             suppressDebugView: options.suppressDebugView,
         };
+
         try {
             return this.debugService.startDebugging(launch, nameOrConfig, debugOptions, saveBeforeStart);
         }
@@ -311,6 +336,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     }
     public $customDebugAdapterRequest(sessionId: DebugSessionUUID, request: string, args: any): Promise<any> {
         const session = this.debugService.getModel().getSession(sessionId, true);
+
         if (session) {
             return session.customRequest(request, args).then(response => {
                 if (response && response.success) {
@@ -325,6 +351,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     }
     public $getDebugProtocolBreakpoint(sessionId: DebugSessionUUID, breakpoinId: string): Promise<DebugProtocol.Breakpoint | undefined> {
         const session = this.debugService.getModel().getSession(sessionId, true);
+
         if (session) {
             return Promise.resolve(session.getDebugProtocolBreakpoint(breakpoinId));
         }
@@ -333,6 +360,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     public $stopDebugging(sessionId: DebugSessionUUID | undefined): Promise<void> {
         if (sessionId) {
             const session = this.debugService.getModel().getSession(sessionId, true);
+
             if (session) {
                 return this.debugService.stopSession(session, isSessionAttach(session));
             }
@@ -359,6 +387,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
     }
     private getDebugAdapter(handle: number): ExtensionHostDebugAdapter {
         const adapter = this._debugAdapters.get(handle);
+
         if (!adapter) {
             throw new Error('Invalid debug adapter');
         }
@@ -370,11 +399,15 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         this._extHostKnownSessions.add(sessionID);
     }
     getSessionDto(session: undefined): undefined;
+
     getSessionDto(session: IDebugSession): IDebugSessionDto;
+
     getSessionDto(session: IDebugSession | undefined): IDebugSessionDto | undefined;
+
     getSessionDto(session: IDebugSession | undefined): IDebugSessionDto | undefined {
         if (session) {
             const sessionID = <DebugSessionUUID>session.getId();
+
             if (this._extHostKnownSessions.has(sessionID)) {
                 return sessionID;
             }
@@ -396,6 +429,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
         return bps.map(bp => {
             if ('name' in bp) {
                 const fbp: IFunctionBreakpoint = bp;
+
                 return {
                     type: 'function',
                     id: fbp.getId(),
@@ -408,6 +442,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
             }
             else if ('src' in bp) {
                 const dbp: IDataBreakpoint = bp;
+
                 return {
                     type: 'data',
                     id: dbp.getId(),
@@ -423,6 +458,7 @@ export class MainThreadDebugService implements MainThreadDebugServiceShape, IDeb
             }
             else if ('uri' in bp) {
                 const sbp: IBreakpoint = bp;
+
                 return {
                     type: 'source',
                     id: sbp.getId(),
@@ -462,6 +498,7 @@ class ExtensionHostDebugAdapter extends AbstractDebugAdapter {
     }
     async stopSession(): Promise<void> {
         await this.cancelPendingRequests();
+
         return Promise.resolve(this._proxy.$stopDASession(this._handle));
     }
 }

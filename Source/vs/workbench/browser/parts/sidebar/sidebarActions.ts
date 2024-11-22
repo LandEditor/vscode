@@ -28,6 +28,7 @@ export class FocusSideBarAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const layoutService = accessor.get(IWorkbenchLayoutService);
+
         const paneCompositeService = accessor.get(IPaneCompositePartService);
         // Show side bar
         if (!layoutService.isVisible(Parts.SIDEBAR_PART)) {

@@ -39,7 +39,9 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const contrib = PerfviewContrib.get();
+
         return editorService.openEditor(contrib.getEditorInput(), { pinned: true });
     }
 });
@@ -54,8 +56,10 @@ registerAction2(class PrintServiceCycles extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const instaService = accessor.get(IInstantiationService);
+
         if (instaService instanceof InstantiationService) {
             const cycle = instaService._globalGraph?.findCycleSlow();
+
             if (cycle) {
                 console.warn(`CYCLE`, cycle);
             }
@@ -77,6 +81,7 @@ registerAction2(class PrintServiceTraces extends Action2 {
     run() {
         if (Trace.all.size === 0) {
             console.log('Enable via `instantiationService.ts#_enableAllTracing`');
+
             return;
         }
         for (const item of Trace.all) {
@@ -96,6 +101,7 @@ registerAction2(class PrintEventProfiling extends Action2 {
     run(): void {
         if (EventProfiling.all.size === 0) {
             console.log('USE `EmitterOptions._profName` to enable profiling');
+
             return;
         }
         for (const item of EventProfiling.all) {

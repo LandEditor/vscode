@@ -28,6 +28,7 @@ export function stripComments(content: string): string {
             // Since m4 is a single line comment is is at least of length 2 (e.g. //)
             // If it ends in \r?\n then keep it.
             const length = m4.length;
+
             if (m4[length - 1] === '\n') {
                 return m4[length - 2] === '\r' ? '\r\n' : '\n';
             }
@@ -54,11 +55,13 @@ export function stripComments(content: string): string {
 */
 export function parse<T>(content: string): T {
     const commentsStripped = stripComments(content);
+
     try {
         return JSON.parse(commentsStripped);
     }
     catch (error) {
         const trailingCommasStriped = commentsStripped.replace(/,\s*([}\]])/g, '$1');
+
         return JSON.parse(trailingCommasStriped);
     }
 }

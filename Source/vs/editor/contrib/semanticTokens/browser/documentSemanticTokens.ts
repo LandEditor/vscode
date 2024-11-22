@@ -42,13 +42,16 @@ export class DocumentSemanticTokensFeature extends Disposable {
 			this._watchers.get(model.uri)?.dispose();
 			this._watchers.set(model.uri, new ModelSemanticColoring(model, semanticTokensStylingService, themeService, languageFeatureDebounceService, languageFeaturesService));
 		};
+
 		const deregister = (model: ITextModel, modelSemanticColoring: ModelSemanticColoring) => {
 			modelSemanticColoring.dispose();
 			this._watchers.delete(model.uri);
 		};
+
 		const handleSettingOrThemeChange = () => {
 			for (const model of modelService.getModels()) {
 				const curr = this._watchers.get(model.uri);
+
 				if (isSemanticColoringEnabled(model, themeService, configurationService)) {
 					if (!curr) {
 						register(model);
@@ -72,6 +75,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
 		}));
 		this._register(modelService.onModelRemoved((model) => {
 			const curr = this._watchers.get(model.uri);
+
 			if (curr) {
 				deregister(model, curr);
 			}
@@ -153,12 +157,14 @@ class ModelSemanticColoring extends Disposable {
 		const bindDocumentChangeListeners = () => {
 			dispose(this._documentProvidersChangeListeners);
 			this._documentProvidersChangeListeners = [];
+
 			for (const provider of this._provider.all(model)) {
 				if (typeof provider.onDidChange === 'function') {
 					this._documentProvidersChangeListeners.push(provider.onDidChange(() => {
 						if (this._currentDocumentRequestCancellationTokenSource) {
 							// there is already a request running,
 							this._providersChangedDuringRequest = true;
+
 							return;
 						}
 						this._fetchDocumentSemanticTokens.schedule(0);
@@ -219,13 +225,17 @@ class ModelSemanticColoring extends Disposable {
 		}
 
 		const cancellationTokenSource = new CancellationTokenSource();
+
 		const lastProvider = this._currentDocumentResponse ? this._currentDocumentResponse.provider : null;
+
 		const lastResultId = this._currentDocumentResponse ? this._currentDocumentResponse.resultId || null : null;
+
 		const request = getDocumentSemanticTokens(this._provider, this._model, lastProvider, lastResultId, cancellationTokenSource.token);
 		this._currentDocumentRequestCancellationTokenSource = cancellationTokenSource;
 		this._providersChangedDuringRequest = false;
 
 		const pendingChanges: IModelContentChangedEvent[] = [];
+
 		const contentChangeListener = this._model.onDidChangeContent((e) => {
 			pendingChanges.push(e);
 		});
@@ -240,11 +250,13 @@ class ModelSemanticColoring extends Disposable {
 				this._setDocumentSemanticTokens(null, null, null, pendingChanges);
 			} else {
 				const { provider, tokens } = res;
+
 				const styling = this._semanticTokensStylingService.getStyling(provider);
 				this._setDocumentSemanticTokens(provider, tokens || null, styling, pendingChanges);
 			}
 		}, (err) => {
 			const isExpectedError = err && (errors.isCancellationError(err) || (typeof err.message === 'string' && err.message.indexOf('busy') !== -1));
+
 			if (!isExpectedError) {
 				errors.onUnexpectedError(err);
 			}
@@ -266,6 +278,7 @@ class ModelSemanticColoring extends Disposable {
 	private static _copy(src: Uint32Array, srcOffset: number, dest: Uint32Array, destOffset: number, length: number): void {
 		// protect against overflows
 		length = Math.min(length, dest.length - destOffset, src.length - srcOffset);
+
 		for (let i = 0; i < length; i++) {
 			dest[destOffset + i] = src[srcOffset + i];
 		}
@@ -273,6 +286,7 @@ class ModelSemanticColoring extends Disposable {
 
 	private _setDocumentSemanticTokens(provider: DocumentSemanticTokensProvider | null, tokens: SemanticTokens | SemanticTokensEdits | null, styling: SemanticTokensProviderStyling | null, pendingChanges: IModelContentChangedEvent[]): void {
 		const currentResponse = this._currentDocumentResponse;
+
 		const rescheduleIfNeeded = () => {
 			if ((pendingChanges.length > 0 || this._providersChangedDuringRequest) && !this._fetchDocumentSemanticTokens.isScheduled()) {
 				this._fetchDocumentSemanticTokens.schedule(this._debounceInformation.get(this._model));
@@ -292,11 +306,13 @@ class ModelSemanticColoring extends Disposable {
 		}
 		if (!provider || !styling) {
 			this._model.tokenization.setSemanticTokens(null, false);
+
 			return;
 		}
 		if (!tokens) {
 			this._model.tokenization.setSemanticTokens(null, true);
 			rescheduleIfNeeded();
+
 			return;
 		}
 
@@ -304,6 +320,7 @@ class ModelSemanticColoring extends Disposable {
 			if (!currentResponse) {
 				// not possible!
 				this._model.tokenization.setSemanticTokens(null, true);
+
 				return;
 			}
 			if (tokens.edits.length === 0) {
@@ -314,15 +331,19 @@ class ModelSemanticColoring extends Disposable {
 				};
 			} else {
 				let deltaLength = 0;
+
 				for (const edit of tokens.edits) {
 					deltaLength += (edit.data ? edit.data.length : 0) - edit.deleteCount;
 				}
 
 				const srcData = currentResponse.data;
+
 				const destData = new Uint32Array(srcData.length + deltaLength);
 
 				let srcLastStart = srcData.length;
+
 				let destLastStart = destData.length;
+
 				for (let i = tokens.edits.length - 1; i >= 0; i--) {
 					const edit = tokens.edits[i];
 
@@ -330,10 +351,12 @@ class ModelSemanticColoring extends Disposable {
 						styling.warnInvalidEditStart(currentResponse.resultId, tokens.resultId, i, edit.start, srcData.length);
 						// The edits are invalid and there's no way to recover
 						this._model.tokenization.setSemanticTokens(null, true);
+
 						return;
 					}
 
 					const copyCount = srcLastStart - (edit.start + edit.deleteCount);
+
 					if (copyCount > 0) {
 						ModelSemanticColoring._copy(srcData, srcLastStart - copyCount, destData, destLastStart - copyCount, copyCount);
 						destLastStart -= copyCount;

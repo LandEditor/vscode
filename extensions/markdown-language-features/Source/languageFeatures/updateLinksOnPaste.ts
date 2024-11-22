@@ -23,6 +23,7 @@ class UpdatePastedLinksEditProvider implements vscode.DocumentPasteEditProvider 
 		}
 
 		const metadata = await this._client.prepareUpdatePastedLinks(document.uri, ranges, token);
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -42,12 +43,15 @@ class UpdatePastedLinksEditProvider implements vscode.DocumentPasteEditProvider 
 		}
 
 		const metadata = dataTransfer.get(UpdatePastedLinksEditProvider.metadataMime)?.value;
+
 		if (!metadata) {
 			return;
 		}
 
 		const textItem = dataTransfer.get(Mime.textPlain);
+
 		const text = await textItem?.asString();
+
 		if (!text || token.isCancellationRequested) {
 			return;
 		}
@@ -57,11 +61,13 @@ class UpdatePastedLinksEditProvider implements vscode.DocumentPasteEditProvider 
 		// - Copy with multiple cursors and paste into multiple locations
 		// - ...
 		const edits = await this._client.getUpdatePastedLinksEdit(document.uri, ranges.map(x => new vscode.TextEdit(x, text)), metadata, token);
+
 		if (!edits?.length || token.isCancellationRequested) {
 			return;
 		}
 
 		const pasteEdit = new vscode.DocumentPasteEdit('', vscode.l10n.t("Paste and update pasted links"), UpdatePastedLinksEditProvider.kind);
+
 		const workspaceEdit = new vscode.WorkspaceEdit();
 		workspaceEdit.set(document.uri, edits.map(x => new vscode.TextEdit(new vscode.Range(x.range.start.line, x.range.start.character, x.range.end.line, x.range.end.character,), x.newText)));
 		pasteEdit.additionalEdit = workspaceEdit;

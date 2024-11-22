@@ -29,6 +29,7 @@ export class ClickLinkMouseEvent {
     public readonly isLeftClick: boolean;
     public readonly isMiddleClick: boolean;
     public readonly isRightClick: boolean;
+
     constructor(source: IEditorMouseEvent, opts: ClickLinkOptions) {
         this.target = source.target;
         this.isLeftClick = source.event.leftButton;
@@ -46,6 +47,7 @@ export class ClickLinkKeyboardEvent {
     public readonly keyCodeIsTriggerKey: boolean;
     public readonly keyCodeIsSideBySideKey: boolean;
     public readonly hasTriggerModifier: boolean;
+
     constructor(source: IKeyboardEvent, opts: ClickLinkOptions) {
         this.keyCodeIsTriggerKey = (source.keyCode === opts.triggerKey);
         this.keyCodeIsSideBySideKey = (source.keyCode === opts.triggerSideBySideKey);
@@ -58,6 +60,7 @@ export class ClickLinkOptions {
     public readonly triggerModifier: TriggerModifier;
     public readonly triggerSideBySideKey: KeyCode;
     public readonly triggerSideBySideModifier: TriggerModifier;
+
     constructor(triggerKey: KeyCode, triggerModifier: TriggerModifier, triggerSideBySideKey: KeyCode, triggerSideBySideModifier: TriggerModifier) {
         this.triggerKey = triggerKey;
         this.triggerModifier = triggerModifier;
@@ -111,6 +114,7 @@ export class ClickLinkGesture extends Disposable {
     private _lastMouseMoveEvent: ClickLinkMouseEvent | null;
     private _hasTriggerKeyOnMouseDown: boolean;
     private _lineNumberOnMouseDown: number;
+
     constructor(editor: ICodeEditor, opts?: IClickLinkGestureOptions) {
         super();
         this._editor = editor;
@@ -122,6 +126,7 @@ export class ClickLinkGesture extends Disposable {
         this._register(this._editor.onDidChangeConfiguration((e) => {
             if (e.hasChanged(EditorOption.multiCursorModifier)) {
                 const newOpts = createOptions(this._editor.getOption(EditorOption.multiCursorModifier));
+
                 if (this._opts.equals(newOpts)) {
                     return;
                 }
@@ -166,6 +171,7 @@ export class ClickLinkGesture extends Disposable {
     }
     private _onEditorMouseUp(mouseEvent: ClickLinkMouseEvent): void {
         const currentLineNumber = this._extractLineNumberFromMouseEvent(mouseEvent);
+
         if (this._hasTriggerKeyOnMouseDown && this._lineNumberOnMouseDown && this._lineNumberOnMouseDown === currentLineNumber) {
             this._onExecute.fire(mouseEvent);
         }

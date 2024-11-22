@@ -54,6 +54,7 @@ interface IOutputReplElementTemplateData {
 	countContainer: HTMLElement;
 	value: HTMLElement;
 	source: SourceWidget;
+
 	getReplElementSource(): IReplElementSource | undefined;
 	elementDisposable: DisposableStore;
 }
@@ -76,8 +77,11 @@ export class ReplEvaluationInputsRenderer implements ITreeRenderer<ReplEvaluatio
 
 	renderTemplate(container: HTMLElement): IReplEvaluationInputTemplateData {
 		dom.append(container, $('span.arrow' + ThemeIcon.asCSSSelector(debugConsoleEvaluationInput)));
+
 		const input = dom.append(container, $('.expression'));
+
 		const label = new HighlightedLabel(input);
+
 		return { label };
 	}
 
@@ -105,16 +109,22 @@ export class ReplGroupRenderer implements ITreeRenderer<ReplGroup, FuzzyScore, I
 
 	renderTemplate(container: HTMLElement): IReplGroupTemplateData {
 		container.classList.add('group');
+
 		const expression = dom.append(container, $('.output.expression.value-and-source'));
+
 		const label = dom.append(expression, $('span.label'));
+
 		const source = this.instaService.createInstance(SourceWidget, expression);
+
 		return { label, source };
 	}
 
 	renderElement(element: ITreeNode<ReplGroup, FuzzyScore>, _index: number, templateData: IReplGroupTemplateData): void {
 
 		templateData.elementDisposable?.dispose();
+
 		const replGroup = element.element;
+
 		dom.clearNode(templateData.label);
 		templateData.elementDisposable = this.expressionRenderer.renderValue(templateData.label, replGroup.name, { wasANSI: true, session: element.element.session });
 		templateData.source.setSource(replGroup.sourceData);
@@ -139,6 +149,7 @@ export class ReplEvaluationResultsRenderer implements ITreeRenderer<ReplEvaluati
 
 	renderTemplate(container: HTMLElement): IReplEvaluationResultTemplateData {
 		const output = dom.append(container, $('.evaluation-result.expression'));
+
 		const value = dom.append(output, $('span.value'));
 
 		return { value, elementStore: new DisposableStore() };
@@ -146,6 +157,7 @@ export class ReplEvaluationResultsRenderer implements ITreeRenderer<ReplEvaluati
 
 	renderElement(element: ITreeNode<ReplEvaluationResult | Variable, FuzzyScore>, index: number, templateData: IReplEvaluationResultTemplateData): void {
 		templateData.elementStore.clear();
+
 		const expression = element.element;
 		templateData.elementStore.add(this.expressionRenderer.renderValue(templateData.value, expression, {
 			colorize: true,
@@ -174,6 +186,7 @@ export class ReplOutputElementRenderer implements ITreeRenderer<ReplOutputElemen
 	renderTemplate(container: HTMLElement): IOutputReplElementTemplateData {
 		const data: IOutputReplElementTemplateData = Object.create(null);
 		container.classList.add('output');
+
 		const expression = dom.append(container, $('.output.expression.value-and-source'));
 
 		data.container = container;
@@ -248,13 +261,16 @@ export class ReplVariablesRenderer extends AbstractExpressionsRenderer<IExpressi
 	public renderElement(node: ITreeNode<IExpression | ReplVariableElement, FuzzyScore>, _index: number, data: IExpressionTemplateData): void {
 		const element = node.element;
 		data.elementDisposable.clear();
+
 		super.renderExpressionElement(element instanceof ReplVariableElement ? element.expression : element, node, data);
 	}
 
 	protected renderExpression(expression: IExpression | ReplVariableElement, data: IExpressionTemplateData, highlights: IHighlight[]): void {
 		const isReplVariable = expression instanceof ReplVariableElement;
+
 		if (isReplVariable || !expression.name) {
 			data.label.set('');
+
 			const value = isReplVariable ? expression.expression : expression;
 			data.elementDisposable.add(this.expressionRenderer.renderValue(data.value, value, { colorize: true, hover: false, session: expression.getSession() }));
 			data.expression.classList.remove('nested-variable');
@@ -284,8 +300,11 @@ export class ReplRawObjectsRenderer implements ITreeRenderer<RawObjectReplElemen
 		container.classList.add('output');
 
 		const expression = dom.append(container, $('.output.expression'));
+
 		const name = dom.append(expression, $('span.name'));
+
 		const label = new HighlightedLabel(name);
+
 		const value = dom.append(expression, $('span.value'));
 
 		return { container, expression, name, label, value, elementStore: new DisposableStore() };
@@ -297,6 +316,7 @@ export class ReplRawObjectsRenderer implements ITreeRenderer<RawObjectReplElemen
 		// key
 		const element = node.element;
 		templateData.label.set(element.name ? `${element.name}:` : '', createMatches(node.filterData));
+
 		if (element.name) {
 			templateData.name.textContent = `${element.name}:`;
 		} else {
@@ -344,11 +364,14 @@ export class ReplDelegate extends CachedListVirtualDelegate<IReplElement> {
 	 */
 	protected estimateHeight(element: IReplElement, ignoreValueLength = false): number {
 		const lineHeight = this.replOptions.replConfiguration.lineHeight;
+
 		const countNumberOfLines = (str: string) => str.match(/\n/g)?.length ?? 0;
+
 		const hasValue = (e: any): e is { value: string } => typeof e.value === 'string';
 
 		if (hasValue(element) && !isNestedVariable(element)) {
 			const value = element.value;
+
 			const valueRows = countNumberOfLines(value)
 				+ (ignoreValueLength ? 0 : Math.floor(value.length / 70)) // Make an estimate for wrapping
 				+ (element instanceof ReplOutputElement ? 0 : 1); // A SimpleReplElement ends in \n if it's a complete line
@@ -452,6 +475,7 @@ class SourceWidget extends Disposable {
 		this._register(dom.addDisposableListener(this.el, 'click', e => {
 			e.preventDefault();
 			e.stopPropagation();
+
 			if (this.source) {
 				this.source.source.openInEditor(editorService, {
 					startLineNumber: this.source.lineNumber,

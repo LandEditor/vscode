@@ -23,8 +23,10 @@ export class TerminalInstanceService extends Disposable implements ITerminalInst
         resolve: () => void;
     }>();
     private readonly _onDidCreateInstance = this._register(new Emitter<ITerminalInstance>());
+
     get onDidCreateInstance(): Event<ITerminalInstance> { return this._onDidCreateInstance.event; }
     private readonly _onDidRegisterBackend = this._register(new Emitter<ITerminalBackend>());
+
     get onDidRegisterBackend(): Event<ITerminalBackend> { return this._onDidRegisterBackend.event; }
     constructor(
     @IInstantiationService
@@ -35,6 +37,7 @@ export class TerminalInstanceService extends Disposable implements ITerminalInst
     environmentService: IWorkbenchEnvironmentService) {
         super();
         this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+
         for (const remoteAuthority of [undefined, environmentService.remoteAuthority]) {
             const { promise, resolve } = promiseWithResolvers<void>();
             this._backendRegistration.set(remoteAuthority, { promise, resolve });
@@ -44,15 +47,18 @@ export class TerminalInstanceService extends Disposable implements ITerminalInst
     createInstance(shellLaunchConfig: IShellLaunchConfig, target: TerminalLocation): ITerminalInstance;
     createInstance(config: IShellLaunchConfig | ITerminalProfile, target: TerminalLocation): ITerminalInstance {
         const shellLaunchConfig = this.convertProfileToShellLaunchConfig(config);
+
         const instance = this._instantiationService.createInstance(TerminalInstance, this._terminalShellTypeContextKey, shellLaunchConfig);
         instance.target = target;
         this._onDidCreateInstance.fire(instance);
+
         return instance;
     }
     convertProfileToShellLaunchConfig(shellLaunchConfigOrProfile?: IShellLaunchConfig | ITerminalProfile, cwd?: string | URI): IShellLaunchConfig {
         // Profile was provided
         if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
             const profile = shellLaunchConfigOrProfile;
+
             if (!profile.path) {
                 return shellLaunchConfigOrProfile;
             }
@@ -78,6 +84,7 @@ export class TerminalInstanceService extends Disposable implements ITerminalInst
     }
     async getBackend(remoteAuthority?: string): Promise<ITerminalBackend | undefined> {
         let backend = Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).getTerminalBackend(remoteAuthority);
+
         if (!backend) {
             // Ensure backend is initialized and try again
             await this._backendRegistration.get(remoteAuthority)?.promise;

@@ -38,15 +38,19 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 
 	override async run(): Promise<void> {
 		const languages = this.languageService.getSortedRegisteredLanguageNames();
+
 		const picks: IQuickPickItem[] = languages.map(({ languageName, languageId }): IQuickPickItem => {
 			const description: string = nls.localize('languageDescriptionConfigured', "({0})", languageId);
 			// construct a fake resource to be able to show nice icons if any
 			let fakeResource: URI | undefined;
+
 			const extensions = this.languageService.getExtensions(languageId);
+
 			if (extensions.length) {
 				fakeResource = URI.file(extensions[0]);
 			} else {
 				const filenames = this.languageService.getFilenames(languageId);
+
 				if (filenames.length) {
 					fakeResource = URI.file(filenames[0]);
 				}
@@ -62,6 +66,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 			.then(pick => {
 				if (pick) {
 					const languageId = this.languageService.getLanguageIdByLanguageName(pick.label);
+
 					if (typeof languageId === 'string') {
 						return this.preferencesService.openLanguageSpecificSettings(languageId);
 					}
@@ -77,7 +82,9 @@ CommandsRegistry.registerCommand({
 	id: '_getAllSettings',
 	handler: () => {
 		const configRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+
 		const allSettings = configRegistry.getConfigurationProperties();
+
 		return allSettings;
 	}
 });
@@ -85,10 +92,14 @@ CommandsRegistry.registerCommand({
 //#region --- Register a command to get all actions from the command palette
 CommandsRegistry.registerCommand('_getAllCommands', function (accessor, filterByPrecondition?: boolean) {
 	const keybindingService = accessor.get(IKeybindingService);
+
 	const contextKeyService = accessor.get(IContextKeyService);
+
 	const actions: { command: string; label: string; keybinding: string; description?: string; precondition?: string }[] = [];
+
 	for (const editorAction of EditorExtensionsRegistry.getEditorActions()) {
 		const keybinding = keybindingService.lookupKeybinding(editorAction.id);
+
 		if (filterByPrecondition && !contextKeyService.contextMatchesRules(editorAction.precondition)) {
 			continue;
 		}
@@ -106,9 +117,13 @@ CommandsRegistry.registerCommand('_getAllCommands', function (accessor, filterBy
 				continue;
 			}
 			const title = typeof menuItem.command.title === 'string' ? menuItem.command.title : menuItem.command.title.value;
+
 			const category = menuItem.command.category ? typeof menuItem.command.category === 'string' ? menuItem.command.category : menuItem.command.category.value : undefined;
+
 			const label = category ? `${category}: ${title}` : title;
+
 			const description = isLocalizedString(menuItem.command.metadata?.description) ? menuItem.command.metadata.description.value : menuItem.command.metadata?.description;
+
 			const keybinding = keybindingService.lookupKeybinding(menuItem.command.id);
 			actions.push({
 				command: menuItem.command.id,

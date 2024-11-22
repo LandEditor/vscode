@@ -20,6 +20,7 @@ export interface IUtilityProcessWorkerMainService extends IUtilityProcessWorkerS
 export class UtilityProcessWorkerMainService extends Disposable implements IUtilityProcessWorkerMainService {
     declare readonly _serviceBrand: undefined;
     private readonly workers = new Map<number /* id */, UtilityProcessWorker>();
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -36,16 +37,19 @@ export class UtilityProcessWorkerMainService extends Disposable implements IUtil
         this.logService.trace(`[UtilityProcessWorker]: createWorker(${workerLogId})`);
         // Ensure to dispose any existing process for config
         const workerId = this.hash(configuration);
+
         if (this.workers.has(workerId)) {
             this.logService.warn(`[UtilityProcessWorker]: createWorker() found an existing worker that will be terminated (${workerLogId})`);
             this.disposeWorker(configuration);
         }
         // Create new worker
         const worker = new UtilityProcessWorker(this.logService, this.windowsMainService, this.telemetryService, this.lifecycleMainService, configuration);
+
         if (!worker.spawn()) {
             return { reason: { code: 1, signal: 'EINVALID' } };
         }
         this.workers.set(workerId, worker);
+
         const onDidTerminate = new DeferredPromise<IOnDidTerminateUtilityrocessWorkerProcess>();
         Event.once(worker.onDidTerminate)(reason => {
             if (reason.code === 0) {
@@ -57,6 +61,7 @@ export class UtilityProcessWorkerMainService extends Disposable implements IUtil
             this.workers.delete(workerId);
             onDidTerminate.complete({ reason });
         });
+
         return onDidTerminate.p;
     }
     private hash(configuration: IUtilityProcessWorkerConfiguration): number {
@@ -67,7 +72,9 @@ export class UtilityProcessWorkerMainService extends Disposable implements IUtil
     }
     async disposeWorker(configuration: IUtilityProcessWorkerConfiguration): Promise<void> {
         const workerId = this.hash(configuration);
+
         const worker = this.workers.get(workerId);
+
         if (!worker) {
             return;
         }
@@ -81,6 +88,7 @@ class UtilityProcessWorker extends Disposable {
     private readonly _onDidTerminate = this._register(new Emitter<IUtilityProcessWorkerProcessExit>());
     readonly onDidTerminate = this._onDidTerminate.event;
     private readonly utilityProcess = this._register(new WindowUtilityProcess(this.logService, this.windowsMainService, this.telemetryService, this.lifecycleMainService));
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -99,7 +107,9 @@ class UtilityProcessWorker extends Disposable {
     }
     spawn(): boolean {
         const window = this.windowsMainService.getWindowById(this.configuration.reply.windowId);
+
         const windowPid = window?.win?.webContents.getOSProcessId();
+
         return this.utilityProcess.start({
             type: this.configuration.process.type,
             entryPoint: this.configuration.process.moduleId,

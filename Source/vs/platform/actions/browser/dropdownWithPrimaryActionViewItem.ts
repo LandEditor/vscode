@@ -23,6 +23,7 @@ import { IHoverDelegate } from '../../../base/browser/ui/hover/hoverDelegate.js'
 
 export interface IDropdownWithPrimaryActionViewItemOptions {
 	actionRunner?: IActionRunner;
+
 	getKeyBinding?: (action: IAction) => ResolvedKeybinding | undefined;
 	hoverDelegate?: IHoverDelegate;
 	menuAsChild?: boolean;
@@ -54,6 +55,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 	) {
 		super(null, primaryAction, { hoverDelegate: _options?.hoverDelegate });
 		this._primaryAction = new MenuEntryActionViewItem(primaryAction, { hoverDelegate: _options?.hoverDelegate }, _keybindingService, _notificationService, _contextKeyService, _themeService, _contextMenuProvider, _accessibilityService);
+
 		if (_options?.actionRunner) {
 			this._primaryAction.actionRunner = _options.actionRunner;
 		}
@@ -83,8 +85,10 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 
 	override render(container: HTMLElement): void {
 		this._container = container;
+
 		super.render(this._container);
 		this._container.classList.add('monaco-dropdown-with-primary');
+
 		const primaryContainer = DOM.$('.action-container');
 		primaryContainer.role = 'button';
 		this._primaryAction.render(DOM.append(this._container, primaryContainer));
@@ -92,6 +96,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		this._dropdown.render(DOM.append(this._container, this._dropdownContainer));
 		this._register(DOM.addDisposableListener(primaryContainer, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.RightArrow)) {
 				this._primaryAction.element!.tabIndex = -1;
 				this._dropdown.focus();
@@ -100,6 +105,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 		}));
 		this._register(DOM.addDisposableListener(this._dropdownContainer, DOM.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.LeftArrow)) {
 				this._primaryAction.element!.tabIndex = 0;
 				this._dropdown.setFocusable(false);
@@ -149,6 +155,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 			hoverDelegate: this._options?.hoverDelegate,
 			keybindingProvider: this._options?.getKeyBinding
 		});
+
 		if (this._dropdownContainer) {
 			this._dropdown.render(this._dropdownContainer);
 		}
@@ -161,6 +168,7 @@ export class DropdownWithPrimaryActionViewItem extends BaseActionViewItem {
 	override dispose() {
 		this._primaryAction.dispose();
 		this._dropdown.dispose();
+
 		super.dispose();
 	}
 }

@@ -335,6 +335,7 @@ export interface ILanguageConfigurationDto {
 	onEnterRules?: IOnEnterRuleDto[];
 	__electricCharacterSupport?: {
 		brackets?: any;
+
 		docComment?: {
 			scope: string;
 			open: string;
@@ -529,6 +530,7 @@ export interface TerminalLaunchConfig {
 	strictEnv?: boolean;
 	hideFromUser?: boolean;
 	isExtensionCustomPtyTerminal?: boolean;
+
 	forceShellIntegration?: boolean;
 	isFeatureTerminal?: boolean;
 	isExtensionOwnedTerminal?: boolean;
@@ -1312,6 +1314,7 @@ export interface IChatAgentCompletionItem {
 	label: string | languages.CompletionItemLabel;
 	value: IChatRequestVariableValueDto;
 	detail?: string;
+
 	documentation?: string | IMarkdownString;
 	command?: ICommandDto;
 }
@@ -1394,6 +1397,7 @@ export interface IChatDto {
 
 export interface IChatRequestDto {
 	message: string;
+
 	variables?: Record<string, IChatRequestVariableValue[]>;
 }
 
@@ -1811,6 +1815,7 @@ export interface ExtHostDocumentSaveParticipantShape {
 
 export interface ITextEditorAddData {
 	id: string;
+
 	documentUri: UriComponents;
 	options: IResolvedTextEditorConfiguration;
 	selections: ISelection[];
@@ -2041,6 +2046,7 @@ export class IdObject {
 	private static _n = 0;
 	static mixin<T extends object>(object: T): T & IdObject {
 		(<any>object)._id = IdObject._n++;
+
 		return <any>object;
 	}
 }
@@ -2244,6 +2250,7 @@ export interface IPasteEditDto {
 	kind: { value: string } | undefined;
 	insertText: string | { snippet: string };
 	additionalEdit?: IWorkspaceEditDto;
+
 	yieldTo?: readonly string[];
 }
 
@@ -2260,6 +2267,7 @@ export interface IDocumentDropEditDto {
 	kind: string | undefined;
 	insertText: string | { snippet: string };
 	additionalEdit?: IWorkspaceEditDto;
+
 	yieldTo?: readonly string[];
 }
 
@@ -2486,6 +2494,7 @@ export interface IBreakpointDto {
 
 export interface IFunctionBreakpointDto extends IBreakpointDto {
 	type: 'function';
+
 	functionName: string;
 	mode?: string;
 }
@@ -2656,6 +2665,7 @@ export interface INotebookModelAddedData {
 
 export interface INotebookEditorAddData {
 	id: string;
+
 	documentUri: UriComponents;
 	selections: ICellRange[];
 	visibleRanges: ICellRange[];
@@ -2883,7 +2893,9 @@ export interface ExtHostTestingShape {
 
 export interface ExtHostLocalizationShape {
 	getMessage(extensionId: string, details: IStringDetails): string;
+
 	getBundle(extensionId: string): { [key: string]: string } | undefined;
+
 	getBundleUri(extensionId: string): URI | undefined;
 	initializeLocalizedMessages(extension: IExtensionDescription): Promise<void>;
 }

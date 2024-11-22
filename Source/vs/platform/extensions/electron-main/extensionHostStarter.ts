@@ -17,6 +17,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
     private static _lastId: number = 0;
     private readonly _extHosts = new Map<string, WindowUtilityProcess>();
     private _shutdown = false;
+
     constructor(
     @ILogService
     private readonly _logService: ILogService, 
@@ -39,6 +40,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
     }
     private _getExtHost(id: string): WindowUtilityProcess {
         const extHostProcess = this._extHosts.get(id);
+
         if (!extHostProcess) {
             throw new Error(`Unknown extension host!`);
         }
@@ -66,11 +68,14 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
             throw canceled();
         }
         const id = String(++ExtensionHostStarter._lastId);
+
         const extHost = new WindowUtilityProcess(this._logService, this._windowsMainService, this._telemetryService, this._lifecycleMainService);
         this._extHosts.set(id, extHost);
+
         const disposable = extHost.onExit(({ pid, code, signal }) => {
             disposable.dispose();
             this._logService.info(`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`);
+
             setTimeout(() => {
                 extHost.dispose();
                 this._extHosts.delete(id);
@@ -91,6 +96,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
                 }
             }, 1000);
         });
+
         return { id };
     }
     async start(id: string, opts: IExtensionHostProcessOptions): Promise<{
@@ -110,7 +116,9 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
             respondToAuthRequestsFromMainProcess: true,
             correlationId: id
         });
+
         const pid = await Event.toPromise(extHost.onSpawn);
+
         return { pid };
     }
     async enableInspectPort(id: string): Promise<boolean> {
@@ -118,6 +126,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
             throw canceled();
         }
         const extHostProcess = this._extHosts.get(id);
+
         if (!extHostProcess) {
             return false;
         }
@@ -128,6 +137,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
             throw canceled();
         }
         const extHostProcess = this._extHosts.get(id);
+
         if (!extHostProcess) {
             // already gone!
             return;
@@ -141,6 +151,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
     }
     async _waitForAllExit(maxWaitTimeMs: number): Promise<void> {
         const exitPromises: Promise<void>[] = [];
+
         for (const [, extHost] of this._extHosts) {
             exitPromises.push(extHost.waitForExit(maxWaitTimeMs));
         }

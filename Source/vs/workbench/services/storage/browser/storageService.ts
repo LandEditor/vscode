@@ -31,6 +31,7 @@ export class BrowserStorageService extends AbstractStorageService {
     private readonly profileStorageDisposables = this._register(new DisposableStore());
     private workspaceStorage: IStorage | undefined;
     private workspaceStorageDatabase: IIndexedDBStorageDatabase | undefined;
+
     get hasPendingUpdate(): boolean {
         return Boolean(this.applicationStorageDatabase?.hasPendingUpdate ||
             this.profileStorageDatabase?.hasPendingUpdate ||
@@ -67,6 +68,7 @@ export class BrowserStorageService extends AbstractStorageService {
         this.profileStorageDisposables.clear();
         // Remember profile associated to profile storage
         this.profileStorageProfile = profile;
+
         if (isProfileUsingDefaultStorage(this.profileStorageProfile)) {
             // If we are using default profile storage, the profile storage is
             // actually the same as application storage. As such we
@@ -96,6 +98,7 @@ export class BrowserStorageService extends AbstractStorageService {
     }
     private updateIsNew(storage: IStorage): void {
         const firstOpen = storage.getBoolean(IS_NEW_KEY);
+
         if (firstOpen === undefined) {
             storage.set(IS_NEW_KEY, true);
         }
@@ -107,8 +110,10 @@ export class BrowserStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationStorage;
+
             case StorageScope.PROFILE:
                 return this.profileStorage;
+
             default:
                 return this.workspaceStorage;
         }
@@ -117,8 +122,10 @@ export class BrowserStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationStorageDatabase?.name;
+
             case StorageScope.PROFILE:
                 return this.profileStorageDatabase?.name;
+
             default:
                 return this.workspaceStorageDatabase?.name;
         }
@@ -128,6 +135,7 @@ export class BrowserStorageService extends AbstractStorageService {
             return;
         }
         const oldProfileStorage = assertIsDefined(this.profileStorage);
+
         const oldItems = oldProfileStorage.items;
         // Close old profile storage but only if this is
         // different from application storage!
@@ -213,6 +221,7 @@ interface IIndexedDBStorageDatabase extends IStorageDatabase, IDisposable {
 class InMemoryIndexedDBStorageDatabase extends InMemoryStorageDatabase implements IIndexedDBStorageDatabase {
     readonly hasPendingUpdate = false;
     readonly name = 'in-memory-indexedb-storage';
+
     async clear(): Promise<void> {
         (await this.getItems()).clear();
     }
@@ -238,10 +247,12 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
         try {
             const database = new IndexedDBStorageDatabase(options, logService);
             await database.whenConnected;
+
             return database;
         }
         catch (error) {
             logService.error(`[IndexedDB Storage ${options.id}] create(): ${toErrorMessage(error, true)}`);
+
             return new InMemoryIndexedDBStorageDatabase();
         }
     }
@@ -251,6 +262,7 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
     readonly onDidChangeItemsExternal = this._onDidChangeItemsExternal.event;
     private broadcastChannel: BroadcastDataChannel<IStorageItemsChangeEvent> | undefined;
     private pendingUpdate: Promise<boolean> | undefined = undefined;
+
     get hasPendingUpdate(): boolean { return !!this.pendingUpdate; }
     readonly name: string;
     private readonly whenConnected: Promise<IndexedDB>;
@@ -278,11 +290,13 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
         }
         catch (error) {
             this.logService.error(`[IndexedDB Storage ${this.name}] connect() error: ${toErrorMessage(error)}`);
+
             throw error;
         }
     }
     async getItems(): Promise<Map<string, string>> {
         const db = await this.whenConnected;
+
         function isValid(value: unknown): value is string {
             return typeof value === 'string';
         }
@@ -292,6 +306,7 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
         // Run the update
         let didUpdate = false;
         this.pendingUpdate = this.doUpdateItems(request);
+
         try {
             didUpdate = await this.pendingUpdate;
         }
@@ -311,7 +326,9 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
     private async doUpdateItems(request: IUpdateRequest): Promise<boolean> {
         // Return early if the request is empty
         const toInsert = request.insert;
+
         const toDelete = request.delete;
+
         if ((!toInsert && !toDelete) || (toInsert?.size === 0 && toDelete?.size === 0)) {
             return false;
         }
@@ -333,6 +350,7 @@ export class IndexedDBStorageDatabase extends Disposable implements IIndexedDBSt
             }
             return requests;
         });
+
         return true;
     }
     async optimize(): Promise<void> {

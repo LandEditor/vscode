@@ -43,6 +43,7 @@ export const enum SocketDiagnosticsEventType {
 }
 export namespace SocketDiagnostics {
     export const enableDiagnostics = false;
+
     export interface IRecord {
         timestamp: number;
         id: string;
@@ -52,8 +53,11 @@ export namespace SocketDiagnostics {
         data?: any;
     }
     export const records: IRecord[] = [];
+
     const socketIds = new WeakMap<any, string>();
+
     let lastUsedSocketId = 0;
+
     function getSocketId(nativeObject: any, label: string): string {
         if (!socketIds.has(nativeObject)) {
             const id = String(++lastUsedSocketId);
@@ -66,6 +70,7 @@ export namespace SocketDiagnostics {
             return;
         }
         const id = getSocketId(nativeObject, socketDebugLabel);
+
         if (data instanceof VSBuffer || data instanceof Uint8Array || data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
             const copiedData = VSBuffer.alloc(data.byteLength);
             copiedData.set(data);
@@ -169,6 +174,7 @@ export class ChunkStream {
         if (this._chunks[0].byteLength === byteCount) {
             // super fast path, precisely first chunk must be returned
             const result = this._chunks[0];
+
             if (advance) {
                 this._chunks.shift();
                 this._totalLength -= byteCount;
@@ -178,6 +184,7 @@ export class ChunkStream {
         if (this._chunks[0].byteLength > byteCount) {
             // fast path, the reading is entirely within the first chunk
             const result = this._chunks[0].slice(0, byteCount);
+
             if (advance) {
                 this._chunks[0] = this._chunks[0].slice(byteCount);
                 this._totalLength -= byteCount;
@@ -185,15 +192,20 @@ export class ChunkStream {
             return result;
         }
         const result = VSBuffer.alloc(byteCount);
+
         let resultOffset = 0;
+
         let chunkIndex = 0;
+
         while (byteCount > 0) {
             const chunk = this._chunks[chunkIndex];
+
             if (chunk.byteLength > byteCount) {
                 // this chunk will survive
                 const chunkPart = chunk.slice(0, byteCount);
                 result.set(chunkPart, resultOffset);
                 resultOffset += byteCount;
+
                 if (advance) {
                     this._chunks[chunkIndex] = chunk.slice(byteCount);
                     this._totalLength -= byteCount;
@@ -204,6 +216,7 @@ export class ChunkStream {
                 // this chunk will be entirely read
                 result.set(chunk, resultOffset);
                 resultOffset += chunk.byteLength;
+
                 if (advance) {
                     this._chunks.shift();
                     this._totalLength -= chunk.byteLength;
@@ -231,13 +244,21 @@ const enum ProtocolMessageType {
 function protocolMessageTypeToString(messageType: ProtocolMessageType) {
     switch (messageType) {
         case ProtocolMessageType.None: return 'None';
+
         case ProtocolMessageType.Regular: return 'Regular';
+
         case ProtocolMessageType.Control: return 'Control';
+
         case ProtocolMessageType.Ack: return 'Ack';
+
         case ProtocolMessageType.Disconnect: return 'Disconnect';
+
         case ProtocolMessageType.ReplayRequest: return 'ReplayRequest';
+
         case ProtocolMessageType.Pause: return 'PauseWriting';
+
         case ProtocolMessageType.Resume: return 'ResumeWriting';
+
         case ProtocolMessageType.KeepAlive: return 'KeepAlive';
     }
 }
@@ -268,6 +289,7 @@ export const enum ProtocolConstants {
 }
 class ProtocolMessage {
     public writtenTime: number;
+
     constructor(public readonly type: ProtocolMessageType, public readonly id: number, public readonly ack: number, public readonly data: VSBuffer) {
         this.writtenTime = 0;
     }
@@ -289,6 +311,7 @@ class ProtocolReader extends Disposable {
         id: 0,
         ack: 0
     };
+
     constructor(socket: ISocket) {
         super();
         this._socket = socket;
@@ -303,8 +326,10 @@ class ProtocolReader extends Disposable {
         }
         this.lastReadTime = Date.now();
         this._incomingData.acceptChunk(data);
+
         while (this._incomingData.byteLength >= this._state.readLen) {
             const buff = this._incomingData.read(this._state.readLen);
+
             if (this._state.readHead) {
                 // buff is the header
                 // save new state => next time will read the body
@@ -318,7 +343,9 @@ class ProtocolReader extends Disposable {
             else {
                 // buff is the body
                 const messageType = this._state.messageType;
+
                 const id = this._state.id;
+
                 const ack = this._state.ack;
                 // save new state => next time will read the header
                 this._state.readHead = true;
@@ -328,6 +355,7 @@ class ProtocolReader extends Disposable {
                 this._state.ack = 0;
                 this._socket.traceSocketEvent(SocketDiagnosticsEventType.ProtocolMessageRead, buff);
                 this._onMessage.fire(new ProtocolMessage(messageType, id, ack, buff));
+
                 if (this._isDisposed) {
                     // check if an event listener lead to our disposal
                     break;
@@ -340,6 +368,7 @@ class ProtocolReader extends Disposable {
     }
     public override dispose(): void {
         this._isDisposed = true;
+
         super.dispose();
     }
 }
@@ -350,6 +379,7 @@ class ProtocolWriter {
     private _data: VSBuffer[];
     private _totalLength: number;
     public lastWriteTime: number;
+
     constructor(socket: ISocket) {
         this._isDisposed = false;
         this._isPaused = false;
@@ -369,6 +399,7 @@ class ProtocolWriter {
     }
     public drain(): Promise<void> {
         this.flush();
+
         return this._socket.drain();
     }
     public flush(): void {
@@ -390,6 +421,7 @@ class ProtocolWriter {
         }
         msg.writtenTime = Date.now();
         this.lastWriteTime = Date.now();
+
         const header = VSBuffer.alloc(ProtocolConstants.HeaderLength);
         header.writeUInt8(msg.type, 0);
         header.writeUInt32BE(msg.id, 1);
@@ -403,12 +435,14 @@ class ProtocolWriter {
         const wasEmpty = this._totalLength === 0;
         this._data.push(head, body);
         this._totalLength += head.byteLength + body.byteLength;
+
         return wasEmpty;
     }
     private _bufferTake(): VSBuffer {
         const ret = VSBuffer.concat(this._data, this._totalLength);
         this._data.length = 0;
         this._totalLength = 0;
+
         return ret;
     }
     private _writeSoon(header: VSBuffer, data: VSBuffer): void {
@@ -463,6 +497,7 @@ export class Protocol extends Disposable implements IMessagePassingProtocol {
     readonly onMessage: Event<VSBuffer> = this._onMessage.event;
     private readonly _onDidDispose = new Emitter<void>();
     readonly onDidDispose: Event<void> = this._onDidDispose.event;
+
     constructor(socket: ISocket) {
         super();
         this._socket = socket;
@@ -498,6 +533,7 @@ export class Client<TContext = string> extends IPCClient<TContext> {
     }
     override dispose(): void {
         super.dispose();
+
         const socket = this.protocol.getSocket();
         // should be sent gracefully with a .flush(), but try to send it out as a
         // last resort here if nothing else:
@@ -515,6 +551,7 @@ export class BufferedEmitter<T> {
     private _hasListeners = false;
     private _isDeliveringMessages = false;
     private _bufferedMessages: T[] = [];
+
     constructor() {
         this._emitter = new Emitter<T>({
             onWillAddFirstListener: () => {
@@ -535,6 +572,7 @@ export class BufferedEmitter<T> {
             return;
         }
         this._isDeliveringMessages = true;
+
         while (this._hasListeners && this._bufferedMessages.length > 0) {
             this._emitter.fire(this._bufferedMessages.shift()!);
         }
@@ -560,6 +598,7 @@ export class BufferedEmitter<T> {
 class QueueElement<T> {
     public readonly data: T;
     public next: QueueElement<T> | null;
+
     constructor(data: T) {
         this.data = data;
         this.next = null;
@@ -568,13 +607,16 @@ class QueueElement<T> {
 class Queue<T> {
     private _first: QueueElement<T> | null;
     private _last: QueueElement<T> | null;
+
     constructor() {
         this._first = null;
         this._last = null;
     }
     public length(): number {
         let result = 0;
+
         let current = this._first;
+
         while (current) {
             current = current.next;
             result++;
@@ -589,8 +631,11 @@ class Queue<T> {
     }
     public toArray(): T[] {
         const result: T[] = [];
+
         let resultLen = 0;
+
         let it = this._first;
+
         while (it) {
             result[resultLen++] = it.data;
             it = it.next;
@@ -604,15 +649,18 @@ class Queue<T> {
         if (this._first === this._last) {
             this._first = null;
             this._last = null;
+
             return;
         }
         this._first = this._first.next;
     }
     public push(item: T): void {
         const element = new QueueElement(item);
+
         if (!this._first) {
             this._first = element;
             this._last = element;
+
             return;
         }
         this._last!.next = element;
@@ -629,9 +677,12 @@ class LoadEstimator {
         return LoadEstimator._INSTANCE;
     }
     private lastRuns: number[];
+
     constructor() {
         this.lastRuns = [];
+
         const now = Date.now();
+
         for (let i = 0; i < LoadEstimator._HISTORY_LENGTH; i++) {
             this.lastRuns[i] = now - 1000 * i;
         }
@@ -647,8 +698,11 @@ class LoadEstimator {
      */
     private load(): number {
         const now = Date.now();
+
         const historyLimit = (1 + LoadEstimator._HISTORY_LENGTH) * 1000;
+
         let score = 0;
+
         for (let i = 0; i < LoadEstimator._HISTORY_LENGTH; i++) {
             if (now - this.lastRuns[i] <= historyLimit) {
                 score++;
@@ -739,6 +793,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
         this._socketReader = this._socketDisposables.add(new ProtocolReader(this._socket));
         this._socketDisposables.add(this._socketReader.onMessage(msg => this._receiveMessage(msg)));
         this._socketDisposables.add(this._socket.onClose(e => this._onSocketClose.fire(e)));
+
         if (opts.initialChunk) {
             this._socketReader.acceptChunk(opts.initialChunk);
         }
@@ -772,6 +827,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
     sendDisconnect(): void {
         if (!this._didSendDisconnect) {
             this._didSendDisconnect = true;
+
             const msg = new ProtocolMessage(ProtocolMessageType.Disconnect, 0, 0, getEmptyBuffer());
             this._socketWriter.write(msg);
             this._socketWriter.flush();
@@ -816,10 +872,12 @@ export class PersistentProtocol implements IMessagePassingProtocol {
         // After a reconnection, let the other party know (again) which messages have been received.
         // (perhaps the other party didn't receive a previous ACK)
         this._incomingAckId = this._incomingMsgId;
+
         const msg = new ProtocolMessage(ProtocolMessageType.Ack, 0, this._incomingAckId, getEmptyBuffer());
         this._socketWriter.write(msg);
         // Send again all unacknowledged messages
         const toSend = this._outgoingUnackMsg.toArray();
+
         for (let i = 0, len = toSend.length; i < len; i++) {
             this._socketWriter.write(toSend[i]);
         }
@@ -831,8 +889,10 @@ export class PersistentProtocol implements IMessagePassingProtocol {
     private _receiveMessage(msg: ProtocolMessage): void {
         if (msg.ack > this._outgoingAckId) {
             this._outgoingAckId = msg.ack;
+
             do {
                 const first = this._outgoingUnackMsg.peek();
+
                 if (first && first.id <= msg.ack) {
                     // this message has been confirmed, remove it
                     this._outgoingUnackMsg.pop();
@@ -852,6 +912,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
                     if (msg.id !== this._incomingMsgId + 1) {
                         // in case we missed some messages we ask the other party to resend them
                         const now = Date.now();
+
                         if (now - this._lastReplayRequestTime > 10000) {
                             // send a replay request at most once every 10s
                             this._lastReplayRequestTime = now;
@@ -869,6 +930,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
             }
             case ProtocolMessageType.Control: {
                 this._onControlMessage.fire(msg.data);
+
                 break;
             }
             case ProtocolMessageType.Ack: {
@@ -877,23 +939,28 @@ export class PersistentProtocol implements IMessagePassingProtocol {
             }
             case ProtocolMessageType.Disconnect: {
                 this._onDidDispose.fire();
+
                 break;
             }
             case ProtocolMessageType.ReplayRequest: {
                 // Send again all unacknowledged messages
                 const toSend = this._outgoingUnackMsg.toArray();
+
                 for (let i = 0, len = toSend.length; i < len; i++) {
                     this._socketWriter.write(toSend[i]);
                 }
                 this._recvAckCheck();
+
                 break;
             }
             case ProtocolMessageType.Pause: {
                 this._socketWriter.pause();
+
                 break;
             }
             case ProtocolMessageType.Resume: {
                 this._socketWriter.resume();
+
                 break;
             }
             case ProtocolMessageType.KeepAlive: {
@@ -911,8 +978,10 @@ export class PersistentProtocol implements IMessagePassingProtocol {
     send(buffer: VSBuffer): void {
         const myId = ++this._outgoingMsgId;
         this._incomingAckId = this._incomingMsgId;
+
         const msg = new ProtocolMessage(ProtocolMessageType.Regular, myId, this._incomingAckId, buffer);
         this._outgoingUnackMsg.push(msg);
+
         if (!this._isReconnecting) {
             this._socketWriter.write(msg);
             this._recvAckCheck();
@@ -936,11 +1005,13 @@ export class PersistentProtocol implements IMessagePassingProtocol {
             return;
         }
         const timeSinceLastIncomingMsg = Date.now() - this._incomingMsgLastTime;
+
         if (timeSinceLastIncomingMsg >= ProtocolConstants.AcknowledgeTime) {
             // sufficient time has passed since this message has been received,
             // and no message from our side needed to be sent in the meantime,
             // so we will send a message containing only an ack.
             this._sendAck();
+
             return;
         }
         this._incomingAckTimeout = setTimeout(() => {
@@ -963,9 +1034,13 @@ export class PersistentProtocol implements IMessagePassingProtocol {
             return;
         }
         const oldestUnacknowledgedMsg = this._outgoingUnackMsg.peek()!;
+
         const timeSinceOldestUnacknowledgedMsg = Date.now() - oldestUnacknowledgedMsg.writtenTime;
+
         const timeSinceLastReceivedSomeData = Date.now() - this._socketReader.lastReadTime;
+
         const timeSinceLastTimeout = Date.now() - this._lastSocketTimeoutTime;
+
         if (timeSinceOldestUnacknowledgedMsg >= ProtocolConstants.TimeoutTime
             && timeSinceLastReceivedSomeData >= ProtocolConstants.TimeoutTime
             && timeSinceLastTimeout >= ProtocolConstants.TimeoutTime) {
@@ -980,6 +1055,7 @@ export class PersistentProtocol implements IMessagePassingProtocol {
                     timeSinceOldestUnacknowledgedMsg,
                     timeSinceLastReceivedSomeData
                 });
+
                 return;
             }
         }
@@ -995,11 +1071,13 @@ export class PersistentProtocol implements IMessagePassingProtocol {
             return;
         }
         this._incomingAckId = this._incomingMsgId;
+
         const msg = new ProtocolMessage(ProtocolMessageType.Ack, 0, this._incomingAckId, getEmptyBuffer());
         this._socketWriter.write(msg);
     }
     private _sendKeepAlive(): void {
         this._incomingAckId = this._incomingMsgId;
+
         const msg = new ProtocolMessage(ProtocolMessageType.KeepAlive, 0, this._incomingAckId, getEmptyBuffer());
         this._socketWriter.write(msg);
     }

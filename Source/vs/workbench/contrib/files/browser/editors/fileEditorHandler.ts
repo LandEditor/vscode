@@ -28,8 +28,11 @@ export class FileEditorInputSerializer implements IEditorSerializer {
     }
     serialize(editorInput: EditorInput): string {
         const fileEditorInput = editorInput as FileEditorInput;
+
         const resource = fileEditorInput.resource;
+
         const preferredResource = fileEditorInput.preferredResource;
+
         const serializedFileEditorInput: ISerializedFileEditorInput = {
             resourceJSON: resource.toJSON(),
             preferredResourceJSON: isEqual(resource, preferredResource) ? undefined : preferredResource, // only storing preferredResource if it differs from the resource
@@ -38,18 +41,27 @@ export class FileEditorInputSerializer implements IEditorSerializer {
             encoding: fileEditorInput.getEncoding(),
             modeId: fileEditorInput.getPreferredLanguageId() // only using the preferred user associated language here if available to not store redundant data
         };
+
         return JSON.stringify(serializedFileEditorInput);
     }
     deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): FileEditorInput {
         return instantiationService.invokeFunction(accessor => {
             const serializedFileEditorInput: ISerializedFileEditorInput = JSON.parse(serializedEditorInput);
+
             const resource = URI.revive(serializedFileEditorInput.resourceJSON);
+
             const preferredResource = URI.revive(serializedFileEditorInput.preferredResourceJSON);
+
             const name = serializedFileEditorInput.name;
+
             const description = serializedFileEditorInput.description;
+
             const encoding = serializedFileEditorInput.encoding;
+
             const languageId = serializedFileEditorInput.modeId;
+
             const fileEditorInput = accessor.get(ITextEditorService).createTextEditor({ resource, label: name, description, encoding, languageId, forceFile: true }) as FileEditorInput;
+
             if (preferredResource) {
                 fileEditorInput.setPreferredResource(preferredResource);
             }
@@ -59,6 +71,7 @@ export class FileEditorInputSerializer implements IEditorSerializer {
 }
 export class FileEditorWorkingCopyEditorHandler extends Disposable implements IWorkbenchContribution, IWorkingCopyEditorHandler {
     static readonly ID = 'workbench.contrib.fileEditorWorkingCopyEditorHandler';
+
     constructor(
     @IWorkingCopyEditorService
     workingCopyEditorService: IWorkingCopyEditorService, 

@@ -535,11 +535,13 @@ export class TextModelResolvedOptions {
 		tabSize: number;
 		indentSize: number | 'tabSize';
 		insertSpaces: boolean;
+
 		defaultEOL: DefaultEndOfLine;
 		trimAutoWhitespace: boolean;
 		bracketPairColorizationOptions: BracketPairColorizationOptions;
 	}) {
 		this.tabSize = Math.max(1, src.tabSize | 0);
+
 		if (src.indentSize === 'tabSize') {
 			this.indentSize = this.tabSize;
 			this._indentSizeIsTabSize = true;
@@ -590,6 +592,7 @@ export interface ITextModelCreationOptions {
 	insertSpaces: boolean;
 	detectIndentation: boolean;
 	trimAutoWhitespace: boolean;
+
 	defaultEOL: DefaultEndOfLine;
 	isForSimpleWidget: boolean;
 	largeFileOptimizations: boolean;
@@ -1388,6 +1391,7 @@ export interface ITextBufferBuilder {
  */
 export interface ITextBufferFactory {
 	create(defaultEOL: DefaultEndOfLine): { textBuffer: ITextBuffer; disposable: IDisposable };
+
 	getFirstLineText(lengthLimit: number): string;
 }
 
@@ -1424,27 +1428,44 @@ export interface IReadonlyTextBuffer {
 	mightContainUnusualLineTerminators(): boolean;
 	resetMightContainUnusualLineTerminators(): void;
 	mightContainNonBasicASCII(): boolean;
+
 	getBOM(): string;
+
 	getEOL(): string;
 
 	getOffsetAt(lineNumber: number, column: number): number;
+
 	getPositionAt(offset: number): Position;
+
 	getRangeAt(offset: number, length: number): Range;
 
 	getValueInRange(range: Range, eol: EndOfLinePreference): string;
 	createSnapshot(preserveBOM: boolean): ITextSnapshot;
+
 	getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
+
 	getCharacterCountInRange(range: Range, eol: EndOfLinePreference): number;
+
 	getLength(): number;
+
 	getLineCount(): number;
+
 	getLinesContent(): string[];
+
 	getLineContent(lineNumber: number): string;
+
 	getLineCharCode(lineNumber: number, index: number): number;
+
 	getCharCode(offset: number): number;
+
 	getLineLength(lineNumber: number): number;
+
 	getLineMinColumn(lineNumber: number): number;
+
 	getLineMaxColumn(lineNumber: number): number;
+
 	getLineFirstNonWhitespaceColumn(lineNumber: number): number;
+
 	getLineLastNonWhitespaceColumn(lineNumber: number): number;
 	findMatchesLineByLine(searchRange: Range, searchData: SearchData, captureMatches: boolean, limitResultCount: number): FindMatch[];
 
@@ -1505,6 +1526,7 @@ export class ApplyEditsResult {
  */
 export interface IInternalModelContentChange extends IModelContentChange {
 	range: Range;
+
 	forceMoveMarkers: boolean;
 }
 

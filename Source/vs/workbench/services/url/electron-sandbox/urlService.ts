@@ -20,6 +20,7 @@ export interface IRelayOpenURLOptions extends IOpenURLOptions {
 }
 export class RelayURLService extends NativeURLService implements IURLHandler, IOpener {
     private urlService: IURLService;
+
     constructor(
     @IMainProcessService
     mainProcessService: IMainProcessService, 
@@ -38,7 +39,9 @@ export class RelayURLService extends NativeURLService implements IURLHandler, IO
     }
     override create(options?: Partial<UriComponents>): URI {
         const uri = super.create(options);
+
         let query = uri.query;
+
         if (!query) {
             query = `windowId=${encodeURIComponent(this.nativeHostService.windowId)}`;
         }
@@ -58,6 +61,7 @@ export class RelayURLService extends NativeURLService implements IURLHandler, IO
     }
     async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
         const result = await super.open(uri, options);
+
         if (result) {
             this.logService.trace('URLService#handleURL(): handled', uri.toString(true));
             await this.nativeHostService.focusWindow({ force: true /* Application may not be active */, targetWindowId: this.nativeHostService.windowId });

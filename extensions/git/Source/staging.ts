@@ -5,11 +5,16 @@
 import { TextDocument, Range, LineChange, Selection, Uri } from 'vscode';
 export function applyLineChanges(original: TextDocument, modified: TextDocument, diffs: LineChange[]): string {
     const result: string[] = [];
+
     let currentLine = 0;
+
     for (const diff of diffs) {
         const isInsertion = diff.originalEndLineNumber === 0;
+
         const isDeletion = diff.modifiedEndLineNumber === 0;
+
         let endLine = isInsertion ? diff.originalStartLineNumber : diff.originalStartLineNumber - 1;
+
         let endCharacter = 0;
         // if this is a deletion at the very end of the document,then we need to account
         // for a newline at the end of the last line which may have been deleted
@@ -19,8 +24,10 @@ export function applyLineChanges(original: TextDocument, modified: TextDocument,
             endCharacter = original.lineAt(endLine).range.end.character;
         }
         result.push(original.getText(new Range(currentLine, 0, endLine, endCharacter)));
+
         if (!isDeletion) {
             let fromLine = diff.modifiedStartLineNumber - 1;
+
             let fromCharacter = 0;
             // if this is an insertion at the very end of the document,
             // then we must start the next range after the last character of the
@@ -34,32 +41,41 @@ export function applyLineChanges(original: TextDocument, modified: TextDocument,
         currentLine = isInsertion ? diff.originalStartLineNumber : diff.originalEndLineNumber;
     }
     result.push(original.getText(new Range(currentLine, 0, original.lineCount, 0)));
+
     return result.join('');
 }
 export function toLineRanges(selections: readonly Selection[], textDocument: TextDocument): Range[] {
     const lineRanges = selections.map(s => {
         const startLine = textDocument.lineAt(s.start.line);
+
         const endLine = textDocument.lineAt(s.end.line);
+
         return new Range(startLine.range.start, endLine.range.end);
     });
     lineRanges.sort((a, b) => a.start.line - b.start.line);
+
     const result = lineRanges.reduce((result, l) => {
         if (result.length === 0) {
             result.push(l);
+
             return result;
         }
         const [last, ...rest] = result;
+
         const intersection = l.intersection(last);
+
         if (intersection) {
             return [intersection, ...rest];
         }
         if (l.start.line === last.end.line + 1) {
             const merge = new Range(last.start, l.end);
+
             return [merge, ...rest];
         }
         return [l, ...result];
     }, [] as Range[]);
     result.reverse();
+
     return result;
 }
 export function getModifiedRange(textDocument: TextDocument, diff: LineChange): Range {
@@ -80,7 +96,9 @@ export function getModifiedRange(textDocument: TextDocument, diff: LineChange): 
 }
 export function intersectDiffWithRange(textDocument: TextDocument, diff: LineChange, range: Range): LineChange | null {
     const modifiedRange = getModifiedRange(textDocument, diff);
+
     const intersection = range.intersection(modifiedRange);
+
     if (!intersection) {
         return null;
     }
@@ -89,11 +107,14 @@ export function intersectDiffWithRange(textDocument: TextDocument, diff: LineCha
     }
     else {
         const modifiedStartLineNumber = intersection.start.line + 1;
+
         const modifiedEndLineNumber = intersection.end.line + 1;
         // heuristic: same number of lines on both sides, let's assume line by line
         if (diff.originalEndLineNumber - diff.originalStartLineNumber === diff.modifiedEndLineNumber - diff.modifiedStartLineNumber) {
             const delta = modifiedStartLineNumber - diff.modifiedStartLineNumber;
+
             const length = modifiedEndLineNumber - modifiedStartLineNumber;
+
             return {
                 originalStartLineNumber: diff.originalStartLineNumber + delta,
                 originalEndLineNumber: diff.originalStartLineNumber + delta + length,

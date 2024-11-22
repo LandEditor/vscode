@@ -6,6 +6,7 @@ import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from '../../
 import { IBreakpointContribution } from './debug.js';
 export class Breakpoints {
     private breakpointsWhen: ContextKeyExpression | undefined;
+
     constructor(private readonly breakpointContribution: IBreakpointContribution, 
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService) {

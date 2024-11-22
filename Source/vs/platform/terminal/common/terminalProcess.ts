@@ -8,6 +8,7 @@ import { IFixedTerminalDimensions, IRawTerminalTabLayoutInfo, IReconnectionPrope
 export interface ISingleTerminalConfiguration<T> {
     userValue: T | undefined;
     value: T | undefined;
+
     defaultValue: T | undefined;
 }
 export interface ICompleteTerminalConfiguration {
@@ -75,7 +76,9 @@ const enum Constants {
  */
 export function chunkInput(data: string): string[] {
     const chunks: string[] = [];
+
     let nextChunkStartIndex = 0;
+
     for (let i = 0; i < data.length - 1; i++) {
         if (
         // If the max chunk size is reached

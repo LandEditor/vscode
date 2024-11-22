@@ -256,6 +256,7 @@ export interface INotebookDocumentMetadataTextModel {
 	 * Text representation of the Notebook Metadata
 	 */
 	getValue(): string;
+
 	getHash(): string;
 }
 
@@ -267,6 +268,7 @@ export interface ICell {
 	outputs: ICellOutput[];
 	metadata: NotebookCellMetadata;
 	internalMetadata: NotebookCellInternalMetadata;
+
 	getHashValue(): number;
 	textBuffer: IReadonlyTextBuffer;
 	onDidChangeOutputs?: Event<NotebookCellOutputsSplice>;
@@ -582,6 +584,7 @@ export interface INotebookContributionData {
 
 export namespace NotebookMetadataUri {
 	export const scheme = Schemas.vscodeNotebookMetadata;
+
 	export function generate(notebook: URI): URI {
 		return generateMetadataUri(notebook);
 	}
@@ -592,6 +595,7 @@ export namespace NotebookMetadataUri {
 
 export namespace CellUri {
 	export const scheme = Schemas.vscodeNotebookCell;
+
 	export function generate(notebook: URI, handle: number): URI {
 		return generateUri(notebook, handle);
 	}
@@ -613,12 +617,15 @@ export namespace CellUri {
 		}
 
 		const match = /^op([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\,(.*)$/i.exec(uri.fragment);
+
 		if (!match) {
 			return undefined;
 		}
 
 		const outputId = (match[1] && match[1] !== '') ? match[1] : undefined;
+
 		const scheme = match[2];
+
 		return {
 			outputId,
 			notebook: uri.with({
@@ -666,6 +673,7 @@ export class MimeTypeDisplayOrder {
 	 */
 	public sort(mimetypes: Iterable<string>): string[] {
 		const remaining = new Map(Iterable.map(mimetypes, m => [m, normalizeSlashes(m)]));
+
 		let sorted: string[] = [];
 
 		for (const { matches } of this.order) {
@@ -673,6 +681,7 @@ export class MimeTypeDisplayOrder {
 				if (matches(normalized)) {
 					sorted.push(original);
 					remaining.delete(original);
+
 					break;
 				}
 			}
@@ -693,9 +702,11 @@ export class MimeTypeDisplayOrder {
 	 */
 	public prioritize(chosenMimetype: string, otherMimetypes: readonly string[]) {
 		const chosenIndex = this.findIndex(chosenMimetype);
+
 		if (chosenIndex === -1) {
 			// always first, nothing more to do
 			this.order.unshift({ pattern: chosenMimetype, matches: glob.parse(normalizeSlashes(chosenMimetype)) });
+
 			return;
 		}
 
@@ -703,6 +714,7 @@ export class MimeTypeDisplayOrder {
 		// them after it, retaining order.
 		const uniqueIndicies = new Set(otherMimetypes.map(m => this.findIndex(m, chosenIndex)));
 		uniqueIndicies.delete(-1);
+
 		const otherIndices = Array.from(uniqueIndicies).sort();
 		this.order.splice(chosenIndex + 1, 0, ...otherIndices.map(i => this.order[i]));
 
@@ -720,6 +732,7 @@ export class MimeTypeDisplayOrder {
 
 	private findIndex(mimeType: string, maxIndex = this.order.length) {
 		const normalized = normalizeSlashes(mimeType);
+
 		for (let i = 0; i < maxIndex; i++) {
 			if (this.order[i].matches(normalized)) {
 				return i;
@@ -754,26 +767,31 @@ export function diff<T>(before: T[], after: T[], contains: (a: T) => boolean, eq
 	}
 
 	let beforeIdx = 0;
+
 	let afterIdx = 0;
 
 	while (true) {
 		if (beforeIdx === before.length) {
 			pushSplice(beforeIdx, 0, after.slice(afterIdx));
+
 			break;
 		}
 
 		if (afterIdx === after.length) {
 			pushSplice(beforeIdx, before.length - beforeIdx, []);
+
 			break;
 		}
 
 		const beforeElement = before[beforeIdx];
+
 		const afterElement = after[afterIdx];
 
 		if (equal(beforeElement, afterElement)) {
 			// equal
 			beforeIdx += 1;
 			afterIdx += 1;
+
 			continue;
 		}
 
@@ -862,6 +880,7 @@ export enum NotebookEditorPriority {
 export interface INotebookFindOptions {
 	regex?: boolean;
 	wholeWord?: boolean;
+
 	caseSensitive?: boolean;
 	wordSeparators?: string;
 	includeMarkupInput?: boolean;
@@ -916,6 +935,7 @@ export function notebookDocumentFilterMatch(filter: INotebookDocumentFilter, vie
 
 	if (filter.filenamePattern) {
 		const filenamePattern = isDocumentExcludePattern(filter.filenamePattern) ? filter.filenamePattern.include : (filter.filenamePattern as string | glob.IRelativePattern);
+
 		const excludeFilenamePattern = isDocumentExcludePattern(filter.filenamePattern) ? filter.filenamePattern.exclude : undefined;
 
 		if (glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())) {
@@ -1041,6 +1061,7 @@ export class NotebookWorkingCopyTypeIdentifier {
 	static parse(candidate: string): { notebookType: string; viewType: string } | undefined {
 		if (candidate.startsWith(NotebookWorkingCopyTypeIdentifier._prefix)) {
 			const split = candidate.substring(NotebookWorkingCopyTypeIdentifier._prefix.length).split('/');
+
 			if (split.length === 2) {
 				return { notebookType: split[0], viewType: split[1] };
 			}
@@ -1072,6 +1093,7 @@ const textDecoder = new TextDecoder();
  */
 export function compressOutputItemStreams(outputs: Uint8Array[]) {
 	const buffers: Uint8Array[] = [];
+
 	let startAppending = false;
 
 	// Pick the first set of outputs with the same mime type.
@@ -1083,14 +1105,19 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 	}
 
 	let didCompression = compressStreamBuffer(buffers);
+
 	const concatenated = VSBuffer.concat(buffers.map(buffer => VSBuffer.wrap(buffer)));
+
 	const data = formatStreamText(concatenated);
 	didCompression = didCompression || data.byteLength !== concatenated.byteLength;
+
 	return { data, didCompression };
 }
 
 export const MOVE_CURSOR_1_LINE_COMMAND = `${String.fromCharCode(27)}[A`;
+
 const MOVE_CURSOR_1_LINE_COMMAND_BYTES = MOVE_CURSOR_1_LINE_COMMAND.split('').map(c => c.charCodeAt(0));
+
 const LINE_FEED = 10;
 function compressStreamBuffer(streams: Uint8Array[]) {
 	let didCompress = false;
@@ -1103,8 +1130,10 @@ function compressStreamBuffer(streams: Uint8Array[]) {
 
 		// Remove the previous line if required.
 		const command = stream.subarray(0, MOVE_CURSOR_1_LINE_COMMAND.length);
+
 		if (command[0] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[0] && command[1] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[1] && command[2] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[2]) {
 			const lastIndexOfLineFeed = previousStream.lastIndexOf(LINE_FEED);
+
 			if (lastIndexOfLineFeed === -1) {
 				return;
 			}
@@ -1114,6 +1143,7 @@ function compressStreamBuffer(streams: Uint8Array[]) {
 			streams[index] = stream.subarray(MOVE_CURSOR_1_LINE_COMMAND.length);
 		}
 	});
+
 	return didCompress;
 }
 
@@ -1126,11 +1156,13 @@ function compressStreamBuffer(streams: Uint8Array[]) {
  */
 function fixBackspace(txt: string) {
 	let tmp = txt;
+
 	do {
 		txt = tmp;
 		// Cancel out anything-but-newline followed by backspace
 		tmp = txt.replace(/[^\n]\x08/gm, '');
 	} while (tmp.length < txt.length);
+
 	return txt;
 }
 
@@ -1142,6 +1174,7 @@ function fixCarriageReturn(txt: string) {
 	txt = txt.replace(/\r+\n/gm, '\n'); // \r followed by \n --> newline
 	while (txt.search(/\r[^$]/g) > -1) {
 		const base = txt.match(/^(.*)\r+/m)![1];
+
 		let insert = txt.match(/\r+(.*)$/m)![1];
 		insert = insert + base.slice(insert.length, base.length);
 		txt = txt.replace(/\r+.*$/m, '\r').replace(/^.*\r/m, insert);
@@ -1150,6 +1183,7 @@ function fixCarriageReturn(txt: string) {
 }
 
 const BACKSPACE_CHARACTER = '\b'.charCodeAt(0);
+
 const CARRIAGE_RETURN_CHARACTER = '\r'.charCodeAt(0);
 function formatStreamText(buffer: VSBuffer): VSBuffer {
 	// We have special handling for backspace and carriage return characters.

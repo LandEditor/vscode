@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { SettingsManager } from './settings';
+
 const codeLineClass = 'code-line';
 export class CodeLineElement {
     private readonly _detailParentElements: readonly HTMLDetailsElement[];
+
     constructor(readonly element: HTMLElement, readonly line: number, readonly codeElement?: HTMLElement) {
         this._detailParentElements = Array.from(getParentsWithTagName<HTMLDetailsElement>(element, 'DETAILS'));
     }
@@ -15,16 +17,20 @@ export class CodeLineElement {
 }
 const getCodeLineElements = (() => {
     let cachedElements: CodeLineElement[] | undefined;
+
     let cachedVersion = -1;
+
     return (documentVersion: number) => {
         if (!cachedElements || documentVersion !== cachedVersion) {
             cachedVersion = documentVersion;
             cachedElements = [new CodeLineElement(document.body, -1)];
+
             for (const element of document.getElementsByClassName(codeLineClass)) {
                 if (!(element instanceof HTMLElement)) {
                     continue;
                 }
                 const line = +element.getAttribute('data-line')!;
+
                 if (isNaN(line)) {
                     continue;
                 }
@@ -55,8 +61,11 @@ export function getElementsForSourceLine(targetLine: number, documentVersion: nu
     next?: CodeLineElement;
 } {
     const lineNumber = Math.floor(targetLine);
+
     const lines = getCodeLineElements(documentVersion);
+
     let previous = lines[0] || null;
+
     for (const entry of lines) {
         if (entry.line === lineNumber) {
             return { previous: entry, next: undefined };
@@ -76,12 +85,18 @@ export function getLineElementsAtPageOffset(offset: number, documentVersion: num
     next?: CodeLineElement;
 } {
     const lines = getCodeLineElements(documentVersion).filter(x => x.isVisible);
+
     const position = offset - window.scrollY;
+
     let lo = -1;
+
     let hi = lines.length - 1;
+
     while (lo + 1 < hi) {
         const mid = Math.floor((lo + hi) / 2);
+
         const bounds = getElementBounds(lines[mid]);
+
         if (bounds.top + bounds.height >= position) {
             hi = mid;
         }
@@ -90,9 +105,12 @@ export function getLineElementsAtPageOffset(offset: number, documentVersion: num
         }
     }
     const hiElement = lines[hi];
+
     const hiBounds = getElementBounds(hiElement);
+
     if (hi >= 1 && hiBounds.top > position) {
         const loElement = lines[lo];
+
         return { previous: loElement, next: hiElement };
     }
     if (hi > 1 && hi < lines.length && hiBounds.top + hiBounds.height > position) {
@@ -108,9 +126,12 @@ function getElementBounds({ element }: CodeLineElement): {
     // Some code line elements may contain other code line elements.
     // In those cases, only take the height up to that child.
     const codeLineChild = element.querySelector(`.${codeLineClass}`);
+
     if (codeLineChild) {
         const childBounds = codeLineChild.getBoundingClientRect();
+
         const height = Math.max(1, (childBounds.top - myBounds.top));
+
         return {
             top: myBounds.top,
             height: height
@@ -127,19 +148,26 @@ export function scrollToRevealSourceLine(line: number, documentVersion: number, 
     }
     if (line <= 0) {
         window.scroll(window.scrollX, 0);
+
         return;
     }
     const { previous, next } = getElementsForSourceLine(line, documentVersion);
+
     if (!previous) {
         return;
     }
     let scrollTo = 0;
+
     const rect = getElementBounds(previous);
+
     const previousTop = rect.top;
+
     if (next && next.line !== previous.line) {
         // Between two elements. Go to percentage offset between them.
         const betweenProgress = (line - previous.line) / (next.line - previous.line);
+
         const previousEnd = previousTop + rect.height;
+
         const betweenHeight = next.element.getBoundingClientRect().top - previousEnd;
         scrollTo = previousEnd + betweenProgress * betweenHeight;
     }
@@ -152,18 +180,23 @@ export function scrollToRevealSourceLine(line: number, documentVersion: number, 
 }
 export function getEditorLineNumberForPageOffset(offset: number, documentVersion: number): number | null {
     const { previous, next } = getLineElementsAtPageOffset(offset, documentVersion);
+
     if (previous) {
         if (previous.line < 0) {
             return 0;
         }
         const previousBounds = getElementBounds(previous);
+
         const offsetFromPrevious = (offset - window.scrollY - previousBounds.top);
+
         if (next) {
             const progressBetweenElements = offsetFromPrevious / (getElementBounds(next).top - previousBounds.top);
+
             return previous.line + progressBetweenElements * (next.line - previous.line);
         }
         else {
             const progressWithinElement = offsetFromPrevious / (previousBounds.height);
+
             return previous.line + progressWithinElement;
         }
     }

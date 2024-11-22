@@ -37,7 +37,9 @@ export class TextLength {
     }
     public static ofText(text: string): TextLength {
         let line = 0;
+
         let column = 0;
+
         for (const c of text) {
             if (c === '\n') {
                 line++;

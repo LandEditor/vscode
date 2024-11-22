@@ -12,6 +12,7 @@ import { RelativeWorkspacePathResolver } from '../utils/relativePathResolver';
 export class ElectronServiceConfigurationProvider extends BaseServiceConfigurationProvider {
     private fixPathPrefixes(inspectValue: string): string {
         const pathPrefixes = ['~' + path.sep];
+
         for (const pathPrefix of pathPrefixes) {
             if (inspectValue.startsWith(pathPrefix)) {
                 return path.join(os.homedir(), inspectValue.slice(pathPrefix.length));
@@ -21,6 +22,7 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
     }
     protected readGlobalTsdk(configuration: vscode.WorkspaceConfiguration): string | null {
         const inspect = configuration.inspect('typescript.tsdk');
+
         if (inspect && typeof inspect.globalValue === 'string') {
             return this.fixPathPrefixes(inspect.globalValue);
         }
@@ -28,6 +30,7 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
     }
     protected readLocalTsdk(configuration: vscode.WorkspaceConfiguration): string | null {
         const inspect = configuration.inspect('typescript.tsdk');
+
         if (inspect && typeof inspect.workspaceValue === 'string') {
             return this.fixPathPrefixes(inspect.workspaceValue);
         }
@@ -38,13 +41,16 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
     }
     private readLocalNodePathWorker(configuration: vscode.WorkspaceConfiguration): string | null {
         const inspect = configuration.inspect('typescript.tsserver.nodePath');
+
         if (inspect?.workspaceValue && typeof inspect.workspaceValue === 'string') {
             if (inspect.workspaceValue === 'node') {
                 return this.findNodePath();
             }
             const fixedPath = this.fixPathPrefixes(inspect.workspaceValue);
+
             if (!path.isAbsolute(fixedPath)) {
                 const workspacePath = RelativeWorkspacePathResolver.asAbsoluteWorkspacePath(fixedPath);
+
                 return workspacePath || null;
             }
             return fixedPath;
@@ -56,11 +62,13 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
     }
     private readGlobalNodePathWorker(configuration: vscode.WorkspaceConfiguration): string | null {
         const inspect = configuration.inspect('typescript.tsserver.nodePath');
+
         if (inspect?.globalValue && typeof inspect.globalValue === 'string') {
             if (inspect.globalValue === 'node') {
                 return this.findNodePath();
             }
             const fixedPath = this.fixPathPrefixes(inspect.globalValue);
+
             if (path.isAbsolute(fixedPath)) {
                 return fixedPath;
             }
@@ -75,16 +83,19 @@ export class ElectronServiceConfigurationProvider extends BaseServiceConfigurati
                 cwd: vscode.workspace.workspaceFolders?.[0].uri.fsPath,
                 encoding: 'utf-8',
             });
+
             return out.trim();
         }
         catch (error) {
             vscode.window.showWarningMessage(vscode.l10n.t("Could not detect a Node installation to run TS Server."));
+
             return null;
         }
     }
     private validatePath(nodePath: string | null): string | null {
         if (nodePath && (!fs.existsSync(nodePath) || fs.lstatSync(nodePath).isDirectory())) {
             vscode.window.showWarningMessage(vscode.l10n.t("The path {0} doesn\'t point to a valid Node installation to run TS Server. Falling back to bundled Node.", nodePath));
+
             return null;
         }
         return nodePath;

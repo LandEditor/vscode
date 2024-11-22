@@ -18,6 +18,7 @@ import { ICommandService } from '../../../platform/commands/common/commands.js';
 class KeybindingsReferenceAction extends Action2 {
     static readonly ID = 'workbench.action.keybindingsReference';
     static readonly AVAILABLE = !!(isLinux ? product.keyboardShortcutsUrlLinux : isMacintosh ? product.keyboardShortcutsUrlMac : product.keyboardShortcutsUrlWin);
+
     constructor() {
         super({
             id: KeybindingsReferenceAction.ID,
@@ -41,8 +42,11 @@ class KeybindingsReferenceAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         const url = isLinux ? productService.keyboardShortcutsUrlLinux : isMacintosh ? productService.keyboardShortcutsUrlMac : productService.keyboardShortcutsUrlWin;
+
         if (url) {
             openerService.open(URI.parse(url));
         }
@@ -51,6 +55,7 @@ class KeybindingsReferenceAction extends Action2 {
 class OpenIntroductoryVideosUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openVideoTutorialsUrl';
     static readonly AVAILABLE = !!product.introductoryVideosUrl;
+
     constructor() {
         super({
             id: OpenIntroductoryVideosUrlAction.ID,
@@ -69,7 +74,9 @@ class OpenIntroductoryVideosUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.introductoryVideosUrl) {
             openerService.open(URI.parse(productService.introductoryVideosUrl));
         }
@@ -78,6 +85,7 @@ class OpenIntroductoryVideosUrlAction extends Action2 {
 class OpenTipsAndTricksUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openTipsAndTricksUrl';
     static readonly AVAILABLE = !!product.tipsAndTricksUrl;
+
     constructor() {
         super({
             id: OpenTipsAndTricksUrlAction.ID,
@@ -96,7 +104,9 @@ class OpenTipsAndTricksUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.tipsAndTricksUrl) {
             openerService.open(URI.parse(productService.tipsAndTricksUrl));
         }
@@ -105,6 +115,7 @@ class OpenTipsAndTricksUrlAction extends Action2 {
 class OpenDocumentationUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openDocumentationUrl';
     static readonly AVAILABLE = !!(isWeb ? product.serverDocumentationUrl : product.documentationUrl);
+
     constructor() {
         super({
             id: OpenDocumentationUrlAction.ID,
@@ -123,8 +134,11 @@ class OpenDocumentationUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         const url = isWeb ? productService.serverDocumentationUrl : productService.documentationUrl;
+
         if (url) {
             openerService.open(URI.parse(url));
         }
@@ -133,6 +147,7 @@ class OpenDocumentationUrlAction extends Action2 {
 class OpenNewsletterSignupUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openNewsletterSignupUrl';
     static readonly AVAILABLE = !!product.newsletterSignupUrl;
+
     constructor() {
         super({
             id: OpenNewsletterSignupUrlAction.ID,
@@ -143,7 +158,9 @@ class OpenNewsletterSignupUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         const telemetryService = accessor.get(ITelemetryService);
         openerService.open(URI.parse(`${productService.newsletterSignupUrl}?machineId=${encodeURIComponent(telemetryService.machineId)}`));
     }
@@ -151,6 +168,7 @@ class OpenNewsletterSignupUrlAction extends Action2 {
 class OpenYouTubeUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openYouTubeUrl';
     static readonly AVAILABLE = !!product.youTubeUrl;
+
     constructor() {
         super({
             id: OpenYouTubeUrlAction.ID,
@@ -169,7 +187,9 @@ class OpenYouTubeUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.youTubeUrl) {
             openerService.open(URI.parse(productService.youTubeUrl));
         }
@@ -178,6 +198,7 @@ class OpenYouTubeUrlAction extends Action2 {
 class OpenRequestFeatureUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openRequestFeatureUrl';
     static readonly AVAILABLE = !!product.requestFeatureUrl;
+
     constructor() {
         super({
             id: OpenRequestFeatureUrlAction.ID,
@@ -196,7 +217,9 @@ class OpenRequestFeatureUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.requestFeatureUrl) {
             openerService.open(URI.parse(productService.requestFeatureUrl));
         }
@@ -205,6 +228,7 @@ class OpenRequestFeatureUrlAction extends Action2 {
 class OpenLicenseUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openLicenseUrl';
     static readonly AVAILABLE = !!(isWeb ? product.serverLicense : product.licenseUrl);
+
     constructor() {
         super({
             id: OpenLicenseUrlAction.ID,
@@ -223,8 +247,11 @@ class OpenLicenseUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         const url = isWeb ? productService.serverLicenseUrl : productService.licenseUrl;
+
         if (url) {
             if (language) {
                 const queryArgChar = url.indexOf('?') > 0 ? '&' : '?';
@@ -239,6 +266,7 @@ class OpenLicenseUrlAction extends Action2 {
 class OpenPrivacyStatementUrlAction extends Action2 {
     static readonly ID = 'workbench.action.openPrivacyStatementUrl';
     static readonly AVAILABE = !!product.privacyStatementUrl;
+
     constructor() {
         super({
             id: OpenPrivacyStatementUrlAction.ID,
@@ -257,7 +285,9 @@ class OpenPrivacyStatementUrlAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.privacyStatementUrl) {
             openerService.open(URI.parse(productService.privacyStatementUrl));
         }
@@ -265,6 +295,7 @@ class OpenPrivacyStatementUrlAction extends Action2 {
 }
 class GetStartedWithAccessibilityFeatures extends Action2 {
     static readonly ID = 'workbench.action.getStartedWithAccessibilityFeatures';
+
     constructor() {
         super({
             id: GetStartedWithAccessibilityFeatures.ID,

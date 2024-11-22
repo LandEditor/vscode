@@ -30,6 +30,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
     public resource = null;
     public hidden = false;
     public cachedSearchComplete: ISearchComplete | undefined;
+
     constructor(private _allowOtherResults: boolean, private _parent: ISearchResult, 
     @IInstantiationService
     protected readonly instantiationService: IInstantiationService, 
@@ -56,11 +57,13 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
     abstract get isAIContributed(): boolean;
     abstract id(): string;
     abstract name(): string;
+
     get isDirty(): boolean {
         return this._isDirty;
     }
     public getFolderMatch(resource: URI): ISearchTreeFolderMatch | undefined {
         const folderMatch = this._folderMatchesMap.findSubstr(resource);
+
         if (!folderMatch && this._allowOtherResults && this._otherFilesMatch) {
             return this._otherFilesMatch;
         }
@@ -77,6 +80,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
             const folderMatch = this.getFolderMatch(raw[0].resource);
             folderMatch?.addFileMatch(raw, silent, searchInstanceID);
         });
+
         if (!this.isAIContributed) {
             this._otherFilesMatch?.addFileMatch(other, silent, searchInstanceID);
         }
@@ -91,7 +95,9 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
                 m.clear();
             }
         });
+
         const fileMatches: ISearchTreeFileMatch[] = matches.filter(m => isSearchTreeFileMatch(m)) as ISearchTreeFileMatch[];
+
         const { byFolder, other } = this.groupFilesByFolder(fileMatches);
         byFolder.forEach(matches => {
             if (!matches.length) {
@@ -99,6 +105,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
             }
             this.getFolderMatch(matches[0].resource)?.remove(matches);
         });
+
         if (other.length) {
             this.getFolderMatch(other[0].resource)?.remove(<ISearchTreeFileMatch[]>other);
         }
@@ -108,15 +115,18 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
         other: FileMatch[];
     } {
         const rawPerFolder = new ResourceMap<FileMatch[]>();
+
         const otherFileMatches: FileMatch[] = [];
         this._folderMatches.forEach(fm => rawPerFolder.set(fm.resource, []));
         fileMatches.forEach(rawFileMatch => {
             const folderMatch = this.getFolderMatch(rawFileMatch.resource);
+
             if (!folderMatch) {
                 // foldermatch was previously removed by user or disposed for some reason
                 return;
             }
             const resource = folderMatch.resource;
+
             if (resource) {
                 rawPerFolder.get(resource)!.push(rawFileMatch);
             }
@@ -124,6 +134,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
                 otherFileMatches.push(rawFileMatch);
             }
         });
+
         return {
             byFolder: rawPerFolder,
             other: otherFileMatches
@@ -167,6 +178,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
         this.folderMatches().forEach(folderMatch => {
             matches.push(folderMatch.allDownstreamFileMatches());
         });
+
         return (<ISearchTreeFileMatch[]>[]).concat(...matches);
     }
     get showHighlights(): boolean {
@@ -177,9 +189,11 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
             return;
         }
         this._showHighlights = value;
+
         let selectedMatch: ISearchTreeMatch | null = null;
         this.matches().forEach((fileMatch: ISearchTreeFileMatch) => {
             fileMatch.updateHighlights();
+
             if (isNotebookFileMatch(fileMatch)) {
                 fileMatch.updateNotebookHighlights();
             }
@@ -187,6 +201,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
                 selectedMatch = fileMatch.getSelectedMatch();
             }
         });
+
         if (this._showHighlights && selectedMatch) {
             // TS?
             this._rangeHighlightDecorations.highlightRange((<ISearchTreeMatch>selectedMatch).parent().resource, (<ISearchTreeMatch>selectedMatch).range());
@@ -214,6 +229,7 @@ export abstract class TextSearchHeadingImpl<QueryType extends ITextSearchQuery> 
     override async dispose(): Promise<void> {
         this._rangeHighlightDecorations.dispose();
         this.disposeMatches();
+
         super.dispose();
         await this.disposePastResults();
     }
@@ -242,7 +258,9 @@ export class PlainTextSearchHeadingImpl extends TextSearchHeadingImpl<ITextQuery
     }
     replaceAll(progress: IProgress<IProgressStep>): Promise<any> {
         this.replacingAll = true;
+
         const promise = this.replaceService.replace(this.matches(), progress);
+
         return promise.then(() => {
             this.replacingAll = false;
             this.clear();
@@ -260,6 +278,7 @@ export class PlainTextSearchHeadingImpl extends TextSearchHeadingImpl<ITextQuery
     }
     override set query(query: ITextQuery | null) {
         this.clearQuery();
+
         if (!query) {
             return;
         }
@@ -272,6 +291,7 @@ export class PlainTextSearchHeadingImpl extends TextSearchHeadingImpl<ITextQuery
     }
     private _createBaseFolderMatch(resource: URI | null, id: string, index: number, query: ITextQuery): ISearchTreeFolderMatch {
         let folderMatch: ISearchTreeFolderMatch;
+
         if (resource) {
             folderMatch = this._register(this.createWorkspaceRootWithResourceImpl(resource, id, index, query));
         }
@@ -280,6 +300,7 @@ export class PlainTextSearchHeadingImpl extends TextSearchHeadingImpl<ITextQuery
         }
         const disposable = folderMatch.onChange((event) => this._onChange.fire(event));
         this._register(folderMatch.onDispose(() => disposable.dispose()));
+
         return folderMatch;
     }
     private createWorkspaceRootWithResourceImpl(resource: URI, id: string, index: number, query: ITextQuery): ISearchTreeFolderMatchWorkspaceRoot {

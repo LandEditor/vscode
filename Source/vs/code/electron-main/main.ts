@@ -94,6 +94,7 @@ class CodeMain {
         setUnexpectedErrorHandler(err => console.error(err));
         // Create services
         const [instantiationService, instanceEnvironment, environmentMainService, configurationService, stateMainService, bufferLogger, productService, userDataProfilesMainService] = this.createServices();
+
         try {
             // Init services
             try {
@@ -102,13 +103,17 @@ class CodeMain {
             catch (error) {
                 // Show a dialog for errors that can be resolved by the user
                 this.handleStartupDataDirError(environmentMainService, productService, error);
+
                 throw error;
             }
             // Startup
             await instantiationService.invokeFunction(async (accessor) => {
                 const logService = accessor.get(ILogService);
+
                 const lifecycleMainService = accessor.get(ILifecycleMainService);
+
                 const fileService = accessor.get(IFileService);
+
                 const loggerService = accessor.get(ILoggerService);
                 // Create the main IPC server by trying to be the server
                 // If this throws an error it means we are not the first
@@ -127,6 +132,7 @@ class CodeMain {
                     configurationService.dispose();
                     evt.join('instanceLockfile', promises.unlink(environmentMainService.mainLockfile).catch(() => { }));
                 });
+
                 return instantiationService.createInstance(CodeApplication, mainProcessNodeIpcServer, instanceEnvironment).startup();
             });
         }
@@ -145,6 +151,7 @@ class CodeMain {
         UserDataProfilesMainService
     ] {
         const services = new ServiceCollection();
+
         const disposables = new DisposableStore();
         process.once('exit', () => disposables.dispose());
         // Product
@@ -152,6 +159,7 @@ class CodeMain {
         services.set(IProductService, productService);
         // Environment
         const environmentMainService = new EnvironmentMainService(this.resolveArgs(), productService);
+
         const instanceEnvironment = this.patchEnvironment(environmentMainService); // Patch `process.env` with the instance's environment
         services.set(IEnvironmentMainService, environmentMainService);
         // Logger
@@ -161,11 +169,13 @@ class CodeMain {
         // we are the only instance running, otherwise we'll have concurrent
         // log file access on Windows (https://github.com/microsoft/vscode/issues/41218)
         const bufferLogger = new BufferLogger(loggerService.getLogLevel());
+
         const logService = disposables.add(new LogService(bufferLogger, [new ConsoleMainLogger(loggerService.getLogLevel())]));
         services.set(ILogService, logService);
         // Files
         const fileService = new FileService(logService);
         services.set(IFileService, fileService);
+
         const diskFileSystemProvider = new DiskFileSystemProvider(logService);
         fileService.registerProvider(Schemas.file, diskFileSystemProvider);
         // URI Identity
@@ -201,6 +211,7 @@ class CodeMain {
         services.set(ITunnelService, new SyncDescriptor(TunnelService));
         // Protocol (instantiated early and not using sync descriptor for security reasons)
         services.set(IProtocolMainService, new ProtocolMainService(environmentMainService, userDataProfilesMainService, logService));
+
         return [new InstantiationService(services, true), instanceEnvironment, environmentMainService, configurationService, stateService, bufferLogger, productService, userDataProfilesMainService];
     }
     private patchEnvironment(environmentMainService: IEnvironmentMainService): IProcessEnvironment {
@@ -209,11 +220,13 @@ class CodeMain {
         };
         ['VSCODE_NLS_CONFIG', 'VSCODE_PORTABLE'].forEach(key => {
             const value = process.env[key];
+
             if (typeof value === 'string') {
                 instanceEnvironment[key] = value;
             }
         });
         Object.assign(process.env, instanceEnvironment);
+
         return instanceEnvironment;
     }
     private async initServices(environmentMainService: IEnvironmentMainService, userDataProfilesMainService: UserDataProfilesMainService, configurationService: ConfigurationService, stateService: StateService, productService: IProductService): Promise<void> {
@@ -239,6 +252,7 @@ class CodeMain {
     private allowWindowsUNCPath(path: string): string {
         if (isWindows) {
             const host = getUNCHost(path);
+
             if (host) {
                 addUNCHostToAllowlist(host);
             }
@@ -250,6 +264,7 @@ class CodeMain {
         // we are the first instance to startup. Otherwise it is likely
         // that another instance is already running.
         let mainProcessNodeIpcServer: NodeIPCServer;
+
         try {
             mark('code/willStartMainServer');
             mainProcessNodeIpcServer = await nodeIPCServe(environmentMainService.mainIPCHandle);
@@ -267,6 +282,7 @@ class CodeMain {
             }
             // there's a running instance, let's connect to it
             let client: NodeIPCClient<string>;
+
             try {
                 client = await nodeIPCConnect(environmentMainService.mainIPCHandle, 'main');
             }
@@ -286,6 +302,7 @@ class CodeMain {
                 }
                 catch (error) {
                     logService.warn('Could not delete obsolete instance handle', error);
+
                     throw error;
                 }
                 return this.claimInstance(logService, environmentMainService, lifecycleMainService, instantiationService, productService, false);
@@ -295,27 +312,34 @@ class CodeMain {
                 const msg = `Running extension tests from the command line is currently only supported if no other instance of ${productService.nameShort} is running.`;
                 logService.error(msg);
                 client.dispose();
+
                 throw new Error(msg);
             }
             // Show a warning dialog after some timeout if it takes long to talk to the other instance
             // Skip this if we are running with --wait where it is expected that we wait for a while.
             // Also skip when gathering diagnostics (--status) which can take a longer time.
             let startupWarningDialogHandle: NodeJS.Timeout | undefined = undefined;
+
             if (!environmentMainService.args.wait && !environmentMainService.args.status) {
                 startupWarningDialogHandle = setTimeout(() => {
                     this.showStartupWarningDialog(localize('secondInstanceNoResponse', "Another instance of {0} is running but not responding", productService.nameShort), localize('secondInstanceNoResponseDetail', "Please close all other instances and try again."), productService);
                 }, 10000);
             }
             const otherInstanceLaunchMainService = ProxyChannel.toService<ILaunchMainService>(client.getChannel('launch'), { disableMarshalling: true });
+
             const otherInstanceDiagnosticsMainService = ProxyChannel.toService<IDiagnosticsMainService>(client.getChannel('diagnostics'), { disableMarshalling: true });
             // Process Info
             if (environmentMainService.args.status) {
                 return instantiationService.invokeFunction(async () => {
                     const diagnosticsService = new DiagnosticsService(NullTelemetryService, productService);
+
                     const mainDiagnostics = await otherInstanceDiagnosticsMainService.getMainDiagnostics();
+
                     const remoteDiagnostics = await otherInstanceDiagnosticsMainService.getRemoteDiagnostics({ includeProcesses: true, includeWorkspaceMetadata: true });
+
                     const diagnostics = await diagnosticsService.getDiagnostics(mainDiagnostics, remoteDiagnostics);
                     console.log(diagnostics);
+
                     throw new ExpectedError();
                 });
             }
@@ -337,11 +361,13 @@ class CodeMain {
         // Print --status usage info
         if (environmentMainService.args.status) {
             console.log(localize('statusWarning', "Warning: The --status argument can only be used if {0} is already running. Please run it again after {0} has started.", productService.nameShort));
+
             throw new ExpectedError('Terminating...');
         }
         // Set the VSCODE_PID variable here when we are sure we are the first
         // instance to startup. Otherwise we would wrongly overwrite the PID
         process.env['VSCODE_PID'] = String(process.pid);
+
         return mainProcessNodeIpcServer;
     }
     private handleStartupDataDirError(environmentMainService: IEnvironmentMainService, productService: IProductService, error: NodeJS.ErrnoException): void {
@@ -365,6 +391,7 @@ class CodeMain {
         if (isWindows) {
             const processId = await launchMainService.getMainProcessId();
             logService.trace('Sending some foreground love to the running instance:', processId);
+
             try {
                 (await import('windows-foreground-love')).allowSetForegroundWindow(processId);
             }
@@ -375,8 +402,11 @@ class CodeMain {
     }
     private quit(accessor: ServicesAccessor, reason?: ExpectedError | Error): void {
         const logService = accessor.get(ILogService);
+
         const lifecycleMainService = accessor.get(ILifecycleMainService);
+
         let exitCode = 0;
+
         if (reason) {
             if ((reason as ExpectedError).isExpected) {
                 if (reason.message) {
@@ -408,6 +438,7 @@ class CodeMain {
         // added as argument. This can happen if VS Code was started from CLI.
         if (args.wait && !args.waitMarkerFilePath) {
             const waitMarkerFilePath = createWaitMarkerFileSync(args.verbose);
+
             if (waitMarkerFilePath) {
                 addArg(process.argv, '--waitMarkerFilePath', waitMarkerFilePath);
                 args.waitMarkerFilePath = waitMarkerFilePath;
@@ -430,9 +461,12 @@ class CodeMain {
     }
     private doValidatePaths(args: string[], gotoLineMode?: boolean): string[] {
         const currentWorkingDir = cwd();
+
         const result = args.map(arg => {
             let pathCandidate = String(arg);
+
             let parsedPath: IPathWithLineAndColumn | undefined = undefined;
+
             if (gotoLineMode) {
                 parsedPath = parseLineAndColumnAware(pathCandidate);
                 pathCandidate = parsedPath.path;
@@ -441,18 +475,24 @@ class CodeMain {
                 pathCandidate = this.preparePath(currentWorkingDir, pathCandidate);
             }
             const sanitizedFilePath = sanitizeFilePath(pathCandidate, currentWorkingDir);
+
             const filePathBasename = basename(sanitizedFilePath);
+
             if (filePathBasename /* can be empty if code is opened on root */ && !isValidBasename(filePathBasename)) {
                 return null; // do not allow invalid file names
             }
             if (gotoLineMode && parsedPath) {
                 parsedPath.path = sanitizedFilePath;
+
                 return this.toPath(parsedPath);
             }
             return sanitizedFilePath;
         });
+
         const caseInsensitive = isWindows || isMacintosh;
+
         const distinctPaths = distinct(result, path => path && caseInsensitive ? path.toLowerCase() : (path || ''));
+
         return coalesce(distinctPaths);
     }
     private preparePath(cwd: string, path: string): string {
@@ -462,6 +502,7 @@ class CodeMain {
         }
         // Trim whitespaces
         path = trim(trim(path, ' '), '\t');
+
         if (isWindows) {
             // Resolve the path against cwd if it is relative
             path = resolve(cwd, path);
@@ -472,6 +513,7 @@ class CodeMain {
     }
     private toPath(pathWithLineAndCol: IPathWithLineAndColumn): string {
         const segments = [pathWithLineAndCol.path];
+
         if (typeof pathWithLineAndCol.line === 'number') {
             segments.push(String(pathWithLineAndCol.line));
         }

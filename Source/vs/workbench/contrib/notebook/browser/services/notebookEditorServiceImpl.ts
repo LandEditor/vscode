@@ -50,9 +50,11 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	) {
 		const onNewGroup = (group: IEditorGroup) => {
 			const { id } = group;
+
 			const listeners: IDisposable[] = [];
 			listeners.push(group.onDidCloseEditor(e => {
 				const widgetMap = this._borrowableEditors.get(group.id);
+
 				if (!widgetMap) {
 					return;
 				}
@@ -60,7 +62,9 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 				const inputs = e.editor instanceof NotebookEditorInput ? [e.editor] : (isCompositeNotebookEditorInput(e.editor) ? e.editor.editorInputs : []);
 				inputs.forEach(input => {
 					const widgets = widgetMap.get(input.resource);
+
 					const index = widgets?.findIndex(widget => widget.editorType === input.typeId);
+
 					if (!widgets || index === undefined || index === -1) {
 						return;
 					}
@@ -90,12 +94,14 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		// group removed -> clean up listeners, clean up widgets
 		this._disposables.add(editorGroupService.onDidRemoveGroup(group => {
 			const listeners = this.groupListener.get(group.id);
+
 			if (listeners) {
 				listeners.forEach(listener => listener.dispose());
 				this.groupListener.delete(group.id);
 			}
 			const widgets = this._borrowableEditors.get(group.id);
 			this._borrowableEditors.delete(group.id);
+
 			if (widgets) {
 				for (const values of widgets.values()) {
 					for (const value of values) {
@@ -108,6 +114,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		}));
 
 		this._mostRecentRepl = MOST_RECENT_REPL_EDITOR.bindTo(contextKeyService);
+
 		const interactiveWindowOpen = InteractiveWindowOpen.bindTo(contextKeyService);
 		this._disposables.add(editorService.onDidEditorsChange(e => {
 			if (e.event.kind === GroupModelChangeKind.EDITOR_OPEN && !interactiveWindowOpen.get()) {
@@ -141,13 +148,16 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	private _disposeWidget(widget: NotebookEditorWidget): void {
 		widget.onWillHide();
+
 		const domNode = widget.getDomNode();
 		widget.dispose();
+
 		domNode.remove();
 	}
 
 	private _allowWidgetMove(input: NotebookEditorInput, sourceID: GroupIdentifier, targetID: GroupIdentifier): void {
 		const sourcePart = this.editorGroupService.getPart(sourceID);
+
 		const targetPart = this.editorGroupService.getPart(targetID);
 
 		if (sourcePart.windowId !== targetPart.windowId) {
@@ -155,20 +165,24 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		}
 
 		const target = this._borrowableEditors.get(targetID)?.get(input.resource)?.findIndex(widget => widget.editorType === input.typeId);
+
 		if (target !== undefined && target !== -1) {
 			// not needed, a separate widget is already there
 			return;
 		}
 
 		const widget = this._borrowableEditors.get(sourceID)?.get(input.resource)?.find(widget => widget.editorType === input.typeId);
+
 		if (!widget) {
 			throw new Error('no widget at source group');
 		}
 
 		// don't allow the widget to be retrieved at its previous location any more
 		const sourceWidgets = this._borrowableEditors.get(sourceID)?.get(input.resource);
+
 		if (sourceWidgets) {
 			const indexToRemove = sourceWidgets.findIndex(widget => widget.editorType === input.typeId);
+
 			if (indexToRemove !== -1) {
 				sourceWidgets.splice(indexToRemove, 1);
 			}
@@ -176,6 +190,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 		// allow the widget to be retrieved at its new location
 		let targetMap = this._borrowableEditors.get(targetID);
+
 		if (!targetMap) {
 			targetMap = new ResourceMap();
 			this._borrowableEditors.set(targetID, targetMap);
@@ -188,6 +203,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	retrieveExistingWidgetFromURI(resource: URI): IBorrowValue<NotebookEditorWidget> | undefined {
 		for (const widgetInfo of this._borrowableEditors.values()) {
 			const widgets = widgetInfo.get(resource);
+
 			if (widgets && widgets.length > 0) {
 				return this._createBorrowValue(widgets[0].token!, widgets[0]);
 			}
@@ -197,6 +213,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[] {
 		const ret: IBorrowValue<NotebookEditorWidget>[] = [];
+
 		for (const widgetInfo of this._borrowableEditors.values()) {
 			for (const widgets of widgetInfo.values()) {
 				for (const widget of widgets) {
@@ -214,13 +231,18 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		if (!value) {
 			// NEW widget
 			const editorGroupContextKeyService = accessor.get(IContextKeyService);
+
 			const editorGroupEditorProgressService = accessor.get(IEditorProgressService);
+
 			const widgetDisposeStore = new DisposableStore();
+
 			const widget = this.createWidget(editorGroupContextKeyService, widgetDisposeStore, editorGroupEditorProgressService, creationOptions, codeWindow, initialDimension);
+
 			const token = this._tokenPool++;
 			value = { widget, editorType: input.typeId, token, disposableStore: widgetDisposeStore };
 
 			let map = this._borrowableEditors.get(groupId);
+
 			if (!map) {
 				map = new ResourceMap();
 				this._borrowableEditors.set(groupId, map);
@@ -242,11 +264,14 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		const notebookInstantiationService = widgetDisposeStore.add(this.instantiationService.createChild(new ServiceCollection(
 			[IContextKeyService, editorGroupContextKeyService],
 			[IEditorProgressService, editorGroupEditorProgressService])));
+
 		const ctorOptions = creationOptions ?? getDefaultNotebookCreationOptions();
+
 		const widget = notebookInstantiationService.createInstance(NotebookEditorWidget, {
 			...ctorOptions,
 			codeWindow: codeWindow ?? ctorOptions.codeWindow,
 		}, initialDimension);
+
 		return widget;
 	}
 
@@ -267,6 +292,7 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 
 	removeNotebookEditor(editor: INotebookEditor): void {
 		const notebookUri = editor.getViewModel()?.notebookDocument.uri;
+
 		if (this._notebookEditors.has(editor.getId())) {
 			this._notebookEditors.delete(editor.getId());
 			this._onNotebookEditorsRemove.fire(editor);

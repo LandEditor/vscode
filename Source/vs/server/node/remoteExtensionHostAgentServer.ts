@@ -39,7 +39,9 @@ import { IServerEnvironmentService, ServerParsedArgs } from './serverEnvironment
 import { setupServerServices, SocketServer } from './serverServices.js';
 import { CacheControl, serveError, serveFile, WebClientServer } from './webClientServer.js';
 import { createRequire } from 'node:module';
+
 const require = createRequire(import.meta.url);
+
 const SHUTDOWN_TIMEOUT = 5 * 60 * 1000;
 declare module vsda {
     // the signer is a native module that for historical reasons uses a lower case class name
@@ -65,6 +67,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
     private readonly _webEndpointOriginChecker = WebEndpointOriginChecker.create(this._productService);
     private readonly _serverRootPath: string;
     private shutdownTimer: NodeJS.Timeout | undefined;
+
     constructor(private readonly _socketServer: SocketServer<RemoteAgentConnectionContext>, private readonly _connectionToken: ServerConnectionToken, private readonly _vsdaMod: typeof vsda | null, hasWebClient: boolean, serverBasePath: string | undefined, 
     @IServerEnvironmentService
     private readonly _environmentService: IServerEnvironmentService, 
@@ -94,7 +97,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             return serveError(req, res, 400, `Bad request.`);
         }
         const parsedUrl = url.parse(req.url, true);
+
         let pathname = parsedUrl.pathname;
+
         if (!pathname) {
             return serveError(req, res, 400, `Bad request.`);
         }
@@ -105,12 +110,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         // Version
         if (pathname === '/version') {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
+
             return void res.end(this._productService.commit || '');
         }
         // Delay shutdown
         if (pathname === '/delay-shutdown') {
             this._delayShutdown();
             res.writeHead(200);
+
             return void res.end('OK');
         }
         if (!httpRequestHasValidConnectionToken(this._connectionToken, req, parsedUrl)) {
@@ -121,10 +128,12 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             // Handle HTTP requests for resources rendered in the rich client (images, fonts, etc.)
             // These resources could be files shipped with extensions or even workspace files.
             const desiredPath = parsedUrl.query['path'];
+
             if (typeof desiredPath !== 'string') {
                 return serveError(req, res, 400, `Bad request.`);
             }
             let filePath: string;
+
             try {
                 filePath = URI.from({ scheme: Schemas.file, path: desiredPath }).fsPath;
             }
@@ -132,6 +141,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                 return serveError(req, res, 400, `Bad request.`);
             }
             const responseHeaders: Record<string, string> = Object.create(null);
+
             if (this._environmentService.isBuilt) {
                 if (isEqualOrParent(filePath, this._environmentService.builtinExtensionsPath, !platform.isLinux)
                     || isEqualOrParent(filePath, this._environmentService.extensionsPath, !platform.isLinux)) {
@@ -140,7 +150,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             }
             // Allow cross origin requests from the web worker extension host
             responseHeaders['Vary'] = 'Origin';
+
             const requestOrigin = req.headers['origin'];
+
             if (requestOrigin && this._webEndpointOriginChecker.matches(requestOrigin)) {
                 responseHeaders['Access-Control-Allow-Origin'] = requestOrigin;
             }
@@ -149,17 +161,23 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         // workbench web UI
         if (this._webClientServer) {
             this._webClientServer.handle(req, res, parsedUrl);
+
             return;
         }
         res.writeHead(404, { 'Content-Type': 'text/plain' });
+
         return void res.end('Not found');
     }
     public handleUpgrade(req: http.IncomingMessage, socket: net.Socket) {
         let reconnectionToken = generateUuid();
+
         let isReconnection = false;
+
         let skipWebSocketFrames = false;
+
         if (req.url) {
             const query = url.parse(req.url, true).query;
+
             if (typeof query.reconnectionToken === 'string') {
                 reconnectionToken = query.reconnectionToken;
             }
@@ -172,13 +190,17 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         }
         if (req.headers['upgrade'] === undefined || req.headers['upgrade'].toLowerCase() !== 'websocket') {
             socket.end('HTTP/1.1 400 Bad Request');
+
             return;
         }
         // https://tools.ietf.org/html/rfc6455#section-4
         const requestNonce = req.headers['sec-websocket-key'];
+
         const hash = crypto.createHash('sha1'); // CodeQL [SM04514] SHA1 must be used here to respect the WebSocket protocol specification
         hash.update(requestNonce + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11');
+
         const responseNonce = hash.digest('base64');
+
         const responseHeaders = [
             `HTTP/1.1 101 Switching Protocols`,
             `Upgrade: websocket`,
@@ -187,8 +209,10 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         ];
         // See https://tools.ietf.org/html/rfc7692#page-12
         let permessageDeflate = false;
+
         if (!skipWebSocketFrames && !this._environmentService.args['disable-websocket-compression'] && req.headers['sec-websocket-extensions']) {
             const websocketExtensionOptions = Array.isArray(req.headers['sec-websocket-extensions']) ? req.headers['sec-websocket-extensions'] : [req.headers['sec-websocket-extensions']];
+
             for (const websocketExtensionOption of websocketExtensionOptions) {
                 if (/\b((server_max_window_bits)|(server_no_context_takeover)|(client_no_context_takeover))\b/.test(websocketExtensionOption)) {
                     // sorry, the server does not support zlib parameter tweaks
@@ -197,11 +221,13 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                 if (/\b(permessage-deflate)\b/.test(websocketExtensionOption)) {
                     permessageDeflate = true;
                     responseHeaders.push(`Sec-WebSocket-Extensions: permessage-deflate`);
+
                     break;
                 }
                 if (/\b(x-webkit-deflate-frame)\b/.test(websocketExtensionOption)) {
                     permessageDeflate = true;
                     responseHeaders.push(`Sec-WebSocket-Extensions: x-webkit-deflate-frame`);
+
                     break;
                 }
             }
@@ -226,6 +252,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
     // Eventually cleanup
     private _getRemoteAddress(socket: NodeSocket | WebSocketNodeSocket): string {
         let _socket: net.Socket;
+
         if (socket instanceof NodeSocket) {
             _socket = socket.socket;
         }
@@ -237,6 +264,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
     private async _rejectWebSocketConnection(logPrefix: string, protocol: PersistentProtocol, reason: string): Promise<void> {
         const socket = protocol.getSocket();
         this._logService.error(`${logPrefix} ${reason}.`);
+
         const errMessage: ErrorMessage = {
             type: 'error',
             reason: reason
@@ -253,10 +281,15 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
      */
     private _handleWebSocketConnection(socket: NodeSocket | WebSocketNodeSocket, isReconnection: boolean, reconnectionToken: string): void {
         const remoteAddress = this._getRemoteAddress(socket);
+
         const logPrefix = `[${remoteAddress}][${reconnectionToken.substr(0, 8)}]`;
+
         const protocol = new PersistentProtocol({ socket });
+
         const validator = this._vsdaMod ? new this._vsdaMod.validator() : null;
+
         const signer = this._vsdaMod ? new this._vsdaMod.signer() : null;
+
         const enum State {
             WaitingForAuth,
             WaitingForConnectionType,
@@ -264,14 +297,17 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             Error
         }
         let state = State.WaitingForAuth;
+
         const rejectWebSocketConnection = (msg: string) => {
             state = State.Error;
             listener.dispose();
             this._rejectWebSocketConnection(logPrefix, protocol, msg);
         };
+
         const listener = protocol.onControlMessage((raw) => {
             if (state === State.WaitingForAuth) {
                 let msg1: HandshakeMessage;
+
                 try {
                     msg1 = <HandshakeMessage>JSON.parse(raw.toString());
                 }
@@ -286,6 +322,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                 }
                 // Send `sign` request
                 let signedData = generateUuid();
+
                 if (signer) {
                     try {
                         signedData = signer.sign(msg1.data);
@@ -294,6 +331,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                     }
                 }
                 let someText = generateUuid();
+
                 if (validator) {
                     try {
                         someText = validator.createNewMessage(someText);
@@ -311,6 +349,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             }
             else if (state === State.WaitingForConnectionType) {
                 let msg2: HandshakeMessage;
+
                 try {
                     msg2 = <HandshakeMessage>JSON.parse(raw.toString());
                 }
@@ -324,7 +363,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                     return rejectWebSocketConnection(`Invalid second message field type`);
                 }
                 const rendererCommit = msg2.commit;
+
                 const myCommit = this._productService.commit;
+
                 if (rendererCommit && myCommit) {
                     // Running in the built version where commits are defined
                     if (rendererCommit !== myCommit) {
@@ -332,6 +373,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                     }
                 }
                 let valid = false;
+
                 if (!validator) {
                     valid = true;
                 }
@@ -377,6 +419,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             : msg.desiredConnectionType === ConnectionType.ExtensionHost
                 ? `${_logPrefix}[ExtensionHostConnection]`
                 : _logPrefix);
+
         if (msg.desiredConnectionType === ConnectionType.Management) {
             // This should become a management connection
             if (isReconnection) {
@@ -392,6 +435,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                     }
                 }
                 protocol.sendControl(VSBuffer.fromString(JSON.stringify({ type: 'ok' })));
+
                 const dataChunk = protocol.readEntireBuffer();
                 protocol.dispose();
                 this._managementConnections[reconnectionToken].acceptReconnection(remoteAddress, socket, dataChunk);
@@ -403,6 +447,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                     return this._rejectWebSocketConnection(logPrefix, protocol, `Duplicate reconnection token`);
                 }
                 protocol.sendControl(VSBuffer.fromString(JSON.stringify({ type: 'ok' })));
+
                 const con = new ManagementConnection(this._logService, reconnectionToken, remoteAddress, protocol);
                 this._socketServer.acceptConnection(con.protocol, con.onClose);
                 this._managementConnections[reconnectionToken] = con;
@@ -415,12 +460,15 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         else if (msg.desiredConnectionType === ConnectionType.ExtensionHost) {
             // This should become an extension host connection
             const startParams0 = <IRemoteExtensionHostStartParams>msg.args || { language: 'en' };
+
             const startParams = await this._updateWithFreeDebugPort(startParams0);
+
             if (startParams.port) {
                 this._logService.trace(`${logPrefix} - startParams debug port ${startParams.port}`);
             }
             this._logService.trace(`${logPrefix} - startParams language: ${startParams.language}`);
             this._logService.trace(`${logPrefix} - startParams env: ${JSON.stringify(startParams.env)}`);
+
             if (isReconnection) {
                 // This is a reconnection
                 if (!this._extHostConnections[reconnectionToken]) {
@@ -435,6 +483,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                 }
                 protocol.sendPause();
                 protocol.sendControl(VSBuffer.fromString(JSON.stringify(startParams.port ? { debugPort: startParams.port } : {})));
+
                 const dataChunk = protocol.readEntireBuffer();
                 protocol.dispose();
                 this._extHostConnections[reconnectionToken].acceptReconnection(remoteAddress, socket, dataChunk);
@@ -447,8 +496,10 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
                 }
                 protocol.sendPause();
                 protocol.sendControl(VSBuffer.fromString(JSON.stringify(startParams.port ? { debugPort: startParams.port } : {})));
+
                 const dataChunk = protocol.readEntireBuffer();
                 protocol.dispose();
+
                 const con = this._instantiationService.createInstance(ExtensionHostConnection, reconnectionToken, remoteAddress, socket, dataChunk);
                 this._extHostConnections[reconnectionToken] = con;
                 this._allReconnectionTokens.add(reconnectionToken);
@@ -470,10 +521,13 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
     }
     private async _createTunnel(protocol: PersistentProtocol, tunnelStartParams: ITunnelConnectionStartParams): Promise<void> {
         const remoteSocket = (<NodeSocket>protocol.getSocket()).socket;
+
         const dataChunk = protocol.readEntireBuffer();
         protocol.dispose();
         remoteSocket.pause();
+
         const localSocket = await this._connectTunnelSocket(tunnelStartParams.host, tunnelStartParams.port);
+
         if (dataChunk.byteLength > 0) {
             localSocket.write(dataChunk.buffer);
         }
@@ -504,6 +558,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         if (typeof startParams.port === 'number') {
             return findFreePort(startParams.port, 10 /* try 10 ports */, 5000 /* try up to 5 seconds */).then(freePort => {
                 startParams.port = freePort;
+
                 return startParams;
             });
         }
@@ -511,6 +566,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
         startParams.debugId = undefined;
         startParams.port = undefined;
         startParams.break = undefined;
+
         return Promise.resolve(startParams);
     }
     private async _onDidCloseExtHostConnection(): Promise<void> {
@@ -518,7 +574,9 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
             return;
         }
         this._cancelShutdown();
+
         const hasActiveExtHosts = !!Object.keys(this._extHostConnections).length;
+
         if (!hasActiveExtHosts) {
             console.log('Last EH closed, waiting before shutting down');
             this._logService.info('Last EH closed, waiting before shutting down');
@@ -541,9 +599,11 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
     }
     private _shutdown(): void {
         const hasActiveExtHosts = !!Object.keys(this._extHostConnections).length;
+
         if (hasActiveExtHosts) {
             console.log('New EH opened, aborting shutdown');
             this._logService.info('New EH opened, aborting shutdown');
+
             return;
         }
         else {
@@ -593,6 +653,7 @@ export interface IServerAPI {
 }
 export async function createServer(address: string | net.AddressInfo | null, args: ServerParsedArgs, REMOTE_DATA_FOLDER: string): Promise<IServerAPI> {
     const connectionToken = await determineServerConnectionToken(args);
+
     if (connectionToken instanceof ServerConnectionTokenParseError) {
         console.warn(connectionToken.message);
         process.exit(1);
@@ -615,6 +676,7 @@ export async function createServer(address: string | net.AddressInfo | null, arg
         unloggedErrors.push(error);
         console.error(error);
     });
+
     let didLogAboutSIGPIPE = false;
     process.on('SIGPIPE', () => {
         // See https://github.com/microsoft/vscode-remote-release/issues/6543
@@ -626,7 +688,9 @@ export async function createServer(address: string | net.AddressInfo | null, arg
             onUnexpectedError(new Error(`Unexpected SIGPIPE`));
         }
     });
+
     const disposables = new DisposableStore();
+
     const { socketServer, instantiationService } = await setupServerServices(connectionToken, args, REMOTE_DATA_FOLDER, disposables);
     // Set the unexpected error handler after the services have been initialized, to avoid having
     // the telemetry service overwrite our handler
@@ -639,6 +703,7 @@ export async function createServer(address: string | net.AddressInfo | null, arg
     // On Windows, configure the UNC allow list based on settings
     instantiationService.invokeFunction((accessor) => {
         const configurationService = accessor.get(IConfigurationService);
+
         if (platform.isWindows) {
             if (configurationService.getValue('security.restrictUNCAccess') === false) {
                 disableUNCAccessRestrictions();
@@ -654,10 +719,14 @@ export async function createServer(address: string | net.AddressInfo | null, arg
     //
     instantiationService.invokeFunction((accessor) => {
         const logService = accessor.get(ILogService);
+
         if (platform.isWindows && process.env.HOMEDRIVE && process.env.HOMEPATH) {
             const homeDirModulesPath = join(process.env.HOMEDRIVE, 'node_modules');
+
             const userDir = dirname(join(process.env.HOMEDRIVE, process.env.HOMEPATH));
+
             const userDirModulesPath = join(userDir, 'node_modules');
+
             if (fs.existsSync(homeDirModulesPath) || fs.existsSync(userDirModulesPath)) {
                 const message = `
 
@@ -678,9 +747,12 @@ export async function createServer(address: string | net.AddressInfo | null, arg
             }
         }
     });
+
     const vsdaMod = instantiationService.invokeFunction((accessor) => {
         const logService = accessor.get(ILogService);
+
         const hasVSDA = fs.existsSync(join(FileAccess.asFileUri('').fsPath, '../node_modules/vsda'));
+
         if (hasVSDA) {
             try {
                 return require('vsda');
@@ -691,11 +763,14 @@ export async function createServer(address: string | net.AddressInfo | null, arg
         }
         return null;
     });
+
     let serverBasePath = args['server-base-path'];
+
     if (serverBasePath && !serverBasePath.startsWith('/')) {
         serverBasePath = `/${serverBasePath}`;
     }
     const hasWebClient = fs.existsSync(FileAccess.asFileUri(`vs/code/browser/workbench/workbench.html`).fsPath);
+
     if (hasWebClient && address && typeof address !== 'string') {
         // ships the web ui!
         const queryPart = (connectionToken.type !== ServerConnectionTokenType.None ? `?${connectionTokenQueryName}=${connectionToken.value}` : '');
@@ -703,9 +778,13 @@ export async function createServer(address: string | net.AddressInfo | null, arg
     }
     const remoteExtensionHostAgentServer = instantiationService.createInstance(RemoteExtensionHostAgentServer, socketServer, connectionToken, vsdaMod, hasWebClient, serverBasePath);
     perf.mark('code/server/ready');
+
     const currentTime = performance.now();
+
     const vscodeServerStartTime: number = (<any>global).vscodeServerStartTime;
+
     const vscodeServerListenTime: number = (<any>global).vscodeServerListenTime;
+
     const vscodeServerCodeLoadedTime: number = (<any>global).vscodeServerCodeLoadedTime;
     instantiationService.invokeFunction(async (accessor) => {
         const telemetryService = accessor.get(ITelemetryService);
@@ -745,9 +824,12 @@ export async function createServer(address: string | net.AddressInfo | null, arg
             codeLoadedTime: vscodeServerCodeLoadedTime,
             readyTime: currentTime
         });
+
         if (platform.isLinux) {
             const logService = accessor.get(ILogService);
+
             const releaseInfo = await getOSReleaseInfo(logService.error.bind(logService));
+
             if (releaseInfo) {
                 type ServerPlatformInfoClassification = {
                     platformId: {
@@ -781,6 +863,7 @@ export async function createServer(address: string | net.AddressInfo | null, arg
             }
         }
     });
+
     if (args['print-startup-performance']) {
         let output = '';
         output += `Start-up time: ${vscodeServerListenTime - vscodeServerStartTime}\n`;
@@ -794,21 +877,29 @@ export async function createServer(address: string | net.AddressInfo | null, arg
 class WebEndpointOriginChecker {
     public static create(productService: IProductService): WebEndpointOriginChecker {
         const webEndpointUrlTemplate = productService.webEndpointUrlTemplate;
+
         const commit = productService.commit;
+
         const quality = productService.quality;
+
         if (!webEndpointUrlTemplate || !commit || !quality) {
             return new WebEndpointOriginChecker(null);
         }
         const uuid = generateUuid();
+
         const exampleUrl = new URL(webEndpointUrlTemplate
             .replace('{{uuid}}', uuid)
             .replace('{{commit}}', commit)
             .replace('{{quality}}', quality));
+
         const exampleOrigin = exampleUrl.origin;
+
         const originRegExpSource = (escapeRegExpCharacters(exampleOrigin)
             .replace(uuid, '[a-zA-Z0-9\\-]+'));
+
         try {
             const originRegExp = createRegExp(`^${originRegExpSource}$`, true, { matchCase: false });
+
             return new WebEndpointOriginChecker(originRegExp);
         }
         catch (err) {

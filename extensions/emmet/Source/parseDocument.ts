@@ -15,15 +15,20 @@ type Pair<K, V> = {
 const _parseCache = new Map<string, Pair<number, FlatNode> | undefined>();
 export function getRootNode(document: TextDocument, useCache: boolean): FlatNode {
     const key = document.uri.toString();
+
     const result = _parseCache.get(key);
+
     const documentVersion = document.version;
+
     if (useCache && result) {
         if (documentVersion === result.key) {
             return result.value;
         }
     }
     const parseContent = isStyleSheet(document.languageId) ? parseStylesheet : parse;
+
     const rootNode = parseContent(document.getText());
+
     if (useCache) {
         _parseCache.set(key, { key: documentVersion, value: rootNode });
     }

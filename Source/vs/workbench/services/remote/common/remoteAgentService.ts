@@ -13,6 +13,7 @@ import { timeout } from '../../../../base/common/async.js';
 export const IRemoteAgentService = createDecorator<IRemoteAgentService>('remoteAgentService');
 export interface IRemoteAgentService {
     readonly _serviceBrand: undefined;
+
     getConnection(): IRemoteAgentConnection | null;
     /**
      * Get the remote environment. In case of an error, returns `null`.
@@ -35,6 +36,7 @@ export interface IRemoteAgentService {
      * Gracefully ends the current connection, if any.
      */
     endConnection(): Promise<void>;
+
     getDiagnosticInfo(options: IDiagnosticInfoOptions): Promise<IDiagnosticInfo | undefined>;
     updateTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void>;
     logTelemetry(eventName: string, data?: ITelemetryData): Promise<void>;
@@ -50,9 +52,11 @@ export interface IRemoteAgentConnection {
     readonly onDidStateChange: Event<PersistentConnectionEvent>;
     end(): Promise<void>;
     dispose(): void;
+
     getChannel<T extends IChannel>(channelName: string): T;
     withChannel<T extends IChannel, R>(channelName: string, callback: (channel: T) => Promise<R>): Promise<R>;
     registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(channelName: string, channel: T): void;
+
     getInitialConnectionTimeMs(): Promise<number>;
 }
 export interface IRemoteConnectionLatencyMeasurement {
@@ -72,12 +76,14 @@ export const remoteConnectionLatencyMeasurer = new class {
     readonly highLatencyMinThreshold = 500;
     readonly highLatencyMaxThreshold = 1500;
     lastMeasurement: IRemoteConnectionLatencyMeasurement | undefined = undefined;
+
     get latency() { return this.lastMeasurement; }
     async measure(remoteAgentService: IRemoteAgentService): Promise<IRemoteConnectionLatencyMeasurement | undefined> {
         let currentLatency = Infinity;
         // Measure up to samples count
         for (let i = 0; i < this.maxSampleCount; i++) {
             const rtt = await remoteAgentService.getRoundTripTime();
+
             if (rtt === undefined) {
                 return undefined;
             }
@@ -86,11 +92,13 @@ export const remoteConnectionLatencyMeasurer = new class {
         }
         // Keep track of average latency
         this.average.push(currentLatency);
+
         if (this.average.length > this.maxAverageCount) {
             this.average.shift();
         }
         // Keep track of initial latency
         let initialLatency: number | undefined = undefined;
+
         if (this.initial.length < this.maxInitialCount) {
             this.initial.push(currentLatency);
         }
@@ -122,6 +130,7 @@ export const remoteConnectionLatencyMeasurer = new class {
                 return false;
             })()
         };
+
         return this.lastMeasurement;
     }
 };

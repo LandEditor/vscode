@@ -47,6 +47,7 @@ export class ToggleTitleBarConfigAction extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]): void {
 		const configService = accessor.get(IConfigurationService);
+
 		const value = configService.getValue(this.section);
 		configService.updateValue(this.section, !value);
 	}
@@ -138,14 +139,20 @@ class ToggleCustomTitleBar extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]): void {
 		const configService = accessor.get(IConfigurationService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const titleBarVisibility = configService.getValue<CustomTitleBarVisibility>(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY);
+
 		switch (titleBarVisibility) {
 			case CustomTitleBarVisibility.NEVER:
 				configService.updateValue(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY, CustomTitleBarVisibility.AUTO);
+
 				break;
+
 			case CustomTitleBarVisibility.WINDOWED: {
 				const isFullScreen = IsMainWindowFullscreenContext.evaluate(contextKeyService.getContext(null));
+
 				if (isFullScreen) {
 					configService.updateValue(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY, CustomTitleBarVisibility.AUTO);
 				} else {
@@ -156,6 +163,7 @@ class ToggleCustomTitleBar extends Action2 {
 			case CustomTitleBarVisibility.AUTO:
 			default:
 				configService.updateValue(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY, CustomTitleBarVisibility.NEVER);
+
 				break;
 		}
 	}
@@ -212,6 +220,7 @@ registerAction2(class HideCustomTitleBar extends Action2 {
 
 registerAction2(class ToggleEditorActions extends Action2 {
 	static readonly settingsID = `workbench.editor.editorActionsLocation`;
+
 	constructor() {
 
 		const titleBarContextCondition = ContextKeyExpr.and(
@@ -232,9 +241,11 @@ registerAction2(class ToggleEditorActions extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]): void {
 		const configService = accessor.get(IConfigurationService);
+
 		const storageService = accessor.get(IStorageService);
 
 		const location = configService.getValue<string>(ToggleEditorActions.settingsID);
+
 		if (location === 'hidden') {
 			const showTabs = configService.getValue<string>(LayoutSettings.EDITOR_TABS_MODE);
 

@@ -20,6 +20,7 @@ interface IExtensionListener<E> {
 }
 export class ExtHostNotebookDocumentSaveParticipant implements ExtHostNotebookDocumentSaveParticipantShape {
     private readonly _onWillSaveNotebookDocumentEvent = new AsyncEmitter<NotebookDocumentWillSaveEvent>();
+
     constructor(private readonly _logService: ILogService, private readonly _notebooksAndEditors: ExtHostNotebookController, private readonly _mainThreadBulkEdits: MainThreadBulkEditsShape, private readonly _thresholds: {
         timeout: number;
         errors: number;
@@ -31,19 +32,24 @@ export class ExtHostNotebookDocumentSaveParticipant implements ExtHostNotebookDo
         return (listener, thisArg, disposables) => {
             const wrappedListener: IExtensionListener<NotebookDocumentWillSaveEvent> = function wrapped(e) { listener.call(thisArg, e); };
             wrappedListener.extension = extension;
+
             return this._onWillSaveNotebookDocumentEvent.event(wrappedListener, undefined, disposables);
         };
     }
     async $participateInSave(resource: UriComponents, reason: SaveReason, token: CancellationToken): Promise<boolean> {
         const revivedUri = URI.revive(resource);
+
         const document = this._notebooksAndEditors.getNotebookDocument(revivedUri);
+
         if (!document) {
             throw new Error('Unable to resolve notebook document');
         }
         const edits: WorkspaceEdit[] = [];
         await this._onWillSaveNotebookDocumentEvent.fireAsync({ notebook: document.apiNotebook, reason: TextDocumentSaveReason.to(reason) }, token, async (thenable: Promise<unknown>, listener) => {
             const now = Date.now();
+
             const data = await await Promise.resolve(thenable);
+
             if (Date.now() - now > this._thresholds.timeout) {
                 this._logService.warn('onWillSaveNotebookDocument-listener from extension', (<IExtensionListener<NotebookDocumentWillSaveEvent>>listener).extension.identifier);
             }
@@ -61,6 +67,7 @@ export class ExtHostNotebookDocumentSaveParticipant implements ExtHostNotebookDo
             }
             return;
         });
+
         if (token.isCancellationRequested) {
             return false;
         }
@@ -68,6 +75,7 @@ export class ExtHostNotebookDocumentSaveParticipant implements ExtHostNotebookDo
             return true;
         }
         const dto: IWorkspaceEditDto = { edits: [] };
+
         for (const edit of edits) {
             const { edits } = WorksapceEditConverter.from(edit);
             dto.edits = dto.edits.concat(edits);

@@ -11,14 +11,19 @@ export function createInstanceCapabilityEventMultiplexer<T extends TerminalCapab
     data: K;
 }> {
     const store = new DisposableStore();
+
     const multiplexer = store.add(new EventMultiplexer<{
         instance: ITerminalInstance;
         data: K;
     }>());
+
     const capabilityListeners = store.add(new DisposableMap<number, DisposableMap<ITerminalCapabilityImplMap[T], IDisposable>>());
+
     function addCapability(instance: ITerminalInstance, capability: ITerminalCapabilityImplMap[T]) {
         const listener = multiplexer.add(Event.map(getEvent(capability), data => ({ instance, data })));
+
         let instanceCapabilityListeners = capabilityListeners.get(instance.instanceId);
+
         if (!instanceCapabilityListeners) {
             instanceCapabilityListeners = new DisposableMap<ITerminalCapabilityImplMap[T], IDisposable>();
             capabilityListeners.set(instance.instanceId, instanceCapabilityListeners);
@@ -28,6 +33,7 @@ export function createInstanceCapabilityEventMultiplexer<T extends TerminalCapab
     // Existing instances
     for (const instance of currentInstances) {
         const capability = instance.capabilities.get(capabilityId);
+
         if (capability) {
             addCapability(instance, capability);
         }
@@ -50,6 +56,7 @@ export function createInstanceCapabilityEventMultiplexer<T extends TerminalCapab
             capabilityListeners.get(e.instance.instanceId)?.deleteAndDispose(e.changeEvent.id);
         }
     }));
+
     return {
         dispose: () => store.dispose(),
         event: multiplexer.event

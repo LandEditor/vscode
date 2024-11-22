@@ -24,15 +24,19 @@ export function equals(one: any, other: any): boolean {
     }
     else {
         const oneKeys: string[] = [];
+
         for (const key in one) {
             oneKeys.push(key);
         }
         oneKeys.sort();
+
         const otherKeys: string[] = [];
+
         for (const key in other) {
             otherKeys.push(key);
         }
         otherKeys.sort();
+
         if (!array.equals(oneKeys, otherKeys)) {
             return false;
         }

@@ -10,8 +10,10 @@ import { IResolvableEditorModel } from '../../../platform/editor/common/editor.j
  */
 export class DiffEditorModel extends EditorModel {
     protected readonly _originalModel: IResolvableEditorModel | undefined;
+
     get originalModel(): IResolvableEditorModel | undefined { return this._originalModel; }
     protected readonly _modifiedModel: IResolvableEditorModel | undefined;
+
     get modifiedModel(): IResolvableEditorModel | undefined { return this._modifiedModel; }
     constructor(originalModel: IResolvableEditorModel | undefined, modifiedModel: IResolvableEditorModel | undefined) {
         super();

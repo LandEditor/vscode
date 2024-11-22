@@ -15,6 +15,7 @@ import { MarkdownString } from '../../../../base/common/htmlContent.js';
 interface IColorExtensionPoint {
     id: string;
     description: string;
+
     defaults: {
         light: string;
         dark: string;
@@ -23,8 +24,11 @@ interface IColorExtensionPoint {
     };
 }
 const colorRegistry: IColorRegistry = Registry.as<IColorRegistry>(ColorRegistryExtensions.ColorContribution);
+
 const colorReferenceSchema = colorRegistry.getColorReferenceSchema();
+
 const colorIdPattern = '^\\w+[.\\w+]*$';
+
 const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<IColorExtensionPoint[]>({
     extensionPoint: 'colors',
     jsonSchema: {
@@ -90,9 +94,12 @@ export class ColorExtensionPoint {
         configurationExtPoint.setHandler((extensions, delta) => {
             for (const extension of delta.added) {
                 const extensionValue = <IColorExtensionPoint[]>extension.value;
+
                 const collector = extension.collector;
+
                 if (!extensionValue || !Array.isArray(extensionValue)) {
                     collector.error(nls.localize('invalid.colorConfiguration', "'configuration.colors' must be a array"));
+
                     return;
                 }
                 const parseColorValue = (s: string, name: string) => {
@@ -105,32 +112,41 @@ export class ColorExtensionPoint {
                         }
                     }
                     collector.error(nls.localize('invalid.default.colorType', "{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.", name));
+
                     return Color.red;
                 };
+
                 for (const colorContribution of extensionValue) {
                     if (typeof colorContribution.id !== 'string' || colorContribution.id.length === 0) {
                         collector.error(nls.localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
+
                         return;
                     }
                     if (!colorContribution.id.match(colorIdPattern)) {
                         collector.error(nls.localize('invalid.id.format', "'configuration.colors.id' must only contain letters, digits and dots and can not start with a dot"));
+
                         return;
                     }
                     if (typeof colorContribution.description !== 'string' || colorContribution.id.length === 0) {
                         collector.error(nls.localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+
                         return;
                     }
                     const defaults = colorContribution.defaults;
+
                     if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string') {
                         collector.error(nls.localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light' and 'dark'"));
+
                         return;
                     }
                     if (defaults.highContrast && typeof defaults.highContrast !== 'string') {
                         collector.error(nls.localize('invalid.defaults.highContrast', "If defined, 'configuration.colors.defaults.highContrast' must be a string."));
+
                         return;
                     }
                     if (defaults.highContrastLight && typeof defaults.highContrastLight !== 'string') {
                         collector.error(nls.localize('invalid.defaults.highContrastLight', "If defined, 'configuration.colors.defaults.highContrastLight' must be a string."));
+
                         return;
                     }
                     colorRegistry.registerColor(colorContribution.id, {
@@ -143,6 +159,7 @@ export class ColorExtensionPoint {
             }
             for (const extension of delta.removed) {
                 const extensionValue = <IColorExtensionPoint[]>extension.value;
+
                 for (const colorContribution of extensionValue) {
                     colorRegistry.deregisterColor(colorContribution.id);
                 }
@@ -157,6 +174,7 @@ class ColorDataRenderer extends Disposable implements IExtensionFeatureTableRend
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const colors = manifest.contributes?.colors || [];
+
         if (!colors.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -167,7 +185,9 @@ class ColorDataRenderer extends Disposable implements IExtensionFeatureTableRend
             nls.localize('defaultLight', "Light Default"),
             nls.localize('defaultHC', "High Contrast Default"),
         ];
+
         const toColor = (colorReference: string): Color | undefined => colorReference[0] === '#' ? Color.fromHex(colorReference) : undefined;
+
         const rows: IRowData[][] = colors.sort((a, b) => a.id.localeCompare(b.id))
             .map(color => {
             return [
@@ -178,6 +198,7 @@ class ColorDataRenderer extends Disposable implements IExtensionFeatureTableRend
                 toColor(color.defaults.highContrast) ?? new MarkdownString().appendMarkdown(`\`${color.defaults.highContrast}\``),
             ];
         });
+
         return {
             data: {
                 headers,

@@ -72,8 +72,10 @@ Registry.as<IDragAndDropContributionRegistry>(DragAndDropExtensions.DragAndDropC
     dataFormatKey: TerminalDataTransfers.Terminals,
     getEditorInputs(data) {
         const editors: IDraggedResourceEditorInput[] = [];
+
         try {
             const terminalEditors: string[] = JSON.parse(data);
+
             for (const terminalEditor of terminalEditors) {
                 editors.push({ resource: URI.parse(terminalEditor) });
             }
@@ -85,6 +87,7 @@ Registry.as<IDragAndDropContributionRegistry>(DragAndDropExtensions.DragAndDropC
     },
     setData(resources, event) {
         const terminalResources = resources.filter(({ resource }) => resource.scheme === Schemas.vscodeTerminal);
+
         if (terminalResources.length) {
             event.dataTransfer?.setData(TerminalDataTransfers.Terminals, JSON.stringify(terminalResources.map(({ resource }) => resource.toString())));
         }
@@ -119,6 +122,7 @@ Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry).registerViews
     }], VIEW_CONTAINER);
 // Register actions
 registerTerminalActions();
+
 const enum Constants {
     /** The text representation of `^<letter>` is `'A'.charCodeAt(0) + 1`. */
     CtrlLetterOffset = 64

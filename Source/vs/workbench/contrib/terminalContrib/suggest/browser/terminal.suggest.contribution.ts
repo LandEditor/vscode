@@ -65,7 +65,9 @@ class TerminalSuggestContribution extends DisposableStore implements ITerminalCo
 
 	xtermOpen(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
 		const config = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection);
+
 		const enabled = config.enabled;
+
 		if (!enabled) {
 			return;
 		}
@@ -103,6 +105,7 @@ class TerminalSuggestContribution extends DisposableStore implements ITerminalCo
 		// TODO: This should be based on the OS of the pty host, not the client
 		if (!isWindows) {
 			let barrier: AutoOpenBarrier | undefined;
+
 			if (pwshCompletionProviderAddon) {
 				this.add(pwshCompletionProviderAddon.onDidRequestSendText(() => {
 					barrier = new AutoOpenBarrier(2000);
@@ -122,15 +125,18 @@ class TerminalSuggestContribution extends DisposableStore implements ITerminalCo
 
 	private _loadAddons(xterm: RawXtermTerminal): void {
 		const sendingKeybindingsToShell = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).sendKeybindingsToShell;
+
 		if (sendingKeybindingsToShell || !this._ctx.instance.shellType) {
 			this._addon.clear();
 			this._pwshAddon.clear();
+
 			return;
 		}
 		if (this._terminalSuggestWidgetVisibleContextKey) {
 			const addon = this._addon.value = this._instantiationService.createInstance(SuggestAddon, this._ctx.instance.shellType, this._ctx.instance.capabilities, this._terminalSuggestWidgetVisibleContextKey);
 			xterm.loadAddon(addon);
 			this._loadPwshCompletionAddon(xterm);
+
 			if (this._ctx.instance.target === TerminalLocation.Editor) {
 				addon.setContainerWithOverflow(xterm.element!);
 			} else {
@@ -142,12 +148,14 @@ class TerminalSuggestContribution extends DisposableStore implements ITerminalCo
 				this._ctx.instance.focus();
 				this._ctx.instance.sendText(text, false);
 			}));
+
 			const clipboardContrib = TerminalClipboardContribution.get(this._ctx.instance)!;
 			this.add(clipboardContrib.onWillPaste(() => addon.isPasting = true));
 			this.add(clipboardContrib.onDidPaste(() => {
 				// Delay this slightly as synchronizing the prompt input is debounced
 				setTimeout(() => addon.isPasting = false, 100);
 			}));
+
 			if (!isWindows) {
 				let barrier: AutoOpenBarrier | undefined;
 				this.add(addon.onDidReceiveCompletions(() => {

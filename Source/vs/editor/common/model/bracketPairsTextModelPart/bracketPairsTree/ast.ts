@@ -72,6 +72,7 @@ abstract class BaseAstNode {
 export class PairAstNode extends BaseAstNode {
     public static create(openingBracket: BracketAstNode, child: AstNode | null, closingBracket: BracketAstNode | null) {
         let length = openingBracket.length;
+
         if (child) {
             length = lengthAdd(length, child.length);
         }
@@ -92,7 +93,9 @@ export class PairAstNode extends BaseAstNode {
     public getChild(idx: number): AstNode | null {
         switch (idx) {
             case 0: return this.openingBracket;
+
             case 1: return this.child;
+
             case 2: return this.closingBracket;
         }
         throw new Error('Invalid child index');
@@ -103,6 +106,7 @@ export class PairAstNode extends BaseAstNode {
     public get children() {
         const result: AstNode[] = [];
         result.push(this.openingBracket);
+
         if (this.child) {
             result.push(this.child);
         }
@@ -144,12 +148,15 @@ export abstract class ListAstNode extends BaseAstNode {
     */
     public static create23(item1: AstNode, item2: AstNode, item3: AstNode | null, immutable: boolean = false): ListAstNode {
         let length = item1.length;
+
         let missingBracketIds = item1.missingOpeningBracketIds;
+
         if (item1.listHeight !== item2.listHeight) {
             throw new Error('Invalid list heights');
         }
         length = lengthAdd(length, item2.length);
         missingBracketIds = missingBracketIds.merge(item2.missingOpeningBracketIds);
+
         if (item3) {
             if (item1.listHeight !== item3.listHeight) {
                 throw new Error('Invalid list heights');
@@ -167,7 +174,9 @@ export abstract class ListAstNode extends BaseAstNode {
         }
         else {
             let length = items[0].length;
+
             let unopenedBrackets = items[0].missingOpeningBracketIds;
+
             for (let i = 1; i < items.length; i++) {
                 length = lengthAdd(length, items[i].length);
                 unopenedBrackets = unopenedBrackets.merge(items[i].missingOpeningBracketIds);
@@ -199,12 +208,16 @@ export abstract class ListAstNode extends BaseAstNode {
     protected abstract setChild(idx: number, child: AstNode): void;
     public makeLastElementMutable(): AstNode | undefined {
         this.throwIfImmutable();
+
         const childCount = this.childrenLength;
+
         if (childCount === 0) {
             return undefined;
         }
         const lastChild = this.getChild(childCount - 1)!;
+
         const mutable = lastChild.kind === AstNodeKind.List ? lastChild.toMutable() : lastChild;
+
         if (lastChild !== mutable) {
             this.setChild(childCount - 1, mutable);
         }
@@ -212,12 +225,16 @@ export abstract class ListAstNode extends BaseAstNode {
     }
     public makeFirstElementMutable(): AstNode | undefined {
         this.throwIfImmutable();
+
         const childCount = this.childrenLength;
+
         if (childCount === 0) {
             return undefined;
         }
         const firstChild = this.getChild(0)!;
+
         const mutable = firstChild.kind === AstNodeKind.List ? firstChild.toMutable() : firstChild;
+
         if (firstChild !== mutable) {
             this.setChild(0, mutable);
         }
@@ -232,8 +249,10 @@ export abstract class ListAstNode extends BaseAstNode {
             return false;
         }
         let lastChild: ListAstNode = this;
+
         while (lastChild.kind === AstNodeKind.List) {
             const lastLength = lastChild.childrenLength;
+
             if (lastLength === 0) {
                 // Empty lists should never be contained in other lists.
                 throw new BugIndicatingError();
@@ -244,9 +263,13 @@ export abstract class ListAstNode extends BaseAstNode {
     }
     public handleChildrenChanged(): void {
         this.throwIfImmutable();
+
         const count = this.childrenLength;
+
         let length = this.getChild(0)!.length;
+
         let unopenedBrackets = this.getChild(0)!.missingOpeningBracketIds;
+
         for (let i = 1; i < count; i++) {
             const child = this.getChild(i)!;
             length = lengthAdd(length, child.length);
@@ -258,8 +281,10 @@ export abstract class ListAstNode extends BaseAstNode {
     }
     public flattenLists(): ListAstNode {
         const items: AstNode[] = [];
+
         for (const c of this.children) {
             const normalized = c.flattenLists();
+
             if (normalized.kind === AstNodeKind.List) {
                 items.push(...normalized.children);
             }
@@ -274,15 +299,19 @@ export abstract class ListAstNode extends BaseAstNode {
             return this.cachedMinIndentation;
         }
         let minIndentation = Number.MAX_SAFE_INTEGER;
+
         let childOffset = offset;
+
         for (let i = 0; i < this.childrenLength; i++) {
             const child = this.getChild(i);
+
             if (child) {
                 minIndentation = Math.min(minIndentation, child.computeMinIndentation(childOffset, textModel));
                 childOffset = lengthAdd(childOffset, child.length);
             }
         }
         this.cachedMinIndentation = minIndentation;
+
         return minIndentation;
     }
     /**
@@ -301,7 +330,9 @@ class TwoThreeListAstNode extends ListAstNode {
     public getChild(idx: number): AstNode | null {
         switch (idx) {
             case 0: return this._item1;
+
             case 1: return this._item2;
+
             case 2: return this._item3;
         }
         throw new Error('Invalid child index');
@@ -310,12 +341,17 @@ class TwoThreeListAstNode extends ListAstNode {
         switch (idx) {
             case 0:
                 this._item1 = node;
+
                 return;
+
             case 1:
                 this._item2 = node;
+
                 return;
+
             case 2:
                 this._item3 = node;
+
                 return;
         }
         throw new Error('Invalid child index');
@@ -351,9 +387,11 @@ class TwoThreeListAstNode extends ListAstNode {
             throw new Error('Cannot remove from a non-full (2,3) tree node');
         }
         this.throwIfImmutable();
+
         const result = this._item3;
         this._item3 = null;
         this.handleChildrenChanged();
+
         return result;
     }
     public prependChildOfSameHeight(node: AstNode): void {
@@ -371,11 +409,13 @@ class TwoThreeListAstNode extends ListAstNode {
             throw new Error('Cannot remove from a non-full (2,3) tree node');
         }
         this.throwIfImmutable();
+
         const result = this._item1;
         this._item1 = this._item2;
         this._item2 = this._item3;
         this._item3 = null;
         this.handleChildrenChanged();
+
         return result;
     }
     override toMutable(): ListAstNode {
@@ -414,6 +454,7 @@ class ArrayListAstNode extends ListAstNode {
     }
     deepClone(): ListAstNode {
         const children = new Array<AstNode>(this._children.length);
+
         for (let i = 0; i < this._children.length; i++) {
             children[i] = this._children[i].deepClone();
         }
@@ -426,8 +467,10 @@ class ArrayListAstNode extends ListAstNode {
     }
     public unappendChild(): AstNode | undefined {
         this.throwIfImmutable();
+
         const item = this._children.pop();
         this.handleChildrenChanged();
+
         return item;
     }
     public prependChildOfSameHeight(node: AstNode): void {
@@ -437,8 +480,10 @@ class ArrayListAstNode extends ListAstNode {
     }
     public unprependChild(): AstNode | undefined {
         this.throwIfImmutable();
+
         const item = this._children.shift();
         this.handleChildrenChanged();
+
         return item;
     }
     public override toMutable(): ListAstNode {
@@ -492,11 +537,16 @@ export class TextAstNode extends ImmutableLeafAstNode {
         // Text ast nodes don't have partial indentation (ensured by the tokenizer).
         // Thus, if this text node does not start at column 0, the first line cannot have any indentation at all.
         const startLineNumber = (start.columnCount === 0 ? start.lineCount : start.lineCount + 1) + 1;
+
         const endLineNumber = lengthGetLineCount(lengthAdd(offset, this.length)) + 1;
+
         let result = Number.MAX_SAFE_INTEGER;
+
         for (let lineNumber = startLineNumber; lineNumber <= endLineNumber; lineNumber++) {
             const firstNonWsColumn = textModel.getLineFirstNonWhitespaceColumn(lineNumber);
+
             const lineContent = textModel.getLineContent(lineNumber);
+
             if (firstNonWsColumn === 0) {
                 continue;
             }
@@ -509,6 +559,7 @@ export class TextAstNode extends ImmutableLeafAstNode {
 export class BracketAstNode extends ImmutableLeafAstNode {
     public static create(length: Length, bracketInfo: BracketKind, bracketIds: SmallImmutableSet<OpeningBracketId>): BracketAstNode {
         const node = new BracketAstNode(length, bracketInfo, bracketIds);
+
         return node;
     }
     public get kind(): AstNodeKind.Bracket {

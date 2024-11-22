@@ -20,6 +20,7 @@ export class CommentNode {
     public readonly contextValue: string | undefined;
     public readonly controllerHandle: number;
     public readonly threadHandle: number;
+
     constructor(public readonly uniqueOwner: string, public readonly owner: string, public readonly resource: URI, public readonly comment: Comment, public readonly thread: CommentThread) {
         this.threadId = thread.threadId;
         this.range = thread.range;
@@ -33,12 +34,16 @@ export class CommentNode {
         return this.replies && this.replies.length !== 0;
     }
     private _lastUpdatedAt: string | undefined;
+
     get lastUpdatedAt(): string {
         if (this._lastUpdatedAt === undefined) {
             let updatedAt = this.comment.timestamp || '';
+
             if (this.replies.length) {
                 const reply = this.replies[this.replies.length - 1];
+
                 const replyUpdatedAt = reply.lastUpdatedAt;
+
                 if (replyUpdatedAt > updatedAt) {
                     updatedAt = replyUpdatedAt;
                 }
@@ -55,6 +60,7 @@ export class ResourceWithCommentThreads {
     ownerLabel: string | undefined;
     commentThreads: CommentNode[]; // The top level comments on the file. Replys are nested under each node.
     resource: URI;
+
     constructor(uniqueOwner: string, owner: string, resource: URI, commentThreads: CommentThread[]) {
         this.uniqueOwner = uniqueOwner;
         this.owner = owner;
@@ -64,14 +70,18 @@ export class ResourceWithCommentThreads {
     }
     public static createCommentNode(uniqueOwner: string, owner: string, resource: URI, commentThread: CommentThread): CommentNode {
         const { comments } = commentThread;
+
         const commentNodes: CommentNode[] = comments!.map(comment => new CommentNode(uniqueOwner, owner, resource, comment, commentThread));
+
         if (commentNodes.length > 1) {
             commentNodes[0].replies = commentNodes.slice(1, commentNodes.length);
         }
         commentNodes[0].isRoot = true;
+
         return commentNodes[0];
     }
     private _lastUpdatedAt: string | undefined;
+
     get lastUpdatedAt() {
         if (this._lastUpdatedAt === undefined) {
             let updatedAt = '';
@@ -81,6 +91,7 @@ export class ResourceWithCommentThreads {
             }
             for (const thread of this.commentThreads) {
                 const threadUpdatedAt = thread.lastUpdatedAt;
+
                 if (threadUpdatedAt && threadUpdatedAt > updatedAt) {
                     updatedAt = threadUpdatedAt;
                 }

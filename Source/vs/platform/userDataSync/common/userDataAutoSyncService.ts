@@ -47,9 +47,13 @@ type AutoSyncErrorClassification = {
         comment: 'Settings sync service for which this error has occurred';
     };
 };
+
 const disableMachineEventuallyKey = 'sync.disableMachineEventually';
+
 const sessionIdKey = 'sync.sessionId';
+
 const storeUrlKey = 'sync.storeUrl';
+
 const productQualityKey = 'sync.productQuality';
 export class UserDataAutoSyncService extends Disposable implements IUserDataAutoSyncService {
     _serviceBrand: any;
@@ -63,6 +67,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
     private lastSyncUrl: URI | undefined;
     private get syncUrl(): URI | undefined {
         const value = this.storageService.get(storeUrlKey, StorageScope.APPLICATION);
+
         return value ? URI.parse(value) : undefined;
     }
     private set syncUrl(syncUrl: URI | undefined) {
@@ -112,17 +117,20 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         this.syncUrl = userDataSyncStoreManagementService.userDataSyncStore?.url;
         this.previousProductQuality = this.productQuality;
         this.productQuality = productService.quality;
+
         if (this.syncUrl) {
             this.logService.info('Using settings sync service', this.syncUrl.toString());
             this._register(userDataSyncStoreManagementService.onDidChangeUserDataSyncStore(() => {
                 if (!isEqual(this.syncUrl, userDataSyncStoreManagementService.userDataSyncStore?.url)) {
                     this.lastSyncUrl = this.syncUrl;
                     this.syncUrl = userDataSyncStoreManagementService.userDataSyncStore?.url;
+
                     if (this.syncUrl) {
                         this.logService.info('Using settings sync service', this.syncUrl.toString());
                     }
                 }
             }));
+
             if (this.userDataSyncEnablementService.isEnabled()) {
                 this.logService.info('Auto Sync is enabled.');
             }
@@ -130,6 +138,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
                 this.logService.info('Auto Sync is disabled.');
             }
             this.updateAutoSync();
+
             if (this.hasToDisableMachineEventually()) {
                 this.disableMachineEventually();
             }
@@ -142,11 +151,13 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
     }
     private updateAutoSync(): void {
         const { enabled, message } = this.isAutoSyncEnabled();
+
         if (enabled) {
             if (this.autoSync.value === undefined) {
                 this.autoSync.value = new AutoSync(this.lastSyncUrl, 1000 * 60 * 5 /* 5 miutes */, this.userDataSyncStoreManagementService, this.userDataSyncStoreService, this.userDataSyncService, this.userDataSyncMachinesService, this.logService, this.telemetryService, this.storageService);
                 this.autoSync.value.register(this.autoSync.value.onDidStartSync(() => this.lastSyncTriggerTime = new Date().getTime()));
                 this.autoSync.value.register(this.autoSync.value.onDidFinishSync(e => this.onDidFinishSync(e)));
+
                 if (this.startAutoSync()) {
                     this.autoSync.value.start();
                 }
@@ -154,6 +165,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         }
         else {
             this.syncTriggerDelayer.cancel();
+
             if (this.autoSync.value !== undefined) {
                 if (message) {
                     this.logService.info(message);
@@ -215,6 +227,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         }
         catch (error) {
             this.logService.error(error);
+
             if (softTurnOffOnError) {
                 this.updateEnablement(false);
             }
@@ -236,6 +249,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         if (!error) {
             // Sync finished without errors
             this.successiveFailures = 0;
+
             return;
         }
         // Error while syncing
@@ -332,6 +346,7 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         this.storageService.remove(disableMachineEventuallyKey, StorageScope.APPLICATION);
     }
     private sources: string[] = [];
+
     async triggerSync(sources: string[], skipIfSyncedRecently: boolean, disableCache: boolean): Promise<void> {
         if (this.autoSync.value === undefined) {
             return this.syncTriggerDelayer.cancel();
@@ -339,17 +354,21 @@ export class UserDataAutoSyncService extends Disposable implements IUserDataAuto
         if (skipIfSyncedRecently && this.lastSyncTriggerTime
             && Math.round((new Date().getTime() - this.lastSyncTriggerTime) / 1000) < 10) {
             this.logService.debug('Auto Sync: Skipped. Limited to once per 10 seconds.');
+
             return;
         }
         this.sources.push(...sources);
+
         return this.syncTriggerDelayer.trigger(async () => {
             this.logService.trace('activity sources', ...this.sources);
+
             const providerId = this.userDataSyncAccountService.account?.authenticationProviderId || '';
             this.telemetryService.publicLog2<{
                 sources: string[];
                 providerId: string;
             }, AutoSyncClassification>('sync/triggered', { sources: this.sources, providerId });
             this.sources = [];
+
             if (this.autoSync.value) {
                 await this.autoSync.value.sync('Activity', disableCache);
             }
@@ -371,6 +390,7 @@ class AutoSync extends Disposable {
     private manifest: IUserDataManifest | null = null;
     private syncTask: IUserDataSyncTask | undefined;
     private syncPromise: CancelablePromise<void> | undefined;
+
     constructor(private readonly lastSyncUrl: URI | undefined, private readonly interval: number /* in milliseconds */, private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService, private readonly userDataSyncStoreService: IUserDataSyncStoreService, private readonly userDataSyncService: IUserDataSyncService, private readonly userDataSyncMachinesService: IUserDataSyncMachinesService, private readonly logService: IUserDataSyncLogService, private readonly telemetryService: ITelemetryService, private readonly storageService: IStorageService) {
         super();
     }
@@ -412,6 +432,7 @@ class AutoSync extends Disposable {
         });
         this.syncPromise = syncPromise;
         this.syncPromise.finally(() => this.syncPromise = undefined);
+
         return this.syncPromise;
     }
     private hasSyncServiceChanged(): boolean {
@@ -419,6 +440,7 @@ class AutoSync extends Disposable {
     }
     private async hasDefaultServiceChanged(): Promise<boolean> {
         const previous = await this.userDataSyncStoreManagementService.getPreviousUserDataSyncStore();
+
         const current = this.userDataSyncStoreManagementService.userDataSyncStore;
         // check if defaults changed
         return !!current && !!previous &&
@@ -429,13 +451,16 @@ class AutoSync extends Disposable {
     private async doSync(reason: string, disableCache: boolean, token: CancellationToken): Promise<void> {
         this.logService.info(`Auto Sync: Triggered by ${reason}`);
         this._onDidStartSync.fire();
+
         let error: Error | undefined;
+
         try {
             await this.createAndRunSyncTask(disableCache, token);
         }
         catch (e) {
             this.logService.error(e);
             error = e;
+
             if (UserDataSyncError.toUserDataSyncError(e).code === UserDataSyncErrorCode.MethodNotFound) {
                 try {
                     this.logService.info('Auto Sync: Client is making invalid requests. Cleaning up data...');
@@ -454,6 +479,7 @@ class AutoSync extends Disposable {
     }
     private async createAndRunSyncTask(disableCache: boolean, token: CancellationToken): Promise<void> {
         this.syncTask = await this.userDataSyncService.createSyncTask(this.manifest, disableCache);
+
         if (token.isCancellationRequested) {
             return;
         }

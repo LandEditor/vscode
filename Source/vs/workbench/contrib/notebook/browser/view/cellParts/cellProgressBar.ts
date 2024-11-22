@@ -12,6 +12,7 @@ import { ICellExecutionStateChangedEvent, INotebookExecutionStateService } from 
 export class CellProgressBar extends CellContentPart {
     private readonly _progressBar: ProgressBar;
     private readonly _collapsedProgressBar: ProgressBar;
+
     constructor(editorContainer: HTMLElement, collapsedInputContainer: HTMLElement, 
     @INotebookExecutionStateService
     private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
@@ -33,14 +34,17 @@ export class CellProgressBar extends CellContentPart {
         }
         if (e.inputCollapsedChanged) {
             const exeState = this._notebookExecutionStateService.getCellExecution(element.uri);
+
             if (element.isInputCollapsed) {
                 this._progressBar.hide();
+
                 if (exeState?.state === NotebookCellExecutionState.Executing) {
                     this._updateForExecutionState(element);
                 }
             }
             else {
                 this._collapsedProgressBar.hide();
+
                 if (exeState?.state === NotebookCellExecutionState.Executing) {
                     this._updateForExecutionState(element);
                 }
@@ -49,7 +53,9 @@ export class CellProgressBar extends CellContentPart {
     }
     private _updateForExecutionState(element: ICellViewModel, e?: ICellExecutionStateChangedEvent): void {
         const exeState = e?.changed ?? this._notebookExecutionStateService.getCellExecution(element.uri);
+
         const progressBar = element.isInputCollapsed ? this._collapsedProgressBar : this._progressBar;
+
         if (exeState?.state === NotebookCellExecutionState.Executing && (!exeState.didPause || element.isInputCollapsed)) {
             showProgressBar(progressBar);
         }

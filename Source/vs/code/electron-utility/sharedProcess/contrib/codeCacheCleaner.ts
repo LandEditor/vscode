@@ -32,12 +32,15 @@ export class CodeCacheCleaner extends Disposable {
     }
     private async cleanUpCodeCaches(currentCodeCachePath: string): Promise<void> {
         this.logService.trace('[code cache cleanup]: Starting to clean up old code cache folders.');
+
         try {
             const now = Date.now();
             // The folder which contains folders of cached data.
             // Each of these folders is partioned per commit
             const codeCacheRootPath = dirname(currentCodeCachePath);
+
             const currentCodeCache = basename(currentCodeCachePath);
+
             const codeCaches = await Promises.readdir(codeCacheRootPath);
             await Promise.all(codeCaches.map(async (codeCache) => {
                 if (codeCache === currentCodeCache) {
@@ -45,9 +48,12 @@ export class CodeCacheCleaner extends Disposable {
                 }
                 // Delete cache folder if old enough
                 const codeCacheEntryPath = join(codeCacheRootPath, codeCache);
+
                 const codeCacheEntryStat = await fs.promises.stat(codeCacheEntryPath);
+
                 if (codeCacheEntryStat.isDirectory() && (now - codeCacheEntryStat.mtime.getTime()) > this._DataMaxAge) {
                     this.logService.trace(`[code cache cleanup]: Removing code cache folder ${codeCache}.`);
+
                     return Promises.rm(codeCacheEntryPath);
                 }
             }));

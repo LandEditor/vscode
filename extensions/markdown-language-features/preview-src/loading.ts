@@ -7,6 +7,7 @@ export class StyleLoadingMonitor {
     private _unloadedStyles: string[] = [];
     private _finishedLoading: boolean = false;
     private _poster?: MessagePoster;
+
     constructor() {
         const onStyleLoadError = (event: any) => {
             const source = event.target.dataset.source;
@@ -29,6 +30,7 @@ export class StyleLoadingMonitor {
     }
     public setPoster(poster: MessagePoster): void {
         this._poster = poster;
+
         if (this._finishedLoading) {
             poster.postMessage('previewStyleLoadError', { unloadedStyles: this._unloadedStyles });
         }

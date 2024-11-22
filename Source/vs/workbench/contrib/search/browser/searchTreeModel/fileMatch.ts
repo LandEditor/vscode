@@ -55,10 +55,12 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
     protected _findMatchDecorationModel: FindMatchDecorationModel | undefined;
     protected _onChange = this._register(new Emitter<{
         didRemove?: boolean;
+
         forceUpdateModel?: boolean;
     }>());
     readonly onChange: Event<{
         didRemove?: boolean;
+
         forceUpdateModel?: boolean;
     }> = this._onChange.event;
     private _onDispose = this._register(new Emitter<void>());
@@ -99,6 +101,7 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
     }
     createMatches(): void {
         const model = this.modelService.getModel(this._resource);
+
         if (model) {
             // todo: handle better when ai contributed results has model, currently, createMatches does not work for this
             this.bindModel(model);
@@ -145,7 +148,9 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
             return;
         }
         this._textMatches = new Map<string, ISearchTreeMatch>();
+
         const wordSeparators = this._query.isWordMatch && this._query.wordSeparators ? this._query.wordSeparators : null;
+
         const matches = this._model
             .findMatches(this._query.pattern, this._model.getFullModelRange(), !!this._query.isRegExp, !!this._query.isCaseSensitive, wordSeparators, false, this._maxResults ?? DEFAULT_MAX_SEARCH_RESULTS);
         this.updateMatches(matches, true, this._model, false);
@@ -160,9 +165,12 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
             endLineNumber: lineNumber,
             endColumn: this._model.getLineMaxColumn(lineNumber)
         };
+
         const oldMatches = Array.from(this._textMatches.values()).filter(match => match.range().startLineNumber === lineNumber);
         oldMatches.forEach(match => this._textMatches.delete(match.id()));
+
         const wordSeparators = this._query.isWordMatch && this._query.wordSeparators ? this._query.wordSeparators : null;
+
         const matches = this._model.findMatches(this._query.pattern, range, !!this._query.isRegExp, !!this._query.isCaseSensitive, wordSeparators, false, this._maxResults ?? DEFAULT_MAX_SEARCH_RESULTS);
         this.updateMatches(matches, modelChange, this._model, false);
     }
@@ -172,6 +180,7 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
             textSearchResultToMatches(textSearchResult, this, isAiContributed).forEach(match => {
                 if (!this._removedTextMatches.has(match.id())) {
                     this.add(match);
+
                     if (this.isMatchSelected(match)) {
                         this._selectedMatch = match;
                     }
@@ -222,6 +231,7 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
         this._onChange.fire({ didRemove: true });
     }
     private replaceQ = Promise.resolve();
+
     async replace(toReplace: ISearchTreeMatch): Promise<void> {
         return this.replaceQ = this.replaceQ.finally(async () => {
             await this.replaceService.replace(toReplace);
@@ -261,16 +271,19 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
         }
         const contexts = results
             .filter((result => !resultIsMatch(result)) as ((a: any) => a is ITextSearchContext));
+
         return contexts.forEach(context => this._context.set(context.lineNumber, context.text));
     }
     add(match: ISearchTreeMatch, trigger?: boolean) {
         this._textMatches.set(match.id(), match);
+
         if (trigger) {
             this._onChange.fire({ forceUpdateModel: true });
         }
     }
     protected removeMatch(match: ISearchTreeMatch) {
         this._textMatches.delete(match.id());
+
         if (this.isMatchSelected(match)) {
             this.setSelectedMatch(null);
             this._findMatchDecorationModel?.clearCurrentFindMatchDecoration();
@@ -292,6 +305,7 @@ export class FileMatchImpl extends Disposable implements ISearchTreeFileMatch {
         this.setSelectedMatch(null);
         this.unbindModel();
         this._onDispose.fire();
+
         super.dispose();
     }
     hasOnlyReadOnlyMatches(): boolean {

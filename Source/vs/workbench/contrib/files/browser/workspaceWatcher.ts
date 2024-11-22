@@ -18,6 +18,7 @@ import { ITelemetryService } from '../../../../platform/telemetry/common/telemet
 export class WorkspaceWatcher extends Disposable {
     static readonly ID = 'workbench.contrib.workspaceWatcher';
     private readonly watchedWorkspaces = new ResourceMap<IDisposable>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -65,6 +66,7 @@ export class WorkspaceWatcher extends Disposable {
     }
     private onDidWatchError(error: Error): void {
         const msg = error.toString();
+
         let reason: 'ENOSPC' | 'EUNKNOWN' | 'ETERM' | undefined = undefined;
         // Detect if we run into ENOSPC issues
         if (msg.indexOf('ENOSPC') >= 0) {
@@ -113,7 +115,9 @@ export class WorkspaceWatcher extends Disposable {
     private watchWorkspace(workspace: IWorkspaceFolder): void {
         // Compute the watcher exclude rules from configuration
         const excludes: string[] = [];
+
         const config = this.configurationService.getValue<IFilesConfiguration>({ resource: workspace.uri });
+
         if (config.files?.watcherExclude) {
             for (const key in config.files.watcherExclude) {
                 if (key && config.files.watcherExclude[key] === true) {
@@ -133,6 +137,7 @@ export class WorkspaceWatcher extends Disposable {
                 // Absolute: verify a child of the workspace
                 if (isAbsolute(includePath)) {
                     const candidate = URI.file(includePath).with({ scheme: workspace.uri.scheme });
+
                     if (this.uriIdentityService.extUri.isEqualOrParent(candidate, workspace.uri)) {
                         pathsToWatch.set(candidate, candidate);
                     }
@@ -146,6 +151,7 @@ export class WorkspaceWatcher extends Disposable {
         }
         // Watch all paths as instructed
         const disposables = new DisposableStore();
+
         for (const [, pathToWatch] of pathsToWatch) {
             disposables.add(this.fileService.watch(pathToWatch, { recursive: true, excludes }));
         }

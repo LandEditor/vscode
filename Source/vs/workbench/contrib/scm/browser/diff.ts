@@ -19,6 +19,7 @@ export const IDirtyDiffModelService = createDecorator<IDirtyDiffModelService>('I
 
 export interface IDirtyDiffModelService {
 	_serviceBrand: undefined;
+
 	getOrCreateModel(uri: URI): DirtyDiffModel | undefined;
 }
 
@@ -60,8 +61,10 @@ export class DirtyDiffModelService extends Disposable implements IDirtyDiffModel
 
 	getOrCreateModel(uri: URI): DirtyDiffModel | undefined {
 		let model = this._models.get(uri);
+
 		if (!model) {
 			const textFileModel = this.textFileService.files.get(uri);
+
 			if (!textFileModel?.isResolved()) {
 				return undefined;
 			}

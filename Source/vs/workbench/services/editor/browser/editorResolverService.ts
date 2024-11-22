@@ -48,6 +48,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     private _flattenedEditors: Map<string | glob.IRelativePattern, RegisteredEditors> = new Map();
     private _shouldReFlattenEditors: boolean = true;
     private cache: Set<string> | undefined;
+
     constructor(
     @IEditorGroupsService
     private readonly editorGroupService: IEditorGroupsService, 
@@ -92,11 +93,13 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         const untypedEditor = editor;
         // Use the untyped editor to find a group
         const findGroupResult = this.instantiationService.invokeFunction(findGroup, untypedEditor, preferredGroup);
+
         if (findGroupResult instanceof Promise) {
             return findGroupResult.then(([group, activation]) => [untypedEditor, group, activation]);
         }
         else {
             const [group, activation] = findGroupResult;
+
             return [untypedEditor, group, activation];
         }
     }
@@ -114,7 +117,9 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             IEditorGroup,
             EditorActivation | undefined
         ] | undefined;
+
         const resolvedUntypedAndGroupResult = this.resolveUntypedInputAndGroup(editor, preferredGroup);
+
         if (resolvedUntypedAndGroupResult instanceof Promise) {
             resolvedUntypedAndGroup = await resolvedUntypedAndGroupResult;
         }
@@ -126,6 +131,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         }
         // Get the resolved untyped editor, group, and activation
         const [untypedEditor, group, activation] = resolvedUntypedAndGroup;
+
         if (activation) {
             untypedEditor.options = { ...untypedEditor.options, activation };
         }
@@ -161,6 +167,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             const resolvedEditor = this.getEditor(resource, DEFAULT_EDITOR_ASSOCIATION.id);
             selectedEditor = resolvedEditor?.editor;
             conflictingDefault = resolvedEditor?.conflictingDefault;
+
             if (!selectedEditor) {
                 return ResolvedStatus.NONE;
             }
@@ -168,10 +175,12 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         // In the special case of diff editors we do some more work to determine the correct editor for both sides
         if (isResourceDiffEditorInput(untypedEditor) && untypedEditor.options?.override === undefined) {
             let resource2 = EditorResourceAccessor.getCanonicalUri(untypedEditor, { supportSideBySide: SideBySideEditor.SECONDARY });
+
             if (!resource2) {
                 resource2 = URI.from({ scheme: Schemas.untitled });
             }
             const { editor: selectedEditor2 } = this.getEditor(resource2, undefined);
+
             if (!selectedEditor2 || selectedEditor.editorInfo.id !== selectedEditor2.editorInfo.id) {
                 const { editor: selectedDiff, conflictingDefault: conflictingDefaultDiff } = this.getEditor(resource, DEFAULT_EDITOR_ASSOCIATION.id);
                 selectedEditor = selectedDiff;
@@ -188,12 +197,14 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             return ResolvedStatus.NONE;
         }
         const input = await this.doResolveEditor(untypedEditor, group, selectedEditor);
+
         if (conflictingDefault && input) {
             // Show the conflicting default dialog
             await this.doHandleConflictingDefaults(resource, selectedEditor.editorInfo.label, untypedEditor, input.editor, group);
         }
         if (input) {
             this.sendEditorResolutionTelemetry(input.editor);
+
             if (input.editor.editorId !== selectedEditor.editorInfo.id) {
                 this.logService.warn(`Editor ID Mismatch: ${input.editor.editorId} !== ${selectedEditor.editorInfo.id}. This will cause bugs. Please ensure editorInput.editorId matches the registered id`);
             }
@@ -203,10 +214,12 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     private async doResolveSideBySideEditor(editor: IResourceSideBySideEditorInput, preferredGroup: PreferredGroup | undefined): Promise<ResolvedEditor> {
         const primaryResolvedEditor = await this.resolveEditor(editor.primary, preferredGroup);
+
         if (!isEditorInputWithOptionsAndGroup(primaryResolvedEditor)) {
             return ResolvedStatus.NONE;
         }
         const secondaryResolvedEditor = await this.resolveEditor(editor.secondary, primaryResolvedEditor.group ?? preferredGroup);
+
         if (!isEditorInputWithOptionsAndGroup(secondaryResolvedEditor)) {
             return ResolvedStatus.NONE;
         }
@@ -218,6 +231,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     bufferChangeEvents(callback: Function): void {
         this._onDidChangeEditorRegistrations.pause();
+
         try {
             callback();
         }
@@ -227,11 +241,13 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     registerEditor(globPattern: string | glob.IRelativePattern, editorInfo: RegisteredEditorInfo, options: RegisteredEditorOptions, editorFactoryObject: EditorInputFactoryObject): IDisposable {
         let registeredEditor = this._editors.get(globPattern);
+
         if (registeredEditor === undefined) {
             registeredEditor = new Map<string, RegisteredEditors>();
             this._editors.set(globPattern, registeredEditor);
         }
         let editorsWithId = registeredEditor.get(editorInfo.id);
+
         if (editorsWithId === undefined) {
             editorsWithId = [];
         }
@@ -244,8 +260,10 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         registeredEditor.set(editorInfo.id, editorsWithId);
         this._shouldReFlattenEditors = true;
         this._onDidChangeEditorRegistrations.fire();
+
         return toDisposable(() => {
             remove();
+
             if (editorsWithId && editorsWithId.length === 0) {
                 registeredEditor?.delete(editorInfo.id);
             }
@@ -255,9 +273,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     getAssociationsForResource(resource: URI): EditorAssociations {
         const associations = this.getAllUserAssociations();
+
         let matchingAssociations = associations.filter(association => association.filenamePattern && globMatchesResource(association.filenamePattern, resource));
         // Sort matching associations based on glob length as a longer glob will be more specific
         matchingAssociations = matchingAssociations.sort((a, b) => (b.filenamePattern?.length ?? 0) - (a.filenamePattern?.length ?? 0));
+
         const allEditors: RegisteredEditors = this._registeredEditors;
         // Ensure that the settings are valid editors
         return matchingAssociations.filter(association => allEditors.find(c => c.editorInfo.id === association.viewType));
@@ -266,9 +286,13 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         const inspectedEditorAssociations = this.configurationService.inspect<{
             [fileNamePattern: string]: string;
         }>(editorsAssociationsSettingId) || {};
+
         const defaultAssociations = inspectedEditorAssociations.defaultValue ?? {};
+
         const workspaceAssociations = inspectedEditorAssociations.workspaceValue ?? {};
+
         const userAssociations = inspectedEditorAssociations.userValue ?? {};
+
         const rawAssociations: {
             [fileNamePattern: string]: string;
         } = { ...workspaceAssociations };
@@ -279,6 +303,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             }
         }
         const associations = [];
+
         for (const [key, value] of Object.entries(rawAssociations)) {
             const association: EditorAssociation = {
                 filenamePattern: key,
@@ -298,9 +323,12 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             return this._flattenedEditors;
         }
         this._shouldReFlattenEditors = false;
+
         const editors = new Map<string | glob.IRelativePattern, RegisteredEditors>();
+
         for (const [glob, value] of this._editors) {
             const registeredEditors: RegisteredEditors = [];
+
             for (const editors of value.values()) {
                 let registeredEditor: RegisteredEditor | undefined = undefined;
                 // Merge all editors with the same id and glob pattern together
@@ -333,7 +361,9 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     updateUserAssociations(globPattern: string, editorID: string): void {
         const newAssociation: EditorAssociation = { viewType: editorID, filenamePattern: globPattern };
+
         const currentAssociations = this.getAllUserAssociations();
+
         const newSettingObject = Object.create(null);
         // Form the new setting object including the newest associations
         for (const association of [...currentAssociations, newAssociation]) {
@@ -346,11 +376,13 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     private findMatchingEditors(resource: URI): RegisteredEditor[] {
         // The user setting should be respected even if the editor doesn't specify that resource in package.json
         const userSettings = this.getAssociationsForResource(resource);
+
         const matchingEditors: RegisteredEditor[] = [];
         // Then all glob patterns
         for (const [key, editors] of this._flattenedEditors) {
             for (const editor of editors) {
                 const foundInSettings = userSettings.find(setting => setting.viewType === editor.editorInfo.id);
+
                 if ((foundInSettings && editor.editorInfo.priority !== RegisteredEditorPriority.exclusive) || globMatchesResource(key, resource)) {
                     matchingEditors.push(editor);
                 }
@@ -370,6 +402,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         // By resource
         if (URI.isUri(resource)) {
             const editors = this.findMatchingEditors(resource);
+
             if (editors.find(e => e.editorInfo.priority === RegisteredEditorPriority.exclusive)) {
                 return [];
             }
@@ -394,19 +427,24 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return editor.editorInfo.id === viewType;
             });
         };
+
         if (editorId && editorId !== EditorResolution.EXCLUSIVE_ONLY) {
             // Specific id passed in doesn't have to match the resource, it can be anything
             const registeredEditors = this._registeredEditors;
+
             return {
                 editor: findMatchingEditor(registeredEditors, editorId),
                 conflictingDefault: false
             };
         }
         const editors = this.findMatchingEditors(resource);
+
         const associationsFromSetting = this.getAssociationsForResource(resource);
         // We only want minPriority+ if no user defined setting is found, else we won't resolve an editor
         const minPriority = editorId === EditorResolution.EXCLUSIVE_ONLY ? RegisteredEditorPriority.exclusive : RegisteredEditorPriority.builtin;
+
         let possibleEditors = editors.filter(editor => priorityToRank(editor.editorInfo.priority) >= priorityToRank(minPriority) && editor.editorInfo.id !== DEFAULT_EDITOR_ASSOCIATION.id);
+
         if (possibleEditors.length === 0) {
             return {
                 editor: associationsFromSetting[0] && minPriority !== RegisteredEditorPriority.exclusive ? findMatchingEditor(editors, associationsFromSetting[0].viewType) : undefined,
@@ -417,9 +455,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         const selectedViewType = possibleEditors[0].editorInfo.priority === RegisteredEditorPriority.exclusive ?
             possibleEditors[0].editorInfo.id :
             associationsFromSetting[0]?.viewType || possibleEditors[0].editorInfo.id;
+
         let conflictingDefault = false;
         // Filter out exclusive before we check for conflicts as exclusive editors cannot be manually chosen
         possibleEditors = possibleEditors.filter(editor => editor.editorInfo.priority !== RegisteredEditorPriority.exclusive);
+
         if (associationsFromSetting.length === 0 && possibleEditors.length > 1) {
             conflictingDefault = true;
         }
@@ -430,6 +470,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
     }
     private async doResolveEditor(editor: IUntypedEditorInput, group: IEditorGroup, selectedEditor: RegisteredEditor): Promise<EditorInputWithOptions | undefined> {
         let options = editor.options;
+
         const resource = EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY });
         // If no activation option is provided, populate it.
         if (options && typeof options.activation === 'undefined') {
@@ -441,6 +482,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return;
             }
             const inputWithOptions = await selectedEditor.editorFactoryObject.createMergeEditorInput(editor, group);
+
             return { editor: inputWithOptions.editor, options: inputWithOptions.options ?? options };
         }
         // If it's a diff editor we trigger the create diff editor input
@@ -449,6 +491,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return;
             }
             const inputWithOptions = await selectedEditor.editorFactoryObject.createDiffEditorInput(editor, group);
+
             return { editor: inputWithOptions.editor, options: inputWithOptions.options ?? options };
         }
         // If it's a diff list editor we trigger the create diff list editor input
@@ -457,6 +500,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return;
             }
             const inputWithOptions = await selectedEditor.editorFactoryObject.createMultiDiffEditorInput(editor, group);
+
             return { editor: inputWithOptions.editor, options: inputWithOptions.options ?? options };
         }
         if (isResourceSideBySideEditorInput(editor)) {
@@ -467,6 +511,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return;
             }
             const inputWithOptions = await selectedEditor.editorFactoryObject.createUntitledEditorInput(editor, group);
+
             return { editor: inputWithOptions.editor, options: inputWithOptions.options ?? options };
         }
         // Should no longer have an undefined resource so lets throw an error if that's somehow the case
@@ -475,10 +520,13 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         }
         // If the editor states it can only be opened once per resource we must close all existing ones except one and move the new one into the group
         const singleEditorPerResource = typeof selectedEditor.options?.singlePerResource === 'function' ? selectedEditor.options.singlePerResource() : selectedEditor.options?.singlePerResource;
+
         if (singleEditorPerResource) {
             const existingEditors = this.findExistingEditorsForResource(resource, selectedEditor.editorInfo.id);
+
             if (existingEditors.length) {
                 const editor = await this.moveExistingEditorForResource(existingEditors, group);
+
                 if (editor) {
                     return { editor, options };
                 }
@@ -494,7 +542,9 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         // Respect options passed back
         const inputWithOptions = await selectedEditor.editorFactoryObject.createEditorInput(editor, group);
         options = inputWithOptions.options ?? options;
+
         const input = inputWithOptions.editor;
+
         return { editor: input, options };
     }
     /**
@@ -514,6 +564,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         for (const { editor, group } of existingEditorsForResource) {
             if (editor !== editorToUse.editor) {
                 const closed = await group.closeEditor(editor);
+
                 if (!closed) {
                     return;
                 }
@@ -522,6 +573,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         // Move the editor already opened to the target group
         if (targetGroup.id !== editorToUse.group.id) {
             const moved = editorToUse.group.moveEditor(editorToUse.editor, targetGroup);
+
             if (!moved) {
                 return;
             }
@@ -542,9 +594,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             editor: EditorInput;
             group: IEditorGroup;
         }> = [];
+
         const orderedGroups = distinct([
             ...this.editorGroupService.groups,
         ]);
+
         for (const group of orderedGroups) {
             for (const editor of group.editors) {
                 if (isEqual(editor.resource, resource) && editor.editorId === editorId) {
@@ -558,8 +612,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         type StoredChoice = {
             [key: string]: string[];
         };
+
         const editors = this.findMatchingEditors(resource);
+
         const storedChoices: StoredChoice = JSON.parse(this.storageService.get(EditorResolverService.conflictingDefaultsStorageID, StorageScope.PROFILE, '{}'));
+
         const globForResource = `*${extname(resource)}`;
         // Writes to the storage service that a choice has been made for the currently installed editors
         const writeCurrentEditorsToStorage = () => {
@@ -576,11 +633,14 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 run: async () => {
                     // Show the picker and tell it to update the setting to whatever the user selected
                     const picked = await this.doPickEditor(untypedInput, true);
+
                     if (!picked) {
                         return;
                     }
                     untypedInput.options = picked;
+
                     const replacementEditor = await this.resolveEditor(untypedInput, group);
+
                     if (replacementEditor === ResolvedStatus.ABORT || replacementEditor === ResolvedStatus.NONE) {
                         return;
                     }
@@ -611,6 +671,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         let registeredEditors = resource.scheme === Schemas.untitled ? this._registeredEditors.filter(e => e.editorInfo.priority !== RegisteredEditorPriority.exclusive) : this.findMatchingEditors(resource);
         // We don't want duplicate Id entries
         registeredEditors = distinct(registeredEditors, c => c.editorInfo.id);
+
         const defaultSetting = this.getAssociationsForResource(resource)[0]?.viewType;
         // Not the most efficient way to do this, but we want to ensure the text editor is at the top of the quickpick
         registeredEditors = registeredEditors.sort((a, b) => {
@@ -624,12 +685,17 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 return priorityToRank(b.editorInfo.priority) - priorityToRank(a.editorInfo.priority);
             }
         });
+
         const quickPickEntries: Array<QuickPickItem> = [];
+
         const currentlyActiveLabel = localize('promptOpenWith.currentlyActive', "Active");
+
         const currentDefaultLabel = localize('promptOpenWith.currentDefault', "Default");
+
         const currentDefaultAndActiveLabel = localize('promptOpenWith.currentDefaultAndActive', "Active and Default");
         // Default order = setting -> highest priority -> text
         let defaultViewType = defaultSetting;
+
         if (!defaultViewType && registeredEditors.length > 2 && registeredEditors[1]?.editorInfo.priority !== RegisteredEditorPriority.option) {
             defaultViewType = registeredEditors[1]?.editorInfo.id;
         }
@@ -639,8 +705,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         // Map the editors to quickpick entries
         registeredEditors.forEach(editor => {
             const currentViewType = currentEditor?.editorId ?? DEFAULT_EDITOR_ASSOCIATION.id;
+
             const isActive = currentEditor ? editor.editorInfo.id === currentViewType : false;
+
             const isDefault = editor.editorInfo.id === defaultViewType;
+
             const quickPickEntry: IQuickPickItem = {
                 id: editor.editorInfo.id,
                 label: editor.editorInfo.label,
@@ -649,9 +718,11 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             };
             quickPickEntries.push(quickPickEntry);
         });
+
         if (!showDefaultPicker && extname(resource) !== '') {
             const separator: IQuickPickSeparator = { type: 'separator' };
             quickPickEntries.push(separator);
+
             const configureDefaultEntry = {
                 id: EditorResolverService.configureDefaultID,
                 label: localize('promptOpenWith.configureDefault', "Configure default editor for '{0}'...", `*${extname(resource)}`),
@@ -666,7 +737,9 @@ export class EditorResolverService extends Disposable implements IEditorResolver
             readonly keyMods?: IKeyMods;
             readonly openInBackground: boolean;
         };
+
         let resource = EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
         if (resource === undefined) {
             resource = URI.from({ scheme: Schemas.untitled });
         }
@@ -674,14 +747,18 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         const editorPicks = this.mapEditorsToQuickPickEntry(resource, showDefaultPicker);
         // Create the editor picker
         const disposables = new DisposableStore();
+
         const editorPicker = disposables.add(this.quickInputService.createQuickPick<IQuickPickItem>({ useSeparators: true }));
+
         const placeHolderMessage = showDefaultPicker ?
             localize('promptOpenWith.updateDefaultPlaceHolder', "Select new default editor for '{0}'", `*${extname(resource)}`) :
             localize('promptOpenWith.placeHolder', "Select editor for '{0}'", basename(resource));
         editorPicker.placeholder = placeHolderMessage;
         editorPicker.canAcceptInBackground = true;
         editorPicker.items = editorPicks;
+
         const firstItem = editorPicker.items.find(item => item.type === 'item') as IQuickPickItem | undefined;
+
         if (firstItem) {
             editorPicker.selectedItems = [firstItem];
         }
@@ -689,6 +766,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         const picked: EditorPick | undefined = await new Promise<EditorPick | undefined>(resolve => {
             disposables.add(editorPicker.onDidAccept(e => {
                 let result: EditorPick | undefined = undefined;
+
                 if (editorPicker.selectedItems.length === 1) {
                     result = {
                         item: editorPicker.selectedItems[0],
@@ -732,6 +810,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
                 override: picked.item.id,
                 preserveFocus: picked.openInBackground || editor.options?.preserveFocus,
             };
+
             return targetOptions;
         }
         return undefined;
@@ -749,6 +828,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         type editorResolutionEvent = {
             viewType: string;
         };
+
         if (chosenInput.editorId) {
             this.telemetryService.publicLog2<editorResolutionEvent, editorResolutionClassification>('override.viewType', { viewType: chosenInput.editorId });
         }
@@ -772,6 +852,7 @@ export class EditorResolverService extends Disposable implements IEditorResolver
         }
         // Also store the users settings as those would have to activate on startup as well
         const userAssociations = this.getAllUserAssociations();
+
         for (const association of userAssociations) {
             if (association.filenamePattern) {
                 cacheStorage.add(association.filenamePattern);

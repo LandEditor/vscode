@@ -26,12 +26,14 @@ export class CommandCenterControl {
     private readonly _onDidChangeVisibility = new Emitter<void>();
     readonly onDidChangeVisibility: Event<void> = this._onDidChangeVisibility.event;
     readonly element: HTMLElement = document.createElement('div');
+
     constructor(windowTitle: WindowTitle, hoverDelegate: IHoverDelegate, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
     @IQuickInputService
     quickInputService: IQuickInputService) {
         this.element.classList.add('command-center');
+
         const titleToolbar = instantiationService.createInstance(MenuWorkbenchToolBar, this.element, MenuId.CommandCenter, {
             contextMenu: MenuId.TitleBarContext,
             hiddenItemStrategy: HiddenItemStrategy.NoHide,
@@ -63,6 +65,7 @@ export class CommandCenterControl {
 class CommandCenterCenterViewItem extends BaseActionViewItem {
     private static readonly _quickOpenCommandId = 'workbench.action.quickOpenWithModes';
     private readonly _hoverDelegate: IHoverDelegate;
+
     constructor(private readonly _submenu: SubmenuItemAction, private readonly _windowTitle: WindowTitle, options: IBaseActionViewItemOptions, 
     @IHoverService
     private readonly _hoverService: IHoverService, 
@@ -79,12 +82,15 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
         super.render(container);
         container.classList.add('command-center-center');
         container.classList.toggle('multiple', (this._submenu.actions.length > 1));
+
         const hover = this._store.add(this._hoverService.setupManagedHover(this._hoverDelegate, container, this.getTooltip()));
         // update label & tooltip when window title changes
         this._store.add(this._windowTitle.onDidChange(() => {
             hover.update(this.getTooltip());
         }));
+
         const groups: (readonly IAction[])[] = [];
+
         for (const action of this._submenu.actions) {
             if (action instanceof SubmenuAction) {
                 groups.push(action.actions);
@@ -104,10 +110,12 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
                         ...options,
                         hoverDelegate: this._hoverDelegate,
                     };
+
                     if (action.id !== CommandCenterCenterViewItem._quickOpenCommandId) {
                         return createActionViewItem(this._instaService, action, options);
                     }
                     const that = this;
+
                     return this._instaService.createInstance(class CommandCenterQuickPickItem extends BaseActionViewItem {
                         constructor() {
                             super(undefined, action, options);
@@ -116,6 +124,7 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
                             super.render(container);
                             container.classList.toggle('command-center-quick-pick');
                             container.role = 'button';
+
                             const action = this.action;
                             // icon (search)
                             const searchIcon = document.createElement('span');
@@ -124,10 +133,12 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
                             searchIcon.classList.add('search-icon');
                             // label: just workspace name and optional decorations
                             const label = this._getLabel();
+
                             const labelElement = document.createElement('span');
                             labelElement.classList.add('search-label');
                             labelElement.innerText = label;
                             reset(container, searchIcon, labelElement);
+
                             const hover = this._store.add(that._hoverService.setupManagedHover(that._hoverDelegate, container, this.getTooltip()));
                             // update label & tooltip when window title changes
                             this._store.add(that._windowTitle.onDidChange(() => {
@@ -147,7 +158,9 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
                         }
                         private _getLabel(): string {
                             const { prefix, suffix } = that._windowTitle.getTitleDecorations();
+
                             let label = that._windowTitle.workspaceName;
+
                             if (that._windowTitle.isCustomTitleFormat()) {
                                 label = that._windowTitle.getWindowTitle();
                             }
@@ -183,9 +196,11 @@ class CommandCenterCenterViewItem extends BaseActionViewItem {
     protected override getTooltip() {
         // tooltip: full windowTitle
         const kb = this._keybindingService.lookupKeybinding(this.action.id)?.getLabel();
+
         const title = kb
             ? localize('title', "Search {0} ({1}) \u2014 {2}", this._windowTitle.workspaceName, kb, this._windowTitle.value)
             : localize('title2', "Search {0} \u2014 {1}", this._windowTitle.workspaceName, this._windowTitle.value);
+
         return title;
     }
 }

@@ -17,6 +17,7 @@ export const ITerminalContributionService = createDecorator<ITerminalContributio
 export class TerminalContributionService implements ITerminalContributionService {
     declare _serviceBrand: undefined;
     private _terminalProfiles: ReadonlyArray<IExtensionTerminalProfile> = [];
+
     get terminalProfiles() { return this._terminalProfiles; }
     constructor() {
         terminalsExtPoint.setHandler(contributions => {

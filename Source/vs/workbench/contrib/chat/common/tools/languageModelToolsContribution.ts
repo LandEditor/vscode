@@ -144,21 +144,26 @@ export class LanguageModelToolsExtensionPointHandler implements IWorkbenchContri
 				for (const rawTool of extension.value) {
 					if (!rawTool.name || !rawTool.modelDescription || !rawTool.displayName) {
 						logService.error(`Extension '${extension.description.identifier.value}' CANNOT register tool without name, modelDescription, and displayName: ${JSON.stringify(rawTool)}`);
+
 						continue;
 					}
 
 					if (!rawTool.name.match(/^[\w-]+$/)) {
 						logService.error(`Extension '${extension.description.identifier.value}' CANNOT register tool with invalid id: ${rawTool.name}. The id must match /^[\\w-]+$/.`);
+
 						continue;
 					}
 
 					if (rawTool.canBeReferencedInPrompt && !rawTool.toolReferenceName) {
 						logService.error(`Extension '${extension.description.identifier.value}' CANNOT register tool with 'canBeReferencedInPrompt' set without a 'toolReferenceName': ${JSON.stringify(rawTool)}`);
+
 						continue;
 					}
 
 					const rawIcon = rawTool.icon;
+
 					let icon: IToolData['icon'] | undefined;
+
 					if (typeof rawIcon === 'string') {
 						icon = ThemeIcon.fromString(rawIcon) ?? {
 							dark: joinPath(extension.description.extensionLocation, rawIcon),
@@ -178,6 +183,7 @@ export class LanguageModelToolsExtensionPointHandler implements IWorkbenchContri
 						icon,
 						when: rawTool.when ? ContextKeyExpr.deserialize(rawTool.when) : undefined,
 					};
+
 					const disposable = languageModelToolsService.registerToolData(tool);
 					this._registrationDisposables.set(toToolKey(extension.description.identifier, rawTool.name), disposable);
 				}

@@ -17,6 +17,7 @@ export class CommandManager {
     }
     public register<T extends Command>(command: T): vscode.Disposable {
         this._registerCommand(command.id, command.execute, command);
+
         return new vscode.Disposable(() => {
             this._commands.delete(command.id);
         });

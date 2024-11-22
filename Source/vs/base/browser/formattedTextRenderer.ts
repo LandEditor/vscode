@@ -23,18 +23,22 @@ export interface FormattedTextRenderOptions {
 export function renderText(text: string, options: FormattedTextRenderOptions = {}): HTMLElement {
 	const element = createElement(options);
 	element.textContent = text;
+
 	return element;
 }
 
 export function renderFormattedText(formattedText: string, options: FormattedTextRenderOptions = {}): HTMLElement {
 	const element = createElement(options);
 	_renderFormattedText(element, parseFormattedText(formattedText, !!options.renderCodeSegments), options.actionHandler, options.renderCodeSegments);
+
 	return element;
 }
 
 export function createElement(options: FormattedTextRenderOptions): HTMLElement {
 	const tagName = options.inline ? 'span' : 'div';
+
 	const element = document.createElement(tagName);
+
 	if (options.className) {
 		element.className = options.className;
 	}
@@ -57,6 +61,7 @@ class StringStream {
 	public next(): string {
 		const next = this.peek();
 		this.advance();
+
 		return next;
 	}
 
@@ -131,14 +136,18 @@ function parseFormattedText(content: string, parseCodeSegments: boolean): IForma
 	};
 
 	let actionViewItemIndex = 0;
+
 	let current = root;
+
 	const stack: IFormatParseTree[] = [];
+
 	const stream = new StringStream(content);
 
 	while (!stream.eos()) {
 		let next = stream.next();
 
 		const isEscapedFormatType = (next === '\\' && formatTagType(stream.peek(), parseCodeSegments) !== FormatType.Invalid);
+
 		if (isEscapedFormatType) {
 			next = stream.next(); // unread the backslash if it escapes a format tag type
 		}
@@ -151,6 +160,7 @@ function parseFormattedText(content: string, parseCodeSegments: boolean): IForma
 			}
 
 			const type = formatTagType(next, parseCodeSegments);
+
 			if (current.type === type || (current.type === FormatType.Action && type === FormatType.ActionClose)) {
 				current = stack.pop()!;
 			} else {
@@ -212,14 +222,19 @@ function formatTagType(char: string, supportCodeSegments: boolean): FormatType {
 	switch (char) {
 		case '*':
 			return FormatType.Bold;
+
 		case '_':
 			return FormatType.Italics;
+
 		case '[':
 			return FormatType.Action;
+
 		case ']':
 			return FormatType.ActionClose;
+
 		case '`':
 			return supportCodeSegments ? FormatType.Code : FormatType.Invalid;
+
 		default:
 			return FormatType.Invalid;
 	}

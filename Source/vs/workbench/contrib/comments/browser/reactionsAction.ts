@@ -12,12 +12,14 @@ export class ToggleReactionsAction extends Action {
     static readonly ID = 'toolbar.toggle.pickReactions';
     private _menuActions: IAction[] = [];
     private toggleDropdownMenu: () => void;
+
     constructor(toggleDropdownMenu: () => void, title?: string) {
         super(ToggleReactionsAction.ID, title || nls.localize('pickReactions', "Pick Reactions..."), 'toggle-reactions', true);
         this.toggleDropdownMenu = toggleDropdownMenu;
     }
     override run(): Promise<any> {
         this.toggleDropdownMenu();
+
         return Promise.resolve(true);
     }
     get menuActions() {
@@ -36,6 +38,7 @@ export class ReactionActionViewItem extends ActionViewItem {
             return;
         }
         const action = this.action as ReactionAction;
+
         if (action.class) {
             this.label.classList.add(action.class);
         }
@@ -45,6 +48,7 @@ export class ReactionActionViewItem extends ActionViewItem {
         }
         else {
             const reactionIcon = dom.append(this.label, dom.$('.reaction-icon'));
+
             const uri = URI.revive(action.icon);
             reactionIcon.style.backgroundImage = cssJs.asCSSUrl(uri);
         }
@@ -55,7 +59,9 @@ export class ReactionActionViewItem extends ActionViewItem {
     }
     protected override getTooltip(): string | undefined {
         const action = this.action as ReactionAction;
+
         const toggleMessage = action.enabled ? nls.localize('comment.toggleableReaction', "Toggle reaction, ") : '';
+
         if (action.count === undefined) {
             return nls.localize({
                 key: 'comment.reactionLabelNone', comment: [
@@ -96,6 +102,7 @@ export class ReactionActionViewItem extends ActionViewItem {
             }
             else if (action.count > 1) {
                 const displayedReactors = action.reactors.slice(0, 10);
+
                 return nls.localize({
                     key: 'comment.reactionMoreThanTen', comment: [
                         'This is a tooltip for an emoji that is a "reaction" to a comment where the count of the reactions is less than or equal to 10.',
@@ -110,6 +117,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 }
 export class ReactionAction extends Action {
     static readonly ID = 'toolbar.toggle.reaction';
+
     constructor(id: string, label: string = '', cssClass: string = '', enabled: boolean = true, actionCallback?: (event?: any) => Promise<any>, public readonly reactors?: readonly string[], public icon?: UriComponents, public count?: number) {
         super(ReactionAction.ID, label, cssClass, enabled, actionCallback);
     }

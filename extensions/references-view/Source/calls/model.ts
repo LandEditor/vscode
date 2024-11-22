@@ -8,6 +8,7 @@ import { asResourceUrl, del, getThemeIcon, tail } from '../utils';
 export class CallsTreeInput implements SymbolTreeInput<CallItem> {
     readonly title: string;
     readonly contextValue: string = 'callHierarchy';
+
     constructor(readonly location: vscode.Location, readonly direction: CallsDirection) {
         this.title = direction === CallsDirection.Incoming
             ? vscode.l10n.t('Callers Of')
@@ -15,8 +16,11 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
     }
     async resolve() {
         const items = await Promise.resolve(vscode.commands.executeCommand<vscode.CallHierarchyItem[]>('vscode.prepareCallHierarchy', this.location.uri, this.location.range.start));
+
         const model = new CallsModel(this.direction, items ?? []);
+
         const provider = new CallItemDataProvider(model);
+
         if (model.roots.length === 0) {
             return;
         }
@@ -41,6 +45,7 @@ export const enum CallsDirection {
 }
 export class CallItem {
     children?: CallItem[];
+
     constructor(readonly model: CallsModel, readonly item: vscode.CallHierarchyItem, readonly parent: CallItem | undefined, readonly locations: vscode.Location[] | undefined) { }
     remove(): void {
         this.model.remove(this);
@@ -50,16 +55,19 @@ class CallsModel implements SymbolItemNavigation<CallItem>, SymbolItemEditorHigh
     readonly roots: CallItem[] = [];
     private readonly _onDidChange = new vscode.EventEmitter<CallsModel>();
     readonly onDidChange = this._onDidChange.event;
+
     constructor(readonly direction: CallsDirection, items: vscode.CallHierarchyItem[]) {
         this.roots = items.map(item => new CallItem(this, item, undefined, undefined));
     }
     private async _resolveCalls(call: CallItem): Promise<CallItem[]> {
         if (this.direction === CallsDirection.Incoming) {
             const calls = await vscode.commands.executeCommand<vscode.CallHierarchyIncomingCall[]>('vscode.provideIncomingCalls', call.item);
+
             return calls ? calls.map(item => new CallItem(this, item.from, call, item.fromRanges.map(range => new vscode.Location(item.from.uri, range)))) : [];
         }
         else {
             const calls = await vscode.commands.executeCommand<vscode.CallHierarchyOutgoingCall[]>('vscode.provideOutgoingCalls', call.item);
+
             return calls ? calls.map(item => new CallItem(this, item.to, call, item.fromRanges.map(range => new vscode.Location(call.item.uri, range)))) : [];
         }
     }
@@ -87,9 +95,12 @@ class CallsModel implements SymbolItemNavigation<CallItem>, SymbolItemEditorHigh
             return fwd ? item.children[0] : tail(item.children);
         }
         const array = this.roots.includes(item) ? this.roots : item.parent?.children;
+
         if (array?.length) {
             const idx = array.indexOf(item);
+
             const delta = fwd ? 1 : -1;
+
             return array[idx + delta + array.length % array.length];
         }
     }
@@ -108,7 +119,9 @@ class CallsModel implements SymbolItemNavigation<CallItem>, SymbolItemEditorHigh
     }
     remove(item: CallItem) {
         const isInRoot = this.roots.includes(item);
+
         const siblings = isInRoot ? this.roots : item.parent?.children;
+
         if (siblings) {
             del(siblings, item);
             this._onDidChange.fire(this);
@@ -119,6 +132,7 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
     private readonly _emitter = new vscode.EventEmitter<CallItem | undefined>();
     readonly onDidChangeTreeData = this._emitter.event;
     private readonly _modelListener: vscode.Disposable;
+
     constructor(private _model: CallsModel) {
         this._modelListener = _model.onDidChange(e => this._emitter.fire(e instanceof CallItem ? e : undefined));
     }
@@ -136,13 +150,16 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
             vscode.Uri,
             vscode.TextDocumentShowOptions
         ];
+
         let openArgs: OpenArgs;
+
         if (element.model.direction === CallsDirection.Outgoing) {
             openArgs = [element.item.uri, { selection: element.item.selectionRange.with({ end: element.item.selectionRange.start }) }];
         }
         else {
             // incoming call -> reveal first call instead of caller
             let firstLoctionStart: vscode.Position | undefined;
+
             if (element.locations) {
                 for (const loc of element.locations) {
                     if (loc.uri.toString() === element.item.uri.toString()) {
@@ -161,6 +178,7 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
             arguments: openArgs
         };
         item.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
+
         return item;
     }
     getChildren(element?: CallItem | undefined) {

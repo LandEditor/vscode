@@ -13,11 +13,13 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
 import * as JSONContributionRegistry from '../../../../platform/jsonschemas/common/jsonContributionRegistry.js';
 import { VSBuffer } from '../../../../base/common/buffer.js';
 import { ILogService, LogLevel } from '../../../../platform/log/common/log.js';
+
 const schemaRegistry = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(JSONContributionRegistry.Extensions.JSONContribution);
 export class SettingsFileSystemProvider extends Disposable implements IFileSystemProviderWithFileReadWriteCapability {
     static readonly SCHEMA = Schemas.vscode;
     protected readonly _onDidChangeFile = this._register(new Emitter<readonly IFileChange[]>());
     readonly onDidChangeFile = this._onDidChangeFile.event;
+
     constructor(
     @IPreferencesService
     private readonly preferencesService: IPreferencesService, 
@@ -32,11 +34,13 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
         }));
     }
     readonly capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite;
+
     async readFile(uri: URI): Promise<Uint8Array> {
         if (uri.scheme !== SettingsFileSystemProvider.SCHEMA) {
             throw new NotSupportedError();
         }
         let content: string | undefined;
+
         if (uri.authority === 'schemas') {
             content = this.getSchemaContent(uri);
         }
@@ -51,6 +55,7 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
     async stat(uri: URI): Promise<IStat> {
         if (schemaRegistry.hasSchemaContent(uri.toString()) || this.preferencesService.hasDefaultSettingsContent(uri)) {
             const currentTime = Date.now();
+
             return {
                 type: FileType.File,
                 permissions: FilePermission.Readonly,
@@ -75,10 +80,14 @@ export class SettingsFileSystemProvider extends Disposable implements IFileSyste
     }
     private getSchemaContent(uri: URI): string {
         const startTime = Date.now();
+
         const content = schemaRegistry.getSchemaContent(uri.toString()) ?? '{}' /* Use empty schema if not yet registered */;
+
         const logLevel = this.logService.getLevel();
+
         if (logLevel === LogLevel.Debug || logLevel === LogLevel.Trace) {
             const endTime = Date.now();
+
             const uncompressed = JSON.stringify(schemaRegistry.getSchemaContributions().schemas[uri.toString()]);
             this.logService.debug(`${uri.toString()}: ${uncompressed.length} -> ${content.length} (${Math.round((uncompressed.length - content.length) / uncompressed.length * 100)}%) Took ${endTime - startTime}ms`);
         }

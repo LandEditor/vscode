@@ -27,6 +27,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Escape, secondary: [KeyMod.Shift | KeyCode.Escape],
     handler: accessor => {
         const quickInputService = accessor.get(IQuickInputService);
+
         return quickInputService.cancel();
     }
 });
@@ -37,6 +38,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: 0,
     handler: accessor => {
         const quickInputService = accessor.get(IQuickInputService);
+
         return quickInputService.accept();
     }
 });
@@ -47,6 +49,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: 0,
     handler: accessor => {
         const quickInputService = accessor.get(IQuickInputService);
+
         return quickInputService.accept({ ctrlCmd: true, alt: false });
     }
 });
@@ -60,6 +63,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         quickInputService.focus();
     }
 });
+
 const quickAccessNavigateNextInFilePickerId = 'workbench.action.quickOpenNavigateNextInFilePicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigateNextInFilePickerId,
@@ -70,6 +74,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     secondary: globalQuickAccessKeybinding.secondary,
     mac: globalQuickAccessKeybinding.mac
 });
+
 const quickAccessNavigatePreviousInFilePickerId = 'workbench.action.quickOpenNavigatePreviousInFilePicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigatePreviousInFilePickerId,
@@ -148,6 +153,7 @@ registerAction2(class QuickAccessAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const quickInputService = accessor.get(IQuickInputService);
+
         const providerOptions: AnythingQuickAccessProviderRunOptions = {
             includeHelp: true,
             from: 'commandCenter',
@@ -170,8 +176,11 @@ class BaseQuickAccessNavigateAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const keybindingService = accessor.get(IKeybindingService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const keys = keybindingService.lookupKeybindings(this.id);
+
         const quickNavigate = this.quickNavigate ? { keybindings: keys } : undefined;
         quickInputService.navigate(this.next, quickNavigate);
     }

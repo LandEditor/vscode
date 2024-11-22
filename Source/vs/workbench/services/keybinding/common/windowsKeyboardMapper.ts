@@ -12,6 +12,7 @@ import { IKeyboardMapper } from '../../../../platform/keyboardLayout/common/keyb
 import { BaseResolvedKeybinding } from '../../../../platform/keybinding/common/baseResolvedKeybinding.js';
 import { toEmptyArrayIfContainsNull } from '../../../../platform/keybinding/common/resolvedKeybindingItem.js';
 import { IWindowsKeyboardMapping } from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
+
 const LOG = false;
 function log(str: string): void {
     if (LOG) {
@@ -28,6 +29,7 @@ export interface IScanCodeMapping {
 }
 export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyCodeChord> {
     private readonly _mapper: WindowsKeyboardMapper;
+
     constructor(mapper: WindowsKeyboardMapper, chords: KeyCodeChord[]) {
         super(OperatingSystem.Windows, chords);
         this._mapper = mapper;
@@ -61,6 +63,7 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
             return '';
         }
         const result = this._mapper.getUserSettingsLabelForKeyCode(chord.keyCode);
+
         return (result ? result.toLowerCase() : result);
     }
     protected _isWYSIWYG(chord: KeyCodeChord): boolean {
@@ -74,7 +77,9 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
             return true;
         }
         const ariaLabel = this._mapper.getAriaLabelForKeyCode(keyCode);
+
         const userSettingsLabel = this._mapper.getUserSettingsLabelForKeyCode(keyCode);
+
         return (ariaLabel === userSettingsLabel);
     }
     protected _getChordDispatch(chord: KeyCodeChord): string | null {
@@ -82,6 +87,7 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
             return null;
         }
         let result = '';
+
         if (chord.ctrlKey) {
             result += 'ctrl+';
         }
@@ -95,6 +101,7 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
             result += 'meta+';
         }
         result += KeyCodeUtils.toString(chord.keyCode);
+
         return result;
     }
     protected _getSingleModifierChordDispatch(chord: KeyCodeChord): SingleModifierChord | null {
@@ -129,6 +136,7 @@ export class WindowsNativeResolvedKeybinding extends BaseResolvedKeybinding<KeyC
     }
     public static getProducedChar(chord: ScanCodeChord, mapping: IScanCodeMapping): string {
         const char = this.getProducedCharCode(chord, mapping);
+
         if (char === null || char.length === 0) {
             return ' --- ';
         }
@@ -140,13 +148,16 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
     private readonly _scanCodeToKeyCode: KeyCode[];
     private readonly _keyCodeToLabel: Array<string | null> = [];
     private readonly _keyCodeExists: boolean[];
+
     constructor(private readonly _isUSStandard: boolean, rawMappings: IWindowsKeyboardMapping, private readonly _mapAltGrToCtrlAlt: boolean) {
         this._scanCodeToKeyCode = [];
         this._keyCodeToLabel = [];
         this._keyCodeExists = [];
         this._keyCodeToLabel[KeyCode.Unknown] = KeyCodeUtils.toString(KeyCode.Unknown);
+
         for (let scanCode = ScanCode.None; scanCode < ScanCode.MAX_VALUE; scanCode++) {
             const immutableKeyCode = IMMUTABLE_CODE_TO_KEY_CODE[scanCode];
+
             if (immutableKeyCode !== KeyCode.DependsOnKbLayout) {
                 this._scanCodeToKeyCode[scanCode] = immutableKeyCode;
                 this._keyCodeToLabel[immutableKeyCode] = KeyCodeUtils.toString(immutableKeyCode);
@@ -154,19 +165,26 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
             }
         }
         const producesLetter: boolean[] = [];
+
         let producesLetters = false;
         this._codeInfo = [];
+
         for (const strCode in rawMappings) {
             if (rawMappings.hasOwnProperty(strCode)) {
                 const scanCode = ScanCodeUtils.toEnum(strCode);
+
                 if (scanCode === ScanCode.None) {
                     log(`Unknown scanCode ${strCode} in mapping.`);
+
                     continue;
                 }
                 const rawMapping = rawMappings[strCode];
+
                 const immutableKeyCode = IMMUTABLE_CODE_TO_KEY_CODE[scanCode];
+
                 if (immutableKeyCode !== KeyCode.DependsOnKbLayout) {
                     const keyCode = NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE[rawMapping.vkey] || KeyCode.Unknown;
+
                     if (keyCode === KeyCode.Unknown || immutableKeyCode === keyCode) {
                         continue;
                     }
@@ -177,10 +195,15 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
                     }
                 }
                 const value = rawMapping.value;
+
                 const withShift = rawMapping.withShift;
+
                 const withAltGr = rawMapping.withAltGr;
+
                 const withShiftAltGr = rawMapping.withShiftAltGr;
+
                 const keyCode = NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE[rawMapping.vkey] || KeyCode.Unknown;
+
                 const mapping: IScanCodeMapping = {
                     scanCode: scanCode,
                     keyCode: keyCode,
@@ -191,10 +214,12 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
                 };
                 this._codeInfo[scanCode] = mapping;
                 this._scanCodeToKeyCode[scanCode] = keyCode;
+
                 if (keyCode === KeyCode.Unknown) {
                     continue;
                 }
                 this._keyCodeExists[keyCode] = true;
+
                 if (value.length === 0) {
                     // This key does not produce strings
                     this._keyCodeToLabel[keyCode] = null;
@@ -205,6 +230,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
                 }
                 else {
                     const charCode = value.charCodeAt(0);
+
                     if (charCode >= CharCode.a && charCode <= CharCode.z) {
                         const upperCaseValue = CharCode.A + (charCode - CharCode.a);
                         producesLetter[upperCaseValue] = true;
@@ -254,6 +280,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
         _registerLetterIfMissing(CharCode.X, KeyCode.KeyX);
         _registerLetterIfMissing(CharCode.Y, KeyCode.KeyY);
         _registerLetterIfMissing(CharCode.Z, KeyCode.KeyZ);
+
         if (!producesLetters) {
             // Since this keyboard layout produces no latin letters at all, most of the UI will use the
             // US kb layout equivalent for UI labels, so also try to render other keys with the US labels
@@ -280,12 +307,15 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
     }
     public dumpDebugInfo(): string {
         const result: string[] = [];
+
         const immutableSamples = [
             ScanCode.ArrowUp,
             ScanCode.Numpad0
         ];
+
         let cnt = 0;
         result.push(`-----------------------------------------------------------------------------------------------------------------------------------------`);
+
         for (let scanCode = ScanCode.None; scanCode < ScanCode.MAX_VALUE; scanCode++) {
             if (IMMUTABLE_CODE_TO_KEY_CODE[scanCode] !== KeyCode.DependsOnKbLayout) {
                 if (immutableSamples.indexOf(scanCode) === -1) {
@@ -297,24 +327,42 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
                 result.push(`-----------------------------------------------------------------------------------------------------------------------------------------`);
             }
             cnt++;
+
             const mapping = this._codeInfo[scanCode];
+
             const strCode = ScanCodeUtils.toString(scanCode);
+
             const mods = [0b000, 0b010, 0b101, 0b111];
+
             for (const mod of mods) {
                 const ctrlKey = (mod & 0b001) ? true : false;
+
                 const shiftKey = (mod & 0b010) ? true : false;
+
                 const altKey = (mod & 0b100) ? true : false;
+
                 const scanCodeChord = new ScanCodeChord(ctrlKey, shiftKey, altKey, false, scanCode);
+
                 const keyCodeChord = this._resolveChord(scanCodeChord);
+
                 const strKeyCode = (keyCodeChord ? KeyCodeUtils.toString(keyCodeChord.keyCode) : null);
+
                 const resolvedKb = (keyCodeChord ? new WindowsNativeResolvedKeybinding(this, [keyCodeChord]) : null);
+
                 const outScanCode = `${ctrlKey ? 'Ctrl+' : ''}${shiftKey ? 'Shift+' : ''}${altKey ? 'Alt+' : ''}${strCode}`;
+
                 const ariaLabel = (resolvedKb ? resolvedKb.getAriaLabel() : null);
+
                 const outUILabel = (ariaLabel ? ariaLabel.replace(/Control\+/, 'Ctrl+') : null);
+
                 const outUserSettings = (resolvedKb ? resolvedKb.getUserSettingsLabel() : null);
+
                 const outKey = WindowsNativeResolvedKeybinding.getProducedChar(scanCodeChord, mapping);
+
                 const outKb = (strKeyCode ? `${ctrlKey ? 'Ctrl+' : ''}${shiftKey ? 'Shift+' : ''}${altKey ? 'Alt+' : ''}${strKeyCode}` : null);
+
                 const isWYSIWYG = (resolvedKb ? resolvedKb.isWYSIWYG() : false);
+
                 const outWYSIWYG = (isWYSIWYG ? '       ' : '   NO  ');
                 result.push(`| ${this._leftPad(outScanCode, 30)} | ${outKey} | ${this._leftPad(outKb, 25)} | ${this._leftPad(outUILabel, 25)} |  ${this._leftPad(outUserSettings, 25)} | ${outWYSIWYG} |`);
             }
@@ -351,8 +399,11 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
     }
     public resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): WindowsNativeResolvedKeybinding {
         const ctrlKey = keyboardEvent.ctrlKey || (this._mapAltGrToCtrlAlt && keyboardEvent.altGraphKey);
+
         const altKey = keyboardEvent.altKey || (this._mapAltGrToCtrlAlt && keyboardEvent.altGraphKey);
+
         const chord = new KeyCodeChord(ctrlKey, keyboardEvent.shiftKey, altKey, keyboardEvent.metaKey, keyboardEvent.keyCode);
+
         return new WindowsNativeResolvedKeybinding(this, [chord]);
     }
     private _resolveChord(chord: Chord | null): KeyCodeChord | null {
@@ -366,6 +417,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
             return chord;
         }
         const keyCode = this._scanCodeToKeyCode[chord.scanCode] || KeyCode.Unknown;
+
         if (keyCode === KeyCode.Unknown || !this._keyCodeExists[keyCode]) {
             return null;
         }
@@ -373,6 +425,7 @@ export class WindowsKeyboardMapper implements IKeyboardMapper {
     }
     public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
         const chords: KeyCodeChord[] = toEmptyArrayIfContainsNull(keybinding.chords.map(chord => this._resolveChord(chord)));
+
         if (chords.length > 0) {
             return [new WindowsNativeResolvedKeybinding(this, chords)];
         }

@@ -477,6 +477,7 @@ export interface IFileSystemWatcher extends IDisposable {
 }
 export function isFileSystemWatcher(thing: unknown): thing is IFileSystemWatcher {
     const candidate = thing as IFileSystemWatcher | undefined;
+
     return !!candidate && typeof candidate.onDidChange === 'function';
 }
 export const enum FileSystemProviderCapabilities {
@@ -650,6 +651,7 @@ export class FileSystemProviderError extends Error implements IFileSystemProvide
     static create(error: Error | string, code: FileSystemProviderErrorCode): FileSystemProviderError {
         const providerError = new FileSystemProviderError(error.toString(), code);
         markAsFileSystemProviderError(providerError, code);
+
         return providerError;
     }
     private constructor(message: string, readonly code: FileSystemProviderErrorCode) {
@@ -667,6 +669,7 @@ export function ensureFileSystemProviderError(error?: Error): Error {
 }
 export function markAsFileSystemProviderError(error: Error, code: FileSystemProviderErrorCode): Error {
     error.name = code ? `${code} (FileSystemError)` : `FileSystemError`;
+
     return error;
 }
 export function toFileSystemProviderErrorCode(error: Error | undefined | null): FileSystemProviderErrorCode {
@@ -681,17 +684,25 @@ export function toFileSystemProviderErrorCode(error: Error | undefined | null): 
     // Any other error, check for name match by assuming that the error
     // went through the markAsFileSystemProviderError() method
     const match = /^(.+) \(FileSystemError\)$/.exec(error.name);
+
     if (!match) {
         return FileSystemProviderErrorCode.Unknown;
     }
     switch (match[1]) {
         case FileSystemProviderErrorCode.FileExists: return FileSystemProviderErrorCode.FileExists;
+
         case FileSystemProviderErrorCode.FileIsADirectory: return FileSystemProviderErrorCode.FileIsADirectory;
+
         case FileSystemProviderErrorCode.FileNotADirectory: return FileSystemProviderErrorCode.FileNotADirectory;
+
         case FileSystemProviderErrorCode.FileNotFound: return FileSystemProviderErrorCode.FileNotFound;
+
         case FileSystemProviderErrorCode.FileTooLarge: return FileSystemProviderErrorCode.FileTooLarge;
+
         case FileSystemProviderErrorCode.FileWriteLocked: return FileSystemProviderErrorCode.FileWriteLocked;
+
         case FileSystemProviderErrorCode.NoPermissions: return FileSystemProviderErrorCode.NoPermissions;
+
         case FileSystemProviderErrorCode.Unavailable: return FileSystemProviderErrorCode.Unavailable;
     }
     return FileSystemProviderErrorCode.Unknown;
@@ -705,18 +716,25 @@ export function toFileOperationResult(error: Error): FileOperationResult {
     switch (toFileSystemProviderErrorCode(error)) {
         case FileSystemProviderErrorCode.FileNotFound:
             return FileOperationResult.FILE_NOT_FOUND;
+
         case FileSystemProviderErrorCode.FileIsADirectory:
             return FileOperationResult.FILE_IS_DIRECTORY;
+
         case FileSystemProviderErrorCode.FileNotADirectory:
             return FileOperationResult.FILE_NOT_DIRECTORY;
+
         case FileSystemProviderErrorCode.FileWriteLocked:
             return FileOperationResult.FILE_WRITE_LOCKED;
+
         case FileSystemProviderErrorCode.NoPermissions:
             return FileOperationResult.FILE_PERMISSION_DENIED;
+
         case FileSystemProviderErrorCode.FileExists:
             return FileOperationResult.FILE_MOVE_CONFLICT;
+
         case FileSystemProviderErrorCode.FileTooLarge:
             return FileOperationResult.FILE_TOO_LARGE;
+
         default:
             return FileOperationResult.FILE_OTHER_ERROR;
     }
@@ -752,7 +770,9 @@ export interface IFileOperationEventWithMetadata extends IFileOperationEvent {
 }
 export class FileOperationEvent implements IFileOperationEvent {
     constructor(resource: URI, operation: FileOperation.DELETE | FileOperation.WRITE);
+
     constructor(resource: URI, operation: FileOperation.CREATE | FileOperation.MOVE | FileOperation.COPY, target: IFileStatWithMetadata);
+
     constructor(readonly resource: URI, readonly operation: FileOperation, readonly target?: IFileStatWithMetadata) { }
     isOperation(operation: FileOperation.DELETE | FileOperation.WRITE): boolean;
     isOperation(operation: FileOperation.CREATE | FileOperation.MOVE | FileOperation.COPY): this is IFileOperationEventWithMetadata;
@@ -791,18 +811,24 @@ export interface IFileChange {
 export class FileChangesEvent {
     private static readonly MIXED_CORRELATION = null;
     private readonly correlationId: number | undefined | typeof FileChangesEvent.MIXED_CORRELATION = undefined;
+
     constructor(changes: readonly IFileChange[], private readonly ignorePathCasing: boolean) {
         for (const change of changes) {
             // Split by type
             switch (change.type) {
                 case FileChangeType.ADDED:
                     this.rawAdded.push(change.resource);
+
                     break;
+
                 case FileChangeType.UPDATED:
                     this.rawUpdated.push(change.resource);
+
                     break;
+
                 case FileChangeType.DELETED:
                     this.rawDeleted.push(change.resource);
+
                     break;
             }
             // Figure out events correlation
@@ -826,16 +852,19 @@ export class FileChangesEvent {
     private readonly added = new Lazy(() => {
         const added = TernarySearchTree.forUris<boolean>(() => this.ignorePathCasing);
         added.fill(this.rawAdded.map(resource => [resource, true]));
+
         return added;
     });
     private readonly updated = new Lazy(() => {
         const updated = TernarySearchTree.forUris<boolean>(() => this.ignorePathCasing);
         updated.fill(this.rawUpdated.map(resource => [resource, true]));
+
         return updated;
     });
     private readonly deleted = new Lazy(() => {
         const deleted = TernarySearchTree.forUris<boolean>(() => this.ignorePathCasing);
         deleted.fill(this.rawDeleted.map(resource => [resource, true]));
+
         return deleted;
     });
     /**
@@ -1214,6 +1243,7 @@ export interface IFilesConfigurationNode {
     encoding: string;
     autoGuessEncoding: boolean;
     candidateGuessEncodings: string[];
+
     defaultLanguage: string;
     trimTrailingWhitespace: boolean;
     autoSave: string;
@@ -1301,7 +1331,9 @@ export function getLargeFileConfirmationLimit(remoteAuthority?: string): number;
 export function getLargeFileConfirmationLimit(uri?: URI): number;
 export function getLargeFileConfirmationLimit(arg?: string | URI): number {
     const isRemote = typeof arg === 'string' || arg?.scheme === Schemas.vscodeRemote;
+
     const isLocal = typeof arg !== 'string' && arg?.scheme === Schemas.file;
+
     if (isLocal) {
         // Local almost has no limit in file size
         return 1024 * ByteSize.MB;

@@ -27,8 +27,11 @@ export interface IBaseWindow extends IDisposable {
     focus(options?: {
         force: boolean;
     }): void;
+
     setRepresentedFilename(name: string): void;
+
     getRepresentedFilename(): string | undefined;
+
     setDocumentEdited(edited: boolean): void;
     isDocumentEdited(): boolean;
     handleTitleDoubleClick(): void;
@@ -37,6 +40,7 @@ export interface IBaseWindow extends IDisposable {
     updateWindowControls(options: {
         height?: number;
         backgroundColor?: string;
+
         foregroundColor?: string;
     }): void;
     matches(webContents: electron.WebContents): boolean;
@@ -55,6 +59,7 @@ export interface ICodeWindow extends IBaseWindow {
     readonly isExtensionTestHost: boolean;
     readonly isReady: boolean;
     ready(): Promise<ICodeWindow>;
+
     setReady(): void;
     addTabbedWindow(window: ICodeWindow): void;
     load(config: INativeWindowConfiguration, options?: {
@@ -62,6 +67,7 @@ export interface ICodeWindow extends IBaseWindow {
     }): void;
     reload(cli?: NativeParsedArgs): void;
     close(): void;
+
     getBounds(): electron.Rectangle;
     send(channel: string, ...args: any[]): void;
     sendWhenReady(channel: string, token: CancellationToken, ...args: any[]): void;
@@ -125,10 +131,15 @@ export const defaultAuxWindowState = function (): IWindowState {
     // we need to set not only width and height but also x and y to
     // a good location on the primary display.
     const width = 800;
+
     const height = 600;
+
     const workArea = electron.screen.getPrimaryDisplay().workArea;
+
     const x = Math.max(workArea.x + (workArea.width / 2) - (width / 2), 0);
+
     const y = Math.max(workArea.y + (workArea.height / 2) - (height / 2), 0);
+
     return {
         x,
         y,

@@ -13,6 +13,7 @@ class DevicePixelRatioMonitor extends Disposable {
     readonly onDidChange = this._onDidChange.event;
     private readonly _listener: () => void;
     private _mediaQueryList: MediaQueryList | null;
+
     constructor(targetWindow: Window) {
         super();
         this._listener = () => this._handleChange(targetWindow, true);
@@ -23,6 +24,7 @@ class DevicePixelRatioMonitor extends Disposable {
         this._mediaQueryList?.removeEventListener('change', this._listener);
         this._mediaQueryList = targetWindow.matchMedia(`(resolution: ${targetWindow.devicePixelRatio}dppx)`);
         this._mediaQueryList.addEventListener('change', this._listener);
+
         if (fireEvent) {
             this._onDidChange.fire();
         }
@@ -36,12 +38,14 @@ class PixelRatioMonitorImpl extends Disposable implements IPixelRatioMonitor {
     private readonly _onDidChange = this._register(new Emitter<number>());
     readonly onDidChange = this._onDidChange.event;
     private _value: number;
+
     get value(): number {
         return this._value;
     }
     constructor(targetWindow: Window) {
         super();
         this._value = this._getPixelRatio(targetWindow);
+
         const dprMonitor = this._register(new DevicePixelRatioMonitor(targetWindow));
         this._register(dprMonitor.onDidChange(() => {
             this._value = this._getPixelRatio(targetWindow);
@@ -50,12 +54,15 @@ class PixelRatioMonitorImpl extends Disposable implements IPixelRatioMonitor {
     }
     private _getPixelRatio(targetWindow: Window): number {
         const ctx: any = document.createElement('canvas').getContext('2d');
+
         const dpr = targetWindow.devicePixelRatio || 1;
+
         const bsr = ctx.webkitBackingStorePixelRatio ||
             ctx.mozBackingStorePixelRatio ||
             ctx.msBackingStorePixelRatio ||
             ctx.oBackingStorePixelRatio ||
             ctx.backingStorePixelRatio || 1;
+
         return dpr / bsr;
     }
 }
@@ -63,7 +70,9 @@ class PixelRatioMonitorFacade {
     private readonly mapWindowIdToPixelRatioMonitor = new Map<number, PixelRatioMonitorImpl>();
     private _getOrCreatePixelRatioMonitor(targetWindow: Window): PixelRatioMonitorImpl {
         const targetWindowId = getWindowId(targetWindow);
+
         let pixelRatioMonitor = this.mapWindowIdToPixelRatioMonitor.get(targetWindowId);
+
         if (!pixelRatioMonitor) {
             pixelRatioMonitor = markAsSingleton(new PixelRatioMonitorImpl(targetWindow));
             this.mapWindowIdToPixelRatioMonitor.set(targetWindowId, pixelRatioMonitor);

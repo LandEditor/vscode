@@ -43,11 +43,17 @@ export interface IWindowsMainService {
     sendToFocused(channel: string, ...args: any[]): void;
     sendToOpeningWindow(channel: string, ...args: any[]): void;
     sendToAll(channel: string, payload?: any, windowIdsToIgnore?: number[]): void;
+
     getWindows(): ICodeWindow[];
+
     getWindowCount(): number;
+
     getFocusedWindow(): ICodeWindow | undefined;
+
     getLastActiveWindow(): ICodeWindow | undefined;
+
     getWindowById(windowId: number): ICodeWindow | undefined;
+
     getWindowByWebContents(webContents: electron.WebContents): ICodeWindow | undefined;
 }
 export interface IWindowsCountChangedEvent {
@@ -109,10 +115,15 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
     experimentalDarkMode: boolean;
 } {
     const themeMainService = accessor.get(IThemeMainService);
+
     const productService = accessor.get(IProductService);
+
     const configurationService = accessor.get(IConfigurationService);
+
     const environmentMainService = accessor.get(IEnvironmentMainService);
+
     const windowSettings = configurationService.getValue<IWindowSettings | undefined>('window');
+
     const options: electron.BrowserWindowConstructorOptions & {
         experimentalDarkMode: boolean;
     } = {
@@ -138,6 +149,7 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
         },
         experimentalDarkMode: true
     };
+
     if (isLinux) {
         options.icon = join(environmentMainService.appRoot, 'resources/linux/code.png'); // always on Linux
     }
@@ -157,12 +169,15 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
         options.fullscreenable = false; // enables simple fullscreen mode
     }
     const useNativeTabs = isMacintosh && windowSettings?.nativeTabs === true;
+
     if (useNativeTabs) {
         options.tabbingIdentifier = productService.nameShort; // this opts in to sierra tabs
     }
     const hideNativeTitleBar = !hasNativeTitlebar(configurationService, overrides?.forceNativeTitlebar ? TitlebarStyle.NATIVE : undefined);
+
     if (hideNativeTitleBar) {
         options.titleBarStyle = 'hidden';
+
         if (!isMacintosh) {
             options.frame = false;
         }
@@ -171,6 +186,7 @@ export function defaultBrowserWindowOptions(accessor: ServicesAccessor, windowSt
             // to use on initialization, but prefer to keep things
             // simple as it is temporary and not noticeable
             const titleBarColor = themeMainService.getWindowSplash()?.colorInfo.titleBarBackground ?? themeMainService.getBackgroundColor();
+
             const symbolColor = Color.fromHex(titleBarColor).isDarker() ? '#FFFFFF' : '#000000';
             options.titleBarOverlay = {
                 height: 29, // the smallest size of the title bar on windows accounting for the border on windows 11
@@ -185,7 +201,9 @@ export function getLastFocused(windows: ICodeWindow[]): ICodeWindow | undefined;
 export function getLastFocused(windows: IAuxiliaryWindow[]): IAuxiliaryWindow | undefined;
 export function getLastFocused(windows: ICodeWindow[] | IAuxiliaryWindow[]): ICodeWindow | IAuxiliaryWindow | undefined {
     let lastFocusedWindow: ICodeWindow | IAuxiliaryWindow | undefined = undefined;
+
     let maxLastFocusTime = Number.MIN_VALUE;
+
     for (const window of windows) {
         if (window.lastFocusTime > maxLastFocusTime) {
             maxLastFocusTime = window.lastFocusTime;
@@ -197,15 +215,18 @@ export function getLastFocused(windows: ICodeWindow[] | IAuxiliaryWindow[]): ICo
 export namespace WindowStateValidator {
     export function validateWindowState(logService: ILogService, state: IWindowState, displays = electron.screen.getAllDisplays()): IWindowState | undefined {
         logService.trace(`window#validateWindowState: validating window state on ${displays.length} display(s)`, state);
+
         if (typeof state.x !== 'number' ||
             typeof state.y !== 'number' ||
             typeof state.width !== 'number' ||
             typeof state.height !== 'number') {
             logService.trace('window#validateWindowState: unexpected type of state values');
+
             return undefined;
         }
         if (state.width <= 0 || state.height <= 0) {
             logService.trace('window#validateWindowState: unexpected negative values');
+
             return undefined;
         }
         // Single Monitor: be strict about x/y positioning
@@ -217,6 +238,7 @@ export namespace WindowStateValidator {
         if (displays.length === 1) {
             const displayWorkingArea = getWorkingArea(displays[0]);
             logService.trace('window#validateWindowState: single monitor working area', displayWorkingArea);
+
             if (displayWorkingArea) {
                 function ensureStateInDisplayWorkingArea(): void {
                     if (!state || typeof state.x !== 'number' || typeof state.y !== 'number' || !displayWorkingArea) {
@@ -233,6 +255,7 @@ export namespace WindowStateValidator {
                 }
                 // ensure state is not outside display working area (top, left)
                 ensureStateInDisplayWorkingArea();
+
                 if (state.width > displayWorkingArea.width) {
                     // prevent window from exceeding display bounds width
                     state.width = displayWorkingArea.width;
@@ -262,17 +285,22 @@ export namespace WindowStateValidator {
         // Multi Montior (fullscreen): try to find the previously used display
         if (state.display && state.mode === WindowMode.Fullscreen) {
             const display = displays.find(d => d.id === state.display);
+
             if (display && typeof display.bounds?.x === 'number' && typeof display.bounds?.y === 'number') {
                 logService.trace('window#validateWindowState: restoring fullscreen to previous display');
+
                 const defaults = defaultWindowState(WindowMode.Fullscreen); // make sure we have good values when the user restores the window
                 defaults.x = display.bounds.x; // carefull to use displays x/y position so that the window ends up on the correct monitor
                 defaults.y = display.bounds.y;
+
                 return defaults;
             }
         }
         // Multi Monitor (non-fullscreen): ensure window is within display bounds
         let display: electron.Display | undefined;
+
         let displayWorkingArea: electron.Rectangle | undefined;
+
         try {
             display = electron.screen.getDisplayMatching({ x: state.x, y: state.y, width: state.width, height: state.height });
             displayWorkingArea = getWorkingArea(display);
@@ -294,6 +322,7 @@ export namespace WindowStateValidator {
             return state;
         }
         logService.trace('window#validateWindowState: state is outside of the multi-monitor working area');
+
         return undefined;
     }
     function getWorkingArea(display: electron.Display): electron.Rectangle | undefined {

@@ -24,6 +24,7 @@ export interface IRemoteAgentEnvironmentDTO {
     pid: number;
     connectionToken: string;
     appRoot: UriComponents;
+
     settingsPath: UriComponents;
     logsPath: UriComponents;
     extensionHostLogsPath: UriComponents;
@@ -47,7 +48,9 @@ export class RemoteExtensionEnvironmentChannelClient {
             remoteAuthority,
             profile
         };
+
         const data = await channel.call<IRemoteAgentEnvironmentDTO>('getEnvironmentData', args);
+
         return {
             pid: data.pid,
             connectionToken: data.connectionToken,
@@ -72,6 +75,7 @@ export class RemoteExtensionEnvironmentChannelClient {
             remoteAuthority,
             reconnectionToken
         };
+
         return channel.call<IExtensionHostExitInfo | null>('getExtensionHostExitInfo', args);
     }
     static getDiagnosticInfo(channel: IChannel, options: IDiagnosticInfoOptions): Promise<IDiagnosticInfo> {

@@ -10,6 +10,7 @@ import { ITypeScriptServiceClient } from '../typescriptService';
 import { Disposable } from '../utils/dispose';
 export class VersionStatus extends Disposable {
     private readonly _statusItem: vscode.LanguageStatusItem;
+
     constructor(private readonly _client: ITypeScriptServiceClient) {
         super();
         this._statusItem = this._register(vscode.languages.createLanguageStatusItem('typescript.version', jsTsLanguageModes));

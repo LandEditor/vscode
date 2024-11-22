@@ -13,10 +13,12 @@ export class FilterOptions {
         readonly text: string;
         readonly negate: boolean;
     };
+
     constructor(readonly filter: string, showResolved: boolean, showUnresolved: boolean) {
         filter = filter.trim();
         this.showResolved = showResolved;
         this.showUnresolved = showUnresolved;
+
         const negate = filter.startsWith('!');
         this.textFilter = { text: (negate ? strings.ltrim(filter, '!') : filter).trim(), negate };
     }

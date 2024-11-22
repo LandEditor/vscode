@@ -13,6 +13,7 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
     constructor(private readonly service: IUserDataProfilesService, private readonly getUriTransformer: (requestContext: any) => IURITransformer) { }
     listen(context: any, event: string): Event<any> {
         const uriTransformer = this.getUriTransformer(context);
+
         switch (event) {
             case 'onDidChangeProfiles': return Event.map<DidChangeProfilesEvent, DidChangeProfilesEvent>(this.service.onDidChangeProfiles, e => {
                 return {
@@ -27,18 +28,22 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
     }
     async call(context: any, command: string, args?: any): Promise<any> {
         const uriTransformer = this.getUriTransformer(context);
+
         switch (command) {
             case 'createProfile': {
                 const profile = await this.service.createProfile(args[0], args[1], args[2]);
+
                 return transformOutgoingURIs({ ...profile }, uriTransformer);
             }
             case 'updateProfile': {
                 let profile = reviveProfile(transformIncomingURIs(args[0], uriTransformer), this.service.profilesHome.scheme);
                 profile = await this.service.updateProfile(profile, args[1]);
+
                 return transformOutgoingURIs({ ...profile }, uriTransformer);
             }
             case 'removeProfile': {
                 const profile = reviveProfile(transformIncomingURIs(args[0], uriTransformer), this.service.profilesHome.scheme);
+
                 return this.service.removeProfile(profile);
             }
         }
@@ -47,18 +52,23 @@ export class RemoteUserDataProfilesServiceChannel implements IServerChannel {
 }
 export class UserDataProfilesService extends Disposable implements IUserDataProfilesService {
     readonly _serviceBrand: undefined;
+
     get defaultProfile(): IUserDataProfile { return this.profiles[0]; }
     private _profiles: IUserDataProfile[] = [];
+
     get profiles(): IUserDataProfile[] { return this._profiles; }
     private readonly _onDidChangeProfiles = this._register(new Emitter<DidChangeProfilesEvent>());
     readonly onDidChangeProfiles = this._onDidChangeProfiles.event;
     readonly onDidResetWorkspaces: Event<void>;
+
     constructor(profiles: readonly UriDto<IUserDataProfile>[], readonly profilesHome: URI, private readonly channel: IChannel) {
         super();
         this._profiles = profiles.map(profile => reviveProfile(profile, this.profilesHome.scheme));
         this._register(this.channel.listen<DidChangeProfilesEvent>('onDidChangeProfiles')(e => {
             const added = e.added.map(profile => reviveProfile(profile, this.profilesHome.scheme));
+
             const removed = e.removed.map(profile => reviveProfile(profile, this.profilesHome.scheme));
+
             const updated = e.updated.map(profile => reviveProfile(profile, this.profilesHome.scheme));
             this._profiles = e.all.map(profile => reviveProfile(profile, this.profilesHome.scheme));
             this._onDidChangeProfiles.fire({ added, removed, updated, all: this.profiles });
@@ -67,14 +77,17 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
     }
     async createNamedProfile(name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
         const result = await this.channel.call<UriDto<IUserDataProfile>>('createNamedProfile', [name, options, workspaceIdentifier]);
+
         return reviveProfile(result, this.profilesHome.scheme);
     }
     async createProfile(id: string, name: string, options?: IUserDataProfileOptions, workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
         const result = await this.channel.call<UriDto<IUserDataProfile>>('createProfile', [id, name, options, workspaceIdentifier]);
+
         return reviveProfile(result, this.profilesHome.scheme);
     }
     async createTransientProfile(workspaceIdentifier?: IAnyWorkspaceIdentifier): Promise<IUserDataProfile> {
         const result = await this.channel.call<UriDto<IUserDataProfile>>('createTransientProfile', [workspaceIdentifier]);
+
         return reviveProfile(result, this.profilesHome.scheme);
     }
     async setProfileForWorkspace(workspaceIdentifier: IAnyWorkspaceIdentifier, profile: IUserDataProfile): Promise<void> {
@@ -85,6 +98,7 @@ export class UserDataProfilesService extends Disposable implements IUserDataProf
     }
     async updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<IUserDataProfile> {
         const result = await this.channel.call<UriDto<IUserDataProfile>>('updateProfile', [profile, updateOptions]);
+
         return reviveProfile(result, this.profilesHome.scheme);
     }
     resetWorkspaces(): Promise<void> {

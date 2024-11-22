@@ -15,6 +15,7 @@ import { IPreferencesService } from '../../../services/preferences/common/prefer
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 export class ShowSignalSoundHelp extends Action2 {
     static readonly ID = 'signals.sounds.help';
+
     constructor() {
         super({
             id: ShowSignalSoundHelp.ID,
@@ -27,11 +28,17 @@ export class ShowSignalSoundHelp extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const accessibilityService = accessor.get(IAccessibilityService);
+
         const preferencesService = accessor.get(IPreferencesService);
+
         const userGestureSignals = [AccessibilitySignal.save, AccessibilitySignal.format];
+
         const items: (IQuickPickItem & {
             signal: AccessibilitySignal;
         })[] = AccessibilitySignal.allAccessibilitySignals.map((signal, idx) => ({
@@ -43,7 +50,9 @@ export class ShowSignalSoundHelp extends Action2 {
                     alwaysVisible: true
                 }] : []
         })).sort((a, b) => a.label.localeCompare(b.label));
+
         const disposables = new DisposableStore();
+
         const qp = disposables.add(quickInputService.createQuickPick<IQuickPickItem & {
             signal: AccessibilitySignal;
         }>());
@@ -51,13 +60,16 @@ export class ShowSignalSoundHelp extends Action2 {
         qp.selectedItems = items.filter(i => accessibilitySignalService.isSoundEnabled(i.signal) || userGestureSignals.includes(i.signal) && configurationService.getValue(i.signal.settingsKey + '.sound') !== 'never');
         disposables.add(qp.onDidAccept(() => {
             const enabledSounds = qp.selectedItems.map(i => i.signal);
+
             const disabledSounds = qp.items.map(i => (i as any).signal).filter(i => !enabledSounds.includes(i));
+
             for (const signal of enabledSounds) {
                 let { sound, announcement } = configurationService.getValue<{
                     sound: string;
                     announcement?: string;
                 }>(signal.settingsKey);
                 sound = userGestureSignals.includes(signal) ? 'userGesture' : accessibilityService.isScreenReaderOptimized() ? 'auto' : 'on';
+
                 if (announcement) {
                     configurationService.updateValue(signal.settingsKey, { sound, announcement });
                 }
@@ -67,7 +79,9 @@ export class ShowSignalSoundHelp extends Action2 {
             }
             for (const signal of disabledSounds) {
                 const announcement = configurationService.getValue(signal.settingsKey + '.announcement');
+
                 const sound = getDisabledSettingValue(userGestureSignals.includes(signal), accessibilityService.isScreenReaderOptimized());
+
                 const value = announcement ? { sound, announcement } : { sound };
                 configurationService.updateValue(signal.settingsKey, value);
             }
@@ -90,6 +104,7 @@ function getDisabledSettingValue(isUserGestureSignal: boolean, isScreenReaderOpt
 }
 export class ShowAccessibilityAnnouncementHelp extends Action2 {
     static readonly ID = 'accessibility.announcement.help';
+
     constructor() {
         super({
             id: ShowAccessibilityAnnouncementHelp.ID,
@@ -102,11 +117,17 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const accessibilityService = accessor.get(IAccessibilityService);
+
         const preferencesService = accessor.get(IPreferencesService);
+
         const userGestureSignals = [AccessibilitySignal.save, AccessibilitySignal.format];
+
         const items: (IQuickPickItem & {
             signal: AccessibilitySignal;
         })[] = AccessibilitySignal.allAccessibilitySignals.filter(c => !!c.legacyAnnouncementSettingsKey).map((signal, idx) => ({
@@ -118,21 +139,27 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
                     alwaysVisible: true,
                 }] : []
         })).sort((a, b) => a.label.localeCompare(b.label));
+
         const disposables = new DisposableStore();
+
         const qp = disposables.add(quickInputService.createQuickPick<IQuickPickItem & {
             signal: AccessibilitySignal;
         }>());
         qp.items = items;
         qp.selectedItems = items.filter(i => accessibilitySignalService.isAnnouncementEnabled(i.signal) || userGestureSignals.includes(i.signal) && configurationService.getValue(i.signal.settingsKey + '.announcement') !== 'never');
+
         const screenReaderOptimized = accessibilityService.isScreenReaderOptimized();
         disposables.add(qp.onDidAccept(() => {
             if (!screenReaderOptimized) {
                 // announcements are off by default when screen reader is not active
                 qp.hide();
+
                 return;
             }
             const enabledAnnouncements = qp.selectedItems.map(i => i.signal);
+
             const disabledAnnouncements = AccessibilitySignal.allAccessibilitySignals.filter(cue => !!cue.legacyAnnouncementSettingsKey && !enabledAnnouncements.includes(cue));
+
             for (const signal of enabledAnnouncements) {
                 let { sound, announcement } = configurationService.getValue<{
                     sound: string;
@@ -143,7 +170,9 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
             }
             for (const signal of disabledAnnouncements) {
                 const announcement = getDisabledSettingValue(userGestureSignals.includes(signal), true);
+
                 const sound = configurationService.getValue(signal.settingsKey + '.sound');
+
                 const value = announcement ? { sound, announcement } : { sound };
                 configurationService.updateValue(signal.settingsKey, value);
             }

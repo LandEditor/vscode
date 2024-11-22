@@ -38,6 +38,7 @@ export interface IAction {
     readonly id: string;
     label: string;
     tooltip: string;
+
     class: string | undefined;
     enabled: boolean;
     checked?: boolean;
@@ -65,6 +66,7 @@ export class Action extends Disposable implements IAction {
     protected _enabled: boolean = true;
     protected _checked?: boolean;
     protected readonly _actionCallback?: (event?: unknown) => unknown;
+
     constructor(id: string, label: string = '', cssClass: string = '', enabled: boolean = true, actionCallback?: (event?: unknown) => unknown) {
         super();
         this._id = id;
@@ -151,12 +153,15 @@ export class ActionRunner extends Disposable implements IActionRunner {
     readonly onWillRun = this._onWillRun.event;
     private readonly _onDidRun = this._register(new Emitter<IRunEvent>());
     readonly onDidRun = this._onDidRun.event;
+
     async run(action: IAction, context?: unknown): Promise<void> {
         if (!action.enabled) {
             return;
         }
         this._onWillRun.fire({ action });
+
         let error: Error | undefined = undefined;
+
         try {
             await this.runAction(action, context);
         }
@@ -175,6 +180,7 @@ export class Separator implements IAction {
      */
     public static join(...actionLists: readonly IAction[][]) {
         let out: IAction[] = [];
+
         for (const list of actionLists) {
             if (!list.length) {
                 // skip
@@ -195,6 +201,7 @@ export class Separator implements IAction {
     readonly class: string = 'separator';
     readonly enabled: boolean = false;
     readonly checked: boolean = false;
+
     async run() { }
 }
 export class SubmenuAction implements IAction {
@@ -205,6 +212,7 @@ export class SubmenuAction implements IAction {
     readonly enabled: boolean = true;
     readonly checked: undefined = undefined;
     private readonly _actions: readonly IAction[];
+
     get actions(): readonly IAction[] { return this._actions; }
     constructor(id: string, label: string, actions: readonly IAction[], cssClass?: string) {
         this.id = id;
@@ -216,6 +224,7 @@ export class SubmenuAction implements IAction {
 }
 export class EmptySubmenuAction extends Action {
     static readonly ID = 'vs.actions.empty';
+
     constructor() {
         super(EmptySubmenuAction.ID, nls.localize('submenu.empty', '(empty)'), undefined, false);
     }
@@ -226,6 +235,7 @@ export function toAction(props: {
     tooltip?: string;
     enabled?: boolean;
     checked?: boolean;
+
     class?: string;
     run: Function;
 }): IAction {

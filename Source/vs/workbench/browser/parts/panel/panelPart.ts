@@ -55,6 +55,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 		}
 
 		const width = activeComposite.getOptimalWidth();
+
 		if (typeof width !== 'number') {
 			return;
 		}
@@ -117,12 +118,14 @@ export class PanelPart extends AbstractPaneCompositePart {
 
 		const container = assertIsDefined(this.getContainer());
 		container.style.backgroundColor = this.getColor(PANEL_BACKGROUND) || '';
+
 		const borderColor = this.getColor(PANEL_BORDER) || this.getColor(contrastBorder) || '';
 		container.style.borderLeftColor = borderColor;
 		container.style.borderRightColor = borderColor;
 		container.style.borderBottomColor = borderColor;
 
 		const title = this.getTitleArea();
+
 		if (title) {
 			title.style.borderTopColor = this.getColor(PANEL_BORDER) || this.getColor(contrastBorder) || '';
 		}
@@ -161,6 +164,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 	private fillExtraContextMenuActions(actions: IAction[]): void {
 		if (this.getCompositeBarPosition() === CompositeBarPosition.TITLE) {
 			const viewsSubmenuAction = this.getViewsSubmenuAction();
+
 			if (viewsSubmenuAction) {
 				actions.push(new Separator());
 				actions.push(viewsSubmenuAction);
@@ -168,11 +172,15 @@ export class PanelPart extends AbstractPaneCompositePart {
 		}
 
 		const panelPositionMenu = this.menuService.getMenuActions(MenuId.PanelPositionMenu, this.contextKeyService, { shouldForwardArgs: true });
+
 		const panelAlignMenu = this.menuService.getMenuActions(MenuId.PanelAlignmentMenu, this.contextKeyService, { shouldForwardArgs: true });
+
 		const positionActions = getContextMenuActions(panelPositionMenu).secondary;
+
 		const alignActions = getContextMenuActions(panelAlignMenu).secondary;
 
 		const panelShowLabels = this.configurationService.getValue<boolean | undefined>('workbench.panel.showLabels');
+
 		const toggleShowLabelsAction = toAction({
 			id: 'workbench.action.panel.toggleShowLabels',
 			label: panelShowLabels ? localize('showIcons', "Show Icons") : localize('showLabels', "Show Labels"),
@@ -190,15 +198,19 @@ export class PanelPart extends AbstractPaneCompositePart {
 
 	override layout(width: number, height: number, top: number, left: number): void {
 		let dimensions: Dimension;
+
 		switch (this.layoutService.getPanelPosition()) {
 			case Position.RIGHT:
 				dimensions = new Dimension(width - 1, height); // Take into account the 1px border when layouting
 				break;
+
 			case Position.TOP:
 				dimensions = new Dimension(width, height - 1); // Take into account the 1px border when layouting
 				break;
+
 			default:
 				dimensions = new Dimension(width, height);
+
 				break;
 		}
 

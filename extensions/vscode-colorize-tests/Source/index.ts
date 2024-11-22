@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from 'path';
 import * as testRunner from '../../../test/integration/electron/testrunner';
+
 const suite = 'Integration Colorize Tests';
+
 const options: import('mocha').MochaOptions = {
     ui: 'tdd',
     color: true,

@@ -25,6 +25,7 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant extends Disp
     @IWorkspaceTrustManagementService
     workspaceTrustManagementService: IWorkspaceTrustManagementService) {
         super();
+
         if (workspaceTrustEnablementService.isWorkspaceTrustEnabled()) {
             // The extension enablement participant will be registered only after the
             // workspace trust state has been initialized. There is no need to execute
@@ -45,6 +46,7 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant extends Disp
                             else {
                                 const stopped = await extensionService.stopExtensionHosts(localize('restartExtensionHost.reason', "Restarting extension host due to workspace trust change."));
                                 await extensionEnablementService.updateExtensionsEnablementsWhenWorkspaceTrustChanges();
+
                                 if (stopped) {
                                     extensionService.startExtensionHosts();
                                 }

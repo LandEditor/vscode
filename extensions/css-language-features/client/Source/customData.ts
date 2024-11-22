@@ -6,10 +6,13 @@ import { workspace, extensions, Uri, EventEmitter, Disposable } from 'vscode';
 import { Utils } from 'vscode-uri';
 export function getCustomDataSource(toDispose: Disposable[]) {
     let pathsInWorkspace = getCustomDataPathsInAllWorkspaces();
+
     let pathsInExtensions = getCustomDataPathsFromAllExtensions();
+
     const onChange = new EventEmitter<void>();
     toDispose.push(extensions.onDidChange(_ => {
         const newPathsInExtensions = getCustomDataPathsFromAllExtensions();
+
         if (newPathsInExtensions.length !== pathsInExtensions.length || !newPathsInExtensions.every((val, idx) => val === pathsInExtensions[idx])) {
             pathsInExtensions = newPathsInExtensions;
             onChange.fire();
@@ -21,6 +24,7 @@ export function getCustomDataSource(toDispose: Disposable[]) {
             onChange.fire();
         }
     }));
+
     return {
         get uris() {
             return pathsInWorkspace.concat(pathsInExtensions);
@@ -32,7 +36,9 @@ export function getCustomDataSource(toDispose: Disposable[]) {
 }
 function getCustomDataPathsInAllWorkspaces(): string[] {
     const workspaceFolders = workspace.workspaceFolders;
+
     const dataPaths: string[] = [];
+
     if (!workspaceFolders) {
         return dataPaths;
     }
@@ -45,12 +51,17 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
             }
         }
     };
+
     for (let i = 0; i < workspaceFolders.length; i++) {
         const folderUri = workspaceFolders[i].uri;
+
         const allCssConfig = workspace.getConfiguration('css', folderUri);
+
         const customDataInspect = allCssConfig.inspect<string[]>('customData');
+
         if (customDataInspect) {
             collect(customDataInspect.workspaceFolderValue, folderUri);
+
             if (i === 0) {
                 if (workspace.workspaceFile) {
                     collect(customDataInspect.workspaceValue, workspace.workspaceFile);
@@ -63,8 +74,10 @@ function getCustomDataPathsInAllWorkspaces(): string[] {
 }
 function getCustomDataPathsFromAllExtensions(): string[] {
     const dataPaths: string[] = [];
+
     for (const extension of extensions.all) {
         const customData = extension.packageJSON?.contributes?.css?.customData;
+
         if (Array.isArray(customData)) {
             for (const rp of customData) {
                 dataPaths.push(Utils.joinPath(extension.extensionUri, rp).toString());

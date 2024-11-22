@@ -23,11 +23,14 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
     protected readonly _onShutdownVeto = this._register(new Emitter<void>());
     readonly onShutdownVeto = this._onShutdownVeto.event;
     private _startupKind: StartupKind;
+
     get startupKind(): StartupKind { return this._startupKind; }
     private _phase = LifecyclePhase.Starting;
+
     get phase(): LifecyclePhase { return this._phase; }
     private readonly phaseWhen = new Map<LifecyclePhase, Barrier>();
     protected shutdownReason: ShutdownReason | undefined;
+
     constructor(
     @ILogService
     protected readonly logService: ILogService, 
@@ -46,6 +49,7 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
     private resolveStartupKind(): StartupKind {
         const startupKind = this.doResolveStartupKind() ?? StartupKind.NewWindow;
         this.logService.trace(`[lifecycle] starting up (startup kind: ${startupKind})`);
+
         return startupKind;
     }
     protected doResolveStartupKind(): StartupKind | undefined {
@@ -54,12 +58,16 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
         this.storageService.remove(AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY, StorageScope.WORKSPACE);
         // Convert into startup kind
         let startupKind: StartupKind | undefined = undefined;
+
         switch (lastShutdownReason) {
             case ShutdownReason.RELOAD:
                 startupKind = StartupKind.ReloadedWindow;
+
                 break;
+
             case ShutdownReason.LOAD:
                 startupKind = StartupKind.ReopenedWindow;
+
                 break;
         }
         return startupKind;
@@ -74,7 +82,9 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
         this.logService.trace(`lifecycle: phase changed (value: ${value})`);
         this._phase = value;
         mark(`code/LifecyclePhase/${LifecyclePhaseToString(value)}`);
+
         const barrier = this.phaseWhen.get(this._phase);
+
         if (barrier) {
             barrier.open();
             this.phaseWhen.delete(this._phase);
@@ -85,6 +95,7 @@ export abstract class AbstractLifecycleService extends Disposable implements ILi
             return;
         }
         let barrier = this.phaseWhen.get(phase);
+
         if (!barrier) {
             barrier = new Barrier();
             this.phaseWhen.set(phase, barrier);

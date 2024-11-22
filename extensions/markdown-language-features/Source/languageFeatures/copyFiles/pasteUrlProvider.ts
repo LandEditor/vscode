@@ -34,27 +34,33 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
 		const pasteUrlSetting = vscode.workspace.getConfiguration('markdown', document)
 			.get<InsertMarkdownLink>('editor.pasteUrlAsFormattedLink.enabled', InsertMarkdownLink.SmartWithSelection);
+
 		if (pasteUrlSetting === InsertMarkdownLink.Never) {
 			return;
 		}
 
 		const item = dataTransfer.get(Mime.textPlain);
+
 		const text = await item?.asString();
+
 		if (token.isCancellationRequested || !text) {
 			return;
 		}
 
 		const uriText = findValidUriInText(text);
+
 		if (!uriText) {
 			return;
 		}
 
 		const edit = createInsertUriListEdit(document, ranges, UriList.from(uriText), { preserveAbsoluteUris: true });
+
 		if (!edit) {
 			return;
 		}
 
 		const pasteEdit = new vscode.DocumentPasteEdit('', edit.label, PasteUrlEditProvider.kind);
+
 		const workspaceEdit = new vscode.WorkspaceEdit();
 		workspaceEdit.set(document.uri, edit.edits);
 		pasteEdit.additionalEdit = workspaceEdit;

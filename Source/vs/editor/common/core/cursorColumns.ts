@@ -36,9 +36,13 @@ export class CursorColumns {
      */
     public static visibleColumnFromColumn(lineContent: string, column: number, tabSize: number): number {
         const textLen = Math.min(column - 1, lineContent.length);
+
         const text = lineContent.substring(0, textLen);
+
         const iterator = new strings.GraphemeIterator(text);
+
         let result = 0;
+
         while (!iterator.eol()) {
             const codePoint = strings.getNextCodePoint(text, textLen, iterator.offset);
             iterator.nextGraphemeLength();
@@ -52,10 +56,14 @@ export class CursorColumns {
      */
     public static toStatusbarColumn(lineContent: string, column: number, tabSize: number): number {
         const text = lineContent.substring(0, Math.min(column - 1, lineContent.length));
+
         const iterator = new strings.CodePointIterator(text);
+
         let result = 0;
+
         while (!iterator.eol()) {
             const codePoint = iterator.nextCodePoint();
+
             if (codePoint === CharCode.Tab) {
                 result = CursorColumns.nextRenderTabStop(result, tabSize);
             }
@@ -74,17 +82,26 @@ export class CursorColumns {
             return 1;
         }
         const lineContentLength = lineContent.length;
+
         const iterator = new strings.GraphemeIterator(lineContent);
+
         let beforeVisibleColumn = 0;
+
         let beforeColumn = 1;
+
         while (!iterator.eol()) {
             const codePoint = strings.getNextCodePoint(lineContent, lineContentLength, iterator.offset);
             iterator.nextGraphemeLength();
+
             const afterVisibleColumn = this._nextVisibleColumn(codePoint, beforeVisibleColumn, tabSize);
+
             const afterColumn = iterator.offset + 1;
+
             if (afterVisibleColumn >= visibleColumn) {
                 const beforeDelta = visibleColumn - beforeVisibleColumn;
+
                 const afterDelta = afterVisibleColumn - visibleColumn;
+
                 if (afterDelta < beforeDelta) {
                     return afterColumn;
                 }

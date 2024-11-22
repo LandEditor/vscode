@@ -51,6 +51,7 @@ export interface ProcessExplorerWindowConfiguration extends ISandboxConfiguratio
 export const IProcessMainService = createDecorator<IProcessMainService>('processService');
 export interface IProcessMainService {
     readonly _serviceBrand: undefined;
+
     getSystemStatus(): Promise<string>;
     stopTracing(): Promise<void>;
     openProcessExplorer(data: ProcessExplorerData): Promise<void>;

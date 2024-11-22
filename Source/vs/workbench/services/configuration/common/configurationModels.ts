@@ -18,6 +18,7 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
     private _settingsModelParser: ConfigurationModelParser;
     private _launchModel: ConfigurationModel;
     private _tasksModel: ConfigurationModel;
+
     constructor(name: string, logService: ILogService) {
         super(name, logService);
         this._settingsModelParser = new ConfigurationModelParser(name, logService);
@@ -51,15 +52,20 @@ export class WorkspaceConfigurationModelParser extends ConfigurationModelParser 
         this._settingsModelParser.parseRaw(raw['settings'], configurationParseOptions);
         this._launchModel = this.createConfigurationModelFrom(raw, 'launch');
         this._tasksModel = this.createConfigurationModelFrom(raw, 'tasks');
+
         return super.doParseRaw(raw, configurationParseOptions);
     }
     private createConfigurationModelFrom(raw: any, key: string): ConfigurationModel {
         const data = raw[key];
+
         if (data) {
             const contents = toValuesTree(data, message => console.error(`Conflict in settings file ${this._name}: ${message}`));
+
             const scopedContents = Object.create(null);
             scopedContents[key] = contents;
+
             const keys = Object.keys(data).map(k => `${key}.${k}`);
+
             return new ConfigurationModel(scopedContents, keys, [], undefined, this.logService);
         }
         return ConfigurationModel.createEmptyModel(this.logService);
@@ -71,9 +77,12 @@ export class StandaloneConfigurationModelParser extends ConfigurationModelParser
     }
     protected override doParseRaw(raw: any, configurationParseOptions?: ConfigurationParseOptions): IConfigurationModel {
         const contents = toValuesTree(raw, message => console.error(`Conflict in settings file ${this._name}: ${message}`));
+
         const scopedContents = Object.create(null);
         scopedContents[this.scope] = contents;
+
         const keys = Object.keys(raw).map(key => `${this.scope}.${key}`);
+
         return { contents: scopedContents, keys, overrides: [] };
     }
 }
@@ -119,16 +128,22 @@ export class Configuration extends BaseConfiguration {
                 // Compare workspace folder value
                 return this._workspace && this._workspace.folders.some(folder => !equals(this.getValue(key, { resource: folder.uri, overrideIdentifier }), other.getValue(key, { resource: folder.uri, overrideIdentifier })));
             }));
+
             return keys;
         };
+
         const keys = compare(this.allKeys(), other.allKeys());
+
         const overrides: [
             string,
             string[]
         ][] = [];
+
         const allOverrideIdentifiers = distinct([...this.allOverrideIdentifiers(), ...other.allOverrideIdentifiers()]);
+
         for (const overrideIdentifier of allOverrideIdentifiers) {
             const keys = compare(this.getAllKeysForOverrideIdentifier(overrideIdentifier), other.getAllKeysForOverrideIdentifier(overrideIdentifier), overrideIdentifier);
+
             if (keys.length) {
                 overrides.push([overrideIdentifier, keys]);
             }

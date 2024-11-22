@@ -31,17 +31,21 @@ import { ChatTreeItem, IChatWidget, IChatWidgetService } from '../chat.js';
 abstract class WorkingSetAction extends Action2 {
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
 
 		const chatWidget = accessor.get(IChatWidgetService).lastFocusedWidget;
+
 		if (chatWidget?.location !== ChatAgentLocation.EditingSession) {
 			return;
 		}
 
 		const uris: URI[] = [];
+
 		if (URI.isUri(args[0])) {
 			uris.push(args[0]);
 		} else if (chatWidget) {
@@ -100,6 +104,7 @@ registerAction2(class RemoveFileFromWorkingSet extends WorkingSetAction {
 
 		// Remove from chat input part
 		const resourceSet = new ResourceSet(uris);
+
 		const newContext = [];
 
 		for (const context of chatWidget.input.attachmentModel.attachments) {
@@ -129,8 +134,10 @@ registerAction2(class OpenFileInDiffAction extends WorkingSetAction {
 
 	async runWorkingSetAction(accessor: ServicesAccessor, currentEditingSession: IChatEditingSession, _chatWidget: IChatWidget, ...uris: URI[]): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		for (const uri of uris) {
 			const editedFile = currentEditingSession.entries.get().find((e) => e.modifiedURI.toString() === uri.toString());
+
 			if (editedFile?.state.get() === WorkingSetEntryState.Modified) {
 				await editorService.openEditor({
 					original: { resource: URI.from(editedFile.originalURI, true) },
@@ -226,7 +233,9 @@ export class ChatEditingAcceptAllAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
@@ -268,14 +277,18 @@ export class ChatEditingDiscardAllAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
 
 		// Ask for confirmation if there are any edits
 		const entries = currentEditingSession.entries.get();
+
 		if (entries.length > 0) {
 			const confirmation = await dialogService.confirm({
 				title: localize('chat.editing.discardAll.confirmation.title', "Discard all edits?"),
@@ -285,6 +298,7 @@ export class ChatEditingDiscardAllAction extends Action2 {
 				primaryButton: localize('chat.editing.discardAll.confirmation.primaryButton', "Yes"),
 				type: 'info'
 			});
+
 			if (!confirmation.confirmed) {
 				return;
 			}
@@ -320,7 +334,9 @@ export class ChatEditingShowChangesAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
@@ -343,7 +359,9 @@ registerAction2(class AddFilesToWorkingSetAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const listService = accessor.get(IListService);
+
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const uris: URI[] = [];
@@ -358,6 +376,7 @@ registerAction2(class AddFilesToWorkingSetAction extends Action2 {
 
 		if (uris.length === 0) {
 			const selection = listService.lastFocusedList?.getSelection();
+
 			if (selection?.length) {
 				for (const file of selection) {
 					if (!!file && typeof file === 'object' && 'resource' in file && URI.isUri(file.resource)) {
@@ -402,8 +421,10 @@ registerAction2(class RemoveAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]) {
 		let item: ChatTreeItem | undefined = args[0];
+
 		if (!isResponseVM(item) && !isRequestVM(item)) {
 			const chatWidgetService = accessor.get(IChatWidgetService);
+
 			const widget = chatWidgetService.lastFocusedWidget;
 			item = widget?.getFocus();
 		}
@@ -413,7 +434,9 @@ registerAction2(class RemoveAction extends Action2 {
 		}
 
 		const chatService = accessor.get(IChatService);
+
 		const chatModel = chatService.getSession(item.sessionId);
+
 		if (chatModel?.initialLocation !== ChatAgentLocation.EditingSession) {
 			return;
 		}
@@ -423,18 +446,27 @@ registerAction2(class RemoveAction extends Action2 {
 
 		if (requestId) {
 			const configurationService = accessor.get(IConfigurationService);
+
 			const dialogService = accessor.get(IDialogService);
+
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const chatRequests = chatModel.getRequests();
+
 			const itemIndex = chatRequests.findIndex(request => request.id === requestId);
+
 			const editsToUndo = chatRequests.length - itemIndex;
 
 			const requestsToRemove = chatRequests.slice(itemIndex);
+
 			const requestIdsToRemove = new Set(requestsToRemove.map(request => request.id));
+
 			const entriesModifiedInRequestsToRemove = chatEditingService.currentEditingSessionObs.get()?.entries.get().filter((entry) => requestIdsToRemove.has(entry.lastModifyingRequestId)) ?? [];
+
 			const shouldPrompt = entriesModifiedInRequestsToRemove.length > 0 && configurationService.getValue('chat.editing.confirmEditRequestRemoval') === true;
 
 			let message: string;
+
 			if (editsToUndo === 1) {
 				if (entriesModifiedInRequestsToRemove.length === 1) {
 					message = localize('chat.removeLast.confirmation.message2', "This will remove your last request and undo the edits made to {0}. Do you want to proceed?", basename(entriesModifiedInRequestsToRemove[0].modifiedURI));
@@ -484,6 +516,7 @@ registerAction2(class RemoveAction extends Action2 {
 registerAction2(class OpenWorkingSetHistoryAction extends Action2 {
 
 	static readonly id = 'chat.openFileSnapshot';
+
 	constructor() {
 		super({
 			id: OpenWorkingSetHistoryAction.id,
@@ -499,28 +532,37 @@ registerAction2(class OpenWorkingSetHistoryAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const context: { sessionId: string; requestId: string; uri: URI } | undefined = args[0];
+
 		if (!context?.sessionId) {
 			return;
 		}
 
 		const chatService = accessor.get(IChatService);
+
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const chatModel = chatService.getSession(context.sessionId);
+
 		const requests = chatModel?.getRequests();
+
 		if (!requests) {
 			return;
 		}
 		const snapshotRequestIndex = requests?.findIndex((v, i) => i > 0 && requests[i - 1]?.id === context.requestId);
+
 		if (snapshotRequestIndex < 1) {
 			return;
 		}
 		const snapshotRequestId = requests[snapshotRequestIndex]?.id;
+
 		if (snapshotRequestId) {
 			const snapshot = chatEditingService.getSnapshotUri(snapshotRequestId, context.uri);
+
 			if (snapshot) {
 				const editor = await editorService.openEditor({ resource: snapshot, label: localize('chatEditing.snapshot', '{0} (Snapshot {1})', basename(context.uri), snapshotRequestIndex - 1), options: { transient: true, activation: EditorActivation.ACTIVATE } });
+
 				if (isCodeEditor(editor)) {
 					editor.updateOptions({ readOnly: true });
 				}

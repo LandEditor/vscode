@@ -37,6 +37,7 @@ export class PerfviewContrib {
     static readonly ID = 'workbench.contrib.perfview';
     private readonly _inputUri = URI.from({ scheme: 'perf', path: 'Startup Performance' });
     private readonly _registration: IDisposable;
+
     constructor(
     @IInstantiationService
     private readonly _instaService: IInstantiationService, 
@@ -82,6 +83,7 @@ export class PerfviewInput extends TextResourceEditorInput {
 class PerfModelContentProvider implements ITextModelContentProvider {
     private _model: ITextModel | undefined;
     private _modelDisposables: IDisposable[] = [];
+
     constructor(
     @IModelService
     private readonly _modelService: IModelService, 
@@ -104,6 +106,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
     provideTextContent(resource: URI): Promise<ITextModel> {
         if (!this._model || this._model.isDisposed()) {
             dispose(this._modelDisposables);
+
             const langId = this._languageService.createById('markdown');
             this._model = this._modelService.getModel(resource) || this._modelService.createModel('Loading...', langId, resource);
             this._modelDisposables.push(langId.onDidChange(e => {
@@ -113,6 +116,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
             writeTransientState(this._model, { wordWrapOverride: 'off' }, this._editorService);
         }
         this._updateModel();
+
         return Promise.resolve(this._model);
     }
     private _updateModel(): void {
@@ -147,6 +151,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
         md.heading(2, 'System Info');
         md.li(`${this._productService.nameShort}: ${this._productService.version} (${this._productService.commit || '0000000'})`);
         md.li(`OS: ${metrics.platform}(${metrics.release})`);
+
         if (metrics.cpus) {
             md.li(`CPUs: ${metrics.cpus.model}(${metrics.cpus.count} x ${metrics.cpus.speed})`);
         }
@@ -164,7 +169,9 @@ class PerfModelContentProvider implements ITextModelContentProvider {
     }
     private _addSummaryTable(md: MarkdownBuilder): void {
         const metrics = this._timerService.startupMetrics;
+
         const contribTimings = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).timings;
+
         const table: Array<Array<string | number | undefined>> = [];
         table.push(['start => app.isReady', metrics.timers.ellapsedAppReady, '[main]', `initial startup: ${metrics.initialStartup}`]);
         table.push(['nls:start => nls:end', metrics.timers.ellapsedNlsGeneration, '[main]', `initial startup: ${metrics.initialStartup}`]);
@@ -179,6 +186,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
         table.push(['wait for window config', metrics.timers.ellapsedWaitForWindowConfig, '[renderer]', undefined]);
         table.push(['init storage (global & workspace)', metrics.timers.ellapsedStorageInit, '[renderer]', undefined]);
         table.push(['init workspace service', metrics.timers.ellapsedWorkspaceServiceInit, '[renderer]', undefined]);
+
         if (isWeb) {
             table.push(['init settings and global state from settings sync service', metrics.timers.ellapsedRequiredUserDataInit, '[renderer]', undefined]);
             table.push(['init keybindings, snippets & extensions from settings sync service', metrics.timers.ellapsedOtherUserDataInit, '[renderer]', undefined]);
@@ -200,12 +208,16 @@ class PerfModelContentProvider implements ITextModelContentProvider {
         const eager: ({
             toString(): string;
         })[][] = [];
+
         const normal: ({
             toString(): string;
         })[][] = [];
+
         const extensionsStatus = this._extensionService.getExtensionsStatus();
+
         for (const id in extensionsStatus) {
             const { activationTimes: times } = extensionsStatus[id];
+
             if (!times) {
                 continue;
             }
@@ -217,6 +229,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
             }
         }
         const table = eager.concat(normal);
+
         if (table.length > 0) {
             md.heading(2, 'Extension Activation Stats');
             md.table(['Extension', 'Eager', 'Load Code', 'Call Activate', 'Finish Activate', 'Event', 'By'], table);
@@ -227,8 +240,11 @@ class PerfModelContentProvider implements ITextModelContentProvider {
             return;
         }
         const table: Array<Array<string | number | undefined>> = [];
+
         let lastStartTime = -1;
+
         let total = 0;
+
         for (const { name, startTime } of marks) {
             const delta = lastStartTime !== -1 ? startTime - lastStartTime : 0;
             total += delta;
@@ -242,10 +258,12 @@ class PerfModelContentProvider implements ITextModelContentProvider {
     }
     private _addWorkbenchContributionsPerfMarksTable(md: MarkdownBuilder): void {
         md.heading(2, 'Workbench Contributions Blocking Restore');
+
         const timings = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).timings;
         md.li(`Total (LifecyclePhase.Starting): ${timings.get(LifecyclePhase.Starting)?.length} (${timings.get(LifecyclePhase.Starting)?.reduce((p, c) => p + c[1], 0)}ms)`);
         md.li(`Total (LifecyclePhase.Ready): ${timings.get(LifecyclePhase.Ready)?.length} (${timings.get(LifecyclePhase.Ready)?.reduce((p, c) => p + c[1], 0)}ms)`);
         md.blank();
+
         const marks = this._timerService.getPerformanceMarks().find(e => e[0] === 'renderer')?.[1].filter(e => e.name.startsWith('code/willCreateWorkbenchContribution/1') ||
             e.name.startsWith('code/didCreateWorkbenchContribution/1') ||
             e.name.startsWith('code/willCreateWorkbenchContribution/2') ||
@@ -257,8 +275,11 @@ class PerfModelContentProvider implements ITextModelContentProvider {
             md.heading(2, `Raw Perf Marks: ${source}`);
             md.value += '```\n';
             md.value += `Name\tTimestamp\tDelta\tTotal\n`;
+
             let lastStartTime = -1;
+
             let total = 0;
+
             for (const { name, startTime } of marks) {
                 const delta = lastStartTime !== -1 ? startTime - lastStartTime : 0;
                 total += delta;
@@ -272,6 +293,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
         const stats = performance.getEntriesByType('resource').map(entry => {
             return [entry.name, entry.duration];
         });
+
         if (!stats.length) {
             return;
         }
@@ -283,14 +305,17 @@ class MarkdownBuilder {
     value: string = '';
     heading(level: number, value: string): this {
         this.value += `${'#'.repeat(level)} ${value}\n\n`;
+
         return this;
     }
     blank() {
         this.value += '\n';
+
         return this;
     }
     li(value: string) {
         this.value += `* ${value}\n`;
+
         return this;
     }
     table(header: string[], rows: Array<Array<{
@@ -302,6 +327,7 @@ class MarkdownBuilder {
         toString(): string;
     } | undefined>>): string {
         let result = '';
+
         const lengths: number[] = [];
         header.forEach((cell, ci) => {
             lengths[ci] = cell.length;
@@ -329,6 +355,7 @@ class MarkdownBuilder {
             });
             result += '|\n';
         });
+
         return result;
     }
 }

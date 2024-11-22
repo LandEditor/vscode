@@ -11,6 +11,7 @@ export class SurroundSelectionCommand implements ICommand {
     private readonly _range: Selection;
     private readonly _charBeforeSelection: string;
     private readonly _charAfterSelection: string;
+
     constructor(range: Selection, charBeforeSelection: string, charAfterSelection: string) {
         this._range = range;
         this._charBeforeSelection = charBeforeSelection;
@@ -22,8 +23,11 @@ export class SurroundSelectionCommand implements ICommand {
     }
     public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
         const inverseEditOperations = helper.getInverseEditOperations();
+
         const firstOperationRange = inverseEditOperations[0].range;
+
         const secondOperationRange = inverseEditOperations[1].range;
+
         return new Selection(firstOperationRange.endLineNumber, firstOperationRange.endColumn, secondOperationRange.endLineNumber, secondOperationRange.endColumn - this._charAfterSelection.length);
     }
 }
@@ -37,7 +41,9 @@ export class CompositionSurroundSelectionCommand implements ICommand {
     }
     public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
         const inverseEditOperations = helper.getInverseEditOperations();
+
         const opRange = inverseEditOperations[0].range;
+
         return new Selection(opRange.endLineNumber, opRange.startColumn, opRange.endLineNumber, opRange.endColumn - this._charAfter.length);
     }
 }

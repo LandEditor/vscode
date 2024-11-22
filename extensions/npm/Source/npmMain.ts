@@ -11,10 +11,12 @@ import { getPackageManager, invalidateTasksCache, NpmTaskProvider, hasPackageJso
 import { invalidateHoverScriptsCache, NpmScriptHoverProvider } from './scriptHover';
 import { NpmScriptLensProvider } from './npmScriptLens';
 import which from 'which';
+
 let treeDataProvider: NpmScriptsTreeDataProvider | undefined;
 function invalidateScriptCaches() {
     invalidateHoverScriptsCache();
     invalidateTasksCache();
+
     if (treeDataProvider) {
         treeDataProvider.refresh();
     }
@@ -26,6 +28,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             configureHttpRequest();
         }
     }));
+
     const npmCommandPath = await getNPMCommandPath();
     context.subscriptions.push(addJSONProviders(httpRequest.xhr, npmCommandPath));
     registerTaskProvider(context);
@@ -33,6 +36,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration('npm.exclude') || e.affectsConfiguration('npm.autoDetect') || e.affectsConfiguration('npm.scriptExplorerExclude')) {
             invalidateTasksCache();
+
             if (treeDataProvider) {
                 treeDataProvider.refresh();
             }
@@ -45,6 +49,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }));
     registerHoverProvider(context);
     context.subscriptions.push(vscode.commands.registerCommand('npm.runSelectedScript', runSelectedScript));
+
     if (await hasPackageJson()) {
         vscode.commands.executeCommand('setContext', 'npm:showScriptExplorer', true);
     }
@@ -65,11 +70,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
                 return;
             }
             const lines = outputMatch.regexMatch[1];
+
             const fixes: vscode.TerminalQuickFixTerminalCommand[] = [];
+
             for (const line of lines.split('\n')) {
                 // search from the second char, since the lines might be prefixed with
                 // "npm ERR!" which comes before the actual command suggestion.
                 const begin = line.indexOf('npm', 1);
+
                 if (begin === -1) {
                     continue;
                 }
@@ -105,11 +113,14 @@ function registerTaskProvider(context: vscode.ExtensionContext): vscode.Disposab
         watcher.onDidDelete((_e) => invalidateScriptCaches());
         watcher.onDidCreate((_e) => invalidateScriptCaches());
         context.subscriptions.push(watcher);
+
         const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders((_e) => invalidateScriptCaches());
         context.subscriptions.push(workspaceWatcher);
         taskProvider = new NpmTaskProvider(context);
+
         const disposable = vscode.tasks.registerTaskProvider('npm', taskProvider);
         context.subscriptions.push(disposable);
+
         return disposable;
     }
     return undefined;
@@ -117,8 +128,10 @@ function registerTaskProvider(context: vscode.ExtensionContext): vscode.Disposab
 function registerExplorer(context: vscode.ExtensionContext): NpmScriptsTreeDataProvider | undefined {
     if (vscode.workspace.workspaceFolders) {
         const treeDataProvider = new NpmScriptsTreeDataProvider(context, taskProvider!);
+
         const view = vscode.window.createTreeView('npm', { treeDataProvider: treeDataProvider, showCollapseAll: true });
         context.subscriptions.push(view);
+
         return treeDataProvider;
     }
     return undefined;
@@ -130,8 +143,10 @@ function registerHoverProvider(context: vscode.ExtensionContext): NpmScriptHover
             scheme: 'file',
             pattern: '**/package.json'
         };
+
         const provider = new NpmScriptHoverProvider(context);
         context.subscriptions.push(vscode.languages.registerHoverProvider(npmSelector, provider));
+
         return provider;
     }
     return undefined;

@@ -20,6 +20,7 @@ export interface IToolBarOptions {
     orientation?: ActionsOrientation;
     actionViewItemProvider?: IActionViewItemProvider;
     ariaLabel?: string;
+
     getKeyBinding?: (action: IAction) => ResolvedKeybinding | undefined;
     actionRunner?: IActionRunner;
     toggleMenuTitle?: string;
@@ -56,6 +57,7 @@ export class ToolBar extends Disposable {
     private _onDidChangeDropdownVisibility = this._register(new EventMultiplexer<boolean>());
     readonly onDidChangeDropdownVisibility = this._onDidChangeDropdownVisibility.event;
     private readonly disposables = this._register(new DisposableStore());
+
     constructor(container: HTMLElement, contextMenuProvider: IContextMenuProvider, options: IToolBarOptions = { orientation: ActionsOrientation.HORIZONTAL }) {
         super();
         options.hoverDelegate = options.hoverDelegate ?? this._register(createInstantHoverDelegate());
@@ -86,10 +88,12 @@ export class ToolBar extends Disposable {
                     });
                     this.toggleMenuActionViewItem.setActionContext(this.actionBar.context);
                     this.disposables.add(this._onDidChangeDropdownVisibility.add(this.toggleMenuActionViewItem.onDidChangeVisibility));
+
                     return this.toggleMenuActionViewItem;
                 }
                 if (options.actionViewItemProvider) {
                     const result = options.actionViewItemProvider(action, viewItemOptions);
+
                     if (result) {
                         return result;
                     }
@@ -108,6 +112,7 @@ export class ToolBar extends Disposable {
                     result.setActionContext(this.actionBar.context);
                     this.submenuActionViewItems.push(result);
                     this.disposables.add(this._onDidChangeDropdownVisibility.add(result.onDidChangeVisibility));
+
                     return result;
                 }
                 return undefined;
@@ -123,6 +128,7 @@ export class ToolBar extends Disposable {
     set context(context: unknown) {
         this.actionBar.context = context;
         this.toggleMenuActionViewItem?.setActionContext(context);
+
         for (const actionViewItem of this.submenuActionViewItems) {
             actionViewItem.setActionContext(context);
         }
@@ -135,6 +141,7 @@ export class ToolBar extends Disposable {
     }
     getItemsWidth(): number {
         let itemsWidth = 0;
+
         for (let i = 0; i < this.actionBar.length(); i++) {
             itemsWidth += this.actionBar.getWidth(i);
         }
@@ -154,9 +161,11 @@ export class ToolBar extends Disposable {
     }
     setActions(primaryActions: ReadonlyArray<IAction>, secondaryActions?: ReadonlyArray<IAction>): void {
         this.clear();
+
         const primaryActionsToSet = primaryActions ? primaryActions.slice(0) : [];
         // Inject additional action to open secondary actions if present
         this.hasSecondaryActions = !!(secondaryActions && secondaryActions.length > 0);
+
         if (this.hasSecondaryActions && secondaryActions) {
             this.toggleMenuAction.menuActions = secondaryActions.slice(0);
             primaryActionsToSet.push(this.toggleMenuAction);
@@ -170,6 +179,7 @@ export class ToolBar extends Disposable {
     }
     private getKeybindingLabel(action: IAction): string | undefined {
         const key = this.options.getKeyBinding?.(action);
+
         return key?.getLabel() ?? undefined;
     }
     private clear(): void {
@@ -180,6 +190,7 @@ export class ToolBar extends Disposable {
     override dispose(): void {
         this.clear();
         this.disposables.dispose();
+
         super.dispose();
     }
 }
@@ -187,8 +198,10 @@ export class ToggleMenuAction extends Action {
     static readonly ID = 'toolbar.toggle.more';
     private _menuActions: ReadonlyArray<IAction>;
     private toggleDropdownMenu: () => void;
+
     constructor(toggleDropdownMenu: () => void, title?: string) {
         title = title || nls.localize('moreActions', "More Actions...");
+
         super(ToggleMenuAction.ID, title, undefined, true);
         this._menuActions = [];
         this.toggleDropdownMenu = toggleDropdownMenu;

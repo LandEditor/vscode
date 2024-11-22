@@ -30,6 +30,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
     private readonly updateWatchersDelayer = this._register(new ThrottledDelayer<void>(this.getUpdateWatchersDelay()));
     protected readonly suspendedWatchRequestPollingInterval: number = 5007; // node.js default
     private joinWatch = new DeferredPromise<void>();
+
     constructor() {
         super();
         this._register(this.onDidWatchFail(request => this.suspendWatchRequest({
@@ -57,6 +58,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
             this.joinWatch.complete();
         }
         this.joinWatch = new DeferredPromise<void>();
+
         try {
             this.correlatedWatchRequests.clear();
             this.nonCorrelatedWatchRequests.clear();
@@ -84,6 +86,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
     }
     private updateWatchers(delayed: boolean): Promise<void> {
         const nonSuspendedRequests: IUniversalWatchRequest[] = [];
+
         for (const [id, request] of [...this.nonCorrelatedWatchRequests, ...this.correlatedWatchRequests]) {
             if (!this.suspendedWatchRequests.has(id)) {
                 nonSuspendedRequests.push(request);
@@ -96,6 +99,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
     }
     isSuspended(request: IUniversalWatchRequest): 'polling' | boolean {
         const id = this.computeId(request);
+
         return this.suspendedWatchRequestsWithPolling.has(id) ? 'polling' : this.suspendedWatchRequests.has(id);
     }
     private async suspendWatchRequest(request: ISuspendedWatchRequest): Promise<void> {
@@ -109,6 +113,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
         // reusing another watcher for suspend/resume tracking, we await
         // all watch requests having processed.
         await this.joinWatch.p;
+
         if (disposables.isDisposed) {
             return;
         }
@@ -142,20 +147,25 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
                 this.onMonitoredPathAdded(request);
             }
         });
+
         if (subscription) {
             disposables.add(subscription);
+
             return true;
         }
         return false;
     }
     private doMonitorWithNodeJS(request: ISuspendedWatchRequest, disposables: DisposableStore): void {
         let pathNotFound = false;
+
         const watchFileCallback: (curr: Stats, prev: Stats) => void = (curr, prev) => {
             if (disposables.isDisposed) {
                 return; // return early if already disposed
             }
             const currentPathNotFound = this.isPathNotFound(curr);
+
             const previousPathNotFound = this.isPathNotFound(prev);
+
             const oldPathNotFound = pathNotFound;
             pathNotFound = currentPathNotFound;
             // Watch path created: resume watching request
@@ -164,6 +174,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
             }
         };
         this.trace(`starting fs.watchFile() on ${request.path} (correlationId: ${request.correlationId})`);
+
         try {
             watchFile(request.path, { persistent: false, interval: this.suspendedWatchRequestPollingInterval }, watchFileCallback);
         }
@@ -172,6 +183,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
         }
         disposables.add(toDisposable(() => {
             this.trace(`stopping fs.watchFile() on ${request.path} (correlationId: ${request.correlationId})`);
+
             try {
                 unwatchFile(request.path, watchFileCallback);
             }
@@ -216,6 +228,7 @@ export abstract class BaseWatcher extends Disposable implements IWatcher {
     protected abstract warn(message: string): void;
     abstract onDidError: Event<IWatcherErrorEvent>;
     protected verboseLogging = false;
+
     async setVerboseLogging(enabled: boolean): Promise<void> {
         this.verboseLogging = enabled;
     }

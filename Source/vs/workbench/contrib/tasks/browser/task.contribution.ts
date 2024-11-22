@@ -32,6 +32,7 @@ import { TaskDefinitionRegistry } from '../common/taskDefinitionRegistry.js';
 import { TerminalMenuBarGroup } from '../../terminal/browser/terminalMenus.js';
 import { isString } from '../../../../base/common/types.js';
 import { promiseWithResolvers } from '../../../../base/common/async.js';
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchRegistry.registerWorkbenchContribution(RunAutomaticTasks, LifecyclePhase.Eventually);
 registerAction2(ManageAutomaticTaskRunning);
@@ -46,6 +47,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 export class TaskStatusBarContributions extends Disposable implements IWorkbenchContribution {
     private _runningTasksStatusItem: IStatusbarEntryAccessor | undefined;
     private _activeTasksCount: number = 0;
+
     constructor(
     @ITaskService
     private readonly _taskService: ITaskService, 
@@ -58,6 +60,7 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
     }
     private _registerListeners(): void {
         let promise: Promise<void> | undefined = undefined;
+
         let resolve: (value?: void | Thenable<void>) => void;
         this._register(this._taskService.onDidStateChange(event => {
             if (event.kind === TaskEventKind.Changed) {
@@ -67,17 +70,20 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
                 switch (event.kind) {
                     case TaskEventKind.Active:
                         this._activeTasksCount++;
+
                         if (this._activeTasksCount === 1) {
                             if (!promise) {
                                 ({ promise, resolve } = promiseWithResolvers<void>());
                             }
                         }
                         break;
+
                     case TaskEventKind.Inactive:
                         // Since the exiting of the sub process is communicated async we can't order inactive and terminate events.
                         // So try to treat them accordingly.
                         if (this._activeTasksCount > 0) {
                             this._activeTasksCount--;
+
                             if (this._activeTasksCount === 0) {
                                 if (promise && resolve) {
                                     resolve!();
@@ -85,9 +91,11 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
                             }
                         }
                         break;
+
                     case TaskEventKind.Terminated:
                         if (this._activeTasksCount !== 0) {
                             this._activeTasksCount = 0;
+
                             if (promise && resolve) {
                                 resolve!();
                             }
@@ -98,6 +106,7 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
             if (promise && (event.kind === TaskEventKind.Active) && (this._activeTasksCount === 1)) {
                 this._progressService.withProgress({ location: ProgressLocation.Window, command: 'workbench.action.tasks.showTasks' }, progress => {
                     progress.report({ message: nls.localize('building', 'Building...') });
+
                     return promise!;
                 }).then(() => {
                     promise = undefined;
@@ -107,6 +116,7 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
     }
     private async _updateRunningTasksStatus(): Promise<void> {
         const tasks = await this._taskService.getActiveTasks();
+
         if (tasks.length === 0) {
             if (this._runningTasksStatusItem) {
                 this._runningTasksStatusItem.dispose();
@@ -121,6 +131,7 @@ export class TaskStatusBarContributions extends Disposable implements IWorkbench
                 tooltip: nls.localize('runningTasks', "Show Running Tasks"),
                 command: 'workbench.action.tasks.showTasks',
             };
+
             if (!this._runningTasksStatusItem) {
                 this._runningTasksStatusItem = this._statusbarService.addEntry(itemProps, 'status.runningTasks', StatusbarAlignment.LEFT, 49 /* Medium Priority, next to Markers */);
             }
@@ -317,6 +328,7 @@ class UserTasksGlobalActionContribution extends Disposable implements IWorkbench
     }
     private registerActions() {
         const id = 'workbench.action.tasks.openUserTasks';
+
         const title = nls.localize('tasks', "Tasks");
         this._register(MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
             command: {
@@ -352,6 +364,7 @@ const outputChannelRegistry = Registry.as<IOutputChannelRegistry>(OutputExt.Outp
 outputChannelRegistry.registerChannel({ id: AbstractTaskService.OutputChannelId, label: AbstractTaskService.OutputChannelLabel, log: false });
 // Register Quick Access
 const quickAccessRegistry = (Registry.as<IQuickAccessRegistry>(QuickAccessExtensions.Quickaccess));
+
 const tasksPickerContextKey = 'inTasksPicker';
 quickAccessRegistry.registerQuickAccessProvider({
     ctor: TasksQuickAccessProvider,
@@ -389,10 +402,12 @@ schema.definitions = {
     ...schemaVersion2.definitions,
 };
 schema.oneOf = [...(schemaVersion2.oneOf || []), ...(schemaVersion1.oneOf || [])];
+
 const jsonRegistry = <jsonContributionRegistry.IJSONContributionRegistry>Registry.as(jsonContributionRegistry.Extensions.JSONContribution);
 jsonRegistry.registerSchema(tasksSchemaId, schema);
 export class TaskRegistryContribution extends Disposable implements IWorkbenchContribution {
     static ID = 'taskRegistryContribution';
+
     constructor() {
         super();
         this._register(ProblemMatcherRegistry.onMatcherChanged(() => {
@@ -406,6 +421,7 @@ export class TaskRegistryContribution extends Disposable implements IWorkbenchCo
     }
 }
 registerWorkbenchContribution2(TaskRegistryContribution.ID, TaskRegistryContribution, WorkbenchPhase.AfterRestored);
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 configurationRegistry.registerConfiguration({
     id: 'task',

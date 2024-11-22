@@ -33,8 +33,11 @@ export class ActiveJsTsEditorTracker extends Disposable {
         // This correctly handles switching to the output view / debug console, which changes the activeEditor but not
         // the active tab.
         const editorCandidates = this.getEditorCandidatesForActiveTab();
+
         const managedEditors = editorCandidates.filter(editor => this.isManagedFile(editor));
+
         const newActiveJsTsEditor = managedEditors.at(0);
+
         if (this._activeJsTsEditor !== newActiveJsTsEditor) {
             this._activeJsTsEditor = newActiveJsTsEditor;
             this._onDidChangeActiveJsTsEditor.fire(this._activeJsTsEditor);
@@ -42,21 +45,25 @@ export class ActiveJsTsEditorTracker extends Disposable {
     }
     private getEditorCandidatesForActiveTab(): vscode.TextEditor[] {
         const tab = vscode.window.tabGroups.activeTabGroup.activeTab;
+
         if (!tab) {
             return [];
         }
         // Basic text editor tab
         if (tab.input instanceof vscode.TabInputText) {
             const inputUri = tab.input.uri;
+
             const editor = vscode.window.visibleTextEditors.find(editor => {
                 return editor.document.uri.toString() === inputUri.toString()
                     && editor.viewColumn === tab.group.viewColumn;
             });
+
             return editor ? [editor] : [];
         }
         // Diff editor tab. We could be focused on either side of the editor.
         if (tab.input instanceof vscode.TabInputTextDiff) {
             const original = tab.input.original;
+
             const modified = tab.input.modified;
             // Check the active editor first. However if a non tab editor like the output view is focused,
             // we still need to check the visible text editors.
@@ -70,6 +77,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
         // Notebook editor. Find editor for notebook cell.
         if (tab.input instanceof vscode.TabInputNotebook) {
             const activeEditor = vscode.window.activeTextEditor;
+
             if (!activeEditor) {
                 return [];
             }
@@ -79,6 +87,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
             }
             const notebook = vscode.window.visibleNotebookEditors.find(editor => editor.notebook.uri.toString() === (tab.input as vscode.TabInputNotebook).uri.toString()
                 && editor.viewColumn === tab.group.viewColumn);
+
             return notebook?.notebook.getCells().some(cell => cell.document.uri.toString() === activeEditor.document.uri.toString()) ? [activeEditor] : [];
         }
         return [];

@@ -32,22 +32,31 @@ function normalize(path: string): string {
 }
 export function createTypeScriptBuilder(config: IConfiguration, projectFile: string, cmd: ts.ParsedCommandLine): ITypeScriptBuilder {
     const _log = config.logFn;
+
     const host = new LanguageServiceHost(cmd, projectFile, _log);
+
     const service = ts.createLanguageService(host, ts.createDocumentRegistry());
+
     const lastBuildVersion: {
         [path: string]: string;
     } = Object.create(null);
+
     const lastDtsHash: {
         [path: string]: string;
     } = Object.create(null);
+
     const userWantsDeclarations = cmd.options.declaration;
+
     let oldErrors: {
         [path: string]: ts.Diagnostic[];
     } = Object.create(null);
+
     let headUsed = process.memoryUsage().heapUsed;
+
     let emitSourceMapsInStream = true;
     // always emit declaraction files
     host.getCompilationSettings().declaration = true;
+
     function file(file: Vinyl): void {
         // support gulp-sourcemaps
         if ((<any>file).sourceMap) {
@@ -107,9 +116,11 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                     if (/\.d\.ts$/.test(fileName)) {
                         // if it's already a d.ts file just emit it signature
                         const snapshot = host.getScriptSnapshot(fileName);
+
                         const signature = crypto.createHash('sha256')
                             .update(snapshot.getText(0, snapshot.getLength()))
                             .digest('base64');
+
                         return resolve({
                             fileName,
                             signature,
@@ -117,8 +128,11 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                         });
                     }
                     const output = service.getEmitOutput(fileName);
+
                     const files: Vinyl[] = [];
+
                     let signature: string | undefined;
+
                     for (const file of output.outputFiles) {
                         if (!emitSourceMapsInStream && /\.js\.map$/.test(file.name)) {
                             continue;
@@ -127,6 +141,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                             signature = crypto.createHash('sha256')
                                 .update(file.text)
                                 .digest('base64');
+
                             if (!userWantsDeclarations) {
                                 // don't leak .d.ts files if users don't want them
                                 continue;
@@ -137,23 +152,33 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                             contents: Buffer.from(file.text),
                             base: !config._emitWithoutBasePath && baseFor(host.getScriptSnapshot(fileName)) || undefined
                         });
+
                         if (!emitSourceMapsInStream && /\.js$/.test(file.name)) {
                             const sourcemapFile = output.outputFiles.filter(f => /\.js\.map$/.test(f.name))[0];
+
                             if (sourcemapFile) {
                                 const extname = path.extname(vinyl.relative);
+
                                 const basename = path.basename(vinyl.relative, extname);
+
                                 const dirname = path.dirname(vinyl.relative);
+
                                 const tsname = (dirname === '.' ? '' : dirname + '/') + basename + '.ts';
+
                                 let sourceMap = <RawSourceMap>JSON.parse(sourcemapFile.text);
                                 sourceMap.sources[0] = tsname.replace(/\\/g, '/');
                                 // check for an "input source" map and combine them
                                 // in step 1 we extract all line edit from the input source map, and
                                 // in step 2 we apply the line edits to the typescript source map
                                 const snapshot = host.getScriptSnapshot(fileName);
+
                                 if (snapshot instanceof VinylScriptSnapshot && snapshot.sourceMap) {
                                     const inputSMC = new SourceMapConsumer(snapshot.sourceMap);
+
                                     const tsSMC = new SourceMapConsumer(sourceMap);
+
                                     let didChange = false;
+
                                     const smg = new SourceMapGenerator({
                                         file: sourceMap.file,
                                         sourceRoot: sourceMap.sourceRoot
@@ -167,6 +192,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                                         if (m.originalLine === m.generatedLine) {
                                             // same line mapping
                                             let array = lineEdits.get(m.originalLine);
+
                                             if (!array) {
                                                 array = [];
                                                 lineEdits.set(m.originalLine, array);
@@ -180,8 +206,11 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                                     // step 2
                                     tsSMC.eachMapping(m => {
                                         didChange = true;
+
                                         const edits = lineEdits.get(m.originalLine);
+
                                         let originalColumnDelta = 0;
+
                                         if (edits) {
                                             for (const [from, to] of edits) {
                                                 if (to >= m.originalColumn) {
@@ -197,13 +226,16 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                                             original: { line: m.originalLine, column: m.originalColumn + originalColumnDelta }
                                         });
                                     });
+
                                     if (didChange) {
                                         [tsSMC, inputSMC].forEach((consumer) => {
                                             (<SourceMapConsumer & {
                                                 sources: string[];
                                             }>consumer).sources.forEach((sourceFile: any) => {
                                                 (<any>smg)._sources.add(sourceFile);
+
                                                 const sourceContent = consumer.sourceContentFor(sourceFile);
+
                                                 if (sourceContent !== null) {
                                                     smg.setSourceContent(sourceFile, sourceContent);
                                                 }
@@ -233,13 +265,21 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
         const newErrors: {
             [path: string]: ts.Diagnostic[];
         } = Object.create(null);
+
         const t1 = Date.now();
+
         const toBeEmitted: string[] = [];
+
         const toBeCheckedSyntactically: string[] = [];
+
         const toBeCheckedSemantically: string[] = [];
+
         const filesWithChangedSignature: string[] = [];
+
         const dependentFiles: string[] = [];
+
         const newLastBuildVersion = new Map<string, string>();
+
         for (const fileName of host.getScriptFileNames()) {
             if (lastBuildVersion[fileName] !== host.getScriptVersion(fileName)) {
                 toBeEmitted.push(fileName);
@@ -249,7 +289,9 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
         }
         return new Promise<void>(resolve => {
             const semanticCheckInfo = new Map<string, number>();
+
             const seenAsDependentFile = new Set<string>();
+
             function workOnNext() {
                 let promise: Promise<any> | undefined;
                 // let fileName: string;
@@ -258,6 +300,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                     _log('[CANCEL]', '>>This compile run was cancelled<<');
                     newLastBuildVersion.clear();
                     resolve();
+
                     return;
                 }
                 // (1st) emit code
@@ -287,6 +330,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                     _log('[check syntax]', fileName);
                     promise = checkSyntaxSoon(fileName).then(diagnostics => {
                         delete oldErrors[fileName];
+
                         if (diagnostics.length > 0) {
                             diagnostics.forEach(d => onError(d));
                             newErrors[fileName] = diagnostics;
@@ -300,6 +344,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                 // (3rd) check semantics
                 else if (toBeCheckedSemantically.length) {
                     let fileName = toBeCheckedSemantically.pop();
+
                     while (fileName && semanticCheckInfo.has(fileName)) {
                         fileName = toBeCheckedSemantically.pop()!;
                     }
@@ -308,6 +353,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                         promise = checkSemanticsSoon(fileName).then(diagnostics => {
                             delete oldErrors[fileName!];
                             semanticCheckInfo.set(fileName!, diagnostics.length);
+
                             if (diagnostics.length > 0) {
                                 diagnostics.forEach(d => onError(d));
                                 newErrors[fileName!] = diagnostics;
@@ -319,11 +365,13 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                 else if (filesWithChangedSignature.length) {
                     while (filesWithChangedSignature.length) {
                         const fileName = filesWithChangedSignature.pop()!;
+
                         if (!isExternalModule(service.getProgram()!.getSourceFile(fileName)!)) {
                             _log('[check semantics*]', fileName + ' is an internal module and it has changed shape -> check whatever hasn\'t been checked yet');
                             toBeCheckedSemantically.push(...host.getScriptFileNames());
                             filesWithChangedSignature.length = 0;
                             dependentFiles.length = 0;
+
                             break;
                         }
                         host.collectDependents(fileName, dependentFiles);
@@ -332,12 +380,15 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                 // (5th) dependents contd
                 else if (dependentFiles.length) {
                     let fileName = dependentFiles.pop();
+
                     while (fileName && seenAsDependentFile.has(fileName)) {
                         fileName = dependentFiles.pop();
                     }
                     if (fileName) {
                         seenAsDependentFile.add(fileName);
+
                         const value = semanticCheckInfo.get(fileName);
+
                         if (value === 0) {
                             // already validated successfully -> look at dependents next
                             host.collectDependents(fileName, dependentFiles);
@@ -352,6 +403,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
                 // (last) done
                 else {
                     resolve();
+
                     return;
                 }
                 if (!promise) {
@@ -378,6 +430,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
             oldErrors = newErrors;
             // print stats
             const headNow = process.memoryUsage().heapUsed;
+
             const MB = 1024 * 1024;
             _log('[tsb]', `time:  ${colors.yellow((Date.now() - t1) + 'ms')} + \nmem:  ${colors.cyan(Math.ceil(headNow / MB) + 'MB')} ${colors.bgcyan('delta: ' + Math.ceil((headNow - headUsed) / MB))}`);
             headUsed = headNow;
@@ -392,6 +445,7 @@ export function createTypeScriptBuilder(config: IConfiguration, projectFile: str
 class ScriptSnapshot implements ts.IScriptSnapshot {
     private readonly _text: string;
     private readonly _mtime: Date;
+
     constructor(text: string, mtime: Date) {
         this._text = text;
         this._mtime = mtime;
@@ -412,6 +466,7 @@ class ScriptSnapshot implements ts.IScriptSnapshot {
 class VinylScriptSnapshot extends ScriptSnapshot {
     private readonly _base: string;
     readonly sourceMap?: RawSourceMap;
+
     constructor(file: Vinyl & {
         sourceMap?: RawSourceMap;
     }) {
@@ -435,6 +490,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
         [path: string]: string[];
     };
     private _projectVersion: number;
+
     constructor(private readonly _cmdLine: ts.ParsedCommandLine, private readonly _projectPath: string, private readonly _log: (topic: string, message: string) => void) {
         this._snapshots = Object.create(null);
         this._filesInProject = new Set(_cmdLine.fileNames);
@@ -461,11 +517,14 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
     }
     getScriptFileNames(): string[] {
         const res = Object.keys(this._snapshots).filter(path => this._filesInProject.has(path) || this._filesAdded.has(path));
+
         return res;
     }
     getScriptVersion(filename: string): string {
         filename = normalize(filename);
+
         const result = this._snapshots[filename];
+
         if (result) {
             return result.getVersion();
         }
@@ -473,7 +532,9 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
     }
     getScriptSnapshot(filename: string, resolve: boolean = true): ScriptSnapshot {
         filename = normalize(filename);
+
         let result = this._snapshots[filename];
+
         if (!result && resolve) {
             try {
                 result = new VinylScriptSnapshot(new Vinyl(<any>{
@@ -494,7 +555,9 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
     addScriptSnapshot(filename: string, snapshot: ScriptSnapshot): ScriptSnapshot {
         this._projectVersion++;
         filename = normalize(filename);
+
         const old = this._snapshots[filename];
+
         if (!old && !this._filesInProject.has(filename) && !filename.endsWith('.d.ts')) {
             //                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^
             //                                              not very proper!
@@ -502,15 +565,20 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
         }
         if (!old || old.getVersion() !== snapshot.getVersion()) {
             this._dependenciesRecomputeList.push(filename);
+
             const node = this._dependencies.lookup(filename);
+
             if (node) {
                 node.outgoing = Object.create(null);
             }
             // (cheap) check for declare module
             LanguageServiceHost._declareModule.lastIndex = 0;
+
             let match: RegExpExecArray | null | undefined;
+
             while ((match = LanguageServiceHost._declareModule.exec(snapshot.getText(0, snapshot.getLength())))) {
                 let declaredModules = this._fileNameToDeclaredModule[filename];
+
                 if (!declaredModules) {
                     this._fileNameToDeclaredModule[filename] = declaredModules = [];
                 }
@@ -518,6 +586,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
             }
         }
         this._snapshots[filename] = snapshot;
+
         return old;
     }
     removeScriptSnapshot(filename: string): boolean {
@@ -526,6 +595,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
         this._projectVersion++;
         filename = normalize(filename);
         delete this._fileNameToDeclaredModule[filename];
+
         return delete this._snapshots[filename];
     }
     getCurrentDirectory(): string {
@@ -545,7 +615,9 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
             this._processFile(this._dependenciesRecomputeList.pop()!);
         }
         filename = normalize(filename);
+
         const node = this._dependencies.lookup(filename);
+
         if (node) {
             utils.collections.forEach(node.incoming, entry => target.push(entry.key));
         }
@@ -555,30 +627,40 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
             return;
         }
         filename = normalize(filename);
+
         const snapshot = this.getScriptSnapshot(filename);
+
         if (!snapshot) {
             this._log('processFile', `Missing snapshot for: ${filename}`);
+
             return;
         }
         const info = ts.preProcessFile(snapshot.getText(0, snapshot.getLength()), true);
         // (1) ///-references
         info.referencedFiles.forEach(ref => {
             const resolvedPath = path.resolve(path.dirname(filename), ref.fileName);
+
             const normalizedPath = normalize(resolvedPath);
             this._dependencies.inertEdge(filename, normalizedPath);
         });
         // (2) import-require statements
         info.importedFiles.forEach(ref => {
             const stopDirname = normalize(this.getCurrentDirectory());
+
             let dirname = filename;
+
             let found = false;
+
             while (!found && dirname.indexOf(stopDirname) === 0) {
                 dirname = path.dirname(dirname);
+
                 let resolvedPath = path.resolve(dirname, ref.fileName);
+
                 if (resolvedPath.endsWith('.js')) {
                     resolvedPath = resolvedPath.slice(0, -3);
                 }
                 const normalizedPath = normalize(resolvedPath);
+
                 if (this.getScriptSnapshot(normalizedPath + '.ts')) {
                     this._dependencies.inertEdge(filename, normalizedPath + '.ts');
                     found = true;

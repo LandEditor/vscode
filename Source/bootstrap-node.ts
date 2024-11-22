@@ -7,7 +7,9 @@ import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'node:module';
 import type { IProductConfiguration } from './vs/base/common/product';
+
 const require = createRequire(import.meta.url);
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // increase number of stack frames(from 10, https://github.com/v8/v8/wiki/Stack-Trace-API)
 Error.stackTraceLimit = 100;
@@ -68,12 +70,16 @@ export function removeGlobalNodeJsModuleLookupPaths(): void {
         return; // Electron disables global search paths in https://github.com/electron/electron/blob/3186c2f0efa92d275dc3d57b5a14a60ed3846b0e/shell/common/node_bindings.cc#L653
     }
     const Module = require('module');
+
     const globalPaths = Module.globalPaths;
+
     const originalResolveLookupPaths = Module._resolveLookupPaths;
     Module._resolveLookupPaths = function (moduleName: string, parent: any): string[] {
         const paths = originalResolveLookupPaths(moduleName, parent);
+
         if (Array.isArray(paths)) {
             let commonSuffixLength = 0;
+
             while (commonSuffixLength < paths.length && paths[paths.length - 1 - commonSuffixLength] === globalPaths[globalPaths.length - 1 - commonSuffixLength]) {
                 commonSuffixLength++;
             }
@@ -90,6 +96,7 @@ export function configurePortable(product: Partial<IProductConfiguration>): {
     isPortable: boolean;
 } {
     const appRoot = path.dirname(__dirname);
+
     function getApplicationPath(): string {
         if (process.env['VSCODE_DEV']) {
             return appRoot;
@@ -107,12 +114,17 @@ export function configurePortable(product: Partial<IProductConfiguration>): {
             return path.join(getApplicationPath(), 'data');
         }
         const portableDataName = product.portable || `${product.applicationName}-portable-data`;
+
         return path.join(path.dirname(getApplicationPath()), portableDataName);
     }
     const portableDataPath = getPortableDataPath();
+
     const isPortable = !('target' in product) && fs.existsSync(portableDataPath);
+
     const portableTempPath = path.join(portableDataPath, 'tmp');
+
     const isTempPortable = isPortable && fs.existsSync(portableTempPath);
+
     if (isPortable) {
         process.env['VSCODE_PORTABLE'] = portableDataPath;
     }

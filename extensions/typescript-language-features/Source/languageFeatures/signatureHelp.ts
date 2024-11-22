@@ -15,6 +15,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
     public constructor(private readonly client: ITypeScriptServiceClient) { }
     public async provideSignatureHelp(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.SignatureHelpContext): Promise<vscode.SignatureHelp | undefined> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return undefined;
         }
@@ -22,22 +23,28 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
             ...typeConverters.Position.toFileLocationRequestArgs(filepath, position),
             triggerReason: toTsTriggerReason(context)
         };
+
         const response = await this.client.interruptGetErr(() => this.client.execute('signatureHelp', args, token));
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
         const info = response.body;
+
         const result = new vscode.SignatureHelp();
         result.signatures = info.items.map(signature => this.convertSignature(signature, document.uri));
         result.activeSignature = this.getActiveSignature(context, info, result.signatures);
         result.activeParameter = this.getActiveParameter(info);
+
         return result;
     }
     private getActiveSignature(context: vscode.SignatureHelpContext, info: Proto.SignatureHelpItems, signatures: readonly vscode.SignatureInformation[]): number {
         // Try matching the previous active signature's label to keep it selected
         const previouslyActiveSignature = context.activeSignatureHelp?.signatures[context.activeSignatureHelp.activeSignature];
+
         if (previouslyActiveSignature && context.isRetrigger) {
             const existingIndex = signatures.findIndex(other => other.label === previouslyActiveSignature?.label);
+
             if (existingIndex >= 0) {
                 return existingIndex;
             }
@@ -46,6 +53,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
     }
     private getActiveParameter(info: Proto.SignatureHelpItems): number {
         const activeSignature = info.items[info.selectedItemIndex];
+
         if (activeSignature?.isVariadic) {
             return Math.min(info.argumentIndex, activeSignature.parameters.length - 1);
         }
@@ -53,20 +61,26 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
     }
     private convertSignature(item: Proto.SignatureHelpItem, baseUri: vscode.Uri) {
         const signature = new vscode.SignatureInformation(Previewer.asPlainTextWithLinks(item.prefixDisplayParts, this.client), Previewer.documentationToMarkdown(item.documentation, item.tags.filter(x => x.name !== 'param'), this.client, baseUri));
+
         let textIndex = signature.label.length;
+
         const separatorLabel = Previewer.asPlainTextWithLinks(item.separatorDisplayParts, this.client);
+
         for (let i = 0; i < item.parameters.length; ++i) {
             const parameter = item.parameters[i];
+
             const label = Previewer.asPlainTextWithLinks(parameter.displayParts, this.client);
             signature.parameters.push(new vscode.ParameterInformation([textIndex, textIndex + label.length], Previewer.documentationToMarkdown(parameter.documentation, [], this.client, baseUri)));
             textIndex += label.length;
             signature.label += label;
+
             if (i !== item.parameters.length - 1) {
                 signature.label += separatorLabel;
                 textIndex += separatorLabel.length;
             }
         }
         signature.label += Previewer.asPlainTextWithLinks(item.suffixDisplayParts, this.client);
+
         return signature;
     }
 }
@@ -86,6 +100,7 @@ function toTsTriggerReason(context: vscode.SignatureHelpContext): Proto.Signatur
             }
         case vscode.SignatureHelpTriggerKind.ContentChange:
             return context.isRetrigger ? { kind: 'retrigger' } : { kind: 'invoked' };
+
         case vscode.SignatureHelpTriggerKind.Invoke:
         default:
             return { kind: 'invoked' };

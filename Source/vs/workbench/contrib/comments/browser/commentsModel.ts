@@ -14,6 +14,7 @@ export function threadHasMeaningfulComments(thread: CommentThread): boolean {
 }
 export interface ICommentsModel {
     hasCommentThreads(): boolean;
+
     getMessage(): string;
     readonly resourceCommentThreads: ResourceWithCommentThreads[];
     readonly commentThreadsMap: Map<string, {
@@ -24,11 +25,13 @@ export interface ICommentsModel {
 export class CommentsModel extends Disposable implements ICommentsModel {
     readonly _serviceBrand: undefined;
     private _resourceCommentThreads: ResourceWithCommentThreads[];
+
     get resourceCommentThreads(): ResourceWithCommentThreads[] { return this._resourceCommentThreads; }
     readonly commentThreadsMap: Map<string, {
         resourceWithCommentThreads: ResourceWithCommentThreads[];
         ownerLabel?: string;
     }>;
+
     constructor() {
         super();
         this._resourceCommentThreads = [];
@@ -42,6 +45,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
         this._resourceCommentThreads = [...this.commentThreadsMap.values()].map(value => {
             return value.resourceWithCommentThreads.map(resource => {
                 resource.ownerLabel = includeLabel ? value.ownerLabel : undefined;
+
                 return resource;
             }).flat();
         }).flat();
@@ -62,13 +66,16 @@ export class CommentsModel extends Disposable implements ICommentsModel {
     }
     public updateCommentThreads(event: ICommentThreadChangedEvent): boolean {
         const { uniqueOwner, owner, ownerLabel, removed, changed, added } = event;
+
         const threadsForOwner = this.commentThreadsMap.get(uniqueOwner)?.resourceWithCommentThreads || [];
         removed.forEach(thread => {
             // Find resource that has the comment thread
             const matchingResourceIndex = threadsForOwner.findIndex((resourceData) => resourceData.id === thread.resource);
+
             const matchingResourceData = matchingResourceIndex >= 0 ? threadsForOwner[matchingResourceIndex] : undefined;
             // Find comment node on resource that is that thread and remove it
             const index = matchingResourceData?.commentThreads.findIndex((commentThread) => commentThread.threadId === thread.threadId) ?? 0;
+
             if (index >= 0) {
                 matchingResourceData?.commentThreads.splice(index, 1);
             }
@@ -80,12 +87,15 @@ export class CommentsModel extends Disposable implements ICommentsModel {
         changed.forEach(thread => {
             // Find resource that has the comment thread
             const matchingResourceIndex = threadsForOwner.findIndex((resourceData) => resourceData.id === thread.resource);
+
             const matchingResourceData = matchingResourceIndex >= 0 ? threadsForOwner[matchingResourceIndex] : undefined;
+
             if (!matchingResourceData) {
                 return;
             }
             // Find comment node on resource that is that thread and replace it
             const index = matchingResourceData.commentThreads.findIndex((commentThread) => commentThread.threadId === thread.threadId);
+
             if (index >= 0) {
                 matchingResourceData.commentThreads[index] = ResourceWithCommentThreads.createCommentNode(uniqueOwner, owner, URI.parse(matchingResourceData.id), thread);
             }
@@ -95,8 +105,10 @@ export class CommentsModel extends Disposable implements ICommentsModel {
         });
         added.forEach(thread => {
             const existingResource = threadsForOwner.filter(resourceWithThreads => resourceWithThreads.resource.toString() === thread.resource);
+
             if (existingResource.length) {
                 const resource = existingResource[0];
+
                 if (thread.comments && thread.comments.length) {
                     resource.commentThreads.push(ResourceWithCommentThreads.createCommentNode(uniqueOwner, owner, resource.resource, thread));
                 }
@@ -107,6 +119,7 @@ export class CommentsModel extends Disposable implements ICommentsModel {
         });
         this.commentThreadsMap.set(uniqueOwner, { ownerLabel, resourceWithCommentThreads: threadsForOwner });
         this.updateResourceCommentThreads();
+
         return removed.length > 0 || changed.length > 0 || added.length > 0;
     }
     public hasCommentThreads(): boolean {
@@ -129,18 +142,23 @@ export class CommentsModel extends Disposable implements ICommentsModel {
     }
     private groupByResource(uniqueOwner: string, owner: string, commentThreads: CommentThread[]): ResourceWithCommentThreads[] {
         const resourceCommentThreads: ResourceWithCommentThreads[] = [];
+
         const commentThreadsByResource = new Map<string, ResourceWithCommentThreads>();
+
         for (const group of groupBy(commentThreads, CommentsModel._compareURIs)) {
             commentThreadsByResource.set(group[0].resource!, new ResourceWithCommentThreads(uniqueOwner, owner, URI.parse(group[0].resource!), group));
         }
         commentThreadsByResource.forEach((v, i, m) => {
             resourceCommentThreads.push(v);
         });
+
         return resourceCommentThreads;
     }
     private static _compareURIs(a: CommentThread, b: CommentThread) {
         const resourceA = a.resource!.toString();
+
         const resourceB = b.resource!.toString();
+
         if (resourceA < resourceB) {
             return -1;
         }

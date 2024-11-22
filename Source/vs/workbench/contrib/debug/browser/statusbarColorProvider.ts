@@ -69,7 +69,9 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
     }
     protected update(): void {
         const debugConfig = this.configurationService.getValue<IDebugConfiguration>('debug');
+
         const isInDebugMode = isStatusbarInDebugMode(this.debugService.state, this.debugService.getModel().getSessions());
+
         if (!debugConfig.enableStatusBarColor) {
             this.enabled = false;
         }

@@ -23,10 +23,12 @@ export async function requestUsbDevice(options?: {
     filters?: unknown[];
 }): Promise<UsbDeviceData | undefined> {
     const usb = (navigator as any).usb;
+
     if (!usb) {
         return undefined;
     }
     const device = await usb.requestDevice({ filters: options?.filters ?? [] });
+
     if (!device) {
         return undefined;
     }
@@ -56,14 +58,17 @@ export async function requestSerialPort(options?: {
     filters?: unknown[];
 }): Promise<SerialPortData | undefined> {
     const serial = (navigator as any).serial;
+
     if (!serial) {
         return undefined;
     }
     const port = await serial.requestPort({ filters: options?.filters ?? [] });
+
     if (!port) {
         return undefined;
     }
     const info = port.getInfo();
+
     return {
         usbVendorId: info.usbVendorId,
         usbProductId: info.usbProductId
@@ -82,14 +87,17 @@ export async function requestHidDevice(options?: {
     filters?: unknown[];
 }): Promise<HidDeviceData | undefined> {
     const hid = (navigator as any).hid;
+
     if (!hid) {
         return undefined;
     }
     const devices = await hid.requestDevice({ filters: options?.filters ?? [] });
+
     if (!devices.length) {
         return undefined;
     }
     const device = devices[0];
+
     return {
         opened: device.opened,
         vendorId: device.vendorId,

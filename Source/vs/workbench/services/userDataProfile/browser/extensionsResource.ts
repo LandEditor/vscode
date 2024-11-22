@@ -42,12 +42,18 @@ export class ExtensionsResourceInitializer implements IProfileResourceInitialize
 
 	async initialize(content: string): Promise<void> {
 		const profileExtensions: IProfileExtension[] = JSON.parse(content);
+
 		const installedExtensions = await this.extensionManagementService.getInstalled(undefined, this.userDataProfileService.currentProfile.extensionsResource);
+
 		const extensionsToEnableOrDisable: { extension: IExtensionIdentifier; enable: boolean }[] = [];
+
 		const extensionsToInstall: IProfileExtension[] = [];
+
 		for (const e of profileExtensions) {
 			const isDisabled = this.extensionEnablementService.getDisabledExtensions().some(disabledExtension => areSameExtensions(disabledExtension, e.identifier));
+
 			const installedExtension = installedExtensions.find(installed => areSameExtensions(installed.identifier, e.identifier));
+
 			if (!installedExtension || (!installedExtension.isBuiltin && installedExtension.preRelease !== e.preRelease)) {
 				extensionsToInstall.push(e);
 			}
@@ -56,6 +62,7 @@ export class ExtensionsResourceInitializer implements IProfileResourceInitialize
 			}
 		}
 		const extensionsToUninstall: ILocalExtension[] = installedExtensions.filter(extension => !extension.isBuiltin && !profileExtensions.some(({ identifier }) => areSameExtensions(identifier, extension.identifier)));
+
 		for (const { extension, enable } of extensionsToEnableOrDisable) {
 			if (enable) {
 				this.logService.trace(`Initializing Profile: Enabling extension...`, extension.id);
@@ -71,6 +78,7 @@ export class ExtensionsResourceInitializer implements IProfileResourceInitialize
 			const galleryExtensions = await this.extensionGalleryService.getExtensions(extensionsToInstall.map(e => ({ ...e.identifier, version: e.version, hasPreRelease: e.version ? undefined : e.preRelease })), CancellationToken.None);
 			await Promise.all(extensionsToInstall.map(async e => {
 				const extension = galleryExtensions.find(galleryExtension => areSameExtensions(galleryExtension.identifier, e.identifier));
+
 				if (!extension) {
 					return;
 				}
@@ -109,6 +117,7 @@ export class ExtensionsResource implements IProfileResource {
 
 	async getContent(profile: IUserDataProfile, exclude?: string[]): Promise<string> {
 		const extensions = await this.getLocalExtensions(profile);
+
 		return this.toContent(extensions, exclude);
 	}
 
@@ -119,12 +128,18 @@ export class ExtensionsResource implements IProfileResource {
 	async apply(content: string, profile: IUserDataProfile, progress?: (message: string) => void, token?: CancellationToken): Promise<void> {
 		return this.withProfileScopedServices(profile, async (extensionEnablementService) => {
 			const profileExtensions: IProfileExtension[] = await this.getProfileExtensions(content);
+
 			const installedExtensions = await this.extensionManagementService.getInstalled(undefined, profile.extensionsResource);
+
 			const extensionsToEnableOrDisable: { extension: IExtensionIdentifier; enable: boolean }[] = [];
+
 			const extensionsToInstall: IProfileExtension[] = [];
+
 			for (const e of profileExtensions) {
 				const isDisabled = extensionEnablementService.getDisabledExtensions().some(disabledExtension => areSameExtensions(disabledExtension, e.identifier));
+
 				const installedExtension = installedExtensions.find(installed => areSameExtensions(installed.identifier, e.identifier));
+
 				if (!installedExtension || (!installedExtension.isBuiltin && installedExtension.preRelease !== e.preRelease)) {
 					extensionsToInstall.push(e);
 				}
@@ -133,6 +148,7 @@ export class ExtensionsResource implements IProfileResource {
 				}
 			}
 			const extensionsToUninstall: ILocalExtension[] = installedExtensions.filter(extension => !extension.isBuiltin && !profileExtensions.some(({ identifier }) => areSameExtensions(identifier, extension.identifier)) && !extension.isApplicationScoped);
+
 			for (const { extension, enable } of extensionsToEnableOrDisable) {
 				if (enable) {
 					this.logService.trace(`Importing Profile (${profile.name}): Enabling extension...`, extension.id);
@@ -146,10 +162,13 @@ export class ExtensionsResource implements IProfileResource {
 			}
 			if (extensionsToInstall.length) {
 				this.logService.info(`Importing Profile (${profile.name}): Started installing extensions.`);
+
 				const galleryExtensions = await this.extensionGalleryService.getExtensions(extensionsToInstall.map(e => ({ ...e.identifier, version: e.version, hasPreRelease: e.version ? undefined : e.preRelease })), CancellationToken.None);
+
 				const installExtensionInfos: InstallExtensionInfo[] = [];
 				await Promise.all(extensionsToInstall.map(async e => {
 					const extension = galleryExtensions.find(galleryExtension => areSameExtensions(galleryExtension.identifier, e.identifier));
+
 					if (!extension) {
 						return;
 					}
@@ -169,6 +188,7 @@ export class ExtensionsResource implements IProfileResource {
 						this.logService.info(`Importing Profile (${profile.name}): Skipped installing extension because it cannot be installed.`, extension.identifier.id);
 					}
 				}));
+
 				if (installExtensionInfos.length) {
 					if (token) {
 						for (const installExtensionInfo of installExtensionInfos) {
@@ -192,10 +212,13 @@ export class ExtensionsResource implements IProfileResource {
 
 	async copy(from: IUserDataProfile, to: IUserDataProfile, disableExtensions: boolean): Promise<void> {
 		await this.extensionManagementService.copyExtensions(from.extensionsResource, to.extensionsResource);
+
 		const extensionsToDisable = await this.withProfileScopedServices(from, async (extensionEnablementService) =>
 			extensionEnablementService.getDisabledExtensions());
+
 		if (disableExtensions) {
 			const extensions = await this.extensionManagementService.getInstalled(ExtensionType.User, to.extensionsResource);
+
 			for (const extension of extensions) {
 				extensionsToDisable.push(extension.identifier);
 			}
@@ -207,11 +230,16 @@ export class ExtensionsResource implements IProfileResource {
 	async getLocalExtensions(profile: IUserDataProfile): Promise<IProfileExtension[]> {
 		return this.withProfileScopedServices(profile, async (extensionEnablementService) => {
 			const result = new Map<string, IProfileExtension & { displayName?: string }>();
+
 			const installedExtensions = await this.extensionManagementService.getInstalled(undefined, profile.extensionsResource);
+
 			const disabledExtensions = extensionEnablementService.getDisabledExtensions();
+
 			for (const extension of installedExtensions) {
 				const { identifier, preRelease } = extension;
+
 				const disabled = disabledExtensions.some(disabledExtension => areSameExtensions(disabledExtension, identifier));
+
 				if (extension.isBuiltin && !disabled) {
 					// skip enabled builtin extensions
 					continue;
@@ -223,11 +251,13 @@ export class ExtensionsResource implements IProfileResource {
 					}
 				}
 				const existing = result.get(identifier.id.toLowerCase());
+
 				if (existing?.disabled) {
 					// Remove the duplicate disabled extension
 					result.delete(identifier.id.toLowerCase());
 				}
 				const profileExtension: IProfileExtension = { identifier, displayName: extension.manifest.displayName };
+
 				if (disabled) {
 					profileExtension.disabled = true;
 				}
@@ -252,8 +282,11 @@ export class ExtensionsResource implements IProfileResource {
 		return this.userDataProfileStorageService.withProfileScopedStorageService(profile,
 			async storageService => {
 				const disposables = new DisposableStore();
+
 				const instantiationService = disposables.add(this.instantiationService.createChild(new ServiceCollection([IStorageService, storageService])));
+
 				const extensionEnablementService = disposables.add(instantiationService.createInstance(GlobalExtensionEnablementService));
+
 				try {
 					return await fn(extensionEnablementService);
 				} finally {
@@ -276,7 +309,9 @@ export abstract class ExtensionsResourceTreeItem implements IProfileResourceTree
 
 	async getChildren(): Promise<Array<IProfileResourceChildTreeItem & IProfileExtension>> {
 		const extensions = (await this.getExtensions()).sort((a, b) => (a.displayName ?? a.identifier.id).localeCompare(b.displayName ?? b.identifier.id));
+
 		const that = this;
+
 		return extensions.map<IProfileResourceChildTreeItem & IProfileExtension>(e => ({
 			...e,
 			handle: e.identifier.id.toLowerCase(),
@@ -309,6 +344,7 @@ export abstract class ExtensionsResourceTreeItem implements IProfileResourceTree
 
 	async hasContent(): Promise<boolean> {
 		const extensions = await this.getExtensions();
+
 		return extensions.length > 0;
 	}
 
@@ -360,7 +396,9 @@ export class ExtensionsResourceImportTreeItem extends ExtensionsResourceTreeItem
 
 	async getContent(): Promise<string> {
 		const extensionsResource = this.instantiationService.createInstance(ExtensionsResource);
+
 		const extensions = await extensionsResource.getProfileExtensions(this.content);
+
 		return extensionsResource.toContent(extensions, [...this.excludedExtensions.values()]);
 	}
 

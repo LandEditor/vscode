@@ -68,11 +68,13 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
         this._isDisposed = true;
         this._container?.domNode.remove();
         this._container = undefined;
+
         for (const msg of this._firstLoadPendingMessages) {
             msg.resolve(false);
         }
         this._firstLoadPendingMessages.clear();
         this._onDidDispose.fire();
+
         super.dispose();
     }
     public get container(): HTMLElement {
@@ -96,6 +98,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
             return;
         }
         const oldOwner = this._owner;
+
         if (this._windowId !== targetWindow.vscodeWindowId) {
             // moving to a new window
             this.release(oldOwner);
@@ -108,12 +111,14 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
         this._owner = owner;
         this._windowId = targetWindow.vscodeWindowId;
         this._show(targetWindow);
+
         if (oldOwner !== owner) {
             const contextKeyService = (scopedContextKeyService || this._baseContextKeyService);
             // Explicitly clear before creating the new context.
             // Otherwise we create the new context while the old one is still around
             this._scopedContextKeyService.clear();
             this._scopedContextKeyService.value = contextKeyService.createScoped(this.container);
+
             const wasFindVisible = this._findWidgetVisible?.get();
             this._findWidgetVisible?.reset();
             this._findWidgetVisible = KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE.bindTo(contextKeyService);
@@ -130,6 +135,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
         }
         this._scopedContextKeyService.clear();
         this._owner = undefined;
+
         if (this._container) {
             this._container.setVisibility('hidden');
         }
@@ -149,6 +155,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
             return;
         }
         const whenContainerStylesLoaded = this._layoutService.whenContainerStylesLoaded(this.window);
+
         if (whenContainerStylesLoaded) {
             // In floating windows, we need to ensure that the
             // container is ready for us to compute certain
@@ -164,13 +171,17 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
             return;
         }
         const frameRect = element.getBoundingClientRect();
+
         const containerRect = this._container.domNode.parentElement.getBoundingClientRect();
+
         const parentBorderTop = (containerRect.height - this._container.domNode.parentElement.clientHeight) / 2.0;
+
         const parentBorderLeft = (containerRect.width - this._container.domNode.parentElement.clientWidth) / 2.0;
         this._container.setTop(frameRect.top - containerRect.top - parentBorderTop);
         this._container.setLeft(frameRect.left - containerRect.left - parentBorderLeft);
         this._container.setWidth(dimension ? dimension.width : frameRect.width);
         this._container.setHeight(dimension ? dimension.height : frameRect.height);
+
         if (clippingContainer) {
             const { top, left, right, bottom } = computeClippingRect(frameRect, clippingContainer);
             this._container.domNode.style.clipPath = `polygon(${left}px ${top}px, ${right}px ${top}px, ${right}px ${bottom}px, ${left}px ${bottom}px)`;
@@ -191,6 +202,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
             });
             this._webview.value = webview;
             webview.state = this._state;
+
             if (this._scopedContextKeyService.value) {
                 this._webview.value.setContextKeyService(this._scopedContextKeyService.value);
             }
@@ -220,6 +232,7 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
                 this._state = state;
                 this._onDidUpdateState.fire(state);
             }));
+
             if (this._isFirstLoad) {
                 this._firstLoadPendingMessages.forEach(async (msg) => {
                     msg.resolve(await webview.postMessage(msg.message, msg.transfer));
@@ -299,8 +312,10 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
         }
         if (this._isFirstLoad) {
             let resolve: (x: boolean) => void;
+
             const p = new Promise<boolean>(r => resolve = r);
             this._firstLoadPendingMessages.add({ message, transfer, resolve: resolve! });
+
             return p;
         }
         return false;
@@ -341,9 +356,14 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
 }
 function computeClippingRect(frameRect: DOMRectReadOnly, clipper: HTMLElement) {
     const rootRect = clipper.getBoundingClientRect();
+
     const top = Math.max(rootRect.top - frameRect.top, 0);
+
     const right = Math.max(frameRect.width - (frameRect.right - rootRect.right), 0);
+
     const bottom = Math.max(frameRect.height - (frameRect.bottom - rootRect.bottom), 0);
+
     const left = Math.max(rootRect.left - frameRect.left, 0);
+
     return { top, right, bottom, left };
 }

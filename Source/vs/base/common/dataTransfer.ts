@@ -26,6 +26,7 @@ export function createStringDataTransferItem(stringOrPromise: string | Promise<s
 }
 export function createFileDataTransferItem(fileName: string, uri: URI | undefined, data: () => Promise<Uint8Array>): IDataTransferItem {
     const file = { id: generateUuid(), name: fileName, uri, data };
+
     return {
         asString: async () => '',
         asFile: () => file,
@@ -65,6 +66,7 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
     private readonly _entries = new Map<string, IDataTransferItem[]>();
     public get size(): number {
         let size = 0;
+
         for (const _ of this._entries) {
             size++;
         }
@@ -75,6 +77,7 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
     }
     public matches(pattern: string): boolean {
         const mimes = [...this._entries.keys()];
+
         if (Iterable.some(this, ([_, item]) => item.asFile())) {
             mimes.push('files');
         }
@@ -90,6 +93,7 @@ export class VSDataTransfer implements IReadonlyVSDataTransfer {
      */
     public append(mimeType: string, value: IDataTransferItem): void {
         const existing = this._entries.get(mimeType);
+
         if (existing) {
             existing.push(value);
         }
@@ -147,10 +151,12 @@ function matchesMimeType_normalized(normalizedPattern: string, normalizedMimeTyp
     }
     // Wildcard, such as `image/*`
     const wildcard = normalizedPattern.match(/^([a-z]+)\/([a-z]+|\*)$/i);
+
     if (!wildcard) {
         return false;
     }
     const [_, type, subtype] = wildcard;
+
     if (subtype === '*') {
         return normalizedMimeTypes.some(mime => mime.startsWith(type + '/'));
     }

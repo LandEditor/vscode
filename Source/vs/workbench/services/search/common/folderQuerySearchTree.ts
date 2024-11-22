@@ -15,13 +15,16 @@ export class FolderQuerySearchTree<FolderQueryInfo extends {
 }> extends TernarySearchTree<URI, Map<string, FolderQueryInfo>> {
     constructor(folderQueries: IFolderQuery<URI>[], getFolderQueryInfo: (fq: IFolderQuery, i: number) => FolderQueryInfo, ignorePathCasing: (key: URI) => boolean = () => false) {
         const uriIterator = new UriIterator(ignorePathCasing, () => false);
+
         super(uriIterator);
+
         const fqBySameBase = new ResourceMap<{
             fq: IFolderQuery<URI>;
             i: number;
         }[]>();
         folderQueries.forEach((fq, i) => {
             const uriWithoutQueryOrFragment = fq.folder.with({ query: '', fragment: '' });
+
             if (fqBySameBase.has(uriWithoutQueryOrFragment)) {
                 fqBySameBase.get(uriWithoutQueryOrFragment)!.push({ fq, i });
             }
@@ -31,6 +34,7 @@ export class FolderQuerySearchTree<FolderQueryInfo extends {
         });
         fqBySameBase.forEach((values, key) => {
             const folderQueriesWithQueries = new Map<string, FolderQueryInfo>();
+
             for (const fqBases of values) {
                 const folderQueryInfo = getFolderQueryInfo(fqBases.fq, fqBases.i);
                 folderQueriesWithQueries.set(this.encodeKey(fqBases.fq.folder), folderQueryInfo);
@@ -40,10 +44,12 @@ export class FolderQuerySearchTree<FolderQueryInfo extends {
     }
     findQueryFragmentAwareSubstr(key: URI): FolderQueryInfo | undefined {
         const baseURIResult = super.findSubstr(key.with({ query: '', fragment: '' }));
+
         if (!baseURIResult) {
             return undefined;
         }
         const queryAndFragmentKey = this.encodeKey(key);
+
         return baseURIResult.get(queryAndFragmentKey);
     }
     forEachFolderQueryInfo(fn: (folderQueryInfo: FolderQueryInfo) => void): void {
@@ -51,6 +57,7 @@ export class FolderQuerySearchTree<FolderQueryInfo extends {
     }
     private encodeKey(key: URI): string {
         let str = '';
+
         if (key.query) {
             str += key.query;
         }

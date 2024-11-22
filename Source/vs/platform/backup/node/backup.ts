@@ -9,6 +9,7 @@ export interface IEmptyWindowBackupInfo extends IBaseBackupInfo {
 }
 export function isEmptyWindowBackupInfo(obj: unknown): obj is IEmptyWindowBackupInfo {
     const candidate = obj as IEmptyWindowBackupInfo | undefined;
+
     return typeof candidate?.backupFolder === 'string';
 }
 export interface ISerializedWorkspaceBackupInfo {
@@ -18,6 +19,7 @@ export interface ISerializedWorkspaceBackupInfo {
 }
 export function deserializeWorkspaceInfos(serializedBackupWorkspaces: ISerializedBackupWorkspaces): IWorkspaceBackupInfo[] {
     let workspaceBackupInfos: IWorkspaceBackupInfo[] = [];
+
     try {
         if (Array.isArray(serializedBackupWorkspaces.workspaces)) {
             workspaceBackupInfos = serializedBackupWorkspaces.workspaces.map(workspace => ({
@@ -40,6 +42,7 @@ export interface ISerializedFolderBackupInfo {
 }
 export function deserializeFolderInfos(serializedBackupWorkspaces: ISerializedBackupWorkspaces): IFolderBackupInfo[] {
     let folderBackupInfos: IFolderBackupInfo[] = [];
+
     try {
         if (Array.isArray(serializedBackupWorkspaces.folders)) {
             folderBackupInfos = serializedBackupWorkspaces.folders.map(folder => ({

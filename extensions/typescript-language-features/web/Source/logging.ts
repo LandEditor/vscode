@@ -14,6 +14,7 @@ export enum LogLevel {
 }
 export class Logger {
     public readonly tsLogger: ts.server.Logger;
+
     constructor(logLevel: LogLevel | undefined) {
         const doLog = typeof logLevel === 'undefined'
             ? (_message: string) => { }
@@ -45,8 +46,11 @@ export class Logger {
 export function parseLogLevel(input: string | undefined): LogLevel | undefined {
     switch (input) {
         case 'normal': return LogLevel.normal;
+
         case 'terse': return LogLevel.terse;
+
         case 'verbose': return LogLevel.verbose;
+
         default: return undefined;
     }
 }

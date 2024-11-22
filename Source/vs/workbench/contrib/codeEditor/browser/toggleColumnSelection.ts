@@ -15,6 +15,7 @@ import { Selection } from '../../../../editor/common/core/selection.js';
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 export class ToggleColumnSelectionAction extends Action2 {
     static readonly ID = 'editor.action.toggleColumnSelection';
+
     constructor() {
         super({
             id: ToggleColumnSelectionAction.ID,
@@ -33,25 +34,36 @@ export class ToggleColumnSelectionAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const codeEditorService = accessor.get(ICodeEditorService);
+
         const oldValue = configurationService.getValue('editor.columnSelection');
+
         const codeEditor = this._getCodeEditor(codeEditorService);
         await configurationService.updateValue('editor.columnSelection', !oldValue);
+
         const newValue = configurationService.getValue('editor.columnSelection');
+
         if (!codeEditor || codeEditor !== this._getCodeEditor(codeEditorService) || oldValue === newValue || !codeEditor.hasModel() || typeof oldValue !== 'boolean' || typeof newValue !== 'boolean') {
             return;
         }
         const viewModel = codeEditor._getViewModel();
+
         if (codeEditor.getOption(EditorOption.columnSelection)) {
             const selection = codeEditor.getSelection();
+
             const modelSelectionStart = new Position(selection.selectionStartLineNumber, selection.selectionStartColumn);
+
             const viewSelectionStart = viewModel.coordinatesConverter.convertModelPositionToViewPosition(modelSelectionStart);
+
             const modelPosition = new Position(selection.positionLineNumber, selection.positionColumn);
+
             const viewPosition = viewModel.coordinatesConverter.convertModelPositionToViewPosition(modelPosition);
             CoreNavigationCommands.MoveTo.runCoreEditorCommand(viewModel, {
                 position: modelSelectionStart,
                 viewPosition: viewSelectionStart
             });
+
             const visibleColumn = viewModel.cursorConfig.visibleColumnFromColumn(viewModel, viewPosition);
             CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(viewModel, {
                 position: modelPosition,
@@ -62,15 +74,20 @@ export class ToggleColumnSelectionAction extends Action2 {
         }
         else {
             const columnSelectData = viewModel.getCursorColumnSelectData();
+
             const fromViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(viewModel, columnSelectData.fromViewLineNumber, columnSelectData.fromViewVisualColumn);
+
             const fromPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(columnSelectData.fromViewLineNumber, fromViewColumn));
+
             const toViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(viewModel, columnSelectData.toViewLineNumber, columnSelectData.toViewVisualColumn);
+
             const toPosition = viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(columnSelectData.toViewLineNumber, toViewColumn));
             codeEditor.setSelection(new Selection(fromPosition.lineNumber, fromPosition.column, toPosition.lineNumber, toPosition.column));
         }
     }
     private _getCodeEditor(codeEditorService: ICodeEditorService): ICodeEditor | null {
         const codeEditor = codeEditorService.getFocusedCodeEditor();
+
         if (codeEditor) {
             return codeEditor;
         }

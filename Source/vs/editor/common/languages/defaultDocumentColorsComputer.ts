@@ -15,8 +15,10 @@ export interface IDocumentColorComputerTarget {
 
 function _parseCaptureGroups(captureGroups: IterableIterator<string>) {
 	const values = [];
+
 	for (const captureGroup of captureGroups) {
 		const parsedNumber = Number(captureGroup);
+
 		if (parsedNumber || parsedNumber === 0 && captureGroup.replace(/\s/g, '') !== '') {
 			values.push(parsedNumber);
 		}
@@ -35,17 +37,21 @@ function _toIColor(r: number, g: number, b: number, a: number): IColor {
 
 function _findRange(model: IDocumentColorComputerTarget, match: RegExpMatchArray): IRange | undefined {
 	const index = match.index;
+
 	const length = match[0].length;
+
 	if (!index) {
 		return;
 	}
 	const startPosition = model.positionAt(index);
+
 	const range: IRange = {
 		startLineNumber: startPosition.lineNumber,
 		startColumn: startPosition.column,
 		endLineNumber: startPosition.lineNumber,
 		endColumn: startPosition.column + length
 	};
+
 	return range;
 }
 
@@ -54,6 +60,7 @@ function _findHexColorInformation(range: IRange | undefined, hexValue: string) {
 		return;
 	}
 	const parsedHexColor = Color.Format.CSS.parseHex(hexValue);
+
 	if (!parsedHexColor) {
 		return;
 	}
@@ -68,8 +75,11 @@ function _findRGBColorInformation(range: IRange | undefined, matches: RegExpMatc
 		return;
 	}
 	const match = matches[0]!;
+
 	const captureGroups = match.values();
+
 	const parsedRegex = _parseCaptureGroups(captureGroups);
+
 	return {
 		range: range,
 		color: _toIColor(parsedRegex[0], parsedRegex[1], parsedRegex[2], isAlpha ? parsedRegex[3] : 1)
@@ -81,9 +91,13 @@ function _findHSLColorInformation(range: IRange | undefined, matches: RegExpMatc
 		return;
 	}
 	const match = matches[0]!;
+
 	const captureGroups = match.values();
+
 	const parsedRegex = _parseCaptureGroups(captureGroups);
+
 	const colorEquivalent = new Color(new HSLA(parsedRegex[0], parsedRegex[1] / 100, parsedRegex[2] / 100, isAlpha ? parsedRegex[3] : 1));
+
 	return {
 		range: range,
 		color: _toIColor(colorEquivalent.rgba.r, colorEquivalent.rgba.g, colorEquivalent.rgba.b, colorEquivalent.rgba.a)
@@ -102,18 +116,23 @@ function computeColors(model: IDocumentColorComputerTarget): IColorInformation[]
 	const result: IColorInformation[] = [];
 	// Early validation for RGB and HSL
 	const initialValidationRegex = /\b(rgb|rgba|hsl|hsla)(\([0-9\s,.\%]*\))|\s+(#)([A-Fa-f0-9]{6})\b|\s+(#)([A-Fa-f0-9]{8})\b|^(#)([A-Fa-f0-9]{6})\b|^(#)([A-Fa-f0-9]{8})\b/gm;
+
 	const initialValidationMatches = _findMatches(model, initialValidationRegex);
 
 	// Potential colors have been found, validate the parameters
 	if (initialValidationMatches.length > 0) {
 		for (const initialMatch of initialValidationMatches) {
 			const initialCaptureGroups = initialMatch.filter(captureGroup => captureGroup !== undefined);
+
 			const colorScheme = initialCaptureGroups[1];
+
 			const colorParameters = initialCaptureGroups[2];
+
 			if (!colorParameters) {
 				continue;
 			}
 			let colorInformation;
+
 			if (colorScheme === 'rgb') {
 				const regexParameters = /^\(\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*,\s*(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\s*\)$/gm;
 				colorInformation = _findRGBColorInformation(_findRange(model, initialMatch), _findMatches(colorParameters, regexParameters), false);

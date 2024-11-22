@@ -49,7 +49,9 @@ class LayoutInfo {
 
 	static retrieve(storageService: IStorageService): LayoutInfo {
 		const value = storageService.get('typeHierarchyPeekLayout', StorageScope.PROFILE, '{}');
+
 		const defaultInfo: LayoutInfo = { ratio: 0.7, height: 17 };
+
 		try {
 			return { ...defaultInfo, ...JSON.parse(value) };
 		} catch {
@@ -106,6 +108,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		this._splitView.dispose();
 		this._tree.dispose();
 		this._editor.dispose();
+
 		super.dispose();
 	}
 
@@ -128,6 +131,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		super._fillHead(container, true);
 
 		const menu = this._menuService.createMenu(TypeHierarchyTreePeekWidget.TitleMenu, this._contextKeyService);
+
 		const updateToolbar = () => {
 			const actions = getFlatActionBarActions(menu.getActions());
 			this._actionbarWidget!.clear();
@@ -162,6 +166,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const editorContainer = document.createElement('div');
 		editorContainer.classList.add('editor');
 		container.appendChild(editorContainer);
+
 		const editorOptions: IEditorOptions = {
 			scrollBeyondLastLine: false,
 			scrollbar: {
@@ -190,6 +195,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		const treeContainer = document.createElement('div');
 		treeContainer.classList.add('tree');
 		container.appendChild(treeContainer);
+
 		const options: IWorkbenchAsyncDataTreeOptions<typeHTree.Type, FuzzyScore> = {
 			sorter: new typeHTree.Sorter(),
 			accessibilityProvider: new typeHTree.AccessibilityProvider(() => this._direction),
@@ -245,10 +251,12 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		this._disposables.add(this._editor.onMouseDown(e => {
 			const { event, target } = e;
+
 			if (event.detail !== 2) {
 				return;
 			}
 			const [focus] = this._tree.getFocus();
+
 			if (!focus) {
 				return;
 			}
@@ -289,6 +297,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 	private async _updatePreview() {
 		const [element] = this._tree.getFocus();
+
 		if (!element) {
 			return;
 		}
@@ -307,6 +316,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		};
 
 		let previewUri: URI;
+
 		if (this._direction === TypeHierarchyDirection.Supertypes) {
 			// supertypes: show super types and highlight focused type
 			previewUri = element.parent ? element.parent.item.uri : element.model.root.uri;
@@ -320,14 +330,18 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		// set decorations for type ranges
 		const decorations: IModelDeltaDecoration[] = [];
+
 		let fullRange: IRange | undefined;
+
 		const loc = { uri: element.item.uri, range: element.item.selectionRange };
+
 		if (loc.uri.toString() === previewUri.toString()) {
 			decorations.push({ range: loc.range, options });
 			fullRange = !fullRange ? loc.range : Range.plusRange(loc.range, fullRange);
 		}
 		if (fullRange) {
 			this._editor.revealRangeInCenter(fullRange, ScrollType.Immediate);
+
 			const decorationsCollection = this._editor.createDecorationsCollection(decorations);
 			this._previewDisposable.add(toDisposable(() => decorationsCollection.clear()));
 		}
@@ -358,6 +372,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	async showModel(model: TypeHierarchyModel): Promise<void> {
 
 		this._show();
+
 		const viewState = this._treeViewStates.get(this._direction);
 
 		await this._tree.setInput(model, viewState);
@@ -372,6 +387,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		} else {
 			this._parent.dataset['state'] = State.Data;
+
 			if (!viewState || this._tree.getFocus().length === 0) {
 				this._tree.setFocus([root.children[0].element]);
 			}
@@ -390,6 +406,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 	async updateDirection(newDirection: TypeHierarchyDirection): Promise<void> {
 		const model = this._tree.getInput();
+
 		if (model && newDirection !== this._direction) {
 			this._treeViewStates.set(this._direction, this._tree.getViewState());
 			this._direction = newDirection;
@@ -400,6 +417,7 @@ export class TypeHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 	private _show() {
 		if (!this._isShowing) {
 			this.editor.revealLineInCenterIfOutsideViewport(this._where.lineNumber, ScrollType.Smooth);
+
 			super.show(Range.fromPositions(this._where), this._layoutInfo.height);
 		}
 	}

@@ -62,6 +62,7 @@ export interface IActivityService {
 
 export interface IBadge {
 	getDescription(): string;
+
 	getColors(theme: IColorTheme): IBadgeStyles | undefined;
 }
 

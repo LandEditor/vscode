@@ -15,6 +15,7 @@ import * as esbuild from 'esbuild';
 import * as sourcemaps from 'gulp-sourcemaps';
 import * as fancyLog from 'fancy-log';
 import * as ansiColors from 'ansi-colors';
+
 const REPO_ROOT_PATH = path.join(__dirname, '../..');
 export interface IBundleESMTaskOpts {
     /**
@@ -58,6 +59,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 	});
 
 	const allMentionedModules = new Set<string>();
+
 	for (const entryPoint of entryPoints) {
 		allMentionedModules.add(entryPoint.name);
 		entryPoint.include?.forEach(allMentionedModules.add, allMentionedModules);
@@ -66,6 +68,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 
 	const bundleAsync = async () => {
 		const files: VinylFile[] = [];
+
 		const tasks: Promise<any>[] = [];
 
 		for (const entryPoint of entryPoints) {
@@ -94,6 +97,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 
 						// TS Boilerplate
 						let newContents: string;
+
 						if (!opts.skipTSBoilerplateRemoval?.(entryPoint.name)) {
 							newContents = bundle.removeAllTSBoilerplate(contents);
 						} else {
@@ -102,6 +106,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 
 						// File Content Mapper
 						const mapper = opts.fileContentMapper?.(path.replace(/\\/g, '/'));
+
 						if (mapper) {
 							newContents = await mapper(newContents);
 						}
@@ -152,6 +157,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 			}).then(res => {
 				for (const file of res.outputFiles) {
 					let sourceMapFile: esbuild.OutputFile | undefined = undefined;
+
 					if (file.path.endsWith('.js')) {
 						sourceMapFile = res.outputFiles.find(f => f.path === `${file.path}.map`);
 					}
@@ -170,6 +176,7 @@ function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
 		}
 
 		await Promise.all(tasks);
+
 		return { files };
 	};
 
@@ -211,11 +218,16 @@ export function bundleTask(opts: IBundleESMTaskOpts): () => NodeJS.ReadWriteStre
 }
 export function minifyTask(src: string, sourceMapBaseUrl?: string): (cb: any) => void {
     const sourceMappingURL = sourceMapBaseUrl ? ((f: any) => `${sourceMapBaseUrl}/${f.relative}.map`) : undefined;
+
     return cb => {
         const cssnano = require('cssnano') as typeof import('cssnano');
+
         const svgmin = require('gulp-svgmin') as typeof import('gulp-svgmin');
+
         const jsFilter = filter('**/*.js', { restore: true });
+
         const cssFilter = filter('**/*.css', { restore: true });
+
         const svgFilter = filter('**/*.svg', { restore: true });
         pump(gulp.src([src + '/**', '!' + src + '/**/*.map']), jsFilter, sourcemaps.init({ loadMaps: true }), es.map((f: any, cb) => {
             esbuild.build({
@@ -229,9 +241,13 @@ export function minifyTask(src: string, sourceMapBaseUrl?: string): (cb: any) =>
                 write: false
             }).then(res => {
                 const jsFile = res.outputFiles.find(f => /\.js$/.test(f.path))!;
+
                 const sourceMapFile = res.outputFiles.find(f => /\.js\.map$/.test(f.path))!;
+
                 const contents = Buffer.from(jsFile.contents);
+
                 const unicodeMatch = contents.toString().match(/[^\x00-\xFF]+/g);
+
                 if (unicodeMatch) {
                     cb(new Error(`Found non-ascii character ${unicodeMatch[0]} in the minified output of ${f.path}. Non-ASCII characters in the output can cause performance problems when loading. Please review if you have introduced a regular expression that esbuild is not automatically converting and convert it to using unicode escape sequences.`));
                 }

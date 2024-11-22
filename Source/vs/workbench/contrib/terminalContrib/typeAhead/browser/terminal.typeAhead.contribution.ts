@@ -17,6 +17,7 @@ class TerminalTypeAheadContribution extends DisposableStore implements ITerminal
         return instance.getContribution<TerminalTypeAheadContribution>(TerminalTypeAheadContribution.ID);
     }
     private _addon: TypeAheadAddon | undefined;
+
     constructor(private readonly _ctx: ITerminalContributionContext, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -41,10 +42,13 @@ class TerminalTypeAheadContribution extends DisposableStore implements ITerminal
     }
     private _loadTypeAheadAddon(xterm: RawXtermTerminal): void {
         const enabled = this._configurationService.getValue<ITerminalTypeAheadConfiguration>(TERMINAL_CONFIG_SECTION).localEchoEnabled;
+
         const isRemote = !!this._ctx.processManager.remoteAuthority;
+
         if (enabled === 'off' || enabled === 'auto' && !isRemote) {
             this._addon?.dispose();
             this._addon = undefined;
+
             return;
         }
         if (this._addon) {

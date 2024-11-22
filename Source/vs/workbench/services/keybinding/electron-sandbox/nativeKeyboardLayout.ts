@@ -20,6 +20,7 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
     private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<void>());
     readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
     private _keyboardMapper: IKeyboardMapper | null;
+
     constructor(
     @INativeKeyboardLayoutService
     private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService, 
@@ -49,6 +50,7 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
     }
     public getKeyboardMapper(): IKeyboardMapper {
         const config = readKeyboardConfig(this._configurationService);
+
         if (config.dispatch === DispatchConfig.KeyCode) {
             // Forcefully set to use keyCode
             return new FallbackKeyboardMapper(config.mapAltGrToCtrlAlt, OS);
@@ -64,6 +66,7 @@ export class KeyboardLayoutService extends Disposable implements IKeyboardLayout
 }
 function createKeyboardMapper(layoutInfo: IKeyboardLayoutInfo | null, rawMapping: IKeyboardMapping | null, mapAltGrToCtrlAlt: boolean): IKeyboardMapper {
     const _isUSStandard = isUSStandard(layoutInfo);
+
     if (OS === OperatingSystem.Windows) {
         return new WindowsKeyboardMapper(_isUSStandard, <IWindowsKeyboardMapping>rawMapping, mapAltGrToCtrlAlt);
     }
@@ -73,6 +76,7 @@ function createKeyboardMapper(layoutInfo: IKeyboardLayoutInfo | null, rawMapping
     }
     if (OS === OperatingSystem.Macintosh) {
         const kbInfo = <IMacKeyboardLayoutInfo>layoutInfo;
+
         if (kbInfo.id === 'com.apple.keylayout.DVORAK-QWERTYCMD') {
             // Use keyCode based dispatching for DVORAK - QWERTY ⌘
             return new FallbackKeyboardMapper(mapAltGrToCtrlAlt, OS);
@@ -86,15 +90,19 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
     }
     if (OS === OperatingSystem.Linux) {
         const kbInfo = <ILinuxKeyboardLayoutInfo>_kbInfo;
+
         const layouts = kbInfo.layout.split(/,/g);
+
         return (layouts[kbInfo.group] === 'us');
     }
     if (OS === OperatingSystem.Macintosh) {
         const kbInfo = <IMacKeyboardLayoutInfo>_kbInfo;
+
         return (kbInfo.id === 'com.apple.keylayout.US');
     }
     if (OS === OperatingSystem.Windows) {
         const kbInfo = <IWindowsKeyboardLayoutInfo>_kbInfo;
+
         return (kbInfo.name === '00000409');
     }
     return false;

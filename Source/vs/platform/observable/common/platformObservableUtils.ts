@@ -17,6 +17,7 @@ export function observableConfigValue<T>(key: string, defaultValue: T, configura
 /** Update the configuration key with a value derived from observables. */
 export function bindContextKey<T extends ContextKeyValue>(key: RawContextKey<T>, service: IContextKeyService, computeValue: (reader: IReader) => T): IDisposable {
     const boundKey = key.bindTo(service);
+
     return autorunOpts({ debugName: () => `Set Context Key "${key.key}"` }, reader => {
         boundKey.set(computeValue(reader));
     });

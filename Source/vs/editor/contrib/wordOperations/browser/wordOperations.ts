@@ -46,17 +46,24 @@ export abstract class MoveWordCommand extends EditorCommand {
 			return;
 		}
 		const wordSeparators = getMapForWordSeparators(editor.getOption(EditorOption.wordSeparators), editor.getOption(EditorOption.wordSegmenterLocales));
+
 		const model = editor.getModel();
+
 		const selections = editor.getSelections();
+
 		const hasMulticursor = selections.length > 1;
+
 		const result = selections.map((sel) => {
 			const inPosition = new Position(sel.positionLineNumber, sel.positionColumn);
+
 			const outPosition = this._move(wordSeparators, model, inPosition, this._wordNavigationType, hasMulticursor);
+
 			return this._moveTo(sel, outPosition, this._inSelectionMode);
 		});
 
 		model.pushStackElement();
 		editor._getViewModel().setCursorStates('moveWordCommand', CursorChangeReason.Explicit, result.map(r => CursorState.fromModelSelection(r)));
+
 		if (result.length === 1) {
 			const pos = new Position(result[0].positionLineNumber, result[0].positionColumn);
 			editor.revealPosition(pos, ScrollType.Smooth);
@@ -337,11 +344,17 @@ export abstract class DeleteWordCommand extends EditorCommand {
 			return;
 		}
 		const wordSeparators = getMapForWordSeparators(editor.getOption(EditorOption.wordSeparators), editor.getOption(EditorOption.wordSegmenterLocales));
+
 		const model = editor.getModel();
+
 		const selections = editor.getSelections();
+
 		const autoClosingBrackets = editor.getOption(EditorOption.autoClosingBrackets);
+
 		const autoClosingQuotes = editor.getOption(EditorOption.autoClosingQuotes);
+
 		const autoClosingPairs = languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).getAutoClosingPairs();
+
 		const viewModel = editor._getViewModel();
 
 		const commands = selections.map((sel) => {
@@ -356,6 +369,7 @@ export abstract class DeleteWordCommand extends EditorCommand {
 				autoClosingPairs,
 				autoClosedCharacters: viewModel.getCursorAutoClosedCharacters(),
 			}, this._wordNavigationType);
+
 			return new ReplaceCommand(deleteRange, '');
 		});
 
@@ -370,6 +384,7 @@ export abstract class DeleteWordCommand extends EditorCommand {
 export class DeleteWordLeftCommand extends DeleteWordCommand {
 	protected _delete(ctx: DeleteWordContext, wordNavigationType: WordNavigationType): Range {
 		const r = WordOperations.deleteWordLeft(ctx, wordNavigationType);
+
 		if (r) {
 			return r;
 		}
@@ -380,11 +395,14 @@ export class DeleteWordLeftCommand extends DeleteWordCommand {
 export class DeleteWordRightCommand extends DeleteWordCommand {
 	protected _delete(ctx: DeleteWordContext, wordNavigationType: WordNavigationType): Range {
 		const r = WordOperations.deleteWordRight(ctx, wordNavigationType);
+
 		if (r) {
 			return r;
 		}
 		const lineCount = ctx.model.getLineCount();
+
 		const maxColumn = ctx.model.getLineMaxColumn(lineCount);
+
 		return new Range(lineCount, maxColumn, lineCount, maxColumn);
 	}
 }
@@ -482,11 +500,14 @@ export class DeleteInsideWord extends EditorAction {
 			return;
 		}
 		const wordSeparators = getMapForWordSeparators(editor.getOption(EditorOption.wordSeparators), editor.getOption(EditorOption.wordSegmenterLocales));
+
 		const model = editor.getModel();
+
 		const selections = editor.getSelections();
 
 		const commands = selections.map((sel) => {
 			const deleteRange = WordOperations.deleteInsideWord(wordSeparators, model, sel);
+
 			return new ReplaceCommand(deleteRange, '');
 		});
 

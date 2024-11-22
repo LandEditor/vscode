@@ -126,6 +126,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
     private static readonly FILE_WORKING_COPY_SAVE_REPLACE_SOURCE = SaveSourceRegistry.registerSource('fileWorkingCopyReplace.source', localize('fileWorkingCopyReplace.source', "File Replaced"));
     readonly stored: IStoredFileWorkingCopyManager<S>;
     readonly untitled: IUntitledFileWorkingCopyManager<U>;
+
     constructor(private readonly workingCopyTypeId: string, private readonly storedWorkingCopyModelFactory: IStoredFileWorkingCopyModelFactory<S>, private readonly untitledWorkingCopyModelFactory: IUntitledFileWorkingCopyModelFactory<U>, 
     @IFileService
     private readonly fileService: IFileService, 
@@ -171,6 +172,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // Untitled file working copies manager
         this.untitled = this._register(new UntitledFileWorkingCopyManager(this.workingCopyTypeId, this.untitledWorkingCopyModelFactory, async (workingCopy, options) => {
             const result = await this.saveAs(workingCopy.resource, undefined, options);
+
             return result ? true : false;
         }, fileService, labelService, logService, workingCopyBackupService, workingCopyService));
         // Events
@@ -185,6 +187,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             readonly label = localize('fileWorkingCopyDecorations', "File Working Copy Decorations");
             private readonly _onDidChange = this._register(new Emitter<URI[]>());
             readonly onDidChange = this._onDidChange.event;
+
             constructor(private readonly stored: IStoredFileWorkingCopyManager<S>) {
                 super();
                 this.registerListeners();
@@ -207,10 +210,12 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             }
             provideDecorations(uri: URI): IDecorationData | undefined {
                 const workingCopy = this.stored.get(uri);
+
                 if (!workingCopy || workingCopy.isDisposed()) {
                     return undefined;
                 }
                 const isReadonly = workingCopy.isReadonly();
+
                 const isOrphaned = workingCopy.hasState(StoredFileWorkingCopyState.ORPHAN);
                 // Readonly + Orphaned
                 if (isReadonly && isOrphaned) {
@@ -274,6 +279,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // Get to target resource
         if (!target) {
             const workingCopy = this.get(source);
+
             if (workingCopy instanceof UntitledFileWorkingCopy && workingCopy.hasAssociatedFilePath) {
                 target = await this.suggestSavePath(source);
             }
@@ -287,6 +293,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // Ensure target is not marked as readonly and prompt otherwise
         if (this.filesConfigurationService.isReadonly(target)) {
             const confirmed = await this.confirmMakeWriteable(target);
+
             if (!confirmed) {
                 return;
             }
@@ -319,8 +326,10 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // Save is only possible with stored file working copies,
         // any other have to go via `saveAs` flow.
         const storedFileWorkingCopy = this.stored.get(resource);
+
         if (storedFileWorkingCopy) {
             const success = await storedFileWorkingCopy.save(options);
+
             if (success) {
                 return storedFileWorkingCopy;
             }
@@ -332,6 +341,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // If the source is an existing file working copy, we can directly
         // use that to copy the contents to the target destination
         const sourceWorkingCopy = this.get(source);
+
         if (sourceWorkingCopy?.isResolved()) {
             sourceContents = await sourceWorkingCopy.model.snapshot(SnapshotContext.Save, CancellationToken.None);
         }
@@ -350,6 +360,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             targetFileExists &&
             this.uriIdentityService.extUri.isEqual(target, toLocalResource(sourceWorkingCopy.resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme))) {
             const overwrite = await this.confirmOverwrite(target);
+
             if (!overwrite) {
                 return undefined;
             }
@@ -369,6 +380,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             from: source,
             force: true /* force to save, even if not dirty (https://github.com/microsoft/vscode/issues/99619) */
         });
+
         if (!success) {
             return undefined;
         }
@@ -392,7 +404,9 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // Prefer an existing stored file working copy if it is already resolved
         // for the given target resource
         let targetFileExists = false;
+
         let targetStoredFileWorkingCopy = this.stored.get(target);
+
         if (targetStoredFileWorkingCopy?.isResolved()) {
             targetFileExists = true;
         }
@@ -426,6 +440,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             detail: localize('overwriteIrreversible', "A file or folder with the name '{0}' already exists in the folder '{1}'. Replacing it will overwrite its current contents.", basename(resource), basename(dirname(resource))),
             primaryButton: localize({ key: 'replaceButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Replace")
         });
+
         return confirmed;
     }
     private async confirmMakeWriteable(resource: URI): Promise<boolean> {
@@ -435,6 +450,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
             detail: localize('confirmMakeWriteableDetail', "Paths can be configured as read-only via settings."),
             primaryButton: localize({ key: 'makeWriteableButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Save Anyway")
         });
+
         return confirmed;
     }
     private async suggestSavePath(resource: URI): Promise<URI> {
@@ -444,6 +460,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         }
         // 2.) Pick the associated file path for untitled working copies if any
         const workingCopy = this.get(resource);
+
         if (workingCopy instanceof UntitledFileWorkingCopy && workingCopy.hasAssociatedFilePath) {
             return toLocalResource(resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme);
         }
@@ -451,6 +468,7 @@ export class FileWorkingCopyManager<S extends IStoredFileWorkingCopyModel, U ext
         // 3.) Pick the working copy name if valid joined with default path
         if (workingCopy) {
             const candidatePath = joinPath(defaultFilePath, workingCopy.name);
+
             if (await this.pathService.hasValidBasename(candidatePath, workingCopy.name)) {
                 return candidatePath;
             }

@@ -18,6 +18,7 @@ import type { IChatEditorOptions } from './chatEditor.js';
 import { ChatAgentLocation } from '../common/chatAgents.js';
 import { IChatModel } from '../common/chatModel.js';
 import { IChatService } from '../common/chatService.js';
+
 const ChatEditorIcon = registerIcon('chat-editor-label-icon', Codicon.commentDiscussion, nls.localize('chatEditorLabelIcon', 'Icon of the chat editor label.'));
 export class ChatEditorInput extends EditorInput {
     static readonly countsInUse = new Set<number>();
@@ -28,10 +29,12 @@ export class ChatEditorInput extends EditorInput {
     private model: IChatModel | undefined;
     static getNewEditorUri(): URI {
         const handle = Math.floor(Math.random() * 1e9);
+
         return ChatUri.generate(handle);
     }
     static getNextCount(): number {
         let count = 0;
+
         while (ChatEditorInput.countsInUse.has(count)) {
             count++;
         }
@@ -41,7 +44,9 @@ export class ChatEditorInput extends EditorInput {
     @IChatService
     private readonly chatService: IChatService) {
         super();
+
         const parsed = ChatUri.parse(resource);
+
         if (typeof parsed?.handle !== 'number') {
             throw new Error('Invalid chat URI');
         }
@@ -85,10 +90,12 @@ export class ChatEditorInput extends EditorInput {
         }
         this.sessionId = this.model.sessionId;
         this._register(this.model.onDidChange(() => this._onDidChangeLabel.fire()));
+
         return this._register(new ChatEditorModel(this.model));
     }
     override dispose(): void {
         super.dispose();
+
         if (this.sessionId) {
             this.chatService.clearSession(this.sessionId);
         }
@@ -99,6 +106,7 @@ export class ChatEditorModel extends Disposable {
     readonly onWillDispose = this._onWillDispose.event;
     private _isDisposed = false;
     private _isResolved = false;
+
     constructor(readonly model: IChatModel) { super(); }
     async resolve(): Promise<void> {
         this._isResolved = true;
@@ -116,6 +124,7 @@ export class ChatEditorModel extends Disposable {
 }
 export namespace ChatUri {
     export const scheme = Schemas.vscodeChatSesssion;
+
     export function generate(handle: number): URI {
         return URI.from({ scheme, path: `chat-${handle}` });
     }
@@ -126,11 +135,14 @@ export namespace ChatUri {
             return undefined;
         }
         const match = resource.path.match(/chat-(\d+)/);
+
         const handleStr = match?.[1];
+
         if (typeof handleStr !== 'string') {
             return undefined;
         }
         const handle = parseInt(handleStr);
+
         if (isNaN(handle)) {
             return undefined;
         }
@@ -157,12 +169,15 @@ export class ChatEditorInputSerializer implements IEditorSerializer {
             sessionId: input.sessionId,
             resource: input.resource
         };
+
         return JSON.stringify(obj);
     }
     deserialize(instantiationService: IInstantiationService, serializedEditor: string): EditorInput | undefined {
         try {
             const parsed: ISerializedChatEditorInput = JSON.parse(serializedEditor);
+
             const resource = URI.revive(parsed.resource);
+
             return instantiationService.createInstance(ChatEditorInput, resource, { ...parsed.options, target: { sessionId: parsed.sessionId } });
         }
         catch (err) {

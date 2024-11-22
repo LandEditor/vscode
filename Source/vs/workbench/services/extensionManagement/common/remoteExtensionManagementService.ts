@@ -35,6 +35,7 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 			return true;
 		}
 		const currentRemoteProfile = await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile);
+
 		if (this.uriIdentityService.extUri.isEqual(currentRemoteProfile.extensionsResource, profileLocation)) {
 			return true;
 		}
@@ -48,7 +49,9 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 			return undefined;
 		}
 		profileLocation = await super.getProfileLocation(profileLocation);
+
 		let profile = this.userDataProfilesService.profiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, profileLocation));
+
 		if (profile) {
 			profile = await this.remoteUserDataProfilesService.getRemoteProfile(profile);
 		} else {
@@ -59,8 +62,11 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 
 	protected override async switchExtensionsProfile(previousProfileLocation: URI, currentProfileLocation: URI, preserveExtensions?: ExtensionIdentifier[]): Promise<DidChangeProfileEvent> {
 		const remoteProfiles = await this.remoteUserDataProfilesService.getRemoteProfiles();
+
 		const previousProfile = remoteProfiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, previousProfileLocation));
+
 		const currentProfile = remoteProfiles.find(p => this.uriIdentityService.extUri.isEqual(p.extensionsResource, currentProfileLocation));
+
 		if (previousProfile?.id === currentProfile?.id) {
 			return { added: [], removed: [] };
 		}

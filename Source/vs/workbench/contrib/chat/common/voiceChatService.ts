@@ -64,6 +64,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
     private static readonly CHAT_AGENT_ALIAS = new Map<string, string>([['vscode', 'code']]);
     private readonly voiceChatInProgress = VoiceChatInProgress.bindTo(this.contextKeyService);
     private activeVoiceChatSessions = 0;
+
     constructor(
     @ISpeechService
     private readonly speechService: ISpeechService, 
@@ -75,12 +76,15 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
     }
     private createPhrases(model?: IChatModel): Map<string, IPhraseValue> {
         const phrases = new Map<string, IPhraseValue>();
+
         for (const agent of this.chatAgentService.getActivatedAgents()) {
             const agentPhrase = `${VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]} ${VoiceChatService.CHAT_AGENT_ALIAS.get(agent.name) ?? agent.name}`.toLowerCase();
             phrases.set(agentPhrase, { agent: agent.name });
+
             for (const slashCommand of agent.slashCommands) {
                 const slashCommandPhrase = `${VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]} ${slashCommand.name}`.toLowerCase();
                 phrases.set(slashCommandPhrase, { agent: agent.name, command: slashCommand.name });
+
                 const agentSlashCommandPhrase = `${agentPhrase} ${slashCommandPhrase}`.toLowerCase();
                 phrases.set(agentSlashCommandPhrase, { agent: agent.name, command: slashCommand.name });
             }
@@ -91,16 +95,20 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
         switch (type) {
             case PhraseTextType.AGENT:
                 return `${VoiceChatService.AGENT_PREFIX}${value.agent}`;
+
             case PhraseTextType.COMMAND:
                 return `${VoiceChatService.COMMAND_PREFIX}${value.command}`;
+
             case PhraseTextType.AGENT_AND_COMMAND:
                 return `${VoiceChatService.AGENT_PREFIX}${value.agent} ${VoiceChatService.COMMAND_PREFIX}${value.command}`;
         }
     }
     async createVoiceChatSession(token: CancellationToken, options: IVoiceChatSessionOptions): Promise<IVoiceChatSession> {
         const disposables = new DisposableStore();
+
         const onSessionStoppedOrCanceled = (dispose: boolean) => {
             this.activeVoiceChatSessions = Math.max(0, this.activeVoiceChatSessions - 1);
+
             if (this.activeVoiceChatSessions === 0) {
                 this.voiceChatInProgress.reset();
             }
@@ -109,10 +117,15 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
             }
         };
         disposables.add(token.onCancellationRequested(() => onSessionStoppedOrCanceled(true)));
+
         let detectedAgent = false;
+
         let detectedSlashCommand = false;
+
         const emitter = disposables.add(new Emitter<IVoiceChatTextEvent>());
+
         const session = await this.speechService.createSpeechToTextSession(token, 'chat');
+
         if (token.isCancellationRequested) {
             onSessionStoppedOrCanceled(true);
         }
@@ -122,19 +135,26 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
                 case SpeechToTextStatus.Recognizing:
                 case SpeechToTextStatus.Recognized: {
                     let massagedEvent: IVoiceChatTextEvent = e;
+
                     if (e.text) {
                         const startsWithAgent = e.text.startsWith(VoiceChatService.PHRASES_UPPER[VoiceChatService.AGENT_PREFIX]) || e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.AGENT_PREFIX]);
+
                         const startsWithSlashCommand = e.text.startsWith(VoiceChatService.PHRASES_UPPER[VoiceChatService.COMMAND_PREFIX]) || e.text.startsWith(VoiceChatService.PHRASES_LOWER[VoiceChatService.COMMAND_PREFIX]);
+
                         if (startsWithAgent || startsWithSlashCommand) {
                             const originalWords = e.text.split(' ');
+
                             let transformedWords: string[] | undefined;
+
                             let waitingForInput = false;
                             // Check for agent + slash command
                             if (options.usesAgents && startsWithAgent && !detectedAgent && !detectedSlashCommand && originalWords.length >= 4) {
                                 const phrase = phrases.get(originalWords.slice(0, 4).map(word => this.normalizeWord(word)).join(' '));
+
                                 if (phrase) {
                                     transformedWords = [this.toText(phrase, PhraseTextType.AGENT_AND_COMMAND), ...originalWords.slice(4)];
                                     waitingForInput = originalWords.length === 4;
+
                                     if (e.status === SpeechToTextStatus.Recognized) {
                                         detectedAgent = true;
                                         detectedSlashCommand = true;
@@ -144,9 +164,11 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
                             // Check for agent (if not done already)
                             if (options.usesAgents && startsWithAgent && !detectedAgent && !transformedWords && originalWords.length >= 2) {
                                 const phrase = phrases.get(originalWords.slice(0, 2).map(word => this.normalizeWord(word)).join(' '));
+
                                 if (phrase) {
                                     transformedWords = [this.toText(phrase, PhraseTextType.AGENT), ...originalWords.slice(2)];
                                     waitingForInput = originalWords.length === 2;
+
                                     if (e.status === SpeechToTextStatus.Recognized) {
                                         detectedAgent = true;
                                     }
@@ -155,12 +177,14 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
                             // Check for slash command (if not done already)
                             if (startsWithSlashCommand && !detectedSlashCommand && !transformedWords && originalWords.length >= 2) {
                                 const phrase = phrases.get(originalWords.slice(0, 2).map(word => this.normalizeWord(word)).join(' '));
+
                                 if (phrase) {
                                     transformedWords = [this.toText(phrase, options.usesAgents && !detectedAgent ?
                                             PhraseTextType.AGENT_AND_COMMAND : // rewrite `/fix` to `@workspace /foo` in this case
                                             PhraseTextType.COMMAND // when we have not yet detected an agent before
                                         ), ...originalWords.slice(2)];
                                     waitingForInput = originalWords.length === 2;
+
                                     if (e.status === SpeechToTextStatus.Recognized) {
                                         detectedSlashCommand = true;
                                     }
@@ -174,22 +198,29 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
                         }
                     }
                     emitter.fire(massagedEvent);
+
                     break;
                 }
                 case SpeechToTextStatus.Started:
                     this.activeVoiceChatSessions++;
                     this.voiceChatInProgress.set(true);
                     emitter.fire(e);
+
                     break;
+
                 case SpeechToTextStatus.Stopped:
                     onSessionStoppedOrCanceled(false);
                     emitter.fire(e);
+
                     break;
+
                 case SpeechToTextStatus.Error:
                     emitter.fire(e);
+
                     break;
             }
         }));
+
         return {
             onDidChange: emitter.event
         };
@@ -198,6 +229,7 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
         word = rtrim(word, '.');
         word = rtrim(word, ',');
         word = rtrim(word, '?');
+
         return word.toLowerCase();
     }
 }

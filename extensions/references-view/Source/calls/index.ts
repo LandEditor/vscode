@@ -8,6 +8,7 @@ import { ContextKey } from '../utils';
 import { CallItem, CallsDirection, CallsTreeInput } from './model';
 export function register(tree: SymbolsTree, context: vscode.ExtensionContext): void {
     const direction = new RichCallsDirection(context.workspaceState, CallsDirection.Incoming);
+
     function showCallHierarchy() {
         if (vscode.window.activeTextEditor) {
             const input = new CallsTreeInput(new vscode.Location(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.selection.active), direction.value);
@@ -16,8 +17,11 @@ export function register(tree: SymbolsTree, context: vscode.ExtensionContext): v
     }
     function setCallsDirection(value: CallsDirection, anchor: CallItem | unknown) {
         direction.value = value;
+
         let newInput: CallsTreeInput | undefined;
+
         const oldInput = tree.getInput();
+
         if (anchor instanceof CallItem) {
             newInput = new CallsTreeInput(new vscode.Location(anchor.item.uri, anchor.item.selectionRange.start), direction.value);
         }
@@ -38,8 +42,10 @@ function removeCallItem(item: CallItem | unknown): void {
 class RichCallsDirection {
     private static _key = 'references-view.callHierarchyMode';
     private _ctxMode = new ContextKey<'showIncoming' | 'showOutgoing'>('references-view.callHierarchyMode');
+
     constructor(private _mem: vscode.Memento, private _value: CallsDirection = CallsDirection.Outgoing) {
         const raw = _mem.get<number>(RichCallsDirection._key);
+
         if (typeof raw === 'number' && raw >= 0 && raw <= 1) {
             this.value = raw;
         }

@@ -14,6 +14,7 @@ export class SettingsEditorContribution extends Disposable {
     static readonly ID: string = 'editor.contrib.settings';
     private currentRenderer: IPreferencesRenderer | undefined;
     private readonly disposables = this._register(new DisposableStore());
+
     constructor(private readonly editor: ICodeEditor, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -29,19 +30,26 @@ export class SettingsEditorContribution extends Disposable {
     private async _createPreferencesRenderer(): Promise<void> {
         this.disposables.clear();
         this.currentRenderer = undefined;
+
         const model = this.editor.getModel();
+
         if (model && /\.(json|code-workspace)$/.test(model.uri.path)) {
             // Fast check: the preferences renderer can only appear
             // in settings files or workspace files
             const settingsModel = await this.preferencesService.createPreferencesEditorModel(model.uri);
+
             if (settingsModel instanceof SettingsEditorModel && this.editor.getModel()) {
                 this.disposables.add(settingsModel);
+
                 switch (settingsModel.configurationTarget) {
                     case ConfigurationTarget.WORKSPACE:
                         this.currentRenderer = this.disposables.add(this.instantiationService.createInstance(WorkspaceSettingsRenderer, this.editor, settingsModel));
+
                         break;
+
                     default:
                         this.currentRenderer = this.disposables.add(this.instantiationService.createInstance(UserSettingsRenderer, this.editor, settingsModel));
+
                         break;
                 }
             }

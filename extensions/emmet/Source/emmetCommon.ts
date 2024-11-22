@@ -105,20 +105,25 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
     }));
     context.subscriptions.push(vscode.workspace.onDidSaveTextDocument((e) => {
         const basefileName: string = getPathBaseName(e.fileName);
+
         if (basefileName.startsWith('snippets') && basefileName.endsWith('.json')) {
             updateEmmetExtensionsPath(true);
         }
     }));
     context.subscriptions.push(vscode.workspace.onDidOpenTextDocument((e) => {
         const emmetMode = getEmmetMode(e.languageId, {}, []) ?? '';
+
         const syntaxes = getSyntaxes();
+
         if (syntaxes.markup.includes(emmetMode) || syntaxes.stylesheet.includes(emmetMode)) {
             addFileToParseCache(e);
         }
     }));
     context.subscriptions.push(vscode.workspace.onDidCloseTextDocument((e) => {
         const emmetMode = getEmmetMode(e.languageId, {}, []) ?? '';
+
         const syntaxes = getSyntaxes();
+
         if (syntaxes.markup.includes(emmetMode) || syntaxes.stylesheet.includes(emmetMode)) {
             removeFileFromParseCache(e);
         }
@@ -128,21 +133,27 @@ export function activateEmmetExtension(context: vscode.ExtensionContext) {
  * Holds any registered completion providers by their language strings
  */
 const languageMappingForCompletionProviders: Map<string, string> = new Map<string, string>();
+
 const completionProviderDisposables: vscode.Disposable[] = [];
 function refreshCompletionProviders(_: vscode.ExtensionContext) {
     clearCompletionProviderInfo();
+
     const completionProvider = new DefaultCompletionItemProvider();
+
     const inlineCompletionProvider: vscode.InlineCompletionItemProvider = {
         async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, _: vscode.InlineCompletionContext, token: vscode.CancellationToken) {
             const items = await completionProvider.provideCompletionItems(document, position, token, { triggerCharacter: undefined, triggerKind: vscode.CompletionTriggerKind.Invoke });
+
             if (!items) {
                 return undefined;
             }
             const item = items.items[0];
+
             if (!item) {
                 return undefined;
             }
             const range = item.range as vscode.Range;
+
             if (document.getText(range) !== item.label) {
                 // We only want to show an inline completion if we are really sure the user meant emmet.
                 // If the user types `d`, we don't want to suggest `<div></div>`.
@@ -157,7 +168,9 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
             ];
         }
     };
+
     const useInlineCompletionProvider = vscode.workspace.getConfiguration('emmet').get<boolean>('useInlineCompletions');
+
     const includedLanguages = getMappingForIncludedLanguages();
     Object.keys(includedLanguages).forEach(language => {
         if (languageMappingForCompletionProviders.has(language) && languageMappingForCompletionProviders.get(language) === includedLanguages[language]) {
@@ -185,7 +198,9 @@ function refreshCompletionProviders(_: vscode.ExtensionContext) {
 }
 function clearCompletionProviderInfo() {
     languageMappingForCompletionProviders.clear();
+
     let disposable: vscode.Disposable | undefined;
+
     while (disposable = completionProviderDisposables.pop()) {
         disposable.dispose();
     }

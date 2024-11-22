@@ -39,6 +39,7 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 				this.editor.applyFontInfo(this.domNode);
 			}
 		}));
+
 		const onDidFocusEditorText = Event.debounce(this.editor.onDidFocusEditorText, () => undefined, 500);
 		this._register(onDidFocusEditorText(() => {
 			if (this.editor.hasTextFocus() && this.ariaLabel && configurationService.getValue(AccessibilityVerbositySettingId.ReplEditor)) {
@@ -95,6 +96,7 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 		hintElement.style.whiteSpace = 'nowrap';
 
 		const keybinding = this.getKeybinding();
+
 		const keybindingHintLabel = keybinding?.getLabel();
 
 		if (keybinding && keybindingHintLabel) {
@@ -103,6 +105,7 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 			const [before, after] = actionPart.split(keybindingHintLabel).map((fragment) => {
 				const hintPart = dom.$('span', undefined, fragment);
 				hintPart.style.fontStyle = 'italic';
+
 				return hintPart;
 			});
 
@@ -117,6 +120,7 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 			this.domNode.append(hintElement);
 
 			const helpKeybinding = this.keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getLabel();
+
 			const helpInfo = helpKeybinding
 				? localize('ReplInputAriaLabelHelp', "Use {0} for accessibility help. ", helpKeybinding)
 				: localize('ReplInputAriaLabelHelpNoKb', "Run the Open Accessibility Help command for more information. ");
@@ -127,26 +131,34 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 
 	private getKeybinding() {
 		const keybindings = this.keybindingService.lookupKeybindings('interactive.execute');
+
 		const shiftEnterConfig = this.configurationService.getValue(ReplEditorSettings.executeWithShiftEnter);
+
 		const hasEnterChord = (kb: ResolvedKeybinding, modifier: string = '') => {
 			const chords = kb.getDispatchChords();
+
 			const chord = modifier + 'Enter';
+
 			const chordAlt = modifier + '[Enter]';
+
 			return chords.length === 1 && (chords[0] === chord || chords[0] === chordAlt);
 		};
 
 		if (shiftEnterConfig) {
 			const keybinding = keybindings.find(kb => hasEnterChord(kb, 'shift+'));
+
 			if (keybinding) {
 				return keybinding;
 			}
 		} else {
 			let keybinding = keybindings.find(kb => hasEnterChord(kb));
+
 			if (keybinding) {
 				return keybinding;
 			}
 			keybinding = this.keybindingService.lookupKeybindings('python.execInREPLEnter')
 				.find(kb => hasEnterChord(kb));
+
 			if (keybinding) {
 				return keybinding;
 			}

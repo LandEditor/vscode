@@ -13,14 +13,20 @@ import { IViewsService } from '../../../services/views/common/viewsService.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 export async function showDebugSessionMenu(accessor: ServicesAccessor, selectAndStartID: string) {
     const quickInputService = accessor.get(IQuickInputService);
+
     const debugService = accessor.get(IDebugService);
+
     const viewsService = accessor.get(IViewsService);
+
     const commandService = accessor.get(ICommandService);
+
     const localDisposableStore = new DisposableStore();
+
     const quickPick = quickInputService.createQuickPick<IPickerDebugItem>({ useSeparators: true });
     localDisposableStore.add(quickPick);
     quickPick.matchOnLabel = quickPick.matchOnDescription = quickPick.matchOnDetail = quickPick.sortByLabel = false;
     quickPick.placeholder = nls.localize('moveFocusedView.selectView', 'Search debug sessions by name');
+
     const pickItems = _getPicksAndActiveItem(quickPick.value, selectAndStartID, debugService, viewsService, commandService);
     quickPick.items = pickItems.picks;
     quickPick.activeItems = pickItems.activeItems;
@@ -40,9 +46,13 @@ function _getPicksAndActiveItem(filter: string, selectAndStartID: string, debugS
     activeItems: Array<IPickerDebugItem>;
 } {
     const debugConsolePicks: Array<IPickerDebugItem | IQuickPickSeparator> = [];
+
     const headerSessions: IDebugSession[] = [];
+
     const currSession = debugService.getViewModel().focusedSession;
+
     const sessions = debugService.getModel().getSessions(false);
+
     const activeItems: Array<IPickerDebugItem> = [];
     sessions.forEach((session) => {
         if (session.compact && session.parentSession) {
@@ -51,19 +61,23 @@ function _getPicksAndActiveItem(filter: string, selectAndStartID: string, debugS
     });
     sessions.forEach((session) => {
         const isHeader = headerSessions.includes(session);
+
         if (!session.parentSession) {
             debugConsolePicks.push({ type: 'separator', label: isHeader ? session.name : undefined });
         }
         if (!isHeader) {
             const pick = _createPick(session, filter, debugService, viewsService, commandService);
+
             if (pick) {
                 debugConsolePicks.push(pick);
+
                 if (session.getId() === currSession?.getId()) {
                     activeItems.push(pick);
                 }
             }
         }
     });
+
     if (debugConsolePicks.length) {
         debugConsolePicks.push({ type: 'separator' });
     }
@@ -73,6 +87,7 @@ function _getPicksAndActiveItem(filter: string, selectAndStartID: string, debugS
         ariaLabel: createDebugSessionLabel,
         accept: () => commandService.executeCommand(selectAndStartID)
     });
+
     return { picks: debugConsolePicks, activeItems };
 }
 function _getSessionInfo(session: IDebugSession): {
@@ -81,9 +96,13 @@ function _getSessionInfo(session: IDebugSession): {
     ariaLabel: string;
 } {
     const label = (!session.configuration.name.length) ? session.name : session.configuration.name;
+
     const parentName = session.compact ? undefined : session.parentSession?.configuration.name;
+
     let description = '';
+
     let ariaLabel = '';
+
     if (parentName) {
         ariaLabel = nls.localize('workbench.action.debug.spawnFrom', 'Session {0} spawned from {1}', label, parentName);
         description = parentName;
@@ -92,7 +111,9 @@ function _getSessionInfo(session: IDebugSession): {
 }
 function _createPick(session: IDebugSession, filter: string, debugService: IDebugService, viewsService: IViewsService, commandService: ICommandService): IPickerDebugItem | undefined {
     const pickInfo = _getSessionInfo(session);
+
     const highlights = matchesFuzzy(filter, pickInfo.label, true);
+
     if (highlights) {
         return {
             label: pickInfo.label,
@@ -101,6 +122,7 @@ function _createPick(session: IDebugSession, filter: string, debugService: IDebu
             highlights: { label: highlights },
             accept: () => {
                 debugService.focusStackFrame(undefined, undefined, session, { explicit: true });
+
                 if (!viewsService.isViewVisible(REPL_VIEW_ID)) {
                     viewsService.openView(REPL_VIEW_ID, true);
                 }

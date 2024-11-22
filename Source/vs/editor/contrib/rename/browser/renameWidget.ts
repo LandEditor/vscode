@@ -220,6 +220,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 						this._isEditingRenameCandidate = true;
 					}
 					this._timeBeforeFirstInputFieldEdit ??= this._beforeFirstInputFieldEditSW.elapsed();
+
 					if (this._renameCandidateProvidersCts?.token.isCancellationRequested === false) {
 						this._renameCandidateProvidersCts.cancel();
 					}
@@ -243,6 +244,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		}
 
 		const widgetShadowColor = theme.getColor(widgetShadow);
+
 		const widgetBorderColor = theme.getColor(widgetBorder);
 		this._domNode.style.backgroundColor = String(theme.getColor(editorWidgetBackground) ?? '');
 		this._domNode.style.boxShadow = widgetShadowColor ? ` 0 0 8px 2px ${widgetShadowColor}` : '';
@@ -286,6 +288,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		}
 
 		const bodyBox = dom.getClientArea(this.getDomNode().ownerDocument.body);
+
 		const editorBox = dom.getDomNodePagePosition(this._editor.getDomNode());
 
 		const cursorBoxTop = this._getTopForPosition();
@@ -294,6 +297,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		this._nPxAvailableBelow = bodyBox.height - this._nPxAvailableAbove;
 
 		const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+
 		const { totalHeight: candidateViewHeight } = RenameCandidateView.getLayoutInfo({ lineHeight });
 
 		const positionPreference = this._nPxAvailableBelow > candidateViewHeight * 6 /* approximate # of candidates to fit in (inclusive of rename input box & rename label) */
@@ -318,9 +322,11 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 	afterRender(position: ContentWidgetPositionPreference | null): void {
 		// FIXME@ulugbekna: commenting trace log out until we start unmounting the widget from editor properly - https://github.com/microsoft/vscode/issues/226975
 		// this._trace('invoking afterRender, position: ', position ? 'not null' : 'null');
+
 		if (position === null) {
 			// cancel rename when input widget isn't rendered anymore
 			this.cancelInput(true, 'afterRender (because position is null)');
+
 			return;
 		}
 
@@ -339,6 +345,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		const labelHeight = dom.getTotalHeight(this._label!);
 
 		let totalHeightAvailable: number;
+
 		if (position === ContentWidgetPositionPreference.BELOW) {
 			totalHeightAvailable = this._nPxAvailableBelow;
 		} else {
@@ -470,6 +477,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			// fixme session cleanup
 			this._renameCandidateListView?.clearCandidates();
 			inputResult.complete(focusEditor);
+
 			return true;
 		};
 
@@ -480,8 +488,11 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			const nRenameSuggestions = this._renameCandidateListView.nCandidates;
 
 			let newName: string;
+
 			let source: NewNameSource;
+
 			const focusedCandidate = this._renameCandidateListView.focusedCandidate;
+
 			if (focusedCandidate !== undefined) {
 				this._trace('using new name from renameSuggestion');
 				newName = focusedCandidate;
@@ -494,6 +505,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 			if (newName === currentName || newName.trim().length === 0 /* is just whitespace */) {
 				this.cancelInput(true, '_currentAcceptInput (because newName === value || newName.trim().length === 0)');
+
 				return;
 			}
 
@@ -516,6 +528,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		};
 
 		disposeOnDone.add(cts.token.onCancellationRequested(() => this.cancelInput(true, 'cts.token.onCancellationRequested')));
+
 		if (!_sticky) {
 			disposeOnDone.add(this._editor.onDidBlurEditorWidget(() => this.cancelInput(!this._domNode?.ownerDocument.hasFocus(), 'editor.onDidBlurEditorWidget')));
 		}
@@ -540,10 +553,12 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 			this._renameCandidateProvidersCts = new CancellationTokenSource();
 
 			const triggerKind = isManuallyTriggered ? NewSymbolNameTriggerKind.Invoke : NewSymbolNameTriggerKind.Automatic;
+
 			const candidates = this._requestRenameCandidatesOnce(triggerKind, this._renameCandidateProvidersCts.token);
 
 			if (candidates.length === 0) {
 				this._inputWithButton.setSparkleButton();
+
 				return;
 			}
 
@@ -566,7 +581,9 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		assertType(this._editor.hasModel());
 
 		const selection = this._editor.getSelection();
+
 		let start = 0;
+
 		let end = currentName.length;
 
 		if (!Range.isEmpty(selection) && !Range.spansMultipleLines(selection) && Range.containsRange(where, selection)) {
@@ -598,12 +615,14 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 		const trace = (...args: any[]) => this._trace('_updateRenameCandidates', ...args);
 
 		trace('start');
+
 		const namesListResults = await raceCancellation(Promise.allSettled(candidates), token);
 
 		this._inputWithButton.setSparkleButton();
 
 		if (namesListResults === undefined) {
 			trace('returning early - received updateRenameCandidates results - undefined');
+
 			return;
 		}
 
@@ -626,6 +645,7 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 		if (validDistinctNames.length < 1) {
 			trace('returning early - no valid distinct candidates');
+
 			return;
 		}
 
@@ -647,7 +667,9 @@ export class RenameWidget implements IRenameWidget, IContentWidget, IDisposable 
 
 	private _getTopForPosition(): number {
 		const visibleRanges = this._editor.getVisibleRanges();
+
 		let firstLineInViewport: number;
+
 		if (visibleRanges.length > 0) {
 			firstLineInViewport = visibleRanges[0].startLineNumber;
 		} else {
@@ -740,6 +762,7 @@ class RenameCandidateListView {
 
 		// adjust list widget layout
 		const height = this._pickListHeight(this._listWidget.length);
+
 		const width = this._pickListWidth(candidates);
 
 		this._listWidget.layout(height, width);
@@ -766,10 +789,12 @@ class RenameCandidateListView {
 			return;
 		}
 		const selectedElement = this._listWidget.getSelectedElements()[0];
+
 		if (selectedElement !== undefined) {
 			return selectedElement.newSymbolName;
 		}
 		const focusedElement = this._listWidget.getFocusedElements()[0];
+
 		if (focusedElement !== undefined) {
 			return focusedElement.newSymbolName;
 		}
@@ -781,9 +806,11 @@ class RenameCandidateListView {
 			return false;
 		}
 		const focusedIxs = this._listWidget.getFocus();
+
 		if (focusedIxs.length === 0) {
 			this._listWidget.focusFirst();
 			this._listWidget.reveal(0);
+
 			return true;
 		} else {
 			if (focusedIxs[0] === this._listWidget.length - 1) {
@@ -792,8 +819,10 @@ class RenameCandidateListView {
 				return false;
 			} else {
 				this._listWidget.focusNext();
+
 				const focused = this._listWidget.getFocus()[0];
 				this._listWidget.reveal(focused);
+
 				return true;
 			}
 		}
@@ -807,19 +836,25 @@ class RenameCandidateListView {
 			return false;
 		}
 		const focusedIxs = this._listWidget.getFocus();
+
 		if (focusedIxs.length === 0) {
 			this._listWidget.focusLast();
+
 			const focused = this._listWidget.getFocus()[0];
 			this._listWidget.reveal(focused);
+
 			return true;
 		} else {
 			if (focusedIxs[0] === 0) {
 				this._listWidget.setFocus([]);
+
 				return false;
 			} else {
 				this._listWidget.focusPrevious();
+
 				const focused = this._listWidget.getFocus()[0];
 				this._listWidget.reveal(focused);
+
 				return true;
 			}
 		}
@@ -831,22 +866,27 @@ class RenameCandidateListView {
 
 	private get _candidateViewHeight(): number {
 		const { totalHeight } = RenameCandidateView.getLayoutInfo({ lineHeight: this._lineHeight });
+
 		return totalHeight;
 	}
 
 	private _pickListHeight(nCandidates: number) {
 		const heightToFitAllCandidates = this._candidateViewHeight * nCandidates;
+
 		const MAX_N_CANDIDATES = 7;  // @ulugbekna: max # of candidates we want to show at once
 		const height = Math.min(heightToFitAllCandidates, this._availableHeight, this._candidateViewHeight * MAX_N_CANDIDATES);
+
 		return height;
 	}
 
 	private _pickListWidth(candidates: NewSymbolName[]): number {
 		const longestCandidateWidth = Math.ceil(Math.max(...candidates.map(c => c.newSymbolName.length)) * this._typicalHalfwidthCharacterWidth);
+
 		const width = Math.max(
 			this._minimumWidth,
 			4 /* padding */ + 16 /* sparkle icon */ + 5 /* margin-left */ + longestCandidateWidth + 10 /* (possibly visible) scrollbar width */ // TODO@ulugbekna: approximate calc - clean this up
 		);
+
 		return width;
 	}
 
@@ -948,6 +988,7 @@ class InputWithButton implements IDisposable {
 			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.INPUT, () => this._onDidInputChange.fire()));
 			this._disposables.add(dom.addDisposableListener(this.input, dom.EventType.KEY_DOWN, (e) => {
 				const keyEvent = new StandardKeyboardEvent(e);
+
 				if (keyEvent.keyCode === KeyCode.LeftArrow || keyEvent.keyCode === KeyCode.RightArrow) {
 					this._onDidInputChange.fire();
 				}
@@ -971,11 +1012,13 @@ class InputWithButton implements IDisposable {
 
 	get input() {
 		assertType(this._inputNode);
+
 		return this._inputNode;
 	}
 
 	get button() {
 		assertType(this._buttonNode);
+
 		return this._buttonNode;
 	}
 
@@ -986,6 +1029,7 @@ class InputWithButton implements IDisposable {
 	setSparkleButton() {
 		this._buttonState = 'sparkle';
 		this._sparkleIcon ??= renderIcon(Codicon.sparkle);
+
 		dom.clearNode(this.button);
 		this.button.appendChild(this._sparkleIcon);
 		this.button.setAttribute('aria-label', 'Generating new name suggestions');
@@ -996,6 +1040,7 @@ class InputWithButton implements IDisposable {
 	setStopButton() {
 		this._buttonState = 'stop';
 		this._stopIcon ??= renderIcon(Codicon.primitiveSquare);
+
 		dom.clearNode(this.button);
 		this.button.appendChild(this._stopIcon);
 		this.button.setAttribute('aria-label', 'Cancel generating new name suggestions');
@@ -1038,6 +1083,7 @@ class RenameCandidateView {
 		iconContainer.appendChild(this._icon);
 
 		this._label = document.createElement('div');
+
 		domFontInfo.applyFontInfo(this._label, fontInfo);
 		this._domNode.appendChild(this._label);
 
@@ -1060,6 +1106,7 @@ class RenameCandidateView {
 
 	public static getLayoutInfo({ lineHeight }: { lineHeight: number }): { totalHeight: number } {
 		const totalHeight = lineHeight + RenameCandidateView._PADDING * 2 /* top & bottom padding */;
+
 		return { totalHeight };
 	}
 

@@ -13,6 +13,7 @@ export class NodeReader {
     private readonly offsets: Length[];
     private readonly idxs: number[];
     private lastOffset: Length = lengthZero;
+
     constructor(node: AstNode) {
         this.nextNodes = [node];
         this.offsets = [lengthZero];
@@ -30,10 +31,12 @@ export class NodeReader {
         // Find the longest node of all those that are closest to the current offset.
         while (true) {
             const curNode = lastOrUndefined(this.nextNodes);
+
             if (!curNode) {
                 return undefined;
             }
             const curNodeOffset = lastOrUndefined(this.offsets)!;
+
             if (lengthLessThan(offset, curNodeOffset)) {
                 // The next best node is not here yet.
                 // The reader must advance before a cached node is hit.
@@ -48,6 +51,7 @@ export class NodeReader {
                 else {
                     // The reader is somewhere in the current node.
                     const nextChildIdx = getNextChildIdx(curNode);
+
                     if (nextChildIdx !== -1) {
                         // Go to the first child and repeat.
                         this.nextNodes.push(curNode.getChild(nextChildIdx)!);
@@ -64,6 +68,7 @@ export class NodeReader {
                 // readerOffsetBeforeChange === curNodeOffset
                 if (predicate(curNode)) {
                     this.nextNodeAfterCurrent();
+
                     return curNode;
                 }
                 else {
@@ -72,6 +77,7 @@ export class NodeReader {
                     if (nextChildIdx === -1) {
                         // There is no shorter node.
                         this.nextNodeAfterCurrent();
+
                         return undefined;
                     }
                     else {
@@ -88,20 +94,25 @@ export class NodeReader {
     private nextNodeAfterCurrent(): void {
         while (true) {
             const currentOffset = lastOrUndefined(this.offsets);
+
             const currentNode = lastOrUndefined(this.nextNodes);
             this.nextNodes.pop();
             this.offsets.pop();
+
             if (this.idxs.length === 0) {
                 // We just popped the root node, there is no next node.
                 break;
             }
             // Parent is not undefined, because idxs is not empty
             const parent = lastOrUndefined(this.nextNodes)!;
+
             const nextChildIdx = getNextChildIdx(parent, this.idxs[this.idxs.length - 1]);
+
             if (nextChildIdx !== -1) {
                 this.nextNodes.push(parent.getChild(nextChildIdx)!);
                 this.offsets.push(lengthAdd(currentOffset!, currentNode!.length));
                 this.idxs[this.idxs.length - 1] = nextChildIdx;
+
                 break;
             }
             else {
@@ -115,6 +126,7 @@ export class NodeReader {
 function getNextChildIdx(node: AstNode, curIdx: number = -1): number | -1 {
     while (true) {
         curIdx++;
+
         if (curIdx >= node.childrenLength) {
             return -1;
         }

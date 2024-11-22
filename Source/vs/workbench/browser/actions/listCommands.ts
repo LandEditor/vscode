@@ -28,6 +28,7 @@ function ensureDOMFocus(widget: ListWidget | undefined): void {
     // list/tree item. therefor we should ensure that the
     // list/tree has DOM focus again after the command ran.
     const element = widget?.getHTMLElement();
+
     if (element && !isActiveElement(element)) {
         widget?.domFocus();
     }
@@ -37,9 +38,12 @@ async function updateFocus(widget: WorkbenchListWidget, updateFocusFn: (widget: 
         return updateFocusFn(widget);
     }
     const focus = widget.getFocus();
+
     const selection = widget.getSelection();
     await updateFocusFn(widget);
+
     const newFocus = widget.getFocus();
+
     if (selection.length > 1 || !equals(focus, selection) || equals(focus, newFocus)) {
         return;
     }
@@ -51,7 +55,9 @@ async function navigate(widget: WorkbenchListWidget | undefined, updateFocusFn: 
         return;
     }
     await updateFocus(widget, updateFocusFn);
+
     const listFocus = widget.getFocus();
+
     if (listFocus.length) {
         widget.reveal(listFocus[0]);
     }
@@ -198,8 +204,11 @@ function expandMultiSelection(focused: WorkbenchListWidget, previousFocus: unkno
     // List
     if (focused instanceof List || focused instanceof PagedList || focused instanceof Table) {
         const list = focused;
+
         const focus = list.getFocus() ? list.getFocus()[0] : undefined;
+
         const selection = list.getSelection();
+
         if (selection && typeof focus === 'number' && selection.indexOf(focus) >= 0) {
             list.setSelection(selection.filter(s => s !== previousFocus));
         }
@@ -212,12 +221,16 @@ function expandMultiSelection(focused: WorkbenchListWidget, previousFocus: unkno
     // Tree
     else if (focused instanceof ObjectTree || focused instanceof DataTree || focused instanceof AsyncDataTree) {
         const list = focused;
+
         const focus = list.getFocus() ? list.getFocus()[0] : undefined;
+
         if (previousFocus === focus) {
             return;
         }
         const selection = list.getSelection();
+
         const fakeKeyboardEvent = new KeyboardEvent('keydown', { shiftKey: true });
+
         if (selection && selection.indexOf(focus) >= 0) {
             list.setSelection(selection.filter(s => s !== previousFocus), fakeKeyboardEvent);
         }
@@ -228,6 +241,7 @@ function expandMultiSelection(focused: WorkbenchListWidget, previousFocus: unkno
 }
 function revealFocusedStickyScroll(tree: ObjectTree<any, any> | DataTree<any, any> | AsyncDataTree<any, any>, postRevealAction?: (focus: any) => void): void {
     const focus = tree.getStickyScrollFocus();
+
     if (focus.length === 0) {
         throw new Error(`StickyScroll has no focus`);
     }
@@ -246,16 +260,20 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.Shift | KeyCode.DownArrow,
     handler: (accessor, arg2) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget) {
             return;
         }
         // Focus down first
         const previousFocus = widget.getFocus() ? widget.getFocus()[0] : undefined;
+
         const fakeKeyboardEvent = new KeyboardEvent('keydown');
         widget.focusNext(typeof arg2 === 'number' ? arg2 : 1, false, fakeKeyboardEvent);
         // Then adjust selection
         expandMultiSelection(widget, previousFocus);
+
         const focus = widget.getFocus();
+
         if (focus.length) {
             widget.reveal(focus[0]);
         }
@@ -269,16 +287,20 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.Shift | KeyCode.UpArrow,
     handler: (accessor, arg2) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget) {
             return;
         }
         // Focus up first
         const previousFocus = widget.getFocus() ? widget.getFocus()[0] : undefined;
+
         const fakeKeyboardEvent = new KeyboardEvent('keydown');
         widget.focusPrevious(typeof arg2 === 'number' ? arg2 : 1, false, fakeKeyboardEvent);
         // Then adjust selection
         expandMultiSelection(widget, previousFocus);
+
         const focus = widget.getFocus();
+
         if (focus.length) {
             widget.reveal(focus[0]);
         }
@@ -296,17 +318,22 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     },
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget || !(widget instanceof ObjectTree || widget instanceof DataTree || widget instanceof AsyncDataTree)) {
             return;
         }
         const tree = widget;
+
         const focusedElements = tree.getFocus();
+
         if (focusedElements.length === 0) {
             return;
         }
         const focus = focusedElements[0];
+
         if (!tree.collapse(focus)) {
             const parent = tree.getParentElement(focus);
+
             if (parent) {
                 navigate(widget, widget => {
                     const fakeKeyboardEvent = new KeyboardEvent('keydown');
@@ -327,6 +354,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     },
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget || !(widget instanceof ObjectTree || widget instanceof DataTree || widget instanceof AsyncDataTree)) {
             return;
         }
@@ -344,6 +372,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     },
     handler: (accessor) => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         if (focused && !(focused instanceof List || focused instanceof PagedList || focused instanceof Table)) {
             focused.collapseAll();
         }
@@ -355,11 +384,14 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: WorkbenchListFocusContextKey,
     handler: accessor => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         const fakeKeyboardEvent = getSelectionKeyboardEvent('keydown', true);
         // Trees
         if (focused instanceof ObjectTree || focused instanceof DataTree || focused instanceof AsyncDataTree) {
             const tree = focused;
+
             const focus = tree.getFocus();
+
             if (focus.length > 0) {
                 tree.collapse(focus[0], true);
             }
@@ -374,16 +406,21 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: WorkbenchListFocusContextKey,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget || !(widget instanceof ObjectTree || widget instanceof DataTree || widget instanceof AsyncDataTree)) {
             return;
         }
         const tree = widget;
+
         const focusedElements = tree.getFocus();
+
         if (focusedElements.length === 0) {
             return;
         }
         const focus = focusedElements[0];
+
         const parent = tree.getParentElement(focus);
+
         if (parent) {
             navigate(widget, widget => {
                 const fakeKeyboardEvent = new KeyboardEvent('keydown');
@@ -399,20 +436,25 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.RightArrow,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget) {
             return;
         }
         if (widget instanceof ObjectTree || widget instanceof DataTree) {
             // TODO@Joao: instead of doing this here, just delegate to a tree method
             const focusedElements = widget.getFocus();
+
             if (focusedElements.length === 0) {
                 return;
             }
             const focus = focusedElements[0];
+
             if (!widget.expand(focus)) {
                 const child = widget.getFirstElementChild(focus);
+
                 if (child) {
                     const node = widget.getNode(child);
+
                     if (node.visible) {
                         navigate(widget, widget => {
                             const fakeKeyboardEvent = new KeyboardEvent('keydown');
@@ -425,6 +467,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         else if (widget instanceof AsyncDataTree) {
             // TODO@Joao: instead of doing this here, just delegate to a tree method
             const focusedElements = widget.getFocus();
+
             if (focusedElements.length === 0) {
                 return;
             }
@@ -432,8 +475,10 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
             widget.expand(focus).then(didExpand => {
                 if (focus && !didExpand) {
                     const child = widget.getFirstElementChild(focus);
+
                     if (child) {
                         const node = widget.getNode(child);
+
                         if (node.visible) {
                             navigate(widget, widget => {
                                 const fakeKeyboardEvent = new KeyboardEvent('keydown');
@@ -448,6 +493,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 function selectElement(accessor: ServicesAccessor, retainCurrentFocus: boolean): void {
     const focused = accessor.get(IListService).lastFocusedList;
+
     const fakeKeyboardEvent = getSelectionKeyboardEvent('keydown', retainCurrentFocus);
     // List
     if (focused instanceof List || focused instanceof PagedList || focused instanceof Table) {
@@ -458,9 +504,12 @@ function selectElement(accessor: ServicesAccessor, retainCurrentFocus: boolean):
     // Trees
     else if (focused instanceof ObjectTree || focused instanceof DataTree || focused instanceof AsyncDataTree) {
         const tree = focused;
+
         const focus = tree.getFocus();
+
         if (focus.length > 0) {
             let toggleCollapsed = true;
+
             if (tree.expandOnlyOnTwistieClick === true) {
                 toggleCollapsed = false;
             }
@@ -499,6 +548,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     },
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget || !(widget instanceof ObjectTree || widget instanceof DataTree || widget instanceof AsyncDataTree)) {
             return;
         }
@@ -523,16 +573,20 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         // List
         if (focused instanceof List || focused instanceof PagedList || focused instanceof Table) {
             const list = focused;
+
             const fakeKeyboardEvent = new KeyboardEvent('keydown');
             list.setSelection(range(list.length), fakeKeyboardEvent);
         }
         // Trees
         else if (focused instanceof ObjectTree || focused instanceof DataTree || focused instanceof AsyncDataTree) {
             const tree = focused;
+
             const focus = tree.getFocus();
+
             const selection = tree.getSelection();
             // Which element should be considered to start selecting all?
             let start: unknown | undefined = undefined;
+
             if (focus.length > 0 && (selection.length === 0 || !selection.includes(focus[0]))) {
                 start = focus[0];
             }
@@ -541,6 +595,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
             }
             // What is the scope of select all?
             let scope: unknown | undefined = undefined;
+
             if (!start) {
                 scope = undefined;
             }
@@ -548,10 +603,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
                 scope = tree.getParentElement(start);
             }
             const newSelection: unknown[] = [];
+
             const visit = (node: ITreeNode<unknown, unknown>) => {
                 for (const child of node.children) {
                     if (child.visible) {
                         newSelection.push(child.element);
+
                         if (!child.collapsed) {
                             visit(child);
                         }
@@ -576,15 +633,19 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget) {
             return;
         }
         const focus = widget.getFocus();
+
         if (focus.length === 0) {
             return;
         }
         const selection = widget.getSelection();
+
         const index = selection.indexOf(focus[0]);
+
         if (index > -1) {
             widget.setSelection([...selection.slice(0, index), ...selection.slice(index + 1)]);
         }
@@ -600,25 +661,33 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: WorkbenchListFocusContextKey,
     handler: async (accessor: ServicesAccessor, ...args: any[]) => {
         const listService = accessor.get(IListService);
+
         const lastFocusedList = listService.lastFocusedList;
+
         if (!lastFocusedList) {
             return;
         }
         // Check if a tree element is focused
         const focus = lastFocusedList.getFocus();
+
         if (!focus || (focus.length === 0)) {
             return;
         }
         // As the tree does not know anything about the rendered DOM elements
         // we have to traverse the dom to find the HTMLElements
         const treeDOM = lastFocusedList.getHTMLElement();
+
         const scrollableElement = treeDOM.querySelector('.monaco-scrollable-element');
+
         const listRows = scrollableElement?.querySelector('.monaco-list-rows');
+
         const focusedElement = listRows?.querySelector('.focused');
+
         if (!focusedElement) {
             return;
         }
         const elementWithHover = getCustomHoverForElement(focusedElement as HTMLElement);
+
         if (elementWithHover) {
             accessor.get(IHoverService).showManagedHover(elementWithHover as HTMLElement);
         }
@@ -632,6 +701,7 @@ function getCustomHoverForElement(element: HTMLElement): HTMLElement | undefined
     // Only consider children that are not action items or have a tabindex
     // as these element are focusable and the user is able to trigger them already
     const noneFocusableElementWithHover = element.querySelector('[custom-hover="true"]:not([tabindex]):not(.action-item)');
+
     if (noneFocusableElementWithHover) {
         return noneFocusableElementWithHover as HTMLElement;
     }
@@ -647,9 +717,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         // Tree only
         if (focused instanceof ObjectTree || focused instanceof DataTree || focused instanceof AsyncDataTree) {
             const tree = focused;
+
             const focus = tree.getFocus();
+
             if (focus.length > 0 && tree.isCollapsible(focus[0])) {
                 tree.toggleCollapsed(focus[0]);
+
                 return;
             }
         }
@@ -663,6 +736,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Space,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget || !(widget instanceof ObjectTree || widget instanceof DataTree || widget instanceof AsyncDataTree)) {
             return;
         }
@@ -676,13 +750,17 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Escape,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (!widget) {
             return;
         }
         const selection = widget.getSelection();
+
         const fakeKeyboardEvent = new KeyboardEvent('keydown');
+
         if (selection.length > 1) {
             const useSelectionNavigation = WorkbenchListSelectionNavigation.getValue(widget.contextKeyService);
+
             if (useSelectionNavigation) {
                 const focus = widget.getFocus();
                 widget.setSelection([focus[0]], fakeKeyboardEvent);
@@ -709,6 +787,7 @@ CommandsRegistry.registerCommand({
     id: 'list.toggleFindMode',
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
             const tree = widget;
             tree.findMode = tree.findMode === TreeFindMode.Filter ? TreeFindMode.Highlight : TreeFindMode.Filter;
@@ -719,6 +798,7 @@ CommandsRegistry.registerCommand({
     id: 'list.toggleFindMatchType',
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
             const tree = widget;
             tree.findMatchType = tree.findMatchType === TreeFindMatchType.Contiguous ? TreeFindMatchType.Fuzzy : TreeFindMatchType.Contiguous;
@@ -754,6 +834,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Escape,
     handler: (accessor) => {
         const widget = accessor.get(IListService).lastFocusedList;
+
         if (widget instanceof AbstractTree || widget instanceof AsyncDataTree) {
             const tree = widget;
             tree.closeFind();
@@ -770,6 +851,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
     handler: accessor => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         if (!focused) {
             return;
         }
@@ -784,6 +866,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
     handler: accessor => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         if (!focused) {
             return;
         }
@@ -796,6 +879,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: WorkbenchListFocusContextKey,
     handler: accessor => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         if (!focused) {
             return;
         }
@@ -808,6 +892,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: WorkbenchListFocusContextKey,
     handler: accessor => {
         const focused = accessor.get(IListService).lastFocusedList;
+
         if (!focused) {
             return;
         }
@@ -829,6 +914,7 @@ registerAction2(class ToggleStickyScroll extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue<boolean>('workbench.tree.enableStickyScroll');
         configurationService.updateValue('workbench.tree.enableStickyScroll', newValue);
     }

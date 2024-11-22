@@ -26,6 +26,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
     private _plainTextSearchResult: PlainTextSearchHeadingImpl;
     private _aiTextSearchResult: AITextSearchHeadingImpl;
     private readonly _id: string;
+
     constructor(public readonly searchModel: ISearchModel, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -70,6 +71,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
             this._onChange.pause();
             await Promise.all(elementsToReplace.map(async (elem) => {
                 const parent = elem.parent();
+
                 if ((isSearchTreeFolderMatch(parent) || isSearchTreeFileMatch(parent)) && arrayContainsElementOrParent(parent, elementsToReplace)) {
                     // skip any children who have parents in the array
                     return;
@@ -92,6 +94,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
     batchRemove(elementsToRemove: RenderableMatch[]) {
         // need to check that we aren't trying to remove elements twice
         const removedElems: RenderableMatch[] = [];
+
         try {
             this._onChange.pause();
             elementsToRemove.forEach((currentElement) => {
@@ -169,6 +172,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
     add(allRaw: IFileMatch[], searchInstanceID: string, ai: boolean, silent: boolean = false): void {
         this._plainTextSearchResult.hidden = false;
         this._aiTextSearchResult.hidden = false;
+
         if (ai) {
             this._aiTextSearchResult.add(allRaw, searchInstanceID, silent);
         }
@@ -243,6 +247,7 @@ export class SearchResultImpl extends Disposable implements ISearchResult {
         this._plainTextSearchResult?.dispose();
         this._onWillChangeModelListener?.dispose();
         this._onDidChangeModelListener?.dispose();
+
         super.dispose();
     }
 }

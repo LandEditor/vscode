@@ -13,6 +13,7 @@ import { SuggestEnabledInput } from '../../codeEditor/browser/suggestEnabledInpu
 import { EXTENSION_SETTING_TAG, FEATURE_SETTING_TAG, GENERAL_TAG_SETTING_TAG, LANGUAGE_SETTING_TAG, MODIFIED_SETTING_TAG, POLICY_SETTING_TAG } from '../common/preferences.js';
 export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenuActionViewItem {
     private readonly suggestController: SuggestController | null;
+
     constructor(action: IAction, options: IActionViewItemOptions, actionRunner: IActionRunner | undefined, private readonly searchWidget: SuggestEnabledInput, 
     @IContextMenuService
     contextMenuService: IContextMenuService) {
@@ -31,6 +32,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
     private doSearchWidgetAction(queryToAppend: string, triggerSuggest: boolean) {
         this.searchWidget.setValue(this.searchWidget.getValue().trimEnd() + ' ' + queryToAppend);
         this.searchWidget.focus();
+
         if (triggerSuggest && this.suggestController) {
             this.suggestController.triggerSuggest();
         }
@@ -55,7 +57,9 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
      */
     private createToggleAction(id: string, label: string, tooltip: string, queryToAppend: string): IAction {
         const splitCurrentQuery = this.searchWidget.getValue().split(' ');
+
         const queryContainsQueryToAppend = splitCurrentQuery.includes(queryToAppend);
+
         return {
             id,
             label,
@@ -66,6 +70,7 @@ export class SettingsSearchFilterDropdownMenuActionViewItem extends DropdownMenu
             run: () => {
                 if (!queryContainsQueryToAppend) {
                     const trimmedCurrentQuery = this.searchWidget.getValue().trimEnd();
+
                     const newQuery = trimmedCurrentQuery ? trimmedCurrentQuery + ' ' + queryToAppend : queryToAppend;
                     this.searchWidget.setValue(newQuery);
                 }

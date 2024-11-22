@@ -50,6 +50,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
         fgColor: string;
     } | undefined;
     private cachedWindowControlHeight: number | undefined;
+
     constructor(id: string, targetWindow: CodeWindow, editorGroupsContainer: IEditorGroupsContainer | 'main', 
     @IContextMenuService
     contextMenuService: IContextMenuService, 
@@ -88,6 +89,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
             // Hack to fix issue #52522 with layered webkit-app-region elements appearing under cursor
             if (this.dragRegion) {
                 hide(this.dragRegion);
+
                 setTimeout(() => show(this.dragRegion!), 50);
             }
         }
@@ -95,6 +97,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
     }
     protected override onConfigurationChanged(event: IConfigurationChangeEvent): void {
         super.onConfigurationChanged(event);
+
         if (event.affectsConfiguration('window.doubleClickIconToClose')) {
             if (this.appIcon) {
                 this.onUpdateAppIconDragBehavior();
@@ -103,6 +106,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
     }
     private onUpdateAppIconDragBehavior(): void {
         const setting = this.configurationService.getValue('window.doubleClickIconToClose');
+
         if (setting && this.appIcon) {
             (this.appIcon.style as any)['-webkit-app-region'] = 'no-drag';
         }
@@ -112,6 +116,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
     }
     protected override installMenubar(): void {
         super.installMenubar();
+
         if (this.menubar) {
             return;
         }
@@ -131,7 +136,9 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
     }
     protected override createContentArea(parent: HTMLElement): HTMLElement {
         const result = super.createContentArea(parent);
+
         const targetWindow = getWindow(parent);
+
         const targetWindowId = getWindowId(targetWindow);
         // Native menu controller
         if (isMacintosh || hasNativeTitlebar(this.configurationService)) {
@@ -155,6 +162,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
             this.maxRestoreControl = append(this.windowControlsContainer, $('div.window-icon.window-max-restore'));
             this._register(addDisposableListener(this.maxRestoreControl, EventType.CLICK, async () => {
                 const maximized = await this.nativeHostService.isMaximized({ targetWindowId });
+
                 if (maximized) {
                     return this.nativeHostService.unmaximizeWindow({ targetWindowId });
                 }
@@ -223,6 +231,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
     }
     override layout(width: number, height: number): void {
         super.layout(width, height);
+
         if (useWindowControlsOverlay(this.configurationService) ||
             (isMacintosh && isNative && !hasNativeTitlebar(this.configurationService))) {
             // When the user goes into full screen mode, the height of the title bar becomes 0.
@@ -230,6 +239,7 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
             // so that they can have the traffic lights rendered at the proper offset.
             // Ref https://github.com/microsoft/vscode/issues/159862
             const newHeight = (height > 0 || this.bigSurOrNewer) ? Math.round(height * getZoomFactor(getWindow(this.element))) : this.macTitlebarSize;
+
             if (newHeight !== this.cachedWindowControlHeight) {
                 this.cachedWindowControlHeight = newHeight;
                 this.nativeHostService.updateWindowControls({
@@ -275,6 +285,7 @@ export class MainNativeTitlebarPart extends NativeTitlebarPart {
 }
 export class AuxiliaryNativeTitlebarPart extends NativeTitlebarPart implements IAuxiliaryTitlebarPart {
     private static COUNTER = 1;
+
     get height() { return this.minimumHeight; }
     constructor(readonly container: HTMLElement, editorGroupsContainer: IEditorGroupsContainer, private readonly mainTitlebar: BrowserTitlebarPart, 
     @IContextMenuService
@@ -306,6 +317,7 @@ export class AuxiliaryNativeTitlebarPart extends NativeTitlebarPart implements I
     @IKeybindingService
     keybindingService: IKeybindingService) {
         const id = AuxiliaryNativeTitlebarPart.COUNTER++;
+
         super(`workbench.parts.auxiliaryTitle.${id}`, getWindow(container), editorGroupsContainer, contextMenuService, configurationService, environmentService, instantiationService, themeService, storageService, layoutService, contextKeyService, hostService, nativeHostService, editorGroupService, editorService, menuService, keybindingService);
     }
     override get preventZoom(): boolean {

@@ -150,6 +150,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 		this._commentThreadContextValue.set(_commentThread.contextValue);
 
 		const commentControllerKey = CommentContextKeys.commentControllerContext.bindTo(this._contextKeyService);
+
 		const controller = this.commentService.getCommentController(this._owner);
 
 		if (controller?.contextValue) {
@@ -161,8 +162,11 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 
 	private _setAriaLabel(): void {
 		let ariaLabel = localize('commentLabel', "Comment");
+
 		let keybinding: string | undefined;
+
 		const verbose = this.configurationService.getValue(AccessibilityVerbositySettingId.Comments);
+
 		if (verbose) {
 			keybinding = this._keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp, this._contextKeyService)?.getLabel() ?? undefined;
 		}
@@ -184,6 +188,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 
 	private currentThreadListeners() {
 		let hasMouse = false;
+
 		let hasFocus = false;
 		this._register(dom.addDisposableListener(this.container, dom.EventType.MOUSE_ENTER, (e) => {
 			if ((<any>e).toElement === this.container) {
@@ -368,6 +373,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 
 	async submitComment() {
 		const activeComment = this._body.activeComment;
+
 		if (activeComment) {
 			return activeComment.submitComment();
 		} else if ((this._commentReply?.getPendingComment()?.body.length ?? 0) > 0) {
@@ -389,59 +395,71 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends
 		content.push(`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`);
 
 		const linkColor = theme.getColor(textLinkForeground);
+
 		if (linkColor) {
 			content.push(`.review-widget .body .comment-body a { color: ${linkColor} }`);
 		}
 
 		const linkActiveColor = theme.getColor(textLinkActiveForeground);
+
 		if (linkActiveColor) {
 			content.push(`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`);
 		}
 
 		const focusColor = theme.getColor(focusBorder);
+
 		if (focusColor) {
 			content.push(`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`);
 			content.push(`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`);
 		}
 
 		const blockQuoteBackground = theme.getColor(textBlockQuoteBackground);
+
 		if (blockQuoteBackground) {
 			content.push(`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`);
 		}
 
 		const blockQuoteBOrder = theme.getColor(textBlockQuoteBorder);
+
 		if (blockQuoteBOrder) {
 			content.push(`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`);
 		}
 
 		const border = theme.getColor(PANEL_BORDER);
+
 		if (border) {
 			content.push(`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`);
 		}
 
 		const hcBorder = theme.getColor(contrastBorder);
+
 		if (hcBorder) {
 			content.push(`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`);
 			content.push(`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`);
 		}
 
 		const errorBorder = theme.getColor(inputValidationErrorBorder);
+
 		if (errorBorder) {
 			content.push(`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`);
 		}
 
 		const errorBackground = theme.getColor(inputValidationErrorBackground);
+
 		if (errorBackground) {
 			content.push(`.review-widget .validation-error { background: ${errorBackground}; }`);
 		}
 
 		const errorForeground = theme.getColor(inputValidationErrorForeground);
+
 		if (errorForeground) {
 			content.push(`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`);
 		}
 
 		const fontFamilyVar = '--comment-thread-editor-font-family';
+
 		const fontSizeVar = '--comment-thread-editor-font-size';
+
 		const fontWeightVar = '--comment-thread-editor-font-weight';
 		this.container?.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		this.container?.style.setProperty(fontSizeVar, `${fontInfo.fontSize}px`);

@@ -13,6 +13,7 @@ export class DomReadingContext {
     private readClientRect(): void {
         if (!this._clientRectRead) {
             this._clientRectRead = true;
+
             const rect = this._domNode.getBoundingClientRect();
             this.markDidDomLayout();
             this._clientRectDeltaLeft = rect.left;

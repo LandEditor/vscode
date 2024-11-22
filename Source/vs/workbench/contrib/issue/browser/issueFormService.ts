@@ -69,6 +69,7 @@ export class IssueFormService implements IIssueFormService {
 		// Center Issue Reporter Window based on bounds from native host service
 		if (bounds && bounds.x && bounds.y) {
 			const centerX = bounds.x + bounds.width / 2;
+
 			const centerY = bounds.y + bounds.height / 2;
 			issueReporterBounds = { ...issueReporterBounds, x: centerX - 350, y: centerY - 400 };
 		}
@@ -109,6 +110,7 @@ export class IssueFormService implements IIssueFormService {
 
 		// render menu and dispose
 		const actions = menu.getActions({ renderShortTitle: true }).flatMap(entry => entry[1]);
+
 		for (const action of actions) {
 			try {
 				if (action.item && 'source' in action.item && action.item.source?.id.toLowerCase() === extensionId.toLowerCase()) {
@@ -198,11 +200,13 @@ export class IssueFormService implements IIssueFormService {
 		if (data.extensionId && this.extensionIdentifierSet.has(data.extensionId)) {
 			this.currentData = data;
 			this.issueReporterWindow?.focus();
+
 			return true;
 		}
 
 		if (this.issueReporterWindow) {
 			this.issueReporterWindow.focus();
+
 			return true;
 		}
 

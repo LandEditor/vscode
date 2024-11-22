@@ -20,6 +20,7 @@ import { TextAreaSyntethicEvents } from './editContext/textArea/textAreaEditCont
  */
 export class PointerEventHandler extends MouseHandler {
     private _lastPointerType: string;
+
     constructor(context: ViewContext, viewController: ViewController, viewHelper: IPointerHandlerHelper) {
         super(context, viewController, viewHelper);
         this._register(Gesture.addTarget(this.viewHelper.linesContentDomNode));
@@ -29,8 +30,10 @@ export class PointerEventHandler extends MouseHandler {
         this._lastPointerType = 'mouse';
         this._register(dom.addDisposableListener(this.viewHelper.linesContentDomNode, 'pointerdown', (e: any) => {
             const pointerType = e.pointerType;
+
             if (pointerType === 'mouse') {
                 this._lastPointerType = 'mouse';
+
                 return;
             }
             else if (pointerType === 'touch') {
@@ -65,6 +68,7 @@ export class PointerEventHandler extends MouseHandler {
     }
     private _dispatchGesture(event: GestureEvent, inSelectionMode: boolean): void {
         const target = this._createMouseTarget(new EditorMouseEvent(event, false, this.viewHelper.viewDomNode), false);
+
         if (target.position) {
             this.viewController.dispatchMouse({
                 position: target.position,
@@ -101,7 +105,9 @@ class TouchHandler extends MouseHandler {
     private onTap(event: GestureEvent): void {
         event.preventDefault();
         this.viewHelper.focusTextArea();
+
         const target = this._createMouseTarget(new EditorMouseEvent(event, false, this.viewHelper.viewDomNode), false);
+
         if (target.position) {
             // Send the tap event also to the <textarea> (for input purposes)
             const event = document.createEvent('CustomEvent');
@@ -116,9 +122,12 @@ class TouchHandler extends MouseHandler {
 }
 export class PointerHandler extends Disposable {
     private readonly handler: MouseHandler;
+
     constructor(context: ViewContext, viewController: ViewController, viewHelper: IPointerHandlerHelper) {
         super();
+
         const isPhone = platform.isIOS || (platform.isAndroid && platform.isMobile);
+
         if (isPhone && BrowserFeatures.pointerEvents) {
             this.handler = this._register(new PointerEventHandler(context, viewController, viewHelper));
         }

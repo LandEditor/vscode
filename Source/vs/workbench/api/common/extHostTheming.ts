@@ -10,6 +10,7 @@ export class ExtHostTheming implements ExtHostThemingShape {
     readonly _serviceBrand: undefined;
     private _actual: ColorTheme;
     private _onDidChangeActiveColorTheme: Emitter<ColorTheme>;
+
     constructor(
     @IExtHostRpcService
     _extHostRpc: IExtHostRpcService) {
@@ -21,16 +22,23 @@ export class ExtHostTheming implements ExtHostThemingShape {
     }
     $onColorThemeChange(type: string): void {
         let kind;
+
         switch (type) {
             case 'light':
                 kind = ColorThemeKind.Light;
+
                 break;
+
             case 'hcDark':
                 kind = ColorThemeKind.HighContrast;
+
                 break;
+
             case 'hcLight':
                 kind = ColorThemeKind.HighContrastLight;
+
                 break;
+
             default:
                 kind = ColorThemeKind.Dark;
         }

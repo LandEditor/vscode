@@ -40,6 +40,7 @@ import { IViewDescriptorService } from '../../../../common/views.js';
 import { BulkEditPreviewProvider, BulkFileOperation, BulkFileOperations, BulkFileOperationType } from './bulkEditPreview.js';
 import { BulkEditAccessibilityProvider, BulkEditDataSource, BulkEditDelegate, BulkEditElement, BulkEditIdentityProvider, BulkEditNaviLabelProvider, BulkEditSorter, CategoryElement, CategoryElementRenderer, compareBulkFileOperations, FileElement, FileElementRenderer, TextEditElement, TextEditElementRenderer } from './bulkEditTree.js';
 import { ACTIVE_GROUP, IEditorService, SIDE_GROUP } from '../../../../services/editor/common/editorService.js';
+
 const enum State {
     Data = 'data',
     Message = 'message'
@@ -63,6 +64,7 @@ export class BulkEditPane extends ViewPane {
     private _currentResolve?: (edit?: ResourceEdit[]) => void;
     private _currentInput?: BulkFileOperations;
     private _currentProvider?: BulkEditPreviewProvider;
+
     constructor(options: IViewletViewOptions, 
     @IInstantiationService
     private readonly _instaService: IInstantiationService, 
@@ -111,12 +113,15 @@ export class BulkEditPane extends ViewPane {
     override dispose(): void {
         this._tree.dispose();
         this._disposables.dispose();
+
         super.dispose();
     }
     protected override renderBody(parent: HTMLElement): void {
         super.renderBody(parent);
+
         const resourceLabels = this._instaService.createInstance(ResourceLabels, { onDidChangeVisibility: this.onDidChangeBodyVisibility });
         this._disposables.add(resourceLabels);
+
         const contentContainer = document.createElement('div');
         contentContainer.className = 'content';
         parent.appendChild(contentContainer);
@@ -141,11 +146,14 @@ export class BulkEditPane extends ViewPane {
         const buttonsContainer = document.createElement('div');
         buttonsContainer.className = 'buttons';
         contentContainer.appendChild(buttonsContainer);
+
         const buttonBar = new ButtonBar(buttonsContainer);
         this._disposables.add(buttonBar);
+
         const btnConfirm = buttonBar.addButton({ supportIcons: true, ...defaultButtonStyles });
         btnConfirm.label = localize('ok', 'Apply');
         btnConfirm.onDidClick(() => this.accept(), this, this._disposables);
+
         const btnCancel = buttonBar.addButton({ ...defaultButtonStyles, secondary: true });
         btnCancel.label = localize('cancel', 'Discard');
         btnCancel.onDidClick(() => this.discard(), this, this._disposables);
@@ -159,6 +167,7 @@ export class BulkEditPane extends ViewPane {
     }
     protected override layoutBody(height: number, width: number): void {
         super.layoutBody(height, width);
+
         const treeHeight = height - 50;
         this._tree.getHTMLElement().parentElement!.style.height = `${treeHeight}px`;
         this._tree.layout(treeHeight, width);
@@ -170,6 +179,7 @@ export class BulkEditPane extends ViewPane {
         this._setState(State.Data);
         this._sessionDisposables.clear();
         this._treeViewStates.clear();
+
         if (this._currentResolve) {
             this._currentResolve(undefined);
             this._currentResolve = undefined;
@@ -184,6 +194,7 @@ export class BulkEditPane extends ViewPane {
         this._treeDataSource.groupByFile = !hasCategories || this._treeDataSource.groupByFile;
         this._ctxHasCheckedChanges.set(input.checked.checkedCount > 0);
         this._currentInput = input;
+
         return new Promise<ResourceEdit[] | undefined>(resolve => {
             token.onCancellationRequested(() => resolve(undefined));
             this._currentResolve = resolve;
@@ -202,13 +213,16 @@ export class BulkEditPane extends ViewPane {
         const viewState = this._treeViewStates.get(this._treeDataSource.groupByFile);
         await this._tree.setInput(input, viewState);
         this._tree.domFocus();
+
         if (viewState) {
             return;
         }
         // async expandAll (max=10) is the default when no view state is given
         const expand = [...this._tree.getNode(input).children].slice(0, 10);
+
         while (expand.length > 0) {
             const { element } = expand.shift()!;
+
             if (element instanceof FileElement) {
                 await this._tree.expand(element, true);
             }
@@ -220,11 +234,14 @@ export class BulkEditPane extends ViewPane {
     }
     accept(): void {
         const conflicts = this._currentInput?.conflicts.list();
+
         if (!conflicts || conflicts.length === 0) {
             this._done(true);
+
             return;
         }
         let message: string;
+
         if (conflicts.length === 1) {
             message = localize('conflict.1', "Cannot apply refactoring because '{0}' has changed in the meantime.", this._labelService.getUriLabel(conflicts[0], { relative: true }));
         }
@@ -244,6 +261,7 @@ export class BulkEditPane extends ViewPane {
     }
     toggleChecked() {
         const [first] = this._tree.getFocus();
+
         if ((first instanceof FileElement || first instanceof TextEditElement) && !first.isDisabled()) {
             first.setChecked(!first.isChecked());
         }
@@ -263,6 +281,7 @@ export class BulkEditPane extends ViewPane {
     }
     toggleGrouping() {
         const input = this._tree.getInput();
+
         if (input) {
             // (1) capture view state
             const oldViewState = this._tree.getViewState();
@@ -277,11 +296,14 @@ export class BulkEditPane extends ViewPane {
     }
     private async _openElementInMultiDiffEditor(e: IOpenEvent<BulkEditElement | undefined>): Promise<void> {
         const fileOperations = this._currentInput?.fileOperations;
+
         if (!fileOperations) {
             return;
         }
         let selection: IRange | undefined = undefined;
+
         let fileElement: FileElement;
+
         if (e.element instanceof TextEditElement) {
             fileElement = e.element.parent;
             selection = e.element.edit.textEdit.textEdit.range;
@@ -295,7 +317,9 @@ export class BulkEditPane extends ViewPane {
             return;
         }
         const result = await this._computeResourceDiffEditorInputs.get(fileOperations);
+
         const resourceId = await result.getResourceDiffEditorInputIdOfOperation(fileElement.edit);
+
         const options: Mutable<IMultiDiffEditorOptions> = {
             ...e.editorOptions,
             viewState: {
@@ -305,7 +329,9 @@ export class BulkEditPane extends ViewPane {
                 }
             }
         };
+
         const multiDiffSource = URI.from({ scheme: BulkEditPane.Schema });
+
         const label = 'Refactor Preview';
         this._editorService.openEditor({
             multiDiffSource,
@@ -318,10 +344,12 @@ export class BulkEditPane extends ViewPane {
     }
     private readonly _computeResourceDiffEditorInputs = new LRUCachedFunction<BulkFileOperation[], Promise<{
         resources: IMultiDiffEditorResource[];
+
         getResourceDiffEditorInputIdOfOperation: (operation: BulkFileOperation) => Promise<IMultiDiffResourceId>;
     }>>(async (fileOperations) => {
         const computeDiffEditorInput = new CachedFunction<BulkFileOperation, Promise<IMultiDiffEditorResource>>(async (fileOperation) => {
             const fileOperationUri = fileOperation.uri;
+
             const previewUri = this._currentProvider!.asPreviewUri(fileOperationUri);
             // delete
             if (fileOperation.type & BulkFileOperationType.Delete) {
@@ -334,6 +362,7 @@ export class BulkEditPane extends ViewPane {
             // rename, create, edits
             else {
                 let leftResource: URI | undefined;
+
                 try {
                     (await this._textModelService.createModelReference(fileOperationUri)).dispose();
                     leftResource = fileOperationUri;
@@ -348,15 +377,20 @@ export class BulkEditPane extends ViewPane {
                 } satisfies IMultiDiffEditorResource;
             }
         });
+
         const sortedFileOperations = fileOperations.slice().sort(compareBulkFileOperations);
+
         const resources: IResourceDiffEditorInput[] = [];
+
         for (const operation of sortedFileOperations) {
             resources.push(await computeDiffEditorInput.get(operation));
         }
         const getResourceDiffEditorInputIdOfOperation = async (operation: BulkFileOperation): Promise<IMultiDiffResourceId> => {
             const resource = await computeDiffEditorInput.get(operation);
+
             return { original: resource.original.resource, modified: resource.modified.resource };
         };
+
         return {
             resources,
             getResourceDiffEditorInputIdOfOperation

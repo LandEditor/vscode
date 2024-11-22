@@ -55,25 +55,38 @@ export interface INotebookService {
     readonly onDidRemoveNotebookDocument: Event<NotebookTextModel>;
     registerNotebookSerializer(viewType: string, extensionData: NotebookExtensionDescription, serializer: INotebookSerializer): IDisposable;
     withNotebookDataProvider(viewType: string): Promise<SimpleNotebookProviderInfo>;
+
     tryGetDataProviderSync(viewType: string): SimpleNotebookProviderInfo | undefined;
+
     getOutputMimeTypeInfo(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined, output: IOutputDto): readonly IOrderedMimeType[];
+
     getViewTypeProvider(viewType: string): string | undefined;
+
     getRendererInfo(id: string): INotebookRendererInfo | undefined;
+
     getRenderers(): INotebookRendererInfo[];
+
     getStaticPreloads(viewType: string): Iterable<INotebookStaticPreloadInfo>;
     /** Updates the preferred renderer for the given mimetype in the workspace. */
     updateMimePreferredRenderer(viewType: string, mimeType: string, rendererId: string, otherMimetypes: readonly string[]): void;
     saveMimeDisplayOrder(target: ConfigurationTarget): void;
     createNotebookTextModel(viewType: string, uri: URI, stream?: VSBufferReadableStream): Promise<NotebookTextModel>;
+
     getNotebookTextModel(uri: URI): NotebookTextModel | undefined;
+
     getNotebookTextModels(): Iterable<NotebookTextModel>;
     listNotebookDocuments(): readonly NotebookTextModel[];
     /**	Register a notebook type that we will handle. The notebook editor will be registered for notebook types contributed by extensions */
     registerContributedNotebookType(viewType: string, data: INotebookContributionData): IDisposable;
+
     getContributedNotebookType(viewType: string): NotebookProviderInfo | undefined;
+
     getContributedNotebookTypes(resource?: URI): readonly NotebookProviderInfo[];
+
     getNotebookProviderResourceRoots(): URI[];
+
     setToCopy(items: NotebookCellTextModel[], isCopy: boolean): void;
+
     getToCopy(): {
         items: NotebookCellTextModel[];
         isCopy: boolean;

@@ -15,8 +15,10 @@ export class TopmostLineMonitor extends Disposable {
     private readonly _throttle = 50;
     private _previousTextEditorInfo = new ResourceMap<LastScrollLocation>();
     private _previousStaticEditorInfo = new ResourceMap<LastScrollLocation>();
+
     constructor() {
         super();
+
         if (vscode.window.activeTextEditor) {
             const line = getVisibleLine(vscode.window.activeTextEditor);
             this.setPreviousTextEditorLine({ uri: vscode.window.activeTextEditor.document.uri, line: line ?? 0 });
@@ -24,6 +26,7 @@ export class TopmostLineMonitor extends Disposable {
         this._register(vscode.window.onDidChangeTextEditorVisibleRanges(event => {
             if (isMarkdownFile(event.textEditor.document)) {
                 const line = getVisibleLine(event.textEditor);
+
                 if (typeof line === 'number') {
                     this.updateLine(event.textEditor.document.uri, line);
                     this.setPreviousTextEditorLine({ uri: event.textEditor.document.uri, line: line });
@@ -42,6 +45,7 @@ export class TopmostLineMonitor extends Disposable {
     public getPreviousStaticEditorLineByUri(resource: vscode.Uri): number | undefined {
         const scrollLoc = this._previousStaticEditorInfo.get(resource);
         this._previousStaticEditorInfo.delete(resource);
+
         return scrollLoc?.line;
     }
     public setPreviousTextEditorLine(scrollLocation: LastScrollLocation): void {
@@ -50,10 +54,12 @@ export class TopmostLineMonitor extends Disposable {
     public getPreviousTextEditorLineByUri(resource: vscode.Uri): number | undefined {
         const scrollLoc = this._previousTextEditorInfo.get(resource);
         this._previousTextEditorInfo.delete(resource);
+
         return scrollLoc?.line;
     }
     public getPreviousStaticTextEditorLineByUri(resource: vscode.Uri): number | undefined {
         const state = this._previousStaticEditorInfo.get(resource);
+
         return state?.line;
     }
     public updateLine(resource: vscode.Uri, line: number) {
@@ -83,8 +89,12 @@ export function getVisibleLine(editor: vscode.TextEditor): number | undefined {
         return undefined;
     }
     const firstVisiblePosition = editor.visibleRanges[0].start;
+
     const lineNumber = firstVisiblePosition.line;
+
     const line = editor.document.lineAt(lineNumber);
+
     const progress = firstVisiblePosition.character / (line.text.length + 2);
+
     return lineNumber + progress;
 }

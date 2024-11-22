@@ -11,6 +11,7 @@ export const splitNewLines = () => new StreamSplitter('\n'.charCodeAt(0));
  */
 export class StreamSplitter extends Transform {
     private buffer: Buffer | undefined;
+
     constructor(private readonly splitter: number) {
         super();
     }
@@ -22,8 +23,10 @@ export class StreamSplitter extends Transform {
             this.buffer = Buffer.concat([this.buffer, chunk]);
         }
         let offset = 0;
+
         while (offset < this.buffer.length) {
             const index = this.buffer.indexOf(this.splitter, offset);
+
             if (index === -1) {
                 break;
             }

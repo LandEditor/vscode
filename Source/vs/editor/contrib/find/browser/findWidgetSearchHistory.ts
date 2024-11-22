@@ -19,12 +19,14 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 	delete(t: string): boolean {
 		const result = this.inMemoryValues.delete(t);
 		this.save();
+
 		return result;
 	}
 
 	add(t: string): this {
 		this.inMemoryValues.add(t);
 		this.save();
+
 		return this;
 	}
 
@@ -40,6 +42,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 	forEach(callbackfn: (value: string, value2: string, set: Set<string>) => void, thisArg?: any): void {
 		// fetch latest from storage
 		this.load();
+
 		return this.inMemoryValues.forEach(callbackfn);
 	}
 	replace?(t: string[]): void {
@@ -49,6 +52,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 
 	load() {
 		let result: [] | undefined;
+
 		const raw = this.storageService.get(
 			FindWidgetSearchHistory.FIND_HISTORY_KEY,
 			StorageScope.WORKSPACE
@@ -69,6 +73,7 @@ export class FindWidgetSearchHistory implements IHistory<string> {
 	save(): Promise<void> {
 		const elements: string[] = [];
 		this.inMemoryValues.forEach(e => elements.push(e));
+
 		return new Promise<void>(resolve => {
 			this.storageService.store(
 				FindWidgetSearchHistory.FIND_HISTORY_KEY,

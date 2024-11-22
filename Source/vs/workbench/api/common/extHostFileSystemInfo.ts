@@ -13,9 +13,11 @@ export class ExtHostFileSystemInfo implements ExtHostFileSystemInfoShape {
     private readonly _systemSchemes = new Set(Object.keys(Schemas));
     private readonly _providerInfo = new Map<string, number>();
     readonly extUri: IExtUri;
+
     constructor() {
         this.extUri = new ExtUri(uri => {
             const capabilities = this._providerInfo.get(uri.scheme);
+
             if (capabilities === undefined) {
                 // default: not ignore
                 return false;

@@ -70,6 +70,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 		@IDialogService dialogService: IDialogService,
 	) {
 		const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi);
+
 		const extensionHostFactory = new BrowserExtensionHostFactory(
 			extensionsProposedApi,
 			() => this._scanWebExtensions(),
@@ -80,6 +81,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 			extensionEnablementService,
 			logService
 		);
+
 		super(
 			{ hasLocalProcess: false, allowRemoteExtensionsInLocalWebWorker: true },
 			extensionsProposedApi,
@@ -124,6 +126,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 		if (!this._scanWebExtensionsPromise) {
 			this._scanWebExtensionsPromise = (async () => {
 				const system: IExtensionDescription[] = [], user: IExtensionDescription[] = [], development: IExtensionDescription[] = [];
+
 				try {
 					await Promise.all([
 						this._webExtensionsScannerService.scanSystemExtensions().then(extensions => system.push(...extensions.map(e => toExtensionDescription(e)))),
@@ -168,12 +171,15 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 		await this._workspaceTrustManagementService.workspaceResolved;
 
 		const localExtensions = await this._scanWebExtensions();
+
 		const resolverExtensions = localExtensions.filter(extension => isResolverExtension(extension));
+
 		if (resolverExtensions.length) {
 			emitter.emitOne(new ResolverExtensions(resolverExtensions));
 		}
 
 		let resolverResult: ResolverResult;
+
 		try {
 			resolverResult = await this._resolveAuthorityInitial(remoteAuthority);
 		} catch (err) {
@@ -192,6 +198,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 
 		// monitor for breakage
 		const connection = this._remoteAgentService.getConnection();
+
 		if (connection) {
 			connection.onDidStateChange(async (e) => {
 				if (e.type === PersistentConnectionEventType.ConnectionLost) {
@@ -210,6 +217,7 @@ export class ExtensionService extends AbstractExtensionService implements IExten
 
 		// If we are running extension tests, forward logs and exit code
 		const automatedWindow = mainWindow as unknown as IAutomatedWindow;
+
 		if (typeof automatedWindow.codeAutomationExit === 'function') {
 			automatedWindow.codeAutomationExit(code, await getLogs(this._fileService, this._environmentService));
 		}
@@ -244,10 +252,12 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 						? ExtensionHostStartup.EagerManualStart
 						: ExtensionHostStartup.EagerAutoStart
 				);
+
 				return this._instantiationService.createInstance(WebWorkerExtensionHost, runningLocation, startup, this._createLocalExtensionHostDataProvider(runningLocations, runningLocation, isInitialStart));
 			}
 			case ExtensionHostKind.Remote: {
 				const remoteAgentConnection = this._remoteAgentService.getConnection();
+
 				if (remoteAgentConnection) {
 					return this._instantiationService.createInstance(RemoteExtensionHost, runningLocation, this._createRemoteExtensionHostDataProvider(runningLocations, remoteAgentConnection.remoteAuthority));
 				}
@@ -262,15 +272,22 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 				if (isInitialStart) {
 					// Here we load even extensions that would be disabled by workspace trust
 					const localExtensions = checkEnabledAndProposedAPI(this._logService, this._extensionEnablementService, this._extensionsProposedApi, await this._scanWebExtensions(), /* ignore workspace trust */true);
+
 					const runningLocation = runningLocations.computeRunningLocation(localExtensions, [], false);
+
 					const myExtensions = filterExtensionDescriptions(localExtensions, runningLocation, extRunningLocation => desiredRunningLocation.equals(extRunningLocation));
+
 					const extensions = new ExtensionHostExtensions(0, localExtensions, myExtensions.map(extension => extension.identifier));
+
 					return { extensions };
 				} else {
 					// restart case
 					const snapshot = await this._getExtensionRegistrySnapshotWhenReady();
+
 					const myExtensions = runningLocations.filterByRunningLocation(snapshot.extensions, desiredRunningLocation);
+
 					const extensions = new ExtensionHostExtensions(snapshot.versionId, snapshot.extensions, myExtensions.map(extension => extension.identifier));
+
 					return { extensions };
 				}
 			}
@@ -284,11 +301,13 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 				const snapshot = await this._getExtensionRegistrySnapshotWhenReady();
 
 				const remoteEnv = await this._remoteAgentService.getEnvironment();
+
 				if (!remoteEnv) {
 					throw new Error('Cannot provide init data for remote extension host!');
 				}
 
 				const myExtensions = runningLocations.filterByExtensionHostKind(snapshot.extensions, ExtensionHostKind.Remote);
+
 				const extensions = new ExtensionHostExtensions(snapshot.versionId, snapshot.extensions, myExtensions.map(extension => extension.identifier));
 
 				return {
@@ -314,12 +333,15 @@ export class BrowserExtensionHostKindPicker implements IExtensionHostKindPicker 
 	pickExtensionHostKind(extensionId: ExtensionIdentifier, extensionKinds: ExtensionKind[], isInstalledLocally: boolean, isInstalledRemotely: boolean, preference: ExtensionRunningPreference): ExtensionHostKind | null {
 		const result = BrowserExtensionHostKindPicker.pickRunningLocation(extensionKinds, isInstalledLocally, isInstalledRemotely, preference);
 		this._logService.trace(`pickRunningLocation for ${extensionId.value}, extension kinds: [${extensionKinds.join(', ')}], isInstalledLocally: ${isInstalledLocally}, isInstalledRemotely: ${isInstalledRemotely}, preference: ${extensionRunningPreferenceToString(preference)} => ${extensionHostKindToString(result)}`);
+
 		return result;
 	}
 
 	public static pickRunningLocation(extensionKinds: ExtensionKind[], isInstalledLocally: boolean, isInstalledRemotely: boolean, preference: ExtensionRunningPreference): ExtensionHostKind | null {
 		const result: ExtensionHostKind[] = [];
+
 		let canRunRemotely = false;
+
 		for (const extensionKind of extensionKinds) {
 			if (extensionKind === 'ui' && isInstalledRemotely) {
 				// ui extensions run remotely if possible (but only as a last resort)

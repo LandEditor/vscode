@@ -5,10 +5,12 @@
 import * as vscode from 'vscode';
 import { ITypeScriptServiceClient } from '../typescriptService';
 import { Disposable } from '../utils/dispose';
+
 const typingsInstallTimeout = 30 * 1000;
 export default class TypingsStatus extends Disposable {
     private readonly _acquiringTypings = new Map<number, NodeJS.Timeout>();
     private readonly _client: ITypeScriptServiceClient;
+
     constructor(client: ITypeScriptServiceClient) {
         super();
         this._client = client;
@@ -17,6 +19,7 @@ export default class TypingsStatus extends Disposable {
     }
     public override dispose(): void {
         super.dispose();
+
         for (const timeout of this._acquiringTypings.values()) {
             clearTimeout(timeout);
         }
@@ -34,6 +37,7 @@ export default class TypingsStatus extends Disposable {
     }
     private onEndInstallTypings(eventId: number): void {
         const timer = this._acquiringTypings.get(eventId);
+
         if (timer) {
             clearTimeout(timer);
         }
@@ -42,6 +46,7 @@ export default class TypingsStatus extends Disposable {
 }
 export class AtaProgressReporter extends Disposable {
     private readonly _promises = new Map<number, Function>();
+
     constructor(client: ITypeScriptServiceClient) {
         super();
         this._register(client.onDidBeginInstallTypings(e => this._onBegin(e.eventId)));
@@ -54,6 +59,7 @@ export class AtaProgressReporter extends Disposable {
     }
     private _onBegin(eventId: number): void {
         const handle = setTimeout(() => this._onEndOrTimeout(eventId), typingsInstallTimeout);
+
         const promise = new Promise<void>(resolve => {
             this._promises.set(eventId, () => {
                 clearTimeout(handle);
@@ -67,6 +73,7 @@ export class AtaProgressReporter extends Disposable {
     }
     private _onEndOrTimeout(eventId: number): void {
         const resolve = this._promises.get(eventId);
+
         if (resolve) {
             this._promises.delete(eventId);
             resolve();
@@ -74,11 +81,14 @@ export class AtaProgressReporter extends Disposable {
     }
     private async onTypesInstallerInitializationFailed() {
         const config = vscode.workspace.getConfiguration('typescript');
+
         if (config.get<boolean>('check.npmIsInstalled', true)) {
             const dontShowAgain: vscode.MessageItem = {
                 title: vscode.l10n.t("Don't Show Again"),
             };
+
             const selected = await vscode.window.showWarningMessage(vscode.l10n.t("Could not install typings files for JavaScript language features. Please ensure that NPM is installed, or configure 'typescript.npm' in your user settings. Alternatively, check the [documentation]({0}) to learn more.", 'https://go.microsoft.com/fwlink/?linkid=847635'), dontShowAgain);
+
             if (selected === dontShowAgain) {
                 config.update('check.npmIsInstalled', false, true);
             }

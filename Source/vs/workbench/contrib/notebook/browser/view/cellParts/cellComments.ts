@@ -22,6 +22,7 @@ export class CellComments extends CellContentPart {
         dispose: () => void;
     }>;
     private currentElement: ICellViewModel | undefined;
+
     constructor(private readonly notebookEditor: INotebookEditorDelegate, private readonly container: HTMLElement, 
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -53,6 +54,7 @@ export class CellComments extends CellContentPart {
     }
     private async _createCommentTheadWidget(owner: string, commentThread: languages.CommentThread<ICellRange>) {
         const widgetDisposables = new DisposableStore();
+
         const widget = this.instantiationService.createInstance(CommentThreadWidget, this.container, this.notebookEditor, owner, this.notebookEditor.textModel!.uri, this.contextKeyService, this.instantiationService, commentThread, undefined, undefined, {
             codeBlockFontFamily: this.configurationService.getValue<IEditorOptions>('editor').fontFamily || EDITOR_FONT_DEFAULTS.fontFamily
         }, undefined, {
@@ -62,6 +64,7 @@ export class CellComments extends CellContentPart {
         }) as unknown as CommentThreadWidget<ICellRange>;
         widgetDisposables.add(widget);
         this._commentThreadWidgets.set(commentThread.threadId, { widget, dispose: () => widgetDisposables.dispose() });
+
         const layoutInfo = this.notebookEditor.getLayoutInfo();
         await widget.display(layoutInfo.fontInfo.lineHeight, true);
         this._applyTheme();
@@ -79,16 +82,21 @@ export class CellComments extends CellContentPart {
             return;
         }
         const infos = await this._getCommentThreadsForCell(this.currentElement);
+
         const widgetsToDelete = new Set(this._commentThreadWidgets.keys());
+
         const layoutInfo = this.currentElement.layoutInfo;
         this.container.style.top = `${layoutInfo.commentOffset}px`;
+
         for (const info of infos) {
             if (!info) {
                 continue;
             }
             for (const thread of info.threads) {
                 widgetsToDelete.delete(thread.threadId);
+
                 const widget = this._commentThreadWidgets.get(thread.threadId)?.widget;
+
                 if (widget) {
                     await widget.updateCommentThread(thread);
                 }
@@ -104,11 +112,17 @@ export class CellComments extends CellContentPart {
     }
     private _calculateCommentThreadHeight(bodyHeight: number) {
         const layoutInfo = this.notebookEditor.getLayoutInfo();
+
         const headHeight = Math.ceil(layoutInfo.fontInfo.lineHeight * 1.2);
+
         const lineHeight = layoutInfo.fontInfo.lineHeight;
+
         const arrowHeight = Math.round(lineHeight / 3);
+
         const frameThickness = Math.round(lineHeight / 9) * 2;
+
         const computedHeight = headHeight + bodyHeight + arrowHeight + frameThickness + 8 /** margin bottom to avoid margin collapse */;
+
         return computedHeight;
     }
     private _updateHeight() {
@@ -116,6 +130,7 @@ export class CellComments extends CellContentPart {
             return;
         }
         let height = 0;
+
         for (const { widget } of this._commentThreadWidgets.values()) {
             height += this._calculateCommentThreadHeight(widget.getDimensions().height);
         }
@@ -129,7 +144,9 @@ export class CellComments extends CellContentPart {
     }
     private _applyTheme() {
         const theme = this.themeService.getColorTheme();
+
         const fontInfo = this.notebookEditor.getLayoutInfo().fontInfo;
+
         for (const { widget } of this._commentThreadWidgets.values()) {
             widget.applyTheme(theme, fontInfo);
         }

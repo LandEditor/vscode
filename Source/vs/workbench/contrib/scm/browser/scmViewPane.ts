@@ -115,12 +115,16 @@ function processResourceFilterData(uri: URI, filterData: FuzzyScore | LabelFuzzy
 
 	if (!(filterData as LabelFuzzyScore).label) {
 		const matches = createMatches(filterData as FuzzyScore);
+
 		return [matches, undefined];
 	}
 
 	const fileName = basename(uri);
+
 	const label = (filterData as LabelFuzzyScore).label;
+
 	const pathLength = label.length - fileName.length;
+
 	const matches = createMatches((filterData as LabelFuzzyScore).score);
 
 	// FileName match
@@ -130,6 +134,7 @@ function processResourceFilterData(uri: URI, filterData: FuzzyScore | LabelFuzzy
 
 	// FilePath match
 	const labelMatches: IMatch[] = [];
+
 	const descriptionMatches: IMatch[] = [];
 
 	for (const match of matches) {
@@ -174,6 +179,7 @@ export class ActionButtonRenderer implements ICompressibleTreeRenderer<ISCMActio
 	static readonly DEFAULT_HEIGHT = 30;
 
 	static readonly TEMPLATE_ID = 'actionButton';
+
 	get templateId(): string { return ActionButtonRenderer.TEMPLATE_ID; }
 
 	private actionButtons = new Map<ISCMActionButton, SCMActionButton>();
@@ -192,6 +198,7 @@ export class ActionButtonRenderer implements ICompressibleTreeRenderer<ISCMActio
 		container.parentElement!.parentElement!.classList.add('cursor-default', 'force-no-hover');
 
 		const buttonContainer = append(container, $('.button-container'));
+
 		const actionButton = new SCMActionButton(buttonContainer, this.contextMenuService, this.commandService, this.notificationService);
 
 		return { actionButton, disposable: Disposable.None, templateDisposable: actionButton };
@@ -201,6 +208,7 @@ export class ActionButtonRenderer implements ICompressibleTreeRenderer<ISCMActio
 		templateData.disposable.dispose();
 
 		const disposables = new DisposableStore();
+
 		const actionButton = node.element;
 		templateData.actionButton.setButton(node.element.button);
 
@@ -243,10 +251,12 @@ class SCMTreeDragAndDrop implements ITreeDragAndDrop<TreeElement> {
 
 	onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
 		const items = SCMTreeDragAndDrop.getResourcesFromDragAndDropData(data as ElementsDragAndDropData<TreeElement, TreeElement[]>);
+
 		if (originalEvent.dataTransfer && items?.length) {
 			this.instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, items, originalEvent));
 
 			const fileResources = items.filter(s => s.scheme === Schemas.file).map(r => r.fsPath);
+
 			if (fileResources.length) {
 				originalEvent.dataTransfer.setData(CodeDataTransfers.FILES, JSON.stringify(fileResources));
 			}
@@ -256,6 +266,7 @@ class SCMTreeDragAndDrop implements ITreeDragAndDrop<TreeElement> {
 	getDragLabel(elements: TreeElement[], originalEvent: DragEvent): string | undefined {
 		if (elements.length === 1) {
 			const element = elements[0];
+
 			if (isSCMResource(element)) {
 				return basename(element.sourceUri);
 			}
@@ -272,6 +283,7 @@ class SCMTreeDragAndDrop implements ITreeDragAndDrop<TreeElement> {
 
 	private static getResourcesFromDragAndDropData(data: ElementsDragAndDropData<TreeElement, TreeElement[]>): URI[] {
 		const uris: URI[] = [];
+
 		for (const element of [...data.context ?? [], ...data.elements]) {
 			if (isSCMResource(element)) {
 				uris.push(element.sourceUri);
@@ -295,6 +307,7 @@ class InputRenderer implements ICompressibleTreeRenderer<ISCMInput, FuzzyScore, 
 	static readonly DEFAULT_HEIGHT = 26;
 
 	static readonly TEMPLATE_ID = 'input';
+
 	get templateId(): string { return InputRenderer.TEMPLATE_ID; }
 
 	private inputWidgets = new Map<ISCMInput, SCMInputWidget>();
@@ -316,7 +329,9 @@ class InputRenderer implements ICompressibleTreeRenderer<ISCMInput, FuzzyScore, 
 		container.parentElement!.parentElement!.classList.add('force-no-hover');
 
 		const templateDisposable = new DisposableStore();
+
 		const inputElement = append(container, $('.scm-input'));
+
 		const inputWidget = this.instantiationService.createInstance(SCMInputWidget, inputElement, this.overflowWidgetsDomNode);
 		templateDisposable.add(inputWidget);
 
@@ -425,6 +440,7 @@ interface ResourceGroupTemplate {
 class ResourceGroupRenderer implements ICompressibleTreeRenderer<ISCMResourceGroup, FuzzyScore, ResourceGroupTemplate> {
 
 	static readonly TEMPLATE_ID = 'resource group';
+
 	get templateId(): string { return ResourceGroupRenderer.TEMPLATE_ID; }
 
 	constructor(
@@ -443,11 +459,17 @@ class ResourceGroupRenderer implements ICompressibleTreeRenderer<ISCMResourceGro
 		(container.parentElement!.parentElement!.querySelector('.monaco-tl-twistie')! as HTMLElement).classList.add('force-twistie');
 
 		const element = append(container, $('.resource-group'));
+
 		const name = append(element, $('.name'));
+
 		const actionsContainer = append(element, $('.actions'));
+
 		const actionBar = new WorkbenchToolBar(actionsContainer, { actionViewItemProvider: this.actionViewItemProvider }, this.menuService, this.contextKeyService, this.contextMenuService, this.keybindingService, this.commandService, this.telemetryService);
+
 		const countContainer = append(element, $('.count'));
+
 		const count = new CountBadge(countContainer, {}, defaultCountBadgeStyles);
+
 		const disposables = combinedDisposable(actionBar, count);
 
 		return { name, count, actionBar, elementDisposables: new DisposableStore(), disposables };
@@ -510,8 +532,11 @@ class RepositoryPaneActionRunner extends ActionRunner {
 		}
 
 		const selection = this.getSelectedResources();
+
 		const contextIsSelected = selection.some(s => s === context);
+
 		const actualContext = contextIsSelected ? selection : [context];
+
 		const args = actualContext.map(e => ResourceTree.isResourceNode(e) ? ResourceTree.collect(e) : [e]).flat();
 		await action.run(...args);
 	}
@@ -520,6 +545,7 @@ class RepositoryPaneActionRunner extends ActionRunner {
 class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IResourceNode<ISCMResource, ISCMResourceGroup>, FuzzyScore | LabelFuzzyScore, ResourceTemplate> {
 
 	static readonly TEMPLATE_ID = 'resource';
+
 	get templateId(): string { return ResourceRenderer.TEMPLATE_ID; }
 
 	private readonly disposables = new DisposableStore();
@@ -545,16 +571,22 @@ class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IReso
 
 	renderTemplate(container: HTMLElement): ResourceTemplate {
 		const element = append(container, $('.resource'));
+
 		const name = append(element, $('.name'));
+
 		const fileLabel = this.labels.create(name, { supportDescriptionHighlights: true, supportHighlights: true });
+
 		const actionsContainer = append(fileLabel.element, $('.actions'));
+
 		const actionBar = new WorkbenchToolBar(actionsContainer, {
 			actionViewItemProvider: this.actionViewItemProvider,
 			actionRunner: this.actionRunner
 		}, this.menuService, this.contextKeyService, this.contextMenuService, this.keybindingService, this.commandService, this.telemetryService);
 
 		const decorationIcon = append(element, $('.decoration-icon'));
+
 		const actionBarMenuListener = new MutableDisposable<IDisposable>();
+
 		const disposables = combinedDisposable(actionBar, fileLabel, actionBarMenuListener);
 
 		return { element, name, fileLabel, decorationIcon, actionBar, actionBarMenu: undefined, actionBarMenuListener, elementDisposables: new DisposableStore(), disposables };
@@ -562,14 +594,21 @@ class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IReso
 
 	renderElement(node: ITreeNode<ISCMResource, FuzzyScore | LabelFuzzyScore> | ITreeNode<ISCMResource | IResourceNode<ISCMResource, ISCMResourceGroup>, FuzzyScore | LabelFuzzyScore>, index: number, template: ResourceTemplate): void {
 		const resourceOrFolder = node.element;
+
 		const iconResource = ResourceTree.isResourceNode(resourceOrFolder) ? resourceOrFolder.element : resourceOrFolder;
+
 		const uri = ResourceTree.isResourceNode(resourceOrFolder) ? resourceOrFolder.uri : resourceOrFolder.sourceUri;
+
 		const fileKind = ResourceTree.isResourceNode(resourceOrFolder) ? FileKind.FOLDER : FileKind.FILE;
+
 		const tooltip = !ResourceTree.isResourceNode(resourceOrFolder) && resourceOrFolder.decorations.tooltip || '';
+
 		const hidePath = this.viewMode() === ViewMode.Tree;
 
 		let matches: IMatch[] | undefined;
+
 		let descriptionMatches: IMatch[] | undefined;
+
 		let strikethrough: boolean | undefined;
 
 		if (ResourceTree.isResourceNode(resourceOrFolder)) {
@@ -613,9 +652,11 @@ class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IReso
 
 	renderCompressedElements(node: ITreeNode<ICompressedTreeNode<ISCMResource> | ICompressedTreeNode<IResourceNode<ISCMResource, ISCMResourceGroup>>, FuzzyScore | LabelFuzzyScore>, index: number, template: ResourceTemplate, height: number | undefined): void {
 		const compressed = node.element as ICompressedTreeNode<IResourceNode<ISCMResource, ISCMResourceGroup>>;
+
 		const folder = compressed.elements[compressed.elements.length - 1];
 
 		const label = compressed.elements.map(e => e.name);
+
 		const fileKind = FileKind.FOLDER;
 
 		const matches = createMatches(node.filterData as FuzzyScore | undefined);
@@ -665,6 +706,7 @@ class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IReso
 
 	private renderIcon(template: ResourceTemplate, data: RenderedResourceData): void {
 		const theme = this.themeService.getColorTheme();
+
 		const icon = theme.type === ColorScheme.LIGHT ? data.iconResource?.decorations.icon : data.iconResource?.decorations.iconDark;
 
 		template.fileLabel.setFile(data.uri, {
@@ -675,6 +717,7 @@ class ResourceRenderer implements ICompressibleTreeRenderer<ISCMResource | IReso
 		if (icon) {
 			if (ThemeIcon.isThemeIcon(icon)) {
 				template.decorationIcon.className = `decoration-icon ${ThemeIcon.asClassName(icon)}`;
+
 				if (icon.color) {
 					template.decorationIcon.style.color = theme.getColor(icon.color.id)?.toString() ?? '';
 				}
@@ -791,6 +834,7 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 			// FileName
 			if (this.viewSortKey() === ViewSortKey.Name) {
 				const oneName = basename((one as ISCMResource).sourceUri);
+
 				const otherName = basename((other as ISCMResource).sourceUri);
 
 				return compareFileNames(oneName, otherName);
@@ -799,6 +843,7 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 			// Status
 			if (this.viewSortKey() === ViewSortKey.Status) {
 				const oneTooltip = (one as ISCMResource).decorations.tooltip ?? '';
+
 				const otherTooltip = (other as ISCMResource).decorations.tooltip ?? '';
 
 				if (oneTooltip !== otherTooltip) {
@@ -808,6 +853,7 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 
 			// Path (default)
 			const onePath = (one as ISCMResource).sourceUri.fsPath;
+
 			const otherPath = (other as ISCMResource).sourceUri.fsPath;
 
 			return comparePaths(onePath, otherPath);
@@ -815,6 +861,7 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 
 		// Resource (Tree)
 		const oneIsDirectory = ResourceTree.isResourceNode(one);
+
 		const otherIsDirectory = ResourceTree.isResourceNode(other);
 
 		if (oneIsDirectory !== otherIsDirectory) {
@@ -822,6 +869,7 @@ export class SCMTreeSorter implements ITreeSorter<TreeElement> {
 		}
 
 		const oneName = ResourceTree.isResourceNode(one) ? one.name : basename((one as ISCMResource).sourceUri);
+
 		const otherName = ResourceTree.isResourceNode(other) ? other.name : basename((other as ISCMResource).sourceUri);
 
 		return compareFileNames(oneName, otherName);
@@ -849,6 +897,7 @@ export class SCMTreeKeyboardNavigationLabelProvider implements ICompressibleKeyb
 				// full path we return an array of labels. A match in the
 				// file name takes precedence over a match in the path.
 				const fileName = basename(element.sourceUri);
+
 				const filePath = this.labelService.getUriLabel(element.sourceUri, { relative: true });
 
 				return [fileName, filePath];
@@ -861,6 +910,7 @@ export class SCMTreeKeyboardNavigationLabelProvider implements ICompressibleKeyb
 
 	getCompressedNodeKeyboardNavigationLabel(elements: TreeElement[]): { toString(): string | undefined } | undefined {
 		const folders = elements as IResourceNode<ISCMResource, ISCMResourceGroup>[];
+
 		return folders.map(e => e.name).join('/');
 	}
 }
@@ -868,22 +918,29 @@ export class SCMTreeKeyboardNavigationLabelProvider implements ICompressibleKeyb
 function getSCMResourceId(element: TreeElement): string {
 	if (isSCMRepository(element)) {
 		const provider = element.provider;
+
 		return `repo:${provider.id}`;
 	} else if (isSCMInput(element)) {
 		const provider = element.repository.provider;
+
 		return `input:${provider.id}`;
 	} else if (isSCMActionButton(element)) {
 		const provider = element.repository.provider;
+
 		return `actionButton:${provider.id}`;
 	} else if (isSCMResourceGroup(element)) {
 		const provider = element.provider;
+
 		return `resourceGroup:${provider.id}/${element.id}`;
 	} else if (isSCMResource(element)) {
 		const group = element.resourceGroup;
+
 		const provider = group.provider;
+
 		return `resource:${provider.id}/${group.id}/${element.sourceUri.toString()}`;
 	} else if (isSCMResourceNode(element)) {
 		const group = element.context;
+
 		return `folder:${group.provider.id}/${group.id}/$FOLDER/${element.uri.toString()}`;
 	} else {
 		throw new Error('Invalid tree element');
@@ -1337,6 +1394,7 @@ class SCMInputWidgetActionRunner extends ActionRunner {
 
 			// Create action context
 			const context: ISCMInputValueProviderContext[] = [];
+
 			for (const group of this.input.repository.provider.groups) {
 				context.push({
 					resourceGroupId: group.id,
@@ -1363,9 +1421,11 @@ class SCMInputWidgetActionRunner extends ActionRunner {
 class SCMInputWidgetToolbar extends WorkbenchToolBar {
 
 	private _dropdownActions: IAction[] = [];
+
 	get dropdownActions(): IAction[] { return this._dropdownActions; }
 
 	private _dropdownAction: IAction;
+
 	get dropdownAction(): IAction { return this._dropdownAction; }
 
 	private _cancelAction: IAction;
@@ -1433,6 +1493,7 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 			}
 
 			this._dropdownActions = actions.length === 1 ? [] : actions;
+
 			super.setActions(primaryAction ? [primaryAction] : [], []);
 
 			this._onDidChange.fire();
@@ -1491,7 +1552,9 @@ class SCMInputWidgetEditorOptions {
 
 	getEditorConstructionOptions(): IEditorConstructionOptions {
 		const fontFamily = this._getEditorFontFamily();
+
 		const fontSize = this._getEditorFontSize();
+
 		const lineHeight = this._getEditorLineHeight(fontSize);
 
 		return {
@@ -1520,9 +1583,13 @@ class SCMInputWidgetEditorOptions {
 
 	getEditorOptions(): IEditorOptions {
 		const fontFamily = this._getEditorFontFamily();
+
 		const fontSize = this._getEditorFontSize();
+
 		const lineHeight = this._getEditorLineHeight(fontSize);
+
 		const accessibilitySupport = this.configurationService.getValue<'auto' | 'off' | 'on'>('editor.accessibilitySupport');
+
 		const cursorBlinking = this.configurationService.getValue<'blink' | 'smooth' | 'phase' | 'expand' | 'solid'>('editor.cursorBlinking');
 
 		return { ...this._getEditorLanguageConfiguration(), accessibilitySupport, cursorBlinking, fontFamily, fontSize, lineHeight };
@@ -1549,10 +1616,12 @@ class SCMInputWidgetEditorOptions {
 	private _getEditorLanguageConfiguration(): IEditorOptions {
 		// editor.rulers
 		const rulersConfig = this.configurationService.inspect('editor.rulers', { overrideIdentifier: 'scminput' });
+
 		const rulers = rulersConfig.overrideIdentifiers?.includes('scminput') ? EditorOptions.rulers.validate(rulersConfig.value) : [];
 
 		// editor.wordWrap
 		const wordWrapConfig = this.configurationService.inspect('editor.wordWrap', { overrideIdentifier: 'scminput' });
+
 		const wordWrap = wordWrapConfig.overrideIdentifiers?.includes('scminput') ? EditorOptions.wordWrap.validate(wordWrapConfig.value) : 'on';
 
 		return { rulers, wordWrap };
@@ -1620,6 +1689,7 @@ class SCMInputWidget {
 		if (!input) {
 			this.inputEditor.setModel(undefined);
 			this.model = undefined;
+
 			return;
 		}
 
@@ -1632,9 +1702,12 @@ class SCMInputWidget {
 
 		// Validation
 		const validationDelayer = new ThrottledDelayer<any>(200);
+
 		const validate = async () => {
 			const position = this.inputEditor.getSelection()?.getStartPosition();
+
 			const offset = position && textModel.getOffsetAt(position);
+
 			const value = textModel.getValue();
 
 			this.setValidation(await input.validateInput(value, offset || 0));
@@ -1646,6 +1719,7 @@ class SCMInputWidget {
 
 		// Adaptive indentation rules
 		const opts = this.modelService.getCreationOptions(textModel.getLanguageId(), textModel.uri, textModel.isForSimpleWidget);
+
 		const onEnter = Event.filter(this.inputEditor.onKeyDown, e => e.keyCode === KeyCode.Enter, this.repositoryDisposables);
 		this.repositoryDisposables.add(onEnter(() => textModel.detectIndentation(opts.insertSpaces, opts.tabSize)));
 
@@ -1653,6 +1727,7 @@ class SCMInputWidget {
 		textModel.setValue(input.value);
 		this.repositoryDisposables.add(input.onDidChange(({ value, reason }) => {
 			const currentValue = textModel.getValue();
+
 			if (value === currentValue) { // circuit breaker
 				return;
 			}
@@ -1679,7 +1754,9 @@ class SCMInputWidget {
 		// Update placeholder text
 		const updatePlaceholderText = () => {
 			const binding = this.keybindingService.lookupKeybinding('scm.acceptInput');
+
 			const label = binding ? binding.getLabel() : (platform.isMacintosh ? 'Cmd+Enter' : 'Ctrl+Enter');
+
 			const placeholderText = format(input.placeholder, label);
 
 			this.inputEditor.updateOptions({ placeholder: placeholderText });
@@ -1699,6 +1776,7 @@ class SCMInputWidget {
 			commitTemplate = input.repository.provider.commitTemplate.read(reader);
 
 			const value = textModel.getValue();
+
 			if (value && value !== oldCommitTemplate) {
 				return;
 			}
@@ -1796,7 +1874,9 @@ class SCMInputWidget {
 		};
 
 		const services = new ServiceCollection([IContextKeyService, this.contextKeyService]);
+
 		const instantiationService2 = instantiationService.createChild(services, this.disposables);
+
 		const editorConstructionOptions = this.inputEditorOptions.getEditorConstructionOptions();
 		this.inputEditor = instantiationService2.createInstance(CodeEditorWidget, this.editorContainer, editorConstructionOptions, codeEditorWidgetOptions);
 		this.disposables.add(this.inputEditor);
@@ -1825,12 +1905,16 @@ class SCMInputWidget {
 		}));
 
 		const firstLineKey = this.contextKeyService.createKey<boolean>('scmInputIsInFirstPosition', false);
+
 		const lastLineKey = this.contextKeyService.createKey<boolean>('scmInputIsInLastPosition', false);
 
 		this.disposables.add(this.inputEditor.onDidChangeCursorPosition(({ position }) => {
 			const viewModel = this.inputEditor._getViewModel()!;
+
 			const lastLineNumber = viewModel.getLineCount();
+
 			const lastLineCol = viewModel.getLineLength(lastLineNumber) + 1;
+
 			const viewPosition = viewModel.coordinatesConverter.convertModelPositionToViewPosition(position);
 			firstLineKey.set(viewPosition.lineNumber === 1 && viewPosition.column === 1);
 			lastLineKey.set(viewPosition.lineNumber === lastLineNumber && viewPosition.column === lastLineCol);
@@ -1862,14 +1946,19 @@ class SCMInputWidget {
 
 	getContentHeight(): number {
 		const lineHeight = this.inputEditor.getOption(EditorOption.lineHeight);
+
 		const { top, bottom } = this.inputEditor.getOption(EditorOption.padding);
 
 		const inputMinLinesConfig = this.configurationService.getValue('scm.inputMinLineCount');
+
 		const inputMinLines = typeof inputMinLinesConfig === 'number' ? clamp(inputMinLinesConfig, 1, 50) : 1;
+
 		const editorMinHeight = inputMinLines * lineHeight + top + bottom;
 
 		const inputMaxLinesConfig = this.configurationService.getValue('scm.inputMaxLineCount');
+
 		const inputMaxLines = typeof inputMaxLinesConfig === 'number' ? clamp(inputMaxLinesConfig, 1, 50) : 10;
+
 		const editorMaxHeight = inputMaxLines * lineHeight + top + bottom;
 
 		return clamp(this.inputEditor.getContentHeight(), editorMinHeight, editorMaxHeight);
@@ -1877,11 +1966,14 @@ class SCMInputWidget {
 
 	layout(): void {
 		const editorHeight = this.getContentHeight();
+
 		const toolbarWidth = this.getToolbarWidth();
+
 		const dimension = new Dimension(this.element.clientWidth - toolbarWidth, editorHeight);
 
 		if (dimension.width < 0) {
 			this.lastLayoutWasTrash = true;
+
 			return;
 		}
 
@@ -1902,6 +1994,7 @@ class SCMInputWidget {
 		if (this.lastLayoutWasTrash) {
 			this.lastLayoutWasTrash = false;
 			this.shouldFocusAfterLayout = true;
+
 			return;
 		}
 
@@ -1941,9 +2034,11 @@ class SCMInputWidget {
 				validationContainer.classList.toggle('validation-warning', this.validation!.type === InputValidationType.Warning);
 				validationContainer.classList.toggle('validation-error', this.validation!.type === InputValidationType.Error);
 				validationContainer.style.width = `${this.element.clientWidth + 2}px`;
+
 				const element = append(validationContainer, $('.scm-editor-validation'));
 
 				const message = this.validation!.message;
+
 				if (typeof message === 'string') {
 					element.textContent = message;
 				} else {
@@ -1958,6 +2053,7 @@ class SCMInputWidget {
 					}));
 
 					const renderer = disposables.add(this.instantiationService.createInstance(MarkdownRenderer, {}));
+
 					const renderedMarkdown = renderer.render(message, {
 						actionHandler: {
 							callback: (link) => {
@@ -1973,7 +2069,9 @@ class SCMInputWidget {
 					element.appendChild(renderedMarkdown.element);
 				}
 				const actionsContainer = append(validationContainer, $('.scm-editor-validation-actions'));
+
 				const actionbar = new ActionBar(actionsContainer);
+
 				const action = new Action('scmInputWidget.validationMessage.close', localize('label.close', "Close"), ThemeIcon.asClassName(Codicon.close), true, () => {
 					this.contextViewService.hideContextView();
 					this.element.style.borderBottomLeftRadius = '2px';
@@ -1996,6 +2094,7 @@ class SCMInputWidget {
 
 	private getToolbarWidth(): number {
 		const showInputActionButton = this.configurationService.getValue<boolean>('scm.showInputActionButton');
+
 		if (!this.toolbar || !showInputActionButton || this.toolbar?.isEmpty() === true) {
 			return 0;
 		}
@@ -2033,6 +2132,7 @@ export class SCMViewPane extends ViewPane {
 	private actionButtonRenderer!: ActionButtonRenderer;
 
 	private _viewMode: ViewMode;
+
 	get viewMode(): ViewMode { return this._viewMode; }
 	set viewMode(mode: ViewMode) {
 		if (this._viewMode === mode) {
@@ -2057,6 +2157,7 @@ export class SCMViewPane extends ViewPane {
 	readonly onDidChangeViewMode = this._onDidChangeViewMode.event;
 
 	private _viewSortKey: ViewSortKey;
+
 	get viewSortKey(): ViewSortKey { return this._viewSortKey; }
 	set viewSortKey(sortKey: ViewSortKey) {
 		if (this._viewSortKey === sortKey) {
@@ -2139,9 +2240,12 @@ export class SCMViewPane extends ViewPane {
 			switch (e.key) {
 				case 'scm.viewMode':
 					this.viewMode = this.getViewMode();
+
 					break;
+
 				case 'scm.viewSortKey':
 					this.viewSortKey = this.getViewSortKey();
+
 					break;
 			}
 		}, this, this.disposables);
@@ -2333,6 +2437,7 @@ export class SCMViewPane extends ViewPane {
 			return;
 		} else if (isSCMRepository(e.element)) {
 			this.scmViewService.focus(e.element);
+
 			return;
 		} else if (isSCMInput(e.element)) {
 			this.scmViewService.focus(e.element.repository);
@@ -2361,7 +2466,9 @@ export class SCMViewPane extends ViewPane {
 			return;
 		} else if (isSCMResourceGroup(e.element)) {
 			const provider = e.element.provider;
+
 			const repository = Iterable.find(this.scmService.repositories, r => r.provider === provider);
+
 			if (repository) {
 				this.scmViewService.focus(repository);
 			}
@@ -2370,6 +2477,7 @@ export class SCMViewPane extends ViewPane {
 			if (e.element.command?.id === API_OPEN_EDITOR_COMMAND_ID || e.element.command?.id === API_OPEN_DIFF_EDITOR_COMMAND_ID) {
 				if (isPointerEvent(e.browserEvent) && e.browserEvent.button === 1) {
 					const resourceGroup = e.element.resourceGroup;
+
 					const title = `${resourceGroup.provider.label}: ${resourceGroup.label}`;
 					await OpenScmGroupAction.openMultiFileDiffEditor(this.editorService, title, resourceGroup.provider.rootUri, resourceGroup.id, {
 						...e.editorOptions,
@@ -2397,6 +2505,7 @@ export class SCMViewPane extends ViewPane {
 			}
 
 			const provider = e.element.resourceGroup.provider;
+
 			const repository = Iterable.find(this.scmService.repositories, r => r.provider === provider);
 
 			if (repository) {
@@ -2404,7 +2513,9 @@ export class SCMViewPane extends ViewPane {
 			}
 		} else if (isSCMResourceNode(e.element)) {
 			const provider = e.element.context.provider;
+
 			const repository = Iterable.find(this.scmService.repositories, r => r.provider === provider);
+
 			if (repository) {
 				this.scmViewService.focus(repository);
 			}
@@ -2442,6 +2553,7 @@ export class SCMViewPane extends ViewPane {
 						// go backwards from last group
 						for (let j = repository.provider.groups.length - 1; j >= 0; j--) {
 							const groupItem = repository.provider.groups[j];
+
 							const resource = this.viewMode === ViewMode.Tree
 								? groupItem.resourceTree.getNode(uri)?.element
 								: groupItem.resources.find(r => this.uriIdentityService.extUri.isEqual(r.sourceUri, uri));
@@ -2452,6 +2564,7 @@ export class SCMViewPane extends ViewPane {
 
 								this.tree.setSelection([resource]);
 								this.tree.setFocus([resource]);
+
 								return;
 							}
 						}
@@ -2511,6 +2624,7 @@ export class SCMViewPane extends ViewPane {
 	private onListContextMenu(e: ITreeContextMenuEvent<TreeElement | null>): void {
 		if (!e.element) {
 			const menu = this.menuService.getMenuActions(Menus.ViewSort, this.contextKeyService);
+
 			const actions = getFlatContextMenuActions(menu);
 
 			return this.contextMenuService.showContextMenu({
@@ -2521,12 +2635,16 @@ export class SCMViewPane extends ViewPane {
 		}
 
 		const element = e.element;
+
 		let context: any = element;
+
 		let actions: IAction[] = [];
+
 		let actionRunner: IActionRunner = new RepositoryPaneActionRunner(() => this.getSelectedResources());
 
 		if (isSCMRepository(element)) {
 			const menus = this.scmViewService.menus.getRepositoryMenus(element.provider);
+
 			const menu = menus.repositoryContextMenu;
 			context = element.provider;
 			actionRunner = new RepositoryActionRunner(() => this.getSelectedRepositories());
@@ -2535,19 +2653,23 @@ export class SCMViewPane extends ViewPane {
 			// noop
 		} else if (isSCMResourceGroup(element)) {
 			const menus = this.scmViewService.menus.getRepositoryMenus(element.provider);
+
 			const menu = menus.getResourceGroupMenu(element);
 			actions = collectContextMenuActions(menu);
 		} else if (isSCMResource(element)) {
 			const menus = this.scmViewService.menus.getRepositoryMenus(element.resourceGroup.provider);
+
 			const menu = menus.getResourceMenu(element);
 			actions = collectContextMenuActions(menu);
 		} else if (isSCMResourceNode(element)) {
 			if (element.element) {
 				const menus = this.scmViewService.menus.getRepositoryMenus(element.element.resourceGroup.provider);
+
 				const menu = menus.getResourceMenu(element.element);
 				actions = collectContextMenuActions(menu);
 			} else {
 				const menus = this.scmViewService.menus.getRepositoryMenus(element.context.provider);
+
 				const menu = menus.getResourceFolderMenu(element.context);
 				actions = collectContextMenuActions(menu);
 			}
@@ -2565,6 +2687,7 @@ export class SCMViewPane extends ViewPane {
 
 	private getSelectedRepositories(): ISCMRepository[] {
 		const focusedRepositories = this.tree.getFocus().filter(r => !!r && isSCMRepository(r))! as ISCMRepository[];
+
 		const selectedRepositories = this.tree.getSelection().filter(r => !!r && isSCMRepository(r))! as ISCMRepository[];
 
 		return Array.from(new Set<ISCMRepository>([...focusedRepositories, ...selectedRepositories]));
@@ -2577,7 +2700,9 @@ export class SCMViewPane extends ViewPane {
 
 	private getViewMode(): ViewMode {
 		let mode = this.configurationService.getValue<'tree' | 'list'>('scm.defaultViewMode') === 'list' ? ViewMode.List : ViewMode.Tree;
+
 		const storageMode = this.storageService.get(`scm.viewMode`, StorageScope.WORKSPACE) as ViewMode;
+
 		if (typeof storageMode === 'string') {
 			mode = storageMode;
 		}
@@ -2593,20 +2718,28 @@ export class SCMViewPane extends ViewPane {
 
 		// List
 		let viewSortKey: ViewSortKey;
+
 		const viewSortKeyString = this.configurationService.getValue<'path' | 'name' | 'status'>('scm.defaultViewSortKey');
+
 		switch (viewSortKeyString) {
 			case 'name':
 				viewSortKey = ViewSortKey.Name;
+
 				break;
+
 			case 'status':
 				viewSortKey = ViewSortKey.Status;
+
 				break;
+
 			default:
 				viewSortKey = ViewSortKey.Path;
+
 				break;
 		}
 
 		const storageSortKey = this.storageService.get(`scm.viewSortKey`, StorageScope.WORKSPACE) as ViewSortKey;
+
 		if (typeof storageSortKey === 'string') {
 			viewSortKey = storageSortKey;
 		}
@@ -2616,12 +2749,14 @@ export class SCMViewPane extends ViewPane {
 
 	private loadTreeViewState(): IAsyncDataTreeViewState | undefined {
 		const storageViewState = this.storageService.get('scm.viewState2', StorageScope.WORKSPACE);
+
 		if (!storageViewState) {
 			return undefined;
 		}
 
 		try {
 			const treeViewState = JSON.parse(storageViewState);
+
 			return treeViewState;
 		} catch {
 			return undefined;
@@ -2683,6 +2818,7 @@ export class SCMViewPane extends ViewPane {
 		if (!this.isBodyVisible() || this.items.size === 1) {
 			this.isAnyRepositoryCollapsibleContextKey.set(false);
 			this.areAllRepositoriesCollapsedContextKey.set(false);
+
 			return;
 		}
 
@@ -2721,6 +2857,7 @@ export class SCMViewPane extends ViewPane {
 		}
 
 		let input = this.scmViewService.focusedRepository.input;
+
 		const repositories = this.scmViewService.visibleRepositories;
 
 		// One visible repository and the input is already focused
@@ -2731,6 +2868,7 @@ export class SCMViewPane extends ViewPane {
 		// Multiple visible repositories and the input already focused
 		if (repositories.length > 1 && this.inputRenderer.getRenderedInputWidget(input)?.hasFocus() === true) {
 			const focusedRepositoryIndex = repositories.indexOf(this.scmViewService.focusedRepository);
+
 			const newFocusedRepositoryIndex = rot(focusedRepositoryIndex + delta, repositories.length);
 			input = repositories[newFocusedRepositoryIndex].input;
 		}
@@ -2756,8 +2894,11 @@ export class SCMViewPane extends ViewPane {
 		}
 
 		const treeHasDomFocus = isActiveElement(this.tree.getHTMLElement());
+
 		const resourceGroups = this.scmViewService.focusedRepository.provider.groups;
+
 		const focusedResourceGroup = this.tree.getFocus().find(e => isSCMResourceGroup(e));
+
 		const focusedResourceGroupIndex = treeHasDomFocus && focusedResourceGroup ? resourceGroups.indexOf(focusedResourceGroup) : -1;
 
 		let resourceGroupNext: ISCMResourceGroup | undefined;
@@ -2767,15 +2908,18 @@ export class SCMViewPane extends ViewPane {
 			for (const resourceGroup of resourceGroups) {
 				if (this.tree.hasNode(resourceGroup)) {
 					resourceGroupNext = resourceGroup;
+
 					break;
 				}
 			}
 		} else {
 			// Next/Previous visible resource group
 			let index = rot(focusedResourceGroupIndex + delta, resourceGroups.length);
+
 			while (index !== focusedResourceGroupIndex) {
 				if (this.tree.hasNode(resourceGroups[index])) {
 					resourceGroupNext = resourceGroups[index];
+
 					break;
 				}
 				index = rot(index + delta, resourceGroups.length);
@@ -2813,6 +2957,7 @@ export class SCMViewPane extends ViewPane {
 							if (widget) {
 								widget.focus();
 								resolve();
+
 								return;
 							}
 						}
@@ -2829,6 +2974,7 @@ export class SCMViewPane extends ViewPane {
 		this.visibilityDisposables.dispose();
 		this.disposables.dispose();
 		this.items.dispose();
+
 		super.dispose();
 	}
 }
@@ -2846,6 +2992,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 		const repositoryCount = this.scmViewService.visibleRepositories.length;
 
 		const showActionButton = this.configurationService.getValue<boolean>('scm.showActionButton') === true;
+
 		const alwaysShowRepositories = this.configurationService.getValue<boolean>('scm.alwaysShowRepositories') === true;
 
 		if (isSCMViewService(inputOrElement) && (repositoryCount > 1 || alwaysShowRepositories)) {
@@ -2854,7 +3001,9 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 			const children: TreeElement[] = [];
 
 			inputOrElement = isSCMRepository(inputOrElement) ? inputOrElement : this.scmViewService.visibleRepositories[0];
+
 			const actionButton = inputOrElement.provider.actionButton.get();
+
 			const resourceGroups = inputOrElement.provider.groups;
 
 			// SCM Input
@@ -2873,6 +3022,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 
 			// ResourceGroups
 			const hasSomeChanges = resourceGroups.some(group => group.resources.length > 0);
+
 			if (hasSomeChanges || (repositoryCount === 1 && (!showActionButton || !actionButton))) {
 				children.push(...resourceGroups);
 			}
@@ -2885,6 +3035,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 			} else if (this.viewMode() === ViewMode.Tree) {
 				// Resources (Tree)
 				const children: TreeElement[] = [];
+
 				for (const node of inputOrElement.resourceTree.root.children) {
 					children.push(node.element && node.childrenCount === 0 ? node.element : node);
 				}
@@ -2894,6 +3045,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 		} else if (isSCMResourceNode(inputOrElement)) {
 			// Resources (Tree), History item changes (Tree)
 			const children: TreeElement[] = [];
+
 			for (const node of inputOrElement.children) {
 				children.push(node.element && node.childrenCount === 0 ? node.element : node);
 			}
@@ -2919,6 +3071,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 			}
 
 			const node = element.resourceGroup.resourceTree.getNode(element.sourceUri);
+
 			const result = node?.parent;
 
 			if (!result) {
@@ -2934,6 +3087,7 @@ class SCMTreeDataSource extends Disposable implements IAsyncDataSource<ISCMViewS
 			return element.repository;
 		} else if (isSCMResourceGroup(element)) {
 			const repository = this.scmViewService.visibleRepositories.find(r => r.provider === element.provider);
+
 			if (!repository) {
 				throw new Error('Invalid element passed to getParent');
 			}
@@ -2984,14 +3138,17 @@ export class SCMActionButton implements IDisposable {
 	setButton(button: ISCMActionButtonDescriptor | undefined): void {
 		// Clear old button
 		this.clear();
+
 		if (!button) {
 			return;
 		}
 
 		if (button.secondaryCommands?.length) {
 			const actions: IAction[] = [];
+
 			for (let index = 0; index < button.secondaryCommands.length; index++) {
 				const commands = button.secondaryCommands[index];
+
 				for (const command of commands) {
 					actions.push(new Action(command.id, command.title, undefined, true, async () => await this.executeCommand(command.id, ...(command.arguments || []))));
 				}
@@ -3018,6 +3175,7 @@ export class SCMActionButton implements IDisposable {
 
 		this.button.enabled = button.enabled;
 		this.button.label = button.command.title;
+
 		if (this.button instanceof Button && button.command.shortTitle) {
 			this.button.labelShort = button.command.shortTitle;
 		}

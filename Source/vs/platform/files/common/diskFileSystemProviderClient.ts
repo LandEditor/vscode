@@ -31,6 +31,7 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
     //#region File Capabilities
     readonly onDidChangeCapabilities: Event<void> = Event.None;
     private _capabilities: FileSystemProviderCapabilities | undefined;
+
     get capabilities(): FileSystemProviderCapabilities {
         if (!this._capabilities) {
             this._capabilities =
@@ -43,6 +44,7 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
                     FileSystemProviderCapabilities.FileAtomicWrite |
                     FileSystemProviderCapabilities.FileAtomicDelete |
                     FileSystemProviderCapabilities.FileClone;
+
             if (this.extraCapabilities.pathCaseSensitive) {
                 this._capabilities |= FileSystemProviderCapabilities.PathCaseSensitive;
             }
@@ -67,10 +69,12 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
     //#region File Reading/Writing
     async readFile(resource: URI, opts?: IFileAtomicReadOptions): Promise<Uint8Array> {
         const { buffer } = await this.channel.call('readFile', [resource, opts]) as VSBuffer;
+
         return buffer;
     }
     readFileStream(resource: URI, opts: IFileReadStreamOptions, token: CancellationToken): ReadableStreamEvents<Uint8Array> {
         const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer);
+
         const disposables = new DisposableStore();
         // Reading as file stream goes through an event to the remote side
         disposables.add(this.channel.listen<ReadableStreamEventPayload<VSBuffer>>('readFileStream', [resource, opts])(dataOrErrorOrEnd => {
@@ -114,6 +118,7 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
             // reading the file.
             disposables.dispose();
         }));
+
         return stream;
     }
     writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
@@ -135,6 +140,7 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
         // pointer, but only by value and as such cannot be directly written
         // to from the other process.
         data.set(bytes.buffer.slice(0, bytesRead), offset);
+
         return bytesRead;
     }
     write(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
@@ -192,6 +198,7 @@ export class DiskFileSystemProviderClient extends Disposable implements IFileSys
         // back to us when we ask to dispose the watcher later.
         const req = generateUuid();
         this.channel.call('watch', [this.sessionId, req, resource, opts]);
+
         return toDisposable(() => this.channel.call('unwatch', [this.sessionId, req]));
     }
 }

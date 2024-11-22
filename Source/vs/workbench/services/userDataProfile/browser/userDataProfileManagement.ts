@@ -37,6 +37,7 @@ export type ProfileManagementActionExecutedEvent = {
 };
 export class UserDataProfileManagementService extends Disposable implements IUserDataProfileManagementService {
     readonly _serviceBrand: undefined;
+
     constructor(
     @IUserDataProfilesService
     private readonly userDataProfilesService: IUserDataProfilesService, 
@@ -71,11 +72,14 @@ export class UserDataProfileManagementService extends Disposable implements IUse
                 const profileToUse = this.getProfileToUseForCurrentWorkspace();
                 this.switchProfile(profileToUse);
                 this.changeCurrentProfile(profileToUse, localize('reload message when removed', "The current profile has been removed. Please reload to switch back to default profile"));
+
                 return;
             }
             const updatedCurrentProfile = e.updated.find(p => this.userDataProfileService.currentProfile.id === p.id);
+
             if (updatedCurrentProfile) {
                 const profileToUse = this.getProfileToUseForCurrentWorkspace();
+
                 if (profileToUse?.id !== updatedCurrentProfile.id) {
                     this.switchProfile(profileToUse);
                     this.changeCurrentProfile(profileToUse, localize('reload message when switched', "The current workspace has been removed from the current profile. Please reload to switch back to the updated profile"));
@@ -93,12 +97,15 @@ export class UserDataProfileManagementService extends Disposable implements IUse
     }
     private getWorkspaceUri(): URI | undefined {
         const workspace = this.workspaceContextService.getWorkspace();
+
         return workspace.configuration ?? workspace.folders[0]?.uri;
     }
     private getProfileToUseForCurrentWorkspace(): IUserDataProfile {
         const workspaceUri = this.getWorkspaceUri();
+
         if (workspaceUri) {
             const profileForWorkspace = this.userDataProfilesService.profiles.find(profile => profile.workspaces?.some(ws => this.uriIdentityService.extUri.isEqual(ws, workspaceUri)));
+
             if (profileForWorkspace) {
                 return profileForWorkspace;
             }
@@ -106,6 +113,7 @@ export class UserDataProfileManagementService extends Disposable implements IUse
         else {
             // If no workspace is open, use the current profile
             const currentProfile = this.userDataProfilesService.profiles.find(profile => profile.id === this.userDataProfileService.currentProfile.id);
+
             if (currentProfile) {
                 return currentProfile;
             }
@@ -114,8 +122,10 @@ export class UserDataProfileManagementService extends Disposable implements IUse
     }
     public getDefaultProfileToUse(): IUserDataProfile {
         const newWindowProfileConfigValue = this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE);
+
         if (newWindowProfileConfigValue) {
             const newWindowProfile = this.userDataProfilesService.profiles.find(profile => profile.name === newWindowProfileConfigValue);
+
             if (newWindowProfile) {
                 return newWindowProfile;
             }
@@ -129,12 +139,14 @@ export class UserDataProfileManagementService extends Disposable implements IUse
         const profile = await this.userDataProfilesService.createNamedProfile(name, options, toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()));
         await this.changeCurrentProfile(profile);
         this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'createAndEnterProfile' });
+
         return profile;
     }
     async createAndEnterTransientProfile(): Promise<IUserDataProfile> {
         const profile = await this.userDataProfilesService.createTransientProfile(toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()));
         await this.changeCurrentProfile(profile);
         this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'createAndEnterTransientProfile' });
+
         return profile;
     }
     async updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<IUserDataProfile> {
@@ -146,6 +158,7 @@ export class UserDataProfileManagementService extends Disposable implements IUse
         }
         const updatedProfile = await this.userDataProfilesService.updateProfile(profile, updateOptions);
         this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'updateProfile' });
+
         return updatedProfile;
     }
     async removeProfile(profile: IUserDataProfile): Promise<void> {
@@ -166,12 +179,14 @@ export class UserDataProfileManagementService extends Disposable implements IUse
             return;
         }
         const workspaceUri = this.getWorkspaceUri();
+
         if (workspaceUri && profile.workspaces?.some(ws => this.uriIdentityService.extUri.isEqual(ws, workspaceUri))) {
             return;
         }
         const workspaceIdentifier = toWorkspaceIdentifier(this.workspaceContextService.getWorkspace());
         await this.userDataProfilesService.setProfileForWorkspace(workspaceIdentifier, profile);
         this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'switchProfile' });
+
         if (isEmptyWorkspaceIdentifier(workspaceIdentifier)) {
             await this.changeCurrentProfile(profile);
         }
@@ -180,6 +195,7 @@ export class UserDataProfileManagementService extends Disposable implements IUse
         if (this.productService.profileTemplatesUrl) {
             try {
                 const context = await this.requestService.request({ type: 'GET', url: this.productService.profileTemplatesUrl }, CancellationToken.None);
+
                 if (context.res.statusCode === 200) {
                     return (await asJson<IProfileTemplateInfo[]>(context)) || [];
                 }
@@ -195,7 +211,9 @@ export class UserDataProfileManagementService extends Disposable implements IUse
     }
     private async changeCurrentProfile(profile: IUserDataProfile, reloadMessage?: string): Promise<void> {
         const isRemoteWindow = !!this.environmentService.remoteAuthority;
+
         const shouldRestartExtensionHosts = this.userDataProfileService.currentProfile.id !== profile.id || !equals(this.userDataProfileService.currentProfile.useDefaultFlags, profile.useDefaultFlags);
+
         if (shouldRestartExtensionHosts) {
             if (!isRemoteWindow) {
                 if (!(await this.extensionService.stopExtensionHosts(localize('switch profile', "Switching to a profile.")))) {
@@ -209,12 +227,14 @@ export class UserDataProfileManagementService extends Disposable implements IUse
         }
         // In a remote window update current profile before reloading so that data is preserved from current profile if asked to preserve
         await this.userDataProfileService.updateCurrentProfile(profile);
+
         if (shouldRestartExtensionHosts) {
             if (isRemoteWindow) {
                 const { confirmed } = await this.dialogService.confirm({
                     message: reloadMessage ?? localize('reload message', "Switching a profile requires reloading VS Code."),
                     primaryButton: localize('reload button', "&&Reload"),
                 });
+
                 if (confirmed) {
                     await this.hostService.reload();
                 }

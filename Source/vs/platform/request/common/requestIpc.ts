@@ -25,11 +25,16 @@ export class RequestChannel implements IServerChannel {
             case 'request': return this.service.request(args[0], token)
                 .then(async ({ res, stream }) => {
                 const buffer = await streamToBuffer(stream);
+
                 return <RequestResponse>[{ statusCode: res.statusCode, headers: res.headers }, buffer];
             });
+
             case 'resolveProxy': return this.service.resolveProxy(args[0]);
+
             case 'lookupAuthorization': return this.service.lookupAuthorization(args[0]);
+
             case 'lookupKerberosAuthorization': return this.service.lookupKerberosAuthorization(args[0]);
+
             case 'loadCertificates': return this.service.loadCertificates();
         }
         throw new Error('Invalid call');
@@ -37,9 +42,11 @@ export class RequestChannel implements IServerChannel {
 }
 export class RequestChannelClient implements IRequestService {
     declare readonly _serviceBrand: undefined;
+
     constructor(private readonly channel: IChannel) { }
     async request(options: IRequestOptions, token: CancellationToken): Promise<IRequestContext> {
         const [res, buffer] = await this.channel.call<RequestResponse>('request', [options], token);
+
         return { res, stream: bufferToStream(buffer) };
     }
     async resolveProxy(url: string): Promise<string | undefined> {

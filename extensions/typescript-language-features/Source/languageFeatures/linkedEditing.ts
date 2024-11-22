@@ -13,15 +13,19 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
     public constructor(private readonly client: ITypeScriptServiceClient) { }
     async provideLinkedEditingRanges(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.LinkedEditingRanges | undefined> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, position);
+
         const response = await this.client.execute('linkedEditingRange', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
         const wordPattern = response.body.wordPattern ? new RegExp(response.body.wordPattern) : undefined;
+
         return new vscode.LinkedEditingRanges(response.body.ranges.map(range => typeConverters.Range.fromTextSpan(range)), wordPattern);
     }
 }

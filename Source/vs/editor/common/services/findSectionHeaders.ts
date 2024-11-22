@@ -6,6 +6,7 @@ import { IRange } from '../core/range.js';
 import { FoldingRules } from '../languages/languageConfiguration.js';
 export interface ISectionHeaderFinderTarget {
     getLineCount(): number;
+
     getLineContent(lineNumber: number): string;
 }
 export interface FindSectionHeaderOptions {
@@ -32,6 +33,7 @@ export interface SectionHeader {
     shouldBeInComments: boolean;
 }
 const markRegex = new RegExp('\\bMARK:\\s*(.*)$', 'd');
+
 const trimDashesRegex = /^-+|-+$/g;
 /**
  * Find section headers in the model.
@@ -42,6 +44,7 @@ const trimDashesRegex = /^-+|-+$/g;
  */
 export function findSectionHeaders(model: ISectionHeaderFinderTarget, options: FindSectionHeaderOptions): SectionHeader[] {
     let headers: SectionHeader[] = [];
+
     if (options.findRegionSectionHeaders && options.foldingRules?.markers) {
         const regionHeaders = collectRegionHeaders(model, options);
         headers = headers.concat(regionHeaders);
@@ -54,18 +57,24 @@ export function findSectionHeaders(model: ISectionHeaderFinderTarget, options: F
 }
 function collectRegionHeaders(model: ISectionHeaderFinderTarget, options: FindSectionHeaderOptions): SectionHeader[] {
     const regionHeaders: SectionHeader[] = [];
+
     const endLineNumber = model.getLineCount();
+
     for (let lineNumber = 1; lineNumber <= endLineNumber; lineNumber++) {
         const lineContent = model.getLineContent(lineNumber);
+
         const match = lineContent.match(options.foldingRules!.markers!.start);
+
         if (match) {
             const range = { startLineNumber: lineNumber, startColumn: match[0].length + 1, endLineNumber: lineNumber, endColumn: lineContent.length + 1 };
+
             if (range.endColumn > range.startColumn) {
                 const sectionHeader = {
                     range,
                     ...getHeaderText(lineContent.substring(match[0].length)),
                     shouldBeInComments: false
                 };
+
                 if (sectionHeader.text || sectionHeader.hasSeparatorLine) {
                     regionHeaders.push(sectionHeader);
                 }
@@ -76,7 +85,9 @@ function collectRegionHeaders(model: ISectionHeaderFinderTarget, options: FindSe
 }
 function collectMarkHeaders(model: ISectionHeaderFinderTarget): SectionHeader[] {
     const markHeaders: SectionHeader[] = [];
+
     const endLineNumber = model.getLineCount();
+
     for (let lineNumber = 1; lineNumber <= endLineNumber; lineNumber++) {
         const lineContent = model.getLineContent(lineNumber);
         addMarkHeaderIfFound(lineContent, lineNumber, markHeaders);
@@ -85,17 +96,23 @@ function collectMarkHeaders(model: ISectionHeaderFinderTarget): SectionHeader[] 
 }
 function addMarkHeaderIfFound(lineContent: string, lineNumber: number, sectionHeaders: SectionHeader[]) {
     markRegex.lastIndex = 0;
+
     const match = markRegex.exec(lineContent);
+
     if (match) {
         const column = match.indices![1][0] + 1;
+
         const endColumn = match.indices![1][1] + 1;
+
         const range = { startLineNumber: lineNumber, startColumn: column, endLineNumber: lineNumber, endColumn: endColumn };
+
         if (range.endColumn > range.startColumn) {
             const sectionHeader = {
                 range,
                 ...getHeaderText(match[1]),
                 shouldBeInComments: true
             };
+
             if (sectionHeader.text || sectionHeader.hasSeparatorLine) {
                 sectionHeaders.push(sectionHeader);
             }
@@ -107,7 +124,9 @@ function getHeaderText(text: string): {
     hasSeparatorLine: boolean;
 } {
     text = text.trim();
+
     const hasSeparatorLine = text.startsWith('-');
     text = text.replace(trimDashesRegex, '');
+
     return { text, hasSeparatorLine };
 }

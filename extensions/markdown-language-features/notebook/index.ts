@@ -6,6 +6,7 @@ import * as DOMPurify from 'dompurify';
 import MarkdownIt from 'markdown-it';
 import type * as MarkdownItToken from 'markdown-it/lib/token';
 import type { ActivationFunction } from 'vscode-notebook-renderer';
+
 const allowedHtmlTags = Object.freeze(['a',
     'abbr',
     'b',
@@ -73,6 +74,7 @@ const allowedHtmlTags = Object.freeze(['a',
     'video',
     'wbr',
 ]);
+
 const allowedSvgTags = Object.freeze([
     'svg',
     'a',
@@ -118,6 +120,7 @@ const allowedSvgTags = Object.freeze([
     'view',
     'vkern',
 ]);
+
 const sanitizerOptions: DOMPurify.Config = {
     ALLOWED_TAGS: [
         ...allowedHtmlTags,
@@ -138,6 +141,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
     markdownIt.linkify.set({ fuzzyLink: false });
     addNamedHeaderRendering(markdownIt);
     addLinkRenderer(markdownIt);
+
     const style = document.createElement('style');
     style.textContent = `
 		.emptyMarkdownCell::before {
@@ -286,13 +290,17 @@ export const activate: ActivationFunction<void> = (ctx) => {
 			margin-bottom: 0.7em;
 		}
 	`;
+
     const template = document.createElement('template');
     template.classList.add('markdown-style');
     template.content.appendChild(style);
+
     document.head.appendChild(template);
+
     return {
         renderOutputItem: (outputInfo, element) => {
             let previewNode: HTMLElement;
+
             if (!element.shadowRoot) {
                 const previewRoot = element.attachShadow({ mode: 'open' });
                 // Insert styles into markdown preview shadow dom so that they are applied.
@@ -316,14 +324,17 @@ export const activate: ActivationFunction<void> = (ctx) => {
                 previewNode = element.shadowRoot.getElementById('preview')!;
             }
             const text = outputInfo.text();
+
             if (text.trim().length === 0) {
                 previewNode.innerText = '';
                 previewNode.classList.add('emptyMarkdownCell');
             }
             else {
                 previewNode.classList.remove('emptyMarkdownCell');
+
                 const markdownText = outputInfo.mime.startsWith('text/x-') ? `\`\`\`${outputInfo.mime.substr(7)}\n${text}\n\`\`\``
                     : (outputInfo.mime.startsWith('application/') ? `\`\`\`${outputInfo.mime.substr(12)}\n${text}\n\`\`\`` : text);
+
                 const unsanitizedRenderedMarkdown = markdownIt.render(markdownText, {
                     outputItem: outputInfo,
                 });
@@ -344,10 +355,13 @@ export const activate: ActivationFunction<void> = (ctx) => {
 };
 function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
     const slugCounter = new Map<string, number>();
+
     const originalHeaderOpen = md.renderer.rules.heading_open;
     md.renderer.rules.heading_open = (tokens: MarkdownItToken[], idx: number, options, env, self) => {
         const title = tokens[idx + 1].children!.reduce<string>((acc, t) => acc + t.content, '');
+
         let slug = slugify(title);
+
         if (slugCounter.has(slug)) {
             const count = slugCounter.get(slug)!;
             slugCounter.set(slug, count + 1);
@@ -357,6 +371,7 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
             slugCounter.set(slug, 0);
         }
         tokens[idx].attrSet('id', slug);
+
         if (originalHeaderOpen) {
             return originalHeaderOpen(tokens, idx, options, env, self);
         }
@@ -364,9 +379,11 @@ function addNamedHeaderRendering(md: InstanceType<typeof MarkdownIt>): void {
             return self.renderToken(tokens, idx, options);
         }
     };
+
     const originalRender = md.render;
     md.render = function () {
         slugCounter.clear();
+
         return originalRender.apply(this, arguments as any);
     };
 }
@@ -374,7 +391,9 @@ function addLinkRenderer(md: MarkdownIt): void {
     const original = md.renderer.rules.link_open;
     md.renderer.rules.link_open = (tokens: MarkdownItToken[], idx: number, options, env, self) => {
         const token = tokens[idx];
+
         const href = token.attrGet('href');
+
         if (typeof href === 'string' && href.startsWith('#')) {
             token.attrSet('href', '#' + slugify(href.slice(1)));
         }
@@ -395,5 +414,6 @@ function slugify(text: string): string {
         .replace(/^\-+/, '') // Remove leading -
         .replace(/\-+$/, '') // Remove trailing -
     );
+
     return slugifiedHeading;
 }

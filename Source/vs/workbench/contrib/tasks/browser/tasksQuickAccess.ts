@@ -20,6 +20,7 @@ import { IThemeService } from '../../../../platform/theme/common/themeService.js
 import { IStorageService } from '../../../../platform/storage/common/storage.js';
 export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
     static PREFIX = 'task ';
+
     constructor(
     @IExtensionService
     extensionService: IExtensionService, 
@@ -48,10 +49,14 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
             return [];
         }
         const taskQuickPick = new TaskQuickPick(this._taskService, this._configurationService, this._quickInputService, this._notificationService, this._themeService, this._dialogService, this._storageService);
+
         const topLevelPicks = await taskQuickPick.getTopLevelEntries();
+
         const taskPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
+
         for (const entry of topLevelPicks.entries) {
             const highlights = matchesFuzzy(filter, entry.label!);
+
             if (!highlights) {
                 continue;
             }
@@ -59,11 +64,13 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
                 taskPicks.push(entry);
             }
             const task: Task | ConfiguringTask | string = (<ITaskTwoLevelQuickPickEntry>entry).task!;
+
             const quickAccessEntry: IPickerQuickAccessItem = <ITaskTwoLevelQuickPickEntry>entry;
             quickAccessEntry.highlights = { label: highlights };
             quickAccessEntry.trigger = (index) => {
                 if ((index === 1) && (quickAccessEntry.buttons?.length === 2)) {
                     const key = (task && !isString(task)) ? task.getKey() : undefined;
+
                     if (key) {
                         this._taskService.removeRecentlyUsedTask(key);
                     }
@@ -83,6 +90,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
                 if (isString(task)) {
                     // switch to quick pick and show second level
                     const showResult = await taskQuickPick.show(localize('TaskService.pickRunTask', 'Select the task to run'), undefined, task);
+
                     if (showResult) {
                         this._taskService.run(showResult, { attachProblemMatcher: true });
                     }

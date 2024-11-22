@@ -30,8 +30,10 @@ export class SettingsResourceInitializer implements IProfileResourceInitializer 
     }
     async initialize(content: string): Promise<void> {
         const settingsContent: ISettingsContent = JSON.parse(content);
+
         if (settingsContent.settings === null) {
             this.logService.info(`Initializing Profile: No settings to apply...`);
+
             return;
         }
         await this.fileService.writeFile(this.userDataProfileService.currentProfile.settingsResource, VSBuffer.fromString(settingsContent.settings));
@@ -48,39 +50,51 @@ export class SettingsResource implements IProfileResource {
     }
     async getContent(profile: IUserDataProfile): Promise<string> {
         const settingsContent = await this.getSettingsContent(profile);
+
         return JSON.stringify(settingsContent);
     }
     async getSettingsContent(profile: IUserDataProfile): Promise<ISettingsContent> {
         const localContent = await this.getLocalFileContent(profile);
+
         if (localContent === null) {
             return { settings: null };
         }
         else {
             const ignoredSettings = this.getIgnoredSettings();
+
             const formattingOptions = await this.userDataSyncUtilService.resolveFormattingOptions(profile.settingsResource);
+
             const settings = updateIgnoredSettings(localContent || '{}', '{}', ignoredSettings, formattingOptions);
+
             return { settings };
         }
     }
     async apply(content: string, profile: IUserDataProfile): Promise<void> {
         const settingsContent: ISettingsContent = JSON.parse(content);
+
         if (settingsContent.settings === null) {
             this.logService.info(`Importing Profile (${profile.name}): No settings to apply...`);
+
             return;
         }
         const localSettingsContent = await this.getLocalFileContent(profile);
+
         const formattingOptions = await this.userDataSyncUtilService.resolveFormattingOptions(profile.settingsResource);
+
         const contentToUpdate = updateIgnoredSettings(settingsContent.settings, localSettingsContent || '{}', this.getIgnoredSettings(), formattingOptions);
         await this.fileService.writeFile(profile.settingsResource, VSBuffer.fromString(contentToUpdate));
     }
     private getIgnoredSettings(): string[] {
         const allSettings = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties();
+
         const ignoredSettings = Object.keys(allSettings).filter(key => allSettings[key]?.scope === ConfigurationScope.MACHINE || allSettings[key]?.scope === ConfigurationScope.MACHINE_OVERRIDABLE);
+
         return ignoredSettings;
     }
     private async getLocalFileContent(profile: IUserDataProfile): Promise<string | null> {
         try {
             const content = await this.fileService.readFile(profile.settingsResource);
+
             return content.value.toString();
         }
         catch (error) {
@@ -100,6 +114,7 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
     readonly label = { label: localize('settings', "Settings") };
     readonly collapsibleState = TreeItemCollapsibleState.Expanded;
     checkbox: ITreeItemCheckboxState | undefined;
+
     constructor(private readonly profile: IUserDataProfile, 
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService, 
@@ -123,6 +138,7 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
     }
     async hasContent(): Promise<boolean> {
         const settingsContent = await this.instantiationService.createInstance(SettingsResource).getSettingsContent(this.profile);
+
         return settingsContent.settings !== null;
     }
     async getContent(): Promise<string> {

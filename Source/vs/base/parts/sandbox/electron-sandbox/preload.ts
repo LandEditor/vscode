@@ -24,8 +24,10 @@
     //#endregion
     //#region Resolve Configuration
     let configuration: ISandboxConfiguration | undefined = undefined;
+
     const resolveConfiguration: Promise<ISandboxConfiguration> = (async () => {
         const windowConfigIpcChannel = parseArgv('vscode-window-config');
+
         if (!windowConfigIpcChannel) {
             throw new Error('Preload: did not find expected vscode-window-config in renderer process arguments list.');
         }
@@ -42,6 +44,7 @@
             // settings per origin (if vscode-file:// is used) and
             // we want to ensure that the user configuration wins.
             webFrame.setZoomLevel(resolvedConfiguration.zoomLevel ?? 0);
+
             return resolvedConfiguration;
         }
         catch (error) {
@@ -63,6 +66,7 @@
             (async () => (await resolveConfiguration).userEnv)(),
             ipcRenderer.invoke('vscode:fetchShellEnv')
         ]);
+
         return { ...process.env, ...shellEnv, ...userEnv };
     })();
     //#endregion
@@ -87,21 +91,25 @@
             },
             invoke(channel: string, ...args: any[]): Promise<any> {
                 validateIPC(channel);
+
                 return ipcRenderer.invoke(channel, ...args);
             },
             on(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
                 validateIPC(channel);
                 ipcRenderer.on(channel, listener);
+
                 return this;
             },
             once(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
                 validateIPC(channel);
                 ipcRenderer.once(channel, listener);
+
                 return this;
             },
             removeListener(channel: string, listener: (event: Electron.IpcRendererEvent, ...args: any[]) => void) {
                 validateIPC(channel);
                 ipcRenderer.removeListener(channel, listener);
+
                 return this;
             }
         },

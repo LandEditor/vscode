@@ -38,12 +38,17 @@ registerEditorAction(class FormatDocumentMultipleAction extends EditorAction {
 		}
 
 		const commandService = accessor.get(ICommandService);
+
 		const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
 
 		const model = editor.getModel();
+
 		const formatterCount = languageFeaturesService.documentFormattingEditProvider.all(model).length;
 
 		if (formatterCount > 1) {
@@ -54,11 +59,14 @@ registerEditorAction(class FormatDocumentMultipleAction extends EditorAction {
 			notificationService.warn(nls.localize('too.large', "This file cannot be formatted because it is too large"));
 		} else {
 			const langName = model.getLanguageId();
+
 			const message = nls.localize('no.provider', "There is no formatter for '{0}' files installed.", langName);
+
 			const { confirmed } = await dialogService.confirm({
 				message,
 				primaryButton: nls.localize({ key: 'install.formatter', comment: ['&& denotes a mnemonic'] }, "&&Install Formatter...")
 			});
+
 			if (confirmed) {
 				extensionsWorkbenchService.openSearch(`category:formatters ${langName}`);
 			}

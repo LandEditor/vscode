@@ -24,6 +24,7 @@ import { IDebugService, IExpression } from '../common/debug.js';
 import { Variable } from '../common/debugModel.js';
 import { IDebugVisualizerService } from '../common/debugVisualizers.js';
 import { LinkDetector } from './linkDetector.js';
+
 const $ = dom.$;
 export interface IRenderValueOptions {
     showChanged?: boolean;
@@ -51,6 +52,7 @@ export function renderViewTree(container: HTMLElement): HTMLElement {
     const treeContainer = $('.');
     treeContainer.classList.add('debug-view-content');
     container.appendChild(treeContainer);
+
     return treeContainer;
 }
 export interface IInputBoxOptions {
@@ -82,13 +84,18 @@ export abstract class AbstractExpressionDataSource<Input, Element extends IExpre
     public abstract hasChildren(element: Input | Element): boolean;
     public async getChildren(element: Input | Element): Promise<Element[]> {
         const vm = this.debugService.getViewModel();
+
         const children = await this.doGetChildren(element);
+
         return Promise.all(children.map(async (r) => {
             const vizOrTree = vm.getVisualizedExpression(r as IExpression);
+
             if (typeof vizOrTree === 'string') {
                 const viz = await this.debugVisualizer.getVisualizedNodeFor(vizOrTree, r);
+
                 if (viz) {
                     vm.setVisualizedExpression(r, viz);
+
                     return viz as IExpression as Element;
                 }
             }
@@ -111,16 +118,25 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
     abstract get templateId(): string;
     renderTemplate(container: HTMLElement): IExpressionTemplateData {
         const templateDisposable = new DisposableStore();
+
         const expression = dom.append(container, $('.expression'));
+
         const name = dom.append(expression, $('span.name'));
+
         const lazyButton = dom.append(expression, $('span.lazy-button'));
         lazyButton.classList.add(...ThemeIcon.asClassNameArray(Codicon.eye));
         templateDisposable.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), lazyButton, localize('debug.lazyButton.tooltip', "Click to expand")));
+
         const type = dom.append(expression, $('span.type'));
+
         const value = dom.append(expression, $('span.value'));
+
         const label = templateDisposable.add(new HighlightedLabel(name));
+
         const inputBoxContainer = dom.append(expression, $('.inputBoxContainer'));
+
         let actionBar: ActionBar | undefined;
+
         if (this.renderActionBar) {
             dom.append(expression, $('.span.actionbar-spacer'));
             actionBar = templateDisposable.add(new ActionBar(expression));
@@ -131,18 +147,22 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
                 this.debugService.getViewModel().evaluateLazyExpression(template.currentElement);
             }
         }));
+
         return template;
     }
     public abstract renderElement(node: ITreeNode<T, FuzzyScore>, index: number, data: IExpressionTemplateData): void;
     protected renderExpressionElement(element: IExpression, node: ITreeNode<T, FuzzyScore>, data: IExpressionTemplateData): void {
         data.currentElement = element;
         this.renderExpression(node.element, data, createMatches(node.filterData));
+
         if (data.actionBar) {
             this.renderActionBar!(data.actionBar, element, data);
         }
         const selectedExpression = this.debugService.getViewModel().getSelectedExpression();
+
         if (element === selectedExpression?.expression || (element instanceof Variable && element.errorMessage)) {
             const options = this.getInputBoxOptions(element, !!selectedExpression?.settingWatch);
+
             if (options) {
                 data.elementDisposable.add(this.renderInputBox(data.name, data.value, data.inputBoxContainer, options));
             }
@@ -152,30 +172,39 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
         nameElement.style.display = 'none';
         valueElement.style.display = 'none';
         inputBoxContainer.style.display = 'initial';
+
         dom.clearNode(inputBoxContainer);
+
         const inputBox = new InputBox(inputBoxContainer, this.contextViewService, { ...options, inputBoxStyles: defaultInputBoxStyles });
         inputBox.value = options.initialValue;
         inputBox.focus();
         inputBox.select();
+
         const done = createSingleCallFunction((success: boolean, finishEditing: boolean) => {
             nameElement.style.display = '';
             valueElement.style.display = '';
             inputBoxContainer.style.display = 'none';
+
             const value = inputBox.value;
             dispose(toDispose);
+
             if (finishEditing) {
                 this.debugService.getViewModel().setSelectedExpression(undefined, false);
                 options.onFinish(value, success);
             }
         });
+
         const toDispose = [
             inputBox,
             dom.addStandardDisposableListener(inputBox.inputElement, dom.EventType.KEY_DOWN, (e: IKeyboardEvent) => {
                 const isEscape = e.equals(KeyCode.Escape);
+
                 const isEnter = e.equals(KeyCode.Enter);
+
                 if (isEscape || isEnter) {
                     e.preventDefault();
                     e.stopPropagation();
+
                     done(isEnter, true);
                 }
             }),
@@ -188,6 +217,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
                 e.stopPropagation();
             })
         ];
+
         return toDisposable(() => {
             done(false, false);
         });

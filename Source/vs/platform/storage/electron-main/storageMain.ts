@@ -68,6 +68,7 @@ export interface IStorageMain extends IDisposable {
      * the provided defaultValue if the element is null or undefined.
      */
     get(key: string, fallbackValue: string): string;
+
     get(key: string, fallbackValue?: string): string | undefined;
     /**
      * Store a string value under the given key to storage. The value will
@@ -107,6 +108,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
     private readonly whenInitPromise = new DeferredPromise<void>();
     readonly whenInit = this.whenInitPromise.p;
     private state = StorageState.None;
+
     constructor(protected readonly logService: ILogService, private readonly fileService: IFileService) {
         super();
     }
@@ -133,6 +135,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
                     await this.doInit(storage);
                     // Ensure we track whether storage is new or not
                     const isNewStorage = storage.getBoolean(IS_NEW_KEY);
+
                     if (isNewStorage === undefined) {
                         storage.set(IS_NEW_KEY, true);
                     }
@@ -163,9 +166,12 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
         return storage.init();
     }
     protected abstract doCreate(): Promise<Storage>;
+
     get items(): Map<string, string> { return this._storage.items; }
     get(key: string, fallbackValue: string): string;
+
     get(key: string, fallbackValue?: string): string | undefined;
+
     get(key: string, fallbackValue?: string): string | undefined {
         return this._storage.get(key, fallbackValue);
     }
@@ -201,6 +207,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
             const largestEntries = top(Array.from(this._storage.items.entries())
                 .map(([key, value]) => ({ key, length: value.length })), (entryA, entryB) => entryB.length - entryA.length, 5)
                 .map(entry => `${entry.key}:${entry.length}`).join(', ');
+
             const dbSize = (await this.fileService.stat(URI.file(this.path))).size;
             this.logService.warn(`[storage main] detected slow close() operation: Time: ${watch.elapsed()}ms, DB size: ${dbSize}b, Large Keys: ${largestEntries}`);
         }
@@ -224,6 +231,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 }
 class BaseProfileAwareStorageMain extends BaseStorageMain {
     private static readonly STORAGE_NAME = 'state.vscdb';
+
     get path(): string | undefined {
         if (!this.options.useInMemoryStorage) {
             return join(this.profile.globalStorageHome.with({ scheme: Schemas.file }).fsPath, BaseProfileAwareStorageMain.STORAGE_NAME);
@@ -256,6 +264,7 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
     private updateTelemetryState(storage: IStorage): void {
         // First session date (once)
         const firstSessionDate = storage.get(firstSessionDateStorageKey, undefined);
+
         if (firstSessionDate === undefined) {
             storage.set(firstSessionDateStorageKey, new Date().toUTCString());
         }
@@ -263,6 +272,7 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
         // previous session date was the "current" one at that time
         // current session date is "now"
         const lastSessionDate = storage.get(currentSessionDateStorageKey, undefined);
+
         const currentSessionDate = new Date().toUTCString();
         storage.set(lastSessionDateStorageKey, typeof lastSessionDate === 'undefined' ? null : lastSessionDate);
         storage.set(currentSessionDateStorageKey, currentSessionDate);
@@ -271,6 +281,7 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 export class WorkspaceStorageMain extends BaseStorageMain {
     private static readonly WORKSPACE_STORAGE_NAME = 'state.vscdb';
     private static readonly WORKSPACE_META_NAME = 'workspace.json';
+
     get path(): string | undefined {
         if (!this.options.useInMemoryStorage) {
             return join(this.environmentService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath, this.workspace.id, WorkspaceStorageMain.WORKSPACE_STORAGE_NAME);
@@ -282,6 +293,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
     }
     protected async doCreate(): Promise<Storage> {
         const { storageFilePath, wasCreated } = await this.prepareWorkspaceStorageFolder();
+
         return new Storage(new SQLiteStorageDatabase(storageFilePath, {
             logging: this.createLoggingOptions()
         }), { hint: this.options.useInMemoryStorage ? StorageHint.STORAGE_IN_MEMORY : wasCreated ? StorageHint.STORAGE_DOES_NOT_EXIST : undefined });
@@ -296,8 +308,11 @@ export class WorkspaceStorageMain extends BaseStorageMain {
         }
         // Otherwise, ensure the storage folder exists on disk
         const workspaceStorageFolderPath = join(this.environmentService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath, this.workspace.id);
+
         const workspaceStorageDatabasePath = join(workspaceStorageFolderPath, WorkspaceStorageMain.WORKSPACE_STORAGE_NAME);
+
         const storageExists = await Promises.exists(workspaceStorageFolderPath);
+
         if (storageExists) {
             return { storageFilePath: workspaceStorageDatabasePath, wasCreated: false };
         }
@@ -305,10 +320,12 @@ export class WorkspaceStorageMain extends BaseStorageMain {
         await fs.promises.mkdir(workspaceStorageFolderPath, { recursive: true });
         // Write metadata into folder (but do not await)
         this.ensureWorkspaceStorageFolderMeta(workspaceStorageFolderPath);
+
         return { storageFilePath: workspaceStorageDatabasePath, wasCreated: true };
     }
     private async ensureWorkspaceStorageFolderMeta(workspaceStorageFolderPath: string): Promise<void> {
         let meta: object | undefined = undefined;
+
         if (isSingleFolderWorkspaceIdentifier(this.workspace)) {
             meta = { folder: this.workspace.uri.toString() };
         }
@@ -318,7 +335,9 @@ export class WorkspaceStorageMain extends BaseStorageMain {
         if (meta) {
             try {
                 const workspaceStorageMetaPath = join(workspaceStorageFolderPath, WorkspaceStorageMain.WORKSPACE_META_NAME);
+
                 const storageExists = await Promises.exists(workspaceStorageMetaPath);
+
                 if (!storageExists) {
                     await Promises.writeFile(workspaceStorageMetaPath, JSON.stringify(meta, undefined, 2));
                 }

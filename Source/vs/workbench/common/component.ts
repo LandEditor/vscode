@@ -9,6 +9,7 @@ import { DisposableStore } from '../../base/common/lifecycle.js';
 import { Event } from '../../base/common/event.js';
 export class Component extends Themable {
     private readonly memento: Memento;
+
     constructor(private readonly id: string, themeService: IThemeService, storageService: IStorageService) {
         super(themeService);
         this.memento = new Memento(this.id, storageService);

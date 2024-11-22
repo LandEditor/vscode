@@ -32,6 +32,7 @@ import { ITimerService } from '../../services/timer/browser/timerService.js';
 export class MainThreadExtensionService implements MainThreadExtensionServiceShape {
     private readonly _extensionHostKind: ExtensionHostKind;
     private readonly _internalExtensionService: IInternalExtensionService;
+
     constructor(extHostContext: IExtHostContext, 
     @IExtensionService
     private readonly _extensionService: IExtensionService, 
@@ -50,6 +51,7 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
     @IWorkbenchEnvironmentService
     protected readonly _environmentService: IWorkbenchEnvironmentService) {
         this._extensionHostKind = extHostContext.extensionHostKind;
+
         const internalExtHostContext = (<IInternalExtHostContext>extHostContext);
         this._internalExtensionService = internalExtHostContext.internalExtensionService;
         internalExtHostContext._setExtensionHostProxy(new ExtensionHostProxy(extHostContext.getProxy(ExtHostContext.ExtHostExtensionService)));
@@ -78,30 +80,39 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
     async $onExtensionActivationError(extensionId: ExtensionIdentifier, data: SerializedError, missingExtensionDependency: MissingExtensionDependency | null): Promise<void> {
         const error = transformErrorFromSerialization(data);
         this._internalExtensionService._onDidActivateExtensionError(extensionId, error);
+
         if (missingExtensionDependency) {
             const extension = await this._extensionService.getExtension(extensionId.value);
+
             if (extension) {
                 const local = await this._extensionsWorkbenchService.queryLocal();
+
                 const installedDependency = local.find(i => areSameExtensions(i.identifier, { id: missingExtensionDependency.dependency }));
+
                 if (installedDependency?.local) {
                     await this._handleMissingInstalledDependency(extension, installedDependency.local);
+
                     return;
                 }
                 else {
                     await this._handleMissingNotInstalledDependency(extension, missingExtensionDependency.dependency);
+
                     return;
                 }
             }
         }
         const isDev = !this._environmentService.isBuilt || this._environmentService.isExtensionDevelopment;
+
         if (isDev) {
             this._notificationService.error(error);
+
             return;
         }
         console.error(error.message);
     }
     private async _handleMissingInstalledDependency(extension: IExtensionDescription, missingInstalledDependency: ILocalExtension): Promise<void> {
         const extName = extension.displayName || extension.name;
+
         if (this._extensionEnablementService.isEnabled(missingInstalledDependency)) {
             this._notificationService.notify({
                 severity: Severity.Error,
@@ -113,6 +124,7 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
         }
         else {
             const enablementState = this._extensionEnablementService.getEnablementState(missingInstalledDependency);
+
             if (enablementState === EnablementState.DisabledByVirtualWorkspace) {
                 this._notificationService.notify({
                     severity: Severity.Error,
@@ -148,7 +160,9 @@ export class MainThreadExtensionService implements MainThreadExtensionServiceSha
     }
     private async _handleMissingNotInstalledDependency(extension: IExtensionDescription, missingDependency: string): Promise<void> {
         const extName = extension.displayName || extension.name;
+
         let dependencyExtension: IExtension | null = null;
+
         try {
             dependencyExtension = (await this._extensionsWorkbenchService.getExtensions([{ id: missingDependency }], CancellationToken.None))[0];
         }
@@ -187,10 +201,12 @@ class ExtensionHostProxy implements IExtensionHostProxy {
     constructor(private readonly _actual: ExtHostExtensionServiceShape) { }
     async resolveAuthority(remoteAuthority: string, resolveAttempt: number): Promise<IResolveAuthorityResult> {
         const resolved = reviveResolveAuthorityResult(await this._actual.$resolveAuthority(remoteAuthority, resolveAttempt));
+
         return resolved;
     }
     async getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null> {
         const uriComponents = await this._actual.$getCanonicalURI(remoteAuthority, uri);
+
         return (uriComponents ? URI.revive(uriComponents) : uriComponents);
     }
     startExtensionHost(extensionsDelta: IExtensionDescriptionDelta): Promise<void> {

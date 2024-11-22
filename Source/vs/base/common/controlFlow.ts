@@ -20,6 +20,7 @@ export class ReentrancyBarrier {
             return;
         }
         this._isOccupied = true;
+
         try {
             runner();
         }
@@ -36,6 +37,7 @@ export class ReentrancyBarrier {
             throw new BugIndicatingError(`ReentrancyBarrier: reentrant call detected!`);
         }
         this._isOccupied = true;
+
         try {
             runner();
         }
@@ -55,6 +57,7 @@ export class ReentrancyBarrier {
                 return;
             }
             this._isOccupied = true;
+
             try {
                 return fn(...args);
             }

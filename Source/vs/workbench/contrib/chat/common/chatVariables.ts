@@ -33,8 +33,11 @@ export interface IChatVariablesService {
     _serviceBrand: undefined;
     registerVariable(data: IChatVariableData, resolver: IChatVariableResolver): IDisposable;
     hasVariable(name: string): boolean;
+
     getVariable(name: string): IChatVariableData | undefined;
+
     getVariables(location: ChatAgentLocation): Iterable<Readonly<IChatVariableData>>;
+
     getDynamicVariables(sessionId: string): ReadonlyArray<IDynamicVariable>; // should be its own service?
     attachContext(name: string, value: string | URI | Location | unknown, location: ChatAgentLocation): void;
     /**

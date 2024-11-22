@@ -26,6 +26,7 @@ export interface IBufferDirtyTrackerReader {
 export class BufferDirtyTracker implements IBufferDirtyTrackerReader {
     private _startIndex: number | undefined;
     private _endIndex: number | undefined;
+
     get dataOffset(): number | undefined {
         return this._startIndex;
     }
@@ -43,6 +44,7 @@ export class BufferDirtyTracker implements IBufferDirtyTrackerReader {
      */
     flag(index: number, length: number = 1): number {
         this._flag(index);
+
         if (length > 1) {
             this._flag(index + length - 1);
         }

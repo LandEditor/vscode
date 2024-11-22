@@ -32,6 +32,7 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
 		this._renderResult = null;
+
 		super.dispose();
 	}
 
@@ -69,14 +70,18 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 
 	public prepareRender(ctx: RenderingContext): void {
 		const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
+
 		const visibleEndLineNumber = ctx.visibleRange.endLineNumber;
 
 		const viewportData = ctx.viewportData;
+
 		const options = new ViewLineOptions(this._context.configuration, this._context.theme.type);
 
 		const output: string[] = [];
+
 		for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
+
 			const cannotRenderReasons = ViewGpuContext.canRenderDetailed(options, viewportData, lineNumber);
 			output[lineIndex] = cannotRenderReasons.length ? `<div class="${GpuMarkOverlay.CLASS_NAME}" title="Cannot render on GPU: ${cannotRenderReasons.join(', ')}"></div>` : '';
 		}
@@ -89,6 +94,7 @@ export class GpuMarkOverlay extends DynamicViewOverlay {
 			return '';
 		}
 		const lineIndex = lineNumber - startLineNumber;
+
 		if (lineIndex < 0 || lineIndex >= this._renderResult.length) {
 			return '';
 		}

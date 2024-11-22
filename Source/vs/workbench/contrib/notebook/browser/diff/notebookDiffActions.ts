@@ -44,12 +44,15 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const activeEditor = editorService.activeEditorPane;
+
         if (!activeEditor) {
             return;
         }
         if (activeEditor instanceof NotebookTextDiffEditor || activeEditor instanceof NotebookMultiTextDiffEditor) {
             const diffEditorInput = activeEditor.input as NotebookDiffEditorInput;
+
             const resource = diffEditorInput.modified.resource;
             await editorService.openEditor({ resource });
         }
@@ -72,6 +75,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue<boolean>('diffEditor.hideUnchangedRegions.enabled');
         configurationService.updateValue('diffEditor.hideUnchangedRegions.enabled', newValue);
     }
@@ -92,7 +96,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const activeEditor = editorService.activeEditorPane;
+
         if (!activeEditor) {
             return;
         }
@@ -127,6 +133,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const activeEditor = accessor.get(IEditorService).activeEditorPane;
+
         if (!activeEditor) {
             return;
         }
@@ -152,6 +159,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const activeEditor = accessor.get(IEditorService).activeEditorPane;
+
         if (!activeEditor) {
             return;
         }
@@ -176,8 +184,11 @@ registerAction2(class GoToFileAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const uri = args[0] as URI;
+
         const editorService = accessor.get(IEditorService);
+
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
             return;
         }
@@ -208,7 +219,9 @@ registerAction2(class extends Action2 {
             return;
         }
         const editorService = accessor.get(IEditorService);
+
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!(activeEditorPane instanceof NotebookTextDiffEditor)) {
             return;
         }
@@ -218,6 +231,7 @@ registerAction2(class extends Action2 {
             }], true, undefined, () => undefined, undefined, true);
     }
 });
+
 const revertInput = localize('notebook.diff.cell.revertInput', "Revert Input");
 registerAction2(class extends Action2 {
     constructor() {
@@ -235,15 +249,21 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const uri = args[0] as URI;
+
         const editorService = accessor.get(IEditorService);
+
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
             return;
         }
         const item = activeEditorPane.getDiffElementViewModel(uri);
+
         if (item && item instanceof SideBySideDiffElementViewModel) {
             const modified = item.modified;
+
             const original = item.original;
+
             if (!original || !modified) {
                 return;
             }
@@ -254,6 +274,7 @@ registerAction2(class extends Action2 {
         }
     }
 });
+
 const revertOutputs = localize('notebook.diff.cell.revertOutputs', "Revert Outputs");
 registerAction2(class extends Action2 {
     constructor() {
@@ -272,15 +293,21 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const uri = args[0] as URI;
+
         const editorService = accessor.get(IEditorService);
+
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
             return;
         }
         const item = activeEditorPane.getDiffElementViewModel(uri);
+
         if (item && item instanceof SideBySideDiffElementViewModel) {
             const original = item.original;
+
             const modifiedCellIndex = item.modifiedDocument.cells.findIndex(cell => cell.handle === item.modified.handle);
+
             if (modifiedCellIndex === -1) {
                 return;
             }
@@ -290,6 +317,7 @@ registerAction2(class extends Action2 {
         }
     }
 });
+
 const revertMetadata = localize('notebook.diff.cell.revertMetadata', "Revert Metadata");
 registerAction2(class extends Action2 {
     constructor() {
@@ -308,15 +336,21 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const uri = args[0] as URI;
+
         const editorService = accessor.get(IEditorService);
+
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!(activeEditorPane instanceof NotebookMultiTextDiffEditor)) {
             return;
         }
         const item = activeEditorPane.getDiffElementViewModel(uri);
+
         if (item && item instanceof SideBySideDiffElementViewModel) {
             const original = item.original;
+
             const modifiedCellIndex = item.modifiedDocument.cells.findIndex(cell => cell.handle === item.modified.handle);
+
             if (modifiedCellIndex === -1) {
                 return;
             }
@@ -348,12 +382,16 @@ registerAction2(class extends Action2 {
             return;
         }
         const original = context.original;
+
         const modified = context.modified;
+
         const modifiedCellIndex = context.mainDocumentTextModel.cells.indexOf(modified.textModel);
+
         if (modifiedCellIndex === -1) {
             return;
         }
         const rawEdits: ICellEditOperation[] = [{ editType: CellEditType.Metadata, index: modifiedCellIndex, metadata: original.metadata }];
+
         if (context.original.language && context.modified.language !== context.original.language) {
             rawEdits.push({ editType: CellEditType.CellLanguage, index: modifiedCellIndex, language: context.original.language });
         }
@@ -423,8 +461,11 @@ registerAction2(class extends Action2 {
             return;
         }
         const original = context.original;
+
         const modified = context.modified;
+
         const modifiedCellIndex = context.mainDocumentTextModel.cells.indexOf(modified.textModel);
+
         if (modifiedCellIndex === -1) {
             return;
         }
@@ -451,12 +492,16 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor, context?: DiffElementCellViewModelBase) {
         const cell = context;
+
         if (!cell?.modified) {
             return;
         }
         const uri = cell.modified.uri;
+
         const configService = accessor.get(ITextResourceConfigurationService);
+
         const key = 'diffEditor.ignoreTrimWhitespace';
+
         const val = configService.getValue(uri, key);
         configService.updateValue(uri, key, !val);
     }
@@ -481,11 +526,14 @@ registerAction2(class extends Action2 {
             return;
         }
         const original = context.original;
+
         const modified = context.modified;
+
         if (!original || !modified) {
             return;
         }
         const bulkEditService = accessor.get(IBulkEditService);
+
         return bulkEditService.apply([
             new ResourceTextEdit(modified.uri, { range: modified.textModel.getFullModelRange(), text: original.textModel.getValue() }),
         ], { quotableLabel: 'Revert Notebook Cell Content Change' });
@@ -508,6 +556,7 @@ class ToggleRenderAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         if (this.toggleOutputs !== undefined) {
             const oldValue = configurationService.getValue('notebook.diff.ignoreOutputs');
             configurationService.updateValue('notebook.diff.ignoreOutputs', !oldValue);
@@ -549,6 +598,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const editorService: IEditorService = accessor.get(IEditorService);
+
         if (editorService.activeEditorPane?.getId() !== NOTEBOOK_DIFF_EDITOR_ID) {
             return;
         }
@@ -577,6 +627,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const editorService: IEditorService = accessor.get(IEditorService);
+
         if (editorService.activeEditorPane?.getId() !== NOTEBOOK_DIFF_EDITOR_ID) {
             return;
         }

@@ -26,14 +26,18 @@ import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { SELECT_AND_START_ID, DEBUG_CONFIGURE_COMMAND_ID, DEBUG_START_COMMAND_ID } from './debugCommands.js';
 import { ILocalizedString } from '../../../../platform/action/common/action.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
+
 const debugStartLanguageKey = 'debugStartLanguage';
+
 const CONTEXT_DEBUG_START_LANGUAGE = new RawContextKey<string>(debugStartLanguageKey, undefined);
+
 const CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR = new RawContextKey<boolean>('debuggerInterestedInActiveEditor', false);
 export class WelcomeView extends ViewPane {
     static readonly ID = 'workbench.debug.welcome';
     static readonly LABEL: ILocalizedString = localize2('run', "Run");
     private debugStartLanguageContext: IContextKey<string | undefined>;
     private debuggerInterestedContext: IContextKey<boolean>;
+
     constructor(options: IViewletViewOptions, 
     @IThemeService
     themeService: IThemeService, 
@@ -64,30 +68,39 @@ export class WelcomeView extends ViewPane {
         super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
         this.debugStartLanguageContext = CONTEXT_DEBUG_START_LANGUAGE.bindTo(contextKeyService);
         this.debuggerInterestedContext = CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR.bindTo(contextKeyService);
+
         const lastSetLanguage = storageSevice.get(debugStartLanguageKey, StorageScope.WORKSPACE);
         this.debugStartLanguageContext.set(lastSetLanguage);
+
         const setContextKey = () => {
             let editorControl = this.editorService.activeTextEditorControl;
+
             if (isDiffEditor(editorControl)) {
                 editorControl = editorControl.getModifiedEditor();
             }
             if (isCodeEditor(editorControl)) {
                 const model = editorControl.getModel();
+
                 const language = model ? model.getLanguageId() : undefined;
+
                 if (language && this.debugService.getAdapterManager().someDebuggerInterestedInLanguage(language)) {
                     this.debugStartLanguageContext.set(language);
                     this.debuggerInterestedContext.set(true);
                     storageSevice.store(debugStartLanguageKey, language, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+
                     return;
                 }
             }
             this.debuggerInterestedContext.set(false);
         };
+
         const disposables = new DisposableStore();
         this._register(disposables);
         this._register(editorService.onDidActiveEditorChange(() => {
             disposables.clear();
+
             let editorControl = this.editorService.activeTextEditorControl;
+
             if (isDiffEditor(editorControl)) {
                 editorControl = editorControl.getModifiedEditor();
             }
@@ -102,7 +115,9 @@ export class WelcomeView extends ViewPane {
                 setContextKey();
             }
         }));
+
         setContextKey();
+
         const debugKeybinding = this.keybindingService.lookupKeybinding(DEBUG_START_COMMAND_ID);
         debugKeybindingLabel = debugKeybinding ? ` (${debugKeybinding.getLabel()})` : '';
     }
@@ -122,6 +137,7 @@ viewsRegistry.registerViewWelcomeContent(WelcomeView.ID, {
     when: ContextKeyExpr.and(CONTEXT_DEBUGGERS_AVAILABLE, CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR.toNegated()),
     group: ViewContentGroups.Open,
 });
+
 let debugKeybindingLabel = '';
 viewsRegistry.registerViewWelcomeContent(WelcomeView.ID, {
     content: `[${localize('runAndDebugAction', "Run and Debug")}${debugKeybindingLabel}](command:${DEBUG_START_COMMAND_ID})`,

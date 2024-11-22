@@ -89,6 +89,7 @@ const NATIVE_TYPES = [
     'INativeHostService',
     'IMainProcessService'
 ];
+
 const RULES: IRule[] = [
     // Tests: skip
     {
@@ -288,6 +289,7 @@ const RULES: IRule[] = [
         ]
     }
 ];
+
 const TS_CONFIG_PATH = join(__dirname, '../../', 'src', 'tsconfig.json');
 interface IRule {
     target: string;
@@ -300,21 +302,27 @@ interface IRule {
 let hasErrors = false;
 function checkFile(program: ts.Program, sourceFile: ts.SourceFile, rule: IRule) {
     checkNode(sourceFile);
+
     function checkNode(node: ts.Node): void {
         if (node.kind !== ts.SyntaxKind.Identifier) {
             return ts.forEachChild(node, checkNode); // recurse down
         }
         const checker = program.getTypeChecker();
+
         const symbol = checker.getSymbolAtLocation(node);
+
         if (!symbol) {
             return;
         }
         let _parentSymbol: any = symbol;
+
         while (_parentSymbol.parent) {
             _parentSymbol = _parentSymbol.parent;
         }
         const parentSymbol = _parentSymbol as ts.Symbol;
+
         const text = parentSymbol.getName();
+
         if (rule.allowedTypes?.some(allowed => allowed === text)) {
             return; // override
         }
@@ -322,17 +330,22 @@ function checkFile(program: ts.Program, sourceFile: ts.SourceFile, rule: IRule) 
             const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
             console.log(`[build/lib/layersChecker.ts]: Reference to type '${text}' violates layer '${rule.target}' (${sourceFile.fileName} (${line + 1},${character + 1}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`);
             hasErrors = true;
+
             return;
         }
         const declarations = symbol.declarations;
+
         if (Array.isArray(declarations)) {
             DeclarationLoop: for (const declaration of declarations) {
                 if (declaration) {
                     const parent = declaration.parent;
+
                     if (parent) {
                         const parentSourceFile = parent.getSourceFile();
+
                         if (parentSourceFile) {
                             const definitionFileName = parentSourceFile.fileName;
+
                             if (rule.allowedDefinitions) {
                                 for (const allowedDefinition of rule.allowedDefinitions) {
                                     if (definitionFileName.indexOf(allowedDefinition) >= 0) {
@@ -346,6 +359,7 @@ function checkFile(program: ts.Program, sourceFile: ts.SourceFile, rule: IRule) 
                                         const { line, character } = sourceFile.getLineAndCharacterOfPosition(node.getStart());
                                         console.log(`[build/lib/layersChecker.ts]: Reference to symbol '${text}' from '${disallowedDefinition}' violates layer '${rule.target}' (${sourceFile.fileName} (${line + 1},${character + 1}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`);
                                         hasErrors = true;
+
                                         return;
                                     }
                                 }
@@ -359,9 +373,13 @@ function checkFile(program: ts.Program, sourceFile: ts.SourceFile, rule: IRule) 
 }
 function createProgram(tsconfigPath: string): ts.Program {
     const tsConfig = ts.readConfigFile(tsconfigPath, ts.sys.readFile);
+
     const configHostParser: ts.ParseConfigHost = { fileExists: existsSync, readDirectory: ts.sys.readDirectory, readFile: file => readFileSync(file, 'utf8'), useCaseSensitiveFileNames: process.platform === 'linux' };
+
     const tsConfigParsed = ts.parseJsonConfigFileContent(tsConfig.config, configHostParser, resolve(dirname(tsconfigPath)), { noEmit: true });
+
     const compilerHost = ts.createCompilerHost(tsConfigParsed.options, true);
+
     return ts.createProgram(tsConfigParsed.fileNames, tsConfigParsed.options, compilerHost);
 }
 //

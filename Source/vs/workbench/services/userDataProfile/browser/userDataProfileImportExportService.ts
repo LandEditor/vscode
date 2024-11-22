@@ -50,6 +50,7 @@ interface IUserDataProfileTemplate {
 }
 function isUserDataProfileTemplate(thing: unknown): thing is IUserDataProfileTemplate {
     const candidate = thing as IUserDataProfileTemplate | undefined;
+
     return !!(candidate && typeof candidate === 'object'
         && (candidate.name && typeof candidate.name === 'string')
         && (isUndefined(candidate.icon) || typeof candidate.icon === 'string')
@@ -61,6 +62,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     readonly _serviceBrand: undefined;
     private profileContentHandlers = new Map<string, IUserDataProfileContentHandler>();
     private readonly fileUserDataProfileContentHandler: FileUserDataProfileContentHandler;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -96,6 +98,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
             throw new Error(`Profile content handler with id '${id}' already registered.`);
         }
         this.profileContentHandlers.set(id, profileContentHandler);
+
         return toDisposable(() => this.unregisterProfileContentHandler(id));
     }
     unregisterProfileContentHandler(id: string): void {
@@ -103,9 +106,12 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     async createFromProfile(from: IUserDataProfile, options: IUserDataProfileCreateOptions, token: CancellationToken): Promise<IUserDataProfile | undefined> {
         const disposables = new DisposableStore();
+
         let creationPromise: CancelablePromise<void>;
         disposables.add(token.onCancellationRequested(() => creationPromise.cancel()));
+
         let profile: IUserDataProfile | undefined;
+
         return this.progressService.withProgress({
             location: ProgressLocation.Notification,
             delay: 500,
@@ -115,8 +121,10 @@ export class UserDataProfileImportExportService extends Disposable implements IU
             const reportProgress = (message: string) => progress.report({ message: localize('create from profile', "Create Profile: {0}", message) });
             creationPromise = createCancelablePromise(async (token) => {
                 const userDataProfilesExportState = disposables.add(this.instantiationService.createInstance(UserDataProfileExportState, from, { ...options?.resourceTypeFlags, extensions: false }));
+
                 const profileTemplate = await userDataProfilesExportState.getProfileTemplate(options.name ?? from.name, options?.icon);
                 profile = await this.getProfileToImport({ ...profileTemplate, name: options.name ?? profileTemplate.name }, !!options.transient, options);
+
                 if (!profile) {
                     return;
                 }
@@ -125,8 +133,10 @@ export class UserDataProfileImportExportService extends Disposable implements IU
                 }
                 await this.applyProfileTemplate(profileTemplate, profile, options, reportProgress, token);
             });
+
             try {
                 await creationPromise;
+
                 if (profile && (options?.resourceTypeFlags?.extensions ?? true)) {
                     reportProgress(localize('installing extensions', "Installing Extensions..."));
                     await this.instantiationService.createInstance(ExtensionsResource).copy(from, profile, false);
@@ -143,9 +153,12 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     async createProfileFromTemplate(profileTemplate: IUserDataProfileTemplate, options: IUserDataProfileCreateOptions, token: CancellationToken): Promise<IUserDataProfile | undefined> {
         const disposables = new DisposableStore();
+
         let creationPromise: CancelablePromise<void>;
         disposables.add(token.onCancellationRequested(() => creationPromise.cancel()));
+
         let profile: IUserDataProfile | undefined;
+
         return this.progressService.withProgress({
             location: ProgressLocation.Notification,
             delay: 500,
@@ -155,6 +168,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
             const reportProgress = (message: string) => progress.report({ message: localize('create from profile', "Create Profile: {0}", message) });
             creationPromise = createCancelablePromise(async (token) => {
                 profile = await this.getProfileToImport({ ...profileTemplate, name: options.name ?? profileTemplate.name }, !!options.transient, options);
+
                 if (!profile) {
                     return;
                 }
@@ -163,6 +177,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
                 }
                 await this.applyProfileTemplate(profileTemplate, profile, options, reportProgress, token);
             });
+
             try {
                 await creationPromise;
             }
@@ -218,6 +233,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     async exportProfile(profile: IUserDataProfile, exportFlags?: ProfileResourceTypeFlags): Promise<void> {
         const disposables = new DisposableStore();
+
         try {
             const userDataProfilesExportState = disposables.add(this.instantiationService.createInstance(UserDataProfileExportState, profile, exportFlags));
             await this.doExportProfile(userDataProfilesExportState, ProgressLocation.Notification);
@@ -228,6 +244,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     async createTroubleshootProfile(): Promise<void> {
         const userDataProfilesExportState = this.instantiationService.createInstance(UserDataProfileExportState, this.userDataProfileService.currentProfile, undefined);
+
         try {
             const profileTemplate = await userDataProfilesExportState.getProfileTemplate(localize('troubleshoot issue', "Troubleshoot Issue"), undefined);
             await this.progressService.withProgress({
@@ -236,7 +253,9 @@ export class UserDataProfileImportExportService extends Disposable implements IU
                 sticky: true,
             }, async (progress) => {
                 const reportProgress = (message: string) => progress.report({ message: localize('troubleshoot profile progress', "Setting up Troubleshoot Profile: {0}", message) });
+
                 const profile = await this.doCreateProfile(profileTemplate, true, false, { useDefaultFlags: this.userDataProfileService.currentProfile.useDefaultFlags }, reportProgress);
+
                 if (profile) {
                     reportProgress(localize('progress extensions', "Applying Extensions..."));
                     await this.instantiationService.createInstance(ExtensionsResource).copy(this.userDataProfileService.currentProfile, profile, true);
@@ -251,35 +270,43 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     private async doExportProfile(userDataProfilesExportState: UserDataProfileExportState, location: ProgressLocation | string): Promise<void> {
         const profile = await userDataProfilesExportState.getProfileToExport();
+
         if (!profile) {
             return;
         }
         const disposables = new DisposableStore();
+
         try {
             await this.progressService.withProgress({
                 location,
                 title: localize('profiles.exporting', "{0}: Exporting...", PROFILES_CATEGORY.value),
             }, async (progress) => {
                 const id = await this.pickProfileContentHandler(profile.name);
+
                 if (!id) {
                     return;
                 }
                 const profileContentHandler = this.profileContentHandlers.get(id);
+
                 if (!profileContentHandler) {
                     return;
                 }
                 const saveResult = await profileContentHandler.saveProfile(profile.name.replace('/', '-'), JSON.stringify(profile), CancellationToken.None);
+
                 if (!saveResult) {
                     return;
                 }
                 const message = localize('export success', "Profile '{0}' was exported successfully.", profile.name);
+
                 if (profileContentHandler.extensionId) {
                     const buttons: IPromptButton<void>[] = [];
+
                     const link = this.productService.webUrl ? `${this.productService.webUrl}/${PROFILE_URL_AUTHORITY}/${id}/${saveResult.id}` : toUserDataProfileUri(`/${id}/${saveResult.id}`, this.productService).toString();
                     buttons.push({
                         label: localize({ key: 'copy', comment: ['&& denotes a mnemonic'] }, "&&Copy Link"),
                         run: () => this.clipboardService.writeText(link)
                     });
+
                     if (this.productService.webUrl) {
                         buttons.push({
                             label: localize({ key: 'open', comment: ['&& denotes a mnemonic'] }, "&&Open Link"),
@@ -314,10 +341,12 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     async resolveProfileTemplate(uri: URI, options?: IProfileImportOptions): Promise<IUserDataProfileTemplate | null> {
         const profileContent = await this.resolveProfileContent(uri);
+
         if (profileContent === null) {
             return null;
         }
         let profileTemplate: Mutable<IUserDataProfileTemplate>;
+
         try {
             profileTemplate = JSON.parse(profileContent);
         }
@@ -355,6 +384,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     private async doCreateProfile(profileTemplate: IUserDataProfileTemplate, temporaryProfile: boolean, extensions: boolean, options: IUserDataProfileOptions | undefined, progress: (message: string) => void): Promise<IUserDataProfile | undefined> {
         const profile = await this.getProfileToImport(profileTemplate, temporaryProfile, options);
+
         if (!profile) {
             return undefined;
         }
@@ -390,6 +420,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
         }
         if (isProfileURL(resource)) {
             let handlerId: string, idOrUri: string | URI;
+
             if (resource.authority === PROFILE_URL_AUTHORITY) {
                 idOrUri = this.uriIdentityService.extUri.basename(resource);
                 handlerId = this.uriIdentityService.extUri.basename(this.uriIdentityService.extUri.dirname(resource));
@@ -399,33 +430,41 @@ export class UserDataProfileImportExportService extends Disposable implements IU
                 idOrUri = URI.parse(resource.path.substring(1));
             }
             await this.extensionService.activateByEvent(`onProfile:${handlerId}`);
+
             const profileContentHandler = this.profileContentHandlers.get(handlerId);
+
             if (profileContentHandler) {
                 return profileContentHandler.readProfile(idOrUri, CancellationToken.None);
             }
         }
         await this.extensionService.activateByEvent('onProfile');
+
         for (const profileContentHandler of this.profileContentHandlers.values()) {
             const content = await profileContentHandler.readProfile(resource, CancellationToken.None);
+
             if (content !== null) {
                 return content;
             }
         }
         const context = await this.requestService.request({ type: 'GET', url: resource.toString(true) }, CancellationToken.None);
+
         if (context.res.statusCode === 200) {
             return await asText(context);
         }
         else {
             const message = await asText(context);
+
             throw new Error(`Failed to get profile from URL: ${resource.toString()}. Status code: ${context.res.statusCode}. Message: ${message}`);
         }
     }
     private async pickProfileContentHandler(name: string): Promise<string | undefined> {
         await this.extensionService.activateByEvent('onProfile');
+
         if (this.profileContentHandlers.size === 1) {
             return this.profileContentHandlers.keys().next().value;
         }
         const options: QuickPickItem[] = [];
+
         for (const [id, profileContentHandler] of this.profileContentHandlers) {
             options.push({ id, label: profileContentHandler.name, description: profileContentHandler.description });
         }
@@ -433,11 +472,14 @@ export class UserDataProfileImportExportService extends Disposable implements IU
             title: localize('select profile content handler', "Export '{0}' profile as...", name),
             hideInput: true
         });
+
         return result?.id;
     }
     private async getProfileToImport(profileTemplate: IUserDataProfileTemplate, temp: boolean, options: IUserDataProfileOptions | undefined): Promise<IUserDataProfile | undefined> {
         const profileName = profileTemplate.name;
+
         const profile = this.userDataProfilesService.profiles.find(p => p.name === profileName);
+
         if (profile) {
             if (temp) {
                 return this.userDataProfilesService.createNamedProfile(`${profileName} ${this.getProfileNameIndex(profileName)}`, { ...options, transient: temp });
@@ -447,6 +489,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
                 message: localize('profile already exists', "Profile with name '{0}' already exists. Do you want to replace its contents?", profileName),
                 primaryButton: localize({ key: 'overwrite', comment: ['&& denotes a mnemonic'] }, "&&Replace")
             });
+
             if (!confirmed) {
                 return undefined;
             }
@@ -458,9 +501,12 @@ export class UserDataProfileImportExportService extends Disposable implements IU
     }
     private getProfileNameIndex(name: string): number {
         const nameRegEx = new RegExp(`${escapeRegExpCharacters(name)}\\s(\\d+)`);
+
         let nameIndex = 0;
+
         for (const profile of this.userDataProfilesService.profiles) {
             const matches = nameRegEx.exec(profile.name);
+
             const index = matches ? parseInt(matches[1]) : 0;
             nameIndex = index > nameIndex ? index : nameIndex;
         }
@@ -470,6 +516,7 @@ export class UserDataProfileImportExportService extends Disposable implements IU
 class FileUserDataProfileContentHandler implements IUserDataProfileContentHandler {
     readonly name = localize('local', "Local");
     readonly description = localize('file', "file");
+
     constructor(
     @IFileDialogService
     private readonly fileDialogService: IFileDialogService, 
@@ -487,10 +534,12 @@ class FileUserDataProfileContentHandler implements IUserDataProfileContentHandle
             filters: PROFILE_FILTER,
             defaultUri: this.uriIdentityService.extUri.joinPath(await this.fileDialogService.defaultFilePath(), `${name}.${PROFILE_EXTENSION}`),
         });
+
         if (!link) {
             return null;
         }
         await this.textFileService.create([{ resource: link, value: content, options: { overwrite: true } }]);
+
         return { link, id: link.toString() };
     }
     async canHandle(uri: URI): Promise<boolean> {
@@ -510,14 +559,17 @@ class FileUserDataProfileContentHandler implements IUserDataProfileContentHandle
             filters: PROFILE_FILTER,
             title: localize('select profile', "Select Profile"),
         });
+
         return profileLocation ? profileLocation[0] : null;
     }
 }
 const USER_DATA_PROFILE_EXPORT_SCHEME = 'userdataprofileexport';
+
 const USER_DATA_PROFILE_EXPORT_PREVIEW_SCHEME = 'userdataprofileexportpreview';
 abstract class UserDataProfileImportExportState extends Disposable implements ITreeViewDataProvider {
     private readonly _onDidChangeRoots = this._register(new Emitter<void>());
     readonly onDidChangeRoots = this._onDidChangeRoots.event;
+
     constructor(
     @IQuickInputService
     protected readonly quickInputService: IQuickInputService) {
@@ -526,6 +578,7 @@ abstract class UserDataProfileImportExportState extends Disposable implements IT
     async getChildren(element?: ITreeItem): Promise<ITreeItem[] | undefined> {
         if (element) {
             const children = await (<IProfileResourceTreeItem>element).getChildren();
+
             if (children) {
                 for (const child of children) {
                     if (child.parent.checkbox && child.checkbox) {
@@ -538,15 +591,18 @@ abstract class UserDataProfileImportExportState extends Disposable implements IT
         else {
             this.rootsPromise = undefined;
             this._onDidChangeRoots.fire();
+
             return this.getRoots();
         }
     }
     private roots: IProfileResourceTreeItem[] = [];
     private rootsPromise: Promise<IProfileResourceTreeItem[]> | undefined;
+
     getRoots(): Promise<IProfileResourceTreeItem[]> {
         if (!this.rootsPromise) {
             this.rootsPromise = (async () => {
                 this.roots = await this.fetchRoots();
+
                 for (const root of this.roots) {
                     root.checkbox = {
                         isChecked: !root.isFromDefaultProfile(),
@@ -555,6 +611,7 @@ abstract class UserDataProfileImportExportState extends Disposable implements IT
                             label: localize('select', "Select {0}", root.label.label),
                         }
                     };
+
                     if (root.isFromDefaultProfile()) {
                         root.description = localize('from default', "From Default Profile");
                     }
@@ -572,12 +629,19 @@ abstract class UserDataProfileImportExportState extends Disposable implements IT
     }
     async getProfileTemplate(name: string, icon: string | undefined): Promise<IUserDataProfileTemplate> {
         const roots = await this.getRoots();
+
         let settings: string | undefined;
+
         let keybindings: string | undefined;
+
         let tasks: string | undefined;
+
         let snippets: string | undefined;
+
         let extensions: string | undefined;
+
         let globalState: string | undefined;
+
         for (const root of roots) {
             if (!this.isSelected(root)) {
                 continue;
@@ -622,6 +686,7 @@ abstract class UserDataProfileImportExportState extends Disposable implements IT
 }
 class UserDataProfileExportState extends UserDataProfileImportExportState {
     private readonly disposables = this._register(new DisposableStore());
+
     constructor(readonly profile: IUserDataProfile, private readonly exportFlags: ProfileResourceTypeFlags | undefined, 
     @IQuickInputService
     quickInputService: IQuickInputService, 
@@ -634,50 +699,69 @@ class UserDataProfileExportState extends UserDataProfileImportExportState {
     protected async fetchRoots(): Promise<IProfileResourceTreeItem[]> {
         this.disposables.clear();
         this.disposables.add(this.fileService.registerProvider(USER_DATA_PROFILE_EXPORT_SCHEME, this._register(new InMemoryFileSystemProvider())));
+
         const previewFileSystemProvider = this._register(new InMemoryFileSystemProvider());
         this.disposables.add(this.fileService.registerProvider(USER_DATA_PROFILE_EXPORT_PREVIEW_SCHEME, previewFileSystemProvider));
+
         const roots: IProfileResourceTreeItem[] = [];
+
         const exportPreviewProfle = this.createExportPreviewProfile(this.profile);
+
         if (this.exportFlags?.settings ?? true) {
             const settingsResource = this.instantiationService.createInstance(SettingsResource);
+
             const settingsContent = await settingsResource.getContent(this.profile);
             await settingsResource.apply(settingsContent, exportPreviewProfle);
+
             const settingsResourceTreeItem = this.instantiationService.createInstance(SettingsResourceTreeItem, exportPreviewProfle);
+
             if (await settingsResourceTreeItem.hasContent()) {
                 roots.push(settingsResourceTreeItem);
             }
         }
         if (this.exportFlags?.keybindings ?? true) {
             const keybindingsResource = this.instantiationService.createInstance(KeybindingsResource);
+
             const keybindingsContent = await keybindingsResource.getContent(this.profile);
             await keybindingsResource.apply(keybindingsContent, exportPreviewProfle);
+
             const keybindingsResourceTreeItem = this.instantiationService.createInstance(KeybindingsResourceTreeItem, exportPreviewProfle);
+
             if (await keybindingsResourceTreeItem.hasContent()) {
                 roots.push(keybindingsResourceTreeItem);
             }
         }
         if (this.exportFlags?.snippets ?? true) {
             const snippetsResource = this.instantiationService.createInstance(SnippetsResource);
+
             const snippetsContent = await snippetsResource.getContent(this.profile);
             await snippetsResource.apply(snippetsContent, exportPreviewProfle);
+
             const snippetsResourceTreeItem = this.instantiationService.createInstance(SnippetsResourceTreeItem, exportPreviewProfle);
+
             if (await snippetsResourceTreeItem.hasContent()) {
                 roots.push(snippetsResourceTreeItem);
             }
         }
         if (this.exportFlags?.tasks ?? true) {
             const tasksResource = this.instantiationService.createInstance(TasksResource);
+
             const tasksContent = await tasksResource.getContent(this.profile);
             await tasksResource.apply(tasksContent, exportPreviewProfle);
+
             const tasksResourceTreeItem = this.instantiationService.createInstance(TasksResourceTreeItem, exportPreviewProfle);
+
             if (await tasksResourceTreeItem.hasContent()) {
                 roots.push(tasksResourceTreeItem);
             }
         }
         if (this.exportFlags?.globalState ?? true) {
             const globalStateResource = joinPath(exportPreviewProfle.globalStorageHome, 'globalState.json').with({ scheme: USER_DATA_PROFILE_EXPORT_PREVIEW_SCHEME });
+
             const globalStateResourceTreeItem = this.instantiationService.createInstance(GlobalStateResourceExportTreeItem, exportPreviewProfle, globalStateResource);
+
             const content = await globalStateResourceTreeItem.getContent();
+
             if (content) {
                 await this.fileService.writeFile(globalStateResource, VSBuffer.fromString(JSON.stringify(JSON.parse(content), null, '\t')));
                 roots.push(globalStateResourceTreeItem);
@@ -685,11 +769,13 @@ class UserDataProfileExportState extends UserDataProfileImportExportState {
         }
         if (this.exportFlags?.extensions ?? true) {
             const extensionsResourceTreeItem = this.instantiationService.createInstance(ExtensionsResourceExportTreeItem, exportPreviewProfle);
+
             if (await extensionsResourceTreeItem.hasContent()) {
                 roots.push(extensionsResourceTreeItem);
             }
         }
         previewFileSystemProvider.setReadOnly(true);
+
         return roots;
     }
     private createExportPreviewProfile(profile: IUserDataProfile): IUserDataProfile {
@@ -712,6 +798,7 @@ class UserDataProfileExportState extends UserDataProfileImportExportState {
     }
     async getProfileToExport(): Promise<IUserDataProfileTemplate | null> {
         let name: string | undefined = this.profile.name;
+
         if (this.profile.isDefault) {
             name = await this.quickInputService.input({
                 placeHolder: localize('export profile name', "Name the profile"),
@@ -723,6 +810,7 @@ class UserDataProfileExportState extends UserDataProfileImportExportState {
                     return undefined;
                 },
             });
+
             if (!name) {
                 return null;
             }

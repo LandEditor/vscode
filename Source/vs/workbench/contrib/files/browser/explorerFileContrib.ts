@@ -46,6 +46,7 @@ class ExplorerFileContributionRegistry implements IExplorerFileContributionRegis
         return this.descriptors.map(d => {
             const i = d.create(insta, container);
             store.add(i);
+
             return i;
         });
     }

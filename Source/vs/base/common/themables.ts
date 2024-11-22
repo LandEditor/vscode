@@ -22,17 +22,25 @@ export interface ThemeIcon {
 }
 export namespace ThemeIcon {
     export const iconNameSegment = '[A-Za-z0-9]+';
+
     export const iconNameExpression = '[A-Za-z0-9-]+';
+
     export const iconModifierExpression = '~[A-Za-z]+';
+
     export const iconNameCharacter = '[A-Za-z0-9~-]';
+
     const ThemeIconIdRegex = new RegExp(`^(${iconNameExpression})(${iconModifierExpression})?$`);
+
     export function asClassNameArray(icon: ThemeIcon): string[] {
         const match = ThemeIconIdRegex.exec(icon.id);
+
         if (!match) {
             return asClassNameArray(Codicon.error);
         }
         const [, id, modifier] = match;
+
         const classNames = ['codicon', 'codicon-' + id];
+
         if (modifier) {
             classNames.push('codicon-modifier-' + modifier.substring(1));
         }
@@ -48,12 +56,15 @@ export namespace ThemeIcon {
         return obj && typeof obj === 'object' && typeof (<ThemeIcon>obj).id === 'string' && (typeof (<ThemeIcon>obj).color === 'undefined' || ThemeColor.isThemeColor((<ThemeIcon>obj).color));
     }
     const _regexFromString = new RegExp(`^\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)$`);
+
     export function fromString(str: string): ThemeIcon | undefined {
         const match = _regexFromString.exec(str);
+
         if (!match) {
             return undefined;
         }
         const [, name] = match;
+
         return { id: name };
     }
     export function fromId(id: string): ThemeIcon {
@@ -61,7 +72,9 @@ export namespace ThemeIcon {
     }
     export function modify(icon: ThemeIcon, modifier: 'disabled' | 'spin' | undefined): ThemeIcon {
         let id = icon.id;
+
         const tildeIndex = id.lastIndexOf('~');
+
         if (tildeIndex !== -1) {
             id = id.substring(0, tildeIndex);
         }
@@ -72,6 +85,7 @@ export namespace ThemeIcon {
     }
     export function getModifier(icon: ThemeIcon): string | undefined {
         const tildeIndex = icon.id.lastIndexOf('~');
+
         if (tildeIndex !== -1) {
             return icon.id.substring(tildeIndex + 1);
         }

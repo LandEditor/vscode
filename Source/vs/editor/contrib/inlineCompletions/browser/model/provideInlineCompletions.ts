@@ -33,12 +33,15 @@ export async function provideInlineCompletions(
 	languageConfigurationService?: ILanguageConfigurationService,
 ): Promise<InlineCompletionProviderResult> {
 	const tokenSource = new CancellationTokenSource(baseToken);
+
 	const token = tokenSource.token;
 
 	const defaultReplaceRange = positionOrRange instanceof Position ? getDefaultRange(positionOrRange, model) : positionOrRange;
+
 	const providers = registry.all(model);
 
 	const multiMap = new SetMap<InlineCompletionProviderGroupId, InlineCompletionsProvider<any>>();
+
 	for (const provider of providers) {
 		if (provider.groupId) {
 			multiMap.add(provider.groupId, provider);
@@ -48,8 +51,10 @@ export async function provideInlineCompletions(
 	function getPreferredProviders(provider: InlineCompletionsProvider<any>): InlineCompletionsProvider<any>[] {
 		if (!provider.yieldsToGroupIds) { return []; }
 		const result: InlineCompletionsProvider<any>[] = [];
+
 		for (const groupId of provider.yieldsToGroupIds || []) {
 			const providers = multiMap.get(groupId);
+
 			for (const p of providers) {
 				result.push(p);
 			}
@@ -58,21 +63,27 @@ export async function provideInlineCompletions(
 	}
 
 	type Result = Promise<InlineCompletionList | undefined>;
+
 	const states = new Map<InlineCompletionsProvider, Result>();
 
 	const seen = new Set<InlineCompletionsProvider>();
+
 	function findPreferredProviderCircle(
 		provider: InlineCompletionsProvider<any>,
 		stack: InlineCompletionsProvider[]
 	): InlineCompletionsProvider[] | undefined {
 		stack = [...stack, provider];
+
 		if (seen.has(provider)) { return stack; }
 
 		seen.add(provider);
+
 		try {
 			const preferred = getPreferredProviders(provider);
+
 			for (const p of preferred) {
 				const c = findPreferredProviderCircle(p, stack);
+
 				if (c) { return c; }
 			}
 		} finally {
@@ -83,9 +94,11 @@ export async function provideInlineCompletions(
 
 	function queryProviderOrPreferredProvider(provider: InlineCompletionsProvider<InlineCompletions>): Result {
 		const state = states.get(provider);
+
 		if (state) { return state; }
 
 		const circle = findPreferredProviderCircle(provider, []);
+
 		if (circle) {
 			onUnexpectedExternalError(new Error(`Inline completions: cyclic yield-to dependency detected.`
 				+ ` Path: ${circle.map(s => s.toString ? s.toString() : ('' + s)).join(' -> ')}`));
@@ -97,8 +110,10 @@ export async function provideInlineCompletions(
 		(async () => {
 			if (!circle) {
 				const preferred = getPreferredProviders(provider);
+
 				for (const p of preferred) {
 					const result = await queryProviderOrPreferredProvider(p);
+
 					if (result && result.inlineCompletions.items.length > 0) {
 						// Skip provider
 						return undefined;
@@ -114,6 +129,7 @@ export async function provideInlineCompletions(
 
 	async function query(provider: InlineCompletionsProvider): Promise<InlineCompletionList | undefined> {
 		let result: InlineCompletions | null | undefined;
+
 		try {
 			if (positionOrRange instanceof Position) {
 				result = await provider.provideInlineCompletions(model, positionOrRange, context, token);
@@ -122,6 +138,7 @@ export async function provideInlineCompletions(
 			}
 		} catch (e) {
 			onUnexpectedExternalError(e);
+
 			return undefined;
 		}
 
@@ -129,6 +146,7 @@ export async function provideInlineCompletions(
 		const list = new InlineCompletionList(result, provider);
 
 		runWhenCancelled(token, () => list.removeRef());
+
 		return list;
 	}
 
@@ -149,12 +167,14 @@ export async function provideInlineCompletions(
 function runWhenCancelled(token: CancellationToken, callback: () => void): IDisposable {
 	if (token.isCancellationRequested) {
 		callback();
+
 		return Disposable.None;
 	} else {
 		const listener = token.onCancellationRequested(() => {
 			listener.dispose();
 			callback();
 		});
+
 		return { dispose: () => listener.dispose() };
 	}
 }
@@ -171,11 +191,14 @@ async function addRefAndCreateResult(
 	const itemsByHash = new Map<string, InlineCompletionItem>();
 
 	let shouldStop = false;
+
 	const lists: InlineCompletionList[] = [];
+
 	for await (const completions of inlineCompletionLists) {
 		if (!completions) { continue; }
 		completions.addRef();
 		lists.push(completions);
+
 		for (const item of completions.inlineCompletions.items) {
 			if (!context.includeInlineEdits && item.isInlineEdit) {
 				continue;
@@ -196,6 +219,7 @@ async function addRefAndCreateResult(
 			// Stop after first visible inline completion
 			if (!item.isInlineEdit && context.triggerKind === InlineCompletionTriggerKind.Automatic) {
 				const minifiedEdit = inlineCompletionItem.toSingleTextEdit().removeCommonPrefix(new TextModelText(model));
+
 				if (!minifiedEdit.isEmpty) {
 					shouldStop = true;
 				}
@@ -238,6 +262,7 @@ export class InlineCompletionProviderResult implements IDisposable {
  */
 export class InlineCompletionList {
 	private refCount = 1;
+
 	constructor(
 		public readonly inlineCompletions: InlineCompletions,
 		public readonly provider: InlineCompletionsProvider,
@@ -249,6 +274,7 @@ export class InlineCompletionList {
 
 	removeRef(): void {
 		this.refCount--;
+
 		if (this.refCount === 0) {
 			this.provider.freeInlineCompletions(this.inlineCompletions);
 		}
@@ -264,7 +290,9 @@ export class InlineCompletionItem {
 		languageConfigurationService: ILanguageConfigurationService | undefined,
 	) {
 		let insertText: string;
+
 		let snippetInfo: SnippetInfo | undefined;
+
 		let range = inlineCompletion.range ? Range.lift(inlineCompletion.range) : defaultReplaceRange;
 
 		if (typeof inlineCompletion.insertText === 'string') {
@@ -280,6 +308,7 @@ export class InlineCompletionItem {
 
 				// Modify range depending on if brackets are added or removed
 				const diff = insertText.length - inlineCompletion.insertText.length;
+
 				if (diff !== 0) {
 					range = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn + diff);
 				}
@@ -299,6 +328,7 @@ export class InlineCompletionItem {
 
 				// Modify range depending on if brackets are added or removed
 				const diff = inlineCompletion.insertText.snippet.length - preBracketCompletionLength;
+
 				if (diff !== 0) {
 					range = new Range(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn + diff);
 				}
@@ -400,6 +430,7 @@ export interface SnippetInfo {
 
 function getDefaultRange(position: Position, model: ITextModel): Range {
 	const word = model.getWordAtPosition(position);
+
 	const maxColumn = model.getLineMaxColumn(position.lineNumber);
 	// By default, always replace up until the end of the current line.
 	// This default might be subject to change!
@@ -410,11 +441,15 @@ function getDefaultRange(position: Position, model: ITextModel): Range {
 
 function closeBrackets(text: string, position: Position, model: ITextModel, languageConfigurationService: ILanguageConfigurationService): string {
 	const lineStart = model.getLineContent(position.lineNumber).substring(0, position.column - 1);
+
 	const newLine = lineStart + text;
 
 	const edit = LineEditWithAdditionalLines.replace(OffsetRange.ofStartAndLength(position.column - 1, newLine.length - (position.column - 1)), text);
+
 	const newTokens = model.tokenization.tokenizeLineWithEdit(position.lineNumber, edit);
+
 	const slicedTokens = newTokens?.mainLineTokens?.sliceAndInflate(position.column - 1, newLine.length, 0);
+
 	if (!slicedTokens) {
 		return text;
 	}

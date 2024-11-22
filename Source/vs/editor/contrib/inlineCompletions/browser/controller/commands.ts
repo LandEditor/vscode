@@ -23,6 +23,7 @@ import { INotificationService, Severity } from '../../../../../platform/notifica
 
 export class ShowNextInlineSuggestionAction extends EditorAction {
 	public static ID = showNextInlineSuggestionActionId;
+
 	constructor() {
 		super({
 			id: ShowNextInlineSuggestionAction.ID,
@@ -43,6 +44,7 @@ export class ShowNextInlineSuggestionAction extends EditorAction {
 
 export class ShowPreviousInlineSuggestionAction extends EditorAction {
 	public static ID = showPreviousInlineSuggestionActionId;
+
 	constructor() {
 		super({
 			id: ShowPreviousInlineSuggestionAction.ID,
@@ -91,9 +93,11 @@ export class TriggerInlineEditAction extends EditorAction {
 
 	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
 		const notificationService = accessor!.get(INotificationService);
+
 		const controller = InlineCompletionsController.get(editor);
 
 		await controller?.model.get()?.triggerExplicitly(undefined, true);
+
 		if (!controller?.model.get()?.inlineEditAvailable.get()) {
 			notificationService.notify({
 				severity: Severity.Info,
@@ -210,6 +214,7 @@ export class AcceptInlineCompletion extends EditorAction {
 
 	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		if (controller) {
 			controller.model.get()?.accept(controller.editor);
 			controller.editor.focus();
@@ -246,6 +251,7 @@ export class JumpToNextInlineEdit extends EditorAction {
 
 	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
+
 		if (controller) {
 			controller.jump();
 		}
@@ -295,7 +301,9 @@ export class ToggleAlwaysShowInlineSuggestionToolbar extends Action2 {
 
 	public async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const configService = accessor.get(IConfigurationService);
+
 		const currentValue = configService.getValue<'always' | 'onHover'>('editor.inlineSuggest.showToolbar');
+
 		const newValue = currentValue === 'always' ? 'onHover' : 'always';
 		configService.updateValue('editor.inlineSuggest.showToolbar', newValue);
 	}
@@ -315,7 +323,9 @@ export class DevExtractReproSample extends EditorAction {
 		const clipboardService = accessor.get(IClipboardService);
 
 		const controller = InlineCompletionsController.get(editor);
+
 		const m = controller?.model.get();
+
 		if (!m) { return; }
 		const repro = m.extractReproSample();
 

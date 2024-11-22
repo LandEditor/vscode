@@ -8,6 +8,7 @@ import { ExtensionRecommendationReason } from '../../../services/extensionRecomm
 import { PlatformToString, platform } from '../../../../base/common/platform.js';
 export class RemoteRecommendations extends ExtensionRecommendations {
     private _recommendations: GalleryExtensionRecommendation[] = [];
+
     get recommendations(): ReadonlyArray<GalleryExtensionRecommendation> { return this._recommendations; }
     constructor(
     @IProductService
@@ -16,6 +17,7 @@ export class RemoteRecommendations extends ExtensionRecommendations {
     }
     protected async doActivate(): Promise<void> {
         const extensionTips = { ...this.productService.remoteExtensionTips, ...this.productService.virtualWorkspaceExtensionTips };
+
         const currentPlatform = PlatformToString(platform);
         this._recommendations = Object.values(extensionTips).filter(({ supportedPlatforms }) => !supportedPlatforms || supportedPlatforms.includes(currentPlatform)).map(extension => ({
             extension: extension.extensionId.toLowerCase(),

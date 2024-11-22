@@ -69,6 +69,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 	public allocate(rasterizedGlyph: IRasterizedGlyph): ITextureAtlasPageGlyph | undefined {
 		// Find ideal slab, creating it if there is none suitable
 		const glyphWidth = rasterizedGlyph.boundingBox.right - rasterizedGlyph.boundingBox.left + 1;
+
 		const glyphHeight = rasterizedGlyph.boundingBox.bottom - rasterizedGlyph.boundingBox.top + 1;
 
 		// The glyph does not fit into the atlas page, glyphs should never be this large in practice
@@ -85,6 +86,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 			// Find the largest power of 2 devisor that the glyph fits into, this ensure there is no
 			// wasted space outside the allocated slabs.
 			let sizeCandidate = this._canvas.width;
+
 			while (glyphWidth < sizeCandidate / 2 && glyphHeight < sizeCandidate / 2) {
 				sizeCandidate /= 2;
 			}
@@ -101,6 +103,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 		// Round slab glyph dimensions to the nearest x pixels, where x scaled with device pixel ratio
 		// const nearestXPixels = Math.max(1, Math.floor(dpr / 0.5));
 		// const nearestXPixels = Math.max(1, Math.floor(dpr));
+
 		const desiredSlabSize = {
 			// Nearest square number
 			// TODO: This can probably be optimized
@@ -126,12 +129,14 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 		// Check if the slab is full
 		if (slab) {
 			const glyphsPerSlab = Math.floor(this._slabW / slab.entryW) * Math.floor(this._slabH / slab.entryH);
+
 			if (slab.count >= glyphsPerSlab) {
 				slab = undefined;
 			}
 		}
 
 		let dx: number | undefined;
+
 		let dy: number | undefined;
 
 		// Search for suitable space in unused rectangles
@@ -139,14 +144,17 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 			// Only check availability for the smallest side
 			if (glyphWidth < glyphHeight) {
 				const openRegions = this._openRegionsByWidth.get(glyphWidth);
+
 				if (openRegions?.length) {
 					// TODO: Don't search everything?
 					// Search from the end so we can typically pop it off the stack
 					for (let i = openRegions.length - 1; i >= 0; i--) {
 						const r = openRegions[i];
+
 						if (r.w >= glyphWidth && r.h >= glyphHeight) {
 							dx = r.x;
 							dy = r.y;
+
 							if (glyphWidth < r.w) {
 								this._unusedRects.push({
 									x: r.x + glyphWidth,
@@ -157,6 +165,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 							}
 							r.y += glyphHeight;
 							r.h -= glyphHeight;
+
 							if (r.h === 0) {
 								if (i === openRegions.length - 1) {
 									openRegions.pop();
@@ -170,14 +179,17 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 				}
 			} else {
 				const openRegions = this._openRegionsByHeight.get(glyphHeight);
+
 				if (openRegions?.length) {
 					// TODO: Don't search everything?
 					// Search from the end so we can typically pop it off the stack
 					for (let i = openRegions.length - 1; i >= 0; i--) {
 						const r = openRegions[i];
+
 						if (r.w >= glyphWidth && r.h >= glyphHeight) {
 							dx = r.x;
 							dy = r.y;
+
 							if (glyphHeight < r.h) {
 								this._unusedRects.push({
 									x: r.x,
@@ -188,6 +200,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 							}
 							r.x += glyphWidth;
 							r.w -= glyphWidth;
+
 							if (r.h === 0) {
 								if (i === openRegions.length - 1) {
 									openRegions.pop();
@@ -225,7 +238,9 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 				// |                  | <- Unused H region
 				// +------------------+
 				const unusedW = this._slabW % slab.entryW;
+
 				const unusedH = this._slabH % slab.entryH;
+
 				if (unusedW) {
 					addEntryToMapArray(this._openRegionsByWidth, unusedW, {
 						x: slab.x + this._slabW - unusedW,
@@ -289,24 +304,34 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 
 	public getUsagePreview(): Promise<Blob> {
 		const w = this._canvas.width;
+
 		const h = this._canvas.height;
+
 		const canvas = new OffscreenCanvas(w, h);
+
 		const ctx = ensureNonNullable(canvas.getContext('2d'));
 
 		ctx.fillStyle = UsagePreviewColors.Unused;
 		ctx.fillRect(0, 0, w, h);
 
 		let slabEntryPixels = 0;
+
 		let usedPixels = 0;
+
 		let slabEdgePixels = 0;
+
 		let restrictedPixels = 0;
+
 		const slabW = 64 << (Math.floor(getActiveWindow().devicePixelRatio) - 1);
+
 		const slabH = slabW;
 
 		// Draw wasted underneath glyphs first
 		for (const slab of this._slabs) {
 			let x = 0;
+
 			let y = 0;
+
 			for (let i = 0; i < slab.count; i++) {
 				if (x + slab.entryW > slabW) {
 					x = 0;
@@ -319,7 +344,9 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 				x += slab.entryW;
 			}
 			const entriesPerRow = Math.floor(slabW / slab.entryW);
+
 			const entriesPerCol = Math.floor(slabH / slab.entryH);
+
 			const thisSlabPixels = slab.entryW * entriesPerRow * slab.entryH * entriesPerCol;
 			slabEdgePixels += (slabW * slabH) - thisSlabPixels;
 		}
@@ -333,6 +360,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 
 		// Draw unused space on side
 		const unusedRegions = Array.from(this._openRegionsByWidth.values()).flat().concat(Array.from(this._openRegionsByHeight.values()).flat());
+
 		for (const r of unusedRegions) {
 			ctx.fillStyle = UsagePreviewColors.Restricted;
 			ctx.fillRect(r.x, r.y, r.w, r.h);
@@ -350,21 +378,31 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 
 	public getStats(): string {
 		const w = this._canvas.width;
+
 		const h = this._canvas.height;
 
 		let slabEntryPixels = 0;
+
 		let usedPixels = 0;
+
 		let slabEdgePixels = 0;
+
 		let wastedPixels = 0;
+
 		let restrictedPixels = 0;
+
 		const totalPixels = w * h;
+
 		const slabW = 64 << (Math.floor(getActiveWindow().devicePixelRatio) - 1);
+
 		const slabH = slabW;
 
 		// Draw wasted underneath glyphs first
 		for (const slab of this._slabs) {
 			let x = 0;
+
 			let y = 0;
+
 			for (let i = 0; i < slab.count; i++) {
 				if (x + slab.entryW > slabW) {
 					x = 0;
@@ -374,7 +412,9 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 				x += slab.entryW;
 			}
 			const entriesPerRow = Math.floor(slabW / slab.entryW);
+
 			const entriesPerCol = Math.floor(slabH / slab.entryH);
+
 			const thisSlabPixels = slab.entryW * entriesPerRow * slab.entryH * entriesPerCol;
 			slabEdgePixels += (slabW * slabH) - thisSlabPixels;
 		}
@@ -386,6 +426,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 
 		// Draw unused space on side
 		const unusedRegions = Array.from(this._openRegionsByWidth.values()).flat().concat(Array.from(this._openRegionsByHeight.values()).flat());
+
 		for (const r of unusedRegions) {
 			restrictedPixels += r.w * r.h;
 		}
@@ -394,6 +435,7 @@ export class TextureAtlasSlabAllocator implements ITextureAtlasAllocator {
 		wastedPixels = slabEntryPixels - (usedPixels - edgeUsedPixels);
 
 		// usedPixels += slabEdgePixels - restrictedPixels;
+
 		const efficiency = usedPixels / (usedPixels + wastedPixels + restrictedPixels);
 
 		return [
@@ -425,6 +467,7 @@ interface ITextureAtlasSlabUnusedRect {
 
 function addEntryToMapArray<K, V>(map: Map<K, V[]>, key: K, entry: V) {
 	let list = map.get(key);
+
 	if (!list) {
 		list = [];
 		map.set(key, list);

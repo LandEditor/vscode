@@ -65,6 +65,7 @@ class SelectionAnchorController implements IEditorContribution {
 	goToSelectionAnchor(): void {
 		if (this.editor.hasModel() && this.decorationId) {
 			const anchorPosition = this.editor.getModel().getDecorationRange(this.decorationId);
+
 			if (anchorPosition) {
 				this.editor.setPosition(anchorPosition.getStartPosition());
 			}
@@ -74,6 +75,7 @@ class SelectionAnchorController implements IEditorContribution {
 	selectFromAnchorToCursor(): void {
 		if (this.editor.hasModel() && this.decorationId) {
 			const start = this.editor.getModel().getDecorationRange(this.decorationId);
+
 			if (start) {
 				const end = this.editor.getPosition();
 				this.editor.setSelection(Selection.fromPositions(start.getStartPosition(), end));

@@ -41,16 +41,21 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
     };
     private _timeoutHandle: any;
     private _accessibilityInformation?: vscode.AccessibilityInformation;
+
     constructor(proxy: MainThreadStatusBarShape, commands: CommandsConverter, staticItems: ReadonlyMap<string, StatusBarItemDto>, extension: IExtensionDescription, id?: string, alignment?: ExtHostStatusBarAlignment, priority?: number);
+
     constructor(proxy: MainThreadStatusBarShape, commands: CommandsConverter, staticItems: ReadonlyMap<string, StatusBarItemDto>, extension: IExtensionDescription | undefined, id: string, alignment?: ExtHostStatusBarAlignment, priority?: number);
+
     constructor(proxy: MainThreadStatusBarShape, commands: CommandsConverter, staticItems: ReadonlyMap<string, StatusBarItemDto>, extension?: IExtensionDescription, id?: string, alignment: ExtHostStatusBarAlignment = ExtHostStatusBarAlignment.Left, priority?: number) {
         this.#proxy = proxy;
         this.#commands = commands;
+
         if (id && extension) {
             this._entryId = asStatusBarItemIdentifier(extension.identifier, id);
             // if new item already exists mark it as visible and copy properties
             // this can only happen when an item was contributed by an extension
             const item = staticItems.get(this._entryId);
+
             if (item) {
                 alignment = item.alignLeft ? ExtHostStatusBarAlignment.Left : ExtHostStatusBarAlignment.Right;
                 priority = item.priority;
@@ -147,6 +152,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
             this._staleCommandRegistrations.add(this._latestCommandRegistration);
         }
         this._latestCommandRegistration = new DisposableStore();
+
         if (typeof command === 'string') {
             this._command = {
                 fromApi: command,
@@ -189,6 +195,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
             // otherwise make sure to prefix it with the extension identifier
             // to get a more unique value across extensions.
             let id: string;
+
             if (this._extension) {
                 if (this._id) {
                     id = `${this._extension.identifier.value}.${this._id}`;
@@ -202,6 +209,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
             }
             // If the name is not set, derive it from the extension descriptor
             let name: string;
+
             if (this._name) {
                 name = this._name;
             }
@@ -210,6 +218,7 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
             }
             // If a background color is set, the foreground is determined
             let color = this._color;
+
             if (this._backgroundColor) {
                 color = ExtHostStatusBarEntry.ALLOWED_BACKGROUND_COLORS.get(this._backgroundColor.id);
             }
@@ -230,6 +239,7 @@ class StatusBarMessage {
     private readonly _messages: {
         message: string;
     }[] = [];
+
     constructor(statusBar: ExtHostStatusBar) {
         this._item = statusBar.createStatusBarEntry(undefined, 'status.extensionMessage', ExtHostStatusBarAlignment.Left, Number.MIN_VALUE);
         this._item.name = localize('status.extensionMessage', "Extension Status");
@@ -244,8 +254,10 @@ class StatusBarMessage {
         } = { message }; // use object to not confuse equal strings
         this._messages.unshift(data);
         this._update();
+
         return new Disposable(() => {
             const idx = this._messages.indexOf(data);
+
             if (idx >= 0) {
                 this._messages.splice(idx, 1);
                 this._update();
@@ -267,6 +279,7 @@ export class ExtHostStatusBar implements ExtHostStatusBarShape {
     private readonly _commands: CommandsConverter;
     private readonly _statusMessage: StatusBarMessage;
     private readonly _existingItems = new Map<string, StatusBarItemDto>();
+
     constructor(mainContext: IMainContext, commands: CommandsConverter) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadStatusBar);
         this._commands = commands;
@@ -284,7 +297,9 @@ export class ExtHostStatusBar implements ExtHostStatusBarShape {
     }
     setStatusBarMessage(text: string, timeoutOrThenable?: number | Thenable<any>): Disposable {
         const d = this._statusMessage.setMessage(text);
+
         let handle: any;
+
         if (typeof timeoutOrThenable === 'number') {
             handle = setTimeout(() => d.dispose(), timeoutOrThenable);
         }

@@ -10,6 +10,7 @@ import { Action2, registerAction2 } from '../../../../platform/actions/common/ac
 import { KeybindingWeight } from '../../../../platform/keybinding/common/keybindingsRegistry.js';
 export class ToggleTabFocusModeAction extends Action2 {
     public static readonly ID = 'editor.action.toggleTabFocusMode';
+
     constructor() {
         super({
             id: ToggleTabFocusModeAction.ID,
@@ -28,8 +29,10 @@ export class ToggleTabFocusModeAction extends Action2 {
     }
     public run(): void {
         const oldValue = TabFocus.getTabFocusMode();
+
         const newValue = !oldValue;
         TabFocus.setTabFocusMode(newValue);
+
         if (newValue) {
             alert(nls.localize('toggle.tabMovesFocus.on', "Pressing Tab will now move focus to the next focusable element"));
         }

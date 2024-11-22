@@ -13,6 +13,7 @@ export function registerChatDeveloperActions() {
 }
 class LogChatInputHistoryAction extends Action2 {
     static readonly ID = 'workbench.action.chat.logInputHistory';
+
     constructor() {
         super({
             id: LogChatInputHistoryAction.ID,

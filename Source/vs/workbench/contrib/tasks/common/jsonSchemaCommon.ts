@@ -5,6 +5,7 @@
 import * as nls from '../../../../nls.js';
 import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
 import { Schemas } from './problemMatcher.js';
+
 const schema: IJSONSchema = {
     definitions: {
         showOutputType: {

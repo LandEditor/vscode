@@ -55,12 +55,14 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
     }
     public override serialize(input: CustomEditorInput): string | undefined {
         const dirty = input.isDirty();
+
         const data: SerializedCustomEditor = {
             ...this.toJson(input),
             editorResource: input.resource.toJSON(),
             dirty,
             backupId: dirty ? input.backupId : undefined,
         };
+
         try {
             return JSON.stringify(data);
         }
@@ -77,8 +79,11 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
     }
     public override deserialize(_instantiationService: IInstantiationService, serializedEditorInput: string): CustomEditorInput {
         const data = this.fromJson(JSON.parse(serializedEditorInput));
+
         const webview = reviveWebview(this._webviewService, data);
+
         const customInput = this._instantiationService.createInstance(CustomEditorInput, { resource: data.editorResource, viewType: data.viewType }, webview, { startsDirty: data.dirty, backupId: data.backupId });
+
         if (typeof data.group === 'number') {
             customInput.updateGroup(data.group);
         }
@@ -106,10 +111,12 @@ function reviveWebview(webviewService: IWebviewService, data: {
         extension: data.extension,
     });
     webview.state = data.state;
+
     return webview;
 }
 export class ComplexCustomWorkingCopyEditorHandler extends Disposable implements IWorkbenchContribution, IWorkingCopyEditorHandler {
     static readonly ID = 'workbench.contrib.complexCustomWorkingCopyEditorHandler';
+
     constructor(
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -135,7 +142,9 @@ export class ComplexCustomWorkingCopyEditorHandler extends Disposable implements
         if (workingCopy.resource.authority === 'jupyter-notebook-ipynb' && editor instanceof NotebookEditorInput) {
             try {
                 const data = JSON.parse(workingCopy.resource.query);
+
                 const workingCopyResource = URI.from(data);
+
                 return isEqual(workingCopyResource, editor.resource);
             }
             catch {
@@ -151,7 +160,9 @@ export class ComplexCustomWorkingCopyEditorHandler extends Disposable implements
         // The working copy stores the uri of the original resource as its query param
         try {
             const data = JSON.parse(workingCopy.resource.query);
+
             const workingCopyResource = URI.from(data);
+
             return isEqual(workingCopyResource, editor.resource);
         }
         catch {
@@ -160,11 +171,14 @@ export class ComplexCustomWorkingCopyEditorHandler extends Disposable implements
     }
     async createEditor(workingCopy: IWorkingCopyIdentifier): Promise<EditorInput> {
         const backup = await this._workingCopyBackupService.resolve<CustomDocumentBackupData>(workingCopy);
+
         if (!backup?.meta) {
             throw new Error(`No backup found for custom editor: ${workingCopy.resource}`);
         }
         const backupData = backup.meta;
+
         const extension = reviveWebviewExtensionDescription(backupData.extension?.id, backupData.extension?.location);
+
         const webview = reviveWebview(this._webviewService, {
             viewType: backupData.viewType,
             origin: backupData.webview.origin,
@@ -173,8 +187,10 @@ export class ComplexCustomWorkingCopyEditorHandler extends Disposable implements
             state: backupData.webview.state,
             extension,
         });
+
         const editor = this._instantiationService.createInstance(CustomEditorInput, { resource: URI.revive(backupData.editorResource), viewType: backupData.viewType }, webview, { backupId: backupData.backupId });
         editor.updateGroup(0);
+
         return editor;
     }
 }

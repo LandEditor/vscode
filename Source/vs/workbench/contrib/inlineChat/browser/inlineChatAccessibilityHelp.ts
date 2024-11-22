@@ -15,8 +15,10 @@ export class InlineChatAccessibilityHelp implements IAccessibleViewImplentation 
     readonly name = 'inlineChat';
     readonly type = AccessibleViewType.Help;
     readonly when = ContextKeyExpr.or(CTX_INLINE_CHAT_RESPONSE_FOCUSED, ChatContextKeys.inputHasFocus);
+
     getProvider(accessor: ServicesAccessor) {
         const codeEditor = accessor.get(ICodeEditorService).getActiveCodeEditor() || accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
         if (!codeEditor) {
             return;
         }

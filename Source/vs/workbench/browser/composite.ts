@@ -33,6 +33,7 @@ export abstract class Composite extends Component implements IComposite {
     private readonly _onTitleAreaUpdate = this._register(new Emitter<void>());
     readonly onTitleAreaUpdate = this._onTitleAreaUpdate.event;
     protected _onDidFocus: Emitter<void> | undefined;
+
     get onDidFocus(): Event<void> {
         if (!this._onDidFocus) {
             this._onDidFocus = this.registerFocusTrackEvents().onDidFocus;
@@ -40,6 +41,7 @@ export abstract class Composite extends Component implements IComposite {
         return this._onDidFocus.event;
     }
     private _onDidBlur: Emitter<void> | undefined;
+
     get onDidBlur(): Event<void> {
         if (!this._onDidBlur) {
             this._onDidBlur = this.registerFocusTrackEvents().onDidBlur;
@@ -55,22 +57,27 @@ export abstract class Composite extends Component implements IComposite {
         onDidBlur: Emitter<void>;
     } {
         const container = assertIsDefined(this.getContainer());
+
         const focusTracker = this._register(trackFocus(container));
+
         const onDidFocus = this._onDidFocus = this._register(new Emitter<void>());
         this._register(focusTracker.onDidFocus(() => {
             this._hasFocus = true;
             onDidFocus.fire();
         }));
+
         const onDidBlur = this._onDidBlur = this._register(new Emitter<void>());
         this._register(focusTracker.onDidBlur(() => {
             this._hasFocus = false;
             onDidBlur.fire();
         }));
+
         return { onDidFocus, onDidBlur };
     }
     protected actionRunner: IActionRunner | undefined;
     private visible = false;
     private parent: HTMLElement | undefined;
+
     constructor(id: string, protected readonly telemetryService: ITelemetryService, themeService: IThemeService, storageService: IStorageService) {
         super(id, themeService, storageService);
     }
@@ -223,6 +230,7 @@ export abstract class CompositeRegistry<T extends Composite> extends Disposable 
     }
     protected deregisterComposite(id: string): void {
         const descriptor = this.compositeById(id);
+
         if (!descriptor) {
             return;
         }

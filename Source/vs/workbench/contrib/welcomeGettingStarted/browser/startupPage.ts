@@ -34,11 +34,15 @@ export type RestoreWalkthroughsConfigurationValue = {
     category?: string;
     step?: string;
 };
+
 const configurationKey = 'workbench.startupEditor';
+
 const oldConfigurationKey = 'workbench.welcome.enabled';
+
 const telemetryOptOutStorageKey = 'workbench.telemetryOptOutShown';
 export class StartupPageEditorResolverContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.startupPageEditorResolver';
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -66,6 +70,7 @@ export class StartupPageEditorResolverContribution implements IWorkbenchContribu
 }
 export class StartupPageRunnerContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.startupPageRunner';
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -113,22 +118,28 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
             && !this.storageService.get(telemetryOptOutStorageKey, StorageScope.PROFILE)) {
             this.storageService.store(telemetryOptOutStorageKey, true, StorageScope.PROFILE, StorageTarget.USER);
             await this.openGettingStarted(true);
+
             return;
         }
         if (this.tryOpenWalkthroughForFolder()) {
             return;
         }
         const enabled = isStartupPageEnabled(this.configurationService, this.contextService, this.environmentService);
+
         if (enabled && this.lifecycleService.startupKind !== StartupKind.ReloadedWindow) {
             const hasBackups = await this.workingCopyBackupService.hasBackups();
+
             if (hasBackups) {
                 return;
             }
             // Open the welcome even if we opened a set of default editors
             if (!this.editorService.activeEditor || this.layoutService.openedDefaultEditors) {
                 const startupEditorSetting = this.configurationService.inspect<string>(configurationKey);
+
                 const isStartupEditorReadme = startupEditorSetting.value === 'readme';
+
                 const isStartupEditorUserReadme = startupEditorSetting.userValue === 'readme';
+
                 const isStartupEditorDefaultReadme = startupEditorSetting.defaultValue === 'readme';
                 // 'readme' should not be set in workspace settings to prevent tracking,
                 // but it can be set as a default (as in codespaces or from configurationDefaults) or a user setting
@@ -136,6 +147,7 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
                     this.logService.warn(`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`);
                 }
                 const openWithReadme = isStartupEditorReadme && (isStartupEditorUserReadme || isStartupEditorDefaultReadme);
+
                 if (openWithReadme) {
                     await this.openReadme();
                 }
@@ -150,12 +162,15 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
     }
     private tryOpenWalkthroughForFolder(): boolean {
         const toRestore = this.storageService.get(restoreWalkthroughsConfigurationKey, StorageScope.PROFILE);
+
         if (!toRestore) {
             return false;
         }
         else {
             const restoreData: RestoreWalkthroughsConfigurationValue = JSON.parse(toRestore);
+
             const currentWorkspace = this.contextService.getWorkspace();
+
             if (restoreData.folder === UNKNOWN_EMPTY_WINDOW_WORKSPACE.id || restoreData.folder === currentWorkspace.folders[0].uri.toString()) {
                 const options: GettingStartedEditorOptions = { selectedCategory: restoreData.category, selectedStep: restoreData.step, pinned: false };
                 this.editorService.openEditor({
@@ -163,6 +178,7 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
                     options
                 });
                 this.storageService.remove(restoreWalkthroughsConfigurationKey, StorageScope.PROFILE);
+
                 return true;
             }
         }
@@ -171,9 +187,13 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
     private async openReadme() {
         const readmes = arrays.coalesce(await Promise.all(this.contextService.getWorkspace().folders.map(async (folder) => {
             const folderUri = folder.uri;
+
             const folderStat = await this.fileService.resolve(folderUri).catch(onUnexpectedError);
+
             const files = folderStat?.children ? folderStat.children.map(child => child.name).sort() : [];
+
             const file = files.find(file => file.toLowerCase() === 'readme.md') || files.find(file => file.toLowerCase().startsWith('readme'));
+
             if (file) {
                 return joinPath(folderUri, file);
             }
@@ -181,6 +201,7 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
                 return undefined;
             }
         })));
+
         if (!this.editorService.activeEditor) {
             if (readmes.length) {
                 const isMarkDown = (readme: URI) => readme.path.toLowerCase().endsWith('.md');
@@ -199,12 +220,14 @@ export class StartupPageRunnerContribution extends Disposable implements IWorkbe
     }
     private async openGettingStarted(showTelemetryNotice?: boolean) {
         const startupEditorTypeID = gettingStartedInputTypeId;
+
         const editor = this.editorService.activeEditor;
         // Ensure that the welcome editor won't get opened more than once
         if (editor?.typeId === startupEditorTypeID || this.editorService.editors.some(e => e.typeId === startupEditorTypeID)) {
             return;
         }
         const options: GettingStartedEditorOptions = editor ? { pinned: false, index: 0, showTelemetryNotice } : { pinned: false, showTelemetryNotice };
+
         if (startupEditorTypeID === gettingStartedInputTypeId) {
             this.editorService.openEditor({
                 resource: GettingStartedInput.RESOURCE,
@@ -218,8 +241,10 @@ function isStartupPageEnabled(configurationService: IConfigurationService, conte
         return false;
     }
     const startupEditor = configurationService.inspect<string>(configurationKey);
+
     if (!startupEditor.userValue && !startupEditor.workspaceValue) {
         const welcomeEnabled = configurationService.inspect(oldConfigurationKey);
+
         if (welcomeEnabled.value !== undefined && welcomeEnabled.value !== null) {
             return welcomeEnabled.value;
         }

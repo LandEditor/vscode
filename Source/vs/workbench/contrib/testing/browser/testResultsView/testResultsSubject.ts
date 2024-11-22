@@ -40,12 +40,15 @@ export class MessageSubject implements ISubjectCommon {
     }
     constructor(public readonly result: ITestResult, test: TestResultItem, public readonly taskIndex: number, public readonly messageIndex: number) {
         this.test = test.item;
+
         const messages = test.tasks[taskIndex].messages;
         this.messageIndex = messageIndex;
+
         const parts = { messageIndex, resultId: result.id, taskIndex, testExtId: test.item.extId };
         this.expectedUri = buildTestUri({ ...parts, type: TestUriType.ResultExpectedOutput });
         this.actualUri = buildTestUri({ ...parts, type: TestUriType.ResultActualOutput });
         this.messageUri = buildTestUri({ ...parts, type: TestUriType.ResultMessage });
+
         const message = this.message = messages[this.messageIndex];
         this.context = getMessageArgs(test, message);
         this.revealLocation = message.location ?? (test.item.uri && test.item.range ? { uri: test.item.uri, range: Range.lift(test.item.range) } : undefined);
@@ -80,8 +83,10 @@ export const equalsSubject = (a: InspectSubject, b: InspectSubject) => ((a insta
 export const mapFindTestMessage = <T>(test: TestResultItem, fn: (task: ITestTaskState, message: ITestMessage, messageIndex: number, taskIndex: number) => T | undefined) => {
     for (let taskIndex = 0; taskIndex < test.tasks.length; taskIndex++) {
         const task = test.tasks[taskIndex];
+
         for (let messageIndex = 0; messageIndex < task.messages.length; messageIndex++) {
             const r = fn(task, task.messages[messageIndex], messageIndex, taskIndex);
+
             if (r !== undefined) {
                 return r;
             }

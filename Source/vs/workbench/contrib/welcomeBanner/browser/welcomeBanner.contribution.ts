@@ -12,6 +12,7 @@ import { URI } from '../../../../base/common/uri.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 class WelcomeBannerContribution {
     private static readonly WELCOME_BANNER_DISMISSED_KEY = 'workbench.banner.welcome.dismissed';
+
     constructor(
     @IBannerService
     bannerService: IBannerService, 
@@ -20,6 +21,7 @@ class WelcomeBannerContribution {
     @IBrowserWorkbenchEnvironmentService
     environmentService: IBrowserWorkbenchEnvironmentService) {
         const welcomeBanner = environmentService.options?.welcomeBanner;
+
         if (!welcomeBanner) {
             return; // welcome banner is not enabled
         }
@@ -27,6 +29,7 @@ class WelcomeBannerContribution {
             return; // welcome banner dismissed
         }
         let icon: ThemeIcon | URI | undefined = undefined;
+
         if (typeof welcomeBanner.icon === 'string') {
             icon = ThemeIcon.fromId(welcomeBanner.icon);
         }

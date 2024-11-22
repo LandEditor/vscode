@@ -96,16 +96,20 @@ const ctrlKeyMod = (isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd);
 
 function stopPropagationForMultiLineUpwards(event: IKeyboardEvent, value: string, textarea: HTMLTextAreaElement | null) {
 	const isMultiline = !!value.match(/\n/);
+
 	if (textarea && (isMultiline || textarea.clientHeight > SingleLineInputHeight) && textarea.selectionStart > 0) {
 		event.stopPropagation();
+
 		return;
 	}
 }
 
 function stopPropagationForMultiLineDownwards(event: IKeyboardEvent, value: string, textarea: HTMLTextAreaElement | null) {
 	const isMultiline = !!value.match(/\n/);
+
 	if (textarea && (isMultiline || textarea.clientHeight > SingleLineInputHeight) && textarea.selectionEnd < textarea.value.length) {
 		event.stopPropagation();
+
 		return;
 	}
 }
@@ -117,6 +121,7 @@ export class SearchWidget extends Widget {
 	private static readonly REPLACE_ALL_DISABLED_LABEL = nls.localize('search.action.replaceAll.disabled.label', "Replace All (Submit Search to Enable)");
 	private static readonly REPLACE_ALL_ENABLED_LABEL = (keyBindingService2: IKeybindingService): string => {
 		const kb = keyBindingService2.lookupKeybinding(ReplaceAllAction.ID);
+
 		return appendKeyBindingLabel(nls.localize('search.action.replaceAll.enabled.label', "Replace All"), kb);
 	};
 
@@ -239,6 +244,7 @@ export class SearchWidget extends Widget {
 
 	private _hasNotebookOpen(): boolean {
 		const editors = this.editorService.editors;
+
 		return editors.some(editor => editor instanceof NotebookEditorInput);
 	}
 
@@ -252,6 +258,7 @@ export class SearchWidget extends Widget {
 		if (focusReplace && this.isReplaceShown()) {
 			if (this.replaceInput) {
 				this.replaceInput.focus();
+
 				if (select) {
 					this.replaceInput.select();
 				}
@@ -259,6 +266,7 @@ export class SearchWidget extends Widget {
 		} else {
 			if (this.searchInput) {
 				this.searchInput.focus();
+
 				if (select) {
 					this.searchInput.select();
 				}
@@ -268,6 +276,7 @@ export class SearchWidget extends Widget {
 
 	setWidth(width: number) {
 		this.searchInput?.inputBox.layout();
+
 		if (this.replaceInput) {
 			this.replaceInput.width = width - 28;
 			this.replaceInput.inputBox.layout();
@@ -395,6 +404,7 @@ export class SearchWidget extends Widget {
 
 	private renderSearchInput(parent: HTMLElement, options: ISearchWidgetOptions): void {
 		const history = options.searchHistory || [];
+
 		const inputOptions: IFindInputOptions = {
 			label: nls.localize('label.Search', 'Search: Type Search Term and press Enter to search'),
 			validation: (value: string) => this.validateSearchInput(value),
@@ -445,8 +455,10 @@ export class SearchWidget extends Widget {
 			this.searchInputBoxFocused.set(true);
 
 			const useGlobalFindBuffer = this.searchConfiguration.globalFindClipboard;
+
 			if (!this.ignoreGlobalFindBufferOnNextFocus && useGlobalFindBuffer) {
 				const globalBufferText = await this.clipboardServce.readFindText();
+
 				if (globalBufferText && this.previousGlobalFindBufferValue !== globalBufferText) {
 					this.searchInput?.inputBox.addToHistory();
 					this.searchInput?.setValue(globalBufferText);
@@ -480,6 +492,7 @@ export class SearchWidget extends Widget {
 				}
 				this.onContextLinesChanged();
 			}));
+
 			dom.append(searchInputContainer, this.showContextToggle.domNode);
 		}
 	}
@@ -506,6 +519,7 @@ export class SearchWidget extends Widget {
 
 	private renderReplaceInput(parent: HTMLElement, options: ISearchWidgetOptions): void {
 		this.replaceContainer = dom.append(parent, dom.$('.replace-container.disabled'));
+
 		const replaceBox = dom.append(this.replaceContainer, dom.$('.replace-input'));
 
 		this.replaceInput = this._register(new ContextScopedReplaceInput(replaceBox, this.contextViewService, {
@@ -547,11 +561,13 @@ export class SearchWidget extends Widget {
 
 	triggerReplaceAll(): Promise<any> {
 		this._onReplaceAll.fire();
+
 		return Promise.resolve(null);
 	}
 
 	private onToggleReplaceButton(): void {
 		this.replaceContainer?.classList.toggle('disabled');
+
 		if (this.isReplaceShown()) {
 			this.toggleReplaceButton?.element.classList.remove(...ThemeIcon.asClassNameArray(searchHideReplaceIcon));
 			this.toggleReplaceButton?.element.classList.add(...ThemeIcon.asClassNameArray(searchShowReplaceIcon));
@@ -578,7 +594,9 @@ export class SearchWidget extends Widget {
 
 	private updateReplaceActiveState(): void {
 		const currentState = this.isReplaceActive();
+
 		const newState = this.isReplaceShown() && !!this.replaceAllAction?.enabled;
+
 		if (currentState !== newState) {
 			this.replaceActive.set(newState);
 			this._onReplaceStateChange.fire(newState);
@@ -610,6 +628,7 @@ export class SearchWidget extends Widget {
 			if (this.searchInput?.getRegex()) {
 				try {
 					const regex = new RegExp(this.searchInput.getValue(), 'ug');
+
 					const matchienessHeuristic = `
 								~!@#$%^&*()_+
 								\`1234567890-=
@@ -672,6 +691,7 @@ export class SearchWidget extends Widget {
 
 		else if (keyboardEvent.equals(KeyCode.PageUp)) {
 			const inputElement = this.searchInput?.inputBox.inputElement;
+
 			if (inputElement) {
 				inputElement.setSelectionRange(0, 0);
 				inputElement.focus();
@@ -681,6 +701,7 @@ export class SearchWidget extends Widget {
 
 		else if (keyboardEvent.equals(KeyCode.PageDown)) {
 			const inputElement = this.searchInput?.inputBox.inputElement;
+
 			if (inputElement) {
 				const endOfText = inputElement.value.length;
 				inputElement.setSelectionRange(endOfText, endOfText);
@@ -762,12 +783,15 @@ export class SearchWidget extends Widget {
 
 	private async submitSearch(triggeredOnType = false, delay: number = 0): Promise<void> {
 		this.searchInput?.validate();
+
 		if (!this.searchInput?.inputBox.isInputValid()) {
 			return;
 		}
 
 		const value = this.searchInput.getValue();
+
 		const useGlobalFindBuffer = this.searchConfiguration.globalFindClipboard;
+
 		if (value && useGlobalFindBuffer) {
 			await this.clipboardServce.writeFindText(value);
 		}
@@ -780,6 +804,7 @@ export class SearchWidget extends Widget {
 
 	modifyContextLines(increase: boolean) {
 		const current = +this.contextLinesInput.value;
+
 		const modified = current + (increase ? 1 : -1);
 		this.showContextToggle.checked = modified !== 0;
 		this.contextLinesInput.value = '' + modified;
@@ -792,6 +817,7 @@ export class SearchWidget extends Widget {
 
 	override dispose(): void {
 		this.setReplaceAllActionState(false);
+
 		super.dispose();
 	}
 
@@ -808,8 +834,10 @@ export function registerContributions() {
 		primary: KeyMod.Alt | KeyMod.CtrlCmd | KeyCode.Enter,
 		handler: accessor => {
 			const viewsService = accessor.get(IViewsService);
+
 			if (isSearchViewFocused(viewsService)) {
 				const searchView = getSearchView(viewsService);
+
 				if (searchView) {
 					new ReplaceAllAction(searchView.searchAndReplaceWidget).run();
 				}

@@ -46,6 +46,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     @memoize
     get logLevel(): string | undefined {
         const logLevelFromPayload = this.payload?.get('logLevel');
+
         if (logLevelFromPayload) {
             return logLevelFromPayload.split(',').find(entry => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry));
         }
@@ -56,13 +57,16 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
         string
     ][] | undefined {
         const logLevelFromPayload = this.payload?.get('logLevel');
+
         if (logLevelFromPayload) {
             const result: [
                 string,
                 string
             ][] = [];
+
             for (const entry of logLevelFromPayload.split(',')) {
                 const matches = EXTENSION_IDENTIFIER_WITH_LOG_REGEX.exec(entry);
+
                 if (matches && matches[1] && matches[2]) {
                     result.push([matches[1], matches[2]]);
                 }
@@ -73,8 +77,10 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     }
     get profDurationMarkers(): string[] | undefined {
         const profDurationMarkersFromPayload = this.payload?.get('profDurationMarkers');
+
         if (profDurationMarkersFromPayload) {
             const result: string[] = [];
+
             for (const entry of profDurationMarkersFromPayload.split(',')) {
                 result.push(entry);
             }
@@ -182,7 +188,9 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
         const endpoint = this.options.webviewEndpoint
             || this.productService.webviewContentExternalBaseUrlTemplate
             || 'https://{{uuid}}.vscode-cdn.net/{{quality}}/{{commit}}/out/vs/workbench/contrib/webview/browser/pre/';
+
         const webviewExternalEndpointCommit = this.payload?.get('webviewExternalEndpointCommit');
+
         return endpoint
             .replace('{{commit}}', webviewExternalEndpointCommit ?? this.productService.commit ?? 'ef65ac1ba57f57f2a3961bfe94aa20481caca4c6')
             .replace('{{quality}}', (webviewExternalEndpointCommit ? 'insider' : this.productService.quality) ?? 'insider');
@@ -205,6 +213,7 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     get profile(): string | undefined { return this.payload?.get('profile'); }
     editSessionId: string | undefined = this.options.editSessionId;
     private payload: Map<string, string> | undefined;
+
     constructor(private readonly workspaceId: string, readonly logsHome: URI, readonly options: IWorkbenchConstructionOptions, private readonly productService: IProductService) {
         if (options.workspaceProvider && Array.isArray(options.workspaceProvider.payload)) {
             try {
@@ -236,33 +245,49 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
                         }
                         extensionHostDebugEnvironment.extensionDevelopmentLocationURI.push(URI.parse(value));
                         extensionHostDebugEnvironment.isExtensionDevelopment = true;
+
                         break;
+
                     case 'extensionDevelopmentKind':
                         extensionHostDebugEnvironment.extensionDevelopmentKind = [<ExtensionKind>value];
+
                         break;
+
                     case 'extensionTestsPath':
                         extensionHostDebugEnvironment.extensionTestsLocationURI = URI.parse(value);
+
                         break;
+
                     case 'debugRenderer':
                         extensionHostDebugEnvironment.debugRenderer = value === 'true';
+
                         break;
+
                     case 'debugId':
                         extensionHostDebugEnvironment.params.debugId = value;
+
                         break;
+
                     case 'inspect-brk-extensions':
                         extensionHostDebugEnvironment.params.port = parseInt(value);
                         extensionHostDebugEnvironment.params.break = true;
+
                         break;
+
                     case 'inspect-extensions':
                         extensionHostDebugEnvironment.params.port = parseInt(value);
+
                         break;
+
                     case 'enableProposedApi':
                         extensionHostDebugEnvironment.extensionEnabledProposedApi = [];
+
                         break;
                 }
             }
         }
         const developmentOptions = this.options.developmentOptions;
+
         if (developmentOptions && !extensionHostDebugEnvironment.isExtensionDevelopment) {
             if (developmentOptions.extensions?.length) {
                 extensionHostDebugEnvironment.extensionDevelopmentLocationURI = developmentOptions.extensions.map(e => URI.revive(e));
@@ -278,11 +303,13 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     get filesToOpenOrCreate(): IPath<ITextEditorOptions>[] | undefined {
         if (this.payload) {
             const fileToOpen = this.payload.get('openFile');
+
             if (fileToOpen) {
                 const fileUri = URI.parse(fileToOpen);
                 // Support: --goto parameter to open on line/col
                 if (this.payload.has('gotoLineMode')) {
                     const pathColumnAware = parseLineAndColumnAware(fileUri.path);
+
                     return [{
                             fileUri: fileUri.with({ path: pathColumnAware.path }),
                             options: {
@@ -299,7 +326,9 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     get filesToDiff(): IPath[] | undefined {
         if (this.payload) {
             const fileToDiffPrimary = this.payload.get('diffFilePrimary');
+
             const fileToDiffSecondary = this.payload.get('diffFileSecondary');
+
             if (fileToDiffPrimary && fileToDiffSecondary) {
                 return [
                     { fileUri: URI.parse(fileToDiffSecondary) },
@@ -313,9 +342,13 @@ export class BrowserWorkbenchEnvironmentService implements IBrowserWorkbenchEnvi
     get filesToMerge(): IPath[] | undefined {
         if (this.payload) {
             const fileToMerge1 = this.payload.get('mergeFile1');
+
             const fileToMerge2 = this.payload.get('mergeFile2');
+
             const fileToMergeBase = this.payload.get('mergeFileBase');
+
             const fileToMergeResult = this.payload.get('mergeFileResult');
+
             if (fileToMerge1 && fileToMerge2 && fileToMergeBase && fileToMergeResult) {
                 return [
                     { fileUri: URI.parse(fileToMerge1) },

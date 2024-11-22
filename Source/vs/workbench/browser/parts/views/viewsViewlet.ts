@@ -23,6 +23,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     private constantViewDescriptors: Map<string, IViewDescriptor> = new Map();
     private allViews: Map<string, Map<string, IViewDescriptor>> = new Map();
     private filterValue: string[] | undefined;
+
     constructor(viewletId: string, onDidChangeFilterValue: Event<string[]>, 
     @IConfigurationService
     configurationService: IConfigurationService, 
@@ -56,6 +57,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     private updateAllViews(viewDescriptors: ReadonlyArray<IViewDescriptor>) {
         viewDescriptors.forEach(descriptor => {
             const filterOnValue = this.getFilterOn(descriptor);
+
             if (!filterOnValue) {
                 return;
             }
@@ -63,6 +65,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
                 this.allViews.set(filterOnValue, new Map());
             }
             this.allViews.get(filterOnValue)!.set(descriptor.id, descriptor);
+
             if (this.filterValue && !this.filterValue.includes(filterOnValue) && this.panes.find(pane => pane.id === descriptor.id)) {
                 this.viewContainerModel.setVisible(descriptor.id, false);
             }
@@ -82,6 +85,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     }
     private getViewsForTarget(target: string[]): IViewDescriptor[] {
         const views: IViewDescriptor[] = [];
+
         for (let i = 0; i < target.length; i++) {
             if (this.allViews.has(target[i])) {
                 views.push(...Array.from(this.allViews.get(target[i])!.values()));
@@ -91,8 +95,11 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     }
     private getViewsNotForTarget(target: string[]): IViewDescriptor[] {
         const iterable = this.allViews.keys();
+
         let key = iterable.next();
+
         let views: IViewDescriptor[] = [];
+
         while (!key.done) {
             let isForTarget: boolean = false;
             target.forEach(value => {
@@ -100,6 +107,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
                     isForTarget = true;
                 }
             });
+
             if (!isForTarget) {
                 views = views.concat(this.getViewsForTarget([key.value]));
             }
@@ -109,6 +117,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     }
     protected override onDidAddViewDescriptors(added: IAddedViewDescriptorRef[]): ViewPane[] {
         const panes: ViewPane[] = super.onDidAddViewDescriptors(added);
+
         for (let i = 0; i < added.length; i++) {
             if (this.constantViewDescriptors.has(added[i].viewDescriptor.id)) {
                 panes[i].setExpanded(false);
@@ -122,8 +131,10 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
     }
     override openView(id: string, focus?: boolean): IView | undefined {
         const result = super.openView(id, focus);
+
         if (result) {
             const descriptorMap = Array.from(this.allViews.entries()).find(entry => entry[1].has(id));
+
             if (descriptorMap && !this.filterValue?.includes(descriptorMap[0])) {
                 this.setFilter(descriptorMap[1].get(id)!);
             }

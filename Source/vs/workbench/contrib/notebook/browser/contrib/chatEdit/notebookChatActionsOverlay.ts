@@ -34,16 +34,22 @@ export class NotebookChatActionsOverlayController extends Disposable {
 
 		this._register(autorunWithStore((r, store) => {
 			const session = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!model || !session) {
 				return;
 			}
 
 			const entries = session.entries.read(r);
+
 			const idx = entries.findIndex(e => isEqual(e.modifiedURI, model.uri));
+
 			if (idx >= 0) {
 				const entry = entries[idx];
+
 				const nextEntry = entries[(idx + 1) % entries.length];
+
 				const previousEntry = entries[(idx - 1 + entries.length) % entries.length];
 				store.add(instantiationService.createInstance(NotebookChatActionsOverlay, notebookEditor, entry, cellDiffInfo, nextEntry, previousEntry, deletedCellDecorator));
 			}
@@ -54,6 +60,7 @@ export class NotebookChatActionsOverlayController extends Disposable {
 // Copied from src/vs/workbench/contrib/chat/browser/chatEditorOverlay.ts (until we unify these)
 export class NotebookChatActionsOverlay extends Disposable {
 	private readonly focusedDiff = observableValue<CellDiffInfo | undefined>('focusedDiff', undefined);
+
 	constructor(
 		notebookEditor: INotebookEditor,
 		entry: IModifiedFileEntry,
@@ -84,7 +91,9 @@ export class NotebookChatActionsOverlay extends Disposable {
 		this._register(toDisposable(() => {
 			notebookEditor.getDomNode().removeChild(toolbarNode);
 		}));
+
 		const focusedDiff = this.focusedDiff;
+
 		const _toolbar = instaService.createInstance(MenuWorkbenchToolBar, toolbarNode, MenuId.ChatEditingEditorContent, {
 			telemetrySource: 'chatEditor.overlayToolbar',
 			hiddenItemStrategy: HiddenItemStrategy.Ignore,
@@ -95,9 +104,11 @@ export class NotebookChatActionsOverlay extends Disposable {
 			menuOptions: { renderShortTitle: true },
 			actionViewItemProvider: (action, options) => {
 				const that = this;
+
 				if (action.id === AcceptAction.ID || action.id === RejectAction.ID) {
 					return new class extends ActionViewItem {
 						private readonly _reveal = this._store.add(new MutableDisposable());
+
 						constructor() {
 							super(undefined, action, { ...options, icon: false, label: true, keybindingNotRenderedWithLabel: true });
 						}
@@ -117,6 +128,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									return;
 								}
 								const change = nextEntry.diffInfo.get().changes.at(0);
+
 								return that._editorService.openEditor({
 									resource: nextEntry.modifiedURI,
 									options: {
@@ -142,7 +154,9 @@ export class NotebookChatActionsOverlay extends Disposable {
 						}
 						override set actionRunner(_: IActionRunner) {
 							const next = action.id === 'chatEditor.action.navigateNext' ? nextEntry : previousEntry;
+
 							const direction = action.id === 'chatEditor.action.navigateNext' ? 'next' : 'previous';
+
 							super.actionRunner = new NextPreviousChangeActionRunner(notebookEditor, cellDiffInfo, entry, next, direction, _editorService, deletedCellDecorator, focusedDiff);
 						}
 						override get actionRunner(): IActionRunner {
@@ -176,13 +190,17 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 	}
 	protected override async runAction(_action: IAction, _context?: unknown): Promise<void> {
 		const viewModel = this.notebookEditor.getViewModel();
+
 		const activeCell = this.notebookEditor.activeCellAndCodeEditor;
+
 		const cellDiff = this.cellDiffInfo.read(undefined);
+
 		if (!viewModel || !cellDiff?.length || (!activeCell && this.focusedDiff.read(undefined))) {
 			return this.goToNextEntry();
 		}
 
 		const nextDiff = this.getNextCellDiff(cellDiff, viewModel);
+
 		if (nextDiff && (await this.focusDiff(nextDiff, viewModel))) {
 			return;
 		}
@@ -196,9 +214,11 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 	private async focusDiff(diff: CellDiffInfo, viewModel: INotebookViewModel) {
 		if (diff.type === 'delete') {
 			const top = this.deletedCellDecorator.getTop(diff.originalCellIndex);
+
 			if (typeof top === 'number') {
 				this.focusedDiff.set(diff, undefined);
 				this.notebookEditor.setScrollTop(top);
+
 				return true;
 			}
 		} else {
@@ -206,6 +226,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 			this.focusedDiff.set(diff, undefined);
 			await this.notebookEditor.focusNotebookCell(viewModel.viewCells[index], 'container');
 			this.notebookEditor.revealInViewAtTop(viewModel.viewCells[index]);
+
 			return true;
 		}
 		return false;
@@ -213,18 +234,24 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 
 	private getNextCellDiff(cellDiffInfo: CellDiffInfo[], viewModel: INotebookViewModel) {
 		const activeCell = this.notebookEditor.activeCellAndCodeEditor;
+
 		const currentCellIndex = activeCell ? viewModel.viewCells.findIndex(c => c.handle === activeCell[0].handle) : (this.direction === 'next' ? 0 : viewModel.viewCells.length - 1);
+
 		if (this.focusedDiff.read(undefined)) {
 			const changes = cellDiffInfo.filter(d => d.type !== 'unchanged');
+
 			const idx = changes.findIndex(d => d === this.focusedDiff.read(undefined));
+
 			if (idx >= 0) {
 				const next = this.direction === 'next' ? idx + 1 : idx - 1;
+
 				if (next >= 0 && next < changes.length) {
 					return changes[next];
 				}
 			}
 		} else if (this.direction === 'next') {
 			let currentIndex = 0;
+
 			let next: CellDiffInfo | undefined;
 			cellDiffInfo
 				.forEach((d, i) => {
@@ -242,11 +269,13 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 						next = d;
 					}
 				});
+
 			if (next) {
 				return next;
 			}
 		} else {
 			let currentIndex = 0;
+
 			let previous: CellDiffInfo | undefined;
 			cellDiffInfo
 				.forEach((d, i) => {
@@ -261,6 +290,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 						previous = d;
 					}
 				});
+
 			if (previous) {
 				return previous;
 			}

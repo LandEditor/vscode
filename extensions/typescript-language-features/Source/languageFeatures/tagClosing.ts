@@ -14,6 +14,7 @@ class TagClosing extends Disposable {
     private _disposed = false;
     private _timeout: NodeJS.Timeout | undefined = undefined;
     private _cancel: vscode.CancellationTokenSource | undefined = undefined;
+
     constructor(private readonly client: ITypeScriptServiceClient) {
         super();
         vscode.workspace.onDidChangeTextDocument(event => this.onDidChangeTextDocument(event), null, this._disposables);
@@ -21,6 +22,7 @@ class TagClosing extends Disposable {
     public override dispose() {
         super.dispose();
         this._disposed = true;
+
         if (this._timeout) {
             clearTimeout(this._timeout);
             this._timeout = undefined;
@@ -36,10 +38,12 @@ class TagClosing extends Disposable {
             return;
         }
         const activeDocument = vscode.window.activeTextEditor?.document;
+
         if (document !== activeDocument) {
             return;
         }
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return;
         }
@@ -52,29 +56,37 @@ class TagClosing extends Disposable {
             this._cancel = undefined;
         }
         const lastChange = contentChanges[contentChanges.length - 1];
+
         const lastCharacter = lastChange.text[lastChange.text.length - 1];
+
         if (lastChange.rangeLength > 0 || lastCharacter !== '>' && lastCharacter !== '/') {
             return;
         }
         const priorCharacter = lastChange.range.start.character > 0
             ? document.getText(new vscode.Range(lastChange.range.start.translate({ characterDelta: -1 }), lastChange.range.start))
             : '';
+
         if (priorCharacter === '>') {
             return;
         }
         const version = document.version;
         this._timeout = setTimeout(async () => {
             this._timeout = undefined;
+
             if (this._disposed) {
                 return;
             }
             const addedLines = lastChange.text.split(/\r\n|\n/g);
+
             const position = addedLines.length <= 1
                 ? lastChange.range.start.translate({ characterDelta: lastChange.text.length })
                 : new vscode.Position(lastChange.range.start.line + addedLines.length - 1, addedLines[addedLines.length - 1].length);
+
             const args: Proto.JsxClosingTagRequestArgs = typeConverters.Position.toFileLocationRequestArgs(filepath, position);
             this._cancel = new vscode.CancellationTokenSource();
+
             const response = await this.client.execute('jsxClosingTag', args, this._cancel.token);
+
             if (response.type !== 'response' || !response.body) {
                 return;
             }
@@ -82,11 +94,14 @@ class TagClosing extends Disposable {
                 return;
             }
             const activeEditor = vscode.window.activeTextEditor;
+
             if (!activeEditor) {
                 return;
             }
             const insertion = response.body;
+
             const activeDocument = activeEditor.document;
+
             if (document === activeDocument && activeDocument.version === version) {
                 activeEditor.insertSnippet(this.getTagSnippet(insertion), this.getInsertionPositions(activeEditor, position));
             }
@@ -96,10 +111,12 @@ class TagClosing extends Disposable {
         const snippet = new vscode.SnippetString();
         snippet.appendPlaceholder('', 0);
         snippet.appendText(closingTag.newText);
+
         return snippet;
     }
     private getInsertionPositions(editor: vscode.TextEditor, position: vscode.Position) {
         const activeSelectionPositions = editor.selections.map(s => s.active);
+
         return activeSelectionPositions.some(p => p.isEqual(position))
             ? activeSelectionPositions
             : position;
@@ -108,6 +125,7 @@ class TagClosing extends Disposable {
 function requireActiveDocumentSetting(selector: vscode.DocumentSelector, language: LanguageDescription) {
     return new Condition(() => {
         const editor = vscode.window.activeTextEditor;
+
         if (!editor || !vscode.languages.match(selector, editor.document)) {
             return false;
         }

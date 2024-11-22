@@ -32,6 +32,7 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
     private readonly element: HTMLElement;
     private readonly messageContainer: HTMLElement;
     private readonly markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
+
     constructor(private readonly _editor: ICodeEditor, private readonly instantiationService: IInstantiationService, private readonly commandService: ICommandService, private readonly telemetryService: ITelemetryService, private readonly openerService: IOpenerService) {
         super();
         this._rootDomNode = document.createElement('div');
@@ -66,23 +67,32 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
     }
     private async buildWidgetContent(title: string, message: string, buttonText: string, buttonAction: string) {
         const actionBar = this._register(new ActionBar(this.element, {}));
+
         const action = this._register(new Action('dialog.close', localize('dialogClose', "Close Dialog"), ThemeIcon.asClassName(Codicon.dialogClose), true, async () => {
             this._hide();
         }));
         actionBar.push(action, { icon: true, label: false });
+
         const renderBody = (message: string, icon: string): MarkdownString => {
             const mds = new MarkdownString(undefined, { supportThemeIcons: true, supportHtml: true });
             mds.appendMarkdown(`<a class="copilot">$(${icon})</a>`);
             mds.appendMarkdown(message);
+
             return mds;
         };
+
         const titleElement = this.messageContainer.appendChild($('#monaco-dialog-message-detail.dialog-message-detail-title'));
+
         const titleElementMdt = this.markdownRenderer.render(renderBody(title, 'zap'));
         titleElement.appendChild(titleElementMdt.element);
         this.buildStepMarkdownDescription(this.messageContainer, message.split('\n').filter(x => x).map(text => parseLinkedText(text)));
+
         const buttonsRowElement = this.messageContainer.appendChild($('.dialog-buttons-row'));
+
         const buttonContainer = buttonsRowElement.appendChild($('.dialog-buttons'));
+
         const buttonBar = this._register(new ButtonBar(buttonContainer));
+
         const primaryButton = this._register(buttonBar.addButtonWithDescription({ title: true, secondary: false, ...defaultButtonStyles }));
         primaryButton.label = mnemonicButtonLabel(buttonText, true);
         this._register(primaryButton.onDidClick(async () => {
@@ -93,9 +103,11 @@ export class WelcomeWidget extends Disposable implements IOverlayWidget {
     private buildStepMarkdownDescription(container: HTMLElement, text: LinkedText[]) {
         for (const linkedText of text) {
             const p = append(container, $('p'));
+
             for (const node of linkedText.nodes) {
                 if (typeof node === 'string') {
                     const labelWithIcon = renderLabelWithIcons(node);
+
                     for (const element of labelWithIcon) {
                         if (typeof element === 'string') {
                             p.appendChild(renderFormattedText(element, { inline: true, renderCodeSegments: true }));
@@ -159,21 +171,27 @@ registerThemingParticipant((theme, collector) => {
             collector.addRule(`.monaco-editor ${selector} { background-color: ${color}; }`);
         }
     };
+
     const widgetBackground = theme.getColor(editorWidgetBackground);
     addBackgroundColorRule('.welcome-widget', widgetBackground);
+
     const widgetShadowColor = theme.getColor(widgetShadow);
+
     if (widgetShadowColor) {
         collector.addRule(`.welcome-widget { box-shadow: 0 0 8px 2px ${widgetShadowColor}; }`);
     }
     const widgetBorderColor = theme.getColor(widgetBorder);
+
     if (widgetBorderColor) {
         collector.addRule(`.welcome-widget { border-left: 1px solid ${widgetBorderColor}; border-right: 1px solid ${widgetBorderColor}; border-bottom: 1px solid ${widgetBorderColor}; }`);
     }
     const hcBorder = theme.getColor(contrastBorder);
+
     if (hcBorder) {
         collector.addRule(`.welcome-widget { border: 1px solid ${hcBorder}; }`);
     }
     const foreground = theme.getColor(editorWidgetForeground);
+
     if (foreground) {
         collector.addRule(`.welcome-widget { color: ${foreground}; }`);
     }

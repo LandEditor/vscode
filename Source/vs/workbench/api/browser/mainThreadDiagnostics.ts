@@ -13,6 +13,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
     private readonly _activeOwners = new Set<string>();
     private readonly _proxy: ExtHostDiagnosticsShape;
     private readonly _markerListener: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @IMarkerService
     private readonly _markerService: IMarkerService, 
@@ -31,13 +32,16 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
             UriComponents,
             IMarkerData[]
         ][] = [];
+
         for (const resource of resources) {
             const allMarkerData = this._markerService.read({ resource });
+
             if (allMarkerData.length === 0) {
                 data.push([resource, []]);
             }
             else {
                 const forgeinMarkerData = allMarkerData.filter(marker => !this._activeOwners.has(marker.owner));
+
                 if (forgeinMarkerData.length > 0) {
                     data.push([resource, forgeinMarkerData]);
                 }
@@ -53,6 +57,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
     ][]): void {
         for (const entry of entries) {
             const [uri, markers] = entry;
+
             if (markers) {
                 for (const marker of markers) {
                     if (marker.relatedInformation) {

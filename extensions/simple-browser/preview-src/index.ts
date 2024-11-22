@@ -3,11 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { onceDocumentLoaded } from './events';
+
 const vscode = acquireVsCodeApi();
 function getSettings() {
     const element = document.getElementById('simple-browser-settings');
+
     if (element) {
         const data = element.getAttribute('data-settings');
+
         if (data) {
             return JSON.parse(data);
         }
@@ -15,23 +18,32 @@ function getSettings() {
     throw new Error(`Could not load settings`);
 }
 const settings = getSettings();
+
 const iframe = document.querySelector('iframe')!;
+
 const header = document.querySelector('.header')!;
+
 const input = header.querySelector<HTMLInputElement>('.url-input')!;
+
 const forwardButton = header.querySelector<HTMLButtonElement>('.forward-button')!;
+
 const backButton = header.querySelector<HTMLButtonElement>('.back-button')!;
+
 const reloadButton = header.querySelector<HTMLButtonElement>('.reload-button')!;
+
 const openExternalButton = header.querySelector<HTMLButtonElement>('.open-external-button')!;
 window.addEventListener('message', e => {
     switch (e.data.type) {
         case 'focus':
             {
                 iframe.focus();
+
                 break;
             }
         case 'didChangeFocusLockIndicatorEnabled':
             {
                 toggleFocusLockIndicatorEnabled(e.data.enabled);
+
                 break;
             }
     }
@@ -39,8 +51,10 @@ window.addEventListener('message', e => {
 onceDocumentLoaded(() => {
     setInterval(() => {
         const iframeFocused = document.activeElement?.tagName === 'IFRAME';
+
         document.body.classList.toggle('iframe-focused', iframeFocused);
     }, 50);
+
     iframe.addEventListener('load', () => {
         // Noop
     });
@@ -48,6 +62,7 @@ onceDocumentLoaded(() => {
         const url = (e.target as HTMLInputElement).value;
         navigateTo(url);
     });
+
     forwardButton.addEventListener('click', () => {
         history.forward();
     });
@@ -71,12 +86,14 @@ onceDocumentLoaded(() => {
     navigateTo(settings.url);
     input.value = settings.url;
     toggleFocusLockIndicatorEnabled(settings.focusLockIndicatorEnabled);
+
     function navigateTo(rawUrl: string): void {
         try {
             const url = new URL(rawUrl);
             // Try to bust the cache for the iframe
             // There does not appear to be any way to reliably do this except modifying the url
             url.searchParams.append('vscodeBrowserReqId', Date.now().toString());
+
             iframe.src = url.toString();
         }
         catch {

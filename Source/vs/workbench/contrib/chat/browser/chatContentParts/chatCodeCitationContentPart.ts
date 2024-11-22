@@ -18,18 +18,22 @@ type ChatCodeCitationOpenedClassification = {
 };
 export class ChatCodeCitationContentPart extends Disposable implements IChatContentPart {
     public readonly domNode: HTMLElement;
+
     constructor(citations: IChatCodeCitations, context: IChatContentPartRenderContext, 
     @IEditorService
     private readonly editorService: IEditorService, 
     @ITelemetryService
     private readonly telemetryService: ITelemetryService) {
         super();
+
         const label = getCodeCitationsMessage(citations.citations);
+
         const elements = dom.h('.chat-code-citation-message@root', [
             dom.h('span.chat-code-citation-label@label'),
             dom.h('.chat-code-citation-button-container@button'),
         ]);
         elements.label.textContent = label + ' - ';
+
         const button = this._register(new Button(elements.button, {
             buttonBackground: undefined,
             buttonBorder: undefined,

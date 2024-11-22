@@ -28,6 +28,7 @@ import { isString } from '../../base/common/types.js';
 import { CharCode } from '../../base/common/charCode.js';
 import { IExtensionManifest } from '../../platform/extensions/common/extensions.js';
 import { ICSSDevelopmentService } from '../../platform/cssDev/node/cssDevService.js';
+
 const textMimeType: {
     [ext: string]: string | undefined;
 } = {
@@ -60,6 +61,7 @@ export async function serveFile(filePath: string, cacheControl: CacheControl, lo
             const etag = `W/"${[stat.ino, stat.size, stat.mtime.getTime()].join('-')}"`; // weak validator (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag)
             if (req.headers['if-none-match'] === etag) {
                 res.writeHead(304);
+
                 return void res.end();
             }
             responseHeaders['Etag'] = etag;
@@ -84,6 +86,7 @@ export async function serveFile(filePath: string, cacheControl: CacheControl, lo
             console.error(`File not found: ${filePath}`);
         }
         res.writeHead(404, { 'Content-Type': 'text/plain' });
+
         return void res.end('Not found');
     }
 }
@@ -93,6 +96,7 @@ export class WebClientServer {
     private readonly _staticRoute: string;
     private readonly _callbackRoute: string;
     private readonly _webExtensionRoute: string;
+
     constructor(private readonly _connectionToken: ServerConnectionToken, private readonly _basePath: string, readonly serverRootPath: string, 
     @IServerEnvironmentService
     private readonly _environmentService: IServerEnvironmentService, 
@@ -117,6 +121,7 @@ export class WebClientServer {
     async handle(req: http.IncomingMessage, res: http.ServerResponse, parsedUrl: url.UrlWithParsedQuery): Promise<void> {
         try {
             const pathname = parsedUrl.pathname!;
+
             if (pathname.startsWith(this._staticRoute) && pathname.charCodeAt(this._staticRoute.length) === CharCode.Slash) {
                 return this._handleStatic(req, res, parsedUrl);
             }
@@ -136,6 +141,7 @@ export class WebClientServer {
         catch (error) {
             this._logService.error(error);
             console.error(error.toString());
+
             return serveError(req, res, 500, 'Internal Server Error.');
         }
     }
@@ -147,6 +153,7 @@ export class WebClientServer {
         // Strip the this._staticRoute from the path
         const normalizedPathname = decodeURIComponent(parsedUrl.pathname!); // support paths that are uri-encoded (e.g. spaces => %20)
         const relativeFilePath = normalizedPathname.substring(this._staticRoute.length + 1);
+
         const filePath = join(APP_ROOT, relativeFilePath); // join also normalizes the path
         if (!isEqualOrParent(filePath, APP_ROOT, !isLinux)) {
             return serveError(req, res, 400, `Bad request.`);
@@ -155,6 +162,7 @@ export class WebClientServer {
     }
     private _getResourceURLTemplateAuthority(uri: URI): string | undefined {
         const index = uri.authority.indexOf('.');
+
         return index !== -1 ? uri.authority.substring(index + 1) : undefined;
     }
     /**
@@ -167,17 +175,21 @@ export class WebClientServer {
         // Strip `/web-extension-resource/` from the path
         const normalizedPathname = decodeURIComponent(parsedUrl.pathname!); // support paths that are uri-encoded (e.g. spaces => %20)
         const path = normalize(normalizedPathname.substring(this._webExtensionRoute.length + 1));
+
         const uri = URI.parse(path).with({
             scheme: this._webExtensionResourceUrlTemplate.scheme,
             authority: path.substring(0, path.indexOf('/')),
             path: path.substring(path.indexOf('/') + 1)
         });
+
         if (this._getResourceURLTemplateAuthority(this._webExtensionResourceUrlTemplate) !== this._getResourceURLTemplateAuthority(uri)) {
             return serveError(req, res, 403, 'Request Forbidden');
         }
         const headers: IHeaders = {};
+
         const setRequestHeader = (header: string) => {
             const value = req.headers[header];
+
             if (value && (isString(value) || value[0])) {
                 headers[header] = isString(value) ? value : value[0];
             }
@@ -185,18 +197,26 @@ export class WebClientServer {
                 setRequestHeader(header.toLowerCase());
             }
         };
+
         setRequestHeader('X-Client-Name');
+
         setRequestHeader('X-Client-Version');
+
         setRequestHeader('X-Machine-Id');
+
         setRequestHeader('X-Client-Commit');
+
         const context = await this._requestService.request({
             type: 'GET',
             url: uri.toString(true),
             headers
         }, CancellationToken.None);
+
         const status = context.res.statusCode || 500;
+
         if (status !== 200) {
             let text: string | null = null;
+
             try {
                 text = await asTextOrError(context);
             }
@@ -204,8 +224,10 @@ export class WebClientServer {
             return serveError(req, res, status, text || `Request failed with status ${status}`);
         }
         const responseHeaders: Record<string, string | string[]> = Object.create(null);
+
         const setResponseHeader = (header: string) => {
             const value = context.res.headers[header];
+
             if (value) {
                 responseHeaders[header] = value;
             }
@@ -213,10 +235,14 @@ export class WebClientServer {
                 setResponseHeader(header.toLowerCase());
             }
         };
+
         setResponseHeader('Cache-Control');
+
         setResponseHeader('Content-Type');
         res.writeHead(200, responseHeaders);
+
         const buffer = await streamToBuffer(context.stream);
+
         return void res.end(buffer.buffer);
     }
     /**
@@ -224,6 +250,7 @@ export class WebClientServer {
      */
     private async _handleRoot(req: http.IncomingMessage, res: http.ServerResponse, parsedUrl: url.UrlWithParsedQuery): Promise<void> {
         const queryConnectionToken = parsedUrl.query[connectionTokenQueryName];
+
         if (typeof queryConnectionToken === 'string') {
             // We got a connection token as a query parameter.
             // We want to have a clean URL, so we strip it
@@ -232,7 +259,9 @@ export class WebClientServer {
                 sameSite: 'lax',
                 maxAge: 60 * 60 * 24 * 7 /* 1 week */
             });
+
             const newQuery = Object.create(null);
+
             for (const key in parsedUrl.query) {
                 if (key !== connectionTokenQueryName) {
                     newQuery[key] = parsedUrl.query[key];
@@ -241,16 +270,21 @@ export class WebClientServer {
             const newLocation = url.format({ pathname: parsedUrl.pathname, query: newQuery });
             responseHeaders['Location'] = newLocation;
             res.writeHead(302, responseHeaders);
+
             return void res.end();
         }
         const getFirstHeader = (headerName: string) => {
             const val = req.headers[headerName];
+
             return Array.isArray(val) ? val[0] : val;
         };
+
         const useTestResolver = (!this._environmentService.isBuilt && this._environmentService.args['use-test-resolver']);
+
         const remoteAuthority = (useTestResolver
             ? 'test+test'
             : (getFirstHeader('x-original-host') || getFirstHeader('x-forwarded-host') || req.headers.host));
+
         if (!remoteAuthority) {
             return serveError(req, res, 400, `Bad request.`);
         }
@@ -258,19 +292,23 @@ export class WebClientServer {
             return JSON.stringify(value).replace(/"/g, '&quot;');
         }
         let _wrapWebWorkerExtHostInIframe: undefined | false = undefined;
+
         if (this._environmentService.args['enable-smoke-test-driver']) {
             // integration tests run at a time when the built output is not yet published to the CDN
             // so we must disable the iframe wrapping because the iframe URL will give a 404
             _wrapWebWorkerExtHostInIframe = false;
         }
         const resolveWorkspaceURI = (defaultLocation?: string) => defaultLocation && URI.file(path.resolve(defaultLocation)).with({ scheme: Schemas.vscodeRemote, authority: remoteAuthority });
+
         const filePath = FileAccess.asFileUri(`vs/code/browser/workbench/workbench${this._environmentService.isBuilt ? '' : '-dev'}.html`).fsPath;
+
         const authSessionInfo = !this._environmentService.isBuilt && this._environmentService.args['github-auth'] ? {
             id: generateUuid(),
             providerId: 'github',
             accessToken: this._environmentService.args['github-auth'],
             scopes: [['user:email'], ['repo']]
         } : undefined;
+
         const productConfiguration = {
             embedderIdentifier: 'server-distro',
             extensionsGallery: this._webExtensionResourceUrlTemplate && this._productService.extensionsGallery ? {
@@ -282,6 +320,7 @@ export class WebClientServer {
                 }).toString(true)
             } : undefined
         } satisfies Partial<IProductConfiguration>;
+
         if (!this._environmentService.isBuilt) {
             try {
                 const productOverrides = JSON.parse((await promises.readFile(join(APP_ROOT, 'product.overrides.json'))).toString());
@@ -301,10 +340,15 @@ export class WebClientServer {
             productConfiguration,
             callbackRoute: this._callbackRoute
         };
+
         const cookies = cookie.parse(req.headers.cookie || '');
+
         const locale = cookies['vscode.nls.locale'] || req.headers['accept-language']?.split(',')[0]?.toLowerCase() || 'en';
+
         let WORKBENCH_NLS_BASE_URL: string | undefined;
+
         let WORKBENCH_NLS_URL: string;
+
         if (!locale.startsWith('en') && this._productService.nlsCoreBaseUrl) {
             WORKBENCH_NLS_BASE_URL = this._productService.nlsCoreBaseUrl;
             WORKBENCH_NLS_URL = `${WORKBENCH_NLS_BASE_URL}${this._productService.commit}/${this._productService.version}/${locale}/nls.messages.js`;
@@ -335,6 +379,7 @@ export class WebClientServer {
                 extensionPath: string;
                 packageJSON: IExtensionManifest;
             }[] = [];
+
             for (const extensionPath of ['vscode-test-resolver', 'github-authentication']) {
                 const packageJSON = JSON.parse((await promises.readFile(FileAccess.asFileUri(`${builtinExtensionsPath}/${extensionPath}/package.json`).fsPath)).toString());
                 bundledExtensions.push({ extensionPath, packageJSON });
@@ -342,15 +387,18 @@ export class WebClientServer {
             values['WORKBENCH_BUILTIN_EXTENSIONS'] = asJSON(bundledExtensions);
         }
         let data;
+
         try {
             const workbenchTemplate = (await promises.readFile(filePath)).toString();
             data = workbenchTemplate.replace(/\{\{([^}]+)\}\}/g, (_, key) => values[key] ?? 'undefined');
         }
         catch (e) {
             res.writeHead(404, { 'Content-Type': 'text/plain' });
+
             return void res.end('Not found');
         }
         const webWorkerExtensionHostIframeScriptSHA = 'sha256-2Q+j4hfT09+1+imS46J2YlkCtHWQt0/BE79PXjJ0ZJ8=';
+
         const cspDirectives = [
             'default-src \'self\';',
             'img-src \'self\' https: data: blob:;',
@@ -364,10 +412,12 @@ export class WebClientServer {
             'font-src \'self\' blob:;',
             'manifest-src \'self\';'
         ].join(' ');
+
         const headers: http.OutgoingHttpHeaders = {
             'Content-Type': 'text/html',
             'Content-Security-Policy': cspDirectives
         };
+
         if (this._connectionToken.type !== ServerConnectionTokenType.None) {
             // At this point we know the client has a valid cookie
             // and we want to set it prolong it to ensure that this
@@ -378,18 +428,23 @@ export class WebClientServer {
             });
         }
         res.writeHead(200, headers);
+
         return void res.end(data);
     }
     private _getScriptCspHashes(content: string): string[] {
         // Compute the CSP hashes for line scripts. Uses regex
         // which means it isn't 100% good.
         const regex = /<script>([\s\S]+?)<\/script>/img;
+
         const result: string[] = [];
+
         let match: RegExpExecArray | null;
+
         while (match = regex.exec(content)) {
             const hasher = crypto.createHash('sha256');
             // This only works on Windows if we strip `\r` from `\r\n`.
             const script = match[1].replace(/\r\n/g, '\n');
+
             const hash = hasher
                 .update(Buffer.from(script))
                 .digest().toString('base64');
@@ -402,7 +457,9 @@ export class WebClientServer {
      */
     private async _handleCallback(res: http.ServerResponse): Promise<void> {
         const filePath = FileAccess.asFileUri('vs/code/browser/workbench/callback.html').fsPath;
+
         const data = (await promises.readFile(filePath)).toString();
+
         const cspDirectives = [
             'default-src \'self\';',
             'img-src \'self\' https: data: blob:;',
@@ -415,6 +472,7 @@ export class WebClientServer {
             'Content-Type': 'text/html',
             'Content-Security-Policy': cspDirectives
         });
+
         return void res.end(data);
     }
 }

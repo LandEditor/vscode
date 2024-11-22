@@ -65,6 +65,7 @@ export class StorageMainService extends Disposable implements IStorageMainServic
     private shutdownReason: ShutdownReason | undefined = undefined;
     private readonly _onDidChangeProfileStorage = this._register(new Emitter<IProfileStorageChangeEvent>());
     readonly onDidChangeProfileStorage = this._onDidChangeProfileStorage.event;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -129,6 +130,7 @@ export class StorageMainService extends Disposable implements IStorageMainServic
         // Close the storage of the profile that is being removed
         this._register(this.userDataProfilesService.onWillRemoveProfile(e => {
             const storage = this.mapProfileToStorage.get(e.profile.id);
+
             if (storage) {
                 e.join(storage.close());
             }
@@ -138,10 +140,12 @@ export class StorageMainService extends Disposable implements IStorageMainServic
     readonly applicationStorage = this._register(this.createApplicationStorage());
     private createApplicationStorage(): IStorageMain {
         this.logService.trace(`StorageMainService: creating application storage`);
+
         const applicationStorage = new ApplicationStorageMain(this.getStorageOptions(), this.userDataProfilesService, this.logService, this.fileService);
         this._register(Event.once(applicationStorage.onDidCloseStorage)(() => {
             this.logService.trace(`StorageMainService: closed application storage`);
         }));
+
         return applicationStorage;
     }
     //#endregion
@@ -152,10 +156,12 @@ export class StorageMainService extends Disposable implements IStorageMainServic
             return this.applicationStorage; // for profiles using default storage, use application storage
         }
         let profileStorage = this.mapProfileToStorage.get(profile.id);
+
         if (!profileStorage) {
             this.logService.trace(`StorageMainService: creating profile storage (${profile.name})`);
             profileStorage = this._register(this.createProfileStorage(profile));
             this.mapProfileToStorage.set(profile.id, profileStorage);
+
             const listener = this._register(profileStorage.onDidChangeStorage(e => this._onDidChangeProfileStorage.fire({
                 ...e,
                 storage: profileStorage!,
@@ -183,6 +189,7 @@ export class StorageMainService extends Disposable implements IStorageMainServic
     private readonly mapWorkspaceToStorage = new Map<string /* workspace ID */, IStorageMain>();
     workspaceStorage(workspace: IAnyWorkspaceIdentifier): IStorageMain {
         let workspaceStorage = this.mapWorkspaceToStorage.get(workspace.id);
+
         if (!workspaceStorage) {
             this.logService.trace(`StorageMainService: creating workspace storage (${workspace.id})`);
             workspaceStorage = this._register(this.createWorkspaceStorage(workspace));
@@ -206,6 +213,7 @@ export class StorageMainService extends Disposable implements IStorageMainServic
     //#endregion
     isUsed(path: string): boolean {
         const pathUri = URI.file(path);
+
         for (const storage of [this.applicationStorage, ...this.mapProfileToStorage.values(), ...this.mapWorkspaceToStorage.values()]) {
             if (!storage.path) {
                 continue;
@@ -237,21 +245,29 @@ export interface IApplicationStorageMainService extends IStorageService {
      * is not backed by any persistent DB.
      */
     readonly whenReady: Promise<void>;
+
     get(key: string, scope: StorageScope.APPLICATION, fallbackValue: string): string;
+
     get(key: string, scope: StorageScope.APPLICATION, fallbackValue?: string): string | undefined;
+
     getBoolean(key: string, scope: StorageScope.APPLICATION, fallbackValue: boolean): boolean;
+
     getBoolean(key: string, scope: StorageScope.APPLICATION, fallbackValue?: boolean): boolean | undefined;
+
     getNumber(key: string, scope: StorageScope.APPLICATION, fallbackValue: number): number;
+
     getNumber(key: string, scope: StorageScope.APPLICATION, fallbackValue?: number): number | undefined;
     store(key: string, value: string | boolean | number | undefined | null, scope: StorageScope.APPLICATION, target: StorageTarget): void;
     remove(key: string, scope: StorageScope.APPLICATION): void;
     keys(scope: StorageScope.APPLICATION, target: StorageTarget): string[];
+
     switch(): never;
     isNew(scope: StorageScope.APPLICATION): boolean;
 }
 export class ApplicationStorageMainService extends AbstractStorageService implements IApplicationStorageMainService {
     declare readonly _serviceBrand: undefined;
     readonly whenReady = this.storageMainService.applicationStorage.whenInit;
+
     constructor(
     @IUserDataProfilesService
     private readonly userDataProfilesService: IUserDataProfilesService, 

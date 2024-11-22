@@ -12,6 +12,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
     public constructor(private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker, private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>) { }
     public execute() {
         const editor = this.activeJsTsEditorTracker.activeJsTsEditor;
+
         if (editor) {
             openProjectConfigForFile(ProjectType.TypeScript, this.lazyClientHost.value.serviceClient, editor.document.uri);
         }
@@ -22,6 +23,7 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
     public constructor(private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker, private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>) { }
     public execute() {
         const editor = this.activeJsTsEditorTracker.activeJsTsEditor;
+
         if (editor) {
             openProjectConfigForFile(ProjectType.JavaScript, this.lazyClientHost.value.serviceClient, editor.document.uri);
         }

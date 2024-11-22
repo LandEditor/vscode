@@ -8,6 +8,7 @@ import { ChatEditorInput } from '../chatEditorInput.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 export async function clearChatEditor(accessor: ServicesAccessor, chatEditorInput?: ChatEditorInput): Promise<void> {
     const editorService = accessor.get(IEditorService);
+
     if (!chatEditorInput) {
         const editorInput = editorService.activeEditor;
         chatEditorInput = editorInput instanceof ChatEditorInput ? editorInput : undefined;

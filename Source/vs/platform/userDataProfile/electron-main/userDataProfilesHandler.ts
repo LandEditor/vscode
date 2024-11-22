@@ -28,9 +28,12 @@ export class UserDataProfilesHandler extends Disposable {
     }
     private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {
         const workspace = this.getWorkspace(window);
+
         const profile = this.userDataProfilesService.getProfileForWorkspace(workspace);
+
         if (profile?.isTransient) {
             this.userDataProfilesService.unsetWorkspace(workspace, profile.isTransient);
+
             if (profile.isTransient) {
                 await this.userDataProfilesService.cleanUpTransientProfiles();
             }
@@ -41,10 +44,12 @@ export class UserDataProfilesHandler extends Disposable {
     }
     private cleanUpEmptyWindowAssociations(): void {
         const associatedEmptyWindows = this.userDataProfilesService.getAssociatedEmptyWindows();
+
         if (associatedEmptyWindows.length === 0) {
             return;
         }
         const openedWorkspaces = this.windowsMainService.getWindows().map(window => this.getWorkspace(window));
+
         for (const associatedEmptyWindow of associatedEmptyWindows) {
             if (openedWorkspaces.some(openedWorkspace => openedWorkspace.id === associatedEmptyWindow.id)) {
                 continue;

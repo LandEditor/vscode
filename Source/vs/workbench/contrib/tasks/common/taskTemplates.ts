@@ -42,6 +42,7 @@ const dotnetBuild: ITaskEntry = {
         '}'
     ].join('\n')
 };
+
 const msbuild: ITaskEntry = {
     id: 'msbuild',
     label: 'MSBuild',
@@ -76,6 +77,7 @@ const msbuild: ITaskEntry = {
         '}'
     ].join('\n')
 };
+
 const command: ITaskEntry = {
     id: 'externalCommand',
     label: 'Others',
@@ -96,6 +98,7 @@ const command: ITaskEntry = {
         '}'
     ].join('\n')
 };
+
 const maven: ITaskEntry = {
     id: 'maven',
     label: 'maven',
@@ -124,6 +127,7 @@ const maven: ITaskEntry = {
         '}'
     ].join('\n')
 };
+
 let _templates: ITaskEntry[] | null = null;
 export function getTemplates(): ITaskEntry[] {
     if (!_templates) {

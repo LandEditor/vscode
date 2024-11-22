@@ -40,12 +40,14 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
             args: IDiagnosticInfoOptions;
         }): void => {
             const connection = remoteAgentService.getConnection();
+
             if (connection) {
                 const hostName = labelService.getHostLabel(Schemas.vscodeRemote, connection.remoteAuthority);
                 remoteAgentService.getDiagnosticInfo(request.args)
                     .then(info => {
                     if (info) {
                         (info as IRemoteDiagnosticInfo).hostName = hostName;
+
                         if (remoteConnectionLatencyMeasurer.latency?.high) {
                             (info as IRemoteDiagnosticInfo).latency = {
                                 average: remoteConnectionLatencyMeasurer.latency.average,
@@ -75,10 +77,12 @@ class RemoteExtensionHostEnvironmentUpdater implements IWorkbenchContribution {
     @IExtensionService
     extensionService: IExtensionService) {
         const connection = remoteAgentService.getConnection();
+
         if (connection) {
             connection.onDidStateChange(async (e) => {
                 if (e.type === PersistentConnectionEventType.ConnectionGain) {
                     const resolveResult = await remoteResolverService.resolveAuthority(connection.remoteAuthority);
+
                     if (resolveResult.options && resolveResult.options.extensionHostEnv) {
                         await extensionService.setRemoteEnvironment(resolveResult.options.extensionHostEnv);
                     }
@@ -89,6 +93,7 @@ class RemoteExtensionHostEnvironmentUpdater implements IWorkbenchContribution {
 }
 class RemoteTelemetryEnablementUpdater extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.remoteTelemetryEnablementUpdater';
+
     constructor(
     @IRemoteAgentService
     private readonly remoteAgentService: IRemoteAgentService, 
@@ -108,6 +113,7 @@ class RemoteTelemetryEnablementUpdater extends Disposable implements IWorkbenchC
 }
 class RemoteEmptyWorkbenchPresentation extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.remoteEmptyWorkbenchPresentation';
+
     constructor(
     @INativeWorkbenchEnvironmentService
     environmentService: INativeWorkbenchEnvironmentService, 
@@ -120,14 +126,17 @@ class RemoteEmptyWorkbenchPresentation extends Disposable implements IWorkbenchC
     @IWorkspaceContextService
     contextService: IWorkspaceContextService) {
         super();
+
         function shouldShowExplorer(): boolean {
             const startupEditor = configurationService.getValue<string>('workbench.startupEditor');
+
             return startupEditor !== 'welcomePage' && startupEditor !== 'welcomePageInEmptyWorkbench';
         }
         function shouldShowTerminal(): boolean {
             return shouldShowExplorer();
         }
         const { remoteAuthority, filesToDiff, filesToMerge, filesToOpenOrCreate, filesToWait } = environmentService;
+
         if (remoteAuthority && contextService.getWorkbenchState() === WorkbenchState.EMPTY && !filesToDiff?.length && !filesToMerge?.length && !filesToOpenOrCreate?.length && !filesToWait) {
             remoteAuthorityResolverService.resolveAuthority(remoteAuthority).then(() => {
                 if (shouldShowExplorer()) {
@@ -145,6 +154,7 @@ class RemoteEmptyWorkbenchPresentation extends Disposable implements IWorkbenchC
  */
 class WSLContextKeyInitializer extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.wslContextKeyInitializer';
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -155,11 +165,17 @@ class WSLContextKeyInitializer extends Disposable implements IWorkbenchContribut
     @ILifecycleService
     lifecycleService: ILifecycleService) {
         super();
+
         const contextKeyId = 'wslFeatureInstalled';
+
         const storageKey = 'remote.wslFeatureInstalled';
+
         const defaultValue = storageService.getBoolean(storageKey, StorageScope.APPLICATION, undefined);
+
         const hasWSLFeatureContext = new RawContextKey<boolean>(contextKeyId, !!defaultValue, nls.localize('wslFeatureInstalled', "Whether the platform has the WSL feature installed"));
+
         const contextKey = hasWSLFeatureContext.bindTo(contextKeyService);
+
         if (defaultValue === undefined) {
             lifecycleService.when(LifecyclePhase.Eventually).then(async () => {
                 nativeHostService.hasWSLFeatureInstalled().then(res => {

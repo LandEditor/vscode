@@ -162,6 +162,7 @@ export class CodeApplication extends Disposable {
 		//
 
 		const isUrlFromWindow = (requestingUrl?: string | undefined) => requestingUrl?.startsWith(`${Schemas.vscodeFileResource}://${VSCODE_AUTHORITY}`);
+
 		const isUrlFromWebview = (requestingUrl: string | undefined) => requestingUrl?.startsWith(`${Schemas.vscodeWebview}://`);
 
 		const allowedPermissionsInWebview = new Set([
@@ -217,12 +218,14 @@ export class CodeApplication extends Disposable {
 
 		const isAllowedVsCodeFileRequest = (details: Electron.OnBeforeRequestListenerDetails) => {
 			const frame = details.frame;
+
 			if (!frame || !this.windowsMainService) {
 				return false;
 			}
 
 			// Check to see if the request comes from one of the main windows (or shared process) and not from embedded content
 			const windows = BrowserWindow.getAllWindows();
+
 			for (const window of windows) {
 				if (frame.processId === window.webContents.mainFrame.processId) {
 					return true;
@@ -238,6 +241,7 @@ export class CodeApplication extends Disposable {
 			}
 
 			const frame = details.frame;
+
 			if (!frame || !this.windowsMainService) {
 				return false;
 			}
@@ -256,9 +260,11 @@ export class CodeApplication extends Disposable {
 
 		session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
 			const uri = URI.parse(details.url);
+
 			if (uri.scheme === Schemas.vscodeWebview) {
 				if (!isAllowedWebviewRequest(uri, details)) {
 					this.logService.error('Blocked vscode-webview request', details.url);
+
 					return callback({ cancel: true });
 				}
 			}
@@ -266,6 +272,7 @@ export class CodeApplication extends Disposable {
 			if (uri.scheme === Schemas.vscodeFileResource) {
 				if (!isAllowedVsCodeFileRequest(details)) {
 					this.logService.error('Blocked vscode-file request', details.url);
+
 					return callback({ cancel: true });
 				}
 			}
@@ -273,6 +280,7 @@ export class CodeApplication extends Disposable {
 			// Block most svgs
 			if (uri.path.endsWith('.svg')) {
 				const isSafeResourceUrl = supportedSvgSchemes.has(uri.scheme);
+
 				if (!isSafeResourceUrl) {
 					return callback({ cancel: !isSvgRequestFromSafeContext(details) });
 				}
@@ -285,10 +293,12 @@ export class CodeApplication extends Disposable {
 		// https://github.com/microsoft/vscode/issues/97564
 		session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
 			const responseHeaders = details.responseHeaders as Record<string, (string) | (string[])>;
+
 			const contentTypes = (responseHeaders['content-type'] || responseHeaders['Content-Type']);
 
 			if (contentTypes && Array.isArray(contentTypes)) {
 				const uri = URI.parse(details.url);
+
 				if (uri.path.endsWith('.svg')) {
 					if (supportedSvgSchemes.has(uri.scheme)) {
 						responseHeaders['Content-Type'] = ['image/svg+xml'];
@@ -318,6 +328,7 @@ export class CodeApplication extends Disposable {
 
 				if (responseHeaders['Access-Control-Allow-Origin'] === undefined) {
 					responseHeaders['Access-Control-Allow-Origin'] = ['*'];
+
 					return callback({ cancel: false, responseHeaders });
 				}
 			}
@@ -338,6 +349,7 @@ export class CodeApplication extends Disposable {
 		};
 
 		const defaultSession = session.defaultSession as unknown as SessionWithCodeCachePathSupport;
+
 		if (typeof defaultSession.setCodeCachePath === 'function' && this.environmentMainService.codeCachePath) {
 			// Make sure to partition Chrome's code cache folder
 			// in the same way as our code cache path to help
@@ -441,6 +453,7 @@ export class CodeApplication extends Disposable {
 		//#endregion
 
 		let macOpenFileURIs: IWindowOpenable[] = [];
+
 		let runningTimeout: NodeJS.Timeout | undefined = undefined;
 		app.on('open-file', (event, path) => {
 			path = normalizeNFC(path); // macOS only: normalize paths to NFC form
@@ -490,7 +503,9 @@ export class CodeApplication extends Disposable {
 			// that is not part of our windows registry!
 			const window = this.windowsMainService?.getWindowByWebContents(event.sender); // Note: this can be `undefined` for the shared process
 			let args: NativeParsedArgs;
+
 			let env: IProcessEnvironment;
+
 			if (window?.config) {
 				args = window.config;
 				env = { ...process.env, ...window.config.userEnv };
@@ -510,6 +525,7 @@ export class CodeApplication extends Disposable {
 
 		validatedIpcMain.handle('vscode:notifyZoomLevel', async (event, zoomLevel: number | undefined) => {
 			const window = this.windowsMainService?.getWindowByWebContents(event.sender);
+
 			if (window) {
 				window.notifyZoomLevel(zoomLevel);
 			}
@@ -532,6 +548,7 @@ export class CodeApplication extends Disposable {
 		}
 
 		this.logService.error(`[uncaught exception in main]: ${error}`);
+
 		if (error.stack) {
 			this.logService.error(error.stack);
 		}
@@ -547,6 +564,7 @@ export class CodeApplication extends Disposable {
 		// any shortcut that is pinned to the taskbar and prevent showing
 		// two icons in the taskbar for the same app.
 		const win32AppUserModelId = this.productService.win32AppUserModelId;
+
 		if (isWindows && win32AppUserModelId) {
 			app.setAppUserModelId(win32AppUserModelId);
 		}
@@ -580,6 +598,7 @@ export class CodeApplication extends Disposable {
 
 		// Resolve unique machine ID
 		this.logService.trace('Resolving machine identifier...');
+
 		const [machineId, sqmId, devDeviceId] = await Promise.all([
 			resolveMachineId(this.stateService, this.logService),
 			resolveSqmId(this.stateService, this.logService),
@@ -636,8 +655,11 @@ export class CodeApplication extends Disposable {
 
 	private async setupProtocolUrlHandlers(accessor: ServicesAccessor, mainProcessElectronServer: ElectronIPCServer): Promise<IInitialProtocolUrls | undefined> {
 		const windowsMainService = this.windowsMainService = accessor.get(IWindowsMainService);
+
 		const urlService = accessor.get(IURLService);
+
 		const nativeHostMainService = this.nativeHostMainService = accessor.get(INativeHostMainService);
+
 		const dialogMainService = accessor.get(IDialogMainService);
 
 		// Install URL handlers that deal with protocl URLs either
@@ -656,8 +678,11 @@ export class CodeApplication extends Disposable {
 			onDidFocusMainWindow: nativeHostMainService.onDidFocusMainWindow,
 			getActiveWindowId: () => nativeHostMainService.getActiveWindowId(-1)
 		}));
+
 		const activeWindowRouter = new StaticRouter(ctx => activeWindowManager.getActiveClientId().then(id => ctx === id));
+
 		const urlHandlerRouter = new URLHandlerRouter(activeWindowRouter, this.logService);
+
 		const urlHandlerChannel = mainProcessElectronServer.getChannel('urlHandler', urlHandlerRouter);
 		urlService.registerHandler(new URLHandlerChannelClient(urlHandlerChannel));
 
@@ -669,6 +694,7 @@ export class CodeApplication extends Disposable {
 
 	private setupManagedRemoteResourceUrlHandler(mainProcessElectronServer: ElectronIPCServer) {
 		const notFound = (): Electron.ProtocolResponse => ({ statusCode: 404, data: 'Not found' });
+
 		const remoteResourceChannel = new Lazy(() => mainProcessElectronServer.getChannel(
 			NODE_REMOTE_RESOURCE_CHANNEL_NAME,
 			new NodeRemoteResourceRouter(),
@@ -676,6 +702,7 @@ export class CodeApplication extends Disposable {
 
 		protocol.registerBufferProtocol(Schemas.vscodeManagedRemoteResource, (request, callback) => {
 			const url = URI.parse(request.url);
+
 			if (!url.authority.startsWith('window:')) {
 				return callback(notFound());
 			}
@@ -698,12 +725,14 @@ export class CodeApplication extends Disposable {
 
 		// Windows/Linux: protocol handler invokes CLI with --open-url
 		const protocolUrlsFromCommandLine = this.environmentMainService.args['open-url'] ? this.environmentMainService.args._urls || [] : [];
+
 		if (protocolUrlsFromCommandLine.length > 0) {
 			this.logService.trace('app#resolveInitialProtocolUrls() protocol urls from command line:', protocolUrlsFromCommandLine);
 		}
 
 		// macOS: open-url events that were received before the app is ready
 		const protocolUrlsFromEvent = ((<any>global).getOpenUrls() || []) as string[];
+
 		if (protocolUrlsFromEvent.length > 0) {
 			this.logService.trace(`app#resolveInitialProtocolUrls() protocol urls from macOS 'open-url' event:`, protocolUrlsFromEvent);
 		}
@@ -726,13 +755,16 @@ export class CodeApplication extends Disposable {
 		});
 
 		const openables: IWindowOpenable[] = [];
+
 		const urls: IProtocolUrl[] = [];
+
 		for (const protocolUrl of protocolUrls) {
 			if (!protocolUrl) {
 				continue; // invalid
 			}
 
 			const windowOpenable = this.getWindowOpenableFromProtocolUrl(protocolUrl.uri);
+
 			if (windowOpenable) {
 				if (await this.shouldBlockOpenable(windowOpenable, windowsMainService, dialogMainService)) {
 					this.logService.trace('app#resolveInitialProtocolUrls() protocol url was blocked:', protocolUrl.uri.toString(true));
@@ -755,7 +787,9 @@ export class CodeApplication extends Disposable {
 
 	private async shouldBlockOpenable(openable: IWindowOpenable, windowsMainService: IWindowsMainService, dialogMainService: IDialogMainService): Promise<boolean> {
 		let openableUri: URI;
+
 		let message: string;
+
 		if (isWorkspaceToOpen(openable)) {
 			openableUri = openable.workspaceUri;
 			message = localize('confirmOpenMessageWorkspace', "An external application wants to open '{0}' in {1}. Do you want to open this workspace file?", openableUri.scheme === Schemas.file ? getPathLabel(openableUri, { os: OS, tildify: this.environmentMainService }) : openableUri.toString(true), this.productService.nameShort);
@@ -784,6 +818,7 @@ export class CodeApplication extends Disposable {
 		}
 
 		const askForConfirmation = this.configurationService.getValue<unknown>(CodeApplication.SECURITY_PROTOCOL_HANDLING_CONFIRMATION_SETTING_KEY[openableUri.scheme]);
+
 		if (askForConfirmation === false) {
 			return false; // not blocked via settings
 		}
@@ -841,8 +876,11 @@ export class CodeApplication extends Disposable {
 			//   To: vscode-remote://wsl+ubuntu/mnt/c/GitDevelopment/monaco
 
 			const secondSlash = uri.path.indexOf(posix.sep, 1 /* skip over the leading slash */);
+
 			let authority: string;
+
 			let path: string;
+
 			if (secondSlash !== -1) {
 				authority = uri.path.substring(1, secondSlash);
 				path = uri.path.substring(secondSlash);
@@ -852,7 +890,9 @@ export class CodeApplication extends Disposable {
 			}
 
 			let query = uri.query;
+
 			const params = new URLSearchParams(uri.query);
+
 			if (params.get('windowId') === '_blank') {
 				// Make sure to unset any `windowId=_blank` here
 				// https://github.com/microsoft/vscode/issues/191902
@@ -892,6 +932,7 @@ export class CodeApplication extends Disposable {
 
 		// We should handle the URI in a new window if the URL contains `windowId=_blank`
 		const params = new URLSearchParams(uri.query);
+
 		if (params.get('windowId') === '_blank') {
 			this.logService.trace(`app#handleProtocolUrl() found 'windowId=_blank' as parameter, setting shouldOpenInNewWindow=true:`, uri.toString(true));
 
@@ -910,6 +951,7 @@ export class CodeApplication extends Disposable {
 
 		// Pass along whether the application is being opened via a Continue On flow
 		const continueOn = params.get('continueOn');
+
 		if (continueOn !== null) {
 			this.logService.trace(`app#handleProtocolUrl() found 'continueOn' as parameter:`, uri.toString(true));
 
@@ -921,6 +963,7 @@ export class CodeApplication extends Disposable {
 
 		// Check if the protocol URL is a window openable to open...
 		const windowOpenableFromProtocolUrl = this.getWindowOpenableFromProtocolUrl(uri);
+
 		if (windowOpenableFromProtocolUrl) {
 			if (await this.shouldBlockOpenable(windowOpenableFromProtocolUrl, windowsMainService, dialogMainService)) {
 				this.logService.trace('app#handleProtocolUrl() protocol url was blocked:', uri.toString(true));
@@ -998,6 +1041,7 @@ export class CodeApplication extends Disposable {
 		switch (process.platform) {
 			case 'win32':
 				services.set(IUpdateService, new SyncDescriptor(Win32UpdateService));
+
 				break;
 
 			case 'linux':
@@ -1010,6 +1054,7 @@ export class CodeApplication extends Disposable {
 
 			case 'darwin':
 				services.set(IUpdateService, new SyncDescriptor(DarwinUpdateService));
+
 				break;
 		}
 
@@ -1059,6 +1104,7 @@ export class CodeApplication extends Disposable {
 			shortGraceTime: LocalReconnectConstants.ShortGraceTime,
 			scrollback: this.configurationService.getValue<number>(TerminalSettingId.PersistentSessionScrollback) ?? 100
 		}, this.configurationService, this.environmentMainService, this.lifecycleMainService, this.logService);
+
 		const ptyHostService = new PtyHostService(
 			ptyHostStarter,
 			this.configurationService,
@@ -1092,10 +1138,15 @@ export class CodeApplication extends Disposable {
 		// Telemetry
 		if (supportsTelemetry(this.productService, this.environmentMainService)) {
 			const isInternal = isInternalTelemetry(this.productService, this.configurationService);
+
 			const channel = getDelayedChannel(sharedProcessReady.then(client => client.getChannel('telemetryAppender')));
+
 			const appender = new TelemetryAppenderClient(channel);
+
 			const commonProperties = resolveCommonProperties(release(), hostname(), process.arch, this.productService.commit, this.productService.version, machineId, sqmId, devDeviceId, isInternal);
+
 			const piiPaths = getPiiPathsFromEnvironment(this.environmentMainService);
+
 			const config: ITelemetryServiceConfig = { appenders: [appender], commonProperties, piiPaths, sendErrorTelemetry: true };
 
 			services.set(ITelemetryService, new SyncDescriptor(TelemetryService, [config], false));
@@ -1148,6 +1199,7 @@ export class CodeApplication extends Disposable {
 		// Local Files
 		const diskFileSystemProvider = this.fileService.getProvider(Schemas.file);
 		assertType(diskFileSystemProvider instanceof DiskFileSystemProvider);
+
 		const fileSystemProviderChannel = disposables.add(new DiskFileSystemProviderChannel(diskFileSystemProvider, this.logService, this.environmentMainService));
 		mainProcessElectronServer.registerChannel(LOCAL_FILE_SYSTEM_CHANNEL_NAME, fileSystemProviderChannel);
 		sharedProcessClient.then(client => client.registerChannel(LOCAL_FILE_SYSTEM_CHANNEL_NAME, fileSystemProviderChannel));
@@ -1179,6 +1231,7 @@ export class CodeApplication extends Disposable {
 
 		// Native host (main & shared process)
 		this.nativeHostMainService = accessor.get(INativeHostMainService);
+
 		const nativeHostChannel = ProxyChannel.fromService(this.nativeHostMainService, disposables);
 		mainProcessElectronServer.registerChannel('nativeHost', nativeHostChannel);
 		sharedProcessClient.then(client => client.registerChannel('nativeHost', nativeHostChannel));
@@ -1239,6 +1292,7 @@ export class CodeApplication extends Disposable {
 		this.auxiliaryWindowsMainService = accessor.get(IAuxiliaryWindowsMainService);
 
 		const context = isLaunchedFromCli(process.env) ? OpenContext.CLI : OpenContext.DESKTOP;
+
 		const args = this.environmentMainService.args;
 
 		// First check for windows from protocol links to open
@@ -1267,6 +1321,7 @@ export class CodeApplication extends Disposable {
 			if (initialProtocolUrls.urls.length > 0) {
 				for (const protocolUrl of initialProtocolUrls.urls) {
 					const params = new URLSearchParams(protocolUrl.uri.query);
+
 					if (params.get('windowId') === '_blank') {
 
 						// It is important here that we remove `windowId=_blank` from
@@ -1291,13 +1346,21 @@ export class CodeApplication extends Disposable {
 		}
 
 		const macOpenFiles: string[] = (<any>global).macOpenFiles;
+
 		const hasCliArgs = args._.length;
+
 		const hasFolderURIs = !!args['folder-uri'];
+
 		const hasFileURIs = !!args['file-uri'];
+
 		const noRecentEntry = args['skip-add-to-recently-opened'] === true;
+
 		const waitMarkerFileURI = args.wait && args.waitMarkerFilePath ? URI.file(args.waitMarkerFilePath) : undefined;
+
 		const remoteAuthority = args.remote || undefined;
+
 		const forceProfile = args.profile;
+
 		const forceTempProfile = args['profile-temp'];
 
 		// Started without file/folder arguments
@@ -1384,9 +1447,11 @@ export class CodeApplication extends Disposable {
 
 	private async installMutex(): Promise<void> {
 		const win32MutexName = this.productService.win32MutexName;
+
 		if (isWindows && win32MutexName) {
 			try {
 				const WindowsMutex = await import('@vscode/windows-mutex');
+
 				const mutex = new WindowsMutex.Mutex(win32MutexName);
 				Event.once(this.lifecycleMainService.onWillShutdown)(() => mutex.release());
 			} catch (error) {
@@ -1400,6 +1465,7 @@ export class CodeApplication extends Disposable {
 			return await getResolvedShellEnv(this.configurationService, this.logService, args, env);
 		} catch (error) {
 			const errorMessage = toErrorMessage(error);
+
 			if (notifyOnError) {
 				this.windowsMainService?.sendToFocused('vscode:showResolveShellEnvError', errorMessage);
 			} else {
@@ -1418,9 +1484,13 @@ export class CodeApplication extends Disposable {
 
 		try {
 			const argvContent = await this.fileService.readFile(this.environmentMainService.argvResource);
+
 			const argvString = argvContent.value.toString();
+
 			const argvJSON = parse<{ 'enable-crash-reporter'?: boolean }>(argvString);
+
 			const telemetryLevel = getTelemetryLevel(this.configurationService);
+
 			const enableCrashReporter = telemetryLevel >= TelemetryLevel.CRASH;
 
 			// Initial startup
@@ -1436,6 +1506,7 @@ export class CodeApplication extends Disposable {
 					`	"crash-reporter-id": "${generateUuid()}"`,
 					'}'
 				];
+
 				const newArgvString = argvString.substring(0, argvString.length - 2).concat(',\n', additionalArgvContent.join('\n'));
 
 				await this.fileService.writeFile(this.environmentMainService.argvResource, VSBuffer.fromString(newArgvString));
@@ -1444,6 +1515,7 @@ export class CodeApplication extends Disposable {
 			// Subsequent startup: update crash reporter value if changed
 			else {
 				const newArgvString = argvString.replace(/"enable-crash-reporter": .*,/, `"enable-crash-reporter": ${enableCrashReporter},`);
+
 				if (newArgvString !== argvString) {
 					await this.fileService.writeFile(this.environmentMainService.argvResource, VSBuffer.fromString(newArgvString));
 				}

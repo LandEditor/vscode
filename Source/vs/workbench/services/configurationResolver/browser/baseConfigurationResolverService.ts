@@ -23,18 +23,23 @@ import { AbstractVariableResolverService } from '../common/variableResolver.js';
 import { IEditorService } from '../../editor/common/editorService.js';
 import { IExtensionService } from '../../extensions/common/extensions.js';
 import { IPathService } from '../../path/common/pathService.js';
+
 const LAST_INPUT_STORAGE_KEY = 'configResolveInputLru';
+
 const LAST_INPUT_CACHE_SIZE = 5;
 export abstract class BaseConfigurationResolverService extends AbstractVariableResolverService {
     static readonly INPUT_OR_COMMAND_VARIABLES_PATTERN = /\${((input|command):(.*?))}/g;
     private userInputAccessQueue = new Queue<string | IQuickPickItem | undefined>();
+
     constructor(context: {
         getAppRoot: () => string | undefined;
+
         getExecPath: () => string | undefined;
     }, envVariablesPromise: Promise<IProcessEnvironment>, editorService: IEditorService, private readonly configurationService: IConfigurationService, private readonly commandService: ICommandService, private readonly workspaceContextService: IWorkspaceContextService, private readonly quickInputService: IQuickInputService, private readonly labelService: ILabelService, private readonly pathService: IPathService, extensionService: IExtensionService, private readonly storageService: IStorageService) {
         super({
             getFolderUri: (folderName: string): uri | undefined => {
                 const folder = workspaceContextService.getWorkspace().folders.filter(f => f.name === folderName).pop();
+
                 return folder ? folder.uri : undefined;
             },
             getWorkspaceFolderCount: (): number => {
@@ -54,6 +59,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
                     supportSideBySide: SideBySideEditor.PRIMARY,
                     filterByScheme: [Schemas.file, Schemas.vscodeUserData, this.pathService.defaultUriScheme]
                 });
+
                 if (!fileResource) {
                     return undefined;
                 }
@@ -64,10 +70,12 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
                     supportSideBySide: SideBySideEditor.PRIMARY,
                     filterByScheme: [Schemas.file, Schemas.vscodeUserData, this.pathService.defaultUriScheme]
                 });
+
                 if (!fileResource) {
                     return undefined;
                 }
                 const wsFolder = workspaceContextService.getWorkspaceFolder(fileResource);
+
                 if (!wsFolder) {
                     return undefined;
                 }
@@ -75,17 +83,22 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
             },
             getSelectedText: (): string | undefined => {
                 const activeTextEditorControl = editorService.activeTextEditorControl;
+
                 let activeControl: ICodeEditor | null = null;
+
                 if (isCodeEditor(activeTextEditorControl)) {
                     activeControl = activeTextEditorControl;
                 }
                 else if (isDiffEditor(activeTextEditorControl)) {
                     const original = activeTextEditorControl.getOriginalEditor();
+
                     const modified = activeTextEditorControl.getModifiedEditor();
                     activeControl = original.hasWidgetFocus() ? original : modified;
                 }
                 const activeModel = activeControl?.getModel();
+
                 const activeSelection = activeControl?.getSelection();
+
                 if (activeModel && activeSelection) {
                     return activeModel.getValueInRange(activeSelection);
                 }
@@ -93,10 +106,13 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
             },
             getLineNumber: (): string | undefined => {
                 const activeTextEditorControl = editorService.activeTextEditorControl;
+
                 if (isCodeEditor(activeTextEditorControl)) {
                     const selection = activeTextEditorControl.getSelection();
+
                     if (selection) {
                         const lineNumber = selection.positionLineNumber;
+
                         return String(lineNumber);
                     }
                 }
@@ -128,6 +144,7 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
         // resolve any non-interactive variables and any contributed variables
         const resolved = await this.resolveAnyMap(folder, config);
         config = resolved.newConfig;
+
         const allVariableMapping: Map<string, string> = resolved.resolvedVariables;
         // resolve input and command variables in the order in which they are encountered
         return this.resolveWithInputAndCommands(folder, config, variables, section, target).then(inputOrCommandMapping => {
@@ -163,22 +180,30 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
         }
         // get all "inputs"
         let inputs: ConfiguredInput[] = [];
+
         if (this.workspaceContextService.getWorkbenchState() !== WorkbenchState.EMPTY && section) {
             const overrides: IConfigurationOverrides = folder ? { resource: folder.uri } : {};
+
             const result = this.configurationService.inspect(section, overrides);
+
             if (result && (result.userValue || result.workspaceValue || result.workspaceFolderValue)) {
                 switch (target) {
                     case ConfigurationTarget.USER:
                         inputs = (<any>result.userValue)?.inputs;
+
                         break;
+
                     case ConfigurationTarget.WORKSPACE:
                         inputs = (<any>result.workspaceValue)?.inputs;
+
                         break;
+
                     default: inputs = (<any>result.workspaceFolderValue)?.inputs;
                 }
             }
             else {
                 const valueResult = this.configurationService.getValue<any>(section, overrides);
+
                 if (valueResult) {
                     inputs = valueResult.inputs;
                 }
@@ -187,18 +212,25 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
         // extract and dedupe all "input" and "command" variables and preserve their order in an array
         const variables: string[] = [];
         this.findVariables(configuration, variables);
+
         const variableValues: IStringDictionary<string> = Object.create(null);
+
         for (const variable of variables) {
             const [type, name] = variable.split(':', 2);
+
             let result: string | undefined;
+
             switch (type) {
                 case 'input':
                     result = await this.showUserInput(section, name, inputs);
+
                     break;
+
                 case 'command': {
                     // use the name as a command ID #12735
                     const commandId = (variableToCommandMap ? variableToCommandMap[name] : undefined) || name;
                     result = await this.commandService.executeCommand(commandId, configuration);
+
                     if (typeof result !== 'string' && !Types.isUndefinedOrNull(result)) {
                         throw new Error(nls.localize('commandVariable.noStringType', "Cannot substitute command variable '{0}' because command did not return a result of type string.", commandId));
                     }
@@ -227,9 +259,11 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
     private findVariables(object: any, variables: string[]) {
         if (typeof object === 'string') {
             let matches;
+
             while ((matches = BaseConfigurationResolverService.INPUT_OR_COMMAND_VARIABLES_PATTERN.exec(object)) !== null) {
                 if (matches.length === 4) {
                     const command = matches[1];
+
                     if (variables.indexOf(command) < 0) {
                         variables.push(command);
                     }
@@ -263,19 +297,25 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
         }
         // find info for the given input variable
         const info = inputInfos.filter(item => item.id === variable).pop();
+
         if (info) {
             const missingAttribute = (attrName: string) => {
                 throw new Error(nls.localize('inputVariable.missingAttribute', "Input variable '{0}' is of type '{1}' and must include '{2}'.", variable, info.type, attrName));
             };
+
             const defaultValueMap = this.readInputLru();
+
             const defaultValueKey = `${section}.${variable}`;
+
             const previousPickedValue = defaultValueMap.get(defaultValueKey);
+
             switch (info.type) {
                 case 'promptString': {
                     if (!Types.isString(info.description)) {
                         missingAttribute('description');
                     }
                     const inputOptions: IInputOptions = { prompt: info.description, ignoreFocusLost: true, value: previousPickedValue };
+
                     if (info.default) {
                         inputOptions.value = info.default;
                     }
@@ -307,14 +347,17 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
                         value: string;
                     }
                     const picks = new Array<PickStringItem>();
+
                     for (const pickOption of info.options) {
                         const value = Types.isString(pickOption) ? pickOption : pickOption.value;
+
                         const label = Types.isString(pickOption) ? undefined : pickOption.label;
                         // If there is no label defined, use value as label
                         const item: PickStringItem = {
                             label: label ? `${label}: ${value}` : value,
                             value: value
                         };
+
                         if (value === info.default) {
                             item.description = nls.localize('inputVariable.defaultInputValue', "(Default)");
                             picks.unshift(item);
@@ -327,10 +370,12 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
                         }
                     }
                     const pickOptions: IPickOptions<PickStringItem> = { placeHolder: info.description, matchOnDetail: true, ignoreFocusLost: true };
+
                     return this.userInputAccessQueue.queue(() => this.quickInputService.pick(picks, pickOptions, undefined)).then(resolvedInput => {
                         if (resolvedInput) {
                             const value = (resolvedInput as PickStringItem).value;
                             this.storeInputLru(defaultValueMap.set(defaultValueKey, value));
+
                             return value;
                         }
                         return undefined;
@@ -358,7 +403,9 @@ export abstract class BaseConfigurationResolverService extends AbstractVariableR
     }
     private readInputLru(): LRUCache<string, string> {
         const contents = this.storageService.get(LAST_INPUT_STORAGE_KEY, StorageScope.WORKSPACE);
+
         const lru = new LRUCache<string, string>(LAST_INPUT_CACHE_SIZE);
+
         try {
             if (contents) {
                 lru.fromJSON(JSON.parse(contents));

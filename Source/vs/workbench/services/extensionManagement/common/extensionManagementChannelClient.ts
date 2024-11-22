@@ -22,12 +22,15 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 	readonly onDidChangeProfile = this._onDidChangeProfile.event;
 
 	private readonly _onDidProfileAwareInstallExtensions = this._register(new Emitter<readonly InstallExtensionResult[]>());
+
 	get onProfileAwareDidInstallExtensions() { return this._onDidProfileAwareInstallExtensions.event; }
 
 	private readonly _onDidProfileAwareUninstallExtension = this._register(new Emitter<DidUninstallExtensionEvent>());
+
 	get onProfileAwareDidUninstallExtension() { return this._onDidProfileAwareUninstallExtension.event; }
 
 	private readonly _onDidProfileAwareUpdateExtensionMetadata = this._register(new Emitter<DidUpdateExtensionMetadata>());
+
 	get onProfileAwareDidUpdateExtensionMetadata() { return this._onDidProfileAwareUpdateExtensionMetadata.event; }
 
 	constructor(channel: IChannel,
@@ -45,6 +48,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected override async onInstallExtensionEvent(data: InstallExtensionEvent): Promise<void> {
 		const result = this.filterEvent(data.profileLocation, data.applicationScoped ?? false);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onInstallExtension.fire(data);
 		}
@@ -52,8 +56,10 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected override async onDidInstallExtensionsEvent(results: readonly InstallExtensionResult[]): Promise<void> {
 		const filtered = [];
+
 		for (const e of results) {
 			const result = this.filterEvent(e.profileLocation, e.applicationScoped ?? e.local?.isApplicationScoped ?? false);
+
 			if (result instanceof Promise ? await result : result) {
 				filtered.push(e);
 			}
@@ -66,6 +72,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected override async onUninstallExtensionEvent(data: UninstallExtensionEvent): Promise<void> {
 		const result = this.filterEvent(data.profileLocation, data.applicationScoped ?? false);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onUninstallExtension.fire(data);
 		}
@@ -73,6 +80,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected override async onDidUninstallExtensionEvent(data: DidUninstallExtensionEvent): Promise<void> {
 		const result = this.filterEvent(data.profileLocation, data.applicationScoped ?? false);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onDidUninstallExtension.fire(data);
 		}
@@ -81,6 +89,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected override async onDidUpdateExtensionMetadataEvent(data: DidUpdateExtensionMetadata): Promise<void> {
 		const result = this.filterEvent(data.profileLocation, data.local?.isApplicationScoped ?? false);
+
 		if (result instanceof Promise ? await result : result) {
 			this._onDidUpdateExtensionMetadata.fire(data);
 		}
@@ -89,6 +98,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	override async install(vsix: URI, installOptions?: InstallOptions): Promise<ILocalExtension> {
 		installOptions = { ...installOptions, profileLocation: await this.getProfileLocation(installOptions?.profileLocation) };
+
 		return super.install(vsix, installOptions);
 	}
 
@@ -98,11 +108,13 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	override async installFromGallery(extension: IGalleryExtension, installOptions?: InstallOptions): Promise<ILocalExtension> {
 		installOptions = { ...installOptions, profileLocation: await this.getProfileLocation(installOptions?.profileLocation) };
+
 		return super.installFromGallery(extension, installOptions);
 	}
 
 	override async installGalleryExtensions(extensions: InstallExtensionInfo[]): Promise<InstallExtensionResult[]> {
 		const infos: InstallExtensionInfo[] = [];
+
 		for (const extension of extensions) {
 			infos.push({ ...extension, options: { ...extension.options, profileLocation: await this.getProfileLocation(extension.options?.profileLocation) } });
 		}
@@ -111,11 +123,13 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	override async uninstall(extension: ILocalExtension, options?: UninstallOptions): Promise<void> {
 		options = { ...options, profileLocation: await this.getProfileLocation(options?.profileLocation) };
+
 		return super.uninstall(extension, options);
 	}
 
 	override async uninstallExtensions(extensions: UninstallExtensionInfo[]): Promise<void> {
 		const infos: UninstallExtensionInfo[] = [];
+
 		for (const { extension, options } of extensions) {
 			infos.push({ extension, options: { ...options, profileLocation: await this.getProfileLocation(options?.profileLocation) } });
 		}
@@ -140,6 +154,7 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	private async whenProfileChanged(e: DidChangeUserDataProfileEvent): Promise<void> {
 		const previousProfileLocation = await this.getProfileLocation(e.previous.extensionsResource);
+
 		const currentProfileLocation = await this.getProfileLocation(e.profile.extensionsResource);
 
 		if (this.uriIdentityService.extUri.isEqual(previousProfileLocation, currentProfileLocation)) {
@@ -152,9 +167,12 @@ export abstract class ProfileAwareExtensionManagementChannelClient extends BaseE
 
 	protected async switchExtensionsProfile(previousProfileLocation: URI, currentProfileLocation: URI, preserveExtensions?: ExtensionIdentifier[]): Promise<DidChangeProfileEvent> {
 		const oldExtensions = await this.getInstalled(ExtensionType.User, previousProfileLocation);
+
 		const newExtensions = await this.getInstalled(ExtensionType.User, currentProfileLocation);
+
 		if (preserveExtensions?.length) {
 			const extensionsToInstall: IExtensionIdentifier[] = [];
+
 			for (const extension of oldExtensions) {
 				if (preserveExtensions.some(id => ExtensionIdentifier.equals(extension.identifier.id, id)) &&
 					!newExtensions.some(e => ExtensionIdentifier.equals(e.identifier.id, extension.identifier.id))) {

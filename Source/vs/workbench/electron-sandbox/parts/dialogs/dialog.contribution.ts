@@ -24,6 +24,7 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
     private browserImpl: Lazy<IDialogHandler>;
     private model: IDialogsModel;
     private currentDialog: IDialogViewItem | undefined;
+
     constructor(
     @IConfigurationService
     private configurationService: IConfigurationService, 
@@ -57,7 +58,9 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
     private async processDialogs(): Promise<void> {
         while (this.model.dialogs.length) {
             this.currentDialog = this.model.dialogs[0];
+
             let result: IDialogResult | Error | undefined = undefined;
+
             try {
                 // Confirm
                 if (this.currentDialog.args.confirmArgs) {

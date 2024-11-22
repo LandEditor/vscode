@@ -16,6 +16,7 @@ export namespace WebFileSystemAccess {
     }
     export function isFileSystemHandle(handle: unknown): handle is FileSystemHandle {
         const candidate = handle as FileSystemHandle | undefined;
+
         if (!candidate) {
             return false;
         }

@@ -41,6 +41,7 @@ export class NativeExtensionManagementService extends ProfileAwareExtensionManag
 
 	override async install(vsix: URI, options?: InstallOptions): Promise<ILocalExtension> {
 		const { location, cleanup } = await this.downloadVsix(vsix);
+
 		try {
 			return await super.install(location, options);
 		} finally {
@@ -53,9 +54,11 @@ export class NativeExtensionManagementService extends ProfileAwareExtensionManag
 			return { location: vsix, async cleanup() { } };
 		}
 		this.logService.trace('Downloading extension from', vsix.toString());
+
 		const location = joinPath(this.nativeEnvironmentService.extensionsDownloadLocation, generateUuid());
 		await this.downloadService.download(vsix, location);
 		this.logService.info('Downloaded extension to', location.toString());
+
 		const cleanup = async () => {
 			try {
 				await this.fileService.del(location);
@@ -63,13 +66,16 @@ export class NativeExtensionManagementService extends ProfileAwareExtensionManag
 				this.logService.error(error);
 			}
 		};
+
 		return { location, cleanup };
 	}
 
 	protected override async switchExtensionsProfile(previousProfileLocation: URI, currentProfileLocation: URI, preserveExtensions?: ExtensionIdentifier[]): Promise<DidChangeProfileEvent> {
 		if (this.nativeEnvironmentService.remoteAuthority) {
 			const previousInstalledExtensions = await this.getInstalled(ExtensionType.User, previousProfileLocation);
+
 			const resolverExtension = previousInstalledExtensions.find(e => isResolverExtension(e.manifest, this.nativeEnvironmentService.remoteAuthority));
+
 			if (resolverExtension) {
 				if (!preserveExtensions) {
 					preserveExtensions = [];

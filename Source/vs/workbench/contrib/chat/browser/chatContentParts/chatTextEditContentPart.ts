@@ -30,7 +30,9 @@ import { CodeCompareBlockPart, ICodeCompareBlockData, ICodeCompareBlockDiffData 
 import { IChatProgressRenderableResponseContent, IChatTextEditGroup } from '../../common/chatModel.js';
 import { IChatService } from '../../common/chatService.js';
 import { IChatResponseViewModel, isResponseVM } from '../../common/chatViewModel.js';
+
 const $ = dom.$;
+
 const ICodeCompareModelService = createDecorator<ICodeCompareModelService>('ICodeCompareModelService');
 interface ICodeCompareModelService {
     _serviceBrand: undefined;
@@ -45,10 +47,12 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
     private readonly comparePart: IDisposableReference<CodeCompareBlockPart> | undefined;
     private readonly _onDidChangeHeight = this._register(new Emitter<void>());
     public readonly onDidChangeHeight = this._onDidChangeHeight.event;
+
     constructor(chatTextEdit: IChatTextEditGroup, context: IChatContentPartRenderContext, rendererOptions: IChatListItemRendererOptions, diffEditorPool: DiffEditorPool, currentWidth: number, 
     @ICodeCompareModelService
     private readonly codeCompareModelService: ICodeCompareModelService) {
         super();
+
         const element = context.element;
         assertType(isResponseVM(element));
         // TODO@jrieken move this into the CompareCodeBlock and properly say what kind of changes happen
@@ -68,6 +72,7 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
         }
         else {
             const cts = new CancellationTokenSource();
+
             let isDisposed = false;
             this._register(toDisposable(() => {
                 isDisposed = true;
@@ -79,16 +84,20 @@ export class ChatTextEditContentPart extends Disposable implements IChatContentP
             this._register(this.comparePart.object.onDidChangeContentHeight(() => {
                 this._onDidChangeHeight.fire();
             }));
+
             const data: ICodeCompareBlockData = {
                 element,
                 edit: chatTextEdit,
                 diffData: (async () => {
                     const ref = await this.codeCompareModelService.createModel(element, chatTextEdit);
+
                     if (isDisposed) {
                         ref.dispose();
+
                         return;
                     }
                     this._register(ref);
+
                     return {
                         modified: ref.object.modified.textEditorModel,
                         original: ref.object.original.textEditorModel,
@@ -126,7 +135,9 @@ export class DiffEditorPool extends Disposable {
     }
     get(): IDisposableReference<CodeCompareBlockPart> {
         const codeBlock = this._pool.get();
+
         let stale = false;
+
         return {
             object: codeBlock,
             isStale: () => stale,
@@ -140,6 +151,7 @@ export class DiffEditorPool extends Disposable {
 }
 class CodeCompareModelService implements ICodeCompareModelService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @ITextModelService
     private readonly textModelService: ITextModelService, 
@@ -153,18 +165,22 @@ class CodeCompareModelService implements ICodeCompareModelService {
         modified: IResolvedTextEditorModel;
     }>> {
         const original = await this.textModelService.createModelReference(chatTextEdit.uri);
+
         const modified = await this.textModelService.createModelReference((this.modelService.createModel(createTextBufferFactoryFromSnapshot(original.object.textEditorModel.createSnapshot()), { languageId: original.object.textEditorModel.getLanguageId(), onDidChange: Event.None }, URI.from({ scheme: Schemas.vscodeChatCodeBlock, path: chatTextEdit.uri.path, query: generateUuid() }), false)).uri);
+
         const d = new RefCountedDisposable(toDisposable(() => {
             original.dispose();
             modified.dispose();
         }));
         // compute the sha1 of the original model
         let originalSha1: string = '';
+
         if (chatTextEdit.state) {
             originalSha1 = chatTextEdit.state.sha1;
         }
         else {
             const sha1 = new DefaultModelSHA1Computer();
+
             if (sha1.canComputeSHA1(original.object.textEditorModel)) {
                 originalSha1 = sha1.computeSHA1(original.object.textEditorModel);
                 chatTextEdit.state = { sha1: originalSha1, applied: 0 };
@@ -172,7 +188,9 @@ class CodeCompareModelService implements ICodeCompareModelService {
         }
         // apply edits to the "modified" model
         const chatModel = this.chatService.getSession(element.sessionId)!;
+
         const editGroups: ISingleEditOperation[][] = [];
+
         for (const request of chatModel.getRequests()) {
             if (!request.response) {
                 continue;
@@ -198,7 +216,9 @@ class CodeCompareModelService implements ICodeCompareModelService {
         // repeatedly and thereby also should reuse the modified-model and just
         // update it with more edits
         d.acquire();
+
         setTimeout(() => d.release(), 5000);
+
         return {
             object: {
                 originalSha1,

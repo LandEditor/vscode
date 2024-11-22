@@ -12,17 +12,23 @@ function dec2hex(dec: number): string {
 export function generateCodeVerifier(): string {
     const array = new Uint32Array(56 / 2);
     crypto.getRandomValues(array);
+
     return Array.from(array, dec2hex).join('');
 }
 function sha256(plain: string | undefined) {
     const encoder = new TextEncoder();
+
     const data = encoder.encode(plain);
+
     return crypto.subtle.digest('SHA-256', data);
 }
 function base64urlencode(a: ArrayBuffer) {
     let str = '';
+
     const bytes = new Uint8Array(a);
+
     const len = bytes.byteLength;
+
     for (let i = 0; i < len; i++) {
         str += String.fromCharCode(bytes[i]);
     }
@@ -33,6 +39,8 @@ function base64urlencode(a: ArrayBuffer) {
 }
 export async function generateCodeChallenge(v: string) {
     const hashed = await sha256(v);
+
     const base64encoded = base64urlencode(hashed);
+
     return base64encoded;
 }

@@ -104,13 +104,16 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 			const disposables = new DisposableStore();
 
 			const tokenSource = disposables.add(new EditorStateCancellationTokenSource(editor, CodeEditorStateFlag.Value, undefined, token));
+
 			try {
 				const ourDataTransfer = await this.extractDataTransferData(dragEvent);
+
 				if (ourDataTransfer.size === 0 || tokenSource.token.isCancellationRequested) {
 					return;
 				}
 
 				const model = editor.getModel();
+
 				if (!model) {
 					return;
 				}
@@ -126,18 +129,21 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 					});
 
 				const editSession = disposables.add(await this.getDropEdits(providers, model, position, ourDataTransfer, tokenSource.token));
+
 				if (tokenSource.token.isCancellationRequested) {
 					return;
 				}
 
 				if (editSession.edits.length) {
 					const activeEditIndex = this.getInitialActiveEditIndex(model, editSession.edits);
+
 					const canShowWidget = editor.getOption(EditorOption.dropIntoEditor).showDropSelector === 'afterDrop';
 					// Pass in the parent token here as it tracks cancelling the entire drop operation
 					await this._postDropWidgetManager.applyEditAndShowIfNeeded([Range.fromPositions(position)], { activeEditIndex, allEdits: editSession.edits }, canShowWidget, async edit => edit, token);
 				}
 			} finally {
 				disposables.dispose();
+
 				if (DropIntoEditorController._currentDropOperation === p) {
 					DropIntoEditorController._currentDropOperation = undefined;
 				}
@@ -154,6 +160,7 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 		const results = await raceCancellation(Promise.all(providers.map(async provider => {
 			try {
 				const edits = await provider.provideDocumentDropEdits(model, position, dataTransfer, token);
+
 				if (edits) {
 					disposables.add(edits);
 				}
@@ -168,6 +175,7 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 		})), token);
 
 		const edits = coalesce(results ?? []).flat();
+
 		return {
 			edits: sortEditsByYieldTo(edits),
 			dispose: () => disposables.dispose()
@@ -176,9 +184,12 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 
 	private getInitialActiveEditIndex(model: ITextModel, edits: ReadonlyArray<DocumentDropEdit>): number {
 		const preferredProviders = this._configService.getValue<PreferredDropConfiguration[]>(dropAsPreferenceConfig, { resource: model.uri });
+
 		for (const config of Array.isArray(preferredProviders) ? preferredProviders : []) {
 			const desiredKind = new HierarchicalKind(config);
+
 			const editIndex = edits.findIndex(edit => edit.kind && desiredKind.contains(edit.kind));
+
 			if (editIndex >= 0) {
 				return editIndex;
 			}
@@ -195,9 +206,11 @@ export class DropIntoEditorController extends Disposable implements IEditorContr
 
 		if (this.treeItemsTransfer.hasData(DraggedTreeItemsIdentifier.prototype)) {
 			const data = this.treeItemsTransfer.getData(DraggedTreeItemsIdentifier.prototype);
+
 			if (Array.isArray(data)) {
 				for (const id of data) {
 					const treeDataTransfer = await this._treeViewsDragAndDropService.removeDragOperationTransfer(id.identifier);
+
 					if (treeDataTransfer) {
 						for (const [type, value] of treeDataTransfer) {
 							dataTransfer.replace(type, value);

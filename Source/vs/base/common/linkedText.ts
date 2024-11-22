@@ -19,13 +19,17 @@ export class LinkedText {
 const LINK_REGEX = /\[([^\]]+)\]\(((?:https?:\/\/|command:|file:)[^\)\s]+)(?: (["'])(.+?)(\3))?\)/gi;
 export function parseLinkedText(text: string): LinkedText {
     const result: LinkedTextNode[] = [];
+
     let index = 0;
+
     let match: RegExpExecArray | null;
+
     while (match = LINK_REGEX.exec(text)) {
         if (match.index - index > 0) {
             result.push(text.substring(index, match.index));
         }
         const [, label, href, , title] = match;
+
         if (title) {
             result.push({ label, href, title });
         }

@@ -40,6 +40,7 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     readonly onDidChangeActiveInstance = this._onDidChangeActiveInstance.event;
     private readonly _onDidChangeInstances = this._register(new Emitter<void>());
     readonly onDidChangeInstances = this._onDidChangeInstances.event;
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -63,9 +64,12 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
         this._register(lifecycleService.onWillShutdown(() => this._isShuttingDown = true));
         this._register(this._editorService.onDidActiveEditorChange(() => {
             const activeEditor = this._editorService.activeEditor;
+
             const instance = activeEditor instanceof TerminalEditorInput ? activeEditor?.terminalInstance : undefined;
+
             const terminalEditorActive = !!instance && activeEditor instanceof TerminalEditorInput;
             this._terminalEditorActive.set(terminalEditorActive);
+
             if (terminalEditorActive) {
                 activeEditor?.setGroup(this._editorService.activeEditorPane?.group);
                 this.setActiveInstance(instance);
@@ -79,14 +83,18 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
         this._register(this._editorService.onDidVisibleEditorsChange(() => {
             // add any terminal editors created via the editor service split command
             const knownIds = this.instances.map(i => i.instanceId);
+
             const terminalEditors = this._getActiveTerminalEditors();
+
             const unknownEditor = terminalEditors.find(input => {
                 const inputId = input instanceof TerminalEditorInput ? input.terminalInstance?.instanceId : undefined;
+
                 if (inputId === undefined) {
                     return false;
                 }
                 return !knownIds.includes(inputId);
             });
+
             if (unknownEditor instanceof TerminalEditorInput && unknownEditor.terminalInstance) {
                 this._editorInputs.set(unknownEditor.terminalInstance.resource.path, unknownEditor);
                 this.instances.push(unknownEditor.terminalInstance);
@@ -96,11 +104,14 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
         // dragging and dropping to another editor or closing the editor via cmd/ctrl+w.
         this._register(this._editorService.onDidCloseEditor(e => {
             const instance = e.editor instanceof TerminalEditorInput ? e.editor.terminalInstance : undefined;
+
             if (instance) {
                 const instanceIndex = this.instances.findIndex(e => e === instance);
+
                 if (instanceIndex !== -1) {
                     const wasActiveInstance = this.instances[instanceIndex] === this.activeInstance;
                     this._removeInstance(instance);
+
                     if (wasActiveInstance) {
                         this.setActiveInstance(undefined);
                     }
@@ -129,6 +140,7 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     }
     async openEditor(instance: ITerminalInstance, editorOptions?: TerminalEditorLocation): Promise<void> {
         const resource = this.resolveResource(instance);
+
         if (resource) {
             await this._activeOpenEditorRequest?.promise;
             this._activeOpenEditorRequest = {
@@ -149,18 +161,24 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     }
     resolveResource(instance: ITerminalInstance): URI {
         const resource = instance.resource;
+
         const inputKey = resource.path;
+
         const cachedEditor = this._editorInputs.get(inputKey);
+
         if (cachedEditor) {
             return cachedEditor.resource;
         }
         instance.target = TerminalLocation.Editor;
+
         const input = this._instantiationService.createInstance(TerminalEditorInput, resource, instance);
         this._registerInstance(inputKey, input, instance);
+
         return input.resource;
     }
     getInputFromResource(resource: URI): TerminalEditorInput {
         const input = this._editorInputs.get(resource.path);
+
         if (!input) {
             throw new Error(`Could not get input from resource: ${resource.path}`);
         }
@@ -180,12 +198,15 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     private _removeInstance(instance: ITerminalInstance) {
         const inputKey = instance.resource.path;
         this._editorInputs.delete(inputKey);
+
         const instanceIndex = this.instances.findIndex(e => e === instance);
+
         if (instanceIndex !== -1) {
             this.instances.splice(instanceIndex, 1);
         }
         const disposables = this._instanceDisposables.get(inputKey);
         this._instanceDisposables.delete(inputKey);
+
         if (disposables) {
             dispose(disposables);
         }
@@ -198,12 +219,15 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
         if (instanceToSplit.target === TerminalLocation.Editor) {
             // Make sure the instance to split's group is active
             const group = this._editorInputs.get(instanceToSplit.resource.path)?.group;
+
             if (group) {
                 this._editorGroupsService.activateGroup(group);
             }
         }
         const instance = this._terminalInstanceService.createInstance(shellLaunchConfig, TerminalLocation.Editor);
+
         const resource = this.resolveResource(instance);
+
         if (resource) {
             this._editorService.openEditor({
                 resource: URI.revive(resource),
@@ -219,9 +243,12 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     reviveInput(deserializedInput: IDeserializedTerminalEditorInput): EditorInput {
         if ('pid' in deserializedInput) {
             const newDeserializedInput = { ...deserializedInput, findRevivedId: true };
+
             const instance = this._terminalInstanceService.createInstance({ attachPersistentProcess: newDeserializedInput }, TerminalLocation.Editor);
+
             const input = this._instantiationService.createInstance(TerminalEditorInput, instance.resource, instance);
             this._registerInstance(instance.resource.path, input, instance);
+
             return input;
         }
         else {
@@ -230,6 +257,7 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     }
     detachInstance(instance: ITerminalInstance) {
         const inputKey = instance.resource.path;
+
         const editorInput = this._editorInputs.get(inputKey);
         editorInput?.detachInstance();
         this._removeInstance(instance);
@@ -240,6 +268,7 @@ export class TerminalEditorService extends Disposable implements ITerminalEditor
     }
     async revealActiveEditor(preserveFocus?: boolean): Promise<void> {
         const instance = this.activeInstance;
+
         if (!instance) {
             return;
         }

@@ -12,6 +12,7 @@ export interface IIndexTreeOptions<T, TFilterData = void> extends IAbstractTreeO
 }
 export class IndexTree<T, TFilterData = void> extends AbstractTree<T, TFilterData, number[]> {
     protected declare model: IndexTreeModel<T, TFilterData>;
+
     constructor(private readonly user: string, container: HTMLElement, delegate: IListVirtualDelegate<T>, renderers: ITreeRenderer<T, TFilterData, any>[], private rootElement: T, options: IIndexTreeOptions<T, TFilterData> = {}) {
         super(user, container, delegate, renderers, options);
     }
@@ -21,6 +22,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<T, TFilterDat
     rerender(location?: number[]): void {
         if (location === undefined) {
             this.view.rerender();
+
             return;
         }
         this.model.rerender(location);
@@ -30,6 +32,7 @@ export class IndexTree<T, TFilterData = void> extends AbstractTree<T, TFilterDat
             throw new TreeError(this.user, `Update element height failed: invalid location`);
         }
         const elementIndex = this.model.getListIndex(location);
+
         if (elementIndex === -1) {
             return;
         }

@@ -15,6 +15,7 @@ import { ICellExecutionStateChangedEvent } from '../../common/notebookExecutionS
 export abstract class CellContentPart extends Disposable {
     protected currentCell: ICellViewModel | undefined;
     protected readonly cellDisposables = this._register(new DisposableStore());
+
     constructor() {
         super();
     }
@@ -64,6 +65,7 @@ export abstract class CellContentPart extends Disposable {
 export abstract class CellOverlayPart extends Disposable {
     protected currentCell: ICellViewModel | undefined;
     protected readonly cellDisposables = this._register(new DisposableStore());
+
     constructor() {
         super();
     }
@@ -108,6 +110,7 @@ function safeInvokeNoArg<T>(func: () => T): T | null {
     }
     catch (e) {
         onUnexpectedError(e);
+
         return null;
     }
 }
@@ -115,6 +118,7 @@ export class CellPartsCollection extends Disposable {
     private readonly _scheduledOverlayRendering = this._register(new MutableDisposable());
     private readonly _scheduledOverlayUpdateState = this._register(new MutableDisposable());
     private readonly _scheduledOverlayUpdateExecutionState = this._register(new MutableDisposable());
+
     constructor(private readonly targetWindow: Window, private readonly contentParts: readonly CellContentPart[], private readonly overlayParts: readonly CellOverlayPart[]) {
         super();
     }
@@ -149,6 +153,7 @@ export class CellPartsCollection extends Disposable {
         this._scheduledOverlayRendering.value = undefined;
         this._scheduledOverlayUpdateState.value = undefined;
         this._scheduledOverlayUpdateExecutionState.value = undefined;
+
         for (const part of this.overlayParts) {
             safeInvokeNoArg(() => part.unrenderCell(element));
         }

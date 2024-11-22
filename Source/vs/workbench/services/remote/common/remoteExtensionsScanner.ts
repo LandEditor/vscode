@@ -18,6 +18,7 @@ import { IWorkbenchExtensionManagementService } from '../../extensionManagement/
 import { Mutable } from '../../../../base/common/types.js';
 class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IRemoteAgentService
     private readonly remoteAgentService: IRemoteAgentService, 
@@ -39,8 +40,10 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
     async scanExtensions(): Promise<IExtensionDescription[]> {
         try {
             const languagePack = await this.activeLanguagePackService.getExtensionIdProvidingCurrentLocale();
+
             return await this.withChannel(async (channel) => {
                 const profileLocation = this.userDataProfileService.currentProfile.isDefault ? undefined : (await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile)).extensionsResource;
+
                 const scannedExtensions = await channel.call<Mutable<IExtensionDescription>[]>('scanExtensions', [
                     platform.language,
                     profileLocation,
@@ -51,16 +54,19 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
                 scannedExtensions.forEach((extension) => {
                     extension.extensionLocation = URI.revive(extension.extensionLocation);
                 });
+
                 return scannedExtensions;
             }, []);
         }
         catch (error) {
             this.logService.error(error);
+
             return [];
         }
     }
     private withChannel<R>(callback: (channel: IChannel) => Promise<R>, fallback: R): Promise<R> {
         const connection = this.remoteAgentService.getConnection();
+
         if (!connection) {
             return Promise.resolve(fallback);
         }

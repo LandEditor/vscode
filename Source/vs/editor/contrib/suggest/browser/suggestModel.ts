@@ -60,9 +60,12 @@ export class LineContext {
             return false;
         }
         const model = editor.getModel();
+
         const pos = editor.getPosition();
         model.tokenization.tokenizeIfCheap(pos.lineNumber);
+
         const word = model.getWordAtPosition(pos);
+
         if (!word) {
             return false;
         }
@@ -80,6 +83,7 @@ export class LineContext {
     readonly leadingLineContent: string;
     readonly leadingWord: IWordAtPosition;
     readonly triggerOptions: SuggestTriggerOptions;
+
     constructor(model: ITextModel, position: Position, triggerOptions: SuggestTriggerOptions) {
         this.leadingLineContent = model.getLineContent(position.lineNumber).substr(0, position.column - 1);
         this.leadingWord = model.getWordUntilPosition(position);
@@ -99,6 +103,7 @@ function canShowQuickSuggest(editor: ICodeEditor, contextKeyService: IContextKey
         return true;
     }
     const suppressSuggestions = contextKeyService.getContextKeyValue<boolean | undefined>(InlineCompletionContextKeys.suppressSuggestions.key);
+
     if (suppressSuggestions !== undefined) {
         return !suppressSuggestions;
     }
@@ -110,6 +115,7 @@ function canShowSuggestOnTriggerCharacters(editor: ICodeEditor, contextKeyServic
         return true;
     }
     const suppressSuggestions = contextKeyService.getContextKeyValue<boolean | undefined>(InlineCompletionContextKeys.suppressSuggestions.key);
+
     if (suppressSuggestions !== undefined) {
         return !suppressSuggestions;
     }
@@ -131,6 +137,7 @@ export class SuggestModel implements IDisposable {
     readonly onDidCancel: Event<ICancelEvent> = this._onDidCancel.event;
     readonly onDidTrigger: Event<ITriggerEvent> = this._onDidTrigger.event;
     readonly onDidSuggest: Event<ISuggestEvent> = this._onDidSuggest.event;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IEditorWorkerService
     private readonly _editorWorkerService: IEditorWorkerService, 
@@ -165,6 +172,7 @@ export class SuggestModel implements IDisposable {
             this._updateTriggerCharacters();
             this._updateActiveSuggestSession();
         }));
+
         let editorIsComposing = false;
         this._toDispose.add(this._editor.onDidCompositionStart(() => {
             editorIsComposing = true;
@@ -198,18 +206,23 @@ export class SuggestModel implements IDisposable {
     }
     private _updateTriggerCharacters(): void {
         this._triggerCharacterListener.clear();
+
         if (this._editor.getOption(EditorOption.readOnly)
             || !this._editor.hasModel()
             || !this._editor.getOption(EditorOption.suggestOnTriggerCharacters)) {
             return;
         }
         const supportsByTriggerCharacter = new Map<string, Set<CompletionItemProvider>>();
+
         for (const support of this._languageFeaturesService.completionProvider.all(this._editor.getModel())) {
             for (const ch of support.triggerCharacters || []) {
                 let set = supportsByTriggerCharacter.get(ch);
+
                 if (!set) {
                     set = new Set();
+
                     const suggestSupport = getSnippetSuggestSupport();
+
                     if (suggestSupport) {
                         set.add(suggestSupport);
                     }
@@ -229,10 +242,12 @@ export class SuggestModel implements IDisposable {
             if (!text) {
                 // came here from the compositionEnd-event
                 const position = this._editor.getPosition()!;
+
                 const model = this._editor.getModel()!;
                 text = model.getLineContent(position.lineNumber).substr(0, position.column - 1);
             }
             let lastChar = '';
+
             if (isLowSurrogate(text.charCodeAt(text.length - 1))) {
                 if (isHighSurrogate(text.charCodeAt(text.length - 2))) {
                     lastChar = text.substr(text.length - 2);
@@ -242,10 +257,12 @@ export class SuggestModel implements IDisposable {
                 lastChar = text.charAt(text.length - 1);
             }
             const supports = supportsByTriggerCharacter.get(lastChar);
+
             if (supports) {
                 // keep existing items that where not computed by the
                 // supports/providers that want to trigger now
                 const providerItemsToReuse = new Map<CompletionItemProvider, CompletionItem[]>();
+
                 if (this._completionModel) {
                     for (const [provider, items] of this._completionModel.getItemsByProvider()) {
                         if (!supports.has(provider)) {
@@ -308,12 +325,14 @@ export class SuggestModel implements IDisposable {
         }
         const prevSelection = this._currentSelection;
         this._currentSelection = this._editor.getSelection();
+
         if (!e.selection.isEmpty()
             || (e.reason !== CursorChangeReason.NotSet && e.reason !== CursorChangeReason.Explicit)
             || (e.source !== 'keyboard' && e.source !== 'deleteLeft')) {
             // Early exit if nothing needs to be done!
             // Leave some form of early exit check here if you wish to continue being a cursor position change listener ;)
             this.cancel();
+
             return;
         }
         if (this._triggerState === undefined && e.reason === CursorChangeReason.NotSet) {
@@ -358,17 +377,22 @@ export class SuggestModel implements IDisposable {
                 return;
             }
             const model = this._editor.getModel();
+
             const pos = this._editor.getPosition();
             // validate enabled now
             const config = this._editor.getOption(EditorOption.quickSuggestions);
+
             if (QuickSuggestionsOptions.isAllOff(config)) {
                 return;
             }
             if (!QuickSuggestionsOptions.isAllOn(config)) {
                 // Check the type of the token that triggered this
                 model.tokenization.tokenizeIfCheap(pos.lineNumber);
+
                 const lineTokens = model.tokenization.getLineTokens(pos.lineNumber);
+
                 const tokenType = lineTokens.getStandardTokenType(lineTokens.findTokenIndexAtOffset(Math.max(pos.column - 1 - 1, 0)));
+
                 if (QuickSuggestionsOptions.valueFor(config, tokenType) !== 'on') {
                     return;
                 }
@@ -387,8 +411,11 @@ export class SuggestModel implements IDisposable {
     private _refilterCompletionItems(): void {
         assertType(this._editor.hasModel());
         assertType(this._triggerState !== undefined);
+
         const model = this._editor.getModel();
+
         const position = this._editor.getPosition();
+
         const ctx = new LineContext(model, position, { ...this._triggerState, refilter: true });
         this._onNewContext(ctx);
     }
@@ -397,6 +424,7 @@ export class SuggestModel implements IDisposable {
             return;
         }
         const model = this._editor.getModel();
+
         const ctx = new LineContext(model, this._editor.getPosition(), options);
         // Cancel previous requests, change state & update UI
         this.cancel(options.retrigger);
@@ -406,6 +434,7 @@ export class SuggestModel implements IDisposable {
         this._context = ctx;
         // Build context for request
         let suggestCtx: CompletionContext = { triggerKind: options.triggerKind ?? CompletionTriggerKind.Invoke };
+
         if (options.triggerCharacter) {
             suggestCtx = {
                 triggerKind: CompletionTriggerKind.TriggerCharacter,
@@ -415,29 +444,39 @@ export class SuggestModel implements IDisposable {
         this._requestToken = new CancellationTokenSource();
         // kind filter and snippet sort rules
         const snippetSuggestions = this._editor.getOption(EditorOption.snippetSuggestions);
+
         let snippetSortOrder = SnippetSortOrder.Inline;
+
         switch (snippetSuggestions) {
             case 'top':
                 snippetSortOrder = SnippetSortOrder.Top;
+
                 break;
             // 	↓ that's the default anyways...
             // case 'inline':
             // 	snippetSortOrder = SnippetSortOrder.Inline;
             // 	break;
+
             case 'bottom':
                 snippetSortOrder = SnippetSortOrder.Bottom;
+
                 break;
         }
         const { itemKind: itemKindFilter, showDeprecated } = SuggestModel.createSuggestFilter(this._editor);
+
         const completionOptions = new CompletionOptions(snippetSortOrder, options.completionOptions?.kindFilter ?? itemKindFilter, options.completionOptions?.providerFilter, options.completionOptions?.providerItemsToReuse, showDeprecated);
+
         const wordDistance = WordDistance.create(this._editorWorkerService, this._editor);
+
         const completions = provideSuggestionItems(this._languageFeaturesService.completionProvider, model, this._editor.getPosition(), completionOptions, suggestCtx, this._requestToken.token);
         Promise.all([completions, wordDistance]).then(async ([completions, wordDistance]) => {
             this._requestToken?.dispose();
+
             if (!this._editor.hasModel()) {
                 return;
             }
             let clipboardText = options?.clipboardText;
+
             if (!clipboardText && completions.needsClipboard) {
                 clipboardText = await this._clipboardService.readText();
             }
@@ -451,6 +490,7 @@ export class SuggestModel implements IDisposable {
             // 	items = items.concat(existing.items).sort(cmpFn);
             // }
             const ctx = new LineContext(model, this._editor.getPosition(), options);
+
             const fuzzySearchOptions = {
                 ...FuzzyScoreOptions.default,
                 firstMatchCanBeWeak: !this._editor.getOption(EditorOption.suggest).matchOnWordStartOnly
@@ -488,6 +528,7 @@ export class SuggestModel implements IDisposable {
                 comment: 'Completions performance numbers';
                 data: {
                     comment: 'Durations per source and overall';
+
                     classification: 'SystemMetaData';
                     purpose: 'PerformanceAndHealth';
                 };
@@ -504,11 +545,13 @@ export class SuggestModel implements IDisposable {
         const result = new Set<CompletionItemKind>();
         // snippet setting
         const snippetSuggestions = editor.getOption(EditorOption.snippetSuggestions);
+
         if (snippetSuggestions === 'none') {
             result.add(CompletionItemKind.Snippet);
         }
         // type setting
         const suggestOptions = editor.getOption(EditorOption.suggest);
+
         if (!suggestOptions.showMethods) {
             result.add(CompletionItemKind.Method);
         }
@@ -603,12 +646,14 @@ export class SuggestModel implements IDisposable {
         if (ctx.lineNumber !== this._context.lineNumber) {
             // e.g. happens when pressing Enter while IntelliSense is computed
             this.cancel();
+
             return;
         }
         if (getLeadingWhitespace(ctx.leadingLineContent) !== getLeadingWhitespace(this._context.leadingLineContent)) {
             // cancel IntelliSense when line start changes
             // happens when the current word gets outdented
             this.cancel();
+
             return;
         }
         if (ctx.column < this._context.column) {
@@ -628,6 +673,7 @@ export class SuggestModel implements IDisposable {
         if (ctx.leadingWord.word.length !== 0 && ctx.leadingWord.startColumn > this._context.leadingWord.startColumn) {
             // started a new word while IntelliSense shows -> retrigger but reuse all items that we currently have
             const shouldAutoTrigger = LineContext.shouldAutoTrigger(this._editor);
+
             if (shouldAutoTrigger && this._context) {
                 // shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
                 // suggestions to be cancelled, which causes `this._context` to be undefined
@@ -644,7 +690,9 @@ export class SuggestModel implements IDisposable {
         if (ctx.column > this._context.column && this._completionModel.getIncompleteProvider().size > 0 && ctx.leadingWord.word.length !== 0) {
             // typed -> moved cursor RIGHT & incomple model & still on a word -> retrigger
             const providerItemsToReuse = new Map<CompletionItemProvider, CompletionItem[]>();
+
             const providerFilter = new Set<CompletionItemProvider>();
+
             for (const [provider, items] of this._completionModel.getItemsByProvider()) {
                 if (items.length > 0 && items[0].container.incomplete) {
                     providerFilter.add(provider);
@@ -664,38 +712,46 @@ export class SuggestModel implements IDisposable {
         else {
             // typed -> moved cursor RIGHT -> update UI
             const oldLineContext = this._completionModel.lineContext;
+
             let isFrozen = false;
             this._completionModel.lineContext = {
                 leadingLineContent: ctx.leadingLineContent,
                 characterCountDelta: ctx.column - this._context.column
             };
+
             if (this._completionModel.items.length === 0) {
                 const shouldAutoTrigger = LineContext.shouldAutoTrigger(this._editor);
+
                 if (!this._context) {
                     // shouldAutoTrigger forces tokenization, which can cause pending cursor change events to be emitted, which can cause
                     // suggestions to be cancelled, which causes `this._context` to be undefined
                     this.cancel();
+
                     return;
                 }
                 if (shouldAutoTrigger && this._context.leadingWord.endColumn < ctx.leadingWord.startColumn) {
                     // retrigger when heading into a new word
                     this.trigger({ auto: this._context.triggerOptions.auto, retrigger: true });
+
                     return;
                 }
                 if (!this._context.triggerOptions.auto) {
                     // freeze when IntelliSense was manually requested
                     this._completionModel.lineContext = oldLineContext;
                     isFrozen = this._completionModel.items.length > 0;
+
                     if (isFrozen && ctx.leadingWord.word.length === 0) {
                         // there were results before but now there aren't
                         // and also we are not on a word anymore -> cancel
                         this.cancel();
+
                         return;
                     }
                 }
                 else {
                     // nothing left
                     this.cancel();
+
                     return;
                 }
             }

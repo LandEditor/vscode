@@ -16,6 +16,7 @@ export class TimestampWidget extends Disposable {
     private _timestamp: Date | undefined;
     private _useRelativeTime: boolean;
     private hover: IManagedHover;
+
     constructor(private configurationService: IConfigurationService, hoverService: IHoverService, container: HTMLElement, timeStamp?: Date) {
         super();
         this._date = dom.append(container, dom.$('span.timestamp'));
@@ -42,8 +43,11 @@ export class TimestampWidget extends Disposable {
         else if ((timestamp !== this._timestamp)
             || (this.useRelativeTimeSetting !== this._useRelativeTime)) {
             this._date.style.display = '';
+
             let textContent: string;
+
             let tooltip: string | undefined;
+
             if (this.useRelativeTimeSetting) {
                 textContent = this.getRelative(timestamp);
                 tooltip = this.getDateString(timestamp);

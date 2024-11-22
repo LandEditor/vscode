@@ -17,6 +17,7 @@ import { isWindows } from '../../../../base/common/platform.js';
 import { ILabelService } from '../../../../platform/label/common/label.js';
 export class NativeElevatedFileService implements IElevatedFileService {
     readonly _serviceBrand: undefined;
+
     constructor(
     @INativeHostService
     private readonly nativeHostService: INativeHostService, 
@@ -39,10 +40,12 @@ export class NativeElevatedFileService implements IElevatedFileService {
         const trusted = await this.workspaceTrustRequestService.requestWorkspaceTrust({
             message: isWindows ? localize('fileNotTrustedMessageWindows', "You are about to save '{0}' as admin.", this.labelService.getUriLabel(resource)) : localize('fileNotTrustedMessagePosix', "You are about to save '{0}' as super user.", this.labelService.getUriLabel(resource)),
         });
+
         if (!trusted) {
             throw new Error(localize('fileNotTrusted', "Workspace is not trusted."));
         }
         const source = URI.file(randomPath(this.environmentService.userDataPath, 'code-elevated'));
+
         try {
             // write into a tmp file first
             await this.fileService.writeFile(source, value, options);

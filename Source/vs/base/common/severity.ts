@@ -11,9 +11,13 @@ enum Severity {
 }
 namespace Severity {
     const _error = 'error';
+
     const _warning = 'warning';
+
     const _warn = 'warn';
+
     const _info = 'info';
+
     const _ignore = 'ignore';
     /**
      * Parses 'error', 'warning', 'warn', 'info' in call casings
@@ -37,8 +41,11 @@ namespace Severity {
     export function toString(severity: Severity): string {
         switch (severity) {
             case Severity.Error: return _error;
+
             case Severity.Warning: return _warning;
+
             case Severity.Info: return _info;
+
             default: return _ignore;
         }
     }

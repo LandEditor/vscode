@@ -19,6 +19,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
     private cache = new Map<string, Credentials>();
     private credentialsProviders = new Set<CredentialsProvider>();
     readonly featureDescription = 'git auth provider';
+
     constructor(private ipc?: IIPCServer) {
         if (ipc) {
             this.disposable = ipc.registerHandler('askpass', this);
@@ -49,7 +50,9 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
         fingerprint?: string;
     }): Promise<string> {
         const config = workspace.getConfiguration('git', null);
+
         const enabled = config.get<boolean>('enabled');
+
         if (!enabled) {
             return '';
         }
@@ -62,20 +65,28 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
     }
     async handleAskpass(request: string, host: string): Promise<string> {
         const uri = Uri.parse(host);
+
         const authority = uri.authority.replace(/^.*@/, '');
+
         const password = /password/i.test(request);
+
         const cached = this.cache.get(authority);
+
         if (cached && password) {
             this.cache.delete(authority);
+
             return cached.password;
         }
         if (!password) {
             for (const credentialsProvider of this.credentialsProviders) {
                 try {
                     const credentials = await credentialsProvider.getCredentials(uri);
+
                     if (credentials) {
                         this.cache.set(authority, credentials);
+
                         setTimeout(() => this.cache.delete(authority), 60000);
+
                         return credentials.username;
                     }
                 }
@@ -88,6 +99,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
             prompt: `Git: ${host}`,
             ignoreFocusOut: true
         };
+
         return await window.showInputBox(options) || '';
     }
     async handleSSHAskpass(request: string, host?: string, file?: string, fingerprint?: string): Promise<string> {
@@ -99,6 +111,7 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
                 prompt: file ? `SSH Key: ${file}` : undefined,
                 ignoreFocusOut: true
             };
+
             return await window.showInputBox(options) || '';
         }
         // authenticity
@@ -108,23 +121,28 @@ export class Askpass implements IIPCHandler, ITerminalEnvironmentProvider {
             placeHolder: l10n.t('Are you sure you want to continue connecting?'),
             title: l10n.t('"{0}" has fingerprint "{1}"', host ?? '', fingerprint ?? '')
         };
+
         const items = [l10n.t('yes'), l10n.t('no')];
+
         return await window.showQuickPick(items, options) ?? '';
     }
     getEnv(): {
         [key: string]: string;
     } {
         const config = workspace.getConfiguration('git');
+
         return config.get<boolean>('useIntegratedAskPass') ? { ...this.env, ...this.sshEnv } : {};
     }
     getTerminalEnv(): {
         [key: string]: string;
     } {
         const config = workspace.getConfiguration('git');
+
         return config.get<boolean>('useIntegratedAskPass') && config.get<boolean>('terminalAuthentication') ? this.env : {};
     }
     registerCredentialsProvider(provider: CredentialsProvider): Disposable {
         this.credentialsProviders.add(provider);
+
         return toDisposable(() => this.credentialsProviders.delete(provider));
     }
     dispose(): void {

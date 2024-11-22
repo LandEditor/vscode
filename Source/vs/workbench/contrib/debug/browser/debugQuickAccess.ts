@@ -31,15 +31,19 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
     }
     protected async _getPicks(filter: string): Promise<(IQuickPickSeparator | IPickerQuickAccessItem)[]> {
         const picks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
+
         if (!this.debugService.getAdapterManager().hasEnabledDebuggers()) {
             return [];
         }
         picks.push({ type: 'separator', label: 'launch.json' });
+
         const configManager = this.debugService.getConfigurationManager();
         // Entries: configs
         let lastGroup: string | undefined;
+
         for (const config of configManager.getAllConfigurations()) {
             const highlights = matchesFuzzy(filter, config.name, true);
+
             if (highlights) {
                 // Separator
                 if (lastGroup !== config.presentation?.group) {
@@ -57,10 +61,12 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
                         }],
                     trigger: () => {
                         config.launch.openConfigFile({ preserveFocus: false });
+
                         return TriggerAction.CLOSE_PICKER;
                     },
                     accept: async () => {
                         await configManager.selectConfiguration(config.launch, config.name);
+
                         try {
                             await this.debugService.startDebugging(config.launch, undefined, { startedByUser: true });
                         }
@@ -73,6 +79,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
         }
         // Entries detected configurations
         const dynamicProviders = await configManager.getDynamicProviders();
+
         if (dynamicProviders.length > 0) {
             picks.push({
                 type: 'separator', label: localize({
@@ -83,6 +90,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
         }
         configManager.getRecentDynamicConfigurations().forEach(({ name, type }) => {
             const highlights = matchesFuzzy(filter, name, true);
+
             if (highlights) {
                 picks.push({
                     label: name,
@@ -93,12 +101,15 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
                         }],
                     trigger: () => {
                         configManager.removeRecentDynamicConfigurations(name, type);
+
                         return TriggerAction.CLOSE_PICKER;
                     },
                     accept: async () => {
                         await configManager.selectConfiguration(undefined, name, undefined, { type });
+
                         try {
                             const { launch, getConfig } = configManager.selectedConfiguration;
+
                             const config = await getConfig();
                             await this.debugService.startDebugging(launch, config, { startedByUser: true });
                         }
@@ -115,6 +126,7 @@ export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPi
                 ariaLabel: localize({ key: 'providerAriaLabel', comment: ['Placeholder stands for the provider label. For example "NodeJS".'] }, "{0} contributed configurations", provider.label),
                 accept: async () => {
                     const pick = await provider.pick();
+
                     if (pick) {
                         // Use the type of the provider, not of the config since config sometimes have subtypes (for example "node-terminal")
                         await configManager.selectConfiguration(pick.launch, pick.config.name, pick.config, { type: provider.type });

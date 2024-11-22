@@ -187,6 +187,7 @@ export class CellContextKeyManager extends Disposable {
 		this.cellEditable.set(!this.notebookEditor.isReadOnly);
 
 		const exeState = this._notebookExecutionStateService.getCellExecution(this.element.uri);
+
 		if (this.element instanceof MarkupCellViewModel) {
 			this.cellRunState.reset();
 			this.cellExecuting.reset();
@@ -242,6 +243,7 @@ export class CellContextKeyManager extends Disposable {
 
 		if (!chatController || !this.element) {
 			this.cellGeneratedByChat.set(false);
+
 			return;
 		}
 

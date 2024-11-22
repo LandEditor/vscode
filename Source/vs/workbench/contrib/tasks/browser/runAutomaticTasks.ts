@@ -16,9 +16,11 @@ import { ConfigurationTarget, IConfigurationService } from '../../../../platform
 import { URI } from '../../../../base/common/uri.js';
 import { Event } from '../../../../base/common/event.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
+
 const ALLOW_AUTOMATIC_TASKS = 'task.allowAutomaticTasks';
 export class RunAutomaticTasks extends Disposable implements IWorkbenchContribution {
     private _hasRunTasks: boolean = false;
+
     constructor(
     @ITaskService
     private readonly _taskService: ITaskService, 
@@ -29,6 +31,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
     @ILogService
     private readonly _logService: ILogService) {
         super();
+
         if (this._taskService.isReconnected) {
             this._tryRunTasks();
         }
@@ -53,6 +56,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
         }
         let workspaceTasks = await this._taskService.getWorkspaceTasks(TaskRunSource.FolderOpen);
         this._logService.trace(`RunAutomaticTasks: Found ${workspaceTasks.size} automatic tasks`);
+
         let autoTasks = this._findAutoTasks(this._taskService, workspaceTasks);
         this._logService.trace(`RunAutomaticTasks: taskNames=${JSON.stringify(autoTasks.taskNames)}`);
         // As seen in some cases with the Remote SSH extension, the tasks configuration is loaded after we have come
@@ -66,8 +70,10 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
                     const timer = setTimeout(() => { clearTimeout(timer); resolve(false); }, 10000);
                 })
             ]);
+
             if (!updatedWithinTimeout) {
                 this._logService.trace(`RunAutomaticTasks: waited some extra time, but no update of tasks configuration`);
+
                 return;
             }
             workspaceTasks = await this._taskService.getWorkspaceTasks(TaskRunSource.FolderOpen);
@@ -92,6 +98,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
     }
     private _getTaskSource(source: TaskSource): URI | undefined {
         const taskKind = TaskSourceKind.toConfigurationTarget(source.kind);
+
         switch (taskKind) {
             case ConfigurationTarget.WORKSPACE_FOLDER: {
                 return resources.joinPath((<IWorkspaceTaskSource>source).config.workspaceFolder!.uri, (<IWorkspaceTaskSource>source).config.file);
@@ -108,8 +115,11 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
         locations: Map<string, URI>;
     } {
         const tasks = new Array<Task | Promise<Task | undefined>>();
+
         const taskNames = new Array<string>();
+
         const locations = new Map<string, URI>();
+
         if (workspaceTaskResult) {
             workspaceTaskResult.forEach(resultElement => {
                 if (resultElement.set) {
@@ -117,7 +127,9 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
                         if (task.runOptions.runOn === RunOnOptions.folderOpen) {
                             tasks.push(task);
                             taskNames.push(task._label);
+
                             const location = this._getTaskSource(task._source);
+
                             if (location) {
                                 locations.set(location.fsPath, location);
                             }
@@ -130,6 +142,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
                             tasks.push(new Promise<Task | undefined>(resolve => {
                                 taskService.getTask(resultElement.workspaceFolder, configuredTask._id, true).then(task => resolve(task));
                             }));
+
                             if (configuredTask._label) {
                                 taskNames.push(configuredTask._label);
                             }
@@ -137,6 +150,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
                                 taskNames.push(configuredTask.configures.task);
                             }
                             const location = this._getTaskSource(configuredTask._source);
+
                             if (location) {
                                 locations.set(location.fsPath, location);
                             }
@@ -160,6 +174,7 @@ export class RunAutomaticTasks extends Disposable implements IWorkbenchContribut
 export class ManageAutomaticTaskRunning extends Action2 {
     public static readonly ID = 'workbench.action.tasks.manageAutomaticRunning';
     public static readonly LABEL = nls.localize('workbench.action.tasks.manageAutomaticRunning', "Manage Automatic Tasks");
+
     constructor() {
         super({
             id: ManageAutomaticTaskRunning.ID,
@@ -169,10 +184,15 @@ export class ManageAutomaticTaskRunning extends Action2 {
     }
     public async run(accessor: ServicesAccessor): Promise<any> {
         const quickInputService = accessor.get(IQuickInputService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const allowItem: IQuickPickItem = { label: nls.localize('workbench.action.tasks.allowAutomaticTasks', "Allow Automatic Tasks") };
+
         const disallowItem: IQuickPickItem = { label: nls.localize('workbench.action.tasks.disallowAutomaticTasks', "Disallow Automatic Tasks") };
+
         const value = await quickInputService.pick([allowItem, disallowItem], { canPickMany: false });
+
         if (!value) {
             return;
         }

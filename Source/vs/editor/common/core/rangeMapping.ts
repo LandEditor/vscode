@@ -14,6 +14,7 @@ export class RangeMapping {
     }
     mapPosition(position: Position): PositionOrRange {
         const mapping = findLastMonotonous(this.mappings, m => m.original.getStartPosition().isBeforeOrEqual(position));
+
         if (!mapping) {
             return PositionOrRange.position(position);
         }
@@ -21,11 +22,14 @@ export class RangeMapping {
             return PositionOrRange.range(mapping.modified);
         }
         const l = TextLength.betweenPositions(mapping.original.getEndPosition(), position);
+
         return PositionOrRange.position(l.addToPosition(mapping.modified.getEndPosition()));
     }
     mapRange(range: Range): Range {
         const start = this.mapPosition(range.getStartPosition());
+
         const end = this.mapPosition(range.getEndPosition());
+
         return Range.fromPositions(start.range?.getStartPosition() ?? start.position!, end.range?.getEndPosition() ?? end.position!);
     }
     reverse(): RangeMapping {

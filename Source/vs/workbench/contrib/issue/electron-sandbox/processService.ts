@@ -14,6 +14,7 @@ import { IWorkbenchProcessService } from '../common/issue.js';
 import { mainWindow } from '../../../../base/browser/window.js';
 export class ProcessService implements IWorkbenchProcessService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IProcessMainService
     private readonly processMainService: IProcessMainService, 
@@ -25,6 +26,7 @@ export class ProcessService implements IWorkbenchProcessService {
     private readonly productService: IProductService) { }
     openProcessExplorer(): Promise<void> {
         const theme = this.themeService.getColorTheme();
+
         const data: ProcessExplorerData = {
             pid: this.environmentService.mainPid,
             zoomLevel: getZoomLevel(mainWindow),
@@ -47,11 +49,13 @@ export class ProcessService implements IWorkbenchProcessService {
             platform: platform,
             applicationName: this.productService.applicationName
         };
+
         return this.processMainService.openProcessExplorer(data);
     }
 }
 function getColor(theme: IColorTheme, key: string): string | undefined {
     const color = theme.getColor(key);
+
     return color ? color.toString() : undefined;
 }
 registerSingleton(IWorkbenchProcessService, ProcessService, InstantiationType.Delayed);

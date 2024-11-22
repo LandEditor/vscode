@@ -46,6 +46,7 @@ export class LanguageFeatureRegistry<T> {
     private readonly _entries: Entry<T>[] = [];
     private readonly _onDidChange = new Emitter<number>();
     readonly onDidChange = this._onDidChange.event;
+
     constructor(private readonly _notebookInfoResolver?: NotebookInfoResolver) { }
     register(selector: LanguageSelector, provider: T): IDisposable {
         let entry: Entry<T> | undefined = {
@@ -57,9 +58,11 @@ export class LanguageFeatureRegistry<T> {
         this._entries.push(entry);
         this._lastCandidate = undefined;
         this._onDidChange.fire(this._entries.length);
+
         return toDisposable(() => {
             if (entry) {
                 const idx = this._entries.indexOf(entry);
+
                 if (idx >= 0) {
                     this._entries.splice(idx, 1);
                     this._lastCandidate = undefined;
@@ -77,6 +80,7 @@ export class LanguageFeatureRegistry<T> {
             return [];
         }
         this._updateScores(model, false);
+
         const result: T[] = [];
         // from registry
         for (const entry of this._entries) {
@@ -92,11 +96,14 @@ export class LanguageFeatureRegistry<T> {
     ordered(model: ITextModel, recursive = false): T[] {
         const result: T[] = [];
         this._orderedForEach(model, recursive, entry => result.push(entry.provider));
+
         return result;
     }
     orderedGroups(model: ITextModel): T[][] {
         const result: T[][] = [];
+
         let lastBucket: T[];
+
         let lastBucketScore: number;
         this._orderedForEach(model, false, entry => {
             if (lastBucket && lastBucketScore === entry._score) {
@@ -108,10 +115,12 @@ export class LanguageFeatureRegistry<T> {
                 result.push(lastBucket);
             }
         });
+
         return result;
     }
     private _orderedForEach(model: ITextModel, recursive: boolean, callback: (provider: Entry<T>) => any): void {
         this._updateScores(model, recursive);
+
         for (const entry of this._entries) {
             if (entry._score > 0) {
                 callback(entry);
@@ -126,13 +135,16 @@ export class LanguageFeatureRegistry<T> {
         const candidate = notebookInfo
             ? new MatchCandidate(model.uri, model.getLanguageId(), notebookInfo.uri, notebookInfo.type, recursive)
             : new MatchCandidate(model.uri, model.getLanguageId(), undefined, undefined, recursive);
+
         if (this._lastCandidate?.equals(candidate)) {
             // nothing has changed
             return;
         }
         this._lastCandidate = candidate;
+
         for (const entry of this._entries) {
             entry._score = score(entry.selector, candidate.uri, candidate.languageId, shouldSynchronizeModel(model), candidate.notebookUri, candidate.notebookType);
+
             if (isExclusive(entry.selector) && entry._score > 0) {
                 if (recursive) {
                     entry._score = 0;
@@ -144,6 +156,7 @@ export class LanguageFeatureRegistry<T> {
                         entry._score = 0;
                     }
                     entry._score = 1000;
+
                     break;
                 }
             }

@@ -12,6 +12,7 @@ export class WordContextKey {
     private readonly _configListener: IDisposable;
     private _enabled: boolean = false;
     private _selectionListener?: IDisposable;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService) {
@@ -27,21 +28,28 @@ export class WordContextKey {
     private _update(): void {
         // only update this when tab completions are enabled
         const enabled = this._editor.getOption(EditorOption.tabCompletion) === 'on';
+
         if (this._enabled === enabled) {
             return;
         }
         this._enabled = enabled;
+
         if (this._enabled) {
             const checkForWordEnd = () => {
                 if (!this._editor.hasModel()) {
                     this._ckAtEnd.set(false);
+
                     return;
                 }
                 const model = this._editor.getModel();
+
                 const selection = this._editor.getSelection();
+
                 const word = model.getWordAtPosition(selection.getStartPosition());
+
                 if (!word) {
                     this._ckAtEnd.set(false);
+
                     return;
                 }
                 this._ckAtEnd.set(word.endColumn === selection.getStartPosition().column);

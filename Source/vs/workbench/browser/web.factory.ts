@@ -14,7 +14,9 @@ import { asArray } from '../../base/common/arrays.js';
 import { IProgress, IProgressCompositeOptions, IProgressDialogOptions, IProgressNotificationOptions, IProgressOptions, IProgressStep, IProgressWindowOptions } from '../../platform/progress/common/progress.js';
 import { LogLevel } from '../../platform/log/common/log.js';
 import { IEmbedderTerminalOptions } from '../services/terminal/common/embedderTerminalService.js';
+
 let created = false;
+
 const workbenchPromise = new DeferredPromise<IWorkbench>();
 /**
  * Creates the workbench with the provided options in the provided container.
@@ -55,6 +57,7 @@ export function create(domElement: HTMLElement, options: IWorkbenchConstructionO
         instantiatedWorkbench = workbench;
         workbenchPromise.complete(workbench);
     });
+
     return toDisposable(() => {
         if (instantiatedWorkbench) {
             instantiatedWorkbench.shutdown();
@@ -67,6 +70,7 @@ export function create(domElement: HTMLElement, options: IWorkbenchConstructionO
 function asMenuId(menu: Menu): MenuId {
     switch (menu) {
         case Menu.CommandPalette: return MenuId.CommandPalette;
+
         case Menu.StatusBarWindowIndicatorMenu: return MenuId.StatusBarWindowIndicatorMenu;
     }
 }
@@ -76,6 +80,7 @@ export namespace commands {
      */
     export async function executeCommand(command: string, ...args: any[]): Promise<unknown> {
         const workbench = await workbenchPromise.p;
+
         return workbench.commands.executeCommand(command, ...args);
     }
 }
@@ -96,6 +101,7 @@ export namespace env {
         readonly PerformanceMark[]
     ][]> {
         const workbench = await workbenchPromise.p;
+
         return workbench.env.retrievePerformanceMarks();
     }
     /**
@@ -103,6 +109,7 @@ export namespace env {
      */
     export async function getUriScheme(): Promise<string> {
         const workbench = await workbenchPromise.p;
+
         return workbench.env.getUriScheme();
     }
     /**
@@ -110,6 +117,7 @@ export namespace env {
      */
     export async function openUri(target: URI): Promise<boolean> {
         const workbench = await workbenchPromise.p;
+
         return workbench.env.openUri(target);
     }
 }
@@ -119,6 +127,7 @@ export namespace window {
      */
     export async function withProgress<R>(options: IProgressOptions | IProgressDialogOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions, task: (progress: IProgress<IProgressStep>) => Promise<R>): Promise<R> {
         const workbench = await workbenchPromise.p;
+
         return workbench.window.withProgress(options, task);
     }
     export async function createTerminal(options: IEmbedderTerminalOptions): Promise<void> {
@@ -127,6 +136,7 @@ export namespace window {
     }
     export async function showInformationMessage<T extends string>(message: string, ...items: T[]): Promise<T | undefined> {
         const workbench = await workbenchPromise.p;
+
         return await workbench.window.showInformationMessage(message, ...items);
     }
 }
@@ -143,6 +153,7 @@ export namespace workspace {
      */
     export async function openTunnel(tunnelOptions: ITunnelOptions): Promise<ITunnel> {
         const workbench = await workbenchPromise.p;
+
         return workbench.workspace.openTunnel(tunnelOptions);
     }
 }

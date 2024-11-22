@@ -11,11 +11,14 @@ enum Trace {
 namespace Trace {
     export function fromString(value: string): Trace {
         value = value.toLowerCase();
+
         switch (value) {
             case 'off':
                 return Trace.Off;
+
             case 'verbose':
                 return Trace.Verbose;
+
             default:
                 return Trace.Off;
         }
@@ -29,6 +32,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
     private _outputChannelValue?: vscode.OutputChannel;
     private get _outputChannel() {
         this._outputChannelValue ??= this._register(vscode.window.createOutputChannel('Markdown'));
+
         return this._outputChannelValue;
     }
     constructor() {
@@ -41,6 +45,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
     public verbose(title: string, message: string, data?: any): void {
         if (this._trace === Trace.Verbose) {
             this._appendLine(`[Verbose ${this._now()}] ${title}: ${message}`);
+
             if (data) {
                 this._appendLine(VsCodeOutputLogger._data2String(data));
             }
@@ -48,6 +53,7 @@ export class VsCodeOutputLogger extends Disposable implements ILogger {
     }
     private _now(): string {
         const now = new Date();
+
         return String(now.getUTCHours()).padStart(2, '0')
             + ':' + String(now.getMinutes()).padStart(2, '0')
             + ':' + String(now.getUTCSeconds()).padStart(2, '0') + '.' + String(now.getMilliseconds()).padStart(3, '0');

@@ -53,8 +53,11 @@ export function findGroup(accessor: ServicesAccessor, editor: EditorInputWithOpt
     EditorActivation | undefined
 ] {
     const editorGroupService = accessor.get(IEditorGroupsService);
+
     const configurationService = accessor.get(IConfigurationService);
+
     const group = doFindGroup(editor, preferredGroup, editorGroupService, configurationService);
+
     if (group instanceof Promise) {
         return group.then(group => handleGroupActivation(group, editor, preferredGroup, editorGroupService));
     }
@@ -66,6 +69,7 @@ function handleGroupActivation(group: IEditorGroup, editor: EditorInputWithOptio
 ] {
     // Resolve editor activation strategy
     let activation: EditorActivation | undefined = undefined;
+
     if (editorGroupService.activeGroup !== group && // only if target group is not already active
         editor.options && !editor.options.inactive && // never for inactive editors
         editor.options.preserveFocus && // only if preserveFocus
@@ -87,7 +91,9 @@ function handleGroupActivation(group: IEditorGroup, editor: EditorInputWithOptio
 }
 function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, preferredGroup: PreferredGroup | undefined, editorGroupService: IEditorGroupsService, configurationService: IConfigurationService): Promise<IEditorGroup> | IEditorGroup {
     let group: Promise<IEditorGroup> | IEditorGroup | undefined;
+
     const editor = isEditorInputWithOptions(input) ? input.editor : input;
+
     const options = input.options;
     // Group: Instance of Group
     if (preferredGroup && typeof preferredGroup !== 'number') {
@@ -100,7 +106,9 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
     // Group: Side by Side
     else if (preferredGroup === SIDE_GROUP) {
         const direction = preferredSideBySideGroupDirection(configurationService);
+
         let candidateGroup = editorGroupService.findGroup({ direction });
+
         if (!candidateGroup || isGroupLockedForEditor(candidateGroup, editor)) {
             // Create new group either when the candidate group
             // is locked or was not found in the direction
@@ -120,6 +128,7 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
             for (const lastActiveGroup of groupsByLastActive) {
                 if (isActive(lastActiveGroup, editor)) {
                     group = lastActiveGroup;
+
                     break;
                 }
             }
@@ -131,7 +140,9 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
         if (!group) {
             if (options?.revealIfOpened || configurationService.getValue<boolean>('workbench.editor.revealIfOpen') || (isEditorInput(editor) && editor.hasCapability(EditorInputCapabilities.Singleton))) {
                 let groupWithInputActive: IEditorGroup | undefined = undefined;
+
                 let groupWithInputOpened: IEditorGroup | undefined = undefined;
+
                 for (const group of groupsByLastActive) {
                     if (isOpened(group, editor)) {
                         if (!groupWithInputOpened) {
@@ -163,6 +174,7 @@ function doFindGroup(input: EditorInputWithOptions | IUntypedEditorInput, prefer
                     continue;
                 }
                 candidateGroup = group;
+
                 break;
             }
             if (isGroupLockedForEditor(candidateGroup, editor)) {

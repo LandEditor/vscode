@@ -14,6 +14,7 @@ export const testFs = new TestFS('fake-fs', true);
 vscode.workspace.registerFileSystemProvider(testFs.scheme, testFs, { isCaseSensitive: testFs.isCaseSensitive });
 export async function createRandomFile(contents = '', dir: vscode.Uri | undefined = undefined, ext = ''): Promise<vscode.Uri> {
     let fakeFile: vscode.Uri;
+
     if (dir) {
         assert.strictEqual(dir.scheme, testFs.scheme);
         fakeFile = dir.with({ path: dir.path + '/' + rndName() + ext });
@@ -22,11 +23,13 @@ export async function createRandomFile(contents = '', dir: vscode.Uri | undefine
         fakeFile = vscode.Uri.parse(`${testFs.scheme}:/${rndName() + ext}`);
     }
     testFs.writeFile(fakeFile, Buffer.from(contents), { create: true, overwrite: true });
+
     return fakeFile;
 }
 export async function deleteFile(file: vscode.Uri): Promise<boolean> {
     try {
         testFs.delete(file);
+
         return true;
     }
     catch {
@@ -59,6 +62,7 @@ function withLogLevel(level: string, runnable: () => Promise<any>): () => Promis
     return async (): Promise<void> => {
         const logLevel = await vscode.commands.executeCommand('_extensionTests.getLogLevel');
         await vscode.commands.executeCommand('_extensionTests.setLogLevel', level);
+
         try {
             await runnable();
         }
@@ -81,9 +85,13 @@ export function assertNoRpcFromEntry(entry: [
     name: string
 ]) {
     const symProxy = Symbol.for('rpcProxy');
+
     const symProtocol = Symbol.for('rpcProtocol');
+
     const proxyPaths: string[] = [];
+
     const rpcPaths: string[] = [];
+
     function walk(obj: any, path: string, seen: Set<any>) {
         if (!obj) {
             return;
@@ -95,6 +103,7 @@ export function assertNoRpcFromEntry(entry: [
             return;
         }
         seen.add(obj);
+
         if (obj[symProtocol]) {
             rpcPaths.push(`PROTOCOL via ${path}`);
         }
@@ -116,11 +125,13 @@ export function assertNoRpcFromEntry(entry: [
 }
 export async function asPromise<T>(event: vscode.Event<T>, timeout = vscode.env.uiKind === vscode.UIKind.Desktop ? 5000 : 15000): Promise<T> {
     const error = new Error('asPromise TIMEOUT reached');
+
     return new Promise<T>((resolve, reject) => {
         const handle = setTimeout(() => {
             sub.dispose();
             reject(error);
         }, timeout);
+
         const sub = event(e => {
             clearTimeout(handle);
             sub.dispose();
@@ -141,14 +152,18 @@ export function suiteRepeat(n: number, description: string, callback: (this: any
 export async function poll<T>(fn: () => Thenable<T>, acceptFn: (result: T) => boolean, timeoutMessage: string, retryCount: number = 200, retryInterval: number = 100 // millis
 ): Promise<T> {
     let trial = 1;
+
     let lastError: string = '';
+
     while (true) {
         if (trial > retryCount) {
             throw new Error(`Timeout: ${timeoutMessage} after ${(retryCount * retryInterval) / 1000} seconds.\r${lastError}`);
         }
         let result;
+
         try {
             result = await fn();
+
             if (acceptFn(result)) {
                 return result;
             }
@@ -182,6 +197,7 @@ export class DeferredPromise<T> {
         return this.rejected || this.resolved;
     }
     public readonly p: Promise<T>;
+
     constructor() {
         this.p = new Promise<T>((c, e) => {
             this.completeCallback = c;

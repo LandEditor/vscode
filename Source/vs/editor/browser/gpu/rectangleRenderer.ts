@@ -111,6 +111,7 @@ export class RectangleRenderer extends ViewEventHandler {
 				Offset_ViewportHeight_ = 5,
 			}
 			const bufferValues = new Float32Array(Info.FloatsPerEntry);
+
 			const updateBufferValues = (canvasDevicePixelWidth: number = this._canvas.width, canvasDevicePixelHeight: number = this._canvas.height) => {
 				bufferValues[Info.Offset_CanvasWidth____] = canvasDevicePixelWidth;
 				bufferValues[Info.Offset_CanvasHeight___] = canvasDevicePixelHeight;
@@ -118,6 +119,7 @@ export class RectangleRenderer extends ViewEventHandler {
 				bufferValues[Info.Offset_ViewportOffsetY] = 0;
 				bufferValues[Info.Offset_ViewportWidth__] = bufferValues[Info.Offset_CanvasWidth____] - bufferValues[Info.Offset_ViewportOffsetX];
 				bufferValues[Info.Offset_ViewportHeight_] = bufferValues[Info.Offset_CanvasHeight___] - bufferValues[Info.Offset_ViewportOffsetY];
+
 				return bufferValues;
 			};
 			layoutInfoUniformBuffer = this._register(GPULifecycle.createBuffer(this._device, {
@@ -152,6 +154,7 @@ export class RectangleRenderer extends ViewEventHandler {
 		this._shapeBindBuffer.value = createShapeBindBuffer();
 		this._register(Event.runAndSubscribe(this._shapeCollection.onDidChangeBuffer, () => {
 			this._shapeBindBuffer.value = createShapeBindBuffer();
+
 			if (this._pipeline) {
 				this._updateBindGroup(this._pipeline, layoutInfoUniformBuffer);
 			}
@@ -260,6 +263,7 @@ export class RectangleRenderer extends ViewEventHandler {
 			return;
 		}
 		const shapes = this._shapeCollection;
+
 		if (shapes.dirtyTracker.isDirty) {
 			this._device.queue.writeBuffer(this._shapeBindBuffer.value!.object, 0, shapes.buffer, shapes.dirtyTracker.dataOffset, shapes.dirtyTracker.dirtySize! * shapes.view.BYTES_PER_ELEMENT);
 			shapes.dirtyTracker.clear();
@@ -276,6 +280,7 @@ export class RectangleRenderer extends ViewEventHandler {
 		const encoder = this._device.createCommandEncoder({ label: 'Monaco rectangle renderer command encoder' });
 
 		this._renderPassColorAttachment.view = this._ctx.getCurrentTexture().createView();
+
 		const pass = encoder.beginRenderPass(this._renderPassDescriptor);
 		pass.setPipeline(this._pipeline);
 		pass.setVertexBuffer(0, this._vertexBuffer);

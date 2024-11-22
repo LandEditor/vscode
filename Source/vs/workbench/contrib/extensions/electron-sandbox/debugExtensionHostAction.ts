@@ -38,10 +38,15 @@ export class DebugExtensionHostAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const nativeHostService = accessor.get(INativeHostService);
+
         const dialogService = accessor.get(IDialogService);
+
         const extensionService = accessor.get(IExtensionService);
+
         const productService = accessor.get(IProductService);
+
         const instantiationService = accessor.get(IInstantiationService);
+
         const hostService = accessor.get(IHostService);
         extensionService.getInspectPorts(ExtensionHostKind.LocalProcess, false).then(async (inspectPorts) => {
             if (inspectPorts.length === 0) {
@@ -50,6 +55,7 @@ export class DebugExtensionHostAction extends Action2 {
                     detail: nls.localize('restart2', "In order to debug extensions a restart is required. Do you want to restart '{0}' now?", productService.nameLong),
                     primaryButton: nls.localize({ key: 'restart3', comment: ['&& denotes a mnemonic'] }, "&&Restart")
                 });
+
                 if (res.confirmed) {
                     await nativeHostService.relaunch({ addArgs: [`--inspect-extensions=${randomPort()}`] });
                 }
@@ -75,6 +81,7 @@ class Storage {
     }
     getAndDeleteDebugPortIfSet(): number | undefined {
         const port = this._storageService.getNumber('debugExtensionHost.debugPort', StorageScope.APPLICATION);
+
         if (port !== undefined) {
             this._storageService.remove('debugExtensionHost.debugPort', StorageScope.APPLICATION);
         }
@@ -90,8 +97,11 @@ export class DebugExtensionsContribution extends Disposable implements IWorkbenc
     @IProgressService
     _progressService: IProgressService) {
         super();
+
         const storage = this._instantiationService.createInstance(Storage);
+
         const port = storage.getAndDeleteDebugPortIfSet();
+
         if (port !== undefined) {
             _progressService.withProgress({
                 location: ProgressLocation.Notification,

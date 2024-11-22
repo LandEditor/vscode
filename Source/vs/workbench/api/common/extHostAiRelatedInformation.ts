@@ -10,6 +10,7 @@ export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationSha
     private _relatedInformationProviders: Map<number, RelatedInformationProvider> = new Map();
     private _nextHandle = 0;
     private readonly _proxy: MainThreadAiRelatedInformationShape;
+
     constructor(mainContext: IMainContext) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadAiRelatedInformation);
     }
@@ -18,10 +19,12 @@ export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationSha
             throw new Error('No related information providers registered');
         }
         const provider = this._relatedInformationProviders.get(handle);
+
         if (!provider) {
             throw new Error('related information provider not found');
         }
         const result = await provider.provideRelatedInformation(query, token) ?? [];
+
         return result;
     }
     getRelatedInformation(extension: IExtensionDescription, query: string, types: RelatedInformationType[]): Promise<RelatedInformationResult[]> {
@@ -32,6 +35,7 @@ export class ExtHostRelatedInformation implements ExtHostAiRelatedInformationSha
         this._nextHandle++;
         this._relatedInformationProviders.set(handle, provider);
         this._proxy.$registerAiRelatedInformationProvider(handle, type);
+
         return new Disposable(() => {
             this._proxy.$unregisterAiRelatedInformationProvider(handle);
             this._relatedInformationProviders.delete(handle);

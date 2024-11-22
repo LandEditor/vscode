@@ -37,27 +37,38 @@ class Settings {
     public readonly canvasHeight: number;
     public readonly x: number[];
     public readonly w: number[];
+
     constructor(config: IEditorConfiguration, theme: EditorTheme) {
         const options = config.options;
         this.lineHeight = options.get(EditorOption.lineHeight);
         this.pixelRatio = options.get(EditorOption.pixelRatio);
         this.overviewRulerLanes = options.get(EditorOption.overviewRulerLanes);
         this.renderBorder = options.get(EditorOption.overviewRulerBorder);
+
         const borderColor = theme.getColor(editorOverviewRulerBorder);
         this.borderColor = borderColor ? borderColor.toString() : null;
         this.hideCursor = options.get(EditorOption.hideCursorInOverviewRuler);
+
         const cursorColorSingle = theme.getColor(editorCursorForeground);
         this.cursorColorSingle = cursorColorSingle ? cursorColorSingle.transparent(0.7).toString() : null;
+
         const cursorColorPrimary = theme.getColor(editorMultiCursorPrimaryForeground);
         this.cursorColorPrimary = cursorColorPrimary ? cursorColorPrimary.transparent(0.7).toString() : null;
+
         const cursorColorSecondary = theme.getColor(editorMultiCursorSecondaryForeground);
         this.cursorColorSecondary = cursorColorSecondary ? cursorColorSecondary.transparent(0.7).toString() : null;
         this.themeType = theme.type;
+
         const minimapOpts = options.get(EditorOption.minimap);
+
         const minimapEnabled = minimapOpts.enabled;
+
         const minimapSide = minimapOpts.side;
+
         const themeColor = theme.getColor(editorOverviewRulerBackground);
+
         const defaultBackground = TokenizationRegistry.getDefaultBackground();
+
         if (themeColor) {
             this.backgroundColor = themeColor;
         }
@@ -68,11 +79,13 @@ class Settings {
             this.backgroundColor = null;
         }
         const layoutInfo = options.get(EditorOption.layoutInfo);
+
         const position = layoutInfo.overviewRuler;
         this.top = position.top;
         this.right = position.right;
         this.domWidth = position.width;
         this.domHeight = position.height;
+
         if (this.overviewRulerLanes === 0) {
             // overview ruler is off
             this.canvasWidth = 0;
@@ -91,13 +104,20 @@ class Settings {
         number[]
     ] {
         const remainingWidth = canvasWidth - canvasLeftOffset;
+
         if (laneCount >= 3) {
             const leftWidth = Math.floor(remainingWidth / 3);
+
             const rightWidth = Math.floor(remainingWidth / 3);
+
             const centerWidth = remainingWidth - leftWidth - rightWidth;
+
             const leftOffset = canvasLeftOffset;
+
             const centerOffset = leftOffset + leftWidth;
+
             const rightOffset = leftOffset + leftWidth + centerWidth;
+
             return [
                 [
                     0,
@@ -122,9 +142,13 @@ class Settings {
         }
         else if (laneCount === 2) {
             const leftWidth = Math.floor(remainingWidth / 2);
+
             const rightWidth = remainingWidth - leftWidth;
+
             const leftOffset = canvasLeftOffset;
+
             const rightOffset = leftOffset + leftWidth;
+
             return [
                 [
                     0,
@@ -149,7 +173,9 @@ class Settings {
         }
         else {
             const offset = canvasLeftOffset;
+
             const width = remainingWidth;
+
             return [
                 [
                     0,
@@ -206,6 +232,7 @@ type Cursor = {
     position: Position;
     color: string | null;
 };
+
 const enum ShouldRenderValue {
     NotNeeded = 0,
     Maybe = 1,
@@ -219,6 +246,7 @@ export class DecorationsOverviewRuler extends ViewPart {
     private _cursorPositions: Cursor[];
     private _renderedDecorations: OverviewRulerDecorationsGroup[] = [];
     private _renderedCursorPositions: Cursor[] = [];
+
     constructor(context: ViewContext) {
         super(context);
         this._domNode = createFastDomNode(document.createElement('canvas'));
@@ -241,6 +269,7 @@ export class DecorationsOverviewRuler extends ViewPart {
     }
     private _updateSettings(renderNow: boolean): boolean {
         const newSettings = new Settings(this._context.configuration, this._context.theme);
+
         if (this._settings && this._settings.equals(newSettings)) {
             // nothing to do
             return false;
@@ -252,6 +281,7 @@ export class DecorationsOverviewRuler extends ViewPart {
         this._domNode.setHeight(this._settings.domHeight);
         this._domNode.domNode.width = this._settings.canvasWidth;
         this._domNode.domNode.height = this._settings.canvasHeight;
+
         if (renderNow) {
             this._render();
         }
@@ -260,10 +290,12 @@ export class DecorationsOverviewRuler extends ViewPart {
     // ---- begin view event handlers
     private _markRenderingIsNeeded(): true {
         this._actualShouldRender = ShouldRenderValue.Needed;
+
         return true;
     }
     private _markRenderingIsMaybeNeeded(): true {
         this._actualShouldRender = ShouldRenderValue.Maybe;
+
         return true;
     }
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
@@ -271,14 +303,17 @@ export class DecorationsOverviewRuler extends ViewPart {
     }
     public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
         this._cursorPositions = [];
+
         for (let i = 0, len = e.selections.length; i < len; i++) {
             let color = this._settings.cursorColorSingle;
+
             if (len > 1) {
                 color = i === 0 ? this._settings.cursorColorPrimary : this._settings.cursorColorSecondary;
             }
             this._cursorPositions.push({ position: e.selections[i].getPosition(), color });
         }
         this._cursorPositions.sort((a, b) => Position.compare(a.position, b.position));
+
         return this._markRenderingIsMaybeNeeded();
     }
     public override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
@@ -312,14 +347,17 @@ export class DecorationsOverviewRuler extends ViewPart {
     }
     private _render(): void {
         const backgroundColor = this._settings.backgroundColor;
+
         if (this._settings.overviewRulerLanes === 0) {
             // overview ruler is off
             this._domNode.setBackgroundColor(backgroundColor ? Color.Format.CSS.formatHexA(backgroundColor) : '');
             this._domNode.setDisplay('none');
+
             return;
         }
         const decorations = this._context.viewModel.getAllOverviewRulerDecorations(this._context.theme);
         decorations.sort(OverviewRulerDecorationsGroup.compareByRenderingProps);
+
         if (this._actualShouldRender === ShouldRenderValue.Maybe && !OverviewRulerDecorationsGroup.equalsArr(this._renderedDecorations, decorations)) {
             this._actualShouldRender = ShouldRenderValue.Needed;
         }
@@ -333,15 +371,25 @@ export class DecorationsOverviewRuler extends ViewPart {
         this._renderedDecorations = decorations;
         this._renderedCursorPositions = this._cursorPositions;
         this._domNode.setDisplay('block');
+
         const canvasWidth = this._settings.canvasWidth;
+
         const canvasHeight = this._settings.canvasHeight;
+
         const lineHeight = this._settings.lineHeight;
+
         const viewLayout = this._context.viewLayout;
+
         const outerHeight = this._context.viewLayout.getScrollHeight();
+
         const heightRatio = canvasHeight / outerHeight;
+
         const minDecorationHeight = (Constants.MIN_DECORATION_HEIGHT * this._settings.pixelRatio) | 0;
+
         const halfMinDecorationHeight = (minDecorationHeight / 2) | 0;
+
         const canvasCtx = this._domNode.domNode.getContext('2d')!;
+
         if (backgroundColor) {
             if (backgroundColor.isOpaque()) {
                 // We have a background color which is opaque, we can just paint the entire surface with it
@@ -361,23 +409,37 @@ export class DecorationsOverviewRuler extends ViewPart {
             canvasCtx.clearRect(0, 0, canvasWidth, canvasHeight);
         }
         const x = this._settings.x;
+
         const w = this._settings.w;
+
         for (const decorationGroup of decorations) {
             const color = decorationGroup.color;
+
             const decorationGroupData = decorationGroup.data;
             canvasCtx.fillStyle = color;
+
             let prevLane = 0;
+
             let prevY1 = 0;
+
             let prevY2 = 0;
+
             for (let i = 0, len = decorationGroupData.length / 3; i < len; i++) {
                 const lane = decorationGroupData[3 * i];
+
                 const startLineNumber = decorationGroupData[3 * i + 1];
+
                 const endLineNumber = decorationGroupData[3 * i + 2];
+
                 let y1 = (viewLayout.getVerticalOffsetForLineNumber(startLineNumber) * heightRatio) | 0;
+
                 let y2 = ((viewLayout.getVerticalOffsetForLineNumber(endLineNumber) + lineHeight) * heightRatio) | 0;
+
                 const height = y2 - y1;
+
                 if (height < minDecorationHeight) {
                     let yCenter = ((y1 + y2) / 2) | 0;
+
                     if (yCenter < halfMinDecorationHeight) {
                         yCenter = halfMinDecorationHeight;
                     }
@@ -408,19 +470,29 @@ export class DecorationsOverviewRuler extends ViewPart {
         // Draw cursors
         if (!this._settings.hideCursor) {
             const cursorHeight = (2 * this._settings.pixelRatio) | 0;
+
             const halfCursorHeight = (cursorHeight / 2) | 0;
+
             const cursorX = this._settings.x[OverviewRulerLane.Full];
+
             const cursorW = this._settings.w[OverviewRulerLane.Full];
+
             let prevY1 = -100;
+
             let prevY2 = -100;
+
             let prevColor: string | null = null;
+
             for (let i = 0, len = this._cursorPositions.length; i < len; i++) {
                 const color = this._cursorPositions[i].color;
+
                 if (!color) {
                     continue;
                 }
                 const cursor = this._cursorPositions[i].position;
+
                 let yCenter = (viewLayout.getVerticalOffsetForLineNumber(cursor.lineNumber) * heightRatio) | 0;
+
                 if (yCenter < halfCursorHeight) {
                     yCenter = halfCursorHeight;
                 }
@@ -428,7 +500,9 @@ export class DecorationsOverviewRuler extends ViewPart {
                     yCenter = canvasHeight - halfCursorHeight;
                 }
                 const y1 = yCenter - halfCursorHeight;
+
                 const y2 = y1 + cursorHeight;
+
                 if (y1 > prevY2 + 1 || color !== prevColor) {
                     // flush prev
                     if (i !== 0 && prevColor) {

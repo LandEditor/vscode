@@ -70,6 +70,7 @@ type FileTelemetryDataFragment = {
 export class TelemetryContribution extends Disposable implements IWorkbenchContribution {
     private static ALLOWLIST_JSON = ['package.json', 'package-lock.json', 'tsconfig.json', 'jsconfig.json', 'bower.json', '.eslintrc.json', 'tslint.json', 'composer.json'];
     private static ALLOWLIST_WORKSPACE_JSON = ['settings.json', 'extensions.json', 'tasks.json', 'launch.json'];
+
     constructor(
     @ITelemetryService
     private readonly telemetryService: ITelemetryService, 
@@ -92,7 +93,9 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
     @ITextFileService
     textFileService: ITextFileService) {
         super();
+
         const { filesToOpenOrCreate, filesToDiff, filesToMerge } = environmentService;
+
         const activeViewlet = paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
         type WindowSizeFragment = {
             innerHeight: {
@@ -221,9 +224,11 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
     }
     private onTextFileModelResolved(e: ITextFileResolveEvent): void {
         const settingsType = this.getTypeIfSettings(e.model.resource);
+
         if (settingsType) {
             type SettingsReadClassification = {
                 owner: 'bpasero';
+
                 settingsType: {
                     classification: 'SystemMetaData';
                     purpose: 'FeatureInsight';
@@ -245,9 +250,11 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
     }
     private onTextFileModelSaved(e: ITextFileSaveEvent): void {
         const settingsType = this.getTypeIfSettings(e.model.resource);
+
         if (settingsType) {
             type SettingsWrittenClassification = {
                 owner: 'bpasero';
+
                 settingsType: {
                     classification: 'SystemMetaData';
                     purpose: 'FeatureInsight';
@@ -285,9 +292,11 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
         }
         // Check for workspace settings file
         const folders = this.contextService.getWorkspace().folders;
+
         for (const folder of folders) {
             if (isEqualOrParent(resource, folder.toResource('.vscode'))) {
                 const filename = basename(resource);
+
                 if (TelemetryContribution.ALLOWLIST_WORKSPACE_JSON.indexOf(filename) > -1) {
                     return `.vscode/${filename}`;
                 }
@@ -300,8 +309,11 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
         // Remove query parameters from the resource extension
         const queryStringLocation = ext.indexOf('?');
         ext = queryStringLocation !== -1 ? ext.substr(0, queryStringLocation) : ext;
+
         const fileName = basename(resource);
+
         const path = resource.scheme === Schemas.file ? resource.fsPath : resource.path;
+
         const telemetryData = {
             mimeType: new TelemetryTrustedValue(getMimeTypes(resource).join(', ')),
             ext,
@@ -309,6 +321,7 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
             reason,
             allowlistedjson: undefined as string | undefined
         };
+
         if (ext === '.json' && TelemetryContribution.ALLOWLIST_JSON.indexOf(fileName) > -1) {
             telemetryData['allowlistedjson'] = fileName;
         }
@@ -317,6 +330,7 @@ export class TelemetryContribution extends Disposable implements IWorkbenchContr
 }
 class ConfigurationTelemetryContribution extends Disposable implements IWorkbenchContribution {
     private readonly configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -328,6 +342,7 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
         // Debounce the event by 1000 ms and merge all affected keys into one event
         const debouncedConfigService = Event.debounce(configurationService.onDidChangeConfiguration, (last, cur) => {
             const newAffectedKeys: ReadonlySet<string> = last ? new Set([...last.affectedKeys, ...cur.affectedKeys]) : cur.affectedKeys;
+
             return { ...cur, affectedKeys: newAffectedKeys };
         }, 1000, true);
         this._register(debouncedConfigService(event => {
@@ -356,7 +371,9 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                 });
             }
         }));
+
         const { user, workspace } = configurationService.keys();
+
         for (const setting of user) {
             this.reportTelemetry(setting, ConfigurationTarget.USER_LOCAL);
         }
@@ -369,11 +386,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
      */
     private getValueToReport(key: string, target: ConfigurationTarget.USER_LOCAL | ConfigurationTarget.WORKSPACE): string | undefined {
         const inpsectData = this.configurationService.inspect(key);
+
         const value = target === ConfigurationTarget.USER_LOCAL ? inpsectData.user?.value : inpsectData.workspace?.value;
+
         if (isNumber(value) || isBoolean(value)) {
             return value.toString();
         }
         const schema = this.configurationRegistry.getConfigurationProperties()[key];
+
         if (isString(value)) {
             if (schema?.enum?.includes(value)) {
                 return value;
@@ -392,12 +412,15 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
             settingValue: string | undefined;
             source: string;
         };
+
         const source = ConfigurationTargetToString(target);
+
         switch (key) {
             case LayoutSettings.ACTIVITY_BAR_LOCATION:
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'sandy081';
                     comment: 'This is used to know where activity bar is shown in the workbench.';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -409,11 +432,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('workbench.activityBar.location', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case AutoUpdateConfigurationKey:
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'sandy081';
                     comment: 'This is used to know if extensions are getting auto updated or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -425,11 +451,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('extensions.autoUpdate', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'files.autoSave':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'isidorn';
                     comment: 'This is used to know if auto save is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -441,11 +470,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('files.autoSave', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'editor.stickyScroll.enabled':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'aiday-mar';
                     comment: 'This is used to know if editor sticky scroll is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -457,11 +489,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('editor.stickyScroll.enabled', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case KEYWORD_ACTIVIATION_SETTING_ID:
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know if voice keyword activation is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -473,11 +508,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('accessibility.voice.keywordActivation', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.zoomLevel':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know if window zoom level is configured or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -489,11 +527,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.zoomLevel', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.zoomPerWindow':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know if window zoom per window is configured or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -505,11 +546,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.zoomPerWindow', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.titleBarStyle':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'benibenj';
                     comment: 'This is used to know if window title bar style is set to custom or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -521,11 +565,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.titleBarStyle', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.commandCenter':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know if command center is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -537,11 +584,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.commandCenter', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'chat.commandCenter.enabled':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know if command center chat menu is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -553,11 +603,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('chat.commandCenter.enabled', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.customTitleBarVisibility':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'benibenj';
                     comment: 'This is used to know if window custom title bar visibility is configured or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -569,11 +622,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.customTitleBarVisibility', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.nativeTabs':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'benibenj';
                     comment: 'This is used to know if window native tabs are enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -585,11 +641,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.nativeTabs', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'extensions.verifySignature':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'sandy081';
                     comment: 'This is used to know if extensions signature verification is enabled or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -601,11 +660,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('extensions.verifySignature', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.systemColorTheme':
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'bpasero';
                     comment: 'This is used to know how system color theme is enforced';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -617,10 +679,13 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('window.systemColorTheme', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
+
             case 'window.newWindowProfile':
                 {
                     const valueToReport = this.getValueToReport(key, target);
+
                     const settingValue = valueToReport === null ? 'null'
                         : valueToReport === this.userDataProfilesService.defaultProfile.name
                             ? 'default'
@@ -628,6 +693,7 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                     this.telemetryService.publicLog2<UpdatedSettingEvent, {
                         owner: 'sandy081';
                         comment: 'This is used to know the new window profile that is being used';
+
                         settingValue: {
                             classification: 'SystemMetaData';
                             purpose: 'FeatureInsight';
@@ -639,12 +705,14 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                             comment: 'source of the setting';
                         };
                     }>('window.newWindowProfile', { settingValue, source });
+
                     return;
                 }
             case AutoRestartConfigurationKey:
                 this.telemetryService.publicLog2<UpdatedSettingEvent, {
                     owner: 'sandy081';
                     comment: 'This is used to know if extensions are getting auto restarted or not';
+
                     settingValue: {
                         classification: 'SystemMetaData';
                         purpose: 'FeatureInsight';
@@ -656,6 +724,7 @@ class ConfigurationTelemetryContribution extends Disposable implements IWorkbenc
                         comment: 'source of the setting';
                     };
                 }>('extensions.autoRestart', { settingValue: this.getValueToReport(key, target), source });
+
                 return;
         }
     }

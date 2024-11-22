@@ -175,6 +175,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	addEntry(entry: IStatusbarEntry, id: string, alignment: StatusbarAlignment, priorityOrLocation: number | IStatusbarEntryLocation | IStatusbarEntryPriority = 0): IStatusbarEntryAccessor {
 		let priority: IStatusbarEntryPriority;
+
 		if (isStatusbarEntryPriority(priorityOrLocation)) {
 			priority = priorityOrLocation;
 		} else {
@@ -223,6 +224,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// View model item
 		const itemContainer = this.doCreateStatusItem(id, alignment);
+
 		const item = this.instantiationService.createInstance(StatusbarEntryItem, itemContainer, entry, this.hoverDelegate);
 
 		// View model entry
@@ -239,6 +241,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Add to view model
 		const { needsFullRefresh } = this.doAddOrRemoveModelEntry(viewModelEntry, true);
+
 		if (needsFullRefresh) {
 			this.appendStatusbarEntries();
 		} else {
@@ -251,6 +254,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			},
 			dispose: () => {
 				const { needsFullRefresh } = this.doAddOrRemoveModelEntry(viewModelEntry, false);
+
 				if (needsFullRefresh) {
 					this.appendStatusbarEntries();
 				} else {
@@ -266,6 +270,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		itemContainer.id = id;
 
 		itemContainer.classList.add('statusbar-item');
+
 		if (extraClasses) {
 			itemContainer.classList.add(...extraClasses);
 		}
@@ -283,6 +288,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Update model but remember previous entries
 		const entriesBefore = this.viewModel.entries;
+
 		if (add) {
 			this.viewModel.add(entry);
 		} else {
@@ -329,7 +335,9 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	focus(preserveEntryFocus = true): void {
 		this.getContainer()?.focus();
+
 		const lastFocusedEntry = this.viewModel.lastFocusedEntry;
+
 		if (preserveEntryFocus && lastFocusedEntry) {
 			setTimeout(() => lastFocusedEntry.labelContainer.focus(), 0); // Need a timeout, for some reason without it the inner label container will not get focused
 		}
@@ -372,6 +380,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		// Fill in pending entries if any
 		while (this.pendingEntries.length) {
 			const pending = this.pendingEntries.shift();
+
 			if (pending) {
 				pending.accessor = this.addEntry(pending.entry, pending.id, pending.alignment, pending.priority.primary);
 			}
@@ -380,6 +389,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	private appendStatusbarEntries(): void {
 		const leftItemsContainer = assertIsDefined(this.leftItemsContainer);
+
 		const rightItemsContainer = assertIsDefined(this.rightItemsContainer);
 
 		// Clear containers
@@ -410,6 +420,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		const target = assertIsDefined(entry.alignment === StatusbarAlignment.LEFT ? this.leftItemsContainer : this.rightItemsContainer);
 
 		const index = entries.indexOf(entry);
+
 		if (index + 1 === entries.length) {
 			target.appendChild(entry.container); // append at the end if last
 		} else {
@@ -425,6 +436,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Find visible entries and clear compact related CSS classes if any
 		const mapIdToVisibleEntry = new Map<string, IStatusbarViewModelEntry>();
+
 		for (const entry of entries) {
 			if (!this.viewModel.isHidden(entry.id)) {
 				mapIdToVisibleEntry.set(entry.id, entry);
@@ -435,19 +447,23 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Figure out groups of entries with `compact` alignment
 		const compactEntryGroups = new Map<string, Map<string, IStatusbarViewModelEntry>>();
+
 		for (const entry of mapIdToVisibleEntry.values()) {
 			if (
 				isStatusbarEntryLocation(entry.priority.primary) && // entry references another entry as location
 				entry.priority.primary.compact						// entry wants to be compact
 			) {
 				const locationId = entry.priority.primary.id;
+
 				const location = mapIdToVisibleEntry.get(locationId);
+
 				if (!location) {
 					continue; // skip if location does not exist
 				}
 
 				// Build a map of entries that are compact among each other
 				let compactEntryGroup = compactEntryGroups.get(locationId);
+
 				if (!compactEntryGroup) {
 
 					// It is possible that this entry references another entry
@@ -457,6 +473,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					for (const group of compactEntryGroups.values()) {
 						if (group.has(locationId)) {
 							compactEntryGroup = group;
+
 							break;
 						}
 					}
@@ -483,8 +500,10 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		// Install mouse listeners to update hover feedback for
 		// all compact entries that belong to each other
 		const statusBarItemHoverBackground = this.getColor(STATUS_BAR_ITEM_HOVER_BACKGROUND);
+
 		const statusBarItemCompactHoverBackground = this.getColor(STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND);
 		this.compactEntriesDisposable.value = new DisposableStore();
+
 		if (statusBarItemHoverBackground && statusBarItemCompactHoverBackground && !isHighContrast(this.theme.type)) {
 			for (const [, compactEntryGroup] of compactEntryGroups) {
 				for (const compactEntry of compactEntryGroup.values()) {
@@ -538,6 +557,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		// having the same identifier (e.g. from extensions). So we make sure to only
 		// show a single entry per identifier we handled.
 		const handledEntries = new Set<string>();
+
 		for (const entry of this.viewModel.entries) {
 			if (!handledEntries.has(entry.id)) {
 				actions.push(new ToggleStatusbarEntryVisibilityAction(entry.id, entry.name, this.viewModel));
@@ -547,10 +567,13 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Figure out if mouse is over an entry
 		let statusEntryUnderMouse: IStatusbarViewModelEntry | undefined = undefined;
+
 		for (let element: HTMLElement | null = event.target; element; element = element.parentElement) {
 			const entry = this.viewModel.findEntry(element);
+
 			if (entry) {
 				statusEntryUnderMouse = entry;
+
 				break;
 			}
 		}
@@ -567,17 +590,21 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		super.updateStyles();
 
 		const container = assertIsDefined(this.getContainer());
+
 		const styleOverride: IStatusbarStyleOverride | undefined = [...this.styleOverrides].sort((a, b) => a.priority - b.priority)[0];
 
 		// Background / foreground colors
 		const backgroundColor = this.getColor(styleOverride?.background ?? (this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY ? STATUS_BAR_BACKGROUND : STATUS_BAR_NO_FOLDER_BACKGROUND)) || '';
 		container.style.backgroundColor = backgroundColor;
+
 		const foregroundColor = this.getColor(styleOverride?.foreground ?? (this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY ? STATUS_BAR_FOREGROUND : STATUS_BAR_NO_FOLDER_FOREGROUND)) || '';
 		container.style.color = foregroundColor;
+
 		const itemBorderColor = this.getColor(STATUS_BAR_ITEM_FOCUS_BORDER);
 
 		// Border color
 		const borderColor = this.getColor(styleOverride?.border ?? (this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY ? STATUS_BAR_BORDER : STATUS_BAR_NO_FOLDER_BORDER)) || this.getColor(contrastBorder);
+
 		if (borderColor) {
 			container.classList.add('status-border-top');
 			container.style.setProperty('--status-border-top-color', borderColor);
@@ -616,6 +643,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	override layout(width: number, height: number, top: number, left: number): void {
 		super.layout(width, height, top, left);
+
 		super.layoutContents(width, height);
 	}
 
@@ -679,6 +707,7 @@ export class AuxiliaryStatusbarPart extends StatusbarPart implements IAuxiliaryS
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		const id = AuxiliaryStatusbarPart.COUNTER++;
+
 		super(`workbench.parts.auxiliaryStatus.${id}`, instantiationService, themeService, contextService, storageService, layoutService, contextMenuService, contextKeyService);
 	}
 }
@@ -717,6 +746,7 @@ export class StatusbarService extends MultiWindowParts<StatusbarPart> implements
 
 		// Statusbar Part
 		const statusbarPart = this.instantiationService.createInstance(AuxiliaryStatusbarPart, statusbarPartContainer);
+
 		const disposable = this.registerPart(statusbarPart);
 
 		statusbarPart.create(statusbarPartContainer);

@@ -83,12 +83,15 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 
 	public $shellIntegrationChange(instanceId: number): void {
 		const terminal = this._extHostTerminalService.getTerminalById(instanceId);
+
 		if (!terminal) {
 			return;
 		}
 
 		const apiTerminal = terminal.value;
+
 		let shellIntegration = this._activeShellIntegrations.get(instanceId);
+
 		if (!shellIntegration) {
 			shellIntegration = new InternalTerminalShellIntegration(terminal.value, this._onDidStartTerminalShellExecution);
 			this._activeShellIntegrations.set(instanceId, shellIntegration);
@@ -144,6 +147,7 @@ export class ExtHostTerminalShellIntegration extends Disposable implements IExtH
 
 class InternalTerminalShellIntegration extends Disposable {
 	private _currentExecution: InternalTerminalShellExecution | undefined;
+
 	get currentExecution(): InternalTerminalShellExecution | undefined { return this._currentExecution; }
 
 	private _ignoreNextExecution: boolean = false;
@@ -175,9 +179,11 @@ class InternalTerminalShellIntegration extends Disposable {
 			// executeCommand(executable: string, args: string[]): vscode.TerminalShellExecution;
 			executeCommand(commandLineOrExecutable: string, args?: string[]): vscode.TerminalShellExecution {
 				let commandLineValue = commandLineOrExecutable;
+
 				if (args) {
 					for (const arg of args) {
 						const wrapInQuotes = !arg.match(/["'`]/) && arg.match(/\s/);
+
 						if (wrapInQuotes) {
 							commandLineValue += ` "${arg}"`;
 						} else {
@@ -194,8 +200,10 @@ class InternalTerminalShellIntegration extends Disposable {
 					confidence: TerminalShellExecutionCommandLineConfidence.High,
 					isTrusted: true
 				};
+
 				const execution = that.startShellExecution(commandLine, that._cwd, true).value;
 				that._ignoreNextExecution = true;
+
 				return execution;
 			}
 		};
@@ -211,6 +219,7 @@ class InternalTerminalShellIntegration extends Disposable {
 			}
 			// Fallback to the shell integration's cwd as the cwd may not have been restored after a reload
 			const currentExecution = this._currentExecution = new InternalTerminalShellExecution(commandLine, cwd ?? this._cwd);
+
 			if (fireEventInMicrotask) {
 				queueMicrotask(() => this._onDidStartTerminalShellExecution.fire({ terminal: this._terminal, shellIntegration: this.value, execution: currentExecution.value }));
 			} else {
@@ -234,6 +243,7 @@ class InternalTerminalShellIntegration extends Disposable {
 
 	setCwd(cwd: URI | undefined): void {
 		let wasChanged = false;
+
 		if (URI.isUri(this._cwd)) {
 			wasChanged = !URI.isUri(cwd) || this._cwd.toString() !== cwd.toString();
 		} else if (this._cwd !== cwd) {
@@ -304,10 +314,12 @@ class ShellExecutionDataStream extends Disposable {
 			this._barrier = new Barrier();
 		}
 		const barrier = this._barrier;
+
 		const iterable = new AsyncIterableObject<string>(async emitter => {
 			this._emitters.push(emitter);
 			await barrier.wait();
 		});
+
 		return iterable;
 	}
 

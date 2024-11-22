@@ -17,6 +17,7 @@ import { ILogService } from '../../log/common/log.js';
 import { Promises } from '../../../base/common/async.js';
 import { IConfigurationService } from '../../configuration/common/configuration.js';
 import { clamp } from '../../../base/common/numbers.js';
+
 let unixShellEnvPromise: Promise<typeof process.env> | undefined = undefined;
 /**
  * Resolves the shell environment by spawning a shell. This call will cache
@@ -30,16 +31,19 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
     // Skip if --force-disable-user-env
     if (args['force-disable-user-env']) {
         logService.trace('resolveShellEnv(): skipped (--force-disable-user-env)');
+
         return {};
     }
     // Skip on windows
     else if (isWindows) {
         logService.trace('resolveShellEnv(): skipped (Windows)');
+
         return {};
     }
     // Skip if running from CLI already
     else if (isLaunchedFromCli(env) && !args['force-user-env']) {
         logService.trace('resolveShellEnv(): skipped (VSCODE_CLI is set)');
+
         return {};
     }
     // Otherwise resolve (macOS, Linux)
@@ -56,8 +60,10 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
         if (!unixShellEnvPromise) {
             unixShellEnvPromise = Promises.withAsyncBody<NodeJS.ProcessEnv>(async (resolve, reject) => {
                 const cts = new CancellationTokenSource();
+
                 let timeoutValue = 10000; // default to 10 seconds
                 const configuredTimeoutValue = configurationService.getValue<unknown>('application.shellEnvironmentResolutionTimeout');
+
                 if (typeof configuredTimeoutValue === 'number') {
                     timeoutValue = clamp(configuredTimeoutValue, 1, 120) * 1000 /* convert from seconds */;
                 }
@@ -90,10 +96,14 @@ export async function getResolvedShellEnv(configurationService: IConfigurationSe
 async function doResolveUnixShellEnv(logService: ILogService, token: CancellationToken): Promise<typeof process.env> {
     const runAsNode = process.env['ELECTRON_RUN_AS_NODE'];
     logService.trace('getUnixShellEnvironment#runAsNode', runAsNode);
+
     const noAttach = process.env['ELECTRON_NO_ATTACH_CONSOLE'];
     logService.trace('getUnixShellEnvironment#noAttach', noAttach);
+
     const mark = generateUuid().replace(/-/g, '').substr(0, 12);
+
     const regex = new RegExp(mark + '({.*})' + mark);
+
     const env = {
         ...process.env,
         ELECTRON_RUN_AS_NODE: '1',
@@ -101,16 +111,21 @@ async function doResolveUnixShellEnv(logService: ILogService, token: Cancellatio
         VSCODE_RESOLVING_ENVIRONMENT: '1'
     };
     logService.trace('getUnixShellEnvironment#env', env);
+
     const systemShellUnix = await getSystemShell(OS, env);
     logService.trace('getUnixShellEnvironment#shell', systemShellUnix);
+
     return new Promise<typeof process.env>((resolve, reject) => {
         if (token.isCancellationRequested) {
             return reject(new CancellationError());
         }
         // handle popular non-POSIX shells
         const name = basename(systemShellUnix);
+
         let command: string, shellArgs: Array<string>;
+
         const extraArgs = '';
+
         if (/^pwsh(-preview)?$/.test(name)) {
             // Older versions of PowerShell removes double quotes sometimes so we use "double single quotes" which is how
             // you escape single quotes inside of a single quoted string.
@@ -127,6 +142,7 @@ async function doResolveUnixShellEnv(logService: ILogService, token: Cancellatio
         }
         else {
             command = `'${process.execPath}' ${extraArgs} -p '"${mark}" + JSON.stringify(process.env) + "${mark}"'`;
+
             if (name === 'tcsh' || name === 'csh') {
                 shellArgs = ['-ic'];
             }
@@ -135,6 +151,7 @@ async function doResolveUnixShellEnv(logService: ILogService, token: Cancellatio
             }
         }
         logService.trace('getUnixShellEnvironment#spawn', JSON.stringify(shellArgs), command);
+
         const child = spawn(systemShellUnix, [...shellArgs, command], {
             detached: true,
             stdio: ['ignore', 'pipe', 'pipe'],
@@ -142,20 +159,25 @@ async function doResolveUnixShellEnv(logService: ILogService, token: Cancellatio
         });
         token.onCancellationRequested(() => {
             child.kill();
+
             return reject(new CancellationError());
         });
         child.on('error', err => {
             logService.error('getUnixShellEnvironment#errorChildProcess', toErrorMessage(err));
             reject(err);
         });
+
         const buffers: Buffer[] = [];
         child.stdout.on('data', b => buffers.push(b));
+
         const stderr: Buffer[] = [];
         child.stderr.on('data', b => stderr.push(b));
         child.on('close', (code, signal) => {
             const raw = Buffer.concat(buffers).toString('utf8');
             logService.trace('getUnixShellEnvironment#raw', raw);
+
             const stderrStr = Buffer.concat(stderr).toString('utf8');
+
             if (stderrStr.trim()) {
                 logService.trace('getUnixShellEnvironment#stderr', stderrStr);
             }
@@ -163,9 +185,12 @@ async function doResolveUnixShellEnv(logService: ILogService, token: Cancellatio
                 return reject(new Error(localize('resolveShellEnvExitError', "Unexpected exit code from spawned shell (code {0}, signal {1})", code, signal)));
             }
             const match = regex.exec(raw);
+
             const rawStripped = match ? match[1] : '{}';
+
             try {
                 const env = JSON.parse(rawStripped);
+
                 if (runAsNode) {
                     env['ELECTRON_RUN_AS_NODE'] = runAsNode;
                 }

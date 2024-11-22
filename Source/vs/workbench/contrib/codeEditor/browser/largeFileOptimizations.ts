@@ -15,6 +15,7 @@ import { INotificationService, Severity } from '../../../../platform/notificatio
  */
 export class LargeFileOptimizationsWarner extends Disposable implements IEditorContribution {
     public static readonly ID = 'editor.contrib.largeFileOptimizationsWarner';
+
     constructor(private readonly _editor: ICodeEditor, 
     @INotificationService
     private readonly _notificationService: INotificationService, 
@@ -26,6 +27,7 @@ export class LargeFileOptimizationsWarner extends Disposable implements IEditorC
     }
     private _update(): void {
         const model = this._editor.getModel();
+
         if (!model) {
             return;
         }

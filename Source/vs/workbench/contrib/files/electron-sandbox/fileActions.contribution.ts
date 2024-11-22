@@ -22,8 +22,11 @@ import { SideBySideEditor, EditorResourceAccessor } from '../../../common/editor
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { IListService } from '../../../../platform/list/browser/listService.js';
 import { IEditorGroupsService } from '../../../services/editor/common/editorGroupsService.js';
+
 const REVEAL_IN_OS_COMMAND_ID = 'revealFileInOS';
+
 const REVEAL_IN_OS_LABEL = isWindows ? nls.localize2('revealInWindows', "Reveal in File Explorer") : isMacintosh ? nls.localize2('revealInMac', "Reveal in Finder") : nls.localize2('openContainer', "Open Containing Folder");
+
 const REVEAL_IN_OS_WHEN_CONTEXT = ContextKeyExpr.or(ResourceContextKey.Scheme.isEqualTo(Schemas.file), ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeUserData));
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: REVEAL_IN_OS_COMMAND_ID,
@@ -38,6 +41,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         revealResourcesInOS(resources, accessor.get(INativeHostService), accessor.get(IWorkspaceContextService));
     }
 });
+
 const REVEAL_ACTIVE_FILE_IN_OS_COMMAND_ID = 'workbench.action.files.revealActiveFileInWindows';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     weight: KeybindingWeight.WorkbenchContrib,
@@ -46,8 +50,11 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: REVEAL_ACTIVE_FILE_IN_OS_COMMAND_ID,
     handler: (accessor: ServicesAccessor) => {
         const editorService = accessor.get(IEditorService);
+
         const activeInput = editorService.activeEditor;
+
         const resource = EditorResourceAccessor.getOriginalUri(activeInput, { filterByScheme: Schemas.file, supportSideBySide: SideBySideEditor.PRIMARY });
+
         const resources = resource ? [resource] : [];
         revealResourcesInOS(resources, accessor.get(INativeHostService), accessor.get(IWorkspaceContextService));
     }

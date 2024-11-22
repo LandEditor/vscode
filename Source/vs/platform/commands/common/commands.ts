@@ -53,7 +53,9 @@ export interface ICommandRegistry {
     registerCommand(id: string, command: ICommandHandler): IDisposable;
     registerCommand(command: ICommand): IDisposable;
     registerCommandAlias(oldId: string, newId: string): IDisposable;
+
     getCommand(id: string): ICommand | undefined;
+
     getCommands(): ICommandsMap;
 }
 export const CommandsRegistry: ICommandRegistry = new class implements ICommandRegistry {
@@ -73,32 +75,40 @@ export const CommandsRegistry: ICommandRegistry = new class implements ICommandR
         // add argument validation if rich command metadata is provided
         if (idOrCommand.metadata && Array.isArray(idOrCommand.metadata.args)) {
             const constraints: Array<TypeConstraint | undefined> = [];
+
             for (const arg of idOrCommand.metadata.args) {
                 constraints.push(arg.constraint);
             }
             const actualHandler = idOrCommand.handler;
             idOrCommand.handler = function (accessor, ...args: any[]) {
                 validateConstraints(args, constraints);
+
                 return actualHandler(accessor, ...args);
             };
         }
         // find a place to store the command
         const { id } = idOrCommand;
+
         let commands = this._commands.get(id);
+
         if (!commands) {
             commands = new LinkedList<ICommand>();
             this._commands.set(id, commands);
         }
         const removeFn = commands.unshift(idOrCommand);
+
         const ret = toDisposable(() => {
             removeFn();
+
             const command = this._commands.get(id);
+
             if (command?.isEmpty()) {
                 this._commands.delete(id);
             }
         });
         // tell the world about this command
         this._onDidRegisterCommand.fire(id);
+
         return ret;
     }
     registerCommandAlias(oldId: string, newId: string): IDisposable {
@@ -106,6 +116,7 @@ export const CommandsRegistry: ICommandRegistry = new class implements ICommandR
     }
     getCommand(id: string): ICommand | undefined {
         const list = this._commands.get(id);
+
         if (!list || list.isEmpty()) {
             return undefined;
         }
@@ -113,8 +124,10 @@ export const CommandsRegistry: ICommandRegistry = new class implements ICommandR
     }
     getCommands(): ICommandsMap {
         const result = new Map<string, ICommand>();
+
         for (const key of this._commands.keys()) {
             const command = this.getCommand(key);
+
             if (command) {
                 result.set(key, command);
             }

@@ -14,5 +14,6 @@ export interface INotebookCellStatusBarService {
     readonly onDidChangeProviders: Event<void>;
     readonly onDidChangeItems: Event<void>;
     registerCellStatusBarItemProvider(provider: INotebookCellStatusBarItemProvider): IDisposable;
+
     getStatusBarItemsForCell(docUri: URI, cellIndex: number, viewType: string, token: CancellationToken): Promise<INotebookCellStatusBarItemList[]>;
 }

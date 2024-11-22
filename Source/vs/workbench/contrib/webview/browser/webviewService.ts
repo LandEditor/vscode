@@ -12,6 +12,7 @@ import { OverlayWebview } from './overlayWebview.js';
 export class WebviewService extends Disposable implements IWebviewService {
     declare readonly _serviceBrand: undefined;
     protected readonly _webviewThemeDataProvider: WebviewThemeDataProvider;
+
     constructor(
     @IInstantiationService
     protected readonly _instantiationService: IInstantiationService) {
@@ -35,19 +36,23 @@ export class WebviewService extends Disposable implements IWebviewService {
     createWebviewElement(initInfo: WebviewInitInfo): IWebviewElement {
         const webview = this._instantiationService.createInstance(WebviewElement, initInfo, this._webviewThemeDataProvider);
         this.registerNewWebview(webview);
+
         return webview;
     }
     createWebviewOverlay(initInfo: WebviewInitInfo): IOverlayWebview {
         const webview = this._instantiationService.createInstance(OverlayWebview, initInfo);
         this.registerNewWebview(webview);
+
         return webview;
     }
     protected registerNewWebview(webview: IWebview) {
         this._webviews.add(webview);
+
         const store = new DisposableStore();
         store.add(webview.onDidFocus(() => {
             this._updateActiveWebview(webview);
         }));
+
         const onBlur = () => {
             if (this._activeWebview === webview) {
                 this._updateActiveWebview(undefined);

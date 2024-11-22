@@ -3,12 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as cp from 'child_process';
+
 let tag = '';
 try {
     tag = cp
         .execSync('git describe --tags `git rev-list --tags --max-count=1`')
         .toString()
         .trim();
+
     if (!isValidTag(tag)) {
         throw Error(`Invalid tag ${tag}`);
     }

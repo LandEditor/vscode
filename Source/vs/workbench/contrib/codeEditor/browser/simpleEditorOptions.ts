@@ -78,6 +78,7 @@ export function setupSimpleEditorSelectionStyling(editorContainerSelector: strin
 		if (selectionBackgroundColor) {
 			// Override inactive selection bg
 			const inputBackgroundColor = theme.getColor(inputBackground);
+
 			if (inputBackgroundColor) {
 				collector.addRule(`${editorContainerSelector} .monaco-editor-background { background-color: ${inputBackgroundColor}; } `);
 				collector.addRule(`${editorContainerSelector} .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(0.4)}; }`);
@@ -85,6 +86,7 @@ export function setupSimpleEditorSelectionStyling(editorContainerSelector: strin
 
 			// Override selected fg
 			const inputForegroundColor = theme.getColor(inputForeground);
+
 			if (inputForegroundColor) {
 				collector.addRule(`${editorContainerSelector} .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`);
 			}

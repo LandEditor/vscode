@@ -16,6 +16,7 @@ import { NotebookTextDiffEditor } from '../../notebook/browser/diff/notebookDiff
 import { NotebookMultiTextDiffEditor } from '../../notebook/browser/diff/notebookMultiDiffEditor.js';
 export class InlineChatNotebookContribution {
     private readonly _store = new DisposableStore();
+
     constructor(
     @IInlineChatSessionService
     sessionService: IInlineChatSessionService, 
@@ -26,13 +27,16 @@ export class InlineChatNotebookContribution {
         this._store.add(sessionService.registerSessionKeyComputer(Schemas.vscodeNotebookCell, {
             getComparisonKey: (editor, uri) => {
                 const data = CellUri.parse(uri);
+
                 if (!data) {
                     throw illegalState('Expected notebook cell uri');
                 }
                 let fallback: string | undefined;
+
                 for (const notebookEditor of notebookEditorService.listNotebookEditors()) {
                     if (notebookEditor.hasModel() && isEqual(notebookEditor.textModel.uri, data.notebook)) {
                         const candidate = `<notebook>${notebookEditor.getId()}#${uri}`;
+
                         if (!fallback) {
                             fallback = candidate;
                         }
@@ -54,6 +58,7 @@ export class InlineChatNotebookContribution {
                     return fallback;
                 }
                 const activeEditor = editorService.activeEditorPane;
+
                 if (activeEditor && (activeEditor.getId() === NotebookTextDiffEditor.ID || activeEditor.getId() === NotebookMultiTextDiffEditor.ID)) {
                     return `<notebook>${editor.getId()}#${uri}`;
                 }
@@ -62,13 +67,16 @@ export class InlineChatNotebookContribution {
         }));
         this._store.add(sessionService.onWillStartSession(newSessionEditor => {
             const candidate = CellUri.parse(newSessionEditor.getModel().uri);
+
             if (!candidate) {
                 return;
             }
             for (const notebookEditor of notebookEditorService.listNotebookEditors()) {
                 if (isEqual(notebookEditor.textModel?.uri, candidate.notebook)) {
                     let found = false;
+
                     const editors: ICodeEditor[] = [];
+
                     for (const [, codeEditor] of notebookEditor.codeEditors) {
                         editors.push(codeEditor);
                         found = codeEditor === newSessionEditor || found;

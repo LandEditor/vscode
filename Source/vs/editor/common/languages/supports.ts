@@ -7,13 +7,18 @@ import { StandardTokenType } from '../encodedTokenAttributes.js';
 import { ILanguageIdCodec } from '../languages.js';
 export function createScopedLineTokens(context: LineTokens, offset: number): ScopedLineTokens {
     const tokenCount = context.getCount();
+
     const tokenIndex = context.findTokenIndexAtOffset(offset);
+
     const desiredLanguageId = context.getLanguageId(tokenIndex);
+
     let lastTokenIndex = tokenIndex;
+
     while (lastTokenIndex + 1 < tokenCount && context.getLanguageId(lastTokenIndex + 1) === desiredLanguageId) {
         lastTokenIndex++;
     }
     let firstTokenIndex = tokenIndex;
+
     while (firstTokenIndex > 0 && context.getLanguageId(firstTokenIndex - 1) === desiredLanguageId) {
         firstTokenIndex--;
     }
@@ -28,6 +33,7 @@ export class ScopedLineTokens {
     private readonly _lastTokenIndex: number;
     public readonly firstCharOffset: number;
     private readonly _lastCharOffset: number;
+
     constructor(actual: LineTokens, languageId: string, firstTokenIndex: number, lastTokenIndex: number, firstCharOffset: number, lastCharOffset: number) {
         this._actual = actual;
         this.languageId = languageId;
@@ -39,6 +45,7 @@ export class ScopedLineTokens {
     }
     public getLineContent(): string {
         const actualLineContent = this._actual.getLineContent();
+
         return actualLineContent.substring(this.firstCharOffset, this._lastCharOffset);
     }
     public getLineLength(): number {
@@ -46,6 +53,7 @@ export class ScopedLineTokens {
     }
     public getActualLineContentBefore(offset: number): string {
         const actualLineContent = this._actual.getLineContent();
+
         return actualLineContent.substring(0, this.firstCharOffset + offset);
     }
     public getTokenCount(): number {

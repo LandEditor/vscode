@@ -21,12 +21,17 @@ export interface ILabelService {
         noPrefix?: boolean;
         separator?: '/' | '\\';
     }): string;
+
     getUriBasenameLabel(resource: URI): string;
+
     getWorkspaceLabel(workspace: (IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | URI | IWorkspace), options?: {
         verbose: Verbosity;
     }): string;
+
     getHostLabel(scheme: string, authority?: string): string;
+
     getHostTooltip(scheme: string, authority?: string): string | undefined;
+
     getSeparator(scheme: string, authority?: string): '/' | '\\';
     registerFormatter(formatter: ResourceLabelFormatter): IDisposable;
     onDidChangeFormatters: Event<IFormatterChangeEvent>;
@@ -49,6 +54,7 @@ export interface ResourceLabelFormatter {
     scheme: string;
     authority?: string;
     priority?: boolean;
+
     formatting: ResourceLabelFormatting;
 }
 export interface ResourceLabelFormatting {

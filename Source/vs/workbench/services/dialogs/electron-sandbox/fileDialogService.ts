@@ -78,7 +78,9 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
         isSetting: boolean;
     } {
         const setting = (this.configurationService.getValue('files.simpleDialog.enable') === true);
+
         const newWindowSetting = (this.configurationService.getValue('window.openFilesInNewWindow') === 'on');
+
         return {
             useSimplified: ((schema !== Schemas.file) && (schema !== Schemas.vscodeUserData)) || setting,
             isSetting: newWindowSetting
@@ -86,10 +88,12 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFilePath(schema);
         }
         const shouldUseSimplified = this.shouldUseSimplified(schema);
+
         if (shouldUseSimplified.useSimplified) {
             return this.pickFileFolderAndOpenSimplified(schema, options, shouldUseSimplified.isSetting);
         }
@@ -97,10 +101,12 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFilePath(schema);
         }
         const shouldUseSimplified = this.shouldUseSimplified(schema);
+
         if (shouldUseSimplified.useSimplified) {
             return this.pickFileAndOpenSimplified(schema, options, shouldUseSimplified.isSetting);
         }
@@ -108,6 +114,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFolderPath(schema);
         }
@@ -118,7 +125,9 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void> {
         options.availableFileSystems = this.getWorkspaceAvailableFileSystems(options);
+
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultWorkspacePath(schema);
         }
@@ -129,15 +138,19 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileToSave(defaultUri: URI, availableFileSystems?: string[]): Promise<URI | undefined> {
         const schema = this.getFileSystemSchema({ defaultUri, availableFileSystems });
+
         const options = this.getPickFileToSaveDialogOptions(defaultUri, availableFileSystems);
+
         if (this.shouldUseSimplified(schema).useSimplified) {
             return this.pickFileToSaveSimplified(schema, options);
         }
         else {
             const result = await this.nativeHostService.showSaveDialog(this.toNativeSaveDialogOptions(options));
+
             if (result && !result.canceled && result.filePath) {
                 const uri = URI.file(result.filePath);
                 this.addFileToRecentlyOpened(uri);
+
                 return uri;
             }
         }
@@ -145,6 +158,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     private toNativeSaveDialogOptions(options: ISaveDialogOptions): SaveDialogOptions & INativeHostOptions {
         options.defaultUri = options.defaultUri ? URI.file(options.defaultUri.path) : undefined;
+
         return {
             defaultPath: options.defaultUri?.fsPath,
             buttonLabel: options.saveLabel,
@@ -155,10 +169,12 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async showSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined> {
         const schema = this.getFileSystemSchema(options);
+
         if (this.shouldUseSimplified(schema).useSimplified) {
             return this.showSaveDialogSimplified(schema, options);
         }
         const result = await this.nativeHostService.showSaveDialog(this.toNativeSaveDialogOptions(options));
+
         if (result && !result.canceled && result.filePath) {
             return URI.file(result.filePath);
         }
@@ -166,6 +182,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async showOpenDialog(options: IOpenDialogOptions): Promise<URI[] | undefined> {
         const schema = this.getFileSystemSchema(options);
+
         if (this.shouldUseSimplified(schema).useSimplified) {
             return this.showOpenDialogSimplified(schema, options);
         }
@@ -180,6 +197,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
             targetWindowId: getActiveWindow().vscodeWindowId
         };
         newOptions.properties.push('createDirectory');
+
         if (options.canSelectFiles) {
             newOptions.properties.push('openFile');
         }
@@ -190,6 +208,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
             newOptions.properties.push('multiSelections');
         }
         const result = await this.nativeHostService.showOpenDialog(newOptions);
+
         return result && Array.isArray(result.filePaths) && result.filePaths.length > 0 ? result.filePaths.map(URI.file) : undefined;
     }
 }

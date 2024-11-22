@@ -58,7 +58,9 @@ export interface IObjectCollectionBuffer<T extends ObjectCollectionBufferPropert
  */
 export interface IObjectCollectionBufferEntry<T extends ObjectCollectionBufferPropertySpec[]> extends IDisposable {
     set(propertyName: T[number]['name'], value: number): void;
+
     get(propertyName: T[number]['name']): number;
+
     setRaw(data: ArrayLike<number>): void;
 }
 export function createObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]>(propertySpecs: T, capacity: number): IObjectCollectionBuffer<T> {
@@ -67,6 +69,7 @@ export function createObjectCollectionBuffer<T extends ObjectCollectionBufferPro
 class ObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]> extends Disposable implements IObjectCollectionBuffer<T> {
     buffer: ArrayBuffer;
     view: Float32Array;
+
     get bufferUsedSize() {
         return this.viewUsedSize * Float32Array.BYTES_PER_ELEMENT;
     }
@@ -77,6 +80,7 @@ class ObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]> ext
         return this._entries.size;
     }
     private _dirtyTracker = new BufferDirtyTracker();
+
     get dirtyTracker(): IBufferDirtyTrackerReader { return this._dirtyTracker; }
     private readonly _propertySpecsMap: Map<string, ObjectCollectionBufferPropertySpec & {
         offset: number;
@@ -87,11 +91,13 @@ class ObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]> ext
     readonly onDidChange = this._onDidChange.event;
     private readonly _onDidChangeBuffer = this._register(new Emitter<void>());
     readonly onDidChangeBuffer = this._onDidChangeBuffer.event;
+
     constructor(public propertySpecs: T, public capacity: number) {
         super();
         this.view = new Float32Array(capacity * propertySpecs.length);
         this.buffer = this.view.buffer;
         this._entrySize = propertySpecs.length;
+
         for (let i = 0; i < propertySpecs.length; i++) {
             const spec = {
                 offset: i,
@@ -107,7 +113,9 @@ class ObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]> ext
             this._onDidChangeBuffer.fire();
         }
         const value = new ObjectCollectionBufferEntry(this.view, this._propertySpecsMap, this._dirtyTracker, this._entries.size, data);
+
         const removeFromEntries = this._entries.push(value);
+
         const listeners: IDisposable[] = [];
         listeners.push(Event.forward(value.onDidChange, this._onDidChange));
         listeners.push(value.onWillDispose(() => {
@@ -124,10 +132,12 @@ class ObjectCollectionBuffer<T extends ObjectCollectionBufferPropertySpec[]> ext
             this._dirtyTracker.flag(deletedEntryIndex, (this._entries.size - deletedEntryIndex) * this._entrySize);
             dispose(listeners);
         }));
+
         return value;
     }
     private _expandBuffer() {
         this.capacity *= 2;
+
         const newView = new Float32Array(this.capacity * this._entrySize);
         newView.set(this.view);
         this.view = newView;
@@ -139,10 +149,12 @@ class ObjectCollectionBufferEntry<T extends ObjectCollectionBufferPropertySpec[]
     readonly onDidChange = this._onDidChange.event;
     private readonly _onWillDispose = this._register(new Emitter<void>());
     readonly onWillDispose = this._onWillDispose.event;
+
     constructor(private _view: Float32Array, private _propertySpecsMap: Map<string, ObjectCollectionBufferPropertySpec & {
         offset: number;
     }>, private _dirtyTracker: BufferDirtyTracker, public i: number, data: ObjectCollectionPropertyValues<T>) {
         super();
+
         for (const propertySpec of this._propertySpecsMap.values()) {
             this._view[this.i * this._propertySpecsMap.size + propertySpec.offset] = data[propertySpec.name as keyof typeof data];
         }
@@ -150,6 +162,7 @@ class ObjectCollectionBufferEntry<T extends ObjectCollectionBufferPropertySpec[]
     }
     override dispose() {
         this._onWillDispose.fire();
+
         super.dispose();
     }
     set(propertyName: T[number]['name'], value: number): void {

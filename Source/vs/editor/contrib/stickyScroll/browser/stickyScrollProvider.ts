@@ -19,8 +19,10 @@ export class StickyLineCandidate {
 }
 export interface IStickyLineCandidateProvider {
     dispose(): void;
+
     getVersionId(): number | undefined;
     update(): Promise<void>;
+
     getCandidateStickyLinesIntersecting(range: StickyRange): StickyLineCandidate[];
     onDidChangeStickyScroll: Event<void>;
 }
@@ -34,6 +36,7 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
     private _model: StickyModel | null = null;
     private _cts: CancellationTokenSource | null = null;
     private _stickyModelProvider: IStickyModelProvider | null = null;
+
     constructor(editor: ICodeEditor, 
     @ILanguageFeaturesService
     private readonly _languageFeaturesService: ILanguageFeaturesService, 
@@ -52,7 +55,9 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
     }
     private readConfiguration() {
         this._sessionStore.clear();
+
         const options = this._editor.getOption(EditorOption.stickyScroll);
+
         if (!options.enabled) {
             return;
         }
@@ -80,7 +85,9 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
     private updateStickyModelProvider() {
         this._stickyModelProvider?.dispose();
         this._stickyModelProvider = null;
+
         const editor = this._editor;
+
         if (editor.hasModel()) {
             this._stickyModelProvider = new StickyModelProvider(editor, () => this._updateSoon.schedule(), this._languageConfigurationService, this._languageFeaturesService);
         }
@@ -94,9 +101,11 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
     private async updateStickyModel(token: CancellationToken): Promise<void> {
         if (!this._editor.hasModel() || !this._stickyModelProvider || this._editor.getModel().isTooLargeForTokenization()) {
             this._model = null;
+
             return;
         }
         const model = await this._stickyModelProvider.update(token);
+
         if (token.isCancellationRequested) {
             // the computation was canceled, so do not overwrite the model
             return;
@@ -117,23 +126,31 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
             return;
         }
         let lastLine = lastStartLineNumber;
+
         const childrenStartLines: number[] = [];
+
         for (let i = 0; i < outlineModel.children.length; i++) {
             const child = outlineModel.children[i];
+
             if (child.range) {
                 childrenStartLines.push(child.range.startLineNumber);
             }
         }
         const lowerBound = this.updateIndex(binarySearch(childrenStartLines, range.startLineNumber, (a: number, b: number) => { return a - b; }));
+
         const upperBound = this.updateIndex(binarySearch(childrenStartLines, range.startLineNumber + depth, (a: number, b: number) => { return a - b; }));
+
         for (let i = lowerBound; i <= upperBound; i++) {
             const child = outlineModel.children[i];
+
             if (!child) {
                 return;
             }
             if (child.range) {
                 const childStartLine = child.range.startLineNumber;
+
                 const childEndLine = child.range.endLineNumber;
+
                 if (range.startLineNumber <= childEndLine + 1 && childStartLine - 1 <= range.endLineNumber && childStartLine !== lastLine) {
                     lastLine = childStartLine;
                     result.push(new StickyLineCandidate(childStartLine, childEndLine - 1, depth + 1));
@@ -151,7 +168,9 @@ export class StickyLineCandidateProvider extends Disposable implements IStickyLi
         }
         let stickyLineCandidates: StickyLineCandidate[] = [];
         this.getCandidateStickyLinesIntersectingFromStickyModel(range, this._model.element, stickyLineCandidates, 0, -1);
+
         const hiddenRanges: Range[] | undefined = this._editor._getViewModel()?.getHiddenAreas();
+
         if (hiddenRanges) {
             for (const hiddenRange of hiddenRanges) {
                 stickyLineCandidates = stickyLineCandidates.filter(stickyLine => !(stickyLine.startLineNumber >= hiddenRange.startLineNumber && stickyLine.endLineNumber <= hiddenRange.endLineNumber + 1));

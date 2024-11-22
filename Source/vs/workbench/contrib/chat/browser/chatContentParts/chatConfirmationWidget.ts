@@ -18,8 +18,10 @@ export interface IChatConfirmationButton {
 }
 export class ChatConfirmationWidget extends Disposable {
     private _onDidClick = this._register(new Emitter<IChatConfirmationButton>());
+
     get onDidClick(): Event<IChatConfirmationButton> { return this._onDidClick.event; }
     private _domNode: HTMLElement;
+
     get domNode(): HTMLElement {
         return this._domNode;
     }
@@ -30,15 +32,19 @@ export class ChatConfirmationWidget extends Disposable {
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {
         super();
+
         const elements = dom.h('.chat-confirmation-widget@root', [
             dom.h('.chat-confirmation-widget-title@title'),
             dom.h('.chat-confirmation-widget-message@message'),
             dom.h('.chat-confirmation-buttons-container@buttonsContainer'),
         ]);
         this._domNode = elements.root;
+
         const renderer = this._register(this.instantiationService.createInstance(MarkdownRenderer, {}));
+
         const renderedTitle = this._register(renderer.render(new MarkdownString(title)));
         elements.title.appendChild(renderedTitle.element);
+
         const renderedMessage = this._register(renderer.render(typeof message === 'string' ? new MarkdownString(message) : message));
         elements.message.appendChild(renderedMessage.element);
         buttons.forEach(buttonData => {

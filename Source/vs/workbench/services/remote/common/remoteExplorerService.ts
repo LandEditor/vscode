@@ -58,9 +58,11 @@ export enum TunnelEditId {
 }
 export interface HelpInformation {
     extensionDescription: IExtensionDescription;
+
     getStarted?: string | {
         id: string;
     };
+
     documentation?: string;
     issues?: string;
     reportIssue?: string;
@@ -77,6 +79,7 @@ const getStartedWalkthrough: IJSONSchema = {
         },
     }
 };
+
 const remoteHelpExtPoint = ExtensionsRegistry.registerExtensionPoint<HelpInformation>({
     extensionPoint: 'remoteHelp',
     jsonSchema: {
@@ -126,14 +129,19 @@ export interface IRemoteExplorerService {
         tunnel: ITunnelItem;
         editId: TunnelEditId;
     } | undefined>;
+
     setEditable(tunnelItem: ITunnelItem | undefined, editId: TunnelEditId, data: IEditableData | null): void;
+
     getEditableData(tunnelItem: ITunnelItem | undefined, editId?: TunnelEditId): IEditableData | undefined;
+
     forward(tunnelProperties: TunnelProperties, attributes?: Attributes | null): Promise<RemoteTunnel | string | undefined>;
     close(remote: {
         host: string;
         port: number;
     }, reason: TunnelCloseReason): Promise<void>;
+
     setTunnelInformation(tunnelInformation: TunnelInformation | undefined): void;
+
     setCandidateFilter(filter: ((candidates: CandidatePort[]) => Promise<CandidatePort[]>) | undefined): IDisposable;
     onFoundNewCandidates(candidates: CandidatePort[]): void;
     restore(): Promise<void>;
@@ -168,6 +176,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
     public readonly onEnabledPortsFeatures: Event<void> = this._onEnabledPortsFeatures.event;
     private _portsFeaturesEnabled: PortsEnablement = PortsEnablement.Disabled;
     public readonly namedProcesses = new Map<number, string>();
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService, 
@@ -187,7 +196,9 @@ class RemoteExplorerService implements IRemoteExplorerService {
     set targetType(name: string[]) {
         // Can just compare the first element of the array since there are no target overlaps
         const current: string = this._targetType.length > 0 ? this._targetType[0] : '';
+
         const newName: string = name.length > 0 ? name[0] : '';
+
         if (current !== newName) {
             this._targetType = name;
             this.storageService.store(REMOTE_EXPLORER_TYPE_KEY, this._targetType.toString(), StorageScope.WORKSPACE, StorageTarget.MACHINE);
@@ -239,6 +250,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
             };
         }
         this.tunnelModel.setCandidateFilter(filter);
+
         return {
             dispose: () => {
                 this.tunnelModel.setCandidateFilter(undefined);

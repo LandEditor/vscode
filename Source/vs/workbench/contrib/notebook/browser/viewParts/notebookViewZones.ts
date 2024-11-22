@@ -9,11 +9,13 @@ import { INotebookViewCellsUpdateEvent, INotebookViewZone, INotebookViewZoneChan
 import { NotebookCellListView } from '../view/notebookCellListView.js';
 import { ICoordinatesConverter } from '../view/notebookRenderingCommon.js';
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
+
 const invalidFunc = () => { throw new Error(`Invalid notebook view zone change accessor`); };
 interface IZoneWidget {
     whitespaceId: string;
     isInHiddenArea: boolean;
     zone: INotebookViewZone;
+
     domNode: FastDomNode<HTMLElement>;
 }
 export class NotebookViewZones extends Disposable {
@@ -21,6 +23,7 @@ export class NotebookViewZones extends Disposable {
         [key: string]: IZoneWidget;
     };
     public domNode: FastDomNode<HTMLElement>;
+
     constructor(private readonly listView: NotebookCellListView<CellViewModel>, private readonly coordinator: ICoordinatesConverter) {
         super();
         this.domNode = createFastDomNode(document.createElement('div'));
@@ -34,9 +37,11 @@ export class NotebookViewZones extends Disposable {
     }
     changeViewZones(callback: (changeAccessor: INotebookViewZoneChangeAccessor) => void): boolean {
         let zonesHaveChanged = false;
+
         const changeAccessor: INotebookViewZoneChangeAccessor = {
             addZone: (zone: INotebookViewZone): string => {
                 zonesHaveChanged = true;
+
                 return this._addZone(zone);
             },
             removeZone: (id: string): void => {
@@ -55,13 +60,16 @@ export class NotebookViewZones extends Disposable {
         changeAccessor.addZone = invalidFunc;
         changeAccessor.removeZone = invalidFunc;
         changeAccessor.layoutZone = invalidFunc;
+
         return zonesHaveChanged;
     }
     onCellsChanged(e: INotebookViewCellsUpdateEvent): void {
         const splices = e.splices.slice().reverse();
         splices.forEach(splice => {
             const [start, deleted, newCells] = splice;
+
             const fromIndex = start;
+
             const toIndex = start + deleted;
             // 1, 2, 0
             // delete cell index 1 and 2
@@ -69,7 +77,9 @@ export class NotebookViewZones extends Disposable {
             // if we have whitespace afterModelPosition 3, which is after cell index 2
             for (const id in this._zones) {
                 const zone = this._zones[id].zone;
+
                 const cellBeforeWhitespaceIndex = zone.afterModelPosition - 1;
+
                 if (cellBeforeWhitespaceIndex >= fromIndex && cellBeforeWhitespaceIndex < toIndex) {
                     // The cell this whitespace was after has been deleted
                     //  => move whitespace to before first deleted cell
@@ -79,6 +89,7 @@ export class NotebookViewZones extends Disposable {
                 else if (cellBeforeWhitespaceIndex >= toIndex) {
                     // adjust afterModelPosition for all other cells
                     const insertLength = newCells.length;
+
                     const offset = insertLength - deleted;
                     zone.afterModelPosition += offset;
                     this._updateWhitespace(this._zones[id]);
@@ -93,7 +104,9 @@ export class NotebookViewZones extends Disposable {
     }
     private _updateWhitespace(zone: IZoneWidget) {
         const whitespaceId = zone.whitespaceId;
+
         const viewPosition = this.coordinator.convertModelIndexToViewIndex(zone.zone.afterModelPosition);
+
         const isInHiddenArea = this._isInHiddenRanges(zone.zone);
         zone.isInHiddenArea = isInHiddenArea;
         this.listView.changeOneWhitespace(whitespaceId, viewPosition, isInHiddenArea ? 0 : zone.zone.heightInPx);
@@ -105,8 +118,11 @@ export class NotebookViewZones extends Disposable {
     }
     private _addZone(zone: INotebookViewZone): string {
         const viewPosition = this.coordinator.convertModelIndexToViewIndex(zone.afterModelPosition);
+
         const whitespaceId = this.listView.insertWhitespace(viewPosition, zone.heightInPx);
+
         const isInHiddenArea = this._isInHiddenRanges(zone);
+
         const myZone: IZoneWidget = {
             whitespaceId: whitespaceId,
             zone: zone,
@@ -119,6 +135,7 @@ export class NotebookViewZones extends Disposable {
         myZone.domNode.setDisplay('none');
         myZone.domNode.setAttribute('notebook-view-zone', whitespaceId);
         this.domNode.appendChild(myZone.domNode);
+
         return whitespaceId;
     }
     private _removeZone(id: string): void {
@@ -127,11 +144,14 @@ export class NotebookViewZones extends Disposable {
     }
     private _layoutZone(id: string): void {
         const zoneWidget = this._zones[id];
+
         if (!zoneWidget) {
             return;
         }
         this._updateWhitespace(this._zones[id]);
+
         const isInHiddenArea = this._isInHiddenRanges(zoneWidget.zone);
+
         if (isInHiddenArea) {
             zoneWidget.domNode.setDisplay('none');
         }

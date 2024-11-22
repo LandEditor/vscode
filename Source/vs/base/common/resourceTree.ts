@@ -16,10 +16,12 @@ export interface IResourceNode<T, C = void> {
     readonly childrenCount: number;
     readonly parent: IResourceNode<T, C> | undefined;
     readonly context: C;
+
     get(childName: string): IResourceNode<T, C> | undefined;
 }
 class Node<T, C> implements IResourceNode<T, C> {
     private _children = new Map<string, Node<T, C>>();
+
     get childrenCount(): number {
         return this._children.size;
     }
@@ -72,13 +74,19 @@ export class ResourceTree<T extends NonNullable<any>, C> {
     }
     add(uri: URI, element: T): void {
         const key = this.extUri.relativePath(this.root.uri, uri) || uri.path;
+
         const iterator = new PathIterator(false).reset(key);
+
         let node = this.root;
+
         let path = '';
+
         while (true) {
             const name = iterator.value();
             path = path + '/' + name;
+
             let child = node.get(name);
+
             if (!child) {
                 child = new Node(this.extUri.joinPath(this.root.uri, path), path, this.root.context, iterator.hasNext() ? undefined : element, node);
                 node.set(name, child);
@@ -87,6 +95,7 @@ export class ResourceTree<T extends NonNullable<any>, C> {
                 child.element = element;
             }
             node = child;
+
             if (!iterator.hasNext()) {
                 return;
             }
@@ -95,23 +104,29 @@ export class ResourceTree<T extends NonNullable<any>, C> {
     }
     delete(uri: URI): T | undefined {
         const key = this.extUri.relativePath(this.root.uri, uri) || uri.path;
+
         const iterator = new PathIterator(false).reset(key);
+
         return this._delete(this.root, iterator);
     }
     private _delete(node: Node<T, C>, iterator: PathIterator): T | undefined {
         const name = iterator.value();
+
         const child = node.get(name);
+
         if (!child) {
             return undefined;
         }
         if (iterator.hasNext()) {
             const result = this._delete(child, iterator.next());
+
             if (typeof result !== 'undefined' && child.childrenCount === 0) {
                 node.delete(name);
             }
             return result;
         }
         node.delete(name);
+
         return child.element;
     }
     clear(): void {
@@ -119,11 +134,16 @@ export class ResourceTree<T extends NonNullable<any>, C> {
     }
     getNode(uri: URI): IResourceNode<T, C> | undefined {
         const key = this.extUri.relativePath(this.root.uri, uri) || uri.path;
+
         const iterator = new PathIterator(false).reset(key);
+
         let node = this.root;
+
         while (true) {
             const name = iterator.value();
+
             const child = node.get(name);
+
             if (!child || !iterator.hasNext()) {
                 return child;
             }

@@ -26,6 +26,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
         };
         this.mapListenerToWrapper.set(listener, wrappedListener);
         electron.ipcMain.on(channel, wrappedListener);
+
         return this;
     }
     /**
@@ -38,6 +39,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
                 listener(event, ...args);
             }
         });
+
         return this;
     }
     /**
@@ -63,6 +65,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
             }
             return Promise.reject(`Invalid channel '${channel}' or sender for ipcMain.handle() usage.`);
         });
+
         return this;
     }
     /**
@@ -70,6 +73,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
      */
     removeHandler(channel: string): this {
         electron.ipcMain.removeHandler(channel);
+
         return this;
     }
     /**
@@ -78,6 +82,7 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
      */
     removeListener(channel: string, listener: ipcMainListener): this {
         const wrappedListener = this.mapListenerToWrapper.get(listener);
+
         if (wrappedListener) {
             electron.ipcMain.removeListener(channel, wrappedListener);
             this.mapListenerToWrapper.delete(listener);
@@ -87,9 +92,11 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
     private validateEvent(channel: string, event: electron.IpcMainEvent | electron.IpcMainInvokeEvent): boolean {
         if (!channel || !channel.startsWith('vscode:')) {
             onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because the channel is unknown.`);
+
             return false; // unexpected channel
         }
         const sender = event.senderFrame;
+
         const url = sender.url;
         // `url` can be `undefined` when running tests from playwright https://github.com/microsoft/vscode/issues/147301
         // and `url` can be `about:blank` when reloading the window
@@ -99,19 +106,23 @@ class ValidatedIpcMain implements Event.NodeEventEmitter {
             return true;
         }
         let host = 'unknown';
+
         try {
             host = new URL(url).host;
         }
         catch (error) {
             onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because of a malformed URL '${url}'.`);
+
             return false; // unexpected URL
         }
         if (host !== VSCODE_AUTHORITY) {
             onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because of a bad origin of '${host}'.`);
+
             return false; // unexpected sender
         }
         if (sender.parent !== null) {
             onUnexpectedError(`Refused to handle ipcMain event for channel '${channel}' because sender of origin '${host}' is not a main frame.`);
+
             return false; // unexpected frame
         }
         return true;

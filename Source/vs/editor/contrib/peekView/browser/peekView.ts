@@ -39,12 +39,14 @@ registerSingleton(IPeekViewService, class implements IPeekViewService {
     }>();
     addExclusiveWidget(editor: ICodeEditor, widget: PeekViewWidget): void {
         const existing = this._widgets.get(editor);
+
         if (existing) {
             existing.listener.dispose();
             existing.widget.dispose();
         }
         const remove = () => {
             const data = this._widgets.get(editor);
+
             if (data && data.widget === widget) {
                 data.listener.dispose();
                 this._widgets.delete(editor);
@@ -55,10 +57,12 @@ registerSingleton(IPeekViewService, class implements IPeekViewService {
 }, InstantiationType.Delayed);
 export namespace PeekContext {
     export const inPeekEditor = new RawContextKey<boolean>('inReferenceSearchEditor', true, nls.localize('inReferenceSearchEditor', "Whether the current code editor is embedded inside peek"));
+
     export const notInPeekEditor = inPeekEditor.toNegated();
 }
 class PeekContextController implements IEditorContribution {
     static readonly ID = 'editor.contrib.referenceController';
+
     constructor(editor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService) {
@@ -71,6 +75,7 @@ class PeekContextController implements IEditorContribution {
 registerEditorContribution(PeekContextController.ID, PeekContextController, EditorContributionInstantiation.Eager); // eager because it needs to define a context key
 export function getOuterEditor(accessor: ServicesAccessor): ICodeEditor | null {
     const editor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
     if (editor instanceof EmbeddedCodeEditorWidget) {
         return editor.getParentEditor();
     }
@@ -84,6 +89,7 @@ export interface IPeekViewStyles extends IStyles {
 export type IPeekViewOptions = IOptions & IPeekViewStyles & {
     supportOnTitleClick?: boolean;
 };
+
 const defaultOptions: IPeekViewOptions = {
     headerBackgroundColor: Color.white,
     primaryHeadingColor: Color.fromHex('#333333'),
@@ -101,6 +107,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
     protected _metaHeading?: HTMLElement;
     protected _actionbarWidget?: ActionBar;
     protected _bodyElement?: HTMLDivElement;
+
     constructor(editor: ICodeEditor, options: IPeekViewOptions, 
     @IInstantiationService
     protected readonly instantiationService: IInstantiationService) {
@@ -116,6 +123,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
     }
     override style(styles: IPeekViewStyles): void {
         const options = <IPeekViewOptions>this.options;
+
         if (styles.headerBackgroundColor) {
             options.headerBackgroundColor = styles.headerBackgroundColor;
         }
@@ -129,7 +137,9 @@ export abstract class PeekViewWidget extends ZoneWidget {
     }
     protected override _applyStyles(): void {
         super._applyStyles();
+
         const options = <IPeekViewOptions>this.options;
+
         if (this._headElement && options.headerBackgroundColor) {
             this._headElement.style.backgroundColor = options.headerBackgroundColor.toString();
         }
@@ -154,8 +164,10 @@ export abstract class PeekViewWidget extends ZoneWidget {
     }
     protected _fillHead(container: HTMLElement, noCloseAction?: boolean): void {
         this._titleElement = dom.$('.peekview-title');
+
         if ((this.options as IPeekViewOptions).supportOnTitleClick) {
             this._titleElement.classList.add('clickable');
+
             dom.addStandardDisposableListener(this._titleElement, 'click', event => this._onTitleClick(event));
         }
         dom.append(this._headElement!, this._titleElement);
@@ -163,15 +175,21 @@ export abstract class PeekViewWidget extends ZoneWidget {
         this._primaryHeading = dom.$('span.filename');
         this._secondaryHeading = dom.$('span.dirname');
         this._metaHeading = dom.$('span.meta');
+
         dom.append(this._titleElement, this._primaryHeading, this._secondaryHeading, this._metaHeading);
+
         const actionsContainer = dom.$('.peekview-actions');
+
         dom.append(this._headElement!, actionsContainer);
+
         const actionBarOptions = this._getActionBarOptions();
         this._actionbarWidget = new ActionBar(actionsContainer, actionBarOptions);
         this._disposables.add(this._actionbarWidget);
+
         if (!noCloseAction) {
             this._actionbarWidget.push(new Action('peekview.close', nls.localize('label.close', "Close"), ThemeIcon.asClassName(Codicon.close), true, () => {
                 this.dispose();
+
                 return Promise.resolve();
             }), { label: false, icon: true });
         }
@@ -191,6 +209,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
         if (this._primaryHeading && this._secondaryHeading) {
             this._primaryHeading.innerText = primaryHeading;
             this._primaryHeading.setAttribute('title', primaryHeading);
+
             if (secondaryHeading) {
                 this._secondaryHeading.innerText = secondaryHeading;
             }
@@ -203,6 +222,7 @@ export abstract class PeekViewWidget extends ZoneWidget {
         if (this._metaHeading) {
             if (value) {
                 this._metaHeading.innerText = value;
+
                 dom.show(this._metaHeading);
             }
             else {
@@ -215,9 +235,11 @@ export abstract class PeekViewWidget extends ZoneWidget {
         if (!this._isShowing && heightInPixel < 0) {
             // Looks like the view zone got folded away!
             this.dispose();
+
             return;
         }
         const headHeight = Math.ceil(this.editor.getOption(EditorOption.lineHeight) * 1.2);
+
         const bodyHeight = Math.round(heightInPixel - (headHeight + 2 /* the border-top/bottom width*/));
         this._doLayoutHead(headHeight, widthInPixel);
         this._doLayoutBody(bodyHeight, widthInPixel);

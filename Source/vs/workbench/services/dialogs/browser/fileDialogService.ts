@@ -26,6 +26,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFilePath(schema);
         }
@@ -40,6 +41,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFilePath(schema);
         }
@@ -47,10 +49,12 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
             return super.pickFileAndOpenSimplified(schema, options, false);
         }
         const activeWindow = getActiveWindow();
+
         if (!WebFileSystemAccess.supported(activeWindow)) {
             return this.showUnsupportedBrowserWarning('open');
         }
         let fileHandle: FileSystemHandle | undefined = undefined;
+
         try {
             ([fileHandle] = await activeWindow.showOpenFilePicker({ multiple: false }));
         }
@@ -66,6 +70,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void> {
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultFolderPath(schema);
         }
@@ -76,7 +81,9 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void> {
         options.availableFileSystems = this.getWorkspaceAvailableFileSystems(options);
+
         const schema = this.getFileSystemSchema(options);
+
         if (!options.defaultUri) {
             options.defaultUri = await this.defaultWorkspacePath(schema);
         }
@@ -87,16 +94,21 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async pickFileToSave(defaultUri: URI, availableFileSystems?: string[]): Promise<URI | undefined> {
         const schema = this.getFileSystemSchema({ defaultUri, availableFileSystems });
+
         const options = this.getPickFileToSaveDialogOptions(defaultUri, availableFileSystems);
+
         if (this.shouldUseSimplified(schema)) {
             return super.pickFileToSaveSimplified(schema, options);
         }
         const activeWindow = getActiveWindow();
+
         if (!WebFileSystemAccess.supported(activeWindow)) {
             return this.showUnsupportedBrowserWarning('save');
         }
         let fileHandle: FileSystemHandle | undefined = undefined;
+
         const startIn = Iterable.first(this.fileSystemProvider.directories);
+
         try {
             fileHandle = await activeWindow.showSaveFilePicker({ types: this.getFilePickerTypes(options.filters), ...{ suggestedName: basename(defaultUri), startIn } });
         }
@@ -113,8 +125,10 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
             return !((filter.extensions.length === 1) && ((filter.extensions[0] === '*') || filter.extensions[0] === ''));
         }).map(filter => {
             const accept: Record<string, string[]> = {};
+
             const extensions = filter.extensions.filter(ext => (ext.indexOf('-') < 0) && (ext.indexOf('*') < 0) && (ext.indexOf('_') < 0));
             accept[getMediaOrTextMime(`fileName.${filter.extensions[0]}`) ?? 'text/plain'] = extensions.map(ext => ext.startsWith('.') ? ext : `.${ext}`);
+
             return {
                 description: filter.name,
                 accept
@@ -123,15 +137,19 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async showSaveDialog(options: ISaveDialogOptions): Promise<URI | undefined> {
         const schema = this.getFileSystemSchema(options);
+
         if (this.shouldUseSimplified(schema)) {
             return super.showSaveDialogSimplified(schema, options);
         }
         const activeWindow = getActiveWindow();
+
         if (!WebFileSystemAccess.supported(activeWindow)) {
             return this.showUnsupportedBrowserWarning('save');
         }
         let fileHandle: FileSystemHandle | undefined = undefined;
+
         const startIn = Iterable.first(this.fileSystemProvider.directories);
+
         try {
             fileHandle = await activeWindow.showSaveFilePicker({ types: this.getFilePickerTypes(options.filters), ...options.defaultUri ? { suggestedName: basename(options.defaultUri) } : undefined, ...{ startIn } });
         }
@@ -145,18 +163,23 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
     }
     async showOpenDialog(options: IOpenDialogOptions): Promise<URI[] | undefined> {
         const schema = this.getFileSystemSchema(options);
+
         if (this.shouldUseSimplified(schema)) {
             return super.showOpenDialogSimplified(schema, options);
         }
         const activeWindow = getActiveWindow();
+
         if (!WebFileSystemAccess.supported(activeWindow)) {
             return this.showUnsupportedBrowserWarning('open');
         }
         let uri: URI | undefined;
+
         const startIn = Iterable.first(this.fileSystemProvider.directories) ?? 'documents';
+
         try {
             if (options.canSelectFiles) {
                 const handle = await activeWindow.showOpenFilePicker({ multiple: false, types: this.getFilePickerTypes(options.filters), ...{ startIn } });
+
                 if (handle.length === 1 && WebFileSystemAccess.isFileSystemFileHandle(handle[0])) {
                     uri = await this.fileSystemProvider.registerFileHandle(handle[0]);
                 }
@@ -176,10 +199,13 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
         // of the active text editor if any as a workaround
         if (context === 'save') {
             const activeCodeEditor = this.codeEditorService.getActiveCodeEditor();
+
             if (!(activeCodeEditor instanceof EmbeddedCodeEditorWidget)) {
                 const activeTextModel = activeCodeEditor?.getModel();
+
                 if (activeTextModel) {
                     triggerDownload(VSBuffer.fromString(activeTextModel.getValue()).buffer, basename(activeTextModel.uri));
+
                     return;
                 }
             }
@@ -195,13 +221,16 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
                 run: async () => { await this.openerService.open('https://aka.ms/VSCodeWebLocalFileSystemAccess'); }
             }
         ];
+
         if (context === 'open') {
             buttons.push({
                 label: localize({ key: 'openFiles', comment: ['&& denotes a mnemonic'] }, "Open &&Files..."),
                 run: async () => {
                     const files = await triggerUpload();
+
                     if (files) {
                         const filesData = (await this.instantiationService.invokeFunction(accessor => extractFileListData(accessor, files))).filter(fileData => !fileData.isDirectory);
+
                         if (filesData.length > 0) {
                             this.editorService.openEditors(filesData.map(fileData => {
                                 return {
@@ -221,6 +250,7 @@ export class FileDialogService extends AbstractFileDialogService implements IFil
             detail: localize('unsupportedBrowserDetail', "Your browser doesn't support opening local folders.\nYou can either open single files or open a remote repository."),
             buttons
         });
+
         return undefined;
     }
     private shouldUseSimplified(scheme: string): boolean {

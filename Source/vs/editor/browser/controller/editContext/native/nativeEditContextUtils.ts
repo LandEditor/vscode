@@ -12,6 +12,7 @@ export interface ITypeData {
 }
 export class FocusTracker extends Disposable {
     private _isFocused: boolean = false;
+
     constructor(private readonly _domNode: HTMLElement, private readonly _onFocusChange: (newFocusValue: boolean) => void) {
         super();
         this._register(addDisposableListener(this._domNode, 'focus', () => this._handleFocusedChanged(true)));
@@ -40,6 +41,7 @@ export class FocusTracker extends Disposable {
 }
 export function editContextAddDisposableListener<K extends keyof EditContextEventHandlersEventMap>(target: EventTarget, type: K, listener: (this: GlobalEventHandlers, ev: EditContextEventHandlersEventMap[K]) => any, options?: boolean | AddEventListenerOptions): IDisposable {
     target.addEventListener(type, listener as any, options);
+
     return {
         dispose() {
             target.removeEventListener(type, listener as any);

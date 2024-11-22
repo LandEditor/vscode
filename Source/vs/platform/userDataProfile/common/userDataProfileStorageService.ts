@@ -51,10 +51,12 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
     _serviceBrand: undefined;
     readonly abstract onDidChange: Event<IProfileStorageChanges>;
     private readonly storageServicesMap: DisposableMap<string, StorageService> | undefined;
+
     constructor(persistStorages: boolean, 
     @IStorageService
     protected readonly storageService: IStorageService) {
         super();
+
         if (persistStorages) {
             this.storageServicesMap = this._register(new DisposableMap<string, StorageService>());
         }
@@ -70,9 +72,11 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
             return fn(this.storageService);
         }
         let storageService = this.storageServicesMap?.get(profile.id);
+
         if (!storageService) {
             storageService = new StorageService(this.createStorageDatabase(profile));
             this.storageServicesMap?.set(profile.id, storageService);
+
             try {
                 await storageService.initialize();
             }
@@ -89,6 +93,7 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
         try {
             const result = await fn(storageService);
             await storageService.flush();
+
             return result;
         }
         finally {
@@ -99,6 +104,7 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
     }
     private getItems(storageService: IStorageService): Map<string, IStorageValue> {
         const result = new Map<string, IStorageValue>();
+
         const populate = (target: StorageTarget) => {
             for (const key of storageService.keys(StorageScope.PROFILE, target)) {
                 result.set(key, { value: storageService.get(key, StorageScope.PROFILE), target });
@@ -106,6 +112,7 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
         };
         populate(StorageTarget.USER);
         populate(StorageTarget.MACHINE);
+
         return result;
     }
     private writeItems(storageService: IStorageService, items: Map<string, string | undefined | null>, target: StorageTarget): void {
@@ -116,9 +123,12 @@ export abstract class AbstractUserDataProfileStorageService extends Disposable i
 export class RemoteUserDataProfileStorageService extends AbstractUserDataProfileStorageService implements IUserDataProfileStorageService {
     private readonly _onDidChange: Emitter<IProfileStorageChanges>;
     readonly onDidChange: Event<IProfileStorageChanges>;
+
     constructor(persistStorages: boolean, private readonly remoteService: IRemoteService, userDataProfilesService: IUserDataProfilesService, storageService: IStorageService, logService: ILogService) {
         super(persistStorages, storageService);
+
         const channel = remoteService.getChannel('profileStorageListener');
+
         const disposable = this._register(new MutableDisposable());
         this._onDidChange = this._register(new Emitter<IProfileStorageChanges>({
             // Start listening to profile storage changes only when someone is listening
@@ -138,16 +148,19 @@ export class RemoteUserDataProfileStorageService extends AbstractUserDataProfile
     }
     protected async createStorageDatabase(profile: IUserDataProfile): Promise<IStorageDatabase> {
         const storageChannel = this.remoteService.getChannel('storage');
+
         return isProfileUsingDefaultStorage(profile) ? new ApplicationStorageDatabaseClient(storageChannel) : new ProfileStorageDatabaseClient(storageChannel, profile);
     }
 }
 class StorageService extends AbstractStorageService {
     private profileStorage: IStorage | undefined;
+
     constructor(private readonly profileStorageDatabase: Promise<IStorageDatabase>) {
         super({ flushInterval: 100 });
     }
     protected async doInitialize(): Promise<void> {
         const profileStorageDatabase = await this.profileStorageDatabase;
+
         const profileStorage = new Storage(profileStorageDatabase);
         this._register(profileStorage.onDidChangeStorage(e => {
             this.emitDidChangeValue(StorageScope.PROFILE, e);
@@ -155,11 +168,13 @@ class StorageService extends AbstractStorageService {
         this._register(toDisposable(() => {
             profileStorage.close();
             profileStorage.dispose();
+
             if (isDisposable(profileStorageDatabase)) {
                 profileStorageDatabase.dispose();
             }
         }));
         this.profileStorage = profileStorage;
+
         return this.profileStorage.init();
     }
     protected getStorage(scope: StorageScope): IStorage | undefined {

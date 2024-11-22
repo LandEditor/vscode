@@ -13,6 +13,7 @@ export class TerminalProcessExtHostProxy extends Disposable implements ITerminal
     private readonly _onProcessData = this._register(new Emitter<string>());
     readonly onProcessData: Event<string> = this._onProcessData.event;
     private readonly _onProcessReady = this._register(new Emitter<IProcessReadyEvent>());
+
     get onProcessReady(): Event<IProcessReadyEvent> { return this._onProcessReady.event; }
     private readonly _onStart = this._register(new Emitter<void>());
     readonly onStart: Event<void> = this._onStart.event;
@@ -45,6 +46,7 @@ export class TerminalProcessExtHostProxy extends Disposable implements ITerminal
     readonly onProcessExit: Event<number | undefined> = this._onProcessExit.event;
     private _pendingInitialCwdRequests: ((value: string | PromiseLike<string>) => void)[] = [];
     private _pendingCwdRequests: ((value: string | PromiseLike<string>) => void)[] = [];
+
     constructor(public instanceId: number, private _cols: number, private _rows: number, 
     @ITerminalService
     private readonly _terminalService: ITerminalService) {
@@ -63,18 +65,27 @@ export class TerminalProcessExtHostProxy extends Disposable implements ITerminal
         switch (type) {
             case ProcessPropertyType.Cwd:
                 this.emitCwd(value);
+
                 break;
+
             case ProcessPropertyType.InitialCwd:
                 this.emitInitialCwd(value);
+
                 break;
+
             case ProcessPropertyType.Title:
                 this.emitTitle(value);
+
                 break;
+
             case ProcessPropertyType.OverrideDimensions:
                 this.emitOverrideDimensions(value);
+
                 break;
+
             case ProcessPropertyType.ResolvedShellLaunchConfig:
                 this.emitResolvedShellLaunchConfig(value);
+
                 break;
         }
     }

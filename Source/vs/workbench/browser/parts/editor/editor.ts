@@ -75,13 +75,16 @@ export function getEditorPartOptions(configurationService: IConfigurationService
         ...DEFAULT_EDITOR_PART_OPTIONS,
         hasIcons: themeService.getFileIconTheme().hasFileIcons
     };
+
     const config = configurationService.getValue<IWorkbenchEditorConfiguration>();
+
     if (config?.workbench?.editor) {
         // Assign all primitive configuration over
         Object.assign(options, config.workbench.editor);
         // Special handle array types and convert to Set
         if (isObject(config.workbench.editor.autoLockGroups)) {
             options.autoLockGroups = DEFAULT_EDITOR_PART_OPTIONS.autoLockGroups;
+
             for (const [editorId, enablement] of Object.entries(config.workbench.editor.autoLockGroups)) {
                 if (enablement === true) {
                     options.autoLockGroups.add(editorId);
@@ -93,6 +96,7 @@ export function getEditorPartOptions(configurationService: IConfigurationService
         }
     }
     const windowConfig = configurationService.getValue<IWindowsConfiguration>();
+
     if (windowConfig?.window?.density?.editorTabHeight) {
         options.tabHeight = windowConfig.window.density.editorTabHeight;
     }
@@ -162,7 +166,9 @@ export interface IEditorPartsView {
     registerPart(part: IEditorPart): IDisposable;
     readonly activeGroup: IEditorGroupView;
     readonly groups: IEditorGroupView[];
+
     getGroup(identifier: GroupIdentifier): IEditorGroupView | undefined;
+
     getGroups(order?: GroupsOrder): IEditorGroupView[];
     readonly count: number;
     createAuxiliaryEditorPart(options?: IAuxiliaryWindowOpenOptions): Promise<IAuxiliaryEditorPart>;
@@ -178,7 +184,9 @@ export interface IEditorGroupsView {
     readonly partOptions: IEditorPartOptions;
     readonly onDidChangeEditorPartOptions: Event<IEditorPartOptionsChangeEvent>;
     readonly onDidVisibilityChange: Event<boolean>;
+
     getGroup(identifier: GroupIdentifier): IEditorGroupView | undefined;
+
     getGroups(order: GroupsOrder): IEditorGroupView[];
     activateGroup(identifier: IEditorGroupView | GroupIdentifier, preserveWindowOrder?: boolean): IEditorGroupView;
     restoreGroup(identifier: IEditorGroupView | GroupIdentifier): IEditorGroupView;
@@ -229,6 +237,7 @@ export interface IEditorGroupView extends IDisposable, ISerializableView, IEdito
     readonly whenRestored: Promise<void>;
     readonly titleHeight: IEditorGroupTitleHeight;
     readonly disposed: boolean;
+
     setActive(isActive: boolean): void;
     notifyIndexChanged(newIndex: number): void;
     notifyLabelChanged(newLabel: string): void;
@@ -241,6 +250,7 @@ export function fillActiveEditorViewState(group: IEditorGroup, expectedActiveEdi
             ...presetOptions,
             viewState: group.activeEditorPane?.getViewState()
         };
+
         return options;
     }
     return presetOptions || Object.create(null);

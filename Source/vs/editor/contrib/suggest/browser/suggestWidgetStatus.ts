@@ -15,6 +15,7 @@ export class SuggestWidgetStatus {
     private readonly _leftActions: ActionBar;
     private readonly _rightActions: ActionBar;
     private readonly _menuDisposables = new DisposableStore();
+
     constructor(container: HTMLElement, private readonly _menuId: MenuId, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -23,6 +24,7 @@ export class SuggestWidgetStatus {
     @IContextKeyService
     private _contextKeyService: IContextKeyService) {
         this.element = dom.append(container, dom.$('.suggest-status-bar'));
+
         const actionViewItemProvider = <IActionViewItemProvider>(action => {
             return action instanceof MenuItemAction ? instantiationService.createInstance(TextOnlyMenuEntryActionViewItem, action, { useComma: true }) : undefined;
         });
@@ -39,9 +41,12 @@ export class SuggestWidgetStatus {
     }
     show(): void {
         const menu = this._menuService.createMenu(this._menuId, this._contextKeyService);
+
         const renderMenu = () => {
             const left: IAction[] = [];
+
             const right: IAction[] = [];
+
             for (const [group, actions] of menu.getActions()) {
                 if (group === 'left') {
                     left.push(...actions);

@@ -30,11 +30,15 @@ export function localizeManifest(logger: ILogger, extensionManifest: IExtensionM
 function replaceNLStrings(logger: ILogger, extensionManifest: IExtensionManifest, messages: ITranslations, originalMessages?: ITranslations): void {
     const processEntry = (obj: any, key: string | number, command?: boolean) => {
         const value = obj[key];
+
         if (isString(value)) {
             const str = <string>value;
+
             const length = str.length;
+
             if (length > 1 && str[0] === '%' && str[length - 1] === '%') {
                 const messageKey = str.substr(1, length - 2);
+
                 let translated = messages[messageKey];
                 // If the messages come from a language pack they might miss some keys
                 // Fill them from the original messages.
@@ -44,7 +48,9 @@ function replaceNLStrings(logger: ILogger, extensionManifest: IExtensionManifest
                 const message: string | undefined = typeof translated === 'string' ? translated : translated?.message;
                 // This branch returns ILocalizedString's instead of Strings so that the Command Palette can contain both the localized and the original value.
                 const original = originalMessages?.[messageKey];
+
                 const originalMessage: string | undefined = typeof original === 'string' ? original : original?.message;
+
                 if (!message) {
                     if (!originalMessage) {
                         logger.warn(`[${extensionManifest.name}]: ${localize('missingNLSKey', "Couldn't find message for key {0}.", messageKey)}`);
@@ -80,6 +86,7 @@ function replaceNLStrings(logger: ILogger, extensionManifest: IExtensionManifest
             }
         }
     };
+
     for (const key in extensionManifest) {
         if (extensionManifest.hasOwnProperty(key)) {
             processEntry(extensionManifest, key);

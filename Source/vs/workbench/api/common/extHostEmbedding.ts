@@ -18,6 +18,7 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
     readonly onDidChange: Event<void> = this._onDidChange.event;
     private _allKnownModels = new Set<string>();
     private _handlePool: number = 0;
+
     constructor(mainContext: IMainContext) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadEmbeddings);
     }
@@ -28,6 +29,7 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
         const handle = this._handlePool++;
         this._proxy.$registerEmbeddingProvider(handle, embeddingsModel);
         this._provider.set(handle, { id: embeddingsModel, provider });
+
         return toDisposable(() => {
             this._allKnownModels.delete(embeddingsModel);
             this._proxy.$unregisterEmbeddingProvider(handle);
@@ -35,15 +37,21 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
         });
     }
     async computeEmbeddings(embeddingsModel: string, input: string, token?: vscode.CancellationToken): Promise<vscode.Embedding>;
+
     async computeEmbeddings(embeddingsModel: string, input: string[], token?: vscode.CancellationToken): Promise<vscode.Embedding[]>;
+
     async computeEmbeddings(embeddingsModel: string, input: string | string[], token?: vscode.CancellationToken): Promise<vscode.Embedding[] | vscode.Embedding> {
         token ??= CancellationToken.None;
+
         let returnSingle = false;
+
         if (typeof input === 'string') {
             input = [input];
+
             returnSingle = true;
         }
         const result = await this._proxy.$computeEmbeddings(embeddingsModel, input, token);
+
         if (result.length !== input.length) {
             throw new Error();
         }
@@ -59,10 +67,12 @@ export class ExtHostEmbeddings implements ExtHostEmbeddingsShape {
         values: number[];
     }[]> {
         const data = this._provider.get(handle);
+
         if (!data) {
             return [];
         }
         const result = await data.provider.provideEmbeddings(input, token);
+
         if (!result) {
             return [];
         }

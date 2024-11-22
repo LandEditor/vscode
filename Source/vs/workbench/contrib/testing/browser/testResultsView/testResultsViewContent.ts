@@ -40,6 +40,7 @@ import { LiveTestResult } from '../../common/testResult.js';
 import { ITestFollowup, ITestService } from '../../common/testService.js';
 import { ITestMessageStackFrame, TestRunProfileBitset } from '../../common/testTypes.js';
 import { TestingContextKeys } from '../../common/testingContextKeys.js';
+
 const enum SubView {
     Diff = 0,
     History = 1
@@ -52,6 +53,7 @@ class MessageStackFrame extends CustomStackFrame {
     public override height = observableValue('MessageStackFrame.height', 100);
     public override label: string;
     public override icon = icons.testingViewIcon;
+
     constructor(private readonly message: HTMLElement, private readonly followup: FollowupActionWidget, private readonly subject: InspectSubject, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -69,15 +71,20 @@ class MessageStackFrame extends CustomStackFrame {
     public override render(container: HTMLElement): IDisposable {
         this.message.style.visibility = 'visible';
         container.appendChild(this.message);
+
         return toDisposable(() => this.message.remove());
     }
     public override renderActions(container: HTMLElement): IDisposable {
         const store = new DisposableStore();
         container.appendChild(this.followup.domNode);
         store.add(toDisposable(() => this.followup.domNode.remove()));
+
         const test = getSubjectTestItem(this.subject);
+
         const capabilities = test && this.profileService.capabilitiesForTest(test);
+
         let contextKeyService: IContextKeyService;
+
         if (capabilities) {
             contextKeyService = this.contextKeyService.createOverlay(capabilityContextKeys(capabilities));
         }
@@ -89,12 +96,14 @@ class MessageStackFrame extends CustomStackFrame {
             ]);
         }
         const instaService = store.add(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, contextKeyService])));
+
         const toolbar = store.add(instaService.createInstance(MenuWorkbenchToolBar, container, MenuId.TestCallStack, {
             menuOptions: { shouldForwardArgs: true },
             actionViewItemProvider: (action, options) => createActionViewItem(this.instantiationService, action, options),
         }));
         toolbar.context = this.subject;
         store.add(toolbar);
+
         return store;
     }
 }
@@ -104,8 +113,11 @@ function runInLast(accessor: ServicesAccessor, bitset: TestRunProfileBitset, sub
         return accessor.get(ICommandService).executeCommand(bitset === TestRunProfileBitset.Debug ? TestCommandId.DebugLastRun : TestCommandId.ReRunLastRun, subject.result.id);
     }
     const testService = accessor.get(ITestService);
+
     const plainTest = subject instanceof MessageSubject ? subject.test : subject.test.item;
+
     const currentTest = testService.collection.getNodeById(plainTest.extId);
+
     if (!currentTest) {
         return;
     }
@@ -196,8 +208,11 @@ export class TestResultsViewContent extends Disposable {
     public fillBody(containerElement: HTMLElement): void {
         const initialSpitWidth = TestResultsViewContent.lastSplitWidth;
         this.splitView = new SplitView(containerElement, { orientation: Orientation.HORIZONTAL });
+
         const { historyVisible, showRevealLocationOnMessages } = this.options;
+
         const isInPeekView = this.editor !== undefined;
+
         const messageContainer = this.messageContainer = dom.$('.test-output-peek-message-container');
         this.stackContainer = dom.append(containerElement, dom.$('.test-output-call-stack-container'));
         this.callStackWidget = this._register(this.instantiationService.createInstance(TestResultStackWidget, this.stackContainer, this.editor));
@@ -212,7 +227,9 @@ export class TestResultsViewContent extends Disposable {
         this.messageContextKeyService = this._register(this.contextKeyService.createScoped(containerElement));
         this.contextKeyTestMessage = TestingContextKeys.testMessageContext.bindTo(this.messageContextKeyService);
         this.contextKeyResultOutdated = TestingContextKeys.testResultOutdated.bindTo(this.messageContextKeyService);
+
         const treeContainer = dom.append(containerElement, dom.$('.test-output-peek-tree'));
+
         const tree = this._register(this.instantiationService.createInstance(OutputPeekTree, treeContainer, this.didReveal.event, { showRevealLocationOnMessages, locationForProgress: this.options.locationForProgress }));
         this.onDidRequestReveal = tree.onDidRequestReview;
         this.splitView.addView({
@@ -222,6 +239,7 @@ export class TestResultsViewContent extends Disposable {
             maximumSize: Number.MAX_VALUE,
             layout: width => {
                 TestResultsViewContent.lastSplitWidth = width;
+
                 if (this.dimension) {
                     this.callStackWidget?.layout(this.dimension.height, width);
                     this.layoutContentWidgets(this.dimension, width);
@@ -243,6 +261,7 @@ export class TestResultsViewContent extends Disposable {
         this._register(historyVisible.onDidChange(visible => {
             this.splitView.setViewVisible(SubView.History, visible);
         }));
+
         if (initialSpitWidth) {
             queueMicrotask(() => this.splitView.resizeView(0, initialSpitWidth));
         }
@@ -256,13 +275,17 @@ export class TestResultsViewContent extends Disposable {
         preserveFocus: boolean;
     }) {
         this.didReveal.fire(opts);
+
         if (this.current && equalsSubject(this.current, opts.subject)) {
             return Promise.resolve();
         }
         this.current = opts.subject;
+
         return this.contentProvidersUpdateLimiter.queue(async () => {
             this.currentSubjectStore.clear();
+
             const callFrames = this.getCallFrames(opts.subject) || [];
+
             const topFrame = await this.prepareTopFrame(opts.subject, callFrames);
             this.callStackWidget.update(topFrame, callFrames);
             this.followupWidget.show(opts.subject);
@@ -280,6 +303,7 @@ export class TestResultsViewContent extends Disposable {
             return undefined;
         }
         const frames = subject.stack;
+
         if (!frames?.length || !this.editor) {
             return frames;
         }
@@ -287,11 +311,14 @@ export class TestResultsViewContent extends Disposable {
         // where the message is displayed, in the case of a peek in an editor,
         // don't show it again because it's just a duplicate
         const topFrame = frames[0];
+
         const peekLocation = subject.revealLocation;
+
         const isTopFrameSame = peekLocation && topFrame.position && topFrame.uri
             && topFrame.position.lineNumber === peekLocation.range.startLineNumber
             && topFrame.position.column === peekLocation.range.startColumn
             && this.uriIdentityService.extUri.isEqual(topFrame.uri, peekLocation.uri);
+
         return isTopFrameSame ? frames.slice(1) : frames;
     }
     private async prepareTopFrame(subject: InspectSubject, callFrames: ITestMessageStackFrame[]) {
@@ -299,12 +326,17 @@ export class TestResultsViewContent extends Disposable {
         // dimensions before it's rendered in the list.
         this.messageContainer.style.visibility = 'hidden';
         this.stackContainer.appendChild(this.messageContainer);
+
         const topFrame = this.currentTopFrame = this.instantiationService.createInstance(MessageStackFrame, this.messageContainer, this.followupWidget, subject);
+
         const hasMultipleFrames = callFrames.length > 0;
         topFrame.showHeader.set(hasMultipleFrames, undefined);
+
         const provider = await findAsync(this.contentProviders, p => p.update(subject));
+
         if (provider) {
             const width = this.splitView.getViewSize(SubView.Diff);
+
             if (width !== -1 && this.dimension) {
                 topFrame.height.set(provider.layout({ width, height: this.dimension?.height }, hasMultipleFrames)!, undefined);
             }
@@ -327,8 +359,10 @@ export class TestResultsViewContent extends Disposable {
     }
     private layoutContentWidgets(dimension: dom.Dimension, width = this.splitView.getViewSize(SubView.Diff)) {
         this.isDoingLayoutUpdate = true;
+
         for (const provider of this.contentProviders) {
             const frameHeight = provider.layout({ height: dimension.height, width }, !!this.currentTopFrame?.showHeader.get());
+
             if (frameHeight) {
                 this.currentTopFrame?.height.set(frameHeight, undefined);
             }
@@ -344,6 +378,7 @@ export class TestResultsViewContent extends Disposable {
             this.contextKeyTestMessage.reset();
         }));
         this.contextKeyTestMessage.set(subject.contextValue || '');
+
         if (subject.result instanceof LiveTestResult) {
             this.contextKeyResultOutdated.set(subject.result.getStateById(subject.test.extId)?.retired ?? false);
             this.currentSubjectStore.add(subject.result.onChange(ev => {
@@ -389,12 +424,14 @@ class FollowupActionWidget extends Disposable {
     }
     public show(subject: InspectSubject) {
         this.visibleStore.clear();
+
         if (subject instanceof MessageSubject) {
             this.showMessage(subject);
         }
     }
     private async showMessage(subject: MessageSubject) {
         const cts = this.visibleStore.add(new CancellationTokenSource());
+
         const start = Date.now();
         // Wait for completion otherwise results will not be available to the ext host:
         if (subject.result instanceof LiveTestResult && !subject.result.completedAt) {
@@ -406,14 +443,18 @@ class FollowupActionWidget extends Disposable {
             resultId: subject.result.id,
             taskIndex: subject.taskIndex,
         }, cts.token);
+
         if (!followups.followups.length || cts.token.isCancellationRequested) {
             followups.dispose();
+
             return;
         }
         this.visibleStore.add(followups);
+
         dom.clearNode(this.el.root);
         this.el.root.classList.toggle('animated', Date.now() - start > FOLLOWUP_ANIMATION_MIN_TIME);
         this.el.root.appendChild(this.makeFollowupLink(followups.followups[0]));
+
         if (followups.followups.length > 1) {
             this.el.root.appendChild(this.makeMoreLink(followups.followups));
         }
@@ -423,7 +464,9 @@ class FollowupActionWidget extends Disposable {
     }
     private makeFollowupLink(first: ITestFollowup) {
         const link = this.makeLink(() => this.actionFollowup(link, first));
+
         dom.reset(link, ...renderLabelWithIcons(first.message));
+
         return link;
     }
     private makeMoreLink(followups: ITestFollowup[]) {
@@ -436,6 +479,7 @@ class FollowupActionWidget extends Disposable {
             }
         }));
         link.innerText = localize('testFollowup.more', '+{0} More...', followups.length - 1);
+
         return link;
     }
     private makeLink(onClick: () => void) {
@@ -444,16 +488,19 @@ class FollowupActionWidget extends Disposable {
         this.visibleStore.add(dom.addDisposableListener(link, 'click', onClick));
         this.visibleStore.add(dom.addDisposableListener(link, 'keydown', e => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.equals(KeyCode.Space) || event.equals(KeyCode.Enter)) {
                 onClick();
             }
         }));
+
         return link;
     }
     private actionFollowup(link: HTMLAnchorElement, fu: ITestFollowup) {
         if (link.ariaDisabled !== 'true') {
             link.ariaDisabled = 'true';
             fu.execute();
+
             if (this.editor) {
                 this.onCloseEmitter.fire();
             }

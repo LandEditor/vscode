@@ -23,11 +23,13 @@ import { concatArrays } from '../utils.js';
 export class ModifiedBaseRange {
     public static fromDiffs(diffs1: readonly DetailedLineRangeMapping[], diffs2: readonly DetailedLineRangeMapping[], baseTextModel: ITextModel, input1TextModel: ITextModel, input2TextModel: ITextModel): ModifiedBaseRange[] {
         const alignments = MappingAlignment.compute(diffs1, diffs2);
+
         return alignments.map((a) => new ModifiedBaseRange(a.inputRange, baseTextModel, a.output1Range, input1TextModel, a.output1LineMappings, a.output2Range, input2TextModel, a.output2LineMappings));
     }
     public readonly input1CombinedDiff = DetailedLineRangeMapping.join(this.input1Diffs);
     public readonly input2CombinedDiff = DetailedLineRangeMapping.join(this.input2Diffs);
     public readonly isEqualChange = equals(this.input1Diffs, this.input2Diffs, (a, b) => a.getLineEdit().equals(b.getLineEdit()));
+
     constructor(public readonly baseRange: LineRange, public readonly baseTextModel: ITextModel, public readonly input1Range: LineRange, public readonly input1TextModel: ITextModel, 
     /**
      * From base to input1
@@ -58,7 +60,9 @@ export class ModifiedBaseRange {
     }
     public get isOrderRelevant(): boolean {
         const input1 = this.smartCombineInputs(1);
+
         const input2 = this.smartCombineInputs(2);
+
         if (!input1 || !input2) {
             return false;
         }
@@ -72,6 +76,7 @@ export class ModifiedBaseRange {
             diff: DetailedLineRangeMapping;
             inputNumber: InputNumber;
         }[] = [];
+
         if (state.includesInput1 && this.input1CombinedDiff) {
             diffs.push({ diff: this.input1CombinedDiff, inputNumber: 1 });
         }
@@ -88,6 +93,7 @@ export class ModifiedBaseRange {
             throw new BugIndicatingError();
         }
         const smartCombinedEdit = state.smartCombination ? this.smartCombineInputs(state.firstInput) : this.dumbCombineInputs(state.firstInput);
+
         if (smartCombinedEdit) {
             return { edit: smartCombinedEdit, effectiveState: state };
         }
@@ -106,11 +112,15 @@ export class ModifiedBaseRange {
             return this.smartInput2LineRangeEdit;
         }
         const combinedDiffs = concatArrays(this.input1Diffs.flatMap((diffs) => diffs.rangeMappings.map((diff) => ({ diff, input: 1 as const }))), this.input2Diffs.flatMap((diffs) => diffs.rangeMappings.map((diff) => ({ diff, input: 2 as const })))).sort(tieBreakComparators(compareBy((d) => d.diff.inputRange, Range.compareRangesUsingStarts), compareBy((d) => (d.input === firstInput ? 1 : 2), numberComparator)));
+
         const sortedEdits = combinedDiffs.map(d => {
             const sourceTextModel = d.input === 1 ? this.input1TextModel : this.input2TextModel;
+
             return new RangeEdit(d.diff.inputRange, sourceTextModel.getValueInRange(d.diff.outputRange));
         });
+
         const result = editsToLineRangeEdit(this.baseRange, sortedEdits, this.baseTextModel);
+
         if (firstInput === 1) {
             this.smartInput1LineRangeEdit = result;
         }
@@ -129,11 +139,14 @@ export class ModifiedBaseRange {
             return this.dumbInput2LineRangeEdit;
         }
         let input1Lines = this.input1Range.getLines(this.input1TextModel);
+
         let input2Lines = this.input2Range.getLines(this.input2TextModel);
+
         if (firstInput === 2) {
             [input1Lines, input2Lines] = [input2Lines, input1Lines];
         }
         const result = new LineRangeEdit(this.baseRange, input1Lines.concat(input2Lines));
+
         if (firstInput === 1) {
             this.dumbInput1LineRangeEdit = result;
         }
@@ -145,16 +158,21 @@ export class ModifiedBaseRange {
 }
 function editsToLineRangeEdit(range: LineRange, sortedEdits: RangeEdit[], textModel: ITextModel): LineRangeEdit | undefined {
     let text = '';
+
     const startsLineBefore = range.startLineNumber > 1;
+
     let currentPosition = startsLineBefore
         ? new Position(range.startLineNumber - 1, textModel.getLineMaxColumn(range.startLineNumber - 1))
         : new Position(range.startLineNumber, 1);
+
     for (const edit of sortedEdits) {
         const diffStart = edit.range.getStartPosition();
+
         if (!currentPosition.isBeforeOrEqual(diffStart)) {
             return undefined;
         }
         let originalText = textModel.getValueInRange(Range.fromPositions(currentPosition, diffStart));
+
         if (diffStart.lineNumber > textModel.getLineCount()) {
             // assert diffStart.lineNumber === textModel.getLineCount() + 1
             // getValueInRange doesn't include this virtual line break, as the document ends the line before.
@@ -166,10 +184,14 @@ function editsToLineRangeEdit(range: LineRange, sortedEdits: RangeEdit[], textMo
         currentPosition = edit.range.getEndPosition();
     }
     const endsLineAfter = range.endLineNumberExclusive <= textModel.getLineCount();
+
     const end = endsLineAfter ? new Position(range.endLineNumberExclusive, 1) : new Position(range.endLineNumberExclusive - 1, Constants.MAX_SAFE_SMALL_INTEGER);
+
     const originalText = textModel.getValueInRange(Range.fromPositions(currentPosition, end));
     text += originalText;
+
     const lines = splitLines(text);
+
     if (startsLineBefore) {
         if (lines[0] !== '') {
             return undefined;
@@ -311,6 +333,7 @@ export class ModifiedBaseRangeStateUnrecognized extends AbstractModifiedBaseRang
 export type ModifiedBaseRangeState = ModifiedBaseRangeStateBase | ModifiedBaseRangeStateInput1 | ModifiedBaseRangeStateInput2 | ModifiedBaseRangeStateInput2 | ModifiedBaseRangeStateBoth | ModifiedBaseRangeStateUnrecognized;
 export namespace ModifiedBaseRangeState {
     export const base = new ModifiedBaseRangeStateBase();
+
     export const unrecognized = new ModifiedBaseRangeStateUnrecognized();
 }
 export const enum InputState {

@@ -12,6 +12,7 @@ import { TelemetryReporter } from '../../logging/telemetry';
 export class EditorChatFollowUp implements Command {
     public static readonly ID = '_typescript.quickFix.editorChatReplacement2';
     public readonly id = EditorChatFollowUp.ID;
+
     constructor(private readonly client: ITypeScriptServiceClient, private readonly telemetryReporter: TelemetryReporter) { }
     async execute({ message, document, expand, action }: EditorChatFollowUp_Args) {
         if (action.type === 'quickfix') {
@@ -49,6 +50,7 @@ export class EditorChatFollowUp implements Command {
                 : expand.kind === 'code-action'
                     ? await findEditScope(this.client, document, expand.action.changes.flatMap((c) => c.textChanges))
                     : expand.range;
+
         const initialSelection = initialRange ? new vscode.Selection(initialRange.start, initialRange.end) : undefined;
         await vscode.commands.executeCommand('vscode.editorChat.start', {
             initialRange,
@@ -95,6 +97,7 @@ export type Expand = {
 function findScopeEndLineFromNavTreeWorker(startLine: number, navigationTree: Proto.NavigationTree[]): vscode.Range | undefined {
     for (const node of navigationTree) {
         const range = typeConverters.Range.fromTextSpan(node.spans[0]);
+
         if (startLine === range.start.line) {
             return range;
         }
@@ -108,10 +111,12 @@ function findScopeEndLineFromNavTreeWorker(startLine: number, navigationTree: Pr
 }
 async function findScopeEndLineFromNavTree(client: ITypeScriptServiceClient, document: vscode.TextDocument, startLine: number) {
     const filepath = client.toOpenTsFilePath(document);
+
     if (!filepath) {
         return;
     }
     const response = await client.execute('navtree', { file: filepath }, nulToken);
+
     if (response.type !== 'response' || !response.body?.childItems) {
         return;
     }
@@ -119,12 +124,18 @@ async function findScopeEndLineFromNavTree(client: ITypeScriptServiceClient, doc
 }
 async function findEditScope(client: ITypeScriptServiceClient, document: vscode.TextDocument, edits: Proto.CodeEdit[]): Promise<vscode.Range> {
     let first = typeConverters.Position.fromLocation(edits[0].start);
+
     let firstEdit = edits[0];
+
     let lastEdit = edits[0];
+
     let last = typeConverters.Position.fromLocation(edits[0].start);
+
     for (const edit of edits) {
         const start = typeConverters.Position.fromLocation(edit.start);
+
         const end = typeConverters.Position.fromLocation(edit.end);
+
         if (start.compareTo(first) < 0) {
             first = start;
             firstEdit = edit;
@@ -135,12 +146,18 @@ async function findEditScope(client: ITypeScriptServiceClient, document: vscode.
         }
     }
     const text = document.getText();
+
     const startIndex = text.indexOf(firstEdit.newText);
+
     const start = startIndex > -1 ? document.positionAt(startIndex) : first;
+
     const endIndex = text.lastIndexOf(lastEdit.newText);
+
     const end = endIndex > -1
         ? document.positionAt(endIndex + lastEdit.newText.length)
         : last;
+
     const expandEnd = await findScopeEndLineFromNavTree(client, document, end.line);
+
     return new vscode.Range(start, expandEnd?.end ?? end);
 }

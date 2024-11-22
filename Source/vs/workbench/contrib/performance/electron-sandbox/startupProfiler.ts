@@ -55,9 +55,13 @@ export class StartupProfiler implements IWorkbenchContribution {
             return;
         }
         const profileFilenamePrefix = URI.file(this._environmentService.args['prof-startup-prefix']);
+
         const dir = dirname(profileFilenamePrefix);
+
         const prefix = basename(profileFilenamePrefix);
+
         const removeArgs: string[] = ['--prof-startup'];
+
         const markerFile = this._fileService.readFile(profileFilenamePrefix).then(value => removeArgs.push(...value.toString().split('|')))
             .then(() => this._fileService.del(profileFilenamePrefix, { recursive: true })) // (1) delete the file to tell the main process to stop profiling
             .then(() => new Promise<void>(resolve => {
@@ -80,6 +84,7 @@ export class StartupProfiler implements IWorkbenchContribution {
             });
         }).then(files => {
             const profileFiles = files.reduce((prev, cur) => `${prev}${this._labelService.getUriLabel(cur)}\n`, '\n');
+
             return this._dialogService.confirm({
                 type: 'info',
                 message: localize('prof.message', "Successfully created profiles."),
@@ -115,11 +120,14 @@ export class StartupProfiler implements IWorkbenchContribution {
     }
     private async _createPerfIssue(files: string[]): Promise<void> {
         const reportIssueUrl = this._productService.reportIssueUrl;
+
         if (!reportIssueUrl) {
             return;
         }
         const contrib = PerfviewContrib.get();
+
         const ref = await this._textModelResolverService.createModelReference(contrib.getInputUri());
+
         try {
             await this._clipboardService.writeText(ref.object.textEditorModel.getValue());
         }
@@ -130,7 +138,9 @@ export class StartupProfiler implements IWorkbenchContribution {
 1. :warning: We have copied additional data to your clipboard. Make sure to **paste** here. :warning:
 1. :warning: Make sure to **attach** these files from your *home*-directory: :warning:\n${files.map(file => `-\`${file}\``).join('\n')}
 `;
+
         const baseUrl = reportIssueUrl;
+
         const queryStringPrefix = baseUrl.indexOf('?') === -1 ? '?' : '&';
         this._openerService.open(URI.parse(`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(body)}`));
     }

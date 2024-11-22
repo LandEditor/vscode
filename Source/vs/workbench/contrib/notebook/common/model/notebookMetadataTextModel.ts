@@ -15,8 +15,10 @@ export function getFormattedNotebookMetadataJSON(transientMetadata: TransientDoc
     let filteredMetadata: {
         [key: string]: any;
     } = {};
+
     if (transientMetadata) {
         const keys = new Set([...Object.keys(metadata)]);
+
         for (const key of keys) {
             if (!(transientMetadata[key as keyof NotebookCellMetadata])) {
                 filteredMetadata[key] = metadata[key as keyof NotebookCellMetadata];
@@ -27,6 +29,7 @@ export function getFormattedNotebookMetadataJSON(transientMetadata: TransientDoc
         filteredMetadata = metadata;
     }
     const metadataSource = toFormattedString(filteredMetadata, {});
+
     return metadataSource;
 }
 export class NotebookDocumentMetadataTextModel extends Disposable implements INotebookDocumentMetadataTextModel {
@@ -38,6 +41,7 @@ export class NotebookDocumentMetadataTextModel extends Disposable implements INo
     public readonly onDidChange = this._onDidChange.event;
     private _textBufferHash: string | null = null;
     private _textBuffer?: ITextBuffer;
+
     get textBuffer() {
         if (this._textBuffer) {
             return this._textBuffer;
@@ -47,6 +51,7 @@ export class NotebookDocumentMetadataTextModel extends Disposable implements INo
         this._register(this._textBuffer.onDidChangeContent(() => {
             this._onDidChange.fire();
         }));
+
         return this._textBuffer;
     }
     constructor(public readonly notebookModel: INotebookTextModel) {
@@ -66,17 +71,23 @@ export class NotebookDocumentMetadataTextModel extends Disposable implements INo
             return this._textBufferHash;
         }
         const shaComputer = new StringSHA1();
+
         const snapshot = this.textBuffer.createSnapshot(false);
+
         let text: string | null;
+
         while ((text = snapshot.read())) {
             shaComputer.update(text);
         }
         this._textBufferHash = shaComputer.digest();
+
         return this._textBufferHash;
     }
     public getValue() {
         const fullRange = this.getFullModelRange();
+
         const eol = this.textBuffer.getEOL();
+
         if (eol === '\n') {
             return this.textBuffer.getValueInRange(fullRange, EndOfLinePreference.LF);
         }
@@ -86,6 +97,7 @@ export class NotebookDocumentMetadataTextModel extends Disposable implements INo
     }
     private getFullModelRange() {
         const lineCount = this.textBuffer.getLineCount();
+
         return new Range(1, 1, lineCount, this.textBuffer.getLineLength(lineCount) + 1);
     }
 }

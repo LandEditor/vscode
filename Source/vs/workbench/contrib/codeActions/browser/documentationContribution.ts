@@ -25,6 +25,7 @@ export class CodeActionDocumentationContribution extends Disposable implements I
         actions: [],
         dispose: () => { }
     };
+
     constructor(extensionPoint: IExtensionPoint<DocumentationExtensionPoint>, 
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -34,12 +35,14 @@ export class CodeActionDocumentationContribution extends Disposable implements I
         this._register(languageFeaturesService.codeActionProvider.register('*', this));
         extensionPoint.setHandler(points => {
             this.contributions = [];
+
             for (const documentation of points) {
                 if (!documentation.value.refactoring) {
                     continue;
                 }
                 for (const contribution of documentation.value.refactoring) {
                     const precondition = ContextKeyExpr.deserialize(contribution.when);
+
                     if (!precondition) {
                         continue;
                     }

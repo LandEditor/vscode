@@ -70,6 +70,7 @@ export class ExplorerService implements IExplorerService {
 
 			// Filter to the ones we care
 			const types = [FileChangeType.DELETED];
+
 			if (this.config.sortOrder === SortOrder.Modified) {
 				types.push(FileChangeType.UPDATED);
 			}
@@ -90,6 +91,7 @@ export class ExplorerService implements IExplorerService {
 						// Parent of the added resource is resolved and the explorer model is not aware of the added resource - we need to refresh
 						if (parent && !parent.getChild(basename(resource))) {
 							shouldRefresh = true;
+
 							break;
 						}
 					}
@@ -121,6 +123,7 @@ export class ExplorerService implements IExplorerService {
 					r.forgetChildren();
 				}
 			});
+
 			if (affected) {
 				if (this.view) {
 					await this.view.setTreeInput();
@@ -185,8 +188,11 @@ export class ExplorerService implements IExplorerService {
 
 	async applyBulkEdit(edit: ResourceFileEdit[], options: { undoLabel: string; progressLabel: string; confirmBeforeUndo?: boolean; progressLocation?: ProgressLocation.Explorer | ProgressLocation.Window }): Promise<void> {
 		const cancellationTokenSource = new CancellationTokenSource();
+
 		const location = options.progressLocation ?? ProgressLocation.Window;
+
 		let progressOptions;
+
 		if (location === ProgressLocation.Window) {
 			progressOptions = {
 				location: location,
@@ -228,6 +234,7 @@ export class ExplorerService implements IExplorerService {
 	findClosestRoot(resource: URI): ExplorerItem | null {
 		const parentRoots = this.model.roots.filter(r => this.uriIdentityService.extUri.isEqualOrParent(resource, r.resource))
 			.sort((first, second) => second.resource.path.length - first.resource.path.length);
+
 		return parentRoots.length ? parentRoots[0] : null;
 	}
 
@@ -242,6 +249,7 @@ export class ExplorerService implements IExplorerService {
 			this.editable = { stat, data };
 		}
 		const isEditing = this.isEditable(stat);
+
 		try {
 			await this.view.setEditable(stat, isEditing);
 		} catch {
@@ -272,6 +280,7 @@ export class ExplorerService implements IExplorerService {
 				parentHasNests: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Whether the parent of the editable element has nested children' };
 				hasNests: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Whether the editable element has nested children' };
 			};
+
 			const errorData = {
 				parentIsDirectory: parent?.isDirectory,
 				isDirectory: stat.isDirectory,
@@ -285,6 +294,7 @@ export class ExplorerService implements IExplorerService {
 				hasNests: stat.hasNests,
 			};
 			this.telemetryService.publicLogError2<ExplorerViewEditableErrorData, ExplorerViewEditableErrorClassification>('explorerView.setEditableError', errorData);
+
 			return;
 		}
 
@@ -327,17 +337,21 @@ export class ExplorerService implements IExplorerService {
 		const ignoreRevealExcludes = reveal === 'force';
 
 		const fileStat = this.findClosest(resource);
+
 		if (fileStat) {
 			if (!this.shouldAutoRevealItem(fileStat, ignoreRevealExcludes)) {
 				return;
 			}
 			await this.view.selectResource(fileStat.resource, reveal);
+
 			return Promise.resolve(undefined);
 		}
 
 		// Stat needs to be resolved first and then revealed
 		const options: IResolveFileOptions = { resolveTo: [resource], resolveMetadata: this.config.sortOrder === SortOrder.Modified };
+
 		const root = this.findClosestRoot(resource);
+
 		if (!root) {
 			return undefined;
 		}
@@ -349,6 +363,7 @@ export class ExplorerService implements IExplorerService {
 			const modelStat = ExplorerItem.create(this.fileService, this.configurationService, this.filesConfigurationService, stat, undefined, options.resolveTo);
 			// Update Input with disk Stat
 			ExplorerItem.mergeLocalWithDisk(modelStat, root);
+
 			const item = root.find(resource);
 			await this.view.refresh(true, root);
 
@@ -370,9 +385,12 @@ export class ExplorerService implements IExplorerService {
 		}
 
 		this.model.roots.forEach(r => r.forgetChildren());
+
 		if (this.view) {
 			await this.view.refresh(true);
+
 			const resource = this.editorService.activeEditor?.resource;
+
 			const autoReveal = this.configurationService.getValue<IFilesConfiguration>().explorer.autoReveal;
 
 			if (reveal && resource && autoReveal) {
@@ -393,7 +411,9 @@ export class ExplorerService implements IExplorerService {
 		// Add
 		if (e.isOperation(FileOperation.CREATE) || e.isOperation(FileOperation.COPY)) {
 			const addedElement = e.target;
+
 			const parentResource = dirname(addedElement.resource)!;
+
 			const parents = this.model.findAll(parentResource);
 
 			if (parents.length) {
@@ -402,8 +422,10 @@ export class ExplorerService implements IExplorerService {
 				await Promise.all(parents.map(async p => {
 					// We have to check if the parent is resolved #29177
 					const resolveMetadata = this.config.sortOrder === `modified`;
+
 					if (!p.isDirectoryResolved) {
 						const stat = await this.fileService.resolve(p.resource, { resolveMetadata });
+
 						if (stat) {
 							const modelStat = ExplorerItem.create(this.fileService, this.configurationService, this.filesConfigurationService, stat, p.parent);
 							ExplorerItem.mergeLocalWithDisk(modelStat, p);
@@ -423,10 +445,15 @@ export class ExplorerService implements IExplorerService {
 		// Move (including Rename)
 		else if (e.isOperation(FileOperation.MOVE)) {
 			const oldResource = e.resource;
+
 			const newElement = e.target;
+
 			const oldParentResource = dirname(oldResource);
+
 			const newParentResource = dirname(newElement.resource);
+
 			const modelElements = this.model.findAll(oldResource);
+
 			const sameParentMove = modelElements.every(e => !e.nestedParent) && this.uriIdentityService.extUri.isEqual(oldParentResource, newParentResource);
 
 			// Handle Rename
@@ -441,12 +468,15 @@ export class ExplorerService implements IExplorerService {
 			// Handle Move
 			else {
 				const newParents = this.model.findAll(newParentResource);
+
 				if (newParents.length && modelElements.length) {
 					// Move in Model
 					await Promise.all(modelElements.map(async (modelElement, index) => {
 						const oldParent = modelElement.parent;
+
 						const oldNestedParent = modelElement.nestedParent;
 						modelElement.move(newParents[index]);
+
 						if (oldNestedParent) {
 							await this.view?.refresh(false, oldNestedParent);
 						}
@@ -468,6 +498,7 @@ export class ExplorerService implements IExplorerService {
 					this.view?.focusNext();
 
 					const oldNestedParent = modelElement.nestedParent;
+
 					if (oldNestedParent) {
 						oldNestedParent.removeChild(modelElement);
 						await this.view?.refresh(false, oldNestedParent);
@@ -492,7 +523,9 @@ export class ExplorerService implements IExplorerService {
 			return false;
 		}
 		const root = item.root;
+
 		let currentItem = item.parent;
+
 		while (currentItem !== root) {
 			if (currentItem === undefined) {
 				return true;
@@ -519,11 +552,13 @@ export class ExplorerService implements IExplorerService {
 		const configuration = this.configurationService.getValue<IFilesConfiguration>();
 
 		const configSortOrder = configuration?.explorer?.sortOrder || SortOrder.Default;
+
 		if (this.config.sortOrder !== configSortOrder) {
 			shouldRefresh = this.config.sortOrder !== undefined;
 		}
 
 		const configLexicographicOptions = configuration?.explorer?.sortOrderLexicographicOptions || LexicographicOptions.Default;
+
 		if (this.config.sortOrderLexicographicOptions !== configLexicographicOptions) {
 			shouldRefresh = shouldRefresh || this.config.sortOrderLexicographicOptions !== undefined;
 		}

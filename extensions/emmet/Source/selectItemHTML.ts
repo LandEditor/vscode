@@ -7,8 +7,11 @@ import { getDeepestFlatNode, findNextWord, findPrevWord, getHtmlFlatNode, offset
 import { HtmlNode } from 'EmmetFlatNode';
 export function nextItemHTML(document: vscode.TextDocument, selectionStart: vscode.Position, selectionEnd: vscode.Position, rootNode: HtmlNode): vscode.Selection | undefined {
     const selectionEndOffset = document.offsetAt(selectionEnd);
+
     let currentNode = getHtmlFlatNode(document.getText(), rootNode, selectionEndOffset, false);
+
     let nextNode: HtmlNode | undefined = undefined;
+
     if (!currentNode) {
         return;
     }
@@ -22,13 +25,16 @@ export function nextItemHTML(document: vscode.TextDocument, selectionStart: vsco
         if (currentNode.open &&
             selectionEndOffset < currentNode.open.end) {
             const selectionStartOffset = document.offsetAt(selectionStart);
+
             const attrSelection = getNextAttribute(document, selectionStartOffset, selectionEndOffset, currentNode);
+
             if (attrSelection) {
                 return attrSelection;
             }
         }
         // Get the first child of current node which is right after the cursor and is not a comment
         nextNode = currentNode.firstChild;
+
         while (nextNode && (selectionEndOffset >= nextNode.end || nextNode.type === 'comment')) {
             nextNode = nextNode.nextSibling;
         }
@@ -51,12 +57,16 @@ export function nextItemHTML(document: vscode.TextDocument, selectionStart: vsco
 }
 export function prevItemHTML(document: vscode.TextDocument, selectionStart: vscode.Position, selectionEnd: vscode.Position, rootNode: HtmlNode): vscode.Selection | undefined {
     const selectionStartOffset = document.offsetAt(selectionStart);
+
     let currentNode = getHtmlFlatNode(document.getText(), rootNode, selectionStartOffset, false);
+
     let prevNode: HtmlNode | undefined = undefined;
+
     if (!currentNode) {
         return;
     }
     const selectionEndOffset = document.offsetAt(selectionEnd);
+
     if (currentNode.open &&
         currentNode.type !== 'comment' &&
         selectionStartOffset - 1 > currentNode.open.start) {
@@ -66,7 +76,9 @@ export function prevItemHTML(document: vscode.TextDocument, selectionStart: vsco
         else {
             // Select the child that appears just before the cursor and is not a comment
             prevNode = currentNode.firstChild;
+
             let oldOption: HtmlNode | undefined = undefined;
+
             while (prevNode.nextSibling && selectionStartOffset >= prevNode.nextSibling.end) {
                 if (prevNode && prevNode.type !== 'comment') {
                     oldOption = prevNode;
@@ -94,12 +106,15 @@ export function prevItemHTML(document: vscode.TextDocument, selectionStart: vsco
         return undefined;
     }
     const attrSelection = getPrevAttribute(document, selectionStartOffset, selectionEndOffset, prevNode);
+
     return attrSelection ? attrSelection : getSelectionFromNode(document, prevNode);
 }
 function getSelectionFromNode(document: vscode.TextDocument, node: HtmlNode): vscode.Selection | undefined {
     if (node && node.open) {
         const selectionStart = node.open.start + 1;
+
         const selectionEnd = selectionStart + node.name.length;
+
         return offsetRangeToSelection(document, selectionStart, selectionEnd);
     }
     return undefined;
@@ -128,22 +143,27 @@ function getNextAttribute(document: vscode.TextDocument, selectionStart: number,
             continue;
         }
         let pos: number | undefined = undefined;
+
         if (selectionStart === attr.value.start && selectionEnd === attr.value.end) {
             pos = -1;
         }
         if (pos === undefined && selectionEnd < attr.end) {
             const selectionEndCharacter = document.positionAt(selectionEnd).character;
+
             const attrValueStartCharacter = document.positionAt(attr.value.start).character;
             pos = selectionEndCharacter - attrValueStartCharacter - 1;
         }
         if (pos !== undefined) {
             const [newSelectionStartOffset, newSelectionEndOffset] = findNextWord(attr.value.toString(), pos);
+
             if (newSelectionStartOffset === undefined || newSelectionEndOffset === undefined) {
                 return;
             }
             if (newSelectionStartOffset >= 0 && newSelectionEndOffset >= 0) {
                 const newSelectionStart = attr.value.start + newSelectionStartOffset;
+
                 const newSelectionEnd = attr.value.start + newSelectionEndOffset;
+
                 return offsetRangeToSelection(document, newSelectionStart, newSelectionEnd);
             }
         }
@@ -156,6 +176,7 @@ function getPrevAttribute(document: vscode.TextDocument, selectionStart: number,
     }
     for (let i = node.attributes.length - 1; i >= 0; i--) {
         const attr = node.attributes[i];
+
         if (selectionStart <= attr.start) {
             continue;
         }
@@ -173,16 +194,22 @@ function getPrevAttribute(document: vscode.TextDocument, selectionStart: number,
         }
         // Fetch the prev word in the attr value
         const selectionStartCharacter = document.positionAt(selectionStart).character;
+
         const attrValueStartCharacter = document.positionAt(attr.value.start).character;
+
         const pos = selectionStart > attr.value.end ? attr.value.toString().length :
             selectionStartCharacter - attrValueStartCharacter;
+
         const [newSelectionStartOffset, newSelectionEndOffset] = findPrevWord(attr.value.toString(), pos);
+
         if (newSelectionStartOffset === undefined || newSelectionEndOffset === undefined) {
             return;
         }
         if (newSelectionStartOffset >= 0 && newSelectionEndOffset >= 0) {
             const newSelectionStart = attr.value.start + newSelectionStartOffset;
+
             const newSelectionEnd = attr.value.start + newSelectionEndOffset;
+
             return offsetRangeToSelection(document, newSelectionStart, newSelectionEnd);
         }
     }

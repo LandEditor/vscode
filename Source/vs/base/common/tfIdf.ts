@@ -8,6 +8,7 @@ type TermFrequencies = Map</* word */ string, /*occurrences*/ number>;
 type DocumentOccurrences = Map</* word */ string, /*documentOccurrences*/ number>;
 function countMapFrom<K>(values: Iterable<K>): Map<K, number> {
     const map = new Map<K, number>();
+
     for (const value of values) {
         map.set(value, (map.get(value) ?? 0) + 1);
     }
@@ -44,7 +45,9 @@ export interface NormalizedTfIdfScore {
 export class TfIdfCalculator {
     calculateScores(query: string, token: CancellationToken): TfIdfScore[] {
         const embedding = this.computeEmbedding(query);
+
         const idfCache = new Map<string, number>();
+
         const scores: TfIdfScore[] = [];
         // For each document, generate one score
         for (const [key, doc] of this.documents) {
@@ -53,6 +56,7 @@ export class TfIdfCalculator {
             }
             for (const chunk of doc.chunks) {
                 const score = this.computeSimilarityScore(chunk, embedding, idfCache);
+
                 if (score > 0) {
                     scores.push({ key, score });
                 }
@@ -74,7 +78,9 @@ export class TfIdfCalculator {
         // Only match on words that are at least 3 characters long and start with a letter
         for (const [word] of input.matchAll(/\b\p{Letter}[\p{Letter}\d]{2,}\b/gu)) {
             yield normalize(word);
+
             const camelParts = word.replace(/([a-z])([A-Z])/g, '$1 $2').split(/\s+/g);
+
             if (camelParts.length > 1) {
                 for (const part of camelParts) {
                     // Require at least 3 letters in the parts of a camel case word
@@ -102,6 +108,7 @@ export class TfIdfCalculator {
                 text: string;
                 tf: TermFrequencies;
             }> = [];
+
             for (const text of doc.textChunks) {
                 // TODO: See if we can compute the tf lazily
                 // The challenge is that we need to also update the `chunkOccurrences`
@@ -121,6 +128,7 @@ export class TfIdfCalculator {
     }
     deleteDocument(key: string) {
         const doc = this.documents.get(key);
+
         if (!doc) {
             return;
         }
@@ -130,8 +138,10 @@ export class TfIdfCalculator {
         for (const chunk of doc.chunks) {
             for (const term of chunk.tf.keys()) {
                 const currentOccurrences = this.chunkOccurrences.get(term);
+
                 if (typeof currentOccurrences === 'number') {
                     const newOccurrences = currentOccurrences - 1;
+
                     if (newOccurrences <= 0) {
                         this.chunkOccurrences.delete(term);
                     }
@@ -148,13 +158,16 @@ export class TfIdfCalculator {
         // This lets us skip a large number of calculations because the majority
         // of chunks do not share any terms with the query.
         let sum = 0;
+
         for (const [term, termTfidf] of Object.entries(queryEmbedding)) {
             const chunkTf = chunk.tf.get(term);
+
             if (!chunkTf) {
                 // Term does not appear in chunk so it has no contribution
                 continue;
             }
             let chunkIdf = idfCache.get(term);
+
             if (typeof chunkIdf !== 'number') {
                 chunkIdf = this.computeIdf(term);
                 idfCache.set(term, chunkIdf);
@@ -166,18 +179,22 @@ export class TfIdfCalculator {
     }
     private computeEmbedding(input: string): SparseEmbedding {
         const tf = TfIdfCalculator.termFrequencies(input);
+
         return this.computeTfidf(tf);
     }
     private computeIdf(term: string): number {
         const chunkOccurrences = this.chunkOccurrences.get(term) ?? 0;
+
         return chunkOccurrences > 0
             ? Math.log((this.chunkCount + 1) / chunkOccurrences)
             : 0;
     }
     private computeTfidf(termFrequencies: TermFrequencies): SparseEmbedding {
         const embedding = Object.create(null);
+
         for (const [word, occurrences] of termFrequencies) {
             const idf = this.computeIdf(word);
+
             if (idf > 0) {
                 embedding[word] = occurrences * idf;
             }
@@ -199,6 +216,7 @@ export function normalizeTfIdfScores(scores: TfIdfScore[]): NormalizedTfIdfScore
     result.sort((a, b) => b.score - a.score);
     // normalize
     const max = result[0]?.score ?? 0;
+
     if (max > 0) {
         for (const score of result) {
             score.score /= max;

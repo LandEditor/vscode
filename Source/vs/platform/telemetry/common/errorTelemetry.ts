@@ -80,6 +80,7 @@ export default abstract class BaseErrorTelemetry {
     private _flushHandle: any = -1;
     private _buffer: ErrorEvent[] = [];
     protected readonly _disposables = new DisposableStore();
+
     constructor(telemetryService: ITelemetryService, flushDelay = BaseErrorTelemetry.ERROR_FLUSH_TIMEOUT) {
         this._telemetryService = telemetryService;
         this._flushDelay = flushDelay;
@@ -112,6 +113,7 @@ export default abstract class BaseErrorTelemetry {
         }
         // work around behavior in workerServer.ts that breaks up Error.stack
         const callstack = Array.isArray(err.stack) ? err.stack.join('\n') : err.stack;
+
         const msg = err.message ? err.message : safeStringify(err);
         // errors without a stack are not useful telemetry
         if (!callstack) {
@@ -121,6 +123,7 @@ export default abstract class BaseErrorTelemetry {
     }
     protected _enqueue(e: ErrorEvent): void {
         const idx = binarySearch(this._buffer, e, ErrorEvent.compare);
+
         if (idx < 0) {
             e.count = 1;
             this._buffer.splice(~idx, 0, e);

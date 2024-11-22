@@ -20,8 +20,11 @@ export class IssueWebReporter extends BaseIssueReporterService {
     @IThemeService
     themeService: IThemeService) {
         super(disableExtensions, data, os, product, window, true, issueFormService, themeService);
+
         const target = this.window.document.querySelector<HTMLElement>('.block-system .block-info');
+
         const webInfo = this.window.navigator.userAgent;
+
         if (webInfo) {
             target?.appendChild(this.window.document.createTextNode(webInfo));
             this.receivedSystemInfo = true;
@@ -36,6 +39,7 @@ export class IssueWebReporter extends BaseIssueReporterService {
             this.issueReporterModel.update({ issueType: issueType });
             // Resets placeholder
             const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
+
             if (descriptionTextArea) {
                 descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
             }

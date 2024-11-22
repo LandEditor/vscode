@@ -11,14 +11,17 @@ import { IToggleStyles, Toggle } from '../../../base/browser/ui/toggle/toggle.js
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import Severity from '../../../base/common/severity.js';
 import './media/quickInput.css';
+
 const $ = dom.$;
 export class QuickInputBox extends Disposable {
     private container: HTMLElement;
     private findInput: FindInput;
+
     constructor(private parent: HTMLElement, inputBoxStyles: IInputBoxStyles, toggleStyles: IToggleStyles) {
         super();
         this.container = dom.append(this.parent, $('.quick-input-box'));
         this.findInput = this._register(new FindInput(this.container, undefined, { label: '', inputBoxStyles, toggleStyles }));
+
         const input = this.findInput.inputBox.inputElement;
         input.role = 'combobox';
         input.ariaHasPopup = 'menu';
@@ -34,6 +37,7 @@ export class QuickInputBox extends Disposable {
     onDidChange = (handler: (event: string) => void): IDisposable => {
         return this.findInput.onDidChange(handler);
     };
+
     get value() {
         return this.findInput.getValue();
     }

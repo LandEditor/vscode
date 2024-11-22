@@ -18,6 +18,7 @@ export class Keychain {
     async getToken(): Promise<string | null | undefined> {
         try {
             const secret = await this.context.secrets.get(this.serviceId);
+
             if (secret && secret !== '[]') {
                 this.Logger.trace('Token acquired from secret storage.');
             }
@@ -26,6 +27,7 @@ export class Keychain {
         catch (e) {
             // Ignore
             this.Logger.error(`Getting token failed: ${e}`);
+
             return Promise.resolve(undefined);
         }
     }
@@ -36,6 +38,7 @@ export class Keychain {
         catch (e) {
             // Ignore
             this.Logger.error(`Deleting token failed: ${e}`);
+
             return Promise.resolve(undefined);
         }
     }

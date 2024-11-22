@@ -26,6 +26,7 @@ export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Run
         encoding?: string;
     }) => {
         const uri = Uri.parse(param.uri);
+
         if (uri.scheme === 'file' && runtime.fs) {
             return runtime.fs.getContent(param.uri);
         }
@@ -35,6 +36,7 @@ export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Run
     });
     client.onRequest(FsReadDirRequest.type, (uriString: string) => {
         const uri = Uri.parse(uriString);
+
         if (uri.scheme === 'file' && runtime.fs) {
             return runtime.fs.readDirectory(uriString);
         }
@@ -42,6 +44,7 @@ export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Run
     });
     client.onRequest(FsStatRequest.type, (uriString: string) => {
         const uri = Uri.parse(uriString);
+
         if (uri.scheme === 'file' && runtime.fs) {
             return runtime.fs.stat(uriString);
         }

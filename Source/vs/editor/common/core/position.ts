@@ -27,6 +27,7 @@ export class Position {
      * column (the first character in a line is between column 1 and column 2)
      */
     public readonly column: number;
+
     constructor(lineNumber: number, column: number) {
         this.lineNumber = lineNumber;
         this.column = column;
@@ -117,10 +118,14 @@ export class Position {
      */
     public static compare(a: IPosition, b: IPosition): number {
         const aLineNumber = a.lineNumber | 0;
+
         const bLineNumber = b.lineNumber | 0;
+
         if (aLineNumber === bLineNumber) {
             const aColumn = a.column | 0;
+
             const bColumn = b.column | 0;
+
             return aColumn - bColumn;
         }
         return aLineNumber - bLineNumber;

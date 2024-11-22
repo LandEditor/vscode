@@ -25,6 +25,7 @@ export function format(value: string, ...args: any[]): string {
     }
     return value.replace(_formatRegexp, function (match, group) {
         const idx = parseInt(group, 10);
+
         return isNaN(idx) || idx < 0 || idx >= args.length ?
             match :
             args[idx];
@@ -51,9 +52,13 @@ export function htmlAttributeEncodeValue(value: string): string {
     return value.replace(/[<>"'&]/g, ch => {
         switch (ch) {
             case '<': return '&lt;';
+
             case '>': return '&gt;';
+
             case '"': return '&quot;';
+
             case '\'': return '&apos;';
+
             case '&': return '&amp;';
         }
         return ch;
@@ -67,8 +72,11 @@ export function escape(html: string): string {
     return html.replace(/[<>&]/g, function (match) {
         switch (match) {
             case '<': return '&lt;';
+
             case '>': return '&gt;';
+
             case '&': return '&amp;';
+
             default: return match;
         }
     });
@@ -84,7 +92,9 @@ export function escapeRegExpCharacters(value: string): string {
  */
 export function count(value: string, substr: string): number {
     let result = 0;
+
     let index = value.indexOf(substr);
+
     while (index !== -1) {
         result++;
         index = value.indexOf(substr, index + substr.length);
@@ -102,7 +112,9 @@ export function truncateMiddle(value: string, maxLength: number, suffix = '…')
         return value;
     }
     const prefixLength = Math.ceil(maxLength / 2) - suffix.length / 2;
+
     const suffixLength = Math.floor(maxLength / 2) - suffix.length / 2;
+
     return `${value.substr(0, prefixLength)}${suffix}${value.substr(value.length - suffixLength)}`;
 }
 /**
@@ -112,6 +124,7 @@ export function truncateMiddle(value: string, maxLength: number, suffix = '…')
  */
 export function trim(haystack: string, needle: string = ' '): string {
     const trimmed = ltrim(haystack, needle);
+
     return rtrim(trimmed, needle);
 }
 /**
@@ -124,10 +137,12 @@ export function ltrim(haystack: string, needle: string): string {
         return haystack;
     }
     const needleLen = needle.length;
+
     if (needleLen === 0 || haystack.length === 0) {
         return haystack;
     }
     let offset = 0;
+
     while (haystack.indexOf(needle, offset) === offset) {
         offset = offset + needleLen;
     }
@@ -143,12 +158,15 @@ export function rtrim(haystack: string, needle: string): string {
         return haystack;
     }
     const needleLen = needle.length, haystackLen = haystack.length;
+
     if (needleLen === 0 || haystackLen === 0) {
         return haystack;
     }
     let offset = haystackLen, idx = -1;
+
     while (true) {
         idx = haystack.lastIndexOf(needle, offset - 1);
+
         if (idx === -1 || idx + needleLen !== offset) {
             break;
         }
@@ -188,6 +206,7 @@ export function createRegExp(searchString: string, isRegex: boolean, options: Re
         }
     }
     let modifiers = '';
+
     if (options.global) {
         modifiers += 'g';
     }
@@ -211,6 +230,7 @@ export function regExpLeadsToEndlessLoop(regexp: RegExp): boolean {
     // We check against an empty string. If the regular expression doesn't advance
     // (e.g. ends in an endless loop) it will match an empty string.
     const match = regexp.exec('');
+
     return !!(match && regexp.lastIndex === 0);
 }
 export function joinStrings(items: (string | undefined | null | false)[], separator: string): string {
@@ -221,7 +241,9 @@ export function splitLines(str: string): string[] {
 }
 export function splitLinesIncludeSeparators(str: string): string[] {
     const linesWithSeparators: string[] = [];
+
     const splitLinesAndSeparators = str.split(/(\r\n|\r|\n)/);
+
     for (let i = 0; i < Math.ceil(splitLinesAndSeparators.length / 2); i++) {
         linesWithSeparators.push(splitLinesAndSeparators[2 * i] + (splitLinesAndSeparators[2 * i + 1] ?? ''));
     }
@@ -234,6 +256,7 @@ export function splitLinesIncludeSeparators(str: string): string[] {
 export function firstNonWhitespaceIndex(str: string): number {
     for (let i = 0, len = str.length; i < len; i++) {
         const chCode = str.charCodeAt(i);
+
         if (chCode !== CharCode.Space && chCode !== CharCode.Tab) {
             return i;
         }
@@ -247,6 +270,7 @@ export function firstNonWhitespaceIndex(str: string): number {
 export function getLeadingWhitespace(str: string, start: number = 0, end: number = str.length): string {
     for (let i = start; i < end; i++) {
         const chCode = str.charCodeAt(i);
+
         if (chCode !== CharCode.Space && chCode !== CharCode.Tab) {
             return str.substring(start, i);
         }
@@ -260,6 +284,7 @@ export function getLeadingWhitespace(str: string, start: number = 0, end: number
 export function lastNonWhitespaceIndex(str: string, startIndex: number = str.length - 1): number {
     for (let i = startIndex; i >= 0; i--) {
         const chCode = str.charCodeAt(i);
+
         if (chCode !== CharCode.Space && chCode !== CharCode.Tab) {
             return i;
         }
@@ -268,6 +293,7 @@ export function lastNonWhitespaceIndex(str: string, startIndex: number = str.len
 }
 export function getIndentationLength(str: string): number {
     const idx = firstNonWhitespaceIndex(str);
+
     if (idx === -1) {
         return str.length;
     }
@@ -279,9 +305,12 @@ export function getIndentationLength(str: string): number {
  */
 export function replaceAsync(str: string, search: RegExp, replacer: (match: string, ...args: any[]) => Promise<string>): Promise<string> {
     const parts: (string | Promise<string>)[] = [];
+
     let last = 0;
+
     for (const match of str.matchAll(search)) {
         parts.push(str.slice(last, match.index));
+
         if (match.index === undefined) {
             throw new Error('match.index should be defined');
         }
@@ -289,6 +318,7 @@ export function replaceAsync(str: string, search: RegExp, replacer: (match: stri
         parts.push(replacer(match[0], ...match.slice(1), match.index, str, match.groups));
     }
     parts.push(str.slice(last));
+
     return Promise.all(parts).then(p => p.join(''));
 }
 export function compare(a: string, b: string): number {
@@ -305,7 +335,9 @@ export function compare(a: string, b: string): number {
 export function compareSubstring(a: string, b: string, aStart: number = 0, aEnd: number = a.length, bStart: number = 0, bEnd: number = b.length): number {
     for (; aStart < aEnd && bStart < bEnd; aStart++, bStart++) {
         const codeA = a.charCodeAt(aStart);
+
         const codeB = b.charCodeAt(bStart);
+
         if (codeA < codeB) {
             return -1;
         }
@@ -314,7 +346,9 @@ export function compareSubstring(a: string, b: string, aStart: number = 0, aEnd:
         }
     }
     const aLen = aEnd - aStart;
+
     const bLen = bEnd - bStart;
+
     if (aLen < bLen) {
         return -1;
     }
@@ -329,7 +363,9 @@ export function compareIgnoreCase(a: string, b: string): number {
 export function compareSubstringIgnoreCase(a: string, b: string, aStart: number = 0, aEnd: number = a.length, bStart: number = 0, bEnd: number = b.length): number {
     for (; aStart < aEnd && bStart < bEnd; aStart++, bStart++) {
         let codeA = a.charCodeAt(aStart);
+
         let codeB = b.charCodeAt(bStart);
+
         if (codeA === codeB) {
             // equal
             continue;
@@ -348,13 +384,16 @@ export function compareSubstringIgnoreCase(a: string, b: string, aStart: number 
         }
         // compare both code points
         const diff = codeA - codeB;
+
         if (diff === 0) {
             continue;
         }
         return diff;
     }
     const aLen = aEnd - aStart;
+
     const bLen = bEnd - bStart;
+
     if (aLen < bLen) {
         return -1;
     }
@@ -377,6 +416,7 @@ export function equalsIgnoreCase(a: string, b: string): boolean {
 }
 export function startsWithIgnoreCase(str: string, candidate: string): boolean {
     const candidateLength = candidate.length;
+
     if (candidate.length > str.length) {
         return false;
     }
@@ -387,7 +427,9 @@ export function startsWithIgnoreCase(str: string, candidate: string): boolean {
  */
 export function commonPrefixLength(a: string, b: string): number {
     const len = Math.min(a.length, b.length);
+
     let i: number;
+
     for (i = 0; i < len; i++) {
         if (a.charCodeAt(i) !== b.charCodeAt(i)) {
             return i;
@@ -400,9 +442,13 @@ export function commonPrefixLength(a: string, b: string): number {
  */
 export function commonSuffixLength(a: string, b: string): number {
     const len = Math.min(a.length, b.length);
+
     let i: number;
+
     const aLastIndex = a.length - 1;
+
     const bLastIndex = b.length - 1;
+
     for (i = 0; i < len; i++) {
         if (a.charCodeAt(aLastIndex - i) !== b.charCodeAt(bLastIndex - i)) {
             return i;
@@ -433,8 +479,10 @@ export function computeCodePoint(highSurrogate: number, lowSurrogate: number): n
  */
 export function getNextCodePoint(str: string, len: number, offset: number): number {
     const charCode = str.charCodeAt(offset);
+
     if (isHighSurrogate(charCode) && offset + 1 < len) {
         const nextCharCode = str.charCodeAt(offset + 1);
+
         if (isLowSurrogate(nextCharCode)) {
             return computeCodePoint(charCode, nextCharCode);
         }
@@ -446,8 +494,10 @@ export function getNextCodePoint(str: string, len: number, offset: number): numb
  */
 function getPrevCodePoint(str: string, offset: number): number {
     const charCode = str.charCodeAt(offset - 1);
+
     if (isLowSurrogate(charCode) && offset > 1) {
         const prevCharCode = str.charCodeAt(offset - 2);
+
         if (isHighSurrogate(prevCharCode)) {
             return computeCodePoint(prevCharCode, charCode);
         }
@@ -472,11 +522,13 @@ export class CodePointIterator {
     public prevCodePoint(): number {
         const codePoint = getPrevCodePoint(this._str, this._offset);
         this._offset -= (codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1);
+
         return codePoint;
     }
     public nextCodePoint(): number {
         const codePoint = getNextCodePoint(this._str, this._len, this._offset);
         this._offset += (codePoint >= Constants.UNICODE_SUPPLEMENTARY_PLANE_BEGIN ? 2 : 1);
+
         return codePoint;
     }
     public eol(): boolean {
@@ -493,15 +545,22 @@ export class GraphemeIterator {
     }
     public nextGraphemeLength(): number {
         const graphemeBreakTree = GraphemeBreakTree.getInstance();
+
         const iterator = this._iterator;
+
         const initialOffset = iterator.offset;
+
         let graphemeBreakType = graphemeBreakTree.getGraphemeBreakType(iterator.nextCodePoint());
+
         while (!iterator.eol()) {
             const offset = iterator.offset;
+
             const nextGraphemeBreakType = graphemeBreakTree.getGraphemeBreakType(iterator.nextCodePoint());
+
             if (breakBetweenGraphemeBreakType(graphemeBreakType, nextGraphemeBreakType)) {
                 // move iterator back
                 iterator.setOffset(offset);
+
                 break;
             }
             graphemeBreakType = nextGraphemeBreakType;
@@ -510,15 +569,22 @@ export class GraphemeIterator {
     }
     public prevGraphemeLength(): number {
         const graphemeBreakTree = GraphemeBreakTree.getInstance();
+
         const iterator = this._iterator;
+
         const initialOffset = iterator.offset;
+
         let graphemeBreakType = graphemeBreakTree.getGraphemeBreakType(iterator.prevCodePoint());
+
         while (iterator.offset > 0) {
             const offset = iterator.offset;
+
             const prevGraphemeBreakType = graphemeBreakTree.getGraphemeBreakType(iterator.prevCodePoint());
+
             if (breakBetweenGraphemeBreakType(prevGraphemeBreakType, graphemeBreakType)) {
                 // move iterator back
                 iterator.setOffset(offset);
+
                 break;
             }
             graphemeBreakType = prevGraphemeBreakType;
@@ -531,10 +597,12 @@ export class GraphemeIterator {
 }
 export function nextCharLength(str: string, initialOffset: number): number {
     const iterator = new GraphemeIterator(str, initialOffset);
+
     return iterator.nextGraphemeLength();
 }
 export function prevCharLength(str: string, initialOffset: number): number {
     const iterator = new GraphemeIterator(str, initialOffset);
+
     return iterator.prevGraphemeLength();
 }
 export function getCharContainingOffset(str: string, offset: number): [
@@ -545,12 +613,16 @@ export function getCharContainingOffset(str: string, offset: number): [
         offset--;
     }
     const endOffset = offset + nextCharLength(str, offset);
+
     const startOffset = endOffset - prevCharLength(str, endOffset);
+
     return [startOffset, endOffset];
 }
 export function charCount(str: string): number {
     const iterator = new GraphemeIterator(str);
+
     let length = 0;
+
     while (!iterator.eol()) {
         length++;
         iterator.nextGraphemeLength();
@@ -646,11 +718,14 @@ export function isEmojiImprecise(x: number): boolean {
  */
 export function lcut(text: string, n: number, prefix = '') {
     const trimmed = text.trimStart();
+
     if (trimmed.length < n) {
         return trimmed;
     }
     const re = /\b/g;
+
     let i = 0;
+
     while (re.test(trimmed)) {
         if (trimmed.length - re.lastIndex < n) {
             break;
@@ -669,6 +744,7 @@ const CSI_SEQUENCE = /(?:(?:\x1b\[|\x9B)[=?>!]?[\d;:]*["$#'* ]?[a-zA-Z@^`{}|~])|
 /** Iterates over parts of a string with CSI sequences */
 export function* forAnsiStringParts(str: string) {
     let last = 0;
+
     for (const match of str.matchAll(CSI_SEQUENCE)) {
         if (last !== match.index) {
             yield { isCode: false, str: str.substring(last, match.index) };
@@ -726,11 +802,16 @@ export function fuzzyContains(target: string, query: string): boolean {
         return false; // impossible for query to be contained in target
     }
     const queryLen = query.length;
+
     const targetLower = target.toLowerCase();
+
     let index = 0;
+
     let lastIndexOf = -1;
+
     while (index < queryLen) {
         const indexOf = targetLower.indexOf(query[index], lastIndexOf + 1);
+
         if (indexOf < 0) {
             return false;
         }
@@ -756,10 +837,12 @@ export function getNLines(str: string, n = 1): string {
         return '';
     }
     let idx = -1;
+
     do {
         idx = str.indexOf('\n', idx + 1);
         n--;
     } while (n > 0 && idx >= 0);
+
     if (idx === -1) {
         return str;
     }
@@ -774,6 +857,7 @@ export function getNLines(str: string, n = 1): string {
 export function singleLetterHash(n: number): string {
     const LETTERS_CNT = (CharCode.Z - CharCode.A + 1);
     n = n % (2 * LETTERS_CNT);
+
     if (n < LETTERS_CNT) {
         return String.fromCharCode(CharCode.a + n);
     }
@@ -782,6 +866,7 @@ export function singleLetterHash(n: number): string {
 //#region Unicode Grapheme Break
 export function getGraphemeBreakType(codePoint: number): GraphemeBreakType {
     const graphemeBreakTree = GraphemeBreakTree.getInstance();
+
     return graphemeBreakTree.getGraphemeBreakType(codePoint);
 }
 function breakBetweenGraphemeBreakType(breakTypeA: GraphemeBreakType, breakTypeB: GraphemeBreakType): boolean {
@@ -881,6 +966,7 @@ class GraphemeBreakTree {
         return GraphemeBreakTree._INSTANCE;
     }
     private readonly _data: number[];
+
     constructor() {
         this._data = getGraphemeBreakRawData();
     }
@@ -900,8 +986,11 @@ class GraphemeBreakTree {
             return GraphemeBreakType.Other;
         }
         const data = this._data;
+
         const nodeCount = data.length / 3;
+
         let nodeIndex = 1;
+
         while (nodeIndex <= nodeCount) {
             if (codePoint < data[3 * nodeIndex]) {
                 // go left
@@ -934,18 +1023,21 @@ export function getLeftDeleteOffset(offset: number, str: string): number {
     }
     // Try to delete emoji part.
     const emojiOffset = getOffsetBeforeLastEmojiComponent(offset, str);
+
     if (emojiOffset !== undefined) {
         return emojiOffset;
     }
     // Otherwise, just skip a single code point.
     const iterator = new CodePointIterator(str, offset);
     iterator.prevCodePoint();
+
     return iterator.offset;
 }
 function getOffsetBeforeLastEmojiComponent(initialOffset: number, str: string): number | undefined {
     // See https://www.unicode.org/reports/tr51/tr51-14.html#EBNF_and_Regex for the
     // structure of emojis.
     const iterator = new CodePointIterator(str, initialOffset);
+
     let codePoint = iterator.prevCodePoint();
     // Skip modifiers
     while ((isEmojiModifier(codePoint) || codePoint === CodePoint.emojiVariantSelector || codePoint === CodePoint.enclosingKeyCap)) {
@@ -961,11 +1053,13 @@ function getOffsetBeforeLastEmojiComponent(initialOffset: number, str: string): 
         return undefined;
     }
     let resultOffset = iterator.offset;
+
     if (resultOffset > 0) {
         // Skip optional ZWJ code points that combine multiple emojis.
         // In theory, we should check if that ZWJ actually combines multiple emojis
         // to prevent deleting ZWJs in situations we didn't account for.
         const optionalZwjCodePoint = iterator.prevCodePoint();
+
         if (optionalZwjCodePoint === CodePoint.zwj) {
             resultOffset = iterator.offset;
         }
@@ -997,6 +1091,7 @@ export class AmbiguousCharacters {
     private static readonly cache = new LRUCachedFunction<string[], AmbiguousCharacters>({ getCacheKey: JSON.stringify }, (locales) => {
         function arrayToMap(arr: number[]): Map<number, number> {
             const result = new Map<number, number>();
+
             for (let i = 0; i < arr.length; i += 2) {
                 result.set(arr[i], arr[i + 1]);
             }
@@ -1004,6 +1099,7 @@ export class AmbiguousCharacters {
         }
         function mergeMaps(map1: Map<number, number>, map2: Map<number, number>): Map<number, number> {
             const result = new Map<number, number>(map1);
+
             for (const [key, value] of map2) {
                 result.set(key, value);
             }
@@ -1014,6 +1110,7 @@ export class AmbiguousCharacters {
                 return map2;
             }
             const result = new Map<number, number>();
+
             for (const [key, value] of map1) {
                 if (map2.has(key)) {
                     result.set(key, value);
@@ -1022,17 +1119,22 @@ export class AmbiguousCharacters {
             return result;
         }
         const data = this.ambiguousCharacterData.value;
+
         let filteredLocales = locales.filter((l) => !l.startsWith('_') && l in data);
+
         if (filteredLocales.length === 0) {
             filteredLocales = ['_default'];
         }
         let languageSpecificMap: Map<number, number> | undefined = undefined;
+
         for (const locale of filteredLocales) {
             const map = arrayToMap(data[locale]);
             languageSpecificMap = intersectMaps(languageSpecificMap, map);
         }
         const commonMap = arrayToMap(data['_common']);
+
         const map = mergeMaps(commonMap, languageSpecificMap!);
+
         return new AmbiguousCharacters(map);
     });
     public static getInstance(locales: Set<string>): AmbiguousCharacters {
@@ -1049,6 +1151,7 @@ export class AmbiguousCharacters {
     public containsAmbiguousCharacter(str: string): boolean {
         for (let i = 0; i < str.length; i++) {
             const codePoint = str.codePointAt(i);
+
             if (typeof codePoint === 'number' && this.isAmbiguous(codePoint)) {
                 return true;
             }
@@ -1084,6 +1187,7 @@ export class InvisibleCharacters {
     public static containsInvisibleCharacter(str: string): boolean {
         for (let i = 0; i < str.length; i++) {
             const codePoint = str.codePointAt(i);
+
             if (typeof codePoint === 'number' && InvisibleCharacters.isInvisibleCharacter(codePoint)) {
                 return true;
             }

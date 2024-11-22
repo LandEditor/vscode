@@ -67,6 +67,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 
 	override clear(): void {
 		this._chords = null;
+
 		super.clear();
 	}
 
@@ -92,13 +93,17 @@ export class KeybindingsSearchWidget extends SearchWidget {
 	private _onKeyDown(keyboardEvent: IKeyboardEvent): void {
 		keyboardEvent.preventDefault();
 		keyboardEvent.stopPropagation();
+
 		const options = this.options as KeybindingsSearchOptions;
+
 		if (!options.recordEnter && keyboardEvent.equals(KeyCode.Enter)) {
 			this._onEnter.fire();
+
 			return;
 		}
 		if (keyboardEvent.equals(KeyCode.Escape)) {
 			this._onEscape.fire();
+
 			return;
 		}
 		this.printKeybinding(keyboardEvent);
@@ -106,7 +111,9 @@ export class KeybindingsSearchWidget extends SearchWidget {
 
 	private printKeybinding(keyboardEvent: IKeyboardEvent): void {
 		const keybinding = this.keybindingService.resolveKeyboardEvent(keyboardEvent);
+
 		const info = `code: ${keyboardEvent.browserEvent.code}, keyCode: ${keyboardEvent.browserEvent.keyCode}, key: ${keyboardEvent.browserEvent.key} => UI: ${keybinding.getAriaLabel()}, user settings: ${keybinding.getUserSettingsLabel()}, dispatch: ${keybinding.getDispatchChords()[0]}`;
+
 		const options = this.options as KeybindingsSearchOptions;
 
 		if (!this._chords) {
@@ -115,6 +122,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 
 		// TODO: note that we allow a keybinding "shift shift", but this widget doesn't allow input "shift shift" because the first "shift" will be incomplete - this is _not_ a regression
 		const hasIncompleteChord = this._chords.length > 0 && this._chords[this._chords.length - 1].getDispatchChords()[0] === null;
+
 		if (hasIncompleteChord) {
 			this._chords[this._chords.length - 1] = keybinding;
 		} else {
@@ -167,6 +175,7 @@ export class DefineKeybindingWidget extends Widget {
 		this._domNode.setHeight(DefineKeybindingWidget.HEIGHT);
 
 		const message = nls.localize('defineKeybinding.initial', "Press desired key combination and then press ENTER.");
+
 		dom.append(this._domNode.domNode, dom.$('.message', undefined, message));
 
 		this._domNode.domNode.style.backgroundColor = asCssVariable(editorWidgetBackground);
@@ -194,6 +203,7 @@ export class DefineKeybindingWidget extends Widget {
 
 	define(): Promise<string | null> {
 		this._keybindingInputWidget.clear();
+
 		return Promises.withAsyncBody<string | null>(async (c) => {
 			if (!this._isVisible) {
 				this._isVisible = true;
@@ -201,7 +211,9 @@ export class DefineKeybindingWidget extends Widget {
 
 				this._chords = null;
 				this._keybindingInputWidget.setInputValue('');
+
 				dom.clearNode(this._outputNode);
+
 				dom.clearNode(this._showExistingKeybindingsNode);
 
 				// Input is not getting focus without timeout in safari
@@ -228,7 +240,9 @@ export class DefineKeybindingWidget extends Widget {
 	printExisting(numberOfExisting: number): void {
 		if (numberOfExisting > 0) {
 			const existingElement = dom.$('span.existingText');
+
 			const text = numberOfExisting === 1 ? nls.localize('defineKeybinding.oneExists', "1 existing command has this keybinding", numberOfExisting) : nls.localize('defineKeybinding.existing', "{0} existing commands have this keybinding", numberOfExisting);
+
 			dom.append(existingElement, document.createTextNode(text));
 			aria.alert(text);
 			this._showExistingKeybindingsNode.appendChild(existingElement);
@@ -241,7 +255,9 @@ export class DefineKeybindingWidget extends Widget {
 	private onKeybinding(keybinding: ResolvedKeybinding[] | null): void {
 		this._keybindingDisposables.clear();
 		this._chords = keybinding;
+
 		dom.clearNode(this._outputNode);
+
 		dom.clearNode(this._showExistingKeybindingsNode);
 
 		const firstLabel = this._keybindingDisposables.add(new KeybindingLabel(this._outputNode, OS, defaultKeybindingLabelStyles));
@@ -250,12 +266,14 @@ export class DefineKeybindingWidget extends Widget {
 		if (this._chords) {
 			for (let i = 1; i < this._chords.length; i++) {
 				this._outputNode.appendChild(document.createTextNode(nls.localize('defineKeybinding.chordsTo', "chord to")));
+
 				const chordLabel = this._keybindingDisposables.add(new KeybindingLabel(this._outputNode, OS, defaultKeybindingLabelStyles));
 				chordLabel.set(this._chords[i]);
 			}
 		}
 
 		const label = this.getUserSettingsLabel();
+
 		if (label) {
 			this._onDidChange.fire(label);
 		}
@@ -263,6 +281,7 @@ export class DefineKeybindingWidget extends Widget {
 
 	private getUserSettingsLabel(): string | null {
 		let label: string | null = null;
+
 		if (this._chords) {
 			label = this._chords.map(keybinding => keybinding.getUserSettingsLabel()).join(' ');
 		}
@@ -280,7 +299,9 @@ export class DefineKeybindingWidget extends Widget {
 		} else {
 			this._chords = null;
 			this._keybindingInputWidget.clear();
+
 			dom.clearNode(this._outputNode);
+
 			dom.clearNode(this._showExistingKeybindingsNode);
 		}
 	}
@@ -323,6 +344,7 @@ export class DefineKeybindingOverlayWidget extends Disposable implements IOverla
 
 	override dispose(): void {
 		this._editor.removeOverlayWidget(this);
+
 		super.dispose();
 	}
 
@@ -332,6 +354,7 @@ export class DefineKeybindingOverlayWidget extends Disposable implements IOverla
 		}
 		const layoutInfo = this._editor.getLayoutInfo();
 		this._widget.layout(new dom.Dimension(layoutInfo.width, layoutInfo.height));
+
 		return this._widget.define();
 	}
 }

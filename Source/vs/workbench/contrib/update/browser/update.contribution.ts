@@ -22,6 +22,7 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 import { URI } from '../../../../base/common/uri.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
+
 const workbench = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbench.registerWorkbenchContribution(ProductContribution, LifecyclePhase.Restored);
 workbench.registerWorkbenchContribution(UpdateContribution, LifecyclePhase.Restored);
@@ -48,8 +49,11 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const instantiationService = accessor.get(IInstantiationService);
+
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         try {
             await showReleaseNotesInEditor(instantiationService, productService.version, false);
         }
@@ -77,7 +81,9 @@ export class ShowCurrentReleaseNotesFromCurrentFileAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const instantiationService = accessor.get(IInstantiationService);
+
         const productService = accessor.get(IProductService);
+
         try {
             await showReleaseNotesInEditor(instantiationService, productService.version, true);
         }
@@ -101,6 +107,7 @@ export class CheckForUpdateAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const updateService = accessor.get(IUpdateService);
+
         return updateService.checkForUpdates(true);
     }
 }
@@ -148,6 +155,7 @@ class RestartToUpdateAction extends Action2 {
 }
 class DownloadAction extends Action2 {
     static readonly ID = 'workbench.action.download';
+
     constructor() {
         super({
             id: DownloadAction.ID,
@@ -162,7 +170,9 @@ class DownloadAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const productService = accessor.get(IProductService);
+
         const openerService = accessor.get(IOpenerService);
+
         if (productService.downloadUrl) {
             openerService.open(URI.parse(productService.downloadUrl));
         }
@@ -186,13 +196,16 @@ if (isWindows) {
         }
         async run(accessor: ServicesAccessor): Promise<void> {
             const updateService = accessor.get(IUpdateService);
+
             const fileDialogService = accessor.get(IFileDialogService);
+
             const updatePath = await fileDialogService.showOpenDialog({
                 title: localize('pickUpdate', "Apply Update"),
                 filters: [{ name: 'Setup', extensions: ['exe'] }],
                 canSelectFiles: true,
                 openLabel: mnemonicButtonLabel(localize({ key: 'updateButton', comment: ['&& denotes a mnemonic'] }, "&&Update"))
             });
+
             if (!updatePath || !updatePath[0]) {
                 return;
             }

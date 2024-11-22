@@ -30,6 +30,7 @@ export interface IExtensionHostManager {
     activate(extension: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<boolean>;
     activateByEvent(activationEvent: string, activationKind: ActivationKind): Promise<void>;
     activationEventIsDone(activationEvent: string): boolean;
+
     getInspectPort(tryEnableInspector: boolean): Promise<{
         port: number;
         host: string;
@@ -41,6 +42,7 @@ export interface IExtensionHostManager {
     getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null>;
     start(extensionRegistryVersionId: number, allExtensions: readonly IExtensionDescription[], myExtensions: ExtensionIdentifier[]): Promise<void>;
     extensionTestsExecute(): Promise<number>;
+
     setRemoteEnvironment(env: {
         [key: string]: string | null;
     }): Promise<void>;

@@ -9,6 +9,7 @@ import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } fr
 import { ViewsWelcomeContribution } from './viewsWelcomeContribution.js';
 import { ViewsWelcomeExtensionPoint, viewsWelcomeExtensionPointDescriptor } from './viewsWelcomeExtensionPoint.js';
 import { ExtensionsRegistry } from '../../../services/extensions/common/extensionsRegistry.js';
+
 const extensionPoint = ExtensionsRegistry.registerExtensionPoint<ViewsWelcomeExtensionPoint>(viewsWelcomeExtensionPointDescriptor);
 class WorkbenchConfigurationContribution {
     constructor(

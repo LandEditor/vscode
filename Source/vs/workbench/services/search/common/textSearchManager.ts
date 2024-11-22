@@ -33,22 +33,28 @@ export class TextSearchManager {
     private collector: TextSearchResultsCollector | null = null;
     private isLimitHit = false;
     private resultCount = 0;
+
     constructor(private queryProviderPair: IAITextQueryProviderPair | ITextQueryProviderPair, private fileUtils: IFileUtils, private processType: ITextSearchStats['type']) { }
     private get query() {
         return this.queryProviderPair.query;
     }
     search(onProgress: (matches: IFileMatch[]) => void, token: CancellationToken): Promise<ISearchCompleteStats> {
         const folderQueries = this.query.folderQueries || [];
+
         const tokenSource = new CancellationTokenSource(token);
+
         return new Promise<ISearchCompleteStats>((resolve, reject) => {
             this.collector = new TextSearchResultsCollector(onProgress);
+
             let isCanceled = false;
+
             const onResult = (result: TextSearchResult2, folderIdx: number) => {
                 if (isCanceled) {
                     return;
                 }
                 if (!this.isLimitHit) {
                     const resultSize = this.resultSize(result);
+
                     if (result instanceof TextSearchMatch2 && typeof this.query.maxResults === 'number' && this.resultCount + resultSize > this.query.maxResults) {
                         this.isLimitHit = true;
                         isCanceled = true;
@@ -57,7 +63,9 @@ export class TextSearchManager {
                     }
                     const newResultSize = this.resultSize(result);
                     this.resultCount += newResultSize;
+
                     const a = result instanceof TextSearchMatch2;
+
                     if (newResultSize > 0 || !a) {
                         this.collector!.add(result, folderIdx);
                     }
@@ -76,6 +84,7 @@ export class TextSearchManager {
                 });
             }, (err: Error) => {
                 tokenSource.dispose();
+
                 const errMsg = toErrorMessage(err);
                 reject(new Error(errMsg));
             });
@@ -107,24 +116,31 @@ export class TextSearchManager {
     private async doSearch(folderQueries: IFolderQuery<URI>[], onResult: (result: TextSearchResult2, folderIdx: number) => void, token: CancellationToken): Promise<TextSearchComplete2 | null | undefined> {
         const folderMappings: FolderQuerySearchTree<FolderQueryInfo> = new FolderQuerySearchTree<FolderQueryInfo>(folderQueries, (fq, i) => {
             const queryTester = new QueryGlobTester(this.query, fq);
+
             return { queryTester, folder: fq.folder, folderIdx: i };
         }, () => true);
+
         const testingPs: Promise<void>[] = [];
+
         const progress = {
             report: (result: TextSearchResult2) => {
                 if (result.uri === undefined) {
                     throw Error('Text search result URI is undefined. Please check provider implementation.');
                 }
                 const folderQuery = folderMappings.findQueryFragmentAwareSubstr(result.uri)!;
+
                 const hasSibling = folderQuery.folder.scheme === Schemas.file ?
                     hasSiblingPromiseFn(() => {
                         return this.fileUtils.readdir(resources.dirname(result.uri));
                     }) :
                     undefined;
+
                 const relativePath = resources.relativePath(folderQuery.folder, result.uri);
+
                 if (relativePath) {
                     // This method is only async when the exclude contains sibling clauses
                     const included = folderQuery.queryTester.includedInQuery(relativePath, path.basename(relativePath), hasSibling);
+
                     if (isThenable(included)) {
                         testingPs.push(included.then(isIncluded => {
                             if (isIncluded) {
@@ -138,7 +154,9 @@ export class TextSearchManager {
                 }
             }
         };
+
         const folderOptions = folderQueries.map(fq => this.getSearchOptionsForFolder(fq));
+
         const searchOptions: TextSearchProviderOptions = {
             folderOptions,
             maxFileSize: this.query.maxFileSize,
@@ -146,10 +164,12 @@ export class TextSearchManager {
             previewOptions: this.query.previewOptions ?? DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS,
             surroundingContext: this.query.surroundingContext ?? 0,
         };
+
         if ('usePCRE2' in this.query) {
             (<IExtendedExtensionSearchOptions>searchOptions).usePCRE2 = this.query.usePCRE2;
         }
         let result;
+
         if (this.queryProviderPair.query.type === QueryType.aiText) {
             result = await (this.queryProviderPair as IAITextQueryProviderPair).provider.provideAITextSearchResults(this.queryProviderPair.query.contentPattern, searchOptions, progress, token);
         }
@@ -163,10 +183,12 @@ export class TextSearchManager {
     }
     private getSearchOptionsForFolder(fq: IFolderQuery<URI>): TextSearchProviderFolderOptions {
         const includes = resolvePatternsForProvider(this.query.includePattern, fq.includePattern);
+
         let excludePattern = fq.excludePattern?.map(e => ({
             folder: e.folder,
             patterns: resolvePatternsForProvider(this.query.excludePattern, e.pattern)
         }));
+
         if (!excludePattern || excludePattern.length === 0) {
             excludePattern = [{
                     folder: undefined,
@@ -174,6 +196,7 @@ export class TextSearchManager {
                 }];
         }
         const excludes = excludeToGlobPattern(excludePattern);
+
         const options = {
             folder: URI.from(fq.folder),
             excludes,
@@ -186,6 +209,7 @@ export class TextSearchManager {
             followSymlinks: !fq.ignoreSymlinks,
             encoding: (fq.fileEncoding && this.fileUtils.toCanonicalName(fq.fileEncoding)) ?? '',
         };
+
         return options;
     }
 }
@@ -203,6 +227,7 @@ export class TextSearchResultsCollector {
     private _currentFolderIdx: number = -1;
     private _currentUri: URI | undefined;
     private _currentFileMatch: IFileMatch | null = null;
+
     constructor(private _onResult: (result: IFileMatch[]) => void) {
         this._batchedCollector = new BatchedCollector<IFileMatch>(512, items => this.sendItems(items));
     }
@@ -279,6 +304,7 @@ export class BatchedCollector<T> {
     private batch: T[] = [];
     private batchSize = 0;
     private timeoutHandle: any;
+
     constructor(private maxBatchSize: number, private cb: (items: T[]) => void) {
     }
     addItem(item: T, size: number): void {
@@ -325,6 +351,7 @@ export class BatchedCollector<T> {
             this.cb(this.batch);
             this.batch = [];
             this.batchSize = 0;
+
             if (this.timeoutHandle) {
                 clearTimeout(this.timeoutHandle);
                 this.timeoutHandle = 0;

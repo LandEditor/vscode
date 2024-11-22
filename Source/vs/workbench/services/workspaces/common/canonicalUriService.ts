@@ -12,12 +12,14 @@ export class CanonicalUriService implements ICanonicalUriService {
     private readonly _providers = new Map<string, ICanonicalUriProvider>();
     registerCanonicalUriProvider(provider: ICanonicalUriProvider): IDisposable {
         this._providers.set(provider.scheme, provider);
+
         return {
             dispose: () => this._providers.delete(provider.scheme)
         };
     }
     async provideCanonicalUri(uri: URI, targetScheme: string, token: CancellationToken): Promise<URI | undefined> {
         const provider = this._providers.get(uri.scheme);
+
         if (provider) {
             return provider.provideCanonicalUri(uri, targetScheme, token);
         }

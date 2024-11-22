@@ -9,6 +9,7 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
     private readonly _autoReplies: Map<string, string> = new Map();
     private readonly _terminalProcesses: Map<number, ITerminalChildProcess> = new Map();
     private readonly _autoResponders: Map<number, Map<string, TerminalAutoResponder>> = new Map();
+
     constructor(
     @ILogService
     private readonly _logService: ILogService) {
@@ -18,8 +19,10 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
         // If the auto reply exists on any existing terminals it will be overridden
         for (const persistentProcessId of this._autoResponders.keys()) {
             const process = this._terminalProcesses.get(persistentProcessId);
+
             if (!process) {
                 this._logService.error('Could not find terminal process to install auto reply');
+
                 continue;
             }
             this._processInstallAutoReply(persistentProcessId, process, match, reply);
@@ -36,12 +39,14 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
     handleProcessReady(persistentProcessId: number, process: ITerminalChildProcess): void {
         this._terminalProcesses.set(persistentProcessId, process);
         this._autoResponders.set(persistentProcessId, new Map());
+
         for (const [match, reply] of this._autoReplies.entries()) {
             this._processInstallAutoReply(persistentProcessId, process, match, reply);
         }
     }
     handleProcessDispose(persistentProcessId: number): void {
         const processAutoResponders = this._autoResponders.get(persistentProcessId);
+
         if (processAutoResponders) {
             for (const e of processAutoResponders.values()) {
                 e.dispose();
@@ -51,6 +56,7 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
     }
     handleProcessInput(persistentProcessId: number, data: string) {
         const processAutoResponders = this._autoResponders.get(persistentProcessId);
+
         if (processAutoResponders) {
             for (const listener of processAutoResponders.values()) {
                 listener.handleInput();
@@ -59,6 +65,7 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
     }
     handleProcessResize(persistentProcessId: number, cols: number, rows: number) {
         const processAutoResponders = this._autoResponders.get(persistentProcessId);
+
         if (processAutoResponders) {
             for (const listener of processAutoResponders.values()) {
                 listener.handleResize();
@@ -67,6 +74,7 @@ export class AutoRepliesPtyServiceContribution implements IPtyServiceContributio
     }
     private _processInstallAutoReply(persistentProcessId: number, terminalProcess: ITerminalChildProcess, match: string, reply: string) {
         const processAutoResponders = this._autoResponders.get(persistentProcessId);
+
         if (processAutoResponders) {
             processAutoResponders.get(match)?.dispose();
             processAutoResponders.set(match, new TerminalAutoResponder(terminalProcess, match, reply, this._logService));

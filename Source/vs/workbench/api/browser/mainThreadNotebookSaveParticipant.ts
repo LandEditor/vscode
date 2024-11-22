@@ -15,6 +15,7 @@ import { IStoredFileWorkingCopy, IStoredFileWorkingCopyModel } from '../../servi
 import { NotebookFileWorkingCopyModel } from '../../contrib/notebook/common/notebookEditorModel.js';
 class ExtHostNotebookDocumentSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
     private readonly _proxy: ExtHostNotebookDocumentSaveParticipantShape;
+
     constructor(extHostContext: IExtHostContext) {
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookDocumentSaveParticipant);
     }
@@ -23,19 +24,23 @@ class ExtHostNotebookDocumentSaveParticipant implements IStoredFileWorkingCopySa
             return undefined;
         }
         let _warningTimeout: any;
+
         const p = new Promise<any>((resolve, reject) => {
             _warningTimeout = setTimeout(() => reject(new Error(localize('timeout.onWillSave', "Aborted onWillSaveNotebookDocument-event after 1750ms"))), 1750);
             this._proxy.$participateInSave(workingCopy.resource, context.reason, token).then(_ => {
                 clearTimeout(_warningTimeout);
+
                 return undefined;
             }).then(resolve, reject);
         });
+
         return raceCancellationError(p, token);
     }
 }
 @extHostCustomer
 export class SaveParticipant {
     private _saveParticipantDisposable: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @IInstantiationService
     instantiationService: IInstantiationService, 

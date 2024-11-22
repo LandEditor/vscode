@@ -29,12 +29,14 @@ export function getSockets(stdout: string): Record<string, {
     socket: number;
 }> {
     const lines = stdout.trim().split('\n');
+
     const mapped: {
         pid: number;
         socket: number;
     }[] = [];
     lines.forEach(line => {
         const match = /\/proc\/(\d+)\/fd\/\d+ -> socket:\[(\d+)\]/.exec(line)!;
+
         if (match && match.length >= 3) {
             mapped.push({
                 pid: parseInt(match[1], 10),
@@ -42,10 +44,13 @@ export function getSockets(stdout: string): Record<string, {
             });
         }
     });
+
     const socketMap = mapped.reduce((m: Record<string, typeof mapped[0]>, socket) => {
         m[socket.socket] = socket;
+
         return m;
     }, {});
+
     return socketMap;
 }
 export function loadListeningPorts(...stdouts: string[]): {
@@ -54,10 +59,12 @@ export function loadListeningPorts(...stdouts: string[]): {
     port: number;
 }[] {
     const table = ([] as Record<string, string>[]).concat(...stdouts.map(loadConnectionTable));
+
     return [
         ...new Map(table.filter(row => row.st === '0A')
             .map(row => {
             const address = row.local_address.split(':');
+
             return {
                 socket: parseInt(row.inode, 10),
                 ip: parseIpAddress(address[0]),
@@ -68,9 +75,11 @@ export function loadListeningPorts(...stdouts: string[]): {
 }
 export function parseIpAddress(hex: string): string {
     let result = '';
+
     if (hex.length === 8) {
         for (let i = hex.length - 2; i >= 0; i -= 2) {
             result += parseInt(hex.substr(i, 2), 16);
+
             if (i !== 0) {
                 result += '.';
             }
@@ -80,14 +89,18 @@ export function parseIpAddress(hex: string): string {
         // Nice explanation of host format in tcp6 file: https://serverfault.com/questions/592574/why-does-proc-net-tcp6-represents-1-as-1000
         for (let i = 0; i < hex.length; i += 8) {
             const word = hex.substring(i, i + 8);
+
             let subWord = '';
+
             for (let j = 8; j >= 2; j -= 2) {
                 subWord += word.substring(j - 2, j);
+
                 if ((j === 6) || (j === 2)) {
                     // Trim leading zeros
                     subWord = parseInt(subWord, 16).toString(16);
                     result += `${subWord}`;
                     subWord = '';
+
                     if (i + j !== hex.length - 6) {
                         result += ':';
                     }
@@ -99,12 +112,16 @@ export function parseIpAddress(hex: string): string {
 }
 export function loadConnectionTable(stdout: string): Record<string, string>[] {
     const lines = stdout.trim().split('\n');
+
     const names = lines.shift()!.trim().split(/\s+/)
         .filter(name => name !== 'rx_queue' && name !== 'tm->when');
+
     const table = lines.map(line => line.trim().split(/\s+/).reduce((obj: Record<string, string>, value, i) => {
         obj[names[i] || i] = value;
+
         return obj;
     }, {}));
+
     return table;
 }
 function knownExcludeCmdline(command: string): boolean {
@@ -117,6 +134,7 @@ function knownExcludeCmdline(command: string): boolean {
 }
 export function getRootProcesses(stdout: string) {
     const lines = stdout.trim().split('\n');
+
     const mapped: {
         pid: number;
         cmd: string;
@@ -124,6 +142,7 @@ export function getRootProcesses(stdout: string) {
     }[] = [];
     lines.forEach(line => {
         const match = /^\d+\s+\D+\s+root\s+(\d+)\s+(\d+).+\d+\:\d+\:\d+\s+(.+)$/.exec(line)!;
+
         if (match && match.length >= 4) {
             mapped.push({
                 pid: parseInt(match[1], 10),
@@ -132,6 +151,7 @@ export function getRootProcesses(stdout: string) {
             });
         }
     });
+
     return mapped;
 }
 export async function findPorts(connections: {
@@ -148,16 +168,21 @@ export async function findPorts(connections: {
 }[]): Promise<CandidatePort[]> {
     const processMap = processes.reduce((m: Record<string, typeof processes[0]>, process) => {
         m[process.pid] = process;
+
         return m;
     }, {});
+
     const ports: CandidatePort[] = [];
     connections.forEach(({ socket, ip, port }) => {
         const pid = socketMap[socket] ? socketMap[socket].pid : undefined;
+
         const command: string | undefined = pid ? processMap[pid]?.cmd : undefined;
+
         if (pid && command && !knownExcludeCmdline(command)) {
             ports.push({ host: ip, port, detail: command, pid });
         }
     });
+
     return ports;
 }
 export function tryFindRootPorts(connections: {
@@ -172,14 +197,19 @@ export function tryFindRootPorts(connections: {
     const ports: Map<number, CandidatePort & {
         ppid: number;
     }> = new Map();
+
     const rootProcesses = getRootProcesses(rootProcessesStdout);
+
     for (const connection of connections) {
         const previousPort = previousPorts.get(connection.port);
+
         if (previousPort) {
             ports.set(connection.port, previousPort);
+
             continue;
         }
         const rootProcessMatch = rootProcesses.find((value) => value.cmd.includes(`${connection.port}`));
+
         if (rootProcessMatch) {
             let bestMatch = rootProcessMatch;
             // There are often several processes that "look" like they could match the port.
@@ -189,8 +219,10 @@ export function tryFindRootPorts(connections: {
                 cmd: string;
                 ppid: number;
             } | undefined;
+
             do {
                 mostChild = rootProcesses.find(value => value.ppid === bestMatch.pid);
+
                 if (mostChild) {
                     bestMatch = mostChild;
                 }
@@ -209,6 +241,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
         ppid: number;
     }> = new Map();
     private _candidateFindingEnabled: boolean = false;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -219,6 +252,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
     @ISignService
     private readonly signService: ISignService) {
         super(extHostRpc, initData, logService);
+
         if (isLinux && initData.remote.isRemote && initData.remote.authority) {
             this._proxy.$setRemoteTunnelService(process.pid);
             this.setInitialCandidates();
@@ -230,6 +264,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
             return;
         }
         this._candidateFindingEnabled = enable;
+
         let oldPorts: {
             host: string;
             port: number;
@@ -242,11 +277,15 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
         }
         // Regularly scan to see if the candidate ports have changed.
         const movingAverage = new MovingAverage();
+
         let scanCount = 0;
+
         while (this._candidateFindingEnabled) {
             const startTime = new Date().getTime();
+
             const newPorts = (await this.findCandidatePorts()).filter(candidate => (isLocalhost(candidate.host) || isAllInterfaces(candidate.host)));
             this.logService.trace(`ForwardedPorts: (ExtHostTunnelService) found candidate ports ${newPorts.map(port => port.port).join(', ')}`);
+
             const timeTaken = new Date().getTime() - startTime;
             this.logService.trace(`ForwardedPorts: (ExtHostTunnelService) candidate port scan took ${timeTaken} ms.`);
             // Do not count the first few scans towards the moving average as they are likely to be slower.
@@ -272,7 +311,9 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
     }
     private async findCandidatePorts(): Promise<CandidatePort[]> {
         let tcp: string = '';
+
         let tcp6: string = '';
+
         try {
             tcp = await fs.promises.readFile('/proc/net/tcp', 'utf8');
             tcp6 = await fs.promises.readFile('/proc/net/tcp6', 'utf8');
@@ -285,25 +326,34 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
             ip: string;
             port: number;
         }[] = loadListeningPorts(tcp, tcp6);
+
         const procSockets: string = await (new Promise(resolve => {
             exec('ls -l /proc/[0-9]*/fd/[0-9]* | grep socket:', (error, stdout, stderr) => {
                 resolve(stdout);
             });
         }));
+
         const socketMap = getSockets(procSockets);
+
         const procChildren = await pfs.Promises.readdir('/proc');
+
         const processes: {
             pid: number;
             cwd: string;
             cmd: string;
         }[] = [];
+
         for (const childName of procChildren) {
             try {
                 const pid: number = Number(childName);
+
                 const childUri = resources.joinPath(URI.file('/proc'), childName);
+
                 const childStat = await fs.promises.stat(childUri.fsPath);
+
                 if (childStat.isDirectory() && !isNaN(pid)) {
                     const cwd = await fs.promises.readlink(resources.joinPath(childUri, 'cwd').fsPath);
+
                     const cmd = await fs.promises.readFile(resources.joinPath(childUri, 'cmdline').fsPath, 'utf8');
                     processes.push({ pid, cwd, cmd });
                 }
@@ -317,16 +367,21 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
             ip: string;
             port: number;
         }[] = [];
+
         const filteredConnections = connections.filter((connection => {
             const foundConnection = socketMap[connection.socket];
+
             if (!foundConnection) {
                 unFoundConnections.push(connection);
             }
             return foundConnection;
         }));
+
         const foundPorts = findPorts(filteredConnections, socketMap, processes);
+
         let heuristicPorts: CandidatePort[] | undefined;
         this.logService.trace(`ForwardedPorts: (ExtHostTunnelService) number of possible root ports ${unFoundConnections.length}`);
+
         if (unFoundConnections.length > 0) {
             const rootProcesses: string = await (new Promise(resolve => {
                 exec('ps -F -A -l | grep root', (error, stdout, stderr) => {
@@ -359,6 +414,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
                     _serviceBrand: undefined,
                     async connect(_connectTo: ManagedRemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
                         const result = await authority.makeConnection();
+
                         return ExtHostManagedSocket.connect(result, path, query, debugLabel);
                     },
                     register() {
@@ -376,7 +432,9 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
                 signService: this.signService,
             }, 'localhost', tunnelOptions.remoteAddress.host || 'localhost', tunnelOptions.remoteAddress.port, tunnelOptions.localAddressPort);
             await t.waitForReady();
+
             const disposeEmitter = new Emitter<void>();
+
             return {
                 localAddress: parseAddress(t.localAddress) ?? t.localAddress,
                 remoteAddress: { port: t.tunnelRemotePort, host: t.tunnelRemoteHost },
@@ -393,6 +451,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
 class ExtHostManagedSocket extends ManagedSocket {
     public static connect(passing: vscode.ManagedMessagePassing, path: string, query: string, debugLabel: string): Promise<ExtHostManagedSocket> {
         const d = new DisposableStore();
+
         const half: RemoteSocketHalf = {
             onClose: d.add(new Emitter()),
             onData: d.add(new Emitter()),
@@ -405,8 +464,10 @@ class ExtHostManagedSocket extends ManagedSocket {
             error,
             hadError: !!error
         })));
+
         const socket = new ExtHostManagedSocket(passing, debugLabel, half);
         socket._register(d);
+
         return connectManagedSocket(socket, path, query, debugLabel, half);
     }
     constructor(private readonly passing: vscode.ManagedMessagePassing, debugLabel: string, half: RemoteSocketHalf) {

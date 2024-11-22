@@ -68,6 +68,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
     private _ctxFilterOnType!: IContextKey<boolean>;
     private _ctxSortMode!: IContextKey<OutlineSortOrder>;
     private _ctxAllCollapsed!: IContextKey<boolean>;
+
     constructor(options: IViewletViewOptions, 
     @IOutlineService
     private readonly _outlineService: IOutlineService, 
@@ -104,6 +105,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
             this._ctxSortMode = ctxSortMode.bindTo(contextKeyService);
             this._ctxAllCollapsed = ctxAllCollapsed.bindTo(contextKeyService);
         });
+
         const updateContext = () => {
             this._ctxFollowsCursor.set(this._outlineViewState.followCursor);
             this._ctxFilterOnType.set(this._outlineViewState.filterOnType);
@@ -117,6 +119,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
         this._editorPaneDisposables.dispose();
         this._editorControlDisposables.dispose();
         this._editorListener.dispose();
+
         super.dispose();
     }
     override focus(): void {
@@ -127,10 +130,12 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
         super.renderBody(container);
         this._domNode = container;
         container.classList.add('outline-pane');
+
         const progressContainer = dom.$('.outline-progress');
         this._message = dom.$('.outline-message');
         this._progressBar = new ProgressBar(progressContainer, defaultProgressBarStyles);
         this._treeContainer = dom.$('.outline-tree');
+
         dom.append(container, progressContainer, this._message, this._treeContainer);
         this._disposables.add(this.onDidChangeBodyVisibility(visible => {
             if (!visible) {
@@ -168,11 +173,13 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
     private _captureViewState(uri?: URI): boolean {
         if (this._tree) {
             const oldOutline = this._tree.getInput();
+
             if (!uri) {
                 uri = oldOutline?.uri;
             }
             if (oldOutline && uri) {
                 this._treeStates.set(`${oldOutline.outlineKind}/${uri}`, this._tree.getViewState());
+
                 return true;
             }
         }
@@ -180,6 +187,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
     }
     private _handleEditorChanged(pane: IEditorPane | undefined): void {
         this._editorPaneDisposables.clear();
+
         if (pane) {
             // react to control changes from within pane (https://github.com/microsoft/vscode/issues/134008)
             this._editorPaneDisposables.add(pane.onDidChangeControl(() => {
@@ -191,32 +199,41 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
     private async _handleEditorControlChanged(pane: IEditorPane | undefined): Promise<void> {
         // persist state
         const resource = EditorResourceAccessor.getOriginalUri(pane?.input);
+
         const didCapture = this._captureViewState();
         this._editorControlDisposables.clear();
+
         if (!pane || !this._outlineService.canCreateOutline(pane) || !resource) {
             return this._showMessage(localize('no-editor', "The active editor cannot provide outline information."));
         }
         let loadingMessage: IDisposable | undefined;
+
         if (!didCapture) {
             loadingMessage = new TimeoutTimer(() => {
                 this._showMessage(localize('loading', "Loading document symbols for '{0}'...", basename(resource)));
             }, 100);
         }
         this._progressBar.infinite().show(500);
+
         const cts = new CancellationTokenSource();
         this._editorControlDisposables.add(toDisposable(() => cts.dispose(true)));
+
         const newOutline = await this._outlineService.createOutline(pane, OutlineTarget.OutlinePane, cts.token);
         loadingMessage?.dispose();
+
         if (!newOutline) {
             return;
         }
         if (cts.token.isCancellationRequested) {
             newOutline?.dispose();
+
             return;
         }
         this._editorControlDisposables.add(newOutline);
         this._progressBar.stop().hide();
+
         const sorter = new OutlineTreeSorter(newOutline.config.comparator, this._outlineViewState.sortBy);
+
         const tree = <WorkbenchDataTree<IOutline<any> | undefined, any, FuzzyScore>>this._instantiationService.createInstance(WorkbenchDataTree, 'OutlinePane', this._treeContainer, newOutline.config.delegate, newOutline.config.renderers, newOutline.config.treeDataSource, {
             ...newOutline.config.options,
             sorter,
@@ -238,6 +255,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
             else if (!tree.getInput()) {
                 // first: init tree
                 this._domNode.classList.remove('message');
+
                 const state = this._treeStates.get(`${newOutline.outlineKind}/${newOutline.uri}`);
                 tree.setInput(newOutline, state && AbstractTreeViewState.lift(state));
             }
@@ -263,10 +281,13 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
         let idPool = 0;
         this._editorControlDisposables.add(tree.onDidOpen(async (e) => {
             const myId = ++idPool;
+
             const isDoubleClick = e.browserEvent?.type === 'dblclick';
+
             if (!isDoubleClick) {
                 // workaround for https://github.com/microsoft/vscode/issues/206424
                 await timeout(150);
+
                 if (myId !== idPool) {
                     return;
                 }
@@ -279,8 +300,10 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
                 return;
             }
             let item = newOutline.activeElement;
+
             while (item) {
                 const top = tree.getRelativeTop(item);
+
                 if (top === null) {
                     // not visible -> reveal
                     tree.reveal(item, 0.5);
@@ -288,6 +311,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
                 if (tree.getRelativeTop(item) !== null) {
                     tree.setFocus([item]);
                     tree.setSelection([item]);
+
                     break;
                 }
                 // STILL not visible -> try parent
@@ -303,6 +327,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
             filterOnType?: boolean;
         }) => {
             this._outlineViewState.persist(this._storageService);
+
             if (e.filterOnType) {
                 tree.findMode = this._outlineViewState.filterOnType ? TreeFindMode.Filter : TreeFindMode.Highlight;
             }

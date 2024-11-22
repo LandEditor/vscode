@@ -14,6 +14,7 @@ import { NotificationPriority } from '../../../../platform/notification/common/n
 import { CancellationError, isCancellationError } from '../../../../base/common/errors.js';
 export class TextFileSaveParticipant extends Disposable {
     private readonly saveParticipants = new LinkedList<ITextFileSaveParticipant>();
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -23,6 +24,7 @@ export class TextFileSaveParticipant extends Disposable {
     }
     addSaveParticipant(participant: ITextFileSaveParticipant): IDisposable {
         const remove = this.saveParticipants.push(participant);
+
         return toDisposable(() => remove());
     }
     async participate(model: ITextFileEditorModel, context: ITextFileSaveParticipantContext, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
@@ -33,6 +35,7 @@ export class TextFileSaveParticipant extends Disposable {
         progress.report({
             message: localize('saveParticipants1', "Running Code Actions and Formatters...")
         });
+
         let bubbleCancel = false;
         // create an "inner" progress to allow to skip over long running save participants
         await this.progressService.withProgress({
@@ -67,12 +70,14 @@ export class TextFileSaveParticipant extends Disposable {
         // undoStop after participation
         model.textEditorModel?.pushStackElement();
         cts.dispose();
+
         if (bubbleCancel) {
             throw new CancellationError();
         }
     }
     override dispose(): void {
         this.saveParticipants.clear();
+
         super.dispose();
     }
 }

@@ -15,6 +15,7 @@ export class ReplaceAllCommand implements ICommand {
     private _trackedEditorSelectionId: string | null;
     private readonly _ranges: Range[];
     private readonly _replaceStrings: string[];
+
     constructor(editorSelection: Selection, ranges: Range[], replaceStrings: string[]) {
         this._editorSelection = editorSelection;
         this._ranges = ranges;
@@ -25,6 +26,7 @@ export class ReplaceAllCommand implements ICommand {
         if (this._ranges.length > 0) {
             // Collect all edit operations
             const ops: IEditOperation[] = [];
+
             for (let i = 0; i < this._ranges.length; i++) {
                 ops.push({
                     range: this._ranges[i],
@@ -37,7 +39,9 @@ export class ReplaceAllCommand implements ICommand {
             });
             // Merge operations that touch each other
             const resultOps: IEditOperation[] = [];
+
             let previousOp = ops[0];
+
             for (let i = 1; i < ops.length; i++) {
                 if (previousOp.range.endLineNumber === ops[i].range.startLineNumber && previousOp.range.endColumn === ops[i].range.startColumn) {
                     // These operations are one after another and can be merged
@@ -50,6 +54,7 @@ export class ReplaceAllCommand implements ICommand {
                 }
             }
             resultOps.push(previousOp);
+
             for (const op of resultOps) {
                 builder.addEditOperation(op.range, op.text);
             }

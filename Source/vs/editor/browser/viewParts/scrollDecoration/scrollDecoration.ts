@@ -15,13 +15,16 @@ export class ScrollDecorationViewPart extends ViewPart {
     private _width: number;
     private _shouldShow: boolean;
     private _useShadows: boolean;
+
     constructor(context: ViewContext) {
         super(context);
         this._scrollTop = 0;
         this._width = 0;
         this._updateWidth();
         this._shouldShow = false;
+
         const options = this._context.configuration.options;
+
         const scrollbar = options.get(EditorOption.scrollbar);
         this._useShadows = scrollbar.useShadows;
         this._domNode = createFastDomNode(document.createElement('div'));
@@ -33,8 +36,10 @@ export class ScrollDecorationViewPart extends ViewPart {
     }
     private _updateShouldShow(): boolean {
         const newShouldShow = (this._useShadows && this._scrollTop > 0);
+
         if (this._shouldShow !== newShouldShow) {
             this._shouldShow = newShouldShow;
+
             return true;
         }
         return false;
@@ -44,7 +49,9 @@ export class ScrollDecorationViewPart extends ViewPart {
     }
     private _updateWidth(): void {
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
+
         if (layoutInfo.minimap.renderMinimap === 0 || (layoutInfo.minimap.minimapWidth > 0 && layoutInfo.minimap.minimapLeft === 0)) {
             this._width = layoutInfo.width;
         }
@@ -55,14 +62,17 @@ export class ScrollDecorationViewPart extends ViewPart {
     // --- begin event handlers
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         const options = this._context.configuration.options;
+
         const scrollbar = options.get(EditorOption.scrollbar);
         this._useShadows = scrollbar.useShadows;
         this._updateWidth();
         this._updateShouldShow();
+
         return true;
     }
     public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
         this._scrollTop = e.scrollTop;
+
         return this._updateShouldShow();
     }
     // --- end event handlers

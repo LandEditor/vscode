@@ -22,18 +22,25 @@ interface IMimeTypeRenderer extends IQuickPickItem {
 }
 export class OutputElement extends Disposable {
     readonly resizeListener = this._register(new DisposableStore());
+
     domNode!: HTMLElement;
     renderResult?: IInsetRenderOutput;
+
     constructor(private _notebookEditor: INotebookTextDiffEditor, private _notebookTextModel: NotebookTextModel, private _notebookService: INotebookService, private _quickInputService: IQuickInputService, private _diffElementViewModel: DiffElementCellViewModelBase, private _diffSide: DiffSide, private _nestedCell: DiffNestedCellViewModel, private _outputContainer: HTMLElement, readonly output: ICellOutputViewModel) {
         super();
     }
     render(index: number, beforeElement?: HTMLElement) {
         const outputItemDiv = document.createElement('div');
+
         let result: IInsetRenderOutput | undefined = undefined;
+
         const [mimeTypes, pick] = this.output.resolveMimeTypes(this._notebookTextModel, undefined);
+
         const pickedMimeTypeRenderer = this.output.pickedMimeType || mimeTypes[pick];
+
         if (mimeTypes.length > 1) {
             outputItemDiv.style.position = 'relative';
+
             const mimeTypePicker = DOM.$('.multi-mimetype-output');
             mimeTypePicker.classList.add(...ThemeIcon.asClassNameArray(mimetypeIcon));
             mimeTypePicker.tabIndex = 0;
@@ -48,6 +55,7 @@ export class OutputElement extends Disposable {
             }));
             this.resizeListener.add((DOM.addDisposableListener(mimeTypePicker, DOM.EventType.KEY_DOWN, async (e) => {
                 const event = new StandardKeyboardEvent(e);
+
                 if ((event.equals(KeyCode.Enter) || event.equals(KeyCode.Space))) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -57,6 +65,7 @@ export class OutputElement extends Disposable {
         }
         const innerContainer = DOM.$('.output-inner-container');
         DOM.append(outputItemDiv, innerContainer);
+
         if (mimeTypes.length !== 0) {
             const renderer = this._notebookService.getRendererInfo(pickedMimeTypeRenderer.rendererId);
             result = renderer
@@ -66,8 +75,10 @@ export class OutputElement extends Disposable {
         }
         this.domNode = outputItemDiv;
         this.renderResult = result;
+
         if (!result) {
             // this.viewCell.updateOutputHeight(index, 0);
+
             return;
         }
         if (beforeElement) {
@@ -86,15 +97,20 @@ export class OutputElement extends Disposable {
         }
         if (!preferredMimeType) {
             const mimeTypes = viewModel.model.outputs.map(op => op.mime);
+
             const mimeTypesMessage = mimeTypes.join(', ');
+
             return this._renderMessage(viewModel, nls.localize('noRenderer.2', "No renderer could be found for output. It has the following mimetypes: {0}", mimeTypesMessage));
         }
         return this._renderSearchForMimetype(viewModel, preferredMimeType);
     }
     private _renderSearchForMimetype(viewModel: ICellOutputViewModel, mimeType: string): IInsetRenderOutput {
         const query = `@tag:notebookRenderer ${mimeType}`;
+
         const p = DOM.$('p', undefined, `No renderer could be found for mimetype "${mimeType}", but one might be available on the Marketplace.`);
+
         const a = DOM.$('a', { href: `command:workbench.extensions.search?%22${query}%22`, class: 'monaco-button monaco-text-button', tabindex: 0, role: 'button', style: 'padding: 8px; text-decoration: none; color: rgb(255, 255, 255); background-color: rgb(14, 99, 156); max-width: 200px;' }, `Search Marketplace`);
+
         return {
             type: RenderOutputType.Html,
             source: viewModel,
@@ -103,10 +119,12 @@ export class OutputElement extends Disposable {
     }
     private _renderMessage(viewModel: ICellOutputViewModel, message: string): IInsetRenderOutput {
         const el = DOM.$('p', undefined, message);
+
         return { type: RenderOutputType.Html, source: viewModel, htmlContent: el.outerHTML };
     }
     private async pickActiveMimeTypeRenderer(notebookTextModel: NotebookTextModel, viewModel: ICellOutputViewModel) {
         const [mimeTypes, currIndex] = viewModel.resolveMimeTypes(notebookTextModel, undefined);
+
         const items = mimeTypes.filter(mimeType => mimeType.isTrusted).map((mimeType, index): IMimeTypeRenderer => ({
             label: mimeType.mimeType,
             id: mimeType.mimeType,
@@ -115,13 +133,16 @@ export class OutputElement extends Disposable {
             detail: this.generateRendererInfo(mimeType.rendererId),
             description: index === currIndex ? nls.localize('curruentActiveMimeType', "Currently Active") : undefined
         }));
+
         const disposables = new DisposableStore();
+
         const picker = disposables.add(this._quickInputService.createQuickPick());
         picker.items = items;
         picker.activeItems = items.filter(item => !!item.picked);
         picker.placeholder = items.length !== mimeTypes.length
             ? nls.localize('promptChooseMimeTypeInSecure.placeHolder', "Select mimetype to render for current output. Rich mimetypes are available only when the notebook is trusted")
             : nls.localize('promptChooseMimeType.placeHolder', "Select mimetype to render for current output");
+
         const pick = await new Promise<number | undefined>(resolve => {
             disposables.add(picker.onDidAccept(() => {
                 resolve(picker.selectedItems.length === 1 ? (picker.selectedItems[0] as IMimeTypeRenderer).index : undefined);
@@ -129,15 +150,19 @@ export class OutputElement extends Disposable {
             }));
             picker.show();
         });
+
         if (pick === undefined) {
             return;
         }
         if (pick !== currIndex) {
             // user chooses another mimetype
             const index = this._nestedCell.outputsViewModels.indexOf(viewModel);
+
             const nextElement = this.domNode.nextElementSibling;
             this.resizeListener.clear();
+
             const element = this.domNode;
+
             if (element) {
                 element.remove();
                 this._notebookEditor.removeInset(this._diffElementViewModel, this._nestedCell, viewModel, this._diffSide);
@@ -148,8 +173,10 @@ export class OutputElement extends Disposable {
     }
     private generateRendererInfo(renderId: string): string {
         const renderInfo = this._notebookService.getRendererInfo(renderId);
+
         if (renderInfo) {
             const displayName = renderInfo.displayName !== '' ? renderInfo.displayName : renderInfo.id;
+
             return `${displayName} (${renderInfo.extensionId.value})`;
         }
         return nls.localize('builtinRenderInfo', "built-in");
@@ -169,6 +196,7 @@ export class OutputElement extends Disposable {
 }
 export class OutputContainer extends Disposable {
     private _outputEntries = new Map<ICellOutputViewModel, OutputElement>();
+
     constructor(private _editor: INotebookTextDiffEditor, private _notebookTextModel: NotebookTextModel, private _diffElementViewModel: DiffElementCellViewModelBase, private _nestedCellViewModel: DiffNestedCellViewModel, private _diffSide: DiffSide, private _outputContainer: HTMLElement, 
     @INotebookService
     private _notebookService: INotebookService, 
@@ -178,6 +206,7 @@ export class OutputContainer extends Disposable {
         this._register(this._diffElementViewModel.onDidLayoutChange(() => {
             this._outputEntries.forEach((value, key) => {
                 const index = _nestedCellViewModel.outputs.indexOf(key.model);
+
                 if (index >= 0) {
                     const top = this._diffElementViewModel.getOutputOffsetInContainer(this._diffSide, index);
                     value.domNode.style.top = `${top}px`;
@@ -203,12 +232,15 @@ export class OutputContainer extends Disposable {
             this._outputEntries.get(key)?.dispose();
             this._outputEntries.delete(key);
         });
+
         let prevElement: HTMLElement | undefined = undefined;
+
         const outputsToRender = this._nestedCellViewModel.outputsViewModels;
         outputsToRender.reverse().forEach(output => {
             if (this._outputEntries.has(output)) {
                 // already exist
                 prevElement = this._outputEntries.get(output)!.domNode;
+
                 return;
             }
             // newly added element

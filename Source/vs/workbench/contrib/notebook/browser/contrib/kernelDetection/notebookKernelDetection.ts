@@ -12,6 +12,7 @@ import { LifecyclePhase } from '../../../../../services/lifecycle/common/lifecyc
 class NotebookKernelDetection extends Disposable implements IWorkbenchContribution {
     private _detectionMap = new Map<string, IDisposable>();
     private readonly _localDisposableStore = this._register(new DisposableStore());
+
     constructor(
     @INotebookKernelService
     private readonly _notebookKernelService: INotebookKernelService, 
@@ -31,11 +32,13 @@ class NotebookKernelDetection extends Disposable implements IWorkbenchContributi
                 }
                 // parse the event to get the notebook type
                 const notebookType = e.event.substring('onNotebook:'.length);
+
                 if (notebookType === '*') {
                     // ignore
                     return;
                 }
                 let shouldStartDetection = false;
+
                 const extensionStatus = this._extensionService.getExtensionsStatus();
                 this._extensionService.extensions.forEach(extension => {
                     if (extensionStatus[extension.identifier.value].activationTimes) {
@@ -46,8 +49,10 @@ class NotebookKernelDetection extends Disposable implements IWorkbenchContributi
                         shouldStartDetection = true;
                     }
                 });
+
                 if (shouldStartDetection && !this._detectionMap.has(notebookType)) {
                     this._notebookLoggingService.debug('KernelDetection', `start extension activation for ${notebookType}`);
+
                     const task = this._notebookKernelService.registerNotebookKernelDetectionTask({
                         notebookType: notebookType
                     });
@@ -55,6 +60,7 @@ class NotebookKernelDetection extends Disposable implements IWorkbenchContributi
                 }
             }
         }));
+
         let timer: any = null;
         this._localDisposableStore.add(this._extensionService.onDidChangeExtensionsStatus(() => {
             if (timer) {
@@ -63,6 +69,7 @@ class NotebookKernelDetection extends Disposable implements IWorkbenchContributi
             // activation state might not be updated yet, postpone to next frame
             timer = setTimeout(() => {
                 const taskToDelete: string[] = [];
+
                 for (const [notebookType, task] of this._detectionMap) {
                     if (this._extensionService.activationEventIsDone(`onNotebook:${notebookType}`)) {
                         this._notebookLoggingService.debug('KernelDetection', `finish extension activation for ${notebookType}`);

@@ -77,17 +77,20 @@ export class FormatOnType implements IEditorContribution {
 
 		// no support
 		const [support] = this._languageFeaturesService.onTypeFormattingEditProvider.ordered(model);
+
 		if (!support || !support.autoFormatTriggerCharacters) {
 			return;
 		}
 
 		// register typing listeners that will trigger the format
 		const triggerChars = new CharacterSet();
+
 		for (const ch of support.autoFormatTriggerCharacters) {
 			triggerChars.add(ch.charCodeAt(0));
 		}
 		this._sessionDisposables.add(this._editor.onDidType((text: string) => {
 			const lastCharCode = text.charCodeAt(text.length - 1);
+
 			if (triggerChars.has(lastCharCode)) {
 				this._trigger(String.fromCharCode(lastCharCode));
 			}
@@ -104,7 +107,9 @@ export class FormatOnType implements IEditorContribution {
 		}
 
 		const model = this._editor.getModel();
+
 		const position = this._editor.getPosition();
+
 		const cts = new CancellationTokenSource();
 
 		// install a listener that checks if edits happens before the
@@ -116,15 +121,18 @@ export class FormatOnType implements IEditorContribution {
 				// cancel only once
 				cts.cancel();
 				unbind.dispose();
+
 				return;
 			}
 
 			for (let i = 0, len = e.changes.length; i < len; i++) {
 				const change = e.changes[i];
+
 				if (change.range.endLineNumber <= position.lineNumber) {
 					// cancel only once
 					cts.cancel();
 					unbind.dispose();
+
 					return;
 				}
 			}
@@ -232,6 +240,7 @@ class FormatDocumentAction extends EditorAction {
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		if (editor.hasModel()) {
 			const instaService = accessor.get(IInstantiationService);
+
 			const progressService = accessor.get(IEditorProgressService);
 			await progressService.showWhile(
 				instaService.invokeFunction(formatDocumentWithSelectedProvider, editor, FormattingMode.Explicit, Progress.None, CancellationToken.None, true),
@@ -266,6 +275,7 @@ class FormatSelectionAction extends EditorAction {
 			return;
 		}
 		const instaService = accessor.get(IInstantiationService);
+
 		const model = editor.getModel();
 
 		const ranges = editor.getSelections().map(range => {
@@ -291,10 +301,12 @@ registerEditorAction(FormatSelectionAction);
 // and we keep it here such that existing keybinding configurations etc will still work
 CommandsRegistry.registerCommand('editor.action.format', async accessor => {
 	const editor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
 	const commandService = accessor.get(ICommandService);
+
 	if (editor.getSelection().isEmpty()) {
 		await commandService.executeCommand('editor.action.formatDocument');
 	} else {

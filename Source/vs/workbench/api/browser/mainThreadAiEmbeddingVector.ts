@@ -11,6 +11,7 @@ import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions
 export class MainThreadAiEmbeddingVector extends Disposable implements MainThreadAiEmbeddingVectorShape {
     private readonly _proxy: ExtHostAiEmbeddingVectorShape;
     private readonly _registrations = this._register(new DisposableMap<number>());
+
     constructor(context: IExtHostContext, 
     @IAiEmbeddingVectorService
     private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService) {

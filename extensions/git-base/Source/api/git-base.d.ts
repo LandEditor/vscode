@@ -79,7 +79,10 @@ export interface RemoteSourceProvider {
 	readonly supportsQuery?: boolean;
 
 	getBranches?(url: string): ProviderResult<string[]>;
+
 	getRemoteSourceActions?(url: string): ProviderResult<RemoteSourceAction[]>;
+
 	getRecentRemoteSources?(query?: string): ProviderResult<RecentRemoteSource[]>;
+
 	getRemoteSources(query?: string): ProviderResult<RemoteSource[]>;
 }

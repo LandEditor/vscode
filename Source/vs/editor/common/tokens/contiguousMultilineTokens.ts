@@ -15,11 +15,15 @@ import { LineRange } from '../core/lineRange.js';
 export class ContiguousMultilineTokens {
     public static deserialize(buff: Uint8Array, offset: number, result: ContiguousMultilineTokens[]): number {
         const view32 = new Uint32Array(buff.buffer);
+
         const startLineNumber = readUInt32BE(buff, offset);
         offset += 4;
+
         const count = readUInt32BE(buff, offset);
         offset += 4;
+
         const tokens: Uint32Array[] = [];
+
         for (let i = 0; i < count; i++) {
             const byteCount = readUInt32BE(buff, offset);
             offset += 4;
@@ -27,6 +31,7 @@ export class ContiguousMultilineTokens {
             offset += byteCount;
         }
         result.push(new ContiguousMultilineTokens(startLineNumber, tokens));
+
         return offset;
     }
     /**
@@ -77,6 +82,7 @@ export class ContiguousMultilineTokens {
         result += 4; // 4 bytes for the line count
         for (let i = 0; i < this._tokens.length; i++) {
             const lineTokens = this._tokens[i];
+
             if (!(lineTokens instanceof Uint32Array)) {
                 throw new Error(`Not supported!`);
             }
@@ -90,8 +96,10 @@ export class ContiguousMultilineTokens {
         offset += 4;
         writeUInt32BE(destination, this._tokens.length, offset);
         offset += 4;
+
         for (let i = 0; i < this._tokens.length; i++) {
             const lineTokens = this._tokens[i];
+
             if (!(lineTokens instanceof Uint32Array)) {
                 throw new Error(`Not supported!`);
             }
@@ -113,11 +121,14 @@ export class ContiguousMultilineTokens {
             return;
         }
         const firstLineIndex = range.startLineNumber - this._startLineNumber;
+
         const lastLineIndex = range.endLineNumber - this._startLineNumber;
+
         if (lastLineIndex < 0) {
             // this deletion occurs entirely before this block, so we only need to adjust line numbers
             const deletedLinesCount = lastLineIndex - firstLineIndex;
             this._startLineNumber -= deletedLinesCount;
+
             return;
         }
         if (firstLineIndex >= this._tokens.length) {
@@ -128,16 +139,19 @@ export class ContiguousMultilineTokens {
             // this deletion completely encompasses this block
             this._startLineNumber = 0;
             this._tokens = [];
+
             return;
         }
         if (firstLineIndex === lastLineIndex) {
             // a delete on a single line
             this._tokens[firstLineIndex] = ContiguousTokensEditing.delete(this._tokens[firstLineIndex], range.startColumn - 1, range.endColumn - 1);
+
             return;
         }
         if (firstLineIndex >= 0) {
             // The first line survives
             this._tokens[firstLineIndex] = ContiguousTokensEditing.deleteEnding(this._tokens[firstLineIndex], range.startColumn - 1);
+
             if (lastLineIndex < this._tokens.length) {
                 // The last line survives
                 const lastLineTokens = ContiguousTokensEditing.deleteBeginning(this._tokens[lastLineIndex], range.endColumn - 1);
@@ -170,9 +184,11 @@ export class ContiguousMultilineTokens {
             return;
         }
         const lineIndex = position.lineNumber - this._startLineNumber;
+
         if (lineIndex < 0) {
             // this insertion occurs before this block, so we only need to adjust line numbers
             this._startLineNumber += eolCount;
+
             return;
         }
         if (lineIndex >= this._tokens.length) {
@@ -182,6 +198,7 @@ export class ContiguousMultilineTokens {
         if (eolCount === 0) {
             // Inserting text on one line
             this._tokens[lineIndex] = ContiguousTokensEditing.insert(this._tokens[lineIndex], position.column - 1, firstLineLength);
+
             return;
         }
         this._tokens[lineIndex] = ContiguousTokensEditing.deleteEnding(this._tokens[lineIndex], position.column - 1);
@@ -193,6 +210,7 @@ export class ContiguousMultilineTokens {
             return;
         }
         const lineTokens: (Uint32Array | ArrayBuffer | null)[] = [];
+
         for (let i = 0; i < insertCount; i++) {
             lineTokens[i] = null;
         }

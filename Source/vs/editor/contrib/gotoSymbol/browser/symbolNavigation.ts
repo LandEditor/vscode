@@ -35,6 +35,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
     private _currentState?: IDisposable;
     private _currentMessage?: IDisposable;
     private _ignoreEditorChange: boolean = false;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -55,30 +56,39 @@ class SymbolNavigationService implements ISymbolNavigationService {
     }
     put(anchor: OneReference): void {
         const refModel = anchor.parent.parent;
+
         if (refModel.references.length <= 1) {
             this.reset();
+
             return;
         }
         this._currentModel = refModel;
         this._currentIdx = refModel.references.indexOf(anchor);
         this._ctxHasSymbols.set(true);
         this._showMessage();
+
         const editorState = new EditorState(this._editorService);
+
         const listener = editorState.onDidChange(_ => {
             if (this._ignoreEditorChange) {
                 return;
             }
             const editor = this._editorService.getActiveCodeEditor();
+
             if (!editor) {
                 return;
             }
             const model = editor.getModel();
+
             const position = editor.getPosition();
+
             if (!model || !position) {
                 return;
             }
             let seenUri: boolean = false;
+
             let seenPosition: boolean = false;
+
             for (const reference of refModel.references) {
                 if (isEqual(reference.uri, model.uri)) {
                     seenUri = true;
@@ -101,11 +111,13 @@ class SymbolNavigationService implements ISymbolNavigationService {
         // get next result and advance
         this._currentIdx += 1;
         this._currentIdx %= this._currentModel.references.length;
+
         const reference = this._currentModel.references[this._currentIdx];
         // status
         this._showMessage();
         // open editor, ignore events while that happens
         this._ignoreEditorChange = true;
+
         return this._editorService.openCodeEditor({
             resource: reference.uri,
             options: {
@@ -118,7 +130,9 @@ class SymbolNavigationService implements ISymbolNavigationService {
     }
     private _showMessage(): void {
         this._currentMessage?.dispose();
+
         const kb = this._keybindingService.lookupKeybinding('editor.gotoNextSymbolFromResult');
+
         const message = kb
             ? localize('location.kb', "Symbol {0} of {1}, {2} for next", this._currentIdx + 1, this._currentModel!.references.length, kb.getLabel())
             : localize('location', "Symbol {0} of {1}", this._currentIdx + 1, this._currentModel!.references.length);
@@ -160,6 +174,7 @@ class EditorState {
     readonly onDidChange: Event<{
         editor: ICodeEditor;
     }> = this._onDidChange.event;
+
     constructor(
     @ICodeEditorService
     editorService: ICodeEditorService) {

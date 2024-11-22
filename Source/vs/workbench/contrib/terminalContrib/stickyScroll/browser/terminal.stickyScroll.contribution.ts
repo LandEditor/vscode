@@ -28,7 +28,9 @@ registerTerminalAction({
     },
     run: (c, accessor) => {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue(TerminalStickyScrollSettingId.Enabled);
+
         return configurationService.updateValue(TerminalStickyScrollSettingId.Enabled, newValue);
     },
     menu: [

@@ -9,12 +9,14 @@ performance.mark('code/fork/start');
 //#region Helpers
 function pipeLoggingToParent(): void {
     const MAX_STREAM_BUFFER_LENGTH = 1024 * 1024;
+
     const MAX_LENGTH = 100000;
     /**
      * Prevent circular stringify and convert arguments to real array
      */
     function safeToString(args: ArrayLike<unknown>): string {
         const seen: unknown[] = [];
+
         const argsArray: unknown[] = [];
         // Massage some arguments with special treatment
         if (args.length) {
@@ -30,6 +32,7 @@ function pipeLoggingToParent(): void {
                 // itself because currently cannot serialize the error over entirely.
                 else if (arg instanceof Error) {
                     const errorObj = arg;
+
                     if (errorObj.stack) {
                         arg = errorObj.stack;
                     }
@@ -51,6 +54,7 @@ function pipeLoggingToParent(): void {
                 }
                 return value;
             });
+
             if (res.length > MAX_LENGTH) {
                 return 'Output omitted for a large object that exceeds the limits';
             }
@@ -104,13 +108,17 @@ function pipeLoggingToParent(): void {
      */
     function wrapStream(streamName: 'stdout' | 'stderr', severity: 'log' | 'warn' | 'error'): void {
         const stream = process[streamName];
+
         const original = stream.write;
+
         let buf = '';
         Object.defineProperty(stream, 'write', {
             set: () => { },
             get: () => (chunk: string | Buffer | Uint8Array, encoding: BufferEncoding | undefined, callback: ((err?: Error | undefined) => void) | undefined) => {
                 buf += chunk.toString(encoding);
+
                 const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
+
                 if (eol !== -1) {
                     console[severity](buf.slice(0, eol));
                     buf = buf.slice(eol + 1);
@@ -147,6 +155,7 @@ function handleExceptions(): void {
 }
 function terminateWhenParentTerminates(): void {
     const parentPid = Number(process.env['VSCODE_PARENT_PID']);
+
     if (typeof parentPid === 'number' && !isNaN(parentPid)) {
         setInterval(function () {
             try {
@@ -160,6 +169,7 @@ function terminateWhenParentTerminates(): void {
 }
 function configureCrashReporter(): void {
     const crashReporterProcessType = process.env['VSCODE_CRASH_REPORTER_PROCESS_TYPE'];
+
     if (crashReporterProcessType) {
         try {
             //@ts-ignore

@@ -57,29 +57,40 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
         const iv = mainWindow.crypto.getRandomValues(new Uint8Array(AESConstants.IV_LENGTH));
         // crypto.getRandomValues isn't a good-enough PRNG to generate crypto keys, so we need to use crypto.subtle.generateKey and export the key instead
         const clientKeyObj = await mainWindow.crypto.subtle.generateKey({ name: AESConstants.ALGORITHM as const, length: AESConstants.KEY_LENGTH as const }, true, ['encrypt', 'decrypt']);
+
         const clientKey = new Uint8Array(await mainWindow.crypto.subtle.exportKey('raw', clientKeyObj));
+
         const key = await this.getKey(clientKey);
+
         const dataUint8Array = new TextEncoder().encode(data);
+
         const cipherText: ArrayBuffer = await mainWindow.crypto.subtle.encrypt({ name: AESConstants.ALGORITHM as const, iv }, key, dataUint8Array);
         // Base64 encode the result and store the ciphertext, the key, and the IV in localStorage
         // Note that the clientKey and IV don't need to be secret
         const result = new Uint8Array([...clientKey, ...iv, ...new Uint8Array(cipherText)]);
+
         return encodeBase64(VSBuffer.wrap(result));
     }
     async unseal(data: string): Promise<string> {
         // encrypted should contain, in order: the key (32-byte), the IV for AES-GCM (12-byte) and the ciphertext (which has the GCM auth tag at the end)
         // Minimum length must be 44 (key+IV length) + 16 bytes (1 block encrypted with AES - regardless of key size)
         const dataUint8Array = decodeBase64(data);
+
         if (dataUint8Array.byteLength < 60) {
             throw Error('Invalid length for the value for credentials.crypto');
         }
         const keyLength = AESConstants.KEY_LENGTH / 8;
+
         const clientKey = dataUint8Array.slice(0, keyLength);
+
         const iv = dataUint8Array.slice(keyLength, keyLength + AESConstants.IV_LENGTH);
+
         const cipherText = dataUint8Array.slice(keyLength + AESConstants.IV_LENGTH);
         // Do the decryption and parse the result as JSON
         const key = await this.getKey(clientKey.buffer);
+
         const decrypted = await mainWindow.crypto.subtle.decrypt({ name: AESConstants.ALGORITHM as const, iv: iv.buffer }, key, cipherText.buffer);
+
         return new TextDecoder().decode(new Uint8Array(decrypted));
     }
     /**
@@ -91,7 +102,9 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
             throw Error('Invalid length for clientKey');
         }
         const serverKey = await this.getServerKeyPart();
+
         const keyData = new Uint8Array(AESConstants.KEY_LENGTH / 8);
+
         for (let i = 0; i < keyData.byteLength; i++) {
             keyData[i] = clientKey[i]! ^ serverKey[i]!;
         }
@@ -105,18 +118,23 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
             return this._serverKey;
         }
         let attempt = 0;
+
         let lastError: Error | undefined;
+
         while (attempt <= 3) {
             try {
                 const res = await fetch(this.authEndpoint, { credentials: 'include', method: 'POST' });
+
                 if (!res.ok) {
                     throw new Error(res.statusText);
                 }
                 const serverKey = new Uint8Array(await res.arrayBuffer());
+
                 if (serverKey.byteLength !== AESConstants.KEY_LENGTH / 8) {
                     throw Error(`The key retrieved by the server is not ${AESConstants.KEY_LENGTH} bit long.`);
                 }
                 this._serverKey = serverKey;
+
                 return this._serverKey;
             }
             catch (e) {
@@ -136,19 +154,23 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
     private readonly _storageKey = 'secrets.provider';
     private _secretsPromise: Promise<Record<string, string>> = this.load();
     type: 'in-memory' | 'persisted' | 'unknown' = 'persisted';
+
     constructor(private readonly crypto: ISecretStorageCrypto) { }
     private async load(): Promise<Record<string, string>> {
         const record = this.loadAuthSessionFromElement();
         // Get the secrets from localStorage
         const encrypted = localStorage.getItem(this._storageKey);
+
         if (encrypted) {
             try {
                 const decrypted = JSON.parse(await this.crypto.unseal(encrypted));
+
                 return { ...record, ...decrypted };
             }
             catch (err) {
                 // TODO: send telemetry
                 console.error('Failed to decrypt secrets from localStorage', err);
+
                 if (!(err instanceof NetworkError)) {
                     localStorage.removeItem(this._storageKey);
                 }
@@ -160,8 +182,11 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
         let authSessionInfo: (AuthenticationSessionInfo & {
             scopes: string[][];
         }) | undefined;
+
         const authSessionElement = mainWindow.document.getElementById('vscode-workbench-auth-session');
+
         const authSessionElementAttribute = authSessionElement ? authSessionElement.getAttribute('data-settings') : undefined;
+
         if (authSessionElementAttribute) {
             try {
                 authSessionInfo = JSON.parse(authSessionElementAttribute);
@@ -177,6 +202,7 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
         // Auth extension Entry
         if (authSessionInfo.providerId !== 'github') {
             console.error(`Unexpected auth provider: ${authSessionInfo.providerId}. Expected 'github'.`);
+
             return record;
         }
         const authAccount = JSON.stringify({ extensionId: 'vscode.github-authentication', key: 'github.auth' });
@@ -185,10 +211,12 @@ export class LocalStorageSecretStorageProvider implements ISecretStorageProvider
             scopes,
             accessToken: authSessionInfo.accessToken
         })));
+
         return record;
     }
     async get(key: string): Promise<string | undefined> {
         const secrets = await this._secretsPromise;
+
         return secrets[key];
     }
     async set(key: string, value: string): Promise<void> {
@@ -228,14 +256,18 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
     private lastTimeChecked = Date.now();
     private checkCallbacksTimeout: unknown | undefined = undefined;
     private onDidChangeLocalStorageDisposable: IDisposable | undefined;
+
     constructor(private readonly _callbackRoute: string) {
         super();
     }
     create(options: Partial<UriComponents> = {}): URI {
         const id = ++LocalStorageURLCallbackProvider.REQUEST_ID;
+
         const queryParams: string[] = [`vscode-reqid=${id}`];
+
         for (const key of LocalStorageURLCallbackProvider.QUERY_KEYS) {
             const value = options[key];
+
             if (value) {
                 queryParams.push(`vscode-${key}=${encodeURIComponent(value)}`);
             }
@@ -267,6 +299,7 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
     // don't want to check more often than once a second
     private async onDidChangeLocalStorage(): Promise<void> {
         const ellapsed = Date.now() - this.lastTimeChecked;
+
         if (ellapsed > 1000) {
             this.checkCallbacks();
         }
@@ -279,9 +312,12 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
     }
     private checkCallbacks(): void {
         let pendingCallbacks: Set<number> | undefined;
+
         for (const id of this.pendingCallbacks) {
             const key = `vscode-web.url-callbacks[${id}]`;
+
             const result = localStorage.getItem(key);
+
             if (result !== null) {
                 try {
                     this._onCallback.fire(URI.revive(JSON.parse(result)));
@@ -296,6 +332,7 @@ class LocalStorageURLCallbackProvider extends Disposable implements IURLCallback
         }
         if (pendingCallbacks) {
             this.pendingCallbacks = pendingCallbacks;
+
             if (this.pendingCallbacks.size === 0) {
                 this.stopListening();
             }
@@ -313,8 +350,11 @@ class WorkspaceProvider implements IWorkspaceProvider {
         workspaceUri?: UriComponents;
     }) {
         let foundWorkspace = false;
+
         let workspace: IWorkspace;
+
         let payload = Object.create(null);
+
         const query = new URL(document.location.href).searchParams;
         query.forEach((value, key) => {
             switch (key) {
@@ -330,6 +370,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
                         workspace = { folderUri: URI.parse(value) };
                     }
                     foundWorkspace = true;
+
                     break;
                 // Workspace
                 case WorkspaceProvider.QUERY_PARAM_WORKSPACE:
@@ -343,11 +384,13 @@ class WorkspaceProvider implements IWorkspaceProvider {
                         workspace = { workspaceUri: URI.parse(value) };
                     }
                     foundWorkspace = true;
+
                     break;
                 // Empty
                 case WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW:
                     workspace = undefined;
                     foundWorkspace = true;
+
                     break;
                 // Payload
                 case WorkspaceProvider.QUERY_PARAM_PAYLOAD:
@@ -383,13 +426,16 @@ class WorkspaceProvider implements IWorkspaceProvider {
             return true; // return early if workspace and environment is not changing and we are reusing window
         }
         const targetHref = this.createTargetUrl(workspace, options);
+
         if (targetHref) {
             if (options?.reuse) {
                 mainWindow.location.href = targetHref;
+
                 return true;
             }
             else {
                 let result;
+
                 if (isStandalone()) {
                     result = mainWindow.open(targetHref, '_blank', 'toolbar=no'); // ensures to open another 'standalone' window!
                 }
@@ -407,6 +453,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
     }): string | undefined {
         // Empty
         let targetHref: string | undefined = undefined;
+
         if (!workspace) {
             targetHref = `${document.location.origin}${document.location.pathname}?${WorkspaceProvider.QUERY_PARAM_EMPTY_WINDOW}=true`;
         }
@@ -464,6 +511,7 @@ class WorkspaceProvider implements IWorkspaceProvider {
 }
 function readCookie(name: string): string | undefined {
     const cookies = document.cookie.split('; ');
+
     for (const cookie of cookies) {
         if (cookie.startsWith(name + '=')) {
             return cookie.substring(name.length + 1);
@@ -474,7 +522,9 @@ function readCookie(name: string): string | undefined {
 (function () {
     // Find config by checking for DOM
     const configElement = mainWindow.document.getElementById('vscode-workbench-web-configuration');
+
     const configElementAttribute = configElement ? configElement.getAttribute('data-settings') : undefined;
+
     if (!configElement || !configElementAttribute) {
         throw new Error('Missing web configuration element');
     }
@@ -483,7 +533,9 @@ function readCookie(name: string): string | undefined {
         workspaceUri?: UriComponents;
         callbackRoute: string;
     } = JSON.parse(configElementAttribute);
+
     const secretStorageKeyPath = readCookie('vscode-secret-key-path');
+
     const secretStorageCrypto = secretStorageKeyPath && ServerKeyedAESCrypto.supported()
         ? new ServerKeyedAESCrypto(secretStorageKeyPath) : new TransparentCrypto();
     // Create workbench

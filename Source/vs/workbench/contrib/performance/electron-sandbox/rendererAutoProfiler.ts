@@ -17,6 +17,7 @@ import { parseExtensionDevOptions } from '../../../services/extensions/common/ex
 import { ITimerService } from '../../../services/timer/browser/timerService.js';
 export class RendererProfiling {
     private _observer?: PerformanceObserver;
+
     constructor(
     @INativeWorkbenchEnvironmentService
     private readonly _environmentService: INativeWorkbenchEnvironmentService, 
@@ -33,12 +34,14 @@ export class RendererProfiling {
     @IProfileAnalysisWorkerService
     profileAnalysisService: IProfileAnalysisWorkerService) {
         const devOpts = parseExtensionDevOptions(_environmentService);
+
         if (devOpts.isExtensionDevTestFromCli) {
             // disabled when running extension tests
             return;
         }
         timerService.perfBaseline.then(perfBaseline => {
             _logService.info(`[perf] Render performance baseline is ${perfBaseline}ms`);
+
             if (perfBaseline < 0) {
                 // too slow
                 return;
@@ -47,14 +50,17 @@ export class RendererProfiling {
             const slowThreshold = perfBaseline * 10; // ~10 frames at 64fps on MY machine
             const obs = new PerformanceObserver(async (list) => {
                 obs.takeRecords();
+
                 const maxDuration = list.getEntries()
                     .map(e => e.duration)
                     .reduce((p, c) => Math.max(p, c), 0);
+
                 if (maxDuration < slowThreshold) {
                     return;
                 }
                 if (!configService.getValue('application.experimental.rendererProfiling')) {
                     _logService.debug(`[perf] SLOW task detected (${maxDuration}ms) but renderer profiling is disabled via 'application.experimental.rendererProfiling'`);
+
                     return;
                 }
                 const sessionId = generateUuid();
@@ -65,15 +71,19 @@ export class RendererProfiling {
                 for (let i = 0; i < 3; i++) {
                     try {
                         const profile = await nativeHostService.profileRenderer(sessionId, 5000);
+
                         const output = await profileAnalysisService.analyseBottomUp(profile, _url => '<<renderer>>', perfBaseline, true);
+
                         if (output === ProfilingOutput.Interesting) {
                             this._store(profile, sessionId);
+
                             break;
                         }
                         timeout(15000); // wait 15s
                     }
                     catch (err) {
                         _logService.error(err);
+
                         break;
                     }
                 }

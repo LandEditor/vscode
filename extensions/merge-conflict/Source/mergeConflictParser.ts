@@ -6,9 +6,13 @@ import * as vscode from 'vscode';
 import * as interfaces from './interfaces';
 import { DocumentMergeConflict } from './documentMergeConflict';
 import TelemetryReporter from '@vscode/extension-telemetry';
+
 const startHeaderMarker = '<<<<<<<';
+
 const commonAncestorsMarker = '|||||||';
+
 const splitterMarker = '=======';
+
 const endFooterMarker = '>>>>>>>';
 interface IScanMergedConflict {
     startHeader: vscode.TextLine;
@@ -24,7 +28,9 @@ export class MergeConflictParser {
         // and footer. This is then converted into a full descriptor containing all required
         // ranges.
         let currentConflict: IScanMergedConflict | null = null;
+
         const conflictDescriptors: interfaces.IDocumentMergeConflictDescriptor[] = [];
+
         for (let i = 0; i < document.lineCount; i++) {
             const line = document.lineAt(i);
             // Ignore empty lines
@@ -57,6 +63,7 @@ export class MergeConflictParser {
                 // Create a full descriptor from the lines that we matched. This can return
                 // null if the descriptor could not be completed.
                 const completeDescriptor = MergeConflictParser.scanItemTolMergeConflictDescriptor(document, currentConflict);
+
                 if (completeDescriptor !== null) {
                     conflictDescriptors.push(completeDescriptor);
                 }
@@ -90,6 +97,7 @@ export class MergeConflictParser {
             },
             commonAncestors: scanned.commonAncestors.map((currentTokenLine, index, commonAncestors) => {
                 const nextTokenLine = commonAncestors[index + 1] || scanned.splitter;
+
                 return {
                     header: currentTokenLine.range,
                     decoratorContent: new vscode.Range(currentTokenLine.rangeIncludingLineBreak.end, MergeConflictParser.shiftBackOneCharacter(document, nextTokenLine.range.start, currentTokenLine.rangeIncludingLineBreak.end)),
@@ -116,6 +124,7 @@ export class MergeConflictParser {
             return false;
         }
         const text = document.getText();
+
         return text.includes(startHeaderMarker) && text.includes(endFooterMarker);
     }
     private static shiftBackOneCharacter(document: vscode.TextDocument, range: vscode.Position, unlessEqual: vscode.Position): vscode.Position {
@@ -123,7 +132,9 @@ export class MergeConflictParser {
             return range;
         }
         let line = range.line;
+
         let character = range.character - 1;
+
         if (character < 0) {
             line--;
             character = document.lineAt(line).range.end.character;

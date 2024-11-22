@@ -220,8 +220,10 @@ export class OperationManager implements IOperationManager {
 
 	end(operation: Operation): void {
 		const operationSet = this.operations.get(operation.kind);
+
 		if (operationSet) {
 			operationSet.delete(operation);
+
 			if (operationSet.size === 0) {
 				this.operations.delete(operation.kind);
 			}
@@ -232,6 +234,7 @@ export class OperationManager implements IOperationManager {
 
 	getOperations(operationKind: OperationKind): Operation[] {
 		const operationSet = this.operations.get(operationKind);
+
 		return operationSet ? Array.from(operationSet) : [];
 	}
 

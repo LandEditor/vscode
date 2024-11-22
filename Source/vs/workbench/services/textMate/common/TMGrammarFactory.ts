@@ -31,6 +31,7 @@ export class TMGrammarFactory extends Disposable {
     };
     private readonly _languageToScope: Map<string, string>;
     private readonly _grammarRegistry: Registry;
+
     constructor(host: ITMGrammarFactoryHost, grammarDefinitions: IValidGrammarDefinition[], vscodeTextmate: typeof import('vscode-textmate'), onigLib: Promise<IOnigLib>) {
         super();
         this._host = host;
@@ -43,23 +44,30 @@ export class TMGrammarFactory extends Disposable {
             onigLib: onigLib,
             loadGrammar: async (scopeName: string) => {
                 const grammarDefinition = this._scopeRegistry.getGrammarDefinition(scopeName);
+
                 if (!grammarDefinition) {
                     this._host.logTrace(`No grammar found for scope ${scopeName}`);
+
                     return null;
                 }
                 const location = grammarDefinition.location;
+
                 try {
                     const content = await this._host.readFile(location);
+
                     return vscodeTextmate.parseRawGrammar(content, location.path);
                 }
                 catch (e) {
                     this._host.logError(`Unable to load and parse grammar for scope ${scopeName} from ${location}`, e);
+
                     return null;
                 }
             },
             getInjections: (scopeName: string) => {
                 const scopeParts = scopeName.split('.');
+
                 let injections: string[] = [];
+
                 for (let i = 1; i <= scopeParts.length; i++) {
                     const subScopeName = scopeParts.slice(0, i).join('.');
                     injections = [...injections, ...(this._injections[subScopeName] || [])];
@@ -67,11 +75,14 @@ export class TMGrammarFactory extends Disposable {
                 return injections;
             }
         }));
+
         for (const validGrammar of grammarDefinitions) {
             this._scopeRegistry.register(validGrammar);
+
             if (validGrammar.injectTo) {
                 for (const injectScope of validGrammar.injectTo) {
                     let injections = this._injections[injectScope];
+
                     if (!injections) {
                         this._injections[injectScope] = injections = [];
                     }
@@ -80,6 +91,7 @@ export class TMGrammarFactory extends Disposable {
                 if (validGrammar.embeddedLanguages) {
                     for (const injectScope of validGrammar.injectTo) {
                         let injectedEmbeddedLanguages = this._injectedEmbeddedLanguages[injectScope];
+
                         if (!injectedEmbeddedLanguages) {
                             this._injectedEmbeddedLanguages[injectScope] = injectedEmbeddedLanguages = [];
                         }
@@ -103,18 +115,22 @@ export class TMGrammarFactory extends Disposable {
     }
     public async createGrammar(languageId: string, encodedLanguageId: number): Promise<ICreateGrammarResult> {
         const scopeName = this._languageToScope.get(languageId);
+
         if (typeof scopeName !== 'string') {
             // No TM grammar defined
             throw new Error(missingTMGrammarErrorMessage);
         }
         const grammarDefinition = this._scopeRegistry.getGrammarDefinition(scopeName);
+
         if (!grammarDefinition) {
             // No TM grammar defined
             throw new Error(missingTMGrammarErrorMessage);
         }
         const embeddedLanguages = grammarDefinition.embeddedLanguages;
+
         if (this._injectedEmbeddedLanguages[scopeName]) {
             const injectedEmbeddedLanguages = this._injectedEmbeddedLanguages[scopeName];
+
             for (const injected of injectedEmbeddedLanguages) {
                 for (const scope of Object.keys(injected)) {
                     embeddedLanguages[scope] = injected[scope];
@@ -122,7 +138,9 @@ export class TMGrammarFactory extends Disposable {
             }
         }
         const containsEmbeddedLanguages = (Object.keys(embeddedLanguages).length > 0);
+
         let grammar: IGrammar | null;
+
         try {
             grammar = await this._grammarRegistry.loadGrammarWithConfiguration(scopeName, encodedLanguageId, {
                 embeddedLanguages,

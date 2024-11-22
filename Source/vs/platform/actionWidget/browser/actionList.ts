@@ -107,6 +107,7 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
 	renderElement(element: IActionListItem<T>, _index: number, data: IActionMenuTemplateData): void {
 		if (element.group?.icon) {
 			data.icon.className = ThemeIcon.asClassName(element.group.icon);
+
 			if (element.group.icon.color) {
 				data.icon.style.color = asCssVariable(element.group.icon.color.id);
 			}
@@ -124,11 +125,14 @@ class ActionItemRenderer<T> implements IListRenderer<IActionListItem<T>, IAction
 		data.text.textContent = stripNewlines(element.label);
 
 		data.keybinding.set(element.keybinding);
+
 		dom.setVisibility(!!element.keybinding, data.keybinding.element);
 
 		const actionTitle = this._keybindingService.lookupKeybinding(acceptSelectedActionCommand)?.getLabel();
+
 		const previewTitle = this._keybindingService.lookupKeybinding(previewSelectedActionCommand)?.getLabel();
 		data.container.classList.toggle('option-disabled', element.disabled);
+
 		if (element.disabled) {
 			data.container.title = element.label;
 		} else if (actionTitle && previewTitle) {
@@ -188,6 +192,7 @@ export class ActionList<T> extends Disposable {
 
 		this.domNode = document.createElement('div');
 		this.domNode.classList.add('actionList');
+
 		const virtualDelegate: IListVirtualDelegate<IActionListItem<T>> = {
 			getHeight: element => element.kind === ActionListItemKind.Header ? this._headerLineHeight : this._actionLineHeight,
 			getTemplateId: element => element.kind
@@ -204,6 +209,7 @@ export class ActionList<T> extends Disposable {
 				getAriaLabel: element => {
 					if (element.kind === ActionListItemKind.Action) {
 						let label = element.label ? stripNewlines(element?.label) : '';
+
 						if (element.disabled) {
 							label = localize({ key: 'customQuickFixWidget.labels', comment: [`Action widget labels for accessibility.`] }, "{0}, Disabled Reason: {1}", label, element.disabled);
 						}
@@ -245,9 +251,12 @@ export class ActionList<T> extends Disposable {
 	layout(minWidth: number): number {
 		// Updating list height, depending on how many separators and headers there are.
 		const numHeaders = this._allMenuItems.filter(item => item.kind === 'header').length;
+
 		const itemsHeight = this._allMenuItems.length * this._actionLineHeight;
+
 		const heightWithHeaders = itemsHeight + numHeaders * this._headerLineHeight - numHeaders * this._actionLineHeight;
 		this._list.layout(heightWithHeaders);
+
 		let maxWidth = minWidth;
 
 		if (this._allMenuItems.length >= 50) {
@@ -256,10 +265,13 @@ export class ActionList<T> extends Disposable {
 			// For finding width dynamically (not using resize observer)
 			const itemWidths: number[] = this._allMenuItems.map((_, index): number => {
 				const element = this.domNode.ownerDocument.getElementById(this._list.getElementID(index));
+
 				if (element) {
 					element.style.width = 'auto';
+
 					const width = element.getBoundingClientRect().width;
 					element.style.width = '';
+
 					return width;
 				}
 				return 0;
@@ -270,12 +282,14 @@ export class ActionList<T> extends Disposable {
 		}
 
 		const maxVhPrecentage = 0.7;
+
 		const height = Math.min(heightWithHeaders, this.domNode.ownerDocument.body.clientHeight * maxVhPrecentage);
 		this._list.layout(height, maxWidth);
 
 		this.domNode.style.height = `${height}px`;
 
 		this._list.domFocus();
+
 		return maxWidth;
 	}
 
@@ -289,12 +303,15 @@ export class ActionList<T> extends Disposable {
 
 	acceptSelected(preview?: boolean) {
 		const focused = this._list.getFocus();
+
 		if (focused.length === 0) {
 			return;
 		}
 
 		const focusIndex = focused[0];
+
 		const element = this._list.element(focusIndex);
+
 		if (!this.focusCondition(element)) {
 			return;
 		}
@@ -309,6 +326,7 @@ export class ActionList<T> extends Disposable {
 		}
 
 		const element = e.elements[0];
+
 		if (element.item && this.focusCondition(element)) {
 			this._delegate.onSelect(element.item, e.browserEvent instanceof PreviewSelectedEvent);
 		} else {
@@ -318,16 +336,19 @@ export class ActionList<T> extends Disposable {
 
 	private onFocus() {
 		const focused = this._list.getFocus();
+
 		if (focused.length === 0) {
 			return;
 		}
 		const focusIndex = focused[0];
+
 		const element = this._list.element(focusIndex);
 		this._delegate.onFocus?.(element.item);
 	}
 
 	private async onListHover(e: IListMouseEvent<IActionListItem<T>>) {
 		const element = e.element;
+
 		if (element && element.item && this.focusCondition(element)) {
 			if (this._delegate.onHover && !element.disabled && element.kind === ActionListItemKind.Action) {
 				const result = await this._delegate.onHover(element.item, this.cts.token);

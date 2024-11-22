@@ -13,13 +13,17 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
         const unhandledPromises: Promise<any>[] = [];
         process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
             unhandledPromises.push(promise);
+
             setTimeout(() => {
                 const idx = unhandledPromises.indexOf(promise);
+
                 if (idx >= 0) {
                     promise.catch(e => {
                         unhandledPromises.splice(idx, 1);
+
                         if (!isCancellationError(e)) {
                             console.warn(`rejected promise not handled within 1 second: ${e}`);
+
                             if (e.stack) {
                                 console.warn(`stack trace: ${e.stack}`);
                             }
@@ -33,6 +37,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
         });
         process.on('rejectionHandled', (promise: Promise<any>) => {
             const idx = unhandledPromises.indexOf(promise);
+
             if (idx >= 0) {
                 unhandledPromises.splice(idx, 1);
             }

@@ -39,7 +39,9 @@ export interface CharacterMap {
     [char: string]: string;
 }
 const autoCloseAlways = () => true;
+
 const autoCloseNever = () => false;
+
 const autoCloseBeforeWhitespace = (chr: string) => (chr === ' ' || chr === '\t');
 export class CursorConfiguration {
     _cursorMoveConfigurationBrand: void = undefined;
@@ -98,8 +100,11 @@ export class CursorConfiguration {
     }
     constructor(languageId: string, modelOptions: TextModelResolvedOptions, configuration: IEditorConfiguration, public readonly languageConfigurationService: ILanguageConfigurationService) {
         this._languageId = languageId;
+
         const options = configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
+
         const fontInfo = options.get(EditorOption.fontInfo);
         this.readOnly = options.get(EditorOption.readOnly);
         this.tabSize = modelOptions.tabSize;
@@ -132,7 +137,9 @@ export class CursorConfiguration {
             bracket: this._getShouldAutoClose(languageId, this.autoClosingBrackets, false),
         };
         this.autoClosingPairs = this.languageConfigurationService.getLanguageConfiguration(languageId).getAutoClosingPairs();
+
         const surroundingPairs = this.languageConfigurationService.getLanguageConfiguration(languageId).getSurroundingPairs();
+
         if (surroundingPairs) {
             for (const pair of surroundingPairs) {
                 this.surroundingPairs[pair.open] = pair.close;
@@ -144,7 +151,9 @@ export class CursorConfiguration {
     public get electricChars() {
         if (!this._electricChars) {
             this._electricChars = {};
+
             const electricChars = this.languageConfigurationService.getLanguageConfiguration(this._languageId).electricCharacter?.getElectricCharacters();
+
             if (electricChars) {
                 for (const char of electricChars) {
                     this._electricChars[char] = true;
@@ -158,7 +167,9 @@ export class CursorConfiguration {
      */
     public onElectricCharacter(character: string, context: LineTokens, column: number): IElectricAction | null {
         const scopedLineTokens = createScopedLineTokens(context, column - 1);
+
         const electricCharacterSupport = this.languageConfigurationService.getLanguageConfiguration(scopedLineTokens.languageId).electricCharacter;
+
         if (!electricCharacterSupport) {
             return null;
         }
@@ -171,16 +182,20 @@ export class CursorConfiguration {
         switch (autoCloseConfig) {
             case 'beforeWhitespace':
                 return autoCloseBeforeWhitespace;
+
             case 'languageDefined':
                 return this._getLanguageDefinedShouldAutoClose(languageId, forQuotes);
+
             case 'always':
                 return autoCloseAlways;
+
             case 'never':
                 return autoCloseNever;
         }
     }
     private _getLanguageDefinedShouldAutoClose(languageId: string, forQuotes: boolean): (ch: string) => boolean {
         const autoCloseBeforeSet = this.languageConfigurationService.getLanguageConfiguration(languageId).getAutoCloseBeforeSet(forQuotes);
+
         return c => autoCloseBeforeSet.indexOf(c) !== -1;
     }
     /**
@@ -196,11 +211,14 @@ export class CursorConfiguration {
      */
     public columnFromVisibleColumn(model: ICursorSimpleModel, lineNumber: number, visibleColumn: number): number {
         const result = CursorColumns.columnFromVisibleColumn(model.getLineContent(lineNumber), visibleColumn, this.tabSize);
+
         const minColumn = model.getLineMinColumn(lineNumber);
+
         if (result < minColumn) {
             return minColumn;
         }
         const maxColumn = model.getLineMaxColumn(lineNumber);
+
         if (result > maxColumn) {
             return maxColumn;
         }
@@ -212,10 +230,15 @@ export class CursorConfiguration {
  */
 export interface ICursorSimpleModel {
     getLineCount(): number;
+
     getLineContent(lineNumber: number): string;
+
     getLineMinColumn(lineNumber: number): number;
+
     getLineMaxColumn(lineNumber: number): number;
+
     getLineFirstNonWhitespaceColumn(lineNumber: number): number;
+
     getLineLastNonWhitespaceColumn(lineNumber: number): number;
     normalizePosition(position: Position, affinity: PositionAffinity): Position;
     /**
@@ -235,11 +258,14 @@ export class CursorState {
     }
     public static fromModelSelection(modelSelection: ISelection): PartialModelCursorState {
         const selection = Selection.liftSelection(modelSelection);
+
         const modelState = new SingleCursorState(Range.fromPositions(selection.getSelectionStart()), SelectionStartKind.Simple, 0, selection.getPosition(), 0);
+
         return CursorState.fromModelState(modelState);
     }
     public static fromModelSelections(modelSelections: readonly ISelection[]): PartialModelCursorState[] {
         const states: PartialModelCursorState[] = [];
+
         for (let i = 0, len = modelSelections.length; i < len; i++) {
             states[i] = this.fromModelSelection(modelSelections[i]);
         }
@@ -247,6 +273,7 @@ export class CursorState {
     }
     readonly modelState: SingleCursorState;
     readonly viewState: SingleCursorState;
+
     constructor(modelState: SingleCursorState, viewState: SingleCursorState) {
         this.modelState = modelState;
         this.viewState = viewState;
@@ -258,6 +285,7 @@ export class CursorState {
 export class PartialModelCursorState {
     readonly modelState: SingleCursorState;
     readonly viewState: null;
+
     constructor(modelState: SingleCursorState) {
         this.modelState = modelState;
         this.viewState = null;
@@ -266,6 +294,7 @@ export class PartialModelCursorState {
 export class PartialViewCursorState {
     readonly modelState: null;
     readonly viewState: SingleCursorState;
+
     constructor(viewState: SingleCursorState) {
         this.modelState = null;
         this.viewState = viewState;
@@ -282,6 +311,7 @@ export const enum SelectionStartKind {
 export class SingleCursorState {
     _singleCursorStateBrand: void = undefined;
     public readonly selection: Selection;
+
     constructor(public readonly selectionStart: Range, public readonly selectionStartKind: SelectionStartKind, public readonly selectionStartLeftoverVisibleColumns: number, public readonly position: Position, public readonly leftoverVisibleColumns: number) {
         this.selection = SingleCursorState._computeSelection(this.selectionStart, this.position);
     }
@@ -320,6 +350,7 @@ export class EditOperationResult {
     readonly commands: Array<ICommand | null>;
     readonly shouldPushStackElementBefore: boolean;
     readonly shouldPushStackElementAfter: boolean;
+
     constructor(type: EditOperationType, commands: Array<ICommand | null>, opts: {
         shouldPushStackElementBefore: boolean;
         shouldPushStackElementAfter: boolean;

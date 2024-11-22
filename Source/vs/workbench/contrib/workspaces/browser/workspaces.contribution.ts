@@ -44,12 +44,15 @@ export class WorkspacesFinderContribution extends Disposable implements IWorkben
     }
     private async findWorkspaces(): Promise<void> {
         const folder = this.contextService.getWorkspace().folders[0];
+
         if (!folder || this.contextService.getWorkbenchState() !== WorkbenchState.FOLDER || isVirtualWorkspace(this.contextService.getWorkspace())) {
             return; // require a single (non virtual) root folder
         }
         const rootFileNames = (await this.fileService.resolve(folder.uri)).children?.map(child => child.name);
+
         if (Array.isArray(rootFileNames)) {
             const workspaceFiles = rootFileNames.filter(hasWorkspaceFileExtension);
+
             if (workspaceFiles.length > 0) {
                 this.doHandleWorkspaceFiles(folder.uri, workspaceFiles);
             }
@@ -108,12 +111,17 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, uri: URI): Promise<void> {
         const hostService = accessor.get(IHostService);
+
         const contextService = accessor.get(IWorkspaceContextService);
+
         const notificationService = accessor.get(INotificationService);
+
         if (contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
             const workspaceConfiguration = contextService.getWorkspace().configuration;
+
             if (workspaceConfiguration && isEqual(workspaceConfiguration, uri)) {
                 notificationService.info(localize('alreadyOpen', "This workspace is already open."));
+
                 return; // workspace already opened
             }
         }

@@ -38,7 +38,9 @@ export interface IChatWidgetService {
 
 
 	getWidgetByInputUri(uri: URI): IChatWidget | undefined;
+
 	getWidgetBySessionId(sessionId: string): IChatWidget | undefined;
+
 	getWidgetsByLocations(location: ChatAgentLocation): ReadonlyArray<IChatWidget>;
 }
 
@@ -94,6 +96,7 @@ export interface IChatCodeBlockInfo {
 	codemapperUri: URI | undefined;
 	readonly isStreaming: boolean;
 	focus(): void;
+
 	getContent(): string;
 }
 
@@ -137,6 +140,7 @@ export interface IChatWidgetViewOptions {
 		 */
 		telemetrySource?: string;
 	};
+
 	defaultElementHeight?: number;
 	editorOverflowWidgetsDomNode?: HTMLElement;
 	enableImplicitContext?: boolean;
@@ -178,24 +182,34 @@ export interface IChatWidget {
 	getContrib<T extends IChatWidgetContrib>(id: string): T | undefined;
 	reveal(item: ChatTreeItem): void;
 	focus(item: ChatTreeItem): void;
+
 	getSibling(item: ChatTreeItem, type: 'next' | 'previous'): ChatTreeItem | undefined;
+
 	getFocus(): ChatTreeItem | undefined;
+
 	setInput(query?: string): void;
+
 	getInput(): string;
 	refreshParsedInput(): void;
 	logInputHistory(): void;
 	acceptInput(query?: string, options?: IChatAcceptInputOptions): Promise<IChatResponseModel | undefined>;
 	acceptInputWithPrefix(prefix: string): void;
+
 	setInputPlaceholder(placeholder: string): void;
 	resetInputPlaceholder(): void;
 	focusLastMessage(): void;
 	focusInput(): void;
 	hasInputFocus(): boolean;
+
 	getCodeBlockInfoForEditor(uri: URI): IChatCodeBlockInfo | undefined;
+
 	getCodeBlockInfosForResponse(response: IChatResponseViewModel): IChatCodeBlockInfo[];
+
 	getFileTreeInfosForResponse(response: IChatResponseViewModel): IChatFileTreeInfo[];
+
 	getLastFocusedFileTreeForResponse(response: IChatResponseViewModel): IChatFileTreeInfo | undefined;
 	clear(): void;
+
 	getViewState(): IChatViewState;
 }
 

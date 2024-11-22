@@ -113,11 +113,16 @@ async function safeReaddirWithFileTypes(path: string): Promise<IDirent[]> {
     // such as explained in #115645 where we get entries
     // from `readdir` that we can later not `lstat`.
     const result: IDirent[] = [];
+
     const children = await readdir(path);
+
     for (const child of children) {
         let isFile = false;
+
         let isDirectory = false;
+
         let isSymbolicLink = false;
+
         try {
             const lstat = await fs.promises.lstat(join(path, child));
             isFile = lstat.isFile();
@@ -155,6 +160,7 @@ function handleDirectoryChildren(children: (string | IDirent)[]): (string | IDir
             return isMacintosh ? normalizeNFC(child) : child;
         }
         child.name = isMacintosh ? normalizeNFC(child.name) : child.name;
+
         return child;
     });
 }
@@ -164,7 +170,9 @@ function handleDirectoryChildren(children: (string | IDirent)[]): (string | IDir
  */
 async function readDirsInDir(dirPath: string): Promise<string[]> {
     const children = await readdir(dirPath);
+
     const directories: string[] = [];
+
     for (const child of children) {
         if (await SymlinkSupport.existsDirectory(join(dirPath, child))) {
             directories.push(child);
@@ -181,11 +189,13 @@ async function readDirsInDir(dirPath: string): Promise<string[]> {
 export function whenDeleted(path: string, intervalMs = 1000): Promise<void> {
     return new Promise<void>(resolve => {
         let running = false;
+
         const interval = setInterval(() => {
             if (!running) {
                 running = true;
                 fs.access(path, err => {
                     running = false;
+
                     if (err) {
                         clearInterval(interval);
                         resolve(undefined);
@@ -222,6 +232,7 @@ export namespace SymlinkSupport {
     export async function stat(path: string): Promise<IStats> {
         // First stat the link
         let lstats: fs.Stats | undefined;
+
         try {
             lstats = await fs.promises.lstat(path);
             // Return early if the stat is not a symbolic link at all
@@ -236,6 +247,7 @@ export namespace SymlinkSupport {
         // which for symbolic links will stat the target they point to
         try {
             const stats = await fs.promises.stat(path);
+
             return { stat: stats, symbolicLink: lstats?.isSymbolicLink() ? { dangling: false } : undefined };
         }
         catch (error) {
@@ -249,6 +261,7 @@ export namespace SymlinkSupport {
             if (isWindows && error.code === 'EACCES') {
                 try {
                     const stats = await fs.promises.stat(await fs.promises.readlink(path));
+
                     return { stat: stats, symbolicLink: { dangling: false } };
                 }
                 catch (error) {
@@ -276,6 +289,7 @@ export namespace SymlinkSupport {
     export async function existsFile(path: string): Promise<boolean> {
         try {
             const { stat, symbolicLink } = await SymlinkSupport.stat(path);
+
             return stat.isFile() && symbolicLink?.dangling !== true;
         }
         catch (error) {
@@ -296,6 +310,7 @@ export namespace SymlinkSupport {
     export async function existsDirectory(path: string): Promise<boolean> {
         try {
             const { stat, symbolicLink } = await SymlinkSupport.stat(path);
+
             return stat.isDirectory() && symbolicLink?.dangling !== true;
         }
         catch (error) {
@@ -324,6 +339,7 @@ function writeFile(path: string, data: string | Buffer | Uint8Array, options?: I
 function writeFile(path: string, data: string | Buffer | Uint8Array, options?: IWriteFileOptions): Promise<void> {
     return writeQueues.queueFor(URI.file(path), () => {
         const ensuredOptions = ensureWriteOptions(options);
+
         return new Promise((resolve, reject) => doWriteFileAndFlush(path, data, ensuredOptions, error => error ? reject(error) : resolve()));
     }, extUriBiasedIgnorePathCase);
 }
@@ -379,11 +395,13 @@ function doWriteFileAndFlush(path: string, data: string | Buffer | Uint8Array, o
  */
 export function writeFileSync(path: string, data: string | Buffer, options?: IWriteFileOptions): void {
     const ensuredOptions = ensureWriteOptions(options);
+
     if (!canFlush) {
         return fs.writeFileSync(path, data, { mode: ensuredOptions.mode, flag: ensuredOptions.flag });
     }
     // Open the file with same flags and mode as fs.writeFile()
     const fd = fs.openSync(path, ensuredOptions.flag, ensuredOptions.mode);
+
     try {
         // It is valid to pass a fd handle to fs.writeFile() and this will keep the handle open!
         fs.writeFileSync(fd, data);
@@ -458,12 +476,15 @@ async function renameWithRetry(source: string, target: string, startTime: number
         }
         if (Date.now() - startTime >= retryTimeout) {
             console.error(`[node.js fs] rename failed after ${attempt} retries with error: ${error}`);
+
             throw error; // give up after configurable timeout
         }
         if (attempt === 0) {
             let abortRetry = false;
+
             try {
                 const { stat } = await SymlinkSupport.stat(target);
+
                 if (!stat.isFile()) {
                     abortRetry = true; // if target is not a file, EPERM error may be raised and we should not attempt to retry
                 }
@@ -547,6 +568,7 @@ async function doCopyDirectory(source: string, target: string, mode: number, pay
     await fs.promises.mkdir(target, { recursive: true, mode });
     // Copy each file recursively
     const files = await readdir(source);
+
     for (const file of files) {
         await doCopy(join(source, file), join(target, file), payload);
     }
@@ -630,6 +652,7 @@ export const Promises = new class {
     async exists(path: string): Promise<boolean> {
         try {
             await fs.promises.access(path);
+
             return true;
         }
         catch {

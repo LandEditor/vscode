@@ -64,9 +64,11 @@ abstract class AbstractSplitEditorAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, ...args: unknown[]): Promise<void> {
 		const editorGroupsService = accessor.get(IEditorGroupsService);
+
 		const configurationService = accessor.get(IConfigurationService);
 
 		const direction = this.getDirection(configurationService);
+
 		const commandContext = resolveCommandsContext(args, accessor.get(IEditorService), editorGroupsService, accessor.get(IListService));
 
 		splitEditor(editorGroupsService, direction, commandContext);
@@ -196,6 +198,7 @@ export class JoinTwoGroupsAction extends Action2 {
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		let sourceGroup: IEditorGroup | undefined;
+
 		if (context && typeof context.groupId === 'number') {
 			sourceGroup = editorGroupService.getGroup(context.groupId);
 		} else {
@@ -204,8 +207,10 @@ export class JoinTwoGroupsAction extends Action2 {
 
 		if (sourceGroup) {
 			const targetGroupDirections = [GroupDirection.RIGHT, GroupDirection.DOWN, GroupDirection.LEFT, GroupDirection.UP];
+
 			for (const targetGroupDirection of targetGroupDirections) {
 				const targetGroup = editorGroupService.findGroup({ direction: targetGroupDirection }, sourceGroup);
+
 				if (targetGroup && sourceGroup !== targetGroup) {
 					editorGroupService.mergeGroup(sourceGroup, targetGroup);
 
@@ -455,18 +460,21 @@ export class CloseEditorTabAction extends Action {
 
 	override async run(context?: IEditorCommandsContext): Promise<void> {
 		const group = context ? this.editorGroupService.getGroup(context.groupId) : this.editorGroupService.activeGroup;
+
 		if (!group) {
 			// group mentioned in context does not exist
 			return;
 		}
 
 		const targetEditor = context?.editorIndex !== undefined ? group.getEditorByIndex(context.editorIndex) : group.activeEditor;
+
 		if (!targetEditor) {
 			// No editor open or editor at index does not exist
 			return;
 		}
 
 		const editors: EditorInput[] = [];
+
 		if (group.isSelected(targetEditor)) {
 			editors.push(...group.selectedEditors);
 		} else {
@@ -493,11 +501,14 @@ export class RevertAndCloseEditorAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const logService = accessor.get(ILogService);
 
 		const activeEditorPane = editorService.activeEditorPane;
+
 		if (activeEditorPane) {
 			const editor = activeEditorPane.input;
+
 			const group = activeEditorPane.group;
 
 			// first try a normal revert where the contents of the editor are restored
@@ -534,6 +545,7 @@ export class CloseLeftEditorsInGroupAction extends Action2 {
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const { group, editor } = this.getTarget(editorGroupService, context);
+
 		if (group && editor) {
 			await group.closeEditors({ direction: CloseDirection.LEFT, except: editor, excludeSticky: true });
 		}
@@ -558,6 +570,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 		// group that is the first (top-left) remains. This helps to keep view state
 		// for editors around that have been opened in this visually first group.
 		const groups = editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE);
+
 		for (let i = groups.length - 1; i >= 0; i--) {
 			groupsToClose.push(groups[i]);
 		}
@@ -567,22 +580,31 @@ abstract class AbstractCloseAllAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const logService = accessor.get(ILogService);
+
 		const progressService = accessor.get(IProgressService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const filesConfigurationService = accessor.get(IFilesConfigurationService);
+
 		const fileDialogService = accessor.get(IFileDialogService);
 
 		// Depending on the editor and auto save configuration,
 		// split editors into buckets for handling confirmation
 
 		const dirtyEditorsWithDefaultConfirm = new Set<IEditorIdentifier>();
+
 		const dirtyAutoSaveOnFocusChangeEditors = new Set<IEditorIdentifier>();
+
 		const dirtyAutoSaveOnWindowChangeEditors = new Set<IEditorIdentifier>();
+
 		const editorsWithCustomConfirm = new Map<string /* typeId */, Set<IEditorIdentifier>>();
 
 		for (const { editor, groupId } of editorService.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: this.excludeSticky })) {
 			let confirmClose = false;
+
 			if (editor.closeHandler) {
 				confirmClose = editor.closeHandler.showConfirm(); // custom handling of confirmation on close
 			} else {
@@ -596,6 +618,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 			// Editor has custom confirm implementation
 			if (typeof editor.closeHandler?.confirm === 'function') {
 				let customEditorsToConfirm = editorsWithCustomConfirm.get(editor.typeId);
+
 				if (!customEditorsToConfirm) {
 					customEditorsToConfirm = new Set();
 					editorsWithCustomConfirm.set(editor.typeId, customEditorsToConfirm);
@@ -640,11 +663,15 @@ abstract class AbstractCloseAllAction extends Action2 {
 			switch (confirmation) {
 				case ConfirmResult.CANCEL:
 					return;
+
 				case ConfirmResult.DONT_SAVE:
 					await this.revertEditors(editorService, logService, progressService, editors);
+
 					break;
+
 				case ConfirmResult.SAVE:
 					await editorService.save(editors, { reason: SaveReason.EXPLICIT });
+
 					break;
 			}
 		}
@@ -656,15 +683,20 @@ abstract class AbstractCloseAllAction extends Action2 {
 			await this.revealEditorsToConfirm(editors, editorGroupService); // help user make a decision by revealing editors
 
 			const confirmation = await editors.at(0)?.editor.closeHandler?.confirm?.(editors);
+
 			if (typeof confirmation === 'number') {
 				switch (confirmation) {
 					case ConfirmResult.CANCEL:
 						return;
+
 					case ConfirmResult.DONT_SAVE:
 						await this.revertEditors(editorService, logService, progressService, editors);
+
 						break;
+
 					case ConfirmResult.SAVE:
 						await editorService.save(editors, { reason: SaveReason.EXPLICIT });
+
 						break;
 				}
 			}
@@ -721,6 +753,7 @@ abstract class AbstractCloseAllAction extends Action2 {
 	private async revealEditorsToConfirm(editors: ReadonlyArray<IEditorIdentifier>, editorGroupService: IEditorGroupsService): Promise<void> {
 		try {
 			const handledGroups = new Set<GroupIdentifier>();
+
 			for (const { editor, groupId } of editors) {
 				if (handledGroups.has(groupId)) {
 					continue;
@@ -833,9 +866,11 @@ export class CloseEditorInAllGroupsAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const activeEditor = editorService.activeEditor;
+
 		if (activeEditor) {
 			await Promise.all(editorGroupService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE).map(group => group.closeEditor(activeEditor)));
 		}
@@ -856,6 +891,7 @@ abstract class AbstractMoveCopyGroupAction extends Action2 {
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		let sourceGroup: IEditorGroup | undefined;
+
 		if (context && typeof context.groupId === 'number') {
 			sourceGroup = editorGroupService.getGroup(context.groupId);
 		} else {
@@ -864,8 +900,10 @@ abstract class AbstractMoveCopyGroupAction extends Action2 {
 
 		if (sourceGroup) {
 			let resultGroup: IEditorGroup | undefined = undefined;
+
 			if (this.isMove) {
 				const targetGroup = this.findTargetGroup(editorGroupService, sourceGroup);
+
 				if (targetGroup) {
 					resultGroup = editorGroupService.moveGroup(sourceGroup, targetGroup, this.direction);
 				}
@@ -889,15 +927,19 @@ abstract class AbstractMoveCopyGroupAction extends Action2 {
 			case GroupDirection.LEFT:
 			case GroupDirection.RIGHT:
 				targetNeighbours.push(GroupDirection.UP, GroupDirection.DOWN);
+
 				break;
+
 			case GroupDirection.UP:
 			case GroupDirection.DOWN:
 				targetNeighbours.push(GroupDirection.LEFT, GroupDirection.RIGHT);
+
 				break;
 		}
 
 		for (const targetNeighbour of targetNeighbours) {
 			const targetNeighbourGroup = editorGroupService.findGroup({ direction: targetNeighbour }, sourceGroup);
+
 			if (targetNeighbourGroup) {
 				return targetNeighbourGroup;
 			}
@@ -1072,6 +1114,7 @@ export class MinimizeOtherGroupsHideSidebarAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
 		layoutService.setPartHidden(true, Parts.SIDEBAR_PART);
@@ -1130,7 +1173,9 @@ export class MaximizeGroupHideSidebarAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const editorService = accessor.get(IEditorService);
 
 		if (editorService.activeEditor) {
@@ -1175,6 +1220,7 @@ export class ToggleMaximizeEditorGroupAction extends Action2 {
 		const editorGroupsService = accessor.get(IEditorGroupsService);
 
 		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), editorGroupsService, accessor.get(IListService));
+
 		if (resolvedContext.groupedEditors.length) {
 			editorGroupsService.toggleMaximizeGroup(resolvedContext.groupedEditors[0].group);
 		}
@@ -1187,16 +1233,19 @@ abstract class AbstractNavigateEditorAction extends Action2 {
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const result = this.navigate(editorGroupService);
+
 		if (!result) {
 			return;
 		}
 
 		const { groupId, editor } = result;
+
 		if (!editor) {
 			return;
 		}
 
 		const group = editorGroupService.getGroup(groupId);
+
 		if (group) {
 			await group.openEditor(editor);
 		}
@@ -1228,21 +1277,28 @@ export class OpenNextEditor extends AbstractNavigateEditorAction {
 
 		// Navigate in active group if possible
 		const activeGroup = editorGroupService.activeGroup;
+
 		const activeGroupEditors = activeGroup.getEditors(EditorsOrder.SEQUENTIAL);
+
 		const activeEditorIndex = activeGroup.activeEditor ? activeGroupEditors.indexOf(activeGroup.activeEditor) : -1;
+
 		if (activeEditorIndex + 1 < activeGroupEditors.length) {
 			return { editor: activeGroupEditors[activeEditorIndex + 1], groupId: activeGroup.id };
 		}
 
 		// Otherwise try in next group that has editors
 		const handledGroups = new Set<number>();
+
 		let currentGroup: IEditorGroup | undefined = editorGroupService.activeGroup;
+
 		while (currentGroup && !handledGroups.has(currentGroup.id)) {
 			currentGroup = editorGroupService.findGroup({ location: GroupLocation.NEXT }, currentGroup, true);
+
 			if (currentGroup) {
 				handledGroups.add(currentGroup.id);
 
 				const groupEditors = currentGroup.getEditors(EditorsOrder.SEQUENTIAL);
+
 				if (groupEditors.length > 0) {
 					return { editor: groupEditors[0], groupId: currentGroup.id };
 				}
@@ -1276,21 +1332,28 @@ export class OpenPreviousEditor extends AbstractNavigateEditorAction {
 
 		// Navigate in active group if possible
 		const activeGroup = editorGroupService.activeGroup;
+
 		const activeGroupEditors = activeGroup.getEditors(EditorsOrder.SEQUENTIAL);
+
 		const activeEditorIndex = activeGroup.activeEditor ? activeGroupEditors.indexOf(activeGroup.activeEditor) : -1;
+
 		if (activeEditorIndex > 0) {
 			return { editor: activeGroupEditors[activeEditorIndex - 1], groupId: activeGroup.id };
 		}
 
 		// Otherwise try in previous group that has editors
 		const handledGroups = new Set<number>();
+
 		let currentGroup: IEditorGroup | undefined = editorGroupService.activeGroup;
+
 		while (currentGroup && !handledGroups.has(currentGroup.id)) {
 			currentGroup = editorGroupService.findGroup({ location: GroupLocation.PREVIOUS }, currentGroup, true);
+
 			if (currentGroup) {
 				handledGroups.add(currentGroup.id);
 
 				const groupEditors = currentGroup.getEditors(EditorsOrder.SEQUENTIAL);
+
 				if (groupEditors.length > 0) {
 					return { editor: groupEditors[groupEditors.length - 1], groupId: currentGroup.id };
 				}
@@ -1321,7 +1384,9 @@ export class OpenNextEditorInGroup extends AbstractNavigateEditorAction {
 
 	protected navigate(editorGroupService: IEditorGroupsService): IEditorIdentifier {
 		const group = editorGroupService.activeGroup;
+
 		const editors = group.getEditors(EditorsOrder.SEQUENTIAL);
+
 		const index = group.activeEditor ? editors.indexOf(group.activeEditor) : -1;
 
 		return { editor: index + 1 < editors.length ? editors[index + 1] : editors[0], groupId: group.id };
@@ -1348,7 +1413,9 @@ export class OpenPreviousEditorInGroup extends AbstractNavigateEditorAction {
 
 	protected navigate(editorGroupService: IEditorGroupsService): IEditorIdentifier {
 		const group = editorGroupService.activeGroup;
+
 		const editors = group.getEditors(EditorsOrder.SEQUENTIAL);
+
 		const index = group.activeEditor ? editors.indexOf(group.activeEditor) : -1;
 
 		return { editor: index > 0 ? editors[index - 1] : editors[editors.length - 1], groupId: group.id };
@@ -1368,6 +1435,7 @@ export class OpenFirstEditorInGroup extends AbstractNavigateEditorAction {
 
 	protected navigate(editorGroupService: IEditorGroupsService): IEditorIdentifier {
 		const group = editorGroupService.activeGroup;
+
 		const editors = group.getEditors(EditorsOrder.SEQUENTIAL);
 
 		return { editor: editors[0], groupId: group.id };
@@ -1396,6 +1464,7 @@ export class OpenLastEditorInGroup extends AbstractNavigateEditorAction {
 
 	protected navigate(editorGroupService: IEditorGroupsService): IEditorIdentifier {
 		const group = editorGroupService.activeGroup;
+
 		const editors = group.getEditors(EditorsOrder.SEQUENTIAL);
 
 		return { editor: editors[editors.length - 1], groupId: group.id };
@@ -1668,7 +1737,9 @@ export class ClearRecentFilesAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const dialogService = accessor.get(IDialogService);
+
 		const workspacesService = accessor.get(IWorkspacesService);
+
 		const historyService = accessor.get(IHistoryService);
 
 		// Ask for confirmation
@@ -1770,6 +1841,7 @@ abstract class AbstractQuickAccessEditorAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const keybindingService = accessor.get(IKeybindingService);
+
 		const quickInputService = accessor.get(IQuickInputService);
 
 		const keybindings = keybindingService.lookupKeybindings(this.desc.id);
@@ -1859,7 +1931,9 @@ export class QuickAccessPreviousEditorFromHistoryAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const keybindingService = accessor.get(IKeybindingService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
 		const keybindings = keybindingService.lookupKeybindings(QuickAccessPreviousEditorFromHistoryAction.ID);
@@ -1867,6 +1941,7 @@ export class QuickAccessPreviousEditorFromHistoryAction extends Action2 {
 		// Enforce to activate the first item in quick access if
 		// the currently active editor group has n editor opened
 		let itemActivation: ItemActivation | undefined = undefined;
+
 		if (editorGroupService.activeGroup.count === 0) {
 			itemActivation = ItemActivation.FIRST;
 		}
@@ -1924,6 +1999,7 @@ export class OpenNextRecentlyUsedEditorInGroupAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const historyService = accessor.get(IHistoryService);
+
 		const editorGroupsService = accessor.get(IEditorGroupsService);
 
 		historyService.openNextRecentlyUsedEditor(editorGroupsService.activeGroup.id);
@@ -1943,6 +2019,7 @@ export class OpenPreviousRecentlyUsedEditorInGroupAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const historyService = accessor.get(IHistoryService);
+
 		const editorGroupsService = accessor.get(IEditorGroupsService);
 
 		historyService.openPreviouslyUsedEditor(editorGroupsService.activeGroup.id);
@@ -1961,6 +2038,7 @@ export class ClearEditorHistoryAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const dialogService = accessor.get(IDialogService);
+
 		const historyService = accessor.get(IHistoryService);
 
 		// Ask for confirmation
@@ -2364,6 +2442,7 @@ abstract class AbstractCreateEditorGroupAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
 		// We are about to create a new empty editor group. We make an opiniated
@@ -2378,6 +2457,7 @@ abstract class AbstractCreateEditorGroupAction extends Action2 {
 		// (see https://github.com/microsoft/vscode/issues/189256)
 
 		const activeDocument = getActiveDocument();
+
 		const focusNewGroup = layoutService.hasFocus(Parts.EDITOR_PART) || activeDocument.activeElement === activeDocument.body;
 
 		const group = editorGroupService.addGroup(editorGroupService.activeGroup, this.direction);
@@ -2451,19 +2531,23 @@ export class ToggleEditorTypeAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorResolverService = accessor.get(IEditorResolverService);
 
 		const activeEditorPane = editorService.activeEditorPane;
+
 		if (!activeEditorPane) {
 			return;
 		}
 
 		const activeEditorResource = EditorResourceAccessor.getCanonicalUri(activeEditorPane.input);
+
 		if (!activeEditorResource) {
 			return;
 		}
 
 		const editorIds = editorResolverService.getEditors(activeEditorResource).map(editor => editor.id).filter(id => id !== activeEditorPane.input.editorId);
+
 		if (editorIds.length === 0) {
 			return;
 		}
@@ -2499,11 +2583,13 @@ export class ReOpenInTextEditorAction extends Action2 {
 		const editorService = accessor.get(IEditorService);
 
 		const activeEditorPane = editorService.activeEditorPane;
+
 		if (!activeEditorPane) {
 			return;
 		}
 
 		const activeEditorResource = EditorResourceAccessor.getCanonicalUri(activeEditorPane.input);
+
 		if (!activeEditorResource) {
 			return;
 		}
@@ -2544,7 +2630,9 @@ abstract class BaseMoveCopyEditorToNewWindowAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, ...args: unknown[]) {
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const resolvedContext = resolveCommandsContext(args, accessor.get(IEditorService), editorGroupService, accessor.get(IListService));
+
 		if (!resolvedContext.groupedEditors.length) {
 			return;
 		}
@@ -2553,7 +2641,9 @@ abstract class BaseMoveCopyEditorToNewWindowAction extends Action2 {
 
 		// only single group supported for move/copy for now
 		const { group, editors } = resolvedContext.groupedEditors[0];
+
 		const options = { preserveFocus: resolvedContext.preserveFocus };
+
 		const editorsWithOptions = editors.map(editor => ({ editor, options }));
 
 		if (this.move) {
@@ -2613,6 +2703,7 @@ abstract class BaseMoveCopyEditorGroupToNewWindowAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const activeGroup = editorGroupService.activeGroup;
 
 		const auxiliaryEditorPart = await editorGroupService.createAuxiliaryEditorPart();

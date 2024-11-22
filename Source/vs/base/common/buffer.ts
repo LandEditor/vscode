@@ -5,9 +5,13 @@
 import { Lazy } from './lazy.js';
 import * as streams from './stream.js';
 declare const Buffer: any;
+
 const hasBuffer = (typeof Buffer !== 'undefined');
+
 const indexOfTable = new Lazy(() => new Uint8Array(256));
+
 let textEncoder: TextEncoder | null;
+
 let textDecoder: TextDecoder | null;
 export class VSBuffer {
     /**
@@ -43,6 +47,7 @@ export class VSBuffer {
         dontUseNodeBuffer?: boolean;
     }): VSBuffer {
         const dontUseNodeBuffer = options?.dontUseNodeBuffer || false;
+
         if (!dontUseNodeBuffer && hasBuffer) {
             return new VSBuffer(Buffer.from(source));
         }
@@ -59,6 +64,7 @@ export class VSBuffer {
      */
     static fromByteArray(source: number[]): VSBuffer {
         const result = VSBuffer.alloc(source.length);
+
         for (let i = 0, len = source.length; i < len; i++) {
             result.buffer[i] = source[i];
         }
@@ -71,12 +77,15 @@ export class VSBuffer {
     static concat(buffers: VSBuffer[], totalLength?: number): VSBuffer {
         if (typeof totalLength === 'undefined') {
             totalLength = 0;
+
             for (let i = 0, len = buffers.length; i < len; i++) {
                 totalLength += buffers[i].byteLength;
             }
         }
         const ret = VSBuffer.alloc(totalLength);
+
         let offset = 0;
+
         for (let i = 0, len = buffers.length; i < len; i++) {
             const element = buffers[i];
             ret.set(element, offset);
@@ -97,6 +106,7 @@ export class VSBuffer {
     clone(): VSBuffer {
         const result = VSBuffer.alloc(this.byteLength);
         result.set(this);
+
         return result;
     }
     toString(): string {
@@ -117,10 +127,15 @@ export class VSBuffer {
         return new VSBuffer(this.buffer.subarray(start, end));
     }
     set(array: VSBuffer, offset?: number): void;
+
     set(array: Uint8Array, offset?: number): void;
+
     set(array: ArrayBuffer, offset?: number): void;
+
     set(array: ArrayBufferView, offset?: number): void;
+
     set(array: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView, offset?: number): void;
+
     set(array: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView, offset?: number): void {
         if (array instanceof VSBuffer) {
             this.buffer.set(array.buffer, offset);
@@ -166,7 +181,9 @@ export class VSBuffer {
  */
 export function binaryIndexOf(haystack: Uint8Array, needle: Uint8Array, offset = 0): number {
     const needleLen = needle.byteLength;
+
     const haystackLen = haystack.byteLength;
+
     if (needleLen === 0) {
         return 0;
     }
@@ -179,16 +196,21 @@ export function binaryIndexOf(haystack: Uint8Array, needle: Uint8Array, offset =
     // find index of the subarray using boyer-moore-horspool algorithm
     const table = indexOfTable.value;
     table.fill(needle.length);
+
     for (let i = 0; i < needle.length; i++) {
         table[needle[i]] = needle.length - i - 1;
     }
     let i = offset + needle.length - 1;
+
     let j = i;
+
     let result = -1;
+
     while (i < haystackLen) {
         if (haystack[i] === needle[j]) {
             if (j === 0) {
                 result = i;
+
                 break;
             }
             i--;
@@ -292,32 +314,42 @@ export function prefixedBufferStream(prefix: VSBuffer, stream: VSBufferReadableS
 /** Decodes base64 to a uint8 array. URL-encoded and unpadded base64 is allowed. */
 export function decodeBase64(encoded: string) {
     let building = 0;
+
     let remainder = 0;
+
     let bufi = 0;
     // The simpler way to do this is `Uint8Array.from(atob(str), c => c.charCodeAt(0))`,
     // but that's about 10-20x slower than this function in current Chromium versions.
     const buffer = new Uint8Array(Math.floor(encoded.length / 4 * 3));
+
     const append = (value: number) => {
         switch (remainder) {
             case 3:
                 buffer[bufi++] = building | value;
                 remainder = 0;
+
                 break;
+
             case 2:
                 buffer[bufi++] = building | (value >>> 2);
                 building = value << 6;
                 remainder = 3;
+
                 break;
+
             case 1:
                 buffer[bufi++] = building | (value >>> 4);
                 building = value << 4;
                 remainder = 2;
+
                 break;
+
             default:
                 building = value << 2;
                 remainder = 1;
         }
     };
+
     for (let i = 0; i < encoded.length; i++) {
         const code = encoded.charCodeAt(i);
         // See https://datatracker.ietf.org/doc/html/rfc4648#section-4
@@ -345,6 +377,7 @@ export function decodeBase64(encoded: string) {
         }
     }
     const unpadded = bufi;
+
     while (remainder > 0) {
         append(0);
     }
@@ -352,16 +385,23 @@ export function decodeBase64(encoded: string) {
     return VSBuffer.wrap(buffer).slice(0, unpadded);
 }
 const base64Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
 const base64UrlSafeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 /** Encodes a buffer to a base64 string. */
 export function encodeBase64({ buffer }: VSBuffer, padded = true, urlSafe = false) {
     const dictionary = urlSafe ? base64UrlSafeAlphabet : base64Alphabet;
+
     let output = '';
+
     const remainder = buffer.byteLength % 3;
+
     let i = 0;
+
     for (; i < buffer.byteLength - remainder; i += 3) {
         const a = buffer[i + 0];
+
         const b = buffer[i + 1];
+
         const c = buffer[i + 2];
         output += dictionary[a >>> 2];
         output += dictionary[(a << 4 | b >>> 4) & 0b111111];
@@ -372,16 +412,19 @@ export function encodeBase64({ buffer }: VSBuffer, padded = true, urlSafe = fals
         const a = buffer[i + 0];
         output += dictionary[a >>> 2];
         output += dictionary[(a << 4) & 0b111111];
+
         if (padded) {
             output += '==';
         }
     }
     else if (remainder === 2) {
         const a = buffer[i + 0];
+
         const b = buffer[i + 1];
         output += dictionary[a >>> 2];
         output += dictionary[(a << 4 | b >>> 4) & 0b111111];
         output += dictionary[(b << 2) & 0b111111];
+
         if (padded) {
             output += '=';
         }

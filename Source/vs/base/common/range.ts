@@ -20,7 +20,9 @@ export namespace Range {
             return { start: 0, end: 0 };
         }
         const start = Math.max(one.start, other.start);
+
         const end = Math.min(one.end, other.end);
+
         if (end - start <= 0) {
             return { start: 0, end: 0 };
         }
@@ -34,8 +36,11 @@ export namespace Range {
     }
     export function relativeComplement(one: IRange, other: IRange): IRange[] {
         const result: IRange[] = [];
+
         const first = { start: one.start, end: Math.min(other.start, one.end) };
+
         const second = { start: Math.max(other.end, one.start), end: one.end };
+
         if (!isEmpty(first)) {
             result.push(first);
         }

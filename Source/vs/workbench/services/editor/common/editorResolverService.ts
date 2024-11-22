@@ -28,7 +28,9 @@ export type EditorAssociation = {
 };
 export type EditorAssociations = readonly EditorAssociation[];
 export const editorsAssociationsSettingId = 'workbench.editorAssociations';
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
 const editorAssociationsConfigurationNode: IConfigurationNode = {
     ...workbenchConfigurationNodeBase,
     properties: {
@@ -155,8 +157,10 @@ export function priorityToRank(priority: RegisteredEditorPriority): number {
     switch (priority) {
         case RegisteredEditorPriority.exclusive:
             return 5;
+
         case RegisteredEditorPriority.default:
             return 4;
+
         case RegisteredEditorPriority.builtin:
             return 3;
         // Text editor is priority 2
@@ -177,7 +181,9 @@ export function globMatchesResource(globPattern: string | glob.IRelativePattern,
         return false;
     }
     const matchOnPath = typeof globPattern === 'string' && globPattern.indexOf(posix.sep) >= 0;
+
     const target = matchOnPath ? `${resource.scheme}:${resource.path}` : basename(resource);
+
     return glob.match(typeof globPattern === 'string' ? globPattern.toLowerCase() : globPattern, target.toLowerCase());
 }
 //#endregion

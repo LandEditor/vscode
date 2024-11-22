@@ -24,6 +24,7 @@ export class CodeEditorContributions extends Disposable {
      * Tracks which instantiation kinds are still left in `_pending`.
      */
     private readonly _finishedInstantiation: boolean[] = [];
+
     constructor() {
         super();
         this._finishedInstantiation[EditorContributionInstantiation.Eager] = false;
@@ -34,9 +35,11 @@ export class CodeEditorContributions extends Disposable {
     public initialize(editor: ICodeEditor, contributions: IEditorContributionDescription[], instantiationService: IInstantiationService) {
         this._editor = editor;
         this._instantiationService = instantiationService;
+
         for (const desc of contributions) {
             if (this._pending.has(desc.id)) {
                 onUnexpectedError(new Error(`Cannot have two contributions with the same id ${desc.id}`));
+
                 continue;
             }
             this._pending.set(desc.id, desc);
@@ -67,6 +70,7 @@ export class CodeEditorContributions extends Disposable {
         const contributionsState: {
             [key: string]: any;
         } = {};
+
         for (const [id, contribution] of this._instances) {
             if (typeof contribution.saveViewState === 'function') {
                 contributionsState[id] = contribution.saveViewState();
@@ -85,6 +89,7 @@ export class CodeEditorContributions extends Disposable {
     }
     public get(id: string): IEditorContribution | null {
         this._instantiateById(id);
+
         return this._instances.get(id) || null;
     }
     /**
@@ -108,13 +113,16 @@ export class CodeEditorContributions extends Disposable {
             return;
         }
         this._finishedInstantiation[instantiation] = true;
+
         const contribs = this._findPendingContributionsByInstantiation(instantiation);
+
         for (const contrib of contribs) {
             this._instantiateById(contrib.id);
         }
     }
     private _findPendingContributionsByInstantiation(instantiation: EditorContributionInstantiation): readonly IEditorContributionDescription[] {
         const result: IEditorContributionDescription[] = [];
+
         for (const [, desc] of this._pending) {
             if (desc.instantiation === instantiation) {
                 result.push(desc);
@@ -124,16 +132,19 @@ export class CodeEditorContributions extends Disposable {
     }
     private _instantiateById(id: string): void {
         const desc = this._pending.get(id);
+
         if (!desc) {
             return;
         }
         this._pending.delete(id);
+
         if (!this._instantiationService || !this._editor) {
             throw new Error(`Cannot instantiate contributions before being initialized!`);
         }
         try {
             const instance = this._instantiationService.createInstance(desc.ctor, this._editor);
             this._instances.set(desc.id, instance);
+
             if (typeof instance.restoreViewState === 'function' && desc.instantiation !== EditorContributionInstantiation.Eager) {
                 console.warn(`Editor contribution '${desc.id}' should be eager instantiated because it uses saveViewState / restoreViewState.`);
             }

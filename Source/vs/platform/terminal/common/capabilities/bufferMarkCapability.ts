@@ -16,6 +16,7 @@ export class BufferMarkCapability extends Disposable implements IBufferMarkCapab
     private _anonymousMarkers: Map<number, IMarker> = new Map();
     private readonly _onMarkAdded = this._register(new Emitter<IMarkProperties>());
     readonly onMarkAdded = this._onMarkAdded.event;
+
     constructor(private readonly _terminal: Terminal) {
         super();
     }
@@ -29,7 +30,9 @@ export class BufferMarkCapability extends Disposable implements IBufferMarkCapab
     }
     addMark(properties?: IMarkProperties): void {
         const marker = properties?.marker || this._terminal.registerMarker();
+
         const id = properties?.id;
+
         if (!marker) {
             return;
         }

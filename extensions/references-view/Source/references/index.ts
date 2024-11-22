@@ -17,7 +17,9 @@ export function register(tree: SymbolsTree, context: vscode.ExtensionContext): v
     vscode.commands.registerCommand('references-view.find', (...args: any[]) => vscode.commands.executeCommand('references-view.findReferences', ...args)), vscode.commands.registerCommand('references-view.removeReferenceItem', removeReferenceItem), vscode.commands.registerCommand('references-view.copy', copyCommand), vscode.commands.registerCommand('references-view.copyAll', copyAllCommand), vscode.commands.registerCommand('references-view.copyPath', copyPathCommand));
     // --- references.preferredLocation setting
     let showReferencesDisposable: vscode.Disposable | undefined;
+
     const config = 'references.preferredLocation';
+
     function updateShowReferences(event?: vscode.ConfigurationChangeEvent) {
         if (event && !event.affectsConfiguration(config)) {
             return;
@@ -25,6 +27,7 @@ export function register(tree: SymbolsTree, context: vscode.ExtensionContext): v
         const value = vscode.workspace.getConfiguration().get<string>(config);
         showReferencesDisposable?.dispose();
         showReferencesDisposable = undefined;
+
         if (value === 'view') {
             showReferencesDisposable = vscode.commands.registerCommand('editor.action.showReferences', async (uri: vscode.Uri, position: vscode.Position, locations: vscode.Location[]) => {
                 const input = new ReferencesTreeInput(vscode.l10n.t('References'), new vscode.Location(uri, position), 'vscode.executeReferenceProvider', locations);
@@ -54,6 +57,7 @@ function removeReferenceItem(item: FileItem | ReferenceItem | unknown) {
 }
 async function copyCommand(item: ReferencesModel | ReferenceItem | FileItem | unknown) {
     let val: string | undefined;
+
     if (item instanceof ReferencesModel) {
         val = await item.asCopyText();
     }

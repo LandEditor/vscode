@@ -31,10 +31,13 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
     async readExtensionResource(uri: URI): Promise<string> {
         if (this.isExtensionGalleryResource(uri)) {
             const headers = await this.getExtensionGalleryRequestHeaders();
+
             const requestContext = await this._requestService.request({ url: uri.toString(), headers }, CancellationToken.None);
+
             return (await asTextOrError(requestContext)) || '';
         }
         const result = await this._fileService.readFile(uri);
+
         return result.value.toString();
     }
 }

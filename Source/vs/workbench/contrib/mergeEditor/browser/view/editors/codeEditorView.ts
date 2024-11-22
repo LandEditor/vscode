@@ -69,6 +69,7 @@ export abstract class CodeEditorView extends Disposable {
     public readonly cursorPosition = observableFromEvent(this, this.editor.onDidChangeCursorPosition, () => /** @description editor.getPosition */ this.editor.getPosition());
     public readonly selection = observableFromEvent(this, this.editor.onDidChangeCursorSelection, () => /** @description editor.getSelections */ this.editor.getSelections());
     public readonly cursorLineNumber = this.cursorPosition.map(p => /** @description cursorPosition.lineNumber */ p?.lineNumber);
+
     constructor(private readonly instantiationService: IInstantiationService, public readonly viewModel: IObservable<undefined | MergeEditorViewModel>, private readonly configurationService: IConfigurationService) {
         super();
     }
@@ -80,18 +81,22 @@ export function createSelectionsAutorun(codeEditorView: CodeEditorView, translat
     const selections = derived(reader => {
         /** @description selections */
         const viewModel = codeEditorView.viewModel.read(reader);
+
         if (!viewModel) {
             return [];
         }
         const baseRange = viewModel.selectionInBase.read(reader);
+
         if (!baseRange || baseRange.sourceEditor === codeEditorView) {
             return [];
         }
         return baseRange.rangesInBase.map(r => translateRange(r, viewModel));
     });
+
     return autorun(reader => {
         /** @description set selections */
         const ranges = selections.read(reader);
+
         if (ranges.length === 0) {
             return;
         }
@@ -103,6 +108,7 @@ export class TitleMenu extends Disposable {
     @IInstantiationService
     instantiationService: IInstantiationService) {
         super();
+
         const toolbar = instantiationService.createInstance(MenuWorkbenchToolBar, targetHtmlElement, menuId, {
             menuOptions: { renderShortTitle: true },
             toolbarOptions: { primaryGroup: (g) => g === 'primary' }

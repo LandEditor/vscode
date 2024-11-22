@@ -24,6 +24,7 @@ export class ResourceGlobMatcher extends Disposable {
     readonly onExpressionChange = this._onExpressionChange.event;
     private readonly mapFolderToParsedExpression = new Map<string | null, ParsedExpression>();
     private readonly mapFolderToConfiguredExpression = new Map<string | null, IConfiguredExpression>();
+
     constructor(private getExpression: (folder?: URI) => IExpression | undefined, private shouldUpdate: (event: IConfigurationChangeEvent) => boolean, 
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -46,8 +47,11 @@ export class ResourceGlobMatcher extends Disposable {
         // Add expressions per workspaces that got added
         for (const folder of this.contextService.getWorkspace().folders) {
             const folderUriStr = folder.uri.toString();
+
             const newExpression = this.doGetExpression(folder.uri);
+
             const currentExpression = this.mapFolderToConfiguredExpression.get(folderUriStr);
+
             if (newExpression) {
                 if (!currentExpression || !equals(currentExpression.expression, newExpression.expression)) {
                     changed = true;
@@ -65,6 +69,7 @@ export class ResourceGlobMatcher extends Disposable {
         }
         // Remove expressions per workspace no longer present
         const foldersMap = new ResourceSet(this.contextService.getWorkspace().folders.map(folder => folder.uri));
+
         for (const [folder] of this.mapFolderToConfiguredExpression) {
             if (folder === ResourceGlobMatcher.NO_FOLDER) {
                 continue; // always keep this one
@@ -77,7 +82,9 @@ export class ResourceGlobMatcher extends Disposable {
         }
         // Always set for resources outside workspace as well
         const globalNewExpression = this.doGetExpression(undefined);
+
         const globalCurrentExpression = this.mapFolderToConfiguredExpression.get(ResourceGlobMatcher.NO_FOLDER);
+
         if (globalNewExpression) {
             if (!globalCurrentExpression || !equals(globalCurrentExpression.expression, globalNewExpression.expression)) {
                 changed = true;
@@ -98,10 +105,12 @@ export class ResourceGlobMatcher extends Disposable {
     }
     private doGetExpression(resource: URI | undefined): IConfiguredExpression | undefined {
         const expression = this.getExpression(resource);
+
         if (!expression) {
             return undefined;
         }
         const keys = Object.keys(expression);
+
         if (keys.length === 0) {
             return undefined;
         }
@@ -112,14 +121,18 @@ export class ResourceGlobMatcher extends Disposable {
         // check with `URI.fsPath` which is always putting
         // the drive letter lowercased.
         const massagedExpression: IExpression = Object.create(null);
+
         for (const key of keys) {
             if (!hasAbsolutePath) {
                 hasAbsolutePath = isAbsolute(key);
             }
             let massagedKey = key;
+
             const driveLetter = getDriveLetter(massagedKey, true /* probe for windows */);
+
             if (driveLetter) {
                 const driveLetterLower = driveLetter.toLowerCase();
+
                 if (driveLetter !== driveLetter.toLowerCase()) {
                     massagedKey = `${driveLetterLower}${massagedKey.substring(1)}`;
                 }
@@ -136,8 +149,11 @@ export class ResourceGlobMatcher extends Disposable {
             return false; // return early: no expression for this matcher
         }
         const folder = this.contextService.getWorkspaceFolder(resource);
+
         let expressionForFolder: ParsedExpression | undefined;
+
         let expressionConfigForFolder: IConfiguredExpression | undefined;
+
         if (folder && this.mapFolderToParsedExpression.has(folder.uri.toString())) {
             expressionForFolder = this.mapFolderToParsedExpression.get(folder.uri.toString());
             expressionConfigForFolder = this.mapFolderToConfiguredExpression.get(folder.uri.toString());
@@ -154,6 +170,7 @@ export class ResourceGlobMatcher extends Disposable {
         // a glob pattern of "src/**" will not match on an absolute path "/folder/src/file.txt"
         // but can match on "src/file.txt"
         let resourcePathToMatch: string | undefined;
+
         if (folder) {
             resourcePathToMatch = relativePath(folder.uri, resource);
         }

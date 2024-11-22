@@ -13,6 +13,7 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
     readonly _serviceBrand: undefined;
     static readonly DEFAULT_TIMEOUT = 1000 * 10; // 10 seconds
     private readonly _providers: Map<RelatedInformationType, IAiRelatedInformationProvider[]> = new Map();
+
     constructor(
     @ILogService
     private readonly logService: ILogService) { }
@@ -23,10 +24,13 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
         const providers = this._providers.get(type) ?? [];
         providers.push(provider);
         this._providers.set(type, providers);
+
         return {
             dispose: () => {
                 const providers = this._providers.get(type) ?? [];
+
                 const index = providers.indexOf(provider);
+
                 if (index !== -1) {
                     providers.splice(index, 1);
                 }
@@ -42,8 +46,10 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
         }
         // get providers for each type
         const providers: IAiRelatedInformationProvider[] = [];
+
         for (const type of types) {
             const typeProviders = this._providers.get(type);
+
             if (typeProviders) {
                 providers.push(...typeProviders);
             }
@@ -52,6 +58,7 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
             throw new Error('No related information providers registered for the given types');
         }
         const stopwatch = StopWatch.create();
+
         const cancellablePromises: Array<CancelablePromise<RelatedInformationResult[]>> = providers.map((provider) => {
             return createCancelablePromise(async (t) => {
                 try {
@@ -65,17 +72,20 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
                 return [];
             });
         });
+
         try {
             const results = await raceTimeout(Promise.allSettled(cancellablePromises), AiRelatedInformationService.DEFAULT_TIMEOUT, () => {
                 cancellablePromises.forEach(p => p.cancel());
                 this.logService.warn('[AiRelatedInformationService]: Related information provider timed out');
             });
+
             if (!results) {
                 return [];
             }
             const result = results
                 .filter(r => r.status === 'fulfilled')
                 .flatMap(r => (r as PromiseFulfilledResult<RelatedInformationResult[]>).value);
+
             return result;
         }
         finally {

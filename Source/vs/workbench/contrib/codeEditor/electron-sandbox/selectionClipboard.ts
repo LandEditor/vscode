@@ -43,11 +43,13 @@ export class SelectionClipboard extends Disposable implements IEditorContributio
 					return;
 				}
 				const model = editor.getModel();
+
 				let selections = editor.getSelections();
 				selections = selections.slice(0);
 				selections.sort(Range.compareRangesUsingStarts);
 
 				let resultLength = 0;
+
 				for (const sel of selections) {
 					if (sel.isEmpty()) {
 						// Only write if all cursors have selection
@@ -63,6 +65,7 @@ export class SelectionClipboard extends Disposable implements IEditorContributio
 				}
 
 				const result: string[] = [];
+
 				for (const sel of selections) {
 					result.push(model.getValueInRange(sel, EndOfLinePreference.TextDefined));
 				}
@@ -104,6 +107,7 @@ class LinuxSelectionClipboardPastePreventer extends Disposable implements IWorkb
 				if (e.button === 1) {
 					// middle button
 					const config = configurationService.getValue<{ selectionClipboard: boolean }>('editor');
+
 					if (!config.selectionClipboard) {
 						// selection clipboard is disabled
 						// try to stop the upcoming paste

@@ -44,7 +44,9 @@ export class MdDocumentRenderer {
     };
     public async renderDocument(markdownDocument: vscode.TextDocument, resourceProvider: WebviewResourceProvider, previewConfigurations: MarkdownPreviewConfigurationManager, initialLine: number | undefined, selectedLine: number | undefined, state: any | undefined, imageInfo: readonly ImageInfo[], token: vscode.CancellationToken): Promise<MarkdownContentProviderOutput> {
         const sourceUri = markdownDocument.uri;
+
         const config = previewConfigurations.loadAndCacheConfiguration(sourceUri);
+
         const initialData = {
             source: sourceUri.toString(),
             fragment: state?.fragment || markdownDocument.uri.fragment || undefined,
@@ -59,8 +61,11 @@ export class MdDocumentRenderer {
         this._logger.verbose('DocumentRenderer', `provideTextDocumentContent - ${markdownDocument.uri}`, initialData);
         // Content Security Policy
         const nonce = getNonce();
+
         const csp = this._getCsp(resourceProvider, sourceUri, nonce);
+
         const body = await this.renderBody(markdownDocument, resourceProvider);
+
         if (token.isCancellationRequested) {
             return { html: '', containingImages: new Set() };
         }
@@ -82,6 +87,7 @@ export class MdDocumentRenderer {
 				${this._getScripts(resourceProvider, nonce)}
 			</body>
 			</html>`;
+
         return {
             html,
             containingImages: body.containingImages,
@@ -89,7 +95,9 @@ export class MdDocumentRenderer {
     }
     public async renderBody(markdownDocument: vscode.TextDocument, resourceProvider: WebviewResourceProvider): Promise<MarkdownContentProviderOutput> {
         const rendered = await this._engine.render(markdownDocument, resourceProvider);
+
         const html = `<div class="markdown-body" dir="auto">${rendered.html}<div class="code-line" data-line="${markdownDocument.lineCount}"></div></div>`;
+
         return {
             html,
             containingImages: rendered.containingImages
@@ -97,7 +105,9 @@ export class MdDocumentRenderer {
     }
     public renderFileNotFoundDocument(resource: vscode.Uri): string {
         const resourcePath = uri.Utils.basename(resource);
+
         const body = vscode.l10n.t('{0} cannot be found', resourcePath);
+
         return `<!DOCTYPE html>
 			<html>
 			<body class="vscode-body">
@@ -107,6 +117,7 @@ export class MdDocumentRenderer {
     }
     private _extensionResourcePath(resourceProvider: WebviewResourceProvider, mediaFile: string): string {
         const webviewResource = resourceProvider.asWebviewUri(vscode.Uri.joinPath(this._context.extensionUri, 'media', mediaFile));
+
         return webviewResource.toString();
     }
     private _fixHref(resourceProvider: WebviewResourceProvider, resource: vscode.Uri, href: string): string {
@@ -122,6 +133,7 @@ export class MdDocumentRenderer {
         }
         // Use a workspace relative path if there is a workspace
         const root = vscode.workspace.getWorkspaceFolder(resource);
+
         if (root) {
             return resourceProvider.asWebviewUri(vscode.Uri.joinPath(root.uri, href)).toString();
         }
@@ -133,6 +145,7 @@ export class MdDocumentRenderer {
             return '';
         }
         const out: string[] = [];
+
         for (const style of config.styles) {
             out.push(`<link rel="stylesheet" class="code-user-style" data-source="${escapeAttribute(style)}" href="${escapeAttribute(this._fixHref(resourceProvider, resource, style))}" type="text/css" media="screen">`);
         }
@@ -150,6 +163,7 @@ export class MdDocumentRenderer {
             return '';
         }
         let ret = '<style>\n';
+
         for (const imgInfo of imageInfo) {
             ret += `#${imgInfo.id}.loading {
 					height: ${imgInfo.height}px;
@@ -157,10 +171,12 @@ export class MdDocumentRenderer {
 				}\n`;
         }
         ret += '</style>\n';
+
         return ret;
     }
     private _getStyles(resourceProvider: WebviewResourceProvider, resource: vscode.Uri, config: MarkdownPreviewConfiguration, imageInfo: readonly ImageInfo[]): string {
         const baseStyles: string[] = [];
+
         for (const resource of this._contributionProvider.contributions.previewStyles) {
             baseStyles.push(`<link rel="stylesheet" type="text/css" href="${escapeAttribute(resourceProvider.asWebviewUri(resource))}">`);
         }
@@ -170,6 +186,7 @@ export class MdDocumentRenderer {
     }
     private _getScripts(resourceProvider: WebviewResourceProvider, nonce: string): string {
         const out: string[] = [];
+
         for (const resource of this._contributionProvider.contributions.previewScripts) {
             out.push(`<script async
 				src="${escapeAttribute(resourceProvider.asWebviewUri(resource))}"
@@ -180,13 +197,17 @@ export class MdDocumentRenderer {
     }
     private _getCsp(provider: WebviewResourceProvider, resource: vscode.Uri, nonce: string): string {
         const rule = provider.cspSource;
+
         switch (this._cspArbiter.getSecurityLevelForResource(resource)) {
             case MarkdownPreviewSecurityLevel.AllowInsecureContent:
                 return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' ${rule} http: https: data:; media-src 'self' ${rule} http: https: data:; script-src 'nonce-${nonce}'; style-src 'self' ${rule} 'unsafe-inline' http: https: data:; font-src 'self' ${rule} http: https: data:;">`;
+
             case MarkdownPreviewSecurityLevel.AllowInsecureLocalContent:
                 return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' ${rule} https: data: http://localhost:* http://127.0.0.1:*; media-src 'self' ${rule} https: data: http://localhost:* http://127.0.0.1:*; script-src 'nonce-${nonce}'; style-src 'self' ${rule} 'unsafe-inline' https: data: http://localhost:* http://127.0.0.1:*; font-src 'self' ${rule} https: data: http://localhost:* http://127.0.0.1:*;">`;
+
             case MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent:
                 return '<meta http-equiv="Content-Security-Policy" content="">';
+
             case MarkdownPreviewSecurityLevel.Strict:
             default:
                 return `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' ${rule} https: data:; media-src 'self' ${rule} https: data:; script-src 'nonce-${nonce}'; style-src 'self' ${rule} 'unsafe-inline' https: data:; font-src 'self' ${rule} https: data:;">`;

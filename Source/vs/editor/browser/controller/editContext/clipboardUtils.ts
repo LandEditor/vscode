@@ -9,16 +9,22 @@ import { Mimes } from '../../../../base/common/mime.js';
 
 export function getDataToCopy(viewModel: IViewModel, modelSelections: Range[], emptySelectionClipboard: boolean, copyWithSyntaxHighlighting: boolean): ClipboardDataToCopy {
 	const rawTextToCopy = viewModel.getPlainTextToCopy(modelSelections, emptySelectionClipboard, isWindows);
+
 	const newLineCharacter = viewModel.model.getEOL();
 
 	const isFromEmptySelection = (emptySelectionClipboard && modelSelections.length === 1 && modelSelections[0].isEmpty());
+
 	const multicursorText = (Array.isArray(rawTextToCopy) ? rawTextToCopy : null);
+
 	const text = (Array.isArray(rawTextToCopy) ? rawTextToCopy.join(newLineCharacter) : rawTextToCopy);
 
 	let html: string | null | undefined = undefined;
+
 	let mode: string | null = null;
+
 	if (CopyOptions.forceCopyWithSyntaxHighlighting || (copyWithSyntaxHighlighting && text.length < 65536)) {
 		const richText = viewModel.getRichTextToCopy(modelSelections, emptySelectionClipboard);
+
 		if (richText) {
 			html = richText.html;
 			mode = richText.mode;
@@ -31,6 +37,7 @@ export function getDataToCopy(viewModel: IViewModel, modelSelections: Range[], e
 		html,
 		mode
 	};
+
 	return dataToCopy;
 }
 
@@ -58,6 +65,7 @@ export class InMemoryClipboardMetadataManager {
 			return this._lastState.data;
 		}
 		this._lastState = null;
+
 		return null;
 	}
 }
@@ -90,11 +98,15 @@ export const ClipboardEventUtils = {
 
 	getTextData(clipboardData: DataTransfer): [string, ClipboardStoredMetadata | null] {
 		const text = clipboardData.getData(Mimes.text);
+
 		let metadata: ClipboardStoredMetadata | null = null;
+
 		const rawmetadata = clipboardData.getData('vscode-editor-data');
+
 		if (typeof rawmetadata === 'string') {
 			try {
 				metadata = <ClipboardStoredMetadata>JSON.parse(rawmetadata);
+
 				if (metadata.version !== 1) {
 					metadata = null;
 				}
@@ -105,6 +117,7 @@ export const ClipboardEventUtils = {
 		if (text.length === 0 && metadata === null && clipboardData.files.length > 0) {
 			// no textual data pasted, generate text from file names
 			const files: File[] = Array.prototype.slice.call(clipboardData.files, 0);
+
 			return [files.map(file => file.name).join('\n'), null];
 		}
 		return [text, metadata];
@@ -112,6 +125,7 @@ export const ClipboardEventUtils = {
 
 	setTextData(clipboardData: DataTransfer, text: string, html: string | null | undefined, metadata: ClipboardStoredMetadata): void {
 		clipboardData.setData(Mimes.text, text);
+
 		if (typeof html === 'string') {
 			clipboardData.setData('text/html', html);
 		}

@@ -68,6 +68,7 @@ export interface Readable<T> {
 }
 export function isReadable<T>(obj: unknown): obj is Readable<T> {
     const candidate = obj as Readable<T> | undefined;
+
     if (!candidate) {
         return false;
     }
@@ -129,6 +130,7 @@ export interface ReadableBufferedStream<T> {
 }
 export function isReadableStream<T>(obj: unknown): obj is ReadableStream<T> {
     const candidate = obj as ReadableStream<T> | undefined;
+
     if (!candidate) {
         return false;
     }
@@ -136,6 +138,7 @@ export function isReadableStream<T>(obj: unknown): obj is ReadableStream<T> {
 }
 export function isReadableBufferedStream<T>(obj: unknown): obj is ReadableBufferedStream<T> {
     const candidate = obj as ReadableBufferedStream<T> | undefined;
+
     if (!candidate) {
         return false;
     }
@@ -187,6 +190,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
         }[]
     };
     private readonly pendingWritePromises: Function[] = [];
+
     constructor(private reducer: IReducer<T>, private options?: WriteableStreamOptions) { }
     pause(): void {
         if (this.state.destroyed) {
@@ -281,7 +285,9 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
                 // switch into flowing mode as soon as the first 'data'
                 // listener is added and we are not yet in flowing mode
                 this.resume();
+
                 break;
+
             case 'end':
                 this.listeners.end.push(callback);
                 // emit 'end' event directly if we are flowing
@@ -292,6 +298,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
                     this.destroy();
                 }
                 break;
+
             case 'error':
                 this.listeners.error.push(callback);
                 // emit buffered 'error' events unless done already
@@ -307,19 +314,26 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
             return;
         }
         let listeners: unknown[] | undefined = undefined;
+
         switch (event) {
             case 'data':
                 listeners = this.listeners.data;
+
                 break;
+
             case 'end':
                 listeners = this.listeners.end;
+
                 break;
+
             case 'error':
                 listeners = this.listeners.error;
+
                 break;
         }
         if (listeners) {
             const index = listeners.indexOf(callback);
+
             if (index >= 0) {
                 listeners.splice(index, 1);
             }
@@ -347,6 +361,7 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
     private flowEnd(): boolean {
         if (this.state.ended) {
             this.emitEnd();
+
             return this.listeners.end.length > 0;
         }
         return false;
@@ -369,7 +384,9 @@ class WriteableStreamImpl<T> implements WriteableStream<T> {
  */
 export function consumeReadable<T>(readable: Readable<T>, reducer: IReducer<T>): T {
     const chunks: T[] = [];
+
     let chunk: T | null;
+
     while ((chunk = readable.read()) !== null) {
         chunks.push(chunk);
     }
@@ -382,7 +399,9 @@ export function consumeReadable<T>(readable: Readable<T>, reducer: IReducer<T>):
  */
 export function peekReadable<T>(readable: Readable<T>, reducer: IReducer<T>, maxChunks: number): T | Readable<T> {
     const chunks: T[] = [];
+
     let chunk: T | null | undefined = undefined;
+
     while ((chunk = readable.read()) !== null && chunks.length < maxChunks) {
         chunks.push(chunk);
     }
@@ -407,6 +426,7 @@ export function peekReadable<T>(readable: Readable<T>, reducer: IReducer<T>, max
                 // explicitly use undefined here to indicate that we consumed
                 // the chunk, which could have either been null or valued.
                 chunk = undefined;
+
                 return lastReadChunk;
             }
             // Finally delegate back to the Readable
@@ -497,6 +517,7 @@ export function listenStream<T>(stream: ReadableStreamEvents<T>, listener: IStre
 export function peekStream<T>(stream: ReadableStream<T>, maxChunks: number): Promise<ReadableBufferedStream<T>> {
     return new Promise((resolve, reject) => {
         const streamListeners = new DisposableStore();
+
         const buffer: T[] = [];
         // Data Listener
         const dataListener = (chunk: T) => {
@@ -508,17 +529,20 @@ export function peekStream<T>(stream: ReadableStream<T>, maxChunks: number): Pro
                 // stream so that it can be consumed again by caller
                 streamListeners.dispose();
                 stream.pause();
+
                 return resolve({ stream, buffer, ended: false });
             }
         };
         // Error Listener
         const errorListener = (error: Error) => {
             streamListeners.dispose();
+
             return reject(error);
         };
         // End Listener
         const endListener = () => {
             streamListeners.dispose();
+
             return resolve({ stream, buffer, ended: true });
         };
         streamListeners.add(toDisposable(() => stream.removeListener('error', errorListener)));
@@ -538,6 +562,7 @@ export function peekStream<T>(stream: ReadableStream<T>, maxChunks: number): Pro
 export function toStream<T>(t: T, reducer: IReducer<T>): ReadableStream<T> {
     const stream = newWriteableStream<T>(reducer);
     stream.end(t);
+
     return stream;
 }
 /**
@@ -546,6 +571,7 @@ export function toStream<T>(t: T, reducer: IReducer<T>): ReadableStream<T> {
 export function emptyStream(): ReadableStream<never> {
     const stream = newWriteableStream<never>(() => { throw new Error('not supported'); });
     stream.end();
+
     return stream;
 }
 /**
@@ -553,12 +579,14 @@ export function emptyStream(): ReadableStream<never> {
  */
 export function toReadable<T>(t: T): Readable<T> {
     let consumed = false;
+
     return {
         read: () => {
             if (consumed) {
                 return null;
             }
             consumed = true;
+
             return t;
         }
     };
@@ -573,6 +601,7 @@ export function transform<Original, Transformed>(stream: ReadableStreamEvents<Or
         onError: error => target.error(transformer.error ? transformer.error(error) : error),
         onEnd: () => target.end()
     });
+
     return target;
 }
 /**
@@ -581,6 +610,7 @@ export function transform<Original, Transformed>(stream: ReadableStreamEvents<Or
  */
 export function prefixedReadable<T>(prefix: T, readable: Readable<T>, reducer: IReducer<T>): Readable<T> {
     let prefixHandled = false;
+
     return {
         read: () => {
             const chunk = readable.read();
@@ -605,12 +635,14 @@ export function prefixedReadable<T>(prefix: T, readable: Readable<T>, reducer: I
  */
 export function prefixedStream<T>(prefix: T, stream: ReadableStream<T>, reducer: IReducer<T>): ReadableStream<T> {
     let prefixHandled = false;
+
     const target = newWriteableStream<T>(reducer);
     listenStream(stream, {
         onData: data => {
             // Handle prefix only once
             if (!prefixHandled) {
                 prefixHandled = true;
+
                 return target.write(reducer([prefix, data]));
             }
             return target.write(data);
@@ -625,5 +657,6 @@ export function prefixedStream<T>(prefix: T, stream: ReadableStream<T>, reducer:
             target.end();
         }
     });
+
     return target;
 }

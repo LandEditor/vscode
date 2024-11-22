@@ -48,10 +48,13 @@ import { mainWindow } from '../../../../base/browser/window.js';
 const defaultThemeExtensionId = 'vscode-theme-defaults';
 
 const DEFAULT_FILE_ICON_THEME_ID = 'vscode.vscode-theme-seti-vs-seti';
+
 const fileIconsEnabledClass = 'file-icons-enabled';
 
 const colorThemeRulesClassName = 'contributedColorTheme';
+
 const fileIconThemeRulesClassName = 'contributedFileIconTheme';
+
 const productIconThemeRulesClassName = 'contributedProductIconTheme';
 
 const themingRegistry = Registry.as<IThemingRegistry>(ThemingExtensions.ThemingContribution);
@@ -60,15 +63,20 @@ function validateThemeId(theme: string): string {
 	// migrations
 	switch (theme) {
 		case VS_LIGHT_THEME: return `vs ${defaultThemeExtensionId}-themes-light_vs-json`;
+
 		case VS_DARK_THEME: return `vs-dark ${defaultThemeExtensionId}-themes-dark_vs-json`;
+
 		case VS_HC_THEME: return `hc-black ${defaultThemeExtensionId}-themes-hc_black-json`;
+
 		case VS_HC_LIGHT_THEME: return `hc-light ${defaultThemeExtensionId}-themes-hc_light-json`;
 	}
 	return theme;
 }
 
 const colorThemesExtPoint = registerColorThemeExtensionPoint();
+
 const fileIconThemesExtPoint = registerFileIconThemeExtensionPoint();
+
 const productIconThemesExtPoint = registerProductIconThemeExtensionPoint();
 
 export class WorkbenchThemeService extends Disposable implements IWorkbenchThemeService {
@@ -142,7 +150,9 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		// themes are loaded asynchronously, we need to initialize
 		// a color theme document with good defaults until the theme is loaded
 		let themeData: ColorThemeData | undefined = ColorThemeData.fromStorageData(this.storageService);
+
 		const colorThemeSetting = this.settings.colorTheme;
+
 		if (themeData && colorThemeSetting !== themeData.settingsId && this.settings.isDefaultColorTheme()) {
 			this.hasDefaultUpdated = themeData.settingsId === ThemeSettingDefaults.COLOR_THEME_DARK_OLD || themeData.settingsId === ThemeSettingDefaults.COLOR_THEME_LIGHT_OLD;
 
@@ -154,6 +164,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 		if (!themeData) {
 			const initialColorTheme = environmentService.options?.initialColorTheme;
+
 			if (initialColorTheme) {
 				themeData = ColorThemeData.createUnloadedThemeForThemeType(initialColorTheme.themeType, initialColorTheme.colors ?? defaultColorMap);
 			}
@@ -165,11 +176,13 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		this.applyTheme(themeData, undefined, true);
 
 		const fileIconData = FileIconThemeData.fromStorageData(this.storageService);
+
 		if (fileIconData) {
 			this.applyAndSetFileIconTheme(fileIconData, true);
 		}
 
 		const productIconData = ProductIconThemeData.fromStorageData(this.storageService);
+
 		if (productIconData) {
 			this.applyAndSetProductIconTheme(productIconData, true);
 		}
@@ -185,6 +198,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		codiconStyleSheet.id = 'codiconStyles';
 
 		const iconsStyleSheet = this._register(getIconsStyleSheet(this));
+
 		function updateAll() {
 			codiconStyleSheet.textContent = iconsStyleSheet.getCSS();
 		}
@@ -196,15 +210,19 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 	private initialize(): Promise<[IWorkbenchColorTheme | null, IWorkbenchFileIconTheme | null, IWorkbenchProductIconTheme | null]> {
 		const extDevLocs = this.environmentService.extensionDevelopmentLocationURI;
+
 		const extDevLoc = extDevLocs && extDevLocs.length === 1 ? extDevLocs[0] : undefined; // in dev mode, switch to a theme provided by the extension under dev.
 
 		const initializeColorTheme = async () => {
 			const devThemes = this.colorThemeRegistry.findThemeByExtensionLocation(extDevLoc);
+
 			if (devThemes.length) {
 				const matchedColorTheme = devThemes.find(theme => theme.type === this.currentColorTheme.type);
+
 				return this.setColorTheme(matchedColorTheme ? matchedColorTheme.id : devThemes[0].id, undefined);
 			}
 			let theme = this.colorThemeRegistry.findThemeBySettingsId(this.settings.colorTheme, undefined);
+
 			if (!theme) {
 				// If the current theme is not available, first make sure setting sync is complete
 				await this.userDataInitializationService.whenInitializationFinished();
@@ -217,10 +235,12 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 		const initializeFileIconTheme = async () => {
 			const devThemes = this.fileIconThemeRegistry.findThemeByExtensionLocation(extDevLoc);
+
 			if (devThemes.length) {
 				return this.setFileIconTheme(devThemes[0].id, ConfigurationTarget.MEMORY);
 			}
 			let theme = this.fileIconThemeRegistry.findThemeBySettingsId(this.settings.fileIconTheme);
+
 			if (!theme) {
 				// If the current theme is not available, first make sure setting sync is complete
 				await this.userDataInitializationService.whenInitializationFinished();
@@ -231,10 +251,12 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 		const initializeProductIconTheme = async () => {
 			const devThemes = this.productIconThemeRegistry.findThemeByExtensionLocation(extDevLoc);
+
 			if (devThemes.length) {
 				return this.setProductIconTheme(devThemes[0].id, ConfigurationTarget.MEMORY);
 			}
 			let theme = this.productIconThemeRegistry.findThemeBySettingsId(this.settings.productIconTheme);
+
 			if (!theme) {
 				// If the current theme is not available, first make sure setting sync is complete
 				await this.userDataInitializationService.whenInitializationFinished();
@@ -268,6 +290,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			}
 			if (this.currentColorTheme) {
 				let hasColorChanges = false;
+
 				if (e.affectsConfiguration(ThemeSettings.COLOR_CUSTOMIZATIONS)) {
 					this.currentColorTheme.setCustomColors(this.settings.colorCustomizations);
 					hasColorChanges = true;
@@ -295,6 +318,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		// update settings schema setting for theme specific settings
 		this._register(this.colorThemeRegistry.onDidChange(async event => {
 			updateColorThemeConfigurationSchemas(event.themes);
+
 			if (await this.restoreColorTheme()) { // checks if theme from settings exists and is set
 				// restore theme
 				if (this.currentColorTheme.settingsId === ThemeSettingDefaults.COLOR_THEME_DARK && !types.isUndefined(prevColorId) && await this.colorThemeRegistry.findThemeById(prevColorId)) {
@@ -306,6 +330,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			} else if (event.removed.some(t => t.settingsId === this.currentColorTheme.settingsId)) {
 				// current theme is no longer available
 				prevColorId = this.currentColorTheme.id;
+
 				const defaultTheme = this.colorThemeRegistry.findThemeBySettingsId(ThemeSettingDefaults.COLOR_THEME_DARK);
 				await this.setColorTheme(defaultTheme, 'auto');
 			}
@@ -314,6 +339,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		let prevFileIconId: string | undefined = undefined;
 		this._register(this._register(this.fileIconThemeRegistry.onDidChange(async event => {
 			updateFileIconThemeConfigurationSchemas(event.themes);
+
 			if (await this.restoreFileIconTheme()) { // checks if theme from settings exists and is set
 				// restore theme
 				if (this.currentFileIconTheme.id === DEFAULT_FILE_ICON_THEME_ID && !types.isUndefined(prevFileIconId) && this.fileIconThemeRegistry.findThemeById(prevFileIconId)) {
@@ -333,6 +359,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		let prevProductIconId: string | undefined = undefined;
 		this._register(this.productIconThemeRegistry.onDidChange(async event => {
 			updateProductIconThemeConfigurationSchemas(event.themes);
+
 			if (await this.restoreProductIconTheme()) { // checks if theme from settings exists and is set
 				// restore theme
 				if (this.currentProductIconTheme.id === DEFAULT_PRODUCT_ICON_THEME_ID && !types.isUndefined(prevProductIconId) && this.productIconThemeRegistry.findThemeById(prevProductIconId)) {
@@ -385,9 +412,11 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 	public async getMarketplaceColorThemes(publisher: string, name: string, version: string): Promise<IWorkbenchColorTheme[]> {
 		const extensionLocation = this.extensionResourceLoaderService.getExtensionGalleryResourceURL({ publisher, name, version }, 'extension');
+
 		if (extensionLocation) {
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
+
 				return this.colorThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
 			} catch (e) {
 				this.logService.error('Problem loading themes from marketplace', e);
@@ -411,6 +440,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			return null;
 		}
 		const themeId = types.isString(themeIdOrTheme) ? validateThemeId(themeIdOrTheme) : themeIdOrTheme.id;
+
 		if (this.currentColorTheme.isLoaded && themeId === this.currentColorTheme.id) {
 			if (settingsTarget !== 'preview') {
 				this.currentColorTheme.toStorage(this.storageService);
@@ -419,6 +449,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		}
 
 		let themeData = this.colorThemeRegistry.findThemeById(themeId);
+
 		if (!themeData) {
 			if (themeIdOrTheme instanceof ColorThemeData) {
 				themeData = themeIdOrTheme;
@@ -429,6 +460,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		try {
 			await themeData.ensureLoaded(this.extensionResourceLoaderService);
 			themeData.setCustomizations(this.settings);
+
 			return this.applyTheme(themeData, settingsTarget);
 		} catch (error) {
 			throw new Error(nls.localize('error.cannotloadtheme', "Unable to load {0}: {1}", themeData.location?.toString(), error.message));
@@ -452,7 +484,9 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 	public async restoreColorTheme(): Promise<boolean> {
 		return this.colorThemeSequencer.queue(async () => {
 			const settingId = this.settings.colorTheme;
+
 			const theme = this.colorThemeRegistry.findThemeBySettingsId(settingId);
+
 			if (theme) {
 				if (settingId !== this.currentColorTheme.settingsId) {
 					await this.internalSetColorTheme(theme.id, undefined);
@@ -469,6 +503,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 	private updateDynamicCSSRules(themeData: IColorTheme) {
 		const cssRules = new Set<string>();
+
 		const ruleCollector = {
 			addRule: (rule: string) => {
 				if (!cssRules.has(rule)) {
@@ -480,8 +515,10 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 		themingRegistry.getThemingParticipants().forEach(p => p(themeData, ruleCollector, this.environmentService));
 
 		const colorVariables: string[] = [];
+
 		for (const item of getColorRegistry().getColors()) {
 			const color = themeData.getColor(item.id, true);
+
 			if (color) {
 				colorVariables.push(`${asCssVariableName(item.id)}: ${color.toString()};`);
 			}
@@ -503,6 +540,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 		this.currentColorTheme.clearCaches();
 		this.currentColorTheme = newTheme;
+
 		if (!this.colorThemingParticipantChangeListener) {
 			this.colorThemingParticipantChangeListener = themingRegistry.onThemingParticipantAdded(_ => this.updateDynamicCSSRules(this.currentColorTheme));
 		}
@@ -530,6 +568,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 	private sendTelemetry(themeId: string, themeData: ExtensionData | undefined, themeType: string) {
 		if (themeData) {
 			const key = themeType + themeData.extensionId;
+
 			if (!this.themeExtensionsActivated.get(key)) {
 				type ActivatePluginClassification = {
 					owner: 'aeschli';
@@ -582,9 +621,11 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			iconThemeOrId = '';
 		}
 		const themeId = types.isString(iconThemeOrId) ? iconThemeOrId : iconThemeOrId.id;
+
 		if (themeId !== this.currentFileIconTheme.id || !this.currentFileIconTheme.isLoaded) {
 
 			let newThemeData = this.fileIconThemeRegistry.findThemeById(themeId);
+
 			if (!newThemeData && iconThemeOrId instanceof FileIconThemeData) {
 				newThemeData = iconThemeOrId;
 			}
@@ -609,9 +650,11 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 	public async getMarketplaceFileIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchFileIconTheme[]> {
 		const extensionLocation = this.extensionResourceLoaderService.getExtensionGalleryResourceURL({ publisher, name, version }, 'extension');
+
 		if (extensionLocation) {
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
+
 				return this.fileIconThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
 			} catch (e) {
 				this.logService.error('Problem loading themes from marketplace', e);
@@ -630,7 +673,9 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 	public async restoreFileIconTheme(): Promise<boolean> {
 		return this.fileIconThemeSequencer.queue(async () => {
 			const settingId = this.settings.fileIconTheme;
+
 			const theme = this.fileIconThemeRegistry.findThemeBySettingsId(settingId);
+
 			if (theme) {
 				if (settingId !== this.currentFileIconTheme.settingsId) {
 					await this.internalSetFileIconTheme(theme.id, undefined);
@@ -689,8 +734,10 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			iconThemeOrId = '';
 		}
 		const themeId = types.isString(iconThemeOrId) ? iconThemeOrId : iconThemeOrId.id;
+
 		if (themeId !== this.currentProductIconTheme.id || !this.currentProductIconTheme.isLoaded) {
 			let newThemeData = this.productIconThemeRegistry.findThemeById(themeId);
+
 			if (!newThemeData && iconThemeOrId instanceof ProductIconThemeData) {
 				newThemeData = iconThemeOrId;
 			}
@@ -715,9 +762,11 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 
 	public async getMarketplaceProductIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchProductIconTheme[]> {
 		const extensionLocation = this.extensionResourceLoaderService.getExtensionGalleryResourceURL({ publisher, name, version }, 'extension');
+
 		if (extensionLocation) {
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
+
 				return this.productIconThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
 			} catch (e) {
 				this.logService.error('Problem loading themes from marketplace', e);
@@ -736,7 +785,9 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 	public async restoreProductIconTheme(): Promise<boolean> {
 		return this.productIconThemeSequencer.queue(async () => {
 			const settingId = this.settings.productIconTheme;
+
 			const theme = this.productIconThemeRegistry.findThemeBySettingsId(settingId);
+
 			if (theme) {
 				if (settingId !== this.currentProductIconTheme.settingsId) {
 					await this.internalSetProductIconTheme(theme.id, undefined);
@@ -779,6 +830,7 @@ class ThemeFileWatcher {
 	update(theme: { location?: URI; watch?: boolean }) {
 		if (!resources.isEqual(theme.location, this.watchedLocation)) {
 			this.dispose();
+
 			if (theme.location && (theme.watch || this.environmentService.isExtensionDevelopment)) {
 				this.watchedLocation = theme.location;
 				this.watcherDisposable = this.fileService.watch(theme.location);
@@ -800,6 +852,7 @@ class ThemeFileWatcher {
 
 function _applyRules(styleSheetContent: string, rulesClassName: string) {
 	const themeStyles = mainWindow.document.head.getElementsByClassName(rulesClassName);
+
 	if (themeStyles.length === 0) {
 		const elStyle = createStyleSheet();
 		elStyle.className = rulesClassName;

@@ -29,6 +29,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
         stream: AsyncIterableSource<IChatResponseFragment>;
     }>();
     private readonly _ignoredFileProviderRegistrations = new DisposableMap<number>();
+
     constructor(extHostContext: IExtHostContext, 
     @ILanguageModelsService
     private readonly _chatProviderService: ILanguageModelsService, 
@@ -59,14 +60,18 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
             metadata,
             sendChatRequest: async (messages, from, options, token) => {
                 const requestId = (Math.random() * 1e6) | 0;
+
                 const defer = new DeferredPromise<any>();
+
                 const stream = new AsyncIterableSource<IChatResponseFragment>();
+
                 try {
                     this._pendingProgress.set(requestId, { defer, stream });
                     await this._proxy.$startChatRequest(handle, requestId, from, messages, options, token);
                 }
                 catch (err) {
                     this._pendingProgress.delete(requestId);
+
                     throw err;
                 }
                 return {
@@ -78,6 +83,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
                 return this._proxy.$provideTokenLength(handle, str, token);
             },
         }));
+
         if (metadata.auth) {
             dipsosables.add(this._registerAuthenticationProvider(metadata.extension, metadata.auth));
         }
@@ -86,6 +92,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
     async $reportResponsePart(requestId: number, chunk: IChatResponseFragment): Promise<void> {
         const data = this._pendingProgress.get(requestId);
         this._logService.trace('[LM] report response PART', Boolean(data), requestId, chunk);
+
         if (data) {
             data.stream.emitOne(chunk);
         }
@@ -93,8 +100,10 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
     async $reportResponseDone(requestId: number, err: SerializedError | undefined): Promise<void> {
         const data = this._pendingProgress.get(requestId);
         this._logService.trace('[LM] report response DONE', Boolean(data), requestId, err);
+
         if (data) {
             this._pendingProgress.delete(requestId);
+
             if (err) {
                 const error = transformErrorFromSerialization(err);
                 data.stream.reject(error);
@@ -117,6 +126,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
     }
     async $tryStartChatRequest(extension: ExtensionIdentifier, providerId: string, requestId: number, messages: IChatMessage[], options: {}, token: CancellationToken): Promise<any> {
         this._logService.trace('[CHAT] request STARTED', extension.value, requestId);
+
         const response = await this._chatProviderService.sendChatRequest(providerId, extension, messages, options, token);
         // !!! IMPORTANT !!!
         // This method must return before the response is done (has streamed all parts)
@@ -158,6 +168,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
             return Disposable.None;
         }
         const accountLabel = auth.accountLabel ?? localize('languageModelsAccountId', 'Language Models');
+
         const disposables = new DisposableStore();
         this._authenticationService.registerAuthenticationProvider(authProviderId, new LanguageModelAccessAuthProvider(authProviderId, auth.providerLabel, accountLabel));
         disposables.add(toDisposable(() => {
@@ -165,9 +176,12 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
         }));
         disposables.add(this._authenticationAccessService.onDidChangeExtensionSessionAccess(async (e) => {
             const allowedExtensions = this._authenticationAccessService.readAllowedExtensions(authProviderId, accountLabel);
+
             const accessList = [];
+
             for (const allowedExtension of allowedExtensions) {
                 const from = await this._extensionService.getExtension(allowedExtension.id);
+
                 if (from) {
                     accessList.push({
                         from: from.identifier,
@@ -178,6 +192,7 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
             }
             this._proxy.$updateModelAccesslist(accessList);
         }));
+
         return disposables;
     }
     $fileIsIgnored(uri: UriComponents, token: CancellationToken): Promise<boolean> {
@@ -199,6 +214,7 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
     private _onDidChangeSessions: Emitter<AuthenticationSessionsChangeEvent> = new Emitter<AuthenticationSessionsChangeEvent>();
     onDidChangeSessions: Event<AuthenticationSessionsChangeEvent> = this._onDidChangeSessions.event;
     private _session: AuthenticationSession | undefined;
+
     constructor(readonly id: string, readonly label: string, private readonly _accountLabel: string) { }
     async getSessions(scopes?: string[] | undefined): Promise<readonly AuthenticationSession[]> {
         // If there are no scopes and no session that means no extension has requested a session yet
@@ -214,6 +230,7 @@ class LanguageModelAccessAuthProvider implements IAuthenticationProvider {
     async createSession(scopes: string[]): Promise<AuthenticationSession> {
         this._session = this._createFakeSession(scopes);
         this._onDidChangeSessions.fire({ added: [this._session], changed: [], removed: [] });
+
         return this._session;
     }
     removeSession(sessionId: string): Promise<void> {

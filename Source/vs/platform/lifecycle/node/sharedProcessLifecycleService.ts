@@ -18,6 +18,7 @@ export class SharedProcessLifecycleService extends Disposable implements IShared
     declare readonly _serviceBrand: undefined;
     private readonly _onWillShutdown = this._register(new Emitter<void>());
     readonly onWillShutdown = this._onWillShutdown.event;
+
     constructor(
     @ILogService
     private readonly logService: ILogService) {

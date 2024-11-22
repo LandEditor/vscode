@@ -37,6 +37,7 @@ import { isITextModel } from '../../../editor/common/model.js';
 export interface IMainThreadEditorLocator {
 	getEditor(id: string): MainThreadTextEditor | undefined;
 	findTextEditorIdFor(editorControl: IEditorControl): string | undefined;
+
 	getIdOfCodeEditor(codeEditor: ICodeEditor): string | undefined;
 }
 
@@ -80,6 +81,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		});
 		this._textEditorsListenersMap = Object.create(null);
 		this._toDispose.dispose();
+
 		for (const decorationType in this._registeredDecorationTypes) {
 			this._codeEditorService.removeDecorationType(decorationType);
 		}
@@ -88,6 +90,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	handleTextEditorAdded(textEditor: MainThreadTextEditor): void {
 		const id = textEditor.getId();
+
 		const toDispose: IDisposable[] = [];
 		toDispose.push(textEditor.onPropertiesChanged((data) => {
 			this._proxy.$acceptEditorPropertiesChanged(id, data);
@@ -111,6 +114,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 		// editor columns
 		const editorPositionData = this._getTextEditorPositionData();
+
 		if (!objectEquals(this._editorPositionData, editorPositionData)) {
 			this._editorPositionData = editorPositionData;
 			this._proxy.$acceptEditorPositionData(this._editorPositionData);
@@ -119,8 +123,10 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	private _getTextEditorPositionData(): ITextEditorPositionData {
 		const result: ITextEditorPositionData = Object.create(null);
+
 		for (const editorPane of this._editorService.visibleEditorPanes) {
 			const id = this._editorLocator.findTextEditorIdFor(editorPane);
+
 			if (id) {
 				result[id] = editorGroupToColumn(this._editorGroupService, editorPane.group);
 			}
@@ -130,12 +136,14 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	private _getTextEditorDiffInformation(textEditor: MainThreadTextEditor): IObservable<ITextEditorDiffInformation | undefined> {
 		const codeEditor = textEditor.getCodeEditor();
+
 		if (!codeEditor) {
 			return constObservable(undefined);
 		}
 
 		// Check if the TextModel belongs to a DiffEditor
 		const diffEditors = this._codeEditorService.listDiffEditors();
+
 		const [diffEditor] = diffEditors.filter(d =>
 			d.getOriginalEditor().getId() === codeEditor.getId() ||
 			d.getModifiedEditor().getId() === codeEditor.getId());
@@ -146,6 +154,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 		const editorChangesObs = derived<IObservable<{ original: URI; modified: URI; changes: IChange[] } | undefined>>(reader => {
 			const editorModel = editorModelObs.read(reader);
+
 			if (!editorModel) {
 				return constObservable(undefined);
 			}
@@ -163,17 +172,20 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 			// TextEditor
 			const dirtyDiffModel = this._dirtyDiffModelService.getOrCreateModel(editorModel.uri);
+
 			if (!dirtyDiffModel) {
 				return constObservable(undefined);
 			}
 
 			return observableFromEvent(this, dirtyDiffModel.onDidChange, () => {
 				const scmQuickDiff = dirtyDiffModel.quickDiffs.find(diff => diff.isSCM === true);
+
 				if (!scmQuickDiff) {
 					return undefined;
 				}
 
 				const scmQuickDiffChanges = dirtyDiffModel.mapChanges.get(scmQuickDiff.label) ?? [];
+
 				const changes = scmQuickDiffChanges.map(index => dirtyDiffModel.changes[index].change);
 
 				return {
@@ -189,7 +201,9 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 			equalsFn: (diff1, diff2) => isTextEditorDiffInformationEqual(this._uriIdentityService, diff1, diff2)
 		}, reader => {
 			const editorModel = editorModelObs.read(reader);
+
 			const editorChanges = editorChangesObs.read(reader).read(reader);
+
 			if (!editorModel || !editorChanges) {
 				return undefined;
 			}
@@ -236,34 +250,42 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		};
 
 		const editor = await this._editorService.openEditor(input, columnToEditorGroup(this._editorGroupService, this._configurationService, options.position));
+
 		if (!editor) {
 			return undefined;
 		}
 		// Composite editors are made up of many editors so we return the active one at the time of opening
 		const editorControl = editor.getControl();
+
 		const codeEditor = getCodeEditor(editorControl);
+
 		return codeEditor ? this._editorLocator.getIdOfCodeEditor(codeEditor) : undefined;
 	}
 
 	async $tryShowEditor(id: string, position?: EditorGroupColumn): Promise<void> {
 		const mainThreadEditor = this._editorLocator.getEditor(id);
+
 		if (mainThreadEditor) {
 			const model = mainThreadEditor.getModel();
 			await this._editorService.openEditor({
 				resource: model.uri,
 				options: { preserveFocus: false }
 			}, columnToEditorGroup(this._editorGroupService, this._configurationService, position));
+
 			return;
 		}
 	}
 
 	async $tryHideEditor(id: string): Promise<void> {
 		const mainThreadEditor = this._editorLocator.getEditor(id);
+
 		if (mainThreadEditor) {
 			const editorPanes = this._editorService.visibleEditorPanes;
+
 			for (const editorPane of editorPanes) {
 				if (mainThreadEditor.matches(editorPane)) {
 					await editorPane.group.closeEditor(editorPane.input);
+
 					return;
 				}
 			}
@@ -272,53 +294,66 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	$trySetSelections(id: string, selections: ISelection[]): Promise<void> {
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		editor.setSelections(selections);
+
 		return Promise.resolve(undefined);
 	}
 
 	$trySetDecorations(id: string, key: string, ranges: IDecorationOptions[]): Promise<void> {
 		key = `${this._instanceId}-${key}`;
+
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		editor.setDecorations(key, ranges);
+
 		return Promise.resolve(undefined);
 	}
 
 	$trySetDecorationsFast(id: string, key: string, ranges: number[]): Promise<void> {
 		key = `${this._instanceId}-${key}`;
+
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		editor.setDecorationsFast(key, ranges);
+
 		return Promise.resolve(undefined);
 	}
 
 	$tryRevealRange(id: string, range: IRange, revealType: TextEditorRevealType): Promise<void> {
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		editor.revealRange(range, revealType);
+
 		return Promise.resolve();
 	}
 
 	$trySetOptions(id: string, options: ITextEditorConfigurationUpdate): Promise<void> {
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
 		editor.setConfiguration(options);
+
 		return Promise.resolve(undefined);
 	}
 
 	$tryApplyEdits(id: string, modelVersionId: number, edits: ISingleEditOperation[], opts: IApplyEditsOptions): Promise<boolean> {
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
@@ -327,6 +362,7 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 	$tryInsertSnippet(id: string, modelVersionId: number, template: string, ranges: readonly IRange[], opts: IUndoStopOptions): Promise<boolean> {
 		const editor = this._editorLocator.getEditor(id);
+
 		if (!editor) {
 			return Promise.reject(illegalArgument(`TextEditor(${id})`));
 		}
@@ -353,12 +389,15 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		}
 
 		const codeEditor = editor.getCodeEditor();
+
 		if (!codeEditor) {
 			return Promise.reject(new Error('No such CodeEditor'));
 		}
 
 		const codeEditorId = codeEditor.getId();
+
 		const diffEditors = this._codeEditorService.listDiffEditors();
+
 		const [diffEditor] = diffEditors.filter(d => d.getOriginalEditor().getId() === codeEditorId || d.getModifiedEditor().getId() === codeEditorId);
 
 		if (diffEditor) {
@@ -379,11 +418,13 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 
 CommandsRegistry.registerCommand('_workbench.revertAllDirty', async function (accessor: ServicesAccessor) {
 	const environmentService = accessor.get(IEnvironmentService);
+
 	if (!environmentService.extensionTestsLocationURI) {
 		throw new Error('Command is only available when running extension tests.');
 	}
 
 	const workingCopyService = accessor.get(IWorkingCopyService);
+
 	for (const workingCopy of workingCopyService.dirtyWorkingCopies) {
 		await workingCopy.revert({ soft: true });
 	}

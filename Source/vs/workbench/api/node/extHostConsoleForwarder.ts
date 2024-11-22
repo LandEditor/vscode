@@ -6,9 +6,11 @@ import { AbstractExtHostConsoleForwarder } from '../common/extHostConsoleForward
 import { IExtHostInitDataService } from '../common/extHostInitDataService.js';
 import { IExtHostRpcService } from '../common/extHostRpcService.js';
 import { NativeLogMarkers } from '../../services/extensions/common/extensionHostProtocol.js';
+
 const MAX_STREAM_BUFFER_LENGTH = 1024 * 1024;
 export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
     private _isMakingConsoleCall: boolean = false;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -34,14 +36,18 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
      */
     private _wrapStream(streamName: 'stdout' | 'stderr', severity: 'log' | 'warn' | 'error') {
         const stream = process[streamName];
+
         const original = stream.write;
+
         let buf = '';
         Object.defineProperty(stream, 'write', {
             set: () => { },
             get: () => (chunk: Uint8Array | string, encoding?: BufferEncoding, callback?: (err?: Error) => void) => {
                 if (!this._isMakingConsoleCall) {
                     buf += (chunk as any).toString(encoding);
+
                     const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
+
                     if (eol !== -1) {
                         console[severity](buf.slice(0, eol));
                         buf = buf.slice(eol + 1);

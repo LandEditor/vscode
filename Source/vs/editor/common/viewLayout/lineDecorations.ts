@@ -8,6 +8,7 @@ import { LinePartMetadata } from './linePart.js';
 import { InlineDecoration, InlineDecorationType } from '../viewModel.js';
 export class LineDecoration {
     _lineDecorationBrand: void = undefined;
+
     constructor(public readonly startColumn: number, public readonly endColumn: number, public readonly className: string, public readonly type: InlineDecorationType) {
     }
     private static _equals(a: LineDecoration, b: LineDecoration): boolean {
@@ -18,7 +19,9 @@ export class LineDecoration {
     }
     public static equalsArr(a: LineDecoration[], b: LineDecoration[]): boolean {
         const aLen = a.length;
+
         const bLen = b.length;
+
         if (aLen !== bLen) {
             return false;
         }
@@ -34,10 +37,15 @@ export class LineDecoration {
             return arr;
         }
         const startColumn = startOffset + 1;
+
         const endColumn = endOffset + 1;
+
         const lineLength = endOffset - startOffset;
+
         const r = [];
+
         let rLength = 0;
+
         for (const dec of arr) {
             if (dec.endColumn <= startColumn || dec.startColumn >= endColumn) {
                 continue;
@@ -51,10 +59,14 @@ export class LineDecoration {
             return [];
         }
         const result: LineDecoration[] = [];
+
         let resultLen = 0;
+
         for (let i = 0, len = lineDecorations.length; i < len; i++) {
             const d = lineDecorations[i];
+
             const range = d.range;
+
             if (range.endLineNumber < lineNumber || range.startLineNumber > lineNumber) {
                 // Ignore decorations that sit outside this line
                 continue;
@@ -64,6 +76,7 @@ export class LineDecoration {
                 continue;
             }
             const startColumn = (range.startLineNumber === lineNumber ? range.startColumn : minLineColumn);
+
             const endColumn = (range.endLineNumber === lineNumber ? range.endColumn : maxLineColumn);
             result[resultLen++] = new LineDecoration(startColumn, endColumn, d.inlineClassName, d.type);
         }
@@ -71,6 +84,7 @@ export class LineDecoration {
     }
     private static _typeCompare(a: InlineDecorationType, b: InlineDecorationType): number {
         const ORDER = [2, 0, 1, 3];
+
         return ORDER[a] - ORDER[b];
     }
     public static compare(a: LineDecoration, b: LineDecoration): number {
@@ -81,6 +95,7 @@ export class LineDecoration {
             return a.endColumn - b.endColumn;
         }
         const typeCmp = LineDecoration._typeCompare(a.type, b.type);
+
         if (typeCmp !== 0) {
             return typeCmp;
         }
@@ -93,8 +108,10 @@ export class LineDecoration {
 export class DecorationSegment {
     startOffset: number;
     endOffset: number;
+
     className: string;
     metadata: number;
+
     constructor(startOffset: number, endOffset: number, className: string, metadata: number) {
         this.startOffset = startOffset;
         this.endOffset = endOffset;
@@ -107,6 +124,7 @@ class Stack {
     private readonly stopOffsets: number[];
     private readonly classNames: string[];
     private readonly metadata: number[];
+
     constructor() {
         this.stopOffsets = [];
         this.classNames = [];
@@ -115,6 +133,7 @@ class Stack {
     }
     private static _metadata(metadata: number[]): number {
         let result = 0;
+
         for (let i = 0, len = metadata.length; i < len; i++) {
             result |= metadata[i];
         }
@@ -156,11 +175,13 @@ class Stack {
                     this.stopOffsets.splice(i, 0, stopOffset);
                     this.classNames.splice(i, 0, className);
                     this.metadata.splice(i, 0, metadata);
+
                     break;
                 }
             }
         }
         this.count++;
+
         return;
     }
 }
@@ -173,13 +194,20 @@ export class LineDecorationsNormalizer {
             return [];
         }
         const result: DecorationSegment[] = [];
+
         const stack = new Stack();
+
         let nextStartOffset = 0;
+
         for (let i = 0, len = lineDecorations.length; i < len; i++) {
             const d = lineDecorations[i];
+
             let startColumn = d.startColumn;
+
             let endColumn = d.endColumn;
+
             const className = d.className;
+
             const metadata = (d.type === InlineDecorationType.Before
                 ? LinePartMetadata.PSEUDO_BEFORE
                 : d.type === InlineDecorationType.After
@@ -188,25 +216,30 @@ export class LineDecorationsNormalizer {
             // If the position would end up in the middle of a high-low surrogate pair, we move it to before the pair
             if (startColumn > 1) {
                 const charCodeBefore = lineContent.charCodeAt(startColumn - 2);
+
                 if (strings.isHighSurrogate(charCodeBefore)) {
                     startColumn--;
                 }
             }
             if (endColumn > 1) {
                 const charCodeBefore = lineContent.charCodeAt(endColumn - 2);
+
                 if (strings.isHighSurrogate(charCodeBefore)) {
                     endColumn--;
                 }
             }
             const currentStartOffset = startColumn - 1;
+
             const currentEndOffset = endColumn - 2;
             nextStartOffset = stack.consumeLowerThan(currentStartOffset, nextStartOffset, result);
+
             if (stack.count === 0) {
                 nextStartOffset = currentStartOffset;
             }
             stack.insert(currentEndOffset, className, metadata);
         }
         stack.consumeLowerThan(Constants.MAX_SAFE_SMALL_INTEGER, nextStartOffset, result);
+
         return result;
     }
 }

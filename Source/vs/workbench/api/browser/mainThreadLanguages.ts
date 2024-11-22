@@ -18,6 +18,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
     private readonly _disposables = new DisposableStore();
     private readonly _proxy: ExtHostLanguagesShape;
     private readonly _status = new DisposableMap<number>();
+
     constructor(_extHostContext: IExtHostContext, 
     @ILanguageService
     private readonly _languageService: ILanguageService, 
@@ -42,7 +43,9 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
             return Promise.reject(new Error(`Unknown language id: ${languageId}`));
         }
         const uri = URI.revive(resource);
+
         const ref = await this._resolverService.createModelReference(uri);
+
         try {
             ref.object.textEditorModel.setLanguage(this._languageService.createById(languageId));
         }
@@ -55,13 +58,18 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
         range: IRange;
     }> {
         const uri = URI.revive(resource);
+
         const model = this._modelService.getModel(uri);
+
         if (!model) {
             return undefined;
         }
         model.tokenization.tokenizeIfCheap(position.lineNumber);
+
         const tokens = model.tokenization.getLineTokens(position.lineNumber);
+
         const idx = tokens.findTokenIndexAtOffset(position.column - 1);
+
         return {
             type: tokens.getStandardTokenType(idx),
             range: new Range(position.lineNumber, 1 + tokens.getStartOffset(idx), position.lineNumber, 1 + tokens.getEndOffset(idx))

@@ -169,6 +169,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration).
 ]);
 class ChatResolverContribution extends Disposable {
     static readonly ID = 'workbench.contrib.chatResolver';
+
     constructor(
     @IEditorResolverService
     editorResolverService: IEditorResolverService, 
@@ -221,6 +222,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 			locations: [ChatAgentLocation.Panel]
 		}, async (prompt, progress) => {
 			const defaultAgent = chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
+
 			const agents = chatAgentService.getAgents();
 
 			// Report prefix
@@ -239,10 +241,14 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 				.filter(a => a.locations.includes(ChatAgentLocation.Panel))
 				.map(async a => {
 					const description = a.description ? `- ${a.description}` : '';
+
 					const agentMarkdown = instantiationService.invokeFunction(accessor => agentToMarkdown(a, true, accessor));
+
 					const agentLine = `- ${agentMarkdown} ${description}`;
+
 					const commandText = a.slashCommands.map(c => {
 						const description = c.description ? `- ${c.description}` : '';
+
 						return `\t* ${agentSlashCommandToMarkdown(a, c)} ${description}`;
 					}).join('\n');
 
@@ -253,6 +259,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 			// Report variables
 			if (defaultAgent?.metadata.helpTextVariablesPrefix) {
 				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+
 				if (isMarkdownString(defaultAgent.metadata.helpTextVariablesPrefix)) {
 					progress.report({ content: defaultAgent.metadata.helpTextVariablesPrefix, kind: 'markdownContent' });
 				} else {
@@ -263,6 +270,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 					...chatVariablesService.getVariables(ChatAgentLocation.Panel),
 					{ name: 'file', description: nls.localize('file', "Choose a file in the workspace") }
 				];
+
 				const variableText = variables
 					.map(v => `* \`${chatVariableLeader}${v.name}\` - ${v.description}`)
 					.join('\n');
@@ -272,6 +280,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 			// Report help text ending
 			if (defaultAgent?.metadata.helpTextPostfix) {
 				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+
 				if (isMarkdownString(defaultAgent.metadata.helpTextPostfix)) {
 					progress.report({ content: defaultAgent.metadata.helpTextPostfix, kind: 'markdownContent' });
 				} else {

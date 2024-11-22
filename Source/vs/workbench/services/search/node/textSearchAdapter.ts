@@ -25,7 +25,9 @@ export class TextSearchEngineAdapter {
                 onMessage({ message: msg });
             }
         };
+
         const textSearchManager = new NativeTextSearchManager(this.query, new RipgrepTextSearchEngine(pretendOutputChannel, this.numThreads), pfs);
+
         return new Promise((resolve, reject) => {
             return textSearchManager
                 .search(matches => {
@@ -42,6 +44,7 @@ function fileMatchToSerialized(match: IFileMatch): ISerializedFileMatch {
         numMatches: (match.results || []).reduce((sum, r) => {
             if (resultIsMatch(r)) {
                 const m = <ITextSearchMatch>r;
+
                 return sum + m.rangeLocations.length;
             }
             else {

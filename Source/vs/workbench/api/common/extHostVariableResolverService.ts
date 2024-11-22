@@ -19,6 +19,7 @@ import * as vscode from 'vscode';
 import { ExtHostConfigProvider, IExtHostConfiguration } from './extHostConfiguration.js';
 export interface IExtHostVariableResolverProvider {
     readonly _serviceBrand: undefined;
+
     getResolver(): Promise<IConfigurationResolverService>;
 }
 export const IExtHostVariableResolverProvider = createDecorator<IExtHostVariableResolverProvider>('IExtHostVariableResolverProvider');
@@ -30,10 +31,12 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
         function getActiveUri(): URI | undefined {
             if (editorService) {
                 const activeEditor = editorService.activeEditor();
+
                 if (activeEditor) {
                     return activeEditor.document.uri;
                 }
                 const activeTab = editorTabs.tabGroups.all.find(group => group.isActive)?.activeTab;
+
                 if (activeTab !== undefined) {
                     // Resolve a resource from the tab
                     if (activeTab.input instanceof TextDiffTabInput || activeTab.input instanceof NotebookDiffEditorTabInput) {
@@ -49,6 +52,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
         super({
             getFolderUri: (folderName: string): URI | undefined => {
                 const found = context.folders.filter(f => f.name === folderName);
+
                 if (found && found.length > 0) {
                     return found[0].uri;
                 }
@@ -68,6 +72,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
             },
             getFilePath: (): string | undefined => {
                 const activeUri = getActiveUri();
+
                 if (activeUri) {
                     return path.normalize(activeUri.fsPath);
                 }
@@ -76,8 +81,10 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
             getWorkspaceFolderPathForFile: (): string | undefined => {
                 if (workspaceService) {
                     const activeUri = getActiveUri();
+
                     if (activeUri) {
                         const ws = workspaceService.getWorkspaceFolder(activeUri);
+
                         if (ws) {
                             return path.normalize(ws.uri.fsPath);
                         }
@@ -88,6 +95,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
             getSelectedText: (): string | undefined => {
                 if (editorService) {
                     const activeEditor = editorService.activeEditor();
+
                     if (activeEditor && !activeEditor.selection.isEmpty) {
                         return activeEditor.document.getText(activeEditor.selection);
                     }
@@ -97,6 +105,7 @@ class ExtHostVariableResolverService extends AbstractVariableResolverService {
             getLineNumber: (): string | undefined => {
                 if (editorService) {
                     const activeEditor = editorService.activeEditor();
+
                     if (activeEditor) {
                         return String(activeEditor.selection.end.line + 1);
                     }
@@ -113,13 +122,17 @@ export class ExtHostVariableResolverProviderService extends Disposable implement
     declare readonly _serviceBrand: undefined;
     private _resolver = new Lazy(async () => {
         const configProvider = await this.configurationService.getConfigProvider();
+
         const folders = await this.workspaceService.getWorkspaceFolders2() || [];
+
         const dynamic: DynamicContext = { folders };
         this._register(this.workspaceService.onDidChangeWorkspace(async (e) => {
             dynamic.folders = await this.workspaceService.getWorkspaceFolders2() || [];
         }));
+
         return new ExtHostVariableResolverService(this.extensionService, this.workspaceService, this.editorService, this.editorTabs, configProvider, dynamic, this.homeDir());
     });
+
     constructor(
     @IExtHostExtensionService
     private readonly extensionService: IExtHostExtensionService, 

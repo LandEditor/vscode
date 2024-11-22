@@ -46,6 +46,7 @@ export const enum HoverAnchorType {
 
 export class HoverRangeAnchor {
 	public readonly type = HoverAnchorType.Range;
+
 	constructor(
 		public readonly priority: number,
 		public readonly range: Range,
@@ -63,6 +64,7 @@ export class HoverRangeAnchor {
 
 export class HoverForeignElementAnchor {
 	public readonly type = HoverAnchorType.ForeignElement;
+
 	constructor(
 		public readonly priority: number,
 		public readonly owner: IEditorHoverParticipant,
@@ -160,6 +162,7 @@ export interface IEditorHoverParticipant<T extends IHoverPart = IHoverPart> {
 	computeAsync?(anchor: HoverAnchor, lineDecorations: IModelDecoration[], source: HoverStartSource, token: CancellationToken): AsyncIterableObject<T>;
 	createLoadingMessage?(anchor: HoverAnchor): T | null;
 	renderHoverParts(context: IEditorHoverRenderContext, hoverParts: T[]): IRenderedHoverParts<T>;
+
 	getAccessibleContent(hoverPart: T): string;
 	handleResize?(): void;
 	handleHide?(): void;

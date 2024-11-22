@@ -39,16 +39,19 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
     override set(key: string, value: string): Promise<void> {
         this._sequencer.queue(key, async () => {
             await this.resolvedStorageService;
+
             if (this.type !== 'persisted' && !this._environmentService.useInMemorySecretStorage) {
                 this._logService.trace('[NativeSecretStorageService] Notifying user that secrets are not being stored on disk.');
                 await this.notifyOfNoEncryptionOnce();
             }
         });
+
         return super.set(key, value);
     }
     private notifyOfNoEncryptionOnce = createSingleCallFunction(() => this.notifyOfNoEncryption());
     private async notifyOfNoEncryption(): Promise<void> {
         const buttons: IPromptChoice[] = [];
+
         const troubleshootingButton: IPromptChoice = {
             label: localize('troubleshootingButton', "Open troubleshooting guide"),
             run: () => this._openerService.open('https://go.microsoft.com/fwlink/?linkid=2239490'),
@@ -56,14 +59,19 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
             keepOpen: true
         };
         buttons.push(troubleshootingButton);
+
         let errorMessage = localize('encryptionNotAvailableJustTroubleshootingGuide', "An OS keyring couldn't be identified for storing the encryption related data in your current desktop environment.");
+
         if (!isLinux) {
             this._notificationService.prompt(Severity.Error, errorMessage, buttons);
+
             return;
         }
         const provider = await this._encryptionService.getKeyStorageProvider();
+
         if (provider === KnownStorageProvider.basicText) {
             const detail = localize('usePlainTextExtraSentence', "Open the troubleshooting guide to address this or you can use weaker encryption that doesn't use the OS keyring.");
+
             const usePlainTextButton: IPromptChoice = {
                 label: localize('usePlainText', "Use weaker encryption"),
                 run: async () => {
@@ -79,6 +87,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
                 message: errorMessage,
                 detail
             });
+
             return;
         }
         if (isGnome(provider)) {

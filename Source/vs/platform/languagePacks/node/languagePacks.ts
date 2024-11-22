@@ -30,6 +30,7 @@ interface ILanguagePack {
 }
 export class NativeLanguagePackService extends LanguagePackBaseService {
     private readonly cache: LanguagePacksCache;
+
     constructor(
     @IExtensionManagementService
     private readonly extensionManagementService: IExtensionManagementService, 
@@ -52,19 +53,26 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
     }
     async getBuiltInExtensionTranslationsUri(id: string, language: string): Promise<URI | undefined> {
         const packs = await this.cache.getLanguagePacks();
+
         const pack = packs[language];
+
         if (!pack) {
             this.logService.warn(`No language pack found for ${language}`);
+
             return undefined;
         }
         const translation = pack.translations[id];
+
         return translation ? URI.file(translation) : undefined;
     }
     async getInstalledLanguages(): Promise<Array<ILanguagePackItem>> {
         const languagePacks = await this.cache.getLanguagePacks();
+
         const languages: ILanguagePackItem[] = Object.keys(languagePacks).map(locale => {
             const languagePack = languagePacks[locale];
+
             const baseQuickPick = this.createQuickPickItem(locale, languagePack.label);
+
             return {
                 ...baseQuickPick,
                 extensionId: languagePack.extensions[0].extensionIdentifier.id,
@@ -72,6 +80,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
         });
         languages.push(this.createQuickPickItem('en', 'English'));
         languages.sort((a, b) => a.label.localeCompare(b.label));
+
         return languages;
     }
     private async postInstallExtension(extension: ILocalExtension): Promise<void> {
@@ -82,6 +91,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
     }
     private async postUninstallExtension(extension: ILocalExtension): Promise<void> {
         const languagePacks = await this.cache.getLanguagePacks();
+
         if (Object.keys(languagePacks).some(language => languagePacks[language] && languagePacks[language].extensions.some(e => areSameExtensions(e.extensionIdentifier, extension.identifier)))) {
             this.logService.info('Removing language packs from the extension', extension.identifier.id);
             await this.update();
@@ -89,7 +99,9 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
     }
     async update(): Promise<boolean> {
         const [current, installed] = await Promise.all([this.cache.getLanguagePacks(), this.extensionManagementService.getInstalled()]);
+
         const updated = await this.cache.update(installed);
+
         return !equals(Object.keys(current), Object.keys(updated));
     }
 }
@@ -100,6 +112,7 @@ class LanguagePacksCache extends Disposable {
     private languagePacksFilePath: string;
     private languagePacksFileLimiter: Queue<any>;
     private initializedCache: boolean | undefined;
+
     constructor(
     @INativeEnvironmentService
     environmentService: INativeEnvironmentService, 
@@ -141,10 +154,13 @@ class LanguagePacksCache extends Disposable {
         [language: string]: ILanguagePack;
     }, extension: ILocalExtension): void {
         const extensionIdentifier = extension.identifier;
+
         const localizations = extension.manifest.contributes && extension.manifest.contributes.localizations ? extension.manifest.contributes.localizations : [];
+
         for (const localizationContribution of localizations) {
             if (extension.location.scheme === Schemas.file && isValidLocalization(localizationContribution)) {
                 let languagePack = languagePacks[localizationContribution.languageId];
+
                 if (!languagePack) {
                     languagePack = {
                         hash: '',
@@ -155,6 +171,7 @@ class LanguagePacksCache extends Disposable {
                     languagePacks[localizationContribution.languageId] = languagePack;
                 }
                 const extensionInLanguagePack = languagePack.extensions.filter(e => areSameExtensions(e.extensionIdentifier, extensionIdentifier))[0];
+
                 if (extensionInLanguagePack) {
                     extensionInLanguagePack.version = extension.manifest.version;
                 }
@@ -181,6 +198,7 @@ class LanguagePacksCache extends Disposable {
     }) => T | null = () => null): Promise<T> {
         return this.languagePacksFileLimiter.queue(() => {
             let result: T | null = null;
+
             return fs.promises.readFile(this.languagePacksFilePath, 'utf8')
                 .then(undefined, err => err.code === 'ENOENT' ? Promise.resolve('{}') : Promise.reject(err))
                 .then<{
@@ -202,8 +220,10 @@ class LanguagePacksCache extends Disposable {
                 }
                 this.languagePacks = languagePacks;
                 this.initializedCache = true;
+
                 const raw = JSON.stringify(this.languagePacks);
                 this.logService.debug('Writing language packs', raw);
+
                 return Promises.writeFile(this.languagePacksFilePath, raw);
             })
                 .then(() => result, error => this.logService.error(error));

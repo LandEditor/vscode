@@ -12,6 +12,7 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
     private readonly _proxy: ExtHostChatVariablesShape;
     private readonly _variables = new DisposableMap<number>();
     private readonly _pendingProgress = new Map<string, (part: IChatVariableResolverProgress) => void>();
+
     constructor(extHostContext: IExtHostContext, 
     @IChatVariablesService
     private readonly _chatVariablesService: IChatVariablesService) {
@@ -24,8 +25,10 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
         const registration = this._chatVariablesService.registerVariable(data, async (messageText, _arg, model, progress, token) => {
             const varRequestId = `${model.sessionId}-${handle}`;
             this._pendingProgress.set(varRequestId, progress);
+
             const result = revive<IChatRequestVariableValue>(await this._proxy.$resolveVariable(handle, varRequestId, messageText, token));
             this._pendingProgress.delete(varRequestId);
+
             return result as any; // 'revive' type signature doesn't like this type for some reason
         });
         this._variables.set(handle, registration);

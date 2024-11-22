@@ -88,6 +88,7 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 			this._asyncIterable = null;
 		}
 		this._options = undefined;
+
 		super.dispose();
 	}
 
@@ -163,6 +164,7 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 			return;
 		}
 		const isComplete = (this._state === HoverOperationState.Idle);
+
 		const hasLoadingMessage = (this._state === HoverOperationState.WaitingForAsyncShowingLoading);
 		this._onResult.fire(new HoverResult(this._result.slice(0), isComplete, hasLoadingMessage, options));
 	}
@@ -180,10 +182,13 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 					this._triggerAsyncComputation(options);
 					this._syncComputationScheduler.cancel();
 					this._triggerSyncComputation(options);
+
 					break;
+
 				case HoverOperationState.SecondWait:
 					this._syncComputationScheduler.cancel();
 					this._triggerSyncComputation(options);
+
 					break;
 			}
 		}
@@ -193,6 +198,7 @@ export class HoverOperation<TArgs, TResult> extends Disposable {
 		this._asyncComputationScheduler.cancel();
 		this._syncComputationScheduler.cancel();
 		this._loadingMessageScheduler.cancel();
+
 		if (this._asyncIterable) {
 			this._asyncIterable.cancel();
 			this._asyncIterable = null;

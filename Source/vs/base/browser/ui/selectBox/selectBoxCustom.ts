@@ -56,7 +56,9 @@ class SelectListRenderer implements IListRenderer<ISelectOptionItem, ISelectList
 		const data: ISelectListTemplateData = templateData;
 
 		const text = element.text;
+
 		const detail = element.detail;
+
 		const decoratorRight = element.decoratorRight;
 
 		const isDisabled = element.isDisabled;
@@ -184,9 +186,11 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 		// Create span flex box item/div we can measure and control
 		const widthControlOuterDiv = dom.append(this.selectDropDownContainer, $('.select-box-dropdown-container-width-control'));
+
 		const widthControlInnerDiv = dom.append(widthControlOuterDiv, $('.width-control-div'));
 		this.widthControlElement = document.createElement('span');
 		this.widthControlElement.className = 'option-text-width-control';
+
 		dom.append(widthControlInnerDiv, this.widthControlElement);
 
 		// Always default to below position
@@ -212,6 +216,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 				index: e.target.selectedIndex,
 				selected: e.target.value
 			});
+
 			if (!!this.options[this.selected] && !!this.options[this.selected].text) {
 				this.setTitle(this.options[this.selected].text);
 			}
@@ -255,6 +260,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 		this._register(dom.addDisposableListener(this.selectElement, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			let showDropDown = false;
 
 			// Create and drop down select list on keyboard select
@@ -270,6 +276,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 			if (showDropDown) {
 				this.showSelectDropDown();
+
 				dom.EventHelper.stop(e, true);
 			}
 		}));
@@ -288,6 +295,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 			this.options.forEach((option, index) => {
 				this.selectElement.add(this.createOption(option.text, index, option.isDisabled));
+
 				if (typeof option.description === 'string') {
 					this._hasDetails = true;
 				}
@@ -325,6 +333,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 		}
 
 		this.selectElement.selectedIndex = this.selected;
+
 		if (!!this.options[this.selected] && !!this.options[this.selected].text) {
 			this.setTitle(this.options[this.selected].text);
 		}
@@ -417,7 +426,9 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 	private styleSelectElement(): void {
 		const background = this.styles.selectBackground ?? '';
+
 		const foreground = this.styles.selectForeground ?? '';
+
 		const border = this.styles.selectBorder ?? '';
 
 		this.selectElement.style.backgroundColor = background;
@@ -431,6 +442,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 		const listBackground = cssJs.asCssValueWithDefault(this.styles.selectListBackground, background);
 		this.selectDropDownListContainer.style.backgroundColor = listBackground;
 		this.selectionDetailsPane.style.backgroundColor = listBackground;
+
 		const optionsBorder = this.styles.focusBorder ?? '';
 		this.selectDropDownContainer.style.outlineColor = optionsBorder;
 		this.selectDropDownContainer.style.outlineOffset = '-1px';
@@ -558,15 +570,22 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			this.selectDropDownContainer.classList.add('visible');
 
 			const window = dom.getWindow(this.selectElement);
+
 			const selectPosition = dom.getDomNodePagePosition(this.selectElement);
+
 			const styles = dom.getWindow(this.selectElement).getComputedStyle(this.selectElement);
+
 			const verticalPadding = parseFloat(styles.getPropertyValue('--dropdown-padding-top')) + parseFloat(styles.getPropertyValue('--dropdown-padding-bottom'));
+
 			const maxSelectDropDownHeightBelow = (window.innerHeight - selectPosition.top - selectPosition.height - (this.selectBoxOptions.minBottomMargin || 0));
+
 			const maxSelectDropDownHeightAbove = (selectPosition.top - SelectBoxList.DEFAULT_DROPDOWN_MINIMUM_TOP_MARGIN);
 
 			// Determine optimal width - min(longest option), opt(parent select, excluding margins), max(ContextView controlled)
 			const selectWidth = this.selectElement.offsetWidth;
+
 			const selectMinWidth = this.setWidthControlElement(this.widthControlElement);
+
 			const selectOptimalWidth = Math.max(selectMinWidth, Math.round(selectWidth)).toString() + 'px';
 
 			this.selectDropDownContainer.style.width = selectOptimalWidth;
@@ -574,6 +593,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			// Get initial list height and determine space above and below
 			this.selectList.getHTMLElement().style.height = '';
 			this.selectList.layout();
+
 			let listHeight = this.selectList.contentHeight;
 
 			if (this._hasDetails && this._cachedMaxDetailsHeight === undefined) {
@@ -582,7 +602,9 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			const maxDetailsPaneHeight = this._hasDetails ? this._cachedMaxDetailsHeight! : 0;
 
 			const minRequiredDropDownHeight = listHeight + verticalPadding + maxDetailsPaneHeight;
+
 			const maxVisibleOptionsBelow = ((Math.floor((maxSelectDropDownHeightBelow - verticalPadding - maxDetailsPaneHeight) / this.getHeight())));
+
 			const maxVisibleOptionsAbove = ((Math.floor((maxSelectDropDownHeightAbove - verticalPadding - maxDetailsPaneHeight) / this.getHeight())));
 
 			// If we are only doing pre-layout check/adjust position only
@@ -638,6 +660,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 				|| (this._dropDownPosition === AnchorPosition.ABOVE && maxVisibleOptionsAbove < 1)) {
 				// Cannot properly layout, close and hide
 				this.hideSelectDropDown(true);
+
 				return false;
 			}
 
@@ -648,6 +671,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 					// If drop-down is visible, must be doing a DOM re-layout, hide since we don't fit
 					// Hide drop-down, hide contextview, focus on parent select
 					this.hideSelectDropDown(true);
+
 					return false;
 				}
 
@@ -699,13 +723,16 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 		if (container) {
 			let longest = 0;
+
 			let longestLength = 0;
 
 			this.options.forEach((option, index) => {
 				const detailLength = !!option.detail ? option.detail.length : 0;
+
 				const rightDecoratorLength = !!option.decoratorRight ? option.decoratorRight.length : 0;
 
 				const len = option.text.length + detailLength + rightDecoratorLength;
+
 				if (len > longestLength) {
 					longest = index;
 					longestLength = len;
@@ -740,6 +767,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			accessibilityProvider: {
 				getAriaLabel: element => {
 					let label = element.text;
+
 					if (element.detail) {
 						label += `. ${element.detail}`;
 					}
@@ -759,12 +787,14 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 				getWidgetRole: () => 'listbox'
 			}
 		}));
+
 		if (this.selectBoxOptions.ariaLabel) {
 			this.selectList.ariaLabel = this.selectBoxOptions.ariaLabel;
 		}
 
 		// SetUp list keyboard controller - control navigation, disabled items, focus
 		const onKeyDown = this._register(new DomEmitter(this.selectDropDownListContainer, 'keydown'));
+
 		const onSelectDropDownKeyDown = Event.chain(onKeyDown.event, $ =>
 			$.filter(() => this.selectList.length > 0)
 				.map(e => new StandardKeyboardEvent(e))
@@ -813,6 +843,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 		dom.EventHelper.stop(e);
 
 		const target = <Element>e.target;
+
 		if (!target) {
 			return;
 		}
@@ -828,6 +859,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			return;
 		}
 		const index = Number(listRowElement.getAttribute('data-index'));
+
 		const disabled = listRowElement.classList.contains('option-disabled');
 
 		// Ignore mouse selection of disabled options
@@ -848,6 +880,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 					selected: this.options[this.selected].text
 
 				});
+
 				if (!!this.options[this.selected] && !!this.options[this.selected].text) {
 					this.setTitle(this.options[this.selected].text);
 				}
@@ -875,6 +908,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 				const child = <Element>element.childNodes.item(i);
 
 				const tagName = child.tagName && child.tagName.toLowerCase();
+
 				if (tagName === 'img') {
 					child.remove();
 				} else {
@@ -903,8 +937,11 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 	private updateDetail(selectedIndex: number): void {
 		this.selectionDetailsPane.innerText = '';
+
 		const option = this.options[selectedIndex];
+
 		const description = option?.description ?? '';
+
 		const descriptionIsMarkdown = option?.descriptionIsMarkdown ?? false;
 
 		if (description) {
@@ -947,6 +984,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 				index: this.selectElement.selectedIndex,
 				selected: this.options[this.selected].text
 			});
+
 			if (!!this.options[this.selected] && !!this.options[this.selected].text) {
 				this.setTitle(this.options[this.selected].text);
 			}
@@ -983,6 +1021,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			dom.EventHelper.stop(e, true);
 			// Skip disabled options
 			const previousOptionDisabled = this.options[this.selected - 1].isDisabled;
+
 			if (previousOptionDisabled && this.selected > 1) {
 				this.selected -= 2;
 			} else {
@@ -1040,6 +1079,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			return;
 		}
 		this.selected = 0;
+
 		if (this.options[this.selected].isDisabled && this.selected > 1) {
 			this.selected++;
 		}
@@ -1055,6 +1095,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 			return;
 		}
 		this.selected = this.options.length - 1;
+
 		if (this.options[this.selected].isDisabled && this.selected > 1) {
 			this.selected--;
 		}
@@ -1066,15 +1107,19 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 	// Mimic option first character navigation of native select
 	private onCharacter(e: StandardKeyboardEvent): void {
 		const ch = KeyCodeUtils.toString(e.keyCode);
+
 		let optionIndex = -1;
 
 		for (let i = 0; i < this.options.length - 1; i++) {
 			optionIndex = (i + this.selected + 1) % this.options.length;
+
 			if (this.options[optionIndex].text.charAt(0).toUpperCase() === ch && !this.options[optionIndex].isDisabled) {
 				this.select(optionIndex);
 				this.selectList.setFocus([optionIndex]);
 				this.selectList.reveal(this.selectList.getFocus()[0]);
+
 				dom.EventHelper.stop(e);
+
 				break;
 			}
 		}
@@ -1082,6 +1127,7 @@ export class SelectBoxList extends Disposable implements ISelectBoxDelegate, ILi
 
 	public override dispose(): void {
 		this.hideSelectDropDown(false);
+
 		super.dispose();
 	}
 }

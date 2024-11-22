@@ -51,6 +51,7 @@ class JSONContributionRegistry implements IJSONContributionRegistry {
     };
     private readonly _onDidChangeSchema = new Emitter<string>();
     readonly onDidChangeSchema: Event<string> = this._onDidChangeSchema.event;
+
     constructor() {
         this.schemasById = {};
     }
@@ -68,6 +69,7 @@ class JSONContributionRegistry implements IJSONContributionRegistry {
     }
     public getSchemaContent(uri: string): string | undefined {
         const schema = this.schemasById[uri];
+
         return schema ? getCompressedContent(schema) : undefined;
     }
     public hasSchemaContent(uri: string): boolean {

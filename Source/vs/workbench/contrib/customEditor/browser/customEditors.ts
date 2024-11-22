@@ -37,6 +37,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     private readonly _onDidChangeEditorTypes = this._register(new Emitter<void>());
     public readonly onDidChangeEditorTypes: Event<void> = this._onDidChangeEditorTypes.event;
     private readonly _fileEditorFactory = Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).getFileEditorFactory();
+
     constructor(
     @IFileService
     fileService: IFileService, 
@@ -68,6 +69,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
             getGroupContextKeyValue: group => this.getActiveCustomEditorId(group),
             onDidChange: this.onDidChangeEditorTypes
         };
+
         const customEditorIsEditableContextKeyProvider: IEditorGroupContextKeyProvider<boolean> = {
             contextKey: CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
             getGroupContextKeyValue: group => this.getCustomEditorIsEditable(group),
@@ -80,6 +82,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
                 this.handleMovedFileInOpenedFileEditors(e.resource, this.uriIdentityService.asCanonicalUri(e.target.resource));
             }
         }));
+
         const PRIORITY = 105;
         this._register(UndoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
             return this.withActiveCustomEditor(editor => editor.undo());
@@ -93,8 +96,10 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     }
     private withActiveCustomEditor(f: (editor: CustomEditorInput) => void | Promise<void>): boolean | Promise<void> {
         const activeEditor = this.editorService.activeEditor;
+
         if (activeEditor instanceof CustomEditorInput) {
             const result = f(activeEditor);
+
             if (result) {
                 return result;
             }
@@ -105,6 +110,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     private registerContributionPoints(): void {
         // Clear all previous contributions we know
         this._editorResolverDisposables.clear();
+
         for (const contributedEditor of this._contributedEditors) {
             for (const globPattern of contributedEditor.selector) {
                 if (!globPattern.filenamePattern) {
@@ -133,7 +139,9 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     }
     private createDiffEditorInput(editor: IResourceDiffEditorInput, editorID: string, group: IEditorGroup): DiffEditorInput {
         const modifiedOverride = CustomEditorInput.create(this.instantiationService, assertIsDefined(editor.modified.resource), editorID, group.id, { customClasses: 'modified' });
+
         const originalOverride = CustomEditorInput.create(this.instantiationService, assertIsDefined(editor.original.resource), editorID, group.id, { customClasses: 'original' });
+
         return this.instantiationService.createInstance(DiffEditorInput, editor.label, editor.description, originalOverride, modifiedOverride, true);
     }
     public get models() { return this._models; }
@@ -145,6 +153,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     }
     public getUserConfiguredCustomEditors(resource: URI): CustomEditorInfoCollection {
         const resourceAssocations = this.editorResolverService.getAssociationsForResource(resource);
+
         return new CustomEditorInfoCollection(coalesce(resourceAssocations
             .map(association => this._contributedEditors.get(association.viewType))));
     }
@@ -159,6 +168,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
             throw new Error(`Capabilities for ${viewType} already set`);
         }
         this._editorCapabilities.set(viewType, options);
+
         return toDisposable(() => {
             this._editorCapabilities.delete(viewType);
         });
@@ -168,7 +178,9 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     }
     private getActiveCustomEditorId(group: IEditorGroup): string {
         const activeEditorPane = group.activeEditorPane;
+
         const resource = activeEditorPane?.input?.resource;
+
         if (!resource) {
             return '';
         }
@@ -176,7 +188,9 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
     }
     private getCustomEditorIsEditable(group: IEditorGroup): boolean {
         const activeEditorPane = group.activeEditorPane;
+
         const resource = activeEditorPane?.input?.resource;
+
         if (!resource) {
             return false;
         }
@@ -193,12 +207,14 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
         }
         // If so, check all editors to see if there are any file editors open for the new resource
         const editorsToReplace = new Map<GroupIdentifier, EditorInput[]>();
+
         for (const group of this.editorGroupService.groups) {
             for (const editor of group.editors) {
                 if (this._fileEditorFactory.isFileEditor(editor)
                     && !(editor instanceof CustomEditorInput)
                     && isEqual(editor.resource, newResource)) {
                     let entry = editorsToReplace.get(group.id);
+
                     if (!entry) {
                         entry = [];
                         editorsToReplace.set(group.id, entry);
@@ -213,6 +229,7 @@ export class CustomEditorService extends Disposable implements ICustomEditorServ
         for (const [group, entries] of editorsToReplace) {
             this.editorService.replaceEditors(entries.map(editor => {
                 let replacement: EditorInput | IResourceEditorInput;
+
                 if (possibleEditors.defaultEditor) {
                     const viewType = possibleEditors.defaultEditor.id;
                     replacement = CustomEditorInput.create(this.instantiationService, newResource, viewType, group);

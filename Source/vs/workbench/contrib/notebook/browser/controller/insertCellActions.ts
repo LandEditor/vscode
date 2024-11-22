@@ -17,26 +17,37 @@ import { NOTEBOOK_CELL_LIST_FOCUSED, NOTEBOOK_EDITOR_EDITABLE } from '../../comm
 import { CellViewModel } from '../viewModel/notebookViewModelImpl.js';
 import { CellKind, NotebookSetting } from '../../common/notebookCommon.js';
 import { CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION } from './chat/notebookChatContext.js';
+
 const INSERT_CODE_CELL_ABOVE_COMMAND_ID = 'notebook.cell.insertCodeCellAbove';
+
 const INSERT_CODE_CELL_BELOW_COMMAND_ID = 'notebook.cell.insertCodeCellBelow';
+
 const INSERT_CODE_CELL_ABOVE_AND_FOCUS_CONTAINER_COMMAND_ID = 'notebook.cell.insertCodeCellAboveAndFocusContainer';
+
 const INSERT_CODE_CELL_BELOW_AND_FOCUS_CONTAINER_COMMAND_ID = 'notebook.cell.insertCodeCellBelowAndFocusContainer';
+
 const INSERT_CODE_CELL_AT_TOP_COMMAND_ID = 'notebook.cell.insertCodeCellAtTop';
+
 const INSERT_MARKDOWN_CELL_ABOVE_COMMAND_ID = 'notebook.cell.insertMarkdownCellAbove';
+
 const INSERT_MARKDOWN_CELL_BELOW_COMMAND_ID = 'notebook.cell.insertMarkdownCellBelow';
+
 const INSERT_MARKDOWN_CELL_AT_TOP_COMMAND_ID = 'notebook.cell.insertMarkdownCellAtTop';
 export function insertNewCell(accessor: ServicesAccessor, context: INotebookActionContext, kind: CellKind, direction: 'above' | 'below', focusEditor: boolean) {
     let newCell: CellViewModel | null = null;
+
     if (context.ui) {
         context.notebookEditor.focus();
     }
     const languageService = accessor.get(ILanguageService);
+
     if (context.cell) {
         const idx = context.notebookEditor.getCellIndex(context.cell);
         newCell = insertCell(languageService, context.notebookEditor, idx, kind, direction, undefined, true);
     }
     else {
         const focusRange = context.notebookEditor.getFocus();
+
         const next = Math.max(focusRange.end - 1, 0);
         newCell = insertCell(languageService, context.notebookEditor, next, kind, direction, undefined, true);
     }
@@ -48,6 +59,7 @@ export abstract class InsertCellCommand extends NotebookAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
         const newCell = await insertNewCell(accessor, context, this.kind, this.direction, this.focusEditor);
+
         if (newCell) {
             await context.notebookEditor.focusNotebookCell(newCell, this.focusEditor ? 'editor' : 'container');
         }
@@ -137,13 +149,16 @@ registerAction2(class InsertCodeCellAtTopAction extends NotebookAction {
     }
     override async run(accessor: ServicesAccessor, context?: INotebookActionContext): Promise<void> {
         context = context ?? this.getEditorContextFromArgsOrActive(accessor);
+
         if (context) {
             this.runWithContext(accessor, context);
         }
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
         const languageService = accessor.get(ILanguageService);
+
         const newCell = insertCell(languageService, context.notebookEditor, 0, CellKind.Code, 'above', undefined, true);
+
         if (newCell) {
             await context.notebookEditor.focusNotebookCell(newCell, 'editor');
         }
@@ -159,13 +174,16 @@ registerAction2(class InsertMarkdownCellAtTopAction extends NotebookAction {
     }
     override async run(accessor: ServicesAccessor, context?: INotebookActionContext): Promise<void> {
         context = context ?? this.getEditorContextFromArgsOrActive(accessor);
+
         if (context) {
             this.runWithContext(accessor, context);
         }
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
         const languageService = accessor.get(ILanguageService);
+
         const newCell = insertCell(languageService, context.notebookEditor, 0, CellKind.Markup, 'above', undefined, true);
+
         if (newCell) {
             await context.notebookEditor.focusNotebookCell(newCell, 'editor');
         }

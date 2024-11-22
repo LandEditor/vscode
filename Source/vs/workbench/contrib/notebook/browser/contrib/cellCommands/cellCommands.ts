@@ -23,8 +23,11 @@ import { EditorContextKeys } from '../../../../../../editor/common/editorContext
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 //#region Move/Copy cells
 const MOVE_CELL_UP_COMMAND_ID = 'notebook.cell.moveUp';
+
 const MOVE_CELL_DOWN_COMMAND_ID = 'notebook.cell.moveDown';
+
 const COPY_CELL_UP_COMMAND_ID = 'notebook.cell.copyUp';
+
 const COPY_CELL_DOWN_COMMAND_ID = 'notebook.cell.copyDown';
 registerAction2(class extends NotebookCellAction {
     constructor() {
@@ -113,8 +116,11 @@ registerAction2(class extends NotebookCellAction {
 //#endregion
 //#region Join/Split
 const SPLIT_CELL_COMMAND_ID = 'notebook.cell.split';
+
 const JOIN_SELECTED_CELLS_COMMAND_ID = 'notebook.cell.joinSelected';
+
 const JOIN_CELL_ABOVE_COMMAND_ID = 'notebook.cell.joinAbove';
+
 const JOIN_CELL_BELOW_COMMAND_ID = 'notebook.cell.joinBelow';
 registerAction2(class extends NotebookCellAction {
     constructor() {
@@ -140,19 +146,28 @@ registerAction2(class extends NotebookCellAction {
             return;
         }
         const bulkEditService = accessor.get(IBulkEditService);
+
         const cell = context.cell;
+
         const index = context.notebookEditor.getCellIndex(cell);
+
         const splitPoints = cell.focusMode === CellFocusMode.Container ? [{ lineNumber: 1, column: 1 }] : cell.getSelectionsStartPosition();
+
         if (splitPoints && splitPoints.length > 0) {
             await cell.resolveTextModel();
+
             if (!cell.hasModel()) {
                 return;
             }
             const newLinesContents = computeCellLinesContents(cell, splitPoints);
+
             if (newLinesContents) {
                 const language = cell.language;
+
                 const kind = cell.cellKind;
+
                 const mime = cell.mime;
+
                 const textModel = await cell.resolveTextModel();
                 await bulkEditService.apply([
                     new ResourceTextEdit(cell.uri, { range: textModel.getFullModelRange(), text: newLinesContents[0] }),
@@ -194,6 +209,7 @@ registerAction2(class extends NotebookCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
         const bulkEditService = accessor.get(IBulkEditService);
+
         return joinCellsWithSurrounds(bulkEditService, context, 'above');
     }
 });
@@ -217,6 +233,7 @@ registerAction2(class extends NotebookCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
         const bulkEditService = accessor.get(IBulkEditService);
+
         return joinCellsWithSurrounds(bulkEditService, context, 'below');
     }
 });
@@ -235,13 +252,16 @@ registerAction2(class extends NotebookCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
         const bulkEditService = accessor.get(IBulkEditService);
+
         const notificationService = accessor.get(INotificationService);
+
         return joinSelectedCells(bulkEditService, notificationService, context);
     }
 });
 //#endregion
 //#region Change Cell Type
 const CHANGE_CELL_TO_CODE_COMMAND_ID = 'notebook.cell.changeToCode';
+
 const CHANGE_CELL_TO_MARKDOWN_COMMAND_ID = 'notebook.cell.changeToMarkdown';
 registerAction2(class ChangeCellToCodeAction extends NotebookMultiCellAction {
     constructor() {
@@ -290,12 +310,19 @@ registerAction2(class ChangeCellToMarkdownAction extends NotebookMultiCellAction
 //#endregion
 //#region Collapse Cell
 const COLLAPSE_CELL_INPUT_COMMAND_ID = 'notebook.cell.collapseCellInput';
+
 const COLLAPSE_CELL_OUTPUT_COMMAND_ID = 'notebook.cell.collapseCellOutput';
+
 const COLLAPSE_ALL_CELL_INPUTS_COMMAND_ID = 'notebook.cell.collapseAllCellInputs';
+
 const EXPAND_ALL_CELL_INPUTS_COMMAND_ID = 'notebook.cell.expandAllCellInputs';
+
 const COLLAPSE_ALL_CELL_OUTPUTS_COMMAND_ID = 'notebook.cell.collapseAllCellOutputs';
+
 const EXPAND_ALL_CELL_OUTPUTS_COMMAND_ID = 'notebook.cell.expandAllCellOutputs';
+
 const TOGGLE_CELL_OUTPUTS_COMMAND_ID = 'notebook.cell.toggleOutputs';
+
 const TOGGLE_CELL_OUTPUT_SCROLLING = 'notebook.cell.toggleOutputScrolling';
 registerAction2(class CollapseCellInputAction extends NotebookMultiCellAction {
     constructor() {
@@ -404,6 +431,7 @@ registerAction2(class extends NotebookMultiCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCommandContext | INotebookCellToolbarActionContext): Promise<void> {
         let cells: readonly ICellViewModel[] = [];
+
         if (context.ui) {
             cells = [context.cell];
         }
@@ -480,6 +508,7 @@ registerAction2(class ToggleCellOutputScrolling extends NotebookMultiCellAction 
         // TODO: when is cellMetadata undefined? Is that a case we need to support? It is currently a read-only property.
         if (cellMetadata) {
             const currentlyEnabled = cellMetadata['scrollable'] !== undefined ? cellMetadata['scrollable'] : globalScrollSetting;
+
             const shouldEnableScrolling = collapsed || !currentlyEnabled;
             cellMetadata['scrollable'] = shouldEnableScrolling;
             viewModel.resetRenderer();
@@ -487,6 +516,7 @@ registerAction2(class ToggleCellOutputScrolling extends NotebookMultiCellAction 
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCommandContext | INotebookCellToolbarActionContext): Promise<void> {
         const globalScrolling = accessor.get(IConfigurationService).getValue<boolean>(NotebookSetting.outputScrolling);
+
         if (context.ui) {
             context.cell.outputsViewModels.forEach((viewModel) => {
                 this.toggleOutputScrolling(viewModel, globalScrolling, context.cell.isOutputCollapsed);

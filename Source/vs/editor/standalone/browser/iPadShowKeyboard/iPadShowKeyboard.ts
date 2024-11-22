@@ -14,10 +14,12 @@ export class IPadShowKeyboard extends Disposable implements IEditorContribution 
     public static readonly ID = 'editor.contrib.iPadShowKeyboard';
     private readonly editor: ICodeEditor;
     private widget: ShowKeyboardWidget | null;
+
     constructor(editor: ICodeEditor) {
         super();
         this.editor = editor;
         this.widget = null;
+
         if (isIOS) {
             this._register(editor.onDidChangeConfiguration(() => this.update()));
             this.update();
@@ -25,6 +27,7 @@ export class IPadShowKeyboard extends Disposable implements IEditorContribution 
     }
     private update(): void {
         const shouldHaveWidget = (!this.editor.getOption(EditorOption.readOnly));
+
         if (!this.widget && shouldHaveWidget) {
             this.widget = new ShowKeyboardWidget(this.editor);
         }
@@ -35,6 +38,7 @@ export class IPadShowKeyboard extends Disposable implements IEditorContribution 
     }
     public override dispose(): void {
         super.dispose();
+
         if (this.widget) {
             this.widget.dispose();
             this.widget = null;
@@ -45,6 +49,7 @@ class ShowKeyboardWidget extends Disposable implements IOverlayWidget {
     private static readonly ID = 'editor.contrib.ShowKeyboardWidget';
     private readonly editor: ICodeEditor;
     private readonly _domNode: HTMLElement;
+
     constructor(editor: ICodeEditor) {
         super();
         this.editor = editor;
@@ -60,6 +65,7 @@ class ShowKeyboardWidget extends Disposable implements IOverlayWidget {
     }
     public override dispose(): void {
         this.editor.removeOverlayWidget(this);
+
         super.dispose();
     }
     // ----- IOverlayWidget API

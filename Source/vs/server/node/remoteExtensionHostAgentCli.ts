@@ -62,6 +62,7 @@ class CliMain extends Disposable {
         const instantiationService = await this.initServices();
         await instantiationService.invokeFunction(async (accessor) => {
             const configurationService = accessor.get(IConfigurationService);
+
             const logService = accessor.get(ILogService);
             // On Windows, configure the UNC allow list based on settings
             if (isWindows) {
@@ -78,18 +79,23 @@ class CliMain extends Disposable {
             catch (error) {
                 logService.error(error);
                 console.error(getErrorMessage(error));
+
                 throw error;
             }
         });
     }
     private async initServices(): Promise<IInstantiationService> {
         const services = new ServiceCollection();
+
         const productService = { _serviceBrand: undefined, ...product };
         services.set(IProductService, productService);
+
         const environmentService = new ServerEnvironmentService(this.args, productService);
         services.set(IServerEnvironmentService, environmentService);
+
         const loggerService = new LoggerService(getLogLevel(environmentService), environmentService.logsHome);
         services.set(ILoggerService, loggerService);
+
         const logService = new LogService(this._register(loggerService.createLogger('remoteCLI', { name: localize('remotecli', "Remote CLI") })));
         services.set(ILogService, logService);
         logService.trace(`Remote configuration data at ${this.remoteDataFolder}`);
@@ -98,6 +104,7 @@ class CliMain extends Disposable {
         const fileService = this._register(new FileService(logService));
         services.set(IFileService, fileService);
         fileService.registerProvider(Schemas.file, this._register(new DiskFileSystemProvider(logService)));
+
         const uriIdentityService = new UriIdentityService(fileService);
         services.set(IUriIdentityService, uriIdentityService);
         // User Data Profiles
@@ -120,6 +127,7 @@ class CliMain extends Disposable {
         services.set(IExtensionSignatureVerificationService, new SyncDescriptor(ExtensionSignatureVerificationService));
         services.set(INativeServerExtensionManagementService, new SyncDescriptor(ExtensionManagementService));
         services.set(ILanguagePackService, new SyncDescriptor(NativeLanguagePackService));
+
         return new InstantiationService(services);
     }
     private async doRun(extensionManagementCLI: ExtensionManagementCLI): Promise<void> {
@@ -130,6 +138,7 @@ class CliMain extends Disposable {
         // Install Extension
         else if (this.args['install-extension'] || this.args['install-builtin-extension']) {
             const installOptions: InstallOptions = { isMachineScoped: !!this.args['do-not-sync'], installPreReleaseVersion: !!this.args['pre-release'] };
+
             return extensionManagementCLI.installExtensions(this.asExtensionIdOrVSIX(this.args['install-extension'] || []), this.asExtensionIdOrVSIX(this.args['install-builtin-extension'] || []), installOptions, !!this.args['force']);
         }
         // Uninstall Extension
@@ -156,14 +165,17 @@ export async function run(args: ServerParsedArgs, REMOTE_DATA_FOLDER: string, op
     if (args.help) {
         const executable = product.serverApplicationName + (isWindows ? '.cmd' : '');
         console.log(buildHelpMessage(product.nameLong, executable, product.version, optionDescriptions, { noInputFiles: true, noPipe: true }));
+
         return;
     }
     // Version Info
     if (args.version) {
         console.log(buildVersionMessage(product.version, product.commit));
+
         return;
     }
     const cliMain = new CliMain(args, REMOTE_DATA_FOLDER);
+
     try {
         await cliMain.run();
         eventuallyExit(0);

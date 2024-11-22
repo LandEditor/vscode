@@ -21,7 +21,9 @@ function createHideUnchangedRegionOptions(configurationService: IConfigurationSe
     dispose: () => void;
 } {
     const disposables = new DisposableStore();
+
     const unchangedRegionsEnablementEmitter = disposables.add(new Emitter<boolean>());
+
     const result = {
         options: {
             enabled: configurationService.getValue<boolean>('diffEditor.hideUnchangedRegions.enabled'),
@@ -50,5 +52,6 @@ function createHideUnchangedRegionOptions(configurationService: IConfigurationSe
             unchangedRegionsEnablementEmitter.fire(result.options.enabled);
         }
     }));
+
     return result;
 }

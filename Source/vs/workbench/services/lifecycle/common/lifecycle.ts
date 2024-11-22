@@ -150,7 +150,9 @@ export const enum StartupKind {
 export function StartupKindToString(startupKind: StartupKind): string {
     switch (startupKind) {
         case StartupKind.NewWindow: return 'NewWindow';
+
         case StartupKind.ReloadedWindow: return 'ReloadedWindow';
+
         case StartupKind.ReopenedWindow: return 'ReopenedWindow';
     }
 }
@@ -183,8 +185,11 @@ export const enum LifecyclePhase {
 export function LifecyclePhaseToString(phase: LifecyclePhase): string {
     switch (phase) {
         case LifecyclePhase.Starting: return 'Starting';
+
         case LifecyclePhase.Ready: return 'Ready';
+
         case LifecyclePhase.Restored: return 'Restored';
+
         case LifecyclePhase.Eventually: return 'Eventually';
     }
 }

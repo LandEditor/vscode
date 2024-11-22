@@ -12,6 +12,7 @@ export default class MergeDecorator implements vscode.Disposable {
     private config?: interfaces.IExtensionConfiguration;
     private tracker: interfaces.IDocumentMergeConflictTracker;
     private updating = new Map<vscode.TextEditor, boolean>();
+
     constructor(private context: vscode.ExtensionContext, trackerService: interfaces.IDocumentMergeConflictTrackerService) {
         this.tracker = trackerService.createTracker('decorator');
     }
@@ -105,6 +106,7 @@ export default class MergeDecorator implements vscode.Disposable {
     }
     private generateBlockRenderOptions(backgroundColor: string, overviewRulerColor: string, config: interfaces.IExtensionConfiguration): vscode.DecorationRenderOptions {
         const renderOptions: vscode.DecorationRenderOptions = {};
+
         if (config.enableDecorations) {
             renderOptions.backgroundColor = new vscode.ThemeColor(backgroundColor);
             renderOptions.isWholeLine = this.decorationUsesWholeLine;
@@ -136,19 +138,24 @@ export default class MergeDecorator implements vscode.Disposable {
         }
         try {
             this.updating.set(editor, true);
+
             const conflicts = await this.tracker.getConflicts(editor.document);
+
             if (vscode.window.visibleTextEditors.indexOf(editor) === -1) {
                 return;
             }
             if (conflicts.length === 0) {
                 this.removeDecorations(editor);
+
                 return;
             }
             // Store decorations keyed by the type of decoration, set decoration wants a "style"
             // to go with it, which will match this key (see constructor);
+
             const matchDecorations: {
                 [key: string]: vscode.Range[];
             } = {};
+
             const pushDecoration = (key: string, d: vscode.Range) => {
                 matchDecorations[key] = matchDecorations[key] || [];
                 matchDecorations[key].push(d);
@@ -166,6 +173,7 @@ export default class MergeDecorator implements vscode.Disposable {
                         pushDecoration('commonAncestors.content', commonAncestorsRegion.decoratorContent);
                     }
                 });
+
                 if (this.config!.enableDecorations) {
                     pushDecoration('current.header', conflict.current.header);
                     pushDecoration('splitter', conflict.splitter);
@@ -179,6 +187,7 @@ export default class MergeDecorator implements vscode.Disposable {
             // editor instance. Keys in both matches and decorations should match.
             Object.keys(matchDecorations).forEach(decorationKey => {
                 const decorationType = this.decorations[decorationKey];
+
                 if (decorationType) {
                     editor.setDecorations(decorationType, matchDecorations[decorationKey]);
                 }
@@ -194,6 +203,7 @@ export default class MergeDecorator implements vscode.Disposable {
             // Race condition, while editing the settings, it's possible to
             // generate regions before the configuration has been refreshed
             const decorationType = this.decorations[decorationKey];
+
             if (decorationType) {
                 editor.setDecorations(decorationType, []);
             }

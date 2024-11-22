@@ -34,6 +34,7 @@ function isSettingsSyncContent(thing: any): thing is ISettingsSyncContent {
 }
 export function parseSettingsSyncContent(syncContent: string): ISettingsSyncContent {
     const parsed = <ISettingsSyncContent>JSON.parse(syncContent);
+
     return isSettingsSyncContent(parsed) ? parsed : /* migrate */ { settings: syncContent };
 }
 export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implements IUserDataSynchroniser {
@@ -44,6 +45,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     readonly localResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'local' });
     readonly remoteResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'remote' });
     readonly acceptedResource: URI = this.previewResource.with({ scheme: USER_DATA_SYNC_SCHEME, authority: 'accepted' });
+
     constructor(private readonly profile: IUserDataProfile, collection: string | undefined, 
     @IFileService
     fileService: IFileService, 
@@ -73,9 +75,13 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     }
     async getRemoteUserDataSyncConfiguration(manifest: IUserDataResourceManifest | null): Promise<IUserDataSyncConfiguration> {
         const lastSyncUserData = await this.getLastSyncUserData();
+
         const remoteUserData = await this.getLatestRemoteUserData(manifest, lastSyncUserData);
+
         const remoteSettingsSyncContent = this.getSettingsSyncContent(remoteUserData);
+
         const parser = new ConfigurationModelParser(USER_DATA_SYNC_CONFIGURATION_SCOPE, this.logService);
+
         if (remoteSettingsSyncContent?.settings) {
             parser.parse(remoteSettingsSyncContent.settings);
         }
@@ -83,21 +89,31 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     }
     protected async generateSyncPreview(remoteUserData: IRemoteUserData, lastSyncUserData: IRemoteUserData | null, isRemoteDataFromCurrentMachine: boolean): Promise<ISettingsResourcePreview[]> {
         const fileContent = await this.getLocalFileContent();
+
         const formattingOptions = await this.getFormattingOptions();
+
         const remoteSettingsSyncContent = this.getSettingsSyncContent(remoteUserData);
         // Use remote data as last sync data if last sync data does not exist and remote data is from same machine
         lastSyncUserData = lastSyncUserData === null && isRemoteDataFromCurrentMachine ? remoteUserData : lastSyncUserData;
+
         const lastSettingsSyncContent: ISettingsSyncContent | null = lastSyncUserData ? this.getSettingsSyncContent(lastSyncUserData) : null;
+
         const ignoredSettings = await this.getIgnoredSettings();
+
         let mergedContent: string | null = null;
+
         let hasLocalChanged: boolean = false;
+
         let hasRemoteChanged: boolean = false;
+
         let hasConflicts: boolean = false;
+
         if (remoteSettingsSyncContent) {
             let localContent: string = fileContent ? fileContent.value.toString().trim() : '{}';
             localContent = localContent || '{}';
             this.validateContent(localContent);
             this.logService.trace(`${this.syncResourceLogLabel}: Merging remote settings with local settings...`);
+
             const result = merge(localContent, remoteSettingsSyncContent.settings, lastSettingsSyncContent ? lastSettingsSyncContent.settings : null, ignoredSettings, [], formattingOptions);
             mergedContent = result.localContent || result.remoteContent;
             hasLocalChanged = result.localContent !== null;
@@ -112,13 +128,16 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
             hasRemoteChanged = true;
         }
         const localContent = fileContent ? fileContent.value.toString() : null;
+
         const baseContent = lastSettingsSyncContent?.settings ?? null;
+
         const previewResult = {
             content: hasConflicts ? baseContent : mergedContent,
             localChange: hasLocalChanged ? Change.Modified : Change.None,
             remoteChange: hasRemoteChanged ? Change.Modified : Change.None,
             hasConflicts
         };
+
         return [{
                 fileContent,
                 baseResource: this.baseResource,
@@ -136,19 +155,27 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     }
     protected async hasRemoteChanged(lastSyncUserData: IRemoteUserData): Promise<boolean> {
         const lastSettingsSyncContent: ISettingsSyncContent | null = this.getSettingsSyncContent(lastSyncUserData);
+
         if (lastSettingsSyncContent === null) {
             return true;
         }
         const fileContent = await this.getLocalFileContent();
+
         const localContent: string = fileContent ? fileContent.value.toString().trim() : '';
+
         const ignoredSettings = await this.getIgnoredSettings();
+
         const formattingOptions = await this.getFormattingOptions();
+
         const result = merge(localContent || '{}', lastSettingsSyncContent.settings, lastSettingsSyncContent.settings, ignoredSettings, [], formattingOptions);
+
         return result.remoteContent !== null;
     }
     protected async getMergeResult(resourcePreview: ISettingsResourcePreview, token: CancellationToken): Promise<IMergeResult> {
         const formatUtils = await this.getFormattingOptions();
+
         const ignoredSettings = await this.getIgnoredSettings();
+
         return {
             ...resourcePreview.previewResult,
             // remove ignored settings from the preview content
@@ -157,6 +184,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     }
     protected async getAcceptResult(resourcePreview: ISettingsResourcePreview, resource: URI, content: string | null | undefined, token: CancellationToken): Promise<IAcceptResult> {
         const formattingOptions = await this.getFormattingOptions();
+
         const ignoredSettings = await this.getIgnoredSettings();
         /* Accept local resource */
         if (this.extUri.isEqual(resource, this.localResource)) {
@@ -201,15 +229,19 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
         IAcceptResult
     ][], force: boolean): Promise<void> {
         const { fileContent } = resourcePreviews[0][0];
+
         let { content, localChange, remoteChange } = resourcePreviews[0][1];
+
         if (localChange === Change.None && remoteChange === Change.None) {
             this.logService.info(`${this.syncResourceLogLabel}: No changes found during synchronizing settings.`);
         }
         content = content ? content.trim() : '{}';
         content = content || '{}';
         this.validateContent(content);
+
         if (localChange !== Change.None) {
             this.logService.trace(`${this.syncResourceLogLabel}: Updating local settings...`);
+
             if (fileContent) {
                 await this.backupLocal(JSON.stringify(this.toSettingsSyncContent(fileContent.value.toString())));
             }
@@ -221,6 +253,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
             const formatUtils = await this.getFormattingOptions();
             // Update ignored settings from remote
             const remoteSettingsSyncContent = this.getSettingsSyncContent(remoteUserData);
+
             const ignoredSettings = await this.getIgnoredSettings(content);
             content = updateIgnoredSettings(content, remoteSettingsSyncContent ? remoteSettingsSyncContent.settings : '{}', ignoredSettings, formatUtils);
             this.logService.trace(`${this.syncResourceLogLabel}: Updating remote settings...`);
@@ -241,6 +274,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     async hasLocalData(): Promise<boolean> {
         try {
             const localFileContent = await this.getLocalFileContent();
+
             if (localFileContent) {
                 return !isEmpty(localFileContent.value.toString());
             }
@@ -263,6 +297,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
     }
     protected override async resolvePreviewContent(resource: URI): Promise<string | null> {
         let content = await super.resolvePreviewContent(resource);
+
         if (content) {
             const formatUtils = await this.getFormattingOptions();
             // remove ignored settings from the preview content
@@ -298,20 +333,24 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
         }
         if (!this.userExtensionsIgnoredSettings) {
             this.userExtensionsIgnoredSettings = this.getIgnoredSettingForUserExtensions();
+
             const disposable = this._register(Event.any<any>(Event.filter(this.extensionManagementService.onDidInstallExtensions, (e => e.some(({ local }) => !!local))), Event.filter(this.extensionManagementService.onDidUninstallExtension, (e => !e.error)))(() => {
                 disposable.dispose();
                 this.userExtensionsIgnoredSettings = undefined;
             }));
         }
         const defaultIgnoredSettings = (await Promise.all([this.coreIgnoredSettings, this.systemExtensionsIgnoredSettings, this.userExtensionsIgnoredSettings])).flat();
+
         return getIgnoredSettings(defaultIgnoredSettings, this.configurationService, content);
     }
     private async getIgnoredSettingForSystemExtensions(): Promise<string[]> {
         const systemExtensions = await this.extensionManagementService.getInstalled(ExtensionType.System);
+
         return distinct(systemExtensions.map(e => getIgnoredSettingsForExtension(e.manifest)).flat());
     }
     private async getIgnoredSettingForUserExtensions(): Promise<string[]> {
         const userExtensions = await this.extensionManagementService.getInstalled(ExtensionType.User, this.profile.extensionsResource);
+
         return distinct(userExtensions.map(e => getIgnoredSettingsForExtension(e.manifest)).flat());
     }
     private validateContent(content: string): void {
@@ -338,13 +377,17 @@ export class SettingsInitializer extends AbstractInitializer {
     }
     protected async doInitialize(remoteUserData: IRemoteUserData): Promise<void> {
         const settingsSyncContent = remoteUserData.syncData ? this.parseSettingsSyncContent(remoteUserData.syncData.content) : null;
+
         if (!settingsSyncContent) {
             this.logService.info('Skipping initializing settings because remote settings does not exist.');
+
             return;
         }
         const isEmpty = await this.isEmpty();
+
         if (!isEmpty) {
             this.logService.info('Skipping initializing settings because local settings exist.');
+
             return;
         }
         await this.fileService.writeFile(this.userDataProfilesService.defaultProfile.settingsResource, VSBuffer.fromString(settingsSyncContent.settings));
@@ -353,6 +396,7 @@ export class SettingsInitializer extends AbstractInitializer {
     private async isEmpty(): Promise<boolean> {
         try {
             const fileContent = await this.fileService.readFile(this.userDataProfilesService.defaultProfile.settingsResource);
+
             return isEmpty(fileContent.value.toString().trim());
         }
         catch (error) {

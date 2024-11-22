@@ -45,6 +45,7 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(options: IDebugNam
     handleChange: (context: IChangeContext, changeSummary: TChangeSummary) => boolean;
 }, fn: (reader: IReader, changeSummary: TChangeSummary, store: DisposableStore) => void): IDisposable {
     const store = new DisposableStore();
+
     const disposable = autorunHandleChanges({
         owner: options.owner,
         debugName: options.debugName,
@@ -55,6 +56,7 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(options: IDebugNam
         store.clear();
         fn(reader, changeSummary, store);
     });
+
     return toDisposable(() => {
         disposable.dispose();
         store.dispose();
@@ -65,6 +67,7 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(options: IDebugNam
  */
 export function autorunWithStore(fn: (reader: IReader, store: DisposableStore) => void): IDisposable {
     const store = new DisposableStore();
+
     const disposable = autorunOpts({
         owner: undefined,
         debugName: undefined,
@@ -73,6 +76,7 @@ export function autorunWithStore(fn: (reader: IReader, store: DisposableStore) =
         store.clear();
         fn(reader, store);
     });
+
     return toDisposable(() => {
         disposable.dispose();
         store.dispose();
@@ -83,8 +87,10 @@ export function autorunDelta<T>(observable: IObservable<T>, handler: (args: {
     newValue: T;
 }) => void): IDisposable {
     let _lastValue: T | undefined;
+
     return autorunOpts({ debugReferenceFn: handler }, (reader) => {
         const newValue = observable.read(reader);
+
         const lastValue = _lastValue;
         _lastValue = newValue;
         handler({ lastValue, newValue });
@@ -114,12 +120,14 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
     }
     constructor(public readonly _debugNameData: DebugNameData, public readonly _runFn: (reader: IReader, changeSummary: TChangeSummary) => void, private readonly createChangeSummary: (() => TChangeSummary) | undefined, private readonly _handleChange: ((context: IChangeContext, summary: TChangeSummary) => boolean) | undefined) {
         this.changeSummary = this.createChangeSummary?.();
+
         getLogger()?.handleAutorunCreated(this);
         this._runIfNeeded();
         trackDisposable(this);
     }
     public dispose(): void {
         this.disposed = true;
+
         for (const o of this.dependencies) {
             o.removeObserver(this);
         }
@@ -134,11 +142,15 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
         this.dependenciesToBeRemoved = this.dependencies;
         this.dependencies = emptySet;
         this.state = AutorunState.upToDate;
+
         const isDisposed = this.disposed;
+
         try {
             if (!isDisposed) {
                 getLogger()?.handleAutorunTriggered(this);
+
                 const changeSummary = this.changeSummary!;
+
                 try {
                     this.changeSummary = this.createChangeSummary?.();
                     this._isReaderValid = true;
@@ -180,8 +192,10 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
                 do {
                     if (this.state === AutorunState.dependenciesMightHaveChanged) {
                         this.state = AutorunState.upToDate;
+
                         for (const d of this.dependencies) {
                             d.reportChanges();
+
                             if (this.state as AutorunState === AutorunState.stale) {
                                 // The other dependencies will refresh on demand
                                 break;
@@ -210,6 +224,7 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
                     change,
                     didChange: (o): this is any => o === observable as any,
                 }, this.changeSummary!) : true;
+
                 if (shouldReact) {
                     this.state = AutorunState.stale;
                 }
@@ -230,9 +245,11 @@ export class AutorunObserver<TChangeSummary = any> implements IObserver, IReader
             return observable.get();
         }
         observable.addObserver(this);
+
         const value = observable.get();
         this.dependencies.add(observable);
         this.dependenciesToBeRemoved.delete(observable);
+
         return value;
     }
 }

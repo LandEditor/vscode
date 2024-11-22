@@ -14,6 +14,7 @@ import { IEditorOptions } from '../../../../platform/editor/common/editor.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
+
 const ExtensionEditorIcon = registerIcon('extensions-editor-label-icon', Codicon.extensions, localize('extensionsEditorLabelIcon', 'Icon of the extensions editor label.'));
 export interface IExtensionEditorOptions extends IEditorOptions {
     showPreReleaseVersion?: boolean;

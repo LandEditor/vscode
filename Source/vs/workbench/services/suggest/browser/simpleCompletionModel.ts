@@ -45,11 +45,13 @@ export class SimpleCompletionModel {
 
 	get items(): SimpleCompletionItem[] {
 		this._ensureCachedState();
+
 		return this._filteredItems!;
 	}
 
 	get stats(): ISimpleCompletionStats {
 		this._ensureCachedState();
+
 		return this._stats!;
 	}
 
@@ -79,11 +81,14 @@ export class SimpleCompletionModel {
 		const labelLengths: number[] = [];
 
 		const { leadingLineContent, characterCountDelta } = this._lineContext;
+
 		let word = '';
+
 		let wordLow = '';
 
 		// incrementally filter less
 		const source = this._refilterKind === Refilter.All ? this._items : this._filteredItems!;
+
 		const target: SimpleCompletionItem[] = [];
 
 		// picks a score function based on the number of
@@ -107,7 +112,9 @@ export class SimpleCompletionModel {
 			// different word, but in practice not - that's why we cache
 			// TODO: Fix
 			const overwriteBefore = item.completion.replacementLength; // item.position.column - item.editStart.column;
+
 			const wordLen = overwriteBefore + characterCountDelta; // - (item.position.column - this._column);
+
 			if (word.length !== wordLen) {
 				word = wordLen === 0 ? '' : leadingLineContent.slice(-wordLen);
 				wordLow = word.toLowerCase();
@@ -116,6 +123,7 @@ export class SimpleCompletionModel {
 			// remember the word against which this item was
 			// scored. If word is undefined, then match against the empty string.
 			item.word = word;
+
 			if (wordLen === 0) {
 				// when there is nothing to score against, don't
 				// event try to do. Use a const rank and rely on
@@ -128,8 +136,10 @@ export class SimpleCompletionModel {
 				// skip word characters that are whitespace until
 				// we have hit the replace range (overwriteBefore)
 				let wordPos = 0;
+
 				while (wordPos < overwriteBefore) {
 					const ch = word.charCodeAt(wordPos);
+
 					if (ch === CharCode.Space || ch === CharCode.Tab) {
 						wordPos += 1;
 					} else {
@@ -164,6 +174,7 @@ export class SimpleCompletionModel {
 				} else {
 					// by default match `word` against the `label`
 					const match = scoreFn(word, wordLow, wordPos, item.completion.label, item.labelLow, 0, this._fuzzyScoreOptions);
+
 					if (!match && word !== '') {
 						continue; // NO match
 					}
@@ -181,27 +192,33 @@ export class SimpleCompletionModel {
 		this._filteredItems = target.sort((a, b) => {
 			// Keywords should always appear at the bottom when they are not an exact match
 			let score = 0;
+
 			if (a.completion.isKeyword && a.labelLow !== wordLow || b.completion.isKeyword && b.labelLow !== wordLow) {
 				score = (a.completion.isKeyword ? 1 : 0) - (b.completion.isKeyword ? 1 : 0);
+
 				if (score !== 0) {
 					return score;
 				}
 			}
 			// Sort by the score
 			score = b.score[0] - a.score[0];
+
 			if (score !== 0) {
 				return score;
 			}
 			// Sort files with the same score against each other specially
 			const isArg = leadingLineContent.includes(' ');
+
 			if (!isArg && a.fileExtLow.length > 0 && b.fileExtLow.length > 0) {
 				// Then by label length ascending (excluding file extension if it's a file)
 				score = a.labelLowExcludeFileExt.length - b.labelLowExcludeFileExt.length;
+
 				if (score !== 0) {
 					return score;
 				}
 				// If they're files at the start of the command line, boost extensions depending on the operating system
 				score = fileExtScore(b.fileExtLow) - fileExtScore(a.fileExtLow);
+
 				if (score !== 0) {
 					return score;
 				}

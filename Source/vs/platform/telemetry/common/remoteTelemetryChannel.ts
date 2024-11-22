@@ -16,6 +16,7 @@ export class ServerTelemetryChannel extends Disposable implements IServerChannel
         switch (command) {
             case 'updateTelemetryLevel': {
                 const { telemetryLevel } = arg;
+
                 return this.telemetryService.updateInjectedTelemetryLevel(telemetryLevel);
             }
             case 'logTelemetry': {
@@ -50,6 +51,7 @@ export class ServerTelemetryChannel extends Disposable implements IServerChannel
      */
     public override dispose(): void {
         this.telemetryService.updateInjectedTelemetryLevel(TelemetryLevel.NONE);
+
         super.dispose();
     }
 }

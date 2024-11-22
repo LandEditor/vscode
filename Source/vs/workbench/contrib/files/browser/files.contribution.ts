@@ -36,6 +36,7 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 import { TextFileEditor } from './editors/textFileEditor.js';
 class FileUriLabelContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.fileUriLabel';
+
     constructor(
     @ILabelService
     labelService: ILabelService) {
@@ -87,6 +88,7 @@ registerWorkbenchContribution2(WorkspaceWatcher.ID, WorkspaceWatcher, WorkbenchP
 registerWorkbenchContribution2(DirtyFilesIndicator.ID, DirtyFilesIndicator, WorkbenchPhase.BlockStartup);
 // Configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
 const hotExitConfiguration: IConfigurationPropertySchema = isNative ?
     {
         'type': 'string',
@@ -590,22 +592,32 @@ configurationRegistry.registerConfiguration({
 });
 UndoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
     const undoRedoService = accessor.get(IUndoRedoService);
+
     const explorerService = accessor.get(IExplorerService);
+
     const configurationService = accessor.get(IConfigurationService);
+
     const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
+
     if (explorerService.hasViewFocus() && undoRedoService.canUndo(UNDO_REDO_SOURCE) && explorerCanUndo) {
         undoRedoService.undo(UNDO_REDO_SOURCE);
+
         return true;
     }
     return false;
 });
 RedoCommand.addImplementation(110, 'explorer', (accessor: ServicesAccessor) => {
     const undoRedoService = accessor.get(IUndoRedoService);
+
     const explorerService = accessor.get(IExplorerService);
+
     const configurationService = accessor.get(IConfigurationService);
+
     const explorerCanUndo = configurationService.getValue<IFilesConfiguration>().explorer.enableUndo;
+
     if (explorerService.hasViewFocus() && undoRedoService.canRedo(UNDO_REDO_SOURCE) && explorerCanUndo) {
         undoRedoService.redo(UNDO_REDO_SOURCE);
+
         return true;
     }
     return false;

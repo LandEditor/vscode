@@ -65,6 +65,7 @@ export interface IView {
 export interface IColor {
     id: string;
     description: string;
+
     defaults: {
         light: string;
         dark: string;
@@ -352,6 +353,7 @@ export class ExtensionIdentifier {
      * allow compatibility between running from source and a built version.
      */
     readonly _lower: string;
+
     constructor(value: string) {
         this.value = value;
         this._lower = value.toLowerCase();
@@ -367,7 +369,9 @@ export class ExtensionIdentifier {
             // At least one of the arguments is an extension id in string form,
             // so we have to use the string comparison which ignores case.
             const aValue = (typeof a === 'string' ? a : a.value);
+
             const bValue = (typeof b === 'string' ? b : b.value);
+
             return strings.equalsIgnoreCase(aValue, bValue);
         }
         // Now we know both arguments are ExtensionIdentifier
@@ -459,6 +463,7 @@ export function isAuthenticationProviderExtension(manifest: IExtensionManifest):
 export function isResolverExtension(manifest: IExtensionManifest, remoteAuthority: string | undefined): boolean {
     if (remoteAuthority) {
         const activationEvent = `onResolveRemoteAuthority:${getRemoteName(remoteAuthority)}`;
+
         return !!manifest.activationEvents?.includes(activationEvent);
     }
     return false;
@@ -469,6 +474,7 @@ export function parseApiProposals(enabledApiProposals: string[]): {
 }[] {
     return enabledApiProposals.map(proposal => {
         const [proposalName, version] = proposal.split('@');
+
         return { proposalName, version: version ? parseInt(version) : undefined };
     });
 }

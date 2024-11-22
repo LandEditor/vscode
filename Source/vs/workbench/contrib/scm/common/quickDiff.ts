@@ -13,6 +13,7 @@ export interface QuickDiffProvider {
     rootUri: URI | undefined;
     selector?: LanguageSelector;
     isSCM: boolean;
+
     getOriginalResource(uri: URI): Promise<URI | null>;
 }
 export interface QuickDiff {
@@ -24,5 +25,6 @@ export interface IQuickDiffService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeQuickDiffProviders: Event<void>;
     addQuickDiffProvider(quickDiff: QuickDiffProvider): IDisposable;
+
     getQuickDiffs(uri: URI, language?: string, isSynchronized?: boolean): Promise<QuickDiff[]>;
 }

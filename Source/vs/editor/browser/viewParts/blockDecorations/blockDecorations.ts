@@ -14,6 +14,7 @@ export class BlockDecorations extends ViewPart {
     private readonly blocks: FastDomNode<HTMLElement>[] = [];
     private contentWidth: number = -1;
     private contentLeft: number = 0;
+
     constructor(context: ViewContext) {
         super(context);
         this.domNode = createFastDomNode<HTMLElement>(document.createElement('div'));
@@ -24,14 +25,19 @@ export class BlockDecorations extends ViewPart {
     }
     private update(): boolean {
         let didChange = false;
+
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
+
         const newContentWidth = layoutInfo.contentWidth - layoutInfo.verticalScrollbarWidth;
+
         if (this.contentWidth !== newContentWidth) {
             this.contentWidth = newContentWidth;
             didChange = true;
         }
         const newContentLeft = layoutInfo.contentLeft;
+
         if (this.contentLeft !== newContentLeft) {
             this.contentLeft = newContentLeft;
             didChange = true;
@@ -60,18 +66,23 @@ export class BlockDecorations extends ViewPart {
     }
     public render(ctx: RestrictedRenderingContext): void {
         let count = 0;
+
         const decorations = ctx.getDecorationsInViewport();
+
         for (const decoration of decorations) {
             if (!decoration.options.blockClassName) {
                 continue;
             }
             let block = this.blocks[count];
+
             if (!block) {
                 block = this.blocks[count] = createFastDomNode(document.createElement('div'));
                 this.domNode.appendChild(block);
             }
             let top: number;
+
             let bottom: number;
+
             if (decoration.options.blockIsAfterEnd) {
                 // range must be empty
                 top = ctx.getVerticalOffsetAfterLineNumber(decoration.range.endLineNumber, false);

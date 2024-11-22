@@ -10,6 +10,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 export class ToggleMinimapAction extends Action2 {
     static readonly ID = 'editor.action.toggleMinimap';
+
     constructor() {
         super({
             id: ToggleMinimapAction.ID,
@@ -29,7 +30,9 @@ export class ToggleMinimapAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue('editor.minimap.enabled');
+
         return configurationService.updateValue('editor.minimap.enabled', newValue);
     }
 }

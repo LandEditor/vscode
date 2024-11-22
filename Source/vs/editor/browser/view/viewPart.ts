@@ -20,6 +20,7 @@ export abstract class ViewPart extends ViewEventHandler {
 
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		super.dispose();
 	}
 
@@ -49,6 +50,7 @@ export class PartFingerprints {
 
 	public static read(target: Element): PartFingerprint {
 		const r = target.getAttribute('data-mprt');
+
 		if (r === null) {
 			return PartFingerprint.None;
 		}
@@ -57,6 +59,7 @@ export class PartFingerprints {
 
 	public static collect(child: Element | null, stopAt: Element): Uint8Array {
 		const result: PartFingerprint[] = [];
+
 		let resultLen = 0;
 
 		while (child && child !== child.ownerDocument.body) {
@@ -70,6 +73,7 @@ export class PartFingerprints {
 		}
 
 		const r = new Uint8Array(resultLen);
+
 		for (let i = 0; i < resultLen; i++) {
 			r[i] = result[resultLen - i - 1];
 		}

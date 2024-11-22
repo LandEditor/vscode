@@ -33,6 +33,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
             this.isQuickNavigating = isQuickNavigating;
         }
     };
+
     constructor(prefix: string, 
     @IEditorGroupsService
     protected readonly editorGroupService: IEditorGroupsService, 
@@ -67,11 +68,13 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
             }
             // Score on label and description
             const itemScore = scoreItemFuzzy(entry, query, true, quickPickItemScorerAccessor, this.pickState.scorerCache);
+
             if (!itemScore.score) {
                 return false;
             }
             // Apply highlights
             entry.highlights = { label: itemScore.labelMatch, description: itemScore.descriptionMatch };
+
             return true;
         });
         // Sorting
@@ -86,11 +89,14 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
         }
         // Grouping (for more than one group)
         const filteredEditorEntriesWithSeparators: Array<IEditorQuickPickItem | IQuickPickSeparator> = [];
+
         if (this.editorGroupService.count > 1) {
             let lastGroupId: number | undefined = undefined;
+
             for (const entry of filteredEditorEntries) {
                 if (typeof lastGroupId !== 'number' || lastGroupId !== entry.groupId) {
                     const group = this.editorGroupService.getGroup(entry.groupId);
+
                     if (group) {
                         filteredEditorEntriesWithSeparators.push({ type: 'separator', label: group.label });
                     }
@@ -106,10 +112,13 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
     }
     private doGetEditorPickItems(): Array<IEditorQuickPickItem> {
         const editors = this.doGetEditors();
+
         const mapGroupIdToGroupAriaLabel = new Map<GroupIdentifier, string>();
+
         for (const { groupId } of editors) {
             if (!mapGroupIdToGroupAriaLabel.has(groupId)) {
                 const group = this.editorGroupService.getGroup(groupId);
+
                 if (group) {
                     mapGroupIdToGroupAriaLabel.set(groupId, group.ariaLabel);
                 }
@@ -117,9 +126,13 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
         }
         return this.doGetEditors().map(({ editor, groupId }): IEditorQuickPickItem => {
             const resource = EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
             const isDirty = editor.isDirty() && !editor.isSaving();
+
             const description = editor.getDescription();
+
             const nameAndDescription = description ? `${editor.getName()} ${description}` : editor.getName();
+
             return {
                 groupId,
                 resource,
@@ -146,8 +159,10 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
                 })(),
                 trigger: async () => {
                     const group = this.editorGroupService.getGroup(groupId);
+
                     if (group) {
                         await group.closeEditor(editor, { preserveFocus: true });
+
                         if (!group.contains(editor)) {
                             return TriggerAction.REMOVE_ITEM;
                         }
@@ -163,6 +178,7 @@ export abstract class BaseEditorQuickAccessProvider extends PickerQuickAccessPro
 //#region Active Editor Group Editors by Most Recently Used
 export class ActiveGroupEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQuickAccessProvider {
     static PREFIX = 'edt active ';
+
     constructor(
     @IEditorGroupsService
     editorGroupService: IEditorGroupsService, 
@@ -176,6 +192,7 @@ export class ActiveGroupEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQ
     }
     protected doGetEditors(): IEditorIdentifier[] {
         const group = this.editorGroupService.activeGroup;
+
         return group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).map(editor => ({ editor, groupId: group.id }));
     }
 }
@@ -183,6 +200,7 @@ export class ActiveGroupEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQ
 //#region All Editors by Appearance
 export class AllEditorsByAppearanceQuickAccess extends BaseEditorQuickAccessProvider {
     static PREFIX = 'edt ';
+
     constructor(
     @IEditorGroupsService
     editorGroupService: IEditorGroupsService, 
@@ -196,6 +214,7 @@ export class AllEditorsByAppearanceQuickAccess extends BaseEditorQuickAccessProv
     }
     protected doGetEditors(): IEditorIdentifier[] {
         const entries: IEditorIdentifier[] = [];
+
         for (const group of this.editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE)) {
             for (const editor of group.getEditors(EditorsOrder.SEQUENTIAL)) {
                 entries.push({ editor, groupId: group.id });
@@ -208,6 +227,7 @@ export class AllEditorsByAppearanceQuickAccess extends BaseEditorQuickAccessProv
 //#region All Editors by Most Recently Used
 export class AllEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQuickAccessProvider {
     static PREFIX = 'edt mru ';
+
     constructor(
     @IEditorGroupsService
     editorGroupService: IEditorGroupsService, 
@@ -221,6 +241,7 @@ export class AllEditorsByMostRecentlyUsedQuickAccess extends BaseEditorQuickAcce
     }
     protected doGetEditors(): IEditorIdentifier[] {
         const entries: IEditorIdentifier[] = [];
+
         for (const editor of this.editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
             entries.push(editor);
         }

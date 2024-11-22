@@ -12,6 +12,7 @@ import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { TerminalSettingId } from '../../../../../platform/terminal/common/terminal.js';
 import type { IHoverAction, IHoverTarget } from '../../../../../base/browser/ui/hover/hover.js';
+
 const $ = dom.$;
 export interface ILinkHoverTargetOptions {
     readonly viewportRange: IViewportRange;
@@ -28,6 +29,7 @@ export interface ILinkHoverTargetOptions {
 }
 export class TerminalHover extends Disposable implements ITerminalWidget {
     readonly id = 'hover';
+
     constructor(private readonly _targetOptions: ILinkHoverTargetOptions, private readonly _text: IMarkdownString, private readonly _actions: IHoverAction[] | undefined, private readonly _linkHandler: (url: string) => unknown, 
     @IHoverService
     private readonly _hoverService: IHoverService, 
@@ -37,10 +39,12 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
     }
     attach(container: HTMLElement): void {
         const showLinkHover = this._configurationService.getValue(TerminalSettingId.ShowLinkHover);
+
         if (!showLinkHover) {
             return;
         }
         const target = new CellHoverTarget(container, this._targetOptions);
+
         const hover = this._hoverService.showHover({
             target,
             content: this._text,
@@ -49,6 +53,7 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
             // .xterm-hover lets xterm know that the hover is part of a link
             additionalClasses: ['xterm-hover']
         });
+
         if (hover) {
             this._register(hover);
         }
@@ -57,13 +62,16 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
 class CellHoverTarget extends Widget implements IHoverTarget {
     private _domNode: HTMLElement;
     private readonly _targetElements: HTMLElement[] = [];
+
     get targetElements(): readonly HTMLElement[] { return this._targetElements; }
     constructor(container: HTMLElement, private readonly _options: ILinkHoverTargetOptions) {
         super();
         this._domNode = $('div.terminal-hover-targets.xterm-hover');
+
         const rowCount = this._options.viewportRange.end.y - this._options.viewportRange.start.y + 1;
         // Add top target row
         const width = (this._options.viewportRange.end.y > this._options.viewportRange.start.y ? this._options.terminalDimensions.width - this._options.viewportRange.start.x : this._options.viewportRange.end.x - this._options.viewportRange.start.x + 1) * this._options.cellDimensions.width;
+
         const topTarget = $('div.terminal-hover-target.hoverHighlight');
         topTarget.style.left = `${this._options.viewportRange.start.x * this._options.cellDimensions.width}px`;
         topTarget.style.bottom = `${(this._options.terminalDimensions.height - this._options.viewportRange.start.y - 1) * this._options.cellDimensions.height}px`;

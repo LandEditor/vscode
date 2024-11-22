@@ -17,6 +17,7 @@ import { isEqual } from '../../../../../../base/common/resources.js';
 class MarkerListProvider implements IMarkerListProvider {
     static readonly ID = 'workbench.contrib.markerListProvider';
     private readonly _dispoables: IDisposable;
+
     constructor(
     @IMarkerService
     private readonly _markerService: IMarkerService, 
@@ -34,11 +35,13 @@ class MarkerListProvider implements IMarkerListProvider {
             return undefined;
         }
         const data = CellUri.parse(resource);
+
         if (!data) {
             return undefined;
         }
         return new MarkerList(uri => {
             const otherData = CellUri.parse(uri);
+
             return otherData?.notebook.toString() === data.notebook.toString();
         }, this._markerService, this._configService);
     }
@@ -46,6 +49,7 @@ class MarkerListProvider implements IMarkerListProvider {
 class NotebookMarkerDecorationContribution extends Disposable implements INotebookEditorContribution {
     static id: string = 'workbench.notebook.markerDecoration';
     private _markersOverviewRulerDecorations: string[] = [];
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @IMarkerService
     private readonly _markerService: IMarkerService) {
@@ -68,6 +72,7 @@ class NotebookMarkerDecorationContribution extends Disposable implements INotebo
             const marker = this._markerService.read({ resource: cell.uri, severities: MarkerSeverity.Error | MarkerSeverity.Warning });
             marker.forEach(m => {
                 const color = m.severity === MarkerSeverity.Error ? editorErrorForeground : editorWarningForeground;
+
                 const range = { startLineNumber: m.startLineNumber, startColumn: m.startColumn, endLineNumber: m.endLineNumber, endColumn: m.endColumn };
                 cellDecorations.push({
                     handle: cell.handle,

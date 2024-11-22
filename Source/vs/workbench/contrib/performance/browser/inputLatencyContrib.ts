@@ -12,6 +12,7 @@ import { IEditorService } from '../../../services/editor/common/editorService.js
 export class InputLatencyContrib extends Disposable implements IWorkbenchContribution {
     private readonly _listener = this._register(new MutableDisposable());
     private readonly _scheduler: RunOnceScheduler;
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -36,6 +37,7 @@ export class InputLatencyContrib extends Disposable implements IWorkbenchContrib
     }
     private _logSamples(): void {
         const measurements = inputLatency.getAndClearMeasurements();
+
         if (!measurements) {
             return;
         }

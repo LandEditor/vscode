@@ -115,6 +115,7 @@ export interface IExtensionHost {
         string | null
     ]>;
     start(): Promise<IMessagePassingProtocol>;
+
     getInspectPort(): {
         port: number;
         host: string;
@@ -156,22 +157,31 @@ export class ExtensionHostExtensions {
             throw new Error(`ExtensionHostExtensions: invalid versionId ${versionId} (current: ${this._versionId})`);
         }
         const toRemove: ExtensionIdentifier[] = [];
+
         const toAdd: IExtensionDescription[] = [];
+
         const myToRemove: ExtensionIdentifier[] = [];
+
         const myToAdd: ExtensionIdentifier[] = [];
+
         const oldExtensionsMap = extensionDescriptionArrayToMap(this._allExtensions);
+
         const newExtensionsMap = extensionDescriptionArrayToMap(allExtensions);
+
         const extensionsAreTheSame = (a: IExtensionDescription, b: IExtensionDescription) => {
             return ((a.extensionLocation.toString() === b.extensionLocation.toString())
                 || (a.isBuiltin === b.isBuiltin)
                 || (a.isUserBuiltin === b.isUserBuiltin)
                 || (a.isUnderDevelopment === b.isUnderDevelopment));
         };
+
         for (const oldExtension of this._allExtensions) {
             const newExtension = newExtensionsMap.get(oldExtension.identifier);
+
             if (!newExtension) {
                 toRemove.push(oldExtension.identifier);
                 oldExtensionsMap.delete(oldExtension.identifier);
+
                 continue;
             }
             if (!extensionsAreTheSame(oldExtension, newExtension)) {
@@ -179,13 +189,16 @@ export class ExtensionHostExtensions {
                 // (e.g. maybe it executes in a different location)
                 toRemove.push(oldExtension.identifier);
                 oldExtensionsMap.delete(oldExtension.identifier);
+
                 continue;
             }
         }
         for (const newExtension of allExtensions) {
             const oldExtension = oldExtensionsMap.get(newExtension.identifier);
+
             if (!oldExtension) {
                 toAdd.push(newExtension);
+
                 continue;
             }
             if (!extensionsAreTheSame(oldExtension, newExtension)) {
@@ -193,11 +206,14 @@ export class ExtensionHostExtensions {
                 // (e.g. maybe it executes in a different location)
                 toRemove.push(oldExtension.identifier);
                 oldExtensionsMap.delete(oldExtension.identifier);
+
                 continue;
             }
         }
         const myOldExtensionsSet = new ExtensionIdentifierSet(this._myExtensions);
+
         const myNewExtensionsSet = new ExtensionIdentifierSet(myExtensions);
+
         for (const oldExtensionId of this._myExtensions) {
             if (!myNewExtensionsSet.has(oldExtensionId)) {
                 myToRemove.push(oldExtensionId);
@@ -209,8 +225,10 @@ export class ExtensionHostExtensions {
             }
         }
         const addActivationEvents = ImplicitActivationEvents.createActivationEventsMap(toAdd);
+
         const delta = { versionId, toRemove, toAdd, addActivationEvents, myToRemove, myToAdd };
         this.delta(delta);
+
         return delta;
     }
     public delta(extensionsDelta: IExtensionDescriptionDelta): IExtensionDescriptionDelta | null {
@@ -221,7 +239,9 @@ export class ExtensionHostExtensions {
         const { toRemove, toAdd, myToRemove, myToAdd } = extensionsDelta;
         // First handle removals
         const toRemoveSet = new ExtensionIdentifierSet(toRemove);
+
         const myToRemoveSet = new ExtensionIdentifierSet(myToRemove);
+
         for (let i = 0; i < this._allExtensions.length; i++) {
             if (toRemoveSet.has(this._allExtensions[i].identifier)) {
                 this._allExtensions.splice(i, 1);
@@ -243,6 +263,7 @@ export class ExtensionHostExtensions {
         }
         // clear cached activation events
         this._myActivationEvents = null;
+
         return extensionsDelta;
     }
     public containsExtension(extensionId: ExtensionIdentifier): boolean {
@@ -261,11 +282,13 @@ export class ExtensionHostExtensions {
     }
     private _readMyActivationEvents(): Set<string> {
         const result = new Set<string>();
+
         for (const extensionDescription of this._allExtensions) {
             if (!this.containsExtension(extensionDescription.identifier)) {
                 continue;
             }
             const activationEvents = ImplicitActivationEvents.readActivationEvents(extensionDescription);
+
             for (const activationEvent of activationEvents) {
                 result.add(activationEvent);
             }
@@ -275,6 +298,7 @@ export class ExtensionHostExtensions {
 }
 function extensionDescriptionArrayToMap(extensions: IExtensionDescription[]): ExtensionIdentifierMap<IExtensionDescription> {
     const result = new ExtensionIdentifierMap<IExtensionDescription>();
+
     for (const extension of extensions) {
         result.set(extension.identifier, extension);
     }
@@ -307,6 +331,7 @@ export class ActivationTimes {
 export class ExtensionPointContribution<T> {
     readonly description: IExtensionDescription;
     readonly value: T;
+
     constructor(description: IExtensionDescription, value: T) {
         this.description = description;
         this.value = value;
@@ -505,6 +530,7 @@ export function toExtension(extensionDescription: IExtensionDescription): IExten
 }
 export function toExtensionDescription(extension: IExtension, isUnderDevelopment?: boolean): IExtensionDescription {
     const id = getExtensionId(extension.manifest.publisher, extension.manifest.name);
+
     return {
         id,
         identifier: new ExtensionIdentifier(id),

@@ -59,6 +59,7 @@ export class DocumentSymbolIdentityProvider implements IIdentityProvider<Documen
 }
 class DocumentSymbolGroupTemplate {
     static readonly id = 'DocumentSymbolGroupTemplate';
+
     constructor(readonly labelContainer: HTMLElement, readonly label: HighlightedLabel) { }
     dispose() {
         this.label.dispose();
@@ -66,6 +67,7 @@ class DocumentSymbolGroupTemplate {
 }
 class DocumentSymbolTemplate {
     static readonly id = 'DocumentSymbolTemplate';
+
     constructor(readonly container: HTMLElement, readonly iconLabel: IconLabel, readonly iconClass: HTMLElement, readonly decoration: HTMLElement) { }
 }
 export class DocumentSymbolVirtualDelegate implements IListVirtualDelegate<DocumentSymbolItem> {
@@ -83,7 +85,9 @@ export class DocumentSymbolGroupRenderer implements ITreeRenderer<OutlineGroup, 
     renderTemplate(container: HTMLElement): DocumentSymbolGroupTemplate {
         const labelContainer = dom.$('.outline-element-label');
         container.classList.add('outline-element');
+
         dom.append(container, labelContainer);
+
         return new DocumentSymbolGroupTemplate(labelContainer, new HighlightedLabel(labelContainer));
     }
     renderElement(node: ITreeNode<OutlineGroup, FuzzyScore>, _index: number, template: DocumentSymbolGroupTemplate): void {
@@ -95,6 +99,7 @@ export class DocumentSymbolGroupRenderer implements ITreeRenderer<OutlineGroup, 
 }
 export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, FuzzyScore, DocumentSymbolTemplate> {
     readonly templateId: string = DocumentSymbolTemplate.id;
+
     constructor(private _renderMarker: boolean, target: OutlineTarget, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -102,22 +107,29 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
     private readonly _themeService: IThemeService) { }
     renderTemplate(container: HTMLElement): DocumentSymbolTemplate {
         container.classList.add('outline-element');
+
         const iconLabel = new IconLabel(container, { supportHighlights: true });
+
         const iconClass = dom.$('.outline-element-icon');
+
         const decoration = dom.$('.outline-element-decoration');
         container.prepend(iconClass);
         container.appendChild(decoration);
+
         return new DocumentSymbolTemplate(container, iconLabel, iconClass, decoration);
     }
     renderElement(node: ITreeNode<OutlineElement, FuzzyScore>, _index: number, template: DocumentSymbolTemplate): void {
         const { element } = node;
+
         const extraClasses = ['nowrap'];
+
         const options: IIconLabelValueOptions = {
             matches: createMatches(node.filterData),
             labelEscapeNewLines: true,
             extraClasses,
             title: localize('title.template', "{0} ({1})", element.symbol.name, symbolKindNames[element.symbol.kind])
         };
+
         if (this._configurationService.getValue(OutlineConfigKeys.icons)) {
             // add styles for the icons
             template.iconClass.className = '';
@@ -128,6 +140,7 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
             options.matches = [];
         }
         template.iconLabel.setLabel(element.symbol.name, element.symbol.detail, options);
+
         if (this._renderMarker) {
             this._renderMarkerInfo(element, template);
         }
@@ -136,14 +149,19 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
         if (!element.marker) {
             dom.hide(template.decoration);
             template.container.style.removeProperty('--outline-element-color');
+
             return;
         }
         const { count, topSev } = element.marker;
+
         const color = this._themeService.getColorTheme().getColor(topSev === MarkerSeverity.Error ? listErrorForeground : listWarningForeground);
+
         const cssColor = color ? color.toString() : 'inherit';
         // color of the label
         const problem = this._configurationService.getValue('problems.visibility');
+
         const configProblems = this._configurationService.getValue(OutlineConfigKeys.problemsColors);
+
         if (!problem || !configProblems) {
             template.container.style.removeProperty('--outline-element-color');
         }
@@ -155,6 +173,7 @@ export class DocumentSymbolRenderer implements ITreeRenderer<OutlineElement, Fuz
             return;
         }
         const configBadges = this._configurationService.getValue(OutlineConfigKeys.problemsBadges);
+
         if (!configBadges || !problem) {
             dom.hide(template.decoration);
         }
@@ -206,16 +225,20 @@ export class DocumentSymbolFilter implements ITreeFilter<DocumentSymbolItem> {
         [SymbolKind.Operator]: 'showOperators',
         [SymbolKind.TypeParameter]: 'showTypeParameters',
     });
+
     constructor(private readonly _prefix: 'breadcrumbs' | 'outline', 
     @ITextResourceConfigurationService
     private readonly _textResourceConfigService: ITextResourceConfigurationService) { }
     filter(element: DocumentSymbolItem): boolean {
         const outline = OutlineModel.get(element);
+
         if (!(element instanceof OutlineElement)) {
             return true;
         }
         const configName = DocumentSymbolFilter.kindToConfigName[element.symbol.kind];
+
         const configKey = `${this._prefix}.${configName}`;
+
         return this._textResourceConfigService.getValue(outline?.uri, configKey);
     }
 }

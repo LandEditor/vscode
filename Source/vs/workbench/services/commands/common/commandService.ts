@@ -18,6 +18,7 @@ export class CommandService extends Disposable implements ICommandService {
     public readonly onWillExecuteCommand: Event<ICommandEvent> = this._onWillExecuteCommand.event;
     private readonly _onDidExecuteCommand: Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
     public readonly onDidExecuteCommand: Event<ICommandEvent> = this._onDidExecuteCommand.event;
+
     constructor(
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -41,8 +42,11 @@ export class CommandService extends Disposable implements ICommandService {
     }
     async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
         this._logService.trace('CommandService#executeCommand', id);
+
         const activationEvent = `onCommand:${id}`;
+
         const commandIsRegistered = !!CommandsRegistry.getCommand(id);
+
         if (commandIsRegistered) {
             // if the activation event has already resolved (i.e. subsequent call),
             // we will execute the registered command immediately
@@ -57,6 +61,7 @@ export class CommandService extends Disposable implements ICommandService {
             }
             // we will wait for a simple activation event (e.g. in case an extension wants to overwrite it)
             await this._extensionService.activateByEvent(activationEvent);
+
             return this._tryExecuteCommand(id, args);
         }
         // finally, if the command is not registered we will send a simple activation event
@@ -69,17 +74,21 @@ export class CommandService extends Disposable implements ICommandService {
                 Event.toPromise(Event.filter(CommandsRegistry.onDidRegisterCommand, e => e === id))
             ]),
         ]);
+
         return this._tryExecuteCommand(id, args);
     }
     private _tryExecuteCommand(id: string, args: any[]): Promise<any> {
         const command = CommandsRegistry.getCommand(id);
+
         if (!command) {
             return Promise.reject(new Error(`command '${id}' not found`));
         }
         try {
             this._onWillExecuteCommand.fire({ commandId: id, args });
+
             const result = this._instantiationService.invokeFunction(command.handler, ...args);
             this._onDidExecuteCommand.fire({ commandId: id, args });
+
             return Promise.resolve(result);
         }
         catch (err) {

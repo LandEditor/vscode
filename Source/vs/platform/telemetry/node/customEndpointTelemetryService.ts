@@ -15,6 +15,7 @@ import { TelemetryService } from '../common/telemetryService.js';
 export class CustomEndpointTelemetryService implements ICustomEndpointTelemetryService {
     declare readonly _serviceBrand: undefined;
     private customTelemetryServices = new Map<string, ITelemetryService>();
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -35,7 +36,9 @@ export class CustomEndpointTelemetryService implements ICustomEndpointTelemetryS
             } = Object.create(null);
             telemetryInfo['common.vscodemachineid'] = this.telemetryService.machineId;
             telemetryInfo['common.vscodesessionid'] = this.telemetryService.sessionId;
+
             const args = [endpoint.id, JSON.stringify(telemetryInfo), endpoint.aiKey];
+
             const client = new TelemetryClient(FileAccess.asFileUri('bootstrap-fork').fsPath, {
                 serverName: 'Debug Telemetry',
                 timeout: 1000 * 60 * 5,
@@ -46,7 +49,9 @@ export class CustomEndpointTelemetryService implements ICustomEndpointTelemetryS
                     VSCODE_ESM_ENTRYPOINT: 'vs/workbench/contrib/debug/node/telemetryApp'
                 }
             });
+
             const channel = client.getChannel('telemetryAppender');
+
             const appenders = [
                 new TelemetryAppenderClient(channel),
                 new TelemetryLogAppender(this.logService, this.loggerService, this.environmentService, this.productService, `[${endpoint.id}] `),

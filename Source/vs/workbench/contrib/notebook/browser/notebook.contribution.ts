@@ -183,6 +183,7 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 
 	serialize(input: EditorInput): string {
 		assertType(input instanceof NotebookDiffEditorInput);
+
 		return JSON.stringify({
 			resource: input.resource,
 			originalResource: input.original.resource,
@@ -195,11 +196,14 @@ class NotebookDiffEditorSerializer implements IEditorSerializer {
 
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		type Data = { resource: URI; originalResource: URI; name: string; originalName: string; viewType: string; textDiffName: string | undefined; group: number };
+
 		const data = <Data>parse(raw);
+
 		if (!data) {
 			return undefined;
 		}
 		const { resource, originalResource, name, viewType } = data;
+
 		if (!data || !URI.isUri(resource) || !URI.isUri(originalResource) || typeof name !== 'string' || typeof viewType !== 'string') {
 			return undefined;
 		}
@@ -223,25 +227,30 @@ class NotebookEditorSerializer implements IEditorSerializer {
 	}
 	serialize(input: EditorInput): string {
 		assertType(input instanceof NotebookEditorInput);
+
 		const data: SerializedNotebookEditorData = {
 			resource: input.resource,
 			preferredResource: input.preferredResource,
 			viewType: input.viewType,
 			options: input.options
 		};
+
 		return JSON.stringify(data);
 	}
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		const data = <SerializedNotebookEditorData>parse(raw);
+
 		if (!data) {
 			return undefined;
 		}
 		const { resource, preferredResource, viewType, options } = data;
+
 		if (!data || !URI.isUri(resource) || typeof viewType !== 'string') {
 			return undefined;
 		}
 
 		const input = NotebookEditorInput.getOrCreate(instantiationService, resource, preferredResource, viewType, options);
+
 		return input;
 	}
 }
@@ -307,6 +316,7 @@ export class NotebookContribution extends Disposable implements IWorkbenchContri
 
 	private static _getCellUndoRedoComparisonKey(uri: URI) {
 		const data = CellUri.parse(uri);
+
 		if (!data) {
 			return uri.toString();
 		}
@@ -341,16 +351,19 @@ class CellContentProvider implements ITextModelContentProvider {
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 		const data = CellUri.parse(resource);
 		// const data = parseCellUri(resource);
+
 		if (!data) {
 			return null;
 		}
 
 		const ref = await this._notebookModelResolverService.resolve(data.notebook);
+
 		let result: ITextModel | null = null;
 
 		if (!ref.object.isResolved()) {
@@ -363,25 +376,30 @@ class CellContentProvider implements ITextModelContentProvider {
 					create: (defaultEOL) => {
 						const newEOL = (defaultEOL === DefaultEndOfLine.CRLF ? '\r\n' : '\n');
 						(cell.textBuffer as ITextBuffer).setEOL(newEOL);
+
 						return { textBuffer: cell.textBuffer as ITextBuffer, disposable: Disposable.None };
 					},
 					getFirstLineText: (limit: number) => {
 						return cell.textBuffer.getLineContent(1).substring(0, limit);
 					}
 				};
+
 				const languageId = this._languageService.getLanguageIdByLanguageName(cell.language);
+
 				const languageSelection = languageId ? this._languageService.createById(languageId) : (cell.cellKind === CellKind.Markup ? this._languageService.createById('markdown') : this._languageService.createByFilepathOrFirstLine(resource, cell.textBuffer.getLineContent(1)));
 				result = this._modelService.createModel(
 					bufferFactory,
 					languageSelection,
 					resource
 				);
+
 				break;
 			}
 		}
 
 		if (!result) {
 			ref.dispose();
+
 			return null;
 		}
 
@@ -438,23 +456,29 @@ class CellInfoContentProvider {
 
 	async provideMetadataTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 
 		const data = CellUri.parseCellPropertyUri(resource, Schemas.vscodeNotebookCellMetadata);
+
 		if (!data) {
 			return null;
 		}
 
 		const ref = await this._notebookModelResolverService.resolve(data.notebook);
+
 		let result: ITextModel | null = null;
 
 		const mode = this._languageService.createById('json');
+
 		const disposables = new DisposableStore();
+
 		for (const cell of ref.object.notebook.cells) {
 			if (cell.handle === data.handle) {
 				const cellIndex = ref.object.notebook.cells.indexOf(cell);
+
 				const metadataSource = getFormattedMetadataJSON(ref.object.notebook.transientOptions.transientCellMetadata, cell.metadata, cell.language);
 				result = this._modelService.createModel(
 					metadataSource,
@@ -464,17 +488,20 @@ class CellInfoContentProvider {
 				this._disposables.push(disposables.add(ref.object.notebook.onDidChangeContent(e => {
 					if (result && e.rawEvents.some(event => (event.kind === NotebookCellsChangeType.ChangeCellMetadata || event.kind === NotebookCellsChangeType.ChangeCellLanguage) && event.index === cellIndex)) {
 						const value = getFormattedMetadataJSON(ref.object.notebook.transientOptions.transientCellMetadata, cell.metadata, cell.language);
+
 						if (result.getValue() !== value) {
 							result.setValue(getFormattedMetadataJSON(ref.object.notebook.transientOptions.transientCellMetadata, cell.metadata, cell.language));
 						}
 					}
 				})));
+
 				break;
 			}
 		}
 
 		if (!result) {
 			ref.dispose();
+
 			return null;
 		}
 
@@ -493,6 +520,7 @@ class CellInfoContentProvider {
 		}
 
 		const streamOutputData = getStreamOutputData(op.outputs);
+
 		if (streamOutputData) {
 			return {
 				content: streamOutputData,
@@ -510,10 +538,14 @@ class CellInfoContentProvider {
 		let result: { content: string; mode: ILanguageSelection } | undefined = undefined;
 
 		const mode = this._languageService.createById('json');
+
 		const op = cell.outputs.find(op => op.outputId === data.outputId || op.alternativeOutputId === data.outputId);
+
 		const streamOutputData = this.parseStreamOutput(op);
+
 		if (streamOutputData) {
 			result = streamOutputData;
+
 			return result;
 		}
 
@@ -536,25 +568,31 @@ class CellInfoContentProvider {
 
 	async provideOutputsTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 
 		const data = CellUri.parseCellPropertyUri(resource, Schemas.vscodeNotebookCellOutput);
+
 		if (!data) {
 			return null;
 		}
 
 		const ref = await this._notebookModelResolverService.resolve(data.notebook);
+
 		const cell = ref.object.notebook.cells.find(cell => cell.handle === data.handle);
 
 		if (!cell) {
 			ref.dispose();
+
 			return null;
 		}
 
 		const mode = this._languageService.createById('json');
+
 		const model = this._modelService.createModel(getFormattedOutputJSON(cell.outputs || []), mode, resource, true);
+
 		const cellModelListener = Event.any(cell.onDidChangeOutputs ?? Event.None, cell.onDidChangeOutputItems ?? Event.None)(() => {
 			model.setValue(getFormattedOutputJSON(cell.outputs || []));
 		});
@@ -570,20 +608,24 @@ class CellInfoContentProvider {
 
 	async provideOutputTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 
 		const data = CellUri.parseCellOutputUri(resource);
+
 		if (!data) {
 			return this.provideOutputsTextContent(resource);
 		}
 
 		const ref = await this._notebookModelResolverService.resolve(data.notebook);
+
 		const cell = ref.object.notebook.cells.find(cell => !!cell.outputs.find(op => op.outputId === data.outputId || op.alternativeOutputId === data.outputId));
 
 		if (!cell) {
 			ref.dispose();
+
 			return null;
 		}
 
@@ -591,10 +633,12 @@ class CellInfoContentProvider {
 
 		if (!result) {
 			ref.dispose();
+
 			return null;
 		}
 
 		const model = this._modelService.createModel(result.content, result.mode, resource);
+
 		const cellModelListener = Event.any(cell.onDidChangeOutputs ?? Event.None, cell.onDidChangeOutputItems ?? Event.None)(() => {
 			const newResult = this._getResult(data, cell);
 
@@ -647,20 +691,25 @@ class NotebookMetadataContentProvider {
 
 	async provideMetadataTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 
 		const data = NotebookMetadataUri.parse(resource);
+
 		if (!data) {
 			return null;
 		}
 
 		const ref = await this._notebookModelResolverService.resolve(data);
+
 		let result: ITextModel | null = null;
 
 		const mode = this._languageService.createById('json');
+
 		const disposables = new DisposableStore();
+
 		const metadataSource = getFormattedNotebookMetadataJSON(ref.object.notebook.transientOptions.transientDocumentMetadata, ref.object.notebook.metadata);
 		result = this._modelService.createModel(
 			metadataSource,
@@ -670,12 +719,14 @@ class NotebookMetadataContentProvider {
 
 		if (!result) {
 			ref.dispose();
+
 			return null;
 		}
 
 		this._disposables.push(disposables.add(ref.object.notebook.onDidChangeContent(e => {
 			if (result && e.rawEvents.some(event => (event.kind === NotebookCellsChangeType.ChangeCellContent || event.kind === NotebookCellsChangeType.ChangeDocumentMetadata || event.kind === NotebookCellsChangeType.ModelChange))) {
 				const value = getFormattedNotebookMetadataJSON(ref.object.notebook.transientOptions.transientDocumentMetadata, ref.object.notebook.metadata);
+
 				if (result.getValue() !== value) {
 					result.setValue(value);
 				}
@@ -703,6 +754,7 @@ class RegisterSchemasContribution extends Disposable implements IWorkbenchContri
 
 	private registerMetadataSchemas(): void {
 		const jsonRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
+
 		const metadataSchema: IJSONSchema = {
 			properties: {
 				['language']: {
@@ -743,6 +795,7 @@ class NotebookEditorManager implements IWorkbenchContribution {
 		this._disposables.add(_notebookEditorModelService.onWillFailWithConflict(e => {
 			for (const group of editorGroups.groups) {
 				const conflictInputs = group.editors.filter(input => input instanceof NotebookEditorInput && input.viewType !== e.viewType && isEqual(input.resource, e.resource));
+
 				const p = group.closeEditors(conflictInputs);
 				e.waitUntil(p);
 			}
@@ -755,6 +808,7 @@ class NotebookEditorManager implements IWorkbenchContribution {
 
 	private _openMissingDirtyNotebookEditors(models: IResolvedNotebookEditorModel[]): void {
 		const result: IResourceEditorInput[] = [];
+
 		for (const model of models) {
 			if (model.isDirty() && !this._editorService.isOpened({ resource: model.resource, typeId: NotebookEditorInput.ID, editorId: model.viewType }) && extname(model.resource) !== '.interactive') {
 				result.push({
@@ -786,6 +840,7 @@ class SimpleNotebookWorkingCopyEditorHandler extends Disposable implements IWork
 
 	async handles(workingCopy: IWorkingCopyIdentifier): Promise<boolean> {
 		const viewType = this.handlesSync(workingCopy);
+
 		if (!viewType) {
 			return false;
 		}
@@ -795,6 +850,7 @@ class SimpleNotebookWorkingCopyEditorHandler extends Disposable implements IWork
 
 	private handlesSync(workingCopy: IWorkingCopyIdentifier): string /* viewType */ | undefined {
 		const viewType = this._getViewType(workingCopy);
+
 		if (!viewType || viewType === 'interactive') {
 			return undefined;
 		}
@@ -822,6 +878,7 @@ class SimpleNotebookWorkingCopyEditorHandler extends Disposable implements IWork
 
 	private _getViewType(workingCopy: IWorkingCopyIdentifier) {
 		const notebookType = NotebookWorkingCopyTypeIdentifier.parse(workingCopy.typeId);
+
 		if (notebookType && notebookType.viewType === notebookType.notebookType) {
 			return notebookType?.viewType;
 		}
@@ -842,10 +899,12 @@ class NotebookLanguageSelectorScoreRefine {
 
 	private _getNotebookInfo(uri: URI): NotebookInfo | undefined {
 		const cellUri = CellUri.parse(uri);
+
 		if (!cellUri) {
 			return undefined;
 		}
 		const notebook = this._notebookService.getNotebookTextModel(cellUri.notebook);
+
 		if (!notebook) {
 			return undefined;
 		}
@@ -892,6 +951,7 @@ function isConfigurationPropertySchema(x: IConfigurationPropertySchema | { [path
 }
 for (const editorOption of editorOptionsRegistry) {
 	const schema = editorOption.schema;
+
 	if (schema) {
 		if (isConfigurationPropertySchema(schema)) {
 			schemas[`editor.${editorOption.name}`] = schema;

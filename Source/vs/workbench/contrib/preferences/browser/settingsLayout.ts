@@ -9,6 +9,7 @@ export interface ITOCEntry<T> {
     label: string;
     order?: number;
     children?: ITOCEntry<T>[];
+
     settings?: Array<T>;
 }
 const defaultCommonlyUsedSettings: string[] = [

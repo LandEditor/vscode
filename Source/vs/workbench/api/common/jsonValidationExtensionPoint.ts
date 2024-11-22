@@ -47,25 +47,33 @@ export class JSONValidationExtensionPoint {
         configurationExtPoint.setHandler((extensions) => {
             for (const extension of extensions) {
                 const extensionValue = <IJSONValidationExtensionPoint[]>extension.value;
+
                 const collector = extension.collector;
+
                 const extensionLocation = extension.description.extensionLocation;
+
                 if (!extensionValue || !Array.isArray(extensionValue)) {
                     collector.error(nls.localize('invalid.jsonValidation', "'configuration.jsonValidation' must be a array"));
+
                     return;
                 }
                 extensionValue.forEach(extension => {
                     if (!isString(extension.fileMatch) && !(Array.isArray(extension.fileMatch) && extension.fileMatch.every(isString))) {
                         collector.error(nls.localize('invalid.fileMatch', "'configuration.jsonValidation.fileMatch' must be defined as a string or an array of strings."));
+
                         return;
                     }
                     const uri = extension.url;
+
                     if (!isString(uri)) {
                         collector.error(nls.localize('invalid.url', "'configuration.jsonValidation.url' must be a URL or relative path"));
+
                         return;
                     }
                     if (uri.startsWith('./')) {
                         try {
                             const colorThemeLocation = resources.joinPath(extensionLocation, uri);
+
                             if (!resources.isEqualOrParent(colorThemeLocation, extensionLocation)) {
                                 collector.warn(nls.localize('invalid.path.1', "Expected `contributes.{0}.url` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.", configurationExtPoint.name, colorThemeLocation.toString(), extensionLocation.path));
                             }
@@ -76,6 +84,7 @@ export class JSONValidationExtensionPoint {
                     }
                     else if (!/^[^:/?#]+:\/\//.test(uri)) {
                         collector.error(nls.localize('invalid.url.schema', "'configuration.jsonValidation.url' must be an absolute URL or start with './'  to reference schemas located in the extension."));
+
                         return;
                     }
                 });
@@ -90,6 +99,7 @@ class JSONValidationDataRenderer extends Disposable implements IExtensionFeature
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.jsonValidation || [];
+
         if (!contrib.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -97,12 +107,14 @@ class JSONValidationDataRenderer extends Disposable implements IExtensionFeature
             nls.localize('fileMatch', "File Match"),
             nls.localize('schema', "Schema"),
         ];
+
         const rows: IRowData[][] = contrib.map(v => {
             return [
                 new MarkdownString().appendMarkdown(`\`${Array.isArray(v.fileMatch) ? v.fileMatch.join(', ') : v.fileMatch}\``),
                 v.url,
             ];
         });
+
         return {
             data: {
                 headers,

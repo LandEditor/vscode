@@ -51,6 +51,7 @@ export interface IMenuOptions {
 	context?: unknown;
 	actionViewItemProvider?: IActionViewItemProvider;
 	actionRunner?: IActionRunner;
+
 	getKeyBinding?: (action: IAction) => ResolvedKeybinding | undefined;
 	ariaLabel?: string;
 	enableMnemonics?: boolean;
@@ -63,6 +64,7 @@ export interface IMenuOptions {
 export interface IMenuStyles {
 	shadowColor: string | undefined;
 	borderColor: string | undefined;
+
 	foregroundColor: string | undefined;
 	backgroundColor: string | undefined;
 	selectionForegroundColor: string | undefined;
@@ -105,6 +107,7 @@ export class Menu extends ActionBar {
 	constructor(container: HTMLElement, actions: ReadonlyArray<IAction>, options: IMenuOptions, private readonly menuStyles: IMenuStyles) {
 		container.classList.add('monaco-menu-container');
 		container.setAttribute('role', 'presentation');
+
 		const menuElement = document.createElement('div');
 		menuElement.classList.add('monaco-menu');
 		menuElement.setAttribute('role', 'presentation');
@@ -140,8 +143,10 @@ export class Menu extends ActionBar {
 		if (options.enableMnemonics) {
 			this._register(addDisposableListener(menuElement, EventType.KEY_DOWN, (e) => {
 				const key = e.key.toLocaleLowerCase();
+
 				if (this.mnemonics.has(key)) {
 					EventHelper.stop(e, true);
+
 					const actions = this.mnemonics.get(key)!;
 
 					if (actions.length === 1) {
@@ -154,6 +159,7 @@ export class Menu extends ActionBar {
 
 					if (actions.length > 1) {
 						const action = actions.shift();
+
 						if (action && action.container) {
 							this.focusItemByElement(action.container);
 							actions.push(action);
@@ -183,6 +189,7 @@ export class Menu extends ActionBar {
 
 		this._register(addDisposableListener(this.domNode, EventType.MOUSE_OUT, e => {
 			const relatedTarget = e.relatedTarget as HTMLElement;
+
 			if (!isAncestor(relatedTarget, this.domNode)) {
 				this.focusedItem = undefined;
 				this.updateFocus();
@@ -192,6 +199,7 @@ export class Menu extends ActionBar {
 
 		this._register(addDisposableListener(this.actionsList, EventType.MOUSE_OVER, e => {
 			let target = e.target as HTMLElement;
+
 			if (!target || !isAncestor(target, this.actionsList) || target === this.actionsList) {
 				return;
 			}
@@ -214,6 +222,7 @@ export class Menu extends ActionBar {
 		this._register(Gesture.addTarget(this.actionsList));
 		this._register(addDisposableListener(this.actionsList, TouchEventType.Tap, e => {
 			let target = e.initialTarget as HTMLElement;
+
 			if (!target || !isAncestor(target, this.actionsList) || target === this.actionsList) {
 				return;
 			}
@@ -274,6 +283,7 @@ export class Menu extends ActionBar {
 		actions = actions.filter((a, idx) => {
 			if (options.submenuIds?.has(a.id)) {
 				console.warn(`Found submenu cycle: ${a.id}`);
+
 				return false;
 			}
 
@@ -284,6 +294,7 @@ export class Menu extends ActionBar {
 				}
 
 				const prevAction = actions[idx - 1];
+
 				if (prevAction instanceof Separator) {
 					return false;
 				}
@@ -319,9 +330,13 @@ export class Menu extends ActionBar {
 	private styleScrollElement(scrollElement: HTMLElement, style: IMenuStyles): void {
 
 		const fgColor = style.foregroundColor ?? '';
+
 		const bgColor = style.backgroundColor ?? '';
+
 		const border = style.borderColor ? `1px solid ${style.borderColor}` : '';
+
 		const borderRadius = '5px';
+
 		const shadow = style.shadowColor ? `0 2px 8px ${style.shadowColor}` : '';
 
 		scrollElement.style.outline = border;
@@ -346,6 +361,7 @@ export class Menu extends ActionBar {
 	trigger(index: number): void {
 		if (index <= this.viewItems.length && index >= 0) {
 			const item = this.viewItems[index];
+
 			if (item instanceof SubmenuMenuActionViewItem) {
 				super.focus(index);
 				item.open(true);
@@ -369,8 +385,10 @@ export class Menu extends ActionBar {
 	private setFocusedItem(element: HTMLElement): void {
 		for (let i = 0; i < this.actionsList.children.length; i++) {
 			const elem = this.actionsList.children[i];
+
 			if (element === elem) {
 				this.focusedItem = i;
+
 				break;
 			}
 		}
@@ -397,8 +415,10 @@ export class Menu extends ActionBar {
 
 			if (options.enableMnemonics) {
 				const mnemonic = menuActionViewItem.getMnemonic();
+
 				if (mnemonic && menuActionViewItem.isEnabled()) {
 					let actionViewItems: BaseMenuActionViewItem[] = [];
+
 					if (this.mnemonics.has(mnemonic)) {
 						actionViewItems = this.mnemonics.get(mnemonic)!;
 					}
@@ -412,8 +432,10 @@ export class Menu extends ActionBar {
 			return menuActionViewItem;
 		} else {
 			const menuItemOptions: IMenuItemOptions = { enableMnemonics: options.enableMnemonics, useEventAsContext: options.useEventAsContext };
+
 			if (options.getKeyBinding) {
 				const keybinding = options.getKeyBinding(action);
+
 				if (keybinding) {
 					const keybindingLabel = keybinding.getLabel();
 
@@ -427,8 +449,10 @@ export class Menu extends ActionBar {
 
 			if (options.enableMnemonics) {
 				const mnemonic = menuActionViewItem.getMnemonic();
+
 				if (mnemonic && menuActionViewItem.isEnabled()) {
 					let actionViewItems: BaseMenuActionViewItem[] = [];
+
 					if (this.mnemonics.has(mnemonic)) {
 						actionViewItems = this.mnemonics.get(mnemonic)!;
 					}
@@ -463,6 +487,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 
 	constructor(ctx: unknown, action: IAction, options: IMenuItemOptions, protected readonly menuStyle: IMenuStyles) {
 		options.isMenu = true;
+
 		super(action, action, options);
 
 		this.options = options;
@@ -473,8 +498,10 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 		// Set mnemonic
 		if (this.options.label && options.enableMnemonics) {
 			const label = this.action.label;
+
 			if (label) {
 				const matches = MENU_MNEMONIC_REGEX.exec(label);
+
 				if (matches) {
 					this.mnemonic = (!!matches[1] ? matches[1] : matches[3]).toLocaleLowerCase();
 				}
@@ -541,11 +568,13 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 		this.container = container;
 
 		this.item = append(this.element, $('a.action-menu-item'));
+
 		if (this._action.id === Separator.ID) {
 			// A separator is a presentation item
 			this.item.setAttribute('role', 'presentation');
 		} else {
 			this.item.setAttribute('role', 'menuitem');
+
 			if (this.mnemonic) {
 				this.item.setAttribute('aria-keyshortcuts', `${this.mnemonic}`);
 			}
@@ -601,8 +630,10 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 			clearNode(this.label);
 
 			let label = stripIcons(this.action.label);
+
 			if (label) {
 				const cleanLabel = cleanMnemonic(label);
+
 				if (!this.options.enableMnemonics) {
 					label = cleanLabel;
 				}
@@ -616,6 +647,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 
 					// This is global, reset it
 					MENU_ESCAPED_MNEMONIC_REGEX.lastIndex = 0;
+
 					let escMatch = MENU_ESCAPED_MNEMONIC_REGEX.exec(label);
 
 					// We can't use negative lookbehind so if we match our negative and skip
@@ -654,6 +686,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 		if (this.options.icon && this.label) {
 			this.cssClass = this.action.class || '';
 			this.label.classList.add('icon');
+
 			if (this.cssClass) {
 				this.label.classList.add(...this.cssClass.split(' '));
 			}
@@ -695,6 +728,7 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 
 		const checked = this.action.checked;
 		this.item.classList.toggle('checked', !!checked);
+
 		if (checked !== undefined) {
 			this.item.setAttribute('role', 'menuitemcheckbox');
 			this.item.setAttribute('aria-checked', checked ? 'true' : 'false');
@@ -710,9 +744,13 @@ class BaseMenuActionViewItem extends BaseActionViewItem {
 
 	protected applyStyle(): void {
 		const isSelected = this.element && this.element.classList.contains('focused');
+
 		const fgColor = isSelected && this.menuStyle.selectionForegroundColor ? this.menuStyle.selectionForegroundColor : this.menuStyle.foregroundColor;
+
 		const bgColor = isSelected && this.menuStyle.selectionBackgroundColor ? this.menuStyle.selectionBackgroundColor : undefined;
+
 		const outline = isSelected && this.menuStyle.selectionBorderColor ? `1px solid ${this.menuStyle.selectionBorderColor}` : '';
+
 		const outlineOffset = isSelected && this.menuStyle.selectionBorderColor ? `-1px` : '';
 
 		if (this.item) {
@@ -782,6 +820,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 		this._register(addDisposableListener(this.element, EventType.KEY_UP, e => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Enter)) {
 				EventHelper.stop(e, true);
 
@@ -854,6 +893,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 			this.parentData.submenu = undefined;
 			this.updateAriaExpanded('false');
+
 			if (this.submenuContainer) {
 				this.submenuDisposables.clear();
 				this.submenuContainer = undefined;
@@ -901,6 +941,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 			// Set the top value of the menu container before construction
 			// This allows the menu constructor to calculate the proper max height
 			const computedStyles = getWindow(this.parentData.parent.domNode).getComputedStyle(this.parentData.parent.domNode);
+
 			const paddingTop = parseFloat(computedStyles.paddingTop || '0') || 0;
 			// this.submenuContainer.style.top = `${this.element.offsetTop - this.parentData.parent.scrollOffset - paddingTop}px`;
 			this.submenuContainer.style.zIndex = '1';
@@ -912,6 +953,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 			// layout submenu
 			const entryBox = this.element.getBoundingClientRect();
+
 			const entryBoxUpdated = {
 				top: entryBox.top - paddingTop,
 				left: entryBox.left,
@@ -922,6 +964,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 			const viewBox = this.submenuContainer.getBoundingClientRect();
 
 			const window = getWindow(this.element);
+
 			const { top, left } = this.calculateSubmenuMenuLayout(new Dimension(window.innerWidth, window.innerHeight), Dimension.lift(viewBox), entryBoxUpdated, this.expandDirection);
 			// subtract offsets caused by transform parent
 			this.submenuContainer.style.left = `${left - viewBox.left}px`;
@@ -929,6 +972,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 			this.submenuDisposables.add(addDisposableListener(this.submenuContainer, EventType.KEY_UP, e => {
 				const event = new StandardKeyboardEvent(e);
+
 				if (event.equals(KeyCode.LeftArrow)) {
 					EventHelper.stop(e, true);
 
@@ -940,6 +984,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 
 			this.submenuDisposables.add(addDisposableListener(this.submenuContainer, EventType.KEY_DOWN, e => {
 				const event = new StandardKeyboardEvent(e);
+
 				if (event.equals(KeyCode.LeftArrow)) {
 					EventHelper.stop(e, true);
 				}
@@ -970,6 +1015,7 @@ class SubmenuMenuActionViewItem extends BaseMenuActionViewItem {
 		super.applyStyle();
 
 		const isSelected = this.element && this.element.classList.contains('focused');
+
 		const fgColor = isSelected && this.menuStyle.selectionForegroundColor ? this.menuStyle.selectionForegroundColor : this.menuStyle.foregroundColor;
 
 		if (this.submenuIndicator) {
@@ -1000,6 +1046,7 @@ class MenuSeparatorActionViewItem extends ActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		if (this.label) {
 			this.label.style.borderBottomColor = this.menuStyles.separatorColor ? `${this.menuStyles.separatorColor}` : '';
 		}
@@ -1010,6 +1057,7 @@ export function cleanMnemonic(label: string): string {
 	const regex = MENU_MNEMONIC_REGEX;
 
 	const matches = regex.exec(label);
+
 	if (!matches) {
 		return label;
 	}
@@ -1021,6 +1069,7 @@ export function cleanMnemonic(label: string): string {
 
 export function formatRule(c: ThemeIcon) {
 	const fontCharacter = getCodiconFontCharacters()[c.id];
+
 	return `.codicon-${c.id}:before { content: '\\${fontCharacter.toString(16)}'; }`;
 }
 
@@ -1375,6 +1424,7 @@ ${formatRule(Codicon.menuSubmenu)}
 
 		// Scrollbars
 		const scrollbarShadowColor = style.scrollbarShadow;
+
 		if (scrollbarShadowColor) {
 			result += `
 				.monaco-scrollable-element > .shadow.top {
@@ -1392,6 +1442,7 @@ ${formatRule(Codicon.menuSubmenu)}
 		}
 
 		const scrollbarSliderBackgroundColor = style.scrollbarSliderBackground;
+
 		if (scrollbarSliderBackgroundColor) {
 			result += `
 				.monaco-scrollable-element > .scrollbar > .slider {
@@ -1401,6 +1452,7 @@ ${formatRule(Codicon.menuSubmenu)}
 		}
 
 		const scrollbarSliderHoverBackgroundColor = style.scrollbarSliderHoverBackground;
+
 		if (scrollbarSliderHoverBackgroundColor) {
 			result += `
 				.monaco-scrollable-element > .scrollbar > .slider:hover {
@@ -1410,6 +1462,7 @@ ${formatRule(Codicon.menuSubmenu)}
 		}
 
 		const scrollbarSliderActiveBackgroundColor = style.scrollbarSliderActiveBackground;
+
 		if (scrollbarSliderActiveBackgroundColor) {
 			result += `
 				.monaco-scrollable-element > .scrollbar > .slider.active {

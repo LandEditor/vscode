@@ -17,6 +17,7 @@ import { checkProposedApiEnabled } from '../../services/extensions/common/extens
 export class ExtHostLanguages implements ExtHostLanguagesShape {
     private readonly _proxy: MainThreadLanguagesShape;
     private _languageIds: string[] = [];
+
     constructor(mainContext: IMainContext, private readonly _documents: ExtHostDocuments, private readonly _commands: CommandsConverter, private readonly _uriTransformer: IURITransformer | undefined) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadLanguages);
     }
@@ -28,7 +29,9 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
     }
     async changeLanguage(uri: vscode.Uri, languageId: string): Promise<vscode.TextDocument> {
         await this._proxy.$changeLanguage(uri, languageId);
+
         const data = this._documents.getDocumentData(uri);
+
         if (!data) {
             throw new Error(`document '${uri.toString()}' NOT found`);
         }
@@ -36,12 +39,16 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
     }
     async tokenAtPosition(document: vscode.TextDocument, position: vscode.Position): Promise<vscode.TokenInformation> {
         const versionNow = document.version;
+
         const pos = typeConvert.Position.from(position);
+
         const info = await this._proxy.$tokensAtPosition(document.uri, pos);
+
         const defaultRange = {
             type: StandardTokenType.Other,
             range: document.getWordRangeAtPosition(position) ?? new Range(position.line, position.character, position.line, position.character)
         };
+
         if (!info) {
             // no result
             return defaultRange;
@@ -50,6 +57,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
             range: typeConvert.Range.to(info.range),
             type: typeConvert.TokenType.to(info.type)
         };
+
         if (!result.range.contains(<Position>position)) {
             // bogous result
             return defaultRange;
@@ -64,14 +72,18 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
     private _ids = new Set<string>();
     createLanguageStatusItem(extension: IExtensionDescription, id: string, selector: vscode.DocumentSelector): vscode.LanguageStatusItem {
         const handle = this._handlePool++;
+
         const proxy = this._proxy;
+
         const ids = this._ids;
         // enforce extension unique identifier
         const fullyQualifiedId = `${extension.identifier.value}/${id}`;
+
         if (ids.has(fullyQualifiedId)) {
             throw new Error(`LanguageStatusItem with id '${id}' ALREADY exists`);
         }
         ids.add(fullyQualifiedId);
+
         const data: Omit<vscode.LanguageStatusItem, 'dispose' | 'text2'> = {
             selector,
             id,
@@ -82,12 +94,17 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
             detail: '',
             busy: false
         };
+
         let soonHandle: IDisposable | undefined;
+
         const commandDisposables = new DisposableStore();
+
         const updateAsync = () => {
             soonHandle?.dispose();
+
             if (!ids.has(fullyQualifiedId)) {
                 console.warn(`LanguageStatusItem (${id}) from ${extension.identifier.value} has been disposed and CANNOT be updated anymore`);
+
                 return; // disposed in the meantime
             }
             soonHandle = disposableTimeout(() => {
@@ -106,6 +123,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
                 });
             }, 0);
         };
+
         const result: vscode.LanguageStatusItem = {
             dispose() {
                 commandDisposables.dispose();
@@ -144,6 +162,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
             },
             get text2() {
                 checkProposedApiEnabled(extension, 'languageStatusText');
+
                 return data.text;
             },
             get detail() {
@@ -183,6 +202,7 @@ export class ExtHostLanguages implements ExtHostLanguagesShape {
             }
         };
         updateAsync();
+
         return result;
     }
 }

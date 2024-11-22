@@ -39,6 +39,7 @@ export class TerminalClipboardContribution extends Disposable implements ITermin
     readonly onWillPaste = this._onWillPaste.event;
     private readonly _onDidPaste = this._register(new Emitter<string>());
     readonly onDidPaste = this._onDidPaste.event;
+
     constructor(private readonly _ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IClipboardService
     private readonly _clipboardService: IClipboardService, 
@@ -90,7 +91,9 @@ export class TerminalClipboardContribution extends Disposable implements ITermin
             return;
         }
         let currentText = value;
+
         const shouldPasteText = await this._instantiationService.invokeFunction(shouldPasteTerminalText, currentText, this._xterm?.raw.modes.bracketedPasteMode);
+
         if (!shouldPasteText) {
             return;
         }
@@ -109,6 +112,7 @@ export class TerminalClipboardContribution extends Disposable implements ITermin
             case 1: { // Middle click
                 if (this._terminalConfigurationService.config.middleClickBehavior === 'paste') {
                     this.paste();
+
                     return { handled: true };
                 }
                 break;
@@ -119,6 +123,7 @@ export class TerminalClipboardContribution extends Disposable implements ITermin
                     return;
                 }
                 const rightClickBehavior = this._terminalConfigurationService.config.rightClickBehavior;
+
                 if (rightClickBehavior !== 'copyPaste' && rightClickBehavior !== 'paste') {
                     return;
                 }
@@ -154,6 +159,7 @@ export class TerminalClipboardContribution extends Disposable implements ITermin
             throw new Error('Cannot set a copy on selection override multiple times');
         }
         this._overrideCopySelection = value;
+
         return toDisposable(() => this._overrideCopySelection = undefined);
     }
 }
@@ -168,11 +174,14 @@ registerActiveInstanceAction({
     precondition: terminalAvailableWhenClause,
     run: async (instance, c, accessor) => {
         const clipboardService = accessor.get(IClipboardService);
+
         const commands = instance.capabilities.get(TerminalCapability.CommandDetection)?.commands;
+
         if (!commands || commands.length === 0) {
             return;
         }
         const command = commands[commands.length - 1];
+
         if (!command.command) {
             return;
         }
@@ -185,15 +194,19 @@ registerActiveInstanceAction({
     precondition: terminalAvailableWhenClause,
     run: async (instance, c, accessor) => {
         const clipboardService = accessor.get(IClipboardService);
+
         const commands = instance.capabilities.get(TerminalCapability.CommandDetection)?.commands;
+
         if (!commands || commands.length === 0) {
             return;
         }
         const command = commands[commands.length - 1];
+
         if (!command?.hasOutput()) {
             return;
         }
         const output = command.getOutput();
+
         if (isString(output)) {
             await clipboardService.writeText(output);
         }
@@ -205,15 +218,19 @@ registerActiveInstanceAction({
     precondition: terminalAvailableWhenClause,
     run: async (instance, c, accessor) => {
         const clipboardService = accessor.get(IClipboardService);
+
         const commands = instance.capabilities.get(TerminalCapability.CommandDetection)?.commands;
+
         if (!commands || commands.length === 0) {
             return;
         }
         const command = commands[commands.length - 1];
+
         if (!command?.hasOutput()) {
             return;
         }
         const output = command.getOutput();
+
         if (isString(output)) {
             await clipboardService.writeText(`${command.command !== '' ? command.command + '\n' : ''}${output}`);
         }

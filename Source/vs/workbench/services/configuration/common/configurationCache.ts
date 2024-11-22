@@ -12,6 +12,7 @@ import { IEnvironmentService } from '../../../../platform/environment/common/env
 export class ConfigurationCache implements IConfigurationCache {
     private readonly cacheHome: URI;
     private readonly cachedConfigurations: Map<string, CachedConfiguration> = new Map<string, CachedConfiguration>();
+
     constructor(private readonly donotCacheResourcesWithSchemes: string[], environmentService: IEnvironmentService, private readonly fileService: IFileService) {
         this.cacheHome = environmentService.cacheHome;
     }
@@ -30,7 +31,9 @@ export class ConfigurationCache implements IConfigurationCache {
     }
     private getCachedConfiguration({ type, key }: ConfigurationKey): CachedConfiguration {
         const k = `${type}:${key}`;
+
         let cachedConfiguration = this.cachedConfigurations.get(k);
+
         if (!cachedConfiguration) {
             cachedConfiguration = new CachedConfiguration({ type, key }, this.cacheHome, this.fileService);
             this.cachedConfigurations.set(k, cachedConfiguration);
@@ -42,6 +45,7 @@ class CachedConfiguration {
     private queue: Queue<void>;
     private cachedConfigurationFolderResource: URI;
     private cachedConfigurationFileResource: URI;
+
     constructor({ type, key }: ConfigurationKey, cacheHome: URI, private readonly fileService: IFileService) {
         this.cachedConfigurationFolderResource = joinPath(cacheHome, 'CachedConfigurations', type, key);
         this.cachedConfigurationFileResource = joinPath(this.cachedConfigurationFolderResource, type === 'workspaces' ? 'workspace.json' : 'configuration.json');
@@ -50,6 +54,7 @@ class CachedConfiguration {
     async read(): Promise<string> {
         try {
             const content = await this.fileService.readFile(this.cachedConfigurationFileResource);
+
             return content.value.toString();
         }
         catch (e) {
@@ -58,6 +63,7 @@ class CachedConfiguration {
     }
     async save(content: string): Promise<void> {
         const created = await this.createCachedFolder();
+
         if (created) {
             await this.queue.queue(async () => {
                 await this.fileService.writeFile(this.cachedConfigurationFileResource, VSBuffer.fromString(content));
@@ -80,6 +86,7 @@ class CachedConfiguration {
         }
         try {
             await this.fileService.createFolder(this.cachedConfigurationFolderResource);
+
             return true;
         }
         catch (error) {

@@ -52,6 +52,7 @@ export interface INativeHostMainService extends AddFirstParameterToFunctions<ICo
 export const INativeHostMainService = createDecorator<INativeHostMainService>('nativeHostMainService');
 export class NativeHostMainService extends Disposable implements INativeHostMainService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IWindowsMainService
     private readonly windowsMainService: IWindowsMainService, 
@@ -112,9 +113,11 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     getWindows(windowId: number | undefined, options: {
         includeAuxiliaryWindows: true;
     }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+
     getWindows(windowId: number | undefined, options: {
         includeAuxiliaryWindows: false;
     }): Promise<Array<IOpenedMainWindow>>;
+
     async getWindows(windowId: number | undefined, options: {
         includeAuxiliaryWindows: boolean;
     }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>> {
@@ -125,7 +128,9 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
             filename: window.getRepresentedFilename(),
             dirty: window.isDocumentEdited()
         }));
+
         const auxiliaryWindows = [];
+
         if (options.includeAuxiliaryWindows) {
             auxiliaryWindows.push(...this.auxiliaryWindowsMainService.getWindows().map(window => ({
                 id: window.id,
@@ -141,6 +146,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async getActiveWindowId(windowId: number | undefined): Promise<number | undefined> {
         const activeWindow = this.windowsMainService.getFocusedWindow() || this.windowsMainService.getLastActiveWindow();
+
         if (activeWindow) {
             return activeWindow.id;
         }
@@ -148,6 +154,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async getActiveWindowPosition(): Promise<IRectangle | undefined> {
         const activeWindow = this.windowsMainService.getFocusedWindow() || this.windowsMainService.getLastActiveWindow();
+
         if (activeWindow) {
             return activeWindow.getBounds();
         }
@@ -191,6 +198,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async isFullScreen(windowId: number | undefined, options?: INativeHostOptions): Promise<boolean> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return window?.isFullScreen ?? false;
     }
     async toggleFullScreen(windowId: number | undefined, options?: INativeHostOptions): Promise<void> {
@@ -206,11 +214,14 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         readonly display: IRectangle;
     }> {
         const point = screen.getCursorScreenPoint();
+
         const display = screen.getDisplayNearestPoint(point);
+
         return { point, display: display.bounds };
     }
     async isMaximized(windowId: number | undefined, options?: INativeHostOptions): Promise<boolean> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return window?.win?.isMaximized() ?? false;
     }
     async maximizeWindow(windowId: number | undefined, options?: INativeHostOptions): Promise<void> {
@@ -231,6 +242,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async positionWindow(windowId: number | undefined, position: IRectangle, options?: INativeHostOptions): Promise<void> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         if (window?.win) {
             if (window.win.isFullScreen()) {
                 const fullscreenLeftFuture = Event.toPromise(Event.once(Event.fromNodeEventEmitter(window.win, 'leave-full-screen')));
@@ -243,6 +255,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     async updateWindowControls(windowId: number | undefined, options: INativeHostOptions & {
         height?: number;
         backgroundColor?: string;
+
         foregroundColor?: string;
     }): Promise<void> {
         const window = this.windowById(options?.targetWindowId, windowId);
@@ -256,11 +269,16 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async setMinimumSize(windowId: number | undefined, width: number | undefined, height: number | undefined): Promise<void> {
         const window = this.codeWindowById(windowId);
+
         if (window?.win) {
             const [windowWidth, windowHeight] = window.win.getSize();
+
             const [minWindowWidth, minWindowHeight] = window.win.getMinimumSize();
+
             const [newMinWindowWidth, newMinWindowHeight] = [width ?? minWindowWidth, height ?? minWindowHeight];
+
             const [newWindowWidth, newWindowHeight] = [Math.max(windowWidth, newMinWindowWidth), Math.max(windowHeight, newMinWindowHeight)];
+
             if (minWindowWidth !== newMinWindowWidth || minWindowHeight !== newMinWindowHeight) {
                 window.win.setMinimumSize(newMinWindowWidth, newMinWindowHeight);
             }
@@ -279,8 +297,10 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         // Only install unless already existing
         try {
             const { symbolicLink } = await SymlinkSupport.stat(source);
+
             if (symbolicLink && !symbolicLink.dangling) {
                 const linkTargetRealPath = await realpath(source);
+
                 if (target === linkTargetRealPath) {
                     return;
                 }
@@ -308,6 +328,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
                     localize('cancel', "Cancel")
                 ]
             });
+
             if (response === 1 /* Cancel */) {
                 throw new CancellationError();
             }
@@ -322,6 +343,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async uninstallShellCommand(windowId: number | undefined): Promise<void> {
         const { source } = await this.getShellCommandLink();
+
         try {
             await fs.promises.unlink(source);
         }
@@ -336,6 +358,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
                             localize('cancel', "Cancel")
                         ]
                     });
+
                     if (response === 1 /* Cancel */) {
                         throw new CancellationError();
                     }
@@ -360,9 +383,11 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         readonly target: string;
     }> {
         const target = resolve(this.environmentMainService.appRoot, 'bin', 'code');
+
         const source = `/usr/local/bin/${this.productService.applicationName}`;
         // Ensure source exists
         const sourceExists = await Promises.exists(target);
+
         if (!sourceExists) {
             throw new Error(localize('sourceMissing', "Unable to find shell script in '{0}'", target));
         }
@@ -372,36 +397,43 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     //#region Dialog
     async showMessageBox(windowId: number | undefined, options: MessageBoxOptions & INativeHostOptions): Promise<MessageBoxReturnValue> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return this.dialogMainService.showMessageBox(options, window?.win ?? undefined);
     }
     async showSaveDialog(windowId: number | undefined, options: SaveDialogOptions & INativeHostOptions): Promise<SaveDialogReturnValue> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return this.dialogMainService.showSaveDialog(options, window?.win ?? undefined);
     }
     async showOpenDialog(windowId: number | undefined, options: OpenDialogOptions & INativeHostOptions): Promise<OpenDialogReturnValue> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return this.dialogMainService.showOpenDialog(options, window?.win ?? undefined);
     }
     async pickFileFolderAndOpen(windowId: number | undefined, options: INativeOpenDialogOptions): Promise<void> {
         const paths = await this.dialogMainService.pickFileFolder(options);
+
         if (paths) {
             await this.doOpenPicked(await Promise.all(paths.map(async (path) => (await SymlinkSupport.existsDirectory(path)) ? { folderUri: URI.file(path) } : { fileUri: URI.file(path) })), options, windowId);
         }
     }
     async pickFolderAndOpen(windowId: number | undefined, options: INativeOpenDialogOptions): Promise<void> {
         const paths = await this.dialogMainService.pickFolder(options);
+
         if (paths) {
             await this.doOpenPicked(paths.map(path => ({ folderUri: URI.file(path) })), options, windowId);
         }
     }
     async pickFileAndOpen(windowId: number | undefined, options: INativeOpenDialogOptions): Promise<void> {
         const paths = await this.dialogMainService.pickFile(options);
+
         if (paths) {
             await this.doOpenPicked(paths.map(path => ({ fileUri: URI.file(path) })), options, windowId);
         }
     }
     async pickWorkspaceAndOpen(windowId: number | undefined, options: INativeOpenDialogOptions): Promise<void> {
         const paths = await this.dialogMainService.pickWorkspace(options);
+
         if (paths) {
             await this.doOpenPicked(paths.map(path => ({ workspaceUri: URI.file(path) })), options, windowId);
         }
@@ -431,6 +463,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async openExternal(windowId: number | undefined, url: string, defaultApplication?: string): Promise<boolean> {
         this.environmentMainService.unsetSnapExportedVariables();
+
         try {
             if (matchesSomeScheme(url, Schemas.http, Schemas.https)) {
                 this.openExternalBrowser(url, defaultApplication);
@@ -446,18 +479,22 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     private async openExternalBrowser(url: string, defaultApplication?: string): Promise<void> {
         const configuredBrowser = defaultApplication ?? this.configurationService.getValue<string>('workbench.externalBrowser');
+
         if (!configuredBrowser) {
             return shell.openExternal(url);
         }
         if (configuredBrowser.includes(posix.sep) || configuredBrowser.includes(win32.sep)) {
             const browserPathExists = await Promises.exists(configuredBrowser);
+
             if (!browserPathExists) {
                 this.logService.error(`Configured external browser path does not exist: ${configuredBrowser}`);
+
                 return shell.openExternal(url);
             }
         }
         try {
             const { default: open } = await import('open');
+
             const res = await open(url, {
                 app: {
                     // Use `open.apps` helper to allow cross-platform browser
@@ -466,6 +503,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
                     name: Object.hasOwn(open.apps, configuredBrowser) ? open.apps[(configuredBrowser as keyof typeof open['apps'])] : configuredBrowser
                 }
             });
+
             if (!isWindows) {
                 // On Linux/macOS, listen to stderr and treat that as failure
                 // for opening the browser to fallback to the default.
@@ -474,12 +512,14 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
                 // (see also https://github.com/microsoft/vscode/issues/230636)
                 res.stderr?.once('data', (data: Buffer) => {
                     this.logService.error(`Error openening external URL '${url}' using browser '${configuredBrowser}': ${data.toString()}`);
+
                     return shell.openExternal(url);
                 });
             }
         }
         catch (error) {
             this.logService.error(`Unable to open external URL '${url}' using browser '${configuredBrowser}' due to ${error}.`);
+
             return shell.openExternal(url);
         }
     }
@@ -488,6 +528,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async isAdmin(): Promise<boolean> {
         let isAdmin: boolean;
+
         if (isWindows) {
             isAdmin = (await import('native-is-elevated')).default();
         }
@@ -500,15 +541,19 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         unlock?: boolean;
     }): Promise<void> {
         const sudoPrompt = await import('@vscode/sudo-prompt');
+
         const argsFile = randomPath(this.environmentMainService.userDataPath, 'code-elevated');
         await Promises.writeFile(argsFile, JSON.stringify({ source: source.fsPath, target: target.fsPath }));
+
         try {
             await new Promise<void>((resolve, reject) => {
                 const sudoCommand: string[] = [`"${this.cliPath}"`];
+
                 if (options?.unlock) {
                     sudoCommand.push('--file-chmod');
                 }
                 sudoCommand.push('--file-write', `"${argsFile}"`);
+
                 const promptOptions = {
                     name: this.productService.nameLong.replace('-', ''),
                     icns: (isMacintosh && this.environmentMainService.isBuilt) ? join(dirname(this.environmentMainService.appRoot), `${this.productService.nameShort}.icns`) : undefined
@@ -592,13 +637,16 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     //#region Screenshots
     async getScreenshot(windowId: number | undefined, options?: INativeHostOptions): Promise<ArrayBufferLike | undefined> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         const captured = await window?.win?.webContents.capturePage();
+
         return captured?.toJPEG(95);
     }
     //#endregion
     //#region Process
     async getProcessId(windowId: number | undefined): Promise<number | undefined> {
         const window = this.windowById(undefined, windowId);
+
         return window?.win?.webContents.getOSProcessId();
     }
     async killProcess(windowId: number | undefined, pid: number, code: string): Promise<void> {
@@ -673,6 +721,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         disableExtensions?: boolean;
     }): Promise<void> {
         const window = this.codeWindowById(windowId);
+
         if (window) {
             // Special case: support `transient` workspaces by preventing
             // the reload and rather go back to an empty window. Transient
@@ -681,8 +730,10 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
             // For: https://github.com/microsoft/vscode/issues/119695
             if (isWorkspaceIdentifier(window.openedWorkspace)) {
                 const configPath = window.openedWorkspace.configPath;
+
                 if (configPath.scheme === Schemas.file) {
                     const workspace = await this.workspacesManagementMainService.resolveLocalWorkspace(configPath);
+
                     if (workspace?.transient) {
                         return this.openWindow(window.id, { forceReuseWindow: true });
                     }
@@ -694,12 +745,14 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async closeWindow(windowId: number | undefined, options?: INativeHostOptions): Promise<void> {
         const window = this.windowById(options?.targetWindowId, windowId);
+
         return window?.win?.close();
     }
     async quit(windowId: number | undefined): Promise<void> {
         // If the user selected to exit from an extension development host window, do not quit, but just
         // close the window unless this is the last window that is opened.
         const window = this.windowsMainService.getLastActiveWindow();
+
         if (window?.isExtensionDevelopmentHost && this.windowsMainService.getWindowCount() > 1 && window.win) {
             window.win.close();
         }
@@ -716,12 +769,15 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     async resolveProxy(windowId: number | undefined, url: string): Promise<string | undefined> {
         if (this.environmentMainService.extensionTestsLocationURI) {
             const testProxy = this.configurationService.getValue<string>('integration-test.http.proxy');
+
             if (testProxy) {
                 return testProxy;
             }
         }
         const window = this.codeWindowById(windowId);
+
         const session = window?.win?.webContents?.session;
+
         return session?.resolveProxy(url);
     }
     async lookupAuthorization(_windowId: number | undefined, authInfo: AuthInfo): Promise<Credentials | undefined> {
@@ -739,6 +795,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     //#endregion
     //#region Development
     private gpuInfoWindowId: number | undefined;
+
     async openDevTools(windowId: number | undefined, options?: Partial<OpenDevToolsOptions> & INativeHostOptions): Promise<void> {
         const window = this.windowById(options?.targetWindowId, windowId);
         window?.win?.webContents.openDevTools(options?.mode ? { mode: options.mode, activate: options.activate } : undefined);
@@ -749,12 +806,14 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     }
     async openGPUInfoWindow(windowId: number | undefined): Promise<void> {
         const parentWindow = this.codeWindowById(windowId);
+
         if (!parentWindow) {
             return;
         }
         if (typeof this.gpuInfoWindowId !== 'number') {
             const options = this.instantiationService.invokeFunction(defaultBrowserWindowOptions, defaultWindowState(), { forceNativeTitlebar: true });
             options.backgroundColor = undefined;
+
             const gpuInfoWindow = new BrowserWindow(options);
             gpuInfoWindow.setMenuBarVisibility(false);
             gpuInfoWindow.loadURL('chrome://gpu');
@@ -770,6 +829,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
         }
         if (typeof this.gpuInfoWindowId === 'number') {
             const window = BrowserWindow.fromId(this.gpuInfoWindowId);
+
             if (window?.isMinimized()) {
                 window?.restore();
             }
@@ -780,11 +840,14 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
     // #region Performance
     async profileRenderer(windowId: number | undefined, session: string, duration: number): Promise<IV8Profile> {
         const window = this.codeWindowById(windowId);
+
         if (!window || !window.win) {
             throw new Error();
         }
         const profiler = new WindowProfiler(window.win, session, this.logService);
+
         const result = await profiler.inspect(duration);
+
         return result;
     }
     // #endregion
@@ -794,6 +857,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
             return undefined;
         }
         const Registry = await import('@vscode/windows-registry');
+
         try {
             return Registry.GetStringRegKey(hive, path, name);
         }
@@ -816,6 +880,7 @@ export class NativeHostMainService extends Disposable implements INativeHostMain
             return undefined;
         }
         const contents = webContents.fromId(windowId);
+
         if (!contents) {
             return undefined;
         }

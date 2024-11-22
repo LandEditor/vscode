@@ -31,20 +31,27 @@ export const IUserDataSyncMachinesService = createDecorator<IUserDataSyncMachine
 export interface IUserDataSyncMachinesService {
     _serviceBrand: any;
     readonly onDidChange: Event<void>;
+
     getMachines(manifest?: IUserDataManifest): Promise<IUserDataSyncMachine[]>;
     addCurrentMachine(manifest?: IUserDataManifest): Promise<void>;
     removeCurrentMachine(manifest?: IUserDataManifest): Promise<void>;
     renameMachine(machineId: string, name: string): Promise<void>;
+
     setEnablements(enbalements: [
         string,
         boolean
     ][]): Promise<void>;
 }
 const currentMachineNameKey = 'sync.currentMachineName';
+
 const Safari = 'Safari';
+
 const Chrome = 'Chrome';
+
 const Edge = 'Edge';
+
 const Firefox = 'Firefox';
+
 const Android = 'Android';
 export function isWebPlatform(platform: string) {
     switch (platform) {
@@ -84,6 +91,7 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     readonly onDidChange = this._onDidChange.event;
     private readonly currentMachineIdPromise: Promise<string>;
     private userData: IUserData | null = null;
+
     constructor(
     @IEnvironmentService
     environmentService: IEnvironmentService, 
@@ -102,12 +110,16 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     async getMachines(manifest?: IUserDataManifest): Promise<IUserDataSyncMachine[]> {
         const currentMachineId = await this.currentMachineIdPromise;
+
         const machineData = await this.readMachinesData(manifest);
+
         return machineData.machines.map<IUserDataSyncMachine>(machine => ({ ...machine, ...{ isCurrent: machine.id === currentMachineId } }));
     }
     async addCurrentMachine(manifest?: IUserDataManifest): Promise<void> {
         const currentMachineId = await this.currentMachineIdPromise;
+
         const machineData = await this.readMachinesData(manifest);
+
         if (!machineData.machines.some(({ id }) => id === currentMachineId)) {
             machineData.machines.push({ id: currentMachineId, name: this.computeCurrentMachineName(machineData.machines), platform: getPlatformName() });
             await this.writeMachinesData(machineData);
@@ -115,8 +127,11 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     async removeCurrentMachine(manifest?: IUserDataManifest): Promise<void> {
         const currentMachineId = await this.currentMachineIdPromise;
+
         const machineData = await this.readMachinesData(manifest);
+
         const updatedMachines = machineData.machines.filter(({ id }) => id !== currentMachineId);
+
         if (updatedMachines.length !== machineData.machines.length) {
             machineData.machines = updatedMachines;
             await this.writeMachinesData(machineData);
@@ -124,11 +139,15 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     async renameMachine(machineId: string, name: string, manifest?: IUserDataManifest): Promise<void> {
         const machineData = await this.readMachinesData(manifest);
+
         const machine = machineData.machines.find(({ id }) => id === machineId);
+
         if (machine) {
             machine.name = name;
             await this.writeMachinesData(machineData);
+
             const currentMachineId = await this.currentMachineIdPromise;
+
             if (machineId === currentMachineId) {
                 this.storageService.store(currentMachineNameKey, name, StorageScope.APPLICATION, StorageTarget.MACHINE);
             }
@@ -139,8 +158,10 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
         boolean
     ][]): Promise<void> {
         const machineData = await this.readMachinesData();
+
         for (const [machineId, enabled] of enablements) {
             const machine = machineData.machines.find(machine => machine.id === machineId);
+
             if (machine) {
                 machine.disabled = enabled ? undefined : true;
             }
@@ -149,14 +170,19 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     private computeCurrentMachineName(machines: IMachineData[]): string {
         const previousName = this.storageService.get(currentMachineNameKey, StorageScope.APPLICATION);
+
         if (previousName) {
             return previousName;
         }
         const namePrefix = `${this.productService.embedderIdentifier ? `${this.productService.embedderIdentifier} - ` : ''}${getPlatformName()} (${this.productService.nameShort})`;
+
         const nameRegEx = new RegExp(`${escapeRegExpCharacters(namePrefix)}\\s#(\\d+)`);
+
         let nameIndex = 0;
+
         for (const machine of machines) {
             const matches = nameRegEx.exec(machine.name);
+
             const index = matches ? parseInt(matches[1]) : 0;
             nameIndex = index > nameIndex ? index : nameIndex;
         }
@@ -164,7 +190,9 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     private async readMachinesData(manifest?: IUserDataManifest): Promise<IMachinesData> {
         this.userData = await this.readUserData(manifest);
+
         const machinesData = this.parse(this.userData);
+
         if (machinesData.version !== UserDataSyncMachinesService.VERSION) {
             throw new Error(localize('error incompatible', "Cannot read machines data as the current version is incompatible. Please update {0} and try again.", this.productService.nameLong));
         }
@@ -172,6 +200,7 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
     }
     private async writeMachinesData(machinesData: IMachinesData): Promise<void> {
         const content = JSON.stringify(machinesData);
+
         const ref = await this.userDataSyncStoreService.writeResource(UserDataSyncMachinesService.RESOURCE, content, this.userData?.ref || null);
         this.userData = { ref, content };
         this._onDidChange.fire();

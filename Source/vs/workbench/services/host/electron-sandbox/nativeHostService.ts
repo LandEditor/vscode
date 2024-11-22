@@ -27,6 +27,7 @@ class WorkbenchNativeHostService extends NativeHostService {
 }
 class WorkbenchHostService extends Disposable implements IHostService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @INativeHostService
     private readonly nativeHostService: INativeHostService, 
@@ -38,11 +39,13 @@ class WorkbenchHostService extends Disposable implements IHostService {
     }
     //#region Focus
     readonly onDidChangeFocus = Event.latch(Event.any(Event.map(Event.filter(this.nativeHostService.onDidFocusMainOrAuxiliaryWindow, id => hasWindow(id), this._store), () => this.hasFocus, this._store), Event.map(Event.filter(this.nativeHostService.onDidBlurMainOrAuxiliaryWindow, id => hasWindow(id), this._store), () => this.hasFocus, this._store), Event.map(this.onDidChangeActiveWindow, () => this.hasFocus, this._store)), undefined, this._store);
+
     get hasFocus(): boolean {
         return getActiveDocument().hasFocus();
     }
     async hadLastFocus(): Promise<boolean> {
         const activeWindowId = await this.nativeHostService.getActiveWindowId();
+
         if (typeof activeWindowId === 'undefined') {
             return false;
         }
@@ -61,12 +64,14 @@ class WorkbenchHostService extends Disposable implements IHostService {
             // poll for a while to ensure we catch the event.
             disposables.add(disposableWindowInterval(window, () => {
                 const hasFocus = window.document.hasFocus();
+
                 if (hasFocus) {
                     emitter.fire(window.vscodeWindowId);
                 }
                 return hasFocus;
             }, 100, 20));
         }));
+
         return Event.latch(emitter.event, undefined, this._store);
     }
     readonly onDidChangeFullScreen = Event.filter(this.nativeHostService.onDidChangeWindowFullScreen, e => hasWindow(e.windowId), this._store);
@@ -80,8 +85,10 @@ class WorkbenchHostService extends Disposable implements IHostService {
     }
     private doOpenWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void> {
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         if (!!remoteAuthority) {
             toOpen.forEach(openable => openable.label = openable.label || this.getRecentLabel(openable));
+
             if (options?.remoteAuthority === undefined) {
                 // set the remoteAuthority of the window the request came from.
                 // It will be used when the input is neither file nor vscode-remote.
@@ -101,6 +108,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
     }
     private doOpenEmptyWindow(options?: IOpenEmptyWindowOptions): Promise<void> {
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         if (!!remoteAuthority && options?.remoteAuthority === undefined) {
             // set the remoteAuthority of the window the request came from
             options = options ? { ...options, remoteAuthority } : { remoteAuthority };

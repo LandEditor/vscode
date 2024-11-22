@@ -17,6 +17,7 @@ import { IssueSource } from '../common/issue.js';
 import { IProductService } from '../../../../platform/product/common/productService.js';
 export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
     static PREFIX = 'issue ';
+
     constructor(
     @IMenuService
     private readonly menuService: IMenuService, 
@@ -32,12 +33,17 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
     }
     protected override _getPicks(filter: string): Picks<IPickerQuickAccessItem> | FastAndSlowPicks<IPickerQuickAccessItem> | Promise<Picks<IPickerQuickAccessItem> | FastAndSlowPicks<IPickerQuickAccessItem>> | null {
         const issuePicksConst = new Array<IPickerQuickAccessItem | IQuickPickSeparator>();
+
         const issuePicksParts = new Array<IPickerQuickAccessItem | IQuickPickSeparator>();
+
         const extensionIdSet = new Set<string>();
         // Add default items
         const productLabel = this.productService.nameLong;
+
         const marketPlaceLabel = localize("reportExtensionMarketplace", "Extension Marketplace");
+
         const productFilter = matchesFuzzy(filter, productLabel, true);
+
         const marketPlaceFilter = matchesFuzzy(filter, marketPlaceLabel, true);
         // Add product pick if product filter matches
         if (productFilter) {
@@ -66,6 +72,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
                 extensionIdSet.add(action.item.source.id);
             }
             const pick = this._createPick(filter, action);
+
             if (pick) {
                 issuePicksParts.push(pick);
             }
@@ -74,7 +81,9 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
         this.extensionService.extensions.forEach(extension => {
             if (!extension.isBuiltin) {
                 const pick = this._createPick(filter, undefined, extension);
+
                 const id = extension.identifier.value;
+
                 if (pick && !extensionIdSet.has(id)) {
                     issuePicksParts.push(pick);
                 }
@@ -83,9 +92,12 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
         });
         issuePicksParts.sort((a, b) => {
             const aLabel = a.label ?? '';
+
             const bLabel = b.label ?? '';
+
             return aLabel.localeCompare(bLabel);
         });
+
         return [...issuePicksConst, ...issuePicksParts];
     }
     private _createPick(filter: string, action?: MenuItemAction | SubmenuItemAction | undefined, extension?: IExtensionDescription): IPickerQuickAccessItem | undefined {
@@ -93,9 +105,13 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
                 iconClass: ThemeIcon.asClassName(Codicon.info),
                 tooltip: localize('contributedIssuePage', "Open Extension Page")
             }];
+
         let label: string;
+
         let trigger: () => TriggerAction;
+
         let accept: () => void;
+
         if (action && 'source' in action.item && action.item.source) {
             label = action.item.source?.title;
             trigger = () => {
@@ -112,6 +128,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
             label = extension.displayName ?? extension.name;
             trigger = () => {
                 this.commandService.executeCommand('extension.open', extension.identifier.value);
+
                 return TriggerAction.CLOSE_PICKER;
             };
             accept = () => {
@@ -122,6 +139,7 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
             return undefined;
         }
         const highlights = matchesFuzzy(filter, label, true);
+
         if (highlights) {
             return {
                 label,

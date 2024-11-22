@@ -69,8 +69,11 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
     }
     private async _appendStartupTimes(standardStartupError: string | undefined) {
         const appendTo = this._environmentService.args['prof-append-timers'];
+
         const durationMarkers = this._environmentService.args['prof-duration-markers'];
+
         const durationMarkersFile = this._environmentService.args['prof-duration-markers-file'];
+
         if (!appendTo && !durationMarkers) {
             // nothing to do
             return;
@@ -80,8 +83,11 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
                 this._timerService.whenReady(),
                 timeout(15000), // wait: cached data creation, telemetry sending
             ]);
+
             const perfBaseline = await this._timerService.perfBaseline;
+
             const heapStatistics = await this._resolveStartupHeapStatistics();
+
             if (heapStatistics) {
                 this._telemetryLogHeapStatistics(heapStatistics);
             }
@@ -99,13 +105,16 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
             }
             if (durationMarkers?.length) {
                 const durations: string[] = [];
+
                 for (const durationMarker of durationMarkers) {
                     let duration: number = 0;
+
                     if (durationMarker === 'ellapsed') {
                         duration = this._timerService.startupMetrics.ellapsed;
                     }
                     else if (durationMarker.indexOf('-') !== -1) {
                         const markers = durationMarker.split('-');
+
                         if (markers.length === 2) {
                             duration = this._timerService.getDuration(markers[0], markers[1]);
                         }
@@ -116,6 +125,7 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
                     }
                 }
                 const durationsContent = `${durations.join('\t')}\n`;
+
                 if (durationMarkersFile) {
                     await this._appendContent(URI.file(durationMarkersFile), durationsContent);
                 }
@@ -133,6 +143,7 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
     }
     protected override async _isStandardStartup(): Promise<string | undefined> {
         const windowCount = await this._nativeHostService.getWindowCount();
+
         if (windowCount !== 1) {
             return `Expected window count : 1, Actual : ${windowCount}`;
         }
@@ -140,6 +151,7 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
     }
     private async _appendContent(file: URI, content: string): Promise<void> {
         const chunks: VSBuffer[] = [];
+
         if (await this._fileService.exists(file)) {
             chunks.push((await this._fileService.readFile(file)).value);
         }
@@ -154,19 +166,25 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
             return undefined; // unexpected arguments for startup heap statistics
         }
         const windowProcessId = await this._nativeHostService.getProcessId();
+
         const used = (performance as unknown as {
             memory?: {
                 usedJSHeapSize?: number;
             };
         }).memory?.usedJSHeapSize ?? 0; // https://developer.mozilla.org/en-US/docs/Web/API/Performance/memory
         let minorGCs = 0;
+
         let majorGCs = 0;
+
         let garbage = 0;
+
         let duration = 0;
+
         try {
             const traceContents: {
                 traceEvents: ITracingData[];
             } = JSON.parse((await this._fileService.readFile(URI.file(this._environmentService.args['trace-startup-file']))).value.toString());
+
             for (const event of traceContents.traceEvents) {
                 if (event.pid !== windowProcessId) {
                     continue;
@@ -175,15 +193,19 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
                     // Major/Minor GC Events
                     case 'MinorGC':
                         minorGCs++;
+
                         break;
+
                     case 'MajorGC':
                         majorGCs++;
+
                         break;
                     // GC Events that block the main thread
                     // Refs: https://v8.dev/blog/trash-talk
                     case 'V8.GCFinalizeMC':
                     case 'V8.GCScavenger':
                         duration += event.dur;
+
                         break;
                 }
                 if (event.name === 'MajorGC' || event.name === 'MinorGC') {
@@ -246,6 +268,7 @@ export class NativeStartupTimings extends StartupTimings implements IWorkbenchCo
     }
     private _printStartupHeapStatistics({ used, garbage, majorGCs, minorGCs, duration }: IHeapStatistics) {
         const MB = 1024 * 1024;
+
         return `Heap: ${Math.round(used / MB)}MB (used) ${Math.round(garbage / MB)}MB (garbage) ${majorGCs} (MajorGC) ${minorGCs} (MinorGC) ${duration}ms (GC duration)`;
     }
 }

@@ -17,6 +17,7 @@ export class VsCodeMdWorkspace extends Disposable {
     private _watcher: vscode.FileSystemWatcher | undefined;
     private readonly _documentCache = new ResourceMap<ITextDocument>();
     private readonly _utf8Decoder = new TextDecoder('utf-8');
+
     constructor() {
         super();
         this._watcher = this._register(vscode.workspace.createFileSystemWatcher('**/*.md'));
@@ -38,12 +39,15 @@ export class VsCodeMdWorkspace extends Disposable {
     }
     public async getOrLoadMarkdownDocument(resource: vscode.Uri): Promise<ITextDocument | undefined> {
         const existing = this._documentCache.get(resource);
+
         if (existing) {
             return existing;
         }
         const matchingDocument = vscode.workspace.textDocuments.find((doc) => this._isRelevantMarkdownDocument(doc) && doc.uri.toString() === resource.toString());
+
         if (matchingDocument) {
             this._documentCache.set(resource, matchingDocument);
+
             return matchingDocument;
         }
         if (!looksLikeMarkdownPath(resource)) {
@@ -53,8 +57,10 @@ export class VsCodeMdWorkspace extends Disposable {
             const bytes = await vscode.workspace.fs.readFile(resource);
             // We assume that markdown is in UTF-8
             const text = this._utf8Decoder.decode(bytes);
+
             const doc = new InMemoryDocument(resource, text, 0);
             this._documentCache.set(resource, doc);
+
             return doc;
         }
         catch {

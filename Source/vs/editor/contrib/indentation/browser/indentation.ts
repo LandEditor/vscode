@@ -44,11 +44,14 @@ export class IndentationToSpacesAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const modelOpts = model.getOptions();
+
 		const selection = editor.getSelection();
+
 		if (!selection) {
 			return;
 		}
@@ -80,11 +83,14 @@ export class IndentationToTabsAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const modelOpts = model.getOptions();
+
 		const selection = editor.getSelection();
+
 		if (!selection) {
 			return;
 		}
@@ -108,15 +114,19 @@ export class ChangeIndentationSizeAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const modelService = accessor.get(IModelService);
 
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
 
 		const creationOpts = modelService.getCreationOptions(model.getLanguageId(), model.uri, model.isForSimpleWidget);
+
 		const modelOpts = model.getOptions();
+
 		const picks = [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({
 			id: n.toString(),
 			label: n.toString(),
@@ -140,6 +150,7 @@ export class ChangeIndentationSizeAction extends EditorAction {
 				if (pick) {
 					if (model && !model.isDisposed()) {
 						const pickedVal = parseInt(pick.label, 10);
+
 						if (this.displaySizeOnly) {
 							model.updateOptions({
 								tabSize: pickedVal
@@ -225,6 +236,7 @@ export class DetectIndentation extends EditorAction {
 		const modelService = accessor.get(IModelService);
 
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
@@ -250,10 +262,12 @@ export class ReindentLinesAction extends EditorAction {
 		const languageConfigurationService = accessor.get(ILanguageConfigurationService);
 
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const edits = getReindentEditOperations(model, languageConfigurationService, 1, model.getLineCount());
+
 		if (edits.length > 0) {
 			editor.pushUndoStop();
 			editor.executeEdits(this.id, edits);
@@ -278,11 +292,13 @@ export class ReindentSelectedLinesAction extends EditorAction {
 		const languageConfigurationService = accessor.get(ILanguageConfigurationService);
 
 		const model = editor.getModel();
+
 		if (!model) {
 			return;
 		}
 
 		const selections = editor.getSelections();
+
 		if (selections === null) {
 			return;
 		}
@@ -291,6 +307,7 @@ export class ReindentSelectedLinesAction extends EditorAction {
 
 		for (const selection of selections) {
 			let startLineNumber = selection.startLineNumber;
+
 			let endLineNumber = selection.endLineNumber;
 
 			if (startLineNumber !== endLineNumber && selection.endColumn === 1) {
@@ -342,6 +359,7 @@ export class AutoIndentOnPasteCommand implements ICommand {
 		}
 
 		let selectionIsSet = false;
+
 		if (Array.isArray(this._edits) && this._edits.length === 1 && this._initialSelection.isEmpty()) {
 			if (this._edits[0].range.startColumn === this._initialSelection.endColumn &&
 				this._edits[0].range.startLineNumber === this._initialSelection.endLineNumber) {
@@ -402,15 +420,18 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 	public trigger(range: Range): void {
 		const selections = this.editor.getSelections();
+
 		if (selections === null || selections.length > 1) {
 			return;
 		}
 
 		const model = this.editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const containsOnlyWhitespace = this.rangeContainsOnlyWhitespaceCharacters(model, range);
+
 		if (containsOnlyWhitespace) {
 			return;
 		}
@@ -421,7 +442,9 @@ export class AutoIndentOnPaste implements IEditorContribution {
 			return;
 		}
 		const autoIndent = this.editor.getOption(EditorOption.autoIndent);
+
 		const { tabSize, indentSize, insertSpaces } = model.getOptions();
+
 		const textEdits: TextEdit[] = [];
 
 		const indentConverter = {
@@ -438,6 +461,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		while (startLineNumber <= range.endLineNumber) {
 			if (this.shouldIgnoreLine(model, startLineNumber)) {
 				startLineNumber++;
+
 				continue;
 			}
 			break;
@@ -448,12 +472,15 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		}
 
 		let firstLineText = model.getLineContent(startLineNumber);
+
 		if (!/\S/.test(firstLineText.substring(0, range.startColumn - 1))) {
 			const indentOfFirstLine = getGoodIndentForLine(autoIndent, model, model.getLanguageId(), startLineNumber, indentConverter, this._languageConfigurationService);
 
 			if (indentOfFirstLine !== null) {
 				const oldIndentation = strings.getLeadingWhitespace(firstLineText);
+
 				const newSpaceCnt = indentUtils.getSpaceCnt(indentOfFirstLine, tabSize);
+
 				const oldSpaceCnt = indentUtils.getSpaceCnt(oldIndentation, tabSize);
 
 				if (newSpaceCnt !== oldSpaceCnt) {
@@ -483,6 +510,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		while (startLineNumber < range.endLineNumber) {
 			if (!/\S/.test(model.getLineContent(startLineNumber + 1))) {
 				startLineNumber++;
+
 				continue;
 			}
 			break;
@@ -509,18 +537,26 @@ export class AutoIndentOnPaste implements IEditorContribution {
 					}
 				}
 			};
+
 			const indentOfSecondLine = getGoodIndentForLine(autoIndent, virtualModel, model.getLanguageId(), startLineNumber + 1, indentConverter, this._languageConfigurationService);
+
 			if (indentOfSecondLine !== null) {
 				const newSpaceCntOfSecondLine = indentUtils.getSpaceCnt(indentOfSecondLine, tabSize);
+
 				const oldSpaceCntOfSecondLine = indentUtils.getSpaceCnt(strings.getLeadingWhitespace(model.getLineContent(startLineNumber + 1)), tabSize);
 
 				if (newSpaceCntOfSecondLine !== oldSpaceCntOfSecondLine) {
 					const spaceCntOffset = newSpaceCntOfSecondLine - oldSpaceCntOfSecondLine;
+
 					for (let i = startLineNumber + 1; i <= range.endLineNumber; i++) {
 						const lineContent = model.getLineContent(i);
+
 						const originalIndent = strings.getLeadingWhitespace(lineContent);
+
 						const originalSpacesCnt = indentUtils.getSpaceCnt(originalIndent, tabSize);
+
 						const newSpacesCnt = originalSpacesCnt + spaceCntOffset;
+
 						const newIndent = indentUtils.generateIndent(newSpacesCnt, tabSize, insertSpaces);
 
 						if (newIndent !== originalIndent) {
@@ -536,6 +572,7 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 		if (textEdits.length > 0) {
 			this.editor.pushUndoStop();
+
 			const cmd = new AutoIndentOnPasteCommand(textEdits, this.editor.getSelection()!);
 			this.editor.executeCommand('autoIndentOnPaste', cmd);
 			this.editor.pushUndoStop();
@@ -546,14 +583,18 @@ export class AutoIndentOnPaste implements IEditorContribution {
 		const lineContainsOnlyWhitespace = (content: string): boolean => {
 			return content.trim().length === 0;
 		};
+
 		let containsOnlyWhitespace: boolean = true;
+
 		if (range.startLineNumber === range.endLineNumber) {
 			const lineContent = model.getLineContent(range.startLineNumber);
+
 			const linePart = lineContent.substring(range.startColumn - 1, range.endColumn - 1);
 			containsOnlyWhitespace = lineContainsOnlyWhitespace(linePart);
 		} else {
 			for (let i = range.startLineNumber; i <= range.endLineNumber; i++) {
 				const lineContent = model.getLineContent(i);
+
 				if (i === range.startLineNumber) {
 					const linePart = lineContent.substring(range.startColumn - 1);
 					containsOnlyWhitespace = lineContainsOnlyWhitespace(linePart);
@@ -573,13 +614,17 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 	private shouldIgnoreLine(model: ITextModel, lineNumber: number): boolean {
 		model.tokenization.forceTokenization(lineNumber);
+
 		const nonWhitespaceColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
+
 		if (nonWhitespaceColumn === 0) {
 			return true;
 		}
 		const tokens = model.tokenization.getLineTokens(lineNumber);
+
 		if (tokens.getCount() > 0) {
 			const firstNonWhitespaceTokenIndex = tokens.findTokenIndexAtOffset(nonWhitespaceColumn);
+
 			if (firstNonWhitespaceTokenIndex >= 0 && tokens.getStandardTokenType(firstNonWhitespaceTokenIndex) === StandardTokenType.Comment) {
 				return true;
 			}
@@ -597,8 +642,10 @@ export class AutoIndentOnPaste implements IEditorContribution {
 function isStartOrEndInString(model: ITextModel, range: Range): boolean {
 	const isPositionInString = (position: Position): boolean => {
 		const tokenType = getStandardTokenTypeAtPosition(model, position);
+
 		return tokenType === StandardTokenType.String;
 	};
+
 	return isPositionInString(range.getStartPosition()) || isPositionInString(range.getEndPosition());
 }
 
@@ -609,6 +656,7 @@ function getIndentationEditOperations(model: ITextModel, builder: IEditOperation
 	}
 
 	let spaces = '';
+
 	for (let i = 0; i < tabSize; i++) {
 		spaces += ' ';
 	}
@@ -617,6 +665,7 @@ function getIndentationEditOperations(model: ITextModel, builder: IEditOperation
 
 	for (let lineNumber = 1, lineCount = model.getLineCount(); lineNumber <= lineCount; lineNumber++) {
 		let lastIndentationColumn = model.getLineFirstNonWhitespaceColumn(lineNumber);
+
 		if (lastIndentationColumn === 0) {
 			lastIndentationColumn = model.getLineMaxColumn(lineNumber);
 		}
@@ -626,7 +675,9 @@ function getIndentationEditOperations(model: ITextModel, builder: IEditOperation
 		}
 
 		const originalIndentationRange = new Range(lineNumber, 1, lineNumber, lastIndentationColumn);
+
 		const originalIndentation = model.getValueInRange(originalIndentationRange);
+
 		const newIndentation = (
 			tabsToSpaces
 				? originalIndentation.replace(/\t/ig, spaces)
@@ -645,6 +696,7 @@ export class IndentationToSpacesCommand implements ICommand {
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
 		this.selectionId = builder.trackSelection(this.selection);
+
 		getIndentationEditOperations(model, builder, this.tabSize, true);
 	}
 
@@ -661,6 +713,7 @@ export class IndentationToTabsCommand implements ICommand {
 
 	public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
 		this.selectionId = builder.trackSelection(this.selection);
+
 		getIndentationEditOperations(model, builder, this.tabSize, false);
 	}
 

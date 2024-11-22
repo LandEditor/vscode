@@ -12,6 +12,7 @@ import { bindContextKey } from '../../../../platform/observable/common/platformO
 import { Position } from '../../../common/core/position.js';
 import { Range } from '../../../common/core/range.js';
 import { SingleTextEdit, TextEdit } from '../../../common/core/textEdit.js';
+
 const array: ReadonlyArray<any> = [];
 export function getReadonlyEmptyArray<T>(): readonly T[] {
     return array;
@@ -38,7 +39,9 @@ export function subtractPositions(pos1: Position, pos2: Position): Position {
 }
 export function substringPos(text: string, pos: Position): string {
     let subtext = '';
+
     const lines = splitLinesIncludeSeparators(text);
+
     for (let i = pos.lineNumber - 1; i < lines.length; i++) {
         subtext += lines[i].substring(i === pos.lineNumber - 1 ? pos.column - 1 : 0);
     }
@@ -46,19 +49,25 @@ export function substringPos(text: string, pos: Position): string {
 }
 export function getEndPositionsAfterApplying(edits: readonly SingleTextEdit[]): Position[] {
     const sortPerm = Permutation.createSortPermutation(edits, compareBy(e => e.range, Range.compareRangesUsingStarts));
+
     const edit = new TextEdit(sortPerm.apply(edits));
+
     const sortedNewRanges = edit.getNewRanges();
+
     const newRanges = sortPerm.inverse().apply(sortedNewRanges);
+
     return newRanges.map(range => range.getEndPosition());
 }
 export function convertItemsToStableObservables<T>(items: IObservable<readonly T[]>, store: DisposableStore): IObservable<IObservable<T>[]> {
     const result = observableValue<IObservable<T>[]>('result', []);
+
     const innerObservables: ISettableObservable<T>[] = [];
     store.add(autorun(reader => {
         const itemsValue = items.read(reader);
         transaction(tx => {
             if (itemsValue.length !== innerObservables.length) {
                 innerObservables.length = itemsValue.length;
+
                 for (let i = 0; i < innerObservables.length; i++) {
                     if (!innerObservables[i]) {
                         innerObservables[i] = observableValue<T>('item', itemsValue[i]);
@@ -69,6 +78,7 @@ export function convertItemsToStableObservables<T>(items: IObservable<readonly T
             innerObservables.forEach((o, i) => o.set(itemsValue[i], tx));
         });
     }));
+
     return result;
 }
 export class ObservableContextKeyService {

@@ -35,6 +35,7 @@ export class RequestQueue {
     public enqueue(item: RequestItem): void {
         if (item.queueingType === RequestQueueingType.Normal) {
             let index = this.queue.length - 1;
+
             while (index >= 0) {
                 if (this.queue[index].queueingType !== RequestQueueingType.LowPriority) {
                     break;
@@ -55,6 +56,7 @@ export class RequestQueue {
         for (let i = 0; i < this.queue.length; i++) {
             if (this.queue[i].request.seq === seq) {
                 this.queue.splice(i, 1);
+
                 return true;
             }
         }

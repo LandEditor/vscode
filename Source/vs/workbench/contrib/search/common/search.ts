@@ -31,8 +31,10 @@ export interface IWorkspaceSymbolProvider {
 }
 export namespace WorkspaceSymbolProviderRegistry {
     const _supports: IWorkspaceSymbolProvider[] = [];
+
     export function register(provider: IWorkspaceSymbolProvider): IDisposable {
         let support: IWorkspaceSymbolProvider | undefined = provider;
+
         if (support) {
             _supports.push(support);
         }
@@ -40,6 +42,7 @@ export namespace WorkspaceSymbolProviderRegistry {
             dispose() {
                 if (support) {
                     const idx = _supports.indexOf(support);
+
                     if (idx >= 0) {
                         _supports.splice(idx, 1);
                         support = undefined;
@@ -57,9 +60,11 @@ export class WorkspaceSymbolItem {
 }
 export async function getWorkspaceSymbols(query: string, token: CancellationToken = CancellationToken.None): Promise<WorkspaceSymbolItem[]> {
     const all: WorkspaceSymbolItem[] = [];
+
     const promises = WorkspaceSymbolProviderRegistry.all().map(async (provider) => {
         try {
             const value = await provider.provideWorkspaceSymbols(query, token);
+
             if (!value) {
                 return;
             }
@@ -72,12 +77,14 @@ export async function getWorkspaceSymbols(query: string, token: CancellationToke
         }
     });
     await Promise.all(promises);
+
     if (token.isCancellationRequested) {
         return [];
     }
     // de-duplicate entries
     function compareItems(a: WorkspaceSymbolItem, b: WorkspaceSymbolItem): number {
         let res = compare(a.symbol.name, b.symbol.name);
+
         if (res === 0) {
             res = a.symbol.kind - b.symbol.kind;
         }
@@ -121,11 +128,15 @@ export interface IWorkbenchSearchConfiguration extends ISearchConfiguration {
  */
 export function getOutOfWorkspaceEditorResources(accessor: ServicesAccessor): URI[] {
     const editorService = accessor.get(IEditorService);
+
     const contextService = accessor.get(IWorkspaceContextService);
+
     const fileService = accessor.get(IFileService);
+
     const resources = editorService.editors
         .map(editor => EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY }))
         .filter(resource => !!resource && !contextService.isInsideWorkspace(resource) && fileService.hasProvider(resource));
+
     return resources as URI[];
 }
 // Supports patterns of <path><#|:|(><line><#|:|,><col?><:?>
@@ -138,6 +149,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
     // Ignore when the unless character not the first character or is before the line colon pattern
     if (!filter || unless?.some(value => {
         const unlessCharPos = filter.indexOf(value);
+
         return unlessCharPos === 0 || unlessCharPos > 0 && !LINE_COLON_PATTERN.test(filter.substring(unlessCharPos + 1));
     })) {
         return undefined;
@@ -145,6 +157,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
     let range: IRange | undefined = undefined;
     // Find Line/Column number from search value using RegExp
     const patternMatch = LINE_COLON_PATTERN.exec(filter);
+
     if (patternMatch) {
         const startLineNumber = parseInt(patternMatch[1] ?? '', 10);
         // Line Number
@@ -157,6 +170,7 @@ export function extractRangeFromFilter(filter: string, unless?: string[]): IFilt
             };
             // Column Number
             const startColumn = parseInt(patternMatch[2] ?? '', 10);
+
             if (isNumber(startColumn)) {
                 range = {
                     startLineNumber: range.startLineNumber,

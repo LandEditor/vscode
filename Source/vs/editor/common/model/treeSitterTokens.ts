@@ -15,12 +15,14 @@ export class TreeSitterTokens extends AbstractTokens {
     private _tokenizationSupport: ITreeSitterTokenizationSupport | null = null;
     private _lastLanguageId: string | undefined;
     private readonly _tokensChangedListener: MutableDisposable<IDisposable> = this._register(new MutableDisposable());
+
     constructor(private readonly _treeSitterService: ITreeSitterParserService, languageIdCodec: ILanguageIdCodec, textModel: TextModel, languageId: () => string) {
         super(languageIdCodec, textModel, languageId);
         this._initialize();
     }
     private _initialize() {
         const newLanguage = this.getLanguageId();
+
         if (!this._tokenizationSupport || this._lastLanguageId !== newLanguage) {
             this._lastLanguageId = newLanguage;
             this._tokenizationSupport = TreeSitterTokenizationRegistry.get(newLanguage);
@@ -33,8 +35,10 @@ export class TreeSitterTokens extends AbstractTokens {
     }
     public getLineTokens(lineNumber: number): LineTokens {
         const content = this._textModel.getLineContent(lineNumber);
+
         if (this._tokenizationSupport) {
             const rawTokens = this._tokenizationSupport.tokenizeEncoded(lineNumber, this._textModel);
+
             if (rawTokens) {
                 return new LineTokens(rawTokens, content, this._languageIdCodec);
             }
@@ -86,6 +90,7 @@ export class TreeSitterTokens extends AbstractTokens {
     public override get hasTokens(): boolean {
         // TODO @alexr00 once we have a token store, implement properly
         const hasTree = this._treeSitterService.getParseResult(this._textModel) !== undefined;
+
         return hasTree;
     }
 }

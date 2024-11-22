@@ -8,6 +8,7 @@ import { getTokenClassificationRegistry, ITokenClassificationRegistry, typeAndMo
 interface ITokenTypeExtensionPoint {
     id: string;
     description: string;
+
     superType?: string;
 }
 interface ITokenModifierExtensionPoint {
@@ -21,6 +22,7 @@ interface ITokenStyleDefaultExtensionPoint {
     };
 }
 const tokenClassificationRegistry: ITokenClassificationRegistry = getTokenClassificationRegistry();
+
 const tokenTypeExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenTypeExtensionPoint[]>({
     extensionPoint: 'semanticTokenTypes',
     jsonSchema: {
@@ -49,6 +51,7 @@ const tokenTypeExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenTypeEx
         }
     }
 });
+
 const tokenModifierExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenModifierExtensionPoint[]>({
     extensionPoint: 'semanticTokenModifiers',
     jsonSchema: {
@@ -70,6 +73,7 @@ const tokenModifierExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenMo
         }
     }
 });
+
 const tokenStyleDefaultsExtPoint = ExtensionsRegistry.registerExtensionPoint<ITokenStyleDefaultExtensionPoint[]>({
     extensionPoint: 'semanticTokenScopes',
     jsonSchema: {
@@ -101,19 +105,24 @@ export class TokenClassificationExtensionPoints {
         function validateTypeOrModifier(contribution: ITokenTypeExtensionPoint | ITokenModifierExtensionPoint, extensionPoint: string, collector: ExtensionMessageCollector): boolean {
             if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
                 collector.error(nls.localize('invalid.id', "'configuration.{0}.id' must be defined and can not be empty", extensionPoint));
+
                 return false;
             }
             if (!contribution.id.match(typeAndModifierIdPattern)) {
                 collector.error(nls.localize('invalid.id.format', "'configuration.{0}.id' must follow the pattern letterOrDigit[-_letterOrDigit]*", extensionPoint));
+
                 return false;
             }
             const superType = (contribution as ITokenTypeExtensionPoint).superType;
+
             if (superType && !superType.match(typeAndModifierIdPattern)) {
                 collector.error(nls.localize('invalid.superType.format', "'configuration.{0}.superType' must follow the pattern letterOrDigit[-_letterOrDigit]*", extensionPoint));
+
                 return false;
             }
             if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
                 collector.error(nls.localize('invalid.description', "'configuration.{0}.description' must be defined and can not be empty", extensionPoint));
+
                 return false;
             }
             return true;
@@ -121,9 +130,12 @@ export class TokenClassificationExtensionPoints {
         tokenTypeExtPoint.setHandler((extensions, delta) => {
             for (const extension of delta.added) {
                 const extensionValue = <ITokenTypeExtensionPoint[]>extension.value;
+
                 const collector = extension.collector;
+
                 if (!extensionValue || !Array.isArray(extensionValue)) {
                     collector.error(nls.localize('invalid.semanticTokenTypeConfiguration', "'configuration.semanticTokenType' must be an array"));
+
                     return;
                 }
                 for (const contribution of extensionValue) {
@@ -134,6 +146,7 @@ export class TokenClassificationExtensionPoints {
             }
             for (const extension of delta.removed) {
                 const extensionValue = <ITokenTypeExtensionPoint[]>extension.value;
+
                 for (const contribution of extensionValue) {
                     tokenClassificationRegistry.deregisterTokenType(contribution.id);
                 }
@@ -142,9 +155,12 @@ export class TokenClassificationExtensionPoints {
         tokenModifierExtPoint.setHandler((extensions, delta) => {
             for (const extension of delta.added) {
                 const extensionValue = <ITokenModifierExtensionPoint[]>extension.value;
+
                 const collector = extension.collector;
+
                 if (!extensionValue || !Array.isArray(extensionValue)) {
                     collector.error(nls.localize('invalid.semanticTokenModifierConfiguration', "'configuration.semanticTokenModifier' must be an array"));
+
                     return;
                 }
                 for (const contribution of extensionValue) {
@@ -155,6 +171,7 @@ export class TokenClassificationExtensionPoints {
             }
             for (const extension of delta.removed) {
                 const extensionValue = <ITokenModifierExtensionPoint[]>extension.value;
+
                 for (const contribution of extensionValue) {
                     tokenClassificationRegistry.deregisterTokenModifier(contribution.id);
                 }
@@ -163,24 +180,31 @@ export class TokenClassificationExtensionPoints {
         tokenStyleDefaultsExtPoint.setHandler((extensions, delta) => {
             for (const extension of delta.added) {
                 const extensionValue = <ITokenStyleDefaultExtensionPoint[]>extension.value;
+
                 const collector = extension.collector;
+
                 if (!extensionValue || !Array.isArray(extensionValue)) {
                     collector.error(nls.localize('invalid.semanticTokenScopes.configuration', "'configuration.semanticTokenScopes' must be an array"));
+
                     return;
                 }
                 for (const contribution of extensionValue) {
                     if (contribution.language && typeof contribution.language !== 'string') {
                         collector.error(nls.localize('invalid.semanticTokenScopes.language', "'configuration.semanticTokenScopes.language' must be a string"));
+
                         continue;
                     }
                     if (!contribution.scopes || typeof contribution.scopes !== 'object') {
                         collector.error(nls.localize('invalid.semanticTokenScopes.scopes', "'configuration.semanticTokenScopes.scopes' must be defined as an object"));
+
                         continue;
                     }
                     for (const selectorString in contribution.scopes) {
                         const tmScopes = contribution.scopes[selectorString];
+
                         if (!Array.isArray(tmScopes) || tmScopes.some(l => typeof l !== 'string')) {
                             collector.error(nls.localize('invalid.semanticTokenScopes.scopes.value', "'configuration.semanticTokenScopes.scopes' values must be an array of strings"));
+
                             continue;
                         }
                         try {
@@ -196,9 +220,11 @@ export class TokenClassificationExtensionPoints {
             }
             for (const extension of delta.removed) {
                 const extensionValue = <ITokenStyleDefaultExtensionPoint[]>extension.value;
+
                 for (const contribution of extensionValue) {
                     for (const selectorString in contribution.scopes) {
                         const tmScopes = contribution.scopes[selectorString];
+
                         try {
                             const selector = tokenClassificationRegistry.parseTokenSelector(selectorString, contribution.language);
                             tokenClassificationRegistry.registerTokenStyleDefault(selector, { scopesToProbe: tmScopes.map(s => s.split(' ')) });

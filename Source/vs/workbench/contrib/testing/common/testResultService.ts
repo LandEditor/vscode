@@ -76,6 +76,7 @@ export class TestResultService extends Disposable implements ITestResultService 
      */
     public get results() {
         this.loadResults();
+
         return this._results;
     }
     /**
@@ -94,6 +95,7 @@ export class TestResultService extends Disposable implements ITestResultService 
         }
     }));
     protected readonly persistScheduler = new RunOnceScheduler(() => this.persistImmediately(), 500);
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -117,6 +119,7 @@ export class TestResultService extends Disposable implements ITestResultService 
     ] | undefined {
         for (const result of this.results) {
             const lookup = result.getStateById(extId);
+
             if (lookup && lookup.computedState !== TestResultState.Unset) {
                 return [result, lookup];
             }
@@ -129,9 +132,11 @@ export class TestResultService extends Disposable implements ITestResultService 
     public createLiveResult(req: ResolvedTestRunRequest | ExtensionRunTestsRequest) {
         if ('targets' in req) {
             const id = generateUuid();
+
             return this.push(new LiveTestResult(id, true, req, this.telemetryService));
         }
         let profile: ITestRunProfile | undefined;
+
         if (req.profile) {
             const profiles = this.testProfiles.getControllerProfiles(req.controllerId);
             profile = profiles.find(c => c.profileId === req.profile!.id);
@@ -143,6 +148,7 @@ export class TestResultService extends Disposable implements ITestResultService 
             continuous: req.continuous,
             group: profile?.group ?? TestRunProfileBitset.Run,
         };
+
         if (profile) {
             resolved.targets.push({
                 profileId: profile.profileId,
@@ -165,12 +171,14 @@ export class TestResultService extends Disposable implements ITestResultService 
             this.persistScheduler.schedule();
         }
         this.hasAnyResults.set(true);
+
         if (this.results.length > RETAIN_MAX_RESULTS) {
             this.results.pop();
             this._resultsDisposables.pop()?.dispose();
         }
         const ds = new DisposableStore();
         this._resultsDisposables.push(ds);
+
         if (result instanceof LiveTestResult) {
             ds.add(result);
             ds.add(result.onComplete(() => this.onComplete(result)));
@@ -187,6 +195,7 @@ export class TestResultService extends Disposable implements ITestResultService 
                 for (const otherResult of this.results) {
                     if (otherResult === result) {
                         this.testChangeEmitter.fire({ item, result, reason: TestResultItemChangeReason.ComputedStateChange });
+
                         break;
                     }
                     else if (otherResult.getStateById(item.item.extId) !== undefined) {
@@ -208,7 +217,9 @@ export class TestResultService extends Disposable implements ITestResultService 
      */
     public clear() {
         const keep: ITestResult[] = [];
+
         const removed: ITestResult[] = [];
+
         for (const result of this.results) {
             if (result.completedAt !== undefined) {
                 removed.push(result);
@@ -219,6 +230,7 @@ export class TestResultService extends Disposable implements ITestResultService 
         }
         this._results = keep;
         this.persistScheduler.schedule();
+
         if (keep.length === 0) {
             this.hasAnyResults.set(false);
         }

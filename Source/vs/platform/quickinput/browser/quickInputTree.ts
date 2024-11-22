@@ -40,6 +40,7 @@ import type { IHoverWidget, IManagedHoverTooltipMarkdownString } from '../../../
 import { IAccessibilityService } from '../../accessibility/common/accessibility.js';
 import { observableValue, observableValueOpts, transaction } from '../../../base/common/observable.js';
 import { equals } from '../../../base/common/arrays.js';
+
 const $ = dom.$;
 interface IQuickInputItemLazyParts {
     readonly saneLabel: string;
@@ -75,14 +76,18 @@ interface IQuickInputItemTemplateData {
 }
 class BaseQuickPickItemElement implements IQuickPickElement {
     private readonly _init: Lazy<IQuickInputItemLazyParts>;
+
     constructor(readonly index: number, readonly hasCheckbox: boolean, mainItem: QuickPickItem) {
         this._init = new Lazy(() => {
             const saneLabel = mainItem.label ?? '';
+
             const saneSortLabel = parseLabelWithIcons(saneLabel).text.trim();
+
             const saneAriaLabel = mainItem.ariaLabel || [saneLabel, this.saneDescription, this.saneDetail]
                 .map(s => getCodiconAriaLabel(s))
                 .filter(s => !!s)
                 .join(', ');
+
             return {
                 saneLabel,
                 saneSortLabel,
@@ -105,6 +110,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
     // #endregion
     // #region Getters and Setters
     private _element?: HTMLElement;
+
     get element() {
         return this._element;
     }
@@ -112,6 +118,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._element = value;
     }
     private _hidden = false;
+
     get hidden() {
         return this._hidden;
     }
@@ -119,6 +126,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._hidden = value;
     }
     private _saneDescription?: string;
+
     get saneDescription() {
         return this._saneDescription;
     }
@@ -126,6 +134,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._saneDescription = value;
     }
     protected _saneDetail?: string;
+
     get saneDetail() {
         return this._saneDetail;
     }
@@ -133,6 +142,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._saneDetail = value;
     }
     private _saneTooltip?: string | IMarkdownString | HTMLElement;
+
     get saneTooltip() {
         return this._saneTooltip;
     }
@@ -140,6 +150,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._saneTooltip = value;
     }
     protected _labelHighlights?: IMatch[];
+
     get labelHighlights() {
         return this._labelHighlights;
     }
@@ -147,6 +158,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._labelHighlights = value;
     }
     protected _descriptionHighlights?: IMatch[];
+
     get descriptionHighlights() {
         return this._descriptionHighlights;
     }
@@ -154,6 +166,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
         this._descriptionHighlights = value;
     }
     protected _detailHighlights?: IMatch[];
+
     get detailHighlights() {
         return this._detailHighlights;
     }
@@ -163,6 +176,7 @@ class BaseQuickPickItemElement implements IQuickPickElement {
 }
 class QuickPickItemElement extends BaseQuickPickItemElement {
     readonly onChecked: Event<boolean>;
+
     constructor(index: number, hasCheckbox: boolean, readonly fireButtonTriggered: (event: IQuickPickItemButtonEvent<IQuickPickItem>) => void, private _onChecked: Emitter<{
         element: IQuickPickElement;
         checked: boolean;
@@ -186,6 +200,7 @@ class QuickPickItemElement extends BaseQuickPickItemElement {
         this._separator = value;
     }
     private _checked = false;
+
     get checked() {
         return this._checked;
     }
@@ -221,6 +236,7 @@ class QuickPickSeparatorElement extends BaseQuickPickItemElement {
      * * active
      */
     focusInsideSeparator = QuickPickSeparatorFocusReason.NONE;
+
     constructor(index: number, readonly fireSeparatorButtonTriggered: (event: IQuickPickSeparatorButtonEvent) => void, readonly separator: IQuickPickSeparator) {
         super(index, false, separator);
     }
@@ -268,6 +284,7 @@ class QuickInputAccessibilityProvider implements IListAccessibilityProvider<IQui
 }
 abstract class BaseQuickInputListRenderer<T extends IQuickPickElement> implements ITreeRenderer<T, void, IQuickInputItemTemplateData> {
     abstract templateId: string;
+
     constructor(private readonly hoverDelegate: IHoverDelegate | undefined) { }
     // TODO: only do the common stuff here and have a subclass handle their specific stuff
     renderTemplate(container: HTMLElement): IQuickInputItemTemplateData {
@@ -286,7 +303,9 @@ abstract class BaseQuickInputListRenderer<T extends IQuickPickElement> implement
         data.checkbox.type = 'checkbox';
         // Rows
         const rows = dom.append(label, $('.quick-input-list-rows'));
+
         const row1 = dom.append(rows, $('.quick-input-list-row'));
+
         const row2 = dom.append(rows, $('.quick-input-list-row'));
         // Label
         data.label = new IconLabel(row1, { supportHighlights: true, supportDescriptionHighlights: true, supportIcons: true, hoverDelegate: this.hoverDelegate });
@@ -306,6 +325,7 @@ abstract class BaseQuickInputListRenderer<T extends IQuickPickElement> implement
         data.actionBar = new ActionBar(data.entry, this.hoverDelegate ? { hoverDelegate: this.hoverDelegate } : undefined);
         data.actionBar.domNode.classList.add('quick-input-list-entry-action-bar');
         data.toDisposeTemplate.add(data.actionBar);
+
         return data;
     }
     disposeTemplate(data: IQuickInputItemTemplateData): void {
@@ -323,6 +343,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
     static readonly ID = 'quickpickitem';
     // Follow what we do in the separator renderer
     private readonly _itemsWithSeparatorsFrequency = new Map<QuickPickItemElement, number>();
+
     constructor(hoverDelegate: IHoverDelegate | undefined, 
     @IThemeService
     private readonly themeService: IThemeService) {
@@ -336,20 +357,24 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
         data.toDisposeTemplate.add(dom.addStandardDisposableListener(data.checkbox, dom.EventType.CHANGE, e => {
             (data.element as QuickPickItemElement).checked = data.checkbox.checked;
         }));
+
         return data;
     }
     renderElement(node: ITreeNode<QuickPickItemElement, void>, index: number, data: IQuickInputItemTemplateData): void {
         const element = node.element;
         data.element = element;
         element.element = data.entry ?? undefined;
+
         const mainItem: IQuickPickItem = element.item;
         data.checkbox.checked = element.checked;
         data.toDisposeElement.add(element.onChecked(checked => data.checkbox.checked = checked));
         data.checkbox.disabled = element.checkboxDisabled;
+
         const { labelHighlights, descriptionHighlights, detailHighlights } = element;
         // Icon
         if (mainItem.iconPath) {
             const icon = isDark(this.themeService.getColorTheme().type) ? mainItem.iconPath.dark : (mainItem.iconPath.light ?? mainItem.iconPath.dark);
+
             const iconUrl = URI.revive(icon);
             data.icon.className = 'quick-input-list-icon';
             data.icon.style.backgroundImage = cssJs.asCSSUrl(iconUrl);
@@ -421,6 +446,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
         data.entry.classList.toggle('quick-input-list-separator-border', !!element.separator);
         // Actions
         const buttons = mainItem.buttons;
+
         if (buttons && buttons.length) {
             data.actionBar.push(buttons.map((button, index) => quickInputButtonToAction(button, `id-${index}`, () => element.fireButtonTriggered({ button, item: element.item }))), { icon: true, label: false });
             data.entry.classList.add('has-actions');
@@ -431,6 +457,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
     }
     override disposeElement(element: ITreeNode<QuickPickItemElement, void>, _index: number, data: IQuickInputItemTemplateData): void {
         this.removeItemWithSeparator(element.element);
+
         super.disposeElement(element, _index, data);
     }
     isItemWithSeparatorVisible(item: QuickPickItemElement): boolean {
@@ -441,6 +468,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
     }
     private removeItemWithSeparator(item: QuickPickItemElement): void {
         const frequency = this._itemsWithSeparatorsFrequency.get(item) || 0;
+
         if (frequency > 1) {
             this._itemsWithSeparatorsFrequency.set(item, frequency - 1);
         }
@@ -454,6 +482,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
     // This is a frequency map because sticky scroll re-uses the same renderer to render a second
     // instance of the same separator.
     private readonly _visibleSeparatorsFrequency = new Map<QuickPickSeparatorElement, number>();
+
     get templateId() {
         return QuickPickSeparatorElementRenderer.ID;
     }
@@ -466,6 +495,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
     override renderTemplate(container: HTMLElement): IQuickInputItemTemplateData {
         const data = super.renderTemplate(container);
         data.checkbox.style.display = 'none';
+
         return data;
     }
     override renderElement(node: ITreeNode<QuickPickSeparatorElement, void>, index: number, data: IQuickInputItemTemplateData): void {
@@ -473,7 +503,9 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
         data.element = element;
         element.element = data.entry ?? undefined;
         element.element.classList.toggle('focus-inside', !!element.focusInsideSeparator);
+
         const mainItem: IQuickPickSeparator = element.separator;
+
         const { labelHighlights, descriptionHighlights } = element;
         // Icon
         data.icon.style.backgroundImage = '';
@@ -506,6 +538,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
         data.entry.classList.add('quick-input-list-separator-border');
         // Actions
         const buttons = mainItem.buttons;
+
         if (buttons && buttons.length) {
             data.actionBar.push(buttons.map((button, index) => quickInputButtonToAction(button, `id-${index}`, () => element.fireSeparatorButtonTriggered({ button, separator: element.separator }))), { icon: true, label: false });
             data.entry.classList.add('has-actions');
@@ -517,6 +550,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
     }
     override disposeElement(element: ITreeNode<QuickPickSeparatorElement, void>, _index: number, data: IQuickInputItemTemplateData): void {
         this.removeSeparator(element.element);
+
         if (!this.isSeparatorVisible(element.element)) {
             element.element.element?.classList.remove('focus-inside');
         }
@@ -527,6 +561,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
     }
     private removeSeparator(separator: QuickPickSeparatorElement): void {
         const frequency = this._visibleSeparatorsFrequency.get(separator) || 0;
+
         if (frequency > 1) {
             this._visibleSeparatorsFrequency.set(separator, frequency - 1);
         }
@@ -577,6 +612,7 @@ export class QuickInputTree extends Disposable {
     private readonly _elementDisposable = this._register(new DisposableStore());
     private _lastHover: IHoverWidget | undefined;
     private _lastQueryString: string | undefined;
+
     constructor(private parent: HTMLElement, private hoverDelegate: IHoverDelegate, private linkOpenerDelegate: (content: string) => void, id: string, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -602,6 +638,7 @@ export class QuickInputTree extends Disposable {
                         return 0;
                     }
                     const normalizedSearchValue = this._lastQueryString.toLowerCase();
+
                     return compareEntries(element, otherElement, normalizedSearchValue);
                 },
             },
@@ -653,6 +690,7 @@ export class QuickInputTree extends Disposable {
         this._tree.getHTMLElement().style.pointerEvents = value ? '' : 'none';
     }
     private _matchOnDescription = false;
+
     get matchOnDescription() {
         return this._matchOnDescription;
     }
@@ -660,6 +698,7 @@ export class QuickInputTree extends Disposable {
         this._matchOnDescription = value;
     }
     private _matchOnDetail = false;
+
     get matchOnDetail() {
         return this._matchOnDetail;
     }
@@ -667,6 +706,7 @@ export class QuickInputTree extends Disposable {
         this._matchOnDetail = value;
     }
     private _matchOnLabel = true;
+
     get matchOnLabel() {
         return this._matchOnLabel;
     }
@@ -674,6 +714,7 @@ export class QuickInputTree extends Disposable {
         this._matchOnLabel = value;
     }
     private _matchOnLabelMode: 'fuzzy' | 'contiguous' = 'fuzzy';
+
     get matchOnLabelMode() {
         return this._matchOnLabelMode;
     }
@@ -681,6 +722,7 @@ export class QuickInputTree extends Disposable {
         this._matchOnLabelMode = value;
     }
     private _matchOnMeta = true;
+
     get matchOnMeta() {
         return this._matchOnMeta;
     }
@@ -688,6 +730,7 @@ export class QuickInputTree extends Disposable {
         this._matchOnMeta = value;
     }
     private _sortByLabel = true;
+
     get sortByLabel() {
         return this._sortByLabel;
     }
@@ -695,6 +738,7 @@ export class QuickInputTree extends Disposable {
         this._sortByLabel = value;
     }
     private _shouldLoop = true;
+
     get shouldLoop() {
         return this._shouldLoop;
     }
@@ -718,9 +762,11 @@ export class QuickInputTree extends Disposable {
         // TODO: Should this be added at a higher level?
         this._register(this._tree.onKeyDown(e => {
             const event = new StandardKeyboardEvent(e);
+
             switch (event.keyCode) {
                 case KeyCode.Space:
                     this.toggleCheckbox();
+
                     break;
             }
             this._onKeyDown.fire(event);
@@ -744,6 +790,7 @@ export class QuickInputTree extends Disposable {
         this._register(this._tree.onDidChangeModel(() => {
             const visibleCount = this._itemElements.filter(e => !e.hidden).length;
             this._visibleCountObservable.set(visibleCount, undefined);
+
             if (this._hasCheckboxes) {
                 this._updateCheckedObservables();
             }
@@ -773,6 +820,7 @@ export class QuickInputTree extends Disposable {
             // the anchor may have a tooltip that we want to show instead.
             if (dom.isHTMLAnchorElement(e.browserEvent.target)) {
                 delayer.cancel();
+
                 return;
             }
             if (
@@ -816,10 +864,12 @@ export class QuickInputTree extends Disposable {
                 ? this._tree.getParentElement(e.elements[0]) as QuickPickSeparatorElement
                 // treat null as focus lost and when we have no separators
                 : null;
+
             for (const separator of this._separatorRenderer.visibleSeparators) {
                 const value = separator === parent;
                 // get bitness of ACTIVE_ITEM and check if it changed
                 const currentActive = !!(separator.focusInsideSeparator & QuickPickSeparatorFocusReason.ACTIVE_ITEM);
+
                 if (currentActive !== value) {
                     if (value) {
                         separator.focusInsideSeparator |= QuickPickSeparatorFocusReason.ACTIVE_ITEM;
@@ -835,11 +885,13 @@ export class QuickInputTree extends Disposable {
             const parent = e.element
                 ? this._tree.getParentElement(e.element) as QuickPickSeparatorElement
                 : null;
+
             for (const separator of this._separatorRenderer.visibleSeparators) {
                 if (separator !== parent) {
                     continue;
                 }
                 const currentMouse = !!(separator.focusInsideSeparator & QuickPickSeparatorFocusReason.MOUSE_HOVER);
+
                 if (!currentMouse) {
                     separator.focusInsideSeparator |= QuickPickSeparatorFocusReason.MOUSE_HOVER;
                     this._tree.rerender(separator);
@@ -850,11 +902,13 @@ export class QuickInputTree extends Disposable {
             const parent = e.element
                 ? this._tree.getParentElement(e.element) as QuickPickSeparatorElement
                 : null;
+
             for (const separator of this._separatorRenderer.visibleSeparators) {
                 if (separator !== parent) {
                     continue;
                 }
                 const currentMouse = !!(separator.focusInsideSeparator & QuickPickSeparatorFocusReason.MOUSE_HOVER);
+
                 if (currentMouse) {
                     separator.focusInsideSeparator &= ~QuickPickSeparatorFocusReason.MOUSE_HOVER;
                     this._tree.rerender(separator);
@@ -867,6 +921,7 @@ export class QuickInputTree extends Disposable {
         // set to the first element after the separator.
         this._register(this._tree.onDidChangeSelection(e => {
             const elementsWithoutSeparators = e.elements.filter((e): e is QuickPickItemElement => e instanceof QuickPickItemElement);
+
             if (elementsWithoutSeparators.length !== e.elements.length) {
                 if (e.elements.length === 1 && e.elements[0] instanceof QuickPickSeparatorElement) {
                     this._tree.setFocus([e.elements[0].children[0]]);
@@ -893,10 +948,12 @@ export class QuickInputTree extends Disposable {
         this._lastQueryString = undefined;
         this._inputElements = inputElements;
         this._hasCheckboxes = this.parent.classList.contains('show-checkboxes');
+
         let currentSeparatorElement: QuickPickSeparatorElement | undefined;
         this._itemElements = new Array<QuickPickItemElement>();
         this._elementTree = inputElements.reduce((result, item, index) => {
             let element: IQuickPickElement;
+
             if (item.type === 'separator') {
                 if (!item.buttons) {
                     // This separator will be rendered as a part of the list item
@@ -907,7 +964,9 @@ export class QuickInputTree extends Disposable {
             }
             else {
                 const previous = index > 0 ? inputElements[index - 1] : undefined;
+
                 let separator: IQuickPickSeparator | undefined;
+
                 if (previous && previous.type === 'separator' && !previous.buttons) {
                     // Found an inline separator so we clear out the current separator element
                     currentSeparatorElement = undefined;
@@ -915,13 +974,16 @@ export class QuickInputTree extends Disposable {
                 }
                 const qpi = new QuickPickItemElement(index, this._hasCheckboxes, e => this._onButtonTriggered.fire(e), this._elementChecked, item, separator);
                 this._itemElements.push(qpi);
+
                 if (currentSeparatorElement) {
                     currentSeparatorElement.children.push(qpi);
+
                     return result;
                 }
                 element = qpi;
             }
             result.push(element);
+
             return result;
         }, new Array<IQuickPickElement>());
         this._setElementsToTree(this._elementTree);
@@ -930,7 +992,9 @@ export class QuickInputTree extends Disposable {
         if (this.accessibilityService.isScreenReaderOptimized()) {
             setTimeout(() => {
                 const focusedElement = this._tree.getHTMLElement().querySelector(`.monaco-list-row.focused`);
+
                 const parent = focusedElement?.parentNode;
+
                 if (focusedElement && parent) {
                     const nextSibling = focusedElement.nextSibling;
                     focusedElement.remove();
@@ -944,8 +1008,10 @@ export class QuickInputTree extends Disposable {
             .filter((e): e is QuickPickItemElement => !!e)
             .filter(e => !e.hidden);
         this._tree.setFocus(elements);
+
         if (items.length > 0) {
             const focused = this._tree.getFocus()[0];
+
             if (focused) {
                 this._tree.reveal(focused);
             }
@@ -966,6 +1032,7 @@ export class QuickInputTree extends Disposable {
     setCheckedElements(items: IQuickPickItem[]) {
         this._elementCheckedEventBufferer.bufferEvents(() => {
             const checked = new Set();
+
             for (const item of items) {
                 checked.add(item);
             }
@@ -986,9 +1053,12 @@ export class QuickInputTree extends Disposable {
             case QuickPickFocus.First:
                 this._tree.scrollTop = 0;
                 this._tree.focusFirst(undefined, (e) => e.element instanceof QuickPickItemElement);
+
                 break;
+
             case QuickPickFocus.Second: {
                 this._tree.scrollTop = 0;
+
                 let isSecondItem = false;
                 this._tree.focusFirst(undefined, (e) => {
                     if (!(e.element instanceof QuickPickItemElement)) {
@@ -998,14 +1068,18 @@ export class QuickInputTree extends Disposable {
                         return true;
                     }
                     isSecondItem = !isSecondItem;
+
                     return false;
                 });
+
                 break;
             }
             case QuickPickFocus.Last:
                 this._tree.scrollTop = this._tree.scrollHeight;
                 this._tree.focusLast(undefined, (e) => e.element instanceof QuickPickItemElement);
+
                 break;
+
             case QuickPickFocus.Next: {
                 const prevFocus = this._tree.getFocus();
                 this._tree.focusNext(undefined, this._shouldLoop, undefined, (e) => {
@@ -1013,9 +1087,12 @@ export class QuickInputTree extends Disposable {
                         return false;
                     }
                     this._tree.reveal(e.element);
+
                     return true;
                 });
+
                 const currentFocus = this._tree.getFocus();
+
                 if (prevFocus.length && prevFocus[0] === currentFocus[0] && prevFocus[0] === this._itemElements[this._itemElements.length - 1]) {
                     this._onLeave.fire();
                 }
@@ -1028,6 +1105,7 @@ export class QuickInputTree extends Disposable {
                         return false;
                     }
                     const parent = this._tree.getParentElement(e.element);
+
                     if (parent === null || (parent as QuickPickSeparatorElement).children[0] !== e.element) {
                         this._tree.reveal(e.element);
                     }
@@ -1037,7 +1115,9 @@ export class QuickInputTree extends Disposable {
                     }
                     return true;
                 });
+
                 const currentFocus = this._tree.getFocus();
+
                 if (prevFocus.length && prevFocus[0] === currentFocus[0] && prevFocus[0] === this._itemElements[0]) {
                     this._onLeave.fire();
                 }
@@ -1049,15 +1129,19 @@ export class QuickInputTree extends Disposable {
                         return false;
                     }
                     this._tree.reveal(e.element);
+
                     return true;
                 });
+
                 break;
+
             case QuickPickFocus.PreviousPage:
                 this._tree.focusPreviousPage(undefined, (e) => {
                     if (!(e.element instanceof QuickPickItemElement)) {
                         return false;
                     }
                     const parent = this._tree.getParentElement(e.element);
+
                     if (parent === null || (parent as QuickPickSeparatorElement).children[0] !== e.element) {
                         this._tree.reveal(e.element);
                     }
@@ -1066,9 +1150,12 @@ export class QuickInputTree extends Disposable {
                     }
                     return true;
                 });
+
                 break;
+
             case QuickPickFocus.NextSeparator: {
                 let foundSeparatorAsItem = false;
+
                 const before = this._tree.getFocus()[0];
                 this._tree.focusNext(undefined, true, undefined, (e) => {
                     if (foundSeparatorAsItem) {
@@ -1101,12 +1188,15 @@ export class QuickInputTree extends Disposable {
                         else if (e.element === this._elementTree[0]) {
                             // We should stop at the first item in the list if it's a regular item.
                             this._tree.reveal(e.element, 0);
+
                             return true;
                         }
                     }
                     return false;
                 });
+
                 const after = this._tree.getFocus()[0];
+
                 if (before === after) {
                     // If we didn't move, then we should just move to the end
                     // of the list.
@@ -1152,12 +1242,14 @@ export class QuickInputTree extends Disposable {
                             else if (e.element === this._elementTree[0]) {
                                 // We should stop at the first item in the list if it's a regular item.
                                 this._tree.reveal(e.element, 0);
+
                                 return true;
                             }
                         }
                     }
                     return false;
                 });
+
                 if (focusElement) {
                     this._tree.setFocus([focusElement]);
                 }
@@ -1181,8 +1273,10 @@ export class QuickInputTree extends Disposable {
     }
     filter(query: string): boolean {
         this._lastQueryString = query;
+
         if (!(this._sortByLabel || this._matchOnLabel || this._matchOnDescription || this._matchOnDetail)) {
             this._tree.layout();
+
             return false;
         }
         const queryWithWhitespace = query;
@@ -1194,7 +1288,9 @@ export class QuickInputTree extends Disposable {
                 element.descriptionHighlights = undefined;
                 element.detailHighlights = undefined;
                 element.hidden = false;
+
                 const previous = element.index && this._inputElements[element.index - 1];
+
                 if (element.item) {
                     element.separator = previous && previous.type === 'separator' && !previous.buttons ? previous : undefined;
                 }
@@ -1205,6 +1301,7 @@ export class QuickInputTree extends Disposable {
             let currentSeparator: IQuickPickSeparator | undefined;
             this._itemElements.forEach(element => {
                 let labelHighlights: IMatch[] | undefined;
+
                 if (this.matchOnLabelMode === 'fuzzy') {
                     labelHighlights = this.matchOnLabel ? matchesFuzzyIconAware(query, parseLabelWithIcons(element.saneLabel)) ?? undefined : undefined;
                 }
@@ -1212,7 +1309,9 @@ export class QuickInputTree extends Disposable {
                     labelHighlights = this.matchOnLabel ? matchesContiguousIconAware(queryWithWhitespace, parseLabelWithIcons(element.saneLabel)) ?? undefined : undefined;
                 }
                 const descriptionHighlights = this.matchOnDescription ? matchesFuzzyIconAware(query, parseLabelWithIcons(element.saneDescription || '')) ?? undefined : undefined;
+
                 const detailHighlights = this.matchOnDetail ? matchesFuzzyIconAware(query, parseLabelWithIcons(element.saneDetail || '')) ?? undefined : undefined;
+
                 if (labelHighlights || descriptionHighlights || detailHighlights) {
                     element.labelHighlights = labelHighlights;
                     element.descriptionHighlights = descriptionHighlights;
@@ -1235,6 +1334,7 @@ export class QuickInputTree extends Disposable {
                 // we can show the separator unless the list gets sorted by match
                 if (!this.sortByLabel) {
                     const previous = element.index && this._inputElements[element.index - 1] || undefined;
+
                     if (previous?.type === 'separator' && !previous.buttons) {
                         currentSeparator = previous;
                     }
@@ -1251,12 +1351,15 @@ export class QuickInputTree extends Disposable {
             // Render the full tree
             : this._elementTree);
         this._tree.layout();
+
         return true;
     }
     toggleCheckbox() {
         this._elementCheckedEventBufferer.bufferEvents(() => {
             const elements = this._tree.getFocus().filter((e): e is QuickPickItemElement => e instanceof QuickPickItemElement);
+
             const allChecked = this._allVisibleChecked(elements);
+
             for (const element of elements) {
                 if (!element.checkboxDisabled) {
                     // Would fire an event if we didn't have the flag set
@@ -1270,22 +1373,26 @@ export class QuickInputTree extends Disposable {
     }
     toggleHover() {
         const focused: IQuickPickElement | null = this._tree.getFocus()[0];
+
         if (!focused?.saneTooltip || !(focused instanceof QuickPickItemElement)) {
             return;
         }
         // if there's a hover already, hide it (toggle off)
         if (this._lastHover && !this._lastHover.isDisposed) {
             this._lastHover.dispose();
+
             return;
         }
         // If there is no hover, show it (toggle on)
         this.showHover(focused);
+
         const store = new DisposableStore();
         store.add(this._tree.onDidChangeFocus(e => {
             if (e.elements[0] instanceof QuickPickItemElement) {
                 this.showHover(e.elements[0]);
             }
         }));
+
         if (this._lastHover) {
             store.add(this._lastHover);
         }
@@ -1295,6 +1402,7 @@ export class QuickInputTree extends Disposable {
     //#region private methods
     private _setElementsToTree(elements: IQuickPickElement[]) {
         const treeElements = new Array<IObjectTreeElement<IQuickPickElement>>();
+
         for (const element of elements) {
             if (element instanceof QuickPickSeparatorElement) {
                 treeElements.push({
@@ -1321,6 +1429,7 @@ export class QuickInputTree extends Disposable {
     private _allVisibleChecked(elements: QuickPickItemElement[], whenNoneVisible = true) {
         for (let i = 0, n = elements.length; i < n; i++) {
             const element = elements[i];
+
             if (!element.hidden) {
                 if (!element.checked) {
                     return false;
@@ -1335,6 +1444,7 @@ export class QuickInputTree extends Disposable {
     private _updateCheckedObservables() {
         transaction((tx) => {
             this._allVisibleCheckedObservable.set(this._allVisibleChecked(this._itemElements, false), tx);
+
             const checkedCount = this._itemElements.filter(element => element.checked).length;
             this._checkedCountObservable.set(checkedCount, tx);
             this._checkedElementsObservable.set(this.getCheckedElements(), tx);
@@ -1377,6 +1487,7 @@ function matchesContiguousIconAware(query: string, target: IParsedLabelWithIcons
     // Trim the word to match against because it could have leading
     // whitespace now if the word started with an icon
     const wordToMatchAgainstWithoutIconsTrimmed = ltrim(text, ' ');
+
     const leadingWhitespaceOffset = text.length - wordToMatchAgainstWithoutIconsTrimmed.length;
     // match on value without icon
     const matches = matchesContiguous(query, wordToMatchAgainstWithoutIconsTrimmed);
@@ -1392,6 +1503,7 @@ function matchesContiguousIconAware(query: string, target: IParsedLabelWithIcons
 }
 function matchesContiguous(word: string, wordToMatchAgainst: string): IMatch[] | null {
     const matchIndex = wordToMatchAgainst.toLowerCase().indexOf(word.toLowerCase());
+
     if (matchIndex !== -1) {
         return [{ start: matchIndex, end: matchIndex + word.length }];
     }
@@ -1399,7 +1511,9 @@ function matchesContiguous(word: string, wordToMatchAgainst: string): IMatch[] |
 }
 function compareEntries(elementA: IQuickPickElement, elementB: IQuickPickElement, lookFor: string): number {
     const labelHighlightsA = elementA.labelHighlights || [];
+
     const labelHighlightsB = elementB.labelHighlights || [];
+
     if (labelHighlightsA.length && !labelHighlightsB.length) {
         return -1;
     }

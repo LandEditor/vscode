@@ -22,13 +22,20 @@ export function joinCombine<T>(arr1: readonly T[], arr2: readonly T[], keySelect
         return arr1;
     }
     const result: T[] = [];
+
     let i = 0;
+
     let j = 0;
+
     while (i < arr1.length && j < arr2.length) {
         const val1 = arr1[i];
+
         const val2 = arr2[j];
+
         const key1 = keySelector(val1);
+
         const key2 = keySelector(val2);
+
         if (key1 < key2) {
             result.push(val1);
             i++;
@@ -56,6 +63,7 @@ export function joinCombine<T>(arr1: readonly T[], arr2: readonly T[], keySelect
 // TODO make utility
 export function applyObservableDecorations(editor: ICodeEditor, decorations: IObservable<IModelDeltaDecoration[]>): IDisposable {
     const d = new DisposableStore();
+
     const decorationsCollection = editor.createDecorationsCollection();
     d.add(autorunOpts({ debugName: () => `Apply decorations from ${decorations.debugName}` }, reader => {
         const d = decorations.read(reader);
@@ -66,16 +74,19 @@ export function applyObservableDecorations(editor: ICodeEditor, decorations: IOb
             decorationsCollection.clear();
         }
     });
+
     return d;
 }
 export function appendRemoveOnDispose(parent: HTMLElement, child: HTMLElement) {
     parent.appendChild(child);
+
     return toDisposable(() => {
         child.remove();
     });
 }
 export function prependRemoveOnDispose(parent: HTMLElement, child: HTMLElement) {
     parent.prepend(child);
+
     return toDisposable(() => {
         child.remove();
     });
@@ -104,6 +115,7 @@ export class ObservableElementSizeObserver extends Disposable {
     }
     public setAutomaticLayout(automaticLayout: boolean): void {
         this._automaticLayout = automaticLayout;
+
         if (automaticLayout) {
             this.elementSizeObserver.startObserving();
         }
@@ -114,11 +126,17 @@ export class ObservableElementSizeObserver extends Disposable {
 }
 export function animatedObservable(targetWindow: Window, base: IObservable<number, boolean>, store: DisposableStore): IObservable<number> {
     let targetVal = base.get();
+
     let startVal = targetVal;
+
     let curVal = targetVal;
+
     const result = observableValue('animatedValue', targetVal);
+
     let animationStartMs: number = -1;
+
     const durationMs = 300;
+
     let animationFrame: number | undefined = undefined;
     store.add(autorunHandleChanges({
         createEmptyChangeSummary: () => ({ animate: false }),
@@ -139,9 +157,11 @@ export function animatedObservable(targetWindow: Window, base: IObservable<numbe
         animationStartMs = Date.now() - (s.animate ? 0 : durationMs);
         update();
     }));
+
     function update() {
         const passedMs = Date.now() - animationStartMs;
         curVal = Math.floor(easeOutExpo(passedMs, startVal, targetVal - startVal, durationMs));
+
         if (passedMs < durationMs) {
             animationFrame = targetWindow.requestAnimationFrame(update);
         }
@@ -157,11 +177,13 @@ function easeOutExpo(t: number, b: number, c: number, d: number): number {
 }
 export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
     const result = {} as any as T;
+
     for (const key in source1) {
         result[key] = source1[key];
     }
     for (const key in source2) {
         const source2Value = source2[key];
+
         if (typeof result[key] === 'object' && source2Value && typeof source2Value === 'object') {
             result[key] = deepMerge<any>(result[key], source2Value);
         }
@@ -196,6 +218,7 @@ export class PlaceholderViewZone implements IObservableViewZone {
     public readonly showInHiddenAreas = true;
     public get afterLineNumber(): number { return this._afterLineNumber.get(); }
     public readonly onChange?: IObservable<unknown> = this._afterLineNumber;
+
     constructor(private readonly _afterLineNumber: IObservable<number>, public readonly heightInPx: number) {
     }
     onDomNodeTop = (top: number) => {
@@ -213,6 +236,7 @@ export class ManagedOverlayWidget implements IDisposable {
         getDomNode: () => this._domElement,
         getPosition: () => null
     };
+
     constructor(private readonly _editor: ICodeEditor, private readonly _domElement: HTMLElement) {
         this._editor.addOverlayWidget(this._overlayWidget);
     }
@@ -242,17 +266,21 @@ export function applyStyle(domNode: HTMLElement, style: Partial<{
                 val = `${val}px`;
             }
             key = key.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+
             domNode.style[key as any] = val as any;
         }
     });
 }
 export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObservableViewZone[]>, setIsUpdating?: (isUpdatingViewZones: boolean) => void, zoneIds?: Set<string>): IDisposable {
     const store = new DisposableStore();
+
     const lastViewZoneIds: string[] = [];
     store.add(autorunWithStore((reader, store) => {
         /** @description applyViewZones */
         const curViewZones = viewZones.read(reader);
+
         const viewZonIdsPerViewZone = new Map<IObservableViewZone, string>();
+
         const viewZoneIdPerOnChangeObservable = new Map<IObservable<unknown>, string>();
         // Add/remove view zones
         if (setIsUpdating) {
@@ -264,8 +292,10 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
                 zoneIds?.delete(id);
             }
             lastViewZoneIds.length = 0;
+
             for (const z of curViewZones) {
                 const id = a.addZone(z);
+
                 if (z.setZoneId) {
                     z.setZoneId(id);
                 }
@@ -274,6 +304,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
                 viewZonIdsPerViewZone.set(z, id);
             }
         });
+
         if (setIsUpdating) {
             setIsUpdating(false);
         }
@@ -284,6 +315,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
             },
             handleChange(context, changeSummary) {
                 const id = viewZoneIdPerOnChangeObservable.get(context.changedObservable);
+
                 if (id !== undefined) {
                     changeSummary.zoneIds.push(id);
                 }
@@ -305,6 +337,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
                     a.layoutZone(id);
                 }
             });
+
             if (setIsUpdating) {
                 setIsUpdating(false);
             }
@@ -321,11 +354,13 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
                 }
             });
             zoneIds?.clear();
+
             if (setIsUpdating) {
                 setIsUpdating(false);
             }
         }
     });
+
     return store;
 }
 export class DisposableCancellationTokenSource extends CancellationTokenSource {
@@ -335,12 +370,14 @@ export class DisposableCancellationTokenSource extends CancellationTokenSource {
 }
 export function translatePosition(posInOriginal: Position, mappings: DetailedLineRangeMapping[]): Range {
     const mapping = findLast(mappings, m => m.original.startLineNumber <= posInOriginal.lineNumber);
+
     if (!mapping) {
         // No changes before the position
         return Range.fromPositions(posInOriginal);
     }
     if (mapping.original.endLineNumberExclusive <= posInOriginal.lineNumber) {
         const newLineNumber = posInOriginal.lineNumber - mapping.original.endLineNumberExclusive + mapping.modified.endLineNumberExclusive;
+
         return Range.fromPositions(new Position(newLineNumber, posInOriginal.column));
     }
     if (!mapping.innerChanges) {
@@ -348,8 +385,10 @@ export function translatePosition(posInOriginal: Position, mappings: DetailedLin
         return Range.fromPositions(new Position(mapping.modified.startLineNumber, 1));
     }
     const innerMapping = findLast(mapping.innerChanges, m => m.originalRange.getStartPosition().isBeforeOrEqual(posInOriginal));
+
     if (!innerMapping) {
         const newLineNumber = posInOriginal.lineNumber - mapping.original.startLineNumber + mapping.modified.startLineNumber;
+
         return Range.fromPositions(new Position(newLineNumber, posInOriginal.column));
     }
     if (innerMapping.originalRange.containsPosition(posInOriginal)) {
@@ -357,6 +396,7 @@ export function translatePosition(posInOriginal: Position, mappings: DetailedLin
     }
     else {
         const l = lengthBetweenPositions(innerMapping.originalRange.getEndPosition(), posInOriginal);
+
         return Range.fromPositions(l.addToPosition(innerMapping.modifiedRange.getEndPosition()));
     }
 }
@@ -370,9 +410,11 @@ function lengthBetweenPositions(position1: Position, position2: Position): TextL
 }
 export function filterWithPrevious<T>(arr: T[], filter: (cur: T, prev: T | undefined) => boolean): T[] {
     let prev: T | undefined;
+
     return arr.filter(cur => {
         const result = filter(cur, prev);
         prev = cur;
+
         return result;
     });
 }
@@ -387,6 +429,7 @@ export abstract class RefCounted<T> implements IDisposable, IReference<T> {
         const store = new DisposableStore();
         store.add(disposable);
         store.add(value);
+
         return new BaseRefCounted(value, store, debugOwner);
     }
     public static createOfNonDisposable<T>(value: T, disposable: IDisposable, debugOwner: object | undefined = undefined): RefCounted<T> {
@@ -400,8 +443,10 @@ class BaseRefCounted<T> extends RefCounted<T> {
     private _refCount = 1;
     private _isDisposed = false;
     private readonly _owners: object[] = [];
+
     constructor(public override readonly object: T, private readonly _disposable: IDisposable, private readonly _debugOwner: object | undefined) {
         super();
+
         if (_debugOwner) {
             this._addOwner(_debugOwner);
         }
@@ -413,6 +458,7 @@ class BaseRefCounted<T> extends RefCounted<T> {
     }
     public createNewRef(debugOwner?: object | undefined): RefCounted<T> {
         this._refCount++;
+
         if (debugOwner) {
             this._addOwner(debugOwner);
         }
@@ -427,11 +473,13 @@ class BaseRefCounted<T> extends RefCounted<T> {
     }
     public _decreaseRefCount(debugOwner?: object | undefined): void {
         this._refCount--;
+
         if (this._refCount === 0) {
             this._disposable.dispose();
         }
         if (debugOwner) {
             const idx = this._owners.indexOf(debugOwner);
+
             if (idx !== -1) {
                 this._owners.splice(idx, 1);
             }
@@ -440,6 +488,7 @@ class BaseRefCounted<T> extends RefCounted<T> {
 }
 class ClonedRefCounted<T> extends RefCounted<T> {
     private _isDisposed = false;
+
     constructor(private readonly _base: BaseRefCounted<T>, private readonly _debugOwner: object | undefined) {
         super();
     }

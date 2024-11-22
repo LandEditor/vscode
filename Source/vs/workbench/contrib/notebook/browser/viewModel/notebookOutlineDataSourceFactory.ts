@@ -25,6 +25,7 @@ export interface INotebookCellOutlineDataSourceFactory {
 }
 export class NotebookCellOutlineDataSourceFactory implements INotebookCellOutlineDataSourceFactory {
     private readonly _data: NotebookCellOutlineDataSourceReferenceCollection;
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService) {

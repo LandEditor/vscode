@@ -21,10 +21,13 @@ import { INotebookKernelHistoryService, INotebookKernelService } from '../../com
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 function getEditorFromContext(editorService: IEditorService, context?: KernelQuickPickContext): INotebookEditor | undefined {
     let editor: INotebookEditor | undefined;
+
     if (context !== undefined && 'notebookEditorId' in context) {
         const editorId = context.notebookEditorId;
+
         const matchingEditor = editorService.visibleEditorPanes.find((editorPane) => {
             const notebookEditor = getNotebookEditorFromEditorPane(editorPane);
+
             return notebookEditor?.getId() === editorId;
         });
         editor = getNotebookEditorFromEditorPane(matchingEditor);
@@ -90,33 +93,45 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, context?: KernelQuickPickContext): Promise<boolean> {
         const instantiationService = accessor.get(IInstantiationService);
+
         const editorService = accessor.get(IEditorService);
+
         const editor = getEditorFromContext(editorService, context);
+
         if (!editor || !editor.hasModel()) {
             return false;
         }
         let controllerId = context && 'id' in context ? context.id : undefined;
+
         let extensionId = context && 'extension' in context ? context.extension : undefined;
+
         if (controllerId && (typeof controllerId !== 'string' || typeof extensionId !== 'string')) {
             // validate context: id & extension MUST be strings
             controllerId = undefined;
             extensionId = undefined;
         }
         const notebook = editor.textModel;
+
         const notebookKernelService = accessor.get(INotebookKernelService);
+
         const matchResult = notebookKernelService.getMatchingKernel(notebook);
+
         const { selected } = matchResult;
+
         if (selected && controllerId && selected.id === controllerId && ExtensionIdentifier.equals(selected.extension, extensionId)) {
             // current kernel is wanted kernel -> done
             return true;
         }
         const wantedKernelId = controllerId ? `${extensionId}/${controllerId}` : undefined;
+
         const strategy = instantiationService.createInstance(KernelPickerMRUStrategy);
+
         return strategy.showQuickPick(editor, wantedKernelId);
     }
 });
 export class NotebooKernelActionViewItem extends ActionViewItem {
     private _kernelLabel?: HTMLAnchorElement;
+
     constructor(actualAction: IAction, private readonly _editor: {
         onDidChangeModel: Event<void>;
         textModel: NotebookTextModel | undefined;
@@ -137,6 +152,7 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
     }
     override render(container: HTMLElement): void {
         this._update();
+
         super.render(container);
         container.classList.add('kernel-action-view-item');
         this._kernelLabel = document.createElement('a');
@@ -151,8 +167,10 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
     }
     protected _update(): void {
         const notebook = this._editor.textModel;
+
         if (!notebook) {
             this._resetAction();
+
             return;
         }
         KernelPickerMRUStrategy.updateKernelStatusAction(notebook, this._action, this._notebookKernelService, this._notebookKernelHistoryService);

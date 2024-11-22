@@ -13,6 +13,7 @@ const intlFileNameCollatorBaseNumeric: Lazy<{
     collatorIsNumeric: boolean;
 }> = new Lazy(() => {
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
     return {
         collator,
         collatorIsNumeric: collator.resolvedOptions().numeric
@@ -23,6 +24,7 @@ const intlFileNameCollatorNumeric: Lazy<{
     collator: Intl.Collator;
 }> = new Lazy(() => {
     const collator = new Intl.Collator(undefined, { numeric: true });
+
     return {
         collator
     };
@@ -32,6 +34,7 @@ const intlFileNameCollatorNumericCaseInsensitive: Lazy<{
     collator: Intl.Collator;
 }> = new Lazy(() => {
     const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'accent' });
+
     return {
         collator
     };
@@ -39,7 +42,9 @@ const intlFileNameCollatorNumericCaseInsensitive: Lazy<{
 /** Compares filenames without distinguishing the name from the extension. Disambiguates by unicode comparison. */
 export function compareFileNames(one: string | null, other: string | null, caseSensitive = false): number {
     const a = one || '';
+
     const b = other || '';
+
     const result = intlFileNameCollatorBaseNumeric.value.collator.compare(a, b);
     // Using the numeric option will make compare(`foo1`, `foo01`) === 0. Disambiguate.
     if (intlFileNameCollatorBaseNumeric.value.collatorIsNumeric && result === 0 && a !== b) {
@@ -52,6 +57,7 @@ export function compareFileNamesDefault(one: string | null, other: string | null
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
     one = one || '';
     other = other || '';
+
     return compareAndDisambiguateByLength(collatorNumeric, one, other);
 }
 /** Compares full filenames grouping uppercase names before lowercase. */
@@ -59,6 +65,7 @@ export function compareFileNamesUpper(one: string | null, other: string | null) 
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
     one = one || '';
     other = other || '';
+
     return compareCaseUpperFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other);
 }
 /** Compares full filenames grouping lowercase names before uppercase. */
@@ -66,12 +73,14 @@ export function compareFileNamesLower(one: string | null, other: string | null) 
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
     one = one || '';
     other = other || '';
+
     return compareCaseLowerFirst(one, other) || compareAndDisambiguateByLength(collatorNumeric, one, other);
 }
 /** Compares full filenames by unicode value. */
 export function compareFileNamesUnicode(one: string | null, other: string | null) {
     one = one || '';
     other = other || '';
+
     if (one === other) {
         return 0;
     }
@@ -80,8 +89,11 @@ export function compareFileNamesUnicode(one: string | null, other: string | null
 /** Compares filenames by extension, then by name. Disambiguates by unicode comparison. */
 export function compareFileExtensions(one: string | null, other: string | null): number {
     const [oneName, oneExtension] = extractNameAndExtension(one);
+
     const [otherName, otherExtension] = extractNameAndExtension(other);
+
     let result = intlFileNameCollatorBaseNumeric.value.collator.compare(oneExtension, otherExtension);
+
     if (result === 0) {
         // Using the numeric option will  make compare(`foo1`, `foo01`) === 0. Disambiguate.
         if (intlFileNameCollatorBaseNumeric.value.collatorIsNumeric && oneExtension !== otherExtension) {
@@ -89,6 +101,7 @@ export function compareFileExtensions(one: string | null, other: string | null):
         }
         // Extensions are equal, compare filenames
         result = intlFileNameCollatorBaseNumeric.value.collator.compare(oneName, otherName);
+
         if (intlFileNameCollatorBaseNumeric.value.collatorIsNumeric && result === 0 && oneName !== otherName) {
             return oneName < otherName ? -1 : 1;
         }
@@ -99,10 +112,15 @@ export function compareFileExtensions(one: string | null, other: string | null):
 export function compareFileExtensionsDefault(one: string | null, other: string | null): number {
     one = one || '';
     other = other || '';
+
     const oneExtension = extractExtension(one);
+
     const otherExtension = extractExtension(other);
+
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
     const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
+
     return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
         compareAndDisambiguateByLength(collatorNumeric, one, other);
 }
@@ -110,10 +128,15 @@ export function compareFileExtensionsDefault(one: string | null, other: string |
 export function compareFileExtensionsUpper(one: string | null, other: string | null): number {
     one = one || '';
     other = other || '';
+
     const oneExtension = extractExtension(one);
+
     const otherExtension = extractExtension(other);
+
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
     const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
+
     return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
         compareCaseUpperFirst(one, other) ||
         compareAndDisambiguateByLength(collatorNumeric, one, other);
@@ -122,10 +145,15 @@ export function compareFileExtensionsUpper(one: string | null, other: string | n
 export function compareFileExtensionsLower(one: string | null, other: string | null): number {
     one = one || '';
     other = other || '';
+
     const oneExtension = extractExtension(one);
+
     const otherExtension = extractExtension(other);
+
     const collatorNumeric = intlFileNameCollatorNumeric.value.collator;
+
     const collatorNumericCaseInsensitive = intlFileNameCollatorNumericCaseInsensitive.value.collator;
+
     return compareAndDisambiguateByLength(collatorNumericCaseInsensitive, oneExtension, otherExtension) ||
         compareCaseLowerFirst(one, other) ||
         compareAndDisambiguateByLength(collatorNumeric, one, other);
@@ -134,7 +162,9 @@ export function compareFileExtensionsLower(one: string | null, other: string | n
 export function compareFileExtensionsUnicode(one: string | null, other: string | null) {
     one = one || '';
     other = other || '';
+
     const oneExtension = extractExtension(one).toLowerCase();
+
     const otherExtension = extractExtension(other).toLowerCase();
     // Check for extension differences
     if (oneExtension !== otherExtension) {
@@ -153,6 +183,7 @@ function extractNameAndExtension(str?: string | null, dotfilesAsNames = false): 
     string
 ] {
     const match = str ? FileNameMatch.exec(str) as Array<string> : ([] as Array<string>);
+
     let result: [
         string,
         string
@@ -167,11 +198,13 @@ function extractNameAndExtension(str?: string | null, dotfilesAsNames = false): 
 /** Extracts the extension from a full filename. Treats dotfiles as names, not extensions. */
 function extractExtension(str?: string | null): string {
     const match = str ? FileNameMatch.exec(str) as Array<string> : ([] as Array<string>);
+
     return (match && match[1] && match[1].charAt(0) !== '.' && match[3]) || '';
 }
 function compareAndDisambiguateByLength(collator: Intl.Collator, one: string, other: string) {
     // Check for differences
     const result = collator.compare(one, other);
+
     if (result !== 0) {
         return result;
     }
@@ -185,11 +218,13 @@ function compareAndDisambiguateByLength(collator: Intl.Collator, one: string, ot
 /** @returns `true` if the string is starts with a lowercase letter. Otherwise, `false`. */
 function startsWithLower(string: string) {
     const character = string.charAt(0);
+
     return (character.toLocaleUpperCase() !== character) ? true : false;
 }
 /** @returns `true` if the string starts with an uppercase letter. Otherwise, `false`. */
 function startsWithUpper(string: string) {
     const character = string.charAt(0);
+
     return (character.toLocaleLowerCase() !== character) ? true : false;
 }
 /**
@@ -236,13 +271,19 @@ function comparePathComponents(one: string, other: string, caseSensitive = false
 }
 export function comparePaths(one: string, other: string, caseSensitive = false): number {
     const oneParts = one.split(sep);
+
     const otherParts = other.split(sep);
+
     const lastOne = oneParts.length - 1;
+
     const lastOther = otherParts.length - 1;
+
     let endOne: boolean, endOther: boolean;
+
     for (let i = 0;; i++) {
         endOne = lastOne === i;
         endOther = lastOther === i;
+
         if (endOne && endOther) {
             return compareFileNames(oneParts[i], otherParts[i], caseSensitive);
         }
@@ -253,6 +294,7 @@ export function comparePaths(one: string, other: string, caseSensitive = false):
             return 1;
         }
         const result = comparePathComponents(oneParts[i], otherParts[i], caseSensitive);
+
         if (result !== 0) {
             return result;
         }
@@ -260,20 +302,25 @@ export function comparePaths(one: string, other: string, caseSensitive = false):
 }
 export function compareAnything(one: string, other: string, lookFor: string): number {
     const elementAName = one.toLowerCase();
+
     const elementBName = other.toLowerCase();
     // Sort prefix matches over non prefix matches
     const prefixCompare = compareByPrefix(one, other, lookFor);
+
     if (prefixCompare) {
         return prefixCompare;
     }
     // Sort suffix matches over non suffix matches
     const elementASuffixMatch = elementAName.endsWith(lookFor);
+
     const elementBSuffixMatch = elementBName.endsWith(lookFor);
+
     if (elementASuffixMatch !== elementBSuffixMatch) {
         return elementASuffixMatch ? -1 : 1;
     }
     // Understand file names
     const r = compareFileNames(elementAName, elementBName);
+
     if (r !== 0) {
         return r;
     }
@@ -282,10 +329,13 @@ export function compareAnything(one: string, other: string, lookFor: string): nu
 }
 export function compareByPrefix(one: string, other: string, lookFor: string): number {
     const elementAName = one.toLowerCase();
+
     const elementBName = other.toLowerCase();
     // Sort prefix matches over non prefix matches
     const elementAPrefixMatch = elementAName.startsWith(lookFor);
+
     const elementBPrefixMatch = elementBName.startsWith(lookFor);
+
     if (elementAPrefixMatch !== elementBPrefixMatch) {
         return elementAPrefixMatch ? -1 : 1;
     }

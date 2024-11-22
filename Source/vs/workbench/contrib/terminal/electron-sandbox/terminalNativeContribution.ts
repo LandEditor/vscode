@@ -15,6 +15,7 @@ import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { disposableWindowInterval, getActiveWindow } from '../../../../base/browser/dom.js';
 export class TerminalNativeContribution extends Disposable implements IWorkbenchContribution {
     declare _serviceBrand: undefined;
+
     constructor(
     @IFileService
     private readonly _fileService: IFileService, 
@@ -30,7 +31,9 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
         this._terminalService.setNativeDelegate({
             getWindowCount: () => nativeHostService.getWindowCount()
         });
+
         const connection = remoteAgentService.getConnection();
+
         if (connection && connection.remoteAuthority) {
             registerRemoteContributions();
         }
@@ -55,11 +58,14 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
         // Complete when wait marker file is deleted
         return new Promise<void>(resolve => {
             let running = false;
+
             const interval = disposableWindowInterval(getActiveWindow(), async () => {
                 if (!running) {
                     running = true;
+
                     const exists = await this._fileService.exists(path);
                     running = false;
+
                     if (!exists) {
                         interval.dispose();
                         resolve(undefined);

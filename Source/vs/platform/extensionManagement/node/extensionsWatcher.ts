@@ -31,6 +31,7 @@ export class ExtensionsWatcher extends Disposable {
     readonly onDidChangeExtensionsByAnotherSource = this._onDidChangeExtensionsByAnotherSource.event;
     private readonly allExtensions = new Map<string, ResourceSet>;
     private readonly extensionsProfileWatchDisposables = this._register(new DisposableMap<string>());
+
     constructor(private readonly extensionManagementService: INativeServerExtensionManagementService, private readonly extensionsScannerService: IExtensionsScannerService, private readonly userDataProfilesService: IUserDataProfilesService, private readonly extensionsProfileScannerService: IExtensionsProfileScannerService, private readonly uriIdentityService: IUriIdentityService, private readonly fileService: IFileService, private readonly logService: ILogService) {
         super();
         this.initialize().then(null, error => logService.error('Error while initializing Extensions Watcher', getErrorMessage(error)));
@@ -56,12 +57,14 @@ export class ExtensionsWatcher extends Disposable {
                     this.extensionsProfileWatchDisposables.set(profile.id, combinedDisposable(this.fileService.watch(this.uriIdentityService.extUri.dirname(profile.extensionsResource)), 
                     // Also listen to the resource incase the resource is a symlink - https://github.com/microsoft/vscode/issues/118134
                     this.fileService.watch(profile.extensionsResource)));
+
                     return this.populateExtensionsFromProfile(profile.extensionsResource);
                 }));
             }
         }
         catch (error) {
             this.logService.error(error);
+
             throw error;
         }
     }
@@ -73,6 +76,7 @@ export class ExtensionsWatcher extends Disposable {
     private async onDidAddExtensions(e: DidAddProfileExtensionsEvent): Promise<void> {
         for (const extension of e.extensions) {
             const key = this.getKey(extension.identifier, extension.version);
+
             if (e.error) {
                 this.removeExtensionWithKey(key, e.profileLocation);
             }
@@ -88,14 +92,18 @@ export class ExtensionsWatcher extends Disposable {
     }
     private async onDidRemoveExtensions(e: DidRemoveProfileExtensionsEvent): Promise<void> {
         const extensionsToUninstall: IExtension[] = [];
+
         const promises: Promise<void>[] = [];
+
         for (const extension of e.extensions) {
             const key = this.getKey(extension.identifier, extension.version);
+
             if (e.error) {
                 this.addExtensionWithKey(key, e.profileLocation);
             }
             else {
                 this.removeExtensionWithKey(key, e.profileLocation);
+
                 if (!this.allExtensions.has(key)) {
                     this.logService.debug('Extension is removed from all profiles', extension.identifier.id, extension.version);
                     promises.push(this.extensionManagementService.scanInstalledExtensionAtLocation(extension.location)
@@ -112,6 +120,7 @@ export class ExtensionsWatcher extends Disposable {
         }
         try {
             await Promise.all(promises);
+
             if (extensionsToUninstall.length) {
                 await this.uninstallExtensionsNotInProfiles(extensionsToUninstall);
             }
@@ -129,9 +138,13 @@ export class ExtensionsWatcher extends Disposable {
     }
     private async onDidExtensionsProfileChange(profileLocation: URI): Promise<void> {
         const added: IExtensionIdentifier[] = [], removed: IExtensionIdentifier[] = [];
+
         const extensions = await this.extensionsProfileScannerService.scanProfileExtensions(profileLocation);
+
         const extensionKeys = new Set<string>();
+
         const cached = new Set<string>();
+
         for (const [key, profiles] of this.allExtensions) {
             if (profiles.has(profileLocation)) {
                 cached.add(key);
@@ -140,6 +153,7 @@ export class ExtensionsWatcher extends Disposable {
         for (const extension of extensions) {
             const key = this.getKey(extension.identifier, extension.version);
             extensionKeys.add(key);
+
             if (!cached.has(key)) {
                 added.push(extension.identifier);
                 this.addExtensionWithKey(key, profileLocation);
@@ -148,6 +162,7 @@ export class ExtensionsWatcher extends Disposable {
         for (const key of cached) {
             if (!extensionKeys.has(key)) {
                 const extension = this.fromKey(key);
+
                 if (extension) {
                     removed.push(extension.identifier);
                     this.removeExtensionWithKey(key, profileLocation);
@@ -160,6 +175,7 @@ export class ExtensionsWatcher extends Disposable {
     }
     private async populateExtensionsFromProfile(extensionsProfileLocation: URI): Promise<void> {
         const extensions = await this.extensionsProfileScannerService.scanProfileExtensions(extensionsProfileLocation);
+
         for (const extension of extensions) {
             this.addExtensionWithKey(this.getKey(extension.identifier, extension.version), extensionsProfileLocation);
         }
@@ -175,6 +191,7 @@ export class ExtensionsWatcher extends Disposable {
     }
     private addExtensionWithKey(key: string, extensionsProfileLocation: URI): void {
         let profiles = this.allExtensions.get(key);
+
         if (!profiles) {
             this.allExtensions.set(key, profiles = new ResourceSet((uri) => this.uriIdentityService.extUri.getComparisonKey(uri)));
         }
@@ -182,6 +199,7 @@ export class ExtensionsWatcher extends Disposable {
     }
     private removeExtensionWithKey(key: string, profileLocation: URI): void {
         const profiles = this.allExtensions.get(key);
+
         if (profiles) {
             profiles.delete(profileLocation);
         }
@@ -197,6 +215,7 @@ export class ExtensionsWatcher extends Disposable {
         version: string;
     } | undefined {
         const [id, version] = getIdAndVersion(key);
+
         return version ? { identifier: { id }, version } : undefined;
     }
 }

@@ -33,6 +33,7 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
     private _tasks: (() => boolean | void)[] = [];
     private _idleCallback?: number;
     private _i = 0;
+
     constructor() {
         super();
         this._register(toDisposable(() => this.clear()));
@@ -66,12 +67,18 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
     }
     private _process(deadline: ITaskDeadline): void {
         this._idleCallback = undefined;
+
         let taskDuration = 0;
+
         let longestTask = 0;
+
         let lastDeadlineRemaining = deadline.timeRemaining();
+
         let deadlineRemaining = 0;
+
         while (this._i < this._tasks.length) {
             taskDuration = Date.now();
+
             if (!this._tasks[this._i]()) {
                 this._i++;
             }
@@ -83,6 +90,7 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
             // Guess the following task will take a similar time to the longest task in this batch, allow
             // additional room to try avoid exceeding the deadline
             deadlineRemaining = deadline.timeRemaining();
+
             if (longestTask * 1.5 > deadlineRemaining) {
                 // Warn when the time exceeding the deadline is over 20ms, if this happens in practice the
                 // task should be split into sub-tasks to ensure the UI remains responsive.
@@ -90,6 +98,7 @@ abstract class TaskQueue extends Disposable implements ITaskQueue {
                     console.warn(`task queue exceeded allotted deadline by ${Math.abs(Math.round(lastDeadlineRemaining - taskDuration))}ms`);
                 }
                 this._start();
+
                 return;
             }
             lastDeadlineRemaining = deadlineRemaining;
@@ -111,6 +120,7 @@ export class PriorityTaskQueue extends TaskQueue {
     }
     private _createDeadline(duration: number): ITaskDeadline {
         const end = Date.now() + duration;
+
         return {
             timeRemaining: () => Math.max(0, end - Date.now())
         };
@@ -136,6 +146,7 @@ export class IdleTaskQueue extends TaskQueue {
  */
 export class DebouncedIdleTask {
     private _queue: ITaskQueue;
+
     constructor() {
         this._queue = new IdleTaskQueue();
     }

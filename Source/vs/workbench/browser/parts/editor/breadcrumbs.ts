@@ -17,6 +17,7 @@ export const IBreadcrumbsService = createDecorator<IBreadcrumbsService>('IEditor
 export interface IBreadcrumbsService {
     readonly _serviceBrand: undefined;
     register(group: GroupIdentifier, widget: BreadcrumbsWidget): IDisposable;
+
     getWidget(group: GroupIdentifier): BreadcrumbsWidget | undefined;
 }
 export class BreadcrumbsService implements IBreadcrumbsService {
@@ -27,6 +28,7 @@ export class BreadcrumbsService implements IBreadcrumbsService {
             throw new Error(`group (${group}) has already a widget`);
         }
         this._map.set(group, widget);
+
         return {
             dispose: () => this._map.delete(group)
         };
@@ -60,14 +62,17 @@ export abstract class BreadcrumbsConfig<T> {
         return {
             bindTo(service) {
                 const onDidChange = new Emitter<void>();
+
                 const listener = service.onDidChangeConfiguration(e => {
                     if (e.affectsConfiguration(name)) {
                         onDidChange.fire(undefined);
                     }
                 });
+
                 return new class implements BreadcrumbsConfig<T> {
                     readonly name = name;
                     readonly onDidChange = onDidChange.event;
+
                     getValue(overrides?: IConfigurationOverrides): T {
                         if (overrides) {
                             return service.getValue(name, overrides);

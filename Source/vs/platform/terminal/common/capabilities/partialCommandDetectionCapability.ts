@@ -6,6 +6,7 @@ import { Emitter } from '../../../../base/common/event.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { IPartialCommandDetectionCapability, TerminalCapability } from './capabilities.js';
 import type { IMarker, Terminal } from '@xterm/headless';
+
 const enum Constants {
     /**
      * The minimum size of the prompt in which to assume the line is a command.
@@ -19,9 +20,11 @@ const enum Constants {
 export class PartialCommandDetectionCapability extends DisposableStore implements IPartialCommandDetectionCapability {
     readonly type = TerminalCapability.PartialCommandDetection;
     private readonly _commands: IMarker[] = [];
+
     get commands(): readonly IMarker[] { return this._commands; }
     private readonly _onCommandFinished = this.add(new Emitter<IMarker>());
     readonly onCommandFinished = this._onCommandFinished.event;
+
     constructor(private readonly _terminal: Terminal) {
         super();
         this.add(this._terminal.onData(e => this._onData(e)));
@@ -44,6 +47,7 @@ export class PartialCommandDetectionCapability extends DisposableStore implement
         }
         if (this._terminal.buffer.active.cursorX >= Constants.MinimumPromptLength) {
             const marker = this._terminal.registerMarker(0);
+
             if (marker) {
                 this._commands.push(marker);
                 this._onCommandFinished.fire(marker);
@@ -53,6 +57,7 @@ export class PartialCommandDetectionCapability extends DisposableStore implement
     private _clearCommandsInViewport(): void {
         // Find the number of commands on the tail end of the array that are within the viewport
         let count = 0;
+
         for (let i = this._commands.length - 1; i >= 0; i--) {
             if (this._commands[i].line < this._terminal.buffer.active.baseY) {
                 break;

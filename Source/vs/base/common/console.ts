@@ -18,6 +18,7 @@ export interface IStackFrame {
 }
 export function isRemoteConsoleLog(obj: any): obj is IRemoteConsoleLog {
     const entry = obj as IRemoteConsoleLog;
+
     return entry && typeof entry.type === 'string' && typeof entry.severity === 'string';
 }
 export function parse(entry: IRemoteConsoleLog): {
@@ -25,12 +26,14 @@ export function parse(entry: IRemoteConsoleLog): {
     stack?: string;
 } {
     const args: any[] = [];
+
     let stack: string | undefined;
     // Parse Entry
     try {
         const parsedArguments: any[] = JSON.parse(entry.arguments);
         // Check for special stack entry as last entry
         const stackArgument = parsedArguments[parsedArguments.length - 1] as IStackArgument;
+
         if (stackArgument && stackArgument.__$stack) {
             parsedArguments.pop(); // stack is handled specially
             stack = stackArgument.__$stack;
@@ -57,6 +60,7 @@ export function getFirstFrame(arg0: IRemoteConsoleLog | string | undefined): ISt
     // or
     // at e.$executeContributedCommand(c:\Users\someone\Desktop\end-js\extension.js:19:17)
     const stack = arg0;
+
     if (stack) {
         const topFrame = findFirstFrame(stack);
         // at [^\/]* => line starts with "at" followed by any character except '/' (to not capture unix paths too late)
@@ -64,6 +68,7 @@ export function getFirstFrame(arg0: IRemoteConsoleLog | string | undefined): ISt
         // (?:.+) => simple pattern for the path, only works because of the line/col pattern after
         // :(?:\d+):(?:\d+) => :line:column data
         const matches = /at [^\/]*((?:(?:[a-zA-Z]+:)|(?:[\/])|(?:\\\\))(?:.+)):(\d+):(\d+)/.exec(topFrame || '');
+
         if (matches && matches.length === 4) {
             return {
                 uri: URI.file(matches[1]),
@@ -79,6 +84,7 @@ function findFirstFrame(stack: string | undefined): string | undefined {
         return stack;
     }
     const newlineIndex = stack.indexOf('\n');
+
     if (newlineIndex === -1) {
         return stack;
     }
@@ -86,8 +92,11 @@ function findFirstFrame(stack: string | undefined): string | undefined {
 }
 export function log(entry: IRemoteConsoleLog, label: string): void {
     const { args, stack } = parse(entry);
+
     const isOneStringArg = typeof args[0] === 'string' && args.length === 1;
+
     let topFrame = findFirstFrame(stack);
+
     if (topFrame) {
         topFrame = `(${topFrame.trim()})`;
     }

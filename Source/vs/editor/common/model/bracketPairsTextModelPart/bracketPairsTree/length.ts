@@ -43,8 +43,11 @@ export function toLength(lineCount: number, columnCount: number): Length {
 }
 export function lengthToObj(length: Length): TextLength {
     const l = length as any as number;
+
     const lineCount = Math.floor(l / factor);
+
     const columnCount = l - lineCount * factor;
+
     return new TextLength(lineCount, columnCount);
 }
 export function lengthGetLineCount(length: Length): number {
@@ -61,6 +64,7 @@ export function lengthGetColumnCountIfZeroLineCount(length: Length): number {
 export function lengthAdd(length1: Length, length2: Length): Length;
 export function lengthAdd(l1: any, l2: any): Length {
     let r = l1 + l2;
+
     if (l2 >= factor) {
         r = r - (l1 % factor);
     }
@@ -77,18 +81,25 @@ export function lengthEquals(length1: Length, length2: Length): boolean {
  */
 export function lengthDiffNonNegative(length1: Length, length2: Length): Length {
     const l1 = length1 as any as number;
+
     const l2 = length2 as any as number;
+
     const diff = l2 - l1;
+
     if (diff <= 0) {
         // line-count of length1 is higher than line-count of length2
         // or they are equal and column-count of length1 is higher than column-count of length2
         return lengthZero;
     }
     const lineCount1 = Math.floor(l1 / factor);
+
     const lineCount2 = Math.floor(l2 / factor);
+
     const colCount2 = l2 - lineCount2 * factor;
+
     if (lineCount1 === lineCount2) {
         const colCount1 = l1 - lineCount1 * factor;
+
         return toLength(0, colCount2 - colCount1);
     }
     else {
@@ -107,8 +118,11 @@ export function lengthGreaterThanEqual(length1: Length, length2: Length): boolea
 }
 export function lengthToPosition(length: Length): Position {
     const l = length as any as number;
+
     const lineCount = Math.floor(l / factor);
+
     const colCount = l - lineCount * factor;
+
     return new Position(lineCount + 1, colCount + 1);
 }
 export function positionToLength(position: Position): Length {
@@ -116,11 +130,17 @@ export function positionToLength(position: Position): Length {
 }
 export function lengthsToRange(lengthStart: Length, lengthEnd: Length): Range {
     const l = lengthStart as any as number;
+
     const lineCount = Math.floor(l / factor);
+
     const colCount = l - lineCount * factor;
+
     const l2 = lengthEnd as any as number;
+
     const lineCount2 = Math.floor(l2 / factor);
+
     const colCount2 = l2 - lineCount2 * factor;
+
     return new Range(lineCount + 1, colCount + 1, lineCount2 + 1, colCount2 + 1);
 }
 export function lengthOfRange(range: Range): TextLength {
@@ -133,15 +153,19 @@ export function lengthOfRange(range: Range): TextLength {
 }
 export function lengthCompare(length1: Length, length2: Length): number {
     const l1 = length1 as any as number;
+
     const l2 = length2 as any as number;
+
     return l1 - l2;
 }
 export function lengthOfString(str: string): Length {
     const lines = splitLines(str);
+
     return toLength(lines.length - 1, lines[lines.length - 1].length);
 }
 export function lengthOfStringObj(str: string): TextLength {
     const lines = splitLines(str);
+
     return new TextLength(lines.length - 1, lines[lines.length - 1].length);
 }
 /**

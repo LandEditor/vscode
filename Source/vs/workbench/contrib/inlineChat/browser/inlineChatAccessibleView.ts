@@ -17,17 +17,22 @@ export class InlineChatAccessibleView implements IAccessibleViewImplentation {
     readonly name = 'inlineChat';
     readonly when = ContextKeyExpr.or(CTX_INLINE_CHAT_FOCUSED, CTX_INLINE_CHAT_RESPONSE_FOCUSED);
     readonly type = AccessibleViewType.View;
+
     getProvider(accessor: ServicesAccessor) {
         const codeEditorService = accessor.get(ICodeEditorService);
+
         const editor = (codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor());
+
         if (!editor) {
             return;
         }
         const controller = InlineChatController.get(editor);
+
         if (!controller) {
             return;
         }
         const responseContent = controller?.getMessage();
+
         if (!responseContent) {
             return;
         }

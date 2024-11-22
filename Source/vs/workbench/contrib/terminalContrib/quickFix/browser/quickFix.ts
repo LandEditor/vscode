@@ -76,10 +76,12 @@ export interface ITerminalCommandMatchResult {
 }
 export interface ITerminalQuickFixInternalOptions extends ITerminalQuickFixOptions {
     type: 'internal';
+
     getQuickFixes: TerminalQuickFixCallback;
 }
 export interface ITerminalQuickFixResolvedExtensionOptions extends ITerminalQuickFixOptions {
     type: 'resolved';
+
     getQuickFixes: TerminalQuickFixCallbackExtension;
 }
 export interface ITerminalQuickFixUnresolvedExtensionOptions extends ITerminalQuickFixOptions {

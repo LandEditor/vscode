@@ -21,6 +21,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
     private readonly scopedMessaging = new Map</* editorId */ string, IScopedRendererMessaging>();
     private readonly postMessageEmitter = this._register(new Emitter<MessageToSend>());
     public readonly onShouldPostMessage = this.postMessageEmitter.event;
+
     constructor(
     @IExtensionService
     private readonly extensionService: IExtensionService) {
@@ -30,6 +31,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
     public receiveMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean> {
         if (editorId === undefined) {
             const sends = [...this.scopedMessaging.values()].map(e => e.receiveMessageHandler?.(rendererId, message));
+
             return Promise.all(sends).then(s => s.some(s => !!s));
         }
         return this.scopedMessaging.get(editorId)?.receiveMessageHandler?.(rendererId, message) ?? Promise.resolve(false);
@@ -51,6 +53,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
     /** @inheritdoc */
     public getScoped(editorId: string): IScopedRendererMessaging {
         const existing = this.scopedMessaging.get(editorId);
+
         if (existing) {
             return existing;
         }
@@ -59,6 +62,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
             dispose: () => this.scopedMessaging.delete(editorId),
         };
         this.scopedMessaging.set(editorId, messaging);
+
         return messaging;
     }
     private postMessage(editorId: string, rendererId: string, message: unknown): void {
@@ -66,7 +70,9 @@ export class NotebookRendererMessagingService extends Disposable implements INot
             this.prepare(rendererId);
         }
         const activation = this.activations.get(rendererId);
+
         const toSend = { rendererId, editorId, message };
+
         if (activation === undefined) {
             this.postMessageEmitter.fire(toSend);
         }

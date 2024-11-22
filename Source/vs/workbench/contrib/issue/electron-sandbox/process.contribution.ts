@@ -18,6 +18,7 @@ import './processMainService.js';
 //#region Commands
 class OpenProcessExplorer extends Action2 {
     static readonly ID = 'workbench.action.openProcessExplorer';
+
     constructor() {
         super({
             id: OpenProcessExplorer.ID,
@@ -28,6 +29,7 @@ class OpenProcessExplorer extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const processService = accessor.get(IWorkbenchProcessService);
+
         return processService.openProcessExplorer();
     }
 }
@@ -42,6 +44,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 });
 class StopTracing extends Action2 {
     static readonly ID = 'workbench.action.stopTracing';
+
     constructor() {
         super({
             id: StopTracing.ID,
@@ -52,15 +55,21 @@ class StopTracing extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const processService = accessor.get(IProcessMainService);
+
         const environmentService = accessor.get(INativeEnvironmentService);
+
         const dialogService = accessor.get(IDialogService);
+
         const nativeHostService = accessor.get(INativeHostService);
+
         const progressService = accessor.get(IProgressService);
+
         if (!environmentService.args.trace) {
             const { confirmed } = await dialogService.confirm({
                 message: localize('stopTracing.message', "Tracing requires to launch with a '--trace' argument"),
                 primaryButton: localize({ key: 'stopTracing.button', comment: ['&& denotes a mnemonic'] }, "&&Relaunch and Enable Tracing"),
             });
+
             if (confirmed) {
                 return nativeHostService.relaunch({ addArgs: ['--trace'] });
             }

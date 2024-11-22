@@ -32,21 +32,27 @@ class DeprecatedExtensionMigratorContribution {
     private async init(): Promise<void> {
         const bracketPairColorizerId = 'coenraads.bracket-pair-colorizer';
         await this.extensionsWorkbenchService.queryLocal();
+
         const extension = this.extensionsWorkbenchService.installed.find(e => e.identifier.id === bracketPairColorizerId);
+
         if (!extension ||
             ((extension.enablementState !== EnablementState.EnabledGlobally) &&
                 (extension.enablementState !== EnablementState.EnabledWorkspace))) {
             return;
         }
         const state = await this.getState();
+
         const disablementLogEntry = state.disablementLog.some(d => d.extensionId === bracketPairColorizerId);
+
         if (disablementLogEntry) {
             return;
         }
         state.disablementLog.push({ extensionId: bracketPairColorizerId, disablementDateTime: new Date().getTime() });
         await this.setState(state);
         await this.extensionsWorkbenchService.setEnablement(extension, EnablementState.DisabledGlobally);
+
         const nativeBracketPairColorizationEnabledKey = 'editor.bracketPairColorization.enabled';
+
         const bracketPairColorizationEnabled = !!this.configurationService.inspect(nativeBracketPairColorizationEnabledKey).user;
         this.notificationService.notify({
             message: localize('bracketPairColorizer.notification', "The extension 'Bracket pair Colorizer' got disabled because it was deprecated."),
@@ -71,6 +77,7 @@ class DeprecatedExtensionMigratorContribution {
     private readonly storageKey = 'deprecatedExtensionMigrator.state';
     private async getState(): Promise<State> {
         const jsonStr = await this.storageService.get(this.storageKey, StorageScope.APPLICATION, '');
+
         if (jsonStr === '') {
             return { disablementLog: [] };
         }

@@ -19,6 +19,7 @@ import { StopWatch } from '../../../../base/common/stopwatch.js';
  */
 class TreeSitterTokenizationInstantiator implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.treeSitterTokenizationInstantiator';
+
     constructor(
     @ITreeSitterParserService
     _treeSitterTokenizationService: ITreeSitterParserService, 
@@ -30,18 +31,23 @@ registerWorkbenchContribution2(TreeSitterTokenizationInstantiator.ID, TreeSitter
 
 CommandsRegistry.registerCommand('_workbench.colorizeTreeSitterTokens', async (accessor: ServicesAccessor, resource?: URI): Promise<{ parseTime: number; captureTime: number; metadataTime: number }> => {
 	const treeSitterParserService = accessor.get(ITreeSitterParserService);
+
 	const textModelService = accessor.get(ITextFileService);
+
 	const textModel = resource ? (await textModelService.files.resolve(resource)).textEditorModel : undefined;
+
 	if (!textModel) {
 		throw new Error(`Cannot resolve text model for resource ${resource}`);
 	}
 
 	const tokenizer = await TreeSitterTokenizationRegistry.getOrCreate(textModel.getLanguageId());
+
 	if (!tokenizer) {
 		throw new Error(`Cannot resolve tokenizer for language ${textModel.getLanguageId()}`);
 	}
 
 	const textModelTreeSitter = treeSitterParserService.getTextModelTreeSitter(textModel);
+
 	if (!textModelTreeSitter) {
 		throw new Error(`Cannot resolve tree sitter parser for language ${textModel.getLanguageId()}`);
 	}
@@ -50,9 +56,12 @@ CommandsRegistry.registerCommand('_workbench.colorizeTreeSitterTokens', async (a
 	stopwatch.stop();
 
 	let captureTime = 0;
+
 	let metadataTime = 0;
+
 	for (let i = 1; i <= textModel.getLineCount(); i++) {
 		const result = tokenizer.tokenizeEncodedInstrumented(i, textModel);
+
 		if (result) {
 			captureTime += result.captureTime;
 			metadataTime += result.metadataTime;
@@ -60,5 +69,6 @@ CommandsRegistry.registerCommand('_workbench.colorizeTreeSitterTokens', async (a
 	}
 	textModelTreeSitter.dispose();
 	textModel.dispose();
+
 	return { parseTime: stopwatch.elapsed(), captureTime, metadataTime };
 });

@@ -23,17 +23,26 @@ import { IExtensionService } from '../../../services/extensions/common/extension
 class LanguageSurvey extends Disposable {
     constructor(data: ISurveyData, storageService: IStorageService, notificationService: INotificationService, telemetryService: ITelemetryService, languageService: ILanguageService, textFileService: ITextFileService, openerService: IOpenerService, productService: IProductService) {
         super();
+
         const SESSION_COUNT_KEY = `${data.surveyId}.sessionCount`;
+
         const LAST_SESSION_DATE_KEY = `${data.surveyId}.lastSessionDate`;
+
         const SKIP_VERSION_KEY = `${data.surveyId}.skipVersion`;
+
         const IS_CANDIDATE_KEY = `${data.surveyId}.isCandidate`;
+
         const EDITED_LANGUAGE_COUNT_KEY = `${data.surveyId}.editedCount`;
+
         const EDITED_LANGUAGE_DATE_KEY = `${data.surveyId}.editedDate`;
+
         const skipVersion = storageService.get(SKIP_VERSION_KEY, StorageScope.APPLICATION, '');
+
         if (skipVersion) {
             return;
         }
         const date = new Date().toDateString();
+
         if (storageService.getNumber(EDITED_LANGUAGE_COUNT_KEY, StorageScope.APPLICATION, 0) < data.editCount) {
             // Process model-save event every 250ms to reduce load
             const onModelsSavedWorker = this._register(new RunOnceWorker<ITextFileEditorModel>(models => {
@@ -48,12 +57,14 @@ class LanguageSurvey extends Disposable {
             this._register(textFileService.files.onDidSave(e => onModelsSavedWorker.work(e.model)));
         }
         const lastSessionDate = storageService.get(LAST_SESSION_DATE_KEY, StorageScope.APPLICATION, new Date(0).toDateString());
+
         if (date === lastSessionDate) {
             return;
         }
         const sessionCount = storageService.getNumber(SESSION_COUNT_KEY, StorageScope.APPLICATION, 0) + 1;
         storageService.store(LAST_SESSION_DATE_KEY, date, StorageScope.APPLICATION, StorageTarget.USER);
         storageService.store(SESSION_COUNT_KEY, sessionCount, StorageScope.APPLICATION, StorageTarget.USER);
+
         if (sessionCount < 9) {
             return;
         }
@@ -63,8 +74,10 @@ class LanguageSurvey extends Disposable {
         const isCandidate = storageService.getBoolean(IS_CANDIDATE_KEY, StorageScope.APPLICATION, false)
             || Math.random() < data.userProbability;
         storageService.store(IS_CANDIDATE_KEY, isCandidate, StorageScope.APPLICATION, StorageTarget.USER);
+
         if (!isCandidate) {
             storageService.store(SKIP_VERSION_KEY, productService.version, StorageScope.APPLICATION, StorageTarget.USER);
+
             return;
         }
         notificationService.prompt(Severity.Info, localize('helpUs', "Help us improve our support for {0}", languageService.getLanguageName(data.languageId) ?? data.languageId), [{

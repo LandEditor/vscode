@@ -13,6 +13,7 @@ import { IWorkspacesManagementMainService } from './workspacesManagementMainServ
 import { IWorkspaceBackupInfo, IFolderBackupInfo } from '../../backup/common/backup.js';
 export class WorkspacesMainService implements AddFirstParameterToFunctions<IWorkspacesService, Promise<unknown> /* only methods, not events */, number /* window ID */> {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IWorkspacesManagementMainService
     private readonly workspacesManagementMainService: IWorkspacesManagementMainService, 
@@ -26,6 +27,7 @@ export class WorkspacesMainService implements AddFirstParameterToFunctions<IWork
     //#region Workspace Management
     async enterWorkspace(windowId: number, path: URI): Promise<IEnterWorkspaceResult | undefined> {
         const window = this.windowsMainService.getWindowById(windowId);
+
         if (window) {
             return this.workspacesManagementMainService.enterWorkspace(window, this.windowsMainService.getWindows(), path);
         }
@@ -43,6 +45,7 @@ export class WorkspacesMainService implements AddFirstParameterToFunctions<IWork
     //#endregion
     //#region Workspaces History
     readonly onDidChangeRecentlyOpened = this.workspacesHistoryMainService.onDidChangeRecentlyOpened;
+
     getRecentlyOpened(windowId: number): Promise<IRecentlyOpened> {
         return this.workspacesHistoryMainService.getRecentlyOpened();
     }

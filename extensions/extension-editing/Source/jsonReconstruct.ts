@@ -21,15 +21,19 @@ export class JsonStringScanner {
     // note that we don't do bound checks here, because we know that the offset is within the string
     getOffsetInEncoded(offsetDecoded: number) {
         let start = this.pos;
+
         while (true) {
             if (this.resultChars > offsetDecoded) {
                 return start;
             }
             const ch = this.text.charCodeAt(this.pos);
+
             if (ch === CharacterCodes.backslash) {
                 start = this.pos;
                 this.pos++;
+
                 const ch2 = this.text.charCodeAt(this.pos++);
+
                 switch (ch2) {
                     case CharacterCodes.doubleQuote:
                     case CharacterCodes.backslash:
@@ -40,9 +44,12 @@ export class JsonStringScanner {
                     case CharacterCodes.r:
                     case CharacterCodes.t:
                         this.resultChars += 1;
+
                         break;
+
                     case CharacterCodes.u: {
                         const ch3 = this.scanHexDigits(4, true);
+
                         if (ch3 >= 0) {
                             this.resultChars += String.fromCharCode(ch3).length;
                         }
@@ -58,9 +65,12 @@ export class JsonStringScanner {
     }
     scanHexDigits(count: number, exact?: boolean): number {
         let digits = 0;
+
         let value = 0;
+
         while (digits < count || !exact) {
             const ch = this.text.charCodeAt(this.pos);
+
             if (ch >= CharacterCodes._0 && ch <= CharacterCodes._9) {
                 value = value * 16 + ch - CharacterCodes._0;
             }

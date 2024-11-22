@@ -155,6 +155,7 @@ class OutputChannelRegistry implements IOutputChannelRegistry {
     public getChannels(): IOutputChannelDescriptor[] {
         const result: IOutputChannelDescriptor[] = [];
         this.channels.forEach(value => result.push(value));
+
         return result;
     }
     public getChannel(id: string): IOutputChannelDescriptor | undefined {

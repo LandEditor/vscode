@@ -17,6 +17,7 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
     private lastHoverHideTime = 0;
     private timeLimit = 200;
     private _delay: number;
+
     get delay(): number {
         if (this.isInstantlyHovering()) {
             return 0; // show instantly when a hover was recently shown
@@ -24,6 +25,7 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
         return this._delay;
     }
     private readonly hoverDisposables = this._register(new DisposableStore());
+
     constructor(public readonly placement: 'mouse' | 'element', private readonly instantHover: boolean, private overrideOptions: Partial<IHoverOptions> | ((options: IHoverDelegateOptions, focus?: boolean) => Partial<IHoverOptions>) = {}, 
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -41,7 +43,9 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
         const overrideOptions = typeof this.overrideOptions === 'function' ? this.overrideOptions(options, focus) : this.overrideOptions;
         // close hover on escape
         this.hoverDisposables.clear();
+
         const targets = isHTMLElement(options.target) ? [options.target] : options.target.targetElements;
+
         for (const target of targets) {
             this.hoverDisposables.add(addStandardDisposableListener(target, 'keydown', (e) => {
                 if (e.equals(KeyCode.Escape)) {
@@ -54,6 +58,7 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
             : typeof options.content === 'string'
                 ? options.content.toString()
                 : options.content.value;
+
         return this.hoverService.showHover({
             ...options,
             ...overrideOptions,
@@ -81,6 +86,7 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
     }
     onDidHideHover(): void {
         this.hoverDisposables.clear();
+
         if (this.instantHover) {
             this.lastHoverHideTime = Date.now();
         }

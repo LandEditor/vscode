@@ -28,6 +28,7 @@ class ErrorLog {
     }
     log(): void {
         const errors = this.allErrors.flat();
+
         const seen = new Set<string>();
         errors.map(err => {
             if (!seen.has(err)) {
@@ -36,12 +37,15 @@ class ErrorLog {
             }
         });
         fancyLog(`Finished ${ansiColors.green('compilation')}${this.id ? ansiColors.blue(` ${this.id}`) : ''} with ${errors.length} errors after ${ansiColors.magenta((new Date().getTime() - this.startTime!) + ' ms')}`);
+
         const regex = /^([^(]+)\((\d+),(\d+)\): (.*)$/s;
+
         const messages = errors
             .map(err => regex.exec(err))
             .filter(match => !!match)
             .map(x => x as string[])
             .map(([, path, line, column, message]) => ({ path, line: parseInt(line), column: parseInt(column), message }));
+
         try {
             const logFileName = 'log' + (this.id ? `_${this.id}` : '');
             fs.writeFileSync(path.join(buildLogFolder, logFileName), JSON.stringify(messages));
@@ -54,6 +58,7 @@ class ErrorLog {
 const errorLogsById = new Map<string, ErrorLog>();
 function getErrorLog(id: string = '') {
     let errorLog = errorLogsById.get(id);
+
     if (!errorLog) {
         errorLog = new ErrorLog(id);
         errorLogsById.set(id, errorLog);
@@ -74,20 +79,25 @@ export interface IReporter {
 }
 export function createReporter(id?: string): IReporter {
     const errorLog = getErrorLog(id);
+
     const errors: string[] = [];
     errorLog.allErrors.push(errors);
+
     const result = (err: string) => errors.push(err);
     result.hasErrors = () => errors.length > 0;
     result.end = (emitError: boolean): NodeJS.ReadWriteStream => {
         errors.length = 0;
         errorLog.onStart();
+
         return es.through(undefined, function () {
             errorLog.onEnd();
+
             if (emitError && errors.length > 0) {
                 if (!(errors as any).__logged__) {
                     errorLog.log();
                 }
                 (errors as any).__logged__ = true;
+
                 const err = new Error(`Found ${errors.length} errors`);
                 (err as any).__reporter__ = true;
                 this.emit('error', err);
@@ -97,5 +107,6 @@ export function createReporter(id?: string): IReporter {
             }
         });
     };
+
     return result;
 }

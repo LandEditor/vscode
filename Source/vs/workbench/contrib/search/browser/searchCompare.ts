@@ -8,7 +8,9 @@ import { SearchSortOrder } from '../../../services/search/common/search.js';
 import { Range } from '../../../../editor/common/core/range.js';
 import { createParentList, isSearchTreeFileMatch, isSearchTreeFolderMatch, isSearchTreeMatch, RenderableMatch } from './searchTreeModel/searchTreeCommon.js';
 import { isSearchTreeAIFileMatch } from './AISearch/aiSearchModelBase.js';
+
 let elemAIndex: number = -1;
+
 let elemBIndex: number = -1;
 /**
  * Compares instances of the same match type. Different match types should not be siblings
@@ -24,6 +26,7 @@ export function searchMatchComparer(elementA: RenderableMatch, elementB: Rendera
     if (isSearchTreeFolderMatch(elementA) && isSearchTreeFolderMatch(elementB)) {
         elemAIndex = elementA.index();
         elemBIndex = elementB.index();
+
         if (elemAIndex !== -1 && elemBIndex !== -1) {
             return elemAIndex - elemBIndex;
         }
@@ -33,10 +36,13 @@ export function searchMatchComparer(elementA: RenderableMatch, elementB: Rendera
         switch (sortOrder) {
             case SearchSortOrder.CountDescending:
                 return elementB.count() - elementA.count();
+
             case SearchSortOrder.CountAscending:
                 return elementA.count() - elementB.count();
+
             case SearchSortOrder.Type:
                 return compareFileExtensions(elementA.name(), elementB.name());
+
             case SearchSortOrder.FileNames:
                 return compareFileNames(elementA.name(), elementB.name());
             // Fall through otherwise
@@ -51,15 +57,21 @@ export function searchMatchComparer(elementA: RenderableMatch, elementB: Rendera
         switch (sortOrder) {
             case SearchSortOrder.CountDescending:
                 return elementB.count() - elementA.count();
+
             case SearchSortOrder.CountAscending:
                 return elementA.count() - elementB.count();
+
             case SearchSortOrder.Type:
                 return compareFileExtensions(elementA.name(), elementB.name());
+
             case SearchSortOrder.FileNames:
                 return compareFileNames(elementA.name(), elementB.name());
+
             case SearchSortOrder.Modified: {
                 const fileStatA = elementA.fileStat;
+
                 const fileStatB = elementB.fileStat;
+
                 if (fileStatA && fileStatB) {
                     return fileStatB.mtime - fileStatA.mtime;
                 }
@@ -104,9 +116,13 @@ function compareNotebookPos(match1: IMatchInNotebook, match2: IMatchInNotebook):
 }
 export function searchComparer(elementA: RenderableMatch, elementB: RenderableMatch, sortOrder: SearchSortOrder = SearchSortOrder.Default): number {
     const elemAParents = createParentList(elementA);
+
     const elemBParents = createParentList(elementB);
+
     let i = elemAParents.length - 1;
+
     let j = elemBParents.length - 1;
+
     while (i >= 0 && j >= 0) {
         if (elemAParents[i].id() !== elemBParents[j].id()) {
             return searchMatchComparer(elemAParents[i], elemBParents[j], sortOrder);
@@ -115,7 +131,9 @@ export function searchComparer(elementA: RenderableMatch, elementB: RenderableMa
         j--;
     }
     const elemAAtEnd = i === 0;
+
     const elemBAtEnd = j === 0;
+
     if (elemAAtEnd && !elemBAtEnd) {
         return 1;
     }

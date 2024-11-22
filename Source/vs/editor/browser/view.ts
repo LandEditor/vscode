@@ -168,6 +168,7 @@ export class View extends ViewEventHandler {
 
 		// View Lines
 		this._viewLines = new ViewLines(this._context, this._linesContent);
+
 		if (this._viewGpuContext) {
 			this._viewLinesGpu = this._instantiationService.createInstance(ViewLinesGpu, this._context, this._viewGpuContext);
 		}
@@ -198,6 +199,7 @@ export class View extends ViewEventHandler {
 		marginViewOverlays.addDynamicOverlay(new MarginViewLineDecorationsOverlay(this._context));
 		marginViewOverlays.addDynamicOverlay(new LinesDecorationsOverlay(this._context));
 		marginViewOverlays.addDynamicOverlay(new LineNumbersOverlay(this._context));
+
 		if (this._viewGpuContext) {
 			marginViewOverlays.addDynamicOverlay(new GpuMarkOverlay(this._context));
 		}
@@ -242,6 +244,7 @@ export class View extends ViewEventHandler {
 		}
 
 		this._linesContent.appendChild(contentViewOverlays.getDomNode());
+
 		if ('domNode' in rulers) {
 			this._linesContent.appendChild(rulers.domNode);
 		}
@@ -251,6 +254,7 @@ export class View extends ViewEventHandler {
 		this._linesContent.appendChild(this._viewCursors.getDomNode());
 		this._overflowGuardContainer.appendChild(margin.getDomNode());
 		this._overflowGuardContainer.appendChild(this._scrollbar.getDomNode());
+
 		if (this._viewGpuContext) {
 			this._overflowGuardContainer.appendChild(this._viewGpuContext.canvas);
 		}
@@ -276,7 +280,9 @@ export class View extends ViewEventHandler {
 
 	private _instantiateEditContext(experimentalEditContextEnabled: boolean): AbstractEditContext {
 		const domNode = dom.getWindow(this._overflowGuardContainer.domNode);
+
 		const isEditContextSupported = EditContext.supported(domNode);
+
 		if (experimentalEditContextEnabled && isEditContextSupported) {
 			return this._instantiationService.createInstance(NativeEditContext, this._ownerID, this._context, this._overflowGuardContainer, this._viewController, this._createTextAreaHandlerHelper());
 		} else {
@@ -286,14 +292,18 @@ export class View extends ViewEventHandler {
 
 	private _updateEditContext(): void {
 		const experimentalEditContextEnabled = this._context.configuration.options.get(EditorOption.experimentalEditContextEnabled);
+
 		if (this._experimentalEditContextEnabled === experimentalEditContextEnabled) {
 			return;
 		}
 		this._experimentalEditContextEnabled = experimentalEditContextEnabled;
+
 		const isEditContextFocused = this._editContext.isFocused();
+
 		const indexOfEditContext = this._viewParts.indexOf(this._editContext);
 		this._editContext.dispose();
 		this._editContext = this._instantiateEditContext(experimentalEditContextEnabled);
+
 		if (isEditContextFocused) {
 			this._editContext.focus();
 		}
@@ -304,15 +314,19 @@ export class View extends ViewEventHandler {
 
 	private _computeGlyphMarginLanes(): IGlyphMarginLanesModel {
 		const model = this._context.viewModel.model;
+
 		const laneModel = this._context.viewModel.glyphLanes;
 		type Glyph = { range: Range; lane: GlyphMarginLane; persist?: boolean };
+
 		let glyphs: Glyph[] = [];
+
 		let maxLineNumber = 0;
 
 		// Add all margin decorations
 		glyphs = glyphs.concat(model.getAllMarginDecorations().map((decoration) => {
 			const lane = decoration.options.glyphMargin?.position ?? GlyphMarginLane.Center;
 			maxLineNumber = Math.max(maxLineNumber, decoration.range.endLineNumber);
+
 			return { range: decoration.range, lane, persist: decoration.options.glyphMargin?.persistLane };
 		}));
 
@@ -320,6 +334,7 @@ export class View extends ViewEventHandler {
 		glyphs = glyphs.concat(this._glyphMarginWidgets.getWidgets().map((widget) => {
 			const range = model.validateRange(widget.preference.range);
 			maxLineNumber = Math.max(maxLineNumber, range.endLineNumber);
+
 			return { range, lane: widget.preference.lane };
 		}));
 
@@ -327,6 +342,7 @@ export class View extends ViewEventHandler {
 		glyphs.sort((a, b) => Range.compareRangesUsingStarts(a.range, b.range));
 
 		laneModel.reset(maxLineNumber);
+
 		for (const glyph of glyphs) {
 			laneModel.push(glyph.lane, glyph.range, glyph.persist);
 		}
@@ -351,7 +367,9 @@ export class View extends ViewEventHandler {
 
 			getLastRenderData: (): PointerHandlerLastRenderData => {
 				const lastViewCursorsRenderData = this._viewCursors.getLastRenderData() || [];
+
 				const lastTextareaPosition = this._editContext.getLastRenderData();
+
 				return new PointerHandlerLastRenderData(lastViewCursorsRenderData, lastTextareaPosition);
 			},
 			renderNow: (): void => {
@@ -365,19 +383,24 @@ export class View extends ViewEventHandler {
 			},
 			getPositionFromDOMInfo: (spanNode: HTMLElement, offset: number) => {
 				this._flushAccumulatedAndRenderNow();
+
 				return this._viewLines.getPositionFromDOMInfo(spanNode, offset);
 			},
 
 			visibleRangeForPosition: (lineNumber: number, column: number) => {
 				this._flushAccumulatedAndRenderNow();
+
 				const position = new Position(lineNumber, column);
+
 				return this._viewLines.visibleRangeForPosition(position) ?? this._viewLinesGpu?.visibleRangeForPosition(position) ?? null;
 			},
 
 			getLineWidth: (lineNumber: number) => {
 				this._flushAccumulatedAndRenderNow();
+
 				if (this._viewLinesGpu) {
 					const result = this._viewLinesGpu.getLineWidth(lineNumber);
+
 					if (result !== undefined) {
 						return result;
 					}
@@ -391,10 +414,12 @@ export class View extends ViewEventHandler {
 		return {
 			visibleRangeForPosition: (position: Position) => {
 				this._flushAccumulatedAndRenderNow();
+
 				return this._viewLines.visibleRangeForPosition(position);
 			},
 			linesVisibleRangesForRange: (range: Range, includeNewLines: boolean): LineVisibleRanges[] | null => {
 				this._flushAccumulatedAndRenderNow();
+
 				return this._viewLines.linesVisibleRangesForRange(range, includeNewLines);
 			}
 		};
@@ -402,6 +427,7 @@ export class View extends ViewEventHandler {
 
 	private _applyLayout(): void {
 		const options = this._context.configuration.options;
+
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this.domNode.setWidth(layoutInfo.width);
@@ -417,6 +443,7 @@ export class View extends ViewEventHandler {
 
 	private _getEditorClassName() {
 		const focused = this._editContext.isFocused() ? ' focused' : '';
+
 		return this._context.configuration.options.get(EditorOption.editorClassName) + ' ' + getThemeTypeSelector(this._context.theme.type) + focused;
 	}
 
@@ -429,10 +456,12 @@ export class View extends ViewEventHandler {
 		this.domNode.setClassName(this._getEditorClassName());
 		this._updateEditContext();
 		this._applyLayout();
+
 		return false;
 	}
 	public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
 		this._selections = e.selections;
+
 		return false;
 	}
 	public override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
@@ -443,11 +472,13 @@ export class View extends ViewEventHandler {
 	}
 	public override onFocusChanged(e: viewEvents.ViewFocusChangedEvent): boolean {
 		this.domNode.setClassName(this._getEditorClassName());
+
 		return false;
 	}
 	public override onThemeChanged(e: viewEvents.ViewThemeChangedEvent): boolean {
 		this._context.theme.update(e.theme);
 		this.domNode.setClassName(this._getEditorClassName());
+
 		return false;
 	}
 
@@ -523,7 +554,9 @@ export class View extends ViewEventHandler {
 	private _flushAccumulatedAndRenderNow(): void {
 		const rendering = this._createCoordinatedRendering();
 		safeInvokeNoArg(() => rendering.prepareRenderText());
+
 		const data = safeInvokeNoArg(() => rendering.renderText());
+
 		if (data) {
 			const [viewParts, ctx] = data;
 			safeInvokeNoArg(() => rendering.prepareRender(viewParts, ctx));
@@ -533,7 +566,9 @@ export class View extends ViewEventHandler {
 
 	private _getViewPartsToRender(): ViewPart[] {
 		const result: ViewPart[] = [];
+
 		let resultLen = 0;
+
 		for (const viewPart of this._viewParts) {
 			if (viewPart.shouldRender()) {
 				result[resultLen++] = viewPart;
@@ -547,6 +582,7 @@ export class View extends ViewEventHandler {
 			prepareRenderText: () => {
 				if (this._shouldRecomputeGlyphMarginLanes) {
 					this._shouldRecomputeGlyphMarginLanes = false;
+
 					const model = this._computeGlyphMarginLanes();
 					this._context.configuration.setGlyphMarginDecorationLaneCount(model.requiredLanes);
 				}
@@ -557,6 +593,7 @@ export class View extends ViewEventHandler {
 					return null;
 				}
 				let viewPartsToRender = this._getViewPartsToRender();
+
 				if (!this._viewLines.shouldRender() && viewPartsToRender.length === 0) {
 					// Nothing to render
 					return null;
@@ -628,9 +665,12 @@ export class View extends ViewEventHandler {
 			lineNumber: modelLineNumber,
 			column: modelColumn
 		});
+
 		const viewPosition = this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(modelPosition);
 		this._flushAccumulatedAndRenderNow();
+
 		const visibleRange = this._viewLines.visibleRangeForPosition(new Position(viewPosition.lineNumber, viewPosition.column));
+
 		if (!visibleRange) {
 			return -1;
 		}
@@ -639,6 +679,7 @@ export class View extends ViewEventHandler {
 
 	public getTargetAtClientPoint(clientX: number, clientY: number): IMouseTarget | null {
 		const mouseTarget = this._pointerHandler.getTargetAtClientPoint(clientX, clientY);
+
 		if (!mouseTarget) {
 			return null;
 		}
@@ -658,6 +699,7 @@ export class View extends ViewEventHandler {
 		if (everything) {
 			// Force everything to render...
 			this._viewLines.forceShouldRender();
+
 			for (const viewPart of this._viewParts) {
 				viewPart.forceShouldRender();
 			}
@@ -719,6 +761,7 @@ export class View extends ViewEventHandler {
 
 	public layoutOverlayWidget(widgetData: IOverlayWidgetData): void {
 		const shouldRender = this._overlayWidgets.setWidgetPosition(widgetData.widget, widgetData.position);
+
 		if (shouldRender) {
 			this._scheduleRender();
 		}
@@ -737,7 +780,9 @@ export class View extends ViewEventHandler {
 
 	public layoutGlyphMarginWidget(widgetData: IGlyphMarginWidgetData): void {
 		const newPreference = widgetData.position;
+
 		const shouldRender = this._glyphMarginWidgets.setWidgetPosition(widgetData.widget, newPreference);
+
 		if (shouldRender) {
 			this._shouldRecomputeGlyphMarginLanes = true;
 			this._scheduleRender();
@@ -759,6 +804,7 @@ function safeInvokeNoArg<T>(func: () => T): T | null {
 		return func();
 	} catch (e) {
 		onUnexpectedError(e);
+
 		return null;
 	}
 }
@@ -783,9 +829,11 @@ class EditorRenderingCoordinator {
 	scheduleCoordinatedRendering(rendering: ICoordinatedRendering): IDisposable {
 		this._coordinatedRenderings.push(rendering);
 		this._scheduleRender(rendering.window);
+
 		return {
 			dispose: () => {
 				const renderingIndex = this._coordinatedRenderings.indexOf(rendering);
+
 				if (renderingIndex === -1) {
 					return;
 				}
@@ -821,6 +869,7 @@ class EditorRenderingCoordinator {
 		}
 
 		const datas: ([ViewPart[], RenderingContext] | null)[] = [];
+
 		for (let i = 0, len = coordinatedRenderings.length; i < len; i++) {
 			const rendering = coordinatedRenderings[i];
 			datas[i] = safeInvokeNoArg(() => rendering.renderText());
@@ -828,7 +877,9 @@ class EditorRenderingCoordinator {
 
 		for (let i = 0, len = coordinatedRenderings.length; i < len; i++) {
 			const rendering = coordinatedRenderings[i];
+
 			const data = datas[i];
+
 			if (!data) {
 				continue;
 			}
@@ -838,7 +889,9 @@ class EditorRenderingCoordinator {
 
 		for (let i = 0, len = coordinatedRenderings.length; i < len; i++) {
 			const rendering = coordinatedRenderings[i];
+
 			const data = datas[i];
+
 			if (!data) {
 				continue;
 			}

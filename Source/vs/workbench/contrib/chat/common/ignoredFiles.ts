@@ -18,15 +18,18 @@ export interface ILanguageModelIgnoredFilesService {
 export class LanguageModelIgnoredFilesService implements ILanguageModelIgnoredFilesService {
     _serviceBrand: undefined;
     private readonly _providers = new Set<ILanguageModelIgnoredFileProvider>();
+
     async fileIsIgnored(uri: URI, token: CancellationToken): Promise<boolean> {
         // Just use the first provider
         const provider = this._providers.values().next().value;
+
         return provider ?
             provider.isFileIgnored(uri, token) :
             false;
     }
     registerIgnoredFileProvider(provider: ILanguageModelIgnoredFileProvider): IDisposable {
         this._providers.add(provider);
+
         return toDisposable(() => {
             this._providers.delete(provider);
         });

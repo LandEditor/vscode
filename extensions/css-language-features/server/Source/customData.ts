@@ -8,16 +8,19 @@ export function fetchDataProviders(dataPaths: string[], requestService: RequestS
     const providers = dataPaths.map(async (p) => {
         try {
             const content = await requestService.getContent(p);
+
             return parseCSSData(content);
         }
         catch (e) {
             return newCSSDataProvider({ version: 1 });
         }
     });
+
     return Promise.all(providers);
 }
 function parseCSSData(source: string): ICSSDataProvider {
     let rawData: any;
+
     try {
         rawData = JSON.parse(source);
     }

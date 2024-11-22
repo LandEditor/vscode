@@ -56,6 +56,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	get(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): CodeBlockEntry | undefined {
 		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+
 		if (!entry) {
 			return;
 		}
@@ -68,11 +69,13 @@ export class CodeBlockModelCollection extends Disposable {
 
 	getOrCreate(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): CodeBlockEntry {
 		const existing = this.get(sessionId, chat, codeBlockIndex);
+
 		if (existing) {
 			return existing;
 		}
 
 		const uri = this.getCodeBlockUri(sessionId, chat, codeBlockIndex);
+
 		const model = this.textModelService.createModelReference(uri);
 		this._models.set(this.getKey(sessionId, chat, codeBlockIndex), {
 			model: model,
@@ -82,6 +85,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 		while (this._models.size > this.maxModelCount) {
 			const first = Iterable.first(this._models.keys());
+
 			if (!first) {
 				break;
 			}
@@ -93,6 +97,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	private delete(key: string) {
 		const entry = this._models.get(key);
+
 		if (!entry) {
 			return;
 		}
@@ -111,10 +116,12 @@ export class CodeBlockModelCollection extends Disposable {
 		const entry = this.getOrCreate(sessionId, chat, codeBlockIndex);
 
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
+
 		const newText = fixCodeText(extractedVulns.newText, content.languageId);
 		this.setVulns(sessionId, chat, codeBlockIndex, extractedVulns.vulnerabilities);
 
 		const codeblockUri = extractCodeblockUrisFromText(newText);
+
 		if (codeblockUri) {
 			this.setCodemapperUri(sessionId, chat, codeBlockIndex, codeblockUri.uri);
 		}
@@ -128,6 +135,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	markCodeBlockCompleted(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): void {
 		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+
 		if (!entry) {
 			return;
 		}
@@ -138,10 +146,12 @@ export class CodeBlockModelCollection extends Disposable {
 		const entry = this.getOrCreate(sessionId, chat, codeBlockIndex);
 
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
+
 		let newText = fixCodeText(extractedVulns.newText, content.languageId);
 		this.setVulns(sessionId, chat, codeBlockIndex, extractedVulns.vulnerabilities);
 
 		const codeblockUri = extractCodeblockUrisFromText(newText);
+
 		if (codeblockUri) {
 			this.setCodemapperUri(sessionId, chat, codeBlockIndex, codeblockUri.uri);
 			newText = codeblockUri.textWithoutResult;
@@ -152,25 +162,30 @@ export class CodeBlockModelCollection extends Disposable {
 		}
 
 		const textModel = await entry.model;
+
 		if (textModel.isDisposed()) {
 			return entry;
 		}
 
 		if (content.languageId) {
 			const vscodeLanguageId = this.languageService.getLanguageIdByLanguageName(content.languageId);
+
 			if (vscodeLanguageId && vscodeLanguageId !== textModel.getLanguageId()) {
 				textModel.setLanguage(vscodeLanguageId);
 			}
 		}
 
 		const currentText = textModel.getValue(EndOfLinePreference.LF);
+
 		if (newText === currentText) {
 			return entry;
 		}
 
 		if (newText.startsWith(currentText)) {
 			const text = newText.slice(currentText.length);
+
 			const lastLine = textModel.getLineCount();
+
 			const lastCol = textModel.getLineMaxColumn(lastLine);
 			textModel.applyEdits([{ range: new Range(lastLine, lastCol, lastLine, lastCol), text }]);
 		} else {
@@ -183,6 +198,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	private setCodemapperUri(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, codemapperUri: URI) {
 		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+
 		if (entry) {
 			entry.codemapperUri = codemapperUri;
 		}
@@ -190,6 +206,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	private setVulns(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, vulnerabilities: IMarkdownVulnerability[]) {
 		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+
 		if (entry) {
 			entry.vulns = vulnerabilities;
 		}
@@ -201,6 +218,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	private getCodeBlockUri(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, index: number): URI {
 		const metadata = this.getUriMetaData(chat);
+
 		return URI.from({
 			scheme: Schemas.vscodeChatCodeBlock,
 			authority: sessionId,
@@ -223,6 +241,7 @@ export class CodeBlockModelCollection extends Disposable {
 				const uriOrLocation = 'variableName' in ref.reference ?
 					ref.reference.value :
 					ref.reference;
+
 				if (!uriOrLocation) {
 					return;
 				}

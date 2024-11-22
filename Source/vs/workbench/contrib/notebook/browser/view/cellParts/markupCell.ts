@@ -40,6 +40,7 @@ export class MarkupCell extends Disposable {
     private cellEditorOptions: CellEditorOptions;
     private editorOptions: IEditorOptions;
     private _isDisposed: boolean = false;
+
     constructor(private readonly notebookEditor: IActiveNotebookEditorDelegate, private readonly viewCell: MarkupCellViewModel, private readonly templateData: MarkdownCellRenderTemplate, private readonly renderedEditors: Map<ICellViewModel, ICodeEditor | undefined>, 
     @IAccessibilityService
     private readonly accessibilityService: IAccessibilityService, 
@@ -118,6 +119,7 @@ export class MarkupCell extends Disposable {
             }
             if (e.foldingStateChanged) {
                 const foldingState = this.viewCell.foldingState;
+
                 if (foldingState !== this.foldingState) {
                     this.foldingState = foldingState;
                     this.layoutFoldingIndicator();
@@ -141,6 +143,7 @@ export class MarkupCell extends Disposable {
         }));
         this._register(this.viewCell.onDidChangeLayout((e) => {
             const layoutInfo = this.editor?.getLayoutInfo();
+
             if (e.outerWidth && this.viewCell.getEditState() === CellEditState.Editing && layoutInfo && layoutInfo.width !== this.viewCell.layoutInfo.editorWidth) {
                 this.onCellEditorWidthChange();
             }
@@ -149,8 +152,10 @@ export class MarkupCell extends Disposable {
     }
     private updateMarkupCellOptions(): void {
         this.updateEditorOptions(this.cellEditorOptions.getUpdatedValue(this.viewCell.internalMetadata, this.viewCell.uri));
+
         if (this.editor) {
             this.editor.updateOptions(this.cellEditorOptions.getUpdatedValue(this.viewCell.internalMetadata, this.viewCell.uri));
+
             const cts = new CancellationTokenSource();
             this._register({ dispose() { cts.dispose(true); } });
             raceCancellation(this.viewCell.resolveTextModel(), cts.token).then(model => {
@@ -191,6 +196,7 @@ export class MarkupCell extends Disposable {
             this.notebookEditor.focusContainer();
         }
         this.viewCell.detachTextEditor();
+
         super.dispose();
     }
     private updateFoldingIconShowClass() {
@@ -213,16 +219,22 @@ export class MarkupCell extends Disposable {
         DOM.show(this.templateData.cellInputCollapsedContainer);
         DOM.hide(this.editorPart);
         this.templateData.cellInputCollapsedContainer.innerText = '';
+
         const markdownIcon = DOM.append(this.templateData.cellInputCollapsedContainer, DOM.$('span'));
         markdownIcon.classList.add(...ThemeIcon.asClassNameArray(Codicon.markdown));
+
         const element = DOM.$('div');
         element.classList.add('cell-collapse-preview');
+
         const richEditorText = this.getRichText(this.viewCell.textBuffer, this.viewCell.language);
         DOM.safeInnerHtml(element, richEditorText);
         this.templateData.cellInputCollapsedContainer.appendChild(element);
+
         const expandIcon = DOM.append(element, DOM.$('span.expandInputIcon'));
         expandIcon.classList.add(...ThemeIcon.asClassNameArray(Codicon.more));
+
         const keybinding = this.keybindingService.lookupKeybinding(EXPAND_CELL_INPUT_COMMAND_ID);
+
         if (keybinding) {
             element.title = localize('cellExpandInputButtonLabelWithDoubleClick', "Double-click to expand cell input ({0})", keybinding.getLabel());
             expandIcon.title = localize('cellExpandInputButtonLabel', "Expand Cell Input ({0})", keybinding.getLabel());
@@ -244,6 +256,7 @@ export class MarkupCell extends Disposable {
         this.notebookEditor.hideMarkupPreviews([this.viewCell]);
         this.templateData.container.classList.toggle('input-collapsed', false);
         this.templateData.container.classList.toggle('markdown-cell-edit-mode', true);
+
         if (this.editor && this.editor.hasModel()) {
             editorHeight = this.editor.getContentHeight();
             // not first time, we don't need to create editor
@@ -257,15 +270,20 @@ export class MarkupCell extends Disposable {
         }
         else {
             this.editorDisposables.clear();
+
             const width = this.notebookEditor.notebookOptions.computeMarkdownCellEditorWidth(this.notebookEditor.getLayoutInfo().width);
+
             const lineNum = this.viewCell.lineCount;
+
             const lineHeight = this.viewCell.layoutInfo.fontInfo?.lineHeight || 17;
+
             const editorPadding = this.notebookEditor.notebookOptions.computeEditorPadding(this.viewCell.internalMetadata, this.viewCell.uri);
             editorHeight = Math.max(lineNum, 1) * lineHeight + editorPadding.top + editorPadding.bottom;
             this.templateData.editorContainer.innerText = '';
             // create a special context key service that set the inCompositeEditor-contextkey
             const editorContextKeyService = this.contextKeyService.createScoped(this.templateData.editorPart);
             EditorContextKeys.inCompositeEditor.bindTo(editorContextKeyService).set(true);
+
             const editorInstaService = this.editorDisposables.add(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, editorContextKeyService])));
             this.editorDisposables.add(editorContextKeyService);
             this.editor = this.editorDisposables.add(editorInstaService.createInstance(CodeEditorWidget, this.templateData.editorContainer, {
@@ -289,6 +307,7 @@ export class MarkupCell extends Disposable {
                     WordHighlighterContribution.get(this.editor)?.restoreViewState(true);
                 }
             }));
+
             const cts = new CancellationTokenSource();
             this.editorDisposables.add({ dispose() { cts.dispose(true); } });
             raceCancellation(this.viewCell.resolveTextModel(), cts.token).then(model => {
@@ -301,7 +320,9 @@ export class MarkupCell extends Disposable {
                     tabSize: this.cellEditorOptions.tabSize,
                     insertSpaces: this.cellEditorOptions.insertSpaces,
                 });
+
                 const realContentHeight = this.editor!.getContentHeight();
+
                 if (realContentHeight !== editorHeight) {
                     this.editor!.layout({
                         width: width,
@@ -310,6 +331,7 @@ export class MarkupCell extends Disposable {
                     editorHeight = realContentHeight;
                 }
                 this.viewCell.attachTextEditor(this.editor!);
+
                 if (this.viewCell.getEditState() === CellEditState.Editing) {
                     this.focusEditorIfNeeded();
                 }
@@ -330,6 +352,7 @@ export class MarkupCell extends Disposable {
         this.templateData.container.classList.toggle('markdown-cell-edit-mode', false);
         this.renderedEditors.delete(this.viewCell);
         this.markdownAccessibilityContainer.innerText = '';
+
         if (this.viewCell.renderedHtml) {
             if (this.accessibilityService.isScreenReaderOptimized()) {
                 DOM.safeInnerHtml(this.markdownAccessibilityContainer, this.viewCell.renderedHtml);
@@ -347,7 +370,9 @@ export class MarkupCell extends Disposable {
                 return;
             }
             this.editor.focus();
+
             const primarySelection = this.editor.getSelection();
+
             if (!primarySelection) {
                 return;
             }
@@ -380,15 +405,21 @@ export class MarkupCell extends Disposable {
             case CellFoldingState.None:
                 this.templateData.foldingIndicator.style.display = 'none';
                 this.templateData.foldingIndicator.innerText = '';
+
                 break;
+
             case CellFoldingState.Collapsed:
                 this.templateData.foldingIndicator.style.display = '';
                 DOM.reset(this.templateData.foldingIndicator, renderIcon(collapsedIcon));
+
                 break;
+
             case CellFoldingState.Expanded:
                 this.templateData.foldingIndicator.style.display = '';
                 DOM.reset(this.templateData.foldingIndicator, renderIcon(expandedIcon));
+
                 break;
+
             default:
                 break;
         }
@@ -407,9 +438,12 @@ export class MarkupCell extends Disposable {
                 return;
             }
             const selections = editor.getSelections();
+
             if (selections?.length) {
                 const contentHeight = editor.getContentHeight();
+
                 const layoutContentHeight = this.viewCell.layoutInfo.editorHeight;
+
                 if (contentHeight !== layoutContentHeight) {
                     this.onCellEditorHeightChange(editor, contentHeight);
                 }
@@ -417,6 +451,7 @@ export class MarkupCell extends Disposable {
                 this.notebookEditor.revealRangeInViewAsync(this.viewCell, lastSelection);
             }
         }));
+
         const updateFocusMode = () => this.viewCell.focusMode = editor.hasWidgetFocus() ? CellFocusMode.Editor : CellFocusMode.Container;
         this.localDisposables.add(editor.onDidFocusEditorWidget(() => {
             updateFocusMode();

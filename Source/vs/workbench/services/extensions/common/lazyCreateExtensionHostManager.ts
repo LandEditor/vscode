@@ -63,6 +63,7 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
         this._logService.info(`Creating lazy extension host (${this.friendyName}). Reason: ${reason}`);
         this._actual = this._register(this._instantiationService.createInstance(ExtensionHostManager, this._extensionHost, [], this._internalExtensionService));
         this._register(this._actual.onDidChangeResponsiveState((e) => this._onDidChangeResponsiveState.fire(e)));
+
         return this._actual;
     }
     private async _getOrCreateActualAndStart(reason: string): Promise<ExtensionHostManager> {
@@ -72,10 +73,12 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
         }
         const actual = this._createActual(reason);
         await actual.start(this._lazyStartExtensions!.versionId, this._lazyStartExtensions!.allExtensions, this._lazyStartExtensions!.myExtensions);
+
         return actual;
     }
     public async ready(): Promise<void> {
         await this._startCalled.wait();
+
         if (this._actual) {
             await this._actual.ready();
         }
@@ -88,13 +91,16 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
     }
     public async deltaExtensions(extensionsDelta: IExtensionDescriptionDelta): Promise<void> {
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.deltaExtensions(extensionsDelta);
         }
         this._lazyStartExtensions!.delta(extensionsDelta);
+
         if (extensionsDelta.myToAdd.length > 0) {
             const actual = this._createActual(`contains ${extensionsDelta.myToAdd.length} new extension(s) (installed or enabled): ${extensionsDelta.myToAdd.map(extId => extId.value)}`);
             await actual.start(this._lazyStartExtensions!.versionId, this._lazyStartExtensions!.allExtensions, this._lazyStartExtensions!.myExtensions);
+
             return;
         }
     }
@@ -103,6 +109,7 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
     }
     public async activate(extension: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<boolean> {
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.activate(extension, reason);
         }
@@ -117,6 +124,7 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
             return;
         }
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.activateByEvent(activationEvent, activationKind);
         }
@@ -135,10 +143,12 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
         host: string;
     } | undefined> {
         await this._startCalled.wait();
+
         return this._actual?.getInspectPort(tryEnableInspector);
     }
     public async resolveAuthority(remoteAuthority: string, resolveAttempt: number): Promise<IResolveAuthorityResult> {
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.resolveAuthority(remoteAuthority, resolveAttempt);
         }
@@ -153,6 +163,7 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
     }
     public async getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null> {
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.getCanonicalURI(remoteAuthority, uri);
         }
@@ -162,8 +173,10 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
         if (myExtensions.length > 0) {
             // there are actual extensions, so let's launch the extension host
             const actual = this._createActual(`contains ${myExtensions.length} extension(s): ${myExtensions.map(extId => extId.value)}.`);
+
             const result = actual.start(extensionRegistryVersionId, allExtensions, myExtensions);
             this._startCalled.open();
+
             return result;
         }
         // there are no actual extensions running, store extensions in `this._lazyStartExtensions`
@@ -172,13 +185,16 @@ export class LazyCreateExtensionHostManager extends Disposable implements IExten
     }
     public async extensionTestsExecute(): Promise<number> {
         await this._startCalled.wait();
+
         const actual = await this._getOrCreateActualAndStart(`execute tests.`);
+
         return actual.extensionTestsExecute();
     }
     public async setRemoteEnvironment(env: {
         [key: string]: string | null;
     }): Promise<void> {
         await this._startCalled.wait();
+
         if (this._actual) {
             return this._actual.setRemoteEnvironment(env);
         }

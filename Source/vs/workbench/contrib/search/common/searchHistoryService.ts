@@ -25,6 +25,7 @@ export class SearchHistoryService implements ISearchHistoryService {
     public static readonly SEARCH_HISTORY_KEY = 'workbench.search.history';
     private readonly _onDidClearHistory = new Emitter<void>();
     readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService) { }
@@ -34,7 +35,9 @@ export class SearchHistoryService implements ISearchHistoryService {
     }
     load(): ISearchHistoryValues {
         let result: ISearchHistoryValues | undefined;
+
         const raw = this.storageService.get(SearchHistoryService.SEARCH_HISTORY_KEY, StorageScope.WORKSPACE);
+
         if (raw) {
             try {
                 result = JSON.parse(raw);

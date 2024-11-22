@@ -13,6 +13,7 @@ import { equals } from '../../../common/objects.js';
 import { OperatingSystem } from '../../../common/platform.js';
 import './keybindingLabel.css';
 import { localize } from '../../../../nls.js';
+
 const $ = dom.$;
 export interface ChordMatches {
     ctrlKey?: boolean;
@@ -54,11 +55,14 @@ export class KeybindingLabel extends Disposable {
     private keybinding: ResolvedKeybinding | undefined;
     private matches: Matches | undefined;
     private didEverRender: boolean;
+
     constructor(container: HTMLElement, private os: OperatingSystem, options?: KeybindingLabelOptions) {
         super();
         this.options = options || Object.create(null);
+
         const labelForeground = this.options.keybindingLabelForeground;
         this.domNode = dom.append(container, $('.monaco-keybinding'));
+
         if (labelForeground) {
             this.domNode.style.color = labelForeground;
         }
@@ -79,8 +83,10 @@ export class KeybindingLabel extends Disposable {
     }
     private render() {
         this.clear();
+
         if (this.keybinding) {
             const chords = this.keybinding.getChords();
+
             if (chords[0]) {
                 this.renderChord(this.domNode, chords[0], this.matches ? this.matches.firstPart : null);
             }
@@ -103,6 +109,7 @@ export class KeybindingLabel extends Disposable {
     }
     private renderChord(parent: HTMLElement, chord: ResolvedChord, match: ChordMatches | null) {
         const modifierLabels = UILabelProvider.modifierLabels[this.os];
+
         if (chord.ctrlKey) {
             this.renderKey(parent, modifierLabels.ctrlKey, Boolean(match?.ctrlKey), modifierLabels.separator);
         }
@@ -116,12 +123,14 @@ export class KeybindingLabel extends Disposable {
             this.renderKey(parent, modifierLabels.metaKey, Boolean(match?.metaKey), modifierLabels.separator);
         }
         const keyLabel = chord.keyLabel;
+
         if (keyLabel) {
             this.renderKey(parent, keyLabel, Boolean(match?.keyCode), '');
         }
     }
     private renderKey(parent: HTMLElement, label: string, highlight: boolean, separator: string): void {
         dom.append(parent, this.createKeyElement(label, highlight ? '.highlight' : ''));
+
         if (separator) {
             dom.append(parent, $('span.monaco-keybinding-key-separator', undefined, separator));
         }
@@ -132,6 +141,7 @@ export class KeybindingLabel extends Disposable {
     private createKeyElement(label: string, extraClass = ''): HTMLElement {
         const keyElement = $('span.monaco-keybinding-key' + extraClass, undefined, label);
         this.keyElements.add(keyElement);
+
         if (this.options.keybindingLabelBackground) {
             keyElement.style.backgroundColor = this.options.keybindingLabelBackground;
         }

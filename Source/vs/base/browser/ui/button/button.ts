@@ -55,9 +55,13 @@ export const unthemedButtonStyles: IButtonStyles = {
 export interface IButton extends IDisposable {
     readonly element: HTMLElement;
     readonly onDidClick: BaseEvent<Event | undefined>;
+
     set label(value: string | IMarkdownString);
+
     set icon(value: ThemeIcon);
+
     set enabled(value: boolean);
+
     set checked(value: boolean);
     focus(): void;
     hasFocus(): boolean;
@@ -73,10 +77,13 @@ export class Button extends Disposable implements IButton {
     protected _labelShortElement: HTMLElement | undefined;
     private _hover: IManagedHover | undefined;
     private _onDidClick = this._register(new Emitter<Event>());
+
     get onDidClick(): BaseEvent<Event> { return this._onDidClick.event; }
     private _onDidEscape = this._register(new Emitter<Event>());
+
     get onDidEscape(): BaseEvent<Event> { return this._onDidEscape.event; }
     private focusTracker: IFocusTracker;
+
     constructor(container: HTMLElement, options: IButtonOptions) {
         super();
         this.options = options;
@@ -85,10 +92,13 @@ export class Button extends Disposable implements IButton {
         this._element.tabIndex = 0;
         this._element.setAttribute('role', 'button');
         this._element.classList.toggle('secondary', !!options.secondary);
+
         const background = options.secondary ? options.buttonSecondaryBackground : options.buttonBackground;
+
         const foreground = options.secondary ? options.buttonSecondaryForeground : options.buttonForeground;
         this._element.style.color = foreground || '';
         this._element.style.backgroundColor = background || '';
+
         if (options.supportShortLabel) {
             this._labelShortElement = document.createElement('div');
             this._labelShortElement.classList.add('monaco-button-label-short');
@@ -110,6 +120,7 @@ export class Button extends Disposable implements IButton {
             this._register(addDisposableListener(this._element, eventType, e => {
                 if (!this.enabled) {
                     EventHelper.stop(e);
+
                     return;
                 }
                 this._onDidClick.fire(e);
@@ -117,7 +128,9 @@ export class Button extends Disposable implements IButton {
         });
         this._register(addDisposableListener(this._element, EventType.KEY_DOWN, e => {
             const event = new StandardKeyboardEvent(e);
+
             let eventHandled = false;
+
             if (this.enabled && (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space))) {
                 this._onDidClick.fire(e);
                 eventHandled = true;
@@ -158,6 +171,7 @@ export class Button extends Disposable implements IButton {
     }
     private getContentElements(content: string): HTMLElement[] {
         const elements: HTMLSpanElement[] = [];
+
         for (let segment of renderLabelWithIcons(content)) {
             if (typeof (segment) === 'string') {
                 segment = segment.trim();
@@ -178,6 +192,7 @@ export class Button extends Disposable implements IButton {
     }
     private updateBackground(hover: boolean): void {
         let background;
+
         if (this.options.secondary) {
             background = hover ? this.options.buttonSecondaryHoverBackground : this.options.buttonSecondaryBackground;
         }
@@ -199,12 +214,15 @@ export class Button extends Disposable implements IButton {
             return;
         }
         this._element.classList.add('monaco-text-button');
+
         const labelElement = this.options.supportShortLabel ? this._labelElement! : this._element;
+
         if (isMarkdownString(value)) {
             const rendered = renderMarkdown(value, { inline: true });
             rendered.dispose();
             // Don't include outer `<p>`
             const root = rendered.element.querySelector('p')?.innerHTML;
+
             if (root) {
                 // Only allow a very limited set of inline html tags
                 const sanitized = dompurify.sanitize(root, { ADD_TAGS: ['b', 'i', 'u', 'code', 'span'], ALLOWED_ATTR: ['class'], RETURN_TRUSTED_TYPE: true });
@@ -223,6 +241,7 @@ export class Button extends Disposable implements IButton {
             }
         }
         let title: string = '';
+
         if (typeof this.options.title === 'string') {
             title = this.options.title;
         }
@@ -230,6 +249,7 @@ export class Button extends Disposable implements IButton {
             title = renderStringAsPlaintext(value);
         }
         this.setTitle(title);
+
         if (typeof this.options.ariaLabel === 'string') {
             this._element.setAttribute('aria-label', this.options.ariaLabel);
         }
@@ -312,11 +332,13 @@ export class ButtonWithDropdown extends Disposable implements IButton {
     readonly element: HTMLElement;
     private readonly _onDidClick = this._register(new Emitter<Event | undefined>());
     readonly onDidClick = this._onDidClick.event;
+
     constructor(container: HTMLElement, options: IButtonWithDropdownOptions) {
         super();
         this.element = document.createElement('div');
         this.element.classList.add('monaco-button-dropdown');
         container.appendChild(this.element);
+
         if (!options.hoverDelegate) {
             options = { ...options, hoverDelegate: this._register(createInstantHoverDelegate()) };
         }
@@ -330,6 +352,7 @@ export class ButtonWithDropdown extends Disposable implements IButton {
         this.element.appendChild(this.separatorContainer);
         // Separator styles
         const border = options.buttonBorder;
+
         if (border) {
             this.separatorContainer.style.borderTop = '1px solid ' + border;
             this.separatorContainer.style.borderBottom = '1px solid ' + border;
@@ -389,6 +412,7 @@ export class ButtonWithDescription implements IButtonWithDescription {
     private _button: Button;
     private _element: HTMLElement;
     private _descriptionElement: HTMLElement;
+
     constructor(container: HTMLElement, private readonly options: IButtonOptions) {
         this._element = document.createElement('div');
         this._element.classList.add('monaco-description-button');
@@ -443,6 +467,7 @@ export class ButtonWithDescription implements IButtonWithDescription {
 export class ButtonBar {
     private readonly _buttons: IButton[] = [];
     private readonly _buttonStore = new DisposableStore();
+
     constructor(private readonly container: HTMLElement) {
     }
     dispose(): void {
@@ -458,26 +483,32 @@ export class ButtonBar {
     addButton(options: IButtonOptions): IButton {
         const button = this._buttonStore.add(new Button(this.container, options));
         this.pushButton(button);
+
         return button;
     }
     addButtonWithDescription(options: IButtonOptions): IButtonWithDescription {
         const button = this._buttonStore.add(new ButtonWithDescription(this.container, options));
         this.pushButton(button);
+
         return button;
     }
     addButtonWithDropdown(options: IButtonWithDropdownOptions): IButton {
         const button = this._buttonStore.add(new ButtonWithDropdown(this.container, options));
         this.pushButton(button);
+
         return button;
     }
     private pushButton(button: IButton): void {
         this._buttons.push(button);
+
         const index = this._buttons.length - 1;
         this._buttonStore.add(addDisposableListener(button.element, EventType.KEY_DOWN, e => {
             const event = new StandardKeyboardEvent(e);
+
             let eventHandled = true;
             // Next / Previous Button
             let buttonIndexToFocus: number | undefined;
+
             if (event.equals(KeyCode.LeftArrow)) {
                 buttonIndexToFocus = index > 0 ? index - 1 : this._buttons.length - 1;
             }

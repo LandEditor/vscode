@@ -33,6 +33,7 @@ import { EditorOpenSource } from '../../../../platform/editor/common/editor.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 export abstract class AbstractFileDialogService implements IFileDialogService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IHostService
     protected readonly hostService: IHostService, 
@@ -97,13 +98,19 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
     }
     async preferredHome(schemeFilter = this.getSchemeFilterForWindow()): Promise<URI> {
         const preferLocal = schemeFilter === Schemas.file;
+
         const preferredHomeConfig = this.configurationService.inspect<string>('files.dialog.defaultPath');
+
         const preferredHomeCandidate = preferLocal ? preferredHomeConfig.userLocalValue : preferredHomeConfig.userRemoteValue;
+
         if (preferredHomeCandidate) {
             const isPreferredHomeCandidateAbsolute = preferLocal ? localPathIsAbsolute(preferredHomeCandidate) : (await this.pathService.path).isAbsolute(preferredHomeCandidate);
+
             if (isPreferredHomeCandidateAbsolute) {
                 const preferredHomeNormalized = preferLocal ? localPathNormalize(preferredHomeCandidate) : (await this.pathService.path).normalize(preferredHomeCandidate);
+
                 const preferredHome = resources.toLocalResource(await this.pathService.fileURI(preferredHomeNormalized), this.environmentService.remoteAuthority, this.pathService.defaultUriScheme);
+
                 if (await this.fileService.exists(preferredHome)) {
                     return preferredHome;
                 }
@@ -116,6 +123,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
         // Check for current workspace config file first...
         if (this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
             const configuration = this.contextService.getWorkspace().configuration;
+
             if (configuration?.scheme === schemeFilter && isSavedWorkspace(configuration, this.environmentService) && !isTemporaryWorkspace(configuration)) {
                 defaultWorkspacePath = resources.dirname(configuration);
             }
@@ -145,7 +153,9 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
             return ConfirmResult.DONT_SAVE;
         }
         let message: string;
+
         let detail = nls.localize('saveChangesDetail', "Your changes will be lost if you don't save them.");
+
         if (fileNamesOrResources.length === 1) {
             message = nls.localize('saveChangesMessage', "Do you want to save the changes you made to {0}?", typeof fileNamesOrResources[0] === 'string' ? fileNamesOrResources[0] : resources.basename(fileNamesOrResources[0]));
         }
@@ -173,6 +183,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
                 run: () => ConfirmResult.CANCEL
             }
         });
+
         return result;
     }
     protected addFileSchemaIfNeeded(schema: string, _isFolder?: boolean): string[] {
@@ -180,11 +191,16 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
     }
     protected async pickFileFolderAndOpenSimplified(schema: string, options: IPickAndOpenOptions, preferNewWindow: boolean): Promise<void> {
         const title = nls.localize('openFileOrFolder.title', 'Open File or Folder');
+
         const availableFileSystems = this.addFileSchemaIfNeeded(schema);
+
         const uri = await this.pickResource({ canSelectFiles: true, canSelectFolders: true, canSelectMany: false, defaultUri: options.defaultUri, title, availableFileSystems });
+
         if (uri) {
             const stat = await this.fileService.stat(uri);
+
             const toOpen: IWindowOpenable = stat.isDirectory ? { folderUri: uri } : { fileUri: uri };
+
             if (!isWorkspaceToOpen(toOpen) && isFileToOpen(toOpen)) {
                 this.addFileToRecentlyOpened(toOpen.fileUri);
             }
@@ -198,10 +214,14 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
     }
     protected async pickFileAndOpenSimplified(schema: string, options: IPickAndOpenOptions, preferNewWindow: boolean): Promise<void> {
         const title = nls.localize('openFile.title', 'Open File');
+
         const availableFileSystems = this.addFileSchemaIfNeeded(schema);
+
         const uri = await this.pickResource({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, defaultUri: options.defaultUri, title, availableFileSystems });
+
         if (uri) {
             this.addFileToRecentlyOpened(uri);
+
             if (options.forceNewWindow || preferNewWindow) {
                 await this.hostService.openWindow([{ fileUri: uri }], { forceNewWindow: options.forceNewWindow, remoteAuthority: options.remoteAuthority });
             }
@@ -215,17 +235,24 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
     }
     protected async pickFolderAndOpenSimplified(schema: string, options: IPickAndOpenOptions): Promise<void> {
         const title = nls.localize('openFolder.title', 'Open Folder');
+
         const availableFileSystems = this.addFileSchemaIfNeeded(schema, true);
+
         const uri = await this.pickResource({ canSelectFiles: false, canSelectFolders: true, canSelectMany: false, defaultUri: options.defaultUri, title, availableFileSystems });
+
         if (uri) {
             return this.hostService.openWindow([{ folderUri: uri }], { forceNewWindow: options.forceNewWindow, remoteAuthority: options.remoteAuthority });
         }
     }
     protected async pickWorkspaceAndOpenSimplified(schema: string, options: IPickAndOpenOptions): Promise<void> {
         const title = nls.localize('openWorkspace.title', 'Open Workspace from File');
+
         const filters: FileFilter[] = [{ name: nls.localize('filterName.workspace', 'Workspace'), extensions: [WORKSPACE_EXTENSION] }];
+
         const availableFileSystems = this.addFileSchemaIfNeeded(schema, true);
+
         const uri = await this.pickResource({ canSelectFiles: true, canSelectFolders: false, canSelectMany: false, defaultUri: options.defaultUri, title, filters, availableFileSystems });
+
         if (uri) {
             return this.hostService.openWindow([{ workspaceUri: uri }], { forceNewWindow: options.forceNewWindow, remoteAuthority: options.remoteAuthority });
         }
@@ -235,7 +262,9 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
             options.availableFileSystems = this.addFileSchemaIfNeeded(schema);
         }
         options.title = nls.localize('saveFileAs.title', 'Save As');
+
         const uri = await this.saveRemoteResource(options);
+
         if (uri) {
             this.addFileToRecentlyOpened(uri);
         }
@@ -252,6 +281,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
             options.availableFileSystems = this.addFileSchemaIfNeeded(schema, options.canSelectFolders);
         }
         const uri = await this.pickResource(options);
+
         return uri ? [uri] : undefined;
     }
     protected getSimpleFileDialog(): ISimpleFileDialog {
@@ -271,6 +301,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
     }
     protected getFileSystemSchema(options: {
         availableFileSystems?: readonly string[];
+
         defaultUri?: URI;
     }): string {
         return options.availableFileSystems && options.availableFileSystems[0] || this.getSchemeFilterForWindow(options.defaultUri?.scheme);
@@ -284,6 +315,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
             return options.availableFileSystems;
         }
         const availableFileSystems = [Schemas.file];
+
         if (this.environmentService.remoteAuthority) {
             availableFileSystems.unshift(Schemas.vscodeRemote);
         }
@@ -304,21 +336,27 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
         }
         // Build the file filter by using our known languages
         const ext: string | undefined = defaultUri ? resources.extname(defaultUri) : undefined;
+
         let matchingFilter: IFilter | undefined;
+
         const registeredLanguageNames = this.languageService.getSortedRegisteredLanguageNames();
+
         const registeredLanguageFilters: IFilter[] = coalesce(registeredLanguageNames.map(({ languageName, languageId }) => {
             const extensions = this.languageService.getExtensions(languageId);
+
             if (!extensions.length) {
                 return null;
             }
             const filter: IFilter = { name: languageName, extensions: distinct(extensions).slice(0, 10).map(e => trim(e, '.')) };
             // https://github.com/microsoft/vscode/issues/115860
             const extOrPlaintext = ext || PLAINTEXT_EXTENSION;
+
             if (!matchingFilter && extensions.includes(extOrPlaintext)) {
                 matchingFilter = filter;
                 // The selected extension must be in the set of extensions that are in the filter list that is sent to the save dialog.
                 // If it isn't, add it manually. https://github.com/microsoft/vscode/issues/147657
                 const trimmedExt = trim(extOrPlaintext, '.');
+
                 if (!filter.extensions.includes(trimmedExt)) {
                     filter.extensions.unshift(trimmedExt);
                 }
@@ -344,6 +382,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
             ...registeredLanguageFilters,
             { name: nls.localize('noExt', "No Extension"), extensions: [''] }
         ]);
+
         return options;
     }
 }

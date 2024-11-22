@@ -11,31 +11,41 @@ import codeInsidersCompletionSpec from './completions/code-insiders';
 import codeCompletionSpec from './completions/code';
 
 let cachedAvailableCommands: Set<string> | undefined;
+
 let cachedBuiltinCommands: Map<string, string[]> | undefined;
 
 function getBuiltinCommands(shell: string): string[] | undefined {
 	try {
 		const shellType = path.basename(shell);
+
 		const cachedCommands = cachedBuiltinCommands?.get(shellType);
+
 		if (cachedCommands) {
 			return cachedCommands;
 		}
 		const options: ExecOptionsWithStringEncoding = { encoding: 'utf-8', shell };
+
 		switch (shellType) {
 			case 'bash': {
 				const bashOutput = execSync('compgen -b', options);
+
 				const bashResult = bashOutput.split('\n').filter(cmd => cmd);
+
 				if (bashResult.length) {
 					cachedBuiltinCommands?.set(shellType, bashResult);
+
 					return bashResult;
 				}
 				break;
 			}
 			case 'zsh': {
 				const zshOutput = execSync('printf "%s\\n" ${(k)builtins}', options);
+
 				const zshResult = zshOutput.split('\n').filter(cmd => cmd);
+
 				if (zshResult.length) {
 					cachedBuiltinCommands?.set(shellType, zshResult);
+
 					return zshResult;
 				}
 			}
@@ -43,9 +53,12 @@ function getBuiltinCommands(shell: string): string[] | undefined {
 				// TODO: ghost text in the command line prevents
 				// completions from working ATM for fish
 				const fishOutput = execSync('functions -n', options);
+
 				const fishResult = fishOutput.split(', ').filter(cmd => cmd);
+
 				if (fishResult.length) {
 					cachedBuiltinCommands?.set(shellType, fishResult);
+
 					return fishResult;
 				}
 				break;
@@ -56,6 +69,7 @@ function getBuiltinCommands(shell: string): string[] | undefined {
 
 	} catch (error) {
 		console.error('Error fetching builtin commands:', error);
+
 		return;
 	}
 }
@@ -70,12 +84,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 
 			const availableCommands = await getCommandsInPath();
+
 			if (!availableCommands) {
 				return;
 			}
 
 			// TODO: Leverage shellType when available https://github.com/microsoft/vscode/issues/230165
 			const shellPath = 'shellPath' in terminal.creationOptions ? terminal.creationOptions.shellPath : vscode.env.shell;
+
 			if (!shellPath) {
 				return;
 			}
@@ -84,10 +100,14 @@ export async function activate(context: vscode.ExtensionContext) {
 			builtinCommands?.forEach(command => availableCommands.add(command));
 
 			const prefix = getPrefix(terminalContext.commandLine, terminalContext.cursorPosition);
+
 			let result: vscode.TerminalCompletionItem[] = [];
+
 			const specs = [codeCompletionSpec, codeInsidersCompletionSpec];
+
 			for (const spec of specs) {
 				const specName = getLabel(spec);
+
 				if (!specName || !availableCommands.has(specName)) {
 					continue;
 				}
@@ -95,6 +115,7 @@ export async function activate(context: vscode.ExtensionContext) {
 					if ('options' in codeInsidersCompletionSpec && codeInsidersCompletionSpec.options) {
 						for (const option of codeInsidersCompletionSpec.options) {
 							const optionLabel = getLabel(option);
+
 							if (!optionLabel) {
 								continue;
 							}
@@ -104,6 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 							if (option.args !== undefined) {
 								const args = Array.isArray(option.args) ? option.args : [option.args];
+
 								for (const arg of args) {
 									if (!arg) {
 										continue;
@@ -124,14 +146,20 @@ export async function activate(context: vscode.ExtensionContext) {
 									}
 
 									const precedingText = terminalContext.commandLine.slice(0, terminalContext.cursorPosition);
+
 									const expectedText = `${optionLabel} `;
+
 									if (arg.suggestions?.length && precedingText.includes(expectedText)) {
 										// there are specific suggestions to show
 										result = [];
+
 										const indexOfPrecedingText = terminalContext.commandLine.lastIndexOf(expectedText);
+
 										const currentPrefix = precedingText.slice(indexOfPrecedingText + expectedText.length);
+
 										for (const suggestion of arg.suggestions) {
 											const suggestionLabel = getLabel(suggestion);
+
 											if (suggestionLabel && suggestionLabel.startsWith(currentPrefix)) {
 												const hasSpaceBeforeCursor = terminalContext.commandLine[terminalContext.cursorPosition - 1] === ' ';
 												// prefix will be '' if there is a space before the cursor
@@ -159,6 +187,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				return undefined;
 			}
 			const uniqueResults = new Map<string, vscode.TerminalCompletionItem>();
+
 			for (const item of result) {
 				if (!uniqueResults.has(item.label)) {
 					uniqueResults.set(item.label, item);
@@ -197,14 +226,17 @@ async function getCommandsInPath(): Promise<Set<string> | undefined> {
 		return cachedAvailableCommands;
 	}
 	const paths = os.platform() === 'win32' ? process.env.PATH?.split(';') : process.env.PATH?.split(':');
+
 	if (!paths) {
 		return;
 	}
 
 	const executables = new Set<string>();
+
 	for (const path of paths) {
 		try {
 			const dirExists = await fs.stat(path).then(stat => stat.isDirectory()).catch(() => false);
+
 			if (!dirExists) {
 				continue;
 			}
@@ -221,6 +253,7 @@ async function getCommandsInPath(): Promise<Set<string> | undefined> {
 		}
 	}
 	cachedAvailableCommands = executables;
+
 	return executables;
 }
 

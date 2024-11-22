@@ -29,7 +29,9 @@ abstract class RepoInfo {
         // scheme:auth/OWNER/REPO/issues/
         if (desc.bugs && typeof desc.bugs.url === 'string') {
             const base = URI.parse(desc.bugs.url);
+
             const match = /\/([^/]+)\/([^/]+)\/issues\/?$/.exec(desc.bugs.url);
+
             if (match) {
                 result = {
                     base: base.with({ path: null, fragment: null, query: null }).toString(true),
@@ -41,7 +43,9 @@ abstract class RepoInfo {
         // scheme:auth/OWNER/REPO.git
         if (!result && desc.repository && typeof desc.repository.url === 'string') {
             const base = URI.parse(desc.repository.url);
+
             const match = /\/([^/]+)\/([^/]+)(\.git)?$/.exec(desc.repository.url);
+
             if (match) {
                 result = {
                     base: base.with({ path: null, fragment: null, query: null }).toString(true),
@@ -66,6 +70,7 @@ export class SlowExtensionAction extends Action {
     }
     override async run(): Promise<void> {
         const action = await this._instantiationService.invokeFunction(createSlowExtensionAction, this.extension, this.profile);
+
         if (action) {
             await action.run();
         }
@@ -73,13 +78,18 @@ export class SlowExtensionAction extends Action {
 }
 export async function createSlowExtensionAction(accessor: ServicesAccessor, extension: IExtensionDescription, profile: IExtensionHostProfile): Promise<Action | undefined> {
     const info = RepoInfo.fromExtension(extension);
+
     if (!info) {
         return undefined;
     }
     const requestService = accessor.get(IRequestService);
+
     const instaService = accessor.get(IInstantiationService);
+
     const url = `https://api.github.com/search/issues?q=is:issue+state:open+in:title+repo:${info.owner}/${info.repo}+%22Extension+causes+high+cpu+load%22`;
+
     let res: IRequestContext;
+
     try {
         res = await requestService.request({ url }, CancellationToken.None);
     }
@@ -87,12 +97,14 @@ export async function createSlowExtensionAction(accessor: ServicesAccessor, exte
         return undefined;
     }
     const rawText = await asText(res);
+
     if (!rawText) {
         return undefined;
     }
     const data = <{
         total_count: number;
     }>JSON.parse(rawText);
+
     if (!data || typeof data.total_count !== 'number') {
         return undefined;
     }
@@ -122,18 +134,24 @@ class ReportExtensionSlowAction extends Action {
     override async run(): Promise<void> {
         // rewrite pii (paths) and store on disk
         const data = Utils.rewriteAbsolutePaths(this.profile.data, 'pii_removed');
+
         const path = joinPath(this._environmentService.tmpDir, `${this.extension.identifier.value}-unresponsive.cpuprofile.txt`);
         await this._fileService.writeFile(path, VSBuffer.fromString(JSON.stringify(data, undefined, 4)));
         // build issue
         const os = await this._nativeHostService.getOSProperties();
+
         const title = encodeURIComponent('Extension causes high cpu load');
+
         const osVersion = `${os.type} ${os.arch} ${os.release}`;
+
         const message = `:warning: Make sure to **attach** this file from your *home*-directory:\n:warning:\`${path}\`\n\nFind more details here: https://github.com/microsoft/vscode/wiki/Explain-extension-causes-high-cpu-load`;
+
         const body = encodeURIComponent(`- Issue Type: \`Performance\`
 - Extension Name: \`${this.extension.name}\`
 - Extension Version: \`${this.extension.version}\`
 - OS Version: \`${osVersion}\`
 - VS Code version: \`${this._productService.version}\`\n\n${message}`);
+
         const url = `${this.repoInfo.base}/${this.repoInfo.owner}/${this.repoInfo.repo}/issues/new/?body=${body}&title=${title}`;
         this._openerService.open(URI.parse(url));
         this._dialogService.info(localize('attach.title', "Did you attach the CPU-Profile?"), localize('attach.msg', "This is a reminder to make sure that you have not forgotten to attach '{0}' to the issue you have just created.", path.fsPath));
@@ -154,6 +172,7 @@ class ShowExtensionSlowAction extends Action {
     override async run(): Promise<void> {
         // rewrite pii (paths) and store on disk
         const data = Utils.rewriteAbsolutePaths(this.profile.data, 'pii_removed');
+
         const path = joinPath(this._environmentService.tmpDir, `${this.extension.identifier.value}-unresponsive.cpuprofile.txt`);
         await this._fileService.writeFile(path, VSBuffer.fromString(JSON.stringify(data, undefined, 4)));
         // show issues

@@ -18,6 +18,7 @@ export class InlayHintAnchor {
 export class InlayHintItem {
     private _isResolved: boolean = false;
     private _currentResolve?: Promise<void>;
+
     constructor(readonly hint: InlayHint, readonly anchor: InlayHintAnchor, readonly provider: InlayHintsProvider) { }
     with(delta: {
         anchor: InlayHintAnchor;
@@ -25,6 +26,7 @@ export class InlayHintItem {
         const result = new InlayHintItem(this.hint, delta.anchor, this.provider);
         result._isResolved = this._isResolved;
         result._currentResolve = this._currentResolve;
+
         return result;
     }
     async resolve(token: CancellationToken): Promise<void> {
@@ -35,6 +37,7 @@ export class InlayHintItem {
             // wait for an active resolve operation and try again
             // when that's done.
             await this._currentResolve;
+
             if (token.isCancellationRequested) {
                 return;
             }
@@ -67,9 +70,11 @@ export class InlayHintsFragments {
             InlayHintList,
             InlayHintsProvider
         ][] = [];
+
         const promises = registry.ordered(model).reverse().map(provider => ranges.map(async (range) => {
             try {
                 const result = await provider.provideInlayHints(model, range, token);
+
                 if (result?.hints.length || provider.onDidChangeInlayHints) {
                     data.push([result ?? InlayHintsFragments._emptyInlayHintList, provider]);
                 }
@@ -79,6 +84,7 @@ export class InlayHintsFragments {
             }
         }));
         await Promise.all(promises.flat());
+
         if (token.isCancellationRequested || model.isDisposed()) {
             throw new CancellationError();
         }
@@ -94,16 +100,23 @@ export class InlayHintsFragments {
     ][], model: ITextModel) {
         this.ranges = ranges;
         this.provider = new Set();
+
         const items: InlayHintItem[] = [];
+
         for (const [list, provider] of data) {
             this._disposables.add(list);
             this.provider.add(provider);
+
             for (const hint of list.hints) {
                 // compute the range to which the item should be attached to
                 const position = model.validatePosition(hint.position);
+
                 let direction: 'before' | 'after' = 'before';
+
                 const wordRange = InlayHintsFragments._getRangeAtPosition(model, position);
+
                 let range: Range;
+
                 if (wordRange.getStartPosition().isBefore(position)) {
                     range = Range.fromPositions(wordRange.getStartPosition(), position);
                     direction = 'after';
@@ -122,17 +135,25 @@ export class InlayHintsFragments {
     }
     private static _getRangeAtPosition(model: ITextModel, position: IPosition): Range {
         const line = position.lineNumber;
+
         const word = model.getWordAtPosition(position);
+
         if (word) {
             // always prefer the word range
             return new Range(line, word.startColumn, line, word.endColumn);
         }
         model.tokenization.tokenizeIfCheap(line);
+
         const tokens = model.tokenization.getLineTokens(line);
+
         const offset = position.column - 1;
+
         const idx = tokens.findTokenIndexAtOffset(offset);
+
         let start = tokens.getStartOffset(idx);
+
         let end = tokens.getEndOffset(idx);
+
         if (end - start === 1) {
             // single character token, when at its end try leading/trailing token instead
             if (start === offset && idx > 1) {

@@ -67,18 +67,23 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 	private readonly uninstallingExtensions = new Map<string, IUninstallExtensionTask>();
 
 	private readonly _onInstallExtension = this._register(new Emitter<InstallExtensionEvent>());
+
 	get onInstallExtension() { return this._onInstallExtension.event; }
 
 	protected readonly _onDidInstallExtensions = this._register(new Emitter<InstallExtensionResult[]>());
+
 	get onDidInstallExtensions() { return this._onDidInstallExtensions.event; }
 
 	protected readonly _onUninstallExtension = this._register(new Emitter<UninstallExtensionEvent>());
+
 	get onUninstallExtension() { return this._onUninstallExtension.event; }
 
 	protected _onDidUninstallExtension = this._register(new Emitter<DidUninstallExtensionEvent>());
+
 	get onDidUninstallExtension() { return this._onDidUninstallExtension.event; }
 
 	protected readonly _onDidUpdateExtensionMetadata = this._register(new Emitter<DidUpdateExtensionMetadata>());
+
 	get onDidUpdateExtensionMetadata() { return this._onDidUpdateExtensionMetadata.event; }
 
 	private readonly participants: IExtensionManagementParticipant[] = [];
@@ -102,6 +107,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 	async canInstall(extension: IGalleryExtension): Promise<true | IMarkdownString> {
 		const currentTargetPlatform = await this.getTargetPlatform();
+
 		if (extension.allTargetPlatforms.some(targetPlatform => isTargetPlatformCompatible(targetPlatform, extension.allTargetPlatforms, currentTargetPlatform))) {
 			return true;
 		}
@@ -111,7 +117,9 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 	async installFromGallery(extension: IGalleryExtension, options: InstallOptions = {}): Promise<ILocalExtension> {
 		try {
 			const results = await this.installGalleryExtensions([{ extension, options }]);
+
 			const result = results.find(({ identifier }) => areSameExtensions(identifier, extension.identifier));
+
 			if (result?.local) {
 				return result?.local;
 			}
@@ -130,6 +138,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		}
 
 		const results: InstallExtensionResult[] = [];
+
 		const installableExtensions: InstallableExtension[] = [];
 
 		await Promise.allSettled(extensions.map(async ({ extension, options }) => {
@@ -150,6 +159,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 	async uninstall(extension: ILocalExtension, options?: UninstallOptions): Promise<void> {
 		this.logService.trace('ExtensionManagementService#uninstall', extension.identifier.id);
+
 		return this.uninstallExtensions([{ extension, options }]);
 	}
 
@@ -160,6 +170,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 		if (extension.isApplicationScoped) {
 			let local = await this.updateMetadata(extension, { isApplicationScoped: false }, this.userDataProfilesService.defaultProfile.extensionsResource);
+
 			if (!this.uriIdentityService.extUri.isEqual(fromProfileLocation, this.userDataProfilesService.defaultProfile.extensionsResource)) {
 				local = await this.copyExtension(extension, this.userDataProfilesService.defaultProfile.extensionsResource, fromProfileLocation);
 			}
@@ -167,6 +178,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			for (const profile of this.userDataProfilesService.profiles) {
 				const existing = (await this.getInstalled(ExtensionType.User, profile.extensionsResource))
 					.find(e => areSameExtensions(e.identifier, extension.identifier));
+
 				if (existing) {
 					this._onDidUpdateExtensionMetadata.fire({ local: existing, profileLocation: profile.extensionsResource });
 				} else {
@@ -182,6 +194,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				: await this.copyExtension(extension, fromProfileLocation, this.userDataProfilesService.defaultProfile.extensionsResource, { isApplicationScoped: true });
 
 			this._onDidInstallExtensions.fire([{ identifier: local.identifier, operation: InstallOperation.Install, local, profileLocation: this.userDataProfilesService.defaultProfile.extensionsResource, applicationScoped: true }]);
+
 			return local;
 		}
 
@@ -216,22 +229,27 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				}));
 		} catch (error) {
 			this.logService.error('Error while resetting pinned state for all user extensions', getErrorMessage(error));
+
 			throw error;
 		}
 	}
 
 	protected async installExtensions(extensions: InstallableExtension[]): Promise<InstallExtensionResult[]> {
 		const installExtensionResultsMap = new Map<string, InstallExtensionResult & { profileLocation: URI }>();
+
 		const installingExtensionsMap = new Map<string, { task: IInstallExtensionTask; root: IInstallExtensionTask | undefined }>();
+
 		const alreadyRequestedInstallations: Promise<any>[] = [];
 
 		const getInstallExtensionTaskKey = (extension: IGalleryExtension, profileLocation: URI) => `${ExtensionKey.create(extension).toString()}-${profileLocation.toString()}`;
+
 		const createInstallExtensionTask = (manifest: IExtensionManifest, extension: IGalleryExtension | URI, options: InstallExtensionTaskOptions, root: IInstallExtensionTask | undefined): void => {
 			if (!URI.isUri(extension)) {
 				if (installingExtensionsMap.has(`${extension.identifier.id.toLowerCase()}-${options.profileLocation.toString()}`)) {
 					return;
 				}
 				const existingInstallingExtension = this.installingExtensions.get(getInstallExtensionTaskKey(extension, options.profileLocation));
+
 				if (existingInstallingExtension) {
 					if (root && this.canWaitForTask(root, existingInstallingExtension.task)) {
 						const identifier = existingInstallingExtension.task.identifier;
@@ -243,7 +261,9 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 								Event.filter(this.onDidInstallExtensions, results => results.some(result => areSameExtensions(result.identifier, identifier)))
 							).then(results => {
 								this.logService.info('Finished waiting for already requested installing extension', identifier.id, root.identifier.id, options.profileLocation.toString());
+
 								const result = results.find(result => areSameExtensions(result.identifier, identifier));
+
 								if (!result?.local) {
 									// Extension failed to install
 									throw new Error(`Extension ${identifier.id} is not installed`);
@@ -254,6 +274,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				}
 			}
 			const installExtensionTask = this.createInstallExtensionTask(manifest, extension, options);
+
 			const key = `${getGalleryExtensionId(manifest.publisher, manifest.name)}-${options.profileLocation.toString()}`;
 			installingExtensionsMap.set(key, { task: installExtensionTask, root });
 			this._onInstallExtension.fire({ identifier: installExtensionTask.identifier, source: extension, profileLocation: options.profileLocation });
@@ -268,6 +289,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			// Start installing extensions
 			for (const { manifest, extension, options } of extensions) {
 				const isApplicationScoped = options.isApplicationScoped || options.isBuiltin || isApplicationScopedExtension(manifest);
+
 				const installExtensionTaskOptions: InstallExtensionTaskOptions = {
 					...options,
 					installOnlyNewlyAddedFromExtensionPack: options.installOnlyNewlyAddedFromExtensionPack ?? !URI.isUri(extension) /* always true for gallery extensions */,
@@ -277,6 +299,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				};
 
 				const existingInstallExtensionTask = !URI.isUri(extension) ? this.installingExtensions.get(getInstallExtensionTaskKey(extension, installExtensionTaskOptions.profileLocation)) : undefined;
+
 				if (existingInstallExtensionTask) {
 					this.logService.info('Extension is already requested to install', existingInstallExtensionTask.task.identifier.id, installExtensionTaskOptions.profileLocation.toString());
 					alreadyRequestedInstallations.push(existingInstallExtensionTask.task.waitUntilTaskIsFinished());
@@ -292,8 +315,11 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				} else {
 					try {
 						const allDepsAndPackExtensionsToInstall = await this.getAllDepsAndPackExtensions(task.identifier, task.manifest, !!task.options.installOnlyNewlyAddedFromExtensionPack, !!task.options.installPreReleaseVersion, task.options.profileLocation, task.options.productVersion);
+
 						const installed = await this.getInstalled(undefined, task.options.profileLocation, task.options.productVersion);
+
 						const options: InstallExtensionTaskOptions = { ...task.options, context: { ...task.options.context, [EXTENSION_INSTALL_DEP_PACK_CONTEXT]: true } };
+
 						for (const { gallery, manifest } of distinct(allDepsAndPackExtensionsToInstall, ({ gallery }) => gallery.identifier.id)) {
 							if (installed.some(({ identifier }) => areSameExtensions(identifier, gallery.identifier))) {
 								continue;
@@ -312,6 +338,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 							}
 						} else {
 							this.logService.error('Error while preparing to install dependencies and extension packs of the extension:', task.identifier.id);
+
 							throw error;
 						}
 					}
@@ -319,6 +346,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			}));
 
 			const otherProfilesToUpdate = await this.getOtherProfilesToUpdateExtension([...installingExtensionsMap.values()].map(({ task }) => task));
+
 			for (const [profileLocation, task] of otherProfilesToUpdate) {
 				createInstallExtensionTask(task.manifest, task.source, { ...task.options, profileLocation }, undefined);
 			}
@@ -326,12 +354,15 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			// Install extensions in parallel and wait until all extensions are installed / failed
 			await this.joinAllSettled([...installingExtensionsMap.entries()].map(async ([key, { task }]) => {
 				const startTime = new Date().getTime();
+
 				let local: ILocalExtension;
+
 				try {
 					local = await task.run();
 					await this.joinAllSettled(this.participants.map(participant => participant.postInstall(local, task.source, task.options, CancellationToken.None)), ExtensionManagementErrorCode.PostInstall);
 				} catch (e) {
 					const error = toExtensionManagementError(e);
+
 					if (!URI.isUri(task.source)) {
 						reportTelemetry(this.telemetryService, task.operation === InstallOperation.Update ? 'extensionGallery:update' : 'extensionGallery:install', {
 							extensionData: getGalleryExtensionTelemetryData(task.source),
@@ -341,10 +372,12 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 					}
 					installExtensionResultsMap.set(key, { error, identifier: task.identifier, operation: task.operation, source: task.source, context: task.options.context, profileLocation: task.options.profileLocation, applicationScoped: task.options.isApplicationScoped });
 					this.logService.error('Error while installing the extension', task.identifier.id, getErrorMessage(error), task.options.profileLocation.toString());
+
 					throw error;
 				}
 				if (!URI.isUri(task.source)) {
 					const isUpdate = task.operation === InstallOperation.Update;
+
 					const durationSinceUpdate = isUpdate ? undefined : (new Date().getTime() - task.source.lastUpdated) / 1000;
 					reportTelemetry(this.telemetryService, isUpdate ? 'extensionGallery:update' : 'extensionGallery:install', {
 						extensionData: getGalleryExtensionTelemetryData(task.source),
@@ -369,6 +402,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		} catch (error) {
 			const getAllDepsAndPacks = (extension: ILocalExtension, profileLocation: URI, allDepsOrPacks: string[]) => {
 				const depsOrPacks = [];
+
 				if (extension.manifest.extensionDependencies?.length) {
 					depsOrPacks.push(...extension.manifest.extensionDependencies);
 				}
@@ -380,18 +414,23 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 						continue;
 					}
 					allDepsOrPacks.push(id.toLowerCase());
+
 					const installed = installExtensionResultsMap.get(`${id.toLowerCase()}-${profileLocation.toString()}`);
+
 					if (installed?.local) {
 						allDepsOrPacks = getAllDepsAndPacks(installed.local, profileLocation, allDepsOrPacks);
 					}
 				}
 				return allDepsOrPacks;
 			};
+
 			const getErrorResult = (task: IInstallExtensionTask) => ({ identifier: task.identifier, operation: InstallOperation.Install, source: task.source, context: task.options.context, profileLocation: task.options.profileLocation, error });
 
 			const rollbackTasks: IUninstallExtensionTask[] = [];
+
 			for (const [key, { task, root }] of installingExtensionsMap) {
 				const result = installExtensionResultsMap.get(key);
+
 				if (!result) {
 					task.cancel();
 					installExtensionResultsMap.set(key, getErrorResult(task));
@@ -404,6 +443,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			}
 			for (const [key, { task }] of installingExtensionsMap) {
 				const result = installExtensionResultsMap.get(key);
+
 				if (!result?.local) {
 					continue;
 				}
@@ -411,6 +451,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 					continue;
 				}
 				const depsOrPacks = getAllDepsAndPacks(result.local, task.options.profileLocation, [result.local.identifier.id.toLowerCase()]).slice(1);
+
 				if (depsOrPacks.some(depOrPack => installingExtensionsMap.has(`${depOrPack.toLowerCase()}-${task.options.profileLocation.toString()}`) && !installExtensionResultsMap.get(`${depOrPack.toLowerCase()}-${task.options.profileLocation.toString()}`)?.local)) {
 					rollbackTasks.push(this.createUninstallExtensionTask(result.local, { versionOnly: true, profileLocation: task.options.profileLocation }));
 					installExtensionResultsMap.set(key, getErrorResult(task));
@@ -436,18 +477,22 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			}
 		}
 		const results = [...installExtensionResultsMap.values()];
+
 		for (const result of results) {
 			if (result.local) {
 				this.logService.info(`Extension installed successfully:`, result.identifier.id, result.profileLocation.toString());
 			}
 		}
 		this._onDidInstallExtensions.fire(results);
+
 		return results;
 	}
 
 	private async getOtherProfilesToUpdateExtension(tasks: IInstallExtensionTask[]): Promise<[URI, IInstallExtensionTask][]> {
 		const otherProfilesToUpdate: [URI, IInstallExtensionTask][] = [];
+
 		const profileExtensionsCache = new ResourceMap<ILocalExtension[]>();
+
 		for (const task of tasks) {
 			if (task.operation !== InstallOperation.Update
 				|| task.options.isApplicationScoped
@@ -462,11 +507,13 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 					continue;
 				}
 				let installedExtensions = profileExtensionsCache.get(profile.extensionsResource);
+
 				if (!installedExtensions) {
 					installedExtensions = await this.getInstalled(ExtensionType.User, profile.extensionsResource);
 					profileExtensionsCache.set(profile.extensionsResource, installedExtensions);
 				}
 				const installedExtension = installedExtensions.find(e => areSameExtensions(e.identifier, task.identifier));
+
 				if (installedExtension && !installedExtension.pinned) {
 					otherProfilesToUpdate.push([profile.extensionsResource, task]);
 				}
@@ -498,8 +545,11 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 	private async joinAllSettled<T>(promises: Promise<T>[], errorCode?: ExtensionManagementErrorCode): Promise<T[]> {
 		const results: T[] = [];
+
 		const errors: ExtensionManagementError[] = [];
+
 		const promiseResults = await Promise.allSettled(promises);
+
 		for (const r of promiseResults) {
 			if (r.status === 'fulfilled') {
 				results.push(r.value);
@@ -518,6 +568,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		}
 
 		let error = new ExtensionManagementError('', ExtensionManagementErrorCode.Unknown);
+
 		for (const current of errors) {
 			error = new ExtensionManagementError(
 				error.message ? `${error.message}, ${current.message}` : current.message,
@@ -533,15 +584,21 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		}
 
 		const installed = await this.getInstalled(undefined, profile, productVersion);
+
 		const knownIdentifiers: IExtensionIdentifier[] = [];
 
 		const allDependenciesAndPacks: { gallery: IGalleryExtension; manifest: IExtensionManifest }[] = [];
+
 		const collectDependenciesAndPackExtensionsToInstall = async (extensionIdentifier: IExtensionIdentifier, manifest: IExtensionManifest): Promise<void> => {
 			knownIdentifiers.push(extensionIdentifier);
+
 			const dependecies: string[] = manifest.extensionDependencies || [];
+
 			const dependenciesAndPackExtensions = [...dependecies];
+
 			if (manifest.extensionPack) {
 				const existing = getOnlyNewlyAddedFromExtensionPack ? installed.find(e => areSameExtensions(e.identifier, extensionIdentifier)) : undefined;
+
 				for (const extension of manifest.extensionPack) {
 					// add only those extensions which are new in currently installed extension
 					if (!(existing && existing.manifest.extensionPack && existing.manifest.extensionPack.some(old => areSameExtensions({ id: old }, { id: extension })))) {
@@ -555,19 +612,24 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			if (dependenciesAndPackExtensions.length) {
 				// filter out known extensions
 				const ids = dependenciesAndPackExtensions.filter(id => knownIdentifiers.every(galleryIdentifier => !areSameExtensions(galleryIdentifier, { id })));
+
 				if (ids.length) {
 					const galleryExtensions = await this.galleryService.getExtensions(ids.map(id => ({ id, preRelease: installPreRelease })), CancellationToken.None);
+
 					for (const galleryExtension of galleryExtensions) {
 						if (knownIdentifiers.find(identifier => areSameExtensions(identifier, galleryExtension.identifier))) {
 							continue;
 						}
 						const isDependency = dependecies.some(id => areSameExtensions({ id }, galleryExtension.identifier));
+
 						let compatible;
+
 						try {
 							compatible = await this.checkAndGetCompatibleVersion(galleryExtension, false, installPreRelease, productVersion);
 						} catch (error) {
 							if (!isDependency) {
 								this.logService.info('Skipping the packed extension as it cannot be installed', galleryExtension.identifier.id, getErrorMessage(error));
+
 								continue;
 							} else {
 								throw error;
@@ -581,6 +643,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		};
 
 		await collectDependenciesAndPackExtensionsToInstall(extensionIdentifier, manifest);
+
 		return allDependenciesAndPacks;
 	}
 
@@ -588,14 +651,17 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		let compatibleExtension: IGalleryExtension | null;
 
 		const extensionsControlManifest = await this.getExtensionsControlManifest();
+
 		if (extensionsControlManifest.malicious.some(identifier => areSameExtensions(extension.identifier, identifier))) {
 			throw new ExtensionManagementError(nls.localize('malicious extension', "Can't install '{0}' extension since it was reported to be problematic.", extension.identifier.id), ExtensionManagementErrorCode.Malicious);
 		}
 
 		const deprecationInfo = extensionsControlManifest.deprecated[extension.identifier.id.toLowerCase()];
+
 		if (deprecationInfo?.extension?.autoMigrate) {
 			this.logService.info(`The '${extension.identifier.id}' extension is deprecated, fetching the compatible '${deprecationInfo.extension.id}' extension instead.`);
 			compatibleExtension = (await this.galleryService.getExtensions([{ id: deprecationInfo.extension.id, preRelease: deprecationInfo.extension.preRelease }], { targetPlatform: await this.getTargetPlatform(), compatible: true, productVersion }, CancellationToken.None))[0];
+
 			if (!compatibleExtension) {
 				throw new ExtensionManagementError(nls.localize('notFoundDeprecatedReplacementExtension', "Can't install '{0}' extension since it was deprecated and the replacement extension '{1}' can't be found.", extension.identifier.id, deprecationInfo.extension.id), ExtensionManagementErrorCode.Deprecated);
 			}
@@ -604,12 +670,15 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		else {
 			if (await this.canInstall(extension) !== true) {
 				const targetPlatform = await this.getTargetPlatform();
+
 				throw new ExtensionManagementError(nls.localize('incompatible platform', "The '{0}' extension is not available in {1} for {2}.", extension.identifier.id, this.productService.nameLong, TargetPlatformToString(targetPlatform)), ExtensionManagementErrorCode.IncompatibleTargetPlatform);
 			}
 
 			compatibleExtension = await this.getCompatibleVersion(extension, sameVersion, installPreRelease, productVersion);
+
 			if (!compatibleExtension) {
 				const incompatibleApiProposalsMessages: string[] = [];
+
 				if (!areApiProposalsCompatible(extension.properties.enabledApiProposals ?? [], incompatibleApiProposalsMessages)) {
 					throw new ExtensionManagementError(nls.localize('incompatibleAPI', "Can't install '{0}' extension. {1}", extension.displayName ?? extension.identifier.id, incompatibleApiProposalsMessages[0]), ExtensionManagementErrorCode.IncompatibleApi);
 				}
@@ -622,7 +691,9 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		}
 
 		this.logService.info('Getting Manifest...', compatibleExtension.identifier.id);
+
 		const manifest = await this.galleryService.getManifest(compatibleExtension, CancellationToken.None);
+
 		if (manifest === null) {
 			throw new ExtensionManagementError(`Missing manifest for extension ${compatibleExtension.identifier.id}`, ExtensionManagementErrorCode.Invalid);
 		}
@@ -636,6 +707,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 
 	protected async getCompatibleVersion(extension: IGalleryExtension, sameVersion: boolean, includePreRelease: boolean, productVersion: IProductVersion): Promise<IGalleryExtension | null> {
 		const targetPlatform = await this.getTargetPlatform();
+
 		let compatibleExtension: IGalleryExtension | null = null;
 
 		if (!sameVersion && extension.hasPreReleaseVersion && extension.properties.isPreReleaseVersion !== includePreRelease) {
@@ -666,6 +738,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			this.uninstallingExtensions.set(getUninstallExtensionTaskKey(uninstallExtensionTask.extension, uninstallOptions), uninstallExtensionTask);
 			this.logService.info('Uninstalling extension from the profile:', `${extension.identifier.id}@${extension.manifest.version}`, uninstallOptions.profileLocation.toString());
 			this._onUninstallExtension.fire({ identifier: extension.identifier, profileLocation: uninstallOptions.profileLocation, applicationScoped: extension.isApplicationScoped });
+
 			return uninstallExtensionTask;
 		};
 
@@ -680,7 +753,9 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		};
 
 		const allTasks: IUninstallExtensionTask[] = [];
+
 		const processedTasks: IUninstallExtensionTask[] = [];
+
 		const alreadyRequestedUninstalls: Promise<any>[] = [];
 
 		const installedExtensionsMap = new ResourceMap<ILocalExtension[]>();
@@ -690,7 +765,9 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				...options,
 				profileLocation: extension.isApplicationScoped ? this.userDataProfilesService.defaultProfile.extensionsResource : options?.profileLocation ?? this.getCurrentExtensionsManifestLocation()
 			};
+
 			const uninstallExtensionTask = this.uninstallingExtensions.get(getUninstallExtensionTaskKey(extension, uninstallOptions));
+
 			if (uninstallExtensionTask) {
 				this.logService.info('Extensions is already requested to uninstall', extension.identifier.id);
 				alreadyRequestedUninstalls.push(uninstallExtensionTask.waitUntilTaskIsFinished());
@@ -702,6 +779,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 		try {
 			for (const task of allTasks.slice(0)) {
 				let installed = installedExtensionsMap.get(task.options.profileLocation);
+
 				if (!installed) {
 					installedExtensionsMap.set(task.options.profileLocation, installed = await this.getInstalled(ExtensionType.User, task.options.profileLocation));
 				}
@@ -710,6 +788,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 					this.logService.info('Uninstalling the extension without including packed extension', `${task.extension.identifier.id}@${task.extension.manifest.version}`);
 				} else {
 					const packedExtensions = this.getAllPackExtensionsToUninstall(task.extension, installed);
+
 					for (const packedExtension of packedExtensions) {
 						if (this.uninstallingExtensions.has(getUninstallExtensionTaskKey(packedExtension, task.options))) {
 							this.logService.info('Extensions is already requested to uninstall', packedExtension.identifier.id);
@@ -739,6 +818,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				} catch (e) {
 					const error = toExtensionManagementError(e);
 					postUninstallExtension(task.extension, task.options, error);
+
 					throw error;
 				} finally {
 					processedTasks.push(task);
@@ -754,6 +834,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			}
 		} catch (e) {
 			const error = toExtensionManagementError(e);
+
 			for (const task of allTasks) {
 				// cancel the tasks
 				try { task.cancel(); } catch (error) { /* ignore */ }
@@ -775,8 +856,10 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 	private checkForDependents(extensionsToUninstall: ILocalExtension[], installed: ILocalExtension[], extensionToUninstall: ILocalExtension): void {
 		for (const extension of extensionsToUninstall) {
 			const dependents = this.getDependents(extension, installed);
+
 			if (dependents.length) {
 				const remainingDependents = dependents.filter(dependent => !extensionsToUninstall.some(e => areSameExtensions(e.identifier, dependent.identifier)));
+
 				if (remainingDependents.length) {
 					throw new Error(this.getDependentsErrorMessage(extension, remainingDependents, extensionToUninstall));
 				}
@@ -818,10 +901,14 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 			return [];
 		}
 		checked.push(extension);
+
 		const extensionsPack = extension.manifest.extensionPack ? extension.manifest.extensionPack : [];
+
 		if (extensionsPack.length) {
 			const packedExtensions = installed.filter(i => !i.isBuiltin && extensionsPack.some(id => areSameExtensions({ id }, i.identifier)));
+
 			const packOfPackedExtensions: ILocalExtension[] = [];
+
 			for (const packedExtension of packedExtensions) {
 				packOfPackedExtensions.push(...this.getAllPackExtensionsToUninstall(packedExtension, installed, checked));
 			}
@@ -837,9 +924,11 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 	private async updateControlCache(): Promise<IExtensionsControlManifest> {
 		try {
 			this.logService.trace('ExtensionManagementService.updateControlCache');
+
 			return await this.galleryService.getExtensionsControlManifest();
 		} catch (err) {
 			this.logService.trace('ExtensionManagementService.refreshControlCache - failed to get extension control manifest', getErrorMessage(err));
+
 			return { malicious: [], deprecated: {}, search: [] };
 		}
 	}
@@ -869,12 +958,14 @@ export function toExtensionManagementError(error: Error, code?: ExtensionManagem
 		return error;
 	}
 	let extensionManagementError: ExtensionManagementError;
+
 	if (error instanceof ExtensionGalleryError) {
 		extensionManagementError = new ExtensionManagementError(error.message, error.code === ExtensionGalleryErrorCode.DownloadFailedWriting ? ExtensionManagementErrorCode.DownloadFailedWriting : ExtensionManagementErrorCode.Gallery);
 	} else {
 		extensionManagementError = new ExtensionManagementError(error.message, isCancellationError(error) ? ExtensionManagementErrorCode.Cancelled : (code ?? ExtensionManagementErrorCode.Internal));
 	}
 	extensionManagementError.stack = error.stack;
+
 	return extensionManagementError;
 }
 
@@ -952,6 +1043,7 @@ export abstract class AbstractExtensionTask<T> {
 
 	async waitUntilTaskIsFinished(): Promise<T> {
 		await this.barrier.wait();
+
 		return this.cancellablePromise!;
 	}
 
@@ -960,6 +1052,7 @@ export abstract class AbstractExtensionTask<T> {
 			this.cancellablePromise = createCancelablePromise(token => this.doRun(token));
 		}
 		this.barrier.open();
+
 		return this.cancellablePromise;
 	}
 

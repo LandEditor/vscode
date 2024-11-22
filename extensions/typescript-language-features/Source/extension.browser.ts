@@ -38,22 +38,31 @@ class StaticVersionProvider implements ITypeScriptVersionProvider {
 export async function activate(context: vscode.ExtensionContext): Promise<Api> {
     const pluginManager = new PluginManager();
     context.subscriptions.push(pluginManager);
+
     const commandManager = new CommandManager();
     context.subscriptions.push(commandManager);
+
     const onCompletionAccepted = new vscode.EventEmitter<vscode.CompletionItem>();
     context.subscriptions.push(onCompletionAccepted);
+
     const activeJsTsEditorTracker = new ActiveJsTsEditorTracker();
     context.subscriptions.push(activeJsTsEditorTracker);
+
     const versionProvider = new StaticVersionProvider(new TypeScriptVersion(TypeScriptVersionSource.Bundled, vscode.Uri.joinPath(context.extensionUri, 'dist/browser/typescript/tsserver.web.js').toString(), API.fromSimpleString('5.6.2')));
+
     let experimentTelemetryReporter: IExperimentationTelemetryReporter | undefined;
+
     const packageInfo = getPackageInfo(context);
+
     if (packageInfo) {
         const { aiKey } = packageInfo;
+
         const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
         experimentTelemetryReporter = new ExperimentationTelemetryReporter(vscTelemetryReporter);
         context.subscriptions.push(experimentTelemetryReporter);
     }
     const logger = new Logger();
+
     const lazyClientHost = createLazyClientHost(context, false, {
         pluginManager,
         commandManager,
@@ -70,6 +79,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
     });
     registerBaseCommands(commandManager, lazyClientHost, pluginManager, activeJsTsEditorTracker);
     // context.subscriptions.push(task.register(lazyClientHost.map(x => x.serviceClient)));
+
     import('./languageFeatures/tsconfig').then(module => {
         context.subscriptions.push(module.register());
     });
@@ -77,6 +87,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
         await startPreloadWorkspaceContentsIfNeeded(context, logger);
     }));
     context.subscriptions.push(registerAtaSupport(logger));
+
     return getExtensionApi(onCompletionAccepted.event, pluginManager);
 }
 async function startPreloadWorkspaceContentsIfNeeded(context: vscode.ExtensionContext, logger: Logger): Promise<void> {
@@ -88,12 +99,15 @@ async function startPreloadWorkspaceContentsIfNeeded(context: vscode.ExtensionCo
     }
     await Promise.all(vscode.workspace.workspaceFolders.map(async (folder) => {
         const workspaceUri = folder.uri;
+
         if (workspaceUri.scheme !== 'vscode-vfs' || !workspaceUri.authority.startsWith('github')) {
             logger.info(`Skipped pre loading workspace contents for repository ${workspaceUri?.toString()}`);
+
             return;
         }
         const loader = new RemoteWorkspaceContentsPreloader(workspaceUri, logger);
         context.subscriptions.push(loader);
+
         try {
             await loader.triggerPreload();
         }
@@ -104,8 +118,10 @@ async function startPreloadWorkspaceContentsIfNeeded(context: vscode.ExtensionCo
 }
 class RemoteWorkspaceContentsPreloader extends Disposable {
     private _preload: Promise<void> | undefined;
+
     constructor(private readonly workspaceUri: vscode.Uri, private readonly logger: Logger) {
         super();
+
         const fsWatcher = this._register(vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceUri, '*')));
         this._register(fsWatcher.onDidChange(uri => {
             if (uri.toString() === workspaceUri.toString()) {
@@ -116,11 +132,13 @@ class RemoteWorkspaceContentsPreloader extends Disposable {
     }
     async triggerPreload() {
         this._preload ??= this.doPreload();
+
         return this._preload;
     }
     private async doPreload(): Promise<void> {
         try {
             const remoteHubApi = await RemoteRepositories.getApi();
+
             if (await remoteHubApi.loadWorkspaceContents?.(this.workspaceUri)) {
                 this.logger.info(`Successfully loaded workspace content for repository ${this.workspaceUri.toString()}`);
             }

@@ -114,11 +114,15 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 	private async _resolveExtensions(): Promise<IRuntimeExtension[]> {
 		// We only deal with extensions with source code!
 		await this._extensionService.whenInstalledExtensionsRegistered();
+
 		const extensionsDescriptions = this._extensionService.extensions.filter((extension) => {
 			return Boolean(extension.main) || Boolean(extension.browser);
 		});
+
 		const marketplaceMap = new ExtensionIdentifierMap<IExtension>();
+
 		const marketPlaceExtensions = await this._extensionsWorkbenchService.queryLocal();
+
 		for (const extension of marketPlaceExtensions) {
 			marketplaceMap.set(extension.identifier.id, extension);
 		}
@@ -129,13 +133,17 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 		const segments = new ExtensionIdentifierMap<number[]>();
 
 		const profileInfo = this._getProfileInfo();
+
 		if (profileInfo) {
 			let currentStartTime = profileInfo.startTime;
+
 			for (let i = 0, len = profileInfo.deltas.length; i < len; i++) {
 				const id = profileInfo.ids[i];
+
 				const delta = profileInfo.deltas[i];
 
 				let extensionSegments = segments.get(id);
+
 				if (!extensionSegments) {
 					extensionSegments = [];
 					segments.set(id, extensionSegments);
@@ -148,15 +156,20 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 		}
 
 		let result: IRuntimeExtension[] = [];
+
 		for (let i = 0, len = extensionsDescriptions.length; i < len; i++) {
 			const extensionDescription = extensionsDescriptions[i];
 
 			let extProfileInfo: IExtensionProfileInformation | null = null;
+
 			if (profileInfo) {
 				const extensionSegments = segments.get(extensionDescription.identifier) || [];
+
 				let extensionTotalTime = 0;
+
 				for (let j = 0, lenJ = extensionSegments.length / 2; j < lenJ; j++) {
 					const startTime = extensionSegments[2 * j];
+
 					const endTime = extensionSegments[2 * j + 1];
 					extensionTotalTime += (endTime - startTime);
 				}
@@ -236,13 +249,19 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 			templateId: TEMPLATE_ID,
 			renderTemplate: (root: HTMLElement): IRuntimeExtensionTemplateData => {
 				const element = append(root, $('.extension'));
+
 				const iconContainer = append(element, $('.icon-container'));
+
 				const icon = append(iconContainer, $<HTMLImageElement>('img.icon'));
 
 				const desc = append(element, $('div.desc'));
+
 				const headerContainer = append(desc, $('.header-container'));
+
 				const header = append(headerContainer, $('.header'));
+
 				const name = append(header, $('div.name'));
+
 				const version = append(header, $('span.version'));
 
 				const msgContainer = append(desc, $('div.msg'));
@@ -251,7 +270,9 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				actionbar.onDidRun(({ error }) => error && this._notificationService.error(error));
 
 				const timeContainer = append(element, $('.time'));
+
 				const activationTime = append(timeContainer, $('div.activation-time'));
+
 				const profileTime = append(timeContainer, $('div.profile-time'));
 
 				const disposables = [actionbar];
@@ -290,6 +311,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				data.version.textContent = element.description.version;
 
 				const activationTimes = element.status.activationTimes;
+
 				if (activationTimes) {
 					const syncTime = activationTimes.codeLoadingTime + activationTimes.activateCallTime;
 					data.activationTime.textContent = activationTimes.activationReason.startup ? `Startup Activation: ${syncTime}ms` : `Activation: ${syncTime}ms`;
@@ -298,21 +320,27 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				}
 
 				data.actionbar.clear();
+
 				const slowExtensionAction = this._createSlowExtensionAction(element);
+
 				if (slowExtensionAction) {
 					data.actionbar.push(slowExtensionAction, { icon: false, label: true });
 				}
 				if (isNonEmptyArray(element.status.runtimeErrors)) {
 					const reportExtensionIssueAction = this._createReportExtensionIssueAction(element);
+
 					if (reportExtensionIssueAction) {
 						data.actionbar.push(reportExtensionIssueAction, { icon: false, label: true });
 					}
 				}
 
 				let title: string;
+
 				if (activationTimes) {
 					const activationId = activationTimes.activationReason.extensionId.value;
+
 					const activationEvent = activationTimes.activationReason.activationEvent;
+
 					if (activationEvent === '*') {
 						title = nls.localize({
 							key: 'starActivation',
@@ -322,6 +350,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 						}, "Activated by {0} on start-up", activationId);
 					} else if (/^workspaceContains:/.test(activationEvent)) {
 						const fileNameOrGlob = activationEvent.substr('workspaceContains:'.length);
+
 						if (fileNameOrGlob.indexOf('*') >= 0 || fileNameOrGlob.indexOf('?') >= 0) {
 							title = nls.localize({
 								key: 'workspaceContainsGlobActivation',
@@ -376,6 +405,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 
 				if (this._getUnresponsiveProfile(element.description.identifier)) {
 					const el = $('span', undefined, ...renderLabelWithIcons(` $(alert) Unresponsive`));
+
 					const extensionHostFreezTitle = nls.localize('unresponsive.title', "Extension has caused the extension host to freeze.");
 					data.elementDisposables.push(this._hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), el, extensionHostFreezTitle));
 
@@ -393,10 +423,12 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				}
 
 				let extraLabel: string | null = null;
+
 				if (element.status.runningLocation && element.status.runningLocation.equals(new LocalWebWorkerRunningLocation(0))) {
 					extraLabel = `$(globe) web worker`;
 				} else if (element.description.extensionLocation.scheme === Schemas.vscodeRemote) {
 					const hostLabel = this._labelService.getHostLabel(Schemas.vscodeRemote, this._environmentService.remoteAuthority);
+
 					if (hostLabel) {
 						extraLabel = `$(remote) ${hostLabel}`;
 					} else {
@@ -414,16 +446,20 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 				}
 
 				const features = Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).getExtensionFeatures();
+
 				for (const feature of features) {
 					const accessData = this._extensionFeaturesManagementService.getAccessData(element.description.identifier, feature.id);
+
 					if (accessData) {
 						const status = accessData?.current?.status;
+
 						if (status) {
 							data.msgContainer.appendChild($('span', undefined, `${feature.label}: `));
 							data.msgContainer.appendChild($('span', undefined, ...renderLabelWithIcons(`$(${status.severity === Severity.Error ? errorIcon.id : warningIcon.id}) ${status.message}`)));
 						}
 						if (accessData?.totalCount > 0) {
 							const element = $('span', undefined, `${nls.localize('requests count', "{0} Requests: {1} (Overall)", feature.label, accessData.totalCount)}${accessData.current ? nls.localize('session requests count', ", {0} (Session)", accessData.current.count) : ''}`);
+
 							if (accessData.current) {
 								const title = nls.localize('requests count title', "Last request was {0}.", fromNow(accessData.current.lastAccessed, true, true));
 								data.elementDisposables.push(this._hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element, title));
@@ -486,6 +522,7 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 			));
 
 			const reportExtensionIssueAction = this._createReportExtensionIssueAction(e.element);
+
 			if (reportExtensionIssueAction) {
 				actions.push(reportExtensionIssueAction);
 			}

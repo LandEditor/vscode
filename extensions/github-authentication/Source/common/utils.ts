@@ -10,8 +10,10 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
     return (listener, thisArgs = null, disposables?) => {
         const result = event(e => {
             result.dispose();
+
             return listener.call(thisArgs, e);
         }, null, disposables);
+
         return result;
     };
 }
@@ -38,7 +40,9 @@ export function promiseFromEvent<T, U>(event: Event<T>, adapter: PromiseAdapter<
     cancel: EventEmitter<void>;
 } {
     let subscription: Disposable;
+
     const cancel = new EventEmitter<void>();
+
     return {
         promise: new Promise<U>((resolve, reject) => {
             cancel.event(_ => reject('Cancelled'));
@@ -53,9 +57,11 @@ export function promiseFromEvent<T, U>(event: Event<T>, adapter: PromiseAdapter<
             });
         }).then((result: U) => {
             subscription.dispose();
+
             return result;
         }, error => {
             subscription.dispose();
+
             throw error;
         }),
         cancel

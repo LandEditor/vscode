@@ -41,16 +41,20 @@ export class ConflictActionsFactory extends Disposable {
 
 	private _updateLensStyle(): void {
 		const { codeLensHeight, fontSize } = this._getLayoutInfo();
+
 		const fontFamily = this._editor.getOption(EditorOption.codeLensFontFamily);
+
 		const editorFontInfo = this._editor.getOption(EditorOption.fontInfo);
 
 		const fontFamilyVar = `--codelens-font-family${this._styleClassName}`;
+
 		const fontFeaturesVar = `--codelens-font-features${this._styleClassName}`;
 
 		let newStyle = `
 		.${this._styleClassName} { line-height: ${codeLensHeight}px; font-size: ${fontSize}px; padding-right: ${Math.round(fontSize * 0.5)}px; font-feature-settings: var(${fontFeaturesVar}) }
 		.monaco-workbench .${this._styleClassName} span.codicon { line-height: ${codeLensHeight}px; font-size: ${fontSize}px; }
 		`;
+
 		if (fontFamily) {
 			newStyle += `${this._styleClassName} { font-family: var(${fontFamilyVar}), ${EDITOR_FONT_DEFAULTS.fontFamily}}`;
 		}
@@ -61,7 +65,9 @@ export class ConflictActionsFactory extends Disposable {
 
 	private _getLayoutInfo() {
 		const lineHeightFactor = Math.max(1.3, this._editor.getOption(EditorOption.lineHeight) / this._editor.getOption(EditorOption.fontSize));
+
 		let fontSize = this._editor.getOption(EditorOption.codeLensFontSize);
+
 		if (!fontSize || fontSize < 5) {
 			fontSize = (this._editor.getOption(EditorOption.fontSize) * .9) | 0;
 		}
@@ -73,6 +79,7 @@ export class ConflictActionsFactory extends Disposable {
 
 	public createWidget(viewZoneChangeAccessor: IViewZoneChangeAccessor, lineNumber: number, items: IObservable<IContentWidgetAction[]>, viewZoneIdsToCleanUp: string[]): IDisposable {
 		const layoutInfo = this._getLayoutInfo();
+
 		return new ActionsContentWidget(
 			this._editor,
 			viewZoneChangeAccessor,
@@ -96,6 +103,7 @@ export class ActionsSource {
 		return derived(reader => {
 			/** @description items */
 			const viewModel = this.viewModel;
+
 			const modifiedBaseRange = this.modifiedBaseRange;
 
 			if (!viewModel.model.hasBaseRange(modifiedBaseRange)) {
@@ -103,12 +111,15 @@ export class ActionsSource {
 			}
 
 			const state = viewModel.model.getState(modifiedBaseRange).read(reader);
+
 			const handled = viewModel.model.isHandled(modifiedBaseRange).read(reader);
+
 			const model = viewModel.model;
 
 			const result: IContentWidgetAction[] = [];
 
 			const inputData = inputNumber === 1 ? viewModel.model.input1 : viewModel.model.input2;
+
 			const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
 
 			if (!modifiedBaseRange.isConflicting && handled && !showNonConflictingChanges) {
@@ -210,9 +221,11 @@ export class ActionsSource {
 
 	public readonly resultItems = derived(this, reader => {
 		const viewModel = this.viewModel;
+
 		const modifiedBaseRange = this.modifiedBaseRange;
 
 		const state = viewModel.model.getState(modifiedBaseRange).read(reader);
+
 		const model = viewModel.model;
 
 		const result: IContentWidgetAction[] = [];
@@ -233,6 +246,7 @@ export class ActionsSource {
 
 		} else {
 			const labels = [];
+
 			if (state.includesInput1) {
 				labels.push(model.input1.title);
 			}
@@ -248,6 +262,7 @@ export class ActionsSource {
 		}
 
 		const stateToggles: IContentWidgetAction[] = [];
+
 		if (state.includesInput1) {
 			stateToggles.push(
 				command(
@@ -368,7 +383,9 @@ class ActionsContentWidget extends FixedZoneWidget {
 
 	private setState(items: IContentWidgetAction[]) {
 		const children: HTMLElement[] = [];
+
 		let isFirst = true;
+
 		for (const item of items) {
 			if (isFirst) {
 				isFirst = false;

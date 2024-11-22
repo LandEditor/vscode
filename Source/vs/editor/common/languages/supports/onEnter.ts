@@ -19,6 +19,7 @@ interface IProcessedBracketPair {
 export class OnEnterSupport {
     private readonly _brackets: IProcessedBracketPair[];
     private readonly _regExpRules: OnEnterRule[];
+
     constructor(opts: IOnEnterSupportOptions) {
         opts = opts || {};
         opts.brackets = opts.brackets || [
@@ -29,7 +30,9 @@ export class OnEnterSupport {
         this._brackets = [];
         opts.brackets.forEach((bracket) => {
             const openRegExp = OnEnterSupport._createOpenBracketRegExp(bracket[0]);
+
             const closeRegExp = OnEnterSupport._createCloseBracketRegExp(bracket[1]);
+
             if (openRegExp && closeRegExp) {
                 this._brackets.push({
                     open: bracket[0],
@@ -46,6 +49,7 @@ export class OnEnterSupport {
         if (autoIndent >= EditorAutoIndentStrategy.Advanced) {
             for (let i = 0, len = this._regExpRules.length; i < len; i++) {
                 const rule = this._regExpRules[i];
+
                 const regResult = [{
                         reg: rule.beforeText,
                         text: beforeEnterText
@@ -62,6 +66,7 @@ export class OnEnterSupport {
                     obj.reg.lastIndex = 0; // To disable the effect of the "g" flag.
                     return obj.reg.test(obj.text);
                 });
+
                 if (regResult) {
                     return rule.action;
                 }
@@ -72,6 +77,7 @@ export class OnEnterSupport {
             if (beforeEnterText.length > 0 && afterEnterText.length > 0) {
                 for (let i = 0, len = this._brackets.length; i < len; i++) {
                     const bracket = this._brackets[i];
+
                     if (bracket.openRegExp.test(beforeEnterText) && bracket.closeRegExp.test(afterEnterText)) {
                         return { indentAction: IndentAction.IndentOutdent };
                     }
@@ -83,6 +89,7 @@ export class OnEnterSupport {
             if (beforeEnterText.length > 0) {
                 for (let i = 0, len = this._brackets.length; i < len; i++) {
                     const bracket = this._brackets[i];
+
                     if (bracket.openRegExp.test(beforeEnterText)) {
                         return { indentAction: IndentAction.Indent };
                     }
@@ -93,18 +100,22 @@ export class OnEnterSupport {
     }
     private static _createOpenBracketRegExp(bracket: string): RegExp | null {
         let str = strings.escapeRegExpCharacters(bracket);
+
         if (!/\B/.test(str.charAt(0))) {
             str = '\\b' + str;
         }
         str += '\\s*$';
+
         return OnEnterSupport._safeRegExp(str);
     }
     private static _createCloseBracketRegExp(bracket: string): RegExp | null {
         let str = strings.escapeRegExpCharacters(bracket);
+
         if (!/\B/.test(str.charAt(str.length - 1))) {
             str = str + '\\b';
         }
         str = '^\\s*' + str;
+
         return OnEnterSupport._safeRegExp(str);
     }
     private static _safeRegExp(def: string): RegExp | null {
@@ -113,6 +124,7 @@ export class OnEnterSupport {
         }
         catch (err) {
             onUnexpectedError(err);
+
             return null;
         }
     }

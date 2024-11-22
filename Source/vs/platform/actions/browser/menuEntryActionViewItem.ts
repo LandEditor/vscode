@@ -44,7 +44,9 @@ export function getContextMenuActions(
 	primaryGroup?: string
 ): PrimaryAndSecondaryActions {
 	const target: PrimaryAndSecondaryActions = { primary: [], secondary: [] };
+
 	getContextMenuActionsImpl(groups, target, primaryGroup);
+
 	return target;
 }
 
@@ -53,7 +55,9 @@ export function getFlatContextMenuActions(
 	primaryGroup?: string
 ): IAction[] {
 	const target: IAction[] = [];
+
 	getContextMenuActionsImpl(groups, target, primaryGroup);
+
 	return target;
 }
 
@@ -63,6 +67,7 @@ function getContextMenuActionsImpl(
 	primaryGroup?: string
 ) {
 	const modifierKeyEmitter = ModifierKeyEmitter.getInstance();
+
 	const useAlternativeActions = modifierKeyEmitter.keyStatus.altKey || ((isWindows || isLinux) && modifierKeyEmitter.keyStatus.shiftKey);
 	fillInActions(groups, target, useAlternativeActions, primaryGroup ? actionGroup => actionGroup === primaryGroup : actionGroup => actionGroup === 'navigation');
 }
@@ -76,6 +81,7 @@ export function getActionBarActions(
 ): PrimaryAndSecondaryActions {
 	const target: PrimaryAndSecondaryActions = { primary: [], secondary: [] };
 	fillInActionBarActions(groups, target, primaryGroup, shouldInlineSubmenu, useSeparatorsInPrimaryActions);
+
 	return target;
 }
 
@@ -87,6 +93,7 @@ export function getFlatActionBarActions(
 ): IAction[] {
 	const target: IAction[] = [];
 	fillInActionBarActions(groups, target, primaryGroup, shouldInlineSubmenu, useSeparatorsInPrimaryActions);
+
 	return target;
 }
 
@@ -113,7 +120,9 @@ function fillInActions(
 ): void {
 
 	let primaryBucket: IAction[];
+
 	let secondaryBucket: IAction[];
+
 	if (Array.isArray(target)) {
 		primaryBucket = target;
 		secondaryBucket = target;
@@ -127,13 +136,16 @@ function fillInActions(
 	for (const [group, actions] of groups) {
 
 		let target: IAction[];
+
 		if (isPrimaryAction(group)) {
 			target = primaryBucket;
+
 			if (target.length > 0 && useSeparatorsInPrimaryActions) {
 				target.push(new Separator());
 			}
 		} else {
 			target = secondaryBucket;
+
 			if (target.length > 0) {
 				target.push(new Separator());
 			}
@@ -159,6 +171,7 @@ function fillInActions(
 		// inlining submenus with length 0 or 1 is easy,
 		// larger submenus need to be checked with the overall limit
 		const submenuActions = action.actions;
+
 		if (shouldInlineSubmenu(action, group, target.length)) {
 			target.splice(index, 1, ...submenuActions);
 		}
@@ -260,16 +273,22 @@ export class MenuEntryActionViewItem<T extends IMenuEntryActionViewItemOptions =
 
 	protected override getTooltip() {
 		const keybinding = this._keybindingService.lookupKeybinding(this._commandAction.id, this._contextKeyService);
+
 		const keybindingLabel = keybinding && keybinding.getLabel();
 
 		const tooltip = this._commandAction.tooltip || this._commandAction.label;
+
 		let title = keybindingLabel
 			? localize('titleAndKb', "{0} ({1})", tooltip, keybindingLabel)
 			: tooltip;
+
 		if (!this._wantsAltCommand && this._menuItemAction.alt?.enabled) {
 			const altTooltip = this._menuItemAction.alt.tooltip || this._menuItemAction.alt.label;
+
 			const altKeybinding = this._keybindingService.lookupKeybinding(this._menuItemAction.alt.id, this._contextKeyService);
+
 			const altKeybindingLabel = altKeybinding && altKeybinding.getLabel();
+
 			const altTitleSection = altKeybindingLabel
 				? localize('titleAndKb', "{0} ({1})", altTooltip, altKeybindingLabel)
 				: altTooltip;
@@ -295,6 +314,7 @@ export class MenuEntryActionViewItem<T extends IMenuEntryActionViewItemOptions =
 		this._itemClassDispose.value = undefined;
 
 		const { element, label } = this;
+
 		if (!element || !label) {
 			return;
 		}
@@ -345,6 +365,7 @@ export class TextOnlyMenuEntryActionViewItem extends MenuEntryActionViewItem<ITe
 	override render(container: HTMLElement): void {
 		this.options.label = true;
 		this.options.icon = false;
+
 		super.render(container);
 		container.classList.add('text-only');
 		container.classList.toggle('use-comma', this._options?.useComma ?? false);
@@ -352,6 +373,7 @@ export class TextOnlyMenuEntryActionViewItem extends MenuEntryActionViewItem<ITe
 
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(this._action.id, this._contextKeyService);
+
 		if (!kb) {
 			return super.updateLabel();
 		}
@@ -398,10 +420,14 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 		assertType(this.element);
 
 		container.classList.add('menu-entry');
+
 		const action = <SubmenuItemAction>this._action;
+
 		const { icon } = action.item;
+
 		if (icon && !ThemeIcon.isThemeIcon(icon)) {
 			this.element.classList.add('icon');
+
 			const setBackgroundImage = () => {
 				if (this.element) {
 					this.element.style.backgroundImage = (
@@ -411,6 +437,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 					);
 				}
 			};
+
 			setBackgroundImage();
 			this._register(this._themeService.onDidColorThemeChange(() => {
 				// refresh when the theme changes in case we go between dark <-> light
@@ -452,7 +479,9 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 		// determine default action
 		let defaultAction: IAction | undefined;
+
 		const defaultActionId = options?.persistLastActionId ? _storageService.get(this._storageKey, StorageScope.WORKSPACE) : undefined;
+
 		if (defaultActionId) {
 			defaultAction = submenuAction.actions.find(a => defaultActionId === a.id);
 		}
@@ -498,8 +527,10 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 	private _getDefaultActionKeybindingLabel(defaultAction: IAction) {
 		let defaultActionKeybinding: string | undefined;
+
 		if (this._options?.renderKeybindingWithDefaultActionLabel) {
 			const kb = this._keybindingService.lookupKeybinding(defaultAction.id);
+
 			if (kb) {
 				defaultActionKeybinding = `(${kb.getLabel()})`;
 			}
@@ -515,6 +546,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 	override render(container: HTMLElement): void {
 		this._container = container;
+
 		super.render(this._container);
 
 		this._container.classList.add('monaco-dropdown-with-default');
@@ -523,6 +555,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		this._defaultAction.render(append(this._container, primaryContainer));
 		this._register(addDisposableListener(primaryContainer, EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.RightArrow)) {
 				this._defaultAction.element!.tabIndex = -1;
 				this._dropdown.focus();
@@ -534,6 +567,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		this._dropdown.render(append(this._container, dropdownContainer));
 		this._register(addDisposableListener(dropdownContainer, EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.LeftArrow)) {
 				this._defaultAction.element!.tabIndex = 0;
 				this._dropdown.setFocusable(false);
@@ -570,6 +604,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 	override dispose() {
 		this._defaultAction.dispose();
 		this._dropdown.dispose();
+
 		super.dispose();
 	}
 }
@@ -594,6 +629,7 @@ class SubmenuEntrySelectActionViewItem extends SelectActionViewItem {
 
 	protected override runAction(option: string, index: number): void {
 		const action = (this.action as SubmenuItemAction).actions[index];
+
 		if (action) {
 			this.actionRunner.run(action);
 		}

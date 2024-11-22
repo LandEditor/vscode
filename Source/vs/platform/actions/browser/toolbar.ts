@@ -110,6 +110,7 @@ export class WorkbenchToolBar extends ToolBar {
 
 		// telemetry logic
 		const telemetrySource = _options?.telemetrySource;
+
 		if (telemetrySource) {
 			this._store.add(this.actionBar.onDidRun(e => telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
 				'workbenchActionExecuted',
@@ -121,9 +122,12 @@ export class WorkbenchToolBar extends ToolBar {
 	override setActions(_primary: readonly IAction[], _secondary: readonly IAction[] = [], menuIds?: readonly MenuId[]): void {
 
 		this._sessionDisposables.clear();
+
 		const primary: Array<IAction | undefined> = _primary.slice(); // for hiding and overflow we set some items to undefined
 		const secondary = _secondary.slice();
+
 		const toggleActions: IAction[] = [];
+
 		let toggleActionsCheckedCount: number = 0;
 
 		const extraSecondary: Array<IAction | undefined> = [];
@@ -133,8 +137,10 @@ export class WorkbenchToolBar extends ToolBar {
 		if (this._options?.hiddenItemStrategy !== HiddenItemStrategy.NoHide) {
 			for (let i = 0; i < primary.length; i++) {
 				const action = primary[i];
+
 				if (!(action instanceof MenuItemAction) && !(action instanceof SubmenuItemAction)) {
 					// console.warn(`Action ${action.id}/${action.label} is not a MenuItemAction`);
+
 					continue;
 				}
 				if (!action.hideActions) {
@@ -143,6 +149,7 @@ export class WorkbenchToolBar extends ToolBar {
 
 				// collect all toggle actions
 				toggleActions.push(action.hideActions.toggle);
+
 				if (action.hideActions.toggle.checked) {
 					toggleActionsCheckedCount++;
 				}
@@ -151,6 +158,7 @@ export class WorkbenchToolBar extends ToolBar {
 				if (action.hideActions.isHidden) {
 					someAreHidden = true;
 					primary[i] = undefined;
+
 					if (this._options?.hiddenItemStrategy !== HiddenItemStrategy.Ignore) {
 						extraSecondary[i] = action;
 					}
@@ -162,15 +170,19 @@ export class WorkbenchToolBar extends ToolBar {
 		if (this._options?.overflowBehavior !== undefined) {
 
 			const exemptedIds = intersection(new Set(this._options.overflowBehavior.exempted), Iterable.map(primary, a => a?.id));
+
 			const maxItems = this._options.overflowBehavior.maxItems - exemptedIds.size;
 
 			let count = 0;
+
 			for (let i = 0; i < primary.length; i++) {
 				const action = primary[i];
+
 				if (!action) {
 					continue;
 				}
 				count++;
+
 				if (exemptedIds.has(action.id)) {
 					continue;
 				}
@@ -184,6 +196,7 @@ export class WorkbenchToolBar extends ToolBar {
 		// coalesce turns Array<IAction|undefined> into IAction[]
 		coalesceInPlace(primary);
 		coalesceInPlace(extraSecondary);
+
 		super.setActions(primary, Separator.join(extraSecondary, secondary));
 
 		// add context menu for toggle and configure keybinding actions
@@ -192,6 +205,7 @@ export class WorkbenchToolBar extends ToolBar {
 				const event = new StandardMouseEvent(getWindow(this.getElement()), e);
 
 				const action = this.getItemAction(event.target);
+
 				if (!(action)) {
 					return;
 				}
@@ -216,6 +230,7 @@ export class WorkbenchToolBar extends ToolBar {
 					// last item cannot be hidden when using ignore strategy
 					if (toggleActionsCheckedCount === 1 && this._options?.hiddenItemStrategy === HiddenItemStrategy.Ignore) {
 						noHide = true;
+
 						for (let i = 0; i < toggleActions.length; i++) {
 							if (toggleActions[i].checked) {
 								toggleActions[i] = toAction({
@@ -225,6 +240,7 @@ export class WorkbenchToolBar extends ToolBar {
 									enabled: false,
 									run() { }
 								});
+
 								break; // there is only one
 							}
 						}
@@ -350,10 +366,12 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 			...options,
 			actionViewItemProvider: (action, opts) => {
 				let provider = actionViewService.lookUp(menuId, action instanceof SubmenuItemAction ? action.item.submenu.id : action.id);
+
 				if (!provider) {
 					provider = options?.actionViewItemProvider;
 				}
 				const viewItem = provider?.(action, opts);
+
 				if (viewItem) {
 					return viewItem;
 				}
@@ -363,12 +381,14 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 
 		// update logic
 		const menu = this._store.add(menuService.createMenu(menuId, contextKeyService, { emitEventsForSubmenuChanges: true, eventDebounceDelay: options?.eventDebounceDelay }));
+
 		const updateToolbar = () => {
 			const { primary, secondary } = getActionBarActions(
 				menu.getActions(options?.menuOptions),
 				options?.toolbarOptions?.primaryGroup, options?.toolbarOptions?.shouldInlineSubmenu, options?.toolbarOptions?.useSeparatorsInPrimaryActions
 			);
 			container.classList.toggle('has-no-actions', primary.length === 0 && secondary.length === 0);
+
 			super.setActions(primary, secondary);
 		};
 

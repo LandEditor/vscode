@@ -14,11 +14,13 @@ export enum NotebookDiffViewEventType {
 }
 export class NotebookDiffLayoutChangedEvent {
     public readonly type = NotebookDiffViewEventType.LayoutChanged;
+
     constructor(readonly source: NotebookLayoutChangeEvent, readonly value: NotebookLayoutInfo) {
     }
 }
 export class NotebookCellLayoutChangedEvent {
     public readonly type = NotebookDiffViewEventType.CellLayoutChanged;
+
     constructor(readonly source: IDiffElementLayoutInfo) {
     }
 }
@@ -31,12 +33,16 @@ export class NotebookDiffEditorEventDispatcher extends Disposable {
     emit(events: NotebookDiffViewEvent[]) {
         for (let i = 0, len = events.length; i < len; i++) {
             const e = events[i];
+
             switch (e.type) {
                 case NotebookDiffViewEventType.LayoutChanged:
                     this._onDidChangeLayout.fire(e);
+
                     break;
+
                 case NotebookDiffViewEventType.CellLayoutChanged:
                     this._onDidChangeCellLayout.fire(e);
+
                     break;
             }
         }

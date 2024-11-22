@@ -18,25 +18,31 @@ import { realpathSync } from '../../../base/node/extpath.js';
 import { ExtHostConsoleForwarder } from './extHostConsoleForwarder.js';
 import { ExtHostDiskFileSystemProvider } from './extHostDiskFileSystemProvider.js';
 import { createRequire } from 'node:module';
+
 const require = createRequire(import.meta.url);
 class NodeModuleRequireInterceptor extends RequireInterceptor {
     protected _installInterceptor(): void {
         const that = this;
+
         const node_module = require('module');
+
         const originalLoad = node_module._load;
         node_module._load = function load(request: string, parent: {
             filename: string;
         }, isMain: boolean) {
             request = applyAlternatives(request);
+
             if (!that._factories.has(request)) {
                 return originalLoad.apply(this, arguments);
             }
             return that._factories.get(request)!.load(request, URI.file(realpathSync(parent.filename)), request => originalLoad.apply(this, [request, parent, isMain]));
         };
+
         const originalLookup = node_module._resolveLookupPaths;
         node_module._resolveLookupPaths = (request: string, parent: unknown) => {
             return originalLookup.call(this, applyAlternatives(request), parent);
         };
+
         const originalResolveFilename = node_module._resolveFilename;
         node_module._resolveFilename = function resolveFilename(request: string, parent: unknown, isMain: boolean, options?: {
             paths?: string[];
@@ -50,11 +56,14 @@ class NodeModuleRequireInterceptor extends RequireInterceptor {
             }
             return originalResolveFilename.call(this, request, parent, isMain, options);
         };
+
         const applyAlternatives = (request: string) => {
             for (const alternativeModuleName of that._alternatives) {
                 const alternative = alternativeModuleName(request);
+
                 if (alternative) {
                     request = alternative;
+
                     break;
                 }
             }
@@ -98,7 +107,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
         activationTimesBuilder.codeLoadingStart();
         this._logService.trace(`ExtensionService#loadCommonJSModule ${module.toString(true)}`);
         this._logService.flush();
+
         const extensionId = extension?.identifier.value;
+
         if (extension) {
             await this._extHostLocalizationService.initializeLocalizedMessages(extension);
         }
@@ -124,6 +135,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
         }
         for (const key in env) {
             const value = env[key];
+
             if (value === null) {
                 delete process.env[key];
             }

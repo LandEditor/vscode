@@ -10,6 +10,7 @@ export function applyTextEditorOptions(options: ITextEditorOptions, editor: IEdi
     let applied = false;
     // Restore view state if any
     const viewState = massageEditorViewState(options);
+
     if (isTextEditorViewState(viewState)) {
         editor.restoreViewState(viewState);
         applied = true;
@@ -53,13 +54,16 @@ function massageEditorViewState(options: ITextEditorOptions): object | undefined
     // cursor state from the modified side where the selection
     // applies. This avoids a redundant selection change event.
     const candidateDiffViewState = options.viewState as IDiffEditorViewState;
+
     if (candidateDiffViewState.modified) {
         candidateDiffViewState.modified.cursorState = [];
+
         return candidateDiffViewState;
     }
     // Code editor: since we have an explicit selection, clear the
     // cursor state. This avoids a redundant selection change event.
     const candidateEditorViewState = options.viewState as ICodeEditorViewState;
+
     if (candidateEditorViewState.cursorState) {
         candidateEditorViewState.cursorState = [];
     }

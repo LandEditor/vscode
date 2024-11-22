@@ -10,6 +10,7 @@ import { dispose } from './util';
 import { OperationKind } from './operation';
 export interface IPostCommitCommandsProviderRegistry {
     readonly onDidChangePostCommitCommandsProviders: Event<void>;
+
     getPostCommitCommandsProviders(): PostCommitCommandsProvider[];
     registerPostCommitCommandsProvider(provider: PostCommitCommandsProvider): Disposable;
 }
@@ -18,17 +19,23 @@ export class GitPostCommitCommandsProvider implements PostCommitCommandsProvider
         const config = workspace.getConfiguration('git', Uri.file(apiRepository.repository.root));
         // Branch protection
         const isBranchProtected = apiRepository.repository.isBranchProtected();
+
         const branchProtectionPrompt = config.get<'alwaysCommit' | 'alwaysCommitToNewBranch' | 'alwaysPrompt'>('branchProtectionPrompt')!;
+
         const alwaysPrompt = isBranchProtected && branchProtectionPrompt === 'alwaysPrompt';
+
         const alwaysCommitToNewBranch = isBranchProtected && branchProtectionPrompt === 'alwaysCommitToNewBranch';
         // Icon
         const repository = apiRepository.repository;
+
         const isCommitInProgress = repository.operations.isRunning(OperationKind.Commit) || repository.operations.isRunning(OperationKind.PostCommitCommand);
+
         const icon = isCommitInProgress ? '$(sync~spin)' : alwaysPrompt ? '$(lock)' : alwaysCommitToNewBranch ? '$(git-branch)' : undefined;
         // Tooltip (default)
         let pushCommandTooltip = !alwaysCommitToNewBranch ?
             l10n.t('Commit & Push Changes') :
             l10n.t('Commit to New Branch & Push Changes');
+
         let syncCommandTooltip = !alwaysCommitToNewBranch ?
             l10n.t('Commit & Sync Changes') :
             l10n.t('Commit to New Branch & Synchronize Changes');
@@ -57,8 +64,10 @@ export class GitPostCommitCommandsProvider implements PostCommitCommandsProvider
 }
 export class CommitCommandsCenter {
     private _onDidChange = new EventEmitter<void>();
+
     get onDidChange(): Event<void> { return this._onDidChange.event; }
     private disposables: Disposable[] = [];
+
     set postCommitCommand(command: string | null | undefined) {
         if (command === undefined) {
             // Commit WAS NOT initiated using the action button
@@ -75,6 +84,7 @@ export class CommitCommandsCenter {
             .then(() => {
             const onRememberPostCommitCommandChange = async () => {
                 const config = workspace.getConfiguration('git', root);
+
                 if (!config.get<boolean>('rememberPostCommitCommand')) {
                     await this.globalState.update(this.getGlobalStateKey(), undefined);
                 }
@@ -90,12 +100,16 @@ export class CommitCommandsCenter {
     }
     getPrimaryCommand(): Command {
         const allCommands = this.getSecondaryCommands().map(c => c).flat();
+
         const commandFromStorage = allCommands.find(c => c.arguments?.length === 2 && c.arguments[1] === this.getPostCommitCommandStringFromStorage());
+
         const commandFromSetting = allCommands.find(c => c.arguments?.length === 2 && c.arguments[1] === this.getPostCommitCommandStringFromSetting());
+
         return commandFromStorage ?? commandFromSetting ?? this.getCommitCommands()[0];
     }
     getSecondaryCommands(): Command[][] {
         const commandGroups: Command[][] = [];
+
         for (const provider of this.postCommitCommandsProviderRegistry.getPostCommitCommandsProviders()) {
             const commands = provider.getCommands(new ApiRepository(this.repository));
             commandGroups.push((commands ?? []).map(c => {
@@ -140,13 +154,17 @@ export class CommitCommandsCenter {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
         // Branch protection
         const isBranchProtected = this.repository.isBranchProtected();
+
         const branchProtectionPrompt = config.get<'alwaysCommit' | 'alwaysCommitToNewBranch' | 'alwaysPrompt'>('branchProtectionPrompt')!;
+
         const alwaysPrompt = isBranchProtected && branchProtectionPrompt === 'alwaysPrompt';
+
         const alwaysCommitToNewBranch = isBranchProtected && branchProtectionPrompt === 'alwaysCommitToNewBranch';
         // Icon
         const icon = alwaysPrompt ? '$(lock)' : alwaysCommitToNewBranch ? '$(git-branch)' : undefined;
         // Tooltip (default)
         const branch = this.repository.HEAD?.name;
+
         let tooltip = alwaysCommitToNewBranch ?
             l10n.t('Commit Changes to New Branch') :
             branch ?
@@ -165,7 +183,9 @@ export class CommitCommandsCenter {
     }
     private getPostCommitCommandStringFromSetting(): string | undefined {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const postCommitCommandSetting = config.get<string>('postCommitCommand');
+
         return postCommitCommandSetting === 'push' || postCommitCommandSetting === 'sync' ? `git.${postCommitCommandSetting}` : undefined;
     }
     private getPostCommitCommandStringFromStorage(): string | null | undefined {
@@ -173,6 +193,7 @@ export class CommitCommandsCenter {
     }
     private async migratePostCommitCommandStorage(): Promise<void> {
         const postCommitCommandString = this.globalState.get<string | null>(this.repository.root);
+
         if (postCommitCommandString !== undefined) {
             await this.globalState.update(this.getGlobalStateKey(), postCommitCommandString);
             await this.globalState.update(this.repository.root, undefined);
@@ -180,6 +201,7 @@ export class CommitCommandsCenter {
     }
     private isRememberPostCommitCommandEnabled(): boolean {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         return config.get<boolean>('rememberPostCommitCommand') === true;
     }
     dispose(): void {

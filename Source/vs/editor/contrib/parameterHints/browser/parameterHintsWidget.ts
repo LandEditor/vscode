@@ -27,8 +27,11 @@ import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js'
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { StopWatch } from '../../../../base/common/stopwatch.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+
 const $ = dom.$;
+
 const parameterHintsNextIcon = registerIcon('parameter-hints-next', Codicon.chevronDown, nls.localize('parameterHintsNextIcon', 'Icon for show next parameter hint.'));
+
 const parameterHintsPreviousIcon = registerIcon('parameter-hints-previous', Codicon.chevronUp, nls.localize('parameterHintsPreviousIcon', 'Icon for show previous parameter hint.'));
 export class ParameterHintsWidget extends Disposable implements IContentWidget {
     private static readonly ID = 'editor.widget.parameterHintsWidget';
@@ -47,6 +50,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     private announcedLabel: string | null = null;
     // Editor.IContentWidget.allowEditorOverflow
     allowEditorOverflow = true;
+
     constructor(private readonly editor: ICodeEditor, private readonly model: ParameterHintsModel, 
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -63,11 +67,16 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     }
     private createParameterHintDOMNodes() {
         const element = $('.editor-widget.parameter-hints-widget');
+
         const wrapper = dom.append(element, $('.phwrapper'));
         wrapper.tabIndex = -1;
+
         const controls = dom.append(wrapper, $('.controls'));
+
         const previous = dom.append(controls, $('.button' + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon)));
+
         const overloads = dom.append(controls, $('.overloads'));
+
         const next = dom.append(controls, $('.button' + ThemeIcon.asCSSSelector(parameterHintsNextIcon)));
         this._register(dom.addDisposableListener(previous, 'click', e => {
             dom.EventHelper.stop(e);
@@ -77,13 +86,17 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
             dom.EventHelper.stop(e);
             this.next();
         }));
+
         const body = $('.body');
+
         const scrollbar = new DomScrollableElement(body, {
             alwaysConsumeMouseWheel: true,
         });
         this._register(scrollbar);
         wrapper.appendChild(scrollbar.getDomNode());
+
         const signature = dom.append(body, $('.signature'));
+
         const docs = dom.append(body, $('.docs'));
         element.style.userSelect = 'text';
         this.domNodes = {
@@ -100,11 +113,13 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
                 this.editor.layoutContentWidget(this);
             }
         }));
+
         const updateFont = () => {
             if (!this.domNodes) {
                 return;
             }
             const fontInfo = this.editor.getOption(EditorOption.fontInfo);
+
             const element = this.domNodes.element;
             element.style.fontSize = `${fontInfo.fontSize}px`;
             element.style.lineHeight = `${fontInfo.lineHeight / fontInfo.fontSize}`;
@@ -125,6 +140,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         }
         this.keyVisible.set(true);
         this.visible = true;
+
         setTimeout(() => {
             this.domNodes?.element.classList.add('visible');
         }, 100);
@@ -132,6 +148,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     }
     public hide(): void {
         this.renderDisposeables.clear();
+
         if (!this.visible) {
             return;
         }
@@ -152,6 +169,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     }
     public render(hints: languages.SignatureHelp): void {
         this.renderDisposeables.clear();
+
         if (!this.domNodes) {
             return;
         }
@@ -160,13 +178,18 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         this.keyMultipleSignatures.set(multiple);
         this.domNodes.signature.innerText = '';
         this.domNodes.docs.innerText = '';
+
         const signature = hints.signatures[hints.activeSignature];
+
         if (!signature) {
             return;
         }
         const code = dom.append(this.domNodes.signature, $('.code'));
+
         const hasParameters = signature.parameters.length > 0;
+
         const activeParameterIndex = signature.activeParameter ?? hints.activeParameter;
+
         if (!hasParameters) {
             const label = dom.append(code, $('span'));
             label.textContent = signature.label;
@@ -175,13 +198,16 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
             this.renderParameters(code, signature, activeParameterIndex);
         }
         const activeParameter: languages.ParameterInformation | undefined = signature.parameters[activeParameterIndex];
+
         if (activeParameter?.documentation) {
             const documentation = $('span.documentation');
+
             if (typeof activeParameter.documentation === 'string') {
                 documentation.textContent = activeParameter.documentation;
             }
             else {
                 const renderedContents = this.renderMarkdownDocs(activeParameter.documentation);
+
                 documentation.appendChild(renderedContents.element);
             }
             dom.append(this.domNodes.docs, $('p', {}, documentation));
@@ -194,6 +220,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         }
         else {
             const renderedContents = this.renderMarkdownDocs(signature.documentation);
+
             dom.append(this.domNodes.docs, renderedContents.element);
         }
         const hasDocs = this.hasDocs(signature, activeParameter);
@@ -201,9 +228,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         this.domNodes.docs.classList.toggle('empty', !hasDocs);
         this.domNodes.overloads.textContent =
             String(hints.activeSignature + 1).padStart(hints.signatures.length.toString().length, '0') + '/' + hints.signatures.length;
+
         if (activeParameter) {
             let labelToAnnounce = '';
+
             const param = signature.parameters[activeParameterIndex];
+
             if (Array.isArray(param.label)) {
                 labelToAnnounce = signature.label.substring(param.label[0], param.label[1]);
             }
@@ -228,6 +258,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     }
     private renderMarkdownDocs(markdown: IMarkdownString | undefined): IMarkdownRenderResult {
         const stopWatch = new StopWatch();
+
         const renderedContents = this.renderDisposeables.add(this.markdownRenderer.render(markdown, {
             asyncRenderCallback: () => {
                 this.domNodes?.scrollbar.scanDomNode();
@@ -246,7 +277,9 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         type RenderMarkdownPerformanceEvent = {
             renderDuration: number;
         };
+
         const renderDuration = stopWatch.elapsed();
+
         if (renderDuration > 300) {
             this.telemetryService.publicLog2<RenderMarkdownPerformanceEvent, RenderMarkdownPerformanceClassification>('parameterHints.parseMarkdown', {
                 renderDuration
@@ -271,13 +304,17 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
     }
     private renderParameters(parent: HTMLElement, signature: languages.SignatureInformation, activeParameterIndex: number): void {
         const [start, end] = this.getParameterLabelOffsets(signature, activeParameterIndex);
+
         const beforeSpan = document.createElement('span');
         beforeSpan.textContent = signature.label.substring(0, start);
+
         const paramSpan = document.createElement('span');
         paramSpan.textContent = signature.label.substring(start, end);
         paramSpan.className = 'parameter active';
+
         const afterSpan = document.createElement('span');
         afterSpan.textContent = signature.label.substring(end);
+
         dom.append(parent, beforeSpan, paramSpan, afterSpan);
     }
     private getParameterLabelOffsets(signature: languages.SignatureInformation, paramIdx: number): [
@@ -285,6 +322,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         number
     ] {
         const param = signature.parameters[paramIdx];
+
         if (!param) {
             return [0, 0];
         }
@@ -297,7 +335,9 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
         else {
             const regex = new RegExp(`(\\W|^)${escapeRegExpCharacters(param.label)}(?=\\W|$)`, 'g');
             regex.test(signature.label);
+
             const idx = regex.lastIndex - param.label.length;
+
             return idx >= 0
                 ? [idx, regex.lastIndex]
                 : [0, 0];
@@ -325,9 +365,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
             return;
         }
         const height = Math.max(this.editor.getLayoutInfo().height / 4, 250);
+
         const maxHeight = `${height}px`;
         this.domNodes.element.style.maxHeight = maxHeight;
+
         const wrapper = this.domNodes.element.getElementsByClassName('phwrapper') as HTMLCollectionOf<HTMLElement>;
+
         if (wrapper.length) {
             wrapper[0].style.maxHeight = maxHeight;
         }

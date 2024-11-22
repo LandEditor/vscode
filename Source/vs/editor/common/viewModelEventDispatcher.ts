@@ -19,6 +19,7 @@ export class ViewModelEventDispatcher extends Disposable {
     private _collector: ViewModelEventsCollector | null;
     private _collectorCnt: number;
     private _outgoingEvents: OutgoingViewModelEvent[];
+
     constructor() {
         super();
         this._eventHandlers = [];
@@ -35,8 +36,10 @@ export class ViewModelEventDispatcher extends Disposable {
     private _addOutgoingEvent(e: OutgoingViewModelEvent): void {
         for (let i = 0, len = this._outgoingEvents.length; i < len; i++) {
             const mergeResult = (this._outgoingEvents[i].kind === e.kind ? this._outgoingEvents[i].attemptToMerge(e) : null);
+
             if (mergeResult) {
                 this._outgoingEvents[i] = mergeResult;
+
                 return;
             }
         }
@@ -50,6 +53,7 @@ export class ViewModelEventDispatcher extends Disposable {
                 return;
             }
             const event = this._outgoingEvents.shift()!;
+
             if (event.isNoOp()) {
                 continue;
             }
@@ -68,12 +72,14 @@ export class ViewModelEventDispatcher extends Disposable {
         for (let i = 0; i < this._eventHandlers.length; i++) {
             if (this._eventHandlers[i] === eventHandler) {
                 this._eventHandlers.splice(i, 1);
+
                 break;
             }
         }
     }
     public beginEmitViewEvents(): ViewModelEventsCollector {
         this._collectorCnt++;
+
         if (this._collectorCnt === 1) {
             this._collector = new ViewModelEventsCollector();
         }
@@ -81,10 +87,13 @@ export class ViewModelEventDispatcher extends Disposable {
     }
     public endEmitViewEvents(): void {
         this._collectorCnt--;
+
         if (this._collectorCnt === 0) {
             const outgoingEvents = this._collector!.outgoingEvents;
+
             const viewEvents = this._collector!.viewEvents;
             this._collector = null;
+
             for (const outgoingEvent of outgoingEvents) {
                 this._addOutgoingEvent(outgoingEvent);
             }
@@ -130,6 +139,7 @@ export class ViewModelEventDispatcher extends Disposable {
             this._viewEventQueue = null;
             // Use a clone of the event handlers list, as they might remove themselves
             const eventHandlers = this._eventHandlers.slice(0);
+
             for (const eventHandler of eventHandlers) {
                 eventHandler.handleEvents(events);
             }
@@ -139,6 +149,7 @@ export class ViewModelEventDispatcher extends Disposable {
 export class ViewModelEventsCollector {
     public readonly viewEvents: ViewEvent[];
     public readonly outgoingEvents: OutgoingViewModelEvent[];
+
     constructor() {
         this.viewEvents = [];
         this.outgoingEvents = [];
@@ -174,6 +185,7 @@ export class ContentSizeChangedEvent implements IContentSizeChangedEvent {
     readonly contentHeight: number;
     readonly contentWidthChanged: boolean;
     readonly contentHeightChanged: boolean;
+
     constructor(oldContentWidth: number, oldContentHeight: number, contentWidth: number, contentHeight: number) {
         this._oldContentWidth = oldContentWidth;
         this._oldContentHeight = oldContentHeight;
@@ -196,6 +208,7 @@ export class FocusChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.FocusChanged;
     readonly oldHasFocus: boolean;
     readonly hasFocus: boolean;
+
     constructor(oldHasFocus: boolean, hasFocus: boolean) {
         this.oldHasFocus = oldHasFocus;
         this.hasFocus = hasFocus;
@@ -224,6 +237,7 @@ export class ScrollChangedEvent {
     public readonly scrollLeftChanged: boolean;
     public readonly scrollHeightChanged: boolean;
     public readonly scrollTopChanged: boolean;
+
     constructor(oldScrollWidth: number, oldScrollLeft: number, oldScrollHeight: number, oldScrollTop: number, scrollWidth: number, scrollLeft: number, scrollHeight: number, scrollTop: number) {
         this._oldScrollWidth = oldScrollWidth;
         this._oldScrollLeft = oldScrollLeft;
@@ -250,6 +264,7 @@ export class ScrollChangedEvent {
 }
 export class ViewZonesChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ViewZonesChanged;
+
     constructor() {
     }
     public isNoOp(): boolean {
@@ -264,6 +279,7 @@ export class ViewZonesChangedEvent {
 }
 export class HiddenAreasChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.HiddenAreasChanged;
+
     constructor() {
     }
     public isNoOp(): boolean {
@@ -285,6 +301,7 @@ export class CursorStateChangedEvent {
     public readonly source: string;
     public readonly reason: CursorChangeReason;
     public readonly reachedMaxCursorCount: boolean;
+
     constructor(oldSelections: Selection[] | null, selections: Selection[], oldModelVersionId: number, modelVersionId: number, source: string, reason: CursorChangeReason, reachedMaxCursorCount: boolean) {
         this.oldSelections = oldSelections;
         this.selections = selections;
@@ -302,7 +319,9 @@ export class CursorStateChangedEvent {
             return false;
         }
         const aLen = a.length;
+
         const bLen = b.length;
+
         if (aLen !== bLen) {
             return false;
         }
@@ -326,6 +345,7 @@ export class CursorStateChangedEvent {
 }
 export class ReadOnlyEditAttemptEvent {
     public readonly kind = OutgoingViewModelEventKind.ReadOnlyEditAttempt;
+
     constructor() {
     }
     public isNoOp(): boolean {
@@ -340,6 +360,7 @@ export class ReadOnlyEditAttemptEvent {
 }
 export class ModelDecorationsChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelDecorationsChanged;
+
     constructor(public readonly event: IModelDecorationsChangedEvent) { }
     public isNoOp(): boolean {
         return false;
@@ -350,6 +371,7 @@ export class ModelDecorationsChangedEvent {
 }
 export class ModelLanguageChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelLanguageChanged;
+
     constructor(public readonly event: IModelLanguageChangedEvent) { }
     public isNoOp(): boolean {
         return false;
@@ -360,6 +382,7 @@ export class ModelLanguageChangedEvent {
 }
 export class ModelLanguageConfigurationChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelLanguageConfigurationChanged;
+
     constructor(public readonly event: IModelLanguageConfigurationChangedEvent) { }
     public isNoOp(): boolean {
         return false;
@@ -370,6 +393,7 @@ export class ModelLanguageConfigurationChangedEvent {
 }
 export class ModelContentChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelContentChanged;
+
     constructor(public readonly event: IModelContentChangedEvent) { }
     public isNoOp(): boolean {
         return false;
@@ -380,6 +404,7 @@ export class ModelContentChangedEvent {
 }
 export class ModelOptionsChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelOptionsChanged;
+
     constructor(public readonly event: IModelOptionsChangedEvent) { }
     public isNoOp(): boolean {
         return false;
@@ -390,6 +415,7 @@ export class ModelOptionsChangedEvent {
 }
 export class ModelTokensChangedEvent {
     public readonly kind = OutgoingViewModelEventKind.ModelTokensChanged;
+
     constructor(public readonly event: IModelTokensChangedEvent) { }
     public isNoOp(): boolean {
         return false;

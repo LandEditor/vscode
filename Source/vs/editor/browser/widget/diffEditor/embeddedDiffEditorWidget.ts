@@ -14,6 +14,7 @@ import { IEditorProgressService } from '../../../../platform/progress/common/pro
 export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
     private readonly _parentEditor: ICodeEditor;
     private readonly _overwriteOptions: IDiffEditorOptions;
+
     constructor(domElement: HTMLElement, options: Readonly<IDiffEditorConstructionOptions>, codeEditorWidgetOptions: IDiffCodeEditorWidgetOptions, parentEditor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -37,10 +38,12 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
     }
     private _onParentConfigurationChanged(e: ConfigurationChangedEvent): void {
         super.updateOptions(this._parentEditor.getRawOptions());
+
         super.updateOptions(this._overwriteOptions);
     }
     override updateOptions(newOptions: IEditorOptions): void {
         objects.mixin(this._overwriteOptions, newOptions, true);
+
         super.updateOptions(this._overwriteOptions);
     }
 }

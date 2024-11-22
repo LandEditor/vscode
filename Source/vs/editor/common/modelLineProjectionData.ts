@@ -61,8 +61,11 @@ export class ModelLineProjectionData {
     public getLineLength(outputLineIndex: number): number {
         // These offsets refer to model text with injected text.
         const startOffset = outputLineIndex > 0 ? this.breakOffsets[outputLineIndex - 1] : 0;
+
         const endOffset = this.breakOffsets[outputLineIndex];
+
         let lineLength = endOffset - startOffset;
+
         if (outputLineIndex > 0) {
             lineLength += this.wrappedTextIndentLength;
         }
@@ -76,7 +79,9 @@ export class ModelLineProjectionData {
             outputOffset = Math.max(0, outputOffset - this.wrappedTextIndentLength);
         }
         const offsetInInputWithInjection = outputLineIndex === 0 ? outputOffset : this.breakOffsets[outputLineIndex - 1] + outputOffset;
+
         let offsetInInput = offsetInInputWithInjection;
+
         if (this.injectionOffsets !== null) {
             for (let i = 0; i < this.injectionOffsets.length; i++) {
                 if (offsetInInput > this.injectionOffsets[i]) {
@@ -97,6 +102,7 @@ export class ModelLineProjectionData {
     }
     public translateToOutputPosition(inputOffset: number, affinity: PositionAffinity = PositionAffinity.None): OutputPosition {
         let inputOffsetInInputWithInjection = inputOffset;
+
         if (this.injectionOffsets !== null) {
             for (let i = 0; i < this.injectionOffsets.length; i++) {
                 if (inputOffset < this.injectionOffsets[i]) {
@@ -112,13 +118,19 @@ export class ModelLineProjectionData {
     }
     private offsetInInputWithInjectionsToOutputPosition(offsetInInputWithInjections: number, affinity: PositionAffinity = PositionAffinity.None): OutputPosition {
         let low = 0;
+
         let high = this.breakOffsets.length - 1;
+
         let mid = 0;
+
         let midStart = 0;
+
         while (low <= high) {
             mid = low + ((high - low) / 2) | 0;
+
             const midStop = this.breakOffsets[mid];
             midStart = mid > 0 ? this.breakOffsets[mid - 1] : 0;
+
             if (affinity === PositionAffinity.Left) {
                 if (offsetInInputWithInjections <= midStart) {
                     high = mid - 1;
@@ -143,6 +155,7 @@ export class ModelLineProjectionData {
             }
         }
         let outputOffset = offsetInInputWithInjections - midStart;
+
         if (mid > 0) {
             outputOffset += this.wrappedTextIndentLength;
         }
@@ -151,7 +164,9 @@ export class ModelLineProjectionData {
     public normalizeOutputPosition(outputLineIndex: number, outputOffset: number, affinity: PositionAffinity): OutputPosition {
         if (this.injectionOffsets !== null) {
             const offsetInInputWithInjections = this.outputPositionToOffsetInInputWithInjections(outputLineIndex, outputOffset);
+
             const normalizedOffsetInUnwrappedLine = this.normalizeOffsetInInputWithInjectionsAroundInjections(offsetInInputWithInjections, affinity);
+
             if (normalizedOffsetInUnwrappedLine !== offsetInInputWithInjections) {
                 // injected text caused a change
                 return this.offsetInInputWithInjectionsToOutputPosition(normalizedOffsetInUnwrappedLine, affinity);
@@ -164,6 +179,7 @@ export class ModelLineProjectionData {
         }
         else if (affinity === PositionAffinity.Right) {
             const maxOutputLineIndex = this.getOutputLineCount() - 1;
+
             if (outputLineIndex < maxOutputLineIndex && outputOffset === this.getMaxOutputOffset(outputLineIndex)) {
                 return new OutputPosition(outputLineIndex + 1, this.getMinOutputOffset(outputLineIndex + 1));
             }
@@ -175,10 +191,12 @@ export class ModelLineProjectionData {
             outputOffset = Math.max(0, outputOffset - this.wrappedTextIndentLength);
         }
         const result = (outputLineIndex > 0 ? this.breakOffsets[outputLineIndex - 1] : 0) + outputOffset;
+
         return result;
     }
     private normalizeOffsetInInputWithInjectionsAroundInjections(offsetInInputWithInjections: number, affinity: PositionAffinity): number {
         const injectedText = this.getInjectedTextAtOffset(offsetInInputWithInjections);
+
         if (!injectedText) {
             return offsetInInputWithInjections;
         }
@@ -189,15 +207,18 @@ export class ModelLineProjectionData {
             }
             else {
                 let result = injectedText.offsetInInputWithInjections;
+
                 if (hasLeftCursorStop(this.injectionOptions![injectedText.injectedTextIndex].cursorStops)) {
                     return result;
                 }
                 let index = injectedText.injectedTextIndex - 1;
+
                 while (index >= 0 && this.injectionOffsets![index] === this.injectionOffsets![injectedText.injectedTextIndex]) {
                     if (hasRightCursorStop(this.injectionOptions![index].cursorStops)) {
                         break;
                     }
                     result -= this.injectionOptions![index].content.length;
+
                     if (hasLeftCursorStop(this.injectionOptions![index].cursorStops)) {
                         break;
                     }
@@ -208,6 +229,7 @@ export class ModelLineProjectionData {
         }
         else if (affinity === PositionAffinity.Right || affinity === PositionAffinity.RightOfInjectedText) {
             let result = injectedText.offsetInInputWithInjections + injectedText.length;
+
             let index = injectedText.injectedTextIndex;
             // traverse all injected text that touch each other
             while (index + 1 < this.injectionOffsets!.length && this.injectionOffsets![index + 1] === this.injectionOffsets![index]) {
@@ -219,6 +241,7 @@ export class ModelLineProjectionData {
         else if (affinity === PositionAffinity.Left || affinity === PositionAffinity.LeftOfInjectedText) {
             // affinity is left
             let result = injectedText.offsetInInputWithInjections;
+
             let index = injectedText.injectedTextIndex;
             // traverse all injected text that touch each other
             while (index - 1 >= 0 && this.injectionOffsets![index - 1] === this.injectionOffsets![index]) {
@@ -231,7 +254,9 @@ export class ModelLineProjectionData {
     }
     public getInjectedText(outputLineIndex: number, outputOffset: number): InjectedText | null {
         const offset = this.outputPositionToOffsetInInputWithInjections(outputLineIndex, outputOffset);
+
         const injectedText = this.getInjectedTextAtOffset(offset);
+
         if (!injectedText) {
             return null;
         }
@@ -245,13 +270,19 @@ export class ModelLineProjectionData {
         length: number;
     } | undefined {
         const injectionOffsets = this.injectionOffsets;
+
         const injectionOptions = this.injectionOptions;
+
         if (injectionOffsets !== null) {
             let totalInjectedTextLengthBefore = 0;
+
             for (let i = 0; i < injectionOffsets.length; i++) {
                 const length = injectionOptions![i].content.length;
+
                 const injectedTextStartOffsetInInputWithInjections = injectionOffsets[i] + totalInjectedTextLengthBefore;
+
                 const injectedTextEndOffsetInInputWithInjections = injectionOffsets[i] + totalInjectedTextLengthBefore + length;
+
                 if (injectedTextStartOffsetInInputWithInjections > offsetInInputWithInjections) {
                     // Injected text starts later.
                     break; // All later injected texts have an even larger offset.
@@ -288,6 +319,7 @@ export class InjectedText {
 export class OutputPosition {
     outputLineIndex: number;
     outputOffset: number;
+
     constructor(outputLineIndex: number, outputOffset: number) {
         this.outputLineIndex = outputLineIndex;
         this.outputOffset = outputOffset;

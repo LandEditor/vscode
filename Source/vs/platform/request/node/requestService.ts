@@ -31,6 +31,7 @@ export interface NodeRequestOptions extends IRequestOptions {
     agent?: Agent;
     strictSSL?: boolean;
     isChromiumNetwork?: boolean;
+
     getRawRequest?(options: IRequestOptions): IRawRequestFunction;
 }
 /**
@@ -43,6 +44,7 @@ export class RequestService extends AbstractRequestService implements IRequestSe
     private strictSSL: boolean | undefined;
     private authorization?: string;
     private shellEnvErrorLogged?: boolean;
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -66,7 +68,9 @@ export class RequestService extends AbstractRequestService implements IRequestSe
     }
     async request(options: NodeRequestOptions, token: CancellationToken): Promise<IRequestContext> {
         const { proxyUrl, strictSSL } = this;
+
         let shellEnv: typeof process.env | undefined = undefined;
+
         try {
             shellEnv = await getResolvedShellEnv(this.configurationService, this.logService, this.environmentService.args, process.env);
         }
@@ -80,9 +84,11 @@ export class RequestService extends AbstractRequestService implements IRequestSe
             ...process.env,
             ...shellEnv
         };
+
         const agent = options.agent ? options.agent : await getProxyAgent(options.url || '', env, { proxyUrl, strictSSL });
         options.agent = agent;
         options.strictSSL = strictSSL;
+
         if (this.authorization) {
             options.headers = {
                 ...(options.headers || {}),
@@ -100,35 +106,46 @@ export class RequestService extends AbstractRequestService implements IRequestSe
     async lookupKerberosAuthorization(urlStr: string): Promise<string | undefined> {
         try {
             const kerberos = await import('kerberos');
+
             const url = new URL(urlStr);
+
             const spn = this.configurationService.getValue<string>('http.proxyKerberosServicePrincipal')
                 || (process.platform === 'win32' ? `HTTP/${url.hostname}` : `HTTP@${url.hostname}`);
             this.logService.debug('RequestService#lookupKerberosAuthorization Kerberos authentication lookup', `proxyURL:${url}`, `spn:${spn}`);
+
             const client = await kerberos.initializeClient(spn);
+
             const response = await client.step('');
+
             return 'Negotiate ' + response;
         }
         catch (err) {
             this.logService.debug('RequestService#lookupKerberosAuthorization Kerberos authentication failed', err);
+
             return undefined;
         }
     }
     async loadCertificates(): Promise<string[]> {
         const proxyAgent = await import('@vscode/proxy-agent');
+
         return proxyAgent.loadSystemCertificates({ log: this.logService });
     }
 }
 async function getNodeRequest(options: IRequestOptions): Promise<IRawRequestFunction> {
     const endpoint = parseUrl(options.url!);
+
     const module = endpoint.protocol === 'https:' ? await import('https') : await import('http');
+
     return module.request;
 }
 export async function nodeRequest(options: NodeRequestOptions, token: CancellationToken): Promise<IRequestContext> {
     return Promises.withAsyncBody<IRequestContext>(async (resolve, reject) => {
         const endpoint = parseUrl(options.url!);
+
         const rawRequest = options.getRawRequest
             ? options.getRawRequest(options)
             : await getNodeRequest(options);
+
         const opts: https.RequestOptions = {
             hostname: endpoint.hostname,
             port: endpoint.port ? parseInt(endpoint.port) : (endpoint.protocol === 'https:' ? 443 : 80),
@@ -139,11 +156,13 @@ export async function nodeRequest(options: NodeRequestOptions, token: Cancellati
             agent: options.agent,
             rejectUnauthorized: isBoolean(options.strictSSL) ? options.strictSSL : true
         };
+
         if (options.user && options.password) {
             opts.auth = options.user + ':' + options.password;
         }
         const req = rawRequest(opts, (res: http.IncomingMessage) => {
             const followRedirects: number = isNumber(options.followRedirects) ? options.followRedirects : 3;
+
             if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && followRedirects > 0 && res.headers['location']) {
                 nodeRequest({
                     ...options,
@@ -165,6 +184,7 @@ export async function nodeRequest(options: NodeRequestOptions, token: Cancellati
             }
         });
         req.on('error', reject);
+
         if (options.timeout) {
             req.setTimeout(options.timeout);
         }

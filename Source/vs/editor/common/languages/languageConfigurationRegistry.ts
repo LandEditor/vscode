@@ -35,6 +35,7 @@ export interface ILanguageConfigurationService {
      * @param priority Use a higher number for higher priority
      */
     register(languageId: string, configuration: LanguageConfiguration, priority?: number): IDisposable;
+
     getLanguageConfiguration(languageId: string): ResolvedLanguageConfiguration;
 }
 export class LanguageConfigurationServiceChangeEvent {
@@ -50,18 +51,22 @@ export class LanguageConfigurationService extends Disposable implements ILanguag
     private readonly onDidChangeEmitter = this._register(new Emitter<LanguageConfigurationServiceChangeEvent>());
     public readonly onDidChange = this.onDidChangeEmitter.event;
     private readonly configurations = new Map<string, ResolvedLanguageConfiguration>();
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
     @ILanguageService
     private readonly languageService: ILanguageService) {
         super();
+
         const languageConfigKeys = new Set(Object.values(customizedLanguageConfigKeys));
         this._register(this.configurationService.onDidChangeConfiguration((e) => {
             const globalConfigChanged = e.change.keys.some((k) => languageConfigKeys.has(k));
+
             const localConfigChanged = e.change.overrides
                 .filter(([overrideLangName, keys]) => keys.some((k) => languageConfigKeys.has(k)))
                 .map(([overrideLangName]) => overrideLangName);
+
             if (globalConfigChanged) {
                 this.configurations.clear();
                 this.onDidChangeEmitter.fire(new LanguageConfigurationServiceChangeEvent(undefined));
@@ -85,6 +90,7 @@ export class LanguageConfigurationService extends Disposable implements ILanguag
     }
     public getLanguageConfiguration(languageId: string): ResolvedLanguageConfiguration {
         let result = this.configurations.get(languageId);
+
         if (!result) {
             result = computeConfig(languageId, this._registry, this.configurationService, this.languageService);
             this.configurations.set(languageId, result);
@@ -94,6 +100,7 @@ export class LanguageConfigurationService extends Disposable implements ILanguag
 }
 function computeConfig(languageId: string, registry: LanguageConfigurationRegistry, configurationService: IConfigurationService, languageService: ILanguageService): ResolvedLanguageConfiguration {
     let languageConfig = registry.getLanguageConfiguration(languageId);
+
     if (!languageConfig) {
         if (!languageService.isRegisteredLanguageId(languageId)) {
             // this happens for the null language, which can be returned by monarch.
@@ -103,8 +110,11 @@ function computeConfig(languageId: string, registry: LanguageConfigurationRegist
         languageConfig = new ResolvedLanguageConfiguration(languageId, {});
     }
     const customizedConfig = getCustomizedLanguageConfig(languageConfig.languageId, configurationService);
+
     const data = combineLanguageConfigurations([languageConfig.underlyingConfig, customizedConfig]);
+
     const config = new ResolvedLanguageConfiguration(languageConfig.languageId, data);
+
     return config;
 }
 const customizedLanguageConfigKeys = {
@@ -115,9 +125,11 @@ function getCustomizedLanguageConfig(languageId: string, configurationService: I
     const brackets = configurationService.getValue(customizedLanguageConfigKeys.brackets, {
         overrideIdentifier: languageId,
     });
+
     const colorizedBracketPairs = configurationService.getValue(customizedLanguageConfigKeys.colorizedBracketPairs, {
         overrideIdentifier: languageId,
     });
+
     return {
         brackets: validateBracketPairs(brackets),
         colorizedBracketPairs: validateBracketPairs(colorizedBracketPairs),
@@ -136,7 +148,9 @@ function validateBracketPairs(data: unknown): CharacterPair[] | undefined {
 }
 export function getIndentationAtPosition(model: ITextModel, lineNumber: number, column: number): string {
     const lineText = model.getLineContent(lineNumber);
+
     let indentation = strings.getLeadingWhitespace(lineText);
+
     if (indentation.length > column - 1) {
         indentation = indentation.substring(0, column - 1);
     }
@@ -146,6 +160,7 @@ class ComposedLanguageConfiguration {
     private readonly _entries: LanguageConfigurationContribution[];
     private _order: number;
     private _resolved: ResolvedLanguageConfiguration | null = null;
+
     constructor(public readonly languageId: string) {
         this._entries = [];
         this._order = 0;
@@ -155,11 +170,13 @@ class ComposedLanguageConfiguration {
         const entry = new LanguageConfigurationContribution(configuration, priority, ++this._order);
         this._entries.push(entry);
         this._resolved = null;
+
         return toDisposable(() => {
             for (let i = 0; i < this._entries.length; i++) {
                 if (this._entries[i] === entry) {
                     this._entries.splice(i, 1);
                     this._resolved = null;
+
                     break;
                 }
             }
@@ -168,6 +185,7 @@ class ComposedLanguageConfiguration {
     public getResolvedConfiguration(): ResolvedLanguageConfiguration | null {
         if (!this._resolved) {
             const config = this._resolve();
+
             if (config) {
                 this._resolved = new ResolvedLanguageConfiguration(this.languageId, config);
             }
@@ -179,6 +197,7 @@ class ComposedLanguageConfiguration {
             return null;
         }
         this._entries.sort(LanguageConfigurationContribution.cmp);
+
         return combineLanguageConfigurations(this._entries.map(e => e.configuration));
     }
 }
@@ -196,6 +215,7 @@ function combineLanguageConfigurations(configs: LanguageConfiguration[]): Langua
         colorizedBracketPairs: undefined,
         __electricCharacterSupport: undefined,
     };
+
     for (const entry of configs) {
         result = {
             comments: entry.comments || result.comments,
@@ -231,6 +251,7 @@ export class LanguageConfigurationRegistry extends Disposable {
     private readonly _entries = new Map<string, ComposedLanguageConfiguration>();
     private readonly _onDidChange = this._register(new Emitter<LanguageConfigurationChangeEvent>());
     public readonly onDidChange: Event<LanguageConfigurationChangeEvent> = this._onDidChange.event;
+
     constructor() {
         super();
         this._register(this.register(PLAINTEXT_LANGUAGE_ID, {
@@ -259,12 +280,14 @@ export class LanguageConfigurationRegistry extends Disposable {
      */
     public register(languageId: string, configuration: LanguageConfiguration, priority: number = 0): IDisposable {
         let entries = this._entries.get(languageId);
+
         if (!entries) {
             entries = new ComposedLanguageConfiguration(languageId);
             this._entries.set(languageId, entries);
         }
         const disposable = entries.register(configuration, priority);
         this._onDidChange.fire(new LanguageConfigurationChangeEvent(languageId));
+
         return toDisposable(() => {
             disposable.dispose();
             this._onDidChange.fire(new LanguageConfigurationChangeEvent(languageId));
@@ -272,6 +295,7 @@ export class LanguageConfigurationRegistry extends Disposable {
     }
     public getLanguageConfiguration(languageId: string): ResolvedLanguageConfiguration | null {
         const entries = this._entries.get(languageId);
+
         return entries?.getResolvedConfiguration() || null;
     }
 }
@@ -289,6 +313,7 @@ export class ResolvedLanguageConfiguration {
     public readonly indentationRules: IndentationRule | undefined;
     public readonly foldingRules: FoldingRules;
     public readonly bracketsNew: LanguageBracketsConfiguration;
+
     constructor(public readonly languageId: string, public readonly underlyingConfig: LanguageConfiguration) {
         this._brackets = null;
         this._electricCharacter = null;
@@ -302,6 +327,7 @@ export class ResolvedLanguageConfiguration {
         this.characterPair = new CharacterPairSupport(this.underlyingConfig);
         this.wordDefinition = this.underlyingConfig.wordPattern || DEFAULT_WORD_REGEXP;
         this.indentationRules = this.underlyingConfig.indentationRules;
+
         if (this.underlyingConfig.indentationRules) {
             this.indentRulesSupport = new IndentRulesSupport(this.underlyingConfig.indentationRules);
         }
@@ -343,11 +369,13 @@ export class ResolvedLanguageConfiguration {
     }
     private static _handleComments(conf: LanguageConfiguration): ICommentsConfiguration | null {
         const commentRule = conf.comments;
+
         if (!commentRule) {
             return null;
         }
         // comment configuration
         const comments: ICommentsConfiguration = {};
+
         if (commentRule.lineComment) {
             comments.lineCommentToken = commentRule.lineComment;
         }

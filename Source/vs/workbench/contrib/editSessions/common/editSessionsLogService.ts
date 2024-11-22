@@ -10,6 +10,7 @@ import { IEditSessionsLogService, editSessionsLogId } from './editSessions.js';
 export class EditSessionsLogService extends AbstractLogger implements IEditSessionsLogService {
     declare readonly _serviceBrand: undefined;
     private readonly logger: ILogger;
+
     constructor(
     @ILoggerService
     loggerService: ILoggerService, 

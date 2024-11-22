@@ -18,6 +18,7 @@ import { product } from './bootstrap-meta.js';
 import * as perf from './vs/base/common/performance.js';
 import { INLSConfiguration } from './vs/nls.js';
 import { IServerAPI } from './vs/server/node/remoteExtensionHostAgentServer.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 perf.mark('code/server/start');
 (globalThis as any).vscodeServerStartTime = performance.now();
@@ -30,14 +31,19 @@ const parsedArgs = minimist(process.argv.slice(2), {
 ['host', 'port', 'accept-server-license-terms'].forEach(e => {
     if (!parsedArgs[e]) {
         const envValue = process.env[`VSCODE_SERVER_${e.toUpperCase().replace('-', '_')}`];
+
         if (envValue) {
             parsedArgs[e] = envValue;
         }
     }
 });
+
 const extensionLookupArgs = ['list-extensions', 'locate-extension'];
+
 const extensionInstallArgs = ['install-extension', 'install-builtin-extension', 'uninstall-extension', 'update-extensions'];
+
 const shouldSpawnCli = parsedArgs.help || parsedArgs.version || extensionLookupArgs.some(a => !!parsedArgs[a]) || (extensionInstallArgs.some(a => !!parsedArgs[a]) && !parsedArgs['start-server']);
+
 const nlsConfiguration = await resolveNLSConfiguration({ userLocale: 'en', osLocale: 'en', commit: product.commit, userDataPath: '', nlsMetadataPath: __dirname });
 if (shouldSpawnCli) {
     loadCode(nlsConfiguration).then((mod) => {
@@ -46,19 +52,24 @@ if (shouldSpawnCli) {
 }
 else {
     let _remoteExtensionHostAgentServer: IServerAPI | null = null;
+
     let _remoteExtensionHostAgentServerPromise: Promise<IServerAPI> | null = null;
+
     const getRemoteExtensionHostAgentServer = () => {
         if (!_remoteExtensionHostAgentServerPromise) {
             _remoteExtensionHostAgentServerPromise = loadCode(nlsConfiguration).then(async (mod) => {
                 const server = await mod.createServer(address);
                 _remoteExtensionHostAgentServer = server;
+
                 return server;
             });
         }
         return _remoteExtensionHostAgentServerPromise;
     };
+
     if (Array.isArray(product.serverLicense) && product.serverLicense.length) {
         console.log(product.serverLicense.join('\n'));
+
         if (product.serverLicensePrompt && parsedArgs['accept-server-license-terms'] !== true) {
             if (hasStdinWithoutTty()) {
                 console.log('To accept the license terms, start the server with --accept-server-license-terms');
@@ -66,6 +77,7 @@ else {
             }
             try {
                 const accept = await prompt(product.serverLicensePrompt);
+
                 if (!accept) {
                     process.exit(1);
                 }
@@ -77,14 +89,18 @@ else {
         }
     }
     let firstRequest = true;
+
     let firstWebSocket = true;
+
     let address: string | AddressInfo | null = null;
+
     const server = http.createServer(async (req, res) => {
         if (firstRequest) {
             firstRequest = false;
             perf.mark('code/server/firstRequest');
         }
         const remoteExtensionHostAgentServer = await getRemoteExtensionHostAgentServer();
+
         return remoteExtensionHostAgentServer.handleRequest(req, res);
     });
     server.on('upgrade', async (req, socket) => {
@@ -98,14 +114,18 @@ else {
     });
     server.on('error', async (err) => {
         const remoteExtensionHostAgentServer = await getRemoteExtensionHostAgentServer();
+
         return remoteExtensionHostAgentServer.handleServerError(err);
     });
+
     const host = sanitizeStringArg(parsedArgs['host']) || (parsedArgs['compatibility'] !== '1.63' ? 'localhost' : undefined);
+
     const nodeListenOptions = (parsedArgs['socket-path']
         ? { path: sanitizeStringArg(parsedArgs['socket-path']) }
         : { host, port: await parsePort(host, sanitizeStringArg(parsedArgs['port'])) });
     server.listen(nodeListenOptions, async () => {
         let output = Array.isArray(product.serverGreeting) && product.serverGreeting.length ? `\n\n${product.serverGreeting.join('\n')}\n\n` : ``;
+
         if (typeof nodeListenOptions.port === 'number' && parsedArgs['print-ip-address']) {
             const ifaces = os.networkInterfaces();
             Object.keys(ifaces).forEach(function (ifname) {
@@ -117,6 +137,7 @@ else {
             });
         }
         address = server.address();
+
         if (address === null) {
             throw new Error('Unexpected server address');
         }
@@ -130,6 +151,7 @@ else {
     });
     process.on('exit', () => {
         server.close();
+
         if (_remoteExtensionHostAgentServer) {
             _remoteExtensionHostAgentServer.dispose();
         }
@@ -156,11 +178,13 @@ async function parsePort(host: string | undefined, strPort: string | undefined):
             start: number;
             end: number;
         } | undefined;
+
         if (strPort.match(/^\d+$/)) {
             return parseInt(strPort, 10);
         }
         else if (range = parseRange(strPort)) {
             const port = await findFreePort(host, range.start, range.end);
+
             if (port !== undefined) {
                 return port;
             }
@@ -180,8 +204,10 @@ function parseRange(strRange: string): {
     end: number;
 } | undefined {
     const match = strRange.match(/^(\d+)-(\d+)$/);
+
     if (match) {
         const start = parseInt(match[1], 10), end = parseInt(match[2], 10);
+
         if (start > 0 && start <= end && end <= 65535) {
             return { start, end };
         }
@@ -204,6 +230,7 @@ async function findFreePort(host: string | undefined, start: number, end: number
             });
         });
     };
+
     for (let port = start; port <= end; port++) {
         if (await testPort(port)) {
             return port;
@@ -219,6 +246,7 @@ async function loadCode(nlsConfiguration: INLSConfiguration) {
     // But in certain situations, the console itself can be in a broken pipe state
     // so logging SIGPIPE to the console will cause an infinite async loop
     process.env['VSCODE_HANDLES_SIGPIPE'] = 'true';
+
     if (process.env['VSCODE_DEV']) {
         // When running out of sources, we need to load node modules from remote/node_modules,
         // which are compiled against nodejs, not electron
@@ -247,10 +275,13 @@ function prompt(question: string): Promise<boolean> {
         input: process.stdin,
         output: process.stdout
     });
+
     return new Promise((resolve, reject) => {
         rl.question(question + ' ', async function (data) {
             rl.close();
+
             const str = data.toString().trim().toLowerCase();
+
             if (str === '' || str === 'y' || str === 'yes') {
                 resolve(true);
             }

@@ -346,6 +346,7 @@ export interface IFindMessage {
     readonly query: string;
     readonly options: {
         wholeWord?: boolean;
+
         caseSensitive?: boolean;
         includeMarkup: boolean;
         includeOutput: boolean;

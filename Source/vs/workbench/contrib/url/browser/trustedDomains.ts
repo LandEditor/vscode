@@ -11,6 +11,7 @@ import { IStorageService, StorageScope, StorageTarget } from '../../../../platfo
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
+
 const TRUSTED_DOMAINS_URI = URI.parse('trustedDomains:/Trusted Domains');
 export const TRUSTED_DOMAINS_STORAGE_KEY = 'http.linkProtectionTrustedDomains';
 export const TRUSTED_DOMAINS_CONTENT_STORAGE_KEY = 'http.linkProtectionTrustedDomainsContent';
@@ -23,6 +24,7 @@ export const manageTrustedDomainSettingsCommand = {
     handler: async (accessor: ServicesAccessor) => {
         const editorService = accessor.get(IEditorService);
         editorService.openEditor({ resource: TRUSTED_DOMAINS_URI, languageId: 'jsonc', options: { pinned: true } });
+
         return;
     }
 };
@@ -34,9 +36,13 @@ type ConfigureTrustedDomainsQuickPickItem = IQuickPickItem & ({
 });
 export async function configureOpenerTrustedDomainsHandler(trustedDomains: string[], domainToConfigure: string, resource: URI, quickInputService: IQuickInputService, storageService: IStorageService, editorService: IEditorService, telemetryService: ITelemetryService) {
     const parsedDomainToConfigure = URI.parse(domainToConfigure);
+
     const toplevelDomainSegements = parsedDomainToConfigure.authority.split('.');
+
     const domainEnd = toplevelDomainSegements.slice(toplevelDomainSegements.length - 2).join('.');
+
     const topLevelDomain = '*.' + domainEnd;
+
     const options: ConfigureTrustedDomainsQuickPickItem[] = [];
     options.push({
         type: 'item',
@@ -45,8 +51,10 @@ export async function configureOpenerTrustedDomainsHandler(trustedDomains: strin
         toTrust: domainToConfigure,
         picked: true
     });
+
     const isIP = toplevelDomainSegements.length === 4 &&
         toplevelDomainSegements.every(segment => Number.isInteger(+segment) || Number.isInteger(+segment.split(':')[0]));
+
     if (isIP) {
         if (parsedDomainToConfigure.authority.includes(':')) {
             const base = parsedDomainToConfigure.authority.split(':')[0];
@@ -77,7 +85,9 @@ export async function configureOpenerTrustedDomainsHandler(trustedDomains: strin
         label: localize('trustedDomain.manageTrustedDomains', 'Manage Trusted Domains'),
         id: 'manage'
     });
+
     const pickedResult = await quickInputService.pick<ConfigureTrustedDomainsQuickPickItem>(options, { activeItem: options[0] });
+
     if (pickedResult && pickedResult.id) {
         switch (pickedResult.id) {
             case 'manage':
@@ -86,12 +96,16 @@ export async function configureOpenerTrustedDomainsHandler(trustedDomains: strin
                     languageId: 'jsonc',
                     options: { pinned: true }
                 });
+
                 return trustedDomains;
+
             case 'trust': {
                 const itemToTrust = pickedResult.toTrust;
+
                 if (trustedDomains.indexOf(itemToTrust) === -1) {
                     storageService.remove(TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, StorageScope.APPLICATION);
                     storageService.store(TRUSTED_DOMAINS_STORAGE_KEY, JSON.stringify([...trustedDomains, itemToTrust]), StorageScope.APPLICATION, StorageTarget.USER);
+
                     return [...trustedDomains, itemToTrust];
                 }
             }
@@ -105,6 +119,7 @@ export interface IStaticTrustedDomains {
 }
 export async function readTrustedDomains(accessor: ServicesAccessor): Promise<IStaticTrustedDomains> {
     const { defaultTrustedDomains, trustedDomains } = readStaticTrustedDomains(accessor);
+
     return {
         defaultTrustedDomains,
         trustedDomains,
@@ -112,15 +127,21 @@ export async function readTrustedDomains(accessor: ServicesAccessor): Promise<IS
 }
 export function readStaticTrustedDomains(accessor: ServicesAccessor): IStaticTrustedDomains {
     const storageService = accessor.get(IStorageService);
+
     const productService = accessor.get(IProductService);
+
     const environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
+
     const defaultTrustedDomains = [
         ...productService.linkProtectionTrustedDomains ?? [],
         ...environmentService.options?.additionalTrustedDomains ?? []
     ];
+
     let trustedDomains: string[] = [];
+
     try {
         const trustedDomainsSrc = storageService.get(TRUSTED_DOMAINS_STORAGE_KEY, StorageScope.APPLICATION);
+
         if (trustedDomainsSrc) {
             trustedDomains = JSON.parse(trustedDomainsSrc);
         }

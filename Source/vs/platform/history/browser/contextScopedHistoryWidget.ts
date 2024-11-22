@@ -14,30 +14,41 @@ import { localize } from '../../../nls.js';
 import { DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
 import { isActiveElement } from '../../../base/browser/dom.js';
 export const historyNavigationVisible = new RawContextKey<boolean>('suggestWidgetVisible', false, localize('suggestWidgetVisible', "Whether suggestion are visible"));
+
 const HistoryNavigationWidgetFocusContext = 'historyNavigationWidgetFocus';
+
 const HistoryNavigationForwardsEnablementContext = 'historyNavigationForwardsEnabled';
+
 const HistoryNavigationBackwardsEnablementContext = 'historyNavigationBackwardsEnabled';
 export interface IHistoryNavigationContext extends IDisposable {
     historyNavigationForwardsEnablement: IContextKey<boolean>;
     historyNavigationBackwardsEnablement: IContextKey<boolean>;
 }
 let lastFocusedWidget: IHistoryNavigationWidget | undefined = undefined;
+
 const widgets: IHistoryNavigationWidget[] = [];
 export function registerAndCreateHistoryNavigationContext(scopedContextKeyService: IContextKeyService, widget: IHistoryNavigationWidget): IHistoryNavigationContext {
     if (widgets.includes(widget)) {
         throw new Error('Cannot register the same widget multiple times');
     }
     widgets.push(widget);
+
     const disposableStore = new DisposableStore();
+
     const historyNavigationWidgetFocus = new RawContextKey<boolean>(HistoryNavigationWidgetFocusContext, false).bindTo(scopedContextKeyService);
+
     const historyNavigationForwardsEnablement = new RawContextKey<boolean>(HistoryNavigationForwardsEnablementContext, true).bindTo(scopedContextKeyService);
+
     const historyNavigationBackwardsEnablement = new RawContextKey<boolean>(HistoryNavigationBackwardsEnablementContext, true).bindTo(scopedContextKeyService);
+
     const onDidFocus = () => {
         historyNavigationWidgetFocus.set(true);
         lastFocusedWidget = widget;
     };
+
     const onDidBlur = () => {
         historyNavigationWidgetFocus.set(false);
+
         if (lastFocusedWidget === widget) {
             lastFocusedWidget = undefined;
         }
@@ -52,6 +63,7 @@ export function registerAndCreateHistoryNavigationContext(scopedContextKeyServic
         widgets.splice(widgets.indexOf(widget), 1);
         onDidBlur();
     }));
+
     return {
         historyNavigationForwardsEnablement,
         historyNavigationBackwardsEnablement,
@@ -65,6 +77,7 @@ export class ContextScopedHistoryInputBox extends HistoryInputBox {
     @IContextKeyService
     contextKeyService: IContextKeyService) {
         super(container, contextViewProvider, options);
+
         const scopedContextKeyService = this._register(contextKeyService.createScoped(this.element));
         this._register(registerAndCreateHistoryNavigationContext(scopedContextKeyService, this));
     }
@@ -74,6 +87,7 @@ export class ContextScopedFindInput extends FindInput {
     @IContextKeyService
     contextKeyService: IContextKeyService) {
         super(container, contextViewProvider, options);
+
         const scopedContextKeyService = this._register(contextKeyService.createScoped(this.inputBox.element));
         this._register(registerAndCreateHistoryNavigationContext(scopedContextKeyService, this.inputBox));
     }
@@ -83,6 +97,7 @@ export class ContextScopedReplaceInput extends ReplaceInput {
     @IContextKeyService
     contextKeyService: IContextKeyService, showReplaceOptions: boolean = false) {
         super(container, contextViewProvider, showReplaceOptions, options);
+
         const scopedContextKeyService = this._register(contextKeyService.createScoped(this.inputBox.element));
         this._register(registerAndCreateHistoryNavigationContext(scopedContextKeyService, this.inputBox));
     }

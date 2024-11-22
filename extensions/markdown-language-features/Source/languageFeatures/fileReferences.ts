@@ -8,11 +8,14 @@ import { MdLanguageClient } from '../client/client';
 import { Command, CommandManager } from '../commandManager';
 export class FindFileReferencesCommand implements Command {
     public readonly id = 'markdown.findAllFileReferences';
+
     constructor(private readonly _client: MdLanguageClient) { }
     public async execute(resource?: vscode.Uri) {
         resource ??= vscode.window.activeTextEditor?.document.uri;
+
         if (!resource) {
             vscode.window.showErrorMessage(vscode.l10n.t("Find file references failed. No resource provided."));
+
             return;
         }
         await vscode.window.withProgress({
@@ -22,9 +25,12 @@ export class FindFileReferencesCommand implements Command {
             const locations = (await this._client.getReferencesToFileInWorkspace(resource, token)).map(loc => {
                 return new vscode.Location(vscode.Uri.parse(loc.uri), convertRange(loc.range));
             });
+
             const config = vscode.workspace.getConfiguration('references');
+
             const existingSetting = config.inspect<string>('preferredLocation');
             await config.update('preferredLocation', 'view');
+
             try {
                 await vscode.commands.executeCommand('editor.action.showReferences', resource, new vscode.Position(0, 0), locations);
             }

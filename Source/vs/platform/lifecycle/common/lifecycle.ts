@@ -9,7 +9,9 @@ export function handleVetos(vetos: (boolean | Promise<boolean>)[], onError: (err
         return Promise.resolve(false);
     }
     const promises: Promise<void>[] = [];
+
     let lazyValue = false;
+
     for (const valueOrPromise of vetos) {
         // veto, done
         if (valueOrPromise === true) {

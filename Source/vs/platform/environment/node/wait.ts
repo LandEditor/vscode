@@ -7,6 +7,7 @@ import { tmpdir } from 'os';
 import { randomPath } from '../../../base/common/extpath.js';
 export function createWaitMarkerFileSync(verbose?: boolean): string | undefined {
     const randomWaitMarkerPath = randomPath(tmpdir());
+
     try {
         writeFileSync(randomWaitMarkerPath, ''); // use built-in fs to avoid dragging in more dependencies
         if (verbose) {

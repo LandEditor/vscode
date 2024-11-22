@@ -14,24 +14,32 @@ export class LinesSliceCharSequence implements ISequence {
     private readonly firstElementOffsetByLineIdx: number[] = [];
     private readonly lineStartOffsets: number[] = [];
     private readonly trimmedWsLengthsByLineIdx: number[] = [];
+
     constructor(public readonly lines: string[], private readonly range: Range, public readonly considerWhitespaceChanges: boolean) {
         this.firstElementOffsetByLineIdx.push(0);
+
         for (let lineNumber = this.range.startLineNumber; lineNumber <= this.range.endLineNumber; lineNumber++) {
             let line = lines[lineNumber - 1];
+
             let lineStartOffset = 0;
+
             if (lineNumber === this.range.startLineNumber && this.range.startColumn > 1) {
                 lineStartOffset = this.range.startColumn - 1;
                 line = line.substring(lineStartOffset);
             }
             this.lineStartOffsets.push(lineStartOffset);
+
             let trimmedWsLength = 0;
+
             if (!considerWhitespaceChanges) {
                 const trimmedStartLine = line.trimStart();
                 trimmedWsLength = line.length - trimmedStartLine.length;
                 line = trimmedStartLine.trimEnd();
             }
             this.trimmedWsLengthsByLineIdx.push(trimmedWsLength);
+
             const lineLength = lineNumber === this.range.endLineNumber ? Math.min(this.range.endColumn - 1 - lineStartOffset - trimmedWsLength, line.length) : line.length;
+
             for (let i = 0; i < lineLength; i++) {
                 this.elements.push(line.charCodeAt(i));
             }
@@ -60,7 +68,9 @@ export class LinesSliceCharSequence implements ISequence {
         //   a   b   c   ,           d   e   f
         // 11  0   0   12  15  6   13  0   0   11
         const prevCategory = getCategory(length > 0 ? this.elements[length - 1] : -1);
+
         const nextCategory = getCategory(length < this.elements.length ? this.elements[length] : -1);
+
         if (prevCategory === CharBoundaryCategory.LineBreakCR && nextCategory === CharBoundaryCategory.LineBreakLF) {
             // don't break between \r and \n
             return 0;
@@ -70,25 +80,32 @@ export class LinesSliceCharSequence implements ISequence {
             return 150;
         }
         let score = 0;
+
         if (prevCategory !== nextCategory) {
             score += 10;
+
             if (prevCategory === CharBoundaryCategory.WordLower && nextCategory === CharBoundaryCategory.WordUpper) {
                 score += 1;
             }
         }
         score += getCategoryBoundaryScore(prevCategory);
         score += getCategoryBoundaryScore(nextCategory);
+
         return score;
     }
     public translateOffset(offset: number, preference: 'left' | 'right' = 'right'): Position {
         // find smallest i, so that lineBreakOffsets[i] <= offset using binary search
         const i = findLastIdxMonotonous(this.firstElementOffsetByLineIdx, (value) => value <= offset);
+
         const lineOffset = offset - this.firstElementOffsetByLineIdx[i];
+
         return new Position(this.range.startLineNumber + i, 1 + this.lineStartOffsets[i] + lineOffset + ((lineOffset === 0 && preference === 'left') ? 0 : this.trimmedWsLengthsByLineIdx[i]));
     }
     public translateRange(range: OffsetRange): Range {
         const pos1 = this.translateOffset(range.start, 'right');
+
         const pos2 = this.translateOffset(range.endExclusive, 'left');
+
         if (pos2.isBefore(pos1)) {
             return Range.fromPositions(pos2, pos2);
         }
@@ -106,11 +123,13 @@ export class LinesSliceCharSequence implements ISequence {
         }
         // find start
         let start = offset;
+
         while (start > 0 && isWordChar(this.elements[start - 1])) {
             start--;
         }
         // find end
         let end = offset;
+
         while (end < this.elements.length && isWordChar(this.elements[end])) {
             end++;
         }
@@ -124,7 +143,9 @@ export class LinesSliceCharSequence implements ISequence {
     }
     public extendToFullLines(range: OffsetRange): OffsetRange {
         const start = findLastMonotonous(this.firstElementOffsetByLineIdx, x => x <= range.start) ?? 0;
+
         const end = findFirstMonotonous(this.firstElementOffsetByLineIdx, x => range.endExclusive <= x) ?? this.elements.length;
+
         return new OffsetRange(start, end);
     }
 }

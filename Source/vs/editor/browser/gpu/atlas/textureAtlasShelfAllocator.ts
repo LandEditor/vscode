@@ -20,6 +20,7 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
     /** A set of all glyphs allocated, this is only tracked to enable debug related functionality */
     private readonly _allocatedGlyphs: Set<Readonly<ITextureAtlasPageGlyph>> = new Set();
     private _nextIndex = 0;
+
     constructor(private readonly _canvas: OffscreenCanvas, private readonly _textureIndex: number) {
         this._ctx = ensureNonNullable(this._canvas.getContext('2d', {
             willReadFrequently: true
@@ -28,7 +29,9 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
     public allocate(rasterizedGlyph: IRasterizedGlyph): ITextureAtlasPageGlyph | undefined {
         // The glyph does not fit into the atlas page
         const glyphWidth = rasterizedGlyph.boundingBox.right - rasterizedGlyph.boundingBox.left + 1;
+
         const glyphHeight = rasterizedGlyph.boundingBox.bottom - rasterizedGlyph.boundingBox.top + 1;
+
         if (glyphWidth > this._canvas.width || glyphHeight > this._canvas.height) {
             throw new BugIndicatingError('Glyph is too large for the atlas page');
         }
@@ -64,15 +67,20 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
         this._currentRow.h = Math.max(this._currentRow.h, glyphHeight);
         // Set the glyph
         this._allocatedGlyphs.add(glyph);
+
         return glyph;
     }
     public getUsagePreview(): Promise<Blob> {
         const w = this._canvas.width;
+
         const h = this._canvas.height;
+
         const canvas = new OffscreenCanvas(w, h);
+
         const ctx = ensureNonNullable(canvas.getContext('2d'));
         ctx.fillStyle = UsagePreviewColors.Unused;
         ctx.fillRect(0, 0, w, h);
+
         const rowHeight: Map<number, number> = new Map(); // y -> h
         const rowWidth: Map<number, number> = new Map(); // y -> w
         for (const g of this._allocatedGlyphs) {
@@ -95,10 +103,15 @@ export class TextureAtlasShelfAllocator implements ITextureAtlasAllocator {
     }
     getStats(): string {
         const w = this._canvas.width;
+
         const h = this._canvas.height;
+
         let usedPixels = 0;
+
         let wastedPixels = 0;
+
         const totalPixels = w * h;
+
         const rowHeight: Map<number, number> = new Map(); // y -> h
         const rowWidth: Map<number, number> = new Map(); // y -> w
         for (const g of this._allocatedGlyphs) {

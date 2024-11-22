@@ -74,6 +74,7 @@ export class Dialog extends Disposable {
     private readonly inputs: InputBox[];
     private readonly buttons: string[];
     private readonly buttonStyles: IButtonStyles;
+
     constructor(private container: HTMLElement, private message: string, buttons: string[] | undefined, private readonly options: IDialogOptions) {
         super();
         this.modalElement = this.container.appendChild($(`.monaco-dialog-modal-block.dimmed`));
@@ -83,6 +84,7 @@ export class Dialog extends Disposable {
         this.element.tabIndex = -1;
         hide(this.element);
         this.buttonStyles = options.buttonStyles;
+
         if (Array.isArray(buttons) && buttons.length > 0) {
             this.buttons = buttons;
         }
@@ -94,16 +96,20 @@ export class Dialog extends Disposable {
         }
         const buttonsRowElement = this.element.appendChild($('.dialog-buttons-row'));
         this.buttonsContainer = buttonsRowElement.appendChild($('.dialog-buttons'));
+
         const messageRowElement = this.element.appendChild($('.dialog-message-row'));
         this.iconElement = messageRowElement.appendChild($('#monaco-dialog-icon.dialog-icon'));
         this.iconElement.setAttribute('aria-label', this.getIconAriaLabel());
         this.messageContainer = messageRowElement.appendChild($('.dialog-message-container'));
+
         if (this.options.detail || this.options.renderBody) {
             const messageElement = this.messageContainer.appendChild($('.dialog-message'));
+
             const messageTextElement = messageElement.appendChild($('#monaco-dialog-message-text.dialog-message-text'));
             messageTextElement.innerText = this.message;
         }
         this.messageDetailElement = this.messageContainer.appendChild($('#monaco-dialog-message-detail.dialog-message-detail'));
+
         if (this.options.detail || !this.options.renderBody) {
             this.messageDetailElement.innerText = this.options.detail ? this.options.detail : message;
         }
@@ -113,6 +119,7 @@ export class Dialog extends Disposable {
         if (this.options.renderBody) {
             const customBody = this.messageContainer.appendChild($('#monaco-dialog-message-body.dialog-message-body'));
             this.options.renderBody(customBody);
+
             for (const el of this.messageContainer.querySelectorAll('a')) {
                 el.tabIndex = 0;
             }
@@ -120,11 +127,13 @@ export class Dialog extends Disposable {
         if (this.options.inputs) {
             this.inputs = this.options.inputs.map(input => {
                 const inputRowElement = this.messageContainer.appendChild($('.dialog-message-input'));
+
                 const inputBox = this._register(new InputBox(inputRowElement, undefined, {
                     placeholder: input.placeholder,
                     type: input.type ?? 'text',
                     inputBoxStyles: options.inputBoxStyles
                 }));
+
                 if (input.value) {
                     inputBox.value = input.value;
                 }
@@ -136,8 +145,10 @@ export class Dialog extends Disposable {
         }
         if (this.options.checkboxLabel) {
             const checkboxRowElement = this.messageContainer.appendChild($('.dialog-checkbox-row'));
+
             const checkbox = this.checkbox = this._register(new Checkbox(this.options.checkboxLabel, !!this.options.checkboxChecked, options.checkboxStyles));
             checkboxRowElement.appendChild(checkbox.domNode);
+
             const checkboxMessageElement = checkboxRowElement.appendChild($('.dialog-checkbox-message'));
             checkboxMessageElement.innerText = this.options.checkboxLabel;
             this._register(addDisposableListener(checkboxMessageElement, EventType.CLICK, () => checkbox.checked = !checkbox.checked));
@@ -148,16 +159,23 @@ export class Dialog extends Disposable {
     }
     private getIconAriaLabel(): string {
         let typeLabel = nls.localize('dialogInfoMessage', 'Info');
+
         switch (this.options.type) {
             case 'error':
                 typeLabel = nls.localize('dialogErrorMessage', 'Error');
+
                 break;
+
             case 'warning':
                 typeLabel = nls.localize('dialogWarningMessage', 'Warning');
+
                 break;
+
             case 'pending':
                 typeLabel = nls.localize('dialogPendingMessage', 'In Progress');
+
                 break;
+
             case 'none':
             case 'info':
             case 'question':
@@ -171,15 +189,20 @@ export class Dialog extends Disposable {
     }
     async show(): Promise<IDialogResult> {
         this.focusToReturn = this.container.ownerDocument.activeElement as HTMLElement;
+
         return new Promise<IDialogResult>((resolve) => {
             clearNode(this.buttonsContainer);
+
             const buttonBar = this.buttonBar = this._register(new ButtonBar(this.buttonsContainer));
+
             const buttonMap = this.rearrangeButtons(this.buttons, this.options.cancelId);
             // Handle button clicks
             buttonMap.forEach((entry, index) => {
                 const primary = buttonMap[index].index === 0;
+
                 const button = this.options.buttonDetails ? this._register(buttonBar.addButtonWithDescription({ secondary: !primary, ...this.buttonStyles })) : this._register(buttonBar.addButton({ secondary: !primary, ...this.buttonStyles }));
                 button.label = mnemonicButtonLabel(buttonMap[index].label, true);
+
                 if (button instanceof ButtonWithDescription) {
                     button.description = this.options.buttonDetails![buttonMap[index].index];
                 }
@@ -198,6 +221,7 @@ export class Dialog extends Disposable {
             const window = getWindow(this.container);
             this._register(addDisposableListener(window, 'keydown', e => {
                 const evt = new StandardKeyboardEvent(e);
+
                 if (evt.equals(KeyMod.Alt)) {
                     evt.preventDefault();
                 }
@@ -223,11 +247,15 @@ export class Dialog extends Disposable {
                     const focusableElements: {
                         focus: () => void;
                     }[] = [];
+
                     let focusedIndex = -1;
+
                     if (this.messageContainer) {
                         const links = this.messageContainer.querySelectorAll('a');
+
                         for (const link of links) {
                             focusableElements.push(link);
+
                             if (isActiveElement(link)) {
                                 focusedIndex = focusableElements.length - 1;
                             }
@@ -235,12 +263,14 @@ export class Dialog extends Disposable {
                     }
                     for (const input of this.inputs) {
                         focusableElements.push(input);
+
                         if (input.hasFocus()) {
                             focusedIndex = focusableElements.length - 1;
                         }
                     }
                     if (this.checkbox) {
                         focusableElements.push(this.checkbox);
+
                         if (this.checkbox.hasFocus()) {
                             focusedIndex = focusableElements.length - 1;
                         }
@@ -248,6 +278,7 @@ export class Dialog extends Disposable {
                     if (this.buttonBar) {
                         for (const button of this.buttonBar.buttons) {
                             focusableElements.push(button);
+
                             if (button.hasFocus()) {
                                 focusedIndex = focusableElements.length - 1;
                             }
@@ -267,6 +298,7 @@ export class Dialog extends Disposable {
                             focusedIndex = focusableElements.length; // default to focus last element if none have focus
                         }
                         let newFocusedIndex = focusedIndex - 1;
+
                         if (newFocusedIndex === -1) {
                             newFocusedIndex = focusableElements.length - 1;
                         }
@@ -283,7 +315,9 @@ export class Dialog extends Disposable {
             }, true));
             this._register(addDisposableListener(window, 'keyup', e => {
                 EventHelper.stop(e, true);
+
                 const evt = new StandardKeyboardEvent(e);
+
                 if (!this.options.disableCloseAction && evt.equals(KeyCode.Escape)) {
                     resolve({
                         button: this.options.cancelId || 0,
@@ -296,6 +330,7 @@ export class Dialog extends Disposable {
                 if (!!e.relatedTarget && !!this.element) {
                     if (!isAncestor(e.relatedTarget as HTMLElement, this.element)) {
                         this.focusToReturn = e.relatedTarget as HTMLElement;
+
                         if (e.target) {
                             (e.target as HTMLElement).focus();
                             EventHelper.stop(e, true);
@@ -303,8 +338,10 @@ export class Dialog extends Disposable {
                     }
                 }
             }, false));
+
             const spinModifierClassName = 'codicon-modifier-spin';
             this.iconElement.classList.remove(...ThemeIcon.asClassNameArray(Codicon.dialogError), ...ThemeIcon.asClassNameArray(Codicon.dialogWarning), ...ThemeIcon.asClassNameArray(Codicon.dialogInfo), ...ThemeIcon.asClassNameArray(Codicon.loading), spinModifierClassName);
+
             if (this.options.icon) {
                 this.iconElement.classList.add(...ThemeIcon.asClassNameArray(this.options.icon));
             }
@@ -312,25 +349,35 @@ export class Dialog extends Disposable {
                 switch (this.options.type) {
                     case 'error':
                         this.iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.dialogError));
+
                         break;
+
                     case 'warning':
                         this.iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.dialogWarning));
+
                         break;
+
                     case 'pending':
                         this.iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.loading), spinModifierClassName);
+
                         break;
+
                     case 'none':
                         this.iconElement.classList.add('no-codicon');
+
                         break;
+
                     case 'info':
                     case 'question':
                     default:
                         this.iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.dialogInfo));
+
                         break;
                 }
             }
             if (!this.options.disableCloseAction) {
                 const actionBar = this._register(new ActionBar(this.toolbarContainer, {}));
+
                 const action = this._register(new Action('dialog.close', nls.localize('dialogClose', "Close Dialog"), ThemeIcon.asClassName(Codicon.dialogClose), true, async () => {
                     resolve({
                         button: this.options.cancelId || 0,
@@ -360,10 +407,15 @@ export class Dialog extends Disposable {
     }
     private applyStyles() {
         const style = this.options.dialogStyles;
+
         const fgColor = style.dialogForeground;
+
         const bgColor = style.dialogBackground;
+
         const shadowColor = style.dialogShadow ? `0 0px 8px ${style.dialogShadow}` : '';
+
         const border = style.dialogBorder ? `1px solid ${style.dialogBorder}` : '';
+
         const linkFgColor = style.textLinkForeground;
         this.shadowElement.style.boxShadow = shadowColor;
         this.element.style.color = fgColor ?? '';
@@ -380,15 +432,21 @@ export class Dialog extends Disposable {
             }
         }
         let color;
+
         switch (this.options.type) {
             case 'error':
                 color = style.errorIconForeground;
+
                 break;
+
             case 'warning':
                 color = style.warningIconForeground;
+
                 break;
+
             default:
                 color = style.infoIconForeground;
+
                 break;
         }
         if (color) {
@@ -397,6 +455,7 @@ export class Dialog extends Disposable {
     }
     override dispose(): void {
         super.dispose();
+
         if (this.modalElement) {
             this.modalElement.remove();
             this.modalElement = undefined;
@@ -410,6 +469,7 @@ export class Dialog extends Disposable {
         // Maps each button to its current label and old index
         // so that when we move them around it's not a problem
         const buttonMap: ButtonMapEntry[] = buttons.map((label, index) => ({ label, index }));
+
         if (buttons.length < 2) {
             return buttonMap; // only need to rearrange if there are 2+ buttons
         }

@@ -28,6 +28,7 @@ const pluginSourceMap: MarkdownIt.PluginSimple = (md): void => {
     });
     // The 'html_block' renderer doesn't respect `attrs`. We need to insert a marker.
     const originalHtmlBlockRenderer = md.renderer.rules['html_block'];
+
     if (originalHtmlBlockRenderer) {
         md.renderer.rules['html_block'] = (tokens, idx, options, env, self) => (`<div ${self.renderAttrs(tokens[idx])} ></div>\n` +
             originalHtmlBlockRenderer(tokens, idx, options, env, self));
@@ -95,14 +96,17 @@ export class MarkdownItEngine implements IMdParser {
     }
     public async getEngine(resource: vscode.Uri | undefined): Promise<MarkdownIt> {
         const config = this._getConfig(resource);
+
         return this._getEngine(config);
     }
     private async _getEngine(config: MarkdownItConfig): Promise<MarkdownIt> {
         if (!this._md) {
             this._md = (async () => {
                 const markdownIt = await import('markdown-it');
+
                 let md: MarkdownIt = markdownIt.default(await getMarkdownOptions(() => md));
                 md.linkify.set({ fuzzyLink: false });
+
                 for (const plugin of this._contributionProvider.contributions.markdownItPlugins.values()) {
                     try {
                         md = (await plugin)(md);
@@ -131,11 +135,13 @@ export class MarkdownItEngine implements IMdParser {
                 this._addNamedHeaders(md);
                 this._addLinkRenderer(md);
                 md.use(pluginSourceMap);
+
                 return md;
             })();
         }
         const md = await this._md!;
         md.set(config);
+
         return md;
     }
     public reloadPlugins() {
@@ -143,17 +149,22 @@ export class MarkdownItEngine implements IMdParser {
     }
     private _tokenizeDocument(document: ITextDocument, config: MarkdownItConfig, engine: MarkdownIt): Token[] {
         const cached = this._tokenCache.tryGetCached(document, config);
+
         if (cached) {
             this._resetSlugCount();
+
             return cached;
         }
         this._logger.verbose('MarkdownItEngine', `tokenizeDocument - ${document.uri}`);
+
         const tokens = this._tokenizeString(document.getText(), engine);
         this._tokenCache.update(document, config, tokens);
+
         return tokens;
     }
     private _tokenizeString(text: string, engine: MarkdownIt) {
         this._resetSlugCount();
+
         return engine.parse(text, {});
     }
     private _resetSlugCount(): void {
@@ -161,19 +172,24 @@ export class MarkdownItEngine implements IMdParser {
     }
     public async render(input: ITextDocument | string, resourceProvider?: WebviewResourceProvider): Promise<RenderOutput> {
         const config = this._getConfig(typeof input === 'string' ? undefined : input.uri);
+
         const engine = await this._getEngine(config);
+
         const tokens = typeof input === 'string'
             ? this._tokenizeString(input, engine)
             : this._tokenizeDocument(input, config, engine);
+
         const env: RenderEnv = {
             containingImages: new Set<string>(),
             currentDocument: typeof input === 'string' ? undefined : input.uri,
             resourceProvider,
         };
+
         const html = engine.renderer.render(tokens, {
             ...engine.options,
             ...config
         }, env);
+
         return {
             html,
             containingImages: env.containingImages
@@ -181,7 +197,9 @@ export class MarkdownItEngine implements IMdParser {
     }
     public async tokenize(document: ITextDocument): Promise<Token[]> {
         const config = this._getConfig(document.uri);
+
         const engine = await this._getEngine(config);
+
         return this._tokenizeDocument(document, config, engine);
     }
     public cleanCache(): void {
@@ -189,6 +207,7 @@ export class MarkdownItEngine implements IMdParser {
     }
     private _getConfig(resource?: vscode.Uri): MarkdownItConfig {
         const config = MarkdownPreviewConfiguration.getForResource(resource ?? null);
+
         return {
             breaks: config.previewLineBreaks,
             linkify: config.previewLinkify,
@@ -199,9 +218,12 @@ export class MarkdownItEngine implements IMdParser {
         const original = md.renderer.rules.image;
         md.renderer.rules.image = (tokens: Token[], idx: number, options, env: RenderEnv, self) => {
             const token = tokens[idx];
+
             const src = token.attrGet('src');
+
             if (src) {
                 env.containingImages?.add(src);
+
                 if (!token.attrGet('data-src')) {
                     token.attrSet('src', this._toResourceUri(src, env.currentDocument, env.resourceProvider));
                     token.attrSet('data-src', src);
@@ -219,6 +241,7 @@ export class MarkdownItEngine implements IMdParser {
         const original = md.renderer.rules['fenced'];
         md.renderer.rules['fenced'] = (tokens: Token[], idx: number, options, env, self) => {
             const token = tokens[idx];
+
             if (token.map?.length) {
                 token.attrJoin('class', 'hljs');
             }
@@ -258,7 +281,9 @@ export class MarkdownItEngine implements IMdParser {
         const original = md.renderer.rules.heading_open;
         md.renderer.rules.heading_open = (tokens: Token[], idx: number, options, env, self) => {
             const title = this._tokenToPlainText(tokens[idx + 1]);
+
             let slug = this.slugifier.fromHeading(title);
+
             if (this._slugCount.has(slug.value)) {
                 const count = this._slugCount.get(slug.value)!;
                 this._slugCount.set(slug.value, count + 1);
@@ -268,6 +293,7 @@ export class MarkdownItEngine implements IMdParser {
                 this._slugCount.set(slug.value, 0);
             }
             tokens[idx].attrSet('id', slug.value);
+
             if (original) {
                 return original(tokens, idx, options, env, self);
             }
@@ -285,6 +311,7 @@ export class MarkdownItEngine implements IMdParser {
             case 'emoji':
             case 'code_inline':
                 return token.content;
+
             default:
                 return '';
         }
@@ -293,6 +320,7 @@ export class MarkdownItEngine implements IMdParser {
         const original = md.renderer.rules.link_open;
         md.renderer.rules.link_open = (tokens: Token[], idx: number, options, env, self) => {
             const token = tokens[idx];
+
             const href = token.attrGet('href');
             // A string, including empty string, may be `href`.
             if (typeof href === 'string') {
@@ -311,6 +339,7 @@ export class MarkdownItEngine implements IMdParser {
             // Support file:// links
             if (isOfScheme(Schemes.file, href)) {
                 const uri = vscode.Uri.parse(href);
+
                 if (resourceProvider) {
                     return resourceProvider.asWebviewUri(uri).toString(true);
                 }
@@ -325,11 +354,13 @@ export class MarkdownItEngine implements IMdParser {
                 // handle absolute paths specially to resolve them relative to the workspace root
                 if (uri.path[0] === '/' && currentDocument) {
                     const root = vscode.workspace.getWorkspaceFolder(currentDocument);
+
                     if (root) {
                         uri = vscode.Uri.joinPath(root.uri, uri.fsPath).with({
                             fragment: uri.fragment,
                             query: uri.query,
                         });
+
                         if (resourceProvider) {
                             return resourceProvider.asWebviewUri(uri).toString(true);
                         }
@@ -349,10 +380,12 @@ export class MarkdownItEngine implements IMdParser {
 }
 async function getMarkdownOptions(md: () => MarkdownIt): Promise<MarkdownIt.Options> {
     const hljs = (await import('highlight.js')).default;
+
     return {
         html: true,
         highlight: (str: string, lang?: string) => {
             lang = normalizeHighlightLang(lang);
+
             if (lang && hljs.getLanguage(lang)) {
                 try {
                     return hljs.highlight(str, {
@@ -370,18 +403,23 @@ function normalizeHighlightLang(lang: string | undefined) {
     switch (lang && lang.toLowerCase()) {
         case 'shell':
             return 'sh';
+
         case 'py3':
             return 'python';
+
         case 'tsx':
         case 'typescriptreact':
             // Workaround for highlight not supporting tsx: https://github.com/isagalaev/highlight.js/issues/1155
             return 'jsx';
+
         case 'json5':
         case 'jsonc':
             return 'json';
+
         case 'c#':
         case 'csharp':
             return 'cs';
+
         default:
             return lang;
     }

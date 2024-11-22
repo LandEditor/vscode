@@ -22,6 +22,7 @@ const tsDirectives: Directive[] = [
         description: vscode.l10n.t("Suppresses @ts-check errors on the next line of a file.")
     }
 ];
+
 const tsDirectives390: Directive[] = [
     ...tsDirectives,
     {
@@ -33,20 +34,26 @@ class DirectiveCommentCompletionProvider implements vscode.CompletionItemProvide
     constructor(private readonly client: ITypeScriptServiceClient) { }
     public provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): vscode.CompletionItem[] {
         const file = this.client.toOpenTsFilePath(document);
+
         if (!file) {
             return [];
         }
         const line = document.lineAt(position.line).text;
+
         const prefix = line.slice(0, position.character);
+
         const match = prefix.match(/^\s*\/\/+\s?(@[a-zA-Z\-]*)?$/);
+
         if (match) {
             const directives = this.client.apiVersion.gte(API.v390)
                 ? tsDirectives390
                 : tsDirectives;
+
             return directives.map(directive => {
                 const item = new vscode.CompletionItem(directive.value, vscode.CompletionItemKind.Snippet);
                 item.detail = directive.description;
                 item.range = new vscode.Range(position.line, Math.max(0, position.character - (match[1] ? match[1].length : 0)), position.line, position.character);
+
                 return item;
             });
         }

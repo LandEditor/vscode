@@ -12,6 +12,7 @@ import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions
 export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
     private readonly proxy: ExtHostQuickDiffShape;
     private providerDisposables = new DisposableMap<number, IDisposable>();
+
     constructor(extHostContext: IExtHostContext, 
     @IQuickDiffService
     private readonly quickDiffService: IQuickDiffService) {
@@ -27,6 +28,7 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
                 return URI.revive(await this.proxy.$provideOriginalResource(handle, uri, CancellationToken.None));
             }
         };
+
         const disposable = this.quickDiffService.addQuickDiffProvider(provider);
         this.providerDisposables.set(handle, disposable);
     }

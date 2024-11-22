@@ -21,24 +21,34 @@ declare const name: string; // https://developer.mozilla.org/en-US/docs/Web/API/
 declare type _Fetch = typeof fetch;
 declare namespace self {
     let close: any;
+
     let postMessage: any;
+
     let addEventListener: any;
+
     let removeEventListener: any;
+
     let dispatchEvent: any;
+
     let indexedDB: {
         open: any;
         [k: string]: any;
     };
+
     let caches: {
         open: any;
         [k: string]: any;
     };
+
     let importScripts: any;
+
     let fetch: _Fetch;
+
     let XMLHttpRequest: any;
 }
 const nativeClose = self.close.bind(self);
 self.close = () => console.trace(`'close' has been blocked`);
+
 const nativePostMessage = postMessage.bind(self);
 self.postMessage = () => console.trace(`'postMessage' has been blocked`);
 function shouldTransformUri(uri: string): boolean {
@@ -117,17 +127,22 @@ if ((<any>self).Worker) {
                     return super.open(method, asWorkerBrowserUrl(url), async ?? true, username, password);
                 }
             };
+
             const nativeImportScripts = importScripts.bind(self);
             self.importScripts = (...urls: string[]) => {
                 nativeImportScripts(...urls.map(asWorkerBrowserUrl));
             };
             nativeImportScripts(workerUrl);
         }).toString();
+
         const js = `(${bootstrapFnSource}('${stringUrl}'))`;
         options = options || {};
         options.name = `${name} -> ${options.name || path.basename(stringUrl.toString())}`;
+
         const blob = new Blob([js], { type: 'application/javascript' });
+
         const blobUrl = URL.createObjectURL(blob);
+
         return new _Worker(blobUrl, options);
     };
 }
@@ -149,23 +164,30 @@ const hostUtil = new class implements IHostUtils {
 class ExtensionWorker {
     // protocol
     readonly protocol: IMessagePassingProtocol;
+
     constructor() {
         const channel = new MessageChannel();
+
         const emitter = new Emitter<VSBuffer>();
+
         let terminating = false;
         // send over port2, keep port1
         nativePostMessage(channel.port2, [channel.port2]);
         channel.port1.onmessage = event => {
             const { data } = event;
+
             if (!(data instanceof ArrayBuffer)) {
                 console.warn('UNKNOWN data received', data);
+
                 return;
             }
             const msg = VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength));
+
             if (isMessageOfType(msg, MessageType.Terminate)) {
                 // handle terminate-message right here
                 terminating = true;
                 onTerminate('received terminate message from renderer');
+
                 return;
             }
             // emit non-terminate messages to the outside
@@ -190,6 +212,7 @@ function connectToRenderer(protocol: IMessagePassingProtocol): Promise<IRenderer
     return new Promise<IRendererConnection>(resolve => {
         const once = protocol.onMessage(raw => {
             once.dispose();
+
             const initData = <IExtensionHostInitData>JSON.parse(raw.toString());
             protocol.send(createMessageOfType(MessageType.Initialized));
             resolve({ protocol, initData });
@@ -213,7 +236,9 @@ export function create(): {
     onmessage: (message: any) => void;
 } {
     performance.mark(`code/extHost/willConnectToRenderer`);
+
     const res = new ExtensionWorker();
+
     return {
         onmessage(message: any) {
             if (!isInitMessage(message)) {
@@ -221,6 +246,7 @@ export function create(): {
             }
             connectToRenderer(res.protocol).then(data => {
                 performance.mark(`code/extHost/didWaitForInitData`);
+
                 const extHostMain = new ExtensionHostMain(data.protocol, data.initData, hostUtil, null, message.data);
                 patchFetching(uri => extHostMain.asBrowserUri(uri));
                 onTerminate = (reason: string) => extHostMain.terminate(reason);

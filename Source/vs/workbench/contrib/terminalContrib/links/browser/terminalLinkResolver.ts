@@ -16,6 +16,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
     // Link cache could be shared across all terminals, but that could lead to weird results when
     // both local and remote terminals are present
     private readonly _resolvedLinkCaches: Map<string, LinkCache> = new Map();
+
     constructor(
     @IFileService
     private readonly _fileService: IFileService) {
@@ -32,25 +33,30 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
         }
         // Get the link cache
         let cache = this._resolvedLinkCaches.get(processManager.remoteAuthority ?? '');
+
         if (!cache) {
             cache = new LinkCache();
             this._resolvedLinkCaches.set(processManager.remoteAuthority ?? '', cache);
         }
         // Check resolved link cache first
         const cached = cache.get(uri || link);
+
         if (cached !== undefined) {
             return cached;
         }
         if (uri) {
             try {
                 const stat = await this._fileService.stat(uri);
+
                 const result = { uri, link, isDirectory: stat.isDirectory };
                 cache.set(uri, result);
+
                 return result;
             }
             catch (e) {
                 // Does not exist
                 cache.set(uri, null);
+
                 return null;
             }
         }
@@ -61,6 +67,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
         // Exit early if the link is determines as not valid already
         if (linkUrl.length === 0) {
             cache.set(link, null);
+
             return null;
         }
         // If the link looks like a /mnt/ WSL path and this is a Windows frontend, use the backend
@@ -75,14 +82,17 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
         // Handle all non-WSL links
         else {
             const preprocessedLink = this._preprocessPath(linkUrl, processManager.initialCwd, processManager.os, processManager.userHome);
+
             if (!preprocessedLink) {
                 cache.set(link, null);
+
                 return null;
             }
             linkUrl = preprocessedLink;
         }
         try {
             let uri: URI;
+
             if (processManager.remoteAuthority) {
                 uri = URI.from({
                     scheme: Schemas.vscodeRemote,
@@ -95,24 +105,29 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
             }
             try {
                 const stat = await this._fileService.stat(uri);
+
                 const result = { uri, link, isDirectory: stat.isDirectory };
                 cache.set(link, result);
+
                 return result;
             }
             catch (e) {
                 // Does not exist
                 cache.set(link, null);
+
                 return null;
             }
         }
         catch {
             // Errors in parsing the path
             cache.set(link, null);
+
             return null;
         }
     }
     protected _preprocessPath(link: string, initialCwd: string, os: OperatingSystem | undefined, userHome: string | undefined): string | null {
         const osPath = this._getOsPath(os);
+
         if (link.charAt(0) === '~') {
             // Resolve ~ -> userHome
             if (!userHome) {
@@ -145,6 +160,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
             }
         }
         link = osPath.normalize(link);
+
         return link;
     }
     private _getOsPath(os: OperatingSystem | undefined): IPath {
@@ -161,6 +177,7 @@ const enum LinkCacheConstants {
 class LinkCache {
     private readonly _cache = new Map<string, ResolvedLink>();
     private _cacheTilTimeout = 0;
+
     set(link: string | URI, value: ResolvedLink) {
         // Reset cached link TTL on any set
         if (this._cacheTilTimeout) {

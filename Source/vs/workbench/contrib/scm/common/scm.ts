@@ -67,6 +67,7 @@ export interface ISCMProvider extends IDisposable {
     readonly acceptInputCommand?: Command;
     readonly actionButton: IObservable<ISCMActionButtonDescriptor | undefined>;
     readonly statusBarCommands: IObservable<readonly Command[] | undefined>;
+
     getOriginalResource(uri: URI): Promise<URI | null>;
 }
 export interface ISCMInputValueProviderContext {
@@ -108,6 +109,7 @@ export interface ISCMActionButton {
 export interface ISCMInput {
     readonly repository: ISCMRepository;
     readonly value: string;
+
     setValue(value: string, fromKeyboard: boolean): void;
     readonly onDidChange: Event<ISCMInputChangeEvent>;
     placeholder: string;
@@ -118,6 +120,7 @@ export interface ISCMInput {
     readonly onDidChangeEnablement: Event<boolean>;
     visible: boolean;
     readonly onDidChangeVisibility: Event<boolean>;
+
     setFocus(): void;
     readonly onDidChangeFocus: Event<void>;
     showValidationMessage(message: string | IMarkdownString, type: InputValidationType): void;
@@ -137,7 +140,9 @@ export interface ISCMService {
     readonly repositories: Iterable<ISCMRepository>;
     readonly repositoryCount: number;
     registerSCMProvider(provider: ISCMProvider): ISCMRepository;
+
     getRepository(id: string): ISCMRepository | undefined;
+
     getRepository(resource: URI): ISCMRepository | undefined;
 }
 export interface ISCMTitleMenu {
@@ -150,8 +155,11 @@ export interface ISCMRepositoryMenus {
     readonly titleMenu: ISCMTitleMenu;
     readonly repositoryMenu: IMenu;
     readonly repositoryContextMenu: IMenu;
+
     getResourceGroupMenu(group: ISCMResourceGroup): IMenu;
+
     getResourceMenu(resource: ISCMResource): IMenu;
+
     getResourceFolderMenu(group: ISCMResourceGroup): IMenu;
 }
 export interface ISCMMenus {

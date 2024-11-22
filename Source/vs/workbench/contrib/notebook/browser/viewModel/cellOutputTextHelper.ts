@@ -17,11 +17,16 @@ interface Error {
 
 export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellViewModel, shortErrors: boolean = false): string {
 	const outputText: string[] = [];
+
 	for (let i = 0; i < viewCell.outputsViewModels.length; i++) {
 		const outputViewModel = viewCell.outputsViewModels[i];
+
 		const outputTextModel = viewCell.model.outputs[i];
+
 		const [mimeTypes, pick] = outputViewModel.resolveMimeTypes(notebook, undefined);
+
 		const mimeType = mimeTypes[pick].mimeType;
+
 		let buffer = outputTextModel.outputs.find(output => output.mime === mimeType);
 
 		if (!buffer || mimeType.startsWith('image')) {
@@ -33,9 +38,11 @@ export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellVi
 		}
 
 		let text = '';
+
 		if (isTextStreamMime(mimeType)) {
 			const { text: stream, count } = getOutputStreamText(outputViewModel);
 			text = stream;
+
 			if (count > 1) {
 				i += count - 1;
 			}
@@ -47,6 +54,7 @@ export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellVi
 	}
 
 	let outputContent: string;
+
 	if (outputText.length > 1) {
 		outputContent = outputText.map((output, i) => {
 			return `Cell output ${i + 1} of ${outputText.length}\n${output}`;
@@ -60,12 +68,18 @@ export function getAllOutputsText(notebook: NotebookTextModel, viewCell: ICellVi
 
 export function getOutputStreamText(output: ICellOutputViewModel): { text: string; count: number } {
 	let text = '';
+
 	const cellViewModel = output.cellViewModel as ICellViewModel;
+
 	let index = cellViewModel.outputsViewModels.indexOf(output);
+
 	let count = 0;
+
 	while (index < cellViewModel.model.outputs.length) {
 		const nextCellOutput = cellViewModel.model.outputs[index];
+
 		const nextOutput = nextCellOutput.outputs.find(output => isTextStreamMime(output.mime));
+
 		if (!nextOutput) {
 			break;
 		}
@@ -90,8 +104,10 @@ export function getOutputText(mimeType: string, buffer: IOutputItemDto, shortErr
 		text = text + '...(truncated)';
 	} else if (mimeType === 'application/vnd.code.notebook.error') {
 		text = text.replace(/\\u001b\[[0-9;]*m/gi, '');
+
 		try {
 			const error = JSON.parse(text) as Error;
+
 			if (!error.stack || shortError) {
 				text = `${error.name}: ${error.message}`;
 			} else {
@@ -107,6 +123,7 @@ export function getOutputText(mimeType: string, buffer: IOutputItemDto, shortErr
 
 export async function copyCellOutput(mimeType: string | undefined, outputViewModel: ICellOutputViewModel, clipboardService: IClipboardService, logService: ILogService) {
 	const cellOutput = outputViewModel.model;
+
 	const output = mimeType && TEXT_BASED_MIMETYPES.includes(mimeType) ?
 		cellOutput.outputs.find(output => output.mime === mimeType) :
 		cellOutput.outputs.find(output => TEXT_BASED_MIMETYPES.includes(output.mime));

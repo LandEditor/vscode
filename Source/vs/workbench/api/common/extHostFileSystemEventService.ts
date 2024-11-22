@@ -33,6 +33,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
     private readonly _onDidDelete = new Emitter<vscode.Uri>();
     private _disposable: Disposable;
     private _config: number;
+
     get ignoreCreateEvents(): boolean {
         return Boolean(this._config & 0b001);
     }
@@ -44,6 +45,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
     }
     constructor(mainContext: IMainContext, configuration: ExtHostConfigProvider, workspace: IExtHostWorkspace, extension: IExtensionDescription, dispatcher: Event<FileSystemEvents>, globPattern: string | IRelativePatternDto, options: FileSystemWatcherCreateOptions) {
         this._config = 0;
+
         if (options.ignoreCreateEvents) {
             this._config += 0b001;
         }
@@ -64,6 +66,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
         // rules. In these cases, we turn the file watcher into correlation
         // mode and ignore any event that does not match the correlation ID.
         const excludeUncorrelatedEvents = options.correlate;
+
         const subscription = dispatcher(events => {
             if (typeof events.session === 'number' && events.session !== this.session) {
                 return; // ignore events from other file watchers that are in correlation mode
@@ -74,6 +77,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             if (!options.ignoreCreateEvents) {
                 for (const created of events.created) {
                     const uri = URI.revive(created);
+
                     if (parsedPattern(uri.fsPath) && (!excludeOutOfWorkspaceEvents || workspace.getWorkspaceFolder(uri))) {
                         this._onDidCreate.fire(uri);
                     }
@@ -82,6 +86,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             if (!options.ignoreChangeEvents) {
                 for (const changed of events.changed) {
                     const uri = URI.revive(changed);
+
                     if (parsedPattern(uri.fsPath) && (!excludeOutOfWorkspaceEvents || workspace.getWorkspaceFolder(uri))) {
                         this._onDidChange.fire(uri);
                     }
@@ -90,6 +95,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             if (!options.ignoreDeleteEvents) {
                 for (const deleted of events.deleted) {
                     const uri = URI.revive(deleted);
+
                     if (parsedPattern(uri.fsPath) && (!excludeOutOfWorkspaceEvents || workspace.getWorkspaceFolder(uri))) {
                         this._onDidDelete.fire(uri);
                     }
@@ -100,6 +106,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
     }
     private ensureWatching(mainContext: IMainContext, workspace: IExtHostWorkspace, configuration: ExtHostConfigProvider, extension: IExtensionDescription, globPattern: string | IRelativePatternDto, options: FileSystemWatcherCreateOptions, correlate: boolean | undefined): Disposable {
         const disposable = Disposable.from();
+
         if (typeof globPattern === 'string') {
             return disposable; // workspace is already watched by default, no need to watch again!
         }
@@ -107,17 +114,22 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             return disposable; // no need to watch if we ignore all events
         }
         const proxy = mainContext.getProxy(MainContext.MainThreadFileSystemEventService);
+
         let recursive = false;
+
         if (globPattern.pattern.includes(GLOBSTAR) || globPattern.pattern.includes(GLOB_SPLIT)) {
             recursive = true; // only watch recursively if pattern indicates the need for it
         }
         const excludes = options.excludes ?? [];
+
         let includes: Array<string | IRelativePattern> | undefined = undefined;
+
         let filter: FileChangeFilter | undefined;
         // Correlated: adjust filter based on arguments
         if (correlate) {
             if (options.ignoreChangeEvents || options.ignoreCreateEvents || options.ignoreDeleteEvents) {
                 filter = FileChangeFilter.UPDATED | FileChangeFilter.ADDED | FileChangeFilter.DELETED;
+
                 if (options.ignoreChangeEvents) {
                     filter &= ~FileChangeFilter.UPDATED;
                 }
@@ -136,7 +148,9 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             // for reducing the overhead of watching recursively
             if (recursive && excludes.length === 0) {
                 const workspaceFolder = workspace.getWorkspaceFolder(URI.revive(globPattern.baseUri));
+
                 const watcherExcludes = configuration.getConfiguration('files', workspaceFolder).get<IGlobPatterns>('watcherExclude');
+
                 if (watcherExcludes) {
                     for (const key in watcherExcludes) {
                         if (key && watcherExcludes[key] === true) {
@@ -158,12 +172,15 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             // (https://github.com/microsoft/vscode/issues/148245)
             else if (!recursive) {
                 const workspaceFolder = workspace.getWorkspaceFolder(URI.revive(globPattern.baseUri));
+
                 if (workspaceFolder) {
                     const watcherExcludes = configuration.getConfiguration('files', workspaceFolder).get<IGlobPatterns>('watcherExclude');
+
                     if (watcherExcludes) {
                         for (const key in watcherExcludes) {
                             if (key && watcherExcludes[key] === true) {
                                 const includePattern = `${rtrim(key, '/')}/${GLOBSTAR}`;
+
                                 if (!includes) {
                                     includes = [];
                                 }
@@ -181,6 +198,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
             }
         }
         proxy.$watch(extension.identifier.value, this.session, globPattern.baseUri, { recursive, excludes, includes, filter }, Boolean(correlate));
+
         return Disposable.from({ dispose: () => proxy.$unwatch(this.session) });
     }
     dispose() {
@@ -204,10 +222,13 @@ class LazyRevivedFileSystemEvents implements FileSystemEvents {
     constructor(private readonly _events: FileSystemEvents) { }
     readonly session = this._events.session;
     private _created = new Lazy(() => this._events.created.map(URI.revive) as URI[]);
+
     get created(): URI[] { return this._created.value; }
     private _changed = new Lazy(() => this._events.changed.map(URI.revive) as URI[]);
+
     get changed(): URI[] { return this._changed.value; }
     private _deleted = new Lazy(() => this._events.deleted.map(URI.revive) as URI[]);
+
     get deleted(): URI[] { return this._deleted.value; }
 }
 export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServiceShape {
@@ -221,6 +242,7 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
     readonly onDidRenameFile: Event<vscode.FileRenameEvent> = this._onDidRenameFile.event;
     readonly onDidCreateFile: Event<vscode.FileCreateEvent> = this._onDidCreateFile.event;
     readonly onDidDeleteFile: Event<vscode.FileDeleteEvent> = this._onDidDeleteFile.event;
+
     constructor(private readonly _mainContext: IMainContext, private readonly _logService: ILogService, private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors) {
         //
     }
@@ -236,14 +258,20 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
         switch (operation) {
             case FileOperation.MOVE:
                 this._onDidRenameFile.fire(Object.freeze({ files: files.map(f => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }));
+
                 break;
+
             case FileOperation.DELETE:
                 this._onDidDeleteFile.fire(Object.freeze({ files: files.map(f => URI.revive(f.target)) }));
+
                 break;
+
             case FileOperation.CREATE:
             case FileOperation.COPY:
                 this._onDidCreateFile.fire(Object.freeze({ files: files.map(f => URI.revive(f.target)) }));
+
                 break;
+
             default:
             //ignore, dont send
         }
@@ -261,6 +289,7 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
         return (listener, thisArg, disposables) => {
             const wrappedListener: IExtensionListener<E> = function wrapped(e: E) { listener.call(thisArg, e); };
             wrappedListener.extension = extension;
+
             return emitter.event(wrappedListener, undefined, disposables);
         };
     }
@@ -268,8 +297,10 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
         switch (operation) {
             case FileOperation.MOVE:
                 return await this._fireWillEvent(this._onWillRenameFile, { files: files.map(f => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) }, timeout, token);
+
             case FileOperation.DELETE:
                 return await this._fireWillEvent(this._onWillDeleteFile, { files: files.map(f => URI.revive(f.target)) }, timeout, token);
+
             case FileOperation.CREATE:
             case FileOperation.COPY:
                 return await this._fireWillEvent(this._onWillCreateFile, { files: files.map(f => URI.revive(f.target)) }, timeout, token);
@@ -278,6 +309,7 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
     }
     private async _fireWillEvent<E extends IWaitUntil>(emitter: AsyncEmitter<E>, data: IWaitUntilData<E>, timeout: number, token: CancellationToken): Promise<IWillRunFileOperationParticipation | undefined> {
         const extensionNames = new Set<string>();
+
         const edits: [
             IExtensionDescription,
             WorkspaceEdit
@@ -285,7 +317,9 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
         await emitter.fireAsync(data, token, async (thenable: Promise<unknown>, listener) => {
             // ignore all results except for WorkspaceEdits. Those are stored in an array.
             const now = Date.now();
+
             const result = await Promise.resolve(thenable);
+
             if (result instanceof WorkspaceEdit) {
                 edits.push([(<IExtensionListener<E>>listener).extension, result]);
                 extensionNames.add((<IExtensionListener<E>>listener).extension.displayName ?? (<IExtensionListener<E>>listener).extension.identifier.value);
@@ -294,6 +328,7 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
                 this._logService.warn('SLOW file-participant', (<IExtensionListener<E>>listener).extension.identifier);
             }
         });
+
         if (token.isCancellationRequested) {
             return undefined;
         }
@@ -302,6 +337,7 @@ export class ExtHostFileSystemEventService implements ExtHostFileSystemEventServ
         }
         // concat all WorkspaceEdits collected via waitUntil-call and send them over to the renderer
         const dto: IWorkspaceEditDto = { edits: [] };
+
         for (const [, edit] of edits) {
             const { edits } = typeConverter.WorkspaceEdit.from(edit, {
                 getTextDocumentVersion: uri => this._extHostDocumentsAndEditors.getDocument(uri)?.version,

@@ -7,6 +7,7 @@ import { LineRange } from '../../core/lineRange.js';
 import { DetailedLineRangeMapping } from '../rangeMapping.js';
 export class Array2D<T> {
     private readonly array: T[] = [];
+
     constructor(public readonly width: number, public readonly height: number) {
         this.array = new Array<T>(width * height);
     }
@@ -24,6 +25,7 @@ export class LineRangeFragment {
     private static chrKeys = new Map<string, number>();
     private static getKey(chr: string): number {
         let key = this.chrKeys.get(chr);
+
         if (key === undefined) {
             key = this.chrKeys.size;
             this.chrKeys.set(chr, key);
@@ -32,17 +34,23 @@ export class LineRangeFragment {
     }
     private readonly totalCount: number;
     private readonly histogram: number[] = [];
+
     constructor(public readonly range: LineRange, public readonly lines: string[], public readonly source: DetailedLineRangeMapping) {
         let counter = 0;
+
         for (let i = range.startLineNumber - 1; i < range.endLineNumberExclusive - 1; i++) {
             const line = lines[i];
+
             for (let j = 0; j < line.length; j++) {
                 counter++;
+
                 const chr = line[j];
+
                 const key = LineRangeFragment.getKey(chr);
                 this.histogram[key] = (this.histogram[key] || 0) + 1;
             }
             counter++;
+
             const key = LineRangeFragment.getKey('\n');
             this.histogram[key] = (this.histogram[key] || 0) + 1;
         }
@@ -50,7 +58,9 @@ export class LineRangeFragment {
     }
     public computeSimilarity(other: LineRangeFragment): number {
         let sumDifferences = 0;
+
         const maxLength = Math.max(this.histogram.length, other.histogram.length);
+
         for (let i = 0; i < maxLength; i++) {
             sumDifferences += Math.abs((this.histogram[i] ?? 0) - (other.histogram[i] ?? 0));
         }

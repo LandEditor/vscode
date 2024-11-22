@@ -30,6 +30,7 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
             return undefined;
         }
         let query: UriFields;
+
         try {
             query = JSON.parse(uri.query) as UriFields;
         }
@@ -40,6 +41,7 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
             return undefined;
         }
         const { repositoryUri, groupId } = query;
+
         if (typeof repositoryUri !== 'string' || typeof groupId !== 'string') {
             return undefined;
         }
@@ -56,11 +58,16 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
     }
     async resolveDiffSource(uri: URI): Promise<IResolvedMultiDiffSource> {
         const { repositoryUri, groupId } = ScmMultiDiffSourceResolver.parseUri(uri)!;
+
         const repository = await waitForState(observableFromEvent(this, this._scmService.onDidAddRepository, () => [...this._scmService.repositories].find(r => r.provider.rootUri?.toString() === repositoryUri.toString())));
+
         const group = await waitForState(observableFromEvent(this, repository.provider.onDidChangeResourceGroups, () => repository.provider.groups.find(g => g.id === groupId)));
+
         const scmActivities = observableFromEvent(this._activityService.onDidChangeActivity, () => [...this._activityService.getViewContainerActivities('workbench.view.scm')]);
+
         const scmViewHasNoProgressBadge = scmActivities.map(activities => !activities.some(a => a.badge instanceof ProgressBadge));
         await waitForState(scmViewHasNoProgressBadge, v => v);
+
         return new ScmResolvedMultiDiffSource(group, repository);
     }
 }
@@ -71,6 +78,7 @@ class ScmResolvedMultiDiffSource implements IResolvedMultiDiffSource {
         scmResourceGroup: this._group.id,
         scmProvider: this._repository.provider.contextValue,
     };
+
     constructor(private readonly _group: ISCMResourceGroup, private readonly _repository: ISCMRepository) { }
 }
 interface UriFields {
@@ -79,6 +87,7 @@ interface UriFields {
 }
 export class ScmMultiDiffSourceResolverContribution extends Disposable {
     static readonly ID = 'workbench.contrib.scmMultiDiffSourceResolver';
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -99,6 +108,7 @@ export class OpenScmGroupAction extends Action2 {
             return;
         }
         const multiDiffSource = ScmMultiDiffSourceResolver.getMultiDiffSourceUri(repositoryRootUri.toString(), resourceGroupId);
+
         return await editorService.openEditor({ label, multiDiffSource, options });
     }
     constructor() {

@@ -89,6 +89,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
     private readonly _onDidRemoveExtensions = this._register(new Emitter<DidRemoveProfileExtensionsEvent>());
     readonly onDidRemoveExtensions = this._onDidRemoveExtensions.event;
     private readonly resourcesAccessQueueMap = new ResourceMap<Queue<IScannedProfileExtension[]>>();
+
     constructor(private readonly extensionsLocation: URI, 
     @IFileService
     private readonly fileService: IFileService, 
@@ -110,10 +111,13 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
         Metadata | undefined
     ][], profileLocation: URI, keepExistingVersions?: boolean): Promise<IScannedProfileExtension[]> {
         const extensionsToRemove: IScannedProfileExtension[] = [];
+
         const extensionsToAdd: IScannedProfileExtension[] = [];
+
         try {
             await this.withProfileExtensions(profileLocation, existingExtensions => {
                 const result: IScannedProfileExtension[] = [];
+
                 if (keepExistingVersions) {
                     result.push(...existingExtensions);
                 }
@@ -130,7 +134,9 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                 }
                 for (const [extension, metadata] of extensions) {
                     const index = result.findIndex(e => areSameExtensions(e.identifier, extension.identifier) && e.version === extension.manifest.version);
+
                     const extensionToAdd = { identifier: extension.identifier, version: extension.manifest.version, location: extension.location, metadata };
+
                     if (index === -1) {
                         extensionsToAdd.push(extensionToAdd);
                         result.push(extensionToAdd);
@@ -147,6 +153,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                 }
                 return result;
             });
+
             if (extensionsToAdd.length) {
                 this._onDidAddExtensions.fire({ extensions: extensionsToAdd, profileLocation });
             }
@@ -172,8 +179,10 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
         const updatedExtensions: IScannedProfileExtension[] = [];
         await this.withProfileExtensions(profileLocation, profileExtensions => {
             const result: IScannedProfileExtension[] = [];
+
             for (const profileExtension of profileExtensions) {
                 const extension = extensions.find(([e]) => areSameExtensions(e.identifier, profileExtension.identifier) && e.manifest.version === profileExtension.version);
+
                 if (extension) {
                     profileExtension.metadata = { ...profileExtension.metadata, ...extension[1] };
                     updatedExtensions.push(profileExtension);
@@ -185,13 +194,16 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
             }
             return result;
         });
+
         return updatedExtensions;
     }
     async removeExtensionFromProfile(extension: IExtension, profileLocation: URI): Promise<void> {
         const extensionsToRemove: IScannedProfileExtension[] = [];
+
         try {
             await this.withProfileExtensions(profileLocation, profileExtensions => {
                 const result: IScannedProfileExtension[] = [];
+
                 for (const e of profileExtensions) {
                     if (areSameExtensions(e.identifier, extension.identifier)) {
                         extensionsToRemove.push(e);
@@ -205,6 +217,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                 }
                 return result;
             });
+
             if (extensionsToRemove.length) {
                 this._onDidRemoveExtensions.fire({ extensions: extensionsToRemove, profileLocation });
             }
@@ -221,6 +234,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
             let extensions: IScannedProfileExtension[] = [];
             // Read
             let storedProfileExtensions: IStoredProfileExtension[] | undefined;
+
             try {
                 const content = await this.fileService.readFile(file);
                 storedProfileExtensions = JSON.parse(content.value.toString().trim() || '[]');
@@ -243,22 +257,27 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                 }
                 // TODO @sandy081: Remove this migration after couple of releases
                 let migrate = false;
+
                 for (const e of storedProfileExtensions) {
                     if (!isStoredProfileExtension(e)) {
                         this.reportAndThrowInvalidConentError(file);
                     }
                     let location: URI;
+
                     if (isString(e.relativeLocation) && e.relativeLocation) {
                         // Extension in new format. No migration needed.
                         location = this.resolveExtensionLocation(e.relativeLocation);
                     }
                     else if (isString(e.location)) {
                         this.logService.warn(`Extensions profile: Ignoring extension with invalid location: ${e.location}`);
+
                         continue;
                     }
                     else {
                         location = URI.revive(e.location);
+
                         const relativePath = this.toRelativePath(location);
+
                         if (relativePath) {
                             // Extension in old format. Migrate to new format.
                             migrate = true;
@@ -283,6 +302,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
             // Update
             if (updateFn) {
                 extensions = updateFn(extensions);
+
                 const storedProfileExtensions: IStoredProfileExtension[] = extensions.map(e => ({
                     identifier: e.identifier,
                     version: e.version,
@@ -306,10 +326,12 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                 comment: 'error code';
             };
         };
+
         const error = new ExtensionsProfileScanningError(`Invalid extensions content in ${file.toString()}`, ExtensionsProfileScanningErrorCode.ERROR_INVALID_CONTENT);
         this.telemetryService.publicLogError2<{
             code: string;
         }, ErrorClassification>('extensionsProfileScanningError', { code: error.code });
+
         throw error;
     }
     private toRelativePath(extensionLocation: URI): string | undefined {
@@ -325,8 +347,11 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
         if (!this._migrationPromise) {
             this._migrationPromise = (async () => {
                 const oldDefaultProfileExtensionsLocation = this.uriIdentityService.extUri.joinPath(this.userDataProfilesService.defaultProfile.location, 'extensions.json');
+
                 const oldDefaultProfileExtensionsInitLocation = this.uriIdentityService.extUri.joinPath(this.extensionsLocation, '.init-default-profile-extensions');
+
                 let content: string;
+
                 try {
                     content = (await this.fileService.readFile(oldDefaultProfileExtensionsLocation)).value.toString();
                 }
@@ -337,9 +362,12 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
                     throw error;
                 }
                 this.logService.info('Migrating extensions from old default profile location', oldDefaultProfileExtensionsLocation.toString());
+
                 let storedProfileExtensions: IStoredProfileExtension[] | undefined;
+
                 try {
                     const parsedData = JSON.parse(content);
+
                     if (Array.isArray(parsedData) && parsedData.every(candidate => isStoredProfileExtension(candidate))) {
                         storedProfileExtensions = parsedData;
                     }
@@ -388,6 +416,7 @@ export abstract class AbstractExtensionsProfileScannerService extends Disposable
     }
     private getResourceAccessQueue(file: URI): Queue<IScannedProfileExtension[]> {
         let resourceQueue = this.resourcesAccessQueueMap.get(file);
+
         if (!resourceQueue) {
             resourceQueue = new Queue<IScannedProfileExtension[]>();
             this.resourcesAccessQueueMap.set(file, resourceQueue);

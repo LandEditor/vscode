@@ -15,14 +15,19 @@ export function hash(obj: any, hashVal = 0): number {
                 return arrayHash(obj, hashVal);
             }
             return objectHash(obj, hashVal);
+
         case 'string':
             return stringHash(obj, hashVal);
+
         case 'boolean':
             return booleanHash(obj, hashVal);
+
         case 'number':
             return numberHash(obj, hashVal);
+
         case 'undefined':
             return 937 * 31;
+
         default:
             return numberHash(obj, 617);
     }
@@ -35,6 +40,7 @@ function booleanHash(b: boolean, initialHashVal: number): number {
 }
 function stringHash(s: string, hashVal: number) {
     hashVal = numberHash(149417, hashVal);
+
     for (let i = 0, length = s.length; i < length; i++) {
         hashVal = numberHash(s.charCodeAt(i), hashVal);
     }
@@ -42,12 +48,15 @@ function stringHash(s: string, hashVal: number) {
 }
 function arrayHash(arr: any[], initialHashVal: number): number {
     initialHashVal = numberHash(104579, initialHashVal);
+
     return arr.reduce((hashVal, item) => hash(item, hashVal), initialHashVal);
 }
 function objectHash(obj: any, initialHashVal: number): number {
     initialHashVal = numberHash(181387, initialHashVal);
+
     return Object.keys(obj).sort().reduce((hashVal, key) => {
         hashVal = stringHash(key, hashVal);
+
         return hash(obj[key], hashVal);
     }, initialHashVal);
 }

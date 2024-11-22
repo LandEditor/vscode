@@ -26,8 +26,10 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
     }
     async initialize(content: string): Promise<void> {
         const tasksContent: ITasksResourceContent = JSON.parse(content);
+
         if (!tasksContent.tasks) {
             this.logService.info(`Initializing Profile: No tasks to apply...`);
+
             return;
         }
         await this.fileService.writeFile(this.userDataProfileService.currentProfile.tasksResource, VSBuffer.fromString(tasksContent.tasks));
@@ -42,16 +44,20 @@ export class TasksResource implements IProfileResource {
     }
     async getContent(profile: IUserDataProfile): Promise<string> {
         const tasksContent = await this.getTasksResourceContent(profile);
+
         return JSON.stringify(tasksContent);
     }
     async getTasksResourceContent(profile: IUserDataProfile): Promise<ITasksResourceContent> {
         const tasksContent = await this.getTasksContent(profile);
+
         return { tasks: tasksContent };
     }
     async apply(content: string, profile: IUserDataProfile): Promise<void> {
         const tasksContent: ITasksResourceContent = JSON.parse(content);
+
         if (!tasksContent.tasks) {
             this.logService.info(`Importing Profile (${profile.name}): No tasks to apply...`);
+
             return;
         }
         await this.fileService.writeFile(profile.tasksResource, VSBuffer.fromString(tasksContent.tasks));
@@ -59,6 +65,7 @@ export class TasksResource implements IProfileResource {
     private async getTasksContent(profile: IUserDataProfile): Promise<string | null> {
         try {
             const content = await this.fileService.readFile(profile.tasksResource);
+
             return content.value.toString();
         }
         catch (error) {
@@ -78,6 +85,7 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
     readonly label = { label: localize('tasks', "Tasks") };
     readonly collapsibleState = TreeItemCollapsibleState.Expanded;
     checkbox: ITreeItemCheckboxState | undefined;
+
     constructor(private readonly profile: IUserDataProfile, 
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService, 
@@ -101,6 +109,7 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
     }
     async hasContent(): Promise<boolean> {
         const tasksContent = await this.instantiationService.createInstance(TasksResource).getTasksResourceContent(this.profile);
+
         return tasksContent.tasks !== null;
     }
     async getContent(): Promise<string> {

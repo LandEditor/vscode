@@ -9,15 +9,18 @@ export class LogLevelMonitor extends Disposable {
     private static readonly logLevelConfigKey = 'typescript.tsserver.log';
     private static readonly logLevelChangedStorageKey = 'typescript.tsserver.logLevelChanged';
     private static readonly doNotPromptLogLevelStorageKey = 'typescript.tsserver.doNotPromptLogLevel';
+
     constructor(private readonly context: vscode.ExtensionContext) {
         super();
         this._register(vscode.workspace.onDidChangeConfiguration(this.onConfigurationChange, this, this._disposables));
+
         if (this.shouldNotifyExtendedLogging()) {
             this.notifyExtendedLogging();
         }
     }
     private onConfigurationChange(event: vscode.ConfigurationChangeEvent) {
         const logLevelChanged = event.affectsConfiguration(LogLevelMonitor.logLevelConfigKey);
+
         if (!logLevelChanged) {
             return;
         }
@@ -32,8 +35,10 @@ export class LogLevelMonitor extends Disposable {
      */
     private get lastLogLevelChange(): Date | undefined {
         const lastChange = this.context.globalState.get<string | undefined>(LogLevelMonitor.logLevelChangedStorageKey);
+
         if (lastChange) {
             const date = new Date(lastChange);
+
             if (date instanceof Date && !isNaN(date.valueOf())) {
                 return date;
             }
@@ -45,7 +50,9 @@ export class LogLevelMonitor extends Disposable {
     }
     private shouldNotifyExtendedLogging(): boolean {
         const lastChangeMilliseconds = this.lastLogLevelChange ? new Date(this.lastLogLevelChange).valueOf() : 0;
+
         const lastChangePlusOneWeek = new Date(lastChangeMilliseconds + /* 7 days in milliseconds */ 86400000 * 7);
+
         if (!this.doNotPrompt && this.logLevel !== TsServerLogLevel.Off && lastChangePlusOneWeek.valueOf() < Date.now()) {
             return true;
         }

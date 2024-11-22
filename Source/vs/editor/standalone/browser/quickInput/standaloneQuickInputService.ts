@@ -20,6 +20,7 @@ import { createSingleCallFunction } from '../../../../base/common/functional.js'
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 class EditorScopedQuickInputService extends QuickInputService {
     private host: IQuickInputControllerHost | undefined = undefined;
+
     constructor(editor: ICodeEditor, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -34,6 +35,7 @@ class EditorScopedQuickInputService extends QuickInputService {
         super(instantiationService, contextKeyService, themeService, new EditorScopedLayoutService(editor.getContainerDomNode(), codeEditorService), configurationService);
         // Use the passed in code editor as host for the quick input widget
         const contribution = QuickInputEditorContribution.get(editor);
+
         if (contribution) {
             const widget = contribution.widget;
             this.host = {
@@ -68,12 +70,14 @@ export class StandaloneQuickInputService implements IQuickInputService {
     private mapEditorToService = new Map<ICodeEditor, EditorScopedQuickInputService>();
     private get activeService(): IQuickInputService {
         const editor = this.codeEditorService.getFocusedCodeEditor();
+
         if (!editor) {
             throw new Error('Quick input service needs a focused editor to work.');
         }
         // Find the quick input implementation for the focused
         // editor or create it lazily if not yet created
         let quickInputService = this.mapEditorToService.get(editor);
+
         if (!quickInputService) {
             const newQuickInputService = quickInputService = this.instantiationService.createInstance(EditorScopedQuickInputService, editor);
             this.mapEditorToService.set(editor, quickInputService);
@@ -151,6 +155,7 @@ export class QuickInputEditorContribution implements IEditorContribution {
         return editor.getContribution<QuickInputEditorContribution>(QuickInputEditorContribution.ID);
     }
     readonly widget = new QuickInputEditorWidget(this.editor);
+
     constructor(private editor: ICodeEditor) { }
     dispose(): void {
         this.widget.dispose();
@@ -159,6 +164,7 @@ export class QuickInputEditorContribution implements IEditorContribution {
 export class QuickInputEditorWidget implements IOverlayWidget {
     private static readonly ID = 'editor.contrib.quickInputWidget';
     private domNode: HTMLElement;
+
     constructor(private codeEditor: ICodeEditor) {
         this.domNode = document.createElement('div');
         this.codeEditor.addOverlayWidget(this);

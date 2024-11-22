@@ -64,7 +64,9 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
         await super.setInput(input, options, context, token);
         this._viewModel = await input.getViewModel();
         this._multiDiffEditorWidget!.setViewModel(this._viewModel);
+
         const viewState = this.loadEditorViewState(input, context);
+
         if (viewState) {
             this._multiDiffEditorWidget!.setViewState(viewState);
         }
@@ -75,6 +77,7 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
     }
     private _applyOptions(options: IMultiDiffEditorOptions | undefined): void {
         const viewState = options?.viewState;
+
         if (!viewState || !viewState.revealData) {
             return;
         }
@@ -117,10 +120,12 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
     }
     public findDocumentDiffItem(resource: URI): MultiDiffEditorItem | undefined {
         const i = this._multiDiffEditorWidget!.findDocumentDiffItem(resource);
+
         if (!i) {
             return undefined;
         }
         const i2 = i as IDocumentDiffItemWithMultiDiffEditorItem;
+
         return i2.multiDiffEditorItem;
     }
     public async showWhile(promise: Promise<unknown>): Promise<void> {
@@ -133,6 +138,7 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
     private readonly _instantiationService: IInstantiationService) { }
     createResourceLabel(element: HTMLElement): IResourceLabel {
         const label = this._instantiationService.createInstance(ResourceLabel, element, {});
+
         return {
             setUri(uri, options = {}) {
                 if (!uri) {

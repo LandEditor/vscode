@@ -23,6 +23,7 @@ export function getSemanticSupportedSchemes() {
         vscodeNotebookCell,
         chatCodeBlock,
     ];
+
     if (isWeb()) {
         return [
             ...(vscode.workspace.workspaceFolders ?? []).map(folder => folder.uri.scheme),
@@ -45,5 +46,6 @@ export const disabledSchemes = new Set([
 ]);
 export function isOfScheme(uri: vscode.Uri, ...schemes: string[]): boolean {
     const normalizedUriScheme = uri.scheme.toLowerCase();
+
     return schemes.some(scheme => normalizedUriScheme === scheme);
 }

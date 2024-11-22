@@ -16,6 +16,7 @@ import { TelemetryLevel } from '../../telemetry/common/telemetry.js';
 import { getTelemetryLevel, supportsTelemetry } from '../../telemetry/common/telemetryUtils.js';
 import { RemoteAuthorities } from '../../../base/common/network.js';
 import { TargetPlatform } from '../../extensions/common/extensions.js';
+
 const WEB_EXTENSION_RESOURCE_END_POINT_SEGMENT = '/web-extension-resource/';
 export const IExtensionResourceLoaderService = createDecorator<IExtensionResourceLoaderService>('extensionResourceLoaderService');
 /**
@@ -50,16 +51,19 @@ export function migratePlatformSpecificExtensionGalleryResourceURL(resource: URI
         return undefined;
     }
     const paths = resource.path.split('/');
+
     if (!paths[3]) {
         return undefined;
     }
     paths[3] = `${paths[3]}+${targetPlatform}`;
+
     return resource.with({ query: null, path: paths.join('/') });
 }
 export abstract class AbstractExtensionResourceLoaderService implements IExtensionResourceLoaderService {
     readonly _serviceBrand: undefined;
     private readonly _extensionGalleryResourceUrlTemplate: string | undefined;
     private readonly _extensionGalleryAuthority: string | undefined;
+
     constructor(protected readonly _fileService: IFileService, private readonly _storageService: IStorageService, private readonly _productService: IProductService, private readonly _environmentService: IEnvironmentService, private readonly _configurationService: IConfigurationService) {
         if (_productService.extensionsGallery) {
             this._extensionGalleryResourceUrlTemplate = _productService.extensionsGallery.resourceUrlTemplate;
@@ -87,6 +91,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
                     : version,
                 path: 'extension'
             }));
+
             return this._isWebExtensionResourceEndPoint(uri) ? uri.with({ scheme: RemoteAuthorities.getPreferredWebSchema() }) : uri;
         }
         return undefined;
@@ -100,6 +105,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
             'X-Client-Name': `${this._productService.applicationName}${isWeb ? '-web' : ''}`,
             'X-Client-Version': this._productService.version
         };
+
         if (supportsTelemetry(this._productService, this._environmentService) && getTelemetryLevel(this._configurationService) === TelemetryLevel.USAGE) {
             headers['X-Machine-Id'] = await this._getServiceMachineId();
         }
@@ -120,6 +126,7 @@ export abstract class AbstractExtensionResourceLoaderService implements IExtensi
             return uri.authority;
         }
         const index = uri.authority.indexOf('.');
+
         return index !== -1 ? uri.authority.substring(index + 1) : undefined;
     }
     protected _isWebExtensionResourceEndPoint(uri: URI): boolean {

@@ -55,15 +55,18 @@ export class InlineEditsAdapter extends Disposable {
 					if (!context.includeInlineEdits) { return undefined; }
 
 					const allInlineEditProvider = _languageFeaturesService.inlineEditProvider.all(model);
+
 					const inlineEdits = await Promise.all(allInlineEditProvider.map(async provider => {
 						const result = await provider.provideInlineEdit(model, {
 							triggerKind: InlineEditTriggerKind.Automatic,
 						}, token);
+
 						if (!result) { return undefined; }
 						return { result, provider };
 					}));
 
 					const definedEdits = inlineEdits.filter(e => !!e);
+
 					return {
 						edits: definedEdits,
 						items: definedEdits.map(e => {

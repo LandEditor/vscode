@@ -14,6 +14,7 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
         message: any;
     }>>();
     private readonly proxy: MainThreadNotebookRenderersShape;
+
     constructor(mainContext: IMainContext, private readonly _extHostNotebook: ExtHostNotebookController) {
         this.proxy = mainContext.getProxy(MainContext.MainThreadNotebookRenderers);
     }
@@ -34,13 +35,16 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
                     [message, editorOrAlias] = [editorOrAlias, message];
                 }
                 const extHostEditor = editorOrAlias && ExtHostNotebookEditor.apiEditorsToExtHost.get(editorOrAlias);
+
                 return this.proxy.$postMessage(extHostEditor?.id, rendererId, message);
             },
         };
+
         return messaging;
     }
     private getOrCreateEmitterFor(rendererId: string) {
         let emitter = this._rendererMessageEmitters.get(rendererId);
+
         if (emitter) {
             return emitter;
         }
@@ -51,6 +55,7 @@ export class ExtHostNotebookRenderers implements ExtHostNotebookRenderersShape {
             }
         });
         this._rendererMessageEmitters.set(rendererId, emitter);
+
         return emitter;
     }
 }

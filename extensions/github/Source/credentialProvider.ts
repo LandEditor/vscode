@@ -5,6 +5,7 @@
 import { CredentialsProvider, Credentials, API as GitAPI } from './typings/git';
 import { workspace, Uri, Disposable } from 'vscode';
 import { getSession } from './auth';
+
 const EmptyDisposable: Disposable = { dispose() { } };
 class GitHubCredentialProvider implements CredentialsProvider {
     async getCredentials(host: Uri): Promise<Credentials | undefined> {
@@ -12,6 +13,7 @@ class GitHubCredentialProvider implements CredentialsProvider {
             return;
         }
         const session = await getSession();
+
         return { username: session.account.id, password: session.accessToken };
     }
 }
@@ -24,6 +26,7 @@ export class GithubCredentialProviderManager {
             return;
         }
         this._enabled = enabled;
+
         if (enabled) {
             this.providerDisposable = this.gitAPI.registerCredentialsProvider(new GitHubCredentialProvider());
         }
@@ -41,6 +44,7 @@ export class GithubCredentialProviderManager {
     }
     private refresh(): void {
         const config = workspace.getConfiguration('github', null);
+
         const enabled = config.get<boolean>('gitAuthentication', true);
         this.enabled = !!enabled;
     }

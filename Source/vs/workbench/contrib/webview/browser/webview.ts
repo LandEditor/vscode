@@ -212,6 +212,7 @@ export interface IWebview extends IDisposable {
     redo(): void;
     windowDidDragStart(): void;
     windowDidDragEnd(): void;
+
     setContextKeyService(scopedContextKeyService: IContextKeyService): void;
 }
 /**
@@ -281,6 +282,7 @@ export interface IOverlayWebview extends IWebview {
 export class WebviewOriginStore {
     private readonly _memento: Memento;
     private readonly _state: MementoObject;
+
     constructor(rootStorageKey: string, 
     @IStorageService
     storageService: IStorageService) {
@@ -289,13 +291,16 @@ export class WebviewOriginStore {
     }
     public getOrigin(viewType: string, additionalKey: string | undefined): string {
         const key = this._getKey(viewType, additionalKey);
+
         const existing = this._state[key];
+
         if (existing && typeof existing === 'string') {
             return existing;
         }
         const newOrigin = generateUuid();
         this._state[key] = newOrigin;
         this._memento.saveMemento();
+
         return newOrigin;
     }
     private _getKey(viewType: string, additionalKey: string | undefined): string {
@@ -309,6 +314,7 @@ export class WebviewOriginStore {
  */
 export class ExtensionKeyedWebviewOriginStore {
     private readonly _store: WebviewOriginStore;
+
     constructor(rootStorageKey: string, 
     @IStorageService
     storageService: IStorageService) {

@@ -5,7 +5,9 @@
 function createDecorator(mapFn: (fn: Function, key: string) => Function): MethodDecorator {
     return (_target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<any>) => {
         let fnKey: 'value' | 'get' | null = null;
+
         let fn: Function | null = null;
+
         if (typeof descriptor.value === 'function') {
             fnKey = 'value';
             fn = descriptor.value;
@@ -22,10 +24,13 @@ function createDecorator(mapFn: (fn: Function, key: string) => Function): Method
 }
 export function memoize(_target: Object, key: string, descriptor: PropertyDescriptor) {
     let fnKey: 'value' | 'get' | null = null;
+
     let fn: Function | null = null;
+
     if (typeof descriptor.value === 'function') {
         fnKey = 'value';
         fn = descriptor.value;
+
         if (fn!.length !== 0) {
             console.warn('Memoize should only be used in functions with zero parameters');
         }
@@ -56,12 +61,15 @@ export interface IDebounceReducer<T> {
 export function debounce<T>(delay: number, reducer?: IDebounceReducer<T>, initialValueProvider?: () => T) {
     return createDecorator((fn, key) => {
         const timerKey = `$debounce$${key}`;
+
         const resultKey = `$debounce$result$${key}`;
+
         return function (this: any, ...args: any[]) {
             if (!this[resultKey]) {
                 this[resultKey] = initialValueProvider ? initialValueProvider() : undefined;
             }
             clearTimeout(this[timerKey]);
+
             if (reducer) {
                 this[resultKey] = reducer(this[resultKey], ...args);
                 args = [this[resultKey]];
@@ -76,9 +84,13 @@ export function debounce<T>(delay: number, reducer?: IDebounceReducer<T>, initia
 export function throttle<T>(delay: number, reducer?: IDebounceReducer<T>, initialValueProvider?: () => T) {
     return createDecorator((fn, key) => {
         const timerKey = `$throttle$timer$${key}`;
+
         const resultKey = `$throttle$result$${key}`;
+
         const lastRunKey = `$throttle$lastRun$${key}`;
+
         const pendingKey = `$throttle$pending$${key}`;
+
         return function (this: any, ...args: any[]) {
             if (!this[resultKey]) {
                 this[resultKey] = initialValueProvider ? initialValueProvider() : undefined;
@@ -93,6 +105,7 @@ export function throttle<T>(delay: number, reducer?: IDebounceReducer<T>, initia
                 return;
             }
             const nextTime = this[lastRunKey] + delay;
+
             if (nextTime <= Date.now()) {
                 this[lastRunKey] = Date.now();
                 fn.apply(this, [this[resultKey]]);

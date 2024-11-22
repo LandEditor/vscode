@@ -31,7 +31,9 @@ export function decodeKeybinding(keybinding: number | number[], OS: OperatingSys
             return null;
         }
         const firstChord = (keybinding & 0x0000FFFF) >>> 0;
+
         const secondChord = (keybinding & 0xFFFF0000) >>> 16;
+
         if (secondChord !== 0) {
             return new Keybinding([
                 createSimpleKeybinding(firstChord, OS),
@@ -42,6 +44,7 @@ export function decodeKeybinding(keybinding: number | number[], OS: OperatingSys
     }
     else {
         const chords = [];
+
         for (let i = 0; i < keybinding.length; i++) {
             chords.push(createSimpleKeybinding(keybinding[i], OS));
         }
@@ -50,12 +53,19 @@ export function decodeKeybinding(keybinding: number | number[], OS: OperatingSys
 }
 export function createSimpleKeybinding(keybinding: number, OS: OperatingSystem): KeyCodeChord {
     const ctrlCmd = (keybinding & BinaryKeybindingsMask.CtrlCmd ? true : false);
+
     const winCtrl = (keybinding & BinaryKeybindingsMask.WinCtrl ? true : false);
+
     const ctrlKey = (OS === OperatingSystem.Macintosh ? winCtrl : ctrlCmd);
+
     const shiftKey = (keybinding & BinaryKeybindingsMask.Shift ? true : false);
+
     const altKey = (keybinding & BinaryKeybindingsMask.Alt ? true : false);
+
     const metaKey = (OS === OperatingSystem.Macintosh ? ctrlCmd : winCtrl);
+
     const keyCode = (keybinding & BinaryKeybindingsMask.KeyCode);
+
     return new KeyCodeChord(ctrlKey, shiftKey, altKey, metaKey, keyCode);
 }
 export interface Modifiers {
@@ -80,9 +90,13 @@ export class KeyCodeChord implements Modifiers {
     }
     public getHashCode(): string {
         const ctrl = this.ctrlKey ? '1' : '0';
+
         const shift = this.shiftKey ? '1' : '0';
+
         const alt = this.altKey ? '1' : '0';
+
         const meta = this.metaKey ? '1' : '0';
+
         return `K${ctrl}${shift}${alt}${meta}${this.keyCode}`;
     }
     public isModifierKey(): boolean {
@@ -121,9 +135,13 @@ export class ScanCodeChord implements Modifiers {
     }
     public getHashCode(): string {
         const ctrl = this.ctrlKey ? '1' : '0';
+
         const shift = this.shiftKey ? '1' : '0';
+
         const alt = this.altKey ? '1' : '0';
+
         const meta = this.metaKey ? '1' : '0';
+
         return `S${ctrl}${shift}${alt}${meta}${this.scanCode}`;
     }
     /**
@@ -142,6 +160,7 @@ export type Chord = KeyCodeChord | ScanCodeChord;
  */
 export class Keybinding {
     public readonly chords: Chord[];
+
     constructor(chords: Chord[]) {
         if (chords.length === 0) {
             throw illegalArgument(`chords`);
@@ -150,6 +169,7 @@ export class Keybinding {
     }
     public getHashCode(): string {
         let result = '';
+
         for (let i = 0, len = this.chords.length; i < len; i++) {
             if (i !== 0) {
                 result += ';';

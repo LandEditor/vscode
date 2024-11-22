@@ -9,6 +9,7 @@ import { arrayInsert } from '../../../base/common/arrays.js';
  */
 export class FixedArray<T> {
     private _store: T[] = [];
+
     constructor(private readonly _default: T) { }
     public get(index: number): T {
         if (index < this._store.length) {
@@ -28,14 +29,18 @@ export class FixedArray<T> {
         }
         if (oldLength === 0) {
             this.insert(index, newLength);
+
             return;
         }
         else if (newLength === 0) {
             this.delete(index, oldLength);
+
             return;
         }
         const before = this._store.slice(0, index);
+
         const after = this._store.slice(index + oldLength);
+
         const insertArr = arrayFill(newLength, this._default);
         this._store = before.concat(insertArr, after);
     }
@@ -50,6 +55,7 @@ export class FixedArray<T> {
             return;
         }
         const arr: T[] = [];
+
         for (let i = 0; i < insertCount; i++) {
             arr[i] = this._default;
         }
@@ -58,6 +64,7 @@ export class FixedArray<T> {
 }
 function arrayFill<T>(length: number, value: T): T[] {
     const arr: T[] = [];
+
     for (let i = 0; i < length; i++) {
         arr[i] = value;
     }

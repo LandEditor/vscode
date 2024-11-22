@@ -18,6 +18,7 @@ export class Type {
     constructor(readonly item: TypeHierarchyItem, readonly model: TypeHierarchyModel, readonly parent: Type | undefined) { }
     static compare(a: Type, b: Type): number {
         let res = compare(a.item.uri.toString(), b.item.uri.toString());
+
         if (res === 0) {
             res = Range.compareRangesUsingStarts(a.item.range, b.item.range);
         }
@@ -34,6 +35,7 @@ export class DataSource implements IAsyncDataSource<TypeHierarchyModel, Type> {
             return element.roots.map(root => new Type(root, element, undefined));
         }
         const { model, item } = element;
+
         if (this.getDirection() === TypeHierarchyDirection.Supertypes) {
             return (await model.provideSupertypes(item, CancellationToken.None)).map(item => {
                 return new Type(item, model, element);
@@ -57,6 +59,7 @@ export class IdentityProvider implements IIdentityProvider<Type> {
         toString(): string;
     } {
         let res = this.getDirection() + JSON.stringify(element.item.uri) + JSON.stringify(element.item.range);
+
         if (element.parent) {
             res += this.getId(element.parent);
         }
@@ -71,13 +74,17 @@ export class TypeRenderer implements ITreeRenderer<Type, FuzzyScore, TypeRenderi
     templateId: string = TypeRenderer.id;
     renderTemplate(container: HTMLElement): TypeRenderingTemplate {
         container.classList.add('typehierarchy-element');
+
         const icon = document.createElement('div');
         container.appendChild(icon);
+
         const label = new IconLabel(container, { supportHighlights: true });
+
         return new TypeRenderingTemplate(icon, label);
     }
     renderElement(node: ITreeNode<Type, FuzzyScore>, _index: number, template: TypeRenderingTemplate): void {
         const { element, filterData } = node;
+
         const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
         template.icon.classList.add('inline', ...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind)));
         template.label.setLabel(element.item.name, element.item.detail, { labelEscapeNewLines: true, matches: createMatches(filterData), strikethrough: deprecated });

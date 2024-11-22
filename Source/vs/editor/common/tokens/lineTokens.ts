@@ -14,18 +14,30 @@ import { TokenArray, TokenArrayBuilder } from './tokenArray.js';
 export interface IViewLineTokens {
 	languageIdCodec: ILanguageIdCodec;
 	equals(other: IViewLineTokens): boolean;
+
 	getCount(): number;
+
 	getStandardTokenType(tokenIndex: number): StandardTokenType;
+
 	getForeground(tokenIndex: number): ColorId;
+
 	getEndOffset(tokenIndex: number): number;
+
 	getClassName(tokenIndex: number): string;
+
 	getInlineStyle(tokenIndex: number, colorMap: string[]): string;
+
 	getPresentation(tokenIndex: number): ITokenPresentation;
 	findTokenIndexAtOffset(offset: number): number;
+
 	getLineContent(): string;
+
 	getMetadata(tokenIndex: number): number;
+
 	getLanguageId(tokenIndex: number): string;
+
 	getTokenText(tokenIndex: number): string;
+
 	forEach(callback: (tokenIndex: number) => void): void;
 }
 
@@ -42,8 +54,11 @@ export class LineTokens implements IViewLineTokens {
 
 	public static createFromTextAndMetadata(data: { text: string; metadata: number }[], decoder: ILanguageIdCodec): LineTokens {
 		let offset: number = 0;
+
 		let fullText: string = '';
+
 		const tokens = new Array<number>();
+
 		for (const { text, metadata } of data) {
 			tokens.push(offset + text.length, metadata);
 			offset += text.length;
@@ -54,7 +69,9 @@ export class LineTokens implements IViewLineTokens {
 
 	public static convertToEndOffset(tokens: Uint32Array, lineTextLength: number): void {
 		const tokenCount = (tokens.length >>> 1);
+
 		const lastTokenIndex = tokenCount - 1;
+
 		for (let tokenIndex = 0; tokenIndex < lastTokenIndex; tokenIndex++) {
 			tokens[tokenIndex << 1] = tokens[(tokenIndex + 1) << 1];
 		}
@@ -67,11 +84,13 @@ export class LineTokens implements IViewLineTokens {
 		}
 
 		let low = 0;
+
 		let high = (tokens.length >>> 1) - 1;
 
 		while (low < high) {
 
 			const mid = low + Math.floor((high - low) / 2);
+
 			const endOffset = tokens[(mid << 1)];
 
 			if (endOffset === desiredIndex) {
@@ -122,7 +141,9 @@ export class LineTokens implements IViewLineTokens {
 			return false;
 		}
 		const from = (sliceFromTokenIndex << 1);
+
 		const to = from + (sliceTokenCount << 1);
+
 		for (let i = from; i < to; i++) {
 			if (this._tokens[i] !== other._tokens[i]) {
 				return false;
@@ -148,37 +169,45 @@ export class LineTokens implements IViewLineTokens {
 
 	public getMetadata(tokenIndex: number): number {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return metadata;
 	}
 
 	public getLanguageId(tokenIndex: number): string {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		const languageId = TokenMetadata.getLanguageId(metadata);
+
 		return this.languageIdCodec.decodeLanguageId(languageId);
 	}
 
 	public getStandardTokenType(tokenIndex: number): StandardTokenType {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return TokenMetadata.getTokenType(metadata);
 	}
 
 	public getForeground(tokenIndex: number): ColorId {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return TokenMetadata.getForeground(metadata);
 	}
 
 	public getClassName(tokenIndex: number): string {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return TokenMetadata.getClassNameFromMetadata(metadata);
 	}
 
 	public getInlineStyle(tokenIndex: number, colorMap: string[]): string {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return TokenMetadata.getInlineStyleFromMetadata(metadata, colorMap);
 	}
 
 	public getPresentation(tokenIndex: number): ITokenPresentation {
 		const metadata = this._tokens[(tokenIndex << 1) + 1];
+
 		return TokenMetadata.getPresentationFromMetadata(metadata);
 	}
 
@@ -213,18 +242,24 @@ export class LineTokens implements IViewLineTokens {
 		}
 
 		let nextOriginalTokenIdx = 0;
+
 		let nextInsertTokenIdx = 0;
+
 		let text = '';
+
 		const newTokens = new Array<number>();
 
 		let originalEndOffset = 0;
+
 		while (true) {
 			const nextOriginalTokenEndOffset = nextOriginalTokenIdx < this._tokensCount ? this._tokens[nextOriginalTokenIdx << 1] : -1;
+
 			const nextInsertToken = nextInsertTokenIdx < insertTokens.length ? insertTokens[nextInsertTokenIdx] : null;
 
 			if (nextOriginalTokenEndOffset !== -1 && (nextInsertToken === null || nextOriginalTokenEndOffset <= nextInsertToken.offset)) {
 				// original token ends before next insert token
 				text += this._text.substring(originalEndOffset, nextOriginalTokenEndOffset);
+
 				const metadata = this._tokens[(nextOriginalTokenIdx << 1) + 1];
 				newTokens.push(text.length, metadata);
 				nextOriginalTokenIdx++;
@@ -234,6 +269,7 @@ export class LineTokens implements IViewLineTokens {
 				if (nextInsertToken.offset > originalEndOffset) {
 					// insert token is in the middle of the next token.
 					text += this._text.substring(originalEndOffset, nextInsertToken.offset);
+
 					const metadata = this._tokens[(nextOriginalTokenIdx << 1) + 1];
 					newTokens.push(text.length, metadata);
 					originalEndOffset = nextInsertToken.offset;
@@ -254,11 +290,14 @@ export class LineTokens implements IViewLineTokens {
 		const builder = new TokenArrayBuilder();
 
 		const startTokenIndex = this.findTokenIndexAtOffset(range.start);
+
 		const endTokenIndex = this.findTokenIndexAtOffset(range.endExclusive);
 
 		for (let tokenIndex = startTokenIndex; tokenIndex <= endTokenIndex; tokenIndex++) {
 			const tokenRange = new OffsetRange(this.getStartOffset(tokenIndex), this.getEndOffset(tokenIndex));
+
 			const length = tokenRange.intersectionLength(range);
+
 			if (length > 0) {
 				builder.add(length, this.getMetadata(tokenIndex));
 			}
@@ -269,13 +308,17 @@ export class LineTokens implements IViewLineTokens {
 
 	public getTokenText(tokenIndex: number): string {
 		const startOffset = this.getStartOffset(tokenIndex);
+
 		const endOffset = this.getEndOffset(tokenIndex);
+
 		const text = this._text.substring(startOffset, endOffset);
+
 		return text;
 	}
 
 	public forEach(callback: (tokenIndex: number) => void): void {
 		const tokenCount = this.getCount();
+
 		for (let tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++) {
 			callback(tokenIndex);
 		}
@@ -286,6 +329,7 @@ export class LineTokens implements IViewLineTokens {
 		this.forEach((i) => {
 			result += `[${this.getTokenText(i)}]{${this.getClassName(i)}}`;
 		});
+
 		return result;
 	}
 }
@@ -311,8 +355,10 @@ class SliceLineTokens implements IViewLineTokens {
 		this.languageIdCodec = source.languageIdCodec;
 
 		this._tokensCount = 0;
+
 		for (let i = this._firstTokenIndex, len = source.getCount(); i < len; i++) {
 			const tokenStartOffset = source.getStartOffset(i);
+
 			if (tokenStartOffset >= endOffset) {
 				break;
 			}
@@ -358,6 +404,7 @@ class SliceLineTokens implements IViewLineTokens {
 
 	public getEndOffset(tokenIndex: number): number {
 		const tokenEndOffset = this._source.getEndOffset(this._firstTokenIndex + tokenIndex);
+
 		return Math.min(this._endOffset, tokenEndOffset) - this._startOffset + this._deltaOffset;
 	}
 
@@ -379,9 +426,13 @@ class SliceLineTokens implements IViewLineTokens {
 
 	public getTokenText(tokenIndex: number): string {
 		const adjustedTokenIndex = this._firstTokenIndex + tokenIndex;
+
 		const tokenStartOffset = this._source.getStartOffset(adjustedTokenIndex);
+
 		const tokenEndOffset = this._source.getEndOffset(adjustedTokenIndex);
+
 		let text = this._source.getTokenText(adjustedTokenIndex);
+
 		if (tokenStartOffset < this._startOffset) {
 			text = text.substring(this._startOffset - tokenStartOffset);
 		}
@@ -400,12 +451,17 @@ class SliceLineTokens implements IViewLineTokens {
 
 export function getStandardTokenTypeAtPosition(model: ITextModel, position: IPosition): StandardTokenType | undefined {
 	const lineNumber = position.lineNumber;
+
 	if (!model.tokenization.isCheapToTokenize(lineNumber)) {
 		return undefined;
 	}
 	model.tokenization.forceTokenization(lineNumber);
+
 	const lineTokens = model.tokenization.getLineTokens(lineNumber);
+
 	const tokenIndex = lineTokens.findTokenIndexAtOffset(position.column - 1);
+
 	const tokenType = lineTokens.getStandardTokenType(tokenIndex);
+
 	return tokenType;
 }

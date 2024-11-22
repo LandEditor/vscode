@@ -55,7 +55,9 @@ struct VSOutput {
 	let cell = cells[instanceIndex];
 	// TODO: Is there a nicer way to init this?
 	var glyph = glyphInfo0[0];
+
 	let glyphIndex = u32(cell.glyphIndex);
+
 	if (u32(cell.textureIndex) == 0) {
 		glyph = glyphInfo0[glyphIndex];
 	} else {

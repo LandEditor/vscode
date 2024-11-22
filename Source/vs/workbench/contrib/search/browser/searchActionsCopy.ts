@@ -89,27 +89,34 @@ export const lineDelimiter = isWindows ? '\r\n' : '\n';
 async function copyPathCommand(accessor: ServicesAccessor, fileMatch: ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource | undefined) {
     if (!fileMatch) {
         const selection = getSelectedRow(accessor);
+
         if (!isSearchTreeFileMatch(selection) || isSearchTreeFolderMatchWithResource(selection)) {
             return;
         }
         fileMatch = selection;
     }
     const clipboardService = accessor.get(IClipboardService);
+
     const labelService = accessor.get(ILabelService);
+
     const text = labelService.getUriLabel(fileMatch.resource, { noPrefix: true });
     await clipboardService.writeText(text);
 }
 async function copyMatchCommand(accessor: ServicesAccessor, match: RenderableMatch | undefined) {
     if (!match) {
         const selection = getSelectedRow(accessor);
+
         if (!selection) {
             return;
         }
         match = selection;
     }
     const clipboardService = accessor.get(IClipboardService);
+
     const labelService = accessor.get(ILabelService);
+
     let text: string | undefined;
+
     if (isSearchTreeMatch(match)) {
         text = matchToString(match);
     }
@@ -125,34 +132,48 @@ async function copyMatchCommand(accessor: ServicesAccessor, match: RenderableMat
 }
 async function copyAllCommand(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const clipboardService = accessor.get(IClipboardService);
+
     const labelService = accessor.get(ILabelService);
+
     const searchView = getSearchView(viewsService);
+
     if (searchView) {
         const root = searchView.searchResult;
+
         const text = allFolderMatchesToString(root.folderMatches(), labelService);
         await clipboardService.writeText(text);
     }
 }
 function matchToString(match: ISearchTreeMatch, indent = 0): string {
     const getFirstLinePrefix = () => `${match.range().startLineNumber},${match.range().startColumn}`;
+
     const getOtherLinePrefix = (i: number) => match.range().startLineNumber + i + '';
+
     const fullMatchLines = match.fullPreviewLines();
+
     const largestPrefixSize = fullMatchLines.reduce((largest, _, i) => {
         const thisSize = i === 0 ?
             getFirstLinePrefix().length :
             getOtherLinePrefix(i).length;
+
         return Math.max(thisSize, largest);
     }, 0);
+
     const formattedLines = fullMatchLines
         .map((line, i) => {
         const prefix = i === 0 ?
             getFirstLinePrefix() :
             getOtherLinePrefix(i);
+
         const paddingStr = ' '.repeat(largestPrefixSize - prefix.length);
+
         const indentStr = ' '.repeat(indent);
+
         return `${indentStr}${prefix}: ${paddingStr}${line}`;
     });
+
     return formattedLines.join('\n');
 }
 function fileFolderMatchToString(match: ISearchTreeFileMatch | ISearchTreeFolderMatch | ISearchTreeFolderMatchWithResource, labelService: ILabelService): {
@@ -173,7 +194,9 @@ function fileMatchToString(fileMatch: ISearchTreeFileMatch, labelService: ILabel
     const matchTextRows = fileMatch.matches()
         .sort(searchMatchComparer)
         .map(match => matchToString(match, 2));
+
     const uriString = labelService.getUriLabel(fileMatch.resource, { noPrefix: true });
+
     return {
         text: `${uriString}${lineDelimiter}${matchTextRows.join(lineDelimiter)}`,
         count: matchTextRows.length
@@ -184,13 +207,16 @@ function folderMatchToString(folderMatch: ISearchTreeFolderMatchWithResource | I
     count: number;
 } {
     const results: string[] = [];
+
     let numMatches = 0;
+
     const matches = folderMatch.matches().sort(searchMatchComparer);
     matches.forEach(match => {
         const result = fileFolderMatchToString(match, labelService);
         numMatches += result.count;
         results.push(result.text);
     });
+
     return {
         text: results.join(lineDelimiter + lineDelimiter),
         count: numMatches
@@ -199,8 +225,10 @@ function folderMatchToString(folderMatch: ISearchTreeFolderMatchWithResource | I
 function allFolderMatchesToString(folderMatches: Array<ISearchTreeFolderMatchWithResource | ISearchTreeFolderMatch>, labelService: ILabelService): string {
     const folderResults: string[] = [];
     folderMatches = folderMatches.sort(searchMatchComparer);
+
     for (let i = 0; i < folderMatches.length; i++) {
         const folderResult = folderMatchToString(folderMatches[i], labelService);
+
         if (folderResult.count) {
             folderResults.push(folderResult.text);
         }
@@ -209,7 +237,9 @@ function allFolderMatchesToString(folderMatches: Array<ISearchTreeFolderMatchWit
 }
 function getSelectedRow(accessor: ServicesAccessor): RenderableMatch | undefined | null {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
+
     return searchView?.getControl().getSelection()[0];
 }
 //#endregion

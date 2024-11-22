@@ -38,11 +38,13 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
     }
     private name: string;
     private readonly isScratchpad: boolean;
+
     get language() {
         return this._inputModelRef?.object.textEditorModel.getLanguageId() ?? this._initLanguage;
     }
     private _initLanguage?: string;
     private _notebookEditorInput: NotebookEditorInput;
+
     get notebookEditorInput() {
         return this._notebookEditorInput;
     }
@@ -54,18 +56,21 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
         return this._resource;
     }
     private _inputResource: URI;
+
     get inputResource() {
         return this._inputResource;
     }
     private _inputResolver: Promise<IResolvedNotebookEditorModel | null> | null;
     private _editorModelReference: IResolvedNotebookEditorModel | null;
     private _inputModelRef: IReference<IResolvedTextEditorModel> | null;
+
     get primary(): EditorInput {
         return this._notebookEditorInput;
     }
     private _textModelService: ITextModelService;
     private _interactiveDocumentService: IInteractiveDocumentService;
     private _historyService: IInteractiveHistoryService;
+
     constructor(resource: URI, inputResource: URI, title: string | undefined, languageId: string | undefined, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -82,6 +87,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
     @IConfigurationService
     configurationService: IConfigurationService) {
         const input = NotebookEditorInput.getOrCreate(instantiationService, resource, undefined, 'interactive', {});
+
         super();
         this.isScratchpad = configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
         this._notebookEditorInput = input;
@@ -113,6 +119,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
     }
     override get capabilities(): EditorInputCapabilities {
         const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
+
         return EditorInputCapabilities.Untitled
             | EditorInputCapabilities.Readonly
             | scratchPad;
@@ -131,6 +138,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
             return this._inputResolver;
         }
         this._inputResolver = this._resolveEditorModel();
+
         return this._inputResolver;
     }
     async resolveInput(language?: string) {
@@ -140,6 +148,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
         const resolvedLanguage = language ?? this._initLanguage ?? PLAINTEXT_LANGUAGE_ID;
         this._interactiveDocumentService.willCreateInteractiveDocument(this.resource, this.inputResource, resolvedLanguage);
         this._inputModelRef = await this._textModelService.createModelReference(this.inputResource);
+
         return this._inputModelRef.object.textEditorModel;
     }
     override async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
@@ -159,16 +168,21 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
             return undefined;
         }
         const provider = this._notebookService.getContributedNotebookType('interactive');
+
         if (!provider) {
             return undefined;
         }
         const filename = this.getName() + '.ipynb';
+
         const pathCandidate = joinPath(await this._fileDialogService.defaultFilePath(), filename);
+
         const target = await this._fileDialogService.pickFileToSave(pathCandidate, options?.availableFileSystems);
+
         if (!target) {
             return undefined; // save cancelled
         }
         const saved = await this._editorModelReference.saveAs(target);
+
         if (saved && 'resource' in saved && saved.resource) {
             this._notebookService.getNotebookTextModel(saved.resource)?.dispose();
         }
@@ -209,6 +223,7 @@ export class InteractiveEditorInput extends EditorInput implements ICompositeNot
         this._interactiveDocumentService.willRemoveInteractiveDocument(this.resource, this.inputResource);
         this._inputModelRef?.dispose();
         this._inputModelRef = null;
+
         super.dispose();
     }
     get historyService() {

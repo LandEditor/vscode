@@ -32,9 +32,11 @@ export class FastDomNode<T extends HTMLElement> {
     private _layerHint: boolean = false;
     private _contain: 'none' | 'strict' | 'content' | 'size' | 'layout' | 'style' | 'paint' = 'none';
     private _boxShadow: string = '';
+
     constructor(public readonly domNode: T) { }
     public setMaxWidth(_maxWidth: number | string): void {
         const maxWidth = numberAsPixels(_maxWidth);
+
         if (this._maxWidth === maxWidth) {
             return;
         }
@@ -43,6 +45,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setWidth(_width: number | string): void {
         const width = numberAsPixels(_width);
+
         if (this._width === width) {
             return;
         }
@@ -51,6 +54,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setHeight(_height: number | string): void {
         const height = numberAsPixels(_height);
+
         if (this._height === height) {
             return;
         }
@@ -59,6 +63,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setTop(_top: number | string): void {
         const top = numberAsPixels(_top);
+
         if (this._top === top) {
             return;
         }
@@ -67,6 +72,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setLeft(_left: number | string): void {
         const left = numberAsPixels(_left);
+
         if (this._left === left) {
             return;
         }
@@ -75,6 +81,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setBottom(_bottom: number | string): void {
         const bottom = numberAsPixels(_bottom);
+
         if (this._bottom === bottom) {
             return;
         }
@@ -83,6 +90,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setRight(_right: number | string): void {
         const right = numberAsPixels(_right);
+
         if (this._right === right) {
             return;
         }
@@ -91,6 +99,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setPaddingTop(_paddingTop: number | string): void {
         const paddingTop = numberAsPixels(_paddingTop);
+
         if (this._paddingTop === paddingTop) {
             return;
         }
@@ -99,6 +108,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setPaddingLeft(_paddingLeft: number | string): void {
         const paddingLeft = numberAsPixels(_paddingLeft);
+
         if (this._paddingLeft === paddingLeft) {
             return;
         }
@@ -107,6 +117,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setPaddingBottom(_paddingBottom: number | string): void {
         const paddingBottom = numberAsPixels(_paddingBottom);
+
         if (this._paddingBottom === paddingBottom) {
             return;
         }
@@ -115,6 +126,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setPaddingRight(_paddingRight: number | string): void {
         const paddingRight = numberAsPixels(_paddingRight);
+
         if (this._paddingRight === paddingRight) {
             return;
         }
@@ -137,6 +149,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setFontSize(_fontSize: number | string): void {
         const fontSize = numberAsPixels(_fontSize);
+
         if (this._fontSize === fontSize) {
             return;
         }
@@ -173,6 +186,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setLineHeight(_lineHeight: number | string): void {
         const lineHeight = numberAsPixels(_lineHeight);
+
         if (this._lineHeight === lineHeight) {
             return;
         }
@@ -181,6 +195,7 @@ export class FastDomNode<T extends HTMLElement> {
     }
     public setLetterSpacing(_letterSpacing: number | string): void {
         const letterSpacing = numberAsPixels(_letterSpacing);
+
         if (this._letterSpacing === letterSpacing) {
             return;
         }

@@ -33,6 +33,7 @@ export const defaultViewIcon = registerIcon('default-view-icon', Codicon.window,
 
 export namespace Extensions {
 	export const ViewContainersRegistry = 'workbench.registry.view.containers';
+
 	export const ViewsRegistry = 'workbench.registry.view';
 }
 
@@ -47,7 +48,9 @@ export const ViewContainerLocations = [ViewContainerLocation.Sidebar, ViewContai
 export function ViewContainerLocationToString(viewContainerLocation: ViewContainerLocation) {
 	switch (viewContainerLocation) {
 		case ViewContainerLocation.Sidebar: return 'sidebar';
+
 		case ViewContainerLocation.Panel: return 'panel';
+
 		case ViewContainerLocation.AuxiliaryBar: return 'auxiliarybar';
 	}
 }
@@ -208,31 +211,39 @@ class ViewContainersRegistryImpl extends Disposable implements IViewContainersRe
 
 	registerViewContainer(viewContainerDescriptor: IViewContainerDescriptor, viewContainerLocation: ViewContainerLocation, options?: { isDefault?: boolean; doNotRegisterOpenCommand?: boolean }): ViewContainer {
 		const existing = this.get(viewContainerDescriptor.id);
+
 		if (existing) {
 			return existing;
 		}
 
 		const viewContainer: RelaxedViewContainer = viewContainerDescriptor;
 		viewContainer.openCommandActionDescriptor = options?.doNotRegisterOpenCommand ? undefined : (viewContainer.openCommandActionDescriptor ?? { id: viewContainer.id });
+
 		const viewContainers = getOrSet(this.viewContainers, viewContainerLocation, []);
 		viewContainers.push(viewContainer);
+
 		if (options?.isDefault) {
 			this.defaultViewContainers.push(viewContainer);
 		}
 		this._onDidRegister.fire({ viewContainer, viewContainerLocation });
+
 		return viewContainer;
 	}
 
 	deregisterViewContainer(viewContainer: ViewContainer): void {
 		for (const viewContainerLocation of this.viewContainers.keys()) {
 			const viewContainers = this.viewContainers.get(viewContainerLocation)!;
+
 			const index = viewContainers?.indexOf(viewContainer);
+
 			if (index !== -1) {
 				viewContainers?.splice(index, 1);
+
 				if (viewContainers.length === 0) {
 					this.viewContainers.delete(viewContainerLocation);
 				}
 				this._onDidDeregister.fire({ viewContainer, viewContainerLocation });
+
 				return;
 			}
 		}
@@ -346,12 +357,15 @@ export interface IViewContainerModel {
 	readonly onDidMoveVisibleViewDescriptors: Event<{ from: IViewDescriptorRef; to: IViewDescriptorRef }>;
 
 	isVisible(id: string): boolean;
+
 	setVisible(id: string, visible: boolean): void;
 
 	isCollapsed(id: string): boolean;
+
 	setCollapsed(id: string, collapsed: boolean): void;
 
 	getSize(id: string): number | undefined;
+
 	setSizes(newSizes: readonly { id: string; size: number }[]): void;
 
 	move(from: string, to: string): void;
@@ -402,12 +416,15 @@ export interface IViewsRegistry {
 	readonly onDidChangeViewWelcomeContent: Event<string>;
 	registerViewWelcomeContent(id: string, viewContent: IViewContentDescriptor): IDisposable;
 	registerViewWelcomeContent2<TKey>(id: string, viewContentMap: Map<TKey, IViewContentDescriptor>): Map<TKey, IDisposable>;
+
 	getViewWelcomeContent(id: string): IViewContentDescriptor[];
 }
 
 function compareViewContentDescriptors(a: IViewContentDescriptor, b: IViewContentDescriptor): number {
 	const aGroup = a.group ?? ViewContentGroups.More;
+
 	const bGroup = b.group ?? ViewContentGroups.More;
+
 	if (aGroup !== bGroup) {
 		return aGroup.localeCompare(bGroup);
 	}
@@ -443,6 +460,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	deregisterViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): void {
 		const views = this.removeViews(viewDescriptors, viewContainer);
+
 		if (views.length) {
 			this._onViewsDeregistered.fire({ views, viewContainer });
 		}
@@ -452,6 +470,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 		for (const container of this._views.keys()) {
 			if (container !== viewContainer) {
 				const views = this.removeViews(viewsToMove, container);
+
 				if (views.length) {
 					this.addViews(views, viewContainer);
 					this._onDidChangeContainer.fire({ views, from: container, to: viewContainer });
@@ -467,6 +486,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	getView(id: string): IViewDescriptor | null {
 		for (const viewContainer of this._viewContainers) {
 			const viewDescriptor = (this._views.get(viewContainer) || []).filter(v => v.id === id)[0];
+
 			if (viewDescriptor) {
 				return viewDescriptor;
 			}
@@ -477,6 +497,7 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	getViewContainer(viewId: string): ViewContainer | null {
 		for (const viewContainer of this._viewContainers) {
 			const viewDescriptor = (this._views.get(viewContainer) || []).filter(v => v.id === viewId)[0];
+
 			if (viewDescriptor) {
 				return viewContainer;
 			}
@@ -513,11 +534,13 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 	getViewWelcomeContent(id: string): IViewContentDescriptor[] {
 		const result: IViewContentDescriptor[] = [];
 		this._viewWelcomeContents.forEach(id, descriptor => result.push(descriptor));
+
 		return result.sort(compareViewContentDescriptors);
 	}
 
 	private addViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): void {
 		let views = this._views.get(viewContainer);
+
 		if (!views) {
 			views = [];
 			this._views.set(viewContainer, views);
@@ -533,11 +556,14 @@ class ViewsRegistry extends Disposable implements IViewsRegistry {
 
 	private removeViews(viewDescriptors: IViewDescriptor[], viewContainer: ViewContainer): IViewDescriptor[] {
 		const views = this._views.get(viewContainer);
+
 		if (!views) {
 			return [];
 		}
 		const viewsToDeregister: IViewDescriptor[] = [];
+
 		const remaningViews: IViewDescriptor[] = [];
+
 		for (const view of views) {
 			if (!viewDescriptors.includes(view)) {
 				remaningViews.push(view);
@@ -590,23 +616,32 @@ export interface IViewDescriptorService {
 	readonly onDidChangeViewContainers: Event<{ added: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }>; removed: ReadonlyArray<{ container: ViewContainer; location: ViewContainerLocation }> }>;
 
 	getDefaultViewContainer(location: ViewContainerLocation): ViewContainer | undefined;
+
 	getViewContainerById(id: string): ViewContainer | null;
 	isViewContainerRemovedPermanently(id: string): boolean;
+
 	getDefaultViewContainerLocation(viewContainer: ViewContainer): ViewContainerLocation | null;
+
 	getViewContainerLocation(viewContainer: ViewContainer): ViewContainerLocation | null;
+
 	getViewContainersByLocation(location: ViewContainerLocation): ViewContainer[];
+
 	getViewContainerModel(viewContainer: ViewContainer): IViewContainerModel;
 
 	readonly onDidChangeContainerLocation: Event<{ viewContainer: ViewContainer; from: ViewContainerLocation; to: ViewContainerLocation }>;
 	moveViewContainerToLocation(viewContainer: ViewContainer, location: ViewContainerLocation, requestedIndex?: number, reason?: string): void;
 
 	getViewContainerBadgeEnablementState(id: string): boolean;
+
 	setViewContainerBadgeEnablementState(id: string, badgesEnabled: boolean): void;
 
 	// Views
 	getViewDescriptorById(id: string): IViewDescriptor | null;
+
 	getViewContainerByViewId(id: string): ViewContainer | null;
+
 	getDefaultContainerById(id: string): ViewContainer | null;
+
 	getViewLocationById(id: string): ViewContainerLocation | null;
 
 	readonly onDidChangeContainer: Event<{ views: IViewDescriptor[]; from: ViewContainer; to: ViewContainer }>;
@@ -790,12 +825,14 @@ export class ResolvableTreeItem implements ITreeItem {
 	resolve: (token: CancellationToken) => Promise<void>;
 	private resolved: boolean = false;
 	private _hasResolve: boolean = false;
+
 	constructor(treeItem: ITreeItem, resolve?: ((token: CancellationToken) => Promise<ITreeItem | undefined>)) {
 		mixin(this, treeItem);
 		this._hasResolve = !!resolve;
 		this.resolve = async (token: CancellationToken) => {
 			if (resolve && !this.resolved) {
 				const resolvedItem = await resolve(token);
+
 				if (resolvedItem) {
 					// Resolvable elements. Currently tooltip and command.
 					this.tooltip = this.tooltip ?? resolvedItem.tooltip;
@@ -835,6 +872,7 @@ export class ResolvableTreeItem implements ITreeItem {
 
 export class NoTreeViewError extends Error {
 	override readonly name = 'NoTreeViewError';
+
 	constructor(treeViewId: string) {
 		super(localize('treeView.notRegistered', 'No tree view with id \'{0}\' registered.', treeViewId));
 	}
@@ -846,7 +884,9 @@ export class NoTreeViewError extends Error {
 export interface ITreeViewDataProvider {
 	readonly isTreeEmpty?: boolean;
 	onDidChangeEmpty?: Event<void>;
+
 	getChildren(element?: ITreeItem): Promise<ITreeItem[] | undefined>;
+
 	getChildrenBatch?(element?: ITreeItem[]): Promise<ITreeItem[][] | undefined>;
 }
 
@@ -874,7 +914,9 @@ export interface IViewPaneContainer {
 	setVisible(visible: boolean): void;
 	isVisible(): boolean;
 	focus(): void;
+
 	getActionsContext(): unknown;
+
 	getView(viewId: string): IView | undefined;
 	toggleViewVisibility(viewId: string): void;
 }

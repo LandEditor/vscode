@@ -20,18 +20,22 @@ export abstract class BaseAssignmentService implements IAssignmentService {
     }
     constructor(private readonly machineId: string, protected readonly configurationService: IConfigurationService, protected readonly productService: IProductService, protected readonly environmentService: IEnvironmentService, protected telemetry: IExperimentationTelemetry, private keyValueStorage?: IKeyValueStorage) {
         const isTesting = environmentService.extensionTestsLocationURI !== undefined;
+
         if (!isTesting && productService.tasConfig && this.experimentsEnabled && getTelemetryLevel(this.configurationService) === TelemetryLevel.USAGE) {
             this.tasClient = this.setupTASClient();
         }
         // For development purposes, configure the delay until tas local tas treatment ovverrides are available
         const overrideDelaySetting = this.configurationService.getValue('experiments.overrideDelay');
+
         const overrideDelay = typeof overrideDelaySetting === 'number' ? overrideDelaySetting : 0;
         this.overrideInitDelay = new Promise(resolve => setTimeout(resolve, overrideDelay));
     }
     async getTreatment<T extends string | number | boolean>(name: string): Promise<T | undefined> {
         // For development purposes, allow overriding tas assignments to test variants locally.
         await this.overrideInitDelay;
+
         const override = this.configurationService.getValue<T>('experiments.override.' + name);
+
         if (override !== undefined) {
             return override;
         }
@@ -42,6 +46,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
             return undefined;
         }
         let result: T | undefined;
+
         const client = await this.tasClient;
         // The TAS client is initialized but we need to check if the initial fetch has completed yet
         // If it is complete, return a cached value for the treatment
@@ -54,14 +59,18 @@ export abstract class BaseAssignmentService implements IAssignmentService {
             result = await client.getTreatmentVariableAsync<T>('vscode', name, true);
         }
         result = client.getTreatmentVariable<T>('vscode', name);
+
         return result;
     }
     private async setupTASClient(): Promise<TASClient> {
         const targetPopulation = this.productService.quality === 'stable' ?
             TargetPopulation.Public : (this.productService.quality === 'exploration' ?
             TargetPopulation.Exploration : TargetPopulation.Insiders);
+
         const filterProvider = new AssignmentFilterProvider(this.productService.version, this.productService.nameLong, this.machineId, targetPopulation);
+
         const tasConfig = this.productService.tasConfig!;
+
         const tasClient = new (await importAMDNodeModule<typeof import('tas-client-umd')>('tas-client-umd', 'lib/tas-client-umd.js')).ExperimentationService({
             filterProviders: [filterProvider],
             telemetry: this.telemetry,
@@ -74,6 +83,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
         });
         await tasClient.initializePromise;
         tasClient.initialFetch.then(() => this.networkInitialized = true);
+
         return tasClient;
     }
 }

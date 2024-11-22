@@ -63,15 +63,18 @@ class RenameSkeleton {
 
 		for (this._providerRenameIdx = 0; this._providerRenameIdx < this._providers.length; this._providerRenameIdx++) {
 			const provider = this._providers[this._providerRenameIdx];
+
 			if (!provider.resolveRenameLocation) {
 				break;
 			}
 			const res = await provider.resolveRenameLocation(this.model, this.position, token);
+
 			if (!res) {
 				continue;
 			}
 			if (res.rejectReason) {
 				rejects.push(res.rejectReason);
+
 				continue;
 			}
 			return res;
@@ -82,6 +85,7 @@ class RenameSkeleton {
 		this._providerRenameIdx = 0;
 
 		const word = this.model.getWordAtPosition(this.position);
+
 		if (!word) {
 			return {
 				range: Range.fromPositions(this.position),
@@ -102,6 +106,7 @@ class RenameSkeleton {
 
 	private async _provideRenameEdits(newName: string, i: number, rejects: string[], token: CancellationToken): Promise<WorkspaceEdit & Rejection> {
 		const provider = this._providers[i];
+
 		if (!provider) {
 			return {
 				edits: [],
@@ -110,6 +115,7 @@ class RenameSkeleton {
 		}
 
 		const result = await provider.provideRenameEdits(this.model, this.position, newName, token);
+
 		if (!result) {
 			return this._provideRenameEdits(newName, i + 1, rejects.concat(nls.localize('no result', "No result.")), token);
 		} else if (result.rejectReason) {
@@ -121,7 +127,9 @@ class RenameSkeleton {
 
 export async function rename(registry: LanguageFeatureRegistry<RenameProvider>, model: ITextModel, position: Position, newName: string): Promise<WorkspaceEdit & Rejection> {
 	const skeleton = new RenameSkeleton(model, position, registry);
+
 	const loc = await skeleton.resolveRenameLocation(CancellationToken.None);
+
 	if (loc?.rejectReason) {
 		return { edits: [], rejectReason: loc.rejectReason };
 	}
@@ -172,14 +180,17 @@ class RenameController implements IEditorContribution {
 
 		if (!this.editor.hasModel()) {
 			trace('editor has no model');
+
 			return undefined;
 		}
 
 		const position = this.editor.getPosition();
+
 		const skeleton = new RenameSkeleton(this.editor.getModel(), position, this._languageFeaturesService.renameProvider);
 
 		if (!skeleton.hasProvider()) {
 			trace('skeleton has no provider');
+
 			return undefined;
 		}
 
@@ -187,8 +198,10 @@ class RenameController implements IEditorContribution {
 		const cts1 = new EditorStateCancellationTokenSource(this.editor, CodeEditorStateFlag.Position | CodeEditorStateFlag.Value, undefined, this._cts.token);
 
 		let loc: RenameLocation & Rejection | undefined;
+
 		try {
 			trace('resolving rename location');
+
 			const resolveLocationOperation = skeleton.resolveRenameLocation(cts1.token);
 			this._progressService.showWhile(resolveLocationOperation, 250);
 			loc = await resolveLocationOperation;
@@ -198,6 +211,7 @@ class RenameController implements IEditorContribution {
 				trace('resolve rename location cancelled', JSON.stringify(e, null, '\t'));
 			} else {
 				trace('resolve rename location failed', e instanceof Error ? e : JSON.stringify(e, null, '\t'));
+
 				if (typeof e === 'string' || isMarkdownString(e)) {
 					MessageController.get(this.editor)?.showMessage(e || nls.localize('resolveRenameLocationFailed', "An unknown error occurred while resolving rename location"), position);
 				}
@@ -210,17 +224,20 @@ class RenameController implements IEditorContribution {
 
 		if (!loc) {
 			trace('returning early - no loc');
+
 			return undefined;
 		}
 
 		if (loc.rejectReason) {
 			trace(`returning early - rejected with reason: ${loc.rejectReason}`, loc.rejectReason);
 			MessageController.get(this.editor)?.showMessage(loc.rejectReason, position);
+
 			return undefined;
 		}
 
 		if (cts1.token.isCancellationRequested) {
 			trace('returning early - cts1 cancelled');
+
 			return undefined;
 		}
 
@@ -244,7 +261,9 @@ class RenameController implements IEditorContribution {
 		};
 
 		trace('creating rename input field and awaiting its result');
+
 		const supportPreview = this._bulkEditService.hasPreviewHandler() && this._configService.getValue<boolean>(this.editor.getModel().uri, 'editor.rename.enablePreview');
+
 		const inputFieldResult = await this._renameWidget.getInput(
 			loc.range,
 			loc.text,
@@ -261,30 +280,36 @@ class RenameController implements IEditorContribution {
 		// no result, only hint to focus the editor or not
 		if (typeof inputFieldResult === 'boolean') {
 			trace(`returning early - rename input field response - ${inputFieldResult}`);
+
 			if (inputFieldResult) {
 				this.editor.focus();
 			}
 			cts2.dispose();
+
 			return undefined;
 		}
 
 		this.editor.focus();
 
 		trace('requesting rename edits');
+
 		const renameOperation = raceCancellation(skeleton.provideRenameEdits(inputFieldResult.newName, cts2.token), cts2.token).then(async renameResult => {
 
 			if (!renameResult) {
 				trace('returning early - no rename edits result');
+
 				return;
 			}
 			if (!this.editor.hasModel()) {
 				trace('returning early - no model after rename edits are provided');
+
 				return;
 			}
 
 			if (renameResult.rejectReason) {
 				trace(`returning early - rejected with reason: ${renameResult.rejectReason}`);
 				this._notificationService.info(renameResult.rejectReason);
+
 				return;
 			}
 
@@ -302,6 +327,7 @@ class RenameController implements IEditorContribution {
 				respectAutoSaveConfig: true
 			}).then(result => {
 				trace('edits applied');
+
 				if (result.ariaSummary) {
 					alert(nls.localize('aria', "Successfully renamed '{0}' to '{1}'. Summary: {2}", loc.text, inputFieldResult.newName, result.ariaSummary));
 				}
@@ -324,6 +350,7 @@ class RenameController implements IEditorContribution {
 		trace('returning rename operation');
 
 		this._progressService.showWhile(renameOperation, 250);
+
 		return renameOperation;
 
 	}
@@ -428,6 +455,7 @@ export class RenameAction extends EditorAction {
 
 	override runCommand(accessor: ServicesAccessor, args: [URI, IPosition]): void | Promise<void> {
 		const editorService = accessor.get(ICodeEditorService);
+
 		const [uri, pos] = Array.isArray(args) && args || [undefined, undefined];
 
 		if (URI.isUri(uri) && Position.isIPosition(pos)) {
@@ -438,6 +466,7 @@ export class RenameAction extends EditorAction {
 				editor.setPosition(pos);
 				editor.invokeWithinContext(accessor => {
 					this.reportTelemetry(accessor, editor);
+
 					return this.run(accessor, editor);
 				});
 			}, onUnexpectedError);
@@ -453,9 +482,11 @@ export class RenameAction extends EditorAction {
 
 		if (controller) {
 			logService.trace('[RenameAction] got controller, running...');
+
 			return controller.run();
 		}
 		logService.trace('[RenameAction] returning early - controller missing');
+
 		return Promise.resolve();
 	}
 }
@@ -518,9 +549,11 @@ registerAction2(class FocusNextRenameSuggestion extends Action2 {
 
 	override run(accessor: ServicesAccessor): void {
 		const currentEditor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
 		if (!currentEditor) { return; }
 
 		const controller = RenameController.get(currentEditor);
+
 		if (!controller) { return; }
 
 		controller.focusNextRenameSuggestion();
@@ -546,9 +579,11 @@ registerAction2(class FocusPreviousRenameSuggestion extends Action2 {
 
 	override run(accessor: ServicesAccessor): void {
 		const currentEditor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
 		if (!currentEditor) { return; }
 
 		const controller = RenameController.get(currentEditor);
+
 		if (!controller) { return; }
 
 		controller.focusPreviousRenameSuggestion();
@@ -560,14 +595,19 @@ registerAction2(class FocusPreviousRenameSuggestion extends Action2 {
 registerModelAndPositionCommand('_executeDocumentRenameProvider', function (accessor, model, position, ...args) {
 	const [newName] = args;
 	assertType(typeof newName === 'string');
+
 	const { renameProvider } = accessor.get(ILanguageFeaturesService);
+
 	return rename(renameProvider, model, position, newName);
 });
 
 registerModelAndPositionCommand('_executePrepareRename', async function (accessor, model, position) {
 	const { renameProvider } = accessor.get(ILanguageFeaturesService);
+
 	const skeleton = new RenameSkeleton(model, position, renameProvider);
+
 	const loc = await skeleton.resolveRenameLocation(CancellationToken.None);
+
 	if (loc?.rejectReason) {
 		throw new Error(loc.rejectReason);
 	}

@@ -9,10 +9,12 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 export const IShellEnvironmentService = createDecorator<IShellEnvironmentService>('shellEnvironmentService');
 export interface IShellEnvironmentService {
     readonly _serviceBrand: undefined;
+
     getShellEnv(): Promise<IProcessEnvironment>;
 }
 export class ShellEnvironmentService implements IShellEnvironmentService {
     declare readonly _serviceBrand: undefined;
+
     getShellEnv(): Promise<IProcessEnvironment> {
         return process.shellEnv();
     }

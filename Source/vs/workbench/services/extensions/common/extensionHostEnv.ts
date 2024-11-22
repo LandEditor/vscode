@@ -14,6 +14,7 @@ export const enum ExtHostConnectionType {
 export class IPCExtHostConnection {
     public static ENV_KEY = 'VSCODE_EXTHOST_IPC_HOOK';
     public readonly type = ExtHostConnectionType.IPC;
+
     constructor(public readonly pipeName: string) { }
     public serialize(env: IProcessEnvironment): void {
         env[IPCExtHostConnection.ENV_KEY] = this.pipeName;
@@ -70,5 +71,6 @@ export function readExtHostConnection(env: IProcessEnvironment): ExtHostConnecti
 }
 function cleanAndReturn(env: IProcessEnvironment, result: ExtHostConnection): ExtHostConnection {
     clean(env);
+
     return result;
 }

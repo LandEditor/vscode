@@ -100,6 +100,7 @@ export interface INotebookKernelService {
     readonly onDidChangeNotebookAffinity: Event<void>;
     readonly onDidNotebookVariablesUpdate: Event<URI>;
     registerKernel(kernel: INotebookKernel): IDisposable;
+
     getMatchingKernel(notebook: INotebookTextModelLike): INotebookKernelMatchResult;
     /**
      * Returns the selected or only available kernel.
@@ -121,13 +122,17 @@ export interface INotebookKernelService {
     //#region Kernel detection tasks
     readonly onDidChangeKernelDetectionTasks: Event<string>;
     registerNotebookKernelDetectionTask(task: INotebookKernelDetectionTask): IDisposable;
+
     getKernelDetectionTasks(notebook: INotebookTextModelLike): INotebookKernelDetectionTask[];
     //#endregion
     //#region Kernel source actions
     readonly onDidChangeSourceActions: Event<INotebookSourceActionChangeEvent>;
+
     getSourceActions(notebook: INotebookTextModelLike, contextKeyService: IContextKeyService | undefined): ISourceAction[];
+
     getRunningSourceActions(notebook: INotebookTextModelLike): ISourceAction[];
     registerKernelSourceActionProvider(viewType: string, provider: IKernelSourceActionProvider): IDisposable;
+
     getKernelSourceActions2(notebook: INotebookTextModelLike): Promise<INotebookKernelSourceAction[]>;
     //#endregion
     notifyVariablesChange(notebookUri: URI): void;
@@ -135,6 +140,7 @@ export interface INotebookKernelService {
 export const INotebookKernelHistoryService = createDecorator<INotebookKernelHistoryService>('INotebookKernelHistoryService');
 export interface INotebookKernelHistoryService {
     _serviceBrand: undefined;
+
     getKernels(notebook: INotebookTextModelLike): {
         selected: INotebookKernel | undefined;
         all: INotebookKernel[];

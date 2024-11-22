@@ -20,6 +20,7 @@ export class CommandManager {
     }
     public register<T extends Command>(command: T): vscode.Disposable {
         let entry = this.commands.get(command.id);
+
         if (!entry) {
             entry = { refCount: 1, registration: vscode.commands.registerCommand(command.id, command.execute, command) };
             this.commands.set(command.id, entry);
@@ -29,6 +30,7 @@ export class CommandManager {
         }
         return new vscode.Disposable(() => {
             entry.refCount -= 1;
+
             if (entry.refCount <= 0) {
                 entry.registration.dispose();
                 this.commands.delete(command.id);

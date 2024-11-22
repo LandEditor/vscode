@@ -16,6 +16,7 @@ export class ReplEditorInputAccessibilityHelp implements IAccessibleViewImplenta
 	readonly name = 'REPL Editor Input';
 	readonly when = ContextKeyExpr.and(IS_COMPOSITE_NOTEBOOK, NOTEBOOK_CELL_LIST_FOCUSED.negate());
 	readonly type: AccessibleViewType = AccessibleViewType.Help;
+
 	getProvider(accessor: ServicesAccessor) {
 		return getAccessibilityHelpProvider(accessor.get(ICodeEditorService), getAccessibilityInputHelpText());
 	}
@@ -38,6 +39,7 @@ export class ReplEditorHistoryAccessibilityHelp implements IAccessibleViewImplen
 	readonly name = 'REPL Editor History';
 	readonly when = ContextKeyExpr.and(IS_COMPOSITE_NOTEBOOK, NOTEBOOK_CELL_LIST_FOCUSED);
 	readonly type: AccessibleViewType = AccessibleViewType.Help;
+
 	getProvider(accessor: ServicesAccessor) {
 		return getAccessibilityHelpProvider(accessor.get(ICodeEditorService), getAccessibilityHistoryHelpText());
 	}

@@ -11,6 +11,7 @@ import { revive } from '../../../base/common/marshalling.js';
 export class ExtHostLoggerService extends AbstractLoggerService implements ExtHostLogLevelServiceShape {
     declare readonly _serviceBrand: undefined;
     protected readonly _proxy: MainThreadLoggerShape;
+
     constructor(
     @IExtHostRpcService
     rpc: IExtHostRpcService, 
@@ -41,6 +42,7 @@ class Logger extends AbstractMessageLogger {
         LogLevel,
         string
     ][] = [];
+
     constructor(private readonly proxy: MainThreadLoggerShape, private readonly file: URI, logLevel: LogLevel, loggerOptions?: ILoggerOptions) {
         super(loggerOptions?.logLevel === 'always');
         this.setLevel(logLevel);
@@ -55,6 +57,7 @@ class Logger extends AbstractMessageLogger {
             LogLevel,
             string
         ][] = [[level, message]];
+
         if (this.isLoggerCreated) {
             this.doLog(messages);
         }

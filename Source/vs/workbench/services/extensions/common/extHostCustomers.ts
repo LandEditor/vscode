@@ -48,6 +48,7 @@ class ExtHostCustomersRegistryImpl {
     public static readonly INSTANCE = new ExtHostCustomersRegistryImpl();
     private _namedCustomers: IExtHostNamedCustomer<any>[];
     private _customers: IExtHostCustomerCtor<any>[];
+
     constructor() {
         this._namedCustomers = [];
         this._customers = [];

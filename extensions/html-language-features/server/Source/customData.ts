@@ -8,16 +8,19 @@ export function fetchHTMLDataProviders(dataPaths: string[], requestService: Cust
     const providers = dataPaths.map(async (p) => {
         try {
             const content = await requestService.getContent(p);
+
             return parseHTMLData(p, content);
         }
         catch (e) {
             return newHTMLDataProvider(p, { version: 1 });
         }
     });
+
     return Promise.all(providers);
 }
 function parseHTMLData(id: string, source: string): IHTMLDataProvider {
     let rawData: any;
+
     try {
         rawData = JSON.parse(source);
     }

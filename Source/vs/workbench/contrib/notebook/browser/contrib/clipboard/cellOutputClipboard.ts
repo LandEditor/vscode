@@ -8,22 +8,29 @@ import { ICellOutputViewModel, ICellViewModel } from '../../notebookBrowser.js';
 import { isTextStreamMime } from '../../../common/notebookCommon.js';
 export async function copyCellOutput(mimeType: string | undefined, outputViewModel: ICellOutputViewModel, clipboardService: IClipboardService, logService: ILogService) {
     const cellOutput = outputViewModel.model;
+
     const output = mimeType && TEXT_BASED_MIMETYPES.includes(mimeType) ?
         cellOutput.outputs.find(output => output.mime === mimeType) :
         cellOutput.outputs.find(output => TEXT_BASED_MIMETYPES.includes(output.mime));
     mimeType = output?.mime;
+
     if (!mimeType || !output) {
         return;
     }
     const decoder = new TextDecoder();
+
     let text = decoder.decode(output.data.buffer);
     // append adjacent text streams since they are concatenated in the renderer
     if (isTextStreamMime(mimeType)) {
         const cellViewModel = outputViewModel.cellViewModel as ICellViewModel;
+
         let index = cellViewModel.outputsViewModels.indexOf(outputViewModel) + 1;
+
         while (index < cellViewModel.model.outputs.length) {
             const nextCellOutput = cellViewModel.model.outputs[index];
+
             const nextOutput = nextCellOutput.outputs.find(output => isTextStreamMime(output.mime));
+
             if (!nextOutput) {
                 break;
             }

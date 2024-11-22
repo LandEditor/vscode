@@ -24,6 +24,7 @@ export function wrapInHotClass0<TArgs extends BrandedService[]>(clazz: IObservab
 type Result<TArgs extends any[]> = new (...args: TArgs) => IDisposable;
 class BaseClass {
     public _instance: unknown;
+
     constructor(public readonly instantiationService: IInstantiationService) { }
     public init(...params: any[]): void { }
 }

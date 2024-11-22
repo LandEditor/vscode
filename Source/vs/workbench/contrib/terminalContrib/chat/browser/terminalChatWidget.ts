@@ -75,6 +75,7 @@ export class TerminalChatWidget extends Disposable {
 	private _viewStateStorageKey = 'terminal-inline-chat-view-state';
 
 	private _lastResponseContent: string | undefined;
+
 	get lastResponseContent(): string | undefined {
 		return this._lastResponseContent;
 	}
@@ -194,6 +195,7 @@ export class TerminalChatWidget extends Disposable {
 
 	private _doLayout() {
 		const xtermElement = this._xterm.raw!.element;
+
 		if (!xtermElement) {
 			return;
 		}
@@ -202,15 +204,20 @@ export class TerminalChatWidget extends Disposable {
 
 		// Calculate width
 		const xtermLeftPadding = parseInt(style.paddingLeft);
+
 		const width = xtermElement.clientWidth - xtermLeftPadding - Constants.RightPadding;
+
 		if (width === 0) {
 			return;
 		}
 
 		// Calculate height
 		const terminalViewportHeight = this._getTerminalViewportHeight();
+
 		const widgetAllowedPercentBasedHeight = (terminalViewportHeight ?? 0) * Constants.MaxHeightPercentageOfViewport;
+
 		const height = Math.max(Math.min(Constants.MaxHeight, this._inlineChatWidget.contentHeight, widgetAllowedPercentBasedHeight), this._inlineChatWidget.minHeight);
+
 		if (height === 0) {
 			return;
 		}
@@ -238,29 +245,39 @@ export class TerminalChatWidget extends Disposable {
 
 	private _getTerminalCursorTop(): number | undefined {
 		const font = this._instance.xterm?.getFont();
+
 		if (!font?.charHeight) {
 			return;
 		}
 		const terminalWrapperHeight = this._getTerminalViewportHeight() ?? 0;
+
 		const cellHeight = font.charHeight * font.lineHeight;
+
 		const topPadding = terminalWrapperHeight - (this._instance.rows * cellHeight);
+
 		const cursorY = (this._instance.xterm?.raw.buffer.active.cursorY ?? 0) + 1;
+
 		return topPadding + cursorY * cellHeight;
 	}
 
 	private _updateXtermViewportPosition(): void {
 		const top = this._getTerminalCursorTop();
+
 		if (!top) {
 			return;
 		}
 		this._container.style.top = `${top}px`;
+
 		const terminalViewportHeight = this._getTerminalViewportHeight();
+
 		if (!terminalViewportHeight) {
 			return;
 		}
 
 		const widgetAllowedPercentBasedHeight = terminalViewportHeight * Constants.MaxHeightPercentageOfViewport;
+
 		const height = Math.max(Math.min(Constants.MaxHeight, this._inlineChatWidget.contentHeight, widgetAllowedPercentBasedHeight), this._inlineChatWidget.minHeight);
+
 		if (top > terminalViewportHeight - height && terminalViewportHeight - height > 0) {
 			this._setTerminalViewportOffset(top - (terminalViewportHeight - height));
 		} else {
@@ -307,6 +324,7 @@ export class TerminalChatWidget extends Disposable {
 
 	async acceptCommand(shouldExecute: boolean): Promise<void> {
 		const code = await this.inlineChatWidget.getCodeBlockInfo(0);
+
 		if (!code) {
 			return;
 		}
@@ -323,7 +341,9 @@ export class TerminalChatWidget extends Disposable {
 		this._sessionCtor = createCancelablePromise<void>(async token => {
 			if (!this._model.value) {
 				this._model.value = this._chatService.startSession(ChatAgentLocation.Terminal, token);
+
 				const model = this._model.value;
+
 				if (model) {
 					this._inlineChatWidget.setChatModel(model, this._loadViewState());
 				}
@@ -337,7 +357,9 @@ export class TerminalChatWidget extends Disposable {
 
 	private _loadViewState() {
 		const rawViewState = this._storageService.get(this._viewStateStorageKey, StorageScope.PROFILE, undefined);
+
 		let viewState: IChatViewState | undefined;
+
 		if (rawViewState) {
 			try {
 				viewState = JSON.parse(rawViewState);
@@ -366,32 +388,44 @@ export class TerminalChatWidget extends Disposable {
 			await this.reveal();
 		}
 		this._messages.fire(Message.AcceptInput);
+
 		const lastInput = this._inlineChatWidget.value;
+
 		if (!lastInput) {
 			return;
 		}
 		this._activeRequestCts?.cancel();
 		this._activeRequestCts = new CancellationTokenSource();
+
 		const store = new DisposableStore();
 		this._requestActiveContextKey.set(true);
+
 		let responseContent = '';
+
 		const response = await this._inlineChatWidget.chatWidget.acceptInput(lastInput, { isVoiceInput: options?.isVoiceInput });
 		this._currentRequestId = response?.requestId;
+
 		const responsePromise = new DeferredPromise<IChatResponseModel | undefined>();
+
 		try {
 			this._requestActiveContextKey.set(true);
+
 			if (response) {
 				store.add(response.onDidChange(async () => {
 					responseContent += response.response.value;
+
 					if (response.isCanceled) {
 						this._requestActiveContextKey.set(false);
 						responsePromise.complete(undefined);
+
 						return;
 					}
 					if (response.isComplete) {
 						this._requestActiveContextKey.set(false);
 						this._requestActiveContextKey.set(false);
+
 						const firstCodeBlock = await this._inlineChatWidget.getCodeBlockInfo(0);
+
 						const secondCodeBlock = await this._inlineChatWidget.getCodeBlockInfo(1);
 						this._responseContainsCodeBlockContextKey.set(!!firstCodeBlock);
 						this._responseContainsMulitpleCodeBlocksContextKey.set(!!secondCodeBlock);
@@ -402,9 +436,11 @@ export class TerminalChatWidget extends Disposable {
 			}
 			await responsePromise.p;
 			this._lastResponseContent = response?.response.getMarkdown();
+
 			return response;
 		} catch {
 			this._lastResponseContent = undefined;
+
 			return;
 		} finally {
 			store.dispose();
@@ -416,7 +452,9 @@ export class TerminalChatWidget extends Disposable {
 		this._sessionCtor = undefined;
 		this._activeRequestCts?.cancel();
 		this._requestActiveContextKey.set(false);
+
 		const model = this._inlineChatWidget.getChatModel();
+
 		if (!model?.sessionId) {
 			return;
 		}
@@ -425,12 +463,15 @@ export class TerminalChatWidget extends Disposable {
 
 	async viewInChat(): Promise<void> {
 		const widget = await showChatView(this._viewsService);
+
 		const currentRequest = this._inlineChatWidget.chatWidget.viewModel?.model.getRequests().find(r => r.id === this._currentRequestId);
+
 		if (!widget || !currentRequest?.response) {
 			return;
 		}
 
 		const message: IChatProgress[] = [];
+
 		for (const item of currentRequest.response.response.value) {
 			if (item.kind === 'textEditGroup') {
 				for (const group of item.edits) {

@@ -9,6 +9,7 @@ export class ActionRunnerWithContext extends ActionRunner {
     }
     protected override runAction(action: IAction, _context?: unknown): Promise<void> {
         const ctx = this._getContext();
+
         return super.runAction(action, ctx);
     }
 }

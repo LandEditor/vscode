@@ -11,6 +11,7 @@ import { IInteractiveDocumentService } from '../../contrib/interactive/browser/i
 export class MainThreadInteractive implements MainThreadInteractiveShape {
     private readonly _proxy: ExtHostInteractiveShape;
     private readonly _disposables = new DisposableStore();
+
     constructor(extHostContext: IExtHostContext, 
     @IInteractiveDocumentService
     interactiveDocumentService: IInteractiveDocumentService) {

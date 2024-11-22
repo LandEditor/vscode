@@ -120,6 +120,7 @@ export interface ICwdDetectionCapability {
     readonly type: TerminalCapability.CwdDetection;
     readonly onDidChangeCwd: Event<string>;
     readonly cwds: string[];
+
     getCwd(): string;
     updateCwd(cwd: string): void;
 }
@@ -135,6 +136,7 @@ export interface IBufferMarkCapability {
     markers(): IterableIterator<IMarker>;
     onMarkAdded: Event<IMarkProperties>;
     addMark(properties?: IMarkProperties): void;
+
     getMark(id: string): IMarker | undefined;
 }
 export interface ICommandDetectionCapability {
@@ -152,16 +154,22 @@ export interface ICommandDetectionCapability {
     readonly onCommandExecuted: Event<ITerminalCommand>;
     readonly onCommandInvalidated: Event<ITerminalCommand[]>;
     readonly onCurrentCommandInvalidated: Event<ICommandInvalidationRequest>;
+
     setContinuationPrompt(value: string): void;
+
     setPromptTerminator(value: string, lastPromptLine: string): void;
+
     setCwd(value: string): void;
+
     setIsWindowsPty(value: boolean): void;
+
     setIsCommandStorageDisabled(): void;
     /**
      * Gets the working directory for a line, this will return undefined if it's unknown in which
      * case the terminal's initial cwd should be used.
      */
     getCwdForLine(line: number): string | undefined;
+
     getCommandForLine(line: number): ITerminalCommand | ICurrentPartialCommand | undefined;
     handlePromptStart(options?: IHandleCommandOptions): void;
     handleContinuationStart(): void;
@@ -201,6 +209,7 @@ export interface IHandleCommandOptions {
 export interface INaiveCwdDetectionCapability {
     readonly type: TerminalCapability.NaiveCwdDetection;
     readonly onDidChangeCwd: Event<string>;
+
     getCwd(): Promise<string>;
 }
 export interface IPartialCommandDetectionCapability {
@@ -232,10 +241,14 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
     readonly aliases?: string[][];
     readonly wasReplayed?: boolean;
     extractCommandLine(): string;
+
     getOutput(): string | undefined;
+
     getOutputMatch(outputMatcher: ITerminalOutputMatcher): ITerminalOutputMatch | undefined;
     hasOutput(): boolean;
+
     getPromptRowCount(): number;
+
     getCommandRowCount(): number;
 }
 export interface ISerializedTerminalCommand extends IBaseTerminalCommand {

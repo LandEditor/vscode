@@ -32,6 +32,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     private readonly _onDidChangeConfiguration: Emitter<IConfigurationChangeEvent> = this._register(new Emitter<IConfigurationChangeEvent>());
     readonly onDidChangeConfiguration: Event<IConfigurationChangeEvent> = this._onDidChangeConfiguration.event;
     private readonly configurationEditing: ConfigurationEditing;
+
     constructor(private readonly settingsResource: URI, fileService: IFileService, policyService: IPolicyService, private readonly logService: ILogService) {
         super();
         this.defaultConfiguration = this._register(new DefaultConfiguration(logService));
@@ -52,22 +53,31 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         return this.configuration.toData();
     }
     getValue<T>(): T;
+
     getValue<T>(section: string): T;
+
     getValue<T>(overrides: IConfigurationOverrides): T;
+
     getValue<T>(section: string, overrides: IConfigurationOverrides): T;
+
     getValue(arg1?: any, arg2?: any): any {
         const section = typeof arg1 === 'string' ? arg1 : undefined;
+
         const overrides = isConfigurationOverrides(arg1) ? arg1 : isConfigurationOverrides(arg2) ? arg2 : {};
+
         return this.configuration.getValue(section, overrides, undefined);
     }
     updateValue(key: string, value: any): Promise<void>;
     updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides): Promise<void>;
     updateValue(key: string, value: any, target: ConfigurationTarget): Promise<void>;
     updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides, target: ConfigurationTarget, options?: IConfigurationUpdateOptions): Promise<void>;
+
     async updateValue(key: string, value: any, arg3?: any, arg4?: any, options?: any): Promise<void> {
         const overrides: IConfigurationUpdateOverrides | undefined = isConfigurationUpdateOverrides(arg3) ? arg3
             : isConfigurationOverrides(arg3) ? { resource: arg3.resource, overrideIdentifiers: arg3.overrideIdentifier ? [arg3.overrideIdentifier] : undefined } : undefined;
+
         const target: ConfigurationTarget | undefined = overrides ? arg4 : arg3;
+
         if (target !== undefined) {
             if (target !== ConfigurationTarget.USER_LOCAL && target !== ConfigurationTarget.USER) {
                 throw new Error(`Unable to write ${key} to target ${target}.`);
@@ -78,6 +88,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
             overrides.overrideIdentifiers = overrides.overrideIdentifiers.length ? overrides.overrideIdentifiers : undefined;
         }
         const inspect = this.inspect(key, { resource: overrides?.resource, overrideIdentifier: overrides?.overrideIdentifiers ? overrides.overrideIdentifiers[0] : undefined });
+
         if (inspect.policyValue !== undefined) {
             throw new Error(`Unable to write ${key} because it is configured in system policy.`);
         }
@@ -87,7 +98,9 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
         }
         if (overrides?.overrideIdentifiers?.length && overrides.overrideIdentifiers.length > 1) {
             const overrideIdentifiers = overrides.overrideIdentifiers.sort();
+
             const existingOverrides = this.configuration.localUserConfiguration.overrides.find(override => arrayEquals([...override.identifiers].sort(), overrideIdentifiers));
+
             if (existingOverrides) {
                 overrides.overrideIdentifiers = existingOverrides.identifiers;
             }
@@ -113,16 +126,19 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
     }
     private onDidChangeUserConfiguration(userConfigurationModel: ConfigurationModel): void {
         const previous = this.configuration.toData();
+
         const change = this.configuration.compareAndUpdateLocalUserConfiguration(userConfigurationModel);
         this.trigger(change, previous, ConfigurationTarget.USER);
     }
     private onDidDefaultConfigurationChange(defaultConfigurationModel: ConfigurationModel, properties: string[]): void {
         const previous = this.configuration.toData();
+
         const change = this.configuration.compareAndUpdateDefaultConfiguration(defaultConfigurationModel, properties);
         this.trigger(change, previous, ConfigurationTarget.DEFAULT);
     }
     private onDidPolicyConfigurationChange(policyConfiguration: ConfigurationModel): void {
         const previous = this.configuration.toData();
+
         const change = this.configuration.compareAndUpdatePolicyConfiguration(policyConfiguration);
         this.trigger(change, previous, ConfigurationTarget.DEFAULT);
     }
@@ -134,6 +150,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
 }
 class ConfigurationEditing {
     private readonly queue: Queue<void>;
+
     constructor(private readonly settingsResource: URI, private readonly fileService: IFileService, private readonly configurationService: IConfigurationService) {
         this.queue = new Queue<void>();
     }
@@ -142,6 +159,7 @@ class ConfigurationEditing {
     }
     private async doWriteConfiguration(path: JSONPath, value: any): Promise<void> {
         let content: string;
+
         try {
             const fileContent = await this.fileService.readFile(this.settingsResource);
             content = fileContent.value.toString();
@@ -156,6 +174,7 @@ class ConfigurationEditing {
         }
         const parseErrors: ParseError[] = [];
         parse(content, parseErrors, { allowTrailingComma: true, allowEmptyContent: true });
+
         if (parseErrors.length > 0) {
             throw new Error('Unable to write into the settings file. Please open the file to correct errors/warnings in the file and try again.');
         }
@@ -168,6 +187,7 @@ class ConfigurationEditing {
         // With empty path the entire file is being replaced, so we just use JSON.stringify
         if (!path.length) {
             const content = JSON.stringify(value, null, insertSpaces ? ' '.repeat(tabSize) : '\t');
+
             return [{
                     content,
                     length: content.length,
@@ -180,7 +200,9 @@ class ConfigurationEditing {
     private get formattingOptions(): Required<FormattingOptions> {
         if (!this._formattingOptions) {
             let eol = OS === OperatingSystem.Linux || OS === OperatingSystem.Macintosh ? '\n' : '\r\n';
+
             const configuredEol = this.configurationService.getValue('files.eol', { overrideIdentifier: 'jsonc' });
+
             if (configuredEol && typeof configuredEol === 'string' && configuredEol !== 'auto') {
                 eol = configuredEol;
             }

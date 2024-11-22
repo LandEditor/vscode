@@ -20,6 +20,7 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
     private readonly model: IDialogsModel;
     private readonly impl: Lazy<IDialogHandler>;
     private currentDialog: IDialogViewItem | undefined;
+
     constructor(
     @IDialogService
     private dialogService: IDialogService, 
@@ -48,7 +49,9 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
     private async processDialogs(): Promise<void> {
         while (this.model.dialogs.length) {
             this.currentDialog = this.model.dialogs[0];
+
             let result: IDialogResult | Error | undefined = undefined;
+
             try {
                 if (this.currentDialog.args.confirmArgs) {
                     const args = this.currentDialog.args.confirmArgs;

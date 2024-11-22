@@ -46,6 +46,7 @@ class DecorationsTree {
 
 	public intervalSearch(start: number, end: number, filterOwnerId: number, filterOutValidation: boolean, cachedVersionId: number, onlyMarginDecorations: boolean = false): IntervalNode[] {
 		const r1 = this._decorationsTree.intervalSearch(start, end, filterOwnerId, filterOutValidation, cachedVersionId, onlyMarginDecorations);
+
 		return r1;
 	}
 
@@ -56,11 +57,13 @@ class DecorationsTree {
 
 	public collectNodesFromOwner(ownerId: number): IntervalNode[] {
 		const r1 = this._decorationsTree.collectNodesFromOwner(ownerId);
+
 		return r1;
 	}
 
 	public collectNodesPostOrder(): IntervalNode[] {
 		const r1 = this._decorationsTree.collectNodesPostOrder();
+
 		return r1;
 	}
 
@@ -104,8 +107,10 @@ export interface NotebookViewModelOptions {
 export class NotebookViewModel extends Disposable implements EditorFoldingStateDelegate, INotebookViewModel {
 	private readonly _localStore = this._register(new DisposableStore());
 	private _handleToViewCellMapping = new Map<number, CellViewModel>();
+
 	get options(): NotebookViewModelOptions { return this._options; }
 	private readonly _onDidChangeOptions = this._register(new Emitter<void>());
+
 	get onDidChangeOptions(): Event<void> { return this._onDidChangeOptions.event; }
 	private _viewCells: CellViewModel[] = [];
 
@@ -134,6 +139,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	private readonly _onDidChangeViewCells = this._register(new Emitter<INotebookViewCellsUpdateEvent>());
+
 	get onDidChangeViewCells(): Event<INotebookViewCellsUpdateEvent> { return this._onDidChangeViewCells.event; }
 
 	private _lastNotebookEditResource: URI[] = [];
@@ -150,12 +156,14 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	}
 
 	private readonly _onDidChangeSelection = this._register(new Emitter<string>());
+
 	get onDidChangeSelection(): Event<string> { return this._onDidChangeSelection.event; }
 
 	private _selectionCollection = this._register(new NotebookCellSelectionCollection());
 
 	private get selectionHandles() {
 		const handlesSet = new Set<number>();
+
 		const handles: number[] = [];
 		cellRangesToIndexes(this._selectionCollection.selections).map(index => index < this.length ? this.cellAt(index) : undefined).forEach(cell => {
 			if (cell && !handlesSet.has(cell.handle)) {
@@ -238,26 +246,33 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			});
 
 			let endSelectionHandles: number[] = [];
+
 			if (selectionHandles.length) {
 				const primaryHandle = selectionHandles[0];
+
 				const primarySelectionIndex = this._viewCells.indexOf(this.getCellByHandle(primaryHandle)!);
 				endSelectionHandles = [primaryHandle];
+
 				let delta = 0;
 
 				for (let i = 0; i < diffs.length; i++) {
 					const diff = diffs[0];
+
 					if (diff[0] + diff[1] <= primarySelectionIndex) {
 						delta += diff[2].length - diff[1];
+
 						continue;
 					}
 
 					if (diff[0] > primarySelectionIndex) {
 						endSelectionHandles = [primaryHandle];
+
 						break;
 					}
 
 					if (diff[0] + diff[1] > primarySelectionIndex) {
 						endSelectionHandles = [this._viewCells[diff[0] + delta].handle];
+
 						break;
 					}
 				}
@@ -271,12 +286,15 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		this._register(this._notebook.onDidChangeContent(e => {
 			for (let i = 0; i < e.rawEvents.length; i++) {
 				const change = e.rawEvents[i];
+
 				let changes: NotebookCellTextModelSplice<ICell>[] = [];
+
 				const synchronous = e.synchronous ?? true;
 
 				if (change.kind === NotebookCellsChangeType.ModelChange || change.kind === NotebookCellsChangeType.Initialize) {
 					changes = change.changes;
 					compute(changes, synchronous);
+
 					continue;
 				} else if (change.kind === NotebookCellsChangeType.Move) {
 					compute([[change.index, change.length, []]], synchronous);
@@ -339,6 +357,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 
 		const viewCellCount = this.isRepl ? this._notebook.cells.length - 1 : this._notebook.cells.length;
+
 		for (let i = 0; i < viewCellCount; i++) {
 			this._viewCells.push(createCellViewModel(this._instantiationService, this, this._notebook.cells[i], this._viewContext));
 		}
@@ -365,6 +384,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	getMostRecentlyExecutedCell(): ICellViewModel | undefined {
 		const handle = this.notebookExecutionStateService.getLastCompletedCellForNotebook(this._notebook.uri);
+
 		return handle !== undefined ? this.getCellByHandle(handle) : undefined;
 	}
 
@@ -378,6 +398,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		const start = clamp(cellRange.start, 0, this.length);
+
 		const end = clamp(cellRange.end, 0, this.length);
 
 		if (start <= end) {
@@ -392,13 +413,16 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		if (this._focused || source === 'model') {
 			if (state.kind === SelectionStateType.Handle) {
 				const primaryIndex = state.primary !== null ? this.getCellIndexByHandle(state.primary) : null;
+
 				const primarySelection = primaryIndex !== null ? this.validateRange({ start: primaryIndex, end: primaryIndex + 1 }) : null;
+
 				const selections = cellIndexesToRanges(state.selections.map(sel => this.getCellIndexByHandle(sel)))
 					.map(range => this.validateRange(range))
 					.filter(range => range !== null) as ICellRange[];
 				this._selectionCollection.setState(primarySelection, reduceCellRanges(selections), true, source);
 			} else {
 				const primarySelection = this.validateRange(state.focus);
+
 				const selections = state.selections
 					.map(range => this.validateRange(range))
 					.filter(range => range !== null) as ICellRange[];
@@ -413,7 +437,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		const range = this._foldingRanges.findRange(index + 1);
+
 		const startIndex = this._foldingRanges.getStartLineNumber(range) - 1;
+
 		return startIndex;
 	}
 
@@ -423,6 +449,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		const range = this._foldingRanges.findRange(index + 1);
+
 		const startIndex = this._foldingRanges.getStartLineNumber(range) - 1;
 
 		if (startIndex !== index) {
@@ -438,7 +465,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		const range = this._foldingRanges.findRange(index + 1);
+
 		const startIndex = this._foldingRanges.getStartLineNumber(range) - 1;
+
 		const endIndex = this._foldingRanges.getEndLineNumber(range) - 1;
 
 		return endIndex - startIndex;
@@ -446,13 +475,16 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	updateFoldingRanges(ranges: FoldingRegions) {
 		this._foldingRanges = ranges;
+
 		let updateHiddenAreas = false;
+
 		const newHiddenAreas: ICellRange[] = [];
 
 		let i = 0; // index into hidden
 		let k = 0;
 
 		let lastCollapsedStart = Number.MAX_VALUE;
+
 		let lastCollapsedEnd = -1;
 
 		for (; i < ranges.length; i++) {
@@ -462,6 +494,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 			const startLineNumber = ranges.getStartLineNumber(i) + 1; // the first line is not hidden
 			const endLineNumber = ranges.getEndLineNumber(i);
+
 			if (lastCollapsedStart <= startLineNumber && endLineNumber <= lastCollapsedEnd) {
 				// ignore ranges contained in collapsed regions
 				continue;
@@ -541,7 +574,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	getNearestVisibleCellIndexUpwards(index: number) {
 		for (let i = this._hiddenRanges.length - 1; i >= 0; i--) {
 			const cellRange = this._hiddenRanges[i];
+
 			const foldStart = cellRange.start - 1;
+
 			const foldEnd = cellRange.end;
 
 			if (foldStart > index) {
@@ -562,7 +597,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	getNextVisibleCellIndex(index: number) {
 		for (let i = 0; i < this._hiddenRanges.length; i++) {
 			const cellRange = this._hiddenRanges[i];
+
 			const foldStart = cellRange.start - 1;
+
 			const foldEnd = cellRange.end;
 
 			if (foldEnd < index) {
@@ -583,7 +620,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	getPreviousVisibleCellIndex(index: number) {
 		for (let i = this._hiddenRanges.length - 1; i >= 0; i--) {
 			const cellRange = this._hiddenRanges[i];
+
 			const foldStart = cellRange.start - 1;
+
 			const foldEnd = cellRange.end;
 
 			if (foldEnd < index) {
@@ -616,10 +655,12 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	private _getDecorationRange(decorationId: string): ICellRange | null {
 		const node = this._decorations[decorationId];
+
 		if (!node) {
 			return null;
 		}
 		const versionId = this.getVersionId();
+
 		if (node.cachedVersionId !== versionId) {
 			this._decorationsTree.resolveNode(node, versionId);
 		}
@@ -645,6 +686,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			// node exists, the request is to delete => delete node
 			this._decorationsTree.delete(node);
 			delete this._decorations[node.id];
+
 			return null;
 		}
 
@@ -652,6 +694,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		node.reset(this.getVersionId(), newRange.start, newRange.end + 1, new Range(newRange.start + 1, 1, newRange.end + 1, 1));
 		node.setOptions(TRACKED_RANGE_OPTIONS[newStickiness]);
 		this._decorationsTree.insert(node);
+
 		return node.id;
 	}
 
@@ -659,12 +702,15 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		const versionId = this.getVersionId();
 
 		const oldDecorationsLen = oldDecorationsIds.length;
+
 		let oldDecorationIndex = 0;
 
 		const newDecorationsLen = newDecorations.length;
+
 		let newDecorationIndex = 0;
 
 		const result = new Array<string>(newDecorationsLen);
+
 		while (oldDecorationIndex < oldDecorationsLen || newDecorationIndex < newDecorationsLen) {
 
 			let node: IntervalNode | null = null;
@@ -685,6 +731,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 				// (3) create a new node if necessary
 				if (!node) {
 					const internalDecorationId = (++this._lastDecorationId);
+
 					const decorationId = `${this._instanceId};${internalDecorationId}`;
 					node = new IntervalNode(decorationId, 0, 0);
 					this._decorations[decorationId] = node;
@@ -692,7 +739,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 				// (4) initialize node
 				const newDecoration = newDecorations[newDecorationIndex];
+
 				const range = newDecoration.range;
+
 				const options = _normalizeOptions(newDecoration.options);
 
 				node.ownerId = ownerId;
@@ -729,6 +778,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		newDecorations.forEach(decoration => {
 			const cell = this.getCellByHandle(decoration.handle);
+
 			const ret = cell?.deltaCellDecorations([], [decoration.options]) || [];
 			ret.forEach(id => {
 				this._decorationIdToCellMap.set(id, decoration.handle);
@@ -746,6 +796,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		const result: string[] = [];
 		newItems.forEach(itemDelta => {
 			const cell = this.getCellByHandle(itemDelta.handle);
+
 			const deleted = deletesByHandle[itemDelta.handle] ?? [];
 			delete deletesByHandle[itemDelta.handle];
 			deleted.forEach(id => this._statusBarItemIdToCellMap.delete(id));
@@ -760,7 +811,9 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		for (const _handle in deletesByHandle) {
 			const handle = parseInt(_handle);
+
 			const ids = deletesByHandle[handle];
+
 			const cell = this.getCellByHandle(handle);
 			cell?.deltaCellStatusBarItems(ids, []);
 			ids.forEach(id => this._statusBarItemIdToCellMap.delete(id));
@@ -771,10 +824,12 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	nearestCodeCellIndex(index: number /* exclusive */) {
 		const nearest = this.viewCells.slice(0, index).reverse().findIndex(cell => cell.cellKind === CellKind.Code);
+
 		if (nearest > -1) {
 			return index - nearest - 1;
 		} else {
 			const nearestCellTheOtherDirection = this.viewCells.slice(index + 1).findIndex(cell => cell.cellKind === CellKind.Code);
+
 			if (nearestCellTheOtherDirection > -1) {
 				return index + 1 + nearestCellTheOtherDirection;
 			}
@@ -784,8 +839,11 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	getEditorViewState(): INotebookEditorViewState {
 		const editingCells: { [key: number]: boolean } = {};
+
 		const collapsedInputCells: { [key: number]: boolean } = {};
+
 		const collapsedOutputCells: { [key: number]: boolean } = {};
+
 		const cellLineNumberStates: { [key: number]: 'on' | 'off' } = {};
 
 		this._viewCells.forEach((cell, i) => {
@@ -805,6 +863,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 				cellLineNumberStates[i] = cell.lineNumbers;
 			}
 		});
+
 		const editorViewStates: { [key: number]: editorCommon.ICodeEditorViewState } = {};
 		this._viewCells.map(cell => ({ handle: cell.model.handle, state: cell.saveEditorViewState() })).forEach((viewState, i) => {
 			if (viewState.state) {
@@ -828,11 +887,14 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		this._viewCells.forEach((cell, index) => {
 			const isEditing = viewState.editingCells && viewState.editingCells[index];
+
 			const editorViewState = viewState.editorViewStates && viewState.editorViewStates[index];
 
 			cell.updateEditState(isEditing ? CellEditState.Editing : CellEditState.Preview, 'viewState');
+
 			const cellHeight = viewState.cellTotalHeights ? viewState.cellTotalHeights[index] : undefined;
 			cell.restoreEditorViewState(editorViewState, cellHeight);
+
 			if (viewState.collapsedInputCells && viewState.collapsedInputCells[index]) {
 				cell.isInputCollapsed = true;
 			}
@@ -857,6 +919,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		};
 
 		let result: T | null = null;
+
 		try {
 			result = callback(changeAccessor);
 		} catch (e) {
@@ -876,12 +939,14 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 			if (!mapping.has(ownerId)) {
 				const cell = this._viewCells.find(cell => cell.handle === ownerId);
+
 				if (cell) {
 					mapping.set(ownerId, { cell: cell, oldDecorations: [], newDecorations: [] });
 				}
 			}
 
 			const data = mapping.get(ownerId)!;
+
 			if (data) {
 				data.oldDecorations = oldDecoration.decorations;
 			}
@@ -899,6 +964,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			}
 
 			const data = mapping.get(ownerId)!;
+
 			if (data) {
 				data.newDecorations = newDecoration.decorations;
 			}
@@ -919,10 +985,12 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	//#region Find
 	find(value: string, options: INotebookFindOptions): CellFindMatchWithIndex[] {
 		const matches: CellFindMatchWithIndex[] = [];
+
 		let findCells: CellViewModel[] = [];
 
 		if (options.findScope && (options.findScope.findScopeType === NotebookFindScopeType.Cells || options.findScope.findScopeType === NotebookFindScopeType.Text)) {
 			const selectedRanges = options.findScope.selectedCellRanges?.map(range => this.validateRange(range)).filter(range => !!range) ?? [];
+
 			const selectedIndexes = cellRangesToIndexes(selectedRanges);
 			findCells = selectedIndexes.map(index => this._viewCells[index]);
 		} else {
@@ -931,6 +999,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 		findCells.forEach((cell, index) => {
 			const cellMatches = cell.startFind(value, options);
+
 			if (cellMatches) {
 				matches.push(new CellFindMatchModel(
 					cellMatches.cell,
@@ -965,6 +1034,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	replaceOne(cell: ICellViewModel, range: Range, text: string): Promise<void> {
 		const viewCell = cell as CellViewModel;
 		this._lastNotebookEditResource.push(viewCell.uri);
+
 		return viewCell.resolveTextModel().then(() => {
 			this._bulkEditService.apply(
 				[new ResourceTextEdit(cell.uri, { range, text })],
@@ -995,6 +1065,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 			return match.cell.resolveTextModel();
 		})).then(async () => {
 			this._bulkEditService.apply({ edits: textEdits }, { quotableLabel: 'Notebook Replace All' });
+
 			return;
 		});
 	}
@@ -1005,6 +1076,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 
 	private async _withElement(element: SingleModelEditStackElement | MultiModelEditStackElement, callback: () => Promise<void>) {
 		const viewCells = this._viewCells.filter(cell => element.matchesResource(cell.uri));
+
 		const refs = await Promise.all(viewCells.map(cell => this._textModelService.createModelReference(cell.uri)));
 		await callback();
 		refs.forEach(ref => ref.dispose());
@@ -1013,6 +1085,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 	async undo() {
 
 		const editStack = this._undoService.getElements(this.uri);
+
 		const element = editStack.past.length ? editStack.past[editStack.past.length - 1] : undefined;
 
 		if (element && element instanceof SingleModelEditStackElement || element instanceof MultiModelEditStackElement) {
@@ -1024,12 +1097,14 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		}
 
 		await this._undoService.undo(this.uri);
+
 		return [];
 	}
 
 	async redo() {
 
 		const editStack = this._undoService.getElements(this.uri);
+
 		const element = editStack.future[0];
 
 		if (element && element instanceof SingleModelEditStackElement || element instanceof MultiModelEditStackElement) {

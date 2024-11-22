@@ -35,29 +35,43 @@ export class ChatAccessibilityProvider implements IListAccessibilityProvider<Cha
     }
     private _getLabelWithCodeBlockCount(element: IChatResponseViewModel): string {
         const accessibleViewHint = this._accessibleViewService.getOpenAriaHint(AccessibilityVerbositySettingId.Chat);
+
         let label: string = '';
+
         const fileTreeCount = element.response.value.filter((v) => !('value' in v))?.length ?? 0;
+
         let fileTreeCountHint = '';
+
         switch (fileTreeCount) {
             case 0:
                 break;
+
             case 1:
                 fileTreeCountHint = localize('singleFileTreeHint', "1 file tree");
+
                 break;
+
             default:
                 fileTreeCountHint = localize('multiFileTreeHint', "{0} file trees", fileTreeCount);
+
                 break;
         }
         const codeBlockCount = marked.lexer(element.response.toString()).filter(token => token.type === 'code')?.length ?? 0;
+
         switch (codeBlockCount) {
             case 0:
                 label = accessibleViewHint ? localize('noCodeBlocksHint', "{0} {1} {2}", fileTreeCountHint, element.response.toString(), accessibleViewHint) : localize('noCodeBlocks', "{0} {1}", fileTreeCountHint, element.response.toString());
+
                 break;
+
             case 1:
                 label = accessibleViewHint ? localize('singleCodeBlockHint', "{0} 1 code block: {1} {2}", fileTreeCountHint, element.response.toString(), accessibleViewHint) : localize('singleCodeBlock', "{0} 1 code block: {1}", fileTreeCountHint, element.response.toString());
+
                 break;
+
             default:
                 label = accessibleViewHint ? localize('multiCodeBlockHint', "{0} {1} code blocks: {2}", fileTreeCountHint, codeBlockCount, element.response.toString(), accessibleViewHint) : localize('multiCodeBlock', "{0} {1} code blocks", fileTreeCountHint, codeBlockCount, element.response.toString());
+
                 break;
         }
         return label;

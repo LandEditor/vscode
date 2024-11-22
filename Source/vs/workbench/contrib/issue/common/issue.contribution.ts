@@ -12,8 +12,11 @@ import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { IWorkbenchIssueService, IssueReporterData } from './issue.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
+
 const OpenIssueReporterActionId = 'workbench.action.openIssueReporter';
+
 const OpenIssueReporterApiId = 'vscode.openIssueReporter';
+
 const OpenIssueReporterCommandMetadata: ICommandMetadata = {
     description: 'Open the issue reporter and optionally prefill part of the form.',
     args: [
@@ -59,6 +62,7 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
     @IConfigurationService
     configurationService: IConfigurationService) {
         super();
+
         if (!productService.reportIssueUrl) {
             return;
         }
@@ -72,6 +76,7 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
                     : Array.isArray(args)
                         ? { extensionId: args[0] }
                         : args ?? {};
+
                 return accessor.get(IWorkbenchIssueService).openReporter(data);
             },
             metadata: OpenIssueReporterCommandMetadata
@@ -86,10 +91,12 @@ export class BaseIssueContribution extends Disposable implements IWorkbenchContr
                     : Array.isArray(args)
                         ? { extensionId: args[0] }
                         : args ?? {};
+
                 return accessor.get(IWorkbenchIssueService).openReporter(data);
             },
             metadata: OpenIssueReporterCommandMetadata
         }));
+
         const reportIssue: ICommandAction = {
             id: OpenIssueReporterActionId,
             title: localize2({ key: 'reportIssueInEnglish', comment: ['Translate this to "Report Issue in English" in all languages please!'] }, "Report Issue..."),

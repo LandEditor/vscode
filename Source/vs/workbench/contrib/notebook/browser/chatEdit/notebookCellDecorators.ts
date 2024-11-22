@@ -58,6 +58,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 		const shouldBeReadOnly = derived(this, r => {
 			const value = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!value || value.state.read(r) !== ChatEditingSessionState.StreamingEdits) {
 				return false;
 			}
@@ -66,10 +67,12 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 
 		let actualReadonly: boolean | undefined;
+
 		let actualDeco: 'off' | 'editable' | 'on' | undefined;
 
 		this.add(autorun(r => {
 			const value = shouldBeReadOnly.read(r);
+
 			if (value) {
 				actualReadonly ??= this.editor.getOption(EditorOption.readOnly);
 				actualDeco ??= this.editor.getOption(EditorOption.renderValidationDecorations);
@@ -94,6 +97,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 	override dispose(): void {
 		this._clearRendering();
+
 		super.dispose();
 	}
 
@@ -107,21 +111,28 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 		}
 		if (!this.editor.hasModel()) {
 			this._clearRendering();
+
 			return;
 		}
 		if (this.editor.getOption(EditorOption.inDiffEditor)) {
 			this._clearRendering();
+
 			return;
 		}
 		const model = this.editor.getModel();
+
 		if (!model) {
 			this._clearRendering();
+
 			return;
 		}
 
 		const version = model.getVersionId();
+
 		const originalModel = this.getOrCreateOriginalModel();
+
 		const diff = originalModel ? await this.computeDiff() : undefined;
+
 		if (this.isDisposed) {
 			return;
 		}
@@ -147,6 +158,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 	private getOrCreateOriginalModel() {
 		if (!this._originalModel) {
 			const model = this.editor.getModel();
+
 			if (!model) {
 				return;
 			}
@@ -156,10 +168,12 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 	}
 	private async computeDiff() {
 		const model = this.editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const originalModel = this.getOrCreateOriginalModel();
+
 		if (!originalModel) {
 			return;
 		}
@@ -177,10 +191,12 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 			...diffAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
 		});
+
 		const chatDiffWholeLineAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffWholeLineAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 		const createOverviewDecoration = (overviewRulerColor: string, minimapColor: string) => {
 			return ModelDecorationOptions.createDynamic({
 				description: 'chat-editing-decoration',
@@ -188,8 +204,11 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				minimap: { color: themeColorFromId(minimapColor), position: MinimapPosition.Gutter },
 			});
 		};
+
 		const modifiedDecoration = createOverviewDecoration(overviewRulerModifiedForeground, minimapGutterModifiedBackground);
+
 		const addedDecoration = createOverviewDecoration(overviewRulerAddedForeground, minimapGutterAddedBackground);
+
 		const deletedDecoration = createOverviewDecoration(overviewRulerDeletedForeground, minimapGutterDeletedBackground);
 
 		this.editor.changeViewZones((viewZoneChangeAccessor) => {
@@ -197,13 +216,18 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				viewZoneChangeAccessor.removeZone(id);
 			}
 			this._viewZones = [];
+
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
+
 			const mightContainNonBasicASCII = originalModel?.mightContainNonBasicASCII();
+
 			const mightContainRTL = originalModel?.mightContainRTL();
+
 			const renderOptions = RenderOptions.fromEditor(this.editor);
 
 			for (const diffEntry of diff.changes) {
 				const originalRange = diffEntry.original;
+
 				if (originalModel) {
 					originalModel.tokenization.forceTokenization(Math.max(1, originalRange.endLineNumberExclusive - 1));
 				}
@@ -213,7 +237,9 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 					mightContainNonBasicASCII,
 					mightContainRTL,
 				);
+
 				const decorations: InlineDecoration[] = [];
+
 				for (const i of diffEntry.innerChanges || []) {
 					decorations.push(new InlineDecoration(
 						i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
@@ -250,10 +276,13 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 					});
 				}
 				const domNode = document.createElement('div');
+
 				domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
+
 				const result = renderLines(source, renderOptions, decorations, domNode);
 
 				const isCreatedContent = decorations.length === 1 && decorations[0].range.isEmpty() && decorations[0].range.startLineNumber === 1;
+
 				if (!isCreatedContent) {
 					const viewZoneData: IViewZone = {
 						afterLineNumber: diffEntry.modified.startLineNumber - 1,
@@ -273,6 +302,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 export class NotebookInsertedCellDecorator extends Disposable {
 	private readonly decorators = this._register(new DisposableStore());
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 	) {
@@ -281,10 +311,12 @@ export class NotebookInsertedCellDecorator extends Disposable {
 	}
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
+
 		if (!model) {
 			return;
 		}
 		const cells = diffInfo.filter(diff => diff.type === 'insert').map((diff) => model.cells[diff.modifiedCellIndex]);
+
 		const ids = this.notebookEditor.deltaCellDecorations([], cells.map(cell => ({
 			handle: cell.handle,
 			options: { className: 'nb-insertHighlight', outputClassName: 'nb-insertHighlight' }
@@ -306,6 +338,7 @@ const ttPolicy = createTrustedTypesPolicy('notebookChatEditController', { create
 export class NotebookDeletedCellDecorator extends Disposable {
 	private readonly zoneRemover = this._register(new DisposableStore());
 	private readonly createdViewZones = new Map<number, string>();
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@ILanguageService private readonly languageService: ILanguageService,
@@ -318,10 +351,12 @@ export class NotebookDeletedCellDecorator extends Disposable {
 		this.clear();
 
 		let currentIndex = 0;
+
 		const deletedCellsToRender: { cells: NotebookCellTextModel[]; index: number } = { cells: [], index: 0 };
 		diffInfo.forEach(diff => {
 			if (diff.type === 'delete') {
 				const deletedCell = original.cells[diff.originalCellIndex];
+
 				if (deletedCell) {
 					deletedCellsToRender.cells.push(deletedCell);
 					deletedCellsToRender.index = currentIndex;
@@ -334,6 +369,7 @@ export class NotebookDeletedCellDecorator extends Disposable {
 				currentIndex = diff.modifiedCellIndex;
 			}
 		});
+
 		if (deletedCellsToRender.cells.length) {
 			this._createWidget(deletedCellsToRender.index + 1, deletedCellsToRender.cells);
 		}
@@ -349,8 +385,11 @@ export class NotebookDeletedCellDecorator extends Disposable {
 	}
 	private async _createWidgetImpl(index: number, cells: NotebookCellTextModel[]) {
 		const rootContainer = document.createElement('div');
+
 		const widgets = cells.map(cell => new NotebookDeletedCellWidget(this._notebookEditor, cell.getValue(), cell.language, rootContainer, this.languageService));
+
 		const heights = await Promise.all(widgets.map(w => w.render()));
+
 		const totalHeight = heights.reduce<number>((prev, curr) => prev + curr, 0);
 
 		this._notebookEditor.changeViewZones(accessor => {
@@ -381,6 +420,7 @@ export class NotebookDeletedCellDecorator extends Disposable {
 
 export class NotebookDeletedCellWidget extends Disposable {
 	private readonly container: HTMLElement;
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		// private readonly _index: number,
@@ -398,16 +438,23 @@ export class NotebookDeletedCellWidget extends Disposable {
 
 	public async render() {
 		const code = this.code;
+
 		const languageId = this.language;
+
 		const codeHtml = await tokenizeToString(this.languageService, code, languageId);
 
 		// const colorMap = this.getDefaultColorMap();
+
 		const fontInfo = this._notebookEditor.getBaseCellEditorOptions(languageId).value;
+
 		const fontFamilyVar = '--notebook-editor-font-family';
+
 		const fontSizeVar = '--notebook-editor-font-size';
+
 		const fontWeightVar = '--notebook-editor-font-weight';
 		// If we have any editors, then use left layout of one of those.
 		const editor = this._notebookEditor.codeEditors.map(c => c[1]).find(c => c);
+
 		const layoutInfo = editor?.getOptions().get(EditorOption.layoutInfo);
 
 		const style = ``
@@ -422,13 +469,19 @@ export class NotebookDeletedCellWidget extends Disposable {
 
 		const rootContainer = this.container;
 		rootContainer.classList.add('code-cell-row');
+
 		const container = DOM.append(rootContainer, DOM.$('.cell-inner-container'));
+
 		const focusIndicatorLeft = DOM.append(container, DOM.$('.cell-focus-indicator.cell-focus-indicator-side.cell-focus-indicator-left'));
+
 		const cellContainer = DOM.append(container, DOM.$('.cell.code'));
 		DOM.append(focusIndicatorLeft, DOM.$('div.execution-count-label'));
+
 		const editorPart = DOM.append(cellContainer, DOM.$('.cell-editor-part'));
+
 		let editorContainer = DOM.append(editorPart, DOM.$('.cell-editor-container'));
 		editorContainer = DOM.append(editorContainer, DOM.$('.code', { style }));
+
 		if (fontInfo.fontFamily) {
 			editorContainer.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		}
@@ -441,7 +494,9 @@ export class NotebookDeletedCellWidget extends Disposable {
 		editorContainer.innerHTML = (ttPolicy?.createHTML(codeHtml) || codeHtml) as string;
 
 		const lineCount = splitLines(code).length;
+
 		const height = (lineCount * (fontInfo.lineHeight || DefaultLineHeight)) + 12 + 12; // We have 12px top and bottom in generated code HTML;
+
 		const totalHeight = height + 16 + 16;
 
 		return totalHeight;

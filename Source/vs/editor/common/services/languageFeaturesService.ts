@@ -43,6 +43,7 @@ export class LanguageFeaturesService implements ILanguageFeaturesService {
     readonly documentPasteEditProvider = new LanguageFeatureRegistry<DocumentPasteEditProvider>(this._score.bind(this));
     readonly mappedEditsProvider: LanguageFeatureRegistry<MappedEditsProvider> = new LanguageFeatureRegistry<MappedEditsProvider>(this._score.bind(this));
     private _notebookTypeResolver?: NotebookInfoResolver;
+
     setNotebookTypeResolver(resolver: NotebookInfoResolver | undefined) {
         this._notebookTypeResolver = resolver;
     }

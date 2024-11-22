@@ -14,6 +14,7 @@ export class DocumentStreamReader {
     private _eof: number;
     private _sof: number;
     public pos: number;
+
     constructor(document: TextDocument, pos?: number, limit?: [
         number,
         number
@@ -61,6 +62,7 @@ export class DocumentStreamReader {
         }
         const code = this.document.getText().charCodeAt(this.pos);
         this.pos++;
+
         if (this.eof()) {
             // restrict pos to eof, if in case it got moved beyond eof
             this.pos = this._eof;
@@ -73,6 +75,7 @@ export class DocumentStreamReader {
      */
     backUp(n: number): number {
         this.pos -= n;
+
         if (this.pos < 0) {
             this.pos = 0;
         }
@@ -96,6 +99,7 @@ export class DocumentStreamReader {
      */
     error(message: string): Error {
         const err = new Error(`${message} at offset ${this.pos}`);
+
         return err;
     }
     /**
@@ -106,7 +110,9 @@ export class DocumentStreamReader {
      */
     eat(match: number | Function): boolean {
         const ch = this.peek();
+
         const ok = typeof match === 'function' ? match(ch) : ch === match;
+
         if (ok) {
             this.next();
         }
@@ -118,6 +124,7 @@ export class DocumentStreamReader {
      */
     eatWhile(match: number | Function): boolean {
         const start = this.pos;
+
         while (!this.eof() && this.eat(match)) { }
         return this.pos !== start;
     }

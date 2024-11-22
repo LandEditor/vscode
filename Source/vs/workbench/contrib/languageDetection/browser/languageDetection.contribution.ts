@@ -24,6 +24,7 @@ import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
 import { EditorContextKeys } from '../../../../editor/common/editorContextKeys.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+
 const detectLanguageCommandId = 'editor.detectLanguage';
 class LanguageDetectionStatusContribution implements IWorkbenchContribution {
     private static readonly _id = 'status.languageDetectionStatus';
@@ -31,6 +32,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
     private _combinedEntry?: IStatusbarEntryAccessor;
     private _delayer = new ThrottledDelayer(1000);
     private readonly _renderDisposables = new DisposableStore();
+
     constructor(
     @ILanguageDetectionService
     private readonly _languageDetectionService: ILanguageDetectionService, 
@@ -66,25 +68,39 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
         // update when editor language changes
         editor?.onDidChangeModelLanguage(() => this._update(true), this, this._renderDisposables);
         editor?.onDidChangeModelContent(() => this._update(false), this, this._renderDisposables);
+
         const editorModel = editor?.getModel();
+
         const editorUri = editorModel?.uri;
+
         const existingId = editorModel?.getLanguageId();
+
         const enablementConfig = this._configurationService.getValue<LanguageDetectionHintConfig>('workbench.editor.languageDetectionHints');
+
         const enabled = typeof enablementConfig === 'object' && enablementConfig?.untitledEditors;
+
         const disableLightbulb = !enabled || editorUri?.scheme !== Schemas.untitled || !existingId;
+
         if (disableLightbulb || !editorUri) {
             this._combinedEntry?.dispose();
             this._combinedEntry = undefined;
         }
         else {
             const lang = await this._languageDetectionService.detectLanguage(editorUri);
+
             const skip: Record<string, string | undefined> = { 'jsonc': 'json' };
+
             const existing = editorModel.getLanguageId();
+
             if (lang && lang !== existing && skip[existing] !== lang) {
                 const detectedName = this._languageService.getLanguageName(lang) || lang;
+
                 let tooltip = localize('status.autoDetectLanguage', "Accept Detected Language: {0}", detectedName);
+
                 const keybinding = this._keybindingService.lookupKeybinding(detectLanguageCommandId);
+
                 const label = keybinding?.getLabel();
+
                 if (label) {
                     tooltip += ` (${label})`;
                 }
@@ -95,6 +111,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
                     command: detectLanguageCommandId,
                     text: '$(lightbulb-autofix)',
                 };
+
                 if (!this._combinedEntry) {
                     this._combinedEntry = this._statusBarService.addEntry(props, LanguageDetectionStatusContribution._id, StatusbarAlignment.RIGHT, { id: 'status.editor.mode', alignment: StatusbarAlignment.RIGHT, compact: true });
                 }
@@ -122,12 +139,18 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const languageDetectionService = accessor.get(ILanguageDetectionService);
+
         const editor = getCodeEditor(editorService.activeTextEditorControl);
+
         const notificationService = accessor.get(INotificationService);
+
         const editorUri = editor?.getModel()?.uri;
+
         if (editorUri) {
             const lang = await languageDetectionService.detectLanguage(editorUri);
+
             if (lang) {
                 editor.getModel()?.setLanguage(lang, LanguageDetectionLanguageEventSource);
             }

@@ -11,6 +11,7 @@ class File implements vscode.FileStat {
     size: number;
     name: string;
     data?: Uint8Array;
+
     constructor(name: string) {
         this.type = vscode.FileType.File;
         this.ctime = Date.now();
@@ -26,6 +27,7 @@ class Directory implements vscode.FileStat {
     size: number;
     name: string;
     entries: Map<string, File | Directory>;
+
     constructor(name: string) {
         this.type = vscode.FileType.Directory;
         this.ctime = Date.now();
@@ -48,10 +50,12 @@ export class TestFS implements vscode.FileSystemProvider {
         vscode.FileType
     ][] {
         const entry = this._lookupAsDirectory(uri, false);
+
         const result: [
             string,
             vscode.FileType
         ][] = [];
+
         for (const [name, child] of entry.entries) {
             result.push([name, child.type]);
         }
@@ -60,6 +64,7 @@ export class TestFS implements vscode.FileSystemProvider {
     // --- manage file contents
     readFile(uri: vscode.Uri): Uint8Array {
         const data = this._lookupAsFile(uri, false).data;
+
         if (data) {
             return data;
         }
@@ -70,8 +75,11 @@ export class TestFS implements vscode.FileSystemProvider {
         overwrite: boolean;
     }): void {
         const basename = path.posix.basename(uri.path);
+
         const parent = this._lookupParentDirectory(uri);
+
         let entry = parent.entries.get(basename);
+
         if (entry instanceof Directory) {
             throw vscode.FileSystemError.FileIsADirectory(uri);
         }
@@ -99,8 +107,11 @@ export class TestFS implements vscode.FileSystemProvider {
             throw vscode.FileSystemError.FileExists(newUri);
         }
         const entry = this._lookup(oldUri, false);
+
         const oldParent = this._lookupParentDirectory(oldUri);
+
         const newParent = this._lookupParentDirectory(newUri);
+
         const newName = path.posix.basename(newUri.path);
         oldParent.entries.delete(entry.name);
         entry.name = newName;
@@ -109,8 +120,11 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     delete(uri: vscode.Uri): void {
         const dirname = uri.with({ path: path.posix.dirname(uri.path) });
+
         const basename = path.posix.basename(uri.path);
+
         const parent = this._lookupAsDirectory(dirname, false);
+
         if (!parent.entries.has(basename)) {
             throw vscode.FileSystemError.FileNotFound(uri);
         }
@@ -121,8 +135,11 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     createDirectory(uri: vscode.Uri): void {
         const basename = path.posix.basename(uri.path);
+
         const dirname = uri.with({ path: path.posix.dirname(uri.path) });
+
         const parent = this._lookupAsDirectory(dirname, false);
+
         const entry = new Directory(basename);
         parent.entries.set(entry.name, entry);
         parent.mtime = Date.now();
@@ -134,13 +151,17 @@ export class TestFS implements vscode.FileSystemProvider {
     private _lookup(uri: vscode.Uri, silent: boolean): Entry | undefined;
     private _lookup(uri: vscode.Uri, silent: boolean): Entry | undefined {
         const parts = uri.path.split('/');
+
         let entry: Entry = this.root;
+
         for (const part of parts) {
             const partLow = part.toLowerCase();
+
             if (!part) {
                 continue;
             }
             let child: Entry | undefined;
+
             if (entry instanceof Directory) {
                 if (this.isCaseSensitive) {
                     child = entry.entries.get(part);
@@ -149,6 +170,7 @@ export class TestFS implements vscode.FileSystemProvider {
                     for (const [key, value] of entry.entries) {
                         if (key.toLowerCase() === partLow) {
                             child = value;
+
                             break;
                         }
                     }
@@ -168,6 +190,7 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     private _lookupAsDirectory(uri: vscode.Uri, silent: boolean): Directory {
         const entry = this._lookup(uri, silent);
+
         if (entry instanceof Directory) {
             return entry;
         }
@@ -175,6 +198,7 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     private _lookupAsFile(uri: vscode.Uri, silent: boolean): File {
         const entry = this._lookup(uri, silent);
+
         if (entry instanceof File) {
             return entry;
         }
@@ -182,6 +206,7 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     private _lookupParentDirectory(uri: vscode.Uri): Directory {
         const dirname = uri.with({ path: path.posix.dirname(uri.path) });
+
         return this._lookupAsDirectory(dirname, false);
     }
     // --- manage file events
@@ -198,6 +223,7 @@ export class TestFS implements vscode.FileSystemProvider {
     }
     private _fireSoon(...events: vscode.FileChangeEvent[]): void {
         this._bufferedEvents.push(...events);
+
         if (this._fireSoonHandle) {
             clearTimeout(this._fireSoonHandle);
         }

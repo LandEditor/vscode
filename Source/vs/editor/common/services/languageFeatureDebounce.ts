@@ -15,6 +15,7 @@ import { matchesScheme } from '../../../base/common/network.js';
 export const ILanguageFeatureDebounceService = createDecorator<ILanguageFeatureDebounceService>('ILanguageFeatureDebounceService');
 export interface ILanguageFeatureDebounceService {
     readonly _serviceBrand: undefined;
+
     for(feature: LanguageFeatureRegistry<object>, debugName: string, config?: {
         min?: number;
         max?: number;
@@ -24,13 +25,17 @@ export interface ILanguageFeatureDebounceService {
 export interface IFeatureDebounceInformation {
     get(model: ITextModel): number;
     update(model: ITextModel, value: number): number;
+
     default(): number;
 }
 namespace IdentityHash {
     const _hashes = new WeakMap<object, number>();
+
     let pool = 0;
+
     export function of(obj: object): number {
         let value = _hashes.get(obj);
+
         if (value === undefined) {
             value = ++pool;
             _hashes.set(obj, value);
@@ -52,25 +57,31 @@ class NullDebounceInformation implements IFeatureDebounceInformation {
 }
 class FeatureDebounceInformation implements IFeatureDebounceInformation {
     private readonly _cache = new LRUCache<string, SlidingWindowAverage>(50, 0.7);
+
     constructor(private readonly _logService: ILogService, private readonly _name: string, private readonly _registry: LanguageFeatureRegistry<object>, private readonly _default: number, private readonly _min: number, private readonly _max: number) { }
     private _key(model: ITextModel): string {
         return model.id + this._registry.all(model).reduce((hashVal, obj) => doHash(IdentityHash.of(obj), hashVal), 0);
     }
     get(model: ITextModel): number {
         const key = this._key(model);
+
         const avg = this._cache.get(key);
+
         return avg
             ? clamp(avg.value, this._min, this._max)
             : this.default();
     }
     update(model: ITextModel, value: number): number {
         const key = this._key(model);
+
         let avg = this._cache.get(key);
+
         if (!avg) {
             avg = new SlidingWindowAverage(6);
             this._cache.set(key, avg);
         }
         const newValue = clamp(avg.update(value), this._min, this._max);
+
         if (!matchesScheme(model.uri, 'output')) {
             this._logService.trace(`[DEBOUNCE: ${this._name}] for ${model.uri.toString()} is ${newValue}ms`);
         }
@@ -78,6 +89,7 @@ class FeatureDebounceInformation implements IFeatureDebounceInformation {
     }
     private _overall(): number {
         const result = new MovingAverage();
+
         for (const [, avg] of this._cache) {
             result.update(avg.value);
         }
@@ -85,6 +97,7 @@ class FeatureDebounceInformation implements IFeatureDebounceInformation {
     }
     default() {
         const value = (this._overall() | 0) || this._default;
+
         return clamp(value, this._min, this._max);
     }
 }
@@ -92,6 +105,7 @@ export class LanguageFeatureDebounceService implements ILanguageFeatureDebounceS
     declare _serviceBrand: undefined;
     private readonly _data = new Map<string, IFeatureDebounceInformation>();
     private readonly _isDev: boolean;
+
     constructor(
     @ILogService
     private readonly _logService: ILogService, 
@@ -105,10 +119,15 @@ export class LanguageFeatureDebounceService implements ILanguageFeatureDebounceS
         key?: string;
     }): IFeatureDebounceInformation {
         const min = config?.min ?? 50;
+
         const max = config?.max ?? min ** 2;
+
         const extra = config?.key ?? undefined;
+
         const key = `${IdentityHash.of(feature)},${min}${extra ? ',' + extra : ''}`;
+
         let info = this._data.get(key);
+
         if (!info) {
             if (this._isDev) {
                 this._logService.debug(`[DEBOUNCE: ${name}] is disabled in developed mode`);
@@ -125,6 +144,7 @@ export class LanguageFeatureDebounceService implements ILanguageFeatureDebounceS
     private _overallAverage(): number {
         // Average of all language features. Not a great value but an approximation
         const result = new MovingAverage();
+
         for (const info of this._data.values()) {
             result.update(info.default());
         }

@@ -19,6 +19,7 @@ export const generateUuid = (function (): () => string {
     }
     // use `randomValues` if possible
     let getRandomValues: (bucket: Uint8Array) => Uint8Array;
+
     if (typeof crypto === 'object' && typeof crypto.getRandomValues === 'function') {
         getRandomValues = crypto.getRandomValues.bind(crypto);
     }
@@ -32,7 +33,9 @@ export const generateUuid = (function (): () => string {
     }
     // prep-work
     const _data = new Uint8Array(16);
+
     const _hex: string[] = [];
+
     for (let i = 0; i < 256; i++) {
         _hex.push(i.toString(16).padStart(2, '0'));
     }
@@ -44,6 +47,7 @@ export const generateUuid = (function (): () => string {
         _data[8] = (_data[8] & 0x3f) | 0x80;
         // print as string
         let i = 0;
+
         let result = '';
         result += _hex[_data[i++]];
         result += _hex[_data[i++]];
@@ -65,6 +69,7 @@ export const generateUuid = (function (): () => string {
         result += _hex[_data[i++]];
         result += _hex[_data[i++]];
         result += _hex[_data[i++]];
+
         return result;
     };
 })();

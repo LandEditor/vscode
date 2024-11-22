@@ -52,10 +52,15 @@ export interface ITerminalProfileResolverService {
 	 */
 	resolveIcon(shellLaunchConfig: IShellLaunchConfig, os: OperatingSystem): void;
 	resolveShellLaunchConfig(shellLaunchConfig: IShellLaunchConfig, options: IShellLaunchConfigResolveOptions): Promise<void>;
+
 	getDefaultProfile(options: IShellLaunchConfigResolveOptions): Promise<ITerminalProfile>;
+
 	getDefaultShell(options: IShellLaunchConfigResolveOptions): Promise<string>;
+
 	getDefaultShellArgs(options: IShellLaunchConfigResolveOptions): Promise<string | string[]>;
+
 	getDefaultIcon(): TerminalIcon & ThemeIcon;
+
 	getEnvironment(remoteAuthority: string | undefined): Promise<IProcessEnvironment>;
 }
 
@@ -75,13 +80,18 @@ export interface ITerminalProfileService {
 	readonly availableProfiles: ITerminalProfile[];
 	readonly contributedProfiles: IExtensionTerminalProfile[];
 	readonly profilesReady: Promise<void>;
+
 	getPlatformKey(): Promise<string>;
 	refreshAvailableProfiles(): void;
+
 	getDefaultProfileName(): string | undefined;
+
 	getDefaultProfile(os?: OperatingSystem): ITerminalProfile | undefined;
 	onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
+
 	getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
 	registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
+
 	getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined;
 	registerTerminalProfileProvider(extensionIdentifier: string, id: string, profileProvider: ITerminalProfileProvider): IDisposable;
 }
@@ -132,6 +142,7 @@ export interface ITerminalConfiguration {
 		windows: string[];
 	};
 	profiles: ITerminalProfiles;
+
 	defaultProfile: {
 		linux: string | null;
 		osx: string | null;
@@ -158,6 +169,7 @@ export interface ITerminalConfiguration {
 	tabStopWidth: number;
 	sendKeybindingsToShell: boolean;
 	fontSize: number;
+
 	letterSpacing: number;
 	lineHeight: number;
 	detectLocale: 'auto' | 'off' | 'on';
@@ -195,6 +207,7 @@ export interface ITerminalConfiguration {
 		separator: string;
 	};
 	bellDuration: number;
+
 	defaultLocation: TerminalLocationString;
 	customGlyphs: boolean;
 	persistentSessionReviveProcess: 'onExit' | 'onExitAndWindowClose' | 'never';
@@ -216,6 +229,7 @@ export interface ITerminalConfiguration {
 export interface ITerminalFont {
 	fontFamily: string;
 	fontSize: number;
+
 	letterSpacing: number;
 	lineHeight: number;
 	charWidth?: number;
@@ -290,16 +304,21 @@ export interface ITerminalProcessManager extends IDisposable, ITerminalProcessIn
 	createProcess(shellLaunchConfig: IShellLaunchConfig, cols: number, rows: number): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	relaunch(shellLaunchConfig: IShellLaunchConfig, cols: number, rows: number, reset: boolean): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	write(data: string): Promise<void>;
+
 	setDimensions(cols: number, rows: number): Promise<void>;
+
 	setDimensions(cols: number, rows: number, sync: false): Promise<void>;
+
 	setDimensions(cols: number, rows: number, sync: true): void;
 	clearBuffer(): Promise<void>;
+
 	setUnicodeVersion(version: '6' | '11'): Promise<void>;
 	acknowledgeDataEvent(charCount: number): void;
 	processBinary(data: string): void;
 
 	refreshProperty<T extends ProcessPropertyType>(type: T): Promise<IProcessPropertyMap[T]>;
 	updateProperty<T extends ProcessPropertyType>(property: T, value: IProcessPropertyMap[T]): Promise<void>;
+
 	getBackendOS(): Promise<OperatingSystem>;
 	freePortKillProcess(port: string): Promise<void>;
 }

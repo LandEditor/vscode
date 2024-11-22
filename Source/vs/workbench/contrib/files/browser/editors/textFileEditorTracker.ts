@@ -20,6 +20,7 @@ import { IWorkingCopyEditorService } from '../../../../services/workingCopy/comm
 import { DEFAULT_EDITOR_ASSOCIATION } from '../../../../common/editor.js';
 export class TextFileEditorTracker extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.textFileEditorTracker';
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService, 
@@ -59,6 +60,7 @@ export class TextFileEditorTracker extends Disposable implements IWorkbenchContr
                 return false; // resource must be dirty
             }
             const fileModel = this.textFileService.files.get(resource);
+
             if (fileModel?.hasState(TextFileEditorModelState.PENDING_SAVE)) {
                 return false; // resource must not be pending to save
             }
@@ -72,6 +74,7 @@ export class TextFileEditorTracker extends Disposable implements IWorkbenchContr
                 return false; // model must not be opened already as file (fast check via editor type)
             }
             const model = fileModel ?? this.textFileService.untitled.get(resource);
+
             if (model && this.workingCopyEditorService.findEditor(model)) {
                 return false; // model must not be opened already as file (slower check via working copy)
             }
@@ -97,10 +100,12 @@ export class TextFileEditorTracker extends Disposable implements IWorkbenchContr
         distinct(coalesce(this.codeEditorService.listCodeEditors()
             .map(codeEditor => {
             const resource = codeEditor.getModel()?.uri;
+
             if (!resource) {
                 return undefined;
             }
             const model = this.textFileService.files.get(resource);
+
             if (!model || model.isDirty() || !model.isResolved()) {
                 return undefined;
             }

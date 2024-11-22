@@ -77,6 +77,7 @@ export interface IUntitledFileWorkingCopyInitialContents {
 export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> extends Disposable implements IUntitledFileWorkingCopy<M> {
     readonly capabilities = this.isScratchpad ? WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad : WorkingCopyCapabilities.Untitled;
     private _model: M | undefined = undefined;
+
     get model(): M | undefined { return this._model; }
     //#region Events
     private readonly _onDidChangeContent = this._register(new Emitter<void>());
@@ -114,6 +115,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
             return;
         }
         this.modified = modified;
+
         if (!this.isScratchpad) {
             this._onDidChangeDirty.fire();
         }
@@ -122,6 +124,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
     //#region Resolve
     async resolve(): Promise<void> {
         this.trace('resolve()');
+
         if (this.isResolved()) {
             this.trace('resolve() - exit (already resolved)');
             // return early if the untitled file working copy is already
@@ -132,6 +135,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
         let untitledContents: VSBufferReadableStream;
         // Check for backups or use initial value or empty
         const backup = await this.workingCopyBackupService.resolve(this);
+
         if (backup) {
             this.trace('resolve() - with backup');
             untitledContents = backup.value;
@@ -207,6 +211,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
     //#region Save
     async save(options?: ISaveOptions): Promise<boolean> {
         this.trace('save()');
+
         const result = await this.saveDelegate(this, options);
         // Emit Save Event
         if (result) {
@@ -231,6 +236,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel> ex
     override dispose(): void {
         this.trace('dispose()');
         this._onWillDispose.fire();
+
         super.dispose();
     }
     private trace(msg: string): void {

@@ -24,6 +24,7 @@ export class TerminalInputSerializer implements IEditorSerializer {
     }
     public deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): EditorInput | undefined {
         const terminalInstance = JSON.parse(serializedEditorInput);
+
         return this._terminalEditorService.reviveInput(terminalInstance);
     }
     private _toJson(instance: ITerminalInstance): ISerializedTerminalEditorInput {

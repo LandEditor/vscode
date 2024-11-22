@@ -64,12 +64,14 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
     } | null;
     private _foreignModuleCreateData: any | null;
     private _foreignProxy: Promise<T> | null;
+
     constructor(modelService: IModelService, opts: IWebWorkerOptions) {
         const workerDescriptor: IWorkerDescriptor = {
             moduleId: standaloneEditorWorkerDescriptor.moduleId,
             esmModuleLocation: standaloneEditorWorkerDescriptor.esmModuleLocation,
             label: opts.label,
         };
+
         super(workerDescriptor, opts.keepIdleModels || false, modelService);
         this._foreignModuleId = opts.moduleId;
         this._foreignModuleCreateData = opts.createData || null;
@@ -92,18 +94,24 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
         if (!this._foreignProxy) {
             this._foreignProxy = this._getProxy().then((proxy) => {
                 const foreignHostMethods = this._foreignModuleHost ? getAllMethodNames(this._foreignModuleHost) : [];
+
                 return proxy.$loadForeignModule(this._foreignModuleId, this._foreignModuleCreateData, foreignHostMethods).then((foreignMethods) => {
                     this._foreignModuleCreateData = null;
+
                     const proxyMethodRequest = (method: string, args: any[]): Promise<any> => {
                         return proxy.$fmr(method, args);
                     };
+
                     const createProxyMethod = (method: string, proxyMethodRequest: (method: string, args: any[]) => Promise<any>): () => Promise<any> => {
                         return function () {
                             const args = Array.prototype.slice.call(arguments, 0);
+
                             return proxyMethodRequest(method, args);
                         };
                     };
+
                     const foreignProxy = {} as any as T;
+
                     for (const foreignMethod of foreignMethods) {
                         (<any>foreignProxy)[foreignMethod] = createProxyMethod(foreignMethod, proxyMethodRequest);
                     }

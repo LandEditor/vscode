@@ -5,6 +5,7 @@
 import Tracer from '../logging/tracer';
 export interface OngoingRequestCanceller {
     readonly cancellationPipeName: string | undefined;
+
     tryCancelOngoingRequest(seq: number): boolean;
 }
 export interface OngoingRequestCancellerFactory {

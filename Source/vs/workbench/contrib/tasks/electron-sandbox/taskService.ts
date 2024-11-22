@@ -144,10 +144,12 @@ export class TaskService extends AbstractTaskService {
                     this._onDidStateChange.fire(event);
                 })
             ];
+
         return this._taskSystem;
     }
     protected _computeLegacyConfiguration(workspaceFolder: IWorkspaceFolder): Promise<IWorkspaceFolderConfigurationResult> {
         const { config, hasParseErrors } = this._getConfiguration(workspaceFolder);
+
         if (hasParseErrors) {
             return Promise.resolve({ workspaceFolder: workspaceFolder, hasErrors: true, config: undefined });
         }
@@ -160,7 +162,9 @@ export class TaskService extends AbstractTaskService {
     }
     protected _versionAndEngineCompatible(filter?: ITaskFilter): boolean {
         const range = filter && filter.version ? filter.version : undefined;
+
         const engine = this.executionEngine;
+
         return (range === undefined) || ((semver.satisfies('0.1.0', range) && engine === ExecutionEngine.Process) || (semver.satisfies('2.0.0', range) && engine === ExecutionEngine.Terminal));
     }
     public beforeShutdown(): boolean | Promise<boolean> {
@@ -176,6 +180,7 @@ export class TaskService extends AbstractTaskService {
             return false;
         }
         let terminatePromise: Promise<IConfirmationResult>;
+
         if (this._taskSystem.canAutoTerminate()) {
             terminatePromise = Promise.resolve({ confirmed: true });
         }
@@ -189,7 +194,9 @@ export class TaskService extends AbstractTaskService {
             if (res.confirmed) {
                 return this._taskSystem!.terminateAll().then((responses) => {
                     let success = true;
+
                     let code: number | undefined = undefined;
+
                     for (const response of responses) {
                         success = success && response.success;
                         // We only have a code in the old output runner which only has one task
@@ -201,6 +208,7 @@ export class TaskService extends AbstractTaskService {
                     if (success) {
                         this._taskSystem = undefined;
                         this._disposeTaskSystemListeners();
+
                         return false; // no veto
                     }
                     else if (code && code === TerminateResponseCode.ProcessNotFound) {

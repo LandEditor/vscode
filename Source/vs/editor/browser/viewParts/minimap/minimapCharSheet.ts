@@ -16,14 +16,17 @@ export const enum Constants {
 }
 export const allCharCodes: ReadonlyArray<number> = (() => {
     const v: number[] = [];
+
     for (let i = Constants.START_CH_CODE; i <= Constants.END_CH_CODE; i++) {
         v.push(i);
     }
     v.push(Constants.UNKNOWN_CODE);
+
     return v;
 })();
 export const getCharIndex = (chCode: number, fontScale: number) => {
     chCode -= Constants.START_CH_CODE;
+
     if (chCode < 0 || chCode > Constants.CHAR_COUNT) {
         if (fontScale <= 2) {
             // for smaller scales, we can get away with using any ASCII character...

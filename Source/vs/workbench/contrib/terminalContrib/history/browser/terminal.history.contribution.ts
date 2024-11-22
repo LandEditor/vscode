@@ -27,6 +27,7 @@ class TerminalHistoryContribution extends Disposable implements ITerminalContrib
         return instance.getContribution<TerminalHistoryContribution>(TerminalHistoryContribution.ID);
     }
     private _terminalInRunCommandPicker: IContextKey<boolean>;
+
     constructor(private readonly _ctx: ITerminalContributionContext, 
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -40,6 +41,7 @@ class TerminalHistoryContribution extends Disposable implements ITerminalContrib
                     _ctx.instance.capabilities.get(TerminalCapability.CwdDetection)?.onDidChangeCwd(e => {
                         this._instantiationService.invokeFunction(getDirectoryHistory)?.add(e, { remoteAuthority: _ctx.instance.remoteAuthority });
                     });
+
                     break;
                 }
                 case TerminalCapability.CommandDetection: {
@@ -48,6 +50,7 @@ class TerminalHistoryContribution extends Disposable implements ITerminalContrib
                             this._instantiationService.invokeFunction(getCommandHistory)?.add(e.command, { shellType: _ctx.instance.shellType });
                         }
                     });
+
                     break;
                 }
             }
@@ -88,10 +91,12 @@ registerActiveInstanceAction({
     },
     run: async (activeInstance, c) => {
         const history = TerminalHistoryContribution.get(activeInstance);
+
         if (!history) {
             return;
         }
         await history.runRecent('cwd');
+
         if (activeInstance?.target === TerminalLocation.Editor) {
             await c.editorService.revealActiveEditor();
         }
@@ -119,10 +124,12 @@ registerActiveInstanceAction({
     ],
     run: async (activeInstance, c) => {
         const history = TerminalHistoryContribution.get(activeInstance);
+
         if (!history) {
             return;
         }
         await history.runRecent('command');
+
         if (activeInstance?.target === TerminalLocation.Editor) {
             await c.editorService.revealActiveEditor();
         }

@@ -8,9 +8,12 @@ import { ProcessItem } from '../common/processes.js';
 export function listProcesses(rootPid: number): Promise<ProcessItem> {
     return new Promise((resolve, reject) => {
         let rootItem: ProcessItem | undefined;
+
         const map = new Map<number, ProcessItem>();
+
         function addToTree(pid: number, ppid: number, cmd: string, load: number, mem: number) {
             const parent = map.get(ppid);
+
             if (pid === rootPid || parent) {
                 const item: ProcessItem = {
                     name: findName(cmd),
@@ -21,6 +24,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                     mem
                 };
                 map.set(pid, item);
+
                 if (pid === rootPid) {
                     rootItem = item;
                 }
@@ -29,6 +33,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                         parent.children = [];
                     }
                     parent.children.push(item);
+
                     if (parent.children.length > 1) {
                         parent.children = parent.children.sort((a, b) => a.pid - b.pid);
                     }
@@ -37,9 +42,13 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
         }
         function findName(cmd: string): string {
             const UTILITY_NETWORK_HINT = /--utility-sub-type=network/i;
+
             const WINDOWS_CRASH_REPORTER = /--crashes-directory/i;
+
             const WINPTY = /\\pipe\\winpty-control/i;
+
             const CONPTY = /conhost\.exe.+--headless/i;
+
             const TYPE = /--type=([a-zA-Z-]+)/;
             // find windows crash reporter
             if (WINDOWS_CRASH_REPORTER.exec(cmd)) {
@@ -55,6 +64,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
             }
             // find "--type=xxxx"
             let matches = TYPE.exec(cmd);
+
             if (matches && matches.length === 2) {
                 if (matches[1] === 'renderer') {
                     return `window`;
@@ -72,13 +82,17 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
             }
             // find all xxxx.js
             const JS = /[a-zA-Z-]+\.js/g;
+
             let result = '';
+
             do {
                 matches = JS.exec(cmd);
+
                 if (matches) {
                     result += matches + ' ';
                 }
             } while (matches);
+
             if (result) {
                 if (cmd.indexOf('node ') < 0 && cmd.indexOf('node.exe') < 0) {
                     return `electron-nodejs (${result})`;
@@ -108,6 +122,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                 windowsProcessTree.getProcessList(rootPid, (processList) => {
                     if (!processList) {
                         reject(new Error(`Root process ${rootPid} not found`));
+
                         return;
                     }
                     windowsProcessTree.getProcessCpuUsage(processList, (completeProcessList) => {
@@ -124,9 +139,11 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                             });
                         });
                         rootItem = processItems.get(rootPid);
+
                         if (rootItem) {
                             processItems.forEach(item => {
                                 const parent = processItems.get(item.ppid);
+
                                 if (parent) {
                                     if (!parent.children) {
                                         parent.children = [];
@@ -152,11 +169,15 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
             function calculateLinuxCpuUsage() {
                 // Flatten rootItem to get a list of all VSCode processes
                 let processes = [rootItem];
+
                 const pids: number[] = [];
+
                 while (processes.length) {
                     const process = processes.shift();
+
                     if (process) {
                         pids.push(process.pid);
+
                         if (process.children) {
                             processes = processes.concat(process.children);
                         }
@@ -173,12 +194,14 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                     }
                     else {
                         const cpuUsage = stdout.toString().split('\n');
+
                         for (let i = 0; i < pids.length; i++) {
                             const processInfo = map.get(pids[i])!;
                             processInfo.load = parseFloat(cpuUsage[i]);
                         }
                         if (!rootItem) {
                             reject(new Error(`Root process ${rootPid} not found`));
+
                             return;
                         }
                         resolve(rootItem);
@@ -205,6 +228,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                 }
                 else {
                     const ps = stdout.toString().trim();
+
                     const args = '-ax -o pid=,ppid=,pcpu=,pmem=,command=';
                     // Set numeric locale to ensure '.' is used as the decimal separator
                     exec(`${ps} ${args}`, { maxBuffer: 1000 * 1024, env: { LC_NUMERIC: 'en_US.UTF-8' } }, (err, stdout, stderr) => {
@@ -214,6 +238,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
                         }
                         else {
                             parsePsOutput(stdout, addToTree);
+
                             if (process.platform === 'linux') {
                                 calculateLinuxCpuUsage();
                             }
@@ -234,9 +259,12 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 }
 function parsePsOutput(stdout: string, addToTree: (pid: number, ppid: number, cmd: string, load: number, mem: number) => void): void {
     const PID_CMD = /^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)\s+(.+)$/;
+
     const lines = stdout.toString().split('\n');
+
     for (const line of lines) {
         const matches = PID_CMD.exec(line.trim());
+
         if (matches && matches.length === 6) {
             addToTree(parseInt(matches[1]), parseInt(matches[2]), matches[5], parseFloat(matches[3]), parseFloat(matches[4]));
         }

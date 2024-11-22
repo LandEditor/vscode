@@ -43,17 +43,21 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 				return;
 			}
 			const viewModel = this.viewModel();
+
 			if (viewModel) {
 				for (const update of updates) {
 					const cellModel = viewModel.getCellByHandle(update.cellHandle);
+
 					if (cellModel) {
 						this._onDidAriaLabelChange.fire(cellModel as CellViewModel);
 					}
 				}
 
 				const lastUpdate = updates[updates.length - 1];
+
 				if (this.shouldReadCellOutputs(lastUpdate.state)) {
 					const cell = viewModel.getCellByHandle(lastUpdate.cellHandle);
+
 					if (cell && cell.outputsViewModels.length) {
 						const text = getAllOutputsText(viewModel.notebookDocument, cell, true);
 						alert(text);
@@ -78,8 +82,10 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 
 	getAriaLabel(element: CellViewModel) {
 		const event = Event.filter(this.onDidAriaLabelChange, e => e === element);
+
 		return observableFromEvent(this, event, () => {
 			const viewModel = this.viewModel();
+
 			if (!viewModel) {
 				return '';
 			}
@@ -101,6 +107,7 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 
 	private getLabel(element: CellViewModel) {
 		const executionState = this.notebookExecutionStateService.getCellExecution(element.uri)?.state;
+
 		const executionLabel =
 			executionState === NotebookCellExecutionState.Executing
 				? ', executing'
@@ -130,9 +137,12 @@ export class NotebookAccessibilityProvider extends Disposable implements IListAc
 
 	private mergeEvents(last: executionUpdate[] | undefined, e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent): executionUpdate[] {
 		const viewModel = this.viewModel();
+
 		const result = last || [];
+
 		if (viewModel && e.type === NotebookExecutionType.cell && e.affectsNotebook(viewModel.uri)) {
 			const index = result.findIndex(update => update.cellHandle === e.cellHandle);
+
 			if (index >= 0) {
 				result.splice(index, 1);
 			}

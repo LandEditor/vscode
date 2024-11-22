@@ -16,11 +16,17 @@ export class UpdateChannel implements IServerChannel {
     call(_: unknown, command: string, arg?: any): Promise<any> {
         switch (command) {
             case 'checkForUpdates': return this.service.checkForUpdates(arg);
+
             case 'downloadUpdate': return this.service.downloadUpdate();
+
             case 'applyUpdate': return this.service.applyUpdate();
+
             case 'quitAndInstall': return this.service.quitAndInstall();
+
             case '_getInitialState': return Promise.resolve(this.service.state);
+
             case 'isLatestVersion': return this.service.isLatestVersion();
+
             case '_applySpecificUpdate': return this.service._applySpecificUpdate(arg);
         }
         throw new Error(`Call not found: ${command}`);
@@ -31,6 +37,7 @@ export class UpdateChannelClient implements IUpdateService {
     private readonly _onStateChange = new Emitter<State>();
     readonly onStateChange: Event<State> = this._onStateChange.event;
     private _state: State = State.Uninitialized;
+
     get state(): State { return this._state; }
     set state(state: State) {
         this._state = state;

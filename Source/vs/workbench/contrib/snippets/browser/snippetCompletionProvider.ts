@@ -19,10 +19,13 @@ import { ILanguageConfigurationService } from '../../../../editor/common/languag
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { CommandsRegistry } from '../../../../platform/commands/common/commands.js';
 import { IWordAtPosition } from '../../../../editor/common/core/wordHelper.js';
+
 const markSnippetAsUsed = '_snippet.markAsUsed';
 CommandsRegistry.registerCommand(markSnippetAsUsed, (accessor, ...args) => {
     const snippetsService = accessor.get(ISnippetsService);
+
     const [first] = args;
+
     if (first instanceof Snippet) {
         snippetsService.updateUsageTimestamp(first);
     }
@@ -31,6 +34,7 @@ export class SnippetCompletion implements CompletionItem {
     label: CompletionItemLabel;
     detail: string;
     insertText: string;
+
     documentation?: MarkdownString;
     range: IRange | {
         insert: IRange;
@@ -41,6 +45,7 @@ export class SnippetCompletion implements CompletionItem {
     insertTextRules: CompletionItemInsertTextRule;
     extensionId?: ExtensionIdentifier;
     command?: Command;
+
     constructor(readonly snippet: Snippet, range: IRange | {
         insert: IRange;
         replace: IRange;
@@ -57,6 +62,7 @@ export class SnippetCompletion implements CompletionItem {
     }
     resolve(): this {
         this.documentation = new MarkdownString().appendCodeblock('', SnippetParser.asInsertText(this.snippet.codeSnippet));
+
         return this;
     }
     static compareByLabel(a: SnippetCompletion, b: SnippetCompletion): number {
@@ -70,6 +76,7 @@ interface ISnippetPosition {
 }
 export class SnippetCompletionProvider implements CompletionItemProvider {
     readonly _debugDisplayName = 'snippetCompletions';
+
     constructor(
     @ILanguageService
     private readonly _languageService: ILanguageService, 
@@ -83,23 +90,34 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
         const sw = new StopWatch();
         // compute all snippet anchors: word starts and every non word character
         const line = position.lineNumber;
+
         const word = model.getWordAtPosition(position) ?? { startColumn: position.column, endColumn: position.column, word: '' };
+
         const lineContentLow = model.getLineContent(position.lineNumber).toLowerCase();
+
         const lineContentWithWordLow = lineContentLow.substring(0, word.startColumn + word.word.length - 1);
+
         const anchors = this._computeSnippetPositions(model, line, word, lineContentWithWordLow);
         // loop over possible snippets and match them against the anchors
         const columnOffset = position.column - 1;
+
         const triggerCharacterLow = context.triggerCharacter?.toLowerCase() ?? '';
+
         const languageId = this._getLanguageIdAtPosition(model, position);
+
         const languageConfig = this._languageConfigurationService.getLanguageConfiguration(languageId);
+
         const snippets = new Set(await this._snippets.getSnippets(languageId));
+
         const suggestions: SnippetCompletion[] = [];
+
         for (const snippet of snippets) {
             if (context.triggerKind === CompletionTriggerKind.TriggerCharacter && !snippet.prefixLow.startsWith(triggerCharacterLow)) {
                 // strict -> when having trigger characters they must prefix-match
                 continue;
             }
             let candidate: ISnippetPosition | undefined;
+
             for (const anchor of anchors) {
                 if (anchor.prefixLow.match(/^\s/) && !snippet.prefixLow.match(/^\s/)) {
                     // only allow whitespace anchor when snippet prefix starts with whitespace too
@@ -107,6 +125,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
                 }
                 if (isPatternInWord(anchor.prefixLow, 0, anchor.prefixLow.length, snippet.prefixLow, 0, snippet.prefixLow.length)) {
                     candidate = anchor;
+
                     break;
                 }
             }
@@ -114,13 +133,18 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
                 continue;
             }
             const pos = candidate.startColumn - 1;
+
             const prefixRestLen = snippet.prefixLow.length - (columnOffset - pos);
+
             const endsWithPrefixRest = compareSubstring(lineContentLow, snippet.prefixLow, columnOffset, columnOffset + prefixRestLen, columnOffset - pos);
+
             const startPosition = position.with(undefined, pos + 1);
+
             let endColumn = endsWithPrefixRest === 0 ? position.column + prefixRestLen : position.column;
             // First check if there is anything to the right of the cursor
             if (columnOffset < lineContentLow.length) {
                 const autoClosingPairs = languageConfig.getAutoClosingPairs();
+
                 const standardAutoClosingPairConditionals = autoClosingPairs.autoClosingPairsCloseSingleChar.get(lineContentLow[columnOffset]);
                 // If the character to the right of the cursor is a closing character of an autoclosing pair
                 if (standardAutoClosingPairConditionals?.some(p => 
@@ -134,6 +158,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
                 }
             }
             const replace = Range.fromPositions({ lineNumber: line, column: candidate.startColumn }, { lineNumber: line, column: endColumn });
+
             const insert = replace.setEndPosition(line, position.column);
             suggestions.push(new SnippetCompletion(snippet, { replace, insert }));
             snippets.delete(snippet);
@@ -143,12 +168,14 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
         if (!triggerCharacterLow && (/\s/.test(lineContentLow[position.column - 2]) /*end in whitespace */ || !lineContentLow /*empty line*/)) {
             for (const snippet of snippets) {
                 const insert = Range.fromPositions(position);
+
                 const replace = lineContentLow.indexOf(snippet.prefixLow, columnOffset) === columnOffset ? insert.setEndPosition(position.lineNumber, position.column + snippet.prefixLow.length) : insert;
                 suggestions.push(new SnippetCompletion(snippet, { replace, insert }));
             }
         }
         // dismbiguate suggestions with same labels
         this._disambiguateSnippets(suggestions);
+
         return {
             suggestions,
             duration: sw.elapsed()
@@ -156,9 +183,12 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
     }
     private _disambiguateSnippets(suggestions: SnippetCompletion[]) {
         suggestions.sort(SnippetCompletion.compareByLabel);
+
         for (let i = 0; i < suggestions.length; i++) {
             const item = suggestions[i];
+
             let to = i + 1;
+
             for (; to < suggestions.length && item.label === suggestions[to].label; to++) {
                 suggestions[to].label.label = localize('snippetSuggest.longLabel', "{0}, {1}", suggestions[to].label.label, suggestions[to].snippet.name);
             }
@@ -173,6 +203,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
     }
     private _computeSnippetPositions(model: ITextModel, line: number, word: IWordAtPosition, lineContentWithWordLow: string): ISnippetPosition[] {
         const result: ISnippetPosition[] = [];
+
         for (let column = 1; column < word.startColumn; column++) {
             const wordInfo = model.getWordAtPosition(new Position(line, column));
             result.push({
@@ -180,6 +211,7 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
                 prefixLow: lineContentWithWordLow.substring(column - 1),
                 isWord: Boolean(wordInfo)
             });
+
             if (wordInfo) {
                 column = wordInfo.endColumn;
                 // the character right after a word is an anchor, always
@@ -204,7 +236,9 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
         // facing language with a name and the chance to have
         // snippets, else fall back to the outer language
         model.tokenization.tokenizeIfCheap(position.lineNumber);
+
         let languageId = model.getLanguageIdAtPosition(position.lineNumber, position.column);
+
         if (!this._languageService.getLanguageName(languageId)) {
             languageId = model.getLanguageId();
         }

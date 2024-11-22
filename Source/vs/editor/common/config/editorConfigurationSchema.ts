@@ -15,6 +15,7 @@ export const editorConfigurationBaseNode = Object.freeze<IConfigurationNode>({
     title: nls.localize('editorConfigurationTitle', "Editor"),
     scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 });
+
 const editorConfiguration: IConfigurationNode = {
     ...editorConfigurationBaseNode,
     properties: {
@@ -275,6 +276,7 @@ function isConfigurationPropertySchema(x: IConfigurationPropertySchema | {
 // Add properties from the Editor Option Registry
 for (const editorOption of editorOptionsRegistry) {
     const schema = editorOption.schema;
+
     if (typeof schema !== 'undefined') {
         if (isConfigurationPropertySchema(schema)) {
             // This is a single schema contribution
@@ -307,10 +309,12 @@ function getEditorConfigurationKeys(): {
 }
 export function isEditorConfigurationKey(key: string): boolean {
     const editorConfigurationKeys = getEditorConfigurationKeys();
+
     return (editorConfigurationKeys[`editor.${key}`] || false);
 }
 export function isDiffEditorConfigurationKey(key: string): boolean {
     const editorConfigurationKeys = getEditorConfigurationKeys();
+
     return (editorConfigurationKeys[`diffEditor.${key}`] || false);
 }
 const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);

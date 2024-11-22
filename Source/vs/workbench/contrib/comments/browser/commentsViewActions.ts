@@ -21,7 +21,9 @@ export const enum CommentsSortOrder {
     UpdatedAtDescending = 'updatedAtDescending'
 }
 const CONTEXT_KEY_SHOW_RESOLVED = new RawContextKey<boolean>('commentsView.showResolvedFilter', true);
+
 const CONTEXT_KEY_SHOW_UNRESOLVED = new RawContextKey<boolean>('commentsView.showUnResolvedFilter', true);
+
 const CONTEXT_KEY_SORT_BY = new RawContextKey<CommentsSortOrder>('commentsView.sortBy', CommentsSortOrder.ResourceAscending);
 export interface CommentsFiltersChangeEvent {
     showResolved?: boolean;
@@ -36,6 +38,7 @@ interface CommentsFiltersOptions {
 export class CommentsFilters extends Disposable {
     private readonly _onDidChange: Emitter<CommentsFiltersChangeEvent> = this._register(new Emitter<CommentsFiltersChangeEvent>());
     readonly onDidChange: Event<CommentsFiltersChangeEvent> = this._onDidChange.event;
+
     constructor(options: CommentsFiltersOptions, private readonly contextKeyService: IContextKeyService) {
         super();
         this._showResolved.set(options.showResolved);
@@ -43,6 +46,7 @@ export class CommentsFilters extends Disposable {
         this._sortBy.set(options.sortBy);
     }
     private readonly _showUnresolved = CONTEXT_KEY_SHOW_UNRESOLVED.bindTo(this.contextKeyService);
+
     get showUnresolved(): boolean {
         return !!this._showUnresolved.get();
     }
@@ -53,6 +57,7 @@ export class CommentsFilters extends Disposable {
         }
     }
     private _showResolved = CONTEXT_KEY_SHOW_RESOLVED.bindTo(this.contextKeyService);
+
     get showResolved(): boolean {
         return !!this._showResolved.get();
     }
@@ -63,6 +68,7 @@ export class CommentsFilters extends Disposable {
         }
     }
     private _sortBy: IContextKey<CommentsSortOrder> = CONTEXT_KEY_SORT_BY.bindTo(this.contextKeyService);
+
     get sortBy(): CommentsSortOrder {
         return this._sortBy.get() ?? CommentsSortOrder.ResourceAscending;
     }
@@ -170,6 +176,7 @@ registerAction2(class extends ViewAction<ICommentsView> {
         view.filters.showResolved = !view.filters.showResolved;
     }
 });
+
 const commentSortSubmenu = new MenuId('submenu.filter.commentSort');
 MenuRegistry.appendMenuItem(viewFilterSubmenu, {
     submenu: commentSortSubmenu,

@@ -26,6 +26,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
     declare readonly _serviceBrand: undefined;
     private readonly builtinExtensionsPromises: Promise<IExtension>[] = [];
     private nlsUrl: URI | undefined;
+
     constructor(
     @IWorkbenchEnvironmentService
     environmentService: IWorkbenchEnvironmentService, 
@@ -44,8 +45,10 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
                 this.nlsUrl = URI.joinPath(URI.parse(nlsBaseUrl), productService.commit, productService.version, Language.value());
             }
             const builtinExtensionsServiceUrl = FileAccess.asBrowserUri(builtinExtensionsPath);
+
             if (builtinExtensionsServiceUrl) {
                 let bundledExtensions: IBundledExtension[] = [];
+
                 if (environmentService.isBuilt) {
                     // Built time configuration (do NOT modify)
                     bundledExtensions = [ /*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
@@ -53,7 +56,9 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
                 else {
                     // Find builtin extensions by checking for DOM
                     const builtinExtensionsElement = mainWindow.document.getElementById('vscode-workbench-builtin-extensions');
+
                     const builtinExtensionsElementAttribute = builtinExtensionsElement ? builtinExtensionsElement.getAttribute('data-settings') : undefined;
+
                     if (builtinExtensionsElementAttribute) {
                         try {
                             bundledExtensions = JSON.parse(builtinExtensionsElementAttribute);
@@ -63,6 +68,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
                 }
                 this.builtinExtensionsPromises = bundledExtensions.map(async (e) => {
                     const id = getGalleryExtensionId(e.packageJSON.publisher, e.packageJSON.name);
+
                     return {
                         identifier: { id },
                         location: uriIdentityService.extUri.joinPath(builtinExtensionsServiceUrl, e.extensionPath),
@@ -88,13 +94,17 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
         }
         // the `package` endpoint returns the translations in a key-value format similar to the package.nls.json file.
         const uri = URI.joinPath(this.nlsUrl, extensionId, 'package');
+
         try {
             const res = await this.extensionResourceLoaderService.readExtensionResource(uri);
+
             const json = JSON.parse(res.toString());
+
             return localizeManifest(this.logService, manifest, json, fallbackTranslations);
         }
         catch (e) {
             this.logService.error(e);
+
             return localizeManifest(this.logService, manifest, fallbackTranslations);
         }
     }

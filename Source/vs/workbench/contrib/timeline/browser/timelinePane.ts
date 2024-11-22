@@ -74,6 +74,7 @@ function isTimelineItem(item: TreeElement | undefined): item is TimelineItem {
 function updateRelativeTime(item: TimelineItem, lastRelativeTime: string | undefined): string | undefined {
 	item.relativeTime = isTimelineItem(item) ? fromNow(item.timestamp) : undefined;
 	item.relativeTimeFullWord = isTimelineItem(item) ? fromNow(item.timestamp, false, true) : undefined;
+
 	if (lastRelativeTime === undefined || item.relativeTime !== lastRelativeTime) {
 		lastRelativeTime = item.relativeTime;
 		item.hideRelativeTime = false;
@@ -103,6 +104,7 @@ class TimelineAggregate {
 	}
 
 	private _cursor?: string;
+
 	get cursor(): string | undefined {
 		return this._cursor;
 	}
@@ -126,6 +128,7 @@ class TimelineAggregate {
 			updated = true;
 
 			const ids = new Set();
+
 			const timestamps = new Set();
 
 			for (const item of timeline.items) {
@@ -139,9 +142,12 @@ class TimelineAggregate {
 
 			// Remove any duplicate items
 			let i = this.items.length;
+
 			let item;
+
 			while (i--) {
 				item = this.items[i];
+
 				if ((item.id !== undefined && ids.has(item.id)) || timestamps.has(item.timestamp)) {
 					this.items.splice(i, 1);
 				}
@@ -177,11 +183,13 @@ class TimelineAggregate {
 	}
 
 	private _stale = false;
+
 	get stale() {
 		return this._stale;
 	}
 
 	private _requiresReset = false;
+
 	get requiresReset(): boolean {
 		return this._requiresReset;
 	}
@@ -211,6 +219,7 @@ class LoadMoreCommand {
 		this._loading = loading;
 	}
 	private _loading: boolean = false;
+
 	get loading(): boolean {
 		return this._loading;
 	}
@@ -294,6 +303,7 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _followActiveEditor: boolean = true;
+
 	get followActiveEditor(): boolean {
 		return this._followActiveEditor;
 	}
@@ -313,6 +323,7 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _pageOnScroll: boolean | undefined;
+
 	get pageOnScroll() {
 		if (this._pageOnScroll === undefined) {
 			this._pageOnScroll = this.configurationService.getValue<boolean | null | undefined>('timeline.pageOnScroll') ?? false;
@@ -323,6 +334,7 @@ export class TimelinePane extends ViewPane {
 
 	get pageSize() {
 		let pageSize = this.configurationService.getValue<number | null | undefined>('timeline.pageSize');
+
 		if (pageSize === undefined || pageSize === null) {
 			// If we are paging when scrolling, then add an extra item to the end to make sure the "Load more" item is out of view
 			pageSize = Math.max(20, Math.floor((this.tree?.renderHeight ?? 0 / ItemHeight) + (this.pageOnScroll ? 1 : -1)));
@@ -356,6 +368,7 @@ export class TimelinePane extends ViewPane {
 
 		const missing = this.timelineService.getSources()
 			.filter(({ id }) => !this.excludedSources.has(id) && !this.timelinesBySource.has(id));
+
 		if (missing.length !== 0) {
 			this.loadTimeline(true, missing.map(({ id }) => id));
 		} else {
@@ -387,6 +400,7 @@ export class TimelinePane extends ViewPane {
 				}
 
 				const timeline = this.timelinesBySource.get(source.id);
+
 				if (timeline !== undefined && !timeline.stale) {
 					continue;
 				}
@@ -421,6 +435,7 @@ export class TimelinePane extends ViewPane {
 	private onTimelineChanged(e: TimelineChangeEvent) {
 		if (e?.uri === undefined || this.uriIdentityService.extUri.isEqual(URI.revive(e.uri), this.uri)) {
 			const timeline = this.timelinesBySource.get(e.id);
+
 			if (timeline === undefined) {
 				return;
 			}
@@ -436,6 +451,7 @@ export class TimelinePane extends ViewPane {
 	private _filename: string | undefined;
 	updateFilename(filename: string | undefined) {
 		this._filename = filename;
+
 		if (this.followActiveEditor || !filename) {
 			this.updateTitleDescription(filename);
 		} else {
@@ -444,6 +460,7 @@ export class TimelinePane extends ViewPane {
 	}
 
 	private _message: string | undefined;
+
 	get message(): string | undefined {
 		return this._message;
 	}
@@ -544,6 +561,7 @@ export class TimelinePane extends ViewPane {
 
 		for (const source of sources ?? this.timelineService.getSources().map(s => s.id)) {
 			const requested = this.loadTimelineForSource(source, this.uri, reset);
+
 			if (requested) {
 				hasPendingRequests = true;
 			}
@@ -588,6 +606,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		let request = this.pendingRequests.get(source);
+
 		if (request !== undefined) {
 			options.cursor = request.options.cursor;
 
@@ -636,6 +655,7 @@ export class TimelinePane extends ViewPane {
 
 	private async handleRequest(request: TimelineRequest) {
 		let response: Timeline | undefined;
+
 		try {
 			response = await this.progressService.withProgress({ location: this.id }, () => request.result);
 		}
@@ -658,7 +678,9 @@ export class TimelinePane extends ViewPane {
 		const source = request.source;
 
 		let updated = false;
+
 		const timeline = this.timelinesBySource.get(source);
+
 		if (timeline === undefined) {
 			this.timelinesBySource.set(source, new TimelineAggregate(response));
 			updated = true;
@@ -695,6 +717,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		const maxCount = this._maxItemCount;
+
 		let count = 0;
 
 		if (this.timelinesBySource.size === 1) {
@@ -716,17 +739,21 @@ export class TimelinePane extends ViewPane {
 			more = timeline.more;
 
 			let lastRelativeTime: string | undefined;
+
 			for (const item of timeline.items) {
 				item.relativeTime = undefined;
 				item.hideRelativeTime = undefined;
 
 				count++;
+
 				if (count > maxCount) {
 					more = true;
+
 					break;
 				}
 
 				lastRelativeTime = updateRelativeTime(item, lastRelativeTime);
+
 				yield { element: item };
 			}
 
@@ -736,6 +763,7 @@ export class TimelinePane extends ViewPane {
 			const sources: { timeline: TimelineAggregate; iterator: IterableIterator<TimelineItem>; nextItem: IteratorResult<TimelineItem, undefined> }[] = [];
 
 			let hasAnyItems = false;
+
 			let mostRecentEnd = 0;
 
 			for (const [source, timeline] of this.timelinesBySource) {
@@ -753,6 +781,7 @@ export class TimelinePane extends ViewPane {
 					more = true;
 
 					const last = timeline.items[Math.min(maxCount, timeline.items.length - 1)];
+
 					if (last.timestamp > mostRecentEnd) {
 						mostRecentEnd = last.timestamp;
 					}
@@ -771,7 +800,9 @@ export class TimelinePane extends ViewPane {
 			}
 
 			let lastRelativeTime: string | undefined;
+
 			let nextSource;
+
 			while (nextSource = getNextMostRecentSource()) {
 				nextSource.timeline.lastRenderedIndex++;
 
@@ -781,12 +812,15 @@ export class TimelinePane extends ViewPane {
 
 				if (item.timestamp >= mostRecentEnd) {
 					count++;
+
 					if (count > maxCount) {
 						more = true;
+
 						break;
 					}
 
 					lastRelativeTime = updateRelativeTime(item, lastRelativeTime);
+
 					yield { element: item };
 				}
 
@@ -795,6 +829,7 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this._visibleItemCount = count;
+
 		if (count > 0) {
 			if (more) {
 				yield {
@@ -824,7 +859,9 @@ export class TimelinePane extends ViewPane {
 				this.setLoadingUriMessage();
 			} else {
 				this.updateFilename(this.labelService.getUriBasenameLabel(this.uri));
+
 				const scmProviderCount = this.contextKeyService.getContextKeyValue<number>('scm.providerCount');
+
 				if (this.timelineService.getSources().filter(({ id }) => !this.excludedSources.has(id)).length === 0) {
 					this.message = localize('timeline.noTimelineSourcesEnabled', "All timeline sources have been filtered out.");
 				} else {
@@ -958,7 +995,9 @@ export class TimelinePane extends ViewPane {
 			}
 
 			const selection = this.tree.getSelection();
+
 			let item;
+
 			if (selection.length === 1) {
 				item = selection[0];
 			}
@@ -970,6 +1009,7 @@ export class TimelinePane extends ViewPane {
 			if (isTimelineItem(item)) {
 				if (item.command) {
 					let args = item.command.arguments ?? [];
+
 					if (item.command.id === API_OPEN_EDITOR_COMMAND_ID || item.command.id === API_OPEN_DIFF_EDITOR_COMMAND_ID) {
 						// Some commands owned by us should receive the
 						// `IOpenEvent` as context to open properly
@@ -1023,6 +1063,7 @@ export class TimelinePane extends ViewPane {
 
 	private onContextMenu(commands: TimelinePaneCommands, treeEvent: ITreeContextMenuEvent<TreeElement | null>): void {
 		const item = treeEvent.element;
+
 		if (item === null) {
 			return;
 		}
@@ -1036,7 +1077,9 @@ export class TimelinePane extends ViewPane {
 		}
 
 		this.tree.setFocus([item]);
+
 		const actions = commands.getItemContextActions(item);
+
 		if (!actions.length) {
 			return;
 		}
@@ -1046,6 +1089,7 @@ export class TimelinePane extends ViewPane {
 			getActions: () => actions,
 			getActionViewItem: (action) => {
 				const keybinding = this.keybindingService.lookupKeybinding(action.id);
+
 				if (keybinding) {
 					return new ActionViewItem(action, action, { label: true, keybinding: keybinding.getLabel() });
 				}
@@ -1111,6 +1155,7 @@ class TimelineActionRunner extends ActionRunner {
 		if (!isTimelineItem(item)) {
 			// TODO@eamodio do we need to do anything else?
 			await action.run();
+
 			return;
 		}
 
@@ -1167,6 +1212,7 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 	}
 
 	private uri: URI | undefined;
+
 	setUri(uri: URI | undefined) {
 		this.uri = uri;
 	}
@@ -1186,7 +1232,9 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 		const { element: item } = node;
 
 		const theme = this.themeService.getColorTheme();
+
 		const icon = theme.type === ColorScheme.LIGHT ? item.icon : item.iconDark;
+
 		const iconUrl = icon ? URI.revive(icon) : null;
 
 		if (iconUrl) {
@@ -1195,6 +1243,7 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 			template.icon.style.color = '';
 		} else if (item.themeIcon) {
 			template.icon.className = `custom-view-tree-node-item-icon ${ThemeIcon.asClassName(item.themeIcon)}`;
+
 			if (item.themeIcon.color) {
 				template.icon.style.color = theme.getColor(item.themeIcon.color.id)?.toString() ?? '';
 			} else {
@@ -1238,7 +1287,9 @@ class TimelineTreeRenderer implements ITreeRenderer<TreeElement, FuzzyScore, Tim
 
 
 const timelineRefresh = registerIcon('timeline-refresh', Codicon.refresh, localize('timelineRefresh', 'Icon for the refresh timeline action.'));
+
 const timelinePin = registerIcon('timeline-pin', Codicon.pin, localize('timelinePin', 'Icon for the pin timeline action.'));
+
 const timelineUnpin = registerIcon('timeline-unpin', Codicon.pinned, localize('timelineUnpin', 'Icon for the unpin timeline action.'));
 
 class TimelinePaneCommands extends Disposable {
@@ -1321,6 +1372,7 @@ class TimelinePaneCommands extends Disposable {
 		]);
 
 		const menu = this.menuService.getMenuActions(menuId, contextKeyService, { shouldForwardArgs: true });
+
 		return getContextMenuActions(menu, 'inline');
 	}
 
@@ -1328,6 +1380,7 @@ class TimelinePaneCommands extends Disposable {
 		this.sourceDisposables.clear();
 
 		const excluded = new Set(JSON.parse(this.storageService.get('timeline.excludeSources', StorageScope.PROFILE, '[]')));
+
 		for (const source of this.timelineService.getSources()) {
 			this.sourceDisposables.add(registerAction2(class extends Action2 {
 				constructor() {

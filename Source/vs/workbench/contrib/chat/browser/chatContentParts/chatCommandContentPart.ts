@@ -12,18 +12,23 @@ import { IChatContentPart, IChatContentPartRenderContext } from './chatContentPa
 import { IChatProgressRenderableResponseContent } from '../../common/chatModel.js';
 import { IChatCommandButton } from '../../common/chatService.js';
 import { isResponseVM } from '../../common/chatViewModel.js';
+
 const $ = dom.$;
 export class ChatCommandButtonContentPart extends Disposable implements IChatContentPart {
     public readonly domNode: HTMLElement;
+
     constructor(commandButton: IChatCommandButton, context: IChatContentPartRenderContext, 
     @ICommandService
     private readonly commandService: ICommandService) {
         super();
         this.domNode = $('.chat-command-button');
+
         const enabled = !isResponseVM(context.element) || !context.element.isStale;
+
         const tooltip = enabled ?
             commandButton.command.tooltip :
             localize('commandButtonDisabled', "Button not available in restored chat");
+
         const button = this._register(new Button(this.domNode, { ...defaultButtonStyles, supportIcons: true, title: tooltip }));
         button.label = commandButton.command.title;
         button.enabled = enabled;

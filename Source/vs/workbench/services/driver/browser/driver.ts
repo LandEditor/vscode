@@ -60,11 +60,14 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		if (element !== mainWindow.document.activeElement) {
 			const chain: string[] = [];
+
 			let el = mainWindow.document.activeElement;
 
 			while (el) {
 				const tagName = el.tagName;
+
 				const id = el.id ? `#${el.id}` : '';
+
 				const classes = coalesce(el.className.split(/\s+/g).map(c => c.trim())).map(c => `.${c}`).join('');
 				chain.unshift(`${tagName}${id}${classes}`);
 
@@ -79,7 +82,9 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 	async getElements(selector: string, recursive: boolean): Promise<IElement[]> {
 		const query = mainWindow.document.querySelectorAll(selector);
+
 		const result: IElement[] = [];
+
 		for (let i = 0; i < query.length; i++) {
 			const element = query.item(i);
 			result.push(this.serializeElement(element, recursive));
@@ -93,6 +98,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 		for (let j = 0; j < element.attributes.length; j++) {
 			const attr = element.attributes.item(j);
+
 			if (attr) {
 				attributes[attr.name] = attr.value;
 			}
@@ -103,6 +109,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 		if (recursive) {
 			for (let i = 0; i < element.children.length; i++) {
 				const child = element.children.item(i);
+
 				if (child) {
 					children.push(this.serializeElement(child, true));
 				}
@@ -124,6 +131,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 	async getElementXY(selector: string, xoffset?: number, yoffset?: number): Promise<{ x: number; y: number }> {
 		const offset = typeof xoffset === 'number' && typeof yoffset === 'number' ? { x: xoffset, y: yoffset } : undefined;
+
 		return this._getElementXY(selector, offset);
 	}
 
@@ -135,9 +143,13 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		const textarea = element as HTMLTextAreaElement;
+
 		const start = textarea.selectionStart;
+
 		const newStart = start + text.length;
+
 		const value = textarea.value;
+
 		const newValue = value.substr(0, start) + text + value.substr(start);
 
 		textarea.value = newValue;
@@ -161,6 +173,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		const lines: string[] = [];
+
 		for (let i = 0; i < xterm.buffer.active.length; i++) {
 			lines.push(xterm.buffer.active.getLine(i)!.translateToString(true));
 		}
@@ -207,7 +220,9 @@ export class BrowserWindowDriver implements IWindowDriver {
 		}
 
 		const { left, top } = getTopLeftOffset(element as HTMLElement);
+
 		const { width, height } = getClientArea(element as HTMLElement);
+
 		let x: number, y: number;
 
 		if (offset) {

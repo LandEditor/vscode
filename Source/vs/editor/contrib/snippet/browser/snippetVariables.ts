@@ -61,6 +61,7 @@ export class CompositeSnippetVariableResolver implements VariableResolver {
     resolve(variable: Variable): string | undefined {
         for (const delegate of this._delegates) {
             const value = delegate.resolve(variable);
+
             if (value !== undefined) {
                 return value;
             }
@@ -74,12 +75,15 @@ export class SelectionBasedVariableResolver implements VariableResolver {
     }
     resolve(variable: Variable): string | undefined {
         const { name } = variable;
+
         if (name === 'SELECTION' || name === 'TM_SELECTED_TEXT') {
             let value = this._model.getValueInRange(this._selection) || undefined;
+
             let isMultiline = this._selection.startLineNumber !== this._selection.endLineNumber;
             // If there was no selected text, try to get last overtyped text
             if (!value && this._overtypingCapturer) {
                 const info = this._overtypingCapturer.getLastOvertypedInfo(this._selectionIdx);
+
                 if (info) {
                     value = info.value;
                     isMultiline = info.multiline;
@@ -91,8 +95,11 @@ export class SelectionBasedVariableResolver implements VariableResolver {
                 // with the indentation at the editor position and add potential
                 // extra indentation to the value
                 const line = this._model.getLineContent(this._selection.startLineNumber);
+
                 const lineLeadingWhitespace = getLeadingWhitespace(line, 0, this._selection.startColumn - 1);
+
                 let varLeadingWhitespace = lineLeadingWhitespace;
+
                 variable.snippet.walk(marker => {
                     if (marker === variable) {
                         return false;
@@ -102,6 +109,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
                     }
                     return true;
                 });
+
                 const whitespaceCommonLength = commonPrefixLength(varLeadingWhitespace, lineLeadingWhitespace);
                 value = value.replace(/(\r\n|\r|\n)(.*)/g, (m, newline, rest) => `${newline}${varLeadingWhitespace.substr(whitespaceCommonLength)}${rest}`);
             }
@@ -115,6 +123,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
                 lineNumber: this._selection.positionLineNumber,
                 column: this._selection.positionColumn
             });
+
             return info && info.word || undefined;
         }
         else if (name === 'TM_LINE_INDEX') {
@@ -138,12 +147,15 @@ export class ModelBasedVariableResolver implements VariableResolver {
     }
     resolve(variable: Variable): string | undefined {
         const { name } = variable;
+
         if (name === 'TM_FILENAME') {
             return path.basename(this._model.uri.fsPath);
         }
         else if (name === 'TM_FILENAME_BASE') {
             const name = path.basename(this._model.uri.fsPath);
+
             const idx = name.lastIndexOf('.');
+
             if (idx <= 0) {
                 return name;
             }
@@ -178,6 +190,7 @@ export class ClipboardBasedVariableResolver implements VariableResolver {
             return undefined;
         }
         const clipboardText = this._readClipboardText();
+
         if (!clipboardText) {
             return undefined;
         }
@@ -186,6 +199,7 @@ export class ClipboardBasedVariableResolver implements VariableResolver {
         // and when enabled
         if (this._spread) {
             const lines = clipboardText.split(/\r\n|\n|\r/).filter(s => !isFalsyOrWhitespace(s));
+
             if (lines.length === this._selectionCount) {
                 return lines[this._selectionIdx];
             }
@@ -201,8 +215,11 @@ export class CommentBasedVariableResolver implements VariableResolver {
     }
     resolve(variable: Variable): string | undefined {
         const { name } = variable;
+
         const langId = this._model.getLanguageIdAtPosition(this._selection.selectionStartLineNumber, this._selection.selectionStartColumn);
+
         const config = this._languageConfigurationService.getLanguageConfiguration(langId).comments;
+
         if (!config) {
             return undefined;
         }
@@ -226,6 +243,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
     private readonly _date = new Date();
     resolve(variable: Variable): string | undefined {
         const { name } = variable;
+
         if (name === 'CURRENT_YEAR') {
             return String(this._date.getFullYear());
         }
@@ -264,11 +282,17 @@ export class TimeBasedVariableResolver implements VariableResolver {
         }
         else if (name === 'CURRENT_TIMEZONE_OFFSET') {
             const rawTimeOffset = this._date.getTimezoneOffset();
+
             const sign = rawTimeOffset > 0 ? '-' : '+';
+
             const hours = Math.trunc(Math.abs(rawTimeOffset / 60));
+
             const hoursString = (hours < 10 ? '0' + hours : hours);
+
             const minutes = Math.abs(rawTimeOffset) - hours * 60;
+
             const minutesString = (minutes < 10 ? '0' + minutes : minutes);
+
             return sign + hoursString + ':' + minutesString;
         }
         return undefined;
@@ -283,6 +307,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
             return undefined;
         }
         const workspaceIdentifier = toWorkspaceIdentifier(this._workspaceService.getWorkspace());
+
         if (isEmptyWorkspaceIdentifier(workspaceIdentifier)) {
             return undefined;
         }
@@ -299,6 +324,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
             return path.basename(workspaceIdentifier.uri.path);
         }
         let filename = path.basename(workspaceIdentifier.configPath.path);
+
         if (filename.endsWith(WORKSPACE_EXTENSION)) {
             filename = filename.substr(0, filename.length - WORKSPACE_EXTENSION.length - 1);
         }
@@ -309,7 +335,9 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
             return normalizeDriveLetter(workspaceIdentifier.uri.fsPath);
         }
         const filename = path.basename(workspaceIdentifier.configPath.path);
+
         let folderpath = workspaceIdentifier.configPath.fsPath;
+
         if (folderpath.endsWith(filename)) {
             folderpath = folderpath.substr(0, folderpath.length - filename.length - 1);
         }
@@ -319,6 +347,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 export class RandomBasedVariableResolver implements VariableResolver {
     resolve(variable: Variable): string | undefined {
         const { name } = variable;
+
         if (name === 'RANDOM') {
             return Math.random().toString().slice(-6);
         }

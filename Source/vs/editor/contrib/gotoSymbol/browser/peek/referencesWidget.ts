@@ -43,6 +43,7 @@ class DecorationsManager implements IDisposable {
     private _decorationIgnoreSet = new Set<string>();
     private readonly _callOnDispose = new DisposableStore();
     private readonly _callOnModelChange = new DisposableStore();
+
     constructor(private _editor: ICodeEditor, private _model: ReferencesModel) {
         this._callOnDispose.add(this._editor.onDidChangeModel(() => this._onModelChanged()));
         this._onModelChanged();
@@ -54,13 +55,16 @@ class DecorationsManager implements IDisposable {
     }
     private _onModelChanged(): void {
         this._callOnModelChange.clear();
+
         const model = this._editor.getModel();
+
         if (!model) {
             return;
         }
         for (const ref of this._model.references) {
             if (ref.uri.toString() === model.uri.toString()) {
                 this._addDecorations(ref.parent);
+
                 return;
             }
         }
@@ -70,10 +74,14 @@ class DecorationsManager implements IDisposable {
             return;
         }
         this._callOnModelChange.add(this._editor.getModel().onDidChangeDecorations(() => this._onDecorationChanged()));
+
         const newDecorations: IModelDeltaDecoration[] = [];
+
         const newDecorationsActualIndex: number[] = [];
+
         for (let i = 0, len = reference.children.length; i < len; i++) {
             const oneReference = reference.children[i];
+
             if (this._decorationIgnoreSet.has(oneReference.id)) {
                 continue;
             }
@@ -88,6 +96,7 @@ class DecorationsManager implements IDisposable {
         }
         this._editor.changeDecorations((changeAccessor) => {
             const decorations = changeAccessor.deltaDecorations([], newDecorations);
+
             for (let i = 0; i < decorations.length; i++) {
                 this._decorations.set(decorations[i], reference.children[newDecorationsActualIndex[i]]);
             }
@@ -95,16 +104,20 @@ class DecorationsManager implements IDisposable {
     }
     private _onDecorationChanged(): void {
         const toRemove: string[] = [];
+
         const model = this._editor.getModel();
+
         if (!model) {
             return;
         }
         for (const [decorationId, reference] of this._decorations) {
             const newRange = model.getDecorationRange(decorationId);
+
             if (!newRange) {
                 continue;
             }
             let ignore = false;
+
             if (Range.equalsRange(newRange, reference.range)) {
                 continue;
             }
@@ -113,7 +126,9 @@ class DecorationsManager implements IDisposable {
             }
             else {
                 const lineLength = reference.range.endColumn - reference.range.startColumn;
+
                 const newLineLength = newRange.endColumn - newRange.startColumn;
+
                 if (lineLength !== newLineLength) {
                     ignore = true;
                 }
@@ -141,7 +156,9 @@ export class LayoutData {
     heightInLines: number = 18;
     static fromJSON(raw: string): LayoutData {
         let ratio: number | undefined;
+
         let heightInLines: number | undefined;
+
         try {
             const data = <LayoutData>JSON.parse(raw);
             ratio = data.ratio;
@@ -215,6 +232,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         dispose(this._tree);
         dispose(this._previewModelReference);
         this._splitView.dispose();
+
         super.dispose();
     }
     private _applyTheme(theme: IColorTheme) {
@@ -252,10 +270,12 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         this.setCssClass('reference-zone-widget');
         // message pane
         this._messageContainer = dom.append(containerElement, dom.$('div.messages'));
+
         dom.hide(this._messageContainer);
         this._splitView = new SplitView(containerElement, { orientation: Orientation.HORIZONTAL });
         // editor
         this._previewContainer = dom.append(containerElement, dom.$('div.preview.inline'));
+
         const options: IEditorOptions = {
             scrollBeyondLastLine: false,
             scrollbar: {
@@ -273,10 +293,12 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
             }
         };
         this._preview = this._instantiationService.createInstance(EmbeddedCodeEditorWidget, this._previewContainer, options, {}, this.editor);
+
         dom.hide(this._previewContainer);
         this._previewNotAvailableMessage = this._instantiationService.createInstance(TextModel, nls.localize('missingPreviewMessage', "no preview available"), PLAINTEXT_LANGUAGE_ID, TextModel.DEFAULT_CREATION_OPTIONS, null);
         // tree
         this._treeContainer = dom.append(containerElement, dom.$('div.ref-tree.inline'));
+
         const treeOptions: IWorkbenchAsyncDataTreeOptions<TreeElement, FuzzyScore> = {
             keyboardSupport: this._defaultTreeKeyboardSupport,
             accessibilityProvider: new AccessibilityProvider(),
@@ -288,6 +310,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
                 listBackground: peekView.peekViewResultsBackground
             }
         };
+
         if (this._defaultTreeKeyboardSupport) {
             // the tree will consume `Escape` and prevent the widget from closing
             this._callOnDispose.add(dom.addStandardDisposableListener(this._treeContainer, 'keydown', (e) => {
@@ -347,6 +370,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
                 onEvent(e.element, 'show');
             }
         }));
+
         dom.hide(this._treeContainer);
     }
     protected override _onWidth(width: number) {
@@ -376,6 +400,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         // clean up
         this._disposeOnNewModel.clear();
         this._model = newModel;
+
         if (this._model) {
             return this._onNewModel();
         }
@@ -388,7 +413,9 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         if (this._model.isEmpty) {
             this.setTitle('');
             this._messageContainer.innerText = nls.localize('noResults', "No results");
+
             dom.show(this._messageContainer);
+
             return Promise.resolve(undefined);
         }
         dom.hide(this._messageContainer);
@@ -399,10 +426,12 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         // listen on editor
         this._disposeOnNewModel.add(this._preview.onMouseDown(e => {
             const { event, target } = e;
+
             if (event.detail !== 2) {
                 return;
             }
             const element = this._getFocusedReference();
+
             if (!element) {
                 return;
             }
@@ -414,7 +443,9 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
         }));
         // make sure things are rendered
         this.container!.classList.add('results-loaded');
+
         dom.show(this._treeContainer);
+
         dom.show(this._previewContainer);
         this._splitView.layout(this._dim.width);
         this.focusOnReferenceTree();
@@ -423,6 +454,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
     }
     private _getFocusedReference(): OneReference | undefined {
         const [element] = this._tree.getFocus();
+
         if (element instanceof OneReference) {
             return element;
         }
@@ -452,6 +484,7 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
             this.setTitle(nls.localize('peekView.alternateTitle', "References"));
         }
         const promise = this._textModelResolverService.createModelReference(reference.uri);
+
         if (this._tree.getInput() === reference.parent) {
             this._tree.reveal(reference);
         }
@@ -463,16 +496,20 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
             this._tree.reveal(reference);
         }
         const ref = await promise;
+
         if (!this._model) {
             // disposed
             ref.dispose();
+
             return;
         }
         dispose(this._previewModelReference);
         // show in editor
         const model = ref.object;
+
         if (model) {
             const scrollType = this._preview.getModel() === model.textEditorModel ? ScrollType.Smooth : ScrollType.Immediate;
+
             const sel = Range.lift(reference.range).collapseToStart();
             this._previewModelReference = ref;
             this._preview.setModel(model.textEditorModel);

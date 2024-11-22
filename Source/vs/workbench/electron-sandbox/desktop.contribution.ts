@@ -68,11 +68,14 @@ import product from '../../platform/product/common/product.js';
 		weight: KeybindingWeight.WorkbenchContrib,
 		async handler(accessor: ServicesAccessor) {
 			const nativeHostService = accessor.get(INativeHostService);
+
 			const configurationService = accessor.get(IConfigurationService);
 
 			const confirmBeforeClose = configurationService.getValue<'always' | 'never' | 'keyboardOnly'>('window.confirmBeforeClose');
+
 			if (confirmBeforeClose === 'always' || (confirmBeforeClose === 'keyboardOnly' && ModifierKeyEmitter.getInstance().isModifierPressed)) {
 				const confirmed = await NativeWindow.confirmOnShutdown(accessor, ShutdownReason.QUIT);
+
 				if (!confirmed) {
 					return; // quit prevented by user
 				}
@@ -352,7 +355,9 @@ import product from '../../platform/product/common/product.js';
 // JSON Schemas
 (function registerJSONSchemas(): void {
 	const argvDefinitionFileSchemaId = 'vscode://schemas/argv';
+
 	const jsonRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
+
 	const schema: IJSONSchema = {
 		id: argvDefinitionFileSchemaId,
 		allowComments: true,
@@ -410,6 +415,7 @@ import product from '../../platform/product/common/product.js';
 			}
 		}
 	};
+
 	if (isLinux) {
 		schema.properties!['force-renderer-accessibility'] = {
 			type: 'boolean',

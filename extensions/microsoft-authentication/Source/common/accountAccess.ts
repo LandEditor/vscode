@@ -9,6 +9,7 @@ import { AccountInfo } from '@azure/msal-node';
 interface IAccountAccess {
 	onDidAccountAccessChange: Event<void>;
 	isAllowedAccess(account: AccountInfo): boolean;
+
 	setAllowedAccess(account: AccountInfo, allowed: boolean): void;
 }
 
@@ -44,6 +45,7 @@ export class ScopedAccountAccess implements IAccountAccess {
 				return;
 			}
 			await this._accountAccessSecretStorage.store([...this.value, account.homeAccountId]);
+
 			return;
 		}
 		await this._accountAccessSecretStorage.store(this.value.filter(id => id !== account.homeAccountId));
@@ -51,9 +53,11 @@ export class ScopedAccountAccess implements IAccountAccess {
 
 	private async update() {
 		const current = new Set(this.value);
+
 		const value = await this._accountAccessSecretStorage.get();
 
 		this.value = value ?? [];
+
 		if (current.size !== this.value.length || !this.value.every(id => current.has(id))) {
 			this._onDidAccountAccessChangeEmitter.fire();
 		}
@@ -86,6 +90,7 @@ export class AccountAccessSecretStorage {
 
 	async get(): Promise<string[] | undefined> {
 		const value = await this._secretStorage.get(this._key);
+
 		if (!value) {
 			return undefined;
 		}

@@ -91,6 +91,7 @@ class LanguageModelResponse {
 			return;
 		}
 		let res = this._responseStreams.get(fragment.index);
+
 		if (!res) {
 			if (this._responseStreams.size === 0) {
 				// the first response claims the default response
@@ -102,6 +103,7 @@ class LanguageModelResponse {
 		}
 
 		let out: vscode.LanguageModelTextPart | vscode.LanguageModelToolCallPart;
+
 		if (fragment.part.type === 'text') {
 			out = new extHostTypes.LanguageModelTextPart(fragment.part.value);
 		} else {
@@ -113,6 +115,7 @@ class LanguageModelResponse {
 
 	reject(err: Error): void {
 		this._isDone = true;
+
 		for (const stream of this._streams()) {
 			stream.reject(err);
 		}
@@ -120,6 +123,7 @@ class LanguageModelResponse {
 
 	resolve(): void {
 		this._isDone = true;
+
 		for (const stream of this._streams()) {
 			stream.resolve();
 		}
@@ -160,7 +164,9 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 		const handle = ExtHostLanguageModels._idPool++;
 		this._languageModels.set(handle, { extension: extension.identifier, provider, languageModelId: identifier });
+
 		let auth;
+
 		if (metadata.auth) {
 			auth = {
 				providerLabel: extension.displayName || extension.name,
@@ -195,16 +201,19 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	async $startChatRequest(handle: number, requestId: number, from: ExtensionIdentifier, messages: IChatMessage[], options: vscode.LanguageModelChatRequestOptions, token: CancellationToken): Promise<void> {
 		const data = this._languageModels.get(handle);
+
 		if (!data) {
 			throw new Error('Provider not found');
 		}
 		const progress = new Progress<vscode.ChatResponseFragment2>(async fragment => {
 			if (token.isCancellationRequested) {
 				this._logService.warn(`[CHAT](${data.extension.value}) CANNOT send progress because the REQUEST IS CANCELLED`);
+
 				return;
 			}
 
 			let part: IChatResponsePart | undefined;
+
 			if (fragment.part instanceof extHostTypes.LanguageModelToolCallPart) {
 				part = { type: 'tool_use', name: fragment.part.name, parameters: fragment.part.input, toolCallId: fragment.part.callId };
 			} else if (fragment.part instanceof extHostTypes.LanguageModelTextPart) {
@@ -213,6 +222,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 			if (!part) {
 				this._logService.warn(`[CHAT](${data.extension.value}) UNKNOWN part ${JSON.stringify(fragment)}`);
+
 				return;
 			}
 
@@ -253,6 +263,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	$provideTokenLength(handle: number, value: string, token: CancellationToken): Promise<number> {
 		const data = this._languageModels.get(handle);
+
 		if (!data) {
 			return Promise.resolve(0);
 		}
@@ -291,6 +302,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	async getDefaultLanguageModel(extension: IExtensionDescription): Promise<vscode.LanguageModelChat | undefined> {
 		const defaultModelId = Iterable.find(this._allLanguageModelData.entries(), ([, value]) => !!value.metadata.isDefault)?.[0];
+
 		if (!defaultModelId) {
 			return;
 		}
@@ -301,6 +313,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	async getLanguageModelByIdentifier(extension: IExtensionDescription, identifier: string): Promise<vscode.LanguageModelChat | undefined> {
 
 		const data = this._allLanguageModelData.get(identifier);
+
 		if (!data) {
 			// model gone? is this an error on us?
 			return;
@@ -312,6 +325,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		}
 
 		let apiObject = data.apiObjects.get(extension.identifier);
+
 		if (!apiObject) {
 			const that = this;
 			apiObject = {
@@ -351,6 +365,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 		for (const identifier of models) {
 			const model = await this.getLanguageModelByIdentifier(extension, identifier);
+
 			if (model) {
 				result.push(model);
 			}
@@ -364,6 +379,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		const internalMessages: IChatMessage[] = this._convertMessages(extension, messages);
 
 		const from = extension.identifier;
+
 		const metadata = this._allLanguageModelData.get(languageModelId)?.metadata;
 
 		if (!metadata || !this._allLanguageModelData.has(languageModelId)) {
@@ -380,6 +396,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 		try {
 			const requestId = (Math.random() * 1e6) | 0;
+
 			const res = new LanguageModelResponse();
 			this._pendingRequest.set(requestId, { languageModelId, res });
 
@@ -390,6 +407,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				// error'ing here means that the request could NOT be started/made, e.g. wrong model, no access, etc, but
 				// later the response can fail as well. Those failures are communicated via the stream-object
 				this._pendingRequest.delete(requestId);
+
 				throw error;
 			}
 
@@ -409,6 +427,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	private _convertMessages(extension: IExtensionDescription, messages: vscode.LanguageModelChatMessage[]) {
 		const internalMessages: IChatMessage[] = [];
+
 		for (const message of messages) {
 			if (message.role as number === extHostTypes.LanguageModelChatMessageRole.System) {
 				checkProposedApiEnabled(extension, 'languageModelSystem');
@@ -420,6 +439,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	async $acceptResponsePart(requestId: number, chunk: IChatResponseFragment): Promise<void> {
 		const data = this._pendingRequest.get(requestId);
+
 		if (data) {
 			data.res.handleFragment(chunk);
 		}
@@ -427,10 +447,12 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	async $acceptResponseDone(requestId: number, error: SerializedError | undefined): Promise<void> {
 		const data = this._pendingRequest.get(requestId);
+
 		if (!data) {
 			return;
 		}
 		this._pendingRequest.delete(requestId);
+
 		if (error) {
 			// we error the stream because that's the only way to signal
 			// that the request has failed
@@ -444,10 +466,12 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	private async _getAuthAccess(from: IExtensionDescription, to: { identifier: ExtensionIdentifier; displayName: string }, justification: string | undefined, silent: boolean | undefined): Promise<boolean> {
 		// This needs to be done in both MainThread & ExtHost ChatProvider
 		const providerId = INTERNAL_AUTH_PROVIDER_PREFIX + to.identifier.value;
+
 		const session = await this._extHostAuthentication.getSession(from, providerId, [], { silent: true });
 
 		if (session) {
 			this.$updateModelAccesslist([{ from: from.identifier, to: to.identifier, enabled: true }]);
+
 			return true;
 		}
 
@@ -461,6 +485,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				: undefined;
 			await this._extHostAuthentication.getSession(from, providerId, [], { forceNewSession: { detail } });
 			this.$updateModelAccesslist([{ from: from.identifier, to: to.identifier, enabled: true }]);
+
 			return true;
 
 		} catch (err) {
@@ -495,11 +520,13 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	private async _computeTokenLength(languageModelId: string, value: string | vscode.LanguageModelChatMessage, token: vscode.CancellationToken): Promise<number> {
 
 		const data = this._allLanguageModelData.get(languageModelId);
+
 		if (!data) {
 			throw extHostTypes.LanguageModelError.NotFound(`Language model '${languageModelId}' is unknown.`);
 		}
 
 		const local = Iterable.find(this._languageModels.values(), candidate => candidate.languageModelId === languageModelId);
+
 		if (local) {
 			// stay inside the EH
 			return local.provider.provideTokenCount(value, token);
@@ -510,9 +537,12 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	$updateModelAccesslist(data: { from: ExtensionIdentifier; to: ExtensionIdentifier; enabled: boolean }[]): void {
 		const updated = new Array<{ from: ExtensionIdentifier; to: ExtensionIdentifier }>();
+
 		for (const { from, to, enabled } of data) {
 			const set = this._modelAccessList.get(from) ?? new ExtensionIdentifierSet();
+
 			const oldValue = set.has(to);
+
 			if (oldValue !== enabled) {
 				if (enabled) {
 					set.add(to);
@@ -520,6 +550,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 					set.delete(to);
 				}
 				this._modelAccessList.set(from, set);
+
 				const newItem = { from, to };
 				updated.push(newItem);
 				this._onDidChangeModelAccess.fire(newItem);
@@ -534,7 +565,9 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		this._languageAccessInformationExtensions.add(from);
 
 		const that = this;
+
 		const _onDidChangeAccess = Event.signal(Event.filter(this._onDidChangeModelAccess.event, e => ExtensionIdentifier.equals(e.from, from.identifier)));
+
 		const _onDidAddRemove = Event.signal(this._onDidChangeProviders.event);
 
 		return {
@@ -549,6 +582,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 					for (const candidate of value.apiObjects.values()) {
 						if (candidate === chat) {
 							metadata = value.metadata;
+
 							break out;
 						}
 					}
@@ -561,6 +595,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 				}
 
 				const list = that._modelAccessList.get(from.identifier);
+
 				if (!list) {
 					return undefined;
 				}
@@ -577,6 +612,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 
 	async $isFileIgnored(handle: number, uri: UriComponents, token: CancellationToken): Promise<boolean> {
 		const provider = this._ignoredFileProviders.get(handle);
+
 		if (!provider) {
 			throw new Error('Unknown LanguageModelIgnoredFileProvider');
 		}
@@ -590,6 +626,7 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 		const handle = ExtHostLanguageModels._idPool++;
 		this._proxy.$registerFileIgnoreProvider(handle);
 		this._ignoredFileProviders.set(handle, provider);
+
 		return toDisposable(() => {
 			this._proxy.$unregisterFileIgnoreProvider(handle);
 			this._ignoredFileProviders.delete(handle);

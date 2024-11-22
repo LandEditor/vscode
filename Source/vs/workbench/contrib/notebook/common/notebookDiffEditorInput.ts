@@ -19,7 +19,9 @@ class NotebookDiffEditorModel extends EditorModel implements INotebookDiffEditor
 export class NotebookDiffEditorInput extends DiffEditorInput {
     static create(instantiationService: IInstantiationService, resource: URI, name: string | undefined, description: string | undefined, originalResource: URI, viewType: string) {
         const original = NotebookEditorInput.getOrCreate(instantiationService, originalResource, undefined, viewType);
+
         const modified = NotebookEditorInput.getOrCreate(instantiationService, resource, undefined, viewType);
+
         return instantiationService.createInstance(NotebookDiffEditorInput, name, description, original, modified, viewType);
     }
     static override readonly ID: string = 'workbench.input.diffNotebookInput';
@@ -32,6 +34,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
         return this.viewType;
     }
     private _cachedModel: NotebookDiffEditorModel | undefined = undefined;
+
     constructor(name: string | undefined, description: string | undefined, override readonly original: NotebookEditorInput, override readonly modified: NotebookEditorInput, public readonly viewType: string, 
     @IEditorService
     editorService: IEditorService) {
@@ -56,11 +59,14 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
         this._originalTextModel = originalEditorModel;
         this._modifiedTextModel = modifiedEditorModel;
         this._cachedModel = new NotebookDiffEditorModel(this._originalTextModel, this._modifiedTextModel);
+
         return this._cachedModel;
     }
     override toUntyped(): IResourceDiffEditorInput & IResourceSideBySideEditorInput {
         const original = { resource: this.original.resource };
+
         const modified = { resource: this.resource };
+
         return {
             original,
             modified,

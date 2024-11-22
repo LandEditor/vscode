@@ -29,10 +29,14 @@ export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: numb
     };
     // Shift start range right for each wide character before the link
     let startOffset = 0;
+
     const startWrappedLineCount = Math.ceil(range.startColumn / bufferWidth);
+
     for (let y = 0; y < Math.min(startWrappedLineCount); y++) {
         const lineLength = Math.min(bufferWidth, (range.startColumn - 1) - y * bufferWidth);
+
         let lineOffset = 0;
+
         const line = lines[y];
         // Sanity check for line, apparently this can happen but it's not clear under what
         // circumstances this happens. Continue on, skipping the remainder of start offset if this
@@ -48,10 +52,12 @@ export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: numb
                 break;
             }
             const width = cell.getWidth();
+
             if (width === 2) {
                 lineOffset++;
             }
             const char = cell.getChars();
+
             if (char.length > 1) {
                 lineOffset -= char.length - 1;
             }
@@ -60,11 +66,16 @@ export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: numb
     }
     // Shift end range right for each wide character inside the link
     let endOffset = 0;
+
     const endWrappedLineCount = Math.ceil(range.endColumn / bufferWidth);
+
     for (let y = Math.max(0, startWrappedLineCount - 1); y < endWrappedLineCount; y++) {
         const start = (y === startWrappedLineCount - 1 ? (range.startColumn - 1 + startOffset) % bufferWidth : 0);
+
         const lineLength = Math.min(bufferWidth, range.endColumn + startOffset - y * bufferWidth);
+
         let lineOffset = 0;
+
         const line = lines[y];
         // Sanity check for line, apparently this can happen but it's not clear under what
         // circumstances this happens. Continue on, skipping the remainder of start offset if this
@@ -80,6 +91,7 @@ export function convertLinkRangeToBuffer(lines: IBufferLine[], bufferWidth: numb
                 break;
             }
             const width = cell.getWidth();
+
             const chars = cell.getChars();
             // Offset for null cells following wide characters
             if (width === 2) {
@@ -127,11 +139,14 @@ export function getXtermLineContent(buffer: IBuffer, lineStart: number, lineEnd:
     // more of a sanity check as the wrapped line should already be trimmed down at this point.
     const maxLineLength = Math.max(2048, cols * 2);
     lineEnd = Math.min(lineEnd, lineStart + maxLineLength);
+
     let content = '';
+
     for (let i = lineStart; i <= lineEnd; i++) {
         // Make sure only 0 to cols are considered as resizing when windows mode is enabled will
         // retain buffer data outside of the terminal width as reflow is disabled.
         const line = buffer.getLine(i);
+
         if (line) {
             content += line.translateToString(true, 0, cols);
         }
@@ -140,16 +155,22 @@ export function getXtermLineContent(buffer: IBuffer, lineStart: number, lineEnd:
 }
 export function getXtermRangesByAttr(buffer: IBuffer, lineStart: number, lineEnd: number, cols: number): IBufferRange[] {
     let bufferRangeStart: IBufferCellPosition | undefined = undefined;
+
     let lastFgAttr: number = -1;
+
     let lastBgAttr: number = -1;
+
     const ranges: IBufferRange[] = [];
+
     for (let y = lineStart; y <= lineEnd; y++) {
         const line = buffer.getLine(y);
+
         if (!line) {
             continue;
         }
         for (let x = 0; x < cols; x++) {
             const cell = line.getCell(x);
+
             if (!cell) {
                 break;
             }
@@ -159,8 +180,10 @@ export function getXtermRangesByAttr(buffer: IBuffer, lineStart: number, lineEnd
                 cell.isInverse() |
                 cell.isStrikethrough() |
                 cell.isUnderline());
+
             const thisBgAttr = (cell.isDim() |
                 cell.isItalic());
+
             if (lastFgAttr === -1 || lastBgAttr === -1) {
                 bufferRangeStart = { x, y };
             }
@@ -200,18 +223,24 @@ export function getXtermRangesByAttr(buffer: IBuffer, lineStart: number, lineEnd
 export function updateLinkWithRelativeCwd(capabilities: ITerminalCapabilityStore, y: number, text: string, osPath: IPath, logService: ITerminalLogService): string[] | undefined {
     const cwd = capabilities.get(TerminalCapability.CommandDetection)?.getCwdForLine(y);
     logService.trace('terminalLinkHelpers#updateLinkWithRelativeCwd cwd', cwd);
+
     if (!cwd) {
         return undefined;
     }
     const result: string[] = [];
+
     const sep = osPath.sep;
+
     if (!text.includes(sep)) {
         result.push(osPath.resolve(cwd + sep + text));
     }
     else {
         let commonDirs = 0;
+
         let i = 0;
+
         const cwdPath = cwd.split(sep).reverse();
+
         const linkPath = text.split(sep);
         // Get all results as candidates, prioritizing the link with the most common directories.
         // For example if in the directory /home/common and the link is common/file, the result
@@ -219,6 +248,7 @@ export function updateLinkWithRelativeCwd(capabilities: ITerminalCapabilityStore
         // likely as cwd detection is active.
         while (i < cwdPath.length) {
             result.push(osPath.resolve(cwd + sep + linkPath.slice(commonDirs).join(sep)));
+
             if (cwdPath[i] === linkPath[i]) {
                 commonDirs++;
             }

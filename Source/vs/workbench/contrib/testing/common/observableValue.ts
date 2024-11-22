@@ -29,6 +29,7 @@ export class MutableObservableValue<T> extends Disposable implements IObservable
         const o = new MutableObservableValue(stored.get(defaultValue));
         o._register(stored);
         o._register(o.onDidChange(value => stored.store(value)));
+
         return o;
     }
     constructor(private _value: T) {

@@ -18,6 +18,7 @@ export function contains<T>(arr: T[], val: T) {
  */
 export function mergeSort<T>(data: T[], compare: (a: T, b: T) => number): T[] {
     _divideAndMerge(data, compare);
+
     return data;
 }
 function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
@@ -26,15 +27,22 @@ function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
         return;
     }
     const p = (data.length / 2) | 0;
+
     const left = data.slice(0, p);
+
     const right = data.slice(p);
     _divideAndMerge(left, compare);
     _divideAndMerge(right, compare);
+
     let leftIdx = 0;
+
     let rightIdx = 0;
+
     let i = 0;
+
     while (leftIdx < left.length && rightIdx < right.length) {
         const ret = compare(left[leftIdx], right[rightIdx]);
+
         if (ret <= 0) {
             // smaller_equal -> take left to preserve order
             data[i++] = left[leftIdx++];
@@ -53,9 +61,12 @@ function _divideAndMerge<T>(data: T[], compare: (a: T, b: T) => number): void {
 }
 export function binarySearch<T>(array: T[], key: T, comparator: (op1: T, op2: T) => number): number {
     let low = 0, high = array.length - 1;
+
     while (low <= high) {
         const mid = ((low + high) / 2) | 0;
+
         const comp = comparator(array[mid], key);
+
         if (comp < 0) {
             low = mid + 1;
         }

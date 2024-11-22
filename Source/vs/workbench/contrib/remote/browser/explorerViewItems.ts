@@ -25,6 +25,7 @@ export class SwitchRemoteViewItem extends Disposable {
     private switchRemoteMenu: MenuId;
     private completedRemotes: DisposableMap<string, IRemoteSelectItem> = this._register(new DisposableMap());
     private readonly selectedRemoteContext: IContextKey<string>;
+
     constructor(
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -53,17 +54,23 @@ export class SwitchRemoteViewItem extends Disposable {
     }
     public setSelectionForConnection(): boolean {
         let isSetForConnection = false;
+
         if (this.completedRemotes.size > 0) {
             let authority: string[] | undefined;
+
             const remoteAuthority = this.environmentService.remoteAuthority;
+
             let virtualWorkspace: string | undefined;
+
             if (!remoteAuthority) {
                 virtualWorkspace = getVirtualWorkspaceLocation(this.workspaceContextService.getWorkspace())?.scheme;
             }
             isSetForConnection = true;
+
             const explorerType: string[] | undefined = remoteAuthority ? [remoteAuthority.split('+')[0]]
                 : (virtualWorkspace ? [virtualWorkspace]
                     : (this.storageService.get(REMOTE_EXPLORER_TYPE_KEY, StorageScope.WORKSPACE)?.split(',') ?? this.storageService.get(REMOTE_EXPLORER_TYPE_KEY, StorageScope.PROFILE)?.split(',')));
+
             if (explorerType !== undefined) {
                 authority = this.getAuthorityForExplorerType(explorerType);
             }
@@ -79,15 +86,18 @@ export class SwitchRemoteViewItem extends Disposable {
     }
     private getAuthorityForExplorerType(explorerType: string[]): string[] | undefined {
         let authority: string[] | undefined;
+
         for (const option of this.completedRemotes) {
             for (const authorityOption of option[1].authority) {
                 for (const explorerOption of explorerType) {
                     if (authorityOption === explorerOption) {
                         authority = option[1].authority;
+
                         break;
                     }
                     else if (option[1].virtualWorkspace === explorerOption) {
                         authority = option[1].authority;
+
                         break;
                     }
                 }
@@ -105,14 +115,18 @@ export class SwitchRemoteViewItem extends Disposable {
     }
     public createOptionItems(views: IViewDescriptor[]) {
         const startingCount = this.completedRemotes.size;
+
         for (const view of views) {
             if (view.group && view.group.startsWith('targets') && view.remoteAuthority && (!view.when || this.contextKeyService.contextMatchesRules(view.when))) {
                 const text = view.name;
+
                 const authority = isStringArray(view.remoteAuthority) ? view.remoteAuthority : [view.remoteAuthority];
+
                 if (this.completedRemotes.has(authority[0])) {
                     continue;
                 }
                 const thisCapture = this;
+
                 const action = registerAction2(class extends Action2 {
                     constructor() {
                         super({

@@ -47,7 +47,9 @@ ModesRegistry.registerLanguage({
 });
 Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
     .registerWorkbenchContribution(DirtyDiffWorkbenchController, LifecyclePhase.Restored);
+
 const sourceControlViewIcon = registerIcon('source-control-view-icon', Codicon.sourceControl, localize('sourceControlViewIcon', 'View icon of the Source Control view.'));
+
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
     id: VIEWLET_ID,
     title: localize2('source control', 'Source Control'),
@@ -58,6 +60,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensio
     order: 2,
     hideIfEmpty: true,
 }, ViewContainerLocation.Sidebar, { doNotRegisterOpenCommand: true });
+
 const viewsRegistry = Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry);
 viewsRegistry.registerViewWelcomeContent(VIEW_PANE_ID, {
     content: localize('no open repo', "No source control providers registered."),
@@ -365,19 +368,27 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.Enter,
     handler: accessor => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         const context = contextKeyService.getContext(getActiveElement());
+
         const repositoryId = context.getValue<string | undefined>('scmRepository');
+
         if (!repositoryId) {
             return Promise.resolve(null);
         }
         const scmService = accessor.get(ISCMService);
+
         const repository = scmService.getRepository(repositoryId);
+
         if (!repository?.provider.acceptInputCommand) {
             return Promise.resolve(null);
         }
         const id = repository.provider.acceptInputCommand.id;
+
         const args = repository.provider.acceptInputCommand.arguments;
+
         const commandService = accessor.get(ICommandService);
+
         return commandService.executeCommand(id, ...(args || []));
     }
 });
@@ -388,33 +399,47 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Escape,
     handler: async (accessor) => {
         const scmService = accessor.get(ISCMService);
+
         const contextKeyService = accessor.get(IContextKeyService);
+
         const context = contextKeyService.getContext(getActiveElement());
+
         const repositoryId = context.getValue<string | undefined>('scmRepository');
+
         const repository = repositoryId ? scmService.getRepository(repositoryId) : undefined;
         repository?.input.setValue('', true);
     }
 });
+
 const viewNextCommitCommand = {
     description: { description: localize('scm view next commit', "Source Control: View Next Commit"), args: [] },
     weight: KeybindingWeight.WorkbenchContrib,
     handler: (accessor: ServicesAccessor) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         const scmService = accessor.get(ISCMService);
+
         const context = contextKeyService.getContext(getActiveElement());
+
         const repositoryId = context.getValue<string | undefined>('scmRepository');
+
         const repository = repositoryId ? scmService.getRepository(repositoryId) : undefined;
         repository?.input.showNextHistoryValue();
     }
 };
+
 const viewPreviousCommitCommand = {
     description: { description: localize('scm view previous commit', "Source Control: View Previous Commit"), args: [] },
     weight: KeybindingWeight.WorkbenchContrib,
     handler: (accessor: ServicesAccessor) => {
         const contextKeyService = accessor.get(IContextKeyService);
+
         const scmService = accessor.get(ISCMService);
+
         const context = contextKeyService.getContext(getActiveElement());
+
         const repositoryId = context.getValue<string | undefined>('scmRepository');
+
         const repository = repositoryId ? scmService.getRepository(repositoryId) : undefined;
         repository?.input.showPreviousHistoryValue();
     }
@@ -448,13 +473,19 @@ CommandsRegistry.registerCommand('scm.openInIntegratedTerminal', async (accessor
         return;
     }
     const commandService = accessor.get(ICommandService);
+
     const listService = accessor.get(IListService);
+
     let provider = providers.length === 1 ? providers[0] : undefined;
+
     if (!provider) {
         const list = listService.lastFocusedList;
+
         const element = list?.getHTMLElement();
+
         if (list instanceof WorkbenchList && element && isActiveElement(element)) {
             const [index] = list.getFocus();
+
             const focusedElement = list.element(index);
             // Source Control Repositories
             if (isSCMRepository(focusedElement)) {
@@ -496,7 +527,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: ContextKeys.RepositoryVisibilityCount.notEqualsTo(0),
     handler: async (accessor) => {
         const viewsService = accessor.get(IViewsService);
+
         const scmView = await viewsService.openView<SCMViewPane>(VIEW_PANE_ID);
+
         if (scmView) {
             scmView.focusPreviousInput();
         }
@@ -508,7 +541,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: ContextKeys.RepositoryVisibilityCount.notEqualsTo(0),
     handler: async (accessor) => {
         const viewsService = accessor.get(IViewsService);
+
         const scmView = await viewsService.openView<SCMViewPane>(VIEW_PANE_ID);
+
         if (scmView) {
             scmView.focusNextInput();
         }
@@ -519,7 +554,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     weight: KeybindingWeight.WorkbenchContrib,
     handler: async (accessor) => {
         const viewsService = accessor.get(IViewsService);
+
         const scmView = await viewsService.openView<SCMViewPane>(VIEW_PANE_ID);
+
         if (scmView) {
             scmView.focusPreviousResourceGroup();
         }
@@ -530,7 +567,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     weight: KeybindingWeight.WorkbenchContrib,
     handler: async (accessor) => {
         const viewsService = accessor.get(IViewsService);
+
         const scmView = await viewsService.openView<SCMViewPane>(VIEW_PANE_ID);
+
         if (scmView) {
             scmView.focusNextResourceGroup();
         }

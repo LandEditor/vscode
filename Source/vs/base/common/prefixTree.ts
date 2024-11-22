@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Iterable } from './iterator.js';
+
 const unset = Symbol('unset');
 export interface IPrefixTreeNode<T> {
     /** Possible children of the node. */
@@ -50,18 +51,23 @@ export class WellDefinedPrefixTree<V> {
     /** Deletes a node from the prefix tree, returning the value it contained. */
     delete(key: Iterable<string>): V | undefined {
         const path = this.getPathToKey(key);
+
         if (!path) {
             return;
         }
         let i = path.length - 1;
+
         const value = path[i].node._value;
+
         if (value === unset) {
             return; // not actually a real node
         }
         this._size--;
         path[i].node._value = unset;
+
         for (; i > 0; i--) {
             const { node, part } = path[i];
+
             if (node.children?.size || node._value !== unset) {
                 break;
             }
@@ -72,6 +78,7 @@ export class WellDefinedPrefixTree<V> {
     /** Deletes a subtree from the prefix tree, returning the values they contained. */
     *deleteRecursive(key: Iterable<string>): Iterable<V> {
         const path = this.getPathToKey(key);
+
         if (!path) {
             return;
         }
@@ -81,6 +88,7 @@ export class WellDefinedPrefixTree<V> {
         for (let i = path.length - 1; i > 0; i--) {
             const parent = path[i - 1];
             parent.node.children!.delete(path[i].part);
+
             if (parent.node.children!.size > 0 || parent.node._value !== unset) {
                 break;
             }
@@ -88,6 +96,7 @@ export class WellDefinedPrefixTree<V> {
         for (const node of bfsIterate(subtree)) {
             if (node._value !== unset) {
                 this._size--;
+
                 yield node._value;
             }
         }
@@ -95,8 +104,10 @@ export class WellDefinedPrefixTree<V> {
     /** Gets a value from the tree. */
     find(key: Iterable<string>): V | undefined {
         let node = this.root;
+
         for (const segment of key) {
             const next = node.children?.get(segment);
+
             if (!next) {
                 return undefined;
             }
@@ -107,8 +118,10 @@ export class WellDefinedPrefixTree<V> {
     /** Gets whether the tree has the key, or a parent of the key, already inserted. */
     hasKeyOrParent(key: Iterable<string>): boolean {
         let node = this.root;
+
         for (const segment of key) {
             const next = node.children?.get(segment);
+
             if (!next) {
                 return false;
             }
@@ -122,8 +135,10 @@ export class WellDefinedPrefixTree<V> {
     /** Gets whether the tree has the given key or any children. */
     hasKeyOrChildren(key: Iterable<string>): boolean {
         let node = this.root;
+
         for (const segment of key) {
             const next = node.children?.get(segment);
+
             if (!next) {
                 return false;
             }
@@ -134,8 +149,10 @@ export class WellDefinedPrefixTree<V> {
     /** Gets whether the tree has the given key. */
     hasKey(key: Iterable<string>): boolean {
         let node = this.root;
+
         for (const segment of key) {
             const next = node.children?.get(segment);
+
             if (!next) {
                 return false;
             }
@@ -145,9 +162,12 @@ export class WellDefinedPrefixTree<V> {
     }
     private getPathToKey(key: Iterable<string>) {
         const path = [{ part: '', node: this.root }];
+
         let i = 0;
+
         for (const part of key) {
             const node = path[i].node.children?.get(part);
+
             if (!node) {
                 return; // node not in tree
             }
@@ -158,6 +178,7 @@ export class WellDefinedPrefixTree<V> {
     }
     private opNode(key: Iterable<string>, fn: (node: Node<V>) => void, onDescend?: (node: Node<V>) => void): void {
         let node = this.root;
+
         for (const part of key) {
             if (!node.children) {
                 const next = new Node<V>();
@@ -176,6 +197,7 @@ export class WellDefinedPrefixTree<V> {
         }
         const sizeBefore = node._value === unset ? 0 : 1;
         fn(node);
+
         const sizeAfter = node._value === unset ? 0 : 1;
         this._size += sizeAfter - sizeBefore;
     }
@@ -190,9 +212,12 @@ export class WellDefinedPrefixTree<V> {
 }
 function* bfsIterate<T>(root: Node<T>): Iterable<Node<T>> {
     const stack = [root];
+
     while (stack.length > 0) {
         const node = stack.pop()!;
+
         yield node;
+
         if (node.children) {
             for (const child of node.children.values()) {
                 stack.push(child);

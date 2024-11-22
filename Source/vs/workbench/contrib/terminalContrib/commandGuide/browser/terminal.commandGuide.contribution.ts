@@ -24,6 +24,7 @@ class TerminalCommandGuideContribution extends Disposable implements ITerminalCo
         raw: RawXtermTerminal;
     } | undefined;
     private readonly _activeCommandGuide = this._register(new MutableDisposable());
+
     constructor(private readonly _ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService) {
@@ -42,10 +43,12 @@ class TerminalCommandGuideContribution extends Disposable implements ITerminalCo
     }
     private _refreshActivatedState() {
         const xterm = this._xterm;
+
         if (!xterm) {
             return;
         }
         const showCommandGuide = this._configurationService.getValue<ITerminalCommandGuideConfiguration>(terminalCommandGuideConfigSection).showCommandGuide;
+
         if (!!this._activeCommandGuide.value === showCommandGuide) {
             return;
         }
@@ -54,6 +57,7 @@ class TerminalCommandGuideContribution extends Disposable implements ITerminalCo
         }
         else {
             const screenElement = xterm.raw.element!.querySelector('.xterm-screen')!;
+
             const viewportElement = xterm.raw.element!.querySelector('.xterm-viewport')!;
             this._activeCommandGuide.value = combinedDisposable(addDisposableListener(screenElement, 'mousemove', (e: MouseEvent) => this._tryShowHighlight(screenElement, xterm, e)), addDisposableListener(viewportElement, 'mousemove', (e: MouseEvent) => this._tryShowHighlight(screenElement, xterm, e)), addDisposableListener(xterm.raw.element!, 'mouseout', () => xterm.markTracker.showCommandGuide(undefined)), xterm.raw.onData(() => xterm.markTracker.showCommandGuide(undefined)), toDisposable(() => xterm.markTracker.showCommandGuide(undefined)));
         }
@@ -62,11 +66,14 @@ class TerminalCommandGuideContribution extends Disposable implements ITerminalCo
         raw: RawXtermTerminal;
     }, e: MouseEvent) {
         const rect = element.getBoundingClientRect();
+
         if (!rect) {
             return;
         }
         const mouseCursorY = Math.floor((e.clientY - rect.top) / (rect.height / xterm.raw.rows));
+
         const command = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection)?.getCommandForLine(xterm.raw.buffer.active.viewportY + mouseCursorY);
+
         if (command && 'getOutput' in command) {
             xterm.markTracker.showCommandGuide(command);
         }

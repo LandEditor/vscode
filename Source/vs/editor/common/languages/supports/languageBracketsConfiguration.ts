@@ -13,26 +13,34 @@ import { createBracketOrRegExp } from './richEditBrackets.js';
 export class LanguageBracketsConfiguration {
     private readonly _openingBrackets: ReadonlyMap<string, OpeningBracketKind>;
     private readonly _closingBrackets: ReadonlyMap<string, ClosingBracketKind>;
+
     constructor(public readonly languageId: string, config: LanguageConfiguration) {
         const bracketPairs = config.brackets ? filterValidBrackets(config.brackets) : [];
+
         const openingBracketInfos = new CachedFunction((bracket: string) => {
             const closing = new Set<ClosingBracketKind>();
+
             return {
                 info: new OpeningBracketKind(this, bracket, closing),
                 closing,
             };
         });
+
         const closingBracketInfos = new CachedFunction((bracket: string) => {
             const opening = new Set<OpeningBracketKind>();
+
             const openingColorized = new Set<OpeningBracketKind>();
+
             return {
                 info: new ClosingBracketKind(this, bracket, opening, openingColorized),
                 opening,
                 openingColorized,
             };
         });
+
         for (const [open, close] of bracketPairs) {
             const opening = openingBracketInfos.get(open);
+
             const closing = closingBracketInfos.get(close);
             opening.closing.add(closing.info);
             closing.opening.add(opening.info);
@@ -45,8 +53,10 @@ export class LanguageBracketsConfiguration {
             // This leads to problems when colorizing this bracket, so we exclude it if not explicitly configured otherwise.
             // https://github.com/microsoft/vscode/issues/132476
             : bracketPairs.filter((p) => !(p[0] === '<' && p[1] === '>'));
+
         for (const [open, close] of colorizedBracketPairs) {
             const opening = openingBracketInfos.get(open);
+
             const closing = closingBracketInfos.get(close);
             opening.closing.add(closing.info);
             closing.openingColorized.add(opening.info);
@@ -78,6 +88,7 @@ export class LanguageBracketsConfiguration {
     }
     public getBracketRegExp(options?: RegExpOptions): RegExp {
         const brackets = Array.from([...this._openingBrackets.keys(), ...this._closingBrackets.keys()]);
+
         return createBracketOrRegExp(brackets, options);
     }
 }
@@ -99,12 +110,14 @@ export class BracketKindBase {
 }
 export class OpeningBracketKind extends BracketKindBase {
     public readonly isOpeningBracket = true;
+
     constructor(config: LanguageBracketsConfiguration, bracketText: string, public readonly openedBrackets: ReadonlySet<ClosingBracketKind>) {
         super(config, bracketText);
     }
 }
 export class ClosingBracketKind extends BracketKindBase {
     public readonly isOpeningBracket = false;
+
     constructor(config: LanguageBracketsConfiguration, bracketText: string, 
     /**
      * Non empty array of all opening brackets this bracket closes.

@@ -14,6 +14,7 @@ import { searchComparer } from './searchCompare.js';
 export const category = nls.localize2('search', "Search");
 export function isSearchViewFocused(viewsService: IViewsService): boolean {
     const searchView = getSearchView(viewsService);
+
     return !!(searchView && DOM.isAncestorOfActiveElement(searchView.getContainer()));
 }
 export function appendKeyBindingLabel(label: string, inputKeyBinding: ResolvedKeybinding | undefined): string {

@@ -26,6 +26,7 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
     private readonly _proxy: ExtHostNotebookEditorsShape;
     private readonly _mainThreadEditors = new Map<string, MainThreadNotebook>();
     private _currentViewColumnInfo?: INotebookEditorViewColumnInfo;
+
     constructor(extHostContext: IExtHostContext, 
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -53,6 +54,7 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
             editorDisposables.add(editor.onDidChangeSelection(() => {
                 this._proxy.$acceptEditorPropertiesChanged(editor.getId(), { selections: { selections: editor.getSelections() } });
             }));
+
             const wrapper = new MainThreadNotebook(editor, editorDisposables);
             this._mainThreadEditors.set(editor.getId(), wrapper);
         }
@@ -65,8 +67,10 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
     }
     private _updateEditorViewColumns(): void {
         const result: INotebookEditorViewColumnInfo = Object.create(null);
+
         for (const editorPane of this._editorService.visibleEditorPanes) {
             const candidate = getNotebookEditorFromEditorPane(editorPane);
+
             if (candidate && this._mainThreadEditors.has(candidate.getId())) {
                 result[candidate.getId()] = editorGroupToColumn(this._editorGroupService, editorPane.group);
             }
@@ -88,8 +92,11 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
             label: options.label,
             override: viewType
         };
+
         const editorPane = await this._editorService.openEditor({ resource: URI.revive(resource), options: editorOptions }, columnToEditorGroup(this._editorGroupService, this._configurationService, options.position));
+
         const notebookEditor = getNotebookEditorFromEditorPane(editorPane);
+
         if (notebookEditor) {
             return notebookEditor.getId();
         }
@@ -99,10 +106,12 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
     }
     async $tryRevealRange(id: string, range: ICellRange, revealType: NotebookEditorRevealType): Promise<void> {
         const editor = this._notebookEditorService.getNotebookEditor(id);
+
         if (!editor) {
             return;
         }
         const notebookEditor = editor as INotebookEditor;
+
         if (!notebookEditor.hasModel()) {
             return;
         }
@@ -110,23 +119,29 @@ export class MainThreadNotebookEditors implements MainThreadNotebookEditorsShape
             return;
         }
         const cell = notebookEditor.cellAt(range.start);
+
         switch (revealType) {
             case NotebookEditorRevealType.Default:
                 return notebookEditor.revealCellRangeInView(range);
+
             case NotebookEditorRevealType.InCenter:
                 return notebookEditor.revealInCenter(cell);
+
             case NotebookEditorRevealType.InCenterIfOutsideViewport:
                 return notebookEditor.revealInCenterIfOutsideViewport(cell);
+
             case NotebookEditorRevealType.AtTop:
                 return notebookEditor.revealInViewAtTop(cell);
         }
     }
     $trySetSelections(id: string, ranges: ICellRange[]): void {
         const editor = this._notebookEditorService.getNotebookEditor(id);
+
         if (!editor) {
             return;
         }
         editor.setSelections(ranges);
+
         if (ranges.length) {
             editor.setFocus({ start: ranges[0].start, end: ranges[0].start + 1 });
         }

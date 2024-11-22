@@ -11,9 +11,13 @@ import { CommandsRegistry } from '../../../../platform/commands/common/commands.
 CommandsRegistry.registerCommand('_executeDocumentSymbolProvider', async function (accessor, ...args) {
     const [resource] = args;
     assertType(URI.isUri(resource));
+
     const outlineService = accessor.get(IOutlineModelService);
+
     const modelService = accessor.get(ITextModelService);
+
     const reference = await modelService.createModelReference(resource);
+
     try {
         return (await outlineService.getOrCreate(reference.object.textEditorModel, CancellationToken.None)).getTopLevelSymbols();
     }

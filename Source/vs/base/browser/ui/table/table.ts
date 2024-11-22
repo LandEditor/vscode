@@ -16,6 +16,7 @@ export interface ITableColumn<TRow, TCell> {
 }
 export interface ITableVirtualDelegate<TRow> {
     readonly headerRowHeight: number;
+
     getHeight(row: TRow): number;
 }
 export interface ITableRenderer<TCell, TTemplateData> extends IListRenderer<TCell, TTemplateData> {

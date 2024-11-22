@@ -56,6 +56,7 @@ export class ContextMenuController implements IEditorContribution {
 		this._toDispose.add(this._editor.onMouseWheel((e: IMouseWheelEvent) => {
 			if (this._contextMenuIsBeingShownCount > 0) {
 				const view = this._contextViewService.getContextViewElement();
+
 				const target = e.srcElement as HTMLElement;
 
 				// Event triggers on shadow root host first
@@ -116,9 +117,11 @@ export class ContextMenuController implements IEditorContribution {
 		// Ensure the cursor is at the position of the mouse click
 		if (e.target.position) {
 			let hasSelectionAtPosition = false;
+
 			for (const selection of this._editor.getSelections()) {
 				if (selection.containsPosition(e.target.position)) {
 					hasSelectionAtPosition = true;
+
 					break;
 				}
 			}
@@ -130,6 +133,7 @@ export class ContextMenuController implements IEditorContribution {
 
 		// Unless the user triggerd the context menu through Shift+F10, use the mouse position as menu position
 		let anchor: IMouseEvent | null = null;
+
 		if (e.target.type !== MouseTargetType.TEXTAREA) {
 			anchor = e.event;
 		}
@@ -165,10 +169,13 @@ export class ContextMenuController implements IEditorContribution {
 		// translate them into other actions
 		for (const group of groups) {
 			const [, actions] = group;
+
 			let addedItems = 0;
+
 			for (const action of actions) {
 				if (action instanceof SubmenuItemAction) {
 					const subActions = this._getMenuActions(model, action.item.submenu);
+
 					if (subActions.length > 0) {
 						result.push(new SubmenuAction(action.id, action.label, subActions));
 						addedItems++;
@@ -205,16 +212,20 @@ export class ContextMenuController implements IEditorContribution {
 		});
 
 		let anchor: IMouseEvent | IAnchor | null = event;
+
 		if (!anchor) {
 			// Ensure selection is visible
 			this._editor.revealPosition(this._editor.getPosition(), ScrollType.Immediate);
 
 			this._editor.render();
+
 			const cursorCoords = this._editor.getScrolledVisiblePosition(this._editor.getPosition());
 
 			// Translate to absolute editor position
 			const editorCoords = dom.getDomNodePagePosition(this._editor.getDomNode());
+
 			const posx = editorCoords.left + cursorCoords.left;
+
 			const posy = editorCoords.top + cursorCoords.top + cursorCoords.height;
 
 			anchor = { x: posx, y: posy };
@@ -233,11 +244,13 @@ export class ContextMenuController implements IEditorContribution {
 
 			getActionViewItem: (action) => {
 				const keybinding = this._keybindingFor(action);
+
 				if (keybinding) {
 					return new ActionViewItem(action, action, { label: true, keybinding: keybinding.getLabel(), isMenu: true });
 				}
 
 				const customActionViewItem = <any>action;
+
 				if (typeof customActionViewItem.getActionViewItem === 'function') {
 					return customActionViewItem.getActionViewItem();
 				}
@@ -271,6 +284,7 @@ export class ContextMenuController implements IEditorContribution {
 		const minimapOptions = this._editor.getOption(EditorOption.minimap);
 
 		let lastId = 0;
+
 		const createAction = (opts: { label: string; enabled?: boolean; checked?: boolean; run: () => void }): IAction => {
 			return {
 				id: `menu-action-${++lastId}`,
@@ -282,6 +296,7 @@ export class ContextMenuController implements IEditorContribution {
 				run: opts.run
 			};
 		};
+
 		const createSubmenuAction = (label: string, actions: IAction[]): SubmenuAction => {
 			return new SubmenuAction(
 				`menu-action-${++lastId}`,
@@ -290,6 +305,7 @@ export class ContextMenuController implements IEditorContribution {
 				undefined
 			);
 		};
+
 		const createEnumAction = <T>(label: string, enabled: boolean, configName: string, configuredValue: T, options: { label: string; value: T }[]): IAction => {
 			if (!enabled) {
 				return createAction({ label, enabled, run: () => { } });
@@ -299,7 +315,9 @@ export class ContextMenuController implements IEditorContribution {
 					this._configurationService.updateValue(configName, value);
 				};
 			};
+
 			const actions: IAction[] = [];
+
 			for (const option of options) {
 				actions.push(createAction({
 					label: option.label,

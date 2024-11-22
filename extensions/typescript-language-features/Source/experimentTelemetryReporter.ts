@@ -17,6 +17,7 @@ export interface IExperimentationTelemetryReporter extends tas.IExperimentationT
 export class ExperimentationTelemetryReporter implements IExperimentationTelemetryReporter {
     private _sharedProperties: Record<string, string> = {};
     private readonly _reporter: VsCodeTelemetryReporter;
+
     constructor(reporter: VsCodeTelemetryReporter) {
         this._reporter = reporter;
     }

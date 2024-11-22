@@ -60,6 +60,7 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {
 		const controller = InlayHintsController.get(this._editor);
+
 		if (!controller) {
 			return null;
 		}
@@ -67,6 +68,7 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 			return null;
 		}
 		const options = mouseEvent.target.detail.injectedText?.options;
+
 		if (!(options instanceof ModelDecorationInjectedTextOptions && options.attachedData instanceof RenderedInlayHintLabelPart)) {
 			return null;
 		}
@@ -93,6 +95,7 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 
 			// (1) Inlay Tooltip
 			let itemTooltip: IMarkdownString | undefined;
+
 			if (typeof part.item.hint.tooltip === 'string') {
 				itemTooltip = new MarkdownString().appendText(part.item.hint.tooltip);
 			} else if (part.item.hint.tooltip) {
@@ -108,6 +111,7 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 
 			// (2) Inlay Label Part Tooltip
 			let partTooltip: IMarkdownString | undefined;
+
 			if (typeof part.part.tooltip === 'string') {
 				partTooltip = new MarkdownString().appendText(part.part.tooltip);
 			} else if (part.part.tooltip) {
@@ -120,7 +124,9 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 			// (2.2) Inlay Label Part Help Hover
 			if (part.part.location || part.part.command) {
 				let linkHint: MarkdownString | undefined;
+
 				const useMetaKey = this._editor.getOption(EditorOption.multiCursorModifier) === 'altKey';
+
 				const kb = useMetaKey
 					? platform.isMacintosh
 						? localize('links.navigate.kb.meta.mac', "cmd + click")
@@ -144,6 +150,7 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 
 			// (3) Inlay Label Part Location tooltip
 			const iterable = await this._resolveInlayHintLabelPartHover(part, token);
+
 			for await (const item of iterable) {
 				executor.emitOne(item);
 			}
@@ -155,9 +162,12 @@ export class InlayHintsHover extends MarkdownHoverParticipant implements IEditor
 			return AsyncIterableObject.EMPTY;
 		}
 		const { uri, range } = part.part.location;
+
 		const ref = await this._resolverService.createModelReference(uri);
+
 		try {
 			const model = ref.object.textEditorModel;
+
 			if (!this._languageFeaturesService.hoverProvider.has(model)) {
 				return AsyncIterableObject.EMPTY;
 			}

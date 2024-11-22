@@ -25,6 +25,7 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
     private _uri: URI | undefined;
     private _entries: OutlineEntry[] = [];
     private _activeEntry?: OutlineEntry;
+
     constructor(private readonly _editor: INotebookEditor, 
     @IMarkerService
     private readonly _markerService: IMarkerService, 
@@ -48,7 +49,9 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
     }
     public async computeFullSymbols(cancelToken: CancellationToken) {
         const notebookEditorWidget = this._editor;
+
         const notebookCells = notebookEditorWidget?.getViewModel()?.viewCells.filter((cell) => cell.cellKind === CellKind.Code);
+
         if (notebookCells) {
             const promises: Promise<void>[] = [];
             // limit the number of cells so that we don't resolve an excessive amount of text models
@@ -64,38 +67,50 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
         this._disposables.clear();
         this._activeEntry = undefined;
         this._uri = undefined;
+
         if (!this._editor.hasModel()) {
             return;
         }
         this._uri = this._editor.textModel.uri;
+
         const notebookEditorWidget: IActiveNotebookEditor = this._editor;
+
         if (notebookEditorWidget.getLength() === 0) {
             return;
         }
         const notebookCells = notebookEditorWidget.getViewModel().viewCells;
+
         const entries: OutlineEntry[] = [];
+
         for (const cell of notebookCells) {
             entries.push(...this._outlineEntryFactory.getOutlineEntries(cell, entries.length));
         }
         // build a tree from the list of entries
         if (entries.length > 0) {
             const result: OutlineEntry[] = [entries[0]];
+
             const parentStack: OutlineEntry[] = [entries[0]];
+
             for (let i = 1; i < entries.length; i++) {
                 const entry = entries[i];
+
                 while (true) {
                     const len = parentStack.length;
+
                     if (len === 0) {
                         // root node
                         result.push(entry);
                         parentStack.push(entry);
+
                         break;
                     }
                     else {
                         const parentCandidate = parentStack[len - 1];
+
                         if (parentCandidate.level < entry.level) {
                             parentCandidate.addChild(entry);
                             parentStack.push(entry);
+
                             break;
                         }
                         else {
@@ -109,6 +124,7 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
         // feature: show markers with each cell
         const markerServiceListener = new MutableDisposable();
         this._disposables.add(markerServiceListener);
+
         const updateMarkerUpdater = () => {
             if (notebookEditorWidget.isDisposed) {
                 return;
@@ -123,15 +139,19 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
                     }
                 }
             };
+
             const problem = this._configurationService.getValue('problems.visibility');
+
             if (problem === undefined) {
                 return;
             }
             const config = this._configurationService.getValue(OutlineConfigKeys.problemsEnabled);
+
             if (problem && config) {
                 markerServiceListener.value = this._markerService.onMarkerChanged(e => {
                     if (notebookEditorWidget.isDisposed) {
                         console.error('notebook editor is disposed');
+
                         return;
                     }
                     if (e.some(uri => notebookEditorWidget.getCellsInRange().some(cell => isEqual(cell.uri, uri)))) {
@@ -139,10 +159,12 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
                         this._onDidChange.fire({});
                     }
                 });
+
                 doUpdateMarker(false);
             }
             else {
                 markerServiceListener.clear();
+
                 doUpdateMarker(true);
             }
         };
@@ -153,7 +175,9 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
                 this._onDidChange.fire({});
             }
         }));
+
         const { changeEventTriggered } = this.recomputeActive();
+
         if (!changeEventTriggered) {
             this._onDidChange.fire({});
         }
@@ -162,13 +186,17 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
         changeEventTriggered: boolean;
     } {
         let newActive: OutlineEntry | undefined;
+
         const notebookEditorWidget = this._editor;
+
         if (notebookEditorWidget) { //TODO don't check for widget, only here if we do have
             if (notebookEditorWidget.hasModel() && notebookEditorWidget.getLength() > 0) {
                 const cell = notebookEditorWidget.cellAt(notebookEditorWidget.getFocus().start);
+
                 if (cell) {
                     for (const entry of this._entries) {
                         newActive = entry.find(cell, []);
+
                         if (newActive) {
                             break;
                         }
@@ -179,6 +207,7 @@ export class NotebookCellOutlineDataSource implements INotebookCellOutlineDataSo
         if (newActive !== this._activeEntry) {
             this._activeEntry = newActive;
             this._onDidChange.fire({ affectOnlyActiveElement: true });
+
             return { changeEventTriggered: true };
         }
         return { changeEventTriggered: false };

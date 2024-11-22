@@ -8,6 +8,7 @@ export interface IRawChatCommandContribution {
     sampleRequest?: string;
     isSticky?: boolean;
     when?: string;
+
     defaultImplicitVariables?: string[];
     disambiguation?: {
         category: string;
@@ -27,6 +28,7 @@ export interface IRawChatParticipantContribution {
     isSticky?: boolean;
     sampleRequest?: string;
     commands?: IRawChatCommandContribution[];
+
     defaultImplicitVariables?: string[];
     locations?: RawChatParticipantLocation[];
     disambiguation?: {

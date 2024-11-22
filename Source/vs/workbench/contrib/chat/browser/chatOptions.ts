@@ -57,6 +57,7 @@ export class ChatEditorOptions extends Disposable {
         'editor.bracketPairColorization.enabled',
         'editor.bracketPairColorization.independentColorPoolPerBracketType',
     ];
+
     constructor(viewId: string | undefined, private readonly foreground: string, private readonly inputEditorBackgroundColor: string, private readonly resultEditorBackgroundColor: string, 
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -82,6 +83,7 @@ export class ChatEditorOptions extends Disposable {
         const editorConfig = this.configurationService.getValue<IEditorOptions>('editor');
         // TODO shouldn't the setting keys be more specific?
         const chatEditorConfig = this.configurationService.getValue<IChatConfiguration>('chat')?.editor;
+
         const accessibilitySupport = this.configurationService.getValue<'auto' | 'off' | 'on'>('editor.accessibilitySupport');
         this._config = {
             foreground: this.themeService.getColorTheme().getColor(this.foreground),

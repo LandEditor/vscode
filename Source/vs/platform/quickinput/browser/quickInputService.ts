@@ -20,6 +20,7 @@ import { IConfigurationService } from '../../configuration/common/configuration.
 import { getWindow } from '../../../base/browser/dom.js';
 export class QuickInputService extends Themable implements IQuickInputService {
     declare readonly _serviceBrand: undefined;
+
     get backButton(): IQuickInputButton { return this.controller.backButton; }
     private readonly _onShow = this._register(new Emitter<void>());
     readonly onShow = this._onShow.event;
@@ -35,6 +36,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
     private get hasController() { return !!this._controller; }
     get currentQuickInput() { return this.controller.currentQuickInput; }
     private _quickAccess: IQuickAccessController | undefined;
+
     get quickAccess(): IQuickAccessController {
         if (!this._quickAccess) {
             this._quickAccess = this._register(this.instantiationService.createInstance(QuickAccessController));
@@ -42,6 +44,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
         return this._quickAccess;
     }
     private readonly contexts = new Map<string, IContextKey<boolean>>();
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -73,6 +76,7 @@ export class QuickInputService extends Themable implements IQuickInputService {
             styles: this.computeStyles(),
             hoverDelegate: this._register(this.instantiationService.createInstance(QuickInputHoverDelegate))
         };
+
         const controller = this._register(this.instantiationService.createInstance(QuickInputController, {
             ...defaultOptions,
             ...options
@@ -99,12 +103,15 @@ export class QuickInputService extends Themable implements IQuickInputService {
             this.resetContextKeys();
             this._onHide.fire();
         }));
+
         return controller;
     }
     private setContextKey(id?: string) {
         let key: IContextKey<boolean> | undefined;
+
         if (id) {
             key = this.contexts.get(id);
+
             if (!key) {
                 key = new RawContextKey<boolean>(id, false)
                     .bindTo(this.contextKeyService);

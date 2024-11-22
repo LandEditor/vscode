@@ -26,6 +26,7 @@ export class InstantiationService implements IInstantiationService {
     private _isDisposed = false;
     private readonly _servicesToMaybeDispose = new Set<any>();
     private readonly _children = new Set<InstantiationService>();
+
     constructor(private readonly _services: ServiceCollection = new ServiceCollection(), private readonly _strict: boolean = false, private readonly _parent?: InstantiationService, private readonly _enableTracing: boolean = _enableAllTracing) {
         this._services.set(IInstantiationService, this);
         this._globalGraph = _enableTracing ? _parent?._globalGraph ?? new Graph(e => e) : undefined;
@@ -52,22 +53,29 @@ export class InstantiationService implements IInstantiationService {
     }
     createChild(services: ServiceCollection, store?: DisposableStore): IInstantiationService {
         this._throwIfDisposed();
+
         const that = this;
+
         const result = new class extends InstantiationService {
             override dispose(): void {
                 that._children.delete(result);
+
                 super.dispose();
             }
         }(services, this._strict, this, this._enableTracing);
         this._children.add(result);
         store?.add(result);
+
         return result;
     }
     invokeFunction<R, TS extends any[] = [
     ]>(fn: (accessor: ServicesAccessor, ...args: TS) => R, ...args: TS): R {
         this._throwIfDisposed();
+
         const _trace = Trace.traceInvocation(this._enableTracing, fn);
+
         let _done = false;
+
         try {
             const accessor: ServicesAccessor = {
                 get: <T>(id: ServiceIdentifier<T>) => {
@@ -75,12 +83,14 @@ export class InstantiationService implements IInstantiationService {
                         throw illegalState('service accessor is only valid during the invocation of its target method');
                     }
                     const result = this._getOrCreateServiceInstance(id, _trace);
+
                     if (!result) {
                         throw new Error(`[invokeFunction] unknown service '${id}'`);
                     }
                     return result;
                 }
             };
+
             return fn(accessor, ...args);
         }
         finally {
@@ -92,8 +102,11 @@ export class InstantiationService implements IInstantiationService {
     createInstance<Ctor extends new (...args: any[]) => unknown, R extends InstanceType<Ctor>>(ctor: Ctor, ...args: GetLeadingNonServiceArgs<ConstructorParameters<Ctor>>): R;
     createInstance(ctorOrDescriptor: any | SyncDescriptor<any>, ...rest: any[]): unknown {
         this._throwIfDisposed();
+
         let _trace: Trace;
+
         let result: any;
+
         if (ctorOrDescriptor instanceof SyncDescriptor) {
             _trace = Trace.traceCreation(this._enableTracing, ctorOrDescriptor.ctor);
             result = this._createInstance(ctorOrDescriptor.ctor, ctorOrDescriptor.staticArguments.concat(rest), _trace);
@@ -103,14 +116,18 @@ export class InstantiationService implements IInstantiationService {
             result = this._createInstance(ctorOrDescriptor, rest, _trace);
         }
         _trace.stop();
+
         return result;
     }
     private _createInstance<T>(ctor: any, args: any[] = [], _trace: Trace): T {
         // arguments defined by service decorators
         const serviceDependencies = _util.getServiceDependencies(ctor).sort((a, b) => a.index - b.index);
+
         const serviceArgs: any[] = [];
+
         for (const dependency of serviceDependencies) {
             const service = this._getOrCreateServiceInstance(dependency.id, _trace);
+
             if (!service) {
                 this._throwIfStrict(`[createInstance] ${ctor.name} depends on UNKNOWN service ${dependency.id}.`, false);
             }
@@ -120,7 +137,9 @@ export class InstantiationService implements IInstantiationService {
         // check for argument mismatches, adjust static args if needed
         if (args.length !== firstServiceArgPos) {
             console.trace(`[createInstance] First service dependency of ${ctor.name} at position ${firstServiceArgPos + 1} conflicts with ${args.length} static arguments`);
+
             const delta = firstServiceArgPos - args.length;
+
             if (delta > 0) {
                 args = args.concat(new Array(delta));
             }
@@ -144,6 +163,7 @@ export class InstantiationService implements IInstantiationService {
     }
     private _getServiceInstanceOrDescriptor<T>(id: ServiceIdentifier<T>): T | SyncDescriptor<T> {
         const instanceOrDesc = this._services.get(id);
+
         if (!instanceOrDesc && this._parent) {
             return this._parent._getServiceInstanceOrDescriptor(id);
         }
@@ -156,11 +176,13 @@ export class InstantiationService implements IInstantiationService {
             this._globalGraph.insertEdge(this._globalGraphImplicitDependency, String(id));
         }
         const thing = this._getServiceInstanceOrDescriptor(id);
+
         if (thing instanceof SyncDescriptor) {
             return this._safeCreateAndCacheServiceInstance(id, thing, _trace.branch(id, true));
         }
         else {
             _trace.branch(id, false);
+
             return thing;
         }
     }
@@ -170,6 +192,7 @@ export class InstantiationService implements IInstantiationService {
             throw new Error(`illegal state - RECURSIVELY instantiating service '${id}'`);
         }
         this._activeInstantiations.add(id);
+
         try {
             return this._createAndCacheServiceInstance(id, desc, _trace);
         }
@@ -183,12 +206,18 @@ export class InstantiationService implements IInstantiationService {
             desc: SyncDescriptor<any>;
             _trace: Trace;
         };
+
         const graph = new Graph<Triple>(data => data.id.toString());
+
         let cycleCount = 0;
+
         const stack = [{ id, desc, _trace }];
+
         const seen = new Set<string>();
+
         while (stack.length) {
             const item = stack.pop()!;
+
             if (seen.has(String(item.id))) {
                 continue;
             }
@@ -201,11 +230,13 @@ export class InstantiationService implements IInstantiationService {
             // check all dependencies for existence and if they need to be created first
             for (const dependency of _util.getServiceDependencies(item.desc.ctor)) {
                 const instanceOrDesc = this._getServiceInstanceOrDescriptor(dependency.id);
+
                 if (!instanceOrDesc) {
                     this._throwIfStrict(`[createInstance] ${id} depends on ${dependency.id} which is NOT registered.`, true);
                 }
                 // take note of all service dependencies
                 this._globalGraph?.insertEdge(String(item.id), String(dependency.id));
+
                 if (instanceOrDesc instanceof SyncDescriptor) {
                     const d = { id: dependency.id, desc: instanceOrDesc, _trace: item._trace.branch(dependency.id, true) };
                     graph.insertEdge(item, d);
@@ -228,6 +259,7 @@ export class InstantiationService implements IInstantiationService {
                 // instantiating a dependency might have side-effect and recursively trigger instantiation
                 // so that some dependencies are now fullfilled already.
                 const instanceOrDesc = this._getServiceInstanceOrDescriptor(data.id);
+
                 if (instanceOrDesc instanceof SyncDescriptor) {
                     // create instance and overwrite the service collections
                     const instance = this._createServiceInstanceWithOwner(data.id, data.desc.ctor, data.desc.staticArguments, data.desc.supportsDelayedInstantiation, data._trace);
@@ -254,6 +286,7 @@ export class InstantiationService implements IInstantiationService {
             // eager instantiation
             const result = this._createInstance<T>(ctor, args, _trace);
             disposeBucket.add(result);
+
             return result;
         }
         else {
@@ -268,12 +301,14 @@ export class InstantiationService implements IInstantiationService {
             // needed but not when injected into a consumer
             // return "empty events" when the service isn't instantiated yet
             const earlyListeners = new Map<string, LinkedList<EaryListenerData>>();
+
             const idle = new GlobalIdleValue<any>(() => {
                 const result = child._createInstance<T>(ctor, args, _trace);
                 // early listeners that we kept are now being subscribed to
                 // the real service
                 for (const [key, values] of earlyListeners) {
                     const candidate = <Event<any>>(<any>result)[key];
+
                     if (typeof candidate === 'function') {
                         for (const value of values) {
                             value.disposable = candidate.apply(result, value.listener);
@@ -282,14 +317,17 @@ export class InstantiationService implements IInstantiationService {
                 }
                 earlyListeners.clear();
                 disposeBucket.add(result);
+
                 return result;
             });
+
             return <T>new Proxy(Object.create(null), {
                 get(target: any, key: PropertyKey): unknown {
                     if (!idle.isInitialized) {
                         // looks like an event
                         if (typeof key === 'string' && (key.startsWith('onDid') || key.startsWith('onWill'))) {
                             let list = earlyListeners.get(key);
+
                             if (!list) {
                                 list = new LinkedList();
                                 earlyListeners.set(key, list);
@@ -300,14 +338,18 @@ export class InstantiationService implements IInstantiationService {
                                 }
                                 else {
                                     const entry: EaryListenerData = { listener: [callback, thisArg, disposables], disposable: undefined };
+
                                     const rm = list.push(entry);
+
                                     const result = toDisposable(() => {
                                         rm();
                                         entry.disposable?.dispose();
                                     });
+
                                     return result;
                                 }
                             };
+
                             return event;
                         }
                     }
@@ -317,16 +359,20 @@ export class InstantiationService implements IInstantiationService {
                     }
                     // create value
                     const obj = idle.value;
+
                     let prop = obj[key];
+
                     if (typeof prop !== 'function') {
                         return prop;
                     }
                     prop = prop.bind(obj);
                     target[key] = prop;
+
                     return prop;
                 },
                 set(_target: T, p: PropertyKey, value: any): boolean {
                     idle.value[p] = value;
+
                     return true;
                 },
                 getPrototypeOf(_target: T) {
@@ -375,20 +421,27 @@ export class Trace {
     branch(id: ServiceIdentifier<any>, first: boolean): Trace {
         const child = new Trace(TraceType.Branch, id.toString());
         this._dep.push([id, first, child]);
+
         return child;
     }
     stop() {
         const dur = Date.now() - this._start;
         Trace._totals += dur;
+
         let causedCreation = false;
+
         function printChild(n: number, trace: Trace) {
             const res: string[] = [];
+
             const prefix = new Array(n + 1).join('\t');
+
             for (const [id, first, child] of trace._dep) {
                 if (first && child) {
                     causedCreation = true;
                     res.push(`${prefix}CREATES -> ${id}`);
+
                     const nested = printChild(n + 1, child);
+
                     if (nested) {
                         res.push(nested);
                     }
@@ -404,6 +457,7 @@ export class Trace {
             `${printChild(1, this)}`,
             `DONE, took ${dur.toFixed(2)}ms (grand total ${Trace._totals.toFixed(2)}ms)`
         ];
+
         if (dur > 2 || causedCreation) {
             Trace.all.add(lines.join('\n'));
         }

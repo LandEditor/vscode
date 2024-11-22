@@ -14,6 +14,7 @@ export class DialogService extends Disposable implements IDialogService {
     readonly model = this._register(new DialogsModel());
     readonly onWillShowDialog = this.model.onWillShowDialog;
     readonly onDidShowDialog = this.model.onDidShowDialog;
+
     constructor(
     @IWorkbenchEnvironmentService
     private readonly environmentService: IWorkbenchEnvironmentService, 
@@ -30,20 +31,25 @@ export class DialogService extends Disposable implements IDialogService {
     async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
         if (this.skipDialogs()) {
             this.logService.trace('DialogService: refused to show confirmation dialog in tests.');
+
             return { confirmed: true };
         }
         const handle = this.model.show({ confirmArgs: { confirmation } });
+
         return await handle.result as IConfirmationResult;
     }
     prompt<T>(prompt: IPromptWithCustomCancel<T>): Promise<IPromptResultWithCancel<T>>;
     prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
     prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
+
     async prompt<T>(prompt: IPrompt<T> | IPromptWithCustomCancel<T> | IPromptWithDefaultCancel<T>): Promise<IPromptResult<T> | IPromptResultWithCancel<T>> {
         if (this.skipDialogs()) {
             throw new Error(`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`);
         }
         const handle = this.model.show({ promptArgs: { prompt } });
+
         const dialogResult = await handle.result as IAsyncPromptResult<T> | IAsyncPromptResultWithCancel<T>;
+
         return {
             result: await dialogResult.result,
             checkboxChecked: dialogResult.checkboxChecked
@@ -54,6 +60,7 @@ export class DialogService extends Disposable implements IDialogService {
             throw new Error('DialogService: refused to show input dialog in tests.');
         }
         const handle = this.model.show({ inputArgs: { input } });
+
         return await handle.result as IInputResult;
     }
     async info(message: string, detail?: string): Promise<void> {

@@ -72,16 +72,19 @@ class CodeActionsTableRenderer extends Disposable implements IExtensionFeatureTa
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const codeActions = manifest.contributes?.codeActions || [];
+
         if (!codeActions.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
         const flatActions = codeActions.map(contribution => contribution.actions.map(action => ({ ...action, languages: contribution.languages }))).flat();
+
         const headers = [
             nls.localize('codeActions.title', "Title"),
             nls.localize('codeActions.kind', "Kind"),
             nls.localize('codeActions.description', "Description"),
             nls.localize('codeActions.languages', "Languages")
         ];
+
         const rows: IRowData[][] = flatActions.sort((a, b) => a.title.localeCompare(b.title))
             .map(action => {
             return [
@@ -91,6 +94,7 @@ class CodeActionsTableRenderer extends Disposable implements IExtensionFeatureTa
                 new MarkdownString().appendMarkdown(`${action.languages.map(lang => `\`${lang}\``).join('&nbsp;')}`),
             ];
         });
+
         return {
             data: {
                 headers,

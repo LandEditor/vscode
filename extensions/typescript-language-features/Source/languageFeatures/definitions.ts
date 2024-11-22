@@ -12,18 +12,24 @@ import { conditionalRegistration, requireSomeCapability } from './util/dependent
 export default class TypeScriptDefinitionProvider extends DefinitionProviderBase implements vscode.DefinitionProvider {
     public async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.DefinitionLink[] | vscode.Definition | undefined> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, position);
+
         const response = await this.client.execute('definitionAndBoundSpan', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
         const span = response.body.textSpan ? typeConverters.Range.fromTextSpan(response.body.textSpan) : undefined;
+
         let definitions = response.body.definitions;
+
         if (vscode.workspace.getConfiguration(document.languageId).get('preferGoToSourceDefinition', false) && this.client.apiVersion.gte(API.v470)) {
             const sourceDefinitionsResponse = await this.client.execute('findSourceDefinition', args, token);
+
             if (sourceDefinitionsResponse.type === 'response' && sourceDefinitionsResponse.body?.length) {
                 definitions = sourceDefinitionsResponse.body;
             }
@@ -31,6 +37,7 @@ export default class TypeScriptDefinitionProvider extends DefinitionProviderBase
         return definitions
             .map((location): vscode.DefinitionLink => {
             const target = typeConverters.Location.fromTextSpan(this.client.toResource(location.file), location);
+
             if (location.contextStart && location.contextEnd) {
                 return {
                     originSelectionRange: span,

@@ -18,6 +18,7 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
     readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
     private _initPromise: Promise<void> | null;
     private _keyboardLayoutData: IKeyboardLayoutData | null;
+
     constructor(
     @ILifecycleMainService
     lifecycleMainService: ILifecycleMainService) {
@@ -38,6 +39,7 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
     private async _doInitialize(): Promise<void> {
         const nativeKeymapMod = await import('native-keymap');
         this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
+
         if (!platform.isCI) {
             // See https://github.com/microsoft/vscode/issues/152840
             // Do not register the keyboard layout change listener in CI because it doesn't work
@@ -50,11 +52,14 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
     }
     public async getKeyboardLayoutData(): Promise<IKeyboardLayoutData> {
         await this._initialize();
+
         return this._keyboardLayoutData!;
     }
 }
 function readKeyboardLayoutData(nativeKeymapMod: typeof nativeKeymap): IKeyboardLayoutData {
     const keyboardMapping = nativeKeymapMod.getKeyMap();
+
     const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
+
     return { keyboardMapping, keyboardLayoutInfo };
 }

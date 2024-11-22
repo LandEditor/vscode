@@ -851,6 +851,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	.registerConfigurationMigrations([{
 		key: 'workbench.activityBar.visible', migrateFn: (value: any) => {
 			const result: ConfigurationKeyValuePairs = [];
+
 			if (value !== undefined) {
 				result.push(['workbench.activityBar.visible', { value: undefined }]);
 			}
@@ -865,6 +866,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	.registerConfigurationMigrations([{
 		key: LayoutSettings.ACTIVITY_BAR_LOCATION, migrateFn: (value: any) => {
 			const results: ConfigurationKeyValuePairs = [];
+
 			if (value === 'side') {
 				results.push([LayoutSettings.ACTIVITY_BAR_LOCATION, { value: ActivityBarPosition.DEFAULT }]);
 			}
@@ -876,6 +878,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	.registerConfigurationMigrations([{
 		key: 'workbench.editor.doubleClickTabToToggleEditorGroupSizes', migrateFn: (value: any) => {
 			const results: ConfigurationKeyValuePairs = [];
+
 			if (typeof value === 'boolean') {
 				value = value ? 'expand' : 'off';
 				results.push(['workbench.editor.doubleClickTabToToggleEditorGroupSizes', { value }]);
@@ -885,6 +888,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	}, {
 		key: LayoutSettings.EDITOR_TABS_MODE, migrateFn: (value: any) => {
 			const results: ConfigurationKeyValuePairs = [];
+
 			if (typeof value === 'boolean') {
 				value = value ? EditorTabsMode.MULTIPLE : EditorTabsMode.SINGLE;
 				results.push([LayoutSettings.EDITOR_TABS_MODE, { value }]);
@@ -894,6 +898,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	}, {
 		key: 'workbench.editor.tabCloseButton', migrateFn: (value: any) => {
 			const result: ConfigurationKeyValuePairs = [];
+
 			if (value === 'left' || value === 'right') {
 				result.push(['workbench.editor.tabActionLocation', { value }]);
 			} else if (value === 'off') {
@@ -904,6 +909,7 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
 	}, {
 		key: 'zenMode.hideTabs', migrateFn: (value: any) => {
 			const result: ConfigurationKeyValuePairs = [['zenMode.hideTabs', { value: undefined }]];
+
 			if (value === true) {
 				result.push(['zenMode.showTabs', { value: 'single' }]);
 			}

@@ -22,6 +22,7 @@ export function getRepositoryFromUrl(url: string): {
 } | undefined {
     const match = /^https:\/\/github\.com\/([^/]+)\/([^/]+?)(\.git)?$/i.exec(url)
         || /^git@github\.com:([^/]+)\/([^/]+?)(\.git)?$/i.exec(url);
+
     return match ? { owner: match[1], repo: match[2] } : undefined;
 }
 export function getRepositoryFromQuery(query: string): {
@@ -29,6 +30,7 @@ export function getRepositoryFromQuery(query: string): {
     repo: string;
 } | undefined {
     const match = /^([^/]+)\/([^/]+)$/i.exec(query);
+
     return match ? { owner: match[1], repo: match[2] } : undefined;
 }
 export function repositoryHasGitHubRemote(repository: Repository) {

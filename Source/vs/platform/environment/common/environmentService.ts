@@ -72,6 +72,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     @memoize
     get argvResource(): URI {
         const vscodePortable = env['VSCODE_PORTABLE'];
+
         if (vscodePortable) {
             return URI.file(join(vscodePortable, 'argv.json'));
         }
@@ -84,6 +85,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     @memoize
     get builtinExtensionsPath(): string {
         const cliBuiltinExtensionsDir = this.args['builtin-extensions-dir'];
+
         if (cliBuiltinExtensionsDir) {
             return resolve(cliBuiltinExtensionsDir);
         }
@@ -91,6 +93,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     }
     get extensionsDownloadLocation(): URI {
         const cliExtensionsDownloadDir = this.args['extensions-download-dir'];
+
         if (cliExtensionsDownloadDir) {
             return URI.file(resolve(cliExtensionsDownloadDir));
         }
@@ -99,14 +102,17 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     @memoize
     get extensionsPath(): string {
         const cliExtensionsDir = this.args['extensions-dir'];
+
         if (cliExtensionsDir) {
             return resolve(cliExtensionsDir);
         }
         const vscodeExtensions = env['VSCODE_EXTENSIONS'];
+
         if (vscodeExtensions) {
             return vscodeExtensions;
         }
         const vscodePortable = env['VSCODE_PORTABLE'];
+
         if (vscodePortable) {
             return join(vscodePortable, 'extensions');
         }
@@ -115,6 +121,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     @memoize
     get extensionDevelopmentLocationURI(): URI[] | undefined {
         const extensionDevelopmentPaths = this.args.extensionDevelopmentPath;
+
         if (Array.isArray(extensionDevelopmentPaths)) {
             return extensionDevelopmentPaths.map(extensionDevelopmentPath => {
                 if (/^[^:/?#]+?:\/\//.test(extensionDevelopmentPath)) {
@@ -132,6 +139,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     @memoize
     get extensionTestsLocationURI(): URI | undefined {
         const extensionTestsPath = this.args.extensionTestsPath;
+
         if (extensionTestsPath) {
             if (/^[^:/?#]+?:\/\//.test(extensionTestsPath)) {
                 return URI.parse(extensionTestsPath);
@@ -145,6 +153,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
             return true;
         }
         const disableExtensions = this.args['disable-extension'];
+
         if (disableExtensions) {
             if (typeof disableExtensions === 'string') {
                 return [disableExtensions];
@@ -171,8 +180,10 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
             string,
             string
         ][] = [];
+
         for (const entry of this.args.log || []) {
             const matches = EXTENSION_IDENTIFIER_WITH_LOG_REGEX.exec(entry);
+
             if (matches && matches[1] && matches[2]) {
                 result.push([matches[1], matches[2]]);
             }
@@ -193,6 +204,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
     get policyFile(): URI | undefined {
         if (this.args['__enable-file-policy']) {
             const vscodePortable = env['VSCODE_PORTABLE'];
+
             if (vscodePortable) {
                 return URI.file(join(vscodePortable, 'policy.json'));
             }
@@ -201,6 +213,7 @@ export abstract class AbstractNativeEnvironmentService implements INativeEnviron
         return undefined;
     }
     editSessionId: string | undefined = this.args['editSessionId'];
+
     get continueOn(): string | undefined {
         return this.args['continueOn'];
     }
@@ -215,9 +228,13 @@ export function parseExtensionHostDebugPort(args: NativeParsedArgs, isBuilt: boo
 }
 export function parseDebugParams(debugArg: string | undefined, debugBrkArg: string | undefined, defaultBuildPort: number, isBuilt: boolean, debugId?: string, environmentString?: string): IExtensionHostDebugParams {
     const portStr = debugBrkArg || debugArg;
+
     const port = Number(portStr) || (!isBuilt ? defaultBuildPort : null);
+
     const brk = port ? Boolean(!!debugBrkArg) : false;
+
     let env: Record<string, string> | undefined;
+
     if (environmentString) {
         try {
             env = JSON.parse(environmentString);

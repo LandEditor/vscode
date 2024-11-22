@@ -30,10 +30,12 @@ export interface IStorageItemsChangeEvent {
 }
 export function isStorageItemsChangeEvent(thing: unknown): thing is IStorageItemsChangeEvent {
     const candidate = thing as IStorageItemsChangeEvent | undefined;
+
     return candidate?.changed instanceof Map || candidate?.deleted instanceof Set;
 }
 export interface IStorageDatabase {
     readonly onDidChangeItemsExternal: Event<IStorageItemsChangeEvent>;
+
     getItems(): Promise<Map<string, string>>;
     updateItems(request: IUpdateRequest): Promise<void>;
     optimize(): Promise<void>;
@@ -60,14 +62,23 @@ export interface IStorage extends IDisposable {
     readonly items: Map<string, string>;
     readonly size: number;
     init(): Promise<void>;
+
     get(key: string, fallbackValue: string): string;
+
     get(key: string, fallbackValue?: string): string | undefined;
+
     getBoolean(key: string, fallbackValue: boolean): boolean;
+
     getBoolean(key: string, fallbackValue?: boolean): boolean | undefined;
+
     getNumber(key: string, fallbackValue: number): number;
+
     getNumber(key: string, fallbackValue?: number): number | undefined;
+
     getObject<T extends object>(key: string, fallbackValue: T): T;
+
     getObject<T extends object>(key: string, fallbackValue?: T): T | undefined;
+
     set(key: string, value: StorageValue, external?: boolean): Promise<void>;
     delete(key: string, external?: boolean): Promise<void>;
     flush(delay?: number): Promise<void>;
@@ -91,6 +102,7 @@ export class Storage extends Disposable implements IStorage {
     private pendingInserts = new Map<string, string>();
     private pendingClose: Promise<void> | undefined = undefined;
     private readonly whenFlushedCallbacks: Function[] = [];
+
     constructor(protected readonly database: IStorageDatabase, private readonly options: IStorageOptions = Object.create(null)) {
         super();
         this.registerListeners();
@@ -100,6 +112,7 @@ export class Storage extends Disposable implements IStorage {
     }
     private onDidChangeItemsExternal(e: IStorageItemsChangeEvent): void {
         this._onDidChangeStorage.pause();
+
         try {
             // items that change external require us to update our
             // caches with the values. we just accept the value and
@@ -123,6 +136,7 @@ export class Storage extends Disposable implements IStorage {
         // Item got updated, check for change
         else {
             const currentValue = this.cache.get(key);
+
             if (currentValue !== value) {
                 this.cache.set(key, value);
                 changed = true;
@@ -144,6 +158,7 @@ export class Storage extends Disposable implements IStorage {
             return; // either closed or already initialized
         }
         this.state = StorageState.Initialized;
+
         if (this.options.hint === StorageHint.STORAGE_DOES_NOT_EXIST) {
             // return early if we know the storage file does not exist. this is a performance
             // optimization to not load all items of the underlying storage if we know that
@@ -153,36 +168,48 @@ export class Storage extends Disposable implements IStorage {
         this.cache = await this.database.getItems();
     }
     get(key: string, fallbackValue: string): string;
+
     get(key: string, fallbackValue?: string): string | undefined;
+
     get(key: string, fallbackValue?: string): string | undefined {
         const value = this.cache.get(key);
+
         if (isUndefinedOrNull(value)) {
             return fallbackValue;
         }
         return value;
     }
     getBoolean(key: string, fallbackValue: boolean): boolean;
+
     getBoolean(key: string, fallbackValue?: boolean): boolean | undefined;
+
     getBoolean(key: string, fallbackValue?: boolean): boolean | undefined {
         const value = this.get(key);
+
         if (isUndefinedOrNull(value)) {
             return fallbackValue;
         }
         return value === 'true';
     }
     getNumber(key: string, fallbackValue: number): number;
+
     getNumber(key: string, fallbackValue?: number): number | undefined;
+
     getNumber(key: string, fallbackValue?: number): number | undefined {
         const value = this.get(key);
+
         if (isUndefinedOrNull(value)) {
             return fallbackValue;
         }
         return parseInt(value, 10);
     }
     getObject(key: string, fallbackValue: object): object;
+
     getObject(key: string, fallbackValue?: object | undefined): object | undefined;
+
     getObject(key: string, fallbackValue?: object): object | undefined {
         const value = this.get(key);
+
         if (isUndefinedOrNull(value)) {
             return fallbackValue;
         }
@@ -200,6 +227,7 @@ export class Storage extends Disposable implements IStorage {
         const valueStr = isObject(value) || Array.isArray(value) ? stringify(value) : String(value);
         // Return early if value already set
         const currentValue = this.cache.get(key);
+
         if (currentValue === valueStr) {
             return;
         }
@@ -218,6 +246,7 @@ export class Storage extends Disposable implements IStorage {
         }
         // Remove from cache and add to pending
         const wasDeleted = this.cache.delete(key);
+
         if (!wasDeleted) {
             return; // Return early if value already deleted
         }
@@ -237,6 +266,7 @@ export class Storage extends Disposable implements IStorage {
         // Await pending data to be flushed to the DB
         // before attempting to optimize the DB
         await this.flush(0);
+
         return this.database.optimize();
     }
     async close(): Promise<void> {
@@ -311,6 +341,7 @@ export class Storage extends Disposable implements IStorage {
 export class InMemoryStorageDatabase implements IStorageDatabase {
     readonly onDidChangeItemsExternal = Event.None;
     private readonly items = new Map<string, string>();
+
     async getItems(): Promise<Map<string, string>> {
         return this.items;
     }

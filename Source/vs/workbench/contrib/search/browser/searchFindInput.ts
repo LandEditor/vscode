@@ -17,6 +17,7 @@ export class SearchFindInput extends ContextScopedFindInput {
     private _filterChecked: boolean = false;
     private readonly _onDidChangeAIToggle = this._register(new Emitter<boolean>());
     public readonly onDidChangeAIToggle = this._onDidChangeAIToggle.event;
+
     constructor(container: HTMLElement | null, contextViewProvider: IContextViewProvider, options: IFindInputOptions, contextKeyService: IContextKeyService, readonly contextMenuService: IContextMenuService, readonly instantiationService: IInstantiationService, readonly filters: NotebookFindFilters, filterStartVisiblitity: boolean) {
         super(container, contextViewProvider, options, contextKeyService);
         this._findFilter = this._register(new NotebookFindInputFilterButton(filters, contextMenuService, instantiationService, options, nls.localize('searchFindInputNotebookFilter.label', "Notebook Find Filters")));
@@ -39,6 +40,7 @@ export class SearchFindInput extends ContextScopedFindInput {
     }
     override setEnabled(enabled: boolean) {
         super.setEnabled(enabled);
+
         if (enabled && (!this._filterChecked || !this._findFilter.visible)) {
             this.regex?.enable();
         }

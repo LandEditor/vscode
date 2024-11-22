@@ -67,6 +67,7 @@ interface IEditorSymbolAnythingQuickPickItem extends IAnythingQuickPickItem {
 }
 function isEditorSymbolQuickPickItem(pick?: IAnythingQuickPickItem): pick is IEditorSymbolAnythingQuickPickItem {
     const candidate = pick as IEditorSymbolAnythingQuickPickItem | undefined;
+
     return !!candidate?.range && !!candidate.resource;
 }
 export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnythingQuickPickItem> {
@@ -89,6 +90,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         lastRange: IRange | undefined = undefined;
         lastGlobalPicks: PicksWithActive<IAnythingQuickPickItem> | undefined = undefined;
         isQuickNavigating: boolean | undefined = undefined;
+
         constructor(private readonly provider: AnythingQuickAccessProvider, private readonly instantiationService: IInstantiationService) {
             super();
         }
@@ -104,6 +106,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             });
             // Caches
             const isQuickNavigating = !!picker.quickNavigate;
+
             if (!isQuickNavigating) {
                 this.fileQueryCache = this.provider.createFileQueryCache();
                 this.scorerCache = Object.create(null);
@@ -117,6 +120,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             this.editorViewState.reset();
         }
     }(this, this.instantiationService));
+
     get defaultFilterValue(): DefaultQuickAccessFilterValue | undefined {
         if (this.configuration.preserveInput) {
             return DefaultQuickAccessFilterValue.LAST;
@@ -173,8 +177,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
     }
     private get configuration() {
         const editorConfig = this.configurationService.getValue<IWorkbenchEditorConfiguration>().workbench?.editor;
+
         const searchConfig = this.configurationService.getValue<IWorkbenchSearchConfiguration>().search;
+
         const quickAccessConfig = this.configurationService.getValue<IWorkbenchQuickAccessConfiguration>().workbench.quickOpen;
+
         return {
             openEditorPinned: !editorConfig?.enablePreviewFromQuickOpen || !editorConfig?.enablePreview,
             openSideBySideDirection: editorConfig?.openSideBySideDirection,
@@ -197,6 +204,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             editorDecorationsDisposable.value = undefined;
             // Add new decoration if editor symbol is active
             const [item] = picker.activeItems;
+
             if (isEditorSymbolQuickPickItem(item)) {
                 editorDecorationsDisposable.value = this.decorateAndRevealSymbolRange(item);
             }
@@ -212,14 +220,17 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }));
         // Start picker
         disposables.add(super.provide(picker, token, runOptions));
+
         return disposables;
     }
     private decorateAndRevealSymbolRange(pick: IEditorSymbolAnythingQuickPickItem): IDisposable {
         const activeEditor = this.editorService.activeEditor;
+
         if (!this.uriIdentityService.extUri.isEqual(pick.resource, activeEditor?.resource)) {
             return Disposable.None; // active editor needs to be for resource
         }
         const activeEditorControl = this.editorService.activeTextEditorControl;
+
         if (!activeEditorControl) {
             return Disposable.None; // we need a text editor control to decorate and reveal
         }
@@ -229,6 +240,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         activeEditorControl.revealRangeInCenter(pick.range.selection, ScrollType.Smooth);
         // Decorate
         this.addDecorations(activeEditorControl, pick.range.decoration);
+
         return toDisposable(() => this.clearDecorations(activeEditorControl));
     }
     protected _getPicks(originalFilter: string, disposables: DisposableStore, token: CancellationToken, runOptions?: AnythingQuickAccessProviderRunOptions): Picks<IAnythingQuickPickItem> | Promise<Picks<IAnythingQuickPickItem>> | FastAndSlowPicks<IAnythingQuickPickItem> | null {
@@ -237,6 +249,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         const filterWithRange = extractRangeFromFilter(originalFilter, [GotoSymbolQuickAccessProvider.PREFIX]);
         // Update filter with normalized values
         let filter: string;
+
         if (filterWithRange) {
             filter = filterWithRange.filter;
         }
@@ -261,10 +274,14 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // We can use this state to return back to the global pick
         // when the user is narrowing back out of editor symbols.
         const picks = this.pickState.picker?.items;
+
         const activePick = this.pickState.picker?.activeItems[0];
+
         if (picks && activePick) {
             const activePickIsEditorSymbol = isEditorSymbolQuickPickItem(activePick);
+
             const activePickIsNoResultsInEditorSymbols = activePick === AnythingQuickAccessProvider.NO_RESULTS_PICK && filter.indexOf(GotoSymbolQuickAccessProvider.PREFIX) >= 0;
+
             if (!activePickIsEditorSymbol && !activePickIsNoResultsInEditorSymbols) {
                 this.pickState.lastGlobalPicks = {
                     items: picks,
@@ -294,6 +311,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // - the user typing `@` to start the local symbol query
         if (options.enableEditorSymbolSearch) {
             const editorSymbolPicks = this.getEditorSymbolPicks(query, disposables, token);
+
             if (editorSymbolPicks) {
                 return editorSymbolPicks;
             }
@@ -302,24 +320,30 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // the last global pick to support the case of narrowing out from a
         // editor symbol search back into the global search
         const activePick = this.pickState.picker?.activeItems[0];
+
         if (isEditorSymbolQuickPickItem(activePick) && this.pickState.lastGlobalPicks) {
             return this.pickState.lastGlobalPicks;
         }
         // Otherwise return normally with history and file/symbol results
         const historyEditorPicks = this.getEditorHistoryPicks(query);
+
         let picks = new Array<IAnythingQuickPickItem | IQuickPickSeparator>();
+
         if (options.additionPicks) {
             for (const pick of options.additionPicks) {
                 if (pick.type === 'separator') {
                     picks.push(pick);
+
                     continue;
                 }
                 if (!query.original) {
                     pick.highlights = undefined;
                     picks.push(pick);
+
                     continue;
                 }
                 const { score, labelMatch, descriptionMatch } = scoreItemFuzzy(pick, query, true, quickPickItemScorerAccessor, this.pickState.scorerCache);
+
                 if (!score) {
                     continue;
                 }
@@ -352,12 +376,14 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             additionalPicks: (async (): Promise<Picks<IAnythingQuickPickItem>> => {
                 // Exclude any result that is already present in editor history
                 const additionalPicksExcludes = new ResourceMap<boolean>();
+
                 for (const historyEditorPick of historyEditorPicks) {
                     if (historyEditorPick.resource) {
                         additionalPicksExcludes.set(historyEditorPick.resource, true);
                     }
                 }
                 let additionalPicks = await this.getAdditionalPicks(query, additionalPicksExcludes, this.configuration.includeSymbols, token);
+
                 if (options.filter) {
                     additionalPicks = additionalPicks.filter((p) => options.filter?.(p));
                 }
@@ -379,6 +405,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             this.getFilePicks(query, excludes, token),
             this.getWorkspaceSymbolPicks(query, includeSymbols, token)
         ]);
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -386,6 +413,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         const sortedAnythingPicks = top([...filePicks, ...symbolPicks], (anyPickA, anyPickB) => compareItemsByFuzzyScore(anyPickA, anyPickB, query, true, quickPickItemScorerAccessor, this.pickState.scorerCache), AnythingQuickAccessProvider.MAX_RESULTS);
         // Perform filtering
         const filteredAnythingPicks: IAnythingQuickPickItem[] = [];
+
         for (const anythingPick of sortedAnythingPicks) {
             // Always preserve any existing highlights (e.g. from workspace symbols)
             if (anythingPick.highlights) {
@@ -394,6 +422,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             // Otherwise, do the scoring and matching here
             else {
                 const { score, labelMatch, descriptionMatch } = scoreItemFuzzy(anythingPick, query, true, quickPickItemScorerAccessor, this.pickState.scorerCache);
+
                 if (!score) {
                     continue;
                 }
@@ -420,6 +449,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // Perform filtering
         const editorHistoryScorerAccessor = query.containsPathSeparator ? quickPickItemScorerAccessor : this.labelOnlyEditorHistoryPickAccessor; // Only match on label of the editor unless the search includes path separators
         const editorHistoryPicks: Array<IAnythingQuickPickItem> = [];
+
         for (const editor of this.historyService.getHistory()) {
             const resource = editor.resource;
             // allow untitled and terminal editors to go through
@@ -427,7 +457,9 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
                 continue; // exclude editors without file resource if we are searching by pattern
             }
             const editorHistoryPick = this.createAnythingPick(editor, configuration);
+
             const { score, labelMatch, descriptionMatch } = scoreItemFuzzy(editorHistoryPick, query, false, editorHistoryScorerAccessor, this.pickState.scorerCache);
+
             if (!score) {
                 continue; // exclude editors not matching query
             }
@@ -457,11 +489,13 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }
         // Absolute path result
         const absolutePathResult = await this.getAbsolutePathFileResult(query, token);
+
         if (token.isCancellationRequested) {
             return [];
         }
         // Use absolute path result as only results if present
         let fileMatches: Array<URI>;
+
         if (absolutePathResult) {
             if (excludes.has(absolutePathResult)) {
                 return []; // excluded
@@ -475,6 +509,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
                 label: [{ start: 0, end: absolutePathPick.label.length }],
                 description: absolutePathPick.description ? [{ start: 0, end: absolutePathPick.description.length }] : undefined
             };
+
             return [absolutePathPick];
         }
         // Otherwise run the file search (with a delayer if cache is not ready yet)
@@ -494,6 +529,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }
         // Filter excludes & convert to picks
         const configuration = this.configuration;
+
         return fileMatches
             .filter(resource => !excludes.has(resource))
             .map(resource => this.createAnythingPick(resource, configuration));
@@ -508,6 +544,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             // excluded)
             this.getRelativePathFileResults(query, token)
         ]);
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -518,6 +555,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // Otherwise, make sure to filter relative path results from
         // the search results to prevent duplicates
         const relativePathFileResultsMap = new ResourceMap<boolean>();
+
         for (const relativePathFileResult of relativePathFileResults) {
             relativePathFileResultsMap.set(relativePathFileResult, true);
         }
@@ -535,6 +573,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // search results for "someFile" and not both that would normally not match.
         //
         let filePattern = '';
+
         if (query.values && query.values.length > 1) {
             filePattern = query.values[0].original;
         }
@@ -542,6 +581,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             filePattern = query.original;
         }
         const fileSearchResults = await this.doGetFileSearchResults(filePattern, token);
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -551,11 +591,13 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // sure we are including all possible results that could match.
         if (fileSearchResults.limitHit && query.values && query.values.length > 1) {
             const additionalFileSearchResults = await this.doGetFileSearchResults(query.original, token);
+
             if (token.isCancellationRequested) {
                 return [];
             }
             // Remember which result we already covered
             const existingFileSearchResultsMap = new ResourceMap<boolean>();
+
             for (const fileSearchResult of fileSearchResults.results) {
                 existingFileSearchResultsMap.set(fileSearchResult.resource, true);
             }
@@ -570,6 +612,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
     }
     private doGetFileSearchResults(filePattern: string, token: CancellationToken): Promise<ISearchComplete> {
         const start = Date.now();
+
         return this.searchService.fileSearch(this.fileQueryBuilder.file(this.contextService.getWorkspace().folders, this.getFileQueryOptions({
             filePattern,
             cacheKey: this.pickState.fileQueryCache?.cacheKey,
@@ -597,16 +640,20 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             return;
         }
         const userHome = await this.pathService.userHome();
+
         const detildifiedQuery = untildify(query.original, userHome.scheme === Schemas.file ? userHome.fsPath : userHome.path);
+
         if (token.isCancellationRequested) {
             return;
         }
         const isAbsolutePathQuery = (await this.pathService.path).isAbsolute(detildifiedQuery);
+
         if (token.isCancellationRequested) {
             return;
         }
         if (isAbsolutePathQuery) {
             const resource = toLocalResource(await this.pathService.fileURI(detildifiedQuery), this.environmentService.remoteAuthority, this.pathService.defaultUriScheme);
+
             if (token.isCancellationRequested) {
                 return;
             }
@@ -628,13 +675,16 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // Convert relative paths to absolute paths over all folders of the workspace
         // and return them as results if the absolute paths exist
         const isAbsolutePathQuery = (await this.pathService.path).isAbsolute(query.original);
+
         if (!isAbsolutePathQuery) {
             const resources: URI[] = [];
+
             for (const folder of this.contextService.getWorkspace().folders) {
                 if (token.isCancellationRequested) {
                     break;
                 }
                 const resource = toLocalResource(folder.toResource(query.original), this.environmentService.remoteAuthority, this.pathService.defaultUriScheme);
+
                 try {
                     if ((await this.fileService.stat(resource)).isFile) {
                         resources.push(resource);
@@ -658,6 +708,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         type IHelpAnythingQuickPickItem = IAnythingQuickPickItem & {
             commandCenterOrder: number;
         };
+
         const providers: IHelpAnythingQuickPickItem[] = this.lazyRegistry.value.getQuickAccessProviders()
             .filter(p => p.helpEntries.some(h => h.commandCenterOrder !== undefined))
             .flatMap(provider => provider.helpEntries
@@ -667,7 +718,9 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
                 ...runOptions,
                 includeHelp: provider.prefix === AnythingQuickAccessProvider.PREFIX ? false : runOptions?.includeHelp
             };
+
             const label = helpEntry.commandCenterLabel ?? helpEntry.description;
+
             return {
                 label,
                 description: helpEntry.prefix ?? provider.prefix,
@@ -717,15 +770,19 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
     private readonly editorSymbolsQuickAccess = this.instantiationService.createInstance(GotoSymbolQuickAccessProvider);
     private getEditorSymbolPicks(query: IPreparedQuery, disposables: DisposableStore, token: CancellationToken): Promise<Picks<IAnythingQuickPickItem>> | null {
         const filterSegments = query.original.split(GotoSymbolQuickAccessProvider.PREFIX);
+
         const filter = filterSegments.length > 1 ? filterSegments[filterSegments.length - 1].trim() : undefined;
+
         if (typeof filter !== 'string') {
             return null; // we need to be searched for editor symbols via `@`
         }
         const activeGlobalPick = this.pickState.lastGlobalPicks?.active;
+
         if (!activeGlobalPick) {
             return null; // we need an active global pick to find symbols for
         }
         const activeGlobalResource = activeGlobalPick.resource;
+
         if (!activeGlobalResource || (!this.fileService.hasProvider(activeGlobalResource) && activeGlobalResource.scheme !== Schemas.untitled)) {
             return null; // we need a resource that we can resolve
         }
@@ -755,9 +812,11 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }
         // Obtain model from resource
         let model = this.modelService.getModel(activeGlobalResource);
+
         if (!model) {
             try {
                 const modelReference = disposables.add(await this.textModelService.createModelReference(activeGlobalResource));
+
                 if (token.isCancellationRequested) {
                     return [];
                 }
@@ -769,6 +828,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }
         // Ask provider for editor symbols
         const editorSymbolPicks = (await this.editorSymbolsQuickAccess.getSymbolPicks(model, filter, { extraContainerLabel: stripIcons(activeGlobalPick.label) }, disposables, token));
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -784,6 +844,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
                 description: editorSymbolPick.description,
                 trigger: (buttonIndex, keyMods) => {
                     this.openAnything(activeGlobalResource, { keyMods, range: editorSymbolPick.range?.selection, forceOpenSideBySide: true });
+
                     return TriggerAction.CLOSE_PICKER;
                 },
                 accept: (keyMods, event) => this.openAnything(activeGlobalResource, { keyMods, range: editorSymbolPick.range?.selection, preserveFocus: event.inBackground, forcePinned: event.inBackground })
@@ -802,12 +863,19 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         openSideBySideDirection: 'right' | 'down' | undefined;
     }): IAnythingQuickPickItem {
         const isEditorHistoryEntry = !URI.isUri(resourceOrEditor);
+
         let resource: URI | undefined;
+
         let label: string;
+
         let description: string | undefined = undefined;
+
         let isDirty: boolean | undefined = undefined;
+
         let extraClasses: string[];
+
         let icon: ThemeIcon | undefined = undefined;
+
         if (isEditorInput(resourceOrEditor)) {
             resource = EditorResourceAccessor.getOriginalUri(resourceOrEditor);
             label = resourceOrEditor.getName();
@@ -818,6 +886,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         }
         else {
             resource = URI.isUri(resourceOrEditor) ? resourceOrEditor : resourceOrEditor.resource;
+
             const customLabel = this.customEditorLabelService.getName(resource);
             label = customLabel || basenameOrAuthority(resource);
             description = this.labelService.getUriLabel(!!customLabel ? resource : dirname(resource), { relative: true });
@@ -825,9 +894,12 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             extraClasses = [];
         }
         const labelAndDescription = description ? `${label} ${description}` : label;
+
         const iconClassesValue = new Lazy(() => getIconClasses(this.modelService, this.languageService, resource, undefined, icon).concat(extraClasses));
+
         const buttonsValue = new Lazy(() => {
             const openSideBySideDirection = configuration.openSideBySideDirection;
+
             const buttons: IQuickInputButton[] = [];
             // Open to side / below
             buttons.push({
@@ -846,6 +918,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             }
             return buttons;
         });
+
         return {
             resource,
             label,
@@ -858,11 +931,13 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
                     // Open to side / below
                     case 0:
                         this.openAnything(resourceOrEditor, { keyMods, range: this.pickState.lastRange, forceOpenSideBySide: true });
+
                         return TriggerAction.CLOSE_PICKER;
                     // Remove from History
                     case 1:
                         if (!URI.isUri(resourceOrEditor)) {
                             this.historyService.removeFromHistory(resourceOrEditor);
+
                             return TriggerAction.REMOVE_ITEM;
                         }
                 }
@@ -875,7 +950,9 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         keyMods?: IKeyMods;
         preserveFocus?: boolean;
         range?: IRange;
+
         forceOpenSideBySide?: boolean;
+
         forcePinned?: boolean;
     }): Promise<void> {
         // Craft some editor options based on quick access usage
@@ -884,6 +961,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
             pinned: options.keyMods?.ctrlCmd || options.forcePinned || this.configuration.openEditorPinned,
             selection: options.range ? Range.collapseToStart(options.range) : undefined
         };
+
         const targetGroup = options.keyMods?.alt || (this.configuration.openEditorPinned && options.keyMods?.ctrlCmd) || options.forceOpenSideBySide ? SIDE_GROUP : ACTIVE_GROUP;
         // Restore any view state if the target is the side group
         if (targetGroup === SIDE_GROUP) {
@@ -896,6 +974,7 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
         // Open editor (untyped)
         else {
             let resourceEditorInput: IResourceEditorInput;
+
             if (URI.isUri(resourceOrEditor)) {
                 resourceEditorInput = {
                     resource: resourceOrEditor,

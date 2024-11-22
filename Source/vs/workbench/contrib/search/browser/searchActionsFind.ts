@@ -130,18 +130,24 @@ registerAction2(class RevealInSideBarForSearchResultsAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, args: any): Promise<any> {
         const paneCompositeService = accessor.get(IPaneCompositePartService);
+
         const explorerService = accessor.get(IExplorerService);
+
         const contextService = accessor.get(IWorkspaceContextService);
+
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (!searchView) {
             return;
         }
         let fileMatch: ISearchTreeFileMatch;
+
         if (isSearchTreeFileMatch(args)) {
             fileMatch = args;
         }
         else {
             args = searchView.getControl().getFocus()[0];
+
             return;
         }
         paneCompositeService.openPaneComposite(VIEWLET_ID_FILES, ViewContainerLocation.Sidebar, false).then((viewlet) => {
@@ -149,7 +155,9 @@ registerAction2(class RevealInSideBarForSearchResultsAction extends Action2 {
                 return;
             }
             const explorerViewContainer = viewlet.getViewPaneContainer() as ExplorerViewPaneContainer;
+
             const uri = fileMatch.resource;
+
             if (uri && contextService.isInsideWorkspace(uri)) {
                 const explorerView = explorerViewContainer.getExplorerView();
                 explorerView.setExpanded(true);
@@ -254,7 +262,9 @@ registerAction2(class FindInWorkspaceAction extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const searchConfig = accessor.get(IConfigurationService).getValue<ISearchConfiguration>().search;
+
         const mode = searchConfig.mode;
+
         if (mode === 'view') {
             const searchView = await openSearchView(accessor.get(IViewsService), true);
             searchView?.searchInFolders();
@@ -270,26 +280,37 @@ registerAction2(class FindInWorkspaceAction extends Action2 {
 //#region Helpers
 async function expandSelectSubtree(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
+
     if (searchView) {
         const viewer = searchView.getControl();
+
         const selected = viewer.getFocus()[0];
         await forcedExpandRecursively(viewer, selected);
     }
 }
 async function searchWithFolderCommand(accessor: ServicesAccessor, isFromExplorer: boolean, isIncludes: boolean, resource?: URI, folderMatch?: ISearchTreeFolderMatchWithResource) {
     const fileService = accessor.get(IFileService);
+
     const viewsService = accessor.get(IViewsService);
+
     const contextService = accessor.get(IWorkspaceContextService);
+
     const commandService = accessor.get(ICommandService);
+
     const searchConfig = accessor.get(IConfigurationService).getValue<ISearchConfiguration>().search;
+
     const mode = searchConfig.mode;
+
     let resources: URI[];
+
     if (isFromExplorer) {
         resources = getMultiSelectedResources(resource, accessor.get(IListService), accessor.get(IEditorService), accessor.get(IEditorGroupsService), accessor.get(IExplorerService));
     }
     else {
         const searchView = getSearchView(viewsService);
+
         if (!searchView) {
             return;
         }
@@ -302,10 +323,13 @@ async function searchWithFolderCommand(accessor: ServicesAccessor, isFromExplore
                 folders.push(result.stat.isDirectory ? result.stat.resource : dirname(result.stat.resource));
             }
         });
+
         return resolveResourcesForSearchIncludes(folders, contextService);
     });
+
     if (mode === 'view') {
         const searchView = await openSearchView(viewsService, true);
+
         if (resources && resources.length && searchView) {
             if (isIncludes) {
                 searchView.searchInFolders(await resolvedResources);
@@ -340,37 +364,53 @@ function getMultiSelectedSearchResources(viewer: WorkbenchCompressibleAsyncDataT
 }
 export async function findInFilesCommand(accessor: ServicesAccessor, _args: IFindInFilesArgs = {}) {
     const searchConfig = accessor.get(IConfigurationService).getValue<ISearchConfiguration>().search;
+
     const viewsService = accessor.get(IViewsService);
+
     const commandService = accessor.get(ICommandService);
+
     const args: IFindInFilesArgs = {};
+
     if (Object.keys(_args).length !== 0) {
         // resolve variables in the same way as in
         // https://github.com/microsoft/vscode/blob/8b76efe9d317d50cb5b57a7658e09ce6ebffaf36/src/vs/workbench/contrib/searchEditor/browser/searchEditorActions.ts#L152-L158
         const configurationResolverService = accessor.get(IConfigurationResolverService);
+
         const historyService = accessor.get(IHistoryService);
+
         const workspaceContextService = accessor.get(IWorkspaceContextService);
+
         const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot();
+
         const filteredActiveWorkspaceRootUri = activeWorkspaceRootUri?.scheme === Schemas.file || activeWorkspaceRootUri?.scheme === Schemas.vscodeRemote ? activeWorkspaceRootUri : undefined;
+
         const lastActiveWorkspaceRoot = filteredActiveWorkspaceRootUri ? workspaceContextService.getWorkspaceFolder(filteredActiveWorkspaceRootUri) ?? undefined : undefined;
+
         for (const entry of Object.entries(_args)) {
             const name = entry[0];
+
             const value = entry[1];
+
             if (value !== undefined) {
                 (args as any)[name as any] = (typeof value === 'string') ? await configurationResolverService.resolveAsync(lastActiveWorkspaceRoot, value) : value;
             }
         }
     }
     const mode = searchConfig.mode;
+
     if (mode === 'view') {
         openSearchView(viewsService, false).then(openedView => {
             if (openedView) {
                 const searchAndReplaceWidget = openedView.searchAndReplaceWidget;
                 searchAndReplaceWidget.toggleReplace(typeof args.replace === 'string');
+
                 let updatedText = false;
+
                 if (typeof args.query !== 'string') {
                     updatedText = openedView.updateTextFromFindWidgetOrSelection({ allowUnselectedWord: typeof args.replace !== 'string' });
                 }
                 openedView.setSearchParameters(args);
+
                 if (typeof args.showIncludesExcludes === 'boolean') {
                     openedView.toggleQueryDetails(false, args.showIncludesExcludes);
                 }

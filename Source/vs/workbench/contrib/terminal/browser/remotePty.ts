@@ -9,6 +9,7 @@ import { RemoteTerminalChannelClient } from '../common/remote/remoteTerminalChan
 import { IRemoteAgentService } from '../../../services/remote/common/remoteAgentService.js';
 export class RemotePty extends BasePty implements ITerminalChildProcess {
     private readonly _startBarrier: Barrier;
+
     constructor(id: number, shouldPersist: boolean, private readonly _remoteTerminalChannel: RemoteTerminalChannelClient, 
     @IRemoteAgentService
     private readonly _remoteAgentService: IRemoteAgentService, 
@@ -22,21 +23,26 @@ export class RemotePty extends BasePty implements ITerminalChildProcess {
     } | undefined> {
         // Fetch the environment to check shell permissions
         const env = await this._remoteAgentService.getEnvironment();
+
         if (!env) {
             // Extension host processes are only allowed in remote extension hosts currently
             throw new Error('Could not fetch remote environment');
         }
         this._logService.trace('Spawning remote agent process', { terminalId: this.id });
+
         const startResult = await this._remoteTerminalChannel.start(this.id);
+
         if (startResult && 'message' in startResult) {
             // An error occurred
             return startResult;
         }
         this._startBarrier.open();
+
         return startResult;
     }
     async detach(forcePersist?: boolean): Promise<void> {
         await this._startBarrier.wait();
+
         return this._remoteTerminalChannel.detachFromProcess(this.id, forcePersist);
     }
     shutdown(immediate: boolean): void {

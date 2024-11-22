@@ -14,12 +14,19 @@ import fetch from './node/fetch';
 import { UriEventHandler } from './UriEventHandler';
 import TelemetryReporter from '@vscode/extension-telemetry';
 import { Environment } from '@azure/ms-rest-azure-env';
+
 const redirectUrl = 'https://vscode.dev/redirect';
+
 const defaultActiveDirectoryEndpointUrl = Environment.AzureCloud.activeDirectoryEndpointUrl;
+
 const DEFAULT_CLIENT_ID = 'aebc6443-996d-45c2-90f0-388ff96faa56';
+
 const DEFAULT_TENANT = 'organizations';
+
 const MSA_TID = '9188040d-6c67-4c5b-b112-36a304b66dad';
+
 const MSA_PASSTHRU_TID = 'f8cdef31-a31e-4b4a-93e4-5f571e91255a';
+
 const enum MicrosoftAccountType {
     AAD = 'aad',
     MSA = 'msa',
@@ -86,6 +93,7 @@ export class AzureActiveDirectoryService {
     private _pendingTokensToStore: Map<string, IToken> = new Map<string, IToken>();
     // Used to sequence requests to the same scope.
     private _sequencer = new SequencerByKey<string>();
+
     constructor(private readonly _logger: vscode.LogOutputChannel, _context: vscode.ExtensionContext, private readonly _uriHandler: UriEventHandler, private readonly _tokenStorage: BetterTokenStorage<IStoredSession>, private readonly _telemetryReporter: TelemetryReporter, private readonly _env: Environment) {
         _context.subscriptions.push(this._tokenStorage.onDidChangeInOtherWindow((e) => this.checkForUpdates(e)));
         _context.subscriptions.push(vscode.window.onDidChangeWindowState(async (e) => e.focused && await this.storePendingTokens()));
@@ -98,11 +106,15 @@ export class AzureActiveDirectoryService {
     }
     public async initialize(): Promise<void> {
         this._logger.trace('Reading sessions from secret storage...');
+
         const sessions = await this._tokenStorage.getAll(item => this.sessionMatchesEndpoint(item));
         this._logger.trace(`Got ${sessions.length} stored sessions`);
+
         const refreshes = sessions.map(async (session) => {
             this._logger.trace(`[${session.scope}] '${session.id}' Read stored session`);
+
             const scopes = session.scope.split(' ');
+
             const scopeData: IScopeData = {
                 scopes,
                 scopeStr: session.scope,
@@ -111,6 +123,7 @@ export class AzureActiveDirectoryService {
                 clientId: this.getClientId(scopes),
                 tenant: this.getTenantId(scopes),
             };
+
             try {
                 await this.refreshToken(session.refreshToken, scopeData, session.id);
             }
@@ -144,11 +157,14 @@ export class AzureActiveDirectoryService {
                 }
             }
         });
+
         const result = await Promise.allSettled(refreshes);
+
         for (const res of result) {
             if (res.status === 'rejected') {
                 this._logger.error(`Failed to initialize stored data: ${res.reason}`);
                 this.clearSessions();
+
                 break;
             }
         }
@@ -175,13 +191,16 @@ export class AzureActiveDirectoryService {
     public getSessions(scopes?: string[], account?: vscode.AuthenticationSessionAccountInformation): Promise<vscode.AuthenticationSession[]> {
         if (!scopes) {
             this._logger.info('Getting sessions for all scopes...');
+
             const sessions = this._tokens
                 .filter(token => !account?.label || token.account.label === account.label)
                 .map(token => this.convertToSessionSync(token));
             this._logger.info(`Got ${sessions.length} sessions for all scopes${account ? ` for account '${account.label}'` : ''}...`);
+
             return Promise.resolve(sessions);
         }
         let modifiedScopes = [...scopes];
+
         if (!modifiedScopes.includes('openid')) {
             modifiedScopes.push('openid');
         }
@@ -195,8 +214,11 @@ export class AzureActiveDirectoryService {
             modifiedScopes.push('offline_access');
         }
         modifiedScopes = modifiedScopes.sort();
+
         const modifiedScopesStr = modifiedScopes.join(' ');
+
         const clientId = this.getClientId(scopes);
+
         const scopeData: IScopeData = {
             clientId,
             originalScopes: scopes,
@@ -207,10 +229,12 @@ export class AzureActiveDirectoryService {
             tenant: this.getTenantId(scopes),
         };
         this._logger.trace(`[${scopeData.scopeStr}] Queued getting sessions` + account ? ` for ${account?.label}` : '');
+
         return this._sequencer.queue(modifiedScopesStr, () => this.doGetSessions(scopeData, account));
     }
     private async doGetSessions(scopeData: IScopeData, account?: vscode.AuthenticationSessionAccountInformation): Promise<vscode.AuthenticationSession[]> {
         this._logger.info(`[${scopeData.scopeStr}] Getting sessions` + account ? ` for ${account?.label}` : '');
+
         const matchingTokens = this._tokens
             .filter(token => token.scope === scopeData.scopeStr)
             .filter(token => !account?.label || token.account.label === account.label);
@@ -221,6 +245,7 @@ export class AzureActiveDirectoryService {
         if (!matchingTokens.length) {
             // Get a token with the correct client id and account.
             let token: IToken | undefined;
+
             for (const t of this._tokens) {
                 // No refresh token, so we can't make a new token from this session
                 if (!t.refreshToken) {
@@ -233,16 +258,19 @@ export class AzureActiveDirectoryService {
                 // If the client id is the default client id, then check for the absence of the VSCODE_CLIENT_ID scope
                 if (scopeData.clientId === DEFAULT_CLIENT_ID && !t.scope.includes('VSCODE_CLIENT_ID')) {
                     token = t;
+
                     break;
                 }
                 // If the client id is not the default client id, then check for the matching VSCODE_CLIENT_ID scope
                 if (scopeData.clientId !== DEFAULT_CLIENT_ID && t.scope.includes(`VSCODE_CLIENT_ID:${scopeData.clientId}`)) {
                     token = t;
+
                     break;
                 }
             }
             if (token) {
                 this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Found a matching token with a different scopes '${token.scope}'. Attempting to get a new session using the existing session.`);
+
                 try {
                     const itoken = await this.doRefreshToken(token.refreshToken, scopeData);
                     this._sessionChangeEmitter.fire({ added: [this.convertToSessionSync(itoken)], removed: [], changed: [] });
@@ -254,13 +282,16 @@ export class AzureActiveDirectoryService {
             }
         }
         this._logger.info(`[${scopeData.scopeStr}] Got ${matchingTokens.length} sessions`);
+
         const results = await Promise.allSettled(matchingTokens.map(token => this.convertToSession(token, scopeData)));
+
         return results
             .filter(result => result.status === 'fulfilled')
             .map(result => (result as PromiseFulfilledResult<vscode.AuthenticationSession>).value);
     }
     public createSession(scopes: string[], account?: vscode.AuthenticationSessionAccountInformation): Promise<vscode.AuthenticationSession> {
         let modifiedScopes = [...scopes];
+
         if (!modifiedScopes.includes('openid')) {
             modifiedScopes.push('openid');
         }
@@ -274,6 +305,7 @@ export class AzureActiveDirectoryService {
             modifiedScopes.push('offline_access');
         }
         modifiedScopes = modifiedScopes.sort();
+
         const scopeData: IScopeData = {
             originalScopes: scopes,
             scopes: modifiedScopes,
@@ -284,12 +316,16 @@ export class AzureActiveDirectoryService {
             tenant: this.getTenantId(scopes),
         };
         this._logger.trace(`[${scopeData.scopeStr}] Queued creating session`);
+
         return this._sequencer.queue(scopeData.scopeStr, () => this.doCreateSession(scopeData, account));
     }
     private async doCreateSession(scopeData: IScopeData, account?: vscode.AuthenticationSessionAccountInformation): Promise<vscode.AuthenticationSession> {
         this._logger.info(`[${scopeData.scopeStr}] Creating session` + account ? ` for ${account?.label}` : '');
+
         const runsRemote = vscode.env.remoteName !== undefined;
+
         const runsServerless = vscode.env.remoteName === undefined && vscode.env.uiKind === vscode.UIKind.Web;
+
         if (runsServerless && this._env.activeDirectoryEndpointUrl !== defaultActiveDirectoryEndpointUrl) {
             throw new Error('Sign in to non-public clouds is not supported on the web.');
         }
@@ -312,8 +348,11 @@ export class AzureActiveDirectoryService {
     }
     private async createSessionWithLocalServer(scopeData: IScopeData, loginHint: string | undefined, token: vscode.CancellationToken): Promise<vscode.AuthenticationSession> {
         this._logger.trace(`[${scopeData.scopeStr}] Starting login flow with local server`);
+
         const codeVerifier = generateCodeVerifier();
+
         const codeChallenge = await generateCodeChallenge(codeVerifier);
+
         const qs = new URLSearchParams({
             response_type: 'code',
             response_mode: 'query',
@@ -323,6 +362,7 @@ export class AzureActiveDirectoryService {
             code_challenge_method: 'S256',
             code_challenge: codeChallenge,
         });
+
         if (loginHint) {
             qs.set('login_hint', loginHint);
         }
@@ -330,11 +370,15 @@ export class AzureActiveDirectoryService {
             qs.set('prompt', 'select_account');
         }
         const loginUrl = new URL(`${scopeData.tenant}/oauth2/v2.0/authorize?${qs.toString()}`, this._env.activeDirectoryEndpointUrl).toString();
+
         const server = new LoopbackAuthServer(path.join(__dirname, '../media'), loginUrl);
         await server.start();
+
         let codeToExchange;
+
         try {
             vscode.env.openExternal(vscode.Uri.parse(`http://127.0.0.1:${server.port}/signin?nonce=${encodeURIComponent(server.nonce)}`));
+
             const { code } = await raceCancellationAndTimeoutError(server.waitForOAuthResponse(), token, 1000 * 60 * 5); // 5 minutes
             codeToExchange = code;
         }
@@ -347,21 +391,30 @@ export class AzureActiveDirectoryService {
         this._logger.trace(`[${scopeData.scopeStr}] '${session.id}' Sending change event for added session`);
         this._sessionChangeEmitter.fire({ added: [session], removed: [], changed: [] });
         this._logger.info(`[${scopeData.scopeStr}] '${session.id}' session successfully created!`);
+
         return session;
     }
     private async createSessionWithoutLocalServer(scopeData: IScopeData, loginHint: string | undefined, token: vscode.CancellationToken): Promise<vscode.AuthenticationSession> {
         this._logger.trace(`[${scopeData.scopeStr}] Starting login flow without local server`);
+
         let callbackUri = await vscode.env.asExternalUri(vscode.Uri.parse(`${vscode.env.uriScheme}://vscode.microsoft-authentication`));
+
         const nonce = generateCodeVerifier();
+
         const callbackQuery = new URLSearchParams(callbackUri.query);
         callbackQuery.set('nonce', encodeURIComponent(nonce));
         callbackUri = callbackUri.with({
             query: callbackQuery.toString()
         });
+
         const state = encodeURIComponent(callbackUri.toString(true));
+
         const codeVerifier = generateCodeVerifier();
+
         const codeChallenge = await generateCodeChallenge(codeVerifier);
+
         const signInUrl = new URL(`${scopeData.tenant}/oauth2/v2.0/authorize`, this._env.activeDirectoryEndpointUrl);
+
         const qs = new URLSearchParams({
             response_type: 'code',
             client_id: encodeURIComponent(scopeData.clientId),
@@ -372,6 +425,7 @@ export class AzureActiveDirectoryService {
             code_challenge_method: 'S256',
             code_challenge: codeChallenge,
         });
+
         if (loginHint) {
             qs.append('login_hint', loginHint);
         }
@@ -379,14 +433,18 @@ export class AzureActiveDirectoryService {
             qs.append('prompt', 'select_account');
         }
         signInUrl.search = qs.toString();
+
         const uri = vscode.Uri.parse(signInUrl.toString());
         vscode.env.openExternal(uri);
+
         const existingNonces = this._pendingNonces.get(scopeData.scopeStr) || [];
         this._pendingNonces.set(scopeData.scopeStr, [...existingNonces, nonce]);
         // Register a single listener for the URI callback, in case the user starts the login process multiple times
         // before completing it.
         let existingPromise = this._codeExchangePromises.get(scopeData.scopeStr);
+
         let inputBox: vscode.InputBox | undefined;
+
         if (!existingPromise) {
             if (isSupportedEnvironment(callbackUri)) {
                 existingPromise = this.handleCodeResponse(scopeData);
@@ -398,6 +456,7 @@ export class AzureActiveDirectoryService {
             this._codeExchangePromises.set(scopeData.scopeStr, existingPromise);
         }
         this._codeVerfifiers.set(nonce, codeVerifier);
+
         return await raceCancellationAndTimeoutError(existingPromise, token, 1000 * 60 * 5) // 5 minutes
             .finally(() => {
             this._pendingNonces.delete(scopeData.scopeStr);
@@ -408,12 +467,15 @@ export class AzureActiveDirectoryService {
     }
     public async removeSessionById(sessionId: string, writeToDisk: boolean = true): Promise<vscode.AuthenticationSession | undefined> {
         const tokenIndex = this._tokens.findIndex(token => token.sessionId === sessionId);
+
         if (tokenIndex === -1) {
             this._logger.warn(`'${sessionId}' Session not found to remove`);
+
             return Promise.resolve(undefined);
         }
         const token = this._tokens.splice(tokenIndex, 1)[0];
         this._logger.trace(`[${token.scope}] '${sessionId}' Queued removing session`);
+
         return this._sequencer.queue(token.scope, () => this.removeSessionByIToken(token, writeToDisk));
     }
     public async clearSessions() {
@@ -429,10 +491,12 @@ export class AzureActiveDirectoryService {
     private async removeSessionByIToken(token: IToken, writeToDisk: boolean = true): Promise<vscode.AuthenticationSession | undefined> {
         this._logger.info(`[${token.scope}] '${token.sessionId}' Logging out of session`);
         this.removeSessionTimeout(token.sessionId);
+
         if (writeToDisk) {
             await this._tokenStorage.delete(token.sessionId);
         }
         const tokenIndex = this._tokens.findIndex(t => t.sessionId === token.sessionId);
+
         if (tokenIndex !== -1) {
             this._tokens.splice(tokenIndex, 1);
         }
@@ -440,6 +504,7 @@ export class AzureActiveDirectoryService {
         this._logger.trace(`[${token.scope}] '${token.sessionId}' Sending change event for session that was removed`);
         this._sessionChangeEmitter.fire({ added: [], removed: [session], changed: [] });
         this._logger.info(`[${token.scope}] '${token.sessionId}' Logged out of session successfully!`);
+
         return session;
     }
     //#endregion
@@ -464,6 +529,7 @@ export class AzureActiveDirectoryService {
     }
     private removeSessionTimeout(sessionId: string): void {
         const timeout = this._refreshTimeouts.get(sessionId);
+
         if (timeout) {
             clearTimeout(timeout);
             this._refreshTimeouts.delete(sessionId);
@@ -474,6 +540,7 @@ export class AzureActiveDirectoryService {
     private convertToTokenSync(json: ITokenResponse, scopeData: IScopeData, existingId?: string): IToken {
         let claims = undefined;
         this._logger.trace(`[${scopeData.scopeStr}] '${existingId ?? 'new'}' Attempting to parse token response.`);
+
         try {
             if (json.id_token) {
                 claims = JSON.parse(base64Decode(json.id_token.split('.')[1]));
@@ -487,8 +554,10 @@ export class AzureActiveDirectoryService {
             throw e;
         }
         const id = `${claims.tid}/${(claims.oid ?? (claims.altsecid ?? '' + claims.ipd ?? ''))}`;
+
         const sessionId = existingId || `${id}/${randomUUID()}`;
         this._logger.trace(`[${scopeData.scopeStr}] '${sessionId}' Token response parsed successfully.`);
+
         return {
             expiresIn: json.expires_in,
             expiresAt: json.expires_in ? Date.now() + json.expires_in * 1000 : undefined,
@@ -520,6 +589,7 @@ export class AzureActiveDirectoryService {
     private async convertToSession(token: IToken, scopeData: IScopeData): Promise<vscode.AuthenticationSession> {
         if (token.accessToken && (!token.expiresAt || token.expiresAt > Date.now())) {
             this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Token available from cache${token.expiresAt ? `, expires in ${token.expiresAt - Date.now()} milliseconds` : ''}.`);
+
             return {
                 id: token.sessionId,
                 accessToken: token.accessToken,
@@ -530,7 +600,9 @@ export class AzureActiveDirectoryService {
         }
         try {
             this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Token expired or unavailable, trying refresh`);
+
             const refreshedToken = await this.refreshToken(token.refreshToken, scopeData, token.sessionId);
+
             if (refreshedToken.accessToken) {
                 return {
                     id: token.sessionId,
@@ -553,24 +625,30 @@ export class AzureActiveDirectoryService {
     //#region refresh logic
     private refreshToken(refreshToken: string, scopeData: IScopeData, sessionId?: string): Promise<IToken> {
         this._logger.trace(`[${scopeData.scopeStr}] '${sessionId ?? 'new'}' Queued refreshing token`);
+
         return this._sequencer.queue(scopeData.scopeStr, () => this.doRefreshToken(refreshToken, scopeData, sessionId));
     }
     private async doRefreshToken(refreshToken: string, scopeData: IScopeData, sessionId?: string): Promise<IToken> {
         this._logger.trace(`[${scopeData.scopeStr}] '${sessionId ?? 'new'}' Refreshing token`);
+
         const postData = new URLSearchParams({
             refresh_token: refreshToken,
             client_id: scopeData.clientId,
             grant_type: 'refresh_token',
             scope: scopeData.scopesToSend
         }).toString();
+
         try {
             const json = await this.fetchTokenResponse(postData, scopeData);
+
             const token = this.convertToTokenSync(json, scopeData, sessionId);
+
             if (token.expiresIn) {
                 this.setSessionTimeout(token.sessionId, token.refreshToken, scopeData, token.expiresIn * AzureActiveDirectoryService.REFRESH_TIMEOUT_MODIFIER);
             }
             this.setToken(token, scopeData);
             this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Token refresh success`);
+
             return token;
         }
         catch (e) {
@@ -583,6 +661,7 @@ export class AzureActiveDirectoryService {
                 throw e;
             }
             this._logger.error(`[${scopeData.scopeStr}] '${sessionId ?? 'new'}' Refreshing token failed: ${e.message}`);
+
             throw e;
         }
     }
@@ -608,12 +687,16 @@ export class AzureActiveDirectoryService {
     //#region oauth flow
     private async handleCodeResponse(scopeData: IScopeData): Promise<vscode.AuthenticationSession> {
         let uriEventListener: vscode.Disposable;
+
         return new Promise((resolve: (value: vscode.AuthenticationSession) => void, reject) => {
             uriEventListener = this._uriHandler.event(async (uri: vscode.Uri) => {
                 try {
                     const query = new URLSearchParams(uri.query);
+
                     let code = query.get('code');
+
                     let nonce = query.get('nonce');
+
                     if (Array.isArray(code)) {
                         code = code[0];
                     }
@@ -632,6 +715,7 @@ export class AzureActiveDirectoryService {
                         throw new Error('Nonce does not match.');
                     }
                     const verifier = this._codeVerfifiers.get(nonce) ?? this._codeVerfifiers.get(decodeURIComponent(nonce));
+
                     if (!verifier) {
                         throw new Error('No available code verifier');
                     }
@@ -646,9 +730,11 @@ export class AzureActiveDirectoryService {
             });
         }).then(result => {
             uriEventListener.dispose();
+
             return result;
         }).catch(err => {
             uriEventListener.dispose();
+
             throw err;
         });
     }
@@ -658,12 +744,15 @@ export class AzureActiveDirectoryService {
         inputBox.title = vscode.l10n.t('Microsoft Authentication');
         inputBox.prompt = vscode.l10n.t('Provide the authorization code to complete the sign in flow.');
         inputBox.placeholder = vscode.l10n.t('Paste authorization code here...');
+
         return new Promise((resolve: (value: vscode.AuthenticationSession) => void, reject) => {
             inputBox.show();
             inputBox.onDidAccept(async () => {
                 const code = inputBox.value;
+
                 if (code) {
                     inputBox.dispose();
+
                     const session = await this.exchangeCodeForSession(code, verifier, scopeData);
                     this._logger.trace(`[${scopeData.scopeStr}] '${session.id}' sending session changed event because session was added.`);
                     this._sessionChangeEmitter.fire({ added: [session], removed: [], changed: [] });
@@ -681,7 +770,9 @@ export class AzureActiveDirectoryService {
     }
     private async exchangeCodeForSession(code: string, codeVerifier: string, scopeData: IScopeData): Promise<vscode.AuthenticationSession> {
         this._logger.trace(`[${scopeData.scopeStr}] Exchanging login code for session`);
+
         let token: IToken | undefined;
+
         try {
             const postData = new URLSearchParams({
                 grant_type: 'authorization_code',
@@ -691,12 +782,14 @@ export class AzureActiveDirectoryService {
                 code_verifier: codeVerifier,
                 redirect_uri: redirectUrl
             }).toString();
+
             const json = await this.fetchTokenResponse(postData, scopeData);
             this._logger.trace(`[${scopeData.scopeStr}] Exchanging code for token succeeded!`);
             token = this.convertToTokenSync(json, scopeData);
         }
         catch (e) {
             this._logger.error(`[${scopeData.scopeStr}] Error exchanging code for token: ${e}`);
+
             throw e;
         }
         if (token.expiresIn) {
@@ -704,10 +797,12 @@ export class AzureActiveDirectoryService {
         }
         this.setToken(token, scopeData);
         this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Exchanging login code for session succeeded!`);
+
         return await this.convertToSession(token, scopeData);
     }
     private async fetchTokenResponse(postData: string, scopeData: IScopeData): Promise<ITokenResponse> {
         let endpointUrl: string;
+
         if (this._env.activeDirectoryEndpointUrl !== defaultActiveDirectoryEndpointUrl) {
             // If this is for sovereign clouds, don't try using the proxy endpoint, which supports only public cloud
             endpointUrl = this._env.activeDirectoryEndpointUrl;
@@ -719,11 +814,16 @@ export class AzureActiveDirectoryService {
             endpointUrl = proxyEndpoints?.microsoft || this._env.activeDirectoryEndpointUrl;
         }
         const endpoint = new URL(`${scopeData.tenant}/oauth2/v2.0/token`, endpointUrl);
+
         let attempts = 0;
+
         while (attempts <= 3) {
             attempts++;
+
             let result;
+
             let errorMessage: string | undefined;
+
             try {
                 result = await fetch(endpoint.toString(), {
                     method: 'POST',
@@ -739,10 +839,12 @@ export class AzureActiveDirectoryService {
             if (!result || result.status > 499) {
                 if (attempts > 3) {
                     this._logger.error(`[${scopeData.scopeStr}] Fetching token failed: ${result ? await result.text() : errorMessage}`);
+
                     break;
                 }
                 // Exponential backoff
                 await new Promise(resolve => setTimeout(resolve, 5 * attempts * attempts * 1000));
+
                 continue;
             }
             else if (!result.ok) {
@@ -759,7 +861,9 @@ export class AzureActiveDirectoryService {
     //#region storage operations
     private setToken(token: IToken, scopeData: IScopeData): void {
         this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Setting token`);
+
         const existingTokenIndex = this._tokens.findIndex(t => t.sessionId === token.sessionId);
+
         if (existingTokenIndex > -1) {
             this._tokens.splice(existingTokenIndex, 1, token);
         }
@@ -778,6 +882,7 @@ export class AzureActiveDirectoryService {
                 this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Window is not focused, pending storage of token`);
             }
             this._pendingTokensToStore.set(token.sessionId, token);
+
             return;
         }
         await this._tokenStorage.store(token.sessionId, {
@@ -792,6 +897,7 @@ export class AzureActiveDirectoryService {
     private async storePendingTokens(): Promise<void> {
         if (this._pendingTokensToStore.size === 0) {
             this._logger.trace('No pending tokens to store');
+
             return;
         }
         const tokens = [...this._pendingTokensToStore.values()];
@@ -813,8 +919,10 @@ export class AzureActiveDirectoryService {
     private async checkForUpdates(e: IDidChangeInOtherWindowEvent<IStoredSession>): Promise<void> {
         for (const key of e.added) {
             const session = await this._tokenStorage.get(key);
+
             if (!session) {
                 this._logger.error('session not found that was apparently just added');
+
                 continue;
             }
             if (!this.sessionMatchesEndpoint(session)) {
@@ -822,9 +930,11 @@ export class AzureActiveDirectoryService {
                 continue;
             }
             const matchesExisting = this._tokens.some(token => token.scope === session.scope && token.sessionId === session.id);
+
             if (!matchesExisting && session.refreshToken) {
                 try {
                     const scopes = session.scope.split(' ');
+
                     const scopeData: IScopeData = {
                         scopes,
                         scopeStr: session.scope,
@@ -834,10 +944,12 @@ export class AzureActiveDirectoryService {
                         tenant: this.getTenantId(scopes),
                     };
                     this._logger.trace(`[${scopeData.scopeStr}] '${session.id}' Session added in another window`);
+
                     const token = await this.refreshToken(session.refreshToken, scopeData, session.id);
                     this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Sending change event for session that was added`);
                     this._sessionChangeEmitter.fire({ added: [this.convertToSessionSync(token)], removed: [], changed: [] });
                     this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Session added in another window added here`);
+
                     continue;
                 }
                 catch (e) {
@@ -852,9 +964,11 @@ export class AzureActiveDirectoryService {
         }
         for (const { value } of e.removed) {
             this._logger.trace(`[${value.scope}] '${value.id}' Session removed in another window`);
+
             if (!this.sessionMatchesEndpoint(value)) {
                 // If the session wasn't made for this login endpoint, ignore this update
                 this._logger.trace(`[${value.scope}] '${value.id}' Session doesn't match endpoint. Skipping...`);
+
                 continue;
             }
             await this.removeSessionById(value.id, false);
@@ -875,6 +989,7 @@ export class AzureActiveDirectoryService {
     private sessionMatchesEndpoint(session: IStoredSession): boolean {
         // For older sessions with no endpoint set, it can be assumed to be the default endpoint
         session.endpoint ||= defaultActiveDirectoryEndpointUrl;
+
         return session.endpoint === this._env.activeDirectoryEndpointUrl;
     }
 }

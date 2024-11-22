@@ -76,6 +76,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
     private readonly _requestQueue = new RequestQueue();
     private readonly _callbacks = new CallbackMap<Proto.Response>();
     private readonly _pendingResponses = new Set<number>();
+
     constructor(private readonly _serverId: string, private readonly _serverSource: ServerType, private readonly _process: TsServerProcess, private readonly _tsServerLog: TsServerLog | undefined, private readonly _requestCanceller: OngoingRequestCanceller, private readonly _version: TypeScriptVersion, private readonly _telemetryReporter: TelemetryReporter, private readonly _tracer: Tracer) {
         super();
         this._process.onData(msg => {
@@ -122,11 +123,15 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
                         this.dispatchResponse(message as Proto.Response);
                     }
                     break;
+
                 case 'event': {
                     const event = message as Proto.Event;
+
                     if (event.event === 'requestCompleted') {
                         const seq = (event as Proto.RequestCompletedEvent).body.request_seq;
+
                         const callback = this._callbacks.fetch(seq);
+
                         if (callback) {
                             this._tracer.traceRequestCompleted(this._serverId, 'requestCompleted', seq, callback);
                             callback.onSuccess(undefined);
@@ -151,15 +156,18 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
     }
     private tryCancelRequest(request: Proto.Request, command: string): boolean {
         const seq = request.seq;
+
         try {
             if (this._requestQueue.tryDeletePendingRequest(seq)) {
                 this.logTrace(`Canceled request with sequence number ${seq}`);
+
                 return true;
             }
             if (this._requestCanceller.tryCancelOngoingRequest(seq)) {
                 return true;
             }
             this.logTrace(`Tried to cancel request with sequence number ${seq}. But request got already delivered.`);
+
             return false;
         }
         finally {
@@ -169,10 +177,12 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
     }
     private dispatchResponse(response: Proto.Response) {
         const callback = this.fetchCallback(response.request_seq);
+
         if (!callback) {
             return;
         }
         this._tracer.traceResponse(this._serverId, response, callback);
+
         if (response.success) {
             callback.onSuccess(response);
         }
@@ -192,16 +202,20 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
         executionTarget?: ExecutionTarget;
     }): Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> {
         const request = this._requestQueue.createRequest(command, args);
+
         const requestInfo: RequestItem = {
             request,
             expectsResponse: executeInfo.expectsResult,
             isAsync: executeInfo.isAsync,
             queueingType: SingleTsServer.getQueueingType(command, executeInfo.lowPriority)
         };
+
         let result: Promise<ServerResponse.Response<Proto.Response>> | undefined;
+
         if (executeInfo.expectsResult) {
             result = new Promise<ServerResponse.Response<Proto.Response>>((resolve, reject) => {
                 this._callbacks.add(request.seq, { onSuccess: resolve as () => ServerResponse.Response<Proto.Response> | undefined, onError: reject, queuingStartTime: Date.now(), isAsync: executeInfo.isAsync }, executeInfo.isAsync);
+
                 if (executeInfo.token) {
                     const cancelViaSAB = isWebAndHasSharedArrayBuffers()
                         ? Cancellation.addData(request)
@@ -231,11 +245,13 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
         }
         this._requestQueue.enqueue(requestInfo);
         this.sendNextRequests();
+
         return [result];
     }
     private sendNextRequests(): void {
         while (this._pendingResponses.size === 0 && this._requestQueue.length > 0) {
             const item = this._requestQueue.dequeue();
+
             if (item) {
                 this.sendRequest(item);
             }
@@ -244,6 +260,7 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
     private sendRequest(requestItem: RequestItem): void {
         const serverRequest = requestItem.request;
         this._tracer.traceRequest(this._serverId, serverRequest, requestItem.expectsResponse, this._requestQueue.length);
+
         if (requestItem.expectsResponse && !requestItem.isAsync) {
             this._pendingResponses.add(requestItem.request.seq);
         }
@@ -257,10 +274,12 @@ export class SingleTsServer extends Disposable implements ITypeScriptServer {
     }
     private fetchCallback(seq: number) {
         const callback = this._callbacks.fetch(seq);
+
         if (!callback) {
             return undefined;
         }
         this._pendingResponses.delete(seq);
+
         return callback;
     }
     private logTrace(message: string) {
@@ -289,6 +308,7 @@ class RequestRouter {
         'updateOpen',
         'configure',
     ]);
+
     constructor(private readonly servers: ReadonlyArray<{
         readonly server: ITypeScriptServer;
         canRun?(command: keyof TypeScriptRequests, executeInfo: ExecuteInfo): boolean;
@@ -299,6 +319,7 @@ class RequestRouter {
             const requestStates: RequestState.State[] = this.servers.map(() => RequestState.Unresolved);
             // Also make sure we never cancel requests to just one server
             let token: vscode.CancellationToken | undefined = undefined;
+
             if (executeInfo.token) {
                 const source = new vscode.CancellationTokenSource();
                 executeInfo.token.onCancellationRequested(() => {
@@ -313,15 +334,20 @@ class RequestRouter {
                 token = source.token;
             }
             const allRequests: Array<Promise<ServerResponse.Response<Proto.Response>> | undefined> = [];
+
             for (let serverIndex = 0; serverIndex < this.servers.length; ++serverIndex) {
                 const server = this.servers[serverIndex].server;
+
                 const request = server.executeImpl(command, args, { ...executeInfo, token })[0];
                 allRequests.push(request);
+
                 if (request) {
                     request
                         .then(result => {
                         requestStates[serverIndex] = RequestState.Resolved;
+
                         const erroredRequest = requestStates.find(state => state.type === RequestState.Type.Errored) as RequestState.Errored | undefined;
+
                         if (erroredRequest) {
                             // We've gone out of sync
                             this.delegate.onFatalError(command, erroredRequest.err);
@@ -329,6 +355,7 @@ class RequestRouter {
                         return result;
                     }, err => {
                         requestStates[serverIndex] = new RequestState.Errored(err);
+
                         if (requestStates.some(state => state === RequestState.Resolved)) {
                             // We've gone out of sync
                             this.delegate.onFatalError(command, err);
@@ -465,6 +492,7 @@ export class SyntaxRoutingTsServer extends Disposable implements ITypeScriptServ
                 canRun: (command, execInfo) => {
                     switch (execInfo.executionTarget) {
                         case ExecutionTarget.Semantic: return false;
+
                         case ExecutionTarget.Syntax: return true;
                     }
                     if (SyntaxRoutingTsServer.syntaxAlwaysCommands.has(command)) {
@@ -490,13 +518,16 @@ export class SyntaxRoutingTsServer extends Disposable implements ITypeScriptServ
             switch (e.event) {
                 case EventName.projectLoadingStart:
                     this._projectLoading = true;
+
                     break;
+
                 case EventName.projectLoadingFinish:
                 case EventName.semanticDiag:
                 case EventName.syntaxDiag:
                 case EventName.suggestionDiag:
                 case EventName.configFileDiag:
                     this._projectLoading = false;
+
                     break;
             }
             return this._onEvent.fire(e);
@@ -536,9 +567,12 @@ namespace RequestState {
         Errored
     }
     export const Unresolved = { type: Type.Unresolved } as const;
+
     export const Resolved = { type: Type.Resolved } as const;
+
     export class Errored {
         readonly type = Type.Errored;
+
         constructor(public readonly err: Error) { }
     }
     export type State = typeof Unresolved | typeof Resolved | Errored;

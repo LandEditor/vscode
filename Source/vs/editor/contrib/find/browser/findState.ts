@@ -105,6 +105,7 @@ export class FindReplaceState<T extends {
     public get isSearching(): boolean { return this._isSearching; }
     public get filters(): T | null { return this._filters; }
     public readonly onFindReplaceStateChange: Event<FindReplaceStateChangedEvent> = this._onFindReplaceStateChange.event;
+
     constructor() {
         super();
         this._searchString = '';
@@ -147,7 +148,9 @@ export class FindReplaceState<T extends {
             isSearching: false,
             filters: false
         };
+
         let somethingChanged = false;
+
         if (matchesCount === 0) {
             matchesPosition = 0;
         }
@@ -195,11 +198,17 @@ export class FindReplaceState<T extends {
             isSearching: false,
             filters: false
         };
+
         let somethingChanged = false;
+
         const oldEffectiveIsRegex = this.isRegex;
+
         const oldEffectiveWholeWords = this.wholeWord;
+
         const oldEffectiveMatchCase = this.matchCase;
+
         const oldEffectivePreserveCase = this.preserveCase;
+
         if (typeof newState.searchString !== 'undefined') {
             if (this._searchString !== newState.searchString) {
                 this._searchString = newState.searchString;
@@ -280,6 +289,7 @@ export class FindReplaceState<T extends {
         this._wholeWordOverride = (typeof newState.wholeWordOverride !== 'undefined' ? newState.wholeWordOverride : FindOptionOverride.NotSet);
         this._matchCaseOverride = (typeof newState.matchCaseOverride !== 'undefined' ? newState.matchCaseOverride : FindOptionOverride.NotSet);
         this._preserveCaseOverride = (typeof newState.preserveCaseOverride !== 'undefined' ? newState.preserveCaseOverride : FindOptionOverride.NotSet);
+
         if (oldEffectiveIsRegex !== this.isRegex) {
             somethingChanged = true;
             changeEvent.isRegex = true;

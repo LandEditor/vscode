@@ -18,7 +18,9 @@ export interface IExtensionRecommendations {
 export function RecommendationSourceToString(source: RecommendationSource) {
     switch (source) {
         case RecommendationSource.FILE: return 'file';
+
         case RecommendationSource.WORKSPACE: return 'workspace';
+
         case RecommendationSource.EXE: return 'exe';
     }
 }

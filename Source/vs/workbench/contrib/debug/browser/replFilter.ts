@@ -15,11 +15,14 @@ type ParsedQuery = {
 export class ReplFilter implements ITreeFilter<IReplElement> {
     static matchQuery = matchesFuzzy;
     private _parsedQueries: ParsedQuery[] = [];
+
     set filterQuery(query: string) {
         this._parsedQueries = [];
         query = query.trim();
+
         if (query && query !== '') {
             const filters = splitGlobAware(query, ',').map(s => s.trim()).filter(s => !!s.length);
+
             for (const f of filters) {
                 if (f.startsWith('\\')) {
                     this._parsedQueries.push({ type: 'include', query: f.slice(1) });
@@ -39,8 +42,11 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
             return TreeVisibility.Visible;
         }
         let includeQueryPresent = false;
+
         let includeQueryMatched = false;
+
         const text = element.toString(true);
+
         for (const { type, query } of this._parsedQueries) {
             if (type === 'exclude' && ReplFilter.matchQuery(query, text)) {
                 // If exclude query matches, ignore all other queries and hide
@@ -48,6 +54,7 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
             }
             else if (type === 'include') {
                 includeQueryPresent = true;
+
                 if (ReplFilter.matchQuery(query, text)) {
                     includeQueryMatched = true;
                 }

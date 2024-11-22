@@ -54,26 +54,40 @@ abstract class BaseOpenRecentAction extends Action2 {
         ...this.dirtyRecentlyOpenedFolder,
         tooltip: localize('dirtyRecentlyOpenedWorkspace', "Workspace With Unsaved Files"),
     };
+
     constructor(desc: Readonly<IAction2Options>) {
         super(desc);
     }
     protected abstract isQuickNavigate(): boolean;
     override async run(accessor: ServicesAccessor): Promise<void> {
         const workspacesService = accessor.get(IWorkspacesService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const contextService = accessor.get(IWorkspaceContextService);
+
         const labelService = accessor.get(ILabelService);
+
         const keybindingService = accessor.get(IKeybindingService);
+
         const modelService = accessor.get(IModelService);
+
         const languageService = accessor.get(ILanguageService);
+
         const hostService = accessor.get(IHostService);
+
         const dialogService = accessor.get(IDialogService);
+
         const recentlyOpened = await workspacesService.getRecentlyOpened();
+
         const dirtyWorkspacesAndFolders = await workspacesService.getDirtyWorkspaces();
+
         let hasWorkspaces = false;
         // Identify all folders and workspaces with unsaved files
         const dirtyFolders = new ResourceMap<boolean>();
+
         const dirtyWorkspaces = new ResourceMap<IWorkspaceIdentifier>();
+
         for (const dirtyWorkspace of dirtyWorkspacesAndFolders) {
             if (isFolderBackupInfo(dirtyWorkspace)) {
                 dirtyFolders.set(dirtyWorkspace.folderUri, true);
@@ -85,7 +99,9 @@ abstract class BaseOpenRecentAction extends Action2 {
         }
         // Identify all recently opened folders and workspaces
         const recentFolders = new ResourceMap<boolean>();
+
         const recentWorkspaces = new ResourceMap<IWorkspaceIdentifier>();
+
         for (const recent of recentlyOpened.workspaces) {
             if (isRecentFolder(recent)) {
                 recentFolders.set(recent.folderUri, true);
@@ -97,6 +113,7 @@ abstract class BaseOpenRecentAction extends Action2 {
         }
         // Fill in all known recently opened workspaces
         const workspacePicks: IRecentlyOpenedPick[] = [];
+
         for (const recent of recentlyOpened.workspaces) {
             const isDirty = isRecentFolder(recent) ? dirtyFolders.has(recent.folderUri) : dirtyWorkspaces.has(recent.workspace.configPath);
             workspacePicks.push(this.toQuickPick(modelService, languageService, labelService, recent, isDirty));
@@ -113,11 +130,17 @@ abstract class BaseOpenRecentAction extends Action2 {
         const filePicks = recentlyOpened.files.map(p => this.toQuickPick(modelService, languageService, labelService, p, false));
         // focus second entry if the first recent workspace is the current workspace
         const firstEntry = recentlyOpened.workspaces[0];
+
         const autoFocusSecondEntry: boolean = firstEntry && contextService.isCurrentWorkspace(isRecentWorkspace(firstEntry) ? firstEntry.workspace : firstEntry.folderUri);
+
         let keyMods: IKeyMods | undefined;
+
         const workspaceSeparator: IQuickPickSeparator = { type: 'separator', label: hasWorkspaces ? localize('workspacesAndFolders', "folders & workspaces") : localize('folders', "folders") };
+
         const fileSeparator: IQuickPickSeparator = { type: 'separator', label: localize('files', "files") };
+
         const picks = [workspaceSeparator, ...workspacePicks, fileSeparator, ...filePicks];
+
         const pick = await quickInputService.pick(picks, {
             contextKey: inRecentFilesPickerContextKey,
             activeItem: [...workspacePicks, ...filePicks][autoFocusSecondEntry ? 1 : 0],
@@ -135,11 +158,13 @@ abstract class BaseOpenRecentAction extends Action2 {
                 // Dirty Folder/Workspace
                 else if (context.button === this.dirtyRecentlyOpenedFolder || context.button === this.dirtyRecentlyOpenedWorkspace) {
                     const isDirtyWorkspace = context.button === this.dirtyRecentlyOpenedWorkspace;
+
                     const { confirmed } = await dialogService.confirm({
                         title: isDirtyWorkspace ? localize('dirtyWorkspace', "Workspace with Unsaved Files") : localize('dirtyFolder', "Folder with Unsaved Files"),
                         message: isDirtyWorkspace ? localize('dirtyWorkspaceConfirm', "Do you want to open the workspace to review the unsaved files?") : localize('dirtyFolderConfirm', "Do you want to open the folder to review the unsaved files?"),
                         detail: isDirtyWorkspace ? localize('dirtyWorkspaceConfirmDetail', "Workspaces with unsaved files cannot be removed until all unsaved files have been saved or reverted.") : localize('dirtyFolderConfirmDetail', "Folders with unsaved files cannot be removed until all unsaved files have been saved or reverted.")
                     });
+
                     if (confirmed) {
                         hostService.openWindow([context.item.openable], {
                             remoteAuthority: context.item.remoteAuthority || null // local window if remoteAuthority is not set or can not be deducted from the openable
@@ -149,6 +174,7 @@ abstract class BaseOpenRecentAction extends Action2 {
                 }
             }
         });
+
         if (pick) {
             return hostService.openWindow([pick.openable], {
                 forceNewWindow: keyMods?.ctrlCmd,
@@ -159,9 +185,13 @@ abstract class BaseOpenRecentAction extends Action2 {
     }
     private toQuickPick(modelService: IModelService, languageService: ILanguageService, labelService: ILabelService, recent: IRecent, isDirty: boolean): IRecentlyOpenedPick {
         let openable: IWindowOpenable | undefined;
+
         let iconClasses: string[];
+
         let fullLabel: string | undefined;
+
         let resource: URI | undefined;
+
         let isWorkspace = false;
         // Folder
         if (isRecentFolder(recent)) {
@@ -186,6 +216,7 @@ abstract class BaseOpenRecentAction extends Action2 {
             fullLabel = recent.label || labelService.getUriLabel(resource);
         }
         const { name, parentPath } = splitRecentLabel(fullLabel);
+
         return {
             iconClasses,
             label: name,
@@ -200,6 +231,7 @@ abstract class BaseOpenRecentAction extends Action2 {
 }
 export class OpenRecentAction extends BaseOpenRecentAction {
     static ID = 'workbench.action.openRecent';
+
     constructor() {
         super({
             id: OpenRecentAction.ID,
@@ -266,11 +298,13 @@ class ToggleFullScreenAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const hostService = accessor.get(IHostService);
+
         return hostService.toggleFullScreen(getActiveWindow());
     }
 }
 export class ReloadWindowAction extends Action2 {
     static readonly ID = 'workbench.action.reloadWindow';
+
     constructor() {
         super({
             id: ReloadWindowAction.ID,
@@ -286,6 +320,7 @@ export class ReloadWindowAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const hostService = accessor.get(IHostService);
+
         return hostService.reload();
     }
 }
@@ -309,6 +344,7 @@ class ShowAboutDialogAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const dialogService = accessor.get(IDialogService);
+
         return dialogService.about();
     }
 }
@@ -335,6 +371,7 @@ class NewWindowAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const hostService = accessor.get(IHostService);
+
         return hostService.openWindow({ remoteAuthority: null });
     }
 }
@@ -347,6 +384,7 @@ class BlurAction extends Action2 {
     }
     run(): void {
         const activeElement = getActiveElement();
+
         if (isHTMLElement(activeElement)) {
             activeElement.blur();
         }
@@ -362,6 +400,7 @@ registerAction2(ShowAboutDialogAction);
 registerAction2(BlurAction);
 // --- Commands/Keybindings Registration
 const recentFilesPickerContext = ContextKeyExpr.and(inQuickPickContext, ContextKeyExpr.has(inRecentFilesPickerContextKey));
+
 const quickPickNavigateNextInRecentFilesPickerId = 'workbench.action.quickOpenNavigateNextInRecentFilesPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickPickNavigateNextInRecentFilesPickerId,
@@ -371,6 +410,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.KeyR,
     mac: { primary: KeyMod.WinCtrl | KeyCode.KeyR }
 });
+
 const quickPickNavigatePreviousInRecentFilesPicker = 'workbench.action.quickOpenNavigatePreviousInRecentFilesPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickPickNavigatePreviousInRecentFilesPicker,
@@ -382,7 +422,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 CommandsRegistry.registerCommand('workbench.action.toggleConfirmBeforeClose', accessor => {
     const configurationService = accessor.get(IConfigurationService);
+
     const setting = configurationService.inspect<'always' | 'keyboardOnly' | 'never'>('window.confirmBeforeClose').userValue;
+
     return configurationService.updateValue('window.confirmBeforeClose', setting === 'never' ? 'keyboardOnly' : 'never');
 });
 // --- Menu Registration

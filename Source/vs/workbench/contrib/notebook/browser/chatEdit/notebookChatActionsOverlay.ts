@@ -31,16 +31,22 @@ export class NotebookChatActionsOverlayController extends Disposable {
 
 		this._register(autorunWithStore((r, store) => {
 			const session = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!model || !session) {
 				return;
 			}
 
 			const entries = session.entries.read(r);
+
 			const idx = entries.findIndex(e => isEqual(e.modifiedURI, model.uri));
+
 			if (idx >= 0) {
 				const entry = entries[idx];
+
 				const nextEntry = entries[(idx + 1) % entries.length];
+
 				const previousEntry = entries[(idx - 1 + entries.length) % entries.length];
 				store.add(instantiationService.createInstance(NotebookChatActionsOverlay, notebookEditor, entry, cellDiffInfo, nextEntry, previousEntry));
 			}
@@ -60,6 +66,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 		@IInstantiationService instaService: IInstantiationService,
 	) {
 		super();
+
 		const toolbarNode = $('div');
 		toolbarNode.classList.add('notebook-chat-editor-overlay-widget');
 		notebookEditor.getDomNode().appendChild(toolbarNode);
@@ -82,6 +89,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 				if (action.id === 'chatEditor.action.accept' || action.id === 'chatEditor.action.reject') {
 					return new class extends ActionViewItem {
 						private readonly _reveal = this._store.add(new MutableDisposable());
+
 						constructor() {
 							super(undefined, action, { ...options, icon: false, label: true, keybindingNotRenderedWithLabel: true });
 						}
@@ -101,6 +109,7 @@ export class NotebookChatActionsOverlay extends Disposable {
 									return;
 								}
 								const change = nextEntry.diffInfo.get().changes.at(0);
+
 								return that._editorService.openEditor({
 									resource: nextEntry.modifiedURI,
 									options: {
@@ -126,7 +135,9 @@ export class NotebookChatActionsOverlay extends Disposable {
 						}
 						override set actionRunner(_: IActionRunner) {
 							const next = action.id === 'chatEditor.action.navigateNext' ? nextEntry : previousEntry;
+
 							const direction = action.id === 'chatEditor.action.navigateNext' ? 'next' : 'previous';
+
 							super.actionRunner = new NextPreviousChangeActionRunner(notebookEditor, cellDiffInfo, entry, next, direction, _editorService);
 						}
 						override get actionRunner(): IActionRunner {
@@ -158,18 +169,23 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 	}
 	protected override async runAction(_action: IAction, _context?: unknown): Promise<void> {
 		const viewModel = this.notebookEditor.getViewModel();
+
 		const activeCell = this.notebookEditor.activeCellAndCodeEditor;
+
 		const cellDiff = this.cellDiffInfo.read(undefined);
+
 		if (!viewModel || !activeCell || !cellDiff || !cellDiff.length) {
 			return this.goToNextEntry();
 		}
 
 		const activeCellIndex = viewModel.viewCells.findIndex(c => c.handle === activeCell[0].handle);
+
 		if (typeof activeCellIndex !== 'number') {
 			return this.goToNextEntry();
 		}
 
 		let index = this.getNextCellDiff(activeCellIndex, cellDiff);
+
 		if (typeof index === 'number') {
 			return this.notebookEditor.focusNotebookCell(viewModel.viewCells[index], 'container');
 		}
@@ -180,6 +196,7 @@ class NextPreviousChangeActionRunner extends ActionRunner {
 
 		// Cycle through edits in current notebook.
 		index = this.getNextCellDiff(this.direction === 'next' ? -1 : viewModel.viewCells.length + 1, cellDiff);
+
 		if (typeof index === 'number') {
 			return this.notebookEditor.focusNotebookCell(viewModel.viewCells[index], 'container');
 		}

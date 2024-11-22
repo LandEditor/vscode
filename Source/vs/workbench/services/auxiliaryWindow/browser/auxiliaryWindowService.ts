@@ -151,6 +151,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 				}
 			}
 		});
+
 		if (veto) {
 			this.handleVetoBeforeClose(e, veto);
 
@@ -159,7 +160,9 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 		// Check for confirm before close setting
 		const confirmBeforeCloseSetting = this.configurationService.getValue<'always' | 'never' | 'keyboardOnly'>('window.confirmBeforeClose');
+
 		const confirmBeforeClose = confirmBeforeCloseSetting === 'always' || (confirmBeforeCloseSetting === 'keyboardOnly' && ModifierKeyEmitter.getInstance().isModifierPressed);
+
 		if (confirmBeforeClose) {
 			this.confirmBeforeClose(e);
 		}
@@ -249,6 +252,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		mark('code/auxiliaryWindow/willOpen');
 
 		const targetWindow = await this.openWindow(options);
+
 		if (!targetWindow) {
 			throw new Error(localize('unableToOpenWindowError', "Unable to open a new window."));
 		}
@@ -258,6 +262,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		ensureCodeWindow(targetWindow, resolvedWindowId);
 
 		const containerDisposables = new DisposableStore();
+
 		const { container, stylesLoaded } = this.createContainer(targetWindow, containerDisposables, options);
 
 		const auxiliaryWindow = this.createAuxiliaryWindow(targetWindow, container, stylesLoaded);
@@ -300,6 +305,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 
 	private async openWindow(options?: IAuxiliaryWindowOpenOptions): Promise<Window | undefined> {
 		const activeWindow = getActiveWindow();
+
 		const activeWindowBounds = {
 			x: activeWindow.screenX,
 			y: activeWindow.screenY,
@@ -308,6 +314,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		};
 
 		const width = Math.max(options?.bounds?.width ?? BrowserAuxiliaryWindowService.DEFAULT_SIZE.width, WindowMinimumSize.WIDTH);
+
 		const height = Math.max(options?.bounds?.height ?? BrowserAuxiliaryWindowService.DEFAULT_SIZE.height, WindowMinimumSize.HEIGHT);
 
 		let newWindowBounds: IRectangle = {
@@ -342,6 +349,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		]);
 
 		const auxiliaryWindow = mainWindow.open(isFirefox ? '' /* FF immediately fires an unload event if using about:blank */ : 'about:blank', undefined, features.join(','));
+
 		if (!auxiliaryWindow && isWeb) {
 			return (await this.dialogService.prompt({
 				type: Severity.Warning,
@@ -373,7 +381,9 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		};
 
 		this.applyMeta(auxiliaryWindow);
+
 		const { stylesLoaded } = this.applyCSS(auxiliaryWindow, disposables);
+
 		const container = this.applyHTML(auxiliaryWindow, disposables);
 
 		return { stylesLoaded, container };
@@ -382,12 +392,14 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 	private applyMeta(auxiliaryWindow: CodeWindow): void {
 		for (const metaTag of ['meta[charset="utf-8"]', 'meta[http-equiv="Content-Security-Policy"]', 'meta[name="viewport"]', 'meta[name="theme-color"]']) {
 			const metaElement = mainWindow.document.querySelector(metaTag);
+
 			if (metaElement) {
 				const clonedMetaElement = createMetaElement(auxiliaryWindow.document.head);
 				copyAttributes(metaElement, clonedMetaElement);
 
 				if (metaTag === 'meta[http-equiv="Content-Security-Policy"]') {
 					const content = clonedMetaElement.getAttribute('content');
+
 					if (content) {
 						clonedMetaElement.setAttribute('content', content.replace(/(script-src[^\;]*)/, `script-src 'none'`));
 					}
@@ -396,6 +408,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		}
 
 		const originalIconLinkTag = mainWindow.document.querySelector('link[rel="icon"]');
+
 		if (originalIconLinkTag) {
 			const icon = createLinkElement(auxiliaryWindow.document.head);
 			copyAttributes(originalIconLinkTag, icon);
@@ -413,6 +426,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		const pendingLinksDisposables = disposables.add(new DisposableStore());
 
 		let pendingLinksToSettle = 0;
+
 		function onLinkSettled() {
 			if (--pendingLinksToSettle === 0) {
 				pendingLinksDisposables.dispose();
@@ -426,6 +440,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 			}
 
 			const clonedNode = auxiliaryWindow.document.head.appendChild(originalNode.cloneNode(true));
+
 			if (originalNode.tagName.toLowerCase() === 'link') {
 				pendingLinksToSettle++;
 
@@ -441,6 +456,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 		// Increment pending links right from the beginning to ensure we only settle when
 		// all style related nodes have been cloned.
 		pendingLinksToSettle++;
+
 		try {
 			for (const originalNode of mainWindow.document.head.querySelectorAll('link[rel="stylesheet"], style')) {
 				cloneNode(originalNode);
@@ -477,6 +493,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 					// text-node was changed, try to apply to our clones
 					else if (node.nodeType === Node.TEXT_NODE && node.parentNode) {
 						const clonedNode = mapOriginalToClone.get(node.parentNode);
+
 						if (clonedNode) {
 							clonedNode.textContent = node.textContent;
 						}
@@ -485,6 +502,7 @@ export class BrowserAuxiliaryWindowService extends Disposable implements IAuxili
 
 				for (const node of mutation.removedNodes) {
 					const clonedNode = mapOriginalToClone.get(node);
+
 					if (clonedNode) {
 						clonedNode.parentNode?.removeChild(clonedNode);
 						mapOriginalToClone.delete(node);

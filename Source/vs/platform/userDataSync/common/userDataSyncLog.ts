@@ -10,6 +10,7 @@ import { IUserDataSyncLogService, USER_DATA_SYNC_LOG_ID } from './userDataSync.j
 export class UserDataSyncLogService extends AbstractLogger implements IUserDataSyncLogService {
     declare readonly _serviceBrand: undefined;
     private readonly logger: ILogger;
+
     constructor(
     @ILoggerService
     loggerService: ILoggerService, 

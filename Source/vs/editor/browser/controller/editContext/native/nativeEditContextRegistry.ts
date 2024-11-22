@@ -11,6 +11,7 @@ class NativeEditContextRegistryImpl {
 
 	registerTextArea(ownerID: string, textArea: HTMLTextAreaElement): IDisposable {
 		this._textAreaMapping.set(ownerID, textArea);
+
 		return {
 			dispose: () => {
 				this._textAreaMapping.delete(ownerID);

@@ -91,10 +91,15 @@ export class FindInput extends Widget {
 		this.showCommonFindToggles = !!options.showCommonFindToggles;
 
 		const appendCaseSensitiveLabel = options.appendCaseSensitiveLabel || '';
+
 		const appendWholeWordsLabel = options.appendWholeWordsLabel || '';
+
 		const appendRegexLabel = options.appendRegexLabel || '';
+
 		const flexibleHeight = !!options.flexibleHeight;
+
 		const flexibleWidth = !!options.flexibleWidth;
+
 		const flexibleMaxHeight = options.flexibleMaxHeight;
 
 		this.domNode = document.createElement('div');
@@ -125,6 +130,7 @@ export class FindInput extends Widget {
 			}));
 			this._register(this.regex.onChange(viaKeyboard => {
 				this._onDidOptionChange.fire(viaKeyboard);
+
 				if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 					this.inputBox.focus();
 				}
@@ -142,6 +148,7 @@ export class FindInput extends Widget {
 			}));
 			this._register(this.wholeWords.onChange(viaKeyboard => {
 				this._onDidOptionChange.fire(viaKeyboard);
+
 				if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 					this.inputBox.focus();
 				}
@@ -156,6 +163,7 @@ export class FindInput extends Widget {
 			}));
 			this._register(this.caseSensitive.onChange(viaKeyboard => {
 				this._onDidOptionChange.fire(viaKeyboard);
+
 				if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 					this.inputBox.focus();
 				}
@@ -170,8 +178,10 @@ export class FindInput extends Widget {
 			this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
 				if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
 					const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
+
 					if (index >= 0) {
 						let newIndex: number = -1;
+
 						if (event.equals(KeyCode.RightArrow)) {
 							newIndex = (index + 1) % indexes.length;
 						} else if (event.equals(KeyCode.LeftArrow)) {
@@ -198,6 +208,7 @@ export class FindInput extends Widget {
 		this.controls = document.createElement('div');
 		this.controls.className = 'controls';
 		this.controls.style.display = this.showCommonFindToggles ? '' : 'none';
+
 		if (this.caseSensitive) {
 			this.controls.append(this.caseSensitive.domNode);
 		}
@@ -292,6 +303,7 @@ export class FindInput extends Widget {
 
 			this.additionalTogglesDisposables.value.add(toggle.onChange(viaKeyboard => {
 				this._onDidOptionChange.fire(viaKeyboard);
+
 				if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 					this.inputBox.focus();
 				}

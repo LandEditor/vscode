@@ -9,7 +9,9 @@ import { URI } from 'vscode-uri';
 import { Disposable } from '../utils/dispose';
 import { MemFs } from './memFs';
 import { Logger } from '../logging/logger';
+
 const TEXT_DECODER = new TextDecoder('utf-8');
+
 const TEXT_ENCODER = new TextEncoder();
 export class AutoInstallerFs extends Disposable implements vscode.FileSystemProvider {
     private readonly memfs: MemFs;
@@ -17,8 +19,10 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
     private readonly _projectCache = new Map</* root */ string, Promise<void> | undefined>();
     private readonly _emitter = this._register(new vscode.EventEmitter<vscode.FileChangeEvent[]>());
     readonly onDidChangeFile = this._emitter.event;
+
     constructor(private readonly logger: Logger) {
         super();
+
         const memfs = new MemFs('auto-installer', logger);
         this.memfs = memfs;
         memfs.onDidChangeFile((e) => {
@@ -44,6 +48,7 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
             directoryExists(path: string): boolean {
                 try {
                     const stat = memfs.stat(URI.file(path));
+
                     return stat.type === vscode.FileType.Directory;
                 }
                 catch (e) {
@@ -62,10 +67,12 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
     }
     watch(resource: vscode.Uri): vscode.Disposable {
         this.logger.trace(`AutoInstallerFs.watch. Resource: ${resource.toString()}}`);
+
         return this.memfs.watch(resource);
     }
     async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
         this.logger.trace(`AutoInstallerFs.stat: ${uri}`);
+
         const mapped = new MappedUri(uri);
         // TODO: case sensitivity configuration
         // We pretend every single node_modules or @types directory ever actually
@@ -79,6 +86,7 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
             };
         }
         await this.ensurePackageContents(mapped);
+
         return this.memfs.stat(URI.file(mapped.path));
     }
     async readDirectory(uri: vscode.Uri): Promise<[
@@ -86,14 +94,18 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
         vscode.FileType
     ][]> {
         this.logger.trace(`AutoInstallerFs.readDirectory: ${uri}`);
+
         const mapped = new MappedUri(uri);
         await this.ensurePackageContents(mapped);
+
         return this.memfs.readDirectory(URI.file(mapped.path));
     }
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
         this.logger.trace(`AutoInstallerFs.readFile: ${uri}`);
+
         const mapped = new MappedUri(uri);
         await this.ensurePackageContents(mapped);
+
         return this.memfs.readFile(URI.file(mapped.path));
     }
     writeFile(_uri: vscode.Uri, _content: Uint8Array, _options: {
@@ -123,22 +135,28 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
             throw vscode.FileSystemError.FileNotFound();
         }
         const root = await this.getProjectRoot(incomingUri.original);
+
         if (!root) {
             return;
         }
         this.logger.trace(`AutoInstallerFs.ensurePackageContents. Path: ${incomingUri.path}, Root: ${root}`);
+
         const existingInstall = this._projectCache.get(root);
+
         if (existingInstall) {
             this.logger.trace(`AutoInstallerFs.ensurePackageContents. Found ongoing install for: ${root}/node_modules`);
+
             return existingInstall;
         }
         const installing = (async () => {
             const proj = await this.packageManager.resolveProject(root, await this.getInstallOpts(incomingUri.original, root));
+
             try {
                 await proj.restore();
             }
             catch (e) {
                 console.error(`failed to restore package at ${incomingUri.path}: `, e);
+
                 throw e;
             }
         })();
@@ -149,12 +167,15 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
         const vsfs = vscode.workspace.fs;
         // We definitely need a package.json to be there.
         const pkgJson = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package.json') })));
+
         let kdlLock;
+
         try {
             kdlLock = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package-lock.kdl') })));
         }
         catch (e) { }
         let npmLock;
+
         try {
             npmLock = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package-lock.json') })));
         }
@@ -167,13 +188,17 @@ export class AutoInstallerFs extends Disposable implements vscode.FileSystemProv
     }
     private async getProjectRoot(incomingUri: URI): Promise<string | undefined> {
         const vsfs = vscode.workspace.fs;
+
         const pkgPath = incomingUri.path.match(/^(.*?)\/node_modules/);
+
         const ret = pkgPath?.[1];
+
         if (!ret) {
             return;
         }
         try {
             await vsfs.stat(incomingUri.with({ path: join(ret, 'package.json') }));
+
             return ret;
         }
         catch (e) {
@@ -185,14 +210,19 @@ class MappedUri {
     readonly raw: vscode.Uri;
     readonly original: vscode.Uri;
     readonly mapped: vscode.Uri;
+
     constructor(uri: vscode.Uri) {
         this.raw = uri;
+
         const parts = uri.path.match(/^\/([^\/]+)\/([^\/]*)(?:\/(.+))?$/);
+
         if (!parts) {
             throw new Error(`Invalid uri: ${uri.toString()}, ${uri.path}`);
         }
         const scheme = parts[1];
+
         const authority = parts[2] === 'ts-nul-authority' ? '' : parts[2];
+
         const path = parts[3];
         this.original = URI.from({ scheme, authority, path: (path ? '/' + path : path) });
         this.mapped = this.original.with({ scheme: this.raw.scheme, authority: this.raw.authority });

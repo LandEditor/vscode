@@ -26,8 +26,10 @@ export class GlobalPointerMoveMonitor implements IDisposable {
         // Unhook
         this._hooks.clear();
         this._pointerMoveCallback = null;
+
         const onStopCallback = this._onStopCallback;
         this._onStopCallback = null;
+
         if (invokeStopCallback && onStopCallback) {
             onStopCallback(browserEvent);
         }
@@ -41,7 +43,9 @@ export class GlobalPointerMoveMonitor implements IDisposable {
         }
         this._pointerMoveCallback = pointerMoveCallback;
         this._onStopCallback = onStopCallback;
+
         let eventSource: Element | Window = initialElement;
+
         try {
             initialElement.setPointerCapture(pointerId);
             this._hooks.add(toDisposable(() => {
@@ -74,6 +78,7 @@ export class GlobalPointerMoveMonitor implements IDisposable {
             if (e.buttons !== initialButtons) {
                 // Buttons state has changed in the meantime
                 this.stopMonitoring(true);
+
                 return;
             }
             e.preventDefault();

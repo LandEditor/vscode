@@ -7,6 +7,7 @@ import { setProperty } from '../../../base/common/jsonEdit.js';
 import { FormattingOptions } from '../../../base/common/jsonFormatter.js';
 export function edit(content: string, originalPath: JSONPath, value: any, formattingOptions: FormattingOptions): string {
     const edit = setProperty(content, originalPath, value, formattingOptions)[0];
+
     if (edit) {
         content = content.substring(0, edit.offset) + edit.content + content.substring(edit.offset + edit.length);
     }
@@ -14,6 +15,7 @@ export function edit(content: string, originalPath: JSONPath, value: any, format
 }
 export function getLineStartOffset(content: string, eol: string, atOffset: number): number {
     let lineStartingOffset = atOffset;
+
     while (lineStartingOffset >= 0) {
         if (content.charAt(lineStartingOffset) === eol.charAt(eol.length - 1)) {
             if (eol.length === 1) {
@@ -21,6 +23,7 @@ export function getLineStartOffset(content: string, eol: string, atOffset: numbe
             }
         }
         lineStartingOffset--;
+
         if (eol.length === 2) {
             if (lineStartingOffset >= 0 && content.charAt(lineStartingOffset) === eol.charAt(0)) {
                 return lineStartingOffset + 2;
@@ -31,6 +34,7 @@ export function getLineStartOffset(content: string, eol: string, atOffset: numbe
 }
 export function getLineEndOffset(content: string, eol: string, atOffset: number): number {
     let lineEndOffset = atOffset;
+
     while (lineEndOffset >= 0) {
         if (content.charAt(lineEndOffset) === eol.charAt(eol.length - 1)) {
             if (eol.length === 1) {
@@ -38,6 +42,7 @@ export function getLineEndOffset(content: string, eol: string, atOffset: number)
             }
         }
         lineEndOffset++;
+
         if (eol.length === 2) {
             if (lineEndOffset >= 0 && content.charAt(lineEndOffset) === eol.charAt(1)) {
                 return lineEndOffset;

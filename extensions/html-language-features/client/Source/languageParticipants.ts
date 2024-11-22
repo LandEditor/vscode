@@ -25,21 +25,28 @@ export interface LanguageParticipants {
 }
 export function getLanguageParticipants(): LanguageParticipants {
     const onDidChangeEmmiter = new EventEmitter<void>();
+
     let languages = new Set<string>();
+
     let autoInsert = new Set<string>();
+
     function update() {
         const oldLanguages = languages, oldAutoInsert = autoInsert;
         languages = new Set();
         languages.add('html');
         autoInsert = new Set();
         autoInsert.add('html');
+
         for (const extension of extensions.allAcrossExtensionHosts) {
             const htmlLanguageParticipants = extension.packageJSON?.contributes?.htmlLanguageParticipants as LanguageParticipantContribution[];
+
             if (Array.isArray(htmlLanguageParticipants)) {
                 for (const htmlLanguageParticipant of htmlLanguageParticipants) {
                     const languageId = htmlLanguageParticipant.languageId;
+
                     if (typeof languageId === 'string') {
                         languages.add(languageId);
+
                         if (htmlLanguageParticipant.autoInsert !== false) {
                             autoInsert.add(languageId);
                         }
@@ -50,11 +57,13 @@ export function getLanguageParticipants(): LanguageParticipants {
         return !isEqualSet(languages, oldLanguages) || !isEqualSet(autoInsert, oldAutoInsert);
     }
     update();
+
     const changeListener = extensions.onDidChange(_ => {
         if (update()) {
             onDidChangeEmmiter.fire();
         }
     });
+
     return {
         onDidChange: onDidChangeEmmiter.event,
         get documentSelector() { return Array.from(languages); },

@@ -15,8 +15,10 @@ export class TsConfigProvider {
             return [];
         }
         const configs = new Map<string, TSConfig>();
+
         for (const config of await this.findConfigFiles(token)) {
             const root = vscode.workspace.getWorkspaceFolder(config);
+
             if (root) {
                 configs.set(config.fsPath, {
                     uri: config,

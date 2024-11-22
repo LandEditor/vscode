@@ -19,6 +19,7 @@ export class TerminalLink extends Disposable implements ILink {
     private readonly _tooltipScheduler: MutableDisposable<RunOnceScheduler> = this._register(new MutableDisposable());
     private readonly _hoverListeners = this._register(new MutableDisposable());
     private readonly _onInvalidated = new Emitter<void>();
+
     get onInvalidated(): Event<void> { return this._onInvalidated.event; }
     get type(): TerminalLinkType { return this._type; }
     constructor(private readonly _xterm: Terminal, readonly range: IBufferRange, readonly text: string, readonly uri: URI | undefined, readonly parsedLink: IParsedLink | undefined, readonly actions: IHoverAction[] | undefined, private readonly _viewportY: number, private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => Promise<void>, private readonly _tooltipCallback: (link: TerminalLink, viewportRange: IViewportRange, modifierDownCallback?: () => void, modifierUpCallback?: () => void) => void, private readonly _isHighConfidenceLink: boolean, readonly label: string | undefined, private readonly _type: TerminalLinkType, 
@@ -35,6 +36,7 @@ export class TerminalLink extends Disposable implements ILink {
     }
     hover(event: MouseEvent, text: string): void {
         const w = dom.getWindow(event);
+
         const d = w.document;
         // Listen for modifier before handing it off to the hover to handle so it gets disposed correctly
         const hoverListeners = this._hoverListeners.value = new DisposableStore();
@@ -51,6 +53,7 @@ export class TerminalLink extends Disposable implements ILink {
         // Listen for when the terminal renders on the same line as the link
         hoverListeners.add(this._xterm.onRender(e => {
             const viewportRangeY = this.range.start.y - this._viewportY;
+
             if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
                 this._onInvalidated.fire();
             }
@@ -104,6 +107,7 @@ export class TerminalLink extends Disposable implements ILink {
     }
     private _isModifierDown(event: MouseEvent | KeyboardEvent): boolean {
         const multiCursorModifier = this._configurationService.getValue<'ctrlCmd' | 'alt'>('editor.multiCursorModifier');
+
         if (multiCursorModifier === 'ctrlCmd') {
             return !!event.altKey;
         }

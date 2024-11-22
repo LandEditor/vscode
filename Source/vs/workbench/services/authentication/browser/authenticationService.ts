@@ -28,9 +28,11 @@ export async function getCurrentAuthenticationSessionInfo(
 	productService: IProductService
 ): Promise<AuthenticationSessionInfo | undefined> {
 	const authenticationSessionValue = await secretStorageService.get(`${productService.urlProtocol}.loginAccount`);
+
 	if (authenticationSessionValue) {
 		try {
 			const authenticationSessionInfo: AuthenticationSessionInfo = JSON.parse(authenticationSessionValue);
+
 			if (authenticationSessionInfo
 				&& isString(authenticationSessionInfo.id)
 				&& isString(authenticationSessionInfo.accessToken)
@@ -122,6 +124,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 	}
 
 	private _declaredProviders: AuthenticationProviderInformation[] = [];
+
 	get declaredProviders(): AuthenticationProviderInformation[] {
 		return this._declaredProviders;
 	}
@@ -143,11 +146,13 @@ export class AuthenticationService extends Disposable implements IAuthentication
 				for (const provider of point.value) {
 					if (isFalsyOrWhitespace(provider.id)) {
 						point.collector.error(localize('authentication.missingId', 'An authentication contribution must specify an id.'));
+
 						continue;
 					}
 
 					if (isFalsyOrWhitespace(provider.label)) {
 						point.collector.error(localize('authentication.missingLabel', 'An authentication contribution must specify a label.'));
+
 						continue;
 					}
 
@@ -163,6 +168,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 			const removedExtPoints = removed.flatMap(r => r.value);
 			removedExtPoints.forEach(point => {
 				const provider = this.declaredProviders.find(provider => provider.id === point.id);
+
 				if (provider) {
 					this.unregisterDeclaredAuthenticationProvider(provider.id);
 					this._logService.debug(`Undeclared authentication provider: ${provider.id}`);
@@ -187,6 +193,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	unregisterDeclaredAuthenticationProvider(id: string): void {
 		const index = this.declaredProviders.findIndex(provider => provider.id === id);
+
 		if (index > -1) {
 			this.declaredProviders.splice(index, 1);
 		}
@@ -199,12 +206,14 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	registerAuthenticationProvider(id: string, authenticationProvider: IAuthenticationProvider): void {
 		this._authenticationProviders.set(id, authenticationProvider);
+
 		const disposableStore = new DisposableStore();
 		disposableStore.add(authenticationProvider.onDidChangeSessions(e => this._onDidChangeSessions.fire({
 			providerId: id,
 			label: authenticationProvider.label,
 			event: e
 		})));
+
 		if (isDisposable(authenticationProvider)) {
 			disposableStore.add(authenticationProvider);
 		}
@@ -214,6 +223,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	unregisterAuthenticationProvider(id: string): void {
 		const provider = this._authenticationProviders.get(id);
+
 		if (provider) {
 			this._authenticationProviders.delete(id);
 			this._onDidUnregisterAuthenticationProvider.fire({ id, label: provider.label });
@@ -226,6 +236,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 		this._authenticationProviders.forEach(provider => {
 			providerIds.push(provider.id);
 		});
+
 		return providerIds;
 	}
 
@@ -239,8 +250,11 @@ export class AuthenticationService extends Disposable implements IAuthentication
 	async getAccounts(id: string): Promise<ReadonlyArray<AuthenticationSessionAccount>> {
 		// TODO: Cache this
 		const sessions = await this.getSessions(id);
+
 		const accounts = new Array<AuthenticationSessionAccount>();
+
 		const seenAccounts = new Set<string>();
+
 		for (const session of sessions) {
 			if (!seenAccounts.has(session.account.label)) {
 				seenAccounts.add(session.account.label);
@@ -252,6 +266,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	async getSessions(id: string, scopes?: string[], account?: AuthenticationSessionAccount, activateImmediate: boolean = false): Promise<ReadonlyArray<AuthenticationSession>> {
 		const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, activateImmediate);
+
 		if (authProvider) {
 			return await authProvider.getSessions(scopes, { account });
 		} else {
@@ -261,6 +276,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	async createSession(id: string, scopes: string[], options?: IAuthenticationCreateSessionOptions): Promise<AuthenticationSession> {
 		const authProvider = this._authenticationProviders.get(id) || await this.tryActivateProvider(id, !!options?.activateImmediate);
+
 		if (authProvider) {
 			return await authProvider.createSession(scopes, {
 				account: options?.account
@@ -272,6 +288,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	async removeSession(id: string, sessionId: string): Promise<void> {
 		const authProvider = this._authenticationProviders.get(id);
+
 		if (authProvider) {
 			return authProvider.removeSession(sessionId);
 		} else {
@@ -281,7 +298,9 @@ export class AuthenticationService extends Disposable implements IAuthentication
 
 	private async tryActivateProvider(providerId: string, activateImmediate: boolean): Promise<IAuthenticationProvider> {
 		await this._extensionService.activateByEvent(getAuthenticationProviderActivationEvent(providerId), activateImmediate ? ActivationKind.Immediate : ActivationKind.Normal);
+
 		let provider = this._authenticationProviders.get(providerId);
+
 		if (provider) {
 			return provider;
 		}
@@ -294,6 +313,7 @@ export class AuthenticationService extends Disposable implements IAuthentication
 			store.add(Event.once(this.onDidRegisterAuthenticationProvider)(e => {
 				if (e.id === providerId) {
 					provider = this._authenticationProviders.get(providerId);
+
 					if (provider) {
 						resolve(provider);
 					} else {

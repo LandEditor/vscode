@@ -24,16 +24,23 @@ export interface CustomEditorCapabilities {
 export interface ICustomEditorService {
     _serviceBrand: any;
     readonly models: ICustomEditorModelManager;
+
     getCustomEditor(viewType: string): CustomEditorInfo | undefined;
+
     getAllCustomEditors(resource: URI): CustomEditorInfoCollection;
+
     getContributedCustomEditors(resource: URI): CustomEditorInfoCollection;
+
     getUserConfiguredCustomEditors(resource: URI): CustomEditorInfoCollection;
     registerCustomEditorCapabilities(viewType: string, options: CustomEditorCapabilities): IDisposable;
+
     getCustomEditorCapabilities(viewType: string): CustomEditorCapabilities | undefined;
 }
 export interface ICustomEditorModelManager {
     getAllModels(resource: URI): Promise<ICustomEditorModel[]>;
+
     get(resource: URI, viewType: string): Promise<ICustomEditorModel | undefined>;
+
     tryRetain(resource: URI, viewType: string): Promise<IReference<ICustomEditorModel>> | undefined;
     add(resource: URI, viewType: string, model: Promise<ICustomEditorModel>): Promise<IReference<ICustomEditorModel>>;
     disposeAllModelsForView(viewType: string): void;
@@ -74,6 +81,7 @@ export class CustomEditorInfo implements CustomEditorDescriptor {
     public readonly providerDisplayName: string;
     public readonly priority: RegisteredEditorPriority;
     public readonly selector: readonly CustomEditorSelector[];
+
     constructor(descriptor: CustomEditorDescriptor) {
         this.id = descriptor.id;
         this.displayName = descriptor.displayName;
@@ -87,6 +95,7 @@ export class CustomEditorInfo implements CustomEditorDescriptor {
 }
 export class CustomEditorInfoCollection {
     public readonly allEditors: readonly CustomEditorInfo[];
+
     constructor(editors: readonly CustomEditorInfo[]) {
         this.allEditors = distinct(editors, editor => editor.id);
     }
@@ -102,6 +111,7 @@ export class CustomEditorInfoCollection {
                 case RegisteredEditorPriority.builtin:
                     // A default editor must have higher priority than all other contributed editors.
                     return this.allEditors.every(otherEditor => otherEditor === editor || isLowerPriority(otherEditor, editor));
+
                 default:
                     return false;
             }
@@ -117,6 +127,7 @@ export class CustomEditorInfoCollection {
         const editors = Array.from(this.allEditors).sort((a, b) => {
             return priorityToRank(a.priority) - priorityToRank(b.priority);
         });
+
         return editors[0];
     }
 }

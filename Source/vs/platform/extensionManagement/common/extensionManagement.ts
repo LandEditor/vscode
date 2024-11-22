@@ -36,22 +36,29 @@ export interface IProductVersion {
 export function TargetPlatformToString(targetPlatform: TargetPlatform) {
 	switch (targetPlatform) {
 		case TargetPlatform.WIN32_X64: return 'Windows 64 bit';
+
 		case TargetPlatform.WIN32_ARM64: return 'Windows ARM';
 
 		case TargetPlatform.LINUX_X64: return 'Linux 64 bit';
+
 		case TargetPlatform.LINUX_ARM64: return 'Linux ARM 64';
+
 		case TargetPlatform.LINUX_ARMHF: return 'Linux ARM';
 
 		case TargetPlatform.ALPINE_X64: return 'Alpine Linux 64 bit';
+
 		case TargetPlatform.ALPINE_ARM64: return 'Alpine ARM 64';
 
 		case TargetPlatform.DARWIN_X64: return 'Mac';
+
 		case TargetPlatform.DARWIN_ARM64: return 'Mac Silicon';
 
 		case TargetPlatform.WEB: return 'Web';
 
 		case TargetPlatform.UNIVERSAL: return TargetPlatform.UNIVERSAL;
+
 		case TargetPlatform.UNKNOWN: return TargetPlatform.UNKNOWN;
+
 		case TargetPlatform.UNDEFINED: return TargetPlatform.UNDEFINED;
 	}
 }
@@ -59,21 +66,27 @@ export function TargetPlatformToString(targetPlatform: TargetPlatform) {
 export function toTargetPlatform(targetPlatform: string): TargetPlatform {
 	switch (targetPlatform) {
 		case TargetPlatform.WIN32_X64: return TargetPlatform.WIN32_X64;
+
 		case TargetPlatform.WIN32_ARM64: return TargetPlatform.WIN32_ARM64;
 
 		case TargetPlatform.LINUX_X64: return TargetPlatform.LINUX_X64;
+
 		case TargetPlatform.LINUX_ARM64: return TargetPlatform.LINUX_ARM64;
+
 		case TargetPlatform.LINUX_ARMHF: return TargetPlatform.LINUX_ARMHF;
 
 		case TargetPlatform.ALPINE_X64: return TargetPlatform.ALPINE_X64;
+
 		case TargetPlatform.ALPINE_ARM64: return TargetPlatform.ALPINE_ARM64;
 
 		case TargetPlatform.DARWIN_X64: return TargetPlatform.DARWIN_X64;
+
 		case TargetPlatform.DARWIN_ARM64: return TargetPlatform.DARWIN_ARM64;
 
 		case TargetPlatform.WEB: return TargetPlatform.WEB;
 
 		case TargetPlatform.UNIVERSAL: return TargetPlatform.UNIVERSAL;
+
 		default: return TargetPlatform.UNKNOWN;
 	}
 }
@@ -179,6 +192,7 @@ export interface IGalleryExtensionAssets {
 	changelog: IGalleryExtensionAsset | null;
 	license: IGalleryExtensionAsset | null;
 	repository: IGalleryExtensionAsset | null;
+
 	download: IGalleryExtensionAsset;
 	icon: IGalleryExtensionAsset | null;
 	signature: IGalleryExtensionAsset | null;
@@ -370,18 +384,29 @@ export interface IExtensionGalleryService {
 	readonly _serviceBrand: undefined;
 	isEnabled(): boolean;
 	query(options: IQueryOptions, token: CancellationToken): Promise<IPager<IGalleryExtension>>;
+
 	getExtensions(extensionInfos: ReadonlyArray<IExtensionInfo>, token: CancellationToken): Promise<IGalleryExtension[]>;
+
 	getExtensions(extensionInfos: ReadonlyArray<IExtensionInfo>, options: IExtensionQueryOptions, token: CancellationToken): Promise<IGalleryExtension[]>;
 	isExtensionCompatible(extension: IGalleryExtension, includePreRelease: boolean, targetPlatform: TargetPlatform, productVersion?: IProductVersion): Promise<boolean>;
+
 	getCompatibleExtension(extension: IGalleryExtension, includePreRelease: boolean, targetPlatform: TargetPlatform, productVersion?: IProductVersion): Promise<IGalleryExtension | null>;
+
 	getAllCompatibleVersions(extensionIdentifier: IExtensionIdentifier, includePreRelease: boolean, targetPlatform: TargetPlatform): Promise<IGalleryExtensionVersion[]>;
+
 	download(extension: IGalleryExtension, location: URI, operation: InstallOperation): Promise<void>;
+
 	downloadSignatureArchive(extension: IGalleryExtension, location: URI): Promise<void>;
 	reportStatistic(publisher: string, name: string, version: string, type: StatisticType): Promise<void>;
+
 	getReadme(extension: IGalleryExtension, token: CancellationToken): Promise<string>;
+
 	getManifest(extension: IGalleryExtension, token: CancellationToken): Promise<IExtensionManifest | null>;
+
 	getChangelog(extension: IGalleryExtension, token: CancellationToken): Promise<string>;
+
 	getCoreTranslation(extension: IGalleryExtension, languageId: string): Promise<ITranslation | null>;
+
 	getExtensionsControlManifest(): Promise<IExtensionsControlManifest>;
 }
 
@@ -518,10 +543,12 @@ export type InstallOptions = {
 	isMachineScoped?: boolean;
 	isApplicationScoped?: boolean;
 	pinned?: boolean;
+
 	donotIncludePackAndDependencies?: boolean;
 	installGivenVersion?: boolean;
 	preRelease?: boolean;
 	installPreReleaseVersion?: boolean;
+
 	donotVerifySignature?: boolean;
 	operation?: InstallOperation;
 	profileLocation?: URI;
@@ -561,6 +588,7 @@ export interface IExtensionManagementService {
 	onDidUpdateExtensionMetadata: Event<DidUpdateExtensionMetadata>;
 
 	zip(extension: ILocalExtension): Promise<URI>;
+
 	getManifest(vsix: URI): Promise<IExtensionManifest>;
 	install(vsix: URI, options?: InstallOptions): Promise<ILocalExtension>;
 	canInstall(extension: IGalleryExtension): Promise<true | IMarkdownString>;
@@ -572,7 +600,9 @@ export interface IExtensionManagementService {
 	uninstallExtensions(extensions: UninstallExtensionInfo[]): Promise<void>;
 	toggleAppliationScope(extension: ILocalExtension, fromProfileLocation: URI): Promise<ILocalExtension>;
 	reinstallFromGallery(extension: ILocalExtension): Promise<ILocalExtension>;
+
 	getInstalled(type?: ExtensionType, profileLocation?: URI, productVersion?: IProductVersion): Promise<ILocalExtension[]>;
+
 	getExtensionsControlManifest(): Promise<IExtensionsControlManifest>;
 	copyExtensions(fromProfileLocation: URI, toProfileLocation: URI): Promise<void>;
 	updateMetadata(local: ILocalExtension, metadata: Partial<Metadata>, profileLocation: URI): Promise<ILocalExtension>;
@@ -581,6 +611,7 @@ export interface IExtensionManagementService {
 	download(extension: IGalleryExtension, operation: InstallOperation, donotVerifySignature: boolean): Promise<URI>;
 
 	registerParticipant(pariticipant: IExtensionManagementParticipant): void;
+
 	getTargetPlatform(): Promise<TargetPlatform>;
 
 	cleanUp(): Promise<void>;
@@ -624,14 +655,18 @@ export interface IExtensionTipsService {
 	readonly _serviceBrand: undefined;
 
 	getConfigBasedTips(folder: URI): Promise<IConfigBasedExtensionTip[]>;
+
 	getImportantExecutableBasedTips(): Promise<IExecutableBasedExtensionTip[]>;
+
 	getOtherExecutableBasedTips(): Promise<IExecutableBasedExtensionTip[]>;
 }
 
 export async function computeSize(location: URI, fileService: IFileService): Promise<number> {
 	const stat = await fileService.resolve(location);
+
 	if (stat.children) {
 		const sizes = await Promise.all(stat.children.map(c => computeSize(c.resource, fileService)));
+
 		return sizes.reduce((r, s) => r + s, 0);
 	}
 	return stat.size ?? 0;

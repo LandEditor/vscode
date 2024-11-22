@@ -12,6 +12,7 @@ import { hasNativeTitlebar } from '../../../../platform/window/common/window.js'
 export class WindowIgnoreMenuShortcutsManager {
     private readonly _isUsingNativeTitleBars: boolean;
     private readonly _webviewMainService: IWebviewManagerService;
+
     constructor(configurationService: IConfigurationService, mainProcessService: IMainProcessService, private readonly _nativeHostService: INativeHostService) {
         this._isUsingNativeTitleBars = hasNativeTitlebar(configurationService);
         this._webviewMainService = ProxyChannel.toService<IWebviewManagerService>(mainProcessService.getChannel('webview'));

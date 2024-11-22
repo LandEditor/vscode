@@ -15,16 +15,27 @@ import { coalesce } from '../utils/arrays';
 function getSymbolKind(item: Proto.NavtoItem): vscode.SymbolKind {
     switch (item.kind) {
         case PConst.Kind.method: return vscode.SymbolKind.Method;
+
         case PConst.Kind.enum: return vscode.SymbolKind.Enum;
+
         case PConst.Kind.enumMember: return vscode.SymbolKind.EnumMember;
+
         case PConst.Kind.function: return vscode.SymbolKind.Function;
+
         case PConst.Kind.class: return vscode.SymbolKind.Class;
+
         case PConst.Kind.interface: return vscode.SymbolKind.Interface;
+
         case PConst.Kind.type: return vscode.SymbolKind.Class;
+
         case PConst.Kind.memberVariable: return vscode.SymbolKind.Field;
+
         case PConst.Kind.memberGetAccessor: return vscode.SymbolKind.Field;
+
         case PConst.Kind.memberSetAccessor: return vscode.SymbolKind.Field;
+
         case PConst.Kind.variable: return vscode.SymbolKind.Variable;
+
         default: return vscode.SymbolKind.Variable;
     }
 }
@@ -32,12 +43,14 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
     public constructor(private readonly client: ITypeScriptServiceClient, private readonly modeIds: readonly string[]) { }
     public async provideWorkspaceSymbols(search: string, token: vscode.CancellationToken): Promise<vscode.SymbolInformation[]> {
         let file: string | undefined;
+
         if (this.searchAllOpenProjects) {
             file = undefined;
         }
         else {
             const document = this.getDocument();
             file = document ? await this.toOpenedFiledPath(document) : undefined;
+
             if (!file && this.client.apiVersion.lt(API.v390)) {
                 return [];
             }
@@ -47,7 +60,9 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
             searchValue: search,
             maxResultCount: 256,
         };
+
         const response = await this.client.execute('navto', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return [];
         }
@@ -61,8 +76,10 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
         if (document.uri.scheme === fileSchemes.git) {
             try {
                 const path = vscode.Uri.file(JSON.parse(document.uri.query)?.path);
+
                 if (doesResourceLookLikeATypeScriptFile(path) || doesResourceLookLikeAJavaScriptFile(path)) {
                     const document = await vscode.workspace.openTextDocument(path);
+
                     return this.client.toOpenTsFilePath(document);
                 }
             }
@@ -77,12 +94,16 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
             return;
         }
         const uri = this.client.toResource(item.file);
+
         if (fileSchemes.isOfScheme(uri, fileSchemes.chatCodeBlock)) {
             return;
         }
         const label = TypeScriptWorkspaceSymbolProvider.getLabel(item);
+
         const info = new vscode.SymbolInformation(label, getSymbolKind(item), item.containerName || '', typeConverters.Location.fromTextSpan(uri, item));
+
         const kindModifiers = item.kindModifiers ? parseKindModifier(item.kindModifiers) : undefined;
+
         if (kindModifiers?.has(PConst.KindModifiers.deprecated)) {
             info.tags = [vscode.SymbolTag.Deprecated];
         }
@@ -90,6 +111,7 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
     }
     private static getLabel(item: Proto.NavtoItem) {
         const label = item.name;
+
         if (item.kind === 'method' || item.kind === 'function') {
             return label + '()';
         }
@@ -100,12 +122,14 @@ class TypeScriptWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvide
         // general questions so we check the active editor. If this
         // doesn't match we take the first TS document.
         const activeDocument = vscode.window.activeTextEditor?.document;
+
         if (activeDocument) {
             if (this.modeIds.includes(activeDocument.languageId)) {
                 return activeDocument;
             }
         }
         const documents = vscode.workspace.textDocuments;
+
         for (const document of documents) {
             if (this.modeIds.includes(document.languageId)) {
                 return document;

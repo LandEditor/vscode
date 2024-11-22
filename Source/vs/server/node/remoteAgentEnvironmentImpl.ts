@@ -22,34 +22,45 @@ import { IUserDataProfilesService } from '../../platform/userDataProfile/common/
 import { joinPath } from '../../base/common/resources.js';
 export class RemoteAgentEnvironmentChannel implements IServerChannel {
     private static _namePool = 1;
+
     constructor(private readonly _connectionToken: ServerConnectionToken, private readonly _environmentService: IServerEnvironmentService, private readonly _userDataProfilesService: IUserDataProfilesService, private readonly _extensionHostStatusService: IExtensionHostStatusService) {
     }
     async call(_: any, command: string, arg?: any): Promise<any> {
         switch (command) {
             case 'getEnvironmentData': {
                 const args = <IGetEnvironmentDataArguments>arg;
+
                 const uriTransformer = createURITransformer(args.remoteAuthority);
+
                 let environmentData = await this._getEnvironmentData(args.profile);
                 environmentData = transformOutgoingURIs(environmentData, uriTransformer);
+
                 return environmentData;
             }
             case 'getExtensionHostExitInfo': {
                 const args = <IGetExtensionHostExitInfoArguments>arg;
+
                 return this._extensionHostStatusService.getExitInfo(args.reconnectionToken);
             }
             case 'getDiagnosticInfo': {
                 const options = <IDiagnosticInfoOptions>arg;
+
                 const diagnosticInfo: IDiagnosticInfo = {
                     machineInfo: getMachineInfo()
                 };
+
                 const processesPromise: Promise<ProcessItem | void> = options.includeProcesses ? listProcesses(process.pid) : Promise.resolve();
+
                 let workspaceMetadataPromises: Promise<void>[] = [];
+
                 const workspaceMetadata: {
                     [key: string]: any;
                 } = {};
+
                 if (options.folders) {
                     // only incoming paths are transformed, so remote authority is unneeded.
                     const uriTransformer = createURITransformer('');
+
                     const folderPaths = options.folders
                         .map(folder => URI.revive(uriTransformer.transformIncoming(folder)))
                         .filter(uri => uri.scheme === 'file');
@@ -63,6 +74,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
                 return Promise.all([processesPromise, ...workspaceMetadataPromises]).then(([processes, _]) => {
                     diagnosticInfo.processes = processes || undefined;
                     diagnosticInfo.workspaceMetadata = options.folders ? workspaceMetadata : undefined;
+
                     return diagnosticInfo;
                 });
             }
@@ -79,9 +91,12 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
         type ProcessWithGlibc = NodeJS.Process & {
             glibcVersion?: string;
         };
+
         let isUnsupportedGlibc = false;
+
         if (process.platform === 'linux') {
             const glibcVersion = (process as ProcessWithGlibc).glibcVersion;
+
             const minorVersion = glibcVersion ? parseInt(glibcVersion.split('.')[1]) : 28;
             isUnsupportedGlibc = (minorVersion <= 27);
         }

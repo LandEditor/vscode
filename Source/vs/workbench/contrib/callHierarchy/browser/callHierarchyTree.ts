@@ -18,6 +18,7 @@ export class Call {
     constructor(readonly item: CallHierarchyItem, readonly locations: Location[] | undefined, readonly model: CallHierarchyModel, readonly parent: Call | undefined) { }
     static compare(a: Call, b: Call): number {
         let res = compare(a.item.uri.toString(), b.item.uri.toString());
+
         if (res === 0) {
             res = Range.compareRangesUsingStarts(a.item.range, b.item.range);
         }
@@ -34,6 +35,7 @@ export class DataSource implements IAsyncDataSource<CallHierarchyModel, Call> {
             return element.roots.map(root => new Call(root, undefined, element, undefined));
         }
         const { model, item } = element;
+
         if (this.getDirection() === CallHierarchyDirection.CallsFrom) {
             return (await model.resolveOutgoingCalls(item, CancellationToken.None)).map(call => {
                 return new Call(call.to, call.fromRanges.map(range => ({ range, uri: item.uri })), model, element);
@@ -57,6 +59,7 @@ export class IdentityProvider implements IIdentityProvider<Call> {
         toString(): string;
     } {
         let res = this.getDirection() + JSON.stringify(element.item.uri) + JSON.stringify(element.item.range);
+
         if (element.parent) {
             res += this.getId(element.parent);
         }
@@ -71,13 +74,17 @@ export class CallRenderer implements ITreeRenderer<Call, FuzzyScore, CallRenderi
     templateId: string = CallRenderer.id;
     renderTemplate(container: HTMLElement): CallRenderingTemplate {
         container.classList.add('callhierarchy-element');
+
         const icon = document.createElement('div');
         container.appendChild(icon);
+
         const label = new IconLabel(container, { supportHighlights: true });
+
         return new CallRenderingTemplate(icon, label);
     }
     renderElement(node: ITreeNode<Call, FuzzyScore>, _index: number, template: CallRenderingTemplate): void {
         const { element, filterData } = node;
+
         const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
         template.icon.className = '';
         template.icon.classList.add('inline', ...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind)));

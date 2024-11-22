@@ -12,6 +12,7 @@ export const enum LinePartMetadata {
 }
 export class LinePart {
     _linePartBrand: void = undefined;
+
     constructor(
     /**
      * last char index of this token (not inclusive).

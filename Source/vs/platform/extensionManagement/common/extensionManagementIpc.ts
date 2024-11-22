@@ -27,8 +27,11 @@ function transformOutgoingURI(uri: URI, transformer: IURITransformer | null): UR
 
 function transformIncomingExtension(extension: ILocalExtension, transformer: IURITransformer | null): ILocalExtension {
 	transformer = transformer ? transformer : DefaultURITransformer;
+
 	const manifest = extension.manifest;
+
 	const transformed = transformAndReviveIncomingURIs({ ...extension, ...{ manifest: undefined } }, transformer);
+
 	return { ...transformed, ...{ manifest } };
 }
 
@@ -58,6 +61,7 @@ export class ExtensionManagementChannel implements IServerChannel {
 
 	listen(context: any, event: string): Event<any> {
 		const uriTransformer = this.getUriTransformer(context);
+
 		switch (event) {
 			case 'onInstallExtension': {
 				return Event.map<InstallExtensionEvent, InstallExtensionEvent>(this.onInstallExtension, e => {
@@ -106,10 +110,13 @@ export class ExtensionManagementChannel implements IServerChannel {
 
 	async call(context: any, command: string, args?: any): Promise<any> {
 		const uriTransformer: IURITransformer | null = this.getUriTransformer(context);
+
 		switch (command) {
 			case 'zip': {
 				const extension = transformIncomingExtension(args[0], uriTransformer);
+
 				const uri = await this.service.zip(extension);
+
 				return transformOutgoingURI(uri, uriTransformer);
 			}
 			case 'install': {
@@ -132,6 +139,7 @@ export class ExtensionManagementChannel implements IServerChannel {
 			}
 			case 'installGalleryExtensions': {
 				const arg: InstallExtensionInfo[] = args[0];
+
 				return this.service.installGalleryExtensions(arg.map(({ extension, options }) => ({ extension, options: transformIncomingOptions(options, uriTransformer) ?? {} })));
 			}
 			case 'uninstall': {
@@ -139,6 +147,7 @@ export class ExtensionManagementChannel implements IServerChannel {
 			}
 			case 'uninstallExtensions': {
 				const arg: UninstallExtensionInfo[] = args[0];
+
 				return this.service.uninstallExtensions(arg.map(({ extension, options }) => ({ extension: transformIncomingExtension(extension, uriTransformer), options: transformIncomingOptions(options, uriTransformer) })));
 			}
 			case 'reinstallFromGallery': {
@@ -146,10 +155,12 @@ export class ExtensionManagementChannel implements IServerChannel {
 			}
 			case 'getInstalled': {
 				const extensions = await this.service.getInstalled(args[0], transformIncomingURI(args[1], uriTransformer), args[2]);
+
 				return extensions.map(e => transformOutgoingExtension(e, uriTransformer));
 			}
 			case 'toggleAppliationScope': {
 				const extension = await this.service.toggleAppliationScope(transformIncomingExtension(args[0], uriTransformer), transformIncomingURI(args[1], uriTransformer));
+
 				return transformOutgoingExtension(extension, uriTransformer);
 			}
 			case 'copyExtensions': {
@@ -157,6 +168,7 @@ export class ExtensionManagementChannel implements IServerChannel {
 			}
 			case 'updateMetadata': {
 				const e = await this.service.updateMetadata(transformIncomingExtension(args[0], uriTransformer), args[1], transformIncomingURI(args[2], uriTransformer));
+
 				return transformOutgoingExtension(e, uriTransformer);
 			}
 			case 'resetPinnedStateForAllUserExtensions': {
@@ -188,18 +200,23 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 	declare readonly _serviceBrand: undefined;
 
 	protected readonly _onInstallExtension = this._register(new Emitter<InstallExtensionEvent>());
+
 	get onInstallExtension() { return this._onInstallExtension.event; }
 
 	protected readonly _onDidInstallExtensions = this._register(new Emitter<readonly InstallExtensionResult[]>());
+
 	get onDidInstallExtensions() { return this._onDidInstallExtensions.event; }
 
 	protected readonly _onUninstallExtension = this._register(new Emitter<UninstallExtensionEvent>());
+
 	get onUninstallExtension() { return this._onUninstallExtension.event; }
 
 	protected readonly _onDidUninstallExtension = this._register(new Emitter<DidUninstallExtensionEvent>());
+
 	get onDidUninstallExtension() { return this._onDidUninstallExtension.event; }
 
 	protected readonly _onDidUpdateExtensionMetadata = this._register(new Emitter<DidUpdateExtensionMetadata>());
+
 	get onDidUpdateExtensionMetadata() { return this._onDidUpdateExtensionMetadata.event; }
 
 	constructor(
@@ -243,6 +260,7 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 	}
 
 	protected _targetPlatformPromise: Promise<TargetPlatform> | undefined;
+
 	getTargetPlatform(): Promise<TargetPlatform> {
 		if (!this._targetPlatformPromise) {
 			this._targetPlatformPromise = this.channel.call<TargetPlatform>('getTargetPlatform');
@@ -252,6 +270,7 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 
 	async canInstall(extension: IGalleryExtension): Promise<true | IMarkdownString> {
 		const currentTargetPlatform = await this.getTargetPlatform();
+
 		if (extension.allTargetPlatforms.some(targetPlatform => isTargetPlatformCompatible(targetPlatform, extension.allTargetPlatforms, currentTargetPlatform))) {
 			return true;
 		}
@@ -272,6 +291,7 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 
 	async installExtensionsFromProfile(extensions: IExtensionIdentifier[], fromProfileLocation: URI, toProfileLocation: URI): Promise<ILocalExtension[]> {
 		const result = await this.channel.call<ILocalExtension[]>('installExtensionsFromProfile', [extensions, fromProfileLocation, toProfileLocation]);
+
 		return result.map(local => transformIncomingExtension(local, null));
 	}
 
@@ -285,6 +305,7 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 
 	async installGalleryExtensions(extensions: InstallExtensionInfo[]): Promise<InstallExtensionResult[]> {
 		const results = await this.channel.call<InstallExtensionResult[]>('installGalleryExtensions', [extensions]);
+
 		return results.map(e => ({ ...e, local: e.local ? transformIncomingExtension(e.local, null) : e.local, source: this.isUriComponents(e.source) ? URI.revive(e.source) : e.source, profileLocation: URI.revive(e.profileLocation) }));
 	}
 
@@ -336,6 +357,7 @@ export class ExtensionManagementChannelClient extends Disposable implements IExt
 
 	async download(extension: IGalleryExtension, operation: InstallOperation, donotVerifySignature: boolean): Promise<URI> {
 		const result = await this.channel.call<UriComponents>('download', [extension, operation, donotVerifySignature]);
+
 		return URI.revive(result);
 	}
 
@@ -358,7 +380,9 @@ export class ExtensionTipsChannel implements IServerChannel {
 	call(context: any, command: string, args?: any): Promise<any> {
 		switch (command) {
 			case 'getConfigBasedTips': return this.service.getConfigBasedTips(URI.revive(args[0]));
+
 			case 'getImportantExecutableBasedTips': return this.service.getImportantExecutableBasedTips();
+
 			case 'getOtherExecutableBasedTips': return this.service.getOtherExecutableBasedTips();
 		}
 

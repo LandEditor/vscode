@@ -26,22 +26,29 @@ export interface FoldRange {
 }
 export const MAX_FOLDING_REGIONS = 0xFFFF;
 export const MAX_LINE_NUMBER = 0xFFFFFF;
+
 const MASK_INDENT = 0xFF000000;
 class BitField {
     private readonly _states: Uint32Array;
+
     constructor(size: number) {
         const numWords = Math.ceil(size / 32);
         this._states = new Uint32Array(numWords);
     }
     public get(index: number): boolean {
         const arrayIndex = (index / 32) | 0;
+
         const bit = index % 32;
+
         return (this._states[arrayIndex] & (1 << bit)) !== 0;
     }
     public set(index: number, newState: boolean) {
         const arrayIndex = (index / 32) | 0;
+
         const bit = index % 32;
+
         const value = this._states[arrayIndex];
+
         if (newState) {
             this._states[arrayIndex] = value | (1 << bit);
         }
@@ -58,6 +65,7 @@ export class FoldingRegions {
     private readonly _recoveredStates: BitField;
     private _parentsComputed: boolean;
     private readonly _types: Array<string | undefined> | undefined;
+
     constructor(startIndexes: Uint32Array, endIndexes: Uint32Array, types?: Array<string | undefined>) {
         if (startIndexes.length !== endIndexes.length || startIndexes.length > MAX_FOLDING_REGIONS) {
             throw new Error('invalid startIndexes or endIndexes size');
@@ -73,14 +81,20 @@ export class FoldingRegions {
     private ensureParentIndices() {
         if (!this._parentsComputed) {
             this._parentsComputed = true;
+
             const parentIndexes: number[] = [];
+
             const isInsideLast = (startLineNumber: number, endLineNumber: number) => {
                 const index = parentIndexes[parentIndexes.length - 1];
+
                 return this.getStartLineNumber(index) <= startLineNumber && this.getEndLineNumber(index) >= endLineNumber;
             };
+
             for (let i = 0, len = this._startIndexes.length; i < len; i++) {
                 const startLineNumber = this._startIndexes[i];
+
                 const endLineNumber = this._endIndexes[i];
+
                 if (startLineNumber > MAX_LINE_NUMBER || endLineNumber > MAX_LINE_NUMBER) {
                     throw new Error('startLineNumber or endLineNumber must not exceed ' + MAX_LINE_NUMBER);
                 }
@@ -152,6 +166,7 @@ export class FoldingRegions {
     }
     public setCollapsedAllOfType(type: string, newState: boolean) {
         let hasChanged = false;
+
         if (this._types) {
             for (let i = 0; i < this._types.length; i++) {
                 if (this._types[i] === type) {
@@ -167,7 +182,9 @@ export class FoldingRegions {
     }
     public getParentIndex(index: number) {
         this.ensureParentIndices();
+
         const parent = ((this._startIndexes[index] & MASK_INDENT) >>> 24) + ((this._endIndexes[index] & MASK_INDENT) >>> 16);
+
         if (parent === MAX_FOLDING_REGIONS) {
             return -1;
         }
@@ -178,11 +195,13 @@ export class FoldingRegions {
     }
     private findIndex(line: number) {
         let low = 0, high = this._startIndexes.length;
+
         if (high === 0) {
             return -1; // no children
         }
         while (low < high) {
             const mid = Math.floor((low + high) / 2);
+
             if (line < this.getStartLineNumber(mid)) {
                 high = mid;
             }
@@ -194,12 +213,15 @@ export class FoldingRegions {
     }
     public findRange(line: number): number {
         let index = this.findIndex(line);
+
         if (index >= 0) {
             const endLineNumber = this.getEndLineNumber(index);
+
             if (endLineNumber >= line) {
                 return index;
             }
             index = this.getParentIndex(index);
+
             while (index !== -1) {
                 if (this.contains(index, line)) {
                     return index;
@@ -211,6 +233,7 @@ export class FoldingRegions {
     }
     public toString() {
         const res: string[] = [];
+
         for (let i = 0; i < this.length; i++) {
             res[i] = `[${foldSourceAbbr[this.getSource(i)]}${this.isCollapsed(i) ? '+' : '-'}] ${this.getStartLineNumber(i)}/${this.getEndLineNumber(i)}`;
         }
@@ -227,15 +250,21 @@ export class FoldingRegions {
     }
     public static fromFoldRanges(ranges: FoldRange[]): FoldingRegions {
         const rangesLength = ranges.length;
+
         const startIndexes = new Uint32Array(rangesLength);
+
         const endIndexes = new Uint32Array(rangesLength);
+
         let types: Array<string | undefined> | undefined = [];
+
         let gotTypes = false;
+
         for (let i = 0; i < rangesLength; i++) {
             const range = ranges[i];
             startIndexes[i] = range.startLineNumber;
             endIndexes[i] = range.endLineNumber;
             types.push(range.type);
+
             if (range.type) {
                 gotTypes = true;
             }
@@ -244,6 +273,7 @@ export class FoldingRegions {
             types = undefined;
         }
         const regions = new FoldingRegions(startIndexes, endIndexes, types);
+
         for (let i = 0; i < rangesLength; i++) {
             if (ranges[i].isCollapsed) {
                 regions.setCollapsed(i, true);
@@ -267,23 +297,36 @@ export class FoldingRegions {
      */
     public static sanitizeAndMerge(rangesA: FoldingRegions | FoldRange[], rangesB: FoldingRegions | FoldRange[], maxLineNumber: number | undefined, selection?: SelectedLines): FoldRange[] {
         maxLineNumber = maxLineNumber ?? Number.MAX_VALUE;
+
         const getIndexedFunction = (r: FoldingRegions | FoldRange[], limit: number) => {
             return Array.isArray(r)
                 ? ((i: number) => { return (i < limit) ? r[i] : undefined; })
                 : ((i: number) => { return (i < limit) ? r.toFoldRange(i) : undefined; });
         };
+
         const getA = getIndexedFunction(rangesA, rangesA.length);
+
         const getB = getIndexedFunction(rangesB, rangesB.length);
+
         let indexA = 0;
+
         let indexB = 0;
+
         let nextA = getA(0);
+
         let nextB = getB(0);
+
         const stackedRanges: FoldRange[] = [];
+
         let topStackedRange: FoldRange | undefined;
+
         let prevLineNumber = 0;
+
         const resultRanges: FoldRange[] = [];
+
         while (nextA || nextB) {
             let useRange: FoldRange | undefined = undefined;
+
             if (nextB && (!nextA || nextA.startLineNumber >= nextB.startLineNumber)) {
                 if (nextA && nextA.startLineNumber === nextB.startLineNumber) {
                     if (nextB.source === FoldSource.userDefined) {
@@ -301,6 +344,7 @@ export class FoldingRegions {
                 }
                 else {
                     useRange = nextB;
+
                     if (nextB.isCollapsed && nextB.source === FoldSource.provider) {
                         // a previously collapsed range
                         useRange.source = FoldSource.recovered;
@@ -312,10 +356,13 @@ export class FoldingRegions {
                 // nextA is next. The user folded B set takes precedence and we sometimes need to look
                 // ahead in it to check for an upcoming conflict.
                 let scanIndex = indexB;
+
                 let prescanB = nextB;
+
                 while (true) {
                     if (!prescanB || prescanB.startLineNumber > nextA!.endLineNumber) {
                         useRange = nextA;
+
                         break; // no conflict, use this nextA
                     }
                     if (prescanB.source === FoldSource.userDefined && prescanB.endLineNumber > nextA!.endLineNumber) {
@@ -338,6 +385,7 @@ export class FoldingRegions {
                         || topStackedRange.endLineNumber >= useRange.endLineNumber)) {
                     resultRanges.push(useRange);
                     prevLineNumber = useRange.startLineNumber;
+
                     if (topStackedRange) {
                         stackedRanges.push(topStackedRange);
                     }

@@ -17,18 +17,24 @@ export class ChatResponseAccessibleView implements IAccessibleViewImplentation {
     readonly name = 'panelChat';
     readonly type = AccessibleViewType.View;
     readonly when = ChatContextKeys.inChatSession;
+
     getProvider(accessor: ServicesAccessor) {
         const widgetService = accessor.get(IChatWidgetService);
+
         const widget = widgetService.lastFocusedWidget;
+
         if (!widget) {
             return;
         }
         const chatInputFocused = widget.hasInputFocus();
+
         if (chatInputFocused) {
             widget.focusLastMessage();
         }
         const verifiedWidget: IChatWidget = widget;
+
         const focusedItem = verifiedWidget.getFocus();
+
         if (!focusedItem) {
             return;
         }
@@ -37,6 +43,7 @@ export class ChatResponseAccessibleView implements IAccessibleViewImplentation {
 }
 class ChatResponseAccessibleProvider extends Disposable implements IAccessibleViewContentProvider {
     private _focusedItem: ChatTreeItem;
+
     constructor(private readonly _widget: IChatWidget, item: ChatTreeItem, private readonly _chatInputFocused: boolean) {
         super();
         this._focusedItem = item;
@@ -49,6 +56,7 @@ class ChatResponseAccessibleProvider extends Disposable implements IAccessibleVi
     }
     private _getContent(item: ChatTreeItem): string {
         let responseContent = isResponseVM(item) ? item.response.toString() : '';
+
         if (!responseContent && 'errorDetails' in item && item.errorDetails) {
             responseContent = item.errorDetails.message;
         }
@@ -56,6 +64,7 @@ class ChatResponseAccessibleProvider extends Disposable implements IAccessibleVi
     }
     onClose(): void {
         this._widget.reveal(this._focusedItem);
+
         if (this._chatInputFocused) {
             this._widget.focusInput();
         }
@@ -65,16 +74,20 @@ class ChatResponseAccessibleProvider extends Disposable implements IAccessibleVi
     }
     provideNextContent(): string | undefined {
         const next = this._widget.getSibling(this._focusedItem, 'next');
+
         if (next) {
             this._focusedItem = next;
+
             return this._getContent(next);
         }
         return;
     }
     providePreviousContent(): string | undefined {
         const previous = this._widget.getSibling(this._focusedItem, 'previous');
+
         if (previous) {
             this._focusedItem = previous;
+
             return this._getContent(previous);
         }
         return;

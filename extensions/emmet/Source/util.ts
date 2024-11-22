@@ -10,8 +10,11 @@ import { DocumentStreamReader } from './bufferStream';
 import * as EmmetHelper from '@vscode/emmet-helper';
 import { TextDocument as LSTextDocument } from 'vscode-languageserver-textdocument';
 import { getRootNode } from './parseDocument';
+
 let _emmetHelper: typeof EmmetHelper;
+
 let _currentExtensionsPath: string[] | undefined;
+
 let _homeDir: vscode.Uri | undefined;
 export function setHomeDir(homeDir: vscode.Uri) {
     _homeDir = homeDir;
@@ -29,13 +32,17 @@ export function getEmmetHelper() {
  */
 export function updateEmmetExtensionsPath(forceRefresh: boolean = false) {
     const helper = getEmmetHelper();
+
     let extensionsPath = vscode.workspace.getConfiguration('emmet').get<string[]>('extensionsPath');
+
     if (!extensionsPath) {
         extensionsPath = [];
     }
     if (forceRefresh || _currentExtensionsPath !== extensionsPath) {
         _currentExtensionsPath = extensionsPath;
+
         const rootPaths = vscode.workspace.workspaceFolders?.length ? vscode.workspace.workspaceFolders.map(f => f.uri) : undefined;
+
         const fileSystem = vscode.workspace.fs;
         helper.updateExtensionsPath(extensionsPath, fileSystem, rootPaths, _homeDir).catch(err => {
             if (Array.isArray(extensionsPath) && extensionsPath.length) {
@@ -95,12 +102,15 @@ export const LANGUAGE_MODES: {
 };
 export function isStyleSheet(syntax: string): boolean {
     const stylesheetSyntaxes = ['css', 'scss', 'sass', 'less', 'stylus'];
+
     return stylesheetSyntaxes.includes(syntax);
 }
 export function validate(allowStylesheet: boolean = true): boolean {
     const editor = vscode.window.activeTextEditor;
+
     if (!editor) {
         vscode.window.showInformationMessage('No editor is active');
+
         return false;
     }
     if (!allowStylesheet && isStyleSheet(editor.document.languageId)) {
@@ -117,14 +127,18 @@ export function getMappingForIncludedLanguages(): Record<string, string> {
         'handlebars': 'html',
         'php': 'html'
     };
+
     const finalMappedModes: Record<string, string> = {};
+
     const includeLanguagesConfig = vscode.workspace.getConfiguration('emmet').get<Record<string, string>>('includeLanguages');
+
     const includeLanguages = Object.assign({}, MAPPED_MODES, includeLanguagesConfig ?? {});
     Object.keys(includeLanguages).forEach(syntax => {
         if (typeof includeLanguages[syntax] === 'string' && LANGUAGE_MODES[includeLanguages[syntax]]) {
             finalMappedModes[syntax] = includeLanguages[syntax];
         }
     });
+
     return finalMappedModes;
 }
 /**
@@ -155,14 +169,18 @@ export function getEmmetMode(language: string, mappedModes: Record<string, strin
         language = 'pug';
     }
     const syntaxes = getSyntaxes();
+
     if (syntaxes.markup.includes(language) || syntaxes.stylesheet.includes(language)) {
         return language;
     }
     return;
 }
 const closeBrace = 125;
+
 const openBrace = 123;
+
 const slash = 47;
+
 const star = 42;
 /**
  * Traverse the given document backward & forward from given position
@@ -172,15 +190,24 @@ const star = 42;
  */
 export function parsePartialStylesheet(document: vscode.TextDocument, position: vscode.Position): FlatStylesheet | undefined {
     const isCSS = document.languageId === 'css';
+
     const positionOffset = document.offsetAt(position);
+
     let startOffset = 0;
+
     let endOffset = document.getText().length;
+
     const limitCharacter = positionOffset - 5000;
+
     const limitOffset = limitCharacter > 0 ? limitCharacter : startOffset;
+
     const stream = new DocumentStreamReader(document, positionOffset);
+
     function findOpeningCommentBeforePosition(pos: number): number | undefined {
         const text = document.getText().substring(0, pos);
+
         const offset = text.lastIndexOf('/*');
+
         if (offset === -1) {
             return;
         }
@@ -188,18 +215,24 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
     }
     function findClosingCommentAfterPosition(pos: number): number | undefined {
         const text = document.getText().substring(pos);
+
         let offset = text.indexOf('*/');
+
         if (offset === -1) {
             return;
         }
         offset += 2 + pos;
+
         return offset;
     }
     function consumeLineCommentBackwards() {
         const posLineNumber = document.positionAt(stream.pos).line;
+
         if (!isCSS && currentLine !== posLineNumber) {
             currentLine = posLineNumber;
+
             const startLineComment = document.lineAt(currentLine).text.indexOf('//');
+
             if (startLineComment > -1) {
                 stream.pos = document.offsetAt(new vscode.Position(currentLine, startLineComment));
             }
@@ -239,16 +272,22 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
         endOffset = stream.pos;
     }
     stream.pos = positionOffset;
+
     let openBracesToFind = 1;
+
     let currentLine = position.line;
+
     let exit = false;
     // Go back until we found an opening brace. If we find a closing one, consume its pair and continue.
     while (!exit && openBracesToFind > 0 && !stream.sof()) {
         consumeLineCommentBackwards();
+
         switch (stream.backUp(1)) {
             case openBrace:
                 openBracesToFind--;
+
                 break;
+
             case closeBrace:
                 if (isCSS) {
                     stream.next();
@@ -259,9 +298,12 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
                     openBracesToFind++;
                 }
                 break;
+
             case slash:
                 consumeBlockCommentBackwards();
+
                 break;
+
             default:
                 break;
         }
@@ -273,23 +315,33 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
     // We are at an opening brace. We need to include its selector.
     currentLine = document.positionAt(stream.pos).line;
     openBracesToFind = 0;
+
     let foundSelector = false;
+
     while (!exit && !stream.sof() && !foundSelector && openBracesToFind >= 0) {
         consumeLineCommentBackwards();
+
         const ch = stream.backUp(1);
+
         if (/\s/.test(String.fromCharCode(ch))) {
             continue;
         }
         switch (ch) {
             case slash:
                 consumeBlockCommentBackwards();
+
                 break;
+
             case closeBrace:
                 openBracesToFind++;
+
                 break;
+
             case openBrace:
                 openBracesToFind--;
+
                 break;
+
             default:
                 if (!openBracesToFind) {
                     foundSelector = true;
@@ -302,6 +354,7 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
     }
     try {
         const buffer = ' '.repeat(startOffset) + document.getText().substring(startOffset, endOffset);
+
         return parseStylesheet(buffer);
     }
     catch (e) {
@@ -320,7 +373,9 @@ export function getFlatNode(root: FlatNode | undefined, offset: number, includeN
             return;
         }
         const nodeStart = child.start;
+
         const nodeEnd = child.end;
+
         if ((nodeStart < offset && nodeEnd > offset)
             || (includeNodeBoundary && nodeStart <= offset && nodeEnd >= offset)) {
             return getFlatNodeChildren(child.children) ?? child;
@@ -330,6 +385,7 @@ export function getFlatNode(root: FlatNode | undefined, offset: number, includeN
             // In case this node is an invalid unpaired HTML node,
             // we still want to search its children
             const htmlChild = <HtmlFlatNode>child;
+
             if (htmlChild.open && !htmlChild.close) {
                 return getFlatNodeChildren(htmlChild.children);
             }
@@ -339,6 +395,7 @@ export function getFlatNode(root: FlatNode | undefined, offset: number, includeN
     function getFlatNodeChildren(children: FlatNode[]): FlatNode | undefined {
         for (let i = 0; i < children.length; i++) {
             const foundChild = getFlatNodeChild(children[i]);
+
             if (foundChild) {
                 return foundChild;
             }
@@ -354,12 +411,14 @@ export const allowedMimeTypesInScriptTag = ['text/html', 'text/plain', 'text/x-t
  */
 export function getHtmlFlatNode(documentText: string, root: FlatNode | undefined, offset: number, includeNodeBoundary: boolean): HtmlFlatNode | undefined {
     let currentNode: HtmlFlatNode | undefined = <HtmlFlatNode | undefined>getFlatNode(root, offset, includeNodeBoundary);
+
     if (!currentNode) {
         return;
     }
     // If the currentNode is a script one, first set up its subtree and then find HTML node.
     if (currentNode.name === 'script' && currentNode.children.length === 0) {
         const scriptNodeBody = setupScriptNodeSubtree(documentText, currentNode);
+
         if (scriptNodeBody) {
             currentNode = getHtmlFlatNode(scriptNodeBody, currentNode, offset, includeNodeBoundary) ?? currentNode;
         }
@@ -375,17 +434,22 @@ export function setupScriptNodeSubtree(documentText: string, scriptNode: HtmlFla
         (scriptNode.attributes &&
             scriptNode.attributes.some(x => x.name.toString() === 'type'
                 && allowedMimeTypesInScriptTag.includes(x.value.toString())));
+
     if (isTemplateScript
         && scriptNode.open) {
         // blank out the rest of the document and generate the subtree.
         const beforePadding = ' '.repeat(scriptNode.open.end);
+
         const endToUse = scriptNode.close ? scriptNode.close.start : scriptNode.end;
+
         const scriptBodyText = beforePadding + documentText.substring(scriptNode.open.end, endToUse);
+
         const innerRoot: HtmlFlatNode = parse(scriptBodyText);
         innerRoot.children.forEach(child => {
             scriptNode.children.push(child);
             child.parent = scriptNode;
         });
+
         return scriptBodyText;
     }
     return '';
@@ -393,20 +457,28 @@ export function setupScriptNodeSubtree(documentText: string, scriptNode: HtmlFla
 export function setupCdataNodeSubtree(documentText: string, cdataNode: HtmlFlatNode): string {
     // blank out the rest of the document and generate the subtree.
     const cdataStart = '<![CDATA[';
+
     const cdataEnd = ']]>';
+
     const startToUse = cdataNode.start + cdataStart.length;
+
     const endToUse = cdataNode.end - cdataEnd.length;
+
     const beforePadding = ' '.repeat(startToUse);
+
     const cdataBody = beforePadding + documentText.substring(startToUse, endToUse);
+
     const innerRoot: HtmlFlatNode = parse(cdataBody);
     innerRoot.children.forEach(child => {
         cdataNode.children.push(child);
         child.parent = cdataNode;
     });
+
     return cdataBody;
 }
 export function isOffsetInsideOpenOrCloseTag(node: FlatNode, offset: number): boolean {
     const htmlNode = node as HtmlFlatNode;
+
     if ((htmlNode.open && offset > htmlNode.open.start && offset < htmlNode.open.end)
         || (htmlNode.close && offset > htmlNode.close.start && offset < htmlNode.close.end)) {
         return true;
@@ -415,12 +487,16 @@ export function isOffsetInsideOpenOrCloseTag(node: FlatNode, offset: number): bo
 }
 export function offsetRangeToSelection(document: vscode.TextDocument, start: number, end: number): vscode.Selection {
     const startPos = document.positionAt(start);
+
     const endPos = document.positionAt(end);
+
     return new vscode.Selection(startPos, endPos);
 }
 export function offsetRangeToVsRange(document: vscode.TextDocument, start: number, end: number): vscode.Range {
     const startPos = document.positionAt(start);
+
     const endPos = document.positionAt(end);
+
     return new vscode.Range(startPos, endPos);
 }
 /**
@@ -442,12 +518,18 @@ export function findNextWord(propertyValue: string, pos: number): [
     number | undefined
 ] {
     let foundSpace = pos === -1;
+
     let foundStart = false;
+
     let foundEnd = false;
+
     let newSelectionStart;
+
     let newSelectionEnd;
+
     while (pos < propertyValue.length - 1) {
         pos++;
+
         if (!foundSpace) {
             if (propertyValue[pos] === ' ') {
                 foundSpace = true;
@@ -460,11 +542,13 @@ export function findNextWord(propertyValue: string, pos: number): [
         if (!foundStart) {
             newSelectionStart = pos;
             foundStart = true;
+
             continue;
         }
         if (propertyValue[pos] === ' ') {
             newSelectionEnd = pos;
             foundEnd = true;
+
             break;
         }
     }
@@ -478,12 +562,18 @@ export function findPrevWord(propertyValue: string, pos: number): [
     number | undefined
 ] {
     let foundSpace = pos === propertyValue.length;
+
     let foundStart = false;
+
     let foundEnd = false;
+
     let newSelectionStart;
+
     let newSelectionEnd;
+
     while (pos > -1) {
         pos--;
+
         if (!foundSpace) {
             if (propertyValue[pos] === ' ') {
                 foundSpace = true;
@@ -496,11 +586,13 @@ export function findPrevWord(propertyValue: string, pos: number): [
         if (!foundEnd) {
             newSelectionEnd = pos + 1;
             foundEnd = true;
+
             continue;
         }
         if (propertyValue[pos] === ' ') {
             newSelectionStart = pos + 1;
             foundStart = true;
+
             break;
         }
     }
@@ -534,8 +626,11 @@ export function getNodesInBetween(node1: FlatNode, node2: FlatNode): FlatNode[] 
         }
     }
     const siblings: FlatNode[] = [];
+
     let currentNode: FlatNode | undefined = node1;
+
     const position = node2.end;
+
     while (currentNode && position > currentNode.start) {
         siblings.push(currentNode);
         currentNode = currentNode.nextSibling;
@@ -555,11 +650,14 @@ export function sameNodes(node1: FlatNode | undefined, node2: FlatNode | undefin
 }
 export function getEmmetConfiguration(syntax: string) {
     const emmetConfig = vscode.workspace.getConfiguration('emmet');
+
     const syntaxProfiles = Object.assign({}, emmetConfig['syntaxProfiles'] || {});
+
     const preferences = Object.assign({}, emmetConfig['preferences'] || {});
     // jsx, xml and xsl syntaxes need to have self closing tags unless otherwise configured by user
     if (syntax === 'jsx' || syntax === 'xml' || syntax === 'xsl') {
         syntaxProfiles[syntax] = syntaxProfiles[syntax] || {};
+
         if (typeof syntaxProfiles[syntax] === 'object'
             && !syntaxProfiles[syntax].hasOwnProperty('self_closing_tag') // Old Emmet format
             && !syntaxProfiles[syntax].hasOwnProperty('selfClosingStyle') // Emmet 2.0 format
@@ -604,13 +702,18 @@ export function getCssPropertyFromRule(rule: FlatRule, name: string): FlatProper
  */
 export function getCssPropertyFromDocument(editor: vscode.TextEditor, position: vscode.Position): FlatProperty | null {
     const document = editor.document;
+
     const rootNode = getRootNode(document, true);
+
     const offset = document.offsetAt(position);
+
     const node = getFlatNode(rootNode, offset, true);
+
     if (isStyleSheet(editor.document.languageId)) {
         return node && node.type === 'property' ? <FlatProperty>node : null;
     }
     const htmlNode = <HtmlFlatNode>node;
+
     if (htmlNode
         && htmlNode.name === 'style'
         && htmlNode.open && htmlNode.close
@@ -618,8 +721,11 @@ export function getCssPropertyFromDocument(editor: vscode.TextEditor, position: 
         && htmlNode.close.start > offset) {
         const buffer = ' '.repeat(htmlNode.start) +
             document.getText().substring(htmlNode.start, htmlNode.end);
+
         const innerRootNode = parseStylesheet(buffer);
+
         const innerNode = getFlatNode(innerRootNode, offset, true);
+
         return (innerNode && innerNode.type === 'property') ? <FlatProperty>innerNode : null;
     }
     return null;
@@ -629,11 +735,14 @@ export function getEmbeddedCssNodeIfAny(document: vscode.TextDocument, currentNo
         return;
     }
     const currentHtmlNode = <HtmlFlatNode>currentNode;
+
     if (currentHtmlNode && currentHtmlNode.open && currentHtmlNode.close) {
         const offset = document.offsetAt(position);
+
         if (currentHtmlNode.open.end < offset && offset <= currentHtmlNode.close.start) {
             if (currentHtmlNode.name === 'style') {
                 const buffer = ' '.repeat(currentHtmlNode.open.end) + document.getText().substring(currentHtmlNode.open.end, currentHtmlNode.close.start);
+
                 return parseStylesheet(buffer);
             }
         }
@@ -645,11 +754,14 @@ export function isStyleAttribute(currentNode: FlatNode | undefined, offset: numb
         return false;
     }
     const currentHtmlNode = <HtmlFlatNode>currentNode;
+
     const index = (currentHtmlNode.attributes || []).findIndex(x => x.name.toString() === 'style');
+
     if (index === -1) {
         return false;
     }
     const styleAttribute = currentHtmlNode.attributes[index];
+
     return offset >= styleAttribute.value.start && offset <= styleAttribute.value.end;
 }
 export function isNumber(obj: any): obj is number {
@@ -660,7 +772,9 @@ export function toLSTextDocument(doc: vscode.TextDocument): LSTextDocument {
 }
 export function getPathBaseName(path: string): string {
     const pathAfterSlashSplit = path.split('/').pop();
+
     const pathAfterBackslashSplit = pathAfterSlashSplit ? pathAfterSlashSplit.split('\\').pop() : '';
+
     return pathAfterBackslashSplit ?? '';
 }
 export function getSyntaxes() {

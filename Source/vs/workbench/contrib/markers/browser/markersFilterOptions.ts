@@ -15,6 +15,7 @@ export class ResourceGlobMatcher {
         root: URI;
         expression: ParsedExpression;
     }>;
+
     constructor(globalExpression: IExpression, rootExpressions: {
         root: URI;
         expression: IExpression;
@@ -24,14 +25,17 @@ export class ResourceGlobMatcher {
             root: URI;
             expression: ParsedExpression;
         }>(uri => uriIdentityService.extUri.ignorePathCasing(uri));
+
         for (const expression of rootExpressions) {
             this.expressionsByRoot.set(expression.root, { root: expression.root, expression: parse(expression.expression) });
         }
     }
     matches(resource: URI): boolean {
         const rootExpression = this.expressionsByRoot.findSubstr(resource);
+
         if (rootExpression) {
             const path = relativePath(rootExpression.root, resource);
+
             if (path && !!rootExpression.expression(path)) {
                 return true;
             }
@@ -60,8 +64,11 @@ export class FilterOptions {
         this.showWarnings = showWarnings;
         this.showErrors = showErrors;
         this.showInfos = showInfos;
+
         const filesExcludeByRoot = Array.isArray(filesExclude) ? filesExclude : [];
+
         const excludesExpression: IExpression = Array.isArray(filesExclude) ? getEmptyExpression() : filesExclude;
+
         for (const { expression } of filesExcludeByRoot) {
             for (const pattern of Object.keys(expression)) {
                 if (!pattern.endsWith('/**')) {
@@ -72,12 +79,16 @@ export class FilterOptions {
         }
         const negate = filter.startsWith('!');
         this.textFilter = { text: (negate ? strings.ltrim(filter, '!') : filter).trim(), negate };
+
         const includeExpression: IExpression = getEmptyExpression();
+
         if (filter) {
             const filters = splitGlobAware(filter, ',').map(s => s.trim()).filter(s => !!s.length);
+
             for (const f of filters) {
                 if (f.startsWith('!')) {
                     const filterText = strings.ltrim(f, '!');
+
                     if (filterText) {
                         this.setPattern(excludesExpression, filterText);
                     }

@@ -12,6 +12,7 @@ import { LinkedList } from '../../../../base/common/linkedList.js';
 import { createDecorator, ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
 import { localize } from '../../../../nls.js';
+
 const IEditorCancellationTokens = createDecorator<IEditorCancellationTokens>('IEditorCancelService');
 interface IEditorCancellationTokens {
     readonly _serviceBrand: undefined;
@@ -27,10 +28,13 @@ registerSingleton(IEditorCancellationTokens, class implements IEditorCancellatio
     }>();
     add(editor: ICodeEditor, cts: CancellationTokenSource): () => void {
         let data = this._tokens.get(editor);
+
         if (!data) {
             data = editor.invokeWithinContext(accessor => {
                 const key = ctxCancellableOperation.bindTo(accessor.get(IContextKeyService));
+
                 const tokens = new LinkedList<CancellationTokenSource>();
+
                 return { key, tokens };
             });
             this._tokens.set(editor, data);
@@ -38,6 +42,7 @@ registerSingleton(IEditorCancellationTokens, class implements IEditorCancellatio
         let removeFn: Function | undefined;
         data.key.set(true);
         removeFn = data.tokens.push(cts);
+
         return () => {
             // remove w/o cancellation
             if (removeFn) {
@@ -49,11 +54,13 @@ registerSingleton(IEditorCancellationTokens, class implements IEditorCancellatio
     }
     cancel(editor: ICodeEditor): void {
         const data = this._tokens.get(editor);
+
         if (!data) {
             return;
         }
         // remove with cancellation
         const cts = data.tokens.pop();
+
         if (cts) {
             cts.cancel();
             data.key.set(!data.tokens.isEmpty());
@@ -62,12 +69,14 @@ registerSingleton(IEditorCancellationTokens, class implements IEditorCancellatio
 }, InstantiationType.Delayed);
 export class EditorKeybindingCancellationTokenSource extends CancellationTokenSource {
     private readonly _unregister: Function;
+
     constructor(readonly editor: ICodeEditor, parent?: CancellationToken) {
         super(parent);
         this._unregister = editor.invokeWithinContext(accessor => accessor.get(IEditorCancellationTokens).add(editor, this));
     }
     override dispose(): void {
         this._unregister();
+
         super.dispose();
     }
 }

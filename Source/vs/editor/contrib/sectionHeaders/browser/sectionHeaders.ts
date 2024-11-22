@@ -23,6 +23,7 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
     private currentOccurrences: {
         [decorationId: string]: SectionHeaderOccurrence;
     };
+
     constructor(private readonly editor: ICodeEditor, 
     @ILanguageConfigurationService
     private readonly languageConfigurationService: ILanguageConfigurationService, 
@@ -46,6 +47,7 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
         }));
         this._register(languageConfigurationService.onDidChange((e) => {
             const editorLanguageId = this.editor.getModel()?.getLanguageId();
+
             if (editorLanguageId && e.affects(editorLanguageId)) {
                 this.currentOccurrences = {};
                 this.options = this.createOptions(editor.getOption(EditorOption.minimap));
@@ -83,11 +85,14 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
             return undefined;
         }
         const languageId = this.editor.getModel().getLanguageId();
+
         if (!languageId) {
             return undefined;
         }
         const commentsConfiguration = this.languageConfigurationService.getLanguageConfiguration(languageId).comments;
+
         const foldingRules = this.languageConfigurationService.getLanguageConfiguration(languageId).foldingRules;
+
         if (!commentsConfiguration && !foldingRules?.markers) {
             return undefined;
         }
@@ -103,6 +108,7 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
             return;
         }
         const model = this.editor.getModel();
+
         if (model.isDisposed() || model.isTooLargeForSyncing()) {
             return;
         }
@@ -118,6 +124,7 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
     }
     private updateDecorations(sectionHeaders: SectionHeader[]): void {
         const model = this.editor.getModel();
+
         if (model) {
             // Remove all section headers that should be in comments and are not in comments
             sectionHeaders = sectionHeaders.filter((sectionHeader) => {
@@ -125,18 +132,25 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
                     return true;
                 }
                 const validRange = model.validateRange(sectionHeader.range);
+
                 const tokens = model.tokenization.getLineTokens(validRange.startLineNumber);
+
                 const idx = tokens.findTokenIndexAtOffset(validRange.startColumn - 1);
+
                 const tokenType = tokens.getStandardTokenType(idx);
+
                 const languageId = tokens.getLanguageId(idx);
+
                 return (languageId === model.getLanguageId() && tokenType === StandardTokenType.Comment);
             });
         }
         const oldDecorations = Object.values(this.currentOccurrences).map(occurrence => occurrence.decorationId);
+
         const newDecorations = sectionHeaders.map(sectionHeader => decoration(sectionHeader));
         this.editor.changeDecorations((changeAccessor) => {
             const decorations = changeAccessor.deltaDecorations(oldDecorations, newDecorations);
             this.currentOccurrences = {};
+
             for (let i = 0, len = decorations.length; i < len; i++) {
                 const occurrence = { sectionHeader: sectionHeaders[i], decorationId: decorations[i] };
                 this.currentOccurrences[occurrence.decorationId] = occurrence;
@@ -145,6 +159,7 @@ export class SectionHeaderDetector extends Disposable implements IEditorContribu
     }
     private stop(): void {
         this.computeSectionHeaders.cancel();
+
         if (this.computePromise) {
             this.computePromise.cancel();
             this.computePromise = null;

@@ -27,6 +27,7 @@ export const ViewIdentifierMap: {
     'scm': 'workbench.scm',
     'testing': 'workbench.view.testing'
 };
+
 const viewsWelcomeExtensionPointSchema = Object.freeze<IConfigurationPropertySchema>({
     type: 'array',
     description: nls.localize('contributes.viewsWelcome', "Contributed views welcome content. Welcome content will be rendered in tree based views whenever they have no meaningful content to display, ie. the File Explorer when no folder is open. Such content is useful as in-product documentation to drive users to use certain features before they are available. A good example would be a `Clone Repository` button in the File Explorer welcome view."),

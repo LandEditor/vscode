@@ -39,6 +39,7 @@ export class RemoteAgentService extends AbstractRemoteAgentService implements IR
 }
 class RemoteConnectionFailureNotificationContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.nativeRemoteConnectionFailureNotification';
+
     constructor(
     @IRemoteAgentService
     private readonly _remoteAgentService: IRemoteAgentService, 
@@ -64,7 +65,9 @@ class RemoteConnectionFailureNotificationContribution implements IWorkbenchContr
                         run: () => nativeHostService.openDevTools()
                     }
                 ];
+
                 const troubleshootingURL = this._getTroubleshootingURL();
+
                 if (troubleshootingURL) {
                     choices.push({
                         label: nls.localize('directUrl', "Open in browser"),
@@ -77,10 +80,12 @@ class RemoteConnectionFailureNotificationContribution implements IWorkbenchContr
     }
     private _getTroubleshootingURL(): URI | null {
         const remoteAgentConnection = this._remoteAgentService.getConnection();
+
         if (!remoteAgentConnection) {
             return null;
         }
         const connectionData = this._remoteAuthorityResolverService.getConnectionData(remoteAgentConnection.remoteAuthority);
+
         if (!connectionData || connectionData.connectTo.type !== RemoteConnectionType.WebSocket) {
             return null;
         }

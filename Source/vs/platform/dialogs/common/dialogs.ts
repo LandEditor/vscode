@@ -143,6 +143,7 @@ export interface ICheckboxResult {
 }
 export interface IPickAndOpenOptions {
     readonly forceNewWindow?: boolean;
+
     defaultUri?: URI;
     readonly telemetryExtraData?: ITelemetryData;
     availableFileSystems?: string[];
@@ -268,9 +269,11 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
         // button last. There maybe later processing when presenting the buttons
         // based on OS standards.
         const buttons: string[] = [];
+
         switch (kind) {
             case DialogKind.Confirmation: {
                 const confirmationDialog = dialog as IConfirmation;
+
                 if (confirmationDialog.primaryButton) {
                     buttons.push(confirmationDialog.primaryButton);
                 }
@@ -287,6 +290,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
             }
             case DialogKind.Prompt: {
                 const promptDialog = dialog as IPrompt<unknown>;
+
                 if (Array.isArray(promptDialog.buttons) && promptDialog.buttons.length > 0) {
                     buttons.push(...promptDialog.buttons.map(button => button.label));
                 }
@@ -313,6 +317,7 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
             }
             case DialogKind.Input: {
                 const inputDialog = dialog as IInput;
+
                 if (inputDialog.primaryButton) {
                     buttons.push(inputDialog.primaryButton);
                 }
@@ -341,10 +346,12 @@ export abstract class AbstractDialogHandler implements IDialogHandler {
     }
     protected getPromptResult<T>(prompt: IPrompt<T>, buttonIndex: number, checkboxChecked: boolean | undefined): IAsyncPromptResult<T> {
         const promptButtons: IPromptBaseButton<T>[] = [...(prompt.buttons ?? [])];
+
         if (prompt.cancelButton && typeof prompt.cancelButton !== 'string' && typeof prompt.cancelButton !== 'boolean') {
             promptButtons.push(prompt.cancelButton);
         }
         let result = promptButtons[buttonIndex]?.run({ checkboxChecked });
+
         if (!(result instanceof Promise)) {
             result = Promise.resolve(result);
         }
@@ -481,6 +488,7 @@ const MAX_CONFIRM_FILES = 10;
 export function getFileNamesMessage(fileNamesOrResources: readonly (string | URI)[]): string {
     const message: string[] = [];
     message.push(...fileNamesOrResources.slice(0, MAX_CONFIRM_FILES).map(fileNameOrResource => typeof fileNameOrResource === 'string' ? fileNameOrResource : basename(fileNameOrResource)));
+
     if (fileNamesOrResources.length > MAX_CONFIRM_FILES) {
         if (fileNamesOrResources.length - MAX_CONFIRM_FILES === 1) {
             message.push(localize('moreFile', "...1 additional file not shown"));
@@ -490,6 +498,7 @@ export function getFileNamesMessage(fileNamesOrResources: readonly (string | URI
         }
     }
     message.push('');
+
     return message.join('\n');
 }
 export interface INativeOpenDialogOptions {
@@ -517,13 +526,17 @@ export interface IMassagedMessageBoxOptions {
  */
 export function massageMessageBoxOptions(options: MessageBoxOptions, productService: IProductService): IMassagedMessageBoxOptions {
     const massagedOptions = deepClone(options);
+
     let buttons = (massagedOptions.buttons ?? []).map(button => mnemonicButtonLabel(button));
+
     let buttonIndeces = (options.buttons || []).map((button, index) => index);
+
     let defaultId = 0; // by default the first button is default button
     let cancelId = massagedOptions.cancelId ?? buttons.length - 1; // by default the last button is cancel button
     // Apply HIG per OS when more than one button is used
     if (buttons.length > 1) {
         const cancelButton = typeof cancelId === 'number' ? buttons[cancelId] : undefined;
+
         if (isLinux || isMacintosh) {
             // Linux: the GNOME HIG (https://developer.gnome.org/hig/patterns/feedback/dialogs.html?highlight=dialog)
             // recommend the following:
@@ -547,6 +560,7 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
             if (typeof cancelButton === 'string' && buttons.length > 1 && cancelId !== 1) {
                 buttons.splice(cancelId, 1);
                 buttons.splice(1, 0, cancelButton);
+
                 const cancelButtonIndex = buttonIndeces[cancelId];
                 buttonIndeces.splice(cancelId, 1);
                 buttonIndeces.splice(1, 0, cancelButtonIndex);
@@ -555,7 +569,9 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
             if (isLinux && buttons.length > 1) {
                 buttons = buttons.reverse();
                 buttonIndeces = buttonIndeces.reverse();
+
                 defaultId = buttons.length - 1;
+
                 if (typeof cancelButton === 'string') {
                     cancelId = defaultId - 1;
                 }
@@ -572,6 +588,7 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
             if (typeof cancelButton === 'string' && buttons.length > 1 && cancelId !== buttons.length - 1 /* last action */) {
                 buttons.splice(cancelId, 1);
                 buttons.push(cancelButton);
+
                 const buttonIndex = buttonIndeces[cancelId];
                 buttonIndeces.splice(cancelId, 1);
                 buttonIndeces.push(buttonIndex);
@@ -584,6 +601,7 @@ export function massageMessageBoxOptions(options: MessageBoxOptions, productServ
     massagedOptions.cancelId = cancelId;
     massagedOptions.noLink = true;
     massagedOptions.title = massagedOptions.title || productService.nameLong;
+
     return {
         options: massagedOptions,
         buttonIndeces

@@ -38,6 +38,7 @@ export class BetterTokenStorage<T> {
             this._secretStorage.get(this.keylistKey).then(keyListStr => {
                 if (!keyListStr) {
                     resolve(new Map());
+
                     return;
                 }
                 const keyList: Array<string> = JSON.parse(keyListStr);
@@ -75,11 +76,14 @@ export class BetterTokenStorage<T> {
     }
     async get(key: string): Promise<T | undefined> {
         const tokens = await this.getTokens();
+
         return tokens.get(key);
     }
     async getAll(predicate?: (item: T) => boolean): Promise<T[]> {
         const tokens = await this.getTokens();
+
         const values = new Array<T>();
+
         for (const [_, value] of tokens) {
             if (!predicate || predicate(value)) {
                 values.push(value);
@@ -89,8 +93,10 @@ export class BetterTokenStorage<T> {
     }
     async store(key: string, value: T): Promise<void> {
         const tokens = await this.getTokens();
+
         const isAddition = !tokens.has(key);
         tokens.set(key, value);
+
         const valueStr = this.serializeSecret(value);
         this._operationInProgress = true;
         this._tokensPromise = new Promise((resolve, _) => {
@@ -112,6 +118,7 @@ export class BetterTokenStorage<T> {
     }
     async delete(key: string): Promise<void> {
         const tokens = await this.getTokens();
+
         if (!tokens.has(key)) {
             return;
         }
@@ -134,7 +141,9 @@ export class BetterTokenStorage<T> {
     }
     async deleteAll(predicate?: (item: T) => boolean): Promise<void> {
         const tokens = await this.getTokens();
+
         const promises = [];
+
         for (const [key, value] of tokens) {
             if (!predicate || predicate(value)) {
                 promises.push(this.delete(key));
@@ -144,6 +153,7 @@ export class BetterTokenStorage<T> {
     }
     private async updateKeyList(tokens: Map<string, T>) {
         const keyList = [];
+
         for (const [key] of tokens) {
             keyList.push(key);
         }
@@ -160,9 +170,11 @@ export class BetterTokenStorage<T> {
     // came before you have been processed.
     private async getTokens(): Promise<Map<string, T>> {
         let tokens;
+
         do {
             tokens = await this._tokensPromise;
         } while (this._operationInProgress);
+
         return tokens;
     }
     // This is a crucial function that handles whether or not the token has changed in
@@ -196,14 +208,18 @@ export class BetterTokenStorage<T> {
                     return tokens;
                 }
                 const storageSecret = this.parseSecret(storageSecretStr);
+
                 const cachedSecret = tokens.get(key);
+
                 if (!cachedSecret) {
                     // token was added in another window
                     tokens.set(key, storageSecret);
                     this._didChangeInOtherWindow.fire({ added: [key], updated: [], removed: [] });
+
                     return tokens;
                 }
                 const cachedSecretStr = this.serializeSecret(cachedSecret);
+
                 if (storageSecretStr !== cachedSecretStr) {
                     // token was updated in another window
                     tokens.set(key, storageSecret);
@@ -215,6 +231,7 @@ export class BetterTokenStorage<T> {
                 return tokens;
             }, err => {
                 Logger.error(err);
+
                 return tokens;
             }).then(resolve);
         });

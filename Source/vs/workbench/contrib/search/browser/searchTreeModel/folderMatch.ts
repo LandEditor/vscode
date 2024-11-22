@@ -35,6 +35,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     private _replacingAll: boolean = false;
     private _name: Lazy<string>;
     private readonly _id: string;
+
     constructor(protected _resource: URI | null, _id: string, protected _index: number, protected _query: ITextQuery, private _parent: ITextSearchHeading | FolderMatchImpl, private _searchResult: ISearchResult, private _closestRoot: ISearchTreeFolderMatchWorkspaceRoot | null, 
     @IReplaceService
     private readonly replaceService: IReplaceService, 
@@ -88,11 +89,13 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     bindModel(model: ITextModel): void {
         const fileMatch = this._fileMatches.get(model.uri);
+
         if (fileMatch) {
             fileMatch.bindModel(model);
         }
         else {
             const folderMatch = this.getFolderMatch(model.uri);
+
             const match = folderMatch?.getDownstreamFileMatch(model.uri);
             match?.bindModel(model);
         }
@@ -101,6 +104,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
         const folderMatch = this._register(this.instantiationService.createInstance(FolderMatchWithResourceImpl, resource, id, index, query, this, this._searchResult, baseWorkspaceFolder));
         this.configureIntermediateMatch(folderMatch);
         this.doAddFolder(folderMatch);
+
         return folderMatch;
     }
     public configureIntermediateMatch(folderMatch: FolderMatchWithResourceImpl) {
@@ -126,6 +130,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     replaceAll(): Promise<any> {
         const matches = this.matches();
+
         return this.batchReplace(matches);
     }
     matches(): (ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource)[] {
@@ -142,11 +147,14 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     getDownstreamFileMatch(uri: URI): ISearchTreeFileMatch | null {
         const directChildFileMatch = this._fileMatches.get(uri);
+
         if (directChildFileMatch) {
             return directChildFileMatch;
         }
         const folderMatch = this.getFolderMatch(uri);
+
         const match = folderMatch?.getDownstreamFileMatch(uri);
+
         if (match) {
             return match;
         }
@@ -154,7 +162,9 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     allDownstreamFileMatches(): ISearchTreeFileMatch[] {
         let recursiveChildren: ISearchTreeFileMatch[] = [];
+
         const iterator = this.folderMatchesIterator();
+
         for (const elem of iterator) {
             recursiveChildren = recursiveChildren.concat(elem.allDownstreamFileMatches());
         }
@@ -180,6 +190,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     doAddFile(fileMatch: ISearchTreeFileMatch): void {
         this._fileMatches.set(fileMatch.resource, fileMatch);
+
         if (this._unDisposedFileMatches.has(fileMatch.resource)) {
             this._unDisposedFileMatches.delete(fileMatch.resource);
         }
@@ -192,6 +203,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     private isInParentChain(folderMatch: FolderMatchWithResourceImpl) {
         let matchItem: FolderMatchImpl | ITextSearchHeading = this;
+
         while (matchItem instanceof FolderMatchImpl) {
             if (matchItem.id() === folderMatch.id()) {
                 return true;
@@ -202,6 +214,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     public getFolderMatch(resource: URI): FolderMatchWithResourceImpl | undefined {
         const folderMatch = this._folderMatchesMap.findSubstr(resource);
+
         return folderMatch;
     }
     doAddFolder(folderMatch: FolderMatchWithResourceImpl) {
@@ -213,6 +226,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
         }
         this._folderMatches.set(folderMatch.resource, folderMatch);
         this._folderMatchesMap.set(folderMatch.resource, folderMatch);
+
         if (this._unDisposedFolderMatches.has(folderMatch.resource)) {
             this._unDisposedFolderMatches.delete(folderMatch.resource);
         }
@@ -224,6 +238,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     public onFileChange(fileMatch: ISearchTreeFileMatch, removed = false): void {
         let added = false;
+
         if (!this._fileMatches.has(fileMatch.resource)) {
             this.doAddFile(fileMatch);
             added = true;
@@ -249,12 +264,14 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     doRemoveFile(fileMatches: ISearchTreeFileMatch[], dispose: boolean = true, trigger: boolean = true, keepReadonly = false): void {
         const removed = [];
+
         for (const match of fileMatches as ISearchTreeFileMatch[]) {
             if (this._fileMatches.get(match.resource)) {
                 if (keepReadonly && match.hasReadonlyMatches()) {
                     continue;
                 }
                 this._fileMatches.delete(match.resource);
+
                 if (dispose) {
                     match.dispose();
                 }
@@ -265,6 +282,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
             }
             else {
                 const folder = this.getFolderMatch(match.resource);
+
                 if (folder) {
                     folder.doRemoveFile([match], dispose, trigger);
                 }
@@ -279,6 +297,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     }
     async bindNotebookEditorWidget(editor: NotebookEditorWidget, resource: URI) {
         const fileMatch = this._fileMatches.get(resource);
+
         if (isNotebookFileMatch(fileMatch)) {
             if (fileMatch) {
                 fileMatch.bindNotebookEditorWidget(editor);
@@ -286,6 +305,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
             }
             else {
                 const folderMatches = this.folderMatchesIterator();
+
                 for (const elem of folderMatches) {
                     await elem.bindNotebookEditorWidget(editor, resource);
                 }
@@ -295,9 +315,11 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     addFileMatch(raw: IFileMatch[], silent: boolean, searchInstanceID: string): void {
         // when adding a fileMatch that has intermediate directories
         const added: ISearchTreeFileMatch[] = [];
+
         const updated: ISearchTreeFileMatch[] = [];
         raw.forEach(rawFileMatch => {
             const existingFileMatch = this.getDownstreamFileMatch(rawFileMatch.resource);
+
             if (existingFileMatch) {
                 if (rawFileMatch.results) {
                     rawFileMatch
@@ -313,6 +335,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
                     rawFileMatch.cellResults?.forEach(rawCellMatch => {
                         if (isNotebookFileMatch(existingFileMatch)) {
                             const existingCellMatch = existingFileMatch.getCellMatch(getIDFromINotebookCellMatch(rawCellMatch));
+
                             if (existingCellMatch) {
                                 existingCellMatch.addContentMatches(rawCellMatch.contentResults);
                                 existingCellMatch.addWebviewMatches(rawCellMatch.webviewResults);
@@ -324,6 +347,7 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
                     });
                 }
                 updated.push(existingFileMatch);
+
                 if (rawFileMatch.results && rawFileMatch.results.length > 0) {
                     existingFileMatch.addContext(rawFileMatch.results);
                 }
@@ -335,19 +359,23 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
                 }
             }
         });
+
         const elements = [...added, ...updated];
+
         if (!silent && elements.length) {
             this._onChange.fire({ elements, added: !!added.length });
         }
     }
     unbindNotebookEditorWidget(editor: NotebookEditorWidget, resource: URI) {
         const fileMatch = this._fileMatches.get(resource);
+
         if (isNotebookFileMatch(fileMatch)) {
             if (fileMatch) {
                 fileMatch.unbindNotebookEditorWidget(editor);
             }
             else {
                 const folderMatches = this.folderMatchesIterator();
+
                 for (const elem of folderMatches) {
                     elem.unbindNotebookEditorWidget(editor, resource);
                 }
@@ -367,11 +395,13 @@ export class FolderMatchImpl extends Disposable implements ISearchTreeFolderMatc
     override dispose(): void {
         this.disposeMatches();
         this._onDispose.fire();
+
         super.dispose();
     }
 }
 export class FolderMatchWithResourceImpl extends FolderMatchImpl implements ISearchTreeFolderMatchWithResource {
     protected _normalizedResource: Lazy<URI>;
+
     constructor(_resource: URI, _id: string, _index: number, _query: ITextQuery, _parent: ITextSearchHeading | FolderMatchImpl, _searchResult: ISearchResult, _closestRoot: ISearchTreeFolderMatchWorkspaceRoot | null, 
     @IReplaceService
     replaceService: IReplaceService, 
@@ -417,8 +447,10 @@ export class FolderMatchWorkspaceRootImpl extends FolderMatchWithResourceImpl im
         const fileMatch = this.instantiationService.createInstance(NotebookCompatibleFileMatch, query, previewOptions, maxResults, parent, rawFileMatch, closestRoot, searchInstanceID);
         fileMatch.createMatches();
         parent.doAddFile(fileMatch);
+
         const disposable = fileMatch.onChange(({ didRemove }) => parent.onFileChange(fileMatch, didRemove));
         this._register(fileMatch.onDispose(() => disposable.dispose()));
+
         return fileMatch;
     }
     createAndConfigureFileMatch(rawFileMatch: IFileMatch<URI>, searchInstanceID: string): FileMatchImpl {
@@ -426,25 +458,33 @@ export class FolderMatchWorkspaceRootImpl extends FolderMatchWithResourceImpl im
             throw Error(`${rawFileMatch.resource} is not a descendant of ${this.resource}`);
         }
         const fileMatchParentParts: URI[] = [];
+
         let uri = this.normalizedUriParent(rawFileMatch.resource);
+
         while (!this.uriEquals(this.normalizedResource, uri)) {
             fileMatchParentParts.unshift(uri);
+
             const prevUri = uri;
             uri = this.uriIdentityService.extUri.removeTrailingPathSeparator(this.normalizedUriParent(uri));
+
             if (this.uriEquals(prevUri, uri)) {
                 throw Error(`${rawFileMatch.resource} is not correctly configured as a child of ${this.normalizedResource}`);
             }
         }
         const root = this.closestRoot ?? this;
+
         let parent: FolderMatchWithResourceImpl = this;
+
         for (let i = 0; i < fileMatchParentParts.length; i++) {
             let folderMatch: FolderMatchWithResourceImpl | undefined = parent.getFolderMatch(fileMatchParentParts[i]);
+
             if (!folderMatch) {
                 folderMatch = parent.createIntermediateFolderMatch(fileMatchParentParts[i], fileMatchParentParts[i].toString(), -1, this._query, root);
             }
             parent = folderMatch;
         }
         const contentPatternToUse = typeof (this._query.contentPattern) === 'string' ? { pattern: this._query.contentPattern } : this._query.contentPattern;
+
         return this.createFileMatch(contentPatternToUse, this._query.previewOptions, this._query.maxResults, parent, rawFileMatch, root, searchInstanceID);
     }
 }
@@ -467,8 +507,10 @@ export class FolderMatchNoRootImpl extends FolderMatchImpl implements ISearchTre
         const fileMatch = this._register(this.instantiationService.createInstance(NotebookCompatibleFileMatch, contentPatternToUse, this._query.previewOptions, this._query.maxResults, this, rawFileMatch, null, searchInstanceID));
         fileMatch.createMatches();
         this.doAddFile(fileMatch);
+
         const disposable = fileMatch.onChange(({ didRemove }) => this.onFileChange(fileMatch, didRemove));
         this._register(fileMatch.onDispose(() => disposable.dispose()));
+
         return fileMatch;
     }
 }

@@ -32,7 +32,9 @@ class DebugEditorGpuRendererAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const instantiationService = accessor.get(IInstantiationService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const choice = await quickInputService.pick([
 			{
 				label: localize('logTextureAtlasStats.label', "Log Texture Atlas Stats"),
@@ -47,6 +49,7 @@ class DebugEditorGpuRendererAction extends EditorAction {
 				id: 'drawGlyph',
 			},
 		], { canPickMany: false });
+
 		if (!choice) {
 			return;
 		}
@@ -56,23 +59,32 @@ class DebugEditorGpuRendererAction extends EditorAction {
 					const logService = accessor.get(ILogService);
 
 					const atlas = ViewGpuContext.atlas;
+
 					if (!ViewGpuContext.atlas) {
 						logService.error('No texture atlas found');
+
 						return;
 					}
 
 					const stats = atlas.getStats();
 					logService.info(['Texture atlas stats', ...stats].join('\n\n'));
 				});
+
 				break;
+
 			case 'saveTextureAtlas':
 				instantiationService.invokeFunction(async accessor => {
 					const workspaceContextService = accessor.get(IWorkspaceContextService);
+
 					const fileService = accessor.get(IFileService);
+
 					const folders = workspaceContextService.getWorkspace().folders;
+
 					if (folders.length > 0) {
 						const atlas = ViewGpuContext.atlas;
+
 						const promises = [];
+
 						for (const [layerIndex, page] of atlas.pages.entries()) {
 							promises.push(...[
 								fileService.writeFile(
@@ -88,35 +100,49 @@ class DebugEditorGpuRendererAction extends EditorAction {
 						await Promise.all(promises);
 					}
 				});
+
 				break;
+
 			case 'drawGlyph':
 				instantiationService.invokeFunction(async accessor => {
 					const configurationService = accessor.get(IConfigurationService);
+
 					const fileService = accessor.get(IFileService);
+
 					const quickInputService = accessor.get(IQuickInputService);
+
 					const workspaceContextService = accessor.get(IWorkspaceContextService);
 
 					const folders = workspaceContextService.getWorkspace().folders;
+
 					if (folders.length === 0) {
 						return;
 					}
 
 					const atlas = ViewGpuContext.atlas;
+
 					const fontFamily = configurationService.getValue<string>('editor.fontFamily');
+
 					const fontSize = configurationService.getValue<number>('editor.fontSize');
+
 					const rasterizer = new GlyphRasterizer(fontSize, fontFamily);
+
 					let chars = await quickInputService.input({
 						prompt: 'Enter a character to draw (prefix with 0x for code point))'
 					});
+
 					if (!chars) {
 						return;
 					}
 					const codePoint = chars.match(/0x(?<codePoint>[0-9a-f]+)/i)?.groups?.codePoint;
+
 					if (codePoint !== undefined) {
 						chars = String.fromCodePoint(parseInt(codePoint, 16));
 					}
 					const metadata = 0;
+
 					const rasterizedGlyph = atlas.getGlyph(rasterizer, chars, metadata);
+
 					if (!rasterizedGlyph) {
 						return;
 					}
@@ -126,16 +152,21 @@ class DebugEditorGpuRendererAction extends EditorAction {
 						rasterizedGlyph.w,
 						rasterizedGlyph.h
 					);
+
 					if (!imageData) {
 						return;
 					}
 					const canvas = new OffscreenCanvas(imageData.width, imageData.height);
+
 					const ctx = ensureNonNullable(canvas.getContext('2d'));
 					ctx.putImageData(imageData, 0, 0);
+
 					const blob = await canvas.convertToBlob({ type: 'image/png' });
+
 					const resource = URI.joinPath(folders[0].uri, `glyph_${chars}_${metadata}_${fontSize}px_${fontFamily.replaceAll(/[,\\\/\.'\s]/g, '_')}.png`);
 					await fileService.writeFile(resource, VSBuffer.wrap(new Uint8Array(await blob.arrayBuffer())));
 				});
+
 				break;
 		}
 	}

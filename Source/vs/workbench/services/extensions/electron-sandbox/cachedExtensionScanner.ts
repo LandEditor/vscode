@@ -21,6 +21,7 @@ export class CachedExtensionScanner {
     public readonly scannedExtensions: Promise<IExtensionDescription[]>;
     private _scannedExtensionsResolve!: (result: IExtensionDescription[]) => void;
     private _scannedExtensionsReject!: (err: any) => void;
+
     constructor(
     @INotificationService
     private readonly _notificationService: INotificationService, 
@@ -53,12 +54,15 @@ export class CachedExtensionScanner {
     private async _scanInstalledExtensions(): Promise<IExtensionDescription[]> {
         try {
             const language = platform.language;
+
             const result = await Promise.allSettled([
                 this._extensionsScannerService.scanSystemExtensions({ language, useCache: true, checkControlFile: true }),
                 this._extensionsScannerService.scanUserExtensions({ language, profileLocation: this._userDataProfileService.currentProfile.extensionsResource, useCache: true }),
                 this._environmentService.remoteAuthority ? [] : this._extensionManagementService.getInstalledWorkspaceExtensions(false)
             ]);
+
             let scannedSystemExtensions: IScannedExtension[] = [], scannedUserExtensions: IScannedExtension[] = [], workspaceExtensions: IExtension[] = [], scannedDevelopedExtensions: IScannedExtension[] = [], hasErrors = false;
+
             if (result[0].status === 'fulfilled') {
                 scannedSystemExtensions = result[0].value;
             }
@@ -87,10 +91,15 @@ export class CachedExtensionScanner {
                 this._logService.error(error);
             }
             const system = scannedSystemExtensions.map(e => toExtensionDescriptionFromScannedExtension(e, false));
+
             const user = scannedUserExtensions.map(e => toExtensionDescriptionFromScannedExtension(e, false));
+
             const workspace = workspaceExtensions.map(e => toExtensionDescription(e, false));
+
             const development = scannedDevelopedExtensions.map(e => toExtensionDescriptionFromScannedExtension(e, true));
+
             const r = dedupExtensions(system, user, workspace, development, this._logService);
+
             if (!hasErrors) {
                 const disposable = this._extensionsScannerService.onDidChangeCache(() => {
                     disposable.dispose();
@@ -106,6 +115,7 @@ export class CachedExtensionScanner {
         catch (err) {
             this._logService.error(`Error scanning installed extensions:`);
             this._logService.error(err);
+
             return [];
         }
     }

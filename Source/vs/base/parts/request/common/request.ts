@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { VSBufferReadableStream } from '../../../common/buffer.js';
+
 const offlineName = 'Offline';
 /**
  * Checks if the given error is offline error

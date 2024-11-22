@@ -48,16 +48,19 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 				ignoreTrimWhitespace: false,
 				maxComputationTimeMs: 1000,
 			}, CancellationToken.None);
+
 			return result;
 		});
 	});
 
 	private readonly _inlineEditPromise = derived<IObservable<InlineEditWithChanges | undefined> | undefined>(this, (reader) => {
 		const inlineEdit = this._edit.read(reader);
+
 		if (!inlineEdit) { return undefined; }
 
 		//if (inlineEdit.text.trim() === '') { return undefined; }
 		const text = new TextModelText(this._editor.getModel()!);
+
 		const edit = inlineEdit.edit.extendToFullLine(text);
 
 		const diffResult = this._differ.get({ original: this._editor.getModel()!.getValueInRange(edit.range), modified: edit.text });
@@ -69,10 +72,12 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 			const result = p.data;
 
 			const rangeStartPos = edit.range.getStartPosition();
+
 			const innerChanges = result.changes.flatMap(c => c.innerChanges!);
 
 			function addRangeToPos(pos: Position, range: Range): Range {
 				const start = TextLength.fromPosition(range.getStartPosition());
+
 				return TextLength.ofRange(range).createRange(start.addToPosition(pos));
 			}
 
@@ -80,6 +85,7 @@ export class InlineEditsViewAndDiffProducer extends Disposable {
 				addRangeToPos(rangeStartPos, c.originalRange),
 				this._modifiedModel.get()!.getValueInRange(c.modifiedRange)
 			));
+
 			const diffEdits = new TextEdit(edits);
 
 			return new InlineEditWithChanges(text, diffEdits, inlineEdit.isCollapsed, inlineEdit.renderExplicitly, inlineEdit.commands, inlineEdit.inlineCompletion); //inlineEdit.showInlineIfPossible);

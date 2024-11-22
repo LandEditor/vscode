@@ -9,6 +9,7 @@ export class ElectronWebviewService extends WebviewService {
     override createWebviewElement(initInfo: WebviewInitInfo): IWebviewElement {
         const webview = this._instantiationService.createInstance(ElectronWebviewElement, initInfo, this._webviewThemeDataProvider);
         this.registerNewWebview(webview);
+
         return webview;
     }
 }

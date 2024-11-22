@@ -124,7 +124,9 @@ export function extractSelection(uri: URI): {
     uri: URI;
 } {
     let selection: ITextEditorSelection | undefined = undefined;
+
     const match = /^L?(\d+)(?:,(\d+))?(-L?(\d+)(?:,(\d+))?)?/.exec(uri.fragment);
+
     if (match) {
         selection = {
             startLineNumber: parseInt(match[1]),

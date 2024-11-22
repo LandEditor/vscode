@@ -11,19 +11,24 @@ import { RedoCommand, UndoCommand } from '../../../../../../editor/browser/edito
 import { NotebookViewModel } from '../../viewModel/notebookViewModelImpl.js';
 class NotebookUndoRedoContribution extends Disposable {
     static readonly ID = 'workbench.contrib.notebookUndoRedo';
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService) {
         super();
+
         const PRIORITY = 105;
         this._register(UndoCommand.addImplementation(PRIORITY, 'notebook-undo-redo', () => {
             const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
             const viewModel = editor?.getViewModel() as NotebookViewModel | undefined;
+
             if (editor && editor.hasModel() && viewModel) {
                 return viewModel.undo().then(cellResources => {
                     if (cellResources?.length) {
                         for (let i = 0; i < editor.getLength(); i++) {
                             const cell = editor.cellAt(i);
+
                             if (cell.cellKind === CellKind.Markup && cellResources.find(resource => resource.fragment === cell.model.uri.fragment)) {
                                 cell.updateEditState(CellEditState.Editing, 'undo');
                             }
@@ -36,12 +41,15 @@ class NotebookUndoRedoContribution extends Disposable {
         }));
         this._register(RedoCommand.addImplementation(PRIORITY, 'notebook-undo-redo', () => {
             const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
             const viewModel = editor?.getViewModel() as NotebookViewModel | undefined;
+
             if (editor && editor.hasModel() && viewModel) {
                 return viewModel.redo().then(cellResources => {
                     if (cellResources?.length) {
                         for (let i = 0; i < editor.getLength(); i++) {
                             const cell = editor.cellAt(i);
+
                             if (cell.cellKind === CellKind.Markup && cellResources.find(resource => resource.fragment === cell.model.uri.fragment)) {
                                 cell.updateEditState(CellEditState.Editing, 'redo');
                             }

@@ -54,11 +54,14 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 
 	renderTemplate(container: HTMLElement) {
 		const rowContainer = append(container, $('.monaco-table-tr'));
+
 		const cellContainers: HTMLElement[] = [];
+
 		const cellTemplateData: unknown[] = [];
 
 		for (let i = 0; i < this.columns.length; i++) {
 			const renderer = this.renderers[i];
+
 			const cellContainer = append(rowContainer, $('.monaco-table-td', { 'data-col-index': i }));
 
 			cellContainer.style.width = `${this.getColumnSize(i)}px`;
@@ -75,7 +78,9 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 	renderElement(element: TRow, index: number, templateData: RowTemplateData, height: number | undefined): void {
 		for (let i = 0; i < this.columns.length; i++) {
 			const column = this.columns[i];
+
 			const cell = column.project(element);
+
 			const renderer = this.renderers[i];
 			renderer.renderElement(cell, index, templateData.cellTemplateData[i], height);
 		}
@@ -87,6 +92,7 @@ class TableListRenderer<TRow> implements IListRenderer<TRow, RowTemplateData> {
 
 			if (renderer.disposeElement) {
 				const column = this.columns[i];
+
 				const cell = column.project(element);
 
 				renderer.disposeElement(cell, index, templateData.cellTemplateData[i], height);
@@ -201,6 +207,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 		this.domNode = append(container, $(`.monaco-table.${this.domId}`));
 
 		const headers = columns.map((c, i) => this.disposables.add(new ColumnHeader(c, i)));
+
 		const descriptor: ISplitViewDescriptor = {
 			size: headers.reduce((a, b) => a + b.column.weight, 0),
 			views: headers.map(view => ({ size: view.column.weight, view }))
@@ -224,6 +231,7 @@ export class Table<TRow> implements ISpliceable<TRow>, IDisposable {
 
 		this.splitview.onDidSashReset(index => {
 			const totalWeight = columns.reduce((r, c) => r + c.weight, 0);
+
 			const size = columns[index].weight / totalWeight * this.cachedWidth;
 			this.splitview.resizeView(index, size);
 		}, null, this.disposables);

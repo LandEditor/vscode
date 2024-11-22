@@ -11,12 +11,18 @@ export class ReplacePattern {
     private _hasParameters: boolean = false;
     private _regExp: RegExp;
     private _caseOpsRegExp: RegExp;
+
     constructor(replaceString: string, searchPatternInfo: IPatternInfo);
+
     constructor(replaceString: string, parseParameters: boolean, regEx: RegExp);
+
     constructor(replaceString: string, arg2: any, arg3?: any) {
         this._replacePattern = replaceString;
+
         let searchPatternInfo: IPatternInfo;
+
         let parseParameters: boolean;
+
         if (typeof arg2 === 'boolean') {
             parseParameters = arg2;
             this._regExp = arg3;
@@ -49,10 +55,13 @@ export class ReplacePattern {
     */
     getReplaceString(text: string, preserveCase?: boolean): string | null {
         this._regExp.lastIndex = 0;
+
         const match = this._regExp.exec(text);
+
         if (match) {
             if (this.hasParameters) {
                 const replaceString = this.replaceWithCaseOperations(text, this._regExp, this.buildReplaceString(match, preserveCase));
+
                 if (match[0] === text) {
                     return replaceString;
                 }
@@ -78,48 +87,66 @@ export class ReplacePattern {
         }
         // Store the values of the search parameters.
         const firstMatch = regex.exec(text);
+
         if (firstMatch === null) {
             return text.replace(regex, replaceString);
         }
         let patMatch: RegExpExecArray | null;
+
         let newReplaceString = '';
+
         let lastIndex = 0;
+
         let lastMatch = '';
         // For each annotated $N, perform text processing on the parameters and perform the substitution.
         while ((patMatch = this._caseOpsRegExp.exec(replaceString)) !== null) {
             lastIndex = patMatch.index;
+
             const fullMatch = patMatch[0];
             lastMatch = fullMatch;
+
             let caseOps = patMatch[2]; // \u, \l\u, etc.
             const money = patMatch[3]; // $1, $2, etc.
             if (!caseOps) {
                 newReplaceString += fullMatch;
+
                 continue;
             }
             const replacement = firstMatch[parseInt(money.slice(1))];
+
             if (!replacement) {
                 newReplaceString += fullMatch;
+
                 continue;
             }
             const replacementLen = replacement.length;
             newReplaceString += patMatch[1]; // prefix
             caseOps = caseOps.replace(/\\/g, '');
+
             let i = 0;
+
             for (; i < caseOps.length; i++) {
                 switch (caseOps[i]) {
                     case 'U':
                         newReplaceString += replacement.slice(i).toUpperCase();
                         i = replacementLen;
+
                         break;
+
                     case 'u':
                         newReplaceString += replacement[i].toUpperCase();
+
                         break;
+
                     case 'L':
                         newReplaceString += replacement.slice(i).toLowerCase();
                         i = replacementLen;
+
                         break;
+
                     case 'l':
                         newReplaceString += replacement[i].toLowerCase();
+
                         break;
                 }
             }
@@ -131,6 +158,7 @@ export class ReplacePattern {
         }
         // Append any remaining trailing content after the final regex match.
         newReplaceString += replaceString.slice(lastIndex + lastMatch.length);
+
         return text.replace(regex, newReplaceString);
     }
     public buildReplaceString(matches: string[] | null, preserveCase?: boolean): string {
@@ -153,29 +181,39 @@ export class ReplacePattern {
             return;
         }
         let substrFrom = 0, result = '';
+
         for (let i = 0, len = replaceString.length; i < len; i++) {
             const chCode = replaceString.charCodeAt(i);
+
             if (chCode === CharCode.Backslash) {
                 // move to next char
                 i++;
+
                 if (i >= len) {
                     // string ends with a \
                     break;
                 }
                 const nextChCode = replaceString.charCodeAt(i);
+
                 let replaceWithCharacter: string | null = null;
+
                 switch (nextChCode) {
                     case CharCode.Backslash:
                         // \\ => \
                         replaceWithCharacter = '\\';
+
                         break;
+
                     case CharCode.n:
                         // \n => LF
                         replaceWithCharacter = '\n';
+
                         break;
+
                     case CharCode.t:
                         // \t => TAB
                         replaceWithCharacter = '\t';
+
                         break;
                 }
                 if (replaceWithCharacter) {
@@ -186,22 +224,29 @@ export class ReplacePattern {
             if (chCode === CharCode.DollarSign) {
                 // move to next char
                 i++;
+
                 if (i >= len) {
                     // string ends with a $
                     break;
                 }
                 const nextChCode = replaceString.charCodeAt(i);
+
                 let replaceWithCharacter: string | null = null;
+
                 switch (nextChCode) {
                     case CharCode.Digit0:
                         // $0 => $&
                         replaceWithCharacter = '$&';
                         this._hasParameters = true;
+
                         break;
+
                     case CharCode.BackTick:
                     case CharCode.SingleQuote:
                         this._hasParameters = true;
+
                         break;
+
                     default: {
                         // check if it is a valid string parameter $n (0 <= n <= 99). $0 is already handled by now.
                         if (!this.between(nextChCode, CharCode.Digit1, CharCode.Digit9)) {
@@ -209,22 +254,28 @@ export class ReplacePattern {
                         }
                         if (i === replaceString.length - 1) {
                             this._hasParameters = true;
+
                             break;
                         }
                         let charCode = replaceString.charCodeAt(++i);
+
                         if (!this.between(charCode, CharCode.Digit0, CharCode.Digit9)) {
                             this._hasParameters = true;
                             --i;
+
                             break;
                         }
                         if (i === replaceString.length - 1) {
                             this._hasParameters = true;
+
                             break;
                         }
                         charCode = replaceString.charCodeAt(++i);
+
                         if (!this.between(charCode, CharCode.Digit0, CharCode.Digit9)) {
                             this._hasParameters = true;
                             --i;
+
                             break;
                         }
                         break;

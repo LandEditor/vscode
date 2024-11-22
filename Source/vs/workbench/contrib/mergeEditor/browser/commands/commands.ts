@@ -27,8 +27,10 @@ abstract class MergeEditorAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             const vm = activeEditorPane.viewModel.get();
+
             if (!vm) {
                 return;
             }
@@ -49,8 +51,10 @@ abstract class MergeEditorAction2 extends Action2 {
     }
     override run(accessor: ServicesAccessor, ...args: any[]): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             const vm = activeEditorPane.viewModel.get();
+
             if (!vm) {
                 return;
             }
@@ -76,6 +80,7 @@ export class OpenMergeEditor extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const validatedArgs = IRelaxedOpenArgs.validate(args[0]);
+
         const input: IResourceMergeEditorInput = {
             base: { resource: validatedArgs.base },
             input1: { resource: validatedArgs.input1.uri, label: validatedArgs.input1.title, description: validatedArgs.input1.description, detail: validatedArgs.input1.detail },
@@ -97,10 +102,15 @@ namespace IRelaxedOpenArgs {
             throw new TypeError('invalid argument');
         }
         const o = obj as IRelaxedOpenArgs;
+
         const base = toUri(o.base);
+
         const output = toUri(o.output);
+
         const input1 = toInputData(o.input1);
+
         const input2 = toInputData(o.input2);
+
         return { base, input1, input2, output };
     }
     function toInputData(obj: unknown): MergeEditorInputData {
@@ -114,10 +124,15 @@ namespace IRelaxedOpenArgs {
             return new MergeEditorInputData(URI.revive(obj), undefined, undefined, undefined);
         }
         const o = obj as IRelaxedInputData;
+
         const title = o.title;
+
         const uri = toUri(o.uri);
+
         const detail = o.detail;
+
         const description = o.description;
+
         return new MergeEditorInputData(uri, title, detail, description);
     }
     function toUri(obj: unknown): URI {
@@ -134,6 +149,7 @@ namespace IRelaxedOpenArgs {
             return false;
         }
         const o = obj as UriComponents;
+
         return typeof o.scheme === 'string'
             && typeof o.authority === 'string'
             && typeof o.path === 'string'
@@ -172,6 +188,7 @@ export class SetMixedLayout extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.setLayoutKind('mixed');
         }
@@ -194,6 +211,7 @@ export class SetColumnLayout extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.setLayoutKind('columns');
         }
@@ -218,6 +236,7 @@ export class ShowNonConflictingChanges extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.toggleShowNonConflictingChanges();
         }
@@ -241,6 +260,7 @@ export class ShowHideBase extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.toggleBase();
         }
@@ -264,6 +284,7 @@ export class ShowHideTopBase extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.toggleShowBaseTop();
         }
@@ -287,6 +308,7 @@ export class ShowHideCenterBase extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             activeEditorPane.toggleShowBaseCenter();
         }
@@ -428,9 +450,13 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 }
 async function mergeEditorCompare(viewModel: MergeEditorViewModel, editorService: IEditorService, inputNumber: 1 | 2) {
     editorService.openEditor(editorService.activeEditor!, { pinned: true });
+
     const model = viewModel.model;
+
     const base = model.base;
+
     const input = inputNumber === 1 ? viewModel.inputCodeEditorView1.editor : viewModel.inputCodeEditorView2.editor;
+
     const lineNumber = input.getPosition()!.lineNumber;
     await editorService.openEditor({
         original: { resource: base.uri },
@@ -535,13 +561,16 @@ export class AcceptMerge extends MergeEditorAction2 {
     }
     override async runWithMergeEditor({ inputModel, editorIdentifier, viewModel }: MergeEditorAction2Args, accessor: ServicesAccessor) {
         const dialogService = accessor.get(IDialogService);
+
         const editorService = accessor.get(IEditorService);
+
         if (viewModel.model.unhandledConflictsCount.get() > 0) {
             const { confirmed } = await dialogService.confirm({
                 message: localize('mergeEditor.acceptMerge.unhandledConflicts.message', "Do you want to complete the merge of {0}?", basename(inputModel.resultUri)),
                 detail: localize('mergeEditor.acceptMerge.unhandledConflicts.detail', "The file contains unhandled conflicts."),
                 primaryButton: localize({ key: 'mergeEditor.acceptMerge.unhandledConflicts.accept', comment: ['&& denotes a mnemonic'] }, "&&Complete with Conflicts")
             });
+
             if (!confirmed) {
                 return {
                     successful: false
@@ -550,6 +579,7 @@ export class AcceptMerge extends MergeEditorAction2 {
         }
         await inputModel.accept();
         await editorService.closeEditor(editorIdentifier);
+
         return {
             successful: true
         };

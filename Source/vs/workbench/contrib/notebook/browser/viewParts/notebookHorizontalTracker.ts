@@ -13,11 +13,17 @@ export class NotebookHorizontalTracker extends Disposable {
         super();
         this._register(addDisposableListener(this._listViewScrollablement, EventType.MOUSE_WHEEL, (event: IMouseWheelEvent) => {
             let deltaX = event.deltaX;
+
             let deltaY = event.deltaY;
+
             let wheelDeltaX = event.wheelDeltaX;
+
             let wheelDeltaY = event.wheelDeltaY;
+
             const wheelDelta = event.wheelDelta;
+
             const shiftConvert = !isMacintosh && event.shiftKey;
+
             if (shiftConvert && !deltaX) {
                 deltaX = deltaY;
                 deltaY = 0;
@@ -29,20 +35,24 @@ export class NotebookHorizontalTracker extends Disposable {
             }
             const hoveringOnEditor = this._notebookEditor.codeEditors.find(editor => {
                 const editorLayout = editor[1].getLayoutInfo();
+
                 if (editorLayout.contentWidth === editorLayout.width) {
                     // no overflow
                     return false;
                 }
                 const editorDOM = editor[1].getDomNode();
+
                 if (editorDOM && editorDOM.contains(event.target as HTMLElement)) {
                     return true;
                 }
                 return false;
             });
+
             if (!hoveringOnEditor) {
                 return;
             }
             const targetWindow = getWindow(event);
+
             const evt = {
                 deltaMode: event.deltaMode,
                 deltaX: deltaX,

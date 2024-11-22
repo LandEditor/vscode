@@ -16,11 +16,13 @@ class StandaloneLayoutService implements ILayoutService {
     readonly onDidLayoutContainer = Event.None;
     readonly onDidChangeActiveContainer = Event.None;
     readonly onDidAddContainer = Event.None;
+
     get mainContainer(): HTMLElement {
         return this._codeEditorService.listCodeEditors().at(0)?.getContainerDomNode() ?? mainWindow.document.body;
     }
     get activeContainer(): HTMLElement {
         const activeCodeEditor = this._codeEditorService.getFocusedCodeEditor() ?? this._codeEditorService.getActiveCodeEditor();
+
         return activeCodeEditor?.getContainerDomNode() ?? this.mainContainer;
     }
     get mainContainerDimension(): dom.IDimension {
@@ -31,6 +33,7 @@ class StandaloneLayoutService implements ILayoutService {
     }
     readonly mainContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
     readonly activeContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
+
     get containers(): Iterable<HTMLElement> {
         return coalesce(this._codeEditorService.listCodeEditors().map(codeEditor => codeEditor.getContainerDomNode()));
     }

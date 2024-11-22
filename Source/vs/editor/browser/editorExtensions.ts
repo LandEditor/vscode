@@ -124,8 +124,10 @@ export abstract class Command {
 
 		if (this._kbOpts) {
 			const kbOptsArr = Array.isArray(this._kbOpts) ? this._kbOpts : [this._kbOpts];
+
 			for (const kbOpts of kbOptsArr) {
 				let kbWhen = kbOpts.kbExpr;
+
 				if (this.precondition) {
 					if (kbWhen) {
 						kbWhen = ContextKeyExpr.and(kbWhen, this.precondition);
@@ -202,11 +204,13 @@ export class MultiCommand extends Command {
 	public addImplementation(priority: number, name: string, implementation: CommandImplementation, when?: ContextKeyExpression): IDisposable {
 		this._implementations.push({ priority, name, implementation, when });
 		this._implementations.sort((a, b) => b.priority - a.priority);
+
 		return {
 			dispose: () => {
 				for (let i = 0; i < this._implementations.length; i++) {
 					if (this._implementations[i].implementation === implementation) {
 						this._implementations.splice(i, 1);
+
 						return;
 					}
 				}
@@ -216,19 +220,25 @@ export class MultiCommand extends Command {
 
 	public runCommand(accessor: ServicesAccessor, args: any): void | Promise<void> {
 		const logService = accessor.get(ILogService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
 		logService.trace(`Executing Command '${this.id}' which has ${this._implementations.length} bound.`);
+
 		for (const impl of this._implementations) {
 			if (impl.when) {
 				const context = contextKeyService.getContext(getActiveElement());
+
 				const value = impl.when.evaluate(context);
+
 				if (!value) {
 					continue;
 				}
 			}
 			const result = impl.implementation(accessor, args);
+
 			if (result) {
 				logService.trace(`Command '${this.id}' was handled by '${impl.name}'.`);
+
 				if (typeof result === 'boolean') {
 					return;
 				}
@@ -284,6 +294,7 @@ export abstract class EditorCommand extends Command {
 
 			public runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
 				const controller = controllerGetter(editor);
+
 				if (controller) {
 					this._callback(controller, args);
 				}
@@ -301,6 +312,7 @@ export abstract class EditorCommand extends Command {
 
 		// Find the editor with text focus or active
 		const editor = codeEditorService.getFocusedCodeEditor() || codeEditorService.getActiveCodeEditor();
+
 		if (!editor) {
 			// well, at least we tried...
 			return;
@@ -308,6 +320,7 @@ export abstract class EditorCommand extends Command {
 
 		return editor.invokeWithinContext((editorAccessor) => {
 			const kbService = editorAccessor.get(IContextKeyService);
+
 			if (!kbService.contextMatchesRules(precondition ?? undefined)) {
 				// precondition does not hold
 				return;
@@ -349,6 +362,7 @@ export abstract class EditorAction extends EditorCommand {
 	private static convertOptions(opts: IActionOptions): ICommandOptions {
 
 		let menuOpts: ICommandMenuOptions[];
+
 		if (Array.isArray(opts.menuOpts)) {
 			menuOpts = opts.menuOpts;
 		} else if (opts.menuOpts) {
@@ -365,6 +379,7 @@ export abstract class EditorAction extends EditorCommand {
 				item.title = typeof opts.label === 'string' ? opts.label : opts.label.value;
 			}
 			item.when = ContextKeyExpr.and(opts.precondition, item.when);
+
 			return <ICommandMenuOptions>item;
 		}
 
@@ -375,6 +390,7 @@ export abstract class EditorAction extends EditorCommand {
 		}
 
 		opts.menuOpts = menuOpts;
+
 		return <ICommandOptions>opts;
 	}
 
@@ -383,6 +399,7 @@ export abstract class EditorAction extends EditorCommand {
 
 	constructor(opts: IActionOptions) {
 		super(EditorAction.convertOptions(opts));
+
 		if (typeof opts.label === 'string') {
 			this.label = opts.label;
 			this.alias = opts.alias ?? opts.label;
@@ -394,6 +411,7 @@ export abstract class EditorAction extends EditorCommand {
 
 	public runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void | Promise<void> {
 		this.reportTelemetry(accessor, editor);
+
 		return this.run(accessor, editor, args || {});
 	}
 
@@ -426,11 +444,13 @@ export class MultiEditorAction extends EditorAction {
 	public addImplementation(priority: number, implementation: EditorActionImplementation): IDisposable {
 		this._implementations.push([priority, implementation]);
 		this._implementations.sort((a, b) => b[0] - a[0]);
+
 		return {
 			dispose: () => {
 				for (let i = 0; i < this._implementations.length; i++) {
 					if (this._implementations[i][1] === implementation) {
 						this._implementations.splice(i, 1);
+
 						return;
 					}
 				}
@@ -441,6 +461,7 @@ export class MultiEditorAction extends EditorAction {
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void | Promise<void> {
 		for (const impl of this._implementations) {
 			const result = impl[1](accessor, editor, args);
+
 			if (result) {
 				if (typeof result === 'boolean') {
 					return;
@@ -461,7 +482,9 @@ export abstract class EditorAction2 extends Action2 {
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		// Find the editor with text focus or active
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const editor = codeEditorService.getFocusedCodeEditor() || codeEditorService.getActiveCodeEditor();
+
 		if (!editor) {
 			// well, at least we tried...
 			return;
@@ -469,10 +492,14 @@ export abstract class EditorAction2 extends Action2 {
 		// precondition does hold
 		return editor.invokeWithinContext((editorAccessor) => {
 			const kbService = editorAccessor.get(IContextKeyService);
+
 			const logService = editorAccessor.get(ILogService);
+
 			const enabled = kbService.contextMatchesRules(this.desc.precondition ?? undefined);
+
 			if (!enabled) {
 				logService.debug(`[EditorAction2] NOT running command because its precondition is FALSE`, this.desc.id, this.desc.precondition?.serialize());
+
 				return;
 			}
 			return this.runEditorCommand(editorAccessor, editor, ...args);
@@ -497,8 +524,10 @@ export function registerModelAndPositionCommand(id: string, handler: (accessor: 
 		assertType(Position.isIPosition(position));
 
 		const model = accessor.get(IModelService).getModel(resource);
+
 		if (model) {
 			const editorPosition = Position.lift(position);
+
 			return instaService.invokeFunction(handler, model, editorPosition, ...args.slice(2));
 		}
 
@@ -519,17 +548,20 @@ export function registerModelAndPositionCommand(id: string, handler: (accessor: 
 
 export function registerEditorCommand<T extends EditorCommand>(editorCommand: T): T {
 	EditorContributionRegistry.INSTANCE.registerEditorCommand(editorCommand);
+
 	return editorCommand;
 }
 
 export function registerEditorAction<T extends EditorAction>(ctor: { new(): T }): T {
 	const action = new ctor();
 	EditorContributionRegistry.INSTANCE.registerEditorAction(action);
+
 	return action;
 }
 
 export function registerMultiEditorAction<T extends MultiEditorAction>(action: T): T {
 	EditorContributionRegistry.INSTANCE.registerEditorAction(action);
+
 	return action;
 }
 
@@ -632,6 +664,7 @@ Registry.add(Extensions.EditorCommonContributions, EditorContributionRegistry.IN
 
 function registerCommand<T extends Command>(command: T): T {
 	command.register();
+
 	return command;
 }
 

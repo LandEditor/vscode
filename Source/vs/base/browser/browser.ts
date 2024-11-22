@@ -10,6 +10,7 @@ class WindowManager {
     private readonly mapWindowIdToZoomLevel = new Map<number, number>();
     private readonly _onDidChangeZoomLevel = new Emitter<number>();
     readonly onDidChangeZoomLevel = this._onDidChangeZoomLevel.event;
+
     getZoomLevel(targetWindow: Window): number {
         return this.mapWindowIdToZoomLevel.get(this.getWindowId(targetWindow)) ?? 0;
     }
@@ -23,6 +24,7 @@ class WindowManager {
     }
     // --- Zoom Factor
     private readonly mapWindowIdToZoomFactor = new Map<number, number>();
+
     getZoomFactor(targetWindow: Window): number {
         return this.mapWindowIdToZoomFactor.get(this.getWindowId(targetWindow)) ?? 1;
     }
@@ -33,6 +35,7 @@ class WindowManager {
     private readonly _onDidChangeFullscreen = new Emitter<number>();
     readonly onDidChangeFullscreen = this._onDidChangeFullscreen.event;
     private readonly mapWindowIdToFullScreen = new Map<number, boolean>();
+
     setFullscreen(fullscreen: boolean, targetWindow: Window): void {
         if (this.isFullscreen(targetWindow) === fullscreen) {
             return;
@@ -76,6 +79,7 @@ export function isFullscreen(targetWindow: Window): boolean {
     return WindowManager.INSTANCE.isFullscreen(targetWindow);
 }
 export const onDidChangeFullscreen = WindowManager.INSTANCE.onDidChangeFullscreen;
+
 const userAgent = navigator.userAgent;
 export const isFirefox = (userAgent.indexOf('Firefox') >= 0);
 export const isWebKit = (userAgent.indexOf('AppleWebKit') >= 0);
@@ -84,9 +88,11 @@ export const isSafari = (!isChrome && (userAgent.indexOf('Safari') >= 0));
 export const isWebkitWebView = (!isChrome && !isSafari && isWebKit);
 export const isElectron = (userAgent.indexOf('Electron/') >= 0);
 export const isAndroid = (userAgent.indexOf('Android') >= 0);
+
 let standalone = false;
 if (typeof mainWindow.matchMedia === 'function') {
     const standaloneMatchMedia = mainWindow.matchMedia('(display-mode: standalone) or (display-mode: window-controls-overlay)');
+
     const fullScreenMatchMedia = mainWindow.matchMedia('(display-mode: fullscreen)');
     standalone = standaloneMatchMedia.matches;
     addMatchMediaChangeListener(mainWindow, standaloneMatchMedia, ({ matches }) => {

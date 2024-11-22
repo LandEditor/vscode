@@ -52,6 +52,7 @@ async function isYarnPreferred(pkgPath: string): Promise<PreferredProperties> {
 }
 async function isNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
     const lockfileExists = await pathExists(path.join(pkgPath, 'package-lock.json'));
+
     return { isPreferred: lockfileExists, hasLockfile: lockfileExists };
 }
 export async function findPreferredPM(pkgPath: string): Promise<{
@@ -59,23 +60,29 @@ export async function findPreferredPM(pkgPath: string): Promise<{
     multipleLockFilesDetected: boolean;
 }> {
     const detectedPackageManagerNames: string[] = [];
+
     const detectedPackageManagerProperties: PreferredProperties[] = [];
+
     const npmPreferred = await isNPMPreferred(pkgPath);
+
     if (npmPreferred.isPreferred) {
         detectedPackageManagerNames.push('npm');
         detectedPackageManagerProperties.push(npmPreferred);
     }
     const pnpmPreferred = await isPNPMPreferred(pkgPath);
+
     if (pnpmPreferred.isPreferred) {
         detectedPackageManagerNames.push('pnpm');
         detectedPackageManagerProperties.push(pnpmPreferred);
     }
     const yarnPreferred = await isYarnPreferred(pkgPath);
+
     if (yarnPreferred.isPreferred) {
         detectedPackageManagerNames.push('yarn');
         detectedPackageManagerProperties.push(yarnPreferred);
     }
     const bunPreferred = await isBunPreferred(pkgPath);
+
     if (bunPreferred.isPreferred) {
         detectedPackageManagerNames.push('bun');
         detectedPackageManagerProperties.push(bunPreferred);
@@ -83,12 +90,14 @@ export async function findPreferredPM(pkgPath: string): Promise<{
     const pmUsedForInstallation: {
         name: string;
     } | null = await whichPM(pkgPath);
+
     if (pmUsedForInstallation && !detectedPackageManagerNames.includes(pmUsedForInstallation.name)) {
         detectedPackageManagerNames.push(pmUsedForInstallation.name);
         detectedPackageManagerProperties.push({ isPreferred: true, hasLockfile: false });
     }
     let lockfilesCount = 0;
     detectedPackageManagerProperties.forEach(detected => lockfilesCount += detected.hasLockfile ? 1 : 0);
+
     return {
         name: detectedPackageManagerNames[0] || 'npm',
         multipleLockFilesDetected: lockfilesCount > 1

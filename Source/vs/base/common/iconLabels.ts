@@ -5,7 +5,9 @@
 import { IMatch, matchesFuzzy } from './filters.js';
 import { ltrim } from './strings.js';
 import { ThemeIcon } from './themables.js';
+
 const iconStartMarker = '$(';
+
 const iconsRegex = new RegExp(`\\$\\(${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?\\)`, 'g'); // no capturing groups
 const escapeIconsRegex = new RegExp(`(\\\\)?${iconsRegex.source}`, 'g');
 export function escapeIcons(text: string): string {
@@ -45,15 +47,23 @@ const _parseIconsRegex = new RegExp(`\\$\\(${ThemeIcon.iconNameCharacter}+\\)`, 
  */
 export function parseLabelWithIcons(input: string): IParsedLabelWithIcons {
     _parseIconsRegex.lastIndex = 0;
+
     let text = '';
+
     const iconOffsets: number[] = [];
+
     let iconsOffset = 0;
+
     while (true) {
         const pos = _parseIconsRegex.lastIndex;
+
         const match = _parseIconsRegex.exec(input);
+
         const chars = input.substring(pos, match?.index);
+
         if (chars.length > 0) {
             text += chars;
+
             for (let i = 0; i < chars.length; i++) {
                 iconOffsets.push(iconsOffset);
             }
@@ -74,6 +84,7 @@ export function matchesFuzzyIconAware(query: string, target: IParsedLabelWithIco
     // Trim the word to match against because it could have leading
     // whitespace now if the word started with an icon
     const wordToMatchAgainstWithoutIconsTrimmed = ltrim(text, ' ');
+
     const leadingWhitespaceOffset = text.length - wordToMatchAgainstWithoutIconsTrimmed.length;
     // match on value without icon
     const matches = matchesFuzzy(query, wordToMatchAgainstWithoutIconsTrimmed, enableSeparateSubstringMatching);

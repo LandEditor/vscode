@@ -425,15 +425,18 @@ class PerfMarks {
         string,
         perf.PerformanceMark[]
     ][] = [];
+
     setMarks(source: string, entries: perf.PerformanceMark[]): void {
         this._entries.push([source, entries]);
     }
     getDuration(from: string, to: string): number {
         const fromEntry = this._findEntry(from);
+
         if (!fromEntry) {
             return 0;
         }
         const toEntry = this._findEntry(to);
+
         if (!toEntry) {
             return 0;
         }
@@ -441,6 +444,7 @@ class PerfMarks {
     }
     getStartTime(mark: string): number {
         const entry = this._findEntry(mark);
+
         return entry ? entry.startTime : -1;
     }
     private _findEntry(name: string): perf.PerformanceMark | void {
@@ -466,6 +470,7 @@ export abstract class AbstractTimerService implements ITimerService {
     private readonly _rndValueShouldSendTelemetry = Math.random() < .05; // 5% of users
     private _startupMetrics?: IStartupMetrics;
     readonly perfBaseline: Promise<number>;
+
     constructor(
     @ILifecycleService
     private readonly _lifecycleService: ILifecycleService, 
@@ -493,6 +498,7 @@ export abstract class AbstractTimerService implements ITimerService {
         ]).then(() => {
             // set perf mark from renderer
             this.setPerformanceMarks('renderer', perf.getMarks());
+
             return this._computeStartupMetrics();
         }).then(metrics => {
             this._startupMetrics = metrics;
@@ -509,6 +515,7 @@ export abstract class AbstractTimerService implements ITimerService {
                 // the following operation took ~16ms (one frame at 64FPS) to complete on my machine. We derive performance observations
                 // from that. We also bail if that took too long (>1s)
                 let tooSlow = false;
+
                 function fib(n: number): number {
                     if (tooSlow) {
                         return 0;
@@ -523,12 +530,17 @@ export abstract class AbstractTimerService implements ITimerService {
                 }
                 const t1 = performance.now();
                 fib(24);
+
                 const value = Math.round(performance.now() - t1);
                 self.postMessage({ value: tooSlow ? -1 : value });
             }).toString();
+
             const blob = new Blob([`(${jsSrc})();`], { type: 'application/javascript' });
+
             const blobUrl = URL.createObjectURL(blob);
+
             const worker = createBlobWorker(blobUrl, { name: 'perfBaseline' });
+
             return new Promise<number>(resolve => {
                 worker.onmessage = e => resolve(e.data.value);
             }).finally(() => {
@@ -613,6 +625,7 @@ export abstract class AbstractTimerService implements ITimerService {
                 comment: 'The absolute timestamp (unix time)';
             };
         };
+
         for (const mark of marks) {
             this._telemetryService.publicLog2<Mark, MarkClassification>('startup.timer.mark', {
                 source,
@@ -623,7 +636,9 @@ export abstract class AbstractTimerService implements ITimerService {
     }
     private async _computeStartupMetrics(): Promise<IStartupMetrics> {
         const initialStartup = this._isInitialStartup();
+
         let startMark: string;
+
         if (isWeb) {
             startMark = 'code/timeOrigin';
         }
@@ -631,7 +646,9 @@ export abstract class AbstractTimerService implements ITimerService {
             startMark = initialStartup ? 'code/didStartMain' : 'code/willOpenNewWindow';
         }
         const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+
         const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+
         const info: Writeable<IStartupMetrics> = {
             version: 2,
             ellapsed: this._marks.getDuration(startMark, 'code/didStartWorkbench'),
@@ -688,6 +705,7 @@ export abstract class AbstractTimerService implements ITimerService {
             emptyWorkbench: this._contextService.getWorkbenchState() === WorkbenchState.EMPTY
         };
         await this._extendStartupInfo(info);
+
         return info;
     }
     protected abstract _isInitialStartup(): boolean;

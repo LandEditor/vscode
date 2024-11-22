@@ -13,7 +13,9 @@ import { Lazy } from '../../../base/common/lazy.js';
 export const ISecretStorageService = createDecorator<ISecretStorageService>('secretStorageService');
 export interface ISecretStorageProvider {
     type: 'in-memory' | 'persisted' | 'unknown';
+
     get(key: string): Promise<string | undefined>;
+
     set(key: string, value: string): Promise<void>;
     delete(key: string): Promise<void>;
 }
@@ -29,6 +31,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
     protected readonly _sequencer = new SequencerByKey<string>();
     private _type: 'in-memory' | 'persisted' | 'unknown' = 'unknown';
     private readonly _onDidChangeValueDisposable = this._register(new DisposableStore());
+
     constructor(private readonly _useInMemoryStorage: boolean, 
     @IStorageService
     private _storageService: IStorageService, 
@@ -52,11 +55,15 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
     get(key: string): Promise<string | undefined> {
         return this._sequencer.queue(key, async () => {
             const storageService = await this.resolvedStorageService;
+
             const fullKey = this.getKey(key);
             this._logService.trace('[secrets] getting secret for key:', fullKey);
+
             const encrypted = storageService.get(fullKey, StorageScope.APPLICATION);
+
             if (!encrypted) {
                 this._logService.trace('[secrets] no secret found for key:', fullKey);
+
                 return undefined;
             }
             try {
@@ -66,11 +73,13 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
                     ? encrypted
                     : await this._encryptionService.decrypt(encrypted);
                 this._logService.trace('[secrets] decrypted secret for key:', fullKey);
+
                 return result;
             }
             catch (e) {
                 this._logService.error(e);
                 this.delete(key);
+
                 return undefined;
             }
         });
@@ -79,7 +88,9 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
         return this._sequencer.queue(key, async () => {
             const storageService = await this.resolvedStorageService;
             this._logService.trace('[secrets] encrypting secret for key:', key);
+
             let encrypted;
+
             try {
                 // If the storage service is in-memory, we don't need to encrypt
                 encrypted = this._type === 'in-memory'
@@ -88,6 +99,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
             }
             catch (e) {
                 this._logService.error(e);
+
                 throw e;
             }
             const fullKey = this.getKey(key);
@@ -99,6 +111,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
     delete(key: string): Promise<void> {
         return this._sequencer.queue(key, async () => {
             const storageService = await this.resolvedStorageService;
+
             const fullKey = this.getKey(key);
             this._logService.trace('[secrets] deleting secret for key:', fullKey);
             storageService.remove(fullKey, StorageScope.APPLICATION);
@@ -107,6 +120,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
     }
     private async initialize(): Promise<IStorageService> {
         let storageService;
+
         if (!this._useInMemoryStorage && await this._encryptionService.isEncryptionAvailable()) {
             this._logService.trace(`[SecretStorageService] Encryption is available, using persisted storage`);
             this._type = 'persisted';
@@ -125,6 +139,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
         this._onDidChangeValueDisposable.add(storageService.onDidChangeValue(StorageScope.APPLICATION, undefined, this._onDidChangeValueDisposable)(e => {
             this.onDidChangeValue(e.key);
         }));
+
         return storageService;
     }
     protected reinitialize(): void {

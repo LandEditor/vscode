@@ -14,6 +14,7 @@ export class RowCache<T> implements IDisposable {
     private cache = new Map<string, IRow[]>();
     private readonly transactionNodesPendingRemoval = new Set<HTMLElement>();
     private inTransaction = false;
+
     constructor(private renderers: Map<string, IListRenderer<T, any>>) { }
     /**
      * Returns a row either by creating a new one or reusing
@@ -26,16 +27,21 @@ export class RowCache<T> implements IDisposable {
         isReusingConnectedDomNode: boolean;
     } {
         let result = this.getTemplateCache(templateId).pop();
+
         let isStale = false;
+
         if (result) {
             isStale = this.transactionNodesPendingRemoval.has(result.domNode);
+
             if (isStale) {
                 this.transactionNodesPendingRemoval.delete(result.domNode);
             }
         }
         else {
             const domNode = $('.monaco-list-row');
+
             const renderer = this.getRenderer(templateId);
+
             const templateData = renderer.renderTemplate(domNode);
             result = { domNode, templateId, templateData };
         }
@@ -58,6 +64,7 @@ export class RowCache<T> implements IDisposable {
             throw new Error('Already in transaction');
         }
         this.inTransaction = true;
+
         try {
             makeChanges();
         }
@@ -71,6 +78,7 @@ export class RowCache<T> implements IDisposable {
     }
     private releaseRow(row: IRow): void {
         const { domNode, templateId } = row;
+
         if (domNode) {
             if (this.inTransaction) {
                 this.transactionNodesPendingRemoval.add(domNode);
@@ -84,10 +92,12 @@ export class RowCache<T> implements IDisposable {
     }
     private doRemoveNode(domNode: HTMLElement) {
         domNode.classList.remove('scrolling');
+
         domNode.remove();
     }
     private getTemplateCache(templateId: string): IRow[] {
         let result = this.cache.get(templateId);
+
         if (!result) {
             result = [];
             this.cache.set(templateId, result);
@@ -107,6 +117,7 @@ export class RowCache<T> implements IDisposable {
     }
     private getRenderer(templateId: string): IListRenderer<T, any> {
         const renderer = this.renderers.get(templateId);
+
         if (!renderer) {
             throw new Error(`No renderer found for ${templateId}`);
         }

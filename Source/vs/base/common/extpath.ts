@@ -44,14 +44,18 @@ export function getRoot(path: string, sep: string = posix.sep): string {
         return '';
     }
     const len = path.length;
+
     const firstLetter = path.charCodeAt(0);
+
     if (isPathSeparator(firstLetter)) {
         if (isPathSeparator(path.charCodeAt(1))) {
             // UNC candidate \\localhost\shares\ddd
             //               ^^^^^^^^^^^^^^^^^^^
             if (!isPathSeparator(path.charCodeAt(2))) {
                 let pos = 3;
+
                 const start = pos;
+
                 for (; pos < len; pos++) {
                     if (isPathSeparator(path.charCodeAt(pos))) {
                         break;
@@ -59,6 +63,7 @@ export function getRoot(path: string, sep: string = posix.sep): string {
                 }
                 if (start !== pos && !isPathSeparator(path.charCodeAt(pos + 1))) {
                     pos += 1;
+
                     for (; pos < len; pos++) {
                         if (isPathSeparator(path.charCodeAt(pos))) {
                             return path.slice(0, pos + 1) // consume this separator
@@ -91,6 +96,7 @@ export function getRoot(path: string, sep: string = posix.sep): string {
     // scheme://authority/path
     // ^^^^^^^^^^^^^^^^^^^
     let pos = path.indexOf('://');
+
     if (pos !== -1) {
         pos += 3; // 3 -> "://".length
         for (; pos < len; pos++) {
@@ -118,17 +124,22 @@ export function isUNC(path: string): boolean {
         return false;
     }
     let code = path.charCodeAt(0);
+
     if (code !== CharCode.Backslash) {
         return false;
     }
     code = path.charCodeAt(1);
+
     if (code !== CharCode.Backslash) {
         return false;
     }
     let pos = 2;
+
     const start = pos;
+
     for (; pos < path.length; pos++) {
         code = path.charCodeAt(pos);
+
         if (code === CharCode.Backslash) {
             break;
         }
@@ -137,6 +148,7 @@ export function isUNC(path: string): boolean {
         return false;
     }
     code = path.charCodeAt(pos + 1);
+
     if (isNaN(code) || code === CharCode.Backslash) {
         return false;
     }
@@ -144,10 +156,13 @@ export function isUNC(path: string): boolean {
 }
 // Reference: https://en.wikipedia.org/wiki/Filename
 const WINDOWS_INVALID_FILE_CHARS = /[\\/:\*\?"<>\|]/g;
+
 const UNIX_INVALID_FILE_CHARS = /[/]/g;
+
 const WINDOWS_FORBIDDEN_NAMES = /^(con|prn|aux|clock\$|nul|lpt[0-9]|com[0-9])(\.(.*?))?$/i;
 export function isValidBasename(name: string | null | undefined, isWindowsOS: boolean = isWindows): boolean {
     const invalidFileChars = isWindowsOS ? WINDOWS_INVALID_FILE_CHARS : UNIX_INVALID_FILE_CHARS;
+
     if (!name || name.length === 0 || /^\s+$/.test(name)) {
         return false; // require a name that is not just whitespace
     }
@@ -179,6 +194,7 @@ export function isValidBasename(name: string | null | undefined, isWindowsOS: bo
  */
 export function isEqual(pathA: string, pathB: string, ignoreCase?: boolean): boolean {
     const identityEquals = (pathA === pathB);
+
     if (!ignoreCase || identityEquals) {
         return identityEquals;
     }
@@ -204,6 +220,7 @@ export function isEqualOrParent(base: string, parentCandidate: string, ignoreCas
     }
     if (ignoreCase) {
         const beginsWith = startsWithIgnoreCase(base, parentCandidate);
+
         if (!beginsWith) {
             return false;
         }
@@ -211,6 +228,7 @@ export function isEqualOrParent(base: string, parentCandidate: string, ignoreCas
             return true; // same path, different casing
         }
         let sepOffset = parentCandidate.length;
+
         if (parentCandidate.charAt(parentCandidate.length - 1) === separator) {
             sepOffset--; // adjust the expected sep offset in case our candidate already ends in separator character
         }
@@ -257,6 +275,7 @@ export function removeTrailingPathSeparator(candidate: string): string {
 }
 export function isRootOrDriveLetter(path: string): boolean {
     const pathNormalized = normalize(path);
+
     if (isWindows) {
         if (path.length > 3) {
             return false;
@@ -296,10 +315,14 @@ export interface IPathWithLineAndColumn {
 export function parseLineAndColumnAware(rawPath: string): IPathWithLineAndColumn {
     const segments = rawPath.split(':'); // C:\file.txt:<line>:<column>
     let path: string | undefined = undefined;
+
     let line: number | undefined = undefined;
+
     let column: number | undefined = undefined;
+
     for (const segment of segments) {
         const segmentAsNumber = Number(segment);
+
         if (!isNumber(segmentAsNumber)) {
             path = !!path ? [path, segment].join(':') : segment; // a colon can well be part of a path (e.g. C:\...)
         }
@@ -320,11 +343,14 @@ export function parseLineAndColumnAware(rawPath: string): IPathWithLineAndColumn
     };
 }
 const pathChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
 const windowsSafePathFirstChars = 'BDEFGHIJKMOQRSTUVWXYZbdefghijkmoqrstuvwxyz0123456789';
 export function randomPath(parent?: string, prefix?: string, randomLength = 8): string {
     let suffix = '';
+
     for (let i = 0; i < randomLength; i++) {
         let pathCharsTouse: string;
+
         if (i === 0 && isWindows && !prefix && (randomLength === 3 || randomLength === 4)) {
             // Windows has certain reserved file names that cannot be used, such
             // as AUX, CON, PRN, etc. We want to avoid generating a random name
@@ -339,6 +365,7 @@ export function randomPath(parent?: string, prefix?: string, randomLength = 8): 
         suffix += pathCharsTouse.charAt(Math.floor(Math.random() * pathCharsTouse.length));
     }
     let randomFileName: string;
+
     if (prefix) {
         randomFileName = `${prefix}-${suffix}`;
     }

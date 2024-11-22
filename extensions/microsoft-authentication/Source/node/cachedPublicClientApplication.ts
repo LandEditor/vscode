@@ -97,8 +97,10 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 
 	async acquireTokenSilent(request: SilentFlowRequest): Promise<AuthenticationResult> {
 		this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] starting...`);
+
 		const result = await this._sequencer.queue(() => this._pca.acquireTokenSilent(request));
 		this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] got result`);
+
 		if (result.account && !result.fromCache && this._verifyIfUsingBroker(result)) {
 			this._logger.debug(`[acquireTokenSilent] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}] [${request.account.username}] firing event due to change`);
 			this._setupRefresh(result);
@@ -109,6 +111,7 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 
 	async acquireTokenInteractive(request: InteractiveRequest): Promise<AuthenticationResult> {
 		this._logger.debug(`[acquireTokenInteractive] [${this._clientId}] [${this._authority}] [${request.scopes?.join(' ')}] loopbackClientOverride: ${request.loopbackClient ? 'true' : 'false'}`);
+
 		const result = await window.withProgress(
 			{
 				location: ProgressLocation.Notification,
@@ -122,6 +125,7 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 			)
 		);
 		this._setupRefresh(result);
+
 		if (this._isBrokerAvailable) {
 			await this._accountAccess.setAllowedAccess(result.account!, true);
 		}
@@ -136,9 +140,12 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 	 */
 	async acquireTokenByRefreshToken(request: RefreshTokenRequest) {
 		this._logger.debug(`[acquireTokenByRefreshToken] [${this._clientId}] [${this._authority}] [${request.scopes.join(' ')}]`);
+
 		const result = await this._pca.acquireTokenByRefreshToken(request);
+
 		if (result) {
 			this._setupRefresh(result);
+
 			if (this._isBrokerAvailable && result.account) {
 				await this._accountAccess.setAllowedAccess(result.account, true);
 			}
@@ -148,6 +155,7 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 
 	removeAccount(account: AccountInfo): Promise<void> {
 		this._globalMemento.update(`lastRemoval:${this._clientId}:${this._authority}`, new Date());
+
 		if (this._isBrokerAvailable) {
 			return this._accountAccess.setAllowedAccess(account, false);
 		}
@@ -169,16 +177,21 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 			return true;
 		}
 		const key = result.account!.homeAccountId;
+
 		const lastSeen = this._lastSeen.get(key);
+
 		const lastTimeAuthed = result.account!.idTokenClaims!.iat!;
+
 		if (!lastSeen) {
 			this._lastSeen.set(key, lastTimeAuthed);
+
 			return true;
 		}
 		if (lastSeen === lastTimeAuthed) {
 			return false;
 		}
 		this._lastSeen.set(key, lastTimeAuthed);
+
 		return true;
 	}
 
@@ -187,6 +200,7 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 		this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`);
 		// Dates are stored as strings in the memento
 		const lastRemovalDate = this._globalMemento.get<string>(`lastRemoval:${this._clientId}:${this._authority}`);
+
 		if (lastRemovalDate && this._lastCreated && Date.parse(lastRemovalDate) > this._lastCreated.getTime()) {
 			this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication removal detected... recreating PCA...`);
 			this._pca = new PublicClientApplication(this._config);
@@ -194,6 +208,7 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 		}
 
 		let after = await this._pca.getAllAccounts();
+
 		if (this._isBrokerAvailable) {
 			after = after.filter(a => this._accountAccess.isAllowedAccess(a));
 		}
@@ -201,13 +216,17 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 		this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update after: ${after.length}`);
 
 		const beforeSet = new Set(before.map(b => b.homeAccountId));
+
 		const afterSet = new Set(after.map(a => a.homeAccountId));
 
 		const added = after.filter(a => !beforeSet.has(a.homeAccountId));
+
 		const deleted = before.filter(b => !afterSet.has(b.homeAccountId));
+
 		if (added.length > 0 || deleted.length > 0) {
 			this._onDidAccountsChangeEmitter.fire({ added, changed: [], deleted });
 			this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication accounts changed. added: ${added.length}, deleted: ${deleted.length}`);
+
 			if (!after.length) {
 				this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication final account deleted. Firing event.`);
 				this._onDidRemoveLastAccountEmitter.fire();
@@ -218,12 +237,15 @@ export class CachedPublicClientApplication implements ICachedPublicClientApplica
 
 	private _setupRefresh(result: AuthenticationResult) {
 		const on = result.refreshOn || result.expiresOn;
+
 		if (!result.account || !on) {
 			return;
 		}
 
 		const account = result.account;
+
 		const scopes = result.scopes;
+
 		const timeToRefresh = on.getTime() - Date.now() - 5 * 60 * 1000; // 5 minutes before expiry
 		const key = JSON.stringify({ accountId: account.homeAccountId, scopes });
 		this._logger.debug(`[_setupRefresh] [${this._clientId}] [${this._authority}] [${scopes.join(' ')}] [${account.username}] timeToRefresh: ${timeToRefresh}`);
@@ -249,6 +271,7 @@ class DelayerByKey<T> {
 
 	trigger(key: string, fn: () => Promise<T>, delay: number): Promise<T> {
 		let delayer = this._delayers.get(key);
+
 		if (!delayer) {
 			delayer = new Delayer<T>(delay);
 			this._delayers.set(key, delayer);

@@ -60,13 +60,19 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const textModelService = accessor.get(ITextModelService);
+
 		const editorWorkerService = accessor.get(IEditorWorkerService);
+
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
 		const bulkEditService = accessor.get(IBulkEditService);
+
 		const instantiationService = accessor.get(IInstantiationService);
 
 		const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
 		if (!editor || !editor.hasModel()) {
 			return;
 		}
@@ -76,6 +82,7 @@ registerAction2(class extends Action2 {
 		const formatApplied: boolean = await instantiationService.invokeFunction(CodeActionParticipantUtils.checkAndRunFormatCodeAction, notebook, Progress.None, CancellationToken.None);
 
 		const disposable = new DisposableStore();
+
 		try {
 			if (!formatApplied) {
 				const allCellEdits = await Promise.all(notebook.cells.map(async cell => {
@@ -155,21 +162,26 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 	async onWillExecuteCell(executions: INotebookCellExecution[]): Promise<void> {
 
 		const enabled = this.configurationService.getValue<boolean>(NotebookSetting.formatOnCellExecution);
+
 		if (!enabled) {
 			return;
 		}
 
 		const disposable = new DisposableStore();
+
 		try {
 			const allCellEdits = await Promise.all(executions.map(async cellExecution => {
 				const nbModel = this._notebookService.getNotebookTextModel(cellExecution.notebook);
+
 				if (!nbModel) {
 					return [];
 				}
 				let activeCell;
+
 				for (const cell of nbModel.cells) {
 					if (cell.handle === cellExecution.cellHandle) {
 						activeCell = cell;
+
 						break;
 					}
 				}
@@ -194,6 +206,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 
 				if (formatEdits) {
 					edits.push(...formatEdits.map(edit => new ResourceTextEdit(model.uri, edit, model.getVersionId())));
+
 					return edits;
 				}
 

@@ -12,6 +12,7 @@ class MissingStoresError extends Error {
 }
 export class DBClosedError extends Error {
     readonly code = 'DBClosed';
+
     constructor(dbName: string) {
         super(`IndexedDB database '${dbName}' is closed.`);
     }
@@ -19,22 +20,26 @@ export class DBClosedError extends Error {
 export class IndexedDB {
     static async create(name: string, version: number | undefined, stores: string[]): Promise<IndexedDB> {
         const database = await IndexedDB.openDatabase(name, version, stores);
+
         return new IndexedDB(database, name);
     }
     private static async openDatabase(name: string, version: number | undefined, stores: string[]): Promise<IDBDatabase> {
         mark(`code/willOpenDatabase/${name}`);
+
         try {
             return await IndexedDB.doOpenDatabase(name, version, stores);
         }
         catch (err) {
             if (err instanceof MissingStoresError) {
                 console.info(`Attempting to recreate the IndexedDB once.`, name);
+
                 try {
                     // Try to delete the db
                     await IndexedDB.deleteDatabase(err.db);
                 }
                 catch (error) {
                     console.error(`Error while deleting the IndexedDB`, getErrorMessage(error));
+
                     throw error;
                 }
                 return await IndexedDB.doOpenDatabase(name, version, stores);
@@ -51,10 +56,12 @@ export class IndexedDB {
             request.onerror = () => e(request.error);
             request.onsuccess = () => {
                 const db = request.result;
+
                 for (const store of stores) {
                     if (!db.objectStoreNames.contains(store)) {
                         console.error(`Error while opening IndexedDB. Could not find '${store}'' object store`);
                         e(new MissingStoresError(db));
+
                         return;
                     }
                 }
@@ -62,6 +69,7 @@ export class IndexedDB {
             };
             request.onupgradeneeded = () => {
                 const db = request.result;
+
                 for (const store of stores) {
                     if (!db.objectStoreNames.contains(store)) {
                         db.createObjectStore(store);
@@ -82,6 +90,7 @@ export class IndexedDB {
     }
     private database: IDBDatabase | null = null;
     private readonly pendingTransactions: IDBTransaction[] = [];
+
     constructor(database: IDBDatabase, private readonly name: string) {
         this.database = database;
     }
@@ -97,12 +106,14 @@ export class IndexedDB {
     }
     runInTransaction<T>(store: string, transactionMode: IDBTransactionMode, dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>[]): Promise<T[]>;
     runInTransaction<T>(store: string, transactionMode: IDBTransactionMode, dbRequestFn: (store: IDBObjectStore) => IDBRequest<T>): Promise<T>;
+
     async runInTransaction<T>(store: string, transactionMode: IDBTransactionMode, dbRequestFn: (store: IDBObjectStore) => IDBRequest<T> | IDBRequest<T>[]): Promise<T | T[]> {
         if (!this.database) {
             throw new DBClosedError(this.name);
         }
         const transaction = this.database.transaction(store, transactionMode);
         this.pendingTransactions.push(transaction);
+
         return new Promise<T | T[]>((c, e) => {
             transaction.oncomplete = () => {
                 if (Array.isArray(request)) {
@@ -114,6 +125,7 @@ export class IndexedDB {
             };
             transaction.onerror = () => e(transaction.error ? ErrorNoTelemetry.fromError(transaction.error) : new ErrorNoTelemetry('unknown error'));
             transaction.onabort = () => e(transaction.error ? ErrorNoTelemetry.fromError(transaction.error) : new ErrorNoTelemetry('unknown error'));
+
             const request = dbRequestFn(transaction.objectStore(store));
         }).finally(() => this.pendingTransactions.splice(this.pendingTransactions.indexOf(transaction), 1));
     }
@@ -123,11 +135,14 @@ export class IndexedDB {
         }
         const transaction = this.database.transaction(store, 'readonly');
         this.pendingTransactions.push(transaction);
+
         return new Promise<Map<string, V>>(resolve => {
             const items = new Map<string, V>();
+
             const objectStore = transaction.objectStore(store);
             // Open a IndexedDB Cursor to iterate over key/values
             const cursor = objectStore.openCursor();
+
             if (!cursor) {
                 return resolve(items); // this means the `ItemTable` was empty
             }

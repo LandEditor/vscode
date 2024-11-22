@@ -459,18 +459,22 @@ namespace schema {
 	export function isValidMenuItem(item: IUserFriendlyMenuItem, collector: ExtensionMessageCollector): boolean {
 		if (typeof item.command !== 'string') {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'command'));
+
 			return false;
 		}
 		if (item.alt && typeof item.alt !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'alt'));
+
 			return false;
 		}
 		if (item.when && typeof item.when !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'when'));
+
 			return false;
 		}
 		if (item.group && typeof item.group !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'group'));
+
 			return false;
 		}
 
@@ -480,14 +484,17 @@ namespace schema {
 	export function isValidSubmenuItem(item: IUserFriendlySubmenuItem, collector: ExtensionMessageCollector): boolean {
 		if (typeof item.submenu !== 'string') {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'submenu'));
+
 			return false;
 		}
 		if (item.when && typeof item.when !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'when'));
+
 			return false;
 		}
 		if (item.group && typeof item.group !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'group'));
+
 			return false;
 		}
 
@@ -497,6 +504,7 @@ namespace schema {
 	export function isValidItems(items: (IUserFriendlyMenuItem | IUserFriendlySubmenuItem)[], collector: ExtensionMessageCollector): boolean {
 		if (!Array.isArray(items)) {
 			collector.error(localize('requirearray', "submenu items must be an array"));
+
 			return false;
 		}
 
@@ -518,15 +526,18 @@ namespace schema {
 	export function isValidSubmenu(submenu: IUserFriendlySubmenu, collector: ExtensionMessageCollector): boolean {
 		if (typeof submenu !== 'object') {
 			collector.error(localize('require', "submenu items must be an object"));
+
 			return false;
 		}
 
 		if (typeof submenu.id !== 'string') {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'id'));
+
 			return false;
 		}
 		if (typeof submenu.label !== 'string') {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'label'));
+
 			return false;
 		}
 
@@ -646,10 +657,12 @@ namespace schema {
 	export function isValidCommand(command: IUserFriendlyCommand, collector: ExtensionMessageCollector): boolean {
 		if (!command) {
 			collector.error(localize('nonempty', "expected non-empty value."));
+
 			return false;
 		}
 		if (isFalsyOrWhitespace(command.command)) {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", 'command'));
+
 			return false;
 		}
 		if (!isValidLocalizedString(command.title, collector, 'title')) {
@@ -660,6 +673,7 @@ namespace schema {
 		}
 		if (command.enablement && typeof command.enablement !== 'string') {
 			collector.error(localize('optstring', "property `{0}` can be omitted or must be of type `string`", 'precondition'));
+
 			return false;
 		}
 		if (command.category && !isValidLocalizedString(command.category, collector, 'category')) {
@@ -681,18 +695,22 @@ namespace schema {
 			return true;
 		}
 		collector.error(localize('opticon', "property `icon` can be omitted or must be either a string or a literal like `{dark, light}`"));
+
 		return false;
 	}
 
 	function isValidLocalizedString(localized: string | ILocalizedString, collector: ExtensionMessageCollector, propertyName: string): boolean {
 		if (typeof localized === 'undefined') {
 			collector.error(localize('requireStringOrObject', "property `{0}` is mandatory and must be of type `string` or `object`", propertyName));
+
 			return false;
 		} else if (typeof localized === 'string' && isFalsyOrWhitespace(localized)) {
 			collector.error(localize('requirestring', "property `{0}` is mandatory and must be of type `string`", propertyName));
+
 			return false;
 		} else if (typeof localized !== 'string' && (isFalsyOrWhitespace(localized.original) || isFalsyOrWhitespace(localized.value))) {
 			collector.error(localize('requirestrings', "properties `{0}` and `{1}` are mandatory and must be of type `string`", `${propertyName}.value`, `${propertyName}.original`));
+
 			return false;
 		}
 
@@ -782,6 +800,7 @@ commandsExtensionPoint.setHandler(extensions => {
 		const { icon, enablement, category, title, shortTitle, command } = userFriendlyCommand;
 
 		let absoluteIcon: { dark: URI; light?: URI } | ThemeIcon | undefined;
+
 		if (icon) {
 			if (typeof icon === 'string') {
 				absoluteIcon = ThemeIcon.fromString(icon) ?? { dark: resources.joinPath(extension.description.extensionLocation, icon), light: resources.joinPath(extension.description.extensionLocation, icon) };
@@ -795,6 +814,7 @@ commandsExtensionPoint.setHandler(extensions => {
 		}
 
 		const existingCmd = MenuRegistry.getCommand(command);
+
 		if (existingCmd) {
 			if (existingCmd.source) {
 				extension.collector.info(localize('dup1', "Command `{0}` already registered by {1} ({2})", userFriendlyCommand.command, existingCmd.source.title, existingCmd.source.id));
@@ -819,6 +839,7 @@ commandsExtensionPoint.setHandler(extensions => {
 
 	for (const extension of extensions) {
 		const { value } = extension;
+
 		if (Array.isArray(value)) {
 			for (const command of value) {
 				handleCommand(command, extension);
@@ -857,18 +878,22 @@ submenusExtensionPoint.setHandler(extensions => {
 
 			if (!submenuInfo.id) {
 				collector.warn(localize('submenuId.invalid.id', "`{0}` is not a valid submenu identifier", submenuInfo.id));
+
 				continue;
 			}
 			if (_submenus.has(submenuInfo.id)) {
 				collector.info(localize('submenuId.duplicate.id', "The `{0}` submenu was already previously registered.", submenuInfo.id));
+
 				continue;
 			}
 			if (!submenuInfo.label) {
 				collector.warn(localize('submenuId.invalid.label', "`{0}` is not a valid submenu label", submenuInfo.label));
+
 				continue;
 			}
 
 			let absoluteIcon: { dark: URI; light?: URI } | ThemeIcon | undefined;
+
 			if (submenuInfo.icon) {
 				if (typeof submenuInfo.icon === 'string') {
 					absoluteIcon = ThemeIcon.fromString(submenuInfo.icon) || { dark: resources.joinPath(extension.description.extensionLocation, submenuInfo.icon) };
@@ -892,7 +917,9 @@ submenusExtensionPoint.setHandler(extensions => {
 });
 
 const _apiMenusByKey = new Map(apiMenus.map(menu => ([menu.key, menu])));
+
 const _menuRegistrations = new DisposableStore();
+
 const _submenuMenuItems = new Map<string /* menu id */, Set<string /* submenu id */>>();
 
 const menusExtensionPoint = ExtensionsRegistry.registerExtensionPoint<{ [loc: string]: (schema.IUserFriendlyMenuItem | schema.IUserFriendlySubmenuItem)[] }>({
@@ -935,6 +962,7 @@ menusExtensionPoint.setHandler(extensions => {
 
 			if (menu.proposed && !isProposedApiEnabled(extension.description, menu.proposed)) {
 				collector.error(localize('proposedAPI.invalid', "{0} is a proposed menu identifier. It requires 'package.json#enabledApiProposals: [\"{1}\"]' and is only available when running out of dev or with the following command line switch: --enable-proposed-api {2}", entry[0], menu.proposed, extension.description.identifier.value));
+
 				continue;
 			}
 
@@ -943,10 +971,12 @@ menusExtensionPoint.setHandler(extensions => {
 
 				if (schema.isMenuItem(menuItem)) {
 					const command = MenuRegistry.getCommand(menuItem.command);
+
 					const alt = menuItem.alt && MenuRegistry.getCommand(menuItem.alt) || undefined;
 
 					if (!command) {
 						collector.error(localize('missing.command', "Menu item references a command `{0}` which is not defined in the 'commands' section.", menuItem.command));
+
 						continue;
 					}
 					if (menuItem.alt && !alt) {
@@ -960,6 +990,7 @@ menusExtensionPoint.setHandler(extensions => {
 				} else {
 					if (menu.supportsSubmenus === false) {
 						collector.error(localize('unsupported.submenureference', "Menu item references a submenu for a menu which doesn't have submenu support."));
+
 						continue;
 					}
 
@@ -967,6 +998,7 @@ menusExtensionPoint.setHandler(extensions => {
 
 					if (!submenu) {
 						collector.error(localize('missing.submenu', "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.", menuItem.submenu));
+
 						continue;
 					}
 
@@ -979,6 +1011,7 @@ menusExtensionPoint.setHandler(extensions => {
 
 					if (submenuRegistrations.has(submenu.id.id)) {
 						collector.warn(localize('submenuItem.duplicate', "The `{0}` submenu was already contributed to the `{1}` menu.", menuItem.submenu, entry[0]));
+
 						continue;
 					}
 
@@ -989,6 +1022,7 @@ menusExtensionPoint.setHandler(extensions => {
 
 				if (menuItem.group) {
 					const idx = menuItem.group.lastIndexOf('@');
+
 					if (idx > 0) {
 						item.group = menuItem.group.substr(0, idx);
 						item.order = Number(menuItem.group.substr(idx + 1)) || undefined;
@@ -1000,6 +1034,7 @@ menusExtensionPoint.setHandler(extensions => {
 				if (menu.id === MenuId.ViewContainerTitle && !menuItem.when?.includes('viewContainer == workbench.view.debug')) {
 					// Not a perfect check but enough to communicate that this proposed extension point is currently only for the debug view container
 					collector.error(localize('viewContainerTitle.when', "The {0} menu contribution must check {1} in its {2} clause.", '`viewContainer/title`', '`viewContainer == workbench.view.debug`', '"when"'));
+
 					continue;
 				}
 
@@ -1024,6 +1059,7 @@ class CommandsTableRenderer extends Disposable implements IExtensionFeatureTable
 
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const rawCommands = manifest.contributes?.commands || [];
+
 		const commands = rawCommands.map(c => ({
 			id: c.command,
 			title: c.title,
@@ -1037,6 +1073,7 @@ class CommandsTableRenderer extends Disposable implements IExtensionFeatureTable
 
 		// Add to commandPalette array any commands not explicitly contributed to it
 		const implicitlyOnCommandPalette = index(commands, c => c.id);
+
 		for (const command of menus['commandPalette']) {
 			delete implicitlyOnCommandPalette[command.command];
 		}
@@ -1053,6 +1090,7 @@ class CommandsTableRenderer extends Disposable implements IExtensionFeatureTable
 				}
 				if (menu.command) {
 					let command = byId[menu.command];
+
 					if (command) {
 						if (!command.menus.includes(context)) {
 							command.menus.push(context);
@@ -1121,7 +1159,9 @@ class CommandsTableRenderer extends Disposable implements IExtensionFeatureTable
 
 		switch (platform) {
 			case 'win32': key = rawKeyBinding.win; break;
+
 			case 'linux': key = rawKeyBinding.linux; break;
+
 			case 'darwin': key = rawKeyBinding.mac; break;
 		}
 

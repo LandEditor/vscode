@@ -13,10 +13,12 @@ export interface IOffsetRange {
 export class OffsetRange implements IOffsetRange {
     public static addRange(range: OffsetRange, sortedRanges: OffsetRange[]): void {
         let i = 0;
+
         while (i < sortedRanges.length && sortedRanges[i].endExclusive < range.start) {
             i++;
         }
         let j = i;
+
         while (j < sortedRanges.length && sortedRanges[j].start <= range.endExclusive) {
             j++;
         }
@@ -25,6 +27,7 @@ export class OffsetRange implements IOffsetRange {
         }
         else {
             const start = Math.min(range.start, sortedRanges[i].start);
+
             const end = Math.max(range.endExclusive, sortedRanges[j - 1].endExclusive);
             sortedRanges.splice(i, j - i, new OffsetRange(start, end));
         }
@@ -91,7 +94,9 @@ export class OffsetRange implements IOffsetRange {
      */
     public intersect(other: OffsetRange): OffsetRange | undefined {
         const start = Math.max(this.start, other.start);
+
         const end = Math.min(this.endExclusive, other.endExclusive);
+
         if (start <= end) {
             return new OffsetRange(start, end);
         }
@@ -99,17 +104,23 @@ export class OffsetRange implements IOffsetRange {
     }
     public intersectionLength(range: OffsetRange): number {
         const start = Math.max(this.start, range.start);
+
         const end = Math.min(this.endExclusive, range.endExclusive);
+
         return Math.max(0, end - start);
     }
     public intersects(other: OffsetRange): boolean {
         const start = Math.max(this.start, other.start);
+
         const end = Math.min(this.endExclusive, other.endExclusive);
+
         return start < end;
     }
     public intersectsOrTouches(other: OffsetRange): boolean {
         const start = Math.max(this.start, other.start);
+
         const end = Math.min(this.endExclusive, other.endExclusive);
+
         return start <= end;
     }
     public isBefore(other: OffsetRange): boolean {
@@ -154,6 +165,7 @@ export class OffsetRange implements IOffsetRange {
     }
     public map<T>(f: (offset: number) => T): T[] {
         const result: T[] = [];
+
         for (let i = this.start; i < this.endExclusive; i++) {
             result.push(f(i));
         }
@@ -169,10 +181,12 @@ export class OffsetRangeSet {
     private readonly _sortedRanges: OffsetRange[] = [];
     public addRange(range: OffsetRange): void {
         let i = 0;
+
         while (i < this._sortedRanges.length && this._sortedRanges[i].endExclusive < range.start) {
             i++;
         }
         let j = i;
+
         while (j < this._sortedRanges.length && this._sortedRanges[j].start <= range.endExclusive) {
             j++;
         }
@@ -181,6 +195,7 @@ export class OffsetRangeSet {
         }
         else {
             const start = Math.min(range.start, this._sortedRanges[i].start);
+
             const end = Math.max(range.endExclusive, this._sortedRanges[j - 1].endExclusive);
             this._sortedRanges.splice(i, j - i, new OffsetRange(start, end));
         }
@@ -194,6 +209,7 @@ export class OffsetRangeSet {
     public intersectsStrict(other: OffsetRange): boolean {
         // TODO use binary search
         let i = 0;
+
         while (i < this._sortedRanges.length && this._sortedRanges[i].endExclusive <= other.start) {
             i++;
         }
@@ -202,8 +218,10 @@ export class OffsetRangeSet {
     public intersectWithRange(other: OffsetRange): OffsetRangeSet {
         // TODO use binary search + slice
         const result = new OffsetRangeSet();
+
         for (const range of this._sortedRanges) {
             const intersection = range.intersect(other);
+
             if (intersection) {
                 result.addRange(intersection);
             }

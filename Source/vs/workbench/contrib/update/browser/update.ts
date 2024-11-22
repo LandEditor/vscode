@@ -33,6 +33,7 @@ export const CONTEXT_UPDATE_STATE = new RawContextKey<string>('updateState', Sta
 export const MAJOR_MINOR_UPDATE_AVAILABLE = new RawContextKey<boolean>('majorMinorUpdateAvailable', false);
 export const RELEASE_NOTES_URL = new RawContextKey<string>('releaseNotesUrl', '');
 export const DOWNLOAD_URL = new RawContextKey<string>('downloadUrl', '');
+
 let releaseNotesManager: ReleaseNotesManager | undefined = undefined;
 export function showReleaseNotesInEditor(instantiationService: IInstantiationService, version: string, useCurrentFile: boolean) {
     if (!releaseNotesManager) {
@@ -42,7 +43,9 @@ export function showReleaseNotesInEditor(instantiationService: IInstantiationSer
 }
 async function openLatestReleaseNotesInBrowser(accessor: ServicesAccessor) {
     const openerService = accessor.get(IOpenerService);
+
     const productService = accessor.get(IProductService);
+
     if (productService.releaseNotesUrl) {
         const uri = URI.parse(productService.releaseNotesUrl);
         await openerService.open(uri);
@@ -53,6 +56,7 @@ async function openLatestReleaseNotesInBrowser(accessor: ServicesAccessor) {
 }
 async function showReleaseNotes(accessor: ServicesAccessor, version: string) {
     const instantiationService = accessor.get(IInstantiationService);
+
     try {
         await showReleaseNotesInEditor(instantiationService, version, false);
     }
@@ -72,6 +76,7 @@ interface IVersion {
 }
 function parseVersion(version: string): IVersion | undefined {
     const match = /([0-9]+)\.([0-9]+)\.([0-9]+)/.exec(version);
+
     if (!match) {
         return undefined;
     }
@@ -86,6 +91,7 @@ function isMajorMinorUpdate(before: IVersion, after: IVersion): boolean {
 }
 export class ProductContribution implements IWorkbenchContribution {
     private static readonly KEY = 'releaseNotes/lastVersion';
+
     constructor(
     @IStorageService
     storageService: IStorageService, 
@@ -111,6 +117,7 @@ export class ProductContribution implements IWorkbenchContribution {
         }
         if (productService.downloadUrl) {
             const downloadUrlKey = DOWNLOAD_URL.bindTo(contextKeyService);
+
             downloadUrlKey.set(productService.downloadUrl);
         }
         if (isWeb) {
@@ -121,8 +128,11 @@ export class ProductContribution implements IWorkbenchContribution {
                 return;
             }
             const lastVersion = parseVersion(storageService.get(ProductContribution.KEY, StorageScope.APPLICATION, ''));
+
             const currentVersion = parseVersion(productService.version);
+
             const shouldShowReleaseNotes = configurationService.getValue<boolean>('update.showReleaseNotes');
+
             const releaseNotesUrl = productService.releaseNotesUrl;
             // was there a major/minor update? if so, open release notes
             if (shouldShowReleaseNotes && !environmentService.skipReleaseNotes && releaseNotesUrl && lastVersion && currentVersion && isMajorMinorUpdate(lastVersion, currentVersion)) {
@@ -146,6 +156,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
     private readonly badgeDisposable = this._register(new MutableDisposable());
     private updateStateContextKey: IContextKey<string>;
     private majorMinorUpdateAvailableContextKey: IContextKey<boolean>;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService, 
@@ -183,6 +194,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
         updated since 5 days.
         */
         const currentVersion = this.productService.commit;
+
         const lastKnownVersion = this.storageService.get('update/lastKnownVersion', StorageScope.APPLICATION);
         // if current version != stored version, clear both fields
         if (currentVersion !== lastKnownVersion) {
@@ -193,6 +205,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
     }
     private async onUpdateStateChange(state: UpdateState): Promise<void> {
         this.updateStateContextKey.set(state.type);
+
         switch (state.type) {
             case StateType.Disabled:
                 if (state.reason === DisablementReason.RunningAsAdmin) {
@@ -210,6 +223,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
                     });
                 }
                 break;
+
             case StateType.Idle:
                 if (state.error) {
                     this.onError(state.error);
@@ -218,16 +232,23 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
                     this.onUpdateNotAvailable();
                 }
                 break;
+
             case StateType.AvailableForDownload:
                 this.onUpdateAvailable(state.update);
+
                 break;
+
             case StateType.Downloaded:
                 this.onUpdateDownloaded(state.update);
+
                 break;
+
             case StateType.Ready: {
                 const productVersion = state.update.productVersion;
+
                 if (productVersion) {
                     const currentVersion = parseVersion(this.productService.version);
+
                     const nextVersion = parseVersion(productVersion);
                     this.majorMinorUpdateAvailableContextKey.set(Boolean(currentVersion && nextVersion && isMajorMinorUpdate(currentVersion, nextVersion)));
                     this.onUpdateReady(state.update);
@@ -236,7 +257,9 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             }
         }
         let badge: IBadge | undefined = undefined;
+
         let priority: number | undefined = undefined;
+
         if (state.type === StateType.AvailableForDownload || state.type === StateType.Downloaded || state.type === StateType.Ready) {
             badge = new NumberBadge(1, () => nls.localize('updateIsReady', "New {0} update available.", this.productService.nameShort));
         }
@@ -253,6 +276,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             priority = 1;
         }
         this.badgeDisposable.clear();
+
         if (badge) {
             this.badgeDisposable.value = this.activityService.showGlobalActivity({ badge, priority });
         }
@@ -278,6 +302,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             return;
         }
         const productVersion = update.productVersion;
+
         if (!productVersion) {
             return;
         }
@@ -306,6 +331,7 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             return;
         }
         const productVersion = update.productVersion;
+
         if (!productVersion) {
             return;
         }
@@ -334,7 +360,9 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
                 label: nls.localize('later', "Later"),
                 run: () => { }
             }];
+
         const productVersion = update.productVersion;
+
         if (productVersion) {
             actions.push({
                 label: nls.localize('releaseNotes', "Release Notes"),
@@ -348,7 +376,9 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
     }
     private shouldShowNotification(): boolean {
         const currentVersion = this.productService.commit;
+
         const currentMillis = new Date().getTime();
+
         const lastKnownVersion = this.storageService.get('update/lastKnownVersion', StorageScope.APPLICATION);
         // if version != stored version, save version and date
         if (currentVersion !== lastKnownVersion) {
@@ -356,7 +386,9 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             this.storageService.store('update/updateNotificationTime', currentMillis, StorageScope.APPLICATION, StorageTarget.MACHINE);
         }
         const updateNotificationMillis = this.storageService.getNumber('update/updateNotificationTime', StorageScope.APPLICATION, currentMillis);
+
         const diffDays = (currentMillis - updateNotificationMillis) / (1000 * 60 * 60 * 24);
+
         return diffDays > 5;
     }
     private registerGlobalActivityActions(): void {
@@ -417,12 +449,14 @@ export class UpdateContribution extends Disposable implements IWorkbenchContribu
             },
             when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Updating)
         });
+
         if (this.productService.quality === 'stable') {
             CommandsRegistry.registerCommand('update.showUpdateReleaseNotes', () => {
                 if (this.updateService.state.type !== StateType.Ready) {
                     return;
                 }
                 const productVersion = this.updateService.state.update.productVersion;
+
                 if (productVersion) {
                     this.instantiationService.invokeFunction(accessor => showReleaseNotes(accessor, productVersion));
                 }
@@ -463,10 +497,14 @@ export class SwitchProductQualityContribution extends Disposable implements IWor
     }
     private registerGlobalActivityActions(): void {
         const quality = this.productService.quality;
+
         const productQualityChangeHandler = this.environmentService.options?.productQualityChangeHandler;
+
         if (productQualityChangeHandler && (quality === 'stable' || quality === 'insider')) {
             const newQuality = quality === 'stable' ? 'insider' : 'stable';
+
             const commandId = `update.switchQuality.${newQuality}`;
+
             const isSwitchingToInsiders = newQuality === 'insider';
             this._register(registerAction2(class SwitchQuality extends Action2 {
                 constructor() {
@@ -483,23 +521,35 @@ export class SwitchProductQualityContribution extends Disposable implements IWor
                 }
                 async run(accessor: ServicesAccessor): Promise<void> {
                     const dialogService = accessor.get(IDialogService);
+
                     const userDataSyncEnablementService = accessor.get(IUserDataSyncEnablementService);
+
                     const userDataSyncStoreManagementService = accessor.get(IUserDataSyncStoreManagementService);
+
                     const storageService = accessor.get(IStorageService);
+
                     const userDataSyncWorkbenchService = accessor.get(IUserDataSyncWorkbenchService);
+
                     const userDataSyncService = accessor.get(IUserDataSyncService);
+
                     const notificationService = accessor.get(INotificationService);
+
                     try {
                         const selectSettingsSyncServiceDialogShownKey = 'switchQuality.selectSettingsSyncServiceDialogShown';
+
                         const userDataSyncStore = userDataSyncStoreManagementService.userDataSyncStore;
+
                         let userDataSyncStoreType: UserDataSyncStoreType | undefined;
+
                         if (userDataSyncStore && isSwitchingToInsiders && userDataSyncEnablementService.isEnabled()
                             && !storageService.getBoolean(selectSettingsSyncServiceDialogShownKey, StorageScope.APPLICATION, false)) {
                             userDataSyncStoreType = await this.selectSettingsSyncService(dialogService);
+
                             if (!userDataSyncStoreType) {
                                 return;
                             }
                             storageService.store(selectSettingsSyncServiceDialogShownKey, true, StorageScope.APPLICATION, StorageTarget.USER);
+
                             if (userDataSyncStoreType === 'stable') {
                                 // Update the stable service type in the current window, so that it uses stable service after switched to insiders version (after reload).
                                 await userDataSyncStoreManagementService.switch(userDataSyncStoreType);
@@ -513,6 +563,7 @@ export class SwitchProductQualityContribution extends Disposable implements IWor
                                 nls.localize('relaunchDetailStable', "Press the reload button to switch to the Stable version of VS Code."),
                             primaryButton: nls.localize({ key: 'reload', comment: ['&& denotes a mnemonic'] }, "&&Reload")
                         });
+
                         if (res.confirmed) {
                             const promises: Promise<any>[] = [];
                             // If sync is happening wait until it is finished before reload
@@ -554,6 +605,7 @@ export class SwitchProductQualityContribution extends Disposable implements IWor
                         ],
                         cancelButton: true
                     });
+
                     return result;
                 }
             }));

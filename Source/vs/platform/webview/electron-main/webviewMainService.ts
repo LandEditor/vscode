@@ -12,6 +12,7 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
     declare readonly _serviceBrand: undefined;
     private readonly _onFoundInFrame = this._register(new Emitter<FoundInFrameResult>());
     public onFoundInFrame = this._onFoundInFrame.event;
+
     constructor(
     @IWindowsMainService
     private readonly windowsMainService: IWindowsMainService) {
@@ -20,9 +21,12 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
     }
     public async setIgnoreMenuShortcuts(id: WebviewWebContentsId | WebviewWindowId, enabled: boolean): Promise<void> {
         let contents: WebContents | undefined;
+
         if (typeof (id as WebviewWindowId).windowId === 'number') {
             const { windowId } = (id as WebviewWindowId);
+
             const window = this.windowsMainService.getWindowById(windowId);
+
             if (!window?.win) {
                 throw new Error(`Invalid windowId: ${windowId}`);
             }
@@ -31,6 +35,7 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
         else {
             const { webContentsId } = (id as WebviewWebContentsId);
             contents = webContents.fromId(webContentsId);
+
             if (!contents) {
                 throw new Error(`Invalid webContentsId: ${webContentsId}`);
             }
@@ -41,6 +46,7 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
     }
     public async findInFrame(windowId: WebviewWindowId, frameName: string, text: string, options: {
         findNext?: boolean;
+
         forward?: boolean;
     }): Promise<void> {
         const initialFrame = this.getFrameByName(windowId, frameName);
@@ -49,12 +55,15 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
             on(event: 'found-in-frame', listener: Function): WebFrameMain;
             removeListener(event: 'found-in-frame', listener: Function): WebFrameMain;
         };
+
         const frame = initialFrame as unknown as WebFrameMainWithFindSupport;
+
         if (typeof frame.findInFrame === 'function') {
             frame.findInFrame(text, {
                 findNext: options.findNext,
                 forward: options.forward,
             });
+
             const foundInFrameHandler = (_: unknown, result: FoundInFrameResult) => {
                 if (result.finalUpdate) {
                     this._onFoundInFrame.fire(result);
@@ -71,19 +80,23 @@ export class WebviewMainService extends Disposable implements IWebviewManagerSer
         type WebFrameMainWithFindSupport = WebFrameMain & {
             stopFindInFrame?(stopOption: 'keepSelection' | 'clearSelection'): void;
         };
+
         const frame = initialFrame as unknown as WebFrameMainWithFindSupport;
+
         if (typeof frame.stopFindInFrame === 'function') {
             frame.stopFindInFrame(options.keepSelection ? 'keepSelection' : 'clearSelection');
         }
     }
     private getFrameByName(windowId: WebviewWindowId, frameName: string): WebFrameMain {
         const window = this.windowsMainService.getWindowById(windowId.windowId);
+
         if (!window?.win) {
             throw new Error(`Invalid windowId: ${windowId}`);
         }
         const frame = window.win.webContents.mainFrame.framesInSubtree.find(frame => {
             return frame.name === frameName;
         });
+
         if (!frame) {
             throw new Error(`Unknown frame: ${frameName}`);
         }

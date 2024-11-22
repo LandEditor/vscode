@@ -16,6 +16,7 @@ enum NavigationDirection {
 export default class CommandHandler implements vscode.Disposable {
     private disposables: vscode.Disposable[] = [];
     private tracker: interfaces.IDocumentMergeConflictTracker;
+
     constructor(trackerService: interfaces.IDocumentMergeConflictTrackerService) {
         this.tracker = trackerService.createTracker('commands');
     }
@@ -28,6 +29,7 @@ export default class CommandHandler implements vscode.Disposable {
                 return resourceCB.call(this, args.map(arg => arg.resourceUri));
             }
             const editor = vscode.window.activeTextEditor;
+
             return editor && cb.call(this, editor, ...args);
         });
     }
@@ -62,6 +64,7 @@ export default class CommandHandler implements vscode.Disposable {
             // Still failed to find conflict, warn the user and exit
             if (!conflict) {
                 vscode.window.showWarningMessage(vscode.l10n.t("Editor cursor is not within a merge conflict"));
+
                 return;
             }
         }
@@ -69,19 +72,27 @@ export default class CommandHandler implements vscode.Disposable {
         // Still failed to find conflict, warn the user and exit
         if (!conflicts) {
             vscode.window.showWarningMessage(vscode.l10n.t("Editor cursor is not within a merge conflict"));
+
             return;
         }
         const scheme = editor.document.uri.scheme;
+
         let range = conflict.current.content;
+
         const leftRanges = conflicts.map(conflict => [conflict.current.content, conflict.range]);
+
         const rightRanges = conflicts.map(conflict => [conflict.incoming.content, conflict.range]);
+
         const leftUri = editor.document.uri.with({
             scheme: ContentProvider.scheme,
             query: JSON.stringify({ scheme, range: range, ranges: leftRanges })
         });
         range = conflict.incoming.content;
+
         const rightUri = leftUri.with({ query: JSON.stringify({ scheme, ranges: rightRanges }) });
+
         let mergeConflictLineOffsets = 0;
+
         for (const nextconflict of conflicts) {
             if (nextconflict.range.isEqual(conflict.range)) {
                 break;
@@ -91,15 +102,21 @@ export default class CommandHandler implements vscode.Disposable {
             }
         }
         const selection = new vscode.Range(conflict.range.start.line - mergeConflictLineOffsets, conflict.range.start.character, conflict.range.start.line - mergeConflictLineOffsets, conflict.range.start.character);
+
         const docPath = editor.document.uri.path;
+
         const fileName = docPath.substring(docPath.lastIndexOf('/') + 1); // avoid NodeJS path to keep browser webpack small
         const title = vscode.l10n.t("{0}: Current Changes ↔ Incoming Changes", fileName);
+
         const mergeConflictConfig = vscode.workspace.getConfiguration('merge-conflict');
+
         const openToTheSide = mergeConflictConfig.get<string>('diffViewPosition');
+
         const opts: vscode.TextDocumentShowOptions = {
             viewColumn: openToTheSide === 'Beside' ? vscode.ViewColumn.Beside : vscode.ViewColumn.Active,
             selection
         };
+
         if (openToTheSide === 'Below') {
             await vscode.commands.executeCommand('workbench.action.newGroupBelow');
         }
@@ -113,12 +130,16 @@ export default class CommandHandler implements vscode.Disposable {
     }
     async acceptSelection(editor: vscode.TextEditor): Promise<void> {
         const conflict = await this.findConflictContainingSelection(editor);
+
         if (!conflict) {
             vscode.window.showWarningMessage(vscode.l10n.t("Editor cursor is not within a merge conflict"));
+
             return;
         }
         let typeToAccept: interfaces.CommitType;
+
         let tokenAfterCurrentBlock: vscode.Range = conflict.splitter;
+
         if (conflict.commonAncestors.length > 0) {
             tokenAfterCurrentBlock = conflict.commonAncestors[0].header;
         }
@@ -135,10 +156,12 @@ export default class CommandHandler implements vscode.Disposable {
         }
         else if (editor.selection.active.isBefore(conflict.splitter.start)) {
             vscode.window.showWarningMessage(vscode.l10n.t('Editor cursor is within the common ancestors block, please move it to either the "current" or "incoming" block'));
+
             return;
         }
         else {
             vscode.window.showWarningMessage(vscode.l10n.t('Editor cursor is within the merge conflict splitter, please move it to either the "current" or "incoming" block'));
+
             return;
         }
         this.tracker.forget(editor.document);
@@ -150,17 +173,21 @@ export default class CommandHandler implements vscode.Disposable {
     }
     private async navigate(editor: vscode.TextEditor, direction: NavigationDirection): Promise<void> {
         const navigationResult = await this.findConflictForNavigation(editor, direction);
+
         if (!navigationResult) {
             // Check for autoNavigateNextConflict, if it's enabled(which indicating no conflict remain), then do not show warning
             const mergeConflictConfig = vscode.workspace.getConfiguration('merge-conflict');
+
             if (mergeConflictConfig.get<boolean>('autoNavigateNextConflict.enabled')) {
                 return;
             }
             vscode.window.showWarningMessage(vscode.l10n.t("No merge conflicts found in this file"));
+
             return;
         }
         else if (!navigationResult.canNavigate) {
             vscode.window.showWarningMessage(vscode.l10n.t("No other merge conflicts within this file"));
+
             return;
         }
         else if (!navigationResult.conflict) {
@@ -183,6 +210,7 @@ export default class CommandHandler implements vscode.Disposable {
         }
         if (!conflict) {
             vscode.window.showWarningMessage(vscode.l10n.t("Editor cursor is not within a merge conflict"));
+
             return;
         }
         // Tracker can forget as we know we are going to do an edit
@@ -190,14 +218,17 @@ export default class CommandHandler implements vscode.Disposable {
         conflict.commitEdit(type, editor);
         // navigate to the next merge conflict
         const mergeConflictConfig = vscode.workspace.getConfiguration('merge-conflict');
+
         if (mergeConflictConfig.get<boolean>('autoNavigateNextConflict.enabled')) {
             this.navigateNext(editor);
         }
     }
     private async acceptAll(type: interfaces.CommitType, editor: vscode.TextEditor): Promise<void> {
         const conflicts = await this.tracker.getConflicts(editor.document);
+
         if (!conflicts || conflicts.length === 0) {
             vscode.window.showWarningMessage(vscode.l10n.t("No merge conflicts found in this file"));
+
             return;
         }
         // For get the current state of the document, as we know we are doing to do a large edit
@@ -209,9 +240,12 @@ export default class CommandHandler implements vscode.Disposable {
     }
     private async acceptAllResources(type: interfaces.CommitType, resources: vscode.Uri[]): Promise<void> {
         const documents = await Promise.all(resources.map(resource => vscode.workspace.openTextDocument(resource)));
+
         const edit = new vscode.WorkspaceEdit();
+
         for (const document of documents) {
             const conflicts = await this.tracker.getConflicts(document);
+
             if (!conflicts || conflicts.length === 0) {
                 continue;
             }
@@ -246,6 +280,7 @@ export default class CommandHandler implements vscode.Disposable {
             return null;
         }
         const selection = editor.selection.active;
+
         if (conflicts.length === 1) {
             if (conflicts[0].range.contains(selection)) {
                 return {
@@ -258,8 +293,11 @@ export default class CommandHandler implements vscode.Disposable {
             };
         }
         let predicate: (_conflict: any) => boolean;
+
         let fallback: () => interfaces.IDocumentMergeConflict;
+
         let scanOrder: interfaces.IDocumentMergeConflict[];
+
         if (direction === NavigationDirection.Forwards) {
             predicate = (conflict) => selection.isBefore(conflict.range.start);
             fallback = () => conflicts![0];

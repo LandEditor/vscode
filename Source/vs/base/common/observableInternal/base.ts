@@ -177,17 +177,22 @@ export abstract class ConvenientObservable<T, TChange> implements IObservable<T,
     public map<TNew>(owner: DebugOwner, fn: (value: T, reader: IReader) => TNew): IObservable<TNew>;
     public map<TNew>(fnOrOwner: DebugOwner | ((value: T, reader: IReader) => TNew), fnOrUndefined?: (value: T, reader: IReader) => TNew): IObservable<TNew> {
         const owner = fnOrUndefined === undefined ? undefined : fnOrOwner as DebugOwner;
+
         const fn = fnOrUndefined === undefined ? fnOrOwner as (value: T, reader: IReader) => TNew : fnOrUndefined;
+
         return _derived({
             owner,
             debugName: () => {
                 const name = getFunctionName(fn);
+
                 if (name !== undefined) {
                     return name;
                 }
                 // regexp to match `x => x.y` or `x => x?.y` where x and y can be arbitrary identifiers (uses backref):
                 const regexp = /^\s*\(?\s*([a-zA-Z_$][a-zA-Z_$0-9]*)\s*\)?\s*=>\s*\1(?:\??)\.([a-zA-Z_$][a-zA-Z_$0-9]*)\s*$/;
+
                 const match = regexp.exec(fn.toString());
+
                 if (match) {
                     return `${this.debugName}.${match[2]}`;
                 }
@@ -211,6 +216,7 @@ export abstract class ConvenientObservable<T, TChange> implements IObservable<T,
     }
     public recomputeInitiallyAndOnChange(store: DisposableStore, handleValue?: (value: T) => void): IObservable<T> {
         store.add(_recomputeInitiallyAndOnChange!(this, handleValue));
+
         return this;
     }
     /**
@@ -220,6 +226,7 @@ export abstract class ConvenientObservable<T, TChange> implements IObservable<T,
      */
     public keepObserved(store: DisposableStore): IObservable<T> {
         store.add(_keepObserved!(this));
+
         return this;
     }
     public abstract get debugName(): string;
@@ -232,12 +239,14 @@ export abstract class BaseObservable<T, TChange = void> extends ConvenientObserv
     public addObserver(observer: IObserver): void {
         const len = this.observers.size;
         this.observers.add(observer);
+
         if (len === 0) {
             this.onFirstObserverAdded();
         }
     }
     public removeObserver(observer: IObserver): void {
         const deleted = this.observers.delete(observer);
+
         if (deleted && this.observers.size === 0) {
             this.onLastObserverRemoved();
         }
@@ -252,6 +261,7 @@ export abstract class BaseObservable<T, TChange = void> extends ConvenientObserv
  */
 export function transaction(fn: (tx: ITransaction) => void, getDebugName?: () => string): void {
     const tx = new TransactionImpl(fn, getDebugName);
+
     try {
         fn(tx);
     }
@@ -267,6 +277,7 @@ export function globalTransaction(fn: (tx: ITransaction) => void) {
     else {
         const tx = new TransactionImpl(fn, undefined);
         _globalTransaction = tx;
+
         try {
             fn(tx);
         }
@@ -279,6 +290,7 @@ export function globalTransaction(fn: (tx: ITransaction) => void) {
 }
 export async function asyncTransaction(fn: (tx: ITransaction) => Promise<void>, getDebugName?: () => string): Promise<void> {
     const tx = new TransactionImpl(fn, getDebugName);
+
     try {
         await fn(tx);
     }
@@ -302,6 +314,7 @@ export class TransactionImpl implements ITransaction {
         observer: IObserver;
         observable: IObservable<any>;
     }[] | null = [];
+
     constructor(public readonly _fn: Function, private readonly _getDebugName?: () => string) {
         getLogger()?.handleBeginTransaction(this);
     }
@@ -318,12 +331,14 @@ export class TransactionImpl implements ITransaction {
     }
     public finish(): void {
         const updatingObservers = this.updatingObservers!;
+
         for (let i = 0; i < updatingObservers.length; i++) {
             const { observer, observable } = updatingObservers[i];
             observer.endUpdate(observable);
         }
         // Prevent anyone from updating observers from now on.
         this.updatingObservers = null;
+
         getLogger()?.handleEndTransaction();
     }
 }
@@ -342,6 +357,7 @@ export function observableValue<T, TChange = void>(name: string, initialValue: T
 export function observableValue<T, TChange = void>(owner: object, initialValue: T): ISettableObservable<T, TChange>;
 export function observableValue<T, TChange = void>(nameOrOwner: string | object, initialValue: T): ISettableObservable<T, TChange> {
     let debugNameData: DebugNameData;
+
     if (typeof nameOrOwner === 'string') {
         debugNameData = new DebugNameData(undefined, nameOrOwner, undefined);
     }
@@ -352,6 +368,7 @@ export function observableValue<T, TChange = void>(nameOrOwner: string | object,
 }
 export class ObservableValue<T, TChange = void> extends BaseObservable<T, TChange> implements ISettableObservable<T, TChange> {
     protected _value: T;
+
     get debugName() {
         return this._debugNameData.getDebugName(this) ?? 'ObservableValue';
     }
@@ -367,13 +384,16 @@ export class ObservableValue<T, TChange = void> extends BaseObservable<T, TChang
             return;
         }
         let _tx: TransactionImpl | undefined;
+
         if (!tx) {
             tx = _tx = new TransactionImpl(() => { }, () => `Setting ${this.debugName}`);
         }
         try {
             const oldValue = this._value;
             this._setValue(value);
+
             getLogger()?.handleObservableChanged(this, { oldValue, newValue: value, change, didChange: true, hadValue: true });
+
             for (const observer of this.observers) {
                 tx.updateObserver(observer, this);
                 observer.handleChange(this, change);
@@ -398,6 +418,7 @@ export class ObservableValue<T, TChange = void> extends BaseObservable<T, TChang
  */
 export function disposableObservableValue<T extends IDisposable | undefined, TChange = void>(nameOrOwner: string | object, initialValue: T): ISettableObservable<T, TChange> & IDisposable {
     let debugNameData: DebugNameData;
+
     if (typeof nameOrOwner === 'string') {
         debugNameData = new DebugNameData(undefined, nameOrOwner, undefined);
     }

@@ -29,8 +29,10 @@ export class CommentThreadRangeDecorator extends Disposable {
     private editor: ICodeEditor | undefined;
     private threadCollapseStateListeners: IDisposable[] = [];
     private currentThreadCollapseStateListener: IDisposable | undefined;
+
     constructor(commentService: ICommentService) {
         super();
+
         const decorationOptions: IModelDecorationOptions = {
             description: CommentThreadRangeDecorator.description,
             isWholeLine: false,
@@ -39,6 +41,7 @@ export class CommentThreadRangeDecorator extends Disposable {
             shouldFillLineOnLineBreak: true
         };
         this.decorationOptions = ModelDecorationOptions.createDynamic(decorationOptions);
+
         const activeDecorationOptions: IModelDecorationOptions = {
             description: CommentThreadRangeDecorator.description,
             isWholeLine: false,
@@ -59,9 +62,12 @@ export class CommentThreadRangeDecorator extends Disposable {
             return;
         }
         this.currentThreadCollapseStateListener?.dispose();
+
         const newDecoration: CommentThreadRangeDecoration[] = [];
+
         if (thread) {
             const range = thread.range;
+
             if (range && !((range.startLineNumber === range.endLineNumber) && (range.startColumn === range.endColumn))) {
                 if (thread.collapsibleState === CommentThreadCollapsibleState.Expanded) {
                     this.currentThreadCollapseStateListener = thread.onDidChangeCollapsibleState(state => {
@@ -80,12 +86,15 @@ export class CommentThreadRangeDecorator extends Disposable {
     }
     public update(editor: ICodeEditor | undefined, commentInfos: ICommentInfo[]) {
         const model = editor?.getModel();
+
         if (!editor || !model) {
             return;
         }
         dispose(this.threadCollapseStateListeners);
         this.editor = editor;
+
         const commentThreadRangeDecorations: CommentThreadRangeDecoration[] = [];
+
         for (const info of commentInfos) {
             info.threads.forEach(thread => {
                 if (thread.isDisposed) {
@@ -100,6 +109,7 @@ export class CommentThreadRangeDecorator extends Disposable {
                 this.threadCollapseStateListeners.push(thread.onDidChangeCollapsibleState(() => {
                     this.update(editor, commentInfos);
                 }));
+
                 if (thread.collapsibleState === CommentThreadCollapsibleState.Collapsed) {
                     return;
                 }
@@ -114,6 +124,7 @@ export class CommentThreadRangeDecorator extends Disposable {
     override dispose() {
         dispose(this.threadCollapseStateListeners);
         this.currentThreadCollapseStateListener?.dispose();
+
         super.dispose();
     }
 }

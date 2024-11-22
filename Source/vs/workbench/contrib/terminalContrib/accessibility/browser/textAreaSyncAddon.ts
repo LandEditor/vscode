@@ -31,9 +31,11 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
     }
     private _refreshListeners(): void {
         const commandDetection = this._capabilities.get(TerminalCapability.CommandDetection);
+
         if (this._shouldBeActive() && commandDetection) {
             if (!this._listeners.value) {
                 const textarea = this._terminal?.textarea;
+
                 if (textarea) {
                     this._listeners.value = Event.runAndSubscribe(commandDetection.promptInputModel.onDidChangeInput, () => this._sync(textarea));
                 }
@@ -49,6 +51,7 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
     @debounce(50)
     private _sync(textArea: HTMLTextAreaElement): void {
         const commandCapability = this._capabilities.get(TerminalCapability.CommandDetection);
+
         if (!commandCapability) {
             return;
         }

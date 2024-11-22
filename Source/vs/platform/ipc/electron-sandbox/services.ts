@@ -17,6 +17,7 @@ type Remote = {
 abstract class RemoteServiceStub<T extends object> {
     constructor(channelName: string, options: IRemoteServiceWithChannelClientOptions<T> | IRemoteServiceWithProxyOptions | undefined, remote: Remote, instantiationService: IInstantiationService) {
         const channel = remote.getChannel(channelName);
+
         if (isRemoteServiceWithChannelClientOptions(options)) {
             return instantiationService.createInstance(new SyncDescriptor(options.channelClientCtor, [channel]));
         }
@@ -31,6 +32,7 @@ export interface IRemoteServiceWithProxyOptions {
 }
 function isRemoteServiceWithChannelClientOptions<T>(obj: unknown): obj is IRemoteServiceWithChannelClientOptions<T> {
     const candidate = obj as IRemoteServiceWithChannelClientOptions<T> | undefined;
+
     return !!candidate?.channelClientCtor;
 }
 //#region Main Process

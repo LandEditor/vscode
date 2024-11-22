@@ -6,6 +6,7 @@ import * as path from 'path';
 import { CodeLens, CodeLensProvider, Disposable, EventEmitter, languages, TextDocument, Uri, workspace, l10n } from 'vscode';
 import { findPreferredPM } from './preferred-pm';
 import { readScripts } from './readScripts';
+
 const enum Constants {
     ConfigKey = 'debug.javascript.codelens.npmScripts'
 }
@@ -22,6 +23,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
      * @inheritdoc
      */
     public readonly onDidChangeCodeLenses = this.changeEmitter.event;
+
     constructor() {
         this.subscriptions.push(this.changeEmitter, workspace.onDidChangeConfiguration(evt => {
             if (evt.affectsConfiguration(Constants.ConfigKey)) {
@@ -41,11 +43,14 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
             return [];
         }
         const tokens = readScripts(document);
+
         if (!tokens) {
             return [];
         }
         const title = '$(debug-start) ' + l10n.t("Debug");
+
         const cwd = path.dirname(document.uri.fsPath);
+
         if (this.lensLocation === 'top') {
             return [
                 new CodeLens(tokens.location.range, {
@@ -57,6 +62,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
         }
         if (this.lensLocation === 'all') {
             const packageManager = await findPreferredPM(Uri.joinPath(document.uri, '..').fsPath);
+
             return tokens.scripts.map(({ name, nameRange }) => new CodeLens(nameRange, {
                 title,
                 command: 'extension.js-debug.createDebuggerTerminal',

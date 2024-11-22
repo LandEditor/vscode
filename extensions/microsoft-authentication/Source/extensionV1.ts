@@ -13,15 +13,19 @@ import Logger from './logger';
 
 async function initMicrosoftSovereignCloudAuthProvider(context: vscode.ExtensionContext, telemetryReporter: TelemetryReporter, uriHandler: UriEventHandler, tokenStorage: BetterTokenStorage<IStoredSession>): Promise<vscode.Disposable | undefined> {
 	const environment = vscode.workspace.getConfiguration('microsoft-sovereign-cloud').get<string | undefined>('environment');
+
 	let authProviderName: string | undefined;
+
 	if (!environment) {
 		return undefined;
 	}
 
 	if (environment === 'custom') {
 		const customEnv = vscode.workspace.getConfiguration('microsoft-sovereign-cloud').get<EnvironmentParameters>('customEnvironment');
+
 		if (!customEnv) {
 			const res = await vscode.window.showErrorMessage(vscode.l10n.t('You must also specify a custom environment in order to use the custom environment auth provider.'), vscode.l10n.t('Open settings'));
+
 			if (res) {
 				await vscode.commands.executeCommand('workbench.action.openSettingsJson', 'microsoft-sovereign-cloud.customEnvironment');
 			}
@@ -31,6 +35,7 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 			Environment.add(customEnv);
 		} catch (e) {
 			const res = await vscode.window.showErrorMessage(vscode.l10n.t('Error validating custom environment setting: {0}', e.message), vscode.l10n.t('Open settings'));
+
 			if (res) {
 				await vscode.commands.executeCommand('workbench.action.openSettings', 'microsoft-sovereign-cloud.customEnvironment');
 			}
@@ -42,8 +47,10 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 	}
 
 	const env = Environment.get(authProviderName);
+
 	if (!env) {
 		const res = await vscode.window.showErrorMessage(vscode.l10n.t('The environment `{0}` is not a valid environment.', authProviderName), vscode.l10n.t('Open settings'));
+
 		return undefined;
 	}
 
@@ -101,6 +108,7 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 	}, { supportsMultipleAccounts: true });
 
 	context.subscriptions.push(disposable);
+
 	return disposable;
 }
 
@@ -111,6 +119,7 @@ export async function activate(context: vscode.ExtensionContext, telemetryReport
 
 	const uriHandler = new UriEventHandler();
 	context.subscriptions.push(uriHandler);
+
 	const betterSecretStorage = new BetterTokenStorage<IStoredSession>('microsoft.login.keylist', context);
 
 	const loginService = new AzureActiveDirectoryService(

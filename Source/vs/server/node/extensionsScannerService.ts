@@ -36,9 +36,11 @@ export class ExtensionsScannerService extends AbstractExtensionsScannerService i
     }
     protected async getTranslations(language: string): Promise<Translations> {
         const config = await getNLSConfiguration(language, this.nativeEnvironmentService.userDataPath);
+
         if (config.languagePack) {
             try {
                 const content = await this.fileService.readFile(URI.file(config.languagePack.translationsConfigFile));
+
                 return JSON.parse(content.value.toString());
             }
             catch (err) { /* Ignore error */ }

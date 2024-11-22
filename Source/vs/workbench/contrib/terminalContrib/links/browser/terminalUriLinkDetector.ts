@@ -12,6 +12,7 @@ import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHel
 import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
 import type { IBufferLine, Terminal } from '@xterm/xterm';
 import { ITerminalBackend, ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
+
 const enum Constants {
     /**
      * The maximum number of links in a line to resolve against the file system. This limit is put
@@ -23,6 +24,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
     static id = 'uri';
     // 2048 is the maximum URL length
     readonly maxLinkLength = 2048;
+
     constructor(readonly xterm: Terminal, private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & {
         backend?: Pick<ITerminalBackend, 'getWslPath'>;
     }, private readonly _linkResolver: ITerminalLinkResolver, 
@@ -35,16 +37,21 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
     }
     async detect(lines: IBufferLine[], startLine: number, endLine: number): Promise<ITerminalSimpleLink[]> {
         const links: ITerminalSimpleLink[] = [];
+
         const linkComputerTarget = new TerminalLinkAdapter(this.xterm, startLine, endLine);
+
         const computedLinks = LinkComputer.computeLinks(linkComputerTarget);
+
         let resolvedLinkCount = 0;
         this._logService.trace('terminalUriLinkDetector#detect computedLinks', computedLinks);
+
         for (const computedLink of computedLinks) {
             const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, computedLink.range, startLine);
             // Check if the link is within the mouse position
             const uri = computedLink.url
                 ? (typeof computedLink.url === 'string' ? URI.parse(this._excludeLineAndColSuffix(computedLink.url)) : computedLink.url)
                 : undefined;
+
             if (!uri) {
                 continue;
             }
@@ -61,6 +68,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
                     bufferRange,
                     type: TerminalBuiltinLinkType.Url
                 });
+
                 continue;
             }
             // Filter out URI with unrecognized authorities
@@ -71,16 +79,19 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
             // for `ls --hyperlink` support for example which includes the hostname in the URI like
             // `file://Some-Hostname/mnt/c/foo/bar`.
             const uriCandidates: URI[] = [uri];
+
             if (uri.authority.length > 0) {
                 uriCandidates.push(URI.from({ ...uri, authority: undefined }));
             }
             // Iterate over all candidates, pushing the candidate on the first that's verified
             this._logService.trace('terminalUriLinkDetector#detect uriCandidates', uriCandidates);
+
             for (const uriCandidate of uriCandidates) {
                 const linkStat = await this._linkResolver.resolveLink(this._processManager, text, uriCandidate);
                 // Create the link if validated
                 if (linkStat) {
                     let type: TerminalBuiltinLinkType;
+
                     if (linkStat.isDirectory) {
                         if (this._isDirectoryInsideWorkspace(uriCandidate)) {
                             type = TerminalBuiltinLinkType.LocalFolderInWorkspace;
@@ -102,6 +113,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
                     this._logService.trace('terminalUriLinkDetector#detect verified link', simpleLink);
                     links.push(simpleLink);
                     resolvedLinkCount++;
+
                     break;
                 }
             }
@@ -114,6 +126,7 @@ export class TerminalUriLinkDetector implements ITerminalLinkDetector {
     }
     private _isDirectoryInsideWorkspace(uri: URI) {
         const folders = this._workspaceContextService.getWorkspace().folders;
+
         for (let i = 0; i < folders.length; i++) {
             if (this._uriIdentityService.extUri.isEqualOrParent(uri, folders[i].uri)) {
                 return true;

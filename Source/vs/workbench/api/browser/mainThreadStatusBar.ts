@@ -14,12 +14,14 @@ import { IStatusbarEntry, StatusbarAlignment } from '../../services/statusbar/br
 @extHostNamedCustomer(MainContext.MainThreadStatusBar)
 export class MainThreadStatusBar implements MainThreadStatusBarShape {
     private readonly _store = new DisposableStore();
+
     constructor(extHostContext: IExtHostContext, 
     @IExtensionStatusBarItemService
     private readonly statusbarService: IExtensionStatusBarItemService) {
         const proxy = extHostContext.getProxy(ExtHostContext.ExtHostStatusBar);
         // once, at startup read existing items and send them over
         const entries: StatusBarItemDto[] = [];
+
         for (const [entryId, item] of statusbarService.getEntries()) {
             entries.push(asDto(entryId, item));
         }
@@ -29,6 +31,7 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
                 proxy.$acceptStaticEntries([asDto(e.added[0], e.added[1])]);
             }
         }));
+
         function asDto(entryId: string, item: {
             entry: IStatusbarEntry;
             alignment: StatusbarAlignment;
@@ -51,6 +54,7 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
     }
     $setEntry(entryId: string, id: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): void {
         const kind = this.statusbarService.setOrUpdateEntry(entryId, id, extensionId, name, text, tooltip, command, color, backgroundColor, alignLeft, priority, accessibilityInformation);
+
         if (kind === StatusBarUpdateKind.DidDefine) {
             this._store.add(toDisposable(() => this.statusbarService.unsetEntry(entryId)));
         }

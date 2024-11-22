@@ -27,6 +27,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     private _proxy: MainThreadDocumentsShape;
     private _documentsAndEditors: ExtHostDocumentsAndEditors;
     private _documentLoader = new Map<string, Promise<ExtHostDocumentData>>();
+
     constructor(mainContext: IMainContext, documentsAndEditors: ExtHostDocumentsAndEditors) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadDocuments);
         this._documentsAndEditors = documentsAndEditors;
@@ -52,6 +53,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
             return undefined;
         }
         const data = this._documentsAndEditors.getDocument(resource);
+
         if (data) {
             return data;
         }
@@ -59,6 +61,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public getDocument(resource: vscode.Uri): vscode.TextDocument {
         const data = this.getDocumentData(resource);
+
         if (!data?.document) {
             throw new Error(`Unable to retrieve document from URI '${resource}'`);
         }
@@ -66,17 +69,22 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public ensureDocumentData(uri: URI): Promise<ExtHostDocumentData> {
         const cached = this._documentsAndEditors.getDocument(uri);
+
         if (cached) {
             return Promise.resolve(cached);
         }
         let promise = this._documentLoader.get(uri.toString());
+
         if (!promise) {
             promise = this._proxy.$tryOpenDocument(uri).then(uriData => {
                 this._documentLoader.delete(uri.toString());
+
                 const canonicalUri = URI.revive(uriData);
+
                 return assertIsDefined(this._documentsAndEditors.getDocument(canonicalUri));
             }, err => {
                 this._documentLoader.delete(uri.toString());
+
                 return Promise.reject(err);
             });
             this._documentLoader.set(uri.toString(), promise);
@@ -91,7 +99,9 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public $acceptModelLanguageChanged(uriComponents: UriComponents, newLanguageId: string): void {
         const uri = URI.revive(uriComponents);
+
         const data = this._documentsAndEditors.getDocument(uri);
+
         if (!data) {
             throw new Error('unknown document');
         }
@@ -102,7 +112,9 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public $acceptModelSaved(uriComponents: UriComponents): void {
         const uri = URI.revive(uriComponents);
+
         const data = this._documentsAndEditors.getDocument(uri);
+
         if (!data) {
             throw new Error('unknown document');
         }
@@ -111,7 +123,9 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public $acceptDirtyStateChanged(uriComponents: UriComponents, isDirty: boolean): void {
         const uri = URI.revive(uriComponents);
+
         const data = this._documentsAndEditors.getDocument(uri);
+
         if (!data) {
             throw new Error('unknown document');
         }
@@ -124,13 +138,17 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
     }
     public $acceptModelChanged(uriComponents: UriComponents, events: IModelChangedEvent, isDirty: boolean): void {
         const uri = URI.revive(uriComponents);
+
         const data = this._documentsAndEditors.getDocument(uri);
+
         if (!data) {
             throw new Error('unknown document');
         }
         data._acceptIsDirty(isDirty);
         data.onEvents(events);
+
         let reason: vscode.TextDocumentChangeReason | undefined = undefined;
+
         if (events.isUndoing) {
             reason = TextDocumentChangeReason.Undo;
         }

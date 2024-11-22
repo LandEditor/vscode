@@ -23,6 +23,7 @@ export class ViewUserInputEvents {
     public onMouseDropCanceled: EventCallback<void> | null = null;
     public onMouseWheel: EventCallback<IMouseWheelEvent> | null = null;
     private readonly _coordinatesConverter: ICoordinatesConverter;
+
     constructor(coordinatesConverter: ICoordinatesConverter) {
         this._coordinatesConverter = coordinatesConverter;
     }
@@ -75,6 +76,7 @@ export class ViewUserInputEvents {
     }
     public static convertViewToModelMouseTarget(target: IMouseTarget, coordinatesConverter: ICoordinatesConverter): IMouseTarget {
         const result = { ...target };
+
         if (result.position) {
             result.position = coordinatesConverter.convertViewPositionToModelPosition(result.position);
         }

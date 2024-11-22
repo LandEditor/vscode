@@ -64,17 +64,22 @@ export interface ICommonNativeHostService {
     getWindows(options: {
         includeAuxiliaryWindows: true;
     }): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+
     getWindows(options: {
         includeAuxiliaryWindows: false;
     }): Promise<Array<IOpenedMainWindow>>;
+
     getWindowCount(): Promise<number>;
+
     getActiveWindowId(): Promise<number | undefined>;
+
     getActiveWindowPosition(): Promise<IRectangle | undefined>;
     openWindow(options?: IOpenEmptyWindowOptions): Promise<void>;
     openWindow(toOpen: IWindowOpenable[], options?: IOpenWindowOptions): Promise<void>;
     isFullScreen(options?: INativeHostOptions): Promise<boolean>;
     toggleFullScreen(options?: INativeHostOptions): Promise<void>;
     handleTitleDoubleClick(options?: INativeHostOptions): Promise<void>;
+
     getCursorScreenPoint(): Promise<{
         readonly point: IPoint;
         readonly display: IRectangle;
@@ -93,8 +98,10 @@ export interface ICommonNativeHostService {
     updateWindowControls(options: INativeHostOptions & {
         height?: number;
         backgroundColor?: string;
+
         foregroundColor?: string;
     }): Promise<void>;
+
     setMinimumSize(width: number | undefined, height: number | undefined): Promise<void>;
     saveWindowSplash(splash: IPartsSplash): Promise<void>;
     /**
@@ -118,7 +125,9 @@ export interface ICommonNativeHostService {
     pickWorkspaceAndOpen(options: INativeOpenDialogOptions): Promise<void>;
     // OS
     showItemInFolder(path: string): Promise<void>;
+
     setRepresentedFilename(path: string, options?: INativeHostOptions): Promise<void>;
+
     setDocumentEdited(edited: boolean, options?: INativeHostOptions): Promise<void>;
     openExternal(url: string, defaultApplication?: string): Promise<boolean>;
     moveItemToTrash(fullPath: string): Promise<void>;
@@ -127,9 +136,13 @@ export interface ICommonNativeHostService {
         unlock?: boolean;
     }): Promise<void>;
     isRunningUnderARM64Translation(): Promise<boolean>;
+
     getOSProperties(): Promise<IOSProperties>;
+
     getOSStatistics(): Promise<IOSStatistics>;
+
     getOSVirtualMachineHint(): Promise<number>;
+
     getOSColorScheme(): Promise<IColorScheme>;
     hasWSLFeatureInstalled(): Promise<boolean>;
     // Screenshots

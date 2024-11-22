@@ -25,6 +25,7 @@ export interface INotebookEditorService {
 	onDidRemoveNotebookEditor: Event<INotebookEditor>;
 	addNotebookEditor(editor: INotebookEditor): void;
 	removeNotebookEditor(editor: INotebookEditor): void;
+
 	getNotebookEditor(editorId: string): INotebookEditor | undefined;
 	listNotebookEditors(): readonly INotebookEditor[];
 	updateReplContextKey(uri: string): void;

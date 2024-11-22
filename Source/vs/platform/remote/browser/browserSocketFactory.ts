@@ -71,16 +71,20 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
         this._isClosed = false;
         this._fileReader.onload = (event) => {
             this._isReading = false;
+
             const buff = <ArrayBuffer>(<any>event.target).result;
             this.traceSocketEvent(SocketDiagnosticsEventType.Read, buff);
             this._onData.fire(buff);
+
             if (this._queue.length > 0) {
                 enqueue(this._queue.shift()!);
             }
         };
+
         const enqueue = (blob: Blob) => {
             if (this._isReading) {
                 this._queue.push(blob);
+
                 return;
             }
             this._isReading = true;
@@ -106,17 +110,21 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
         // delay the error event processing in the hope of receiving a close event
         // with more information
         let pendingErrorEvent: any | null = null;
+
         const sendPendingErrorNow = () => {
             const err = pendingErrorEvent;
             pendingErrorEvent = null;
             this._onError.fire(err);
         };
+
         const errorRunner = this._register(new RunOnceScheduler(sendPendingErrorNow, 0));
+
         const sendErrorSoon = (err: any) => {
             errorRunner.cancel();
             pendingErrorEvent = err;
             errorRunner.schedule();
         };
+
         const sendErrorNow = (err: any) => {
             errorRunner.cancel();
             pendingErrorEvent = err;
@@ -125,6 +133,7 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
         this._register(dom.addDisposableListener(this._socket, 'close', (e: CloseEvent) => {
             this.traceSocketEvent(SocketDiagnosticsEventType.Close, { code: e.code, reason: e.reason, wasClean: e.wasClean });
             this._isClosed = true;
+
             if (pendingErrorEvent) {
                 if (!navigator.onLine) {
                     // The browser is offline => this is a temporary error which might resolve itself
@@ -208,6 +217,7 @@ class BrowserSocket implements ISocket {
                 });
             }
         };
+
         return this.socket.onClose(adapter);
     }
     public onEnd(listener: () => void): IDisposable {
@@ -225,6 +235,7 @@ class BrowserSocket implements ISocket {
 }
 export class BrowserSocketFactory implements ISocketFactory<RemoteConnectionType.WebSocket> {
     private readonly _webSocketFactory: IWebSocketFactory;
+
     constructor(webSocketFactory: IWebSocketFactory | null | undefined) {
         this._webSocketFactory = webSocketFactory || defaultWebSocketFactory;
     }
@@ -234,7 +245,9 @@ export class BrowserSocketFactory implements ISocketFactory<RemoteConnectionType
     connect({ host, port }: WebSocketRemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
         return new Promise<ISocket>((resolve, reject) => {
             const webSocketSchema = (/^https:/.test(mainWindow.location.href) ? 'wss' : 'ws');
+
             const socket = this._webSocketFactory.create(`${webSocketSchema}://${(/:/.test(host) && !/\[/.test(host)) ? `[${host}]` : host}:${port}${path}?${query}&skipWebSocketFrames=false`, debugLabel);
+
             const errorListener = socket.onError(reject);
             socket.onOpen(() => {
                 errorListener.dispose();

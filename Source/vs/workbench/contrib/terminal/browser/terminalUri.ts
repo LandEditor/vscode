@@ -7,6 +7,7 @@ import { URI } from '../../../../base/common/uri.js';
 import { ITerminalInstance, TerminalDataTransfers } from './terminal.js';
 export function parseTerminalUri(resource: URI): ITerminalIdentifier {
     const [, workspaceId, instanceId] = resource.path.split('/');
+
     if (!workspaceId || !Number.parseInt(instanceId)) {
         throw new Error(`Could not parse terminal uri for resource ${resource}`);
     }
@@ -28,9 +29,12 @@ export interface IPartialDragEvent {
 }
 export function getTerminalResourcesFromDragEvent(event: IPartialDragEvent): URI[] | undefined {
     const resources = event.dataTransfer?.getData(TerminalDataTransfers.Terminals);
+
     if (resources) {
         const json = JSON.parse(resources);
+
         const result = [];
+
         for (const entry of json) {
             result.push(URI.parse(entry));
         }

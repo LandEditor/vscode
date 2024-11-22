@@ -27,6 +27,7 @@ const MAX_GITHUB_API_LENGTH = 65500;
 
 export class IssueReporter extends BaseIssueReporterService {
 	private readonly processMainService: IProcessMainService;
+
 	constructor(
 		disableExtensions: boolean,
 		data: IssueReporterData,
@@ -51,6 +52,7 @@ export class IssueReporter extends BaseIssueReporterService {
 			this.updateSystemInfo(this.issueReporterModel.getData());
 			this.updatePreviewButtonState();
 		});
+
 		if (this.data.issueType === IssueType.PerformanceIssue) {
 			this.processMainService.$getPerformanceInfo().then(info => {
 				this.updatePerformanceInfo(info as Partial<IssueReporterData>);
@@ -70,6 +72,7 @@ export class IssueReporter extends BaseIssueReporterService {
 		this.addEventListener('issue-type', 'change', (event: Event) => {
 			const issueType = parseInt((<HTMLInputElement>event.target).value);
 			this.issueReporterModel.update({ issueType: issueType });
+
 			if (issueType === IssueType.PerformanceIssue && !this.receivedPerformanceInfo) {
 				this.processMainService.$getPerformanceInfo().then(info => {
 					this.updatePerformanceInfo(info as Partial<IssueReporterData>);
@@ -78,6 +81,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 			// Resets placeholder
 			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
+
 			if (descriptionTextArea) {
 				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
 			}
@@ -91,9 +95,11 @@ export class IssueReporter extends BaseIssueReporterService {
 	public override async submitToGitHub(issueTitle: string, issueBody: string, gitHubDetails: { owner: string; repositoryName: string }): Promise<boolean> {
 		if (issueBody.length > MAX_GITHUB_API_LENGTH) {
 			console.error('Issue body is too long.');
+
 			return false;
 		}
 		const url = `https://api.github.com/repos/${gitHubDetails.owner}/${gitHubDetails.repositoryName}/issues`;
+
 		const init = {
 			method: 'POST',
 			body: JSON.stringify({
@@ -107,25 +113,31 @@ export class IssueReporter extends BaseIssueReporterService {
 		};
 
 		const response = await fetch(url, init);
+
 		if (!response.ok) {
 			console.error('Invalid GitHub URL provided.');
+
 			return false;
 		}
 		const result = await response.json();
 		await this.nativeHostService.openExternal(result.html_url);
 		this.close();
+
 		return true;
 	}
 
 	public override async createIssue(): Promise<boolean> {
 		const selectedExtension = this.issueReporterModel.getData().selectedExtension;
+
 		const hasUri = this.nonGitHubIssueUrl;
 		// Short circuit if the extension provides a custom issue handler
 		if (hasUri) {
 			const url = this.getExtensionBugsUrl();
+
 			if (url) {
 				this.hasBeenSubmitted = true;
 				await this.nativeHostService.openExternal(url);
+
 				return true;
 			}
 		}
@@ -134,6 +146,7 @@ export class IssueReporter extends BaseIssueReporterService {
 			// If inputs are invalid, set focus to the first one and add listeners on them
 			// to detect further changes
 			const invalidInput = this.window.document.getElementsByClassName('invalid-input');
+
 			if (invalidInput.length) {
 				(<HTMLInputElement>invalidInput[0]).focus();
 			}
@@ -163,11 +176,14 @@ export class IssueReporter extends BaseIssueReporterService {
 		this.hasBeenSubmitted = true;
 
 		const issueTitle = (<HTMLInputElement>this.getElementById('issue-title')).value;
+
 		const issueBody = this.issueReporterModel.serialize();
 
 		let issueUrl = this.getIssueUrl();
+
 		if (!issueUrl) {
 			console.error('No issue url found');
+
 			return false;
 		}
 
@@ -179,6 +195,7 @@ export class IssueReporter extends BaseIssueReporterService {
 		const gitHubDetails = this.parseGitHubUrl(issueUrl);
 
 		const baseUrl = this.getIssueUrlWithTitle((<HTMLInputElement>this.getElementById('issue-title')).value, issueUrl);
+
 		let url = baseUrl + `&body=${encodeURIComponent(issueBody)}`;
 
 		if (this.data.githubAccessToken && gitHubDetails) {
@@ -193,15 +210,18 @@ export class IssueReporter extends BaseIssueReporterService {
 			}
 		} catch (_) {
 			console.error('Writing to clipboard failed');
+
 			return false;
 		}
 
 		await this.nativeHostService.openExternal(url);
+
 		return true;
 	}
 
 	public override async writeToClipboard(baseUrl: string, issueBody: string): Promise<string> {
 		const shouldWrite = await this.issueFormService.showClipboardDialog();
+
 		if (!shouldWrite) {
 			throw new CancellationError();
 		}
@@ -216,6 +236,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 		if (target) {
 			const systemInfo = state.systemInfo!;
+
 			const renderedDataTable = $('table', undefined,
 				$('tr', undefined,
 					$('td', undefined, 'CPUs'),
@@ -250,6 +271,7 @@ export class IssueReporter extends BaseIssueReporterService {
 
 			systemInfo.remoteData.forEach(remote => {
 				target.appendChild($<HTMLHRElement>('hr'));
+
 				if (isRemoteDiagnosticError(remote)) {
 					const remoteDataTable = $('table', undefined,
 						$('tr', undefined,
@@ -301,7 +323,9 @@ export class IssueReporter extends BaseIssueReporterService {
 
 	private updateExperimentsInfo(experimentInfo: string | undefined) {
 		this.issueReporterModel.update({ experimentInfo });
+
 		const target = this.window.document.querySelector<HTMLElement>('.block-experiments .block-info');
+
 		if (target) {
 			target.textContent = experimentInfo ? experimentInfo : localize('noCurrentExperiments', "No current experiments.");
 		}

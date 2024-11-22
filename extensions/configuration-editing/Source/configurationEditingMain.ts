@@ -32,11 +32,13 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
     return vscode.languages.registerCompletionItemProvider({ language: 'jsonc', pattern }, {
         provideCompletionItems(document, position, _token) {
             const location = getLocation(document.getText(), document.offsetAt(position));
+
             if (isCompletingInsidePropertyStringValue(document, location, position)) {
                 if (document.fileName.endsWith('.code-workspace') && !isLocationInsideTopLevelProperty(location, ['launch', 'tasks'])) {
                     return [];
                 }
                 let range = document.getWordRangeAtPosition(position, /\$\{[^"\}]*\}?/);
+
                 if (!range || range.start.isEqual(position) || range.end.isEqual(position) && document.getText(range).endsWith('}')) {
                     range = new vscode.Range(position, position);
                 }
@@ -73,8 +75,10 @@ function isCompletingInsidePropertyStringValue(document: vscode.TextDocument, lo
         return false;
     }
     const previousNode = location.previousNode;
+
     if (previousNode && previousNode.type === 'string') {
         const offset = document.offsetAt(pos);
+
         return offset > previousNode.offset && offset < previousNode.offset + previousNode.length;
     }
     return false;
@@ -92,9 +96,12 @@ function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable 
     return vscode.languages.registerCompletionItemProvider({ pattern: '**/extensions.json' }, {
         provideCompletionItems(document, position, _token) {
             const location = getLocation(document.getText(), document.offsetAt(position));
+
             if (location.path[0] === 'recommendations') {
                 const range = getReplaceRange(document, location, position);
+
                 const extensionsContent = <IExtensionsContent>parse(document.getText());
+
                 return provideInstalledExtensionProposals(extensionsContent && extensionsContent.recommendations || [], '', range, false);
             }
             return [];
@@ -105,9 +112,12 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
     return vscode.languages.registerCompletionItemProvider({ pattern: '**/*.code-workspace' }, {
         provideCompletionItems(document, position, _token) {
             const location = getLocation(document.getText(), document.offsetAt(position));
+
             if (location.path[0] === 'extensions' && location.path[1] === 'recommendations') {
                 const range = getReplaceRange(document, location, position);
+
                 const extensionsContent = <IExtensionsContent>parse(document.getText())['extensions'];
+
                 return provideInstalledExtensionProposals(extensionsContent && extensionsContent.recommendations || [], '', range, false);
             }
             return [];
@@ -116,8 +126,10 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
 }
 function getReplaceRange(document: vscode.TextDocument, location: Location, position: vscode.Position) {
     const node = location.previousNode;
+
     if (node) {
         const nodeStart = document.positionAt(node.offset), nodeEnd = document.positionAt(node.offset + node.length);
+
         if (nodeStart.isBeforeOrEqual(position) && nodeEnd.isAfterOrEqual(position)) {
             return new vscode.Range(nodeStart, nodeEnd);
         }
@@ -127,9 +139,13 @@ function getReplaceRange(document: vscode.TextDocument, location: Location, posi
 vscode.languages.registerDocumentSymbolProvider({ pattern: '**/launch.json', language: 'jsonc' }, {
     provideDocumentSymbols(document: vscode.TextDocument, _token: vscode.CancellationToken): vscode.ProviderResult<vscode.SymbolInformation[]> {
         const result: vscode.SymbolInformation[] = [];
+
         let name: string = '';
+
         let lastProperty = '';
+
         let startOffset = 0;
+
         let depthInObjects = 0;
         visit(document.getText(), {
             onObjectProperty: (property, _offset, _length) => {
@@ -142,6 +158,7 @@ vscode.languages.registerDocumentSymbolProvider({ pattern: '**/launch.json', lan
             },
             onObjectBegin: (offset: number, _length: number) => {
                 depthInObjects++;
+
                 if (depthInObjects === 2) {
                     startOffset = offset;
                 }
@@ -153,6 +170,7 @@ vscode.languages.registerDocumentSymbolProvider({ pattern: '**/launch.json', lan
                 depthInObjects--;
             },
         });
+
         return result;
     }
 }, { label: 'Launch Targets' });
@@ -162,6 +180,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
         type?: string;
         description?: string;
     };
+
     const paths = new Map<vscode.DocumentFilter, JSONPath[]>([
         [{ language: 'jsonc', pattern: '**/keybindings.json' }, [
                 ['*', 'when']
@@ -174,17 +193,21 @@ function registerContextKeyCompletions(): vscode.Disposable {
                 ['contributes', 'keybindings', 'when'],
             ]]
     ]);
+
     return vscode.languages.registerCompletionItemProvider([...paths.keys()], {
         async provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken) {
             const location = getLocation(document.getText(), document.offsetAt(position));
+
             if (location.isAtPropertyKey) {
                 return;
             }
             let isValidLocation = false;
+
             for (const [key, value] of paths) {
                 if (vscode.languages.match(key, document)) {
                     if (value.some(location.matches.bind(location))) {
                         isValidLocation = true;
+
                         break;
                     }
                 }
@@ -193,12 +216,16 @@ function registerContextKeyCompletions(): vscode.Disposable {
                 return;
             }
             const replacing = document.getWordRangeAtPosition(position, /[a-zA-Z.]+/) || new vscode.Range(position, position);
+
             const inserting = replacing.with(undefined, position);
+
             const data = await vscode.commands.executeCommand<ContextKeyInfo[]>('getContextKeyInfo');
+
             if (token.isCancellationRequested || !data) {
                 return;
             }
             const result = new vscode.CompletionList();
+
             for (const item of data) {
                 const completion = new vscode.CompletionItem(item.key, vscode.CompletionItemKind.Constant);
                 completion.detail = item.type;

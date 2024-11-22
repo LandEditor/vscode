@@ -26,13 +26,16 @@ type entryDesc = {
 };
 function getMarkdownHeadersInCellFallbackToHtmlTags(fullContent: string) {
     const headers = Array.from(getMarkdownHeadersInCell(fullContent));
+
     if (headers.length) {
         return headers;
     }
     // no markdown syntax headers, try to find html tags
     const match = fullContent.match(/<h([1-6]).*>(.*)<\/h\1>/i);
+
     if (match) {
         const level = parseInt(match[1]);
+
         const text = match[2].trim();
         headers.push({ depth: level, text });
     }
@@ -41,6 +44,7 @@ function getMarkdownHeadersInCellFallbackToHtmlTags(fullContent: string) {
 export const INotebookOutlineEntryFactory = createDecorator<INotebookOutlineEntryFactory>('INotebookOutlineEntryFactory');
 export interface INotebookOutlineEntryFactory {
     readonly _serviceBrand: undefined;
+
     getOutlineEntries(cell: ICellViewModel, index: number): OutlineEntry[];
     cacheSymbols(cell: ICellViewModel, cancelToken: CancellationToken): Promise<void>;
 }
@@ -54,6 +58,7 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
             text: string;
         }[];
     }>();
+
     constructor(
     @INotebookExecutionStateService
     private readonly executionStateService: INotebookExecutionStateService, 
@@ -63,17 +68,23 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
     private readonly textModelService: ITextModelService) { }
     public getOutlineEntries(cell: ICellViewModel, index: number): OutlineEntry[] {
         const entries: OutlineEntry[] = [];
+
         const isMarkdown = cell.cellKind === CellKind.Markup;
         // cap the amount of characters that we look at and use the following logic
         // - for MD prefer headings (each header is an entry)
         // - otherwise use the first none-empty line of the cell (MD or code)
         let content = getCellFirstNonEmptyLine(cell);
+
         let hasHeader = false;
+
         if (isMarkdown) {
             const fullContent = cell.getText().substring(0, 10000);
+
             const cache = this.cachedMarkdownOutlineEntries.get(cell);
+
             const headers = cache?.alternativeId === cell.getAlternativeId() ? cache.headers : Array.from(getMarkdownHeadersInCellFallbackToHtmlTags(fullContent));
             this.cachedMarkdownOutlineEntries.set(cell, { alternativeId: cell.getAlternativeId(), headers });
+
             for (const { depth, text } of headers) {
                 hasHeader = true;
                 entries.push(new OutlineEntry(index++, depth, cell, text, false, false));
@@ -84,7 +95,9 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
         }
         if (!hasHeader) {
             const exeState = !isMarkdown && this.executionStateService.getCellExecution(cell.uri);
+
             let preview = content.trim();
+
             if (!isMarkdown) {
                 const cached = this.cellOutlineEntryCache[cell.id];
                 // Gathering symbols from the model is an async operation, but this provider is syncronous.
@@ -112,9 +125,12 @@ export class NotebookOutlineEntryFactory implements INotebookOutlineEntryFactory
             return;
         }
         const ref = await this.textModelService.createModelReference(cell.uri);
+
         try {
             const textModel = ref.object.textEditorModel;
+
             const outlineModel = await this.outlineModelService.getOrCreate(textModel, cancelToken);
+
             const entries = createOutlineEntries(outlineModel.getTopLevelSymbols(), 8);
             this.cellOutlineEntryCache[cell.id] = entries;
         }
@@ -129,17 +145,22 @@ function createOutlineEntries(symbols: documentSymbol[], level: number): entryDe
     const entries: entryDesc[] = [];
     symbols.forEach(symbol => {
         entries.push({ name: symbol.name, range: symbol.range, level, kind: symbol.kind });
+
         if (symbol.children) {
             entries.push(...createOutlineEntries(symbol.children, level + 1));
         }
     });
+
     return entries;
 }
 function getCellFirstNonEmptyLine(cell: ICellViewModel) {
     const textBuffer = cell.textBuffer;
+
     for (let i = 0; i < textBuffer.getLineCount(); i++) {
         const firstNonWhitespace = textBuffer.getLineFirstNonWhitespaceColumn(i + 1);
+
         const lineLength = textBuffer.getLineLength(i + 1);
+
         if (firstNonWhitespace < lineLength) {
             return textBuffer.getLineContent(i + 1);
         }

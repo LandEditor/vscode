@@ -10,7 +10,9 @@ import { product, pkg } from './bootstrap-meta.js';
 import './bootstrap-node.js';
 import * as performance from './vs/base/common/performance.js';
 import { INLSConfiguration } from './vs/nls.js';
+
 const require = createRequire(import.meta.url);
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Install a hook to module resolution to map 'fs' to 'original-fs'
 if (process.env['ELECTRON_RUN_AS_NODE'] || process.versions['electron']) {
@@ -51,11 +53,15 @@ function setupNLS(): Promise<INLSConfiguration | undefined> {
 }
 async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
     performance.mark('code/willLoadNls');
+
     let nlsConfig: INLSConfiguration | undefined = undefined;
+
     let messagesFile: string | undefined;
+
     if (process.env['VSCODE_NLS_CONFIG']) {
         try {
             nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG']);
+
             if (nlsConfig?.languagePack?.messagesFile) {
                 messagesFile = nlsConfig.languagePack.messagesFile;
             }
@@ -98,6 +104,7 @@ async function doSetupNLS(): Promise<INLSConfiguration | undefined> {
         }
     }
     performance.mark('code/didLoadNls');
+
     return nlsConfig;
 }
 //#endregion

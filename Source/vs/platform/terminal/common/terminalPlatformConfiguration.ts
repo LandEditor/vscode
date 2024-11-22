@@ -29,6 +29,7 @@ export const terminalIconSchema: IJSONSchema = {
     enum: Array.from(getAllCodicons(), icon => icon.id),
     markdownEnumDescriptions: Array.from(getAllCodicons(), icon => `$(${icon.id})`),
 };
+
 const terminalProfileBaseProperties: IJSONSchemaMap = {
     args: {
         description: localize('terminalProfile.args', 'An optional set of arguments to run the shell executable with.'),
@@ -58,6 +59,7 @@ const terminalProfileBaseProperties: IJSONSchemaMap = {
         default: {}
     }
 };
+
 const terminalProfileSchema: IJSONSchema = {
     type: 'object',
     required: ['path'],
@@ -72,6 +74,7 @@ const terminalProfileSchema: IJSONSchema = {
         ...terminalProfileBaseProperties
     }
 };
+
 const terminalAutomationProfileSchema: IJSONSchema = {
     type: 'object',
     required: ['path'],
@@ -88,6 +91,7 @@ const terminalAutomationProfileSchema: IJSONSchema = {
 };
 function createTerminalProfileMarkdownDescription(platform: Platform.Linux | Platform.Mac | Platform.Windows): string {
     const key = platform === Platform.Linux ? 'linux' : platform === Platform.Mac ? 'osx' : 'windows';
+
     return localize({
         key: 'terminal.integrated.profile',
         comment: ['{0} is the platform, {1} is a code block, {2} and {3} are a link start and end']
@@ -368,11 +372,14 @@ export function registerTerminalDefaultProfileConfiguration(detectedProfiles?: {
     profiles: ITerminalProfile[];
 }, extensionContributedProfiles?: readonly IExtensionTerminalProfile[]) {
     const registry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+
     let profileEnum;
+
     if (detectedProfiles) {
         profileEnum = createProfileSchemaEnums(detectedProfiles?.profiles, extensionContributedProfiles);
     }
     const oldDefaultProfilesConfiguration = defaultProfilesConfiguration;
+
     defaultProfilesConfiguration = {
         id: 'terminal',
         order: 100,

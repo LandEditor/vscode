@@ -30,6 +30,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
         capabilities: ISettableObservable<TestControllerCapability>;
         disposable: IDisposable;
     }>();
+
     constructor(extHostContext: IExtHostContext, 
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService, 
@@ -52,6 +53,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
         }));
         this._register(Event.debounce(testProfiles.onDidChange, (_last, e) => e)(() => {
             const obj: Record</* controller id */ string, /* profile id */ number[]> = {};
+
             for (const group of [TestRunProfileBitset.Run, TestRunProfileBitset.Debug, TestRunProfileBitset.Coverage]) {
                 for (const profile of this.testProfiles.getGroupDefaultProfiles(group)) {
                     obj[profile.controllerId] ??= [];
@@ -63,6 +65,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
         this._register(resultService.onResultsChanged(evt => {
             if ('completed' in evt) {
                 const serialized = evt.completed.toJSONWithMessages();
+
                 if (serialized) {
                     this.proxy.$publishTestResults([serialized]);
                 }
@@ -81,8 +84,10 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     $markTestRetired(testIds: string[] | undefined): void {
         let tree: WellDefinedPrefixTree<undefined> | undefined;
+
         if (testIds) {
             tree = new WellDefinedPrefixTree();
+
             for (const id of testIds) {
                 tree.insert(TestId.fromString(id).path, undefined);
             }
@@ -99,6 +104,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     $publishTestRunProfile(profile: ITestRunProfile): void {
         const controller = this.testProviderRegistrations.get(profile.controllerId);
+
         if (controller) {
             this.testProfiles.addProfile(controller.instance, profile);
         }
@@ -127,12 +133,14 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
     $appendCoverage(runId: string, taskId: string, coverage: IFileCoverage.Serialized): void {
         this.withLiveRun(runId, run => {
             const task = run.tasks.find(t => t.id === taskId);
+
             if (!task) {
                 return;
             }
             const deserialized = IFileCoverage.deserialize(this.uriIdentityService, coverage);
             transaction(tx => {
                 let value = task.coverage.read(undefined);
+
                 if (!value) {
                     value = new TestCoverage(run, taskId, this.uriIdentityService, {
                         getCoverageDetails: (id, testId, token) => this.proxy.$getCoverageDetails(id, testId, token)
@@ -192,6 +200,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     public $appendTestMessagesInRun(runId: string, taskId: string, testId: string, messages: ITestMessage.Serialized[]): void {
         const r = this.resultService.getResult(runId);
+
         if (r && r instanceof LiveTestResult) {
             for (const message of messages) {
                 r.appendMessage(testId, taskId, ITestMessage.deserialize(this.uriIdentityService, message));
@@ -203,8 +212,11 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     public $registerTestController(controllerId: string, _label: string, _capabilities: TestControllerCapability) {
         const disposable = new DisposableStore();
+
         const label = observableValue(`${controllerId}.label`, _label);
+
         const capabilities = observableValue(`${controllerId}.cap`, _capabilities);
+
         const controller: IMainThreadTestController = {
             id: controllerId,
             label,
@@ -234,6 +246,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     public $updateController(controllerId: string, patch: ITestControllerPatch) {
         const controller = this.testProviderRegistrations.get(controllerId);
+
         if (!controller) {
             return;
         }
@@ -277,6 +290,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
      */
     public async $runTests(req: ResolvedTestRunRequest, token: CancellationToken): Promise<string> {
         const result = await this.testService.runResolvedTests(req, token);
+
         return result.id;
     }
     /**
@@ -294,6 +308,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
     }
     public override dispose() {
         super.dispose();
+
         for (const subscription of this.testProviderRegistrations.values()) {
             subscription.disposable.dispose();
         }
@@ -301,6 +316,7 @@ export class MainThreadTesting extends Disposable implements MainThreadTestingSh
     }
     private withLiveRun<T>(runId: string, fn: (run: LiveTestResult) => T): T | undefined {
         const r = this.resultService.getResult(runId);
+
         return r && r instanceof LiveTestResult ? fn(r) : undefined;
     }
 }

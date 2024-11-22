@@ -8,8 +8,11 @@ import * as path from 'path';
 import * as byline from 'byline';
 import { rgPath } from '@vscode/ripgrep';
 import * as Parser from 'tree-sitter';
+
 const { typescript } = require('tree-sitter-typescript');
+
 const product = require('../../product.json');
+
 const packageJson = require('../../package.json');
 type NlsString = {
     value: string;
@@ -40,8 +43,10 @@ interface Policy {
 }
 function renderADMLString(prefix: string, moduleName: string, nlsString: NlsString, translations?: LanguageTranslations): string {
     let value: string | undefined;
+
     if (translations) {
         const moduleTranslations = translations[moduleName];
+
         if (moduleTranslations) {
             value = moduleTranslations[nlsString.nlsKey];
         }
@@ -82,6 +87,7 @@ abstract class BasePolicy implements Policy {
 class BooleanPolicy extends BasePolicy {
     static from(name: string, category: Category, minimumVersion: string, description: NlsString, moduleName: string, settingNode: Parser.SyntaxNode): BooleanPolicy | undefined {
         const type = getStringProperty(settingNode, 'type');
+
         if (type !== 'boolean') {
             return undefined;
         }
@@ -104,10 +110,12 @@ class BooleanPolicy extends BasePolicy {
 class IntPolicy extends BasePolicy {
     static from(name: string, category: Category, minimumVersion: string, description: NlsString, moduleName: string, settingNode: Parser.SyntaxNode): IntPolicy | undefined {
         const type = getStringProperty(settingNode, 'type');
+
         if (type !== 'number') {
             return undefined;
         }
         const defaultValue = getIntProperty(settingNode, 'default');
+
         if (typeof defaultValue === 'undefined') {
             throw new Error(`Missing required 'default' property.`);
         }
@@ -129,6 +137,7 @@ class IntPolicy extends BasePolicy {
 class StringPolicy extends BasePolicy {
     static from(name: string, category: Category, minimumVersion: string, description: NlsString, moduleName: string, settingNode: Parser.SyntaxNode): StringPolicy | undefined {
         const type = getStringProperty(settingNode, 'type');
+
         if (type !== 'string') {
             return undefined;
         }
@@ -147,10 +156,12 @@ class StringPolicy extends BasePolicy {
 class StringEnumPolicy extends BasePolicy {
     static from(name: string, category: Category, minimumVersion: string, description: NlsString, moduleName: string, settingNode: Parser.SyntaxNode): StringEnumPolicy | undefined {
         const type = getStringProperty(settingNode, 'type');
+
         if (type !== 'string') {
             return undefined;
         }
         const enum_ = getStringArrayProperty(settingNode, 'enum');
+
         if (!enum_) {
             return undefined;
         }
@@ -158,6 +169,7 @@ class StringEnumPolicy extends BasePolicy {
             throw new Error(`Property 'enum' should not be localized.`);
         }
         const enumDescriptions = getStringArrayProperty(settingNode, 'enumDescriptions');
+
         if (!enumDescriptions) {
             throw new Error(`Missing required 'enumDescriptions' property.`);
         }
@@ -194,16 +206,19 @@ const IntQ: QType<number> = {
     Q: `(number) @value`,
     value(matches: Parser.QueryMatch[]): number | undefined {
         const match = matches[0];
+
         if (!match) {
             return undefined;
         }
         const value = match.captures.filter(c => c.name === 'value')[0]?.node.text;
+
         if (!value) {
             throw new Error(`Missing required 'value' property.`);
         }
         return parseInt(value);
     }
 };
+
 const StringQ: QType<string | NlsString> = {
     Q: `[
 		(string (string_fragment) @value)
@@ -211,14 +226,17 @@ const StringQ: QType<string | NlsString> = {
 	]`,
     value(matches: Parser.QueryMatch[]): string | NlsString | undefined {
         const match = matches[0];
+
         if (!match) {
             return undefined;
         }
         const value = match.captures.filter(c => c.name === 'value')[0]?.node.text;
+
         if (!value) {
             throw new Error(`Missing required 'value' property.`);
         }
         const nlsKey = match.captures.filter(c => c.name === 'nlsKey')[0]?.node.text;
+
         if (nlsKey) {
             return { value, nlsKey };
         }
@@ -227,6 +245,7 @@ const StringQ: QType<string | NlsString> = {
         }
     }
 };
+
 const StringArrayQ: QType<(string | NlsString)[]> = {
     Q: `(array ${StringQ.Q})`,
     value(matches: Parser.QueryMatch[]): (string | NlsString)[] | undefined {
@@ -246,6 +265,7 @@ function getProperty<T>(qtype: QType<T>, node: Parser.SyntaxNode, key: string): 
 			)
 			(#eq? @key ${key})
 		)`);
+
     return qtype.value(query.matches(node));
 }
 function getIntProperty(node: Parser.SyntaxNode, key: string): number | undefined {
@@ -266,6 +286,7 @@ const PolicyTypes = [
 ];
 function getPolicy(moduleName: string, configurationNode: Parser.SyntaxNode, settingNode: Parser.SyntaxNode, policyNode: Parser.SyntaxNode, categories: Map<string, Category>): Policy {
     const name = getStringProperty(policyNode, 'name');
+
     if (!name) {
         throw new Error(`Missing required 'name' property.`);
     }
@@ -273,6 +294,7 @@ function getPolicy(moduleName: string, configurationNode: Parser.SyntaxNode, set
         throw new Error(`Property 'name' should be a literal string.`);
     }
     const categoryName = getStringProperty(configurationNode, 'title');
+
     if (!categoryName) {
         throw new Error(`Missing required 'title' property.`);
     }
@@ -280,12 +302,15 @@ function getPolicy(moduleName: string, configurationNode: Parser.SyntaxNode, set
         throw new Error(`Property 'title' should be localized.`);
     }
     const categoryKey = `${categoryName.nlsKey}:${categoryName.value}`;
+
     let category = categories.get(categoryKey);
+
     if (!category) {
         category = { moduleName, name: categoryName };
         categories.set(categoryKey, category);
     }
     const minimumVersion = getStringProperty(policyNode, 'minimumVersion');
+
     if (!minimumVersion) {
         throw new Error(`Missing required 'minimumVersion' property.`);
     }
@@ -293,6 +318,7 @@ function getPolicy(moduleName: string, configurationNode: Parser.SyntaxNode, set
         throw new Error(`Property 'minimumVersion' should be a literal string.`);
     }
     const description = getStringProperty(settingNode, 'description');
+
     if (!description) {
         throw new Error(`Missing required 'description' property.`);
     }
@@ -300,6 +326,7 @@ function getPolicy(moduleName: string, configurationNode: Parser.SyntaxNode, set
         throw new Error(`Property 'description' should be localized.`);
     }
     let result: Policy | undefined;
+
     for (const policyType of PolicyTypes) {
         if (result = policyType.from(name, category, minimumVersion, description, moduleName, settingNode)) {
             break;
@@ -328,18 +355,25 @@ function getPolicies(moduleName: string, node: Parser.SyntaxNode): Policy[] {
 			)
 		)
 	`);
+
     const categories = new Map<string, Category>();
+
     return query.matches(node).map(m => {
         const configurationNode = m.captures.filter(c => c.name === 'configuration')[0].node;
+
         const settingNode = m.captures.filter(c => c.name === 'setting')[0].node;
+
         const policyNode = m.captures.filter(c => c.name === 'policy')[0].node;
+
         return getPolicy(moduleName, configurationNode, settingNode, policyNode, categories);
     });
 }
 async function getFiles(root: string): Promise<string[]> {
     return new Promise((c, e) => {
         const result: string[] = [];
+
         const rg = spawn(rgPath, ['-l', 'registerConfiguration\\(', '-g', 'src/**/*.ts', '-g', '!src/**/test/**', root]);
+
         const stream = byline(rg.stdout.setEncoding('utf8'));
         stream.on('data', path => result.push(path));
         stream.on('error', err => e(err));
@@ -348,6 +382,7 @@ async function getFiles(root: string): Promise<string[]> {
 }
 function renderADMX(regKey: string, versions: string[], categories: Category[], policies: Policy[]) {
     versions = versions.map(v => v.replace(/\./g, '_'));
+
     return `<?xml version="1.0" encoding="utf-8"?>
 <policyDefinitions revision="1.1" schemaVersion="1.0">
 	<policyNamespaces>
@@ -390,9 +425,13 @@ function renderADML(appName: string, versions: string[], categories: Category[],
 }
 function renderGP(policies: Policy[], translations: Translations) {
     const appName = product.nameLong;
+
     const regKey = product.win32RegValueName;
+
     const versions = [...new Set(policies.map(p => p.minimumVersion)).values()].sort();
+
     const categories = [...new Set(policies.map(p => p.category))];
+
     return {
         admx: renderADMX(regKey, versions, categories, policies),
         adml: [
@@ -437,18 +476,23 @@ async function getSpecificNLS(resourceUrlTemplate: string, languageId: string, v
         version: `${version[0]}.${version[1]}.${version[2]}`,
         path: 'extension/translations/main.i18n.json'
     };
+
     const url = resourceUrlTemplate.replace(/\{([^}]+)\}/g, (_, key) => resource[key as keyof typeof resource]);
+
     const res = await fetch(url);
+
     if (res.status !== 200) {
         throw new Error(`[${res.status}] Error downloading language pack ${languageId}@${version}`);
     }
     const { contents: result } = await res.json() as {
         contents: LanguageTranslations;
     };
+
     return result;
 }
 function parseVersion(version: string): Version {
     const [, major, minor, patch] = /^(\d+)\.(\d+)\.(\d+)/.exec(version)!;
+
     return [parseInt(major), parseInt(minor), parseInt(patch)];
 }
 function compareVersions(a: Version, b: Version): number {
@@ -473,6 +517,7 @@ async function queryVersions(serviceUrl: string, languageId: string): Promise<Ve
             flags: 0x1
         })
     });
+
     if (res.status !== 200) {
         throw new Error(`[${res.status}] Error querying for extension: ${languageId}`);
     }
@@ -487,12 +532,16 @@ async function queryVersions(serviceUrl: string, languageId: string): Promise<Ve
             }
         ];
     };
+
     return result.results[0].extensions[0].versions.map(v => parseVersion(v.version)).sort(compareVersions);
 }
 async function getNLS(extensionGalleryServiceUrl: string, resourceUrlTemplate: string, languageId: string, version: Version) {
     const versions = await queryVersions(extensionGalleryServiceUrl, languageId);
+
     const nextMinor: Version = [version[0], version[1] + 1, 0];
+
     const compatibleVersions = versions.filter(v => compareVersions(v, nextMinor) < 0);
+
     const latestCompatibleVersion = compatibleVersions.at(-1)!; // order is newest to oldest
     if (!latestCompatibleVersion) {
         throw new Error(`No compatible language pack found for ${languageId} for version ${version}`);
@@ -502,12 +551,18 @@ async function getNLS(extensionGalleryServiceUrl: string, resourceUrlTemplate: s
 async function parsePolicies(): Promise<Policy[]> {
     const parser = new Parser();
     parser.setLanguage(typescript);
+
     const files = await getFiles(process.cwd());
+
     const base = path.join(process.cwd(), 'src');
+
     const policies = [];
+
     for (const file of files) {
         const moduleName = path.relative(base, file).replace(/\.ts$/i, '').replace(/\\/g, '/');
+
         const contents = await fs.readFile(file, { encoding: 'utf8' });
+
         const tree = parser.parse(contents);
         policies.push(...getPolicies(moduleName, tree.rootNode));
     }
@@ -515,27 +570,36 @@ async function parsePolicies(): Promise<Policy[]> {
 }
 async function getTranslations(): Promise<Translations> {
     const extensionGalleryServiceUrl = product.extensionsGallery?.serviceUrl;
+
     if (!extensionGalleryServiceUrl) {
         console.warn(`Skipping policy localization: No 'extensionGallery.serviceUrl' found in 'product.json'.`);
+
         return [];
     }
     const resourceUrlTemplate = product.extensionsGallery?.resourceUrlTemplate;
+
     if (!resourceUrlTemplate) {
         console.warn(`Skipping policy localization: No 'resourceUrlTemplate' found in 'product.json'.`);
+
         return [];
     }
     const version = parseVersion(packageJson.version);
+
     const languageIds = Object.keys(Languages);
+
     return await Promise.all(languageIds.map(languageId => getNLS(extensionGalleryServiceUrl, resourceUrlTemplate, languageId, version)
         .then(languageTranslations => ({ languageId, languageTranslations }))));
 }
 async function main() {
     const [policies, translations] = await Promise.all([parsePolicies(), getTranslations()]);
+
     const { admx, adml } = await renderGP(policies, translations);
+
     const root = '.build/policies/win32';
     await fs.rm(root, { recursive: true, force: true });
     await fs.mkdir(root, { recursive: true });
     await fs.writeFile(path.join(root, `${product.win32RegValueName}.admx`), admx.replace(/\r?\n/g, '\n'));
+
     for (const { languageId, contents } of adml) {
         const languagePath = path.join(root, languageId === 'en-us' ? 'en-us' : Languages[languageId as keyof typeof Languages]);
         await fs.mkdir(languagePath, { recursive: true });

@@ -31,5 +31,6 @@ export function registerMarkdownCommands(commandManager: CommandManager, preview
     commandManager.register(new ReloadPlugins(previewManager, engine));
     commandManager.register(new InsertLinkFromWorkspace());
     commandManager.register(new InsertImageFromWorkspace());
+
     return commandManager;
 }

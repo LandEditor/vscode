@@ -92,6 +92,7 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
         }, storageService));
         this._register(toDisposable(() => {
             this.globallyRunning?.dispose();
+
             for (const cts of this.running.values()) {
                 cts.dispose();
             }
@@ -119,8 +120,10 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
     /** @inheritdoc */
     public start(profiles: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void {
         const store = new DisposableStore();
+
         const cts = new CancellationTokenSource();
         store.add(toDisposable(() => cts.dispose(true)));
+
         if (testId === undefined) {
             this.isGloballyOn.set(true);
         }
@@ -131,10 +134,12 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
         else {
             this.running.mutate(TestId.fromString(testId).path, c => {
                 c?.dispose();
+
                 return store;
             });
         }
         let actualProfiles: ITestRunProfile[];
+
         if (profiles instanceof Array) {
             actualProfiles = profiles;
         }
@@ -151,6 +156,7 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
             }));
         }
         this.lastRun.store(new Set(actualProfiles.map(p => p.profileId)));
+
         if (actualProfiles.length) {
             this.testService.startContinuousRun({
                 continuous: true,

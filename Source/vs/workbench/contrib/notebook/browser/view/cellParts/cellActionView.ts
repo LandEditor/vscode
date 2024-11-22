@@ -45,6 +45,7 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
     private _actionLabel?: HTMLAnchorElement;
     private _hover?: IManagedHover;
     private _primaryAction: IAction | undefined;
+
     constructor(action: SubmenuItemAction, options: IMenuEntryActionViewItemOptions | undefined, readonly renderLabel: boolean, readonly subActionProvider: IActionProvider, readonly subActionViewItemProvider: IActionViewItemProvider | undefined, 
     @IKeybindingService
     _keybindingService: IKeybindingService, 
@@ -64,22 +65,27 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
         container.appendChild(this._actionLabel);
         this._hover = this._register(this._hoverService.setupManagedHover(this.options.hoverDelegate ?? getDefaultHoverDelegate('element'), this._actionLabel, ''));
         this.updateLabel();
+
         for (const event of [DOM.EventType.CLICK, DOM.EventType.MOUSE_DOWN, TouchEventType.Tap]) {
             this._register(DOM.addDisposableListener(container, event, e => this.onClick(e, true)));
         }
     }
     override onClick(event: DOM.EventLike, preserveFocus = false): void {
         DOM.EventHelper.stop(event, true);
+
         const context = types.isUndefinedOrNull(this._context) ? this.options?.useEventAsContext ? event : { preserveFocus } : this._context;
         this.actionRunner.run(this._primaryAction ?? this._action, context);
     }
     protected override updateLabel() {
         const actions = this.subActionProvider.getActions();
+
         if (this._actionLabel) {
             const primaryAction = actions[0];
             this._primaryAction = primaryAction;
+
             if (primaryAction && primaryAction instanceof MenuItemAction) {
                 const element = this.element;
+
                 if (element && primaryAction.item.icon && ThemeIcon.isThemeIcon(primaryAction.item.icon)) {
                     const iconClasses = ThemeIcon.asClassNameArray(primaryAction.item.icon);
                     // remove all classes started with 'codicon-'

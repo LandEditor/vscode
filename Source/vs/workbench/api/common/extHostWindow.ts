@@ -19,9 +19,11 @@ export class ExtHostWindow implements ExtHostWindowShape {
     private readonly _onDidChangeWindowState = new Emitter<WindowState>();
     readonly onDidChangeWindowState: Event<WindowState> = this._onDidChangeWindowState.event;
     private _state = ExtHostWindow.InitialState;
+
     getState(): WindowState {
         // todo@connor4312: this can be changed to just return this._state after proposed api is finalized
         const state = this._state;
+
         return {
             get focused() {
                 return state.focused;
@@ -55,8 +57,10 @@ export class ExtHostWindow implements ExtHostWindowShape {
     }
     openUri(stringOrUri: string | URI, options: IOpenUriOptions): Promise<boolean> {
         let uriAsString: string | undefined;
+
         if (typeof stringOrUri === 'string') {
             uriAsString = stringOrUri;
+
             try {
                 stringOrUri = URI.parse(stringOrUri);
             }
@@ -77,6 +81,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
             return Promise.reject('Invalid scheme - cannot be empty');
         }
         const result = await this._proxy.$asExternalUri(uri, options);
+
         return URI.from(result);
     }
 }

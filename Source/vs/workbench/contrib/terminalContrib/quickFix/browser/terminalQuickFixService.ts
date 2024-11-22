@@ -14,6 +14,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
     declare _serviceBrand: undefined;
     private _selectors: Map<string, ITerminalCommandSelector> = new Map();
     private _providers: Map<string, ITerminalQuickFixProvider> = new Map();
+
     get providers(): Map<string, ITerminalQuickFixProvider> { return this._providers; }
     private readonly _onDidRegisterProvider = new Emitter<ITerminalQuickFixProviderSelector>();
     readonly onDidRegisterProvider = this._onDidRegisterProvider.event;
@@ -22,6 +23,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
     private readonly _onDidUnregisterProvider = new Emitter<string>();
     readonly onDidUnregisterProvider = this._onDidUnregisterProvider.event;
     readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
+
     constructor(
     @ILogService
     private readonly _logService: ILogService) {
@@ -53,17 +55,23 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
                 return;
             }
             this._providers.set(id, provider);
+
             const selector = this._selectors.get(id);
+
             if (!selector) {
                 this._logService.error(`No registered selector for ID: ${id}`);
+
                 return;
             }
             this._onDidRegisterProvider.fire({ selector, provider });
         });
+
         return toDisposable(() => {
             disposed = true;
             this._providers.delete(id);
+
             const selector = this._selectors.get(id);
+
             if (selector) {
                 this._selectors.delete(id);
                 this._onDidUnregisterProvider.fire(selector.id);

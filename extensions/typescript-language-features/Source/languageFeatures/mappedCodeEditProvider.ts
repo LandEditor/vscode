@@ -16,6 +16,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
             return;
         }
         const file = this.client.toOpenTsFilePath(document);
+
         if (!file) {
             return;
         }
@@ -26,6 +27,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
                 focusLocations: context.documents.map(documents => {
                     return documents.flatMap((contextItem): FileSpan[] => {
                         const file = this.client.toTsFilePath(contextItem.uri);
+
                         if (!file) {
                             return [];
                         }
@@ -34,6 +36,7 @@ class TsMappedEditsProvider implements vscode.MappedEditsProvider {
                 }),
             }
         }, token);
+
         if (response.type !== 'response' || !response.body) {
             return;
         }
@@ -48,6 +51,7 @@ export function register(selector: DocumentSelector, client: ITypeScriptServiceC
         requireMinVersion(client, API.v540)
     ], () => {
         const provider = new TsMappedEditsProvider(client);
+
         return vscode.chat.registerMappedEditsProvider(selector.semantic, provider);
     });
 }

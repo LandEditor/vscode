@@ -16,6 +16,7 @@ import { TerminalCommandId, TERMINAL_VIEW_ID } from '../common/terminal.js';
 import { TerminalContextKeys, TerminalContextKeyStrings } from '../common/terminalContextKey.js';
 import { terminalStrings } from '../common/terminalStrings.js';
 import { ACTIVE_GROUP, SIDE_GROUP } from '../../../services/editor/common/editorService.js';
+
 const enum ContextMenuGroup {
     Create = '1_create',
     Edit = '3_edit',
@@ -624,17 +625,24 @@ export function setupTerminalMenus(): void {
 export function getTerminalActionBarArgs(location: ITerminalLocationOptions, profiles: ITerminalProfile[], defaultProfileName: string, contributedProfiles: readonly IExtensionTerminalProfile[], terminalService: ITerminalService, dropdownMenu: IMenu): {
     dropdownAction: IAction;
     dropdownMenuActions: IAction[];
+
     className: string;
     dropdownIcon?: string;
 } {
     let dropdownActions: IAction[] = [];
+
     let submenuActions: IAction[] = [];
     profiles = profiles.filter(e => !e.isAutoDetected);
+
     const splitLocation = (location === TerminalLocation.Editor || (typeof location === 'object' && 'viewColumn' in location && location.viewColumn === ACTIVE_GROUP)) ? { viewColumn: SIDE_GROUP } : { splitActiveTerminal: true };
+
     for (const p of profiles) {
         const isDefault = p.profileName === defaultProfileName;
+
         const options: ICreateTerminalOptions = { config: p, location };
+
         const splitOptions: ICreateTerminalOptions = { config: p, location: splitLocation };
+
         const sanitizedProfileName = p.profileName.replace(/[\n\r\t]/g, '');
         dropdownActions.push(new Action(TerminalCommandId.NewWithProfile, isDefault ? localize('defaultTerminalProfile', "{0} (Default)", sanitizedProfileName) : sanitizedProfileName, undefined, true, async () => {
             const instance = await terminalService.createTerminal(options);
@@ -649,6 +657,7 @@ export function getTerminalActionBarArgs(location: ITerminalLocationOptions, pro
     }
     for (const contributed of contributedProfiles) {
         const isDefault = contributed.title === defaultProfileName;
+
         const title = isDefault ? localize('defaultTerminalProfile', "{0} (Default)", contributed.title.replace(/[\n\r\t]/g, '')) : contributed.title.replace(/[\n\r\t]/g, '');
         dropdownActions.push(new Action('contributed', title, undefined, true, () => terminalService.createTerminal({
             config: {
@@ -668,6 +677,7 @@ export function getTerminalActionBarArgs(location: ITerminalLocationOptions, pro
         })));
     }
     const defaultProfileAction = dropdownActions.find(d => d.label.endsWith('(Default)'));
+
     if (defaultProfileAction) {
         dropdownActions = dropdownActions.filter(d => d !== defaultProfileAction).sort((a, b) => a.label.localeCompare(b.label));
         dropdownActions.unshift(defaultProfileAction);
@@ -678,11 +688,14 @@ export function getTerminalActionBarArgs(location: ITerminalLocationOptions, pro
     }
     const actions = dropdownMenu.getActions();
     dropdownActions.push(...Separator.join(...actions.map(a => a[1])));
+
     const defaultSubmenuProfileAction = submenuActions.find(d => d.label.endsWith('(Default)'));
+
     if (defaultSubmenuProfileAction) {
         submenuActions = submenuActions.filter(d => d !== defaultSubmenuProfileAction).sort((a, b) => a.label.localeCompare(b.label));
         submenuActions.unshift(defaultSubmenuProfileAction);
     }
     const dropdownAction = new Action('refresh profiles', localize('launchProfile', 'Launch Profile...'), 'codicon-chevron-down', true);
+
     return { dropdownAction, dropdownMenuActions: dropdownActions, className: `terminal-tab-actions-${terminalService.resolveLocation(location)}` };
 }

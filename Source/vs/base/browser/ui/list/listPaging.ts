@@ -24,18 +24,22 @@ class PagedRenderer<TElement, TTemplateData> implements IListRenderer<number, IT
     constructor(private renderer: IPagedRenderer<TElement, TTemplateData>, private modelProvider: () => IPagedModel<TElement>) { }
     renderTemplate(container: HTMLElement): ITemplateData<TTemplateData> {
         const data = this.renderer.renderTemplate(container);
+
         return { data, disposable: Disposable.None };
     }
     renderElement(index: number, _: number, data: ITemplateData<TTemplateData>, height: number | undefined): void {
         data.disposable?.dispose();
+
         if (!data.data) {
             return;
         }
         const model = this.modelProvider();
+
         if (model.isResolved(index)) {
             return this.renderer.renderElement(model.get(index), index, data.data, height);
         }
         const cts = new CancellationTokenSource();
+
         const promise = model.resolve(index, cts.token);
         data.disposable = { dispose: () => cts.cancel() };
         this.renderer.renderPlaceholder(index, data.data);
@@ -59,6 +63,7 @@ class PagedAccessibilityProvider<T> implements IListAccessibilityProvider<number
     }
     getAriaLabel(index: number) {
         const model = this.modelProvider();
+
         if (!model.isResolved(index)) {
             return null;
         }
@@ -92,8 +97,10 @@ function fromPagedListOptions<T>(modelProvider: () => IPagedModel<T>, options: I
 export class PagedList<T> implements IDisposable {
     private list: List<number>;
     private _model!: IPagedModel<T>;
+
     constructor(user: string, container: HTMLElement, virtualDelegate: IListVirtualDelegate<number>, renderers: IPagedRenderer<T, any>[], options: IPagedListOptions<T> = {}) {
         const modelProvider = () => this.model;
+
         const pagedRenderers = renderers.map(r => new PagedRenderer<T, ITemplateData<T>>(r, modelProvider));
         this.list = new List(user, container, virtualDelegate, pagedRenderers, fromPagedListOptions(modelProvider, options));
     }

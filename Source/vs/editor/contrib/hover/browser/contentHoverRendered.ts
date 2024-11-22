@@ -46,6 +46,7 @@ export class RenderedContentHover extends Disposable {
 		@IHoverService hoverService: IHoverService
 	) {
 		super();
+
 		const parts = hoverResult.hoverParts;
 		this._renderedHoverParts = this._register(new RenderedContentHoverParts(
 			editor,
@@ -55,8 +56,11 @@ export class RenderedContentHover extends Disposable {
 			keybindingService,
 			hoverService
 		));
+
 		const contentHoverComputerOptions = hoverResult.options;
+
 		const anchor = contentHoverComputerOptions.anchor;
+
 		const { showAtPosition, showAtSecondaryPosition } = RenderedContentHover.computeHoverPositions(editor, anchor.range, parts);
 		this.shouldAppearBeforeContent = parts.some(m => m.isBeforeContent);
 		this.showAtPosition = showAtPosition;
@@ -106,29 +110,41 @@ export class RenderedContentHover extends Disposable {
 	public static computeHoverPositions(editor: ICodeEditor, anchorRange: Range, hoverParts: IHoverPart[]): { showAtPosition: Position; showAtSecondaryPosition: Position } {
 
 		let startColumnBoundary = 1;
+
 		if (editor.hasModel()) {
 			// Ensure the range is on the current view line
 			const viewModel = editor._getViewModel();
+
 			const coordinatesConverter = viewModel.coordinatesConverter;
+
 			const anchorViewRange = coordinatesConverter.convertModelRangeToViewRange(anchorRange);
+
 			const anchorViewMinColumn = viewModel.getLineMinColumn(anchorViewRange.startLineNumber);
+
 			const anchorViewRangeStart = new Position(anchorViewRange.startLineNumber, anchorViewMinColumn);
 			startColumnBoundary = coordinatesConverter.convertViewPositionToModelPosition(anchorViewRangeStart).column;
 		}
 
 		// The anchor range is always on a single line
 		const anchorStartLineNumber = anchorRange.startLineNumber;
+
 		let secondaryPositionColumn = anchorRange.startColumn;
+
 		let forceShowAtRange: Range | undefined;
 
 		for (const hoverPart of hoverParts) {
 			const hoverPartRange = hoverPart.range;
+
 			const hoverPartRangeOnAnchorStartLine = hoverPartRange.startLineNumber === anchorStartLineNumber;
+
 			const hoverPartRangeOnAnchorEndLine = hoverPartRange.endLineNumber === anchorStartLineNumber;
+
 			const hoverPartRangeIsOnAnchorLine = hoverPartRangeOnAnchorStartLine && hoverPartRangeOnAnchorEndLine;
+
 			if (hoverPartRangeIsOnAnchorLine) {
 				// this message has a range that is completely sitting on the line of the anchor
 				const hoverPartStartColumn = hoverPartRange.startColumn;
+
 				const minSecondaryPositionColumn = Math.min(secondaryPositionColumn, hoverPartStartColumn);
 				secondaryPositionColumn = Math.max(minSecondaryPositionColumn, startColumnBoundary);
 			}
@@ -138,7 +154,9 @@ export class RenderedContentHover extends Disposable {
 		}
 
 		let showAtPosition: Position;
+
 		let showAtSecondaryPosition: Position;
+
 		if (forceShowAtRange) {
 			const forceShowAtPosition = forceShowAtRange.getStartPosition();
 			showAtPosition = forceShowAtPosition;
@@ -246,6 +264,7 @@ class RenderedContentHoverParts extends Disposable {
 			return Disposable.None;
 		}
 		let highlightRange = hoverParts[0].range;
+
 		for (const hoverPart of hoverParts) {
 			const hoverPartRange = hoverPart.range;
 			highlightRange = Range.plusRange(highlightRange, hoverPartRange);
@@ -255,6 +274,7 @@ class RenderedContentHoverParts extends Disposable {
 			range: highlightRange,
 			options: RenderedContentHoverParts._DECORATION_OPTIONS
 		}]);
+
 		return toDisposable(() => {
 			highlightDecoration.clear();
 		});
@@ -262,15 +282,19 @@ class RenderedContentHoverParts extends Disposable {
 
 	private _renderParts(participants: IEditorHoverParticipant<IHoverPart>[], hoverParts: IHoverPart[], hoverContext: IEditorHoverContext, keybindingService: IKeybindingService, hoverService: IHoverService): IDisposable {
 		const statusBar = new EditorHoverStatusBar(keybindingService, hoverService);
+
 		const hoverRenderingContext: IEditorHoverRenderContext = {
 			fragment: this._fragment,
 			statusBar,
 			...hoverContext
 		};
+
 		const disposables = new DisposableStore();
+
 		for (const participant of participants) {
 			const renderedHoverParts = this._renderHoverPartsForParticipant(hoverParts, participant, hoverRenderingContext);
 			disposables.add(renderedHoverParts);
+
 			for (const renderedHoverPart of renderedHoverParts.renderedHoverParts) {
 				this._renderedParts.push({
 					type: 'hoverPart',
@@ -281,6 +305,7 @@ class RenderedContentHoverParts extends Disposable {
 			}
 		}
 		const renderedStatusBar = this._renderStatusBar(this._fragment, statusBar);
+
 		if (renderedStatusBar) {
 			disposables.add(renderedStatusBar);
 			this._renderedParts.push({
@@ -294,7 +319,9 @@ class RenderedContentHoverParts extends Disposable {
 
 	private _renderHoverPartsForParticipant(hoverParts: IHoverPart[], participant: IEditorHoverParticipant<IHoverPart>, hoverRenderingContext: IEditorHoverRenderContext): IRenderedHoverParts<IHoverPart> {
 		const hoverPartsForParticipant = hoverParts.filter(hoverPart => hoverPart.owner === participant);
+
 		const hasHoverPartsForParticipant = hoverPartsForParticipant.length > 0;
+
 		if (!hasHoverPartsForParticipant) {
 			return new RenderedHoverParts([]);
 		}
@@ -322,6 +349,7 @@ class RenderedContentHoverParts extends Disposable {
 				this._focusedHoverPartIndex = -1;
 			}));
 		});
+
 		return disposables;
 	}
 
@@ -329,6 +357,7 @@ class RenderedContentHoverParts extends Disposable {
 		const markdownHoverParticipant = participants.find(p => {
 			return (p instanceof MarkdownHoverParticipant) && !(p instanceof InlayHintsHover);
 		});
+
 		if (markdownHoverParticipant) {
 			this._markdownHoverParticipant = markdownHoverParticipant as MarkdownHoverParticipant;
 		}
@@ -344,6 +373,7 @@ class RenderedContentHoverParts extends Disposable {
 
 	public getAccessibleContent(): string {
 		const content: string[] = [];
+
 		for (let i = 0; i < this._renderedParts.length; i++) {
 			content.push(this.getAccessibleHoverContentAtIndex(i));
 		}
@@ -352,13 +382,16 @@ class RenderedContentHoverParts extends Disposable {
 
 	public getAccessibleHoverContentAtIndex(index: number): string {
 		const renderedPart = this._renderedParts[index];
+
 		if (!renderedPart) {
 			return '';
 		}
 		if (renderedPart.type === 'statusBar') {
 			const statusBarDescription = [localize('hoverAccessibilityStatusBar', "This is a hover status bar.")];
+
 			for (const action of renderedPart.actions) {
 				const keybinding = action.actionKeybindingLabel;
+
 				if (keybinding) {
 					statusBarDescription.push(localize('hoverAccessibilityStatusBarActionWithKeybinding', "It has an action with label {0} and keybinding {1}.", action.actionLabel, keybinding));
 				} else {
@@ -375,10 +408,12 @@ class RenderedContentHoverParts extends Disposable {
 			return;
 		}
 		const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(this._markdownHoverParticipant, index);
+
 		if (normalizedMarkdownHoverIndex === undefined) {
 			return;
 		}
 		const renderedPart = await this._markdownHoverParticipant.updateMarkdownHoverVerbosityLevel(action, normalizedMarkdownHoverIndex, focus);
+
 		if (!renderedPart) {
 			return;
 		}
@@ -396,6 +431,7 @@ class RenderedContentHoverParts extends Disposable {
 			return false;
 		}
 		const normalizedMarkdownHoverIndex = this._normalizedIndexToMarkdownHoverIndexRange(this._markdownHoverParticipant, index);
+
 		if (normalizedMarkdownHoverIndex === undefined) {
 			return false;
 		}
@@ -408,10 +444,12 @@ class RenderedContentHoverParts extends Disposable {
 
 	private _normalizedIndexToMarkdownHoverIndexRange(markdownHoverParticipant: MarkdownHoverParticipant, index: number): number | undefined {
 		const renderedPart = this._renderedParts[index];
+
 		if (!renderedPart || renderedPart.type !== 'hoverPart') {
 			return undefined;
 		}
 		const isHoverPartMarkdownHover = renderedPart.participant === markdownHoverParticipant;
+
 		if (!isHoverPartMarkdownHover) {
 			return undefined;
 		}
@@ -419,6 +457,7 @@ class RenderedContentHoverParts extends Disposable {
 			renderedPart.type === 'hoverPart'
 			&& renderedPart.participant === markdownHoverParticipant
 		);
+
 		if (firstIndexOfMarkdownHovers === -1) {
 			throw new BugIndicatingError();
 		}

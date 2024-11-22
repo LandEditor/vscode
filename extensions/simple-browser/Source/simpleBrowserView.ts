@@ -34,6 +34,7 @@ export class SimpleBrowserView extends Disposable {
             retainContextWhenHidden: true,
             ...SimpleBrowserView.getWebviewOptions(extensionUri)
         });
+
         return new SimpleBrowserView(extensionUri, url, webview);
     }
     public static restore(extensionUri: vscode.Uri, url: string, webviewPanel: vscode.WebviewPanel): SimpleBrowserView {
@@ -72,6 +73,7 @@ export class SimpleBrowserView extends Disposable {
     }
     public override dispose() {
         this._onDidDispose.fire();
+
         super.dispose();
     }
     public show(url: string, options?: ShowOptions) {
@@ -80,10 +82,15 @@ export class SimpleBrowserView extends Disposable {
     }
     private getHtml(url: string) {
         const configuration = vscode.workspace.getConfiguration('simpleBrowser');
+
         const nonce = getNonce();
+
         const mainJs = this.extensionResourceUrl('media', 'index.js');
+
         const mainCss = this.extensionResourceUrl('media', 'main.css');
+
         const codiconsUri = this.extensionResourceUrl('media', 'codicon.css');
+
         return /* html */ `<!DOCTYPE html>
 			<html>
 			<head>
@@ -147,7 +154,9 @@ function escapeAttribute(value: string | vscode.Uri): string {
 }
 function getNonce() {
     let text = '';
+
     const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
     for (let i = 0; i < 64; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }

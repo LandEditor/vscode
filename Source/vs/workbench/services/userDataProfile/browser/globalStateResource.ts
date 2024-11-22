@@ -24,9 +24,12 @@ export class GlobalStateResourceInitializer implements IProfileResourceInitializ
     }
     async initialize(content: string): Promise<void> {
         const globalState: IGlobalState = JSON.parse(content);
+
         const storageKeys = Object.keys(globalState.storage);
+
         if (storageKeys.length) {
             const storageEntries: Array<IStorageEntry> = [];
+
             for (const key of storageKeys) {
                 storageEntries.push({ key, value: globalState.storage[key], scope: StorageScope.PROFILE, target: StorageTarget.USER });
             }
@@ -45,6 +48,7 @@ export class GlobalStateResource implements IProfileResource {
     }
     async getContent(profile: IUserDataProfile): Promise<string> {
         const globalState = await this.getGlobalState(profile);
+
         return JSON.stringify(globalState);
     }
     async apply(content: string, profile: IUserDataProfile): Promise<void> {
@@ -53,7 +57,9 @@ export class GlobalStateResource implements IProfileResource {
     }
     async getGlobalState(profile: IUserDataProfile): Promise<IGlobalState> {
         const storage: IStringDictionary<string> = {};
+
         const storageData = await this.userDataProfileStorageService.readStorageData(profile);
+
         for (const [key, value] of storageData) {
             if (value.value !== undefined && value.target === StorageTarget.USER) {
                 storage[key] = value.value;
@@ -63,14 +69,17 @@ export class GlobalStateResource implements IProfileResource {
     }
     private async writeGlobalState(globalState: IGlobalState, profile: IUserDataProfile): Promise<void> {
         const storageKeys = Object.keys(globalState.storage);
+
         if (storageKeys.length) {
             const updatedStorage = new Map<string, string | undefined>();
+
             const nonProfileKeys = [
                 // Do not include application scope user target keys because they also include default profile user target keys
                 ...this.storageService.keys(StorageScope.APPLICATION, StorageTarget.MACHINE),
                 ...this.storageService.keys(StorageScope.WORKSPACE, StorageTarget.USER),
                 ...this.storageService.keys(StorageScope.WORKSPACE, StorageTarget.MACHINE),
             ];
+
             for (const key of storageKeys) {
                 if (nonProfileKeys.includes(key)) {
                     this.logService.info(`Importing Profile (${profile.name}): Ignoring global state key '${key}' because it is not a profile key.`);
@@ -89,6 +98,7 @@ export abstract class GlobalStateResourceTreeItem implements IProfileResourceTre
     readonly label = { label: localize('globalState', "UI State") };
     readonly collapsibleState = TreeItemCollapsibleState.Collapsed;
     checkbox: ITreeItemCheckboxState | undefined;
+
     constructor(private readonly resource: URI, private readonly uriIdentityService: IUriIdentityService) { }
     async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
         return [{
@@ -119,6 +129,7 @@ export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeIt
     }
     async hasContent(): Promise<boolean> {
         const globalState = await this.instantiationService.createInstance(GlobalStateResource).getGlobalState(this.profile);
+
         return Object.keys(globalState.storage).length > 0;
     }
     async getContent(): Promise<string> {

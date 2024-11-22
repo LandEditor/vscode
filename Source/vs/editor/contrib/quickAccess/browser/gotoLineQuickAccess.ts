@@ -16,6 +16,7 @@ interface IGotoLineQuickPickItem extends IQuickPickItem, Partial<IPosition> {
 }
 export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditorNavigationQuickAccessProvider {
     static PREFIX = ':';
+
     constructor() {
         super({ canAcceptInBackground: true });
     }
@@ -25,21 +26,25 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
         const label = localize('cannotRunGotoLine', "Open a text editor first to go to a line.");
         picker.items = [{ label }];
         picker.ariaLabel = label;
+
         return Disposable.None;
     }
     protected provideWithTextEditor(context: IQuickAccessTextEditorContext, picker: IQuickPick<IGotoLineQuickPickItem, {
         useSeparators: true;
     }>, token: CancellationToken): IDisposable {
         const editor = context.editor;
+
         const disposables = new DisposableStore();
         // Goto line once picked
         disposables.add(picker.onDidAccept(event => {
             const [item] = picker.selectedItems;
+
             if (item) {
                 if (!this.isValidLineNumber(editor, item.lineNumber)) {
                     return;
                 }
                 this.gotoLocation(context, { range: this.toRange(item.lineNumber, item.column), keyMods: picker.keyMods, preserveFocus: event.inBackground });
+
                 if (!event.inBackground) {
                     picker.hide();
                 }
@@ -48,6 +53,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
         // React to picker changes
         const updatePickerAndEditor = () => {
             const position = this.parsePosition(editor, picker.value.trim().substr(AbstractGotoLineQuickAccessProvider.PREFIX.length));
+
             const label = this.getPickLabel(editor, position.lineNumber, position.column);
             // Picker
             picker.items = [{
@@ -60,6 +66,7 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
             // Clear decorations for invalid range
             if (!this.isValidLineNumber(editor, position.lineNumber)) {
                 this.clearDecorations(editor);
+
                 return;
             }
             // Reveal
@@ -72,9 +79,12 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
         disposables.add(picker.onDidChangeValue(() => updatePickerAndEditor()));
         // Adjust line number visibility as needed
         const codeEditor = getCodeEditor(editor);
+
         if (codeEditor) {
             const options = codeEditor.getOptions();
+
             const lineNumbers = options.get(EditorOption.lineNumbers);
+
             if (lineNumbers.renderType === RenderLineNumbersType.Relative) {
                 codeEditor.updateOptions({ lineNumbers: 'on' });
                 disposables.add(toDisposable(() => codeEditor.updateOptions({ lineNumbers: 'relative' })));
@@ -93,7 +103,9 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
     private parsePosition(editor: IEditor, value: string): IPosition {
         // Support line-col formats of `line,col`, `line:col`, `line#col`
         const numbers = value.split(/,|:|#/).map(part => parseInt(part, 10)).filter(part => !isNaN(part));
+
         const endLine = this.lineCount(editor) + 1;
+
         return {
             lineNumber: numbers[0] > 0 ? numbers[0] : endLine + numbers[0],
             column: numbers[1]
@@ -109,7 +121,9 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
         }
         // Location invalid: show generic label
         const position = editor.getPosition() || { lineNumber: 1, column: 1 };
+
         const lineCount = this.lineCount(editor);
+
         if (lineCount > 1) {
             return localize('gotoLineLabelEmptyWithLimit', "Current Line: {0}, Character: {1}. Type a line number between 1 and {2} to navigate to.", position.lineNumber, position.column, lineCount);
         }
@@ -126,10 +140,12 @@ export abstract class AbstractGotoLineQuickAccessProvider extends AbstractEditor
             return false;
         }
         const model = this.getModel(editor);
+
         if (!model) {
             return false;
         }
         const positionCandidate = { lineNumber, column };
+
         return model.validatePosition(positionCandidate).equals(positionCandidate);
     }
     private lineCount(editor: IEditor): number {

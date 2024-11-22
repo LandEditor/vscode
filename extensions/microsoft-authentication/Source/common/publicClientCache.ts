@@ -25,6 +25,8 @@ export interface ICachedPublicClientApplicationManager {
         changed: AccountInfo[];
         deleted: AccountInfo[];
     }>;
+
     getOrCreate(clientId: string, authority: string): Promise<ICachedPublicClientApplication>;
+
     getAll(): ICachedPublicClientApplication[];
 }

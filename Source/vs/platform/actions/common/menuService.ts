@@ -17,6 +17,7 @@ import { IKeybindingService } from '../../keybinding/common/keybinding.js';
 export class MenuService implements IMenuService {
     declare readonly _serviceBrand: undefined;
     private readonly _hiddenStates: PersistedMenuHideState;
+
     constructor(
     @ICommandService
     private readonly _commandService: ICommandService, 
@@ -34,12 +35,15 @@ export class MenuService implements IMenuService {
         Array<MenuItemAction | SubmenuItemAction>
     ][] {
         const menu = new MenuImpl(id, this._hiddenStates, { emitEventsForSubmenuChanges: false, eventDebounceDelay: 50, ...options }, this._commandService, this._keybindingService, contextKeyService);
+
         const actions = menu.getActions(options);
         menu.dispose();
+
         return actions;
     }
     getMenuContexts(id: MenuId): ReadonlySet<string> {
         const menuInfo = new MenuInfoSnapshot(id, false);
+
         return new Set<string>([...menuInfo.structureContextKeys, ...menuInfo.preconditionContextKeys, ...menuInfo.toggledContextKeys]);
     }
     resetHiddenStates(ids?: MenuId[]): void {
@@ -54,6 +58,7 @@ class PersistedMenuHideState {
     private _ignoreChangeEvent: boolean = false;
     private _data: Record<string, string[] | undefined>;
     private _hiddenByDefaultCache = new Map<string, boolean>();
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService) {
@@ -89,19 +94,24 @@ class PersistedMenuHideState {
     }
     isHidden(menu: MenuId, commandId: string): boolean {
         const hiddenByDefault = this._isHiddenByDefault(menu, commandId);
+
         const state = this._data[menu.id]?.includes(commandId) ?? false;
+
         return hiddenByDefault ? !state : state;
     }
     updateHidden(menu: MenuId, commandId: string, hidden: boolean): void {
         const hiddenByDefault = this._isHiddenByDefault(menu, commandId);
+
         if (hiddenByDefault) {
             hidden = !hidden;
         }
         const entries = this._data[menu.id];
+
         if (!hidden) {
             // remove and cleanup
             if (entries) {
                 const idx = entries.indexOf(commandId);
+
                 if (idx >= 0) {
                     removeFastWithoutKeepingOrder(entries, idx);
                 }
@@ -117,6 +127,7 @@ class PersistedMenuHideState {
             }
             else {
                 const idx = entries.indexOf(commandId);
+
                 if (idx < 0) {
                     entries.push(commandId);
                 }
@@ -143,6 +154,7 @@ class PersistedMenuHideState {
     private _persist(): void {
         try {
             this._ignoreChangeEvent = true;
+
             const raw = JSON.stringify(this._data);
             this._storageService.store(PersistedMenuHideState._key, raw, StorageScope.PROFILE, StorageTarget.USER);
         }
@@ -161,6 +173,7 @@ class MenuInfoSnapshot {
     private _structureContextKeys: Set<string> = new Set();
     private _preconditionContextKeys: Set<string> = new Set();
     private _toggledContextKeys: Set<string> = new Set();
+
     constructor(protected readonly _id: MenuId, protected readonly _collectContextKeysForSubmenus: boolean) {
         this.refresh();
     }
@@ -183,11 +196,15 @@ class MenuInfoSnapshot {
         this._structureContextKeys.clear();
         this._preconditionContextKeys.clear();
         this._toggledContextKeys.clear();
+
         const menuItems = this._sort(MenuRegistry.getMenuItems(this._id));
+
         let group: MenuItemGroup | undefined;
+
         for (const item of menuItems) {
             // group by groupId
             const groupName = item.group || '';
+
             if (!group || group[0] !== groupName) {
                 group = [groupName, []];
                 this._menuGroups.push(group);
@@ -204,6 +221,7 @@ class MenuInfoSnapshot {
     }
     private _collectContextKeysAndSubmenuIds(item: IMenuItem | ISubmenuItem): void {
         MenuInfoSnapshot._fillInKbExprKeys(item.when, this._structureContextKeys);
+
         if (isIMenuItem(item)) {
             // keep precondition keys for event if applicable
             if (item.command.precondition) {
@@ -251,16 +269,21 @@ class MenuInfo extends MenuInfoSnapshot {
             string,
             Array<MenuItemAction | SubmenuItemAction>
         ][] = [];
+
         for (const group of this._menuGroups) {
             const [id, items] = group;
+
             let activeActions: Array<MenuItemAction | SubmenuItemAction> | undefined;
+
             for (const item of items) {
                 if (this._contextKeyService.contextMatchesRules(item.when)) {
                     const isMenuItem = isIMenuItem(item);
+
                     if (isMenuItem) {
                         this._hiddenStates.setDefaultState(this._id, item.command.id, !!item.isHiddenByDefault);
                     }
                     const menuHide = createMenuHide(this._id, isMenuItem ? item.command : item, this._hiddenStates);
+
                     if (isMenuItem) {
                         // MenuItemAction
                         const menuKeybinding = createConfigureKeybindingAction(this._commandService, this._keybindingService, item.command.id, item.when);
@@ -269,7 +292,9 @@ class MenuInfo extends MenuInfoSnapshot {
                     else {
                         // SubmenuItemAction
                         const groups = new MenuInfo(item.submenu, this._hiddenStates, this._collectContextKeysForSubmenus, this._commandService, this._keybindingService, this._contextKeyService).createActionGroups(options);
+
                         const submenuActions = Separator.join(...groups.map(g => g[1]));
+
                         if (submenuActions.length > 0) {
                             (activeActions ??= []).push(new SubmenuItemAction(item, menuHide, submenuActions));
                         }
@@ -287,7 +312,9 @@ class MenuInfo extends MenuInfoSnapshot {
     }
     private static _compareMenuItems(a: IMenuItem | ISubmenuItem, b: IMenuItem | ISubmenuItem): number {
         const aGroup = a.group;
+
         const bGroup = b.group;
+
         if (aGroup !== bGroup) {
             // Falsy groups come last
             if (!aGroup) {
@@ -305,13 +332,16 @@ class MenuInfo extends MenuInfoSnapshot {
             }
             // lexical sort for groups
             const value = aGroup.localeCompare(bGroup);
+
             if (value !== 0) {
                 return value;
             }
         }
         // sort on priority - default is 0
         const aPrio = a.order || 0;
+
         const bPrio = b.order || 0;
+
         if (aPrio < bPrio) {
             return -1;
         }
@@ -323,7 +353,9 @@ class MenuInfo extends MenuInfoSnapshot {
     }
     private static _compareTitles(a: string | ILocalizedString, b: string | ILocalizedString) {
         const aStr = typeof a === 'string' ? a : a.original;
+
         const bStr = typeof b === 'string' ? b : b.original;
+
         return aStr.localeCompare(bStr);
     }
 }
@@ -332,6 +364,7 @@ class MenuImpl implements IMenu {
     private readonly _disposables = new DisposableStore();
     private readonly _onDidChange: Emitter<IMenuChangeEvent>;
     readonly onDidChange: Event<IMenuChangeEvent>;
+
     constructor(id: MenuId, hiddenStates: PersistedMenuHideState, options: Required<IMenuCreateOptions>, 
     @ICommandService
     commandService: ICommandService, 
@@ -352,6 +385,7 @@ class MenuImpl implements IMenu {
             for (const id of this._menuInfo.allMenuIds) {
                 if (e.has(id)) {
                     rebuildMenuSoon.schedule();
+
                     break;
                 }
             }
@@ -360,14 +394,19 @@ class MenuImpl implements IMenu {
         // we only do that when someone listens on this menu because (1) these events are
         // firing often and (2) menu are often leaked
         const lazyListener = this._disposables.add(new DisposableStore());
+
         const merge = (events: IMenuChangeEvent[]): IMenuChangeEvent => {
             let isStructuralChange = false;
+
             let isEnablementChange = false;
+
             let isToggleChange = false;
+
             for (const item of events) {
                 isStructuralChange = isStructuralChange || item.isStructuralChange;
                 isEnablementChange = isEnablementChange || item.isEnablementChange;
                 isToggleChange = isToggleChange || item.isToggleChange;
+
                 if (isStructuralChange && isEnablementChange && isToggleChange) {
                     // everything is TRUE, no need to continue iterating
                     break;
@@ -375,11 +414,15 @@ class MenuImpl implements IMenu {
             }
             return { menu: this, isStructuralChange, isEnablementChange, isToggleChange };
         };
+
         const startLazyListener = () => {
             lazyListener.add(contextKeyService.onDidChangeContext(e => {
                 const isStructuralChange = e.affectsSome(this._menuInfo.structureContextKeys);
+
                 const isEnablementChange = e.affectsSome(this._menuInfo.preconditionContextKeys);
+
                 const isToggleChange = e.affectsSome(this._menuInfo.toggledContextKeys);
+
                 if (isStructuralChange || isEnablementChange || isToggleChange) {
                     this._onDidChange.fire({ menu: this, isStructuralChange, isEnablementChange, isToggleChange });
                 }
@@ -410,18 +453,22 @@ class MenuImpl implements IMenu {
 }
 function createMenuHide(menu: MenuId, command: ICommandAction | ISubmenuItem, states: PersistedMenuHideState): IMenuItemHide {
     const id = isISubmenuItem(command) ? command.submenu.id : command.id;
+
     const title = typeof command.title === 'string' ? command.title : command.title.value;
+
     const hide = toAction({
         id: `hide/${menu.id}/${id}`,
         label: localize('hide.label', 'Hide \'{0}\'', title),
         run() { states.updateHidden(menu, id, true); }
     });
+
     const toggle = toAction({
         id: `toggle/${menu.id}/${id}`,
         label: title,
         get checked() { return !states.isHidden(menu, id); },
         run() { states.updateHidden(menu, id, !!this.checked); }
     });
+
     return {
         hide,
         toggle,

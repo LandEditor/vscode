@@ -6,11 +6,13 @@ import { ITextMateThemingRule, IColorMap } from './workbenchThemeService.js';
 import { Color } from '../../../../base/common/color.js';
 import * as colorRegistry from '../../../../platform/theme/common/colorRegistry.js';
 import * as editorColorRegistry from '../../../../editor/common/core/editorColorRegistry.js';
+
 const settingToColorIdMapping: {
     [settingId: string]: string[];
 } = {};
 function addSettingMapping(settingId: string, colorId: string) {
     let colorIds = settingToColorIdMapping[settingId];
+
     if (!colorIds) {
         settingToColorIdMapping[settingId] = colorIds = [];
     }
@@ -22,19 +24,25 @@ export function convertSettings(oldSettings: ITextMateThemingRule[], result: {
 }): void {
     for (const rule of oldSettings) {
         result.textMateRules.push(rule);
+
         if (!rule.scope) {
             const settings = rule.settings;
+
             if (!settings) {
                 rule.settings = {};
             }
             else {
                 for (const settingKey in settings) {
                     const key = <keyof typeof settings>settingKey;
+
                     const mappings = settingToColorIdMapping[key];
+
                     if (mappings) {
                         const colorHex = settings[key];
+
                         if (typeof colorHex === 'string') {
                             const color = Color.fromHex(colorHex);
+
                             for (const colorId of mappings) {
                                 result.colors[colorId] = color;
                             }
@@ -67,6 +75,7 @@ addSettingMapping('caret', editorColorRegistry.editorCursorForeground);
 addSettingMapping('invisibles', editorColorRegistry.editorWhitespaces);
 addSettingMapping('guide', editorColorRegistry.editorIndentGuide1);
 addSettingMapping('activeGuide', editorColorRegistry.editorActiveIndentGuide1);
+
 const ansiColorMap = ['ansiBlack', 'ansiRed', 'ansiGreen', 'ansiYellow', 'ansiBlue', 'ansiMagenta', 'ansiCyan', 'ansiWhite',
     'ansiBrightBlack', 'ansiBrightRed', 'ansiBrightGreen', 'ansiBrightYellow', 'ansiBrightBlue', 'ansiBrightMagenta', 'ansiBrightCyan', 'ansiBrightWhite'
 ];

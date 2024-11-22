@@ -12,6 +12,7 @@ import { InputFocusedContext } from '../../contextkey/common/contextkeys.js';
 import { ICommandAndKeybindingRule, KeybindingWeight, KeybindingsRegistry } from '../../keybinding/common/keybindingsRegistry.js';
 import { endOfQuickInputBoxContext, inQuickInputContext, quickInputTypeContextKeyValue } from './quickInput.js';
 import { IQuickInputService, IQuickPick, QuickInputType, QuickPickFocus } from '../common/quickInput.js';
+
 const defaultCommandAndKeybindingRule = {
     weight: KeybindingWeight.WorkbenchContrib,
     when: ContextKeyExpr.and(ContextKeyExpr.equals(quickInputTypeContextKeyValue, QuickInputType.QuickPick), inQuickInputContext),
@@ -40,17 +41,20 @@ function getSecondary(primary: number, secondary: number[], options: {
     }
     if (options.withCtrlMod) {
         secondary.push(ctrlKeyMod + primary);
+
         if (options.withAltMod) {
             secondary.push(KeyMod.Alt + ctrlKeyMod + primary);
         }
     }
     if (options.withCmdMod && isMacintosh) {
         secondary.push(KeyMod.CtrlCmd + primary);
+
         if (options.withCtrlMod) {
             secondary.push(KeyMod.CtrlCmd + KeyMod.WinCtrl + primary);
         }
         if (options.withAltMod) {
             secondary.push(KeyMod.CtrlCmd + KeyMod.Alt + primary);
+
             if (options.withCtrlMod) {
                 secondary.push(KeyMod.CtrlCmd + KeyMod.Alt + KeyMod.WinCtrl + primary);
             }
@@ -63,6 +67,7 @@ function focusHandler(focus: QuickPickFocus, focusOnQuickNatigate?: QuickPickFoc
     return accessor => {
         // Assuming this is a quick pick due to above when clause
         const currentQuickPick = accessor.get(IQuickInputService).currentQuickInput as IQuickPick<any> | undefined;
+
         if (!currentQuickPick) {
             return;
         }
@@ -83,6 +88,7 @@ registerQuickPickCommandAndKeybindingRule({ id: 'quickInput.previous', primary: 
 // To handle this, we have a separate command for navigating to the next/previous separator when we are not in quick access mode.
 // If, however, we are in quick access mode, and you hold down an additional modifier key, we will navigate to the next/previous separator.
 const nextSeparatorFallbackDesc = localize('quickInput.nextSeparatorWithQuickAccessFallback', "If we're in quick access mode, this will navigate to the next item. If we are not in quick access mode, this will navigate to the next separator.");
+
 const prevSeparatorFallbackDesc = localize('quickInput.previousSeparatorWithQuickAccessFallback', "If we're in quick access mode, this will navigate to the previous item. If we are not in quick access mode, this will navigate to the previous separator.");
 if (isMacintosh) {
     registerQuickPickCommandAndKeybindingRule({

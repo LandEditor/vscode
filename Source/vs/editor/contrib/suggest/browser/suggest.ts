@@ -63,6 +63,7 @@ export class CompletionItem {
     // resolving
     private _resolveDuration?: number;
     private _resolveCache?: Promise<void>;
+
     constructor(readonly position: IPosition, readonly completion: languages.CompletionItem, readonly container: languages.CompletionList, readonly provider: languages.CompletionItemProvider) {
         this.textLabel = typeof completion.label === 'string'
             ? completion.label
@@ -112,6 +113,7 @@ export class CompletionItem {
                 this._resolveCache = undefined;
                 this._resolveDuration = undefined;
             });
+
             const sw = new StopWatch(true);
             this._resolveCache = Promise.resolve(this.provider.resolveCompletionItem!(this.completion, token)).then(value => {
                 Object.assign(this.completion, value);
@@ -137,6 +139,7 @@ export const enum SnippetSortOrder {
 }
 export class CompletionOptions {
     static readonly default = new CompletionOptions();
+
     constructor(readonly snippetSortOrder = SnippetSortOrder.Bottom, readonly kindFilter = new Set<languages.CompletionItemKind>(), readonly providerFilter = new Set<languages.CompletionItemProvider>(), readonly providerItemsToReuse: ReadonlyMap<languages.CompletionItemProvider, CompletionItem[]> = new Map<languages.CompletionItemProvider, CompletionItem[]>(), readonly showDeprecated = true) { }
 }
 let _snippetSuggestSupport: languages.CompletionItemProvider | undefined;
@@ -146,6 +149,7 @@ export function getSnippetSuggestSupport(): languages.CompletionItemProvider | u
 export function setSnippetSuggestSupport(support: languages.CompletionItemProvider | undefined): languages.CompletionItemProvider | undefined {
     const old = _snippetSuggestSupport;
     _snippetSuggestSupport = support;
+
     return old;
 }
 export interface CompletionDurationEntry {
@@ -163,15 +167,24 @@ export class CompletionItemModel {
 export async function provideSuggestionItems(registry: LanguageFeatureRegistry<languages.CompletionItemProvider>, model: ITextModel, position: Position, options: CompletionOptions = CompletionOptions.default, context: languages.CompletionContext = { triggerKind: languages.CompletionTriggerKind.Invoke }, token: CancellationToken = CancellationToken.None): Promise<CompletionItemModel> {
     const sw = new StopWatch();
     position = position.clone();
+
     const word = model.getWordAtPosition(position);
+
     const defaultReplaceRange = word ? new Range(position.lineNumber, word.startColumn, position.lineNumber, word.endColumn) : Range.fromPositions(position);
+
     const defaultRange = { replace: defaultReplaceRange, insert: defaultReplaceRange.setEndPosition(position.lineNumber, position.column) };
+
     const result: CompletionItem[] = [];
+
     const disposables = new DisposableStore();
+
     const durations: CompletionDurationEntry[] = [];
+
     let needsClipboard = false;
+
     const onCompletionList = (provider: languages.CompletionItemProvider, container: languages.CompletionList | null | undefined, sw: StopWatch): boolean => {
         let didAddResult = false;
+
         if (!container) {
             return didAddResult;
         }
@@ -202,6 +215,7 @@ export async function provideSuggestionItems(registry: LanguageFeatureRegistry<l
         durations.push({
             providerName: provider._debugDisplayName ?? 'unknown_provider', elapsedProvider: container.duration ?? -1, elapsedOverall: sw.elapsed()
         });
+
         return didAddResult;
     };
     // ask for snippets in parallel to asking "real" providers. Only do something if configured to
@@ -212,14 +226,17 @@ export async function provideSuggestionItems(registry: LanguageFeatureRegistry<l
         }
         // we have items from a previous session that we can reuse
         const reuseItems = options.providerItemsToReuse.get(_snippetSuggestSupport);
+
         if (reuseItems) {
             reuseItems.forEach(item => result.push(item));
+
             return;
         }
         if (options.providerFilter.size > 0 && !options.providerFilter.has(_snippetSuggestSupport)) {
             return;
         }
         const sw = new StopWatch();
+
         const list = await _snippetSuggestSupport.provideCompletionItems(model, position, context, token);
         onCompletionList(_snippetSuggestSupport, list, sw);
     })();
@@ -235,6 +252,7 @@ export async function provideSuggestionItems(registry: LanguageFeatureRegistry<l
                 const items = options.providerItemsToReuse.get(provider)!;
                 items.forEach(item => result.push(item));
                 didAddResult = didAddResult || items.length > 0;
+
                 return;
             }
             // check if this provider is filtered out
@@ -243,6 +261,7 @@ export async function provideSuggestionItems(registry: LanguageFeatureRegistry<l
             }
             try {
                 const sw = new StopWatch();
+
                 const list = await provider.provideCompletionItems(model, position, context, token);
                 didAddResult = onCompletionList(provider, list, sw) || didAddResult;
             }
@@ -250,13 +269,16 @@ export async function provideSuggestionItems(registry: LanguageFeatureRegistry<l
                 onUnexpectedExternalError(err);
             }
         }));
+
         if (didAddResult || token.isCancellationRequested) {
             break;
         }
     }
     await snippetCompletions;
+
     if (token.isCancellationRequested) {
         disposables.dispose();
+
         return Promise.reject<any>(new CancellationError());
     }
     return new CompletionItemModel(result.sort(getSuggestionComparator(options.snippetSortOrder)), needsClipboard, { entries: durations, elapsed: sw.elapsed() }, disposables);
@@ -324,16 +346,23 @@ CommandsRegistry.registerCommand('_executeCompletionItemProvider', async (access
     assertType(Position.isIPosition(position));
     assertType(typeof triggerCharacter === 'string' || !triggerCharacter);
     assertType(typeof maxItemsToResolve === 'number' || !maxItemsToResolve);
+
     const { completionProvider } = accessor.get(ILanguageFeaturesService);
+
     const ref = await accessor.get(ITextModelService).createModelReference(uri);
+
     try {
         const result: languages.CompletionList = {
             incomplete: false,
             suggestions: []
         };
+
         const resolving: Promise<any>[] = [];
+
         const actualPosition = ref.object.textEditorModel.validatePosition(position);
+
         const completions = await provideSuggestionItems(completionProvider, ref.object.textEditorModel, actualPosition, undefined, { triggerCharacter: triggerCharacter ?? undefined, triggerKind: triggerCharacter ? languages.CompletionTriggerKind.TriggerCharacter : languages.CompletionTriggerKind.Invoke });
+
         for (const item of completions.items) {
             if (resolving.length < (maxItemsToResolve ?? 0)) {
                 resolving.push(item.resolve(CancellationToken.None));
@@ -343,6 +372,7 @@ CommandsRegistry.registerCommand('_executeCompletionItemProvider', async (access
         }
         try {
             await Promise.all(resolving);
+
             return result;
         }
         finally {
@@ -380,7 +410,9 @@ export abstract class QuickSuggestionsOptions {
     static valueFor(config: InternalQuickSuggestionsOptions, tokenType: StandardTokenType): QuickSuggestionsValue {
         switch (tokenType) {
             case StandardTokenType.Comment: return config.comments;
+
             case StandardTokenType.String: return config.strings;
+
             default: return config.other;
         }
     }

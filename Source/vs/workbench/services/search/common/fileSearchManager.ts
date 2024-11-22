@@ -47,6 +47,7 @@ class FileSearchEngine {
     private isCanceled = false;
     private activeCancellationTokens: Set<CancellationTokenSource>;
     private globalExcludePattern?: glob.ParsedExpression;
+
     constructor(private config: IFileQuery, private provider: FileSearchProvider2, private sessionLifecycle?: SessionLifecycle) {
         this.filePattern = config.filePattern;
         this.includePattern = config.includePattern && glob.parse(config.includePattern);
@@ -62,6 +63,7 @@ class FileSearchEngine {
     }
     search(_onResult: (match: IInternalFileMatch) => void): Promise<IInternalSearchComplete> {
         const folderQueries = this.config.folderQueries || [];
+
         return new Promise((resolve, reject) => {
             const onResult = (match: IInternalFileMatch) => {
                 this.resultCount++;
@@ -77,6 +79,7 @@ class FileSearchEngine {
                     .forEach(extraFile => {
                     const extraFileStr = extraFile.toString(); // ?
                     const basename = path.basename(extraFileStr);
+
                     if (this.globalExcludePattern && this.globalExcludePattern(extraFileStr, basename)) {
                         return; // excluded
                     }
@@ -98,36 +101,52 @@ class FileSearchEngine {
     }
     private async doSearch(fqs: IFolderQuery<URI>[], onResult: (match: IInternalFileMatch) => void): Promise<IFileSearchProviderStats | null> {
         const cancellation = new CancellationTokenSource();
+
         const folderOptions = fqs.map(fq => this.getSearchOptionsForFolder(fq));
+
         const session = this.provider instanceof OldFileSearchProviderConverter ? this.sessionLifecycle?.tokenSource.token : this.sessionLifecycle?.obj;
+
         const options: FileSearchProviderOptions = {
             folderOptions,
             maxResults: this.config.maxResults ?? DEFAULT_MAX_SEARCH_RESULTS,
             session
         };
+
         const getFolderQueryInfo = (fq: IFolderQuery) => {
             const queryTester = new QueryGlobTester(this.config, fq);
+
             const noSiblingsClauses = !queryTester.hasSiblingExcludeClauses();
+
             return { queryTester, noSiblingsClauses, folder: fq.folder, tree: this.initDirectoryTree() };
         };
+
         const folderMappings: FolderQuerySearchTree<FolderQueryInfo> = new FolderQuerySearchTree<FolderQueryInfo>(fqs, getFolderQueryInfo);
+
         let providerSW: StopWatch;
+
         try {
             this.activeCancellationTokens.add(cancellation);
             providerSW = StopWatch.create();
+
             const results = await this.provider.provideFileSearchResults(this.config.filePattern || '', options, cancellation.token);
+
             const providerTime = providerSW.elapsed();
+
             const postProcessSW = StopWatch.create();
+
             if (this.isCanceled && !this.isLimitHit) {
                 return null;
             }
             if (results) {
                 results.forEach(result => {
                     const fqFolderInfo = folderMappings.findQueryFragmentAwareSubstr(result)!;
+
                     const relativePath = path.posix.relative(fqFolderInfo.folder.path, result.path);
+
                     if (fqFolderInfo.noSiblingsClauses) {
                         const basename = path.basename(result.path);
                         this.matchFile(onResult, { base: fqFolderInfo.folder, relativePath, basename });
+
                         return;
                     }
                     // TODO: Optimize siblings clauses with ripgrep here.
@@ -140,6 +159,7 @@ class FileSearchEngine {
             folderMappings.forEachFolderQueryInfo(e => {
                 this.matchDirectoryTree(e.tree, e.queryTester, onResult);
             });
+
             return {
                 providerTime,
                 postProcessTime: postProcessSW.elapsed()
@@ -152,10 +172,12 @@ class FileSearchEngine {
     }
     private getSearchOptionsForFolder(fq: IFolderQuery<URI>): FileSearchProviderFolderOptions {
         const includes = resolvePatternsForProvider(this.config.includePattern, fq.includePattern);
+
         let excludePattern = fq.excludePattern?.map(e => ({
             folder: e.folder,
             patterns: resolvePatternsForProvider(this.config.excludePattern, e.pattern)
         }));
+
         if (!excludePattern?.length) {
             excludePattern = [{
                     folder: undefined,
@@ -163,6 +185,7 @@ class FileSearchEngine {
                 }];
         }
         const excludes = excludeToGlobPattern(excludePattern);
+
         return {
             folder: fq.folder,
             excludes,
@@ -181,6 +204,7 @@ class FileSearchEngine {
             pathToEntries: Object.create(null)
         };
         tree.pathToEntries['.'] = tree.rootEntries;
+
         return tree;
     }
     private addDirectoryEntries({ pathToEntries }: IDirectoryTree, base: URI, relativeFile: string, onResult: (result: IInternalFileMatch) => void) {
@@ -191,8 +215,11 @@ class FileSearchEngine {
         }
         function add(relativePath: string) {
             const basename = path.basename(relativePath);
+
             const dirname = path.dirname(relativePath);
+
             let entries = pathToEntries[dirname];
+
             if (!entries) {
                 entries = pathToEntries[dirname] = [];
                 add(dirname);
@@ -207,11 +234,15 @@ class FileSearchEngine {
     }
     private matchDirectoryTree({ rootEntries, pathToEntries }: IDirectoryTree, queryTester: QueryGlobTester, onResult: (result: IInternalFileMatch) => void) {
         const self = this;
+
         const filePattern = this.filePattern;
+
         function matchDirectory(entries: IDirectoryEntry[]) {
             const hasSibling = hasSiblingFn(() => entries.map(entry => entry.basename));
+
             for (let i = 0, n = entries.length; i < n; i++) {
                 const entry = entries[i];
+
                 const { relativePath, basename } = entry;
                 // Check exclude pattern
                 // If the user searches for the exact file name, we adjust the glob matching
@@ -221,6 +252,7 @@ class FileSearchEngine {
                     continue;
                 }
                 const sub = pathToEntries[relativePath];
+
                 if (sub) {
                     matchDirectory(sub);
                 }
@@ -259,6 +291,7 @@ interface IInternalSearchComplete {
 class SessionLifecycle {
     private _obj: object | undefined;
     public readonly tokenSource: CancellationTokenSource;
+
     constructor() {
         this._obj = new Object();
         this.tokenSource = new CancellationTokenSource();
@@ -279,12 +312,16 @@ export class FileSearchManager {
     private readonly sessions = new Map<string, SessionLifecycle>();
     fileSearch(config: IFileQuery, provider: FileSearchProvider2, onBatch: (matches: IFileMatch[]) => void, token: CancellationToken): Promise<ISearchCompleteStats> {
         const sessionTokenSource = this.getSessionTokenSource(config.cacheKey);
+
         const engine = new FileSearchEngine(config, provider, sessionTokenSource);
+
         let resultCount = 0;
+
         const onInternalResult = (batch: IInternalFileMatch[]) => {
             resultCount += batch.length;
             onBatch(batch.map(m => this.rawMatchToSearchItem(m)));
         };
+
         return this.doSearch(engine, FileSearchManager.BATCH_SIZE, onInternalResult, token).then(result => {
             return {
                 limitHit: result.limitHit,
@@ -330,27 +367,33 @@ export class FileSearchManager {
         const listener = token.onCancellationRequested(() => {
             engine.cancel();
         });
+
         const _onResult = (match: IInternalFileMatch) => {
             if (match) {
                 batch.push(match);
+
                 if (batchSize > 0 && batch.length >= batchSize) {
                     onResultBatch(batch);
                     batch = [];
                 }
             }
         };
+
         let batch: IInternalFileMatch[] = [];
+
         return engine.search(_onResult).then(result => {
             if (batch.length) {
                 onResultBatch(batch);
             }
             listener.dispose();
+
             return result;
         }, error => {
             if (batch.length) {
                 onResultBatch(batch);
             }
             listener.dispose();
+
             return Promise.reject(error);
         });
     }

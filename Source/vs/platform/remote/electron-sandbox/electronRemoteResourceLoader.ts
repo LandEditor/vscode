@@ -19,6 +19,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
     @IFileService
     private readonly fileService: IFileService) {
         super();
+
         const channel: IServerChannel = {
             listen<T>(_: unknown, event: string): Event<T> {
                 throw new Error(`Event not found: ${event}`);
@@ -34,8 +35,10 @@ export class ElectronRemoteResourceLoader extends Disposable {
     }
     private async doRequest(uri: URI): Promise<NodeRemoteResourceResponse> {
         let content: IFileContent;
+
         try {
             const params = new URLSearchParams(uri.query);
+
             const actual = uri.with({
                 scheme: params.get('scheme')!,
                 authority: params.get('authority')!,
@@ -45,6 +48,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
         }
         catch (e) {
             const str = encodeBase64(VSBuffer.fromString(e.message));
+
             if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
                 return { statusCode: 404, body: str };
             }
@@ -53,6 +57,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
             }
         }
         const mimeType = uri.path && getMediaOrTextMime(uri.path);
+
         return { statusCode: 200, body: encodeBase64(content.value), mimeType };
     }
     public getResourceUriProvider() {

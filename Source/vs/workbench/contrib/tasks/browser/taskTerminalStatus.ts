@@ -26,16 +26,23 @@ interface ITerminalData {
 const TASK_TERMINAL_STATUS_ID = 'task_terminal_status';
 export const ACTIVE_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: spinningLoading, severity: Severity.Info, tooltip: nls.localize('taskTerminalStatus.active', "Task is running") };
 export const SUCCEEDED_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.check, severity: Severity.Info, tooltip: nls.localize('taskTerminalStatus.succeeded', "Task succeeded") };
+
 const SUCCEEDED_INACTIVE_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.check, severity: Severity.Info, tooltip: nls.localize('taskTerminalStatus.succeededInactive', "Task succeeded and waiting...") };
 export const FAILED_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.error, severity: Severity.Error, tooltip: nls.localize('taskTerminalStatus.errors', "Task has errors") };
+
 const FAILED_INACTIVE_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.error, severity: Severity.Error, tooltip: nls.localize('taskTerminalStatus.errorsInactive', "Task has errors and is waiting...") };
+
 const WARNING_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.warning, severity: Severity.Warning, tooltip: nls.localize('taskTerminalStatus.warnings', "Task has warnings") };
+
 const WARNING_INACTIVE_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.warning, severity: Severity.Warning, tooltip: nls.localize('taskTerminalStatus.warningsInactive', "Task has warnings and is waiting...") };
+
 const INFO_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.info, severity: Severity.Info, tooltip: nls.localize('taskTerminalStatus.infos', "Task has infos") };
+
 const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = { id: TASK_TERMINAL_STATUS_ID, icon: Codicon.info, severity: Severity.Info, tooltip: nls.localize('taskTerminalStatus.infosInactive', "Task has infos and is waiting...") };
 export class TaskTerminalStatus extends Disposable {
     private terminalMap: Map<number, ITerminalData> = new Map();
     private _marker: IMarker | undefined;
+
     constructor(
     @ITaskService
     taskService: ITaskService, 
@@ -47,12 +54,17 @@ export class TaskTerminalStatus extends Disposable {
                 case TaskEventKind.ProcessStarted:
                 case TaskEventKind.Active:
                     this.eventActive(event);
+
                     break;
+
                 case TaskEventKind.Inactive:
                     this.eventInactive(event);
+
                     break;
+
                 case TaskEventKind.ProcessEnded:
                     this.eventEnd(event);
+
                     break;
             }
         }));
@@ -68,6 +80,7 @@ export class TaskTerminalStatus extends Disposable {
         terminal.statusList.add(status);
         this._register(problemMatcher.onDidFindFirstMatch(() => {
             this._marker = terminal.registerMarker();
+
             if (this._marker) {
                 this._register(this._marker);
             }
@@ -93,13 +106,16 @@ export class TaskTerminalStatus extends Disposable {
     }
     private eventEnd(event: ITaskProcessEndedEvent) {
         const terminalData = this.terminalFromEvent(event);
+
         if (!terminalData) {
             return;
         }
         terminalData.taskRunEnded = true;
         terminalData.terminal.statusList.remove(terminalData.status);
+
         if ((event.exitCode === 0) && (terminalData.problemMatcher.numberOfMatches === 0)) {
             this._accessibilitySignalService.playSignal(AccessibilitySignal.taskCompleted);
+
             if (terminalData.task.configurationProperties.isBackground) {
                 for (const status of terminalData.terminal.statusList.statuses) {
                     terminalData.terminal.statusList.remove(status);
@@ -122,10 +138,12 @@ export class TaskTerminalStatus extends Disposable {
     }
     private eventInactive(event: ITaskGeneralEvent) {
         const terminalData = this.terminalFromEvent(event);
+
         if (!terminalData || !terminalData.problemMatcher || terminalData.taskRunEnded) {
             return;
         }
         terminalData.terminal.statusList.remove(terminalData.status);
+
         if (terminalData.problemMatcher.numberOfMatches === 0) {
             this._accessibilitySignalService.playSignal(AccessibilitySignal.taskCompleted);
             terminalData.terminal.statusList.add(SUCCEEDED_INACTIVE_TASK_STATUS);
@@ -143,6 +161,7 @@ export class TaskTerminalStatus extends Disposable {
     }
     private eventActive(event: ITaskGeneralEvent | ITaskProcessStartedEvent) {
         const terminalData = this.terminalFromEvent(event);
+
         if (!terminalData) {
             return;
         }

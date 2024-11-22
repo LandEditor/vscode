@@ -13,6 +13,7 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
     private readonly _onDidChange = new Emitter<ITokenizationSupportChangedEvent>();
     public readonly onDidChange: Event<ITokenizationSupportChangedEvent> = this._onDidChange.event;
     private _colorMap: Color[] | null;
+
     constructor() {
         this._colorMap = null;
     }
@@ -25,6 +26,7 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
     public register(languageId: string, support: TSupport): IDisposable {
         this._tokenizationSupports.set(languageId, support);
         this.handleChange([languageId]);
+
         return toDisposable(() => {
             if (this._tokenizationSupports.get(languageId) !== support) {
                 return;
@@ -38,10 +40,13 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
     }
     public registerFactory(languageId: string, factory: ILazyTokenizationSupport<TSupport>): IDisposable {
         this._factories.get(languageId)?.dispose();
+
         const myData = new TokenizationSupportFactoryData(this, languageId, factory);
         this._factories.set(languageId, myData);
+
         return toDisposable(() => {
             const v = this._factories.get(languageId);
+
             if (!v || v !== myData) {
                 return;
             }
@@ -52,23 +57,28 @@ export class TokenizationRegistry<TSupport> implements ITokenizationRegistry<TSu
     public async getOrCreate(languageId: string): Promise<TSupport | null> {
         // check first if the support is already set
         const tokenizationSupport = this.get(languageId);
+
         if (tokenizationSupport) {
             return tokenizationSupport;
         }
         const factory = this._factories.get(languageId);
+
         if (!factory || factory.isResolved) {
             // no factory or factory.resolve already finished
             return null;
         }
         await factory.resolve();
+
         return this.get(languageId);
     }
     public isResolved(languageId: string): boolean {
         const tokenizationSupport = this.get(languageId);
+
         if (tokenizationSupport) {
             return true;
         }
         const factory = this._factories.get(languageId);
+
         if (!factory || factory.isResolved) {
             return true;
         }
@@ -103,6 +113,7 @@ class TokenizationSupportFactoryData<TSupport> extends Disposable {
     }
     public override dispose(): void {
         this._isDisposed = true;
+
         super.dispose();
     }
     public async resolve(): Promise<void> {
@@ -114,6 +125,7 @@ class TokenizationSupportFactoryData<TSupport> extends Disposable {
     private async _create(): Promise<void> {
         const value = await this._factory.tokenizationSupport;
         this._isResolved = true;
+
         if (value && !this._isDisposed) {
             this._register(this._registry.register(this._languageId, value));
         }

@@ -18,6 +18,7 @@ import { ProxyChannel } from '../../../../base/parts/ipc/common/ipc.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 class UserDataSyncServicesContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.userDataSyncServices';
+
     constructor(
     @IUserDataSyncUtilService
     userDataSyncUtilService: IUserDataSyncUtilService, 
@@ -42,12 +43,18 @@ registerAction2(class OpenSyncBackupsFolder extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const syncHome = accessor.get(IEnvironmentService).userDataSyncHome;
+
         const nativeHostService = accessor.get(INativeHostService);
+
         const fileService = accessor.get(IFileService);
+
         const notificationService = accessor.get(INotificationService);
+
         if (await fileService.exists(syncHome)) {
             const folderStat = await fileService.resolve(syncHome);
+
             const item = folderStat.children && folderStat.children[0] ? folderStat.children[0].resource : syncHome;
+
             return nativeHostService.showItemInFolder(item.with({ scheme: Schemas.file }).fsPath);
         }
         else {
@@ -61,9 +68,13 @@ registerAction2(class DownloadSyncActivityAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const userDataSyncWorkbenchService = accessor.get(IUserDataSyncWorkbenchService);
+
         const notificationService = accessor.get(INotificationService);
+
         const hostService = accessor.get(INativeHostService);
+
         const folder = await userDataSyncWorkbenchService.downloadSyncActivity();
+
         if (folder) {
             notificationService.prompt(Severity.Info, localize('download sync activity complete', "Successfully downloaded Settings Sync activity."), [{
                     label: localize('open', "Open Folder"),

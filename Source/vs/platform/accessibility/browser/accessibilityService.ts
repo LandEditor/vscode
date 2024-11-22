@@ -21,6 +21,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
     protected readonly _onDidChangeReducedMotion = new Emitter<void>();
     private _linkUnderlinesEnabled: boolean;
     protected readonly _onDidChangeLinkUnderline = new Emitter<void>();
+
     constructor(
     @IContextKeyService
     private readonly _contextKeyService: IContextKeyService, 
@@ -30,6 +31,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
     protected readonly _configurationService: IConfigurationService) {
         super();
         this._accessibilityModeEnabledContext = CONTEXT_ACCESSIBILITY_MODE_ENABLED.bindTo(this._contextKeyService);
+
         const updateContextKey = () => this._accessibilityModeEnabledContext.set(this.isScreenReaderOptimized());
         this._register(this._configurationService.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration('editor.accessibilitySupport')) {
@@ -43,6 +45,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
         }));
         updateContextKey();
         this._register(this.onDidChangeScreenReaderOptimized(() => updateContextKey()));
+
         const reduceMotionMatcher = mainWindow.matchMedia(`(prefers-reduced-motion: reduce)`);
         this._systemMotionReduced = reduceMotionMatcher.matches;
         this._configMotionReduced = this._configurationService.getValue<'auto' | 'on' | 'off'>('workbench.reduceMotion');
@@ -53,10 +56,12 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
     private initReducedMotionListeners(reduceMotionMatcher: MediaQueryList) {
         this._register(addDisposableListener(reduceMotionMatcher, 'change', () => {
             this._systemMotionReduced = reduceMotionMatcher.matches;
+
             if (this._configMotionReduced === 'auto') {
                 this._onDidChangeReducedMotion.fire();
             }
         }));
+
         const updateRootClasses = () => {
             const reduce = this.isMotionReduced();
             this._layoutService.mainContainer.classList.toggle('reduce-motion', reduce);
@@ -73,6 +78,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
                 this._onDidChangeLinkUnderline.fire();
             }
         }));
+
         const updateLinkUnderlineClasses = () => {
             const underlineLinks = this._linkUnderlinesEnabled;
             this._layoutService.mainContainer.classList.toggle('underline-links', underlineLinks);
@@ -88,6 +94,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
     }
     isScreenReaderOptimized(): boolean {
         const config = this._configurationService.getValue('editor.accessibilitySupport');
+
         return config === 'on' || (config === 'auto' && this._accessibilitySupport === AccessibilitySupport.Enabled);
     }
     get onDidChangeReducedMotion(): Event<void> {
@@ -95,6 +102,7 @@ export class AccessibilityService extends Disposable implements IAccessibilitySe
     }
     isMotionReduced(): boolean {
         const config = this._configMotionReduced;
+
         return config === 'on' || (config === 'auto' && this._systemMotionReduced);
     }
     alwaysUnderlineAccessKeys(): Promise<boolean> {

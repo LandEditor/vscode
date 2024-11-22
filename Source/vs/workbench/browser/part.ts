@@ -28,8 +28,10 @@ export interface ILayoutContentResult {
  */
 export abstract class Part extends Component implements ISerializableView {
     private _dimension: Dimension | undefined;
+
     get dimension(): Dimension | undefined { return this._dimension; }
     private _contentPosition: IDomPosition | undefined;
+
     get contentPosition(): IDomPosition | undefined { return this._contentPosition; }
     protected _onDidVisibilityChange = this._register(new Emitter<boolean>());
     readonly onDidVisibilityChange = this._onDidVisibilityChange.event;
@@ -39,6 +41,7 @@ export abstract class Part extends Component implements ISerializableView {
     private contentArea: HTMLElement | undefined;
     private footerArea: HTMLElement | undefined;
     private partLayout: PartLayout | undefined;
+
     constructor(id: string, private options: IPartOptions, themeService: IThemeService, storageService: IStorageService, protected readonly layoutService: IWorkbenchLayoutService) {
         super(id, themeService, storageService);
         this._register(layoutService.registerPart(this));
@@ -158,10 +161,12 @@ export abstract class Part extends Component implements ISerializableView {
      */
     protected layoutContents(width: number, height: number): ILayoutContentResult {
         const partLayout = assertIsDefined(this.partLayout);
+
         return partLayout.layout(width, height);
     }
     //#region ISerializableView
     protected _onDidChange = this._register(new Emitter<IViewSize | undefined>());
+
     get onDidChange(): Event<IViewSize | undefined> { return this._onDidChange.event; }
     element!: HTMLElement;
     abstract minimumWidth: number;
@@ -183,10 +188,12 @@ class PartLayout {
     private static readonly Footer_HEIGHT = 35;
     private headerVisible: boolean = false;
     private footerVisible: boolean = false;
+
     constructor(private options: IPartOptions, private contentArea: HTMLElement | undefined) { }
     layout(width: number, height: number): ILayoutContentResult {
         // Title Size: Width (Fill), Height (Variable)
         let titleSize: Dimension;
+
         if (this.options.hasTitle) {
             titleSize = new Dimension(width, Math.min(height, PartLayout.TITLE_HEIGHT));
         }
@@ -195,6 +202,7 @@ class PartLayout {
         }
         // Header Size: Width (Fill), Height (Variable)
         let headerSize: Dimension;
+
         if (this.headerVisible) {
             headerSize = new Dimension(width, Math.min(height, PartLayout.HEADER_HEIGHT));
         }
@@ -203,6 +211,7 @@ class PartLayout {
         }
         // Footer Size: Width (Fill), Height (Variable)
         let footerSize: Dimension;
+
         if (this.footerVisible) {
             footerSize = new Dimension(width, Math.min(height, PartLayout.Footer_HEIGHT));
         }
@@ -210,6 +219,7 @@ class PartLayout {
             footerSize = Dimension.None;
         }
         let contentWidth = width;
+
         if (this.options && typeof this.options.borderWidth === 'function') {
             contentWidth -= this.options.borderWidth(); // adjust for border size
         }
@@ -233,10 +243,12 @@ export interface IMultiWindowPart {
 }
 export abstract class MultiWindowParts<T extends IMultiWindowPart> extends Component {
     protected readonly _parts = new Set<T>();
+
     get parts() { return Array.from(this._parts); }
     abstract readonly mainPart: T;
     registerPart(part: T): IDisposable {
         this._parts.add(part);
+
         return toDisposable(() => this.unregisterPart(part));
     }
     protected unregisterPart(part: T): void {

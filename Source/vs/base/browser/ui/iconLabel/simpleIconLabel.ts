@@ -10,6 +10,7 @@ import { renderLabelWithIcons } from './iconLabels.js';
 import { IDisposable } from '../../../common/lifecycle.js';
 export class SimpleIconLabel implements IDisposable {
     private hover?: IManagedHover;
+
     constructor(private readonly _container: HTMLElement) { }
     set text(text: string) {
         reset(this._container, ...renderLabelWithIcons(text ?? ''));

@@ -19,6 +19,7 @@ import { isEqual } from '../../../../../base/common/resources.js';
 export class NotebookEditorWorkerServiceImpl extends Disposable implements INotebookEditorWorkerService {
     declare readonly _serviceBrand: undefined;
     private readonly _workerManager: WorkerManager;
+
     constructor(
     @INotebookService
     notebookService: INotebookService, 
@@ -44,6 +45,7 @@ export class NotebookEditorWorkerServiceImpl extends Disposable implements INote
 class WorkerManager extends Disposable {
     private _editorWorkerClient: NotebookWorkerClient | null;
     // private _lastWorkerUsedTime: number;
+
     constructor(private readonly _notebookService: INotebookService, private readonly _modelService: IModelService) {
         super();
         this._editorWorkerClient = null;
@@ -51,6 +53,7 @@ class WorkerManager extends Disposable {
     }
     withWorker(): Promise<NotebookWorkerClient> {
         // this._lastWorkerUsedTime = (new Date()).getTime();
+
         if (!this._editorWorkerClient) {
             this._editorWorkerClient = new NotebookWorkerClient(this._notebookService, this._modelService);
         }
@@ -64,12 +67,14 @@ class NotebookEditorModelManager extends Disposable {
     private _syncedModelsLastUsedTime: {
         [modelUrl: string]: number;
     } = Object.create(null);
+
     constructor(private readonly _proxy: Proxied<NotebookEditorSimpleWorker>, private readonly _notebookService: INotebookService, private readonly _modelService: IModelService) {
         super();
     }
     public ensureSyncedResources(resources: URI[]): void {
         for (const resource of resources) {
             const resourceStr = resource.toString();
+
             if (!this._syncedModels[resourceStr]) {
                 this._beginModelSync(resource);
             }
@@ -80,6 +85,7 @@ class NotebookEditorModelManager extends Disposable {
     }
     private _beginModelSync(resource: URI): void {
         const model = this._notebookService.listNotebookDocuments().find(document => document.uri.toString() === resource.toString());
+
         if (!model) {
             return;
         }
@@ -97,7 +103,9 @@ class NotebookEditorModelManager extends Disposable {
             metadata: cell.metadata,
             internalMetadata: cell.internalMetadata,
         })));
+
         const toDispose = new DisposableStore();
+
         const cellToDto = (cell: NotebookCellTextModel): IMainCellDto => {
             return {
                 handle: cell.handle,
@@ -112,7 +120,9 @@ class NotebookEditorModelManager extends Disposable {
                 internalMetadata: cell.internalMetadata,
             };
         };
+
         const cellHandlers = new Set<NotebookCellTextModel>();
+
         const addCellContentChangeHandler = (cell: NotebookCellTextModel) => {
             cellHandlers.add(cell);
             toDispose.add(cell.onDidChangeContent((e) => {
@@ -130,10 +140,12 @@ class NotebookEditorModelManager extends Disposable {
                     return;
                 }
                 const cellUri = CellUri.parse(textModel.uri);
+
                 if (!cellUri || !isEqual(cellUri.notebook, model.uri)) {
                     return;
                 }
                 const cell = model.cells.find(cell => cell.handle === cellUri.handle);
+
                 if (cell) {
                     addCellContentChangeHandler(cell);
                 }
@@ -154,6 +166,7 @@ class NotebookEditorModelManager extends Disposable {
                                 IMainCellDto[]
                             ])
                         });
+
                         for (const change of e.changes) {
                             for (const cell of change[2]) {
                                 addCellContentChangeHandler(cell as NotebookCellTextModel);
@@ -169,16 +182,19 @@ class NotebookEditorModelManager extends Disposable {
                             newIdx: e.newIdx,
                             cells: e.cells.map(cell => cellToDto(cell as NotebookCellTextModel))
                         });
+
                         break;
                     }
                     case NotebookCellsChangeType.ChangeCellContent:
                         // Changes to cell content are handled by the cell model change listener.
                         break;
+
                     case NotebookCellsChangeType.ChangeDocumentMetadata:
                         dto.push({
                             kind: e.kind,
                             metadata: e.metadata
                         });
+
                     default:
                         dto.push(e);
                 }
@@ -206,6 +222,7 @@ class NotebookEditorModelManager extends Disposable {
 class NotebookWorkerClient extends Disposable {
     private _worker: IWorkerClient<NotebookEditorSimpleWorker> | null;
     private _modelManager: NotebookEditorModelManager | null;
+
     constructor(private readonly _notebookService: INotebookService, private readonly _modelService: IModelService) {
         super();
         this._worker = null;
@@ -213,10 +230,12 @@ class NotebookWorkerClient extends Disposable {
     }
     computeDiff(original: URI, modified: URI) {
         const proxy = this._ensureSyncedResources([original, modified]);
+
         return proxy.$computeDiff(original.toString(), modified.toString());
     }
     canPromptRecommendation(modelUri: URI) {
         const proxy = this._ensureSyncedResources([modelUri]);
+
         return proxy.$canPromptRecommendation(modelUri.toString());
     }
     private _getOrCreateModelManager(proxy: Proxied<NotebookEditorSimpleWorker>): NotebookEditorModelManager {
@@ -228,6 +247,7 @@ class NotebookWorkerClient extends Disposable {
     protected _ensureSyncedResources(resources: URI[]): Proxied<NotebookEditorSimpleWorker> {
         const proxy = this._getOrCreateWorker().proxy;
         this._getOrCreateModelManager(proxy).ensureSyncedResources(resources);
+
         return proxy;
     }
     private _getOrCreateWorker(): IWorkerClient<NotebookEditorSimpleWorker> {
@@ -238,6 +258,7 @@ class NotebookWorkerClient extends Disposable {
             catch (err) {
                 // logOnceWebWorkerWarning(err);
                 // this._worker = new SynchronousWorkerClient(new EditorSimpleWorker(new EditorWorkerHost(this), null));
+
                 throw (err);
             }
         }

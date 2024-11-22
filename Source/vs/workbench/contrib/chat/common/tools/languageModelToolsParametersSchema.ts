@@ -11,6 +11,7 @@ import { Registry } from '../../../../../platform/registry/common/platform.js';
  * Possibly it can be whittled down some more based on which attributes are supported by language models.
  */
 export const toolsParametersSchemaSchemaId = 'vscode://schemas/toolsParameters';
+
 const toolsParametersSchemaSchema: IJSONSchema = {
     definitions: {
         schemaArray: {
@@ -253,5 +254,6 @@ const toolsParametersSchemaSchema: IJSONSchema = {
             },
         }],
 };
+
 const contributionRegistry = Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
 contributionRegistry.registerSchema(toolsParametersSchemaSchemaId, toolsParametersSchemaSchema);

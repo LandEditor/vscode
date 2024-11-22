@@ -12,10 +12,14 @@ export class StableEditorScrollState {
             return new StableEditorScrollState(editor.getScrollTop(), editor.getContentHeight(), null, 0, null);
         }
         let visiblePosition: Position | null = null;
+
         let visiblePositionScrollDelta = 0;
+
         const visibleRanges = editor.getVisibleRanges();
+
         if (visibleRanges.length > 0) {
             visiblePosition = visibleRanges[0].getStartPosition();
+
             const visiblePositionScrollTop = editor.getTopForPosition(visiblePosition.lineNumber, visiblePosition.column);
             visiblePositionScrollDelta = editor.getScrollTop() - visiblePositionScrollTop;
         }
@@ -39,6 +43,7 @@ export class StableEditorScrollState {
             return;
         }
         const currentCursorPosition = editor.getPosition();
+
         if (!this._cursorPosition || !currentCursorPosition) {
             return;
         }
@@ -53,10 +58,14 @@ export class StableEditorBottomScrollState {
             return new StableEditorBottomScrollState(editor.getScrollTop(), editor.getContentHeight(), null, 0);
         }
         let visiblePosition: Position | null = null;
+
         let visiblePositionScrollDelta = 0;
+
         const visibleRanges = editor.getVisibleRanges();
+
         if (visibleRanges.length > 0) {
             visiblePosition = visibleRanges.at(-1)!.getEndPosition();
+
             const visiblePositionScrollBottom = editor.getBottomForLineNumber(visiblePosition.lineNumber);
             visiblePositionScrollDelta = visiblePositionScrollBottom - editor.getScrollTop();
         }

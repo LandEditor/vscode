@@ -65,6 +65,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		dropEdit.kind = edit.kind;
 		dropEdit.additionalEdit = edit.additionalEdits;
 		dropEdit.yieldTo = [...this._yieldTo, ...edit.yieldTo];
+
 		return dropEdit;
 	}
 
@@ -87,6 +88,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		const pasteEdit = new vscode.DocumentPasteEdit(edit.snippet, edit.label, edit.kind);
 		pasteEdit.additionalEdit = edit.additionalEdits;
 		pasteEdit.yieldTo = [...this._yieldTo, ...edit.yieldTo];
+
 		return [pasteEdit];
 	}
 
@@ -118,6 +120,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		}
 
 		let edit = await this._createEditForMediaFiles(document, dataTransfer, settings.copyIntoWorkspace, token);
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -145,11 +148,13 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		token: vscode.CancellationToken,
 	): Promise<DropOrPasteEdit | undefined> {
 		const uriListData = await dataTransfer.get(Mime.textUriList)?.asString();
+
 		if (!uriListData || token.isCancellationRequested) {
 			return;
 		}
 
 		const uriList = UriList.from(uriListData);
+
 		if (!uriList.entries.length) {
 			return;
 		}
@@ -163,6 +168,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 			&& !context?.only?.contains(baseLinkEditKind)
 		) {
 			const text = await dataTransfer.get(Mime.textPlain)?.asString();
+
 			if (token.isCancellationRequested) {
 				return;
 			}
@@ -173,6 +179,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		}
 
 		const edit = createInsertUriListEdit(document, ranges, uriList);
+
 		if (!edit) {
 			return;
 		}
@@ -210,12 +217,14 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		}
 
 		const pathGenerator = new NewFilePathGenerator();
+
 		const fileEntries = coalesce(await Promise.all(Array.from(dataTransfer, async ([mime, item]): Promise<FileEntry | undefined> => {
 			if (!mediaMimes.has(mime)) {
 				return;
 			}
 
 			const file = item?.asFile();
+
 			if (!file) {
 				return;
 			}
@@ -223,27 +232,32 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 			if (file.uri) {
 				// If the file is already in a workspace, we don't want to create a copy of it
 				const workspaceFolder = vscode.workspace.getWorkspaceFolder(file.uri);
+
 				if (workspaceFolder) {
 					return { uri: file.uri };
 				}
 			}
 
 			const newFile = await pathGenerator.getNewFilePath(document, file, token);
+
 			if (!newFile) {
 				return;
 			}
 			return { uri: newFile.uri, newFile: { contents: file, overwrite: newFile.overwrite } };
 		})));
+
 		if (!fileEntries.length) {
 			return;
 		}
 
 		const snippet = createUriListSnippet(document.uri, fileEntries);
+
 		if (!snippet) {
 			return;
 		}
 
 		const additionalEdits = new vscode.WorkspaceEdit();
+
 		for (const entry of fileEntries) {
 			if (entry.newFile) {
 				additionalEdits.createFile(entry.uri, {
@@ -254,6 +268,7 @@ class ResourcePasteOrDropProvider implements vscode.DocumentPasteEditProvider, v
 		}
 
 		const { label, kind } = getSnippetLabelAndKind(snippet);
+
 		return {
 			snippet: snippet.snippet,
 			label,
@@ -271,6 +286,7 @@ function textMatchesUriList(text: string, uriList: UriList): boolean {
 
 	try {
 		const uri = vscode.Uri.parse(text);
+
 		return uriList.entries.some(entry => entry.uri.toString() === uri.toString());
 	} catch {
 		return false;

@@ -25,6 +25,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
         return super.win;
     }
     private stateApplied = false;
+
     constructor(private readonly webContents: WebContents, 
     @IEnvironmentMainService
     environmentMainService: IEnvironmentMainService, 
@@ -45,6 +46,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
             return; // already disposed
         }
         this.doTryClaimWindow(options);
+
         if (options && !this.stateApplied) {
             this.stateApplied = true;
             this.applyState({
@@ -66,12 +68,14 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
             return; // already claimed
         }
         const window = BrowserWindow.fromWebContents(this.webContents);
+
         if (window) {
             this.logService.trace('[aux window] Claimed browser window instance');
             // Remember
             this.setWin(window, options);
             // Disable Menu
             window.setMenu(null);
+
             if ((isWindows || isLinux) && hasNativeTitlebar(this.configurationService, options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */)) {
                 window.setAutoHideMenuBar(true); // Fix for https://github.com/microsoft/vscode/issues/200615
             }

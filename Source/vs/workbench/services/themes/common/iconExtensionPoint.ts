@@ -16,6 +16,7 @@ import { fontCharacterRegex } from './productIconThemeSchema.js';
 interface IIconExtensionPoint {
 	[id: string]: {
 		description: string;
+
 		default: { fontPath: string; fontCharacter: string } | string;
 	};
 }
@@ -23,6 +24,7 @@ interface IIconExtensionPoint {
 const iconRegistry: IIconRegistry = Registry.as<IIconRegistry>(IconRegistryExtensions.IconContribution);
 
 const iconReferenceSchema = iconRegistry.getIconReferenceSchema();
+
 const iconIdPattern = `^${ThemeIcon.iconNameSegment}(-${ThemeIcon.iconNameSegment})+$`;
 
 const iconConfigurationExtPoint = ExtensionsRegistry.registerExtensionPoint<IIconExtensionPoint>({
@@ -79,42 +81,56 @@ export class IconExtensionPoint {
 		iconConfigurationExtPoint.setHandler((extensions, delta) => {
 			for (const extension of delta.added) {
 				const extensionValue = <IIconExtensionPoint>extension.value;
+
 				const collector = extension.collector;
 
 				if (!extensionValue || typeof extensionValue !== 'object') {
 					collector.error(nls.localize('invalid.icons.configuration', "'configuration.icons' must be an object with the icon names as properties."));
+
 					return;
 				}
 
 				for (const id in extensionValue) {
 					if (!id.match(iconIdPattern)) {
 						collector.error(nls.localize('invalid.icons.id.format', "'configuration.icons' keys represent the icon id and can only contain letter, digits and minuses. They need to consist of at least two segments in the form `component-iconname`."));
+
 						return;
 					}
 					const iconContribution = extensionValue[id];
+
 					if (typeof iconContribution.description !== 'string' || iconContribution.description.length === 0) {
 						collector.error(nls.localize('invalid.icons.description', "'configuration.icons.description' must be defined and can not be empty"));
+
 						return;
 					}
 					const defaultIcon = iconContribution.default;
+
 					if (typeof defaultIcon === 'string') {
 						iconRegistry.registerIcon(id, { id: defaultIcon }, iconContribution.description);
 					} else if (typeof defaultIcon === 'object' && typeof defaultIcon.fontPath === 'string' && typeof defaultIcon.fontCharacter === 'string') {
 						const fileExt = extname(defaultIcon.fontPath).substring(1);
+
 						const format = formatMap[fileExt];
+
 						if (!format) {
 							collector.warn(nls.localize('invalid.icons.default.fontPath.extension', "Expected `contributes.icons.default.fontPath` to have file extension 'woff', woff2' or 'ttf', is '{0}'.", fileExt));
+
 							return;
 						}
 						if (!defaultIcon.fontCharacter.match(fontCharacterRegex)) {
 							collector.warn(nls.localize('invalid.icons.default.fontCharacter', 'Expected `contributes.icons.default.fontCharacter` to consist of a single character or a \\ followed by a Unicode code points in hexadecimal.')); return;
 						}
 						const extensionLocation = extension.description.extensionLocation;
+
 						const iconFontLocation = resources.joinPath(extensionLocation, defaultIcon.fontPath);
+
 						const fontId = getFontId(extension.description, defaultIcon.fontPath);
+
 						const definition = iconRegistry.registerIconFont(fontId, { src: [{ location: iconFontLocation, format }] });
+
 						if (!resources.isEqualOrParent(iconFontLocation, extensionLocation)) {
 							collector.warn(nls.localize('invalid.icons.default.fontPath.path', "Expected `contributes.icons.default.fontPath` ({0}) to be included inside extension's folder ({0}).", iconFontLocation.path, extensionLocation.path));
+
 							return;
 						}
 						iconRegistry.registerIcon(id, {
@@ -131,6 +147,7 @@ export class IconExtensionPoint {
 			}
 			for (const extension of delta.removed) {
 				const extensionValue = <IIconExtensionPoint>extension.value;
+
 				for (const id in extensionValue) {
 					iconRegistry.deregisterIcon(id);
 				}

@@ -25,6 +25,7 @@ import { IStateService } from '../../state/node/state.js';
 import { UtilityProcess } from '../../utilityProcess/electron-main/utilityProcess.js';
 import { zoomLevelToZoomFactor } from '../../window/common/window.js';
 import { IWindowState } from '../../window/electron-main/window.js';
+
 const processExplorerWindowState = 'issue.processExplorerWindowState';
 interface IBrowserWindowOptions {
     backgroundColor: string | undefined;
@@ -38,6 +39,7 @@ export class ProcessMainService implements IProcessMainService {
     private static readonly DEFAULT_BACKGROUND_COLOR = '#1E1E1E';
     private processExplorerWindow: BrowserWindow | null = null;
     private processExplorerParentWindow: BrowserWindow | null = null;
+
     constructor(private userEnv: IProcessEnvironment, 
     @IEnvironmentMainService
     private readonly environmentMainService: IEnvironmentMainService, 
@@ -65,8 +67,10 @@ export class ProcessMainService implements IProcessMainService {
     private registerListeners(): void {
         validatedIpcMain.on('vscode:listProcesses', async (event) => {
             const processes = [];
+
             try {
                 processes.push({ name: localize('local', "Local"), rootProcess: await listProcesses(process.pid) });
+
                 const remoteDiagnostics = await this.diagnosticsMainService.getRemoteDiagnostics({ includeProcesses: true });
                 remoteDiagnostics.forEach(data => {
                     if (isRemoteDiagnosticError(data)) {
@@ -96,11 +100,15 @@ export class ProcessMainService implements IProcessMainService {
             args: any;
         }) => {
             const { id, from, args } = commandInfo;
+
             let parentWindow: BrowserWindow | null;
+
             switch (from) {
                 case 'processExplorer':
                     parentWindow = this.processExplorerParentWindow;
+
                     break;
+
                 default:
                     // The issue reporter does not use this anymore.
                     throw new Error(`Unexpected command source: ${from}`);
@@ -112,10 +120,12 @@ export class ProcessMainService implements IProcessMainService {
         });
         validatedIpcMain.on('vscode:pidToNameRequest', async (event) => {
             const mainProcessInfo = await this.diagnosticsMainService.getMainDiagnostics();
+
             const pidToNames: [
                 number,
                 string
             ][] = [];
+
             for (const window of mainProcessInfo.windows) {
                 pidToNames.push([window.pid, `window [${window.id}] (${window.title})`]);
             }
@@ -128,10 +138,14 @@ export class ProcessMainService implements IProcessMainService {
     async openProcessExplorer(data: ProcessExplorerData): Promise<void> {
         if (!this.processExplorerWindow) {
             this.processExplorerParentWindow = BrowserWindow.getFocusedWindow();
+
             if (this.processExplorerParentWindow) {
                 const processExplorerDisposables = new DisposableStore();
+
                 const processExplorerWindowConfigUrl = processExplorerDisposables.add(this.protocolMainService.createIPCObjectUrl<ProcessExplorerWindowConfiguration>());
+
                 const savedPosition = this.stateService.getItem<IWindowState>(processExplorerWindowState, undefined);
+
                 const position = isStrictWindowState(savedPosition) ? savedPosition : this.getWindowPosition(this.processExplorerParentWindow, 800, 500);
                 this.processExplorerWindow = this.createBrowserWindow(position, processExplorerWindowConfigUrl, {
                     backgroundColor: data.styles.backgroundColor,
@@ -164,12 +178,15 @@ export class ProcessMainService implements IProcessMainService {
                         processExplorerDisposables.dispose();
                     }
                 });
+
                 const storeState = () => {
                     if (!this.processExplorerWindow) {
                         return;
                     }
                     const size = this.processExplorerWindow.getSize();
+
                     const position = this.processExplorerWindow.getPosition();
+
                     if (!size || !position) {
                         return;
                     }
@@ -198,6 +215,7 @@ export class ProcessMainService implements IProcessMainService {
     private getWindowPosition(parentWindow: BrowserWindow, defaultWidth: number, defaultHeight: number): IStrictWindowState {
         // We want the new window to open on the same display that the parent is in
         let displayToUse: Display | undefined;
+
         const displays = screen.getAllDisplays();
         // Single Display
         if (displays.length === 1) {
@@ -220,12 +238,14 @@ export class ProcessMainService implements IProcessMainService {
             }
         }
         const displayBounds = displayToUse.bounds;
+
         const state: IStrictWindowState = {
             width: defaultWidth,
             height: defaultHeight,
             x: displayBounds.x + (displayBounds.width / 2) - (defaultWidth / 2),
             y: displayBounds.y + (displayBounds.height / 2) - (defaultHeight / 2)
         };
+
         if (displayBounds.width > 0 && displayBounds.height > 0 /* Linux X11 sessions sometimes report wrong display bounds */) {
             if (state.x < displayBounds.x) {
                 state.x = displayBounds.x; // prevent window from falling out of the screen to the left
@@ -265,20 +285,25 @@ export class ProcessMainService implements IProcessMainService {
     }
     async getSystemStatus(): Promise<string> {
         const [info, remoteData] = await Promise.all([this.diagnosticsMainService.getMainDiagnostics(), this.diagnosticsMainService.getRemoteDiagnostics({ includeProcesses: false, includeWorkspaceMetadata: false })]);
+
         return this.diagnosticsService.getDiagnostics(info, remoteData);
     }
     async $getSystemInfo(): Promise<SystemInfo> {
         const [info, remoteData] = await Promise.all([this.diagnosticsMainService.getMainDiagnostics(), this.diagnosticsMainService.getRemoteDiagnostics({ includeProcesses: false, includeWorkspaceMetadata: false })]);
+
         const msg = await this.diagnosticsService.getSystemInfo(info, remoteData);
+
         return msg;
     }
     async $getPerformanceInfo(): Promise<PerformanceInfo> {
         try {
             const [info, remoteData] = await Promise.all([this.diagnosticsMainService.getMainDiagnostics(), this.diagnosticsMainService.getRemoteDiagnostics({ includeProcesses: true, includeWorkspaceMetadata: true })]);
+
             return await this.diagnosticsService.getPerformanceInfo(info, remoteData);
         }
         catch (error) {
             this.logService.warn('issueService#getPerformanceInfo ', error.message);
+
             throw error;
         }
     }
@@ -309,8 +334,10 @@ export class ProcessMainService implements IProcessMainService {
             alwaysOnTop: options.alwaysOnTop,
             experimentalDarkMode: true
         };
+
         const window = new BrowserWindow(browserWindowOptions);
         window.setMenuBarVisibility(false);
+
         return window;
     }
     private safeSend(event: IpcMainEvent, channel: string, ...args: unknown[]): void {

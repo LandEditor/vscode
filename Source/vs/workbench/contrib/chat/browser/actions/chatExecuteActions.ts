@@ -37,6 +37,7 @@ abstract class SubmitAction extends Action2 {
 		const context: IChatExecuteActionContext | undefined = args[0];
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
 		widget?.acceptInput(context?.inputValue);
 	}
@@ -144,6 +145,7 @@ class SubmitWithoutDispatchingAction extends Action2 {
 		const context: IChatExecuteActionContext | undefined = args[0];
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
 		widget?.acceptInput(context?.inputValue, { noCommandDetection: true });
 	}
@@ -193,14 +195,19 @@ export class ChatSubmitSecondaryAgentAction extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const context: IChatExecuteActionContext | undefined = args[0];
+
 		const agentService = accessor.get(IChatAgentService);
+
 		const secondaryAgent = agentService.getSecondaryAgent();
+
 		if (!secondaryAgent) {
 			return;
 		}
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
@@ -254,17 +261,23 @@ class SendToChatEditingAction extends Action2 {
 		const context: IChatExecuteActionContext | undefined = args[0];
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		if (!widget || widget.viewModel?.model.initialLocation === ChatAgentLocation.EditingSession) {
 			return;
 		}
 
 		const viewsService = accessor.get(IViewsService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const chatEditingService = accessor.get(IChatEditingService);
 
 		const currentEditingSession = chatEditingService.currentEditingSessionObs.get();
+
 		const currentEditCount = currentEditingSession?.entries.get().length;
+
 		if (currentEditCount) {
 			const result = await dialogService.confirm({
 				title: localize('chat.startEditing.confirmation.title', "Start new editing session?"),
@@ -283,6 +296,7 @@ class SendToChatEditingAction extends Action2 {
 		}
 
 		const { widget: editingWidget } = await viewsService.openView(EditsViewId) as ChatViewPane;
+
 		for (const attachment of widget.attachmentModel.attachments) {
 			if (attachment.isFile && URI.isUri(attachment.value)) {
 				chatEditingService.currentEditingSessionObs.get()?.addFileToWorkingSet(attachment.value);
@@ -325,7 +339,9 @@ class SendToNewChatAction extends Action2 {
 		const context: IChatExecuteActionContext | undefined = args[0];
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
@@ -337,6 +353,7 @@ class SendToNewChatAction extends Action2 {
 
 export class CancelAction extends Action2 {
 	static readonly ID = 'workbench.action.chat.cancel';
+
 	constructor() {
 		super({
 			id: CancelAction.ID,
@@ -362,18 +379,23 @@ export class CancelAction extends Action2 {
 		const context: IChatExecuteActionContext | undefined = args[0];
 
 		const widgetService = accessor.get(IChatWidgetService);
+
 		const widget = context?.widget ?? widgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
 
 		const chatService = accessor.get(IChatService);
+
 		if (widget.viewModel) {
 			chatService.cancelCurrentRequestForSession(widget.viewModel.sessionId);
 		}
 
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (currentEditingSession && currentEditingSession?.chatSessionId === widget.viewModel?.sessionId) {
 			chatEditingService.currentAutoApplyOperation?.cancel();
 		}

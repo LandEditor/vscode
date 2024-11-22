@@ -42,12 +42,14 @@ class DropOverlay extends Themable {
     private dropIntoPromptElement?: HTMLSpanElement;
     private currentDropOperation: IDropOperation | undefined;
     private _disposed: boolean | undefined;
+
     get disposed(): boolean { return !!this._disposed; }
     private cleanupOverlayScheduler: RunOnceScheduler;
     private readonly editorTransfer = LocalSelectionTransfer.getInstance<DraggedEditorIdentifier>();
     private readonly groupTransfer = LocalSelectionTransfer.getInstance<DraggedEditorGroupIdentifier>();
     private readonly treeItemsTransfer = LocalSelectionTransfer.getInstance<DraggedTreeItemsIdentifier>();
     private readonly enableDropIntoEditor: boolean;
+
     constructor(private readonly groupView: IEditorGroupView, 
     @IThemeService
     themeService: IThemeService, 
@@ -85,6 +87,7 @@ class DropOverlay extends Themable {
         this.overlay = document.createElement('div');
         this.overlay.classList.add('editor-group-overlay-indicator');
         container.appendChild(this.overlay);
+
         if (this.enableDropIntoEditor) {
             this.dropIntoPromptElement = renderFormattedText(localize('dropIntoEditorPrompt', "Hold __{0}__ to drop into editor", isMacintosh ? '⇧' : 'Shift'), {});
             this.dropIntoPromptElement.classList.add('editor-group-overlay-drop-into-prompt');
@@ -105,10 +108,13 @@ class DropOverlay extends Themable {
         overlay.style.outlineOffset = activeContrastBorderColor ? '-2px' : '';
         overlay.style.outlineStyle = activeContrastBorderColor ? 'dashed' : '';
         overlay.style.outlineWidth = activeContrastBorderColor ? '2px' : '';
+
         if (this.dropIntoPromptElement) {
             this.dropIntoPromptElement.style.backgroundColor = this.getColor(EDITOR_DROP_INTO_PROMPT_BACKGROUND) ?? '';
             this.dropIntoPromptElement.style.color = this.getColor(EDITOR_DROP_INTO_PROMPT_FOREGROUND) ?? '';
+
             const borderColor = this.getColor(EDITOR_DROP_INTO_PROMPT_BORDER);
+
             if (borderColor) {
                 this.dropIntoPromptElement.style.borderWidth = '1px';
                 this.dropIntoPromptElement.style.borderStyle = 'solid';
@@ -124,9 +130,11 @@ class DropOverlay extends Themable {
             onDragOver: e => {
                 if (this.enableDropIntoEditor && isDragIntoEditorEvent(e)) {
                     this.dispose();
+
                     return;
                 }
                 const isDraggingGroup = this.groupTransfer.hasData(DraggedEditorGroupIdentifier.prototype);
+
                 const isDraggingEditor = this.editorTransfer.hasData(DraggedEditorIdentifier.prototype);
                 // Update the dropEffect to "copy" if there is no local data to be dragged because
                 // in that case we can only copy the data into and not move it from its source
@@ -135,20 +143,24 @@ class DropOverlay extends Themable {
                 }
                 // Find out if operation is valid
                 let isCopy = true;
+
                 if (isDraggingGroup) {
                     isCopy = this.isCopyOperation(e);
                 }
                 else if (isDraggingEditor) {
                     const data = this.editorTransfer.getData(DraggedEditorIdentifier.prototype);
+
                     if (Array.isArray(data) && data.length > 0) {
                         isCopy = this.isCopyOperation(e, data[0].identifier);
                     }
                 }
                 if (!isCopy) {
                     const sourceGroupView = this.findSourceGroupView();
+
                     if (sourceGroupView === this.groupView) {
                         if (isDraggingGroup || (isDraggingEditor && sourceGroupView.count < 2)) {
                             this.hideOverlay();
+
                             return; // do not allow to drop group/editor on itself if this results in an empty group
                         }
                     }
@@ -157,6 +169,7 @@ class DropOverlay extends Themable {
                 // editor group splitting support based on setting and
                 // keymodifiers used.
                 let splitOnDragAndDrop = !!this.editorGroupService.partOptions.splitOnDragAndDrop;
+
                 if (this.isToggleSplitOperation(e)) {
                     splitOnDragAndDrop = !splitOnDragAndDrop;
                 }
@@ -198,6 +211,7 @@ class DropOverlay extends Themable {
         // Check for group transfer
         if (this.groupTransfer.hasData(DraggedEditorGroupIdentifier.prototype)) {
             const data = this.groupTransfer.getData(DraggedEditorGroupIdentifier.prototype);
+
             if (Array.isArray(data) && data.length > 0) {
                 return this.editorGroupService.getGroup(data[0].identifier);
             }
@@ -205,6 +219,7 @@ class DropOverlay extends Themable {
         // Check for editor transfer
         else if (this.editorTransfer.hasData(DraggedEditorIdentifier.prototype)) {
             const data = this.editorTransfer.getData(DraggedEditorIdentifier.prototype);
+
             if (Array.isArray(data) && data.length > 0) {
                 return this.editorGroupService.getGroup(data[0].identifier.groupId);
             }
@@ -215,6 +230,7 @@ class DropOverlay extends Themable {
         // Determine target group
         const ensureTargetGroup = () => {
             let targetGroup: IEditorGroup;
+
             if (typeof splitDirection === 'number') {
                 targetGroup = this.editorGroupService.addGroup(this.groupView, splitDirection);
             }
@@ -226,14 +242,17 @@ class DropOverlay extends Themable {
         // Check for group transfer
         if (this.groupTransfer.hasData(DraggedEditorGroupIdentifier.prototype)) {
             const data = this.groupTransfer.getData(DraggedEditorGroupIdentifier.prototype);
+
             if (Array.isArray(data) && data.length > 0) {
                 const sourceGroup = this.editorGroupService.getGroup(data[0].identifier);
+
                 if (sourceGroup) {
                     if (typeof splitDirection !== 'number' && sourceGroup === this.groupView) {
                         return;
                     }
                     // Split to new group
                     let targetGroup: IEditorGroup | undefined;
+
                     if (typeof splitDirection === 'number') {
                         if (this.isCopyOperation(event)) {
                             targetGroup = this.editorGroupService.copyGroup(sourceGroup, this.groupView, splitDirection);
@@ -245,6 +264,7 @@ class DropOverlay extends Themable {
                     // Merge into existing group
                     else {
                         let mergeGroupOptions: IMergeGroupOptions | undefined = undefined;
+
                         if (this.isCopyOperation(event)) {
                             mergeGroupOptions = { mode: MergeGroupMode.COPY_EDITORS };
                         }
@@ -260,12 +280,17 @@ class DropOverlay extends Themable {
         // Check for editor transfer
         else if (this.editorTransfer.hasData(DraggedEditorIdentifier.prototype)) {
             const data = this.editorTransfer.getData(DraggedEditorIdentifier.prototype);
+
             if (Array.isArray(data) && data.length > 0) {
                 const draggedEditors = data;
+
                 const firstDraggedEditor = data[0].identifier;
+
                 const sourceGroup = this.editorGroupService.getGroup(firstDraggedEditor.groupId);
+
                 if (sourceGroup) {
                     const copyEditor = this.isCopyOperation(event, firstDraggedEditor);
+
                     let targetGroup: IEditorGroup | undefined = undefined;
                     // Optimization: if we move the last editor of an editor group
                     // and we are configured to close empty editor groups, we can
@@ -276,6 +301,7 @@ class DropOverlay extends Themable {
                     // In any other case do a normal move/copy operation
                     else {
                         targetGroup = ensureTargetGroup();
+
                         if (sourceGroup === targetGroup) {
                             return;
                         }
@@ -286,6 +312,7 @@ class DropOverlay extends Themable {
                                 sticky: sourceGroup.isSticky(draggedEditor.identifier.editor) // preserve sticky state
                             })
                         }));
+
                         if (!copyEditor) {
                             sourceGroup.moveEditors(editors, targetGroup);
                         }
@@ -302,10 +329,13 @@ class DropOverlay extends Themable {
         // Check for tree items
         else if (this.treeItemsTransfer.hasData(DraggedTreeItemsIdentifier.prototype)) {
             const data = this.treeItemsTransfer.getData(DraggedTreeItemsIdentifier.prototype);
+
             if (Array.isArray(data) && data.length > 0) {
                 const editors: IUntypedEditorInput[] = [];
+
                 for (const id of data) {
                     const dataTransferItem = await this.treeViewsDragAndDropService.removeDragOperationTransfer(id.identifier);
+
                     if (dataTransferItem) {
                         const treeDropData = await extractTreeDropData(dataTransferItem);
                         editors.push(...treeDropData.map(editor => ({ ...editor, options: { ...editor.options, pinned: true } })));
@@ -334,10 +364,15 @@ class DropOverlay extends Themable {
     }
     private positionOverlay(mousePosX: number, mousePosY: number, isDraggingGroup: boolean, enableSplitting: boolean): void {
         const preferSplitVertically = this.editorGroupService.partOptions.openSideBySideDirection === 'right';
+
         const editorControlWidth = this.groupView.element.clientWidth;
+
         const editorControlHeight = this.groupView.element.clientHeight - this.getOverlayOffsetHeight();
+
         let edgeWidthThresholdFactor: number;
+
         let edgeHeightThresholdFactor: number;
+
         if (enableSplitting) {
             if (isDraggingGroup) {
                 edgeWidthThresholdFactor = preferSplitVertically ? 0.3 : 0.1; // give larger threshold when dragging group depending on preferred split direction
@@ -357,11 +392,14 @@ class DropOverlay extends Themable {
             edgeHeightThresholdFactor = 0;
         }
         const edgeWidthThreshold = editorControlWidth * edgeWidthThresholdFactor;
+
         const edgeHeightThreshold = editorControlHeight * edgeHeightThresholdFactor;
+
         const splitWidthThreshold = editorControlWidth / 3; // offer to split left/right at 33%
         const splitHeightThreshold = editorControlHeight / 3; // offer to split up/down at 33%
         // No split if mouse is above certain threshold in the center of the view
         let splitDirection: GroupDirection | undefined;
+
         if (mousePosX > edgeWidthThreshold && mousePosX < editorControlWidth - edgeWidthThreshold &&
             mousePosY > edgeHeightThreshold && mousePosY < editorControlHeight - edgeHeightThreshold) {
             splitDirection = undefined;
@@ -420,19 +458,27 @@ class DropOverlay extends Themable {
             case GroupDirection.UP:
                 this.doPositionOverlay({ top: '0', left: '0', width: '100%', height: '50%' });
                 this.toggleDropIntoPrompt(false);
+
                 break;
+
             case GroupDirection.DOWN:
                 this.doPositionOverlay({ top: '50%', left: '0', width: '100%', height: '50%' });
                 this.toggleDropIntoPrompt(false);
+
                 break;
+
             case GroupDirection.LEFT:
                 this.doPositionOverlay({ top: '0', left: '0', width: '50%', height: '100%' });
                 this.toggleDropIntoPrompt(false);
+
                 break;
+
             case GroupDirection.RIGHT:
                 this.doPositionOverlay({ top: '0', left: '50%', width: '50%', height: '100%' });
                 this.toggleDropIntoPrompt(false);
+
                 break;
+
             default:
                 this.doPositionOverlay({ top: '0', left: '0', width: '100%', height: '100%' });
                 this.toggleDropIntoPrompt(true);
@@ -454,6 +500,7 @@ class DropOverlay extends Themable {
         const [container, overlay] = assertAllDefined(this.container, this.overlay);
         // Container
         const offsetHeight = this.getOverlayOffsetHeight();
+
         if (offsetHeight) {
             container.style.height = `calc(100% - ${offsetHeight}px)`;
         }
@@ -502,6 +549,7 @@ export class EditorDropTarget extends Themable {
     private counter = 0;
     private readonly editorTransfer = LocalSelectionTransfer.getInstance<DraggedEditorIdentifier>();
     private readonly groupTransfer = LocalSelectionTransfer.getInstance<DraggedEditorGroupIdentifier>();
+
     constructor(private readonly container: HTMLElement, private readonly delegate: IEditorDropTargetDelegate, 
     @IEditorGroupsService
     private readonly editorGroupService: IEditorGroupsService, 
@@ -523,6 +571,7 @@ export class EditorDropTarget extends Themable {
     private registerListeners(): void {
         this._register(addDisposableListener(this.container, EventType.DRAG_ENTER, e => this.onDragEnter(e)));
         this._register(addDisposableListener(this.container, EventType.DRAG_LEAVE, () => this.onDragLeave()));
+
         for (const target of [this.container, getWindow(this.container)]) {
             this._register(addDisposableListener(target, EventType.DRAG_END, () => this.onDragEnd()));
         }
@@ -537,15 +586,20 @@ export class EditorDropTarget extends Themable {
             !this.groupTransfer.hasData(DraggedEditorGroupIdentifier.prototype) &&
             event.dataTransfer) {
             const dndContributions = Registry.as<IDragAndDropContributionRegistry>(DragAndDropExtensions.DragAndDropContribution).getAll();
+
             const dndContributionKeys = Array.from(dndContributions).map(e => e.dataFormatKey);
+
             if (!containsDragType(event, DataTransfers.FILES, CodeDataTransfers.FILES, DataTransfers.RESOURCES, CodeDataTransfers.EDITORS, ...dndContributionKeys)) { // see https://github.com/microsoft/vscode/issues/25789
                 event.dataTransfer.dropEffect = 'none';
+
                 return; // unsupported transfer
             }
         }
         // Signal DND start
         this.updateContainer(true);
+
         const target = event.target as HTMLElement;
+
         if (target) {
             // Somehow we managed to move the mouse quickly out of the current overlay, so destroy it
             if (this.overlay && !this.overlay.contains(target)) {
@@ -554,6 +608,7 @@ export class EditorDropTarget extends Themable {
             // Create overlay over target
             if (!this.overlay) {
                 const targetGroupView = this.findTargetGroupView(target);
+
                 if (targetGroupView) {
                     this._overlay = this.instantiationService.createInstance(DropOverlay, targetGroupView);
                 }
@@ -562,6 +617,7 @@ export class EditorDropTarget extends Themable {
     }
     private onDragLeave(): void {
         this.counter--;
+
         if (this.counter === 0) {
             this.updateContainer(false);
         }
@@ -573,6 +629,7 @@ export class EditorDropTarget extends Themable {
     }
     private findTargetGroupView(child: HTMLElement): IEditorGroupView | undefined {
         const groups = this.editorGroupService.groups as IEditorGroupView[];
+
         return groups.find(groupView => isAncestor(child, groupView.element) || this.delegate.containsGroup?.(groupView));
     }
     private updateContainer(isDraggedOver: boolean): void {

@@ -13,7 +13,9 @@ import { IInstantiationService } from '../../../../../../platform/instantiation/
 import { WorkbenchObjectTree } from '../../../../../../platform/list/browser/listService.js';
 import { DebugExpressionRenderer } from '../../../../debug/browser/debugExpressionRenderer.js';
 import { INotebookVariableElement } from './notebookVariablesDataSource.js';
+
 const $ = dom.$;
+
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
 export class NotebookVariablesTree extends WorkbenchObjectTree<INotebookVariableElement> {
 }
@@ -34,6 +36,7 @@ export interface IVariableTemplateData {
 export class NotebookVariableRenderer implements ITreeRenderer<INotebookVariableElement, FuzzyScore, IVariableTemplateData> {
     private expressionRenderer: DebugExpressionRenderer;
     static readonly ID = 'variableElement';
+
     get templateId(): string {
         return NotebookVariableRenderer.ID;
     }
@@ -44,9 +47,13 @@ export class NotebookVariableRenderer implements ITreeRenderer<INotebookVariable
     }
     renderTemplate(container: HTMLElement): IVariableTemplateData {
         const expression = dom.append(container, $('.expression'));
+
         const name = dom.append(expression, $('span.name'));
+
         const value = dom.append(expression, $('span.value'));
+
         const template: IVariableTemplateData = { expression, name, value, elementDisposables: new DisposableStore() };
+
         return template;
     }
     renderElement(element: ITreeNode<INotebookVariableElement, FuzzyScore>, _index: number, data: IVariableTemplateData): void {

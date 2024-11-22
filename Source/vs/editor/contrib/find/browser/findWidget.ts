@@ -50,6 +50,7 @@ import { FindWidgetSearchHistory } from './findWidgetSearchHistory.js';
 import { IHistory } from '../../../../base/common/history.js';
 
 const findCollapsedIcon = registerIcon('find-collapsed', Codicon.chevronRight, nls.localize('findCollapsedIcon', 'Icon to indicate that the editor find widget is collapsed.'));
+
 const findExpandedIcon = registerIcon('find-expanded', Codicon.chevronDown, nls.localize('findExpandedIcon', 'Icon to indicate that the editor find widget is expanded.'));
 
 export const findSelectionIcon = registerIcon('find-selection', Codicon.selection, nls.localize('findSelectionIcon', 'Icon for \'Find in Selection\' in the editor find widget.'));
@@ -61,27 +62,42 @@ export const findNextMatchIcon = registerIcon('find-next-match', Codicon.arrowDo
 export interface IFindController {
 	replace(): void;
 	replaceAll(): void;
+
 	getGlobalBufferTerm(): Promise<string>;
 }
 
 const NLS_FIND_DIALOG_LABEL = nls.localize('label.findDialog', "Find / Replace");
+
 const NLS_FIND_INPUT_LABEL = nls.localize('label.find', "Find");
+
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', "Find");
+
 const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize('label.previousMatchButton', "Previous Match");
+
 const NLS_NEXT_MATCH_BTN_LABEL = nls.localize('label.nextMatchButton', "Next Match");
+
 const NLS_TOGGLE_SELECTION_FIND_TITLE = nls.localize('label.toggleSelectionFind', "Find in Selection");
+
 const NLS_CLOSE_BTN_LABEL = nls.localize('label.closeButton', "Close");
+
 const NLS_REPLACE_INPUT_LABEL = nls.localize('label.replace', "Replace");
+
 const NLS_REPLACE_INPUT_PLACEHOLDER = nls.localize('placeholder.replace', "Replace");
+
 const NLS_REPLACE_BTN_LABEL = nls.localize('label.replaceButton', "Replace");
+
 const NLS_REPLACE_ALL_BTN_LABEL = nls.localize('label.replaceAllButton', "Replace All");
+
 const NLS_TOGGLE_REPLACE_MODE_BTN_LABEL = nls.localize('label.toggleReplaceButton', "Toggle Replace");
+
 const NLS_MATCHES_COUNT_LIMIT_TITLE = nls.localize('title.matchesCountLimit', "Only the first {0} results are highlighted, but all find operations work on the entire text.", MATCHES_LIMIT);
 export const NLS_MATCHES_LOCATION = nls.localize('label.matchesLocation', "{0} of {1}");
 export const NLS_NO_RESULTS = nls.localize('label.noResults', "No results");
 
 const FIND_WIDGET_INITIAL_WIDTH = 419;
+
 const PART_WIDTH = 275;
+
 const FIND_INPUT_AREA_WIDTH = PART_WIDTH - 54;
 
 let MAX_MATCHES_COUNT_WIDTH = 69;
@@ -109,16 +125,20 @@ export class FindWidgetViewZone implements IViewZone {
 
 function stopPropagationForMultiLineUpwards(event: IKeyboardEvent, value: string, textarea: HTMLTextAreaElement | null) {
 	const isMultiline = !!value.match(/\n/);
+
 	if (textarea && isMultiline && textarea.selectionStart > 0) {
 		event.stopPropagation();
+
 		return;
 	}
 }
 
 function stopPropagationForMultiLineDownwards(event: IKeyboardEvent, value: string, textarea: HTMLTextAreaElement | null) {
 	const isMultiline = !!value.match(/\n/);
+
 	if (textarea && isMultiline && textarea.selectionEnd < textarea.value.length) {
 		event.stopPropagation();
+
 		return;
 	}
 }
@@ -221,7 +241,9 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			if (e.hasChanged(EditorOption.find)) {
 				const supportLoop = this._codeEditor.getOption(EditorOption.find).loop;
 				this._state.change({ loop: supportLoop }, false);
+
 				const addExtraSpaceOnTop = this._codeEditor.getOption(EditorOption.find).addExtraSpaceOnTop;
+
 				if (addExtraSpaceOnTop && !this._viewZone) {
 					this._viewZone = new FindWidgetViewZone(0);
 					this._showViewZone();
@@ -240,6 +262,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		this._register(this._codeEditor.onDidFocusEditorWidget(async () => {
 			if (this._isVisible) {
 				const globalBufferTerm = await this._controller.getGlobalBufferTerm();
+
 				if (globalBufferTerm && globalBufferTerm !== this._state.searchString) {
 					this._state.change({ searchString: globalBufferTerm }, false);
 					this._findInput.select();
@@ -267,6 +290,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		}));
 
 		this._codeEditor.addOverlayWidget(this);
+
 		if (this._codeEditor.getOption(EditorOption.find).addExtraSpaceOnTop) {
 			this._viewZone = new FindWidgetViewZone(0); // Put it before the first line then users can scroll beyond the first line.
 		}
@@ -282,6 +306,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		this._register(this._codeEditor.onDidScrollChange((e) => {
 			if (e.scrollTopChanged) {
 				this._layoutViewZone();
+
 				return;
 			}
 
@@ -407,6 +432,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 	private _updateMatchesCount(): void {
 		this._matchesCount.style.minWidth = MAX_MATCHES_COUNT_WIDTH + 'px';
+
 		if (this._state.matchesCount >= MATCHES_LIMIT) {
 			this._matchesCount.title = NLS_MATCHES_COUNT_LIMIT_TITLE;
 		} else {
@@ -417,12 +443,15 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		this._matchesCount.firstChild?.remove();
 
 		let label: string;
+
 		if (this._state.matchesCount > 0) {
 			let matchesCount: string = String(this._state.matchesCount);
+
 			if (this._state.matchesCount >= MATCHES_LIMIT) {
 				matchesCount += '+';
 			}
 			let matchesPosition: string = String(this._state.matchesPosition);
+
 			if (matchesPosition === '0') {
 				matchesPosition = '?';
 			}
@@ -447,9 +476,12 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		}
 		if (currentMatch) {
 			const ariaLabel = nls.localize('ariaSearchNoResultWithLineNum', "{0} found for '{1}', at {2}", label, searchString, currentMatch.startLineNumber + ':' + currentMatch.startColumn);
+
 			const model = this._codeEditor.getModel();
+
 			if (model && (currentMatch.startLineNumber <= model.getLineCount()) && (currentMatch.startLineNumber >= 1)) {
 				const lineContent = model.getLineContent(currentMatch.startLineNumber);
+
 				return `${lineContent}, ${ariaLabel}`;
 			}
 
@@ -465,7 +497,9 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 	 */
 	private _updateToggleSelectionFindButton(): void {
 		const selection = this._codeEditor.getSelection();
+
 		const isSelection = selection ? (selection.startLineNumber !== selection.endLineNumber || selection.startColumn !== selection.endColumn) : false;
+
 		const isChecked = this._toggleSelectionFind.checked;
 
 		if (this._isVisible && (isChecked || isSelection)) {
@@ -482,6 +516,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		this._closeBtn.setEnabled(this._isVisible);
 
 		const findInputIsNonEmpty = (this._state.searchString.length > 0);
+
 		const matchesCount = this._state.matchesCount ? true : false;
 		this._prevBtn.setEnabled(this._isVisible && findInputIsNonEmpty && matchesCount && this._state.canNavigateBack());
 		this._nextBtn.setEnabled(this._isVisible && findInputIsNonEmpty && matchesCount && this._state.canNavigateForward());
@@ -512,13 +547,18 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			switch (this._codeEditor.getOption(EditorOption.find).autoFindInSelection) {
 				case 'always':
 					this._toggleSelectionFind.checked = true;
+
 					break;
+
 				case 'never':
 					this._toggleSelectionFind.checked = false;
+
 					break;
+
 				case 'multiline': {
 					const isSelectionMultipleLine = !!selection && selection.startLineNumber !== selection.endLineNumber;
 					this._toggleSelectionFind.checked = isSelectionMultipleLine;
+
 					break;
 				}
 				default:
@@ -541,12 +581,17 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			this._codeEditor.layoutOverlayWidget(this);
 
 			let adjustEditorScrollTop = true;
+
 			if (this._codeEditor.getOption(EditorOption.find).seedSearchStringFromSelection && selection) {
 				const domNode = this._codeEditor.getDomNode();
+
 				if (domNode) {
 					const editorCoords = dom.getDomNodePagePosition(domNode);
+
 					const startCoords = this._codeEditor.getScrolledVisiblePosition(selection.getStartPosition());
+
 					const startLeft = editorCoords.left + (startCoords ? startCoords.left : 0);
+
 					const startTop = startCoords ? startCoords.top : 0;
 
 					if (this._viewZone && startTop < this._viewZone.heightInPx) {
@@ -555,11 +600,14 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 						}
 
 						const leftOfFindWidget = dom.getTopLeftOffset(this._domNode).left;
+
 						if (startLeft > leftOfFindWidget) {
 							adjustEditorScrollTop = false;
 						}
 						const endCoords = this._codeEditor.getScrolledVisiblePosition(selection.getEndPosition());
+
 						const endLeft = editorCoords.left + (endCoords ? endCoords.left : 0);
+
 						if (endLeft > leftOfFindWidget) {
 							adjustEditorScrollTop = false;
 						}
@@ -585,6 +633,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			this._domNode.classList.remove('visible');
 			this._domNode.setAttribute('aria-hidden', 'true');
 			this._findInput.clearMessage();
+
 			if (focusTheEditor) {
 				this._codeEditor.focus();
 			}
@@ -598,6 +647,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 		if (!addExtraSpaceOnTop) {
 			this._removeViewZone();
+
 			return;
 		}
 
@@ -605,6 +655,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			return;
 		}
 		const viewZone = this._viewZone;
+
 		if (this._viewZoneId !== undefined || !viewZone) {
 			return;
 		}
@@ -638,6 +689,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			if (this._viewZoneId !== undefined) {
 				// the view zone already exists, we need to update the height
 				const newHeight = this._getHeight();
+
 				if (newHeight === viewZone.heightInPx) {
 					return;
 				}
@@ -656,6 +708,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 				// if the editor has top padding, factor that into the zone height
 				scrollAdjustment -= this._codeEditor.getOption(EditorOption.padding).top;
+
 				if (scrollAdjustment <= 0) {
 					return;
 				}
@@ -675,6 +728,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			if (this._viewZoneId !== undefined) {
 				accessor.removeZone(this._viewZoneId);
 				this._viewZoneId = undefined;
+
 				if (this._viewZone) {
 					this._codeEditor.setScrollTop(this._codeEditor.getScrollTop() - this._viewZone.heightInPx);
 					this._viewZone = undefined;
@@ -693,20 +747,26 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		}
 
 		const layoutInfo = this._codeEditor.getLayoutInfo();
+
 		const editorContentWidth = layoutInfo.contentWidth;
 
 		if (editorContentWidth <= 0) {
 			// for example, diff view original editor
 			this._domNode.classList.add('hiddenEditor');
+
 			return;
 		} else if (this._domNode.classList.contains('hiddenEditor')) {
 			this._domNode.classList.remove('hiddenEditor');
 		}
 
 		const editorWidth = layoutInfo.width;
+
 		const minimapWidth = layoutInfo.minimap.minimapWidth;
+
 		let collapsedFindWidget = false;
+
 		let reducedFindWidget = false;
+
 		let narrowFindWidget = false;
 
 		if (this._resized) {
@@ -716,6 +776,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 				// as the widget is resized by users, we may need to change the max width of the widget as the editor width changes.
 				this._domNode.style.maxWidth = `${editorWidth - 28 - minimapWidth - 15}px`;
 				this._replaceInput.width = dom.getTotalWidth(this._findInput.domNode);
+
 				return;
 			}
 		}
@@ -739,8 +800,10 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		}
 
 		this._findInput.layout({ collapsedFindWidget, narrowFindWidget, reducedFindWidget });
+
 		if (this._resized) {
 			const findInputWidth = this._findInput.inputBox.element.clientWidth;
+
 			if (findInputWidth > 0) {
 				this._replaceInput.width = findInputWidth;
 			}
@@ -767,11 +830,13 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 		// margin bottom
 		totalheight += 4;
+
 		return totalheight;
 	}
 
 	private _tryUpdateHeight(): boolean {
 		const totalHeight = this._getHeight();
+
 		if (this._cachedHeight !== null && this._cachedHeight === totalHeight) {
 			return false;
 		}
@@ -816,6 +881,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 					);
 				}
 				const currentMatch = this._state.currentMatch;
+
 				if (selection.startLineNumber !== selection.endLineNumber) {
 					if (!Range.equalsRange(selection, currentMatch)) {
 						return selection;
@@ -841,10 +907,12 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		if (e.equals(ctrlKeyMod | KeyCode.Enter)) {
 			if (this._keybindingService.dispatchEvent(e, e.target)) {
 				e.preventDefault();
+
 				return;
 			} else {
 				this._findInput.inputBox.insertAtCursor('\n');
 				e.preventDefault();
+
 				return;
 			}
 		}
@@ -856,12 +924,14 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 				this._findInput.focusOnCaseSensitive();
 			}
 			e.preventDefault();
+
 			return;
 		}
 
 		if (e.equals(KeyMod.CtrlCmd | KeyCode.DownArrow)) {
 			this._codeEditor.focus();
 			e.preventDefault();
+
 			return;
 		}
 
@@ -878,6 +948,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		if (e.equals(ctrlKeyMod | KeyCode.Enter)) {
 			if (this._keybindingService.dispatchEvent(e, e.target)) {
 				e.preventDefault();
+
 				return;
 			} else {
 				if (platform.isWindows && platform.isNative && !this._ctrlEnterReplaceAllWarningPrompted) {
@@ -893,6 +964,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 				this._replaceInput.inputBox.insertAtCursor('\n');
 				e.preventDefault();
+
 				return;
 			}
 
@@ -901,18 +973,21 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		if (e.equals(KeyCode.Tab)) {
 			this._findInput.focusOnCaseSensitive();
 			e.preventDefault();
+
 			return;
 		}
 
 		if (e.equals(KeyMod.Shift | KeyCode.Tab)) {
 			this._findInput.focus();
 			e.preventDefault();
+
 			return;
 		}
 
 		if (e.equals(KeyMod.CtrlCmd | KeyCode.DownArrow)) {
 			this._codeEditor.focus();
 			e.preventDefault();
+
 			return;
 		}
 
@@ -933,6 +1008,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 	private _keybindingLabelFor(actionId: string): string {
 		const kb = this._keybindingService.lookupKeybinding(actionId);
+
 		if (!kb) {
 			return '';
 		}
@@ -941,6 +1017,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 	private _buildDomNode(): void {
 		const flexibleHeight = true;
+
 		const flexibleWidth = true;
 		// Find input
 		const findSearchHistoryConfig = this._codeEditor.getOption(EditorOption.find).findSearchHistory;
@@ -958,6 +1035,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 				try {
 					// use `g` and `u` which are also used by the TextModel search
 					new RegExp(value, 'gu');
+
 					return null;
 				} catch (e) {
 					return { content: e.message };
@@ -1010,6 +1088,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 				this._showViewZone();
 			}
 		}));
+
 		if (platform.isLinux) {
 			this._register(this._findInput.onMouseDown((e) => this._onFindInputMouseDown(e)));
 		}
@@ -1044,6 +1123,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 		const findPart = document.createElement('div');
 		findPart.className = 'find-part';
 		findPart.appendChild(this._findInput.domNode);
+
 		const actionsContainer = document.createElement('div');
 		actionsContainer.className = 'find-actions';
 		findPart.appendChild(actionsContainer);
@@ -1199,6 +1279,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			className: 'codicon toggle left',
 			onTrigger: () => {
 				this._state.change({ isReplaceRevealed: !this._isReplaceVisible }, false);
+
 				if (this._isReplaceVisible) {
 					this._replaceInput.width = dom.getTotalWidth(this._findInput.domNode);
 					this._replaceInput.inputBox.layout();
@@ -1225,6 +1306,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 		this._resizeSash = this._register(new Sash(this._domNode, this, { orientation: Orientation.VERTICAL, size: 2 }));
 		this._resized = false;
+
 		let originalWidth = FIND_WIDGET_INITIAL_WIDTH;
 
 		this._register(this._resizeSash.onDidStart(() => {
@@ -1233,6 +1315,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 		this._register(this._resizeSash.onDidChange((evt: ISashEvent) => {
 			this._resized = true;
+
 			const width = originalWidth + evt.startX - evt.currentX;
 
 			if (width < FIND_WIDGET_INITIAL_WIDTH) {
@@ -1241,10 +1324,12 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 			}
 
 			const maxWidth = parseFloat(dom.getComputedStyle(this._domNode).maxWidth) || 0;
+
 			if (width > maxWidth) {
 				return;
 			}
 			this._domNode.style.width = `${width}px`;
+
 			if (this._isReplaceVisible) {
 				this._replaceInput.width = dom.getTotalWidth(this._findInput.domNode);
 			}
@@ -1278,6 +1363,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 
 			this._domNode.style.width = `${width}px`;
+
 			if (this._isReplaceVisible) {
 				this._replaceInput.width = dom.getTotalWidth(this._findInput.domNode);
 			}
@@ -1293,6 +1379,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 
 	getViewState() {
 		let widgetViewZoneVisible = false;
+
 		if (this._viewZone && this._viewZoneId) {
 			widgetViewZoneVisible = this._viewZone.heightInPx > this._codeEditor.getScrollTop();
 		}
@@ -1337,6 +1424,7 @@ export class SimpleButton extends Widget {
 		this._opts = opts;
 
 		let className = 'button';
+
 		if (this._opts.className) {
 			className = className + ' ' + this._opts.className;
 		}
@@ -1360,6 +1448,7 @@ export class SimpleButton extends Widget {
 			if (e.equals(KeyCode.Space) || e.equals(KeyCode.Enter)) {
 				this._opts.onTrigger();
 				e.preventDefault();
+
 				return;
 			}
 			this._opts.onKeyDown?.(e);
@@ -1386,6 +1475,7 @@ export class SimpleButton extends Widget {
 
 	public setExpanded(expanded: boolean): void {
 		this._domNode.setAttribute('aria-expanded', String(!!expanded));
+
 		if (expanded) {
 			this._domNode.classList.remove(...ThemeIcon.asClassNameArray(findCollapsedIcon));
 			this._domNode.classList.add(...ThemeIcon.asClassNameArray(findExpandedIcon));
@@ -1400,24 +1490,29 @@ export class SimpleButton extends Widget {
 
 registerThemingParticipant((theme, collector) => {
 	const findMatchHighlightBorder = theme.getColor(editorFindMatchHighlightBorder);
+
 	if (findMatchHighlightBorder) {
 		collector.addRule(`.monaco-editor .findMatch { border: 1px ${isHighContrast(theme.type) ? 'dotted' : 'solid'} ${findMatchHighlightBorder}; box-sizing: border-box; }`);
 	}
 
 	const findRangeHighlightBorder = theme.getColor(editorFindRangeHighlightBorder);
+
 	if (findRangeHighlightBorder) {
 		collector.addRule(`.monaco-editor .findScope { border: 1px ${isHighContrast(theme.type) ? 'dashed' : 'solid'} ${findRangeHighlightBorder}; }`);
 	}
 
 	const hcBorder = theme.getColor(contrastBorder);
+
 	if (hcBorder) {
 		collector.addRule(`.monaco-editor .find-widget { border: 1px solid ${hcBorder}; }`);
 	}
 	const findMatchForeground = theme.getColor(editorFindMatchForeground);
+
 	if (findMatchForeground) {
 		collector.addRule(`.monaco-editor .findMatchInline { color: ${findMatchForeground}; }`);
 	}
 	const findMatchHighlightForeground = theme.getColor(editorFindMatchHighlightForeground);
+
 	if (findMatchHighlightForeground) {
 		collector.addRule(`.monaco-editor .currentFindMatchInline { color: ${findMatchHighlightForeground}; }`);
 	}

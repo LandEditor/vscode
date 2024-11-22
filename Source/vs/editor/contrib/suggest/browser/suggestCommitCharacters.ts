@@ -15,6 +15,7 @@ export class CommitCharacterController {
         readonly acceptCharacters: CharacterSet;
         readonly item: ISelectedSuggestion;
     };
+
     constructor(editor: ICodeEditor, widget: SuggestWidget, model: SuggestModel, accept: (selected: ISelectedSuggestion) => any) {
         this._disposables.add(model.onDidSuggest(e => {
             if (e.completionModel.items.length === 0) {
@@ -30,6 +31,7 @@ export class CommitCharacterController {
         this._disposables.add(editor.onWillType(text => {
             if (this._active && !widget.isFrozen() && model.state !== State.Idle) {
                 const ch = text.charCodeAt(text.length - 1);
+
                 if (this._active.acceptCharacters.has(ch) && editor.getOption(EditorOption.acceptSuggestionOnCommitCharacter)) {
                     accept(this._active.item);
                 }
@@ -40,6 +42,7 @@ export class CommitCharacterController {
         if (!selected || !isNonEmptyArray(selected.item.completion.commitCharacters)) {
             // no item or no commit characters
             this.reset();
+
             return;
         }
         if (this._active && this._active.item.item === selected.item) {
@@ -48,6 +51,7 @@ export class CommitCharacterController {
         }
         // keep item and its commit characters
         const acceptCharacters = new CharacterSet();
+
         for (const ch of selected.item.completion.commitCharacters) {
             if (ch.length > 0) {
                 acceptCharacters.add(ch.charCodeAt(0));

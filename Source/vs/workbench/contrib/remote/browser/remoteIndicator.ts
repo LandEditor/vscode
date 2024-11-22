@@ -116,6 +116,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
     private remoteMetadataInitialized: boolean = false;
     private readonly _onDidChangeEntries = this._register(new Emitter<void>());
     private readonly onDidChangeEntries: Event<void> = this._onDidChangeEntries.event;
+
     constructor(
     @IStatusbarService
     private readonly statusbarService: IStatusbarService, 
@@ -202,6 +203,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                 }
                 run = () => that.hostService.openWindow({ forceReuseWindow: true, remoteAuthority: null });
             }));
+
             if (this.remoteAuthority) {
                 MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
                     group: '6_close',
@@ -225,6 +227,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                 }
                 run = (accessor: ServicesAccessor, input: string) => {
                     const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
                     return extensionsWorkbenchService.openSearch(`@recommended:remotes`);
                 };
             }));
@@ -242,12 +245,14 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         this._register(this.labelService.onDidChangeFormatters(() => this.updateRemoteStatusIndicator()));
         // Update based on remote indicator changes if any
         const remoteIndicator = this.environmentService.options?.windowIndicator;
+
         if (remoteIndicator && remoteIndicator.onDidChange) {
             this._register(remoteIndicator.onDidChange(() => this.updateRemoteStatusIndicator()));
         }
         // Listen to changes of the connection
         if (this.remoteAuthority) {
             const connection = this.remoteAgentService.getConnection();
+
             if (connection) {
                 this._register(connection.onDidStateChange((e) => {
                     switch (e.type) {
@@ -255,12 +260,17 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                         case PersistentConnectionEventType.ReconnectionRunning:
                         case PersistentConnectionEventType.ReconnectionWait:
                             this.setConnectionState('reconnecting');
+
                             break;
+
                         case PersistentConnectionEventType.ReconnectionPermanentFailure:
                             this.setConnectionState('disconnected');
+
                             break;
+
                         case PersistentConnectionEventType.ConnectionGain:
                             this.setConnectionState('connected');
+
                             break;
                     }
                 }));
@@ -279,6 +289,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         this._register(this.extensionService.onDidChangeExtensions(async (result) => {
             for (const ext of result.added) {
                 const index = this.remoteExtensionMetadata.findIndex(value => ExtensionIdentifier.equals(value.id, ext.identifier));
+
                 if (index > -1) {
                     this.remoteExtensionMetadata[index].installed = true;
                 }
@@ -286,6 +297,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         }));
         this._register(this.extensionManagementService.onDidUninstallExtension(async (result) => {
             const index = this.remoteExtensionMetadata.findIndex(value => ExtensionIdentifier.equals(value.id, result.identifier.id));
+
             if (index > -1) {
                 this.remoteExtensionMetadata[index].installed = false;
             }
@@ -296,11 +308,15 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             return;
         }
         const currentPlatform = PlatformToString(platform);
+
         for (let i = 0; i < this.remoteExtensionMetadata.length; i++) {
             const extensionId = this.remoteExtensionMetadata[i].id;
+
             const supportedPlatforms = this.remoteExtensionMetadata[i].supportedPlatforms;
+
             const isInstalled = (await this.extensionManagementService.getInstalled()).find(value => ExtensionIdentifier.equals(value.identifier.id, extensionId)) ? true : false;
             this.remoteExtensionMetadata[i].installed = isInstalled;
+
             if (isInstalled) {
                 this.remoteExtensionMetadata[i].isPlatformCompatible = true;
             }
@@ -320,7 +336,9 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
     }
     private async updateWhenInstalledExtensionsRegistered(): Promise<void> {
         await this.extensionService.whenInstalledExtensionsRegistered();
+
         const remoteAuthority = this.remoteAuthority;
+
         if (remoteAuthority) {
             // Try to resolve the authority to figure out connection state
             (async () => {
@@ -370,6 +388,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         // waking up the connection to the remote
         if (this.hostService.hasFocus && this.networkState !== 'offline') {
             const measurement = await remoteConnectionLatencyMeasurer.measure(this.remoteAgentService);
+
             if (measurement) {
                 if (measurement.high) {
                     this.setNetworkState('high-latency');
@@ -385,6 +404,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         if (this.networkState !== newState) {
             const oldState = this.networkState;
             this.networkState = newState;
+
             if (newState === 'high-latency') {
                 this.logService.warn(`Remote network connection appears to have high latency (${remoteConnectionLatencyMeasurer.latency?.current?.toFixed(2)}ms last, ${remoteConnectionLatencyMeasurer.latency?.average?.toFixed(2)}ms average)`);
             }
@@ -450,30 +470,42 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
     private updateRemoteStatusIndicator(): void {
         // Remote Indicator: show if provided via options, e.g. by the web embedder API
         const remoteIndicator = this.environmentService.options?.windowIndicator;
+
         if (remoteIndicator) {
             let remoteIndicatorLabel = remoteIndicator.label.trim();
+
             if (!remoteIndicatorLabel.startsWith('$(')) {
                 remoteIndicatorLabel = `$(remote) ${remoteIndicatorLabel}`; // ensure the indicator has a codicon
             }
             this.renderRemoteStatusIndicator(truncate(remoteIndicatorLabel, RemoteStatusIndicator.REMOTE_STATUS_LABEL_MAX_LENGTH), remoteIndicator.tooltip, remoteIndicator.command);
+
             return;
         }
         // Show for remote windows on the desktop
         if (this.remoteAuthority) {
             const hostLabel = this.labelService.getHostLabel(Schemas.vscodeRemote, this.remoteAuthority) || this.remoteAuthority;
+
             switch (this.connectionState) {
                 case 'initializing':
                     this.renderRemoteStatusIndicator(nls.localize('host.open', "Opening Remote..."), nls.localize('host.open', "Opening Remote..."), undefined, true /* progress */);
+
                     break;
+
                 case 'reconnecting':
                     this.renderRemoteStatusIndicator(`${nls.localize('host.reconnecting', "Reconnecting to {0}...", truncate(hostLabel, RemoteStatusIndicator.REMOTE_STATUS_LABEL_MAX_LENGTH))}`, undefined, undefined, true /* progress */);
+
                     break;
+
                 case 'disconnected':
                     this.renderRemoteStatusIndicator(`$(alert) ${nls.localize('disconnectedFrom', "Disconnected from {0}", truncate(hostLabel, RemoteStatusIndicator.REMOTE_STATUS_LABEL_MAX_LENGTH))}`);
+
                     break;
+
                 default: {
                     const tooltip = new MarkdownString('', { isTrusted: true, supportThemeIcons: true });
+
                     const hostNameTooltip = this.labelService.getHostTooltip(Schemas.vscodeRemote, this.remoteAuthority);
+
                     if (hostNameTooltip) {
                         tooltip.appendMarkdown(hostNameTooltip);
                     }
@@ -489,9 +521,12 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         if (this.virtualWorkspaceLocation) {
             // Workspace with label: indicate editing source
             const workspaceLabel = this.labelService.getHostLabel(this.virtualWorkspaceLocation.scheme, this.virtualWorkspaceLocation.authority);
+
             if (workspaceLabel) {
                 const tooltip = new MarkdownString('', { isTrusted: true, supportThemeIcons: true });
+
                 const hostNameTooltip = this.labelService.getHostTooltip(this.virtualWorkspaceLocation.scheme, this.virtualWorkspaceLocation.authority);
+
                 if (hostNameTooltip) {
                     tooltip.appendMarkdown(hostNameTooltip);
                 }
@@ -503,14 +538,17 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                     tooltip.appendMarkdown(nls.localize({ key: 'workspace.tooltip2', comment: ['[features are not available]({1}) is a link. Only translate `features are not available`. Do not change brackets and parentheses or {0}'] }, "Some [features are not available]({0}) for resources located on a virtual file system.", `command:${LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID}`));
                 }
                 this.renderRemoteStatusIndicator(`$(remote) ${truncate(workspaceLabel, RemoteStatusIndicator.REMOTE_STATUS_LABEL_MAX_LENGTH)}`, tooltip);
+
                 return;
             }
         }
         this.renderRemoteStatusIndicator(`$(remote)`, nls.localize('noHost.tooltip', "Open a Remote Window"));
+
         return;
     }
     private renderRemoteStatusIndicator(initialText: string, initialTooltip?: string | MarkdownString, command?: string, showProgress?: boolean): void {
         const { text, tooltip, ariaLabel } = this.withNetworkStatus(initialText, initialTooltip, showProgress);
+
         const properties: IStatusbarEntry = {
             name: nls.localize('remoteHost', "Remote Host"),
             kind: this.networkState === 'offline' ? 'offline' : 'remote',
@@ -520,6 +558,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             tooltip,
             command: command ?? RemoteStatusIndicator.REMOTE_ACTIONS_COMMAND_ID
         };
+
         if (this.remoteStatusEntry) {
             this.remoteStatusEntry.update(properties);
         }
@@ -533,8 +572,11 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         ariaLabel: string;
     } {
         let text = initialText;
+
         let tooltip = initialTooltip;
+
         let ariaLabel = getCodiconAriaLabel(text);
+
         function textWithAlert(): string {
             // `initialText` can have a codicon in the beginning that already
             // indicates some kind of status, or we may have been asked to
@@ -552,17 +594,20 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                 text = textWithAlert();
                 tooltip = this.appendTooltipLine(tooltip, offlineMessage);
                 ariaLabel = `${ariaLabel}, ${offlineMessage}`;
+
                 break;
             }
             case 'high-latency':
                 text = textWithAlert();
                 tooltip = this.appendTooltipLine(tooltip, nls.localize('networkStatusHighLatencyTooltip', "Network appears to have high latency ({0}ms last, {1}ms average), certain features may be slow to respond.", remoteConnectionLatencyMeasurer.latency?.current?.toFixed(2), remoteConnectionLatencyMeasurer.latency?.average?.toFixed(2)));
+
                 break;
         }
         return { text, tooltip, ariaLabel };
     }
     private appendTooltipLine(tooltip: string | MarkdownString | undefined, line: string): MarkdownString {
         let markdownTooltip: MarkdownString;
+
         if (typeof tooltip === 'string') {
             markdownTooltip = new MarkdownString(tooltip, { isTrusted: true, supportThemeIcons: true });
         }
@@ -573,6 +618,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             markdownTooltip.appendMarkdown('\n\n');
         }
         markdownTooltip.appendMarkdown(line);
+
         return markdownTooltip;
     }
     private async installExtension(extensionId: string) {
@@ -587,6 +633,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         // check to ensure the extension is installed
         await retry(async () => {
             const ext = await this.extensionService.getExtension(extensionId);
+
             if (!ext) {
                 throw Error('Failed to find installed remote extension');
             }
@@ -606,6 +653,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             }
             return undefined;
         };
+
         const matchCurrentRemote = () => {
             if (this.remoteAuthority) {
                 return new RegExp(`^remote_\\d\\d_${getRemoteName(this.remoteAuthority)}_`);
@@ -615,15 +663,21 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             }
             return undefined;
         };
+
         const computeItems = () => {
             let actionGroups = this.getRemoteMenuActions(true);
+
             const items: QuickPickItem[] = [];
+
             const currentRemoteMatcher = matchCurrentRemote();
+
             if (currentRemoteMatcher) {
                 // commands for the current remote go first
                 actionGroups = actionGroups.sort((g1, g2) => {
                     const isCurrentRemote1 = currentRemoteMatcher.test(g1[0]);
+
                     const isCurrentRemote2 = currentRemoteMatcher.test(g2[0]);
+
                     if (isCurrentRemote1 !== isCurrentRemote2) {
                         return isCurrentRemote1 ? -1 : 1;
                     }
@@ -638,12 +692,15 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                 });
             }
             let lastCategoryName: string | undefined = undefined;
+
             for (const actionGroup of actionGroups) {
                 let hasGroupCategory = false;
+
                 for (const action of actionGroup[1]) {
                     if (action instanceof MenuItemAction) {
                         if (!hasGroupCategory) {
                             const category = getCategoryLabel(action);
+
                             if (category !== lastCategoryName) {
                                 items.push({ type: 'separator', label: category });
                                 lastCategoryName = category;
@@ -660,12 +717,15 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                 }
             }
             const showExtensionRecommendations = this.configurationService.getValue<boolean>('workbench.remoteIndicator.showExtensionRecommendations');
+
             if (showExtensionRecommendations && this.extensionGalleryService.isEnabled() && this.remoteMetadataInitialized) {
                 const notInstalledItems: QuickPickItem[] = [];
+
                 for (const metadata of this.remoteExtensionMetadata) {
                     if (!metadata.installed && metadata.isPlatformCompatible) {
                         // Create Install QuickPick with a help link
                         const label = metadata.startConnectLabel;
+
                         const buttons: IQuickInputButton[] = [{
                                 iconClass: ThemeIcon.asClassName(infoIcon),
                                 tooltip: nls.localize('remote.startActions.help', "Learn More")
@@ -681,7 +741,9 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             items.push({
                 type: 'separator'
             });
+
             const entriesBeforeConfig = items.length;
+
             if (RemoteStatusIndicator.SHOW_CLOSE_REMOTE_COMMAND_ID) {
                 if (this.remoteAuthority) {
                     items.push({
@@ -689,6 +751,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
                         id: RemoteStatusIndicator.CLOSE_REMOTE_COMMAND_ID,
                         label: nls.localize('closeRemoteConnection.title', 'Close Remote Connection')
                     });
+
                     if (this.connectionState === 'disconnected') {
                         items.push({
                             type: 'item',
@@ -710,7 +773,9 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
             }
             return items;
         };
+
         const disposables = new DisposableStore();
+
         const quickPick = disposables.add(this.quickInputService.createQuickPick({ useSeparators: true }));
         quickPick.placeholder = nls.localize('remoteActions', "Select an option to open a Remote Window");
         quickPick.items = computeItems();
@@ -718,9 +783,12 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         quickPick.canSelectMany = false;
         disposables.add(Event.once(quickPick.onDidAccept)((async (_) => {
             const selectedItems = quickPick.selectedItems;
+
             if (selectedItems.length === 1) {
                 const commandId = selectedItems[0].id!;
+
                 const remoteExtension = this.remoteExtensionMetadata.find(value => ExtensionIdentifier.equals(value.id, commandId));
+
                 if (remoteExtension) {
                     quickPick.items = [];
                     quickPick.busy = true;
@@ -741,6 +809,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         })));
         disposables.add(Event.once(quickPick.onDidTriggerItemButton)(async (e) => {
             const remoteExtension = this.remoteExtensionMetadata.find(value => ExtensionIdentifier.equals(value.id, e.item.id));
+
             if (remoteExtension) {
                 await this.openerService.open(URI.parse(remoteExtension.helpLink));
             }
@@ -749,6 +818,7 @@ export class RemoteStatusIndicator extends Disposable implements IWorkbenchContr
         disposables.add(this.legacyIndicatorMenu.onDidChange(() => quickPick.items = computeItems()));
         disposables.add(this.remoteIndicatorMenu.onDidChange(() => quickPick.items = computeItems()));
         disposables.add(quickPick.onDidHide(() => disposables.dispose()));
+
         if (!this.remoteMetadataInitialized) {
             quickPick.busy = true;
             this._register(this.onDidChangeEntries(() => {

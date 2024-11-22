@@ -151,6 +151,7 @@ export abstract class AbstractWatcherClient extends Disposable {
     private readonly watcherDisposables = this._register(new MutableDisposable());
     private requests: IWatchRequest[] | undefined = undefined;
     private restartCounter = 0;
+
     constructor(private readonly onFileChanges: (changes: IFileChange[]) => void, private readonly onLogMessage: (msg: ILogMessage) => void, private verboseLogging: boolean, private options: {
         readonly type: string;
         readonly restartOnError: boolean;
@@ -228,6 +229,7 @@ export abstract class AbstractWatcherClient extends Disposable {
     override dispose(): void {
         // Render the watcher invalid from here
         this.watcher = undefined;
+
         return super.dispose();
     }
 }
@@ -257,6 +259,7 @@ export function reviveFileChanges(changes: IFileChange[]): IFileChange[] {
 export function coalesceEvents(changes: IFileChange[]): IFileChange[] {
     // Build deltas
     const coalescer = new EventCoalescer();
+
     for (const event of changes) {
         coalescer.processEvent(event);
     }
@@ -275,6 +278,7 @@ export function normalizeWatcherPattern(path: string, pattern: string | IRelativ
 }
 export function parseWatcherPatterns(path: string, patterns: Array<string | IRelativePattern>): ParsedPattern[] {
     const parsedPatterns: ParsedPattern[] = [];
+
     for (const pattern of patterns) {
         parsedPatterns.push(parse(normalizeWatcherPattern(path, pattern)));
     }
@@ -291,10 +295,12 @@ class EventCoalescer {
     }
     processEvent(event: IFileChange): void {
         const existingEvent = this.mapPathToChange.get(this.toKey(event));
+
         let keepEvent = false;
         // Event path already exists
         if (existingEvent) {
             const currentChangeType = existingEvent.type;
+
             const newChangeType = event.type;
             // macOS/Windows: track renames to different case
             // by keeping both CREATE and DELETE events
@@ -328,6 +334,7 @@ class EventCoalescer {
     }
     coalesce(): IFileChange[] {
         const addOrChangeEvents: IFileChange[] = [];
+
         const deletedPaths: string[] = [];
         // This algorithm will remove all DELETE events up to the root folder
         // that got deleted if any. This ensures that we are not producing
@@ -339,6 +346,7 @@ class EventCoalescer {
         return Array.from(this.coalesced).filter(e => {
             if (e.type !== FileChangeType.DELETED) {
                 addOrChangeEvents.push(e);
+
                 return false; // remove ADD / CHANGE
             }
             return true; // keep DELETE
@@ -350,6 +358,7 @@ class EventCoalescer {
             }
             // otherwise mark as deleted
             deletedPaths.push(e.resource.fsPath);
+
             return true;
         }).concat(addOrChangeEvents);
     }
@@ -359,8 +368,10 @@ export function isFiltered(event: IFileChange, filter: FileChangeFilter | undefi
         switch (event.type) {
             case FileChangeType.ADDED:
                 return (filter & FileChangeFilter.ADDED) === 0;
+
             case FileChangeType.DELETED:
                 return (filter & FileChangeFilter.DELETED) === 0;
+
             case FileChangeType.UPDATED:
                 return (filter & FileChangeFilter.UPDATED) === 0;
         }
@@ -370,6 +381,7 @@ export function isFiltered(event: IFileChange, filter: FileChangeFilter | undefi
 export function requestFilterToString(filter: FileChangeFilter | undefined): string {
     if (typeof filter === 'number') {
         const filters = [];
+
         if (filter & FileChangeFilter.ADDED) {
             filters.push('Added');
         }

@@ -21,6 +21,7 @@ function unescape(html: string) {
     // explicitly match decimal, hex, and named HTML entities
     return html.replace(unescapeTest, (_, n) => {
         n = n.toLowerCase();
+
         if (n === 'colon') {
             return ':';
         }
@@ -45,13 +46,17 @@ export function markedGfmHeadingIdPlugin({ prefix = '', globalSlugs = false } = 
         renderer: {
             heading({ tokens, depth }) {
                 const text = this.parser.parseInline(tokens);
+
                 const raw = unescape(this.parser.parseInline(tokens, this.parser.textRenderer))
                     .trim()
                     .replace(/<[!\/a-z].*?>/gi, '');
+
                 const level = depth;
+
                 const id = `${prefix}${slugify(raw)}`;
                 // const heading = { level, text, id, raw };
                 // headings.push(heading);
+
                 return `<h${level} id="${id}">${text}</h${level}>\n`;
             },
         },

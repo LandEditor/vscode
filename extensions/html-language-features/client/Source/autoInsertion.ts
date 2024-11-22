@@ -8,26 +8,33 @@ import { LanguageParticipants } from './languageParticipants';
 export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose', document: TextDocument, position: Position) => Thenable<string>, languageParticipants: LanguageParticipants, runtime: Runtime): Disposable {
     const disposables: Disposable[] = [];
     workspace.onDidChangeTextDocument(onDidChangeTextDocument, null, disposables);
+
     let anyIsEnabled = false;
+
     const isEnabled = {
         'autoQuote': false,
         'autoClose': false
     };
     updateEnabledState();
     window.onDidChangeActiveTextEditor(updateEnabledState, null, disposables);
+
     let timeout: Disposable | undefined = undefined;
     disposables.push({
         dispose: () => {
             timeout?.dispose();
         }
     });
+
     function updateEnabledState() {
         anyIsEnabled = false;
+
         const editor = window.activeTextEditor;
+
         if (!editor) {
             return;
         }
         const document = editor.document;
+
         if (!languageParticipants.useAutoInsert(document.languageId)) {
             return;
         }
@@ -41,6 +48,7 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
             return;
         }
         const activeDocument = window.activeTextEditor && window.activeTextEditor.document;
+
         if (document !== activeDocument) {
             return;
         }
@@ -48,8 +56,10 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
             timeout.dispose();
         }
         const lastChange = contentChanges[contentChanges.length - 1];
+
         if (lastChange.rangeLength === 0 && isSingleLine(lastChange.text)) {
             const lastCharacter = lastChange.text[lastChange.text.length - 1];
+
             if (isEnabled['autoQuote'] && lastCharacter === '=') {
                 doAutoInsert('autoQuote', document, lastChange);
             }
@@ -63,16 +73,20 @@ export function activateAutoInsertion(provider: (kind: 'autoQuote' | 'autoClose'
     }
     function doAutoInsert(kind: 'autoQuote' | 'autoClose', document: TextDocument, lastChange: TextDocumentContentChangeEvent) {
         const rangeStart = lastChange.range.start;
+
         const version = document.version;
         timeout = runtime.timer.setTimeout(() => {
             const position = new Position(rangeStart.line, rangeStart.character + lastChange.text.length);
             provider(kind, document, position).then(text => {
                 if (text && isEnabled[kind]) {
                     const activeEditor = window.activeTextEditor;
+
                     if (activeEditor) {
                         const activeDocument = activeEditor.document;
+
                         if (document === activeDocument && activeDocument.version === version) {
                             const selections = activeEditor.selections;
+
                             if (selections.length && selections.some(s => s.active.isEqual(position))) {
                                 activeEditor.insertSnippet(new SnippetString(text), selections.map(s => s.active));
                             }

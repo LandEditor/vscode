@@ -26,7 +26,9 @@ export class LineRangeMapping {
             throw new BugIndicatingError();
         }
         const startDelta = extendedInputRange.startLineNumber - this.inputRange.startLineNumber;
+
         const endDelta = extendedInputRange.endLineNumberExclusive - this.inputRange.endLineNumberExclusive;
+
         return new LineRangeMapping(extendedInputRange, new LineRange(this.outputRange.startLineNumber + startDelta, this.outputRange.lineCount - startDelta + endDelta));
     }
     public join(other: LineRangeMapping): LineRangeMapping {
@@ -54,7 +56,9 @@ export class LineRangeMapping {
 export class DocumentLineRangeMap {
     public static betweenOutputs(inputToOutput1: readonly LineRangeMapping[], inputToOutput2: readonly LineRangeMapping[], inputLineCount: number): DocumentLineRangeMap {
         const alignments = MappingAlignment.compute(inputToOutput1, inputToOutput2);
+
         const mappings = alignments.map((m) => new LineRangeMapping(m.output1Range, m.output2Range));
+
         return new DocumentLineRangeMap(mappings, inputLineCount);
     }
     constructor(
@@ -71,6 +75,7 @@ export class DocumentLineRangeMap {
     }
     public project(lineNumber: number): LineRangeMapping {
         const lastBefore = findLast(this.lineRangeMappings, r => r.inputRange.startLineNumber <= lineNumber);
+
         if (!lastBefore) {
             return new LineRangeMapping(new LineRange(lineNumber, 1), new LineRange(lineNumber, 1));
         }
@@ -78,14 +83,18 @@ export class DocumentLineRangeMap {
             return lastBefore;
         }
         const containingRange = new LineRange(lineNumber, 1);
+
         const mappedRange = new LineRange(lineNumber +
             lastBefore.outputRange.endLineNumberExclusive -
             lastBefore.inputRange.endLineNumberExclusive, 1);
+
         return new LineRangeMapping(containingRange, mappedRange);
     }
     public get outputLineCount(): number {
         const last = this.lineRangeMappings.at(-1);
+
         const diff = last ? last.outputRange.endLineNumberExclusive - last.inputRange.endLineNumberExclusive : 0;
+
         return this.inputLineCount + diff;
     }
     public reverse(): DocumentLineRangeMap {
@@ -98,20 +107,28 @@ export class DocumentLineRangeMap {
 export class MappingAlignment<T extends LineRangeMapping> {
     public static compute<T extends LineRangeMapping>(fromInputToOutput1: readonly T[], fromInputToOutput2: readonly T[]): MappingAlignment<T>[] {
         const compareByStartLineNumber = compareBy<LineRangeMapping, number>((d) => d.inputRange.startLineNumber, numberComparator);
+
         const combinedDiffs = concatArrays(fromInputToOutput1.map((diff) => ({ source: 0 as const, diff })), fromInputToOutput2.map((diff) => ({ source: 1 as const, diff }))).sort(compareBy((d) => d.diff, compareByStartLineNumber));
+
         const currentDiffs = [new Array<T>(), new Array<T>()];
+
         const deltaFromBaseToInput = [0, 0];
+
         const alignments = new Array<MappingAlignment<T>>();
+
         function pushAndReset(inputRange: LineRange) {
             const mapping1 = LineRangeMapping.join(currentDiffs[0]) || new LineRangeMapping(inputRange, inputRange.delta(deltaFromBaseToInput[0]));
+
             const mapping2 = LineRangeMapping.join(currentDiffs[1]) || new LineRangeMapping(inputRange, inputRange.delta(deltaFromBaseToInput[1]));
             alignments.push(new MappingAlignment(currentInputRange!, mapping1.extendInputRange(currentInputRange!).outputRange, currentDiffs[0], mapping2.extendInputRange(currentInputRange!).outputRange, currentDiffs[1]));
             currentDiffs[0] = [];
             currentDiffs[1] = [];
         }
         let currentInputRange: LineRange | undefined;
+
         for (const diff of combinedDiffs) {
             const range = diff.diff.inputRange;
+
             if (currentInputRange && !currentInputRange.touches(range)) {
                 pushAndReset(currentInputRange);
                 currentInputRange = undefined;
@@ -140,6 +157,7 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
         return mappings.reduce<undefined | DetailedLineRangeMapping>((acc, cur) => acc ? acc.join(cur) : cur, undefined);
     }
     public readonly rangeMappings: readonly RangeMapping[];
+
     constructor(inputRange: LineRange, public readonly inputTextModel: ITextModel, outputRange: LineRange, public readonly outputTextModel: ITextModel, rangeMappings?: readonly RangeMapping[]) {
         super(inputRange, outputRange);
         this.rangeMappings = rangeMappings || [new RangeMapping(this.inputRange.toRange(), this.outputRange.toRange())];
@@ -207,6 +225,7 @@ lengthBetweenPositions(m1.inputRange.getEndPosition(), m2.inputRange.getStartPos
     }
     public project(position: Position): RangeMapping {
         const lastBefore = findLast(this.rangeMappings, r => r.inputRange.getStartPosition().isBeforeOrEqual(position));
+
         if (!lastBefore) {
             return new RangeMapping(Range.fromPositions(position, position), Range.fromPositions(position, position));
         }
@@ -214,17 +233,23 @@ lengthBetweenPositions(m1.inputRange.getEndPosition(), m2.inputRange.getStartPos
             return lastBefore;
         }
         const dist = lengthBetweenPositions(lastBefore.inputRange.getEndPosition(), position);
+
         const outputPos = addLength(lastBefore.outputRange.getEndPosition(), dist);
+
         return new RangeMapping(Range.fromPositions(position), Range.fromPositions(outputPos));
     }
     public projectRange(range: Range): RangeMapping {
         const start = this.project(range.getStartPosition());
+
         const end = this.project(range.getEndPosition());
+
         return new RangeMapping(start.inputRange.plusRange(end.inputRange), start.outputRange.plusRange(end.outputRange));
     }
     public get outputLineCount(): number {
         const last = this.rangeMappings.at(-1);
+
         const diff = last ? last.outputRange.endLineNumber - last.inputRange.endLineNumber : 0;
+
         return this.inputLineCount + diff;
     }
     public reverse(): DocumentRangeMap {

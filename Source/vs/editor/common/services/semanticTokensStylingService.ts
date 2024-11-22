@@ -13,6 +13,7 @@ import { InstantiationType, registerSingleton } from '../../../platform/instanti
 export class SemanticTokensStylingService extends Disposable implements ISemanticTokensStylingService {
     public _serviceBrand: undefined;
     private _caches: WeakMap<DocumentTokensProvider, SemanticTokensProviderStyling>;
+
     constructor(
     @IThemeService
     private readonly _themeService: IThemeService, 

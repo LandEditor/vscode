@@ -6,6 +6,7 @@ import type * as ts from 'typescript/lib/tsserverlibrary';
 export class WasmCancellationToken implements ts.server.ServerCancellationToken {
     shouldCancel: (() => boolean) | undefined;
     currentRequestId: number | undefined = undefined;
+
     setRequest(requestId: number) {
         this.currentRequestId = requestId;
     }

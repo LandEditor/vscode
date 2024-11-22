@@ -13,6 +13,7 @@ import { ISearchService } from '../../search/common/search.js';
 import { toWorkspaceFolder } from '../../../../platform/workspace/common/workspace.js';
 import { ILogService } from '../../../../platform/log/common/log.js';
 import { promiseWithResolvers } from '../../../../base/common/async.js';
+
 const WORKSPACE_CONTAINS_TIMEOUT = 7000;
 export interface IExtensionActivationHost {
     readonly logService: ILogService;
@@ -26,14 +27,18 @@ export interface IExtensionActivationResult {
 }
 export function checkActivateWorkspaceContainsExtension(host: IExtensionActivationHost, desc: IExtensionDescription): Promise<IExtensionActivationResult | undefined> {
     const activationEvents = desc.activationEvents;
+
     if (!activationEvents) {
         return Promise.resolve(undefined);
     }
     const fileNames: string[] = [];
+
     const globPatterns: string[] = [];
+
     for (const activationEvent of activationEvents) {
         if (/^workspaceContains:/.test(activationEvent)) {
             const fileNameOrGlob = activationEvent.substr('workspaceContains:'.length);
+
             if (fileNameOrGlob.indexOf('*') >= 0 || fileNameOrGlob.indexOf('?') >= 0 || host.forceUsingSearch) {
                 globPatterns.push(fileNameOrGlob);
             }
@@ -46,13 +51,17 @@ export function checkActivateWorkspaceContainsExtension(host: IExtensionActivati
         return Promise.resolve(undefined);
     }
     const { promise, resolve } = promiseWithResolvers<IExtensionActivationResult | undefined>();
+
     const activate = (activationEvent: string) => resolve({ activationEvent });
+
     const fileNamePromise = Promise.all(fileNames.map((fileName) => _activateIfFileName(host, fileName, activate))).then(() => { });
+
     const globPatternPromise = _activateIfGlobPatterns(host, desc.identifier, globPatterns, activate);
     Promise.all([fileNamePromise, globPatternPromise]).then(() => {
         // when all are done, resolve with undefined (relevant only if it was not activated so far)
         resolve(undefined);
     });
+
     return promise;
 }
 async function _activateIfFileName(host: IExtensionActivationHost, fileName: string, activate: (activationEvent: string) => void): Promise<void> {
@@ -61,6 +70,7 @@ async function _activateIfFileName(host: IExtensionActivationHost, fileName: str
         if (await host.exists(resources.joinPath(URI.revive(uri), fileName))) {
             // the file was found
             activate(`workspaceContains:${fileName}`);
+
             return;
         }
     }
@@ -70,12 +80,16 @@ async function _activateIfGlobPatterns(host: IExtensionActivationHost, extension
         return Promise.resolve(undefined);
     }
     const tokenSource = new CancellationTokenSource();
+
     const searchP = host.checkExists(host.folders, globPatterns, tokenSource.token);
+
     const timer = setTimeout(async () => {
         tokenSource.cancel();
         host.logService.info(`Not activating extension '${extensionId.value}': Timed out while searching for 'workspaceContains' pattern ${globPatterns.join(',')}`);
     }, WORKSPACE_CONTAINS_TIMEOUT);
+
     let exists: boolean = false;
+
     try {
         exists = await searchP;
     }
@@ -86,6 +100,7 @@ async function _activateIfGlobPatterns(host: IExtensionActivationHost, extension
     }
     tokenSource.dispose();
     clearTimeout(timer);
+
     if (exists) {
         // a file was found matching one of the glob patterns
         activate(`workspaceContains:${globPatterns.join(',')}`);
@@ -93,13 +108,17 @@ async function _activateIfGlobPatterns(host: IExtensionActivationHost, extension
 }
 export function checkGlobFileExists(accessor: ServicesAccessor, folders: readonly UriComponents[], includes: string[], token: CancellationToken): Promise<boolean> {
     const instantiationService = accessor.get(IInstantiationService);
+
     const searchService = accessor.get(ISearchService);
+
     const queryBuilder = instantiationService.createInstance(QueryBuilder);
+
     const query = queryBuilder.file(folders.map(folder => toWorkspaceFolder(URI.revive(folder))), {
         _reason: 'checkExists',
         includePattern: includes,
         exists: true
     });
+
     return searchService.fileSearch(query, token).then(result => {
         return !!result.limitHit;
     }, err => {

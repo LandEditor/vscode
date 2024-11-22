@@ -38,17 +38,21 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	async resolveVariables(prompt: IParsedChatRequest, attachedContextVariables: IChatRequestVariableEntry[] | undefined, model: IChatModel, progress: (part: IChatVariableResolverProgress) => void, token: CancellationToken): Promise<IChatRequestVariableData> {
 		let resolvedVariables: IChatRequestVariableEntry[] = [];
+
 		const jobs: Promise<any>[] = [];
 
 		prompt.parts
 			.forEach((part, i) => {
 				if (part instanceof ChatRequestVariablePart) {
 					const data = this._resolver.get(part.variableName.toLowerCase());
+
 					if (data) {
 						const references: IChatContentReference[] = [];
+
 						const variableProgressCallback = (item: IChatVariableResolverProgress) => {
 							if (item.kind === 'reference') {
 								references.push(item);
+
 								return;
 							}
 							progress(item);
@@ -70,11 +74,14 @@ export class ChatVariablesService implements IChatVariablesService {
 		attachedContextVariables
 			?.forEach((attachment, i) => {
 				const data = this._resolver.get(attachment.name?.toLowerCase());
+
 				if (data) {
 					const references: IChatContentReference[] = [];
+
 					const variableProgressCallback = (item: IChatVariableResolverProgress) => {
 						if (item.kind === 'reference') {
 							references.push(item);
+
 							return;
 						}
 						progress(item);
@@ -108,6 +115,7 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	async resolveVariable(variableName: string, promptText: string, model: IChatModel, progress: (part: IChatVariableResolverProgress) => void, token: CancellationToken): Promise<IChatRequestVariableValue | undefined> {
 		const data = this._resolver.get(variableName.toLowerCase());
+
 		if (!data) {
 			return undefined;
 		}
@@ -125,6 +133,7 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	getVariables(location: ChatAgentLocation): Iterable<Readonly<IChatVariableData>> {
 		const all = Iterable.map(this._resolver.values(), data => data.data);
+
 		return Iterable.filter(all, data => {
 			// TODO@jrieken this is improper and should be know from the variable registeration data
 			return location !== ChatAgentLocation.Editor || !new Set(['selection', 'editor']).has(data.name);
@@ -137,11 +146,13 @@ export class ChatVariablesService implements IChatVariablesService {
 		// - Parser takes list of dynamic references (annoying)
 		// - Or the parser is known to implicitly act on the input widget, and we need to call it before calling the chat service (maybe incompatible with the future, but easy)
 		const widget = this.chatWidgetService.getWidgetBySessionId(sessionId);
+
 		if (!widget || !widget.viewModel || !widget.supportsFileReferences) {
 			return [];
 		}
 
 		const model = widget.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID);
+
 		if (!model) {
 			return [];
 		}
@@ -151,10 +162,12 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	registerVariable(data: IChatVariableData, resolver: IChatVariableResolver): IDisposable {
 		const key = data.name.toLowerCase();
+
 		if (this._resolver.has(key)) {
 			throw new Error(`A chat variable with the name '${data.name}' already exists.`);
 		}
 		this._resolver.set(key, { data, resolver });
+
 		return toDisposable(() => {
 			this._resolver.delete(key);
 		});
@@ -168,19 +181,24 @@ export class ChatVariablesService implements IChatVariablesService {
 		const widget = location === ChatAgentLocation.EditingSession
 			? await showEditsView(this.viewsService)
 			: (this.chatWidgetService.lastFocusedWidget ?? await showChatView(this.viewsService));
+
 		if (!widget || !widget.viewModel) {
 			return;
 		}
 
 		const key = name.toLowerCase();
+
 		if (key === 'file' && typeof value !== 'string') {
 			const uri = URI.isUri(value) ? value : value.uri;
+
 			const range = 'range' in value ? value.range : undefined;
 			widget.attachmentModel.addFile(uri, range);
+
 			return;
 		}
 
 		const resolved = this._resolver.get(key);
+
 		if (!resolved) {
 			return;
 		}

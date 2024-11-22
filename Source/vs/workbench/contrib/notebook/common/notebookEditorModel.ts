@@ -42,6 +42,7 @@ export class SimpleNotebookEditorModel extends EditorModel implements INotebookE
     private _workingCopy?: IStoredFileWorkingCopy<NotebookFileWorkingCopyModel> | IUntitledFileWorkingCopy<NotebookFileWorkingCopyModel>;
     private readonly _workingCopyListeners = this._register(new DisposableStore());
     private readonly scratchPad: boolean;
+
     constructor(readonly resource: URI, private readonly _hasAssociatedFilePath: boolean, readonly viewType: string, private readonly _workingCopyManager: IFileWorkingCopyManager<NotebookFileWorkingCopyModel, NotebookFileWorkingCopyModel>, scratchpad: boolean, 
     @IFilesConfigurationService
     private readonly _filesConfigurationService: IFilesConfigurationService) {
@@ -50,6 +51,7 @@ export class SimpleNotebookEditorModel extends EditorModel implements INotebookE
     }
     override dispose(): void {
         this._workingCopy?.dispose();
+
         super.dispose();
     }
     get notebook(): NotebookTextModel | undefined {
@@ -97,10 +99,12 @@ export class SimpleNotebookEditorModel extends EditorModel implements INotebookE
     }
     revert(options?: IRevertOptions): Promise<void> {
         assertType(this.isResolved());
+
         return this._workingCopy!.revert(options);
     }
     save(options?: ISaveOptions): Promise<boolean> {
         assertType(this.isResolved());
+
         return this._workingCopy!.save(options);
     }
     async load(options?: INotebookLoadOptions): Promise<IResolvedNotebookEditorModel> {
@@ -139,10 +143,12 @@ export class SimpleNotebookEditorModel extends EditorModel implements INotebookE
             });
         }
         assertType(this.isResolved());
+
         return this;
     }
     async saveAs(target: URI): Promise<IUntypedEditorInput | undefined> {
         const newWorkingCopy = await this._workingCopyManager.saveAs(this.resource, target);
+
         if (!newWorkingCopy) {
             return undefined;
         }
@@ -152,6 +158,7 @@ export class SimpleNotebookEditorModel extends EditorModel implements INotebookE
     }
     private static _isStoredFileWorkingCopy(candidate?: IStoredFileWorkingCopy<NotebookFileWorkingCopyModel> | IUntitledFileWorkingCopy<NotebookFileWorkingCopyModel>): candidate is IStoredFileWorkingCopy<NotebookFileWorkingCopyModel> {
         const isUntitled = candidate && candidate.capabilities & WorkingCopyCapabilities.Untitled;
+
         return !isUntitled;
     }
 }
@@ -161,6 +168,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
     readonly onWillDispose: Event<void>;
     readonly configuration: IFileWorkingCopyModelConfiguration | undefined = undefined;
     save: ((options: IWriteFileOptions, token: CancellationToken) => Promise<IFileStatWithMetadata>) | undefined;
+
     constructor(private readonly _notebookModel: NotebookTextModel, private readonly _notebookService: INotebookService, private readonly _configurationService: IConfigurationService, private readonly _telemetryService: ITelemetryService, private readonly _notebookLogService: INotebookLoggingService) {
         super();
         this.onWillDispose = _notebookModel.onWillDispose.bind(_notebookModel);
@@ -177,10 +185,13 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
                     isUndoing: false,
                     isInitial: false, //_notebookModel.cells.length === 0 // todo@jrieken non transient metadata?
                 });
+
                 break;
             }
         }));
+
         const saveWithReducedCommunication = this._configurationService.getValue(NotebookSetting.remoteSaving);
+
         if (saveWithReducedCommunication || _notebookModel.uri.scheme === Schemas.vscodeRemote) {
             this.configuration = {
                 // Intentionally pick a larger delay for triggering backups to allow auto-save
@@ -199,6 +210,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
         this.save = async (options: IWriteFileOptions, token: CancellationToken) => {
             try {
                 let serializer = this._notebookService.tryGetDataProviderSync(this.notebookModel.viewType)?.serializer;
+
                 if (!serializer) {
                     this._notebookLogService.info('WorkingCopyModel', 'No serializer found for notebook model, checking if provider still needs to be resolved');
                     serializer = await this.getNotebookSerializer();
@@ -207,6 +219,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
                     throw new CancellationError();
                 }
                 const stat = await serializer.save(this._notebookModel.uri, this._notebookModel.versionId, options, token);
+
                 return stat;
             }
             catch (error) {
@@ -235,6 +248,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
                             comment: 'Info about the error that occurred';
                         };
                     };
+
                     const isIPynb = this._notebookModel.viewType === 'jupyter-notebook' || this._notebookModel.viewType === 'interactive';
                     this._telemetryService.publicLogError2<notebookSaveErrorData, notebookSaveErrorClassification>('notebook/SaveError', {
                         isRemote: this._notebookModel.uri.scheme === Schemas.vscodeRemote,
@@ -248,6 +262,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
     }
     override dispose(): void {
         this._notebookModel.dispose();
+
         super.dispose();
     }
     get notebookModel() {
@@ -255,11 +270,14 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
     }
     async snapshot(context: SnapshotContext, token: CancellationToken): Promise<VSBufferReadableStream> {
         const serializer = await this.getNotebookSerializer();
+
         const data: NotebookData = {
             metadata: filter(this._notebookModel.metadata, key => !serializer.options.transientDocumentMetadata[key]),
             cells: [],
         };
+
         let outputSize = 0;
+
         for (const cell of this._notebookModel.cells) {
             const cellData: ICellDto2 = {
                 cellKind: cell.cellKind,
@@ -269,13 +287,16 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
                 outputs: [],
                 internalMetadata: cell.internalMetadata
             };
+
             const outputSizeLimit = this._configurationService.getValue<number>(NotebookSetting.outputBackupSizeLimit) * 1024;
+
             if (context === SnapshotContext.Backup && outputSizeLimit > 0) {
                 cell.outputs.forEach(output => {
                     output.outputs.forEach(item => {
                         outputSize += item.data.byteLength;
                     });
                 });
+
                 if (outputSize > outputSizeLimit) {
                     throw new Error('Notebook too large to backup');
                 }
@@ -285,6 +306,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
             data.cells.push(cellData);
         }
         const bytes = await serializer.notebookToData(data);
+
         if (token.isCancellationRequested) {
             throw new CancellationError();
         }
@@ -292,8 +314,11 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
     }
     async update(stream: VSBufferReadableStream, token: CancellationToken): Promise<void> {
         const serializer = await this.getNotebookSerializer();
+
         const bytes = await streamToBuffer(stream);
+
         const data = await serializer.dataToNotebook(bytes);
+
         if (token.isCancellationRequested) {
             throw new CancellationError();
         }
@@ -302,6 +327,7 @@ export class NotebookFileWorkingCopyModel extends Disposable implements IStoredF
     }
     async getNotebookSerializer(): Promise<INotebookSerializer> {
         const info = await this._notebookService.withNotebookDataProvider(this.notebookModel.viewType);
+
         if (!(info instanceof SimpleNotebookProviderInfo)) {
             throw new Error('CANNOT open file notebook with this provider');
         }
@@ -327,6 +353,7 @@ export class NotebookFileWorkingCopyModelFactory implements IStoredFileWorkingCo
     async createModel(resource: URI, stream: VSBufferReadableStream, token: CancellationToken): Promise<NotebookFileWorkingCopyModel> {
         const notebookModel = this._notebookService.getNotebookTextModel(resource) ??
             await this._notebookService.createNotebookTextModel(this._viewType, resource, stream);
+
         return new NotebookFileWorkingCopyModel(notebookModel, this._notebookService, this._configurationService, this._telemetryService, this._notebookLogService);
     }
 }

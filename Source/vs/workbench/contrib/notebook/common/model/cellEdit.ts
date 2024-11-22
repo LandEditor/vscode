@@ -18,10 +18,12 @@ export interface ITextCellEditingDelegate {
 }
 export class MoveCellEdit implements IResourceUndoRedoElement {
     type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
+
     get label() {
         return this.length === 1 ? 'Move Cell' : 'Move Cells';
     }
     code: string = 'undoredo.textBufferEdit';
+
     constructor(public resource: URI, private fromIndex: number, private length: number, private toIndex: number, private editingDelegate: ITextCellEditingDelegate, private beforedSelections: ISelectionState | undefined, private endSelections: ISelectionState | undefined) {
     }
     undo(): void {
@@ -39,6 +41,7 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 }
 export class SpliceCellsEdit implements IResourceUndoRedoElement {
     type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
+
     get label() {
         // Compute the most appropriate labels
         if (this.diffs.length === 1 && this.diffs[0][1].length === 0) {
@@ -51,6 +54,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
         return 'Insert Cell';
     }
     code: string = 'undoredo.textBufferEdit';
+
     constructor(public resource: URI, private diffs: [
         number,
         NotebookCellTextModel[],
@@ -78,6 +82,7 @@ export class CellMetadataEdit implements IResourceUndoRedoElement {
     type: UndoRedoElementType.Resource = UndoRedoElementType.Resource;
     label: string = 'Update Cell Metadata';
     code: string = 'undoredo.textBufferEdit';
+
     constructor(public resource: URI, readonly index: number, readonly oldMetadata: NotebookCellMetadata, readonly newMetadata: NotebookCellMetadata, private editingDelegate: ITextCellEditingDelegate) {
     }
     undo(): void {

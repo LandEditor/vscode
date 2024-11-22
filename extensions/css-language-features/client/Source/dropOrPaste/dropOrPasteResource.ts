@@ -19,11 +19,13 @@ class DropOrPasteResourceProvider implements vscode.DocumentDropEditProvider, vs
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		const uriList = await this.getUriList(dataTransfer);
+
 		if (!uriList.entries.length || token.isCancellationRequested) {
 			return;
 		}
 
 		const snippet = await this.createUriListSnippet(document.uri, uriList);
+
 		if (!snippet || token.isCancellationRequested) {
 			return;
 		}
@@ -44,11 +46,13 @@ class DropOrPasteResourceProvider implements vscode.DocumentDropEditProvider, vs
 		token: vscode.CancellationToken
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
 		const uriList = await this.getUriList(dataTransfer);
+
 		if (!uriList.entries.length || token.isCancellationRequested) {
 			return;
 		}
 
 		const snippet = await this.createUriListSnippet(document.uri, uriList);
+
 		if (!snippet || token.isCancellationRequested) {
 			return;
 		}
@@ -63,14 +67,17 @@ class DropOrPasteResourceProvider implements vscode.DocumentDropEditProvider, vs
 
 	private async getUriList(dataTransfer: vscode.DataTransfer): Promise<UriList> {
 		const urlList = await dataTransfer.get(Mimes.uriList)?.asString();
+
 		if (urlList) {
 			return UriList.from(urlList);
 		}
 
 		// Find file entries
 		const uris: vscode.Uri[] = [];
+
 		for (const [_, entry] of dataTransfer) {
 			const file = entry.asFile();
+
 			if (file?.uri) {
 				uris.push(file.uri);
 			}
@@ -85,12 +92,16 @@ class DropOrPasteResourceProvider implements vscode.DocumentDropEditProvider, vs
 		}
 
 		const snippet = new vscode.SnippetString();
+
 		for (let i = 0; i < uriList.entries.length; i++) {
 			const uri = uriList.entries[i];
+
 			const relativePath = getRelativePath(getDocumentDir(docUri), uri.uri);
+
 			const urlText = relativePath ?? uri.str;
 
 			snippet.appendText(`url(${urlText})`);
+
 			if (i !== uriList.entries.length - 1) {
 				snippet.appendText(' ');
 			}
@@ -106,6 +117,7 @@ class DropOrPasteResourceProvider implements vscode.DocumentDropEditProvider, vs
 
 	private pasteAsCssUrlByDefault(document: vscode.TextDocument, position: vscode.Position): boolean {
 		const regex = /url\(.+?\)/gi;
+
 		for (const match of Array.from(document.lineAt(position.line).text.matchAll(regex))) {
 			if (position.character > match.index && position.character < match.index + match[0].length) {
 				return false;
@@ -122,6 +134,7 @@ function getRelativePath(fromFile: vscode.Uri | undefined, toFile: vscode.Uri): 
 			// so that drive-letters are resolved cast insensitively. However we then want to
 			// convert back to a posix path to insert in to the document
 			const relativePath = path.relative(fromFile.fsPath, toFile.fsPath);
+
 			return path.posix.normalize(relativePath.split(path.sep).join(path.posix.sep));
 		}
 

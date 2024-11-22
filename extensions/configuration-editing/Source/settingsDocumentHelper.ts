@@ -5,6 +5,7 @@
 import * as vscode from 'vscode';
 import { getLocation, Location, parse } from 'jsonc-parser';
 import { provideInstalledExtensionProposals } from './extensionsProposals';
+
 const OVERRIDE_IDENTIFIER_REGEX = /\[([^\[\]]*)\]/g;
 export class SettingsDocument {
     constructor(private document: vscode.TextDocument) { }
@@ -33,21 +34,25 @@ export class SettingsDocument {
         // settingsSync.ignoredExtensions
         if (location.path[0] === 'settingsSync.ignoredExtensions') {
             let ignoredExtensions = [];
+
             try {
                 ignoredExtensions = parse(this.document.getText())['settingsSync.ignoredExtensions'];
             }
             catch (e) { /* ignore error */ }
             const range = this.getReplaceRange(location, position);
+
             return provideInstalledExtensionProposals(ignoredExtensions, '', range, true);
         }
         // remote.extensionKind
         if (location.path[0] === 'remote.extensionKind' && location.path.length === 2 && location.isAtPropertyKey) {
             let alreadyConfigured: string[] = [];
+
             try {
                 alreadyConfigured = Object.keys(parse(this.document.getText())['remote.extensionKind']);
             }
             catch (e) { /* ignore error */ }
             const range = this.getReplaceRange(location, position);
+
             return provideInstalledExtensionProposals(alreadyConfigured, location.previousNode ? '' : `: [\n\t"ui"\n]`, range, true);
         }
         // remote.portsAttributes
@@ -58,8 +63,10 @@ export class SettingsDocument {
     }
     private getReplaceRange(location: Location, position: vscode.Position) {
         const node = location.previousNode;
+
         if (node) {
             const nodeStart = this.document.positionAt(node.offset), nodeEnd = this.document.positionAt(node.offset + node.length);
+
             if (nodeStart.isBeforeOrEqual(position) && nodeEnd.isAfterOrEqual(position)) {
                 return new vscode.Range(nodeStart, nodeEnd);
             }
@@ -71,23 +78,28 @@ export class SettingsDocument {
             return false;
         }
         const previousNode = location.previousNode;
+
         if (previousNode) {
             const offset = this.document.offsetAt(pos);
+
             return offset >= previousNode.offset && offset <= previousNode.offset + previousNode.length;
         }
         return true;
     }
     private async provideWindowTitleCompletionItems(location: Location, pos: vscode.Position): Promise<vscode.CompletionItem[]> {
         const completions: vscode.CompletionItem[] = [];
+
         if (!this.isCompletingPropertyValue(location, pos)) {
             return completions;
         }
         let range = this.document.getWordRangeAtPosition(pos, /\$\{[^"\}]*\}?/);
+
         if (!range || range.start.isEqual(pos) || range.end.isEqual(pos) && this.document.getText(range).endsWith('}')) {
             range = new vscode.Range(pos, pos);
         }
         const getText = (variable: string) => {
             const text = '${' + variable + '}';
+
             return location.previousNode ? text : JSON.stringify(text);
         };
         completions.push(this.newSimpleCompletionItem(getText('activeEditorShort'), range, vscode.l10n.t("the file name (e.g. myFile.txt)")));
@@ -107,29 +119,35 @@ export class SettingsDocument {
         completions.push(this.newSimpleCompletionItem(getText('separator'), range, vscode.l10n.t("a conditional separator (' - ') that only shows when surrounded by variables with values")));
         completions.push(this.newSimpleCompletionItem(getText('activeRepositoryName'), range, vscode.l10n.t("the name of the active repository (e.g. vscode)")));
         completions.push(this.newSimpleCompletionItem(getText('activeRepositoryBranchName'), range, vscode.l10n.t("the name of the active branch in the active repository (e.g. main)")));
+
         return completions;
     }
     private async provideEditorLabelCompletionItems(location: Location, pos: vscode.Position): Promise<vscode.CompletionItem[]> {
         const completions: vscode.CompletionItem[] = [];
+
         if (!this.isCompletingPropertyValue(location, pos)) {
             return completions;
         }
         let range = this.document.getWordRangeAtPosition(pos, /\$\{[^"\}]*\}?/);
+
         if (!range || range.start.isEqual(pos) || range.end.isEqual(pos) && this.document.getText(range).endsWith('}')) {
             range = new vscode.Range(pos, pos);
         }
         const getText = (variable: string) => {
             const text = '${' + variable + '}';
+
             return location.previousNode ? text : JSON.stringify(text);
         };
         completions.push(this.newSimpleCompletionItem(getText('dirname'), range, vscode.l10n.t("The parent folder name of the editor (e.g. myFileFolder)")));
         completions.push(this.newSimpleCompletionItem(getText('dirname(1)'), range, vscode.l10n.t("The nth parent folder name of the editor")));
         completions.push(this.newSimpleCompletionItem(getText('filename'), range, vscode.l10n.t("The file name of the editor without its directory or extension (e.g. myFile)")));
         completions.push(this.newSimpleCompletionItem(getText('extname'), range, vscode.l10n.t("The file extension of the editor (e.g. txt)")));
+
         return completions;
     }
     private async provideFilesAssociationsCompletionItems(location: Location, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         const completions: vscode.CompletionItem[] = [];
+
         if (location.path.length === 2) {
             // Key
             if (location.path[1] === '') {
@@ -211,7 +229,9 @@ export class SettingsDocument {
     private async provideLanguageCompletionItems(location: Location, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         if (location.path.length === 1 && this.isCompletingPropertyValue(location, position)) {
             const range = this.getReplaceRange(location, position);
+
             const languages = await vscode.languages.getLanguages();
+
             return [
                 this.newSimpleCompletionItem(JSON.stringify('${activeEditorLanguage}'), range, vscode.l10n.t("Use the language of the currently active text editor if any")),
                 ...languages.map(l => this.newSimpleCompletionItem(JSON.stringify(l), range))
@@ -221,7 +241,9 @@ export class SettingsDocument {
     }
     private async provideLanguageCompletionItemsForLanguageOverrides(range: vscode.Range): Promise<vscode.CompletionItem[]> {
         const languages = await vscode.languages.getLanguages();
+
         const completionItems = [];
+
         for (const language of languages) {
             const item = new vscode.CompletionItem(JSON.stringify(language));
             item.kind = vscode.CompletionItemKind.Property;
@@ -233,11 +255,17 @@ export class SettingsDocument {
     private async provideLanguageOverridesCompletionItems(location: Location, position: vscode.Position): Promise<vscode.CompletionItem[]> {
         if (location.path.length === 1 && location.isAtPropertyKey && location.previousNode && typeof location.previousNode.value === 'string' && location.previousNode.value.startsWith('[')) {
             const startPosition = this.document.positionAt(location.previousNode.offset + 1);
+
             const endPosition = startPosition.translate(undefined, location.previousNode.value.length);
+
             const donotSuggestLanguages: string[] = [];
+
             const languageOverridesRanges: vscode.Range[] = [];
+
             let matches = OVERRIDE_IDENTIFIER_REGEX.exec(location.previousNode.value);
+
             let lastLanguageOverrideRange: vscode.Range | undefined;
+
             while (matches?.length) {
                 lastLanguageOverrideRange = new vscode.Range(this.document.positionAt(location.previousNode.offset + 1 + matches.index), this.document.positionAt(location.previousNode.offset + 1 + matches.index + matches[0].length));
                 languageOverridesRanges.push(lastLanguageOverrideRange);
@@ -248,6 +276,7 @@ export class SettingsDocument {
                 matches = OVERRIDE_IDENTIFIER_REGEX.exec(location.previousNode.value);
             }
             const lastLanguageOverrideEndPosition = lastLanguageOverrideRange ? lastLanguageOverrideRange.end : startPosition;
+
             if (lastLanguageOverrideEndPosition.isBefore(endPosition)) {
                 languageOverridesRanges.push(new vscode.Range(lastLanguageOverrideEndPosition, endPosition));
             }
@@ -258,7 +287,9 @@ export class SettingsDocument {
              */
             if (languageOverrideRange && !languageOverrideRange.isEqual(languageOverridesRanges[0])) {
                 const languages = await vscode.languages.getLanguages();
+
                 const completionItems = [];
+
                 for (const language of languages) {
                     if (!donotSuggestLanguages.includes(language)) {
                         const item = new vscode.CompletionItem(`[${language}]`);
@@ -299,10 +330,12 @@ export class SettingsDocument {
         item.detail = description;
         item.insertText = insertText ? insertText : text;
         item.range = range;
+
         return item;
     }
     private newSnippetCompletionItem(o: {
         label: string;
+
         documentation?: string;
         snippet: string;
         range: vscode.Range;
@@ -312,6 +345,7 @@ export class SettingsDocument {
         item.documentation = o.documentation;
         item.insertText = new vscode.SnippetString(o.snippet);
         item.range = o.range;
+
         return item;
     }
 }

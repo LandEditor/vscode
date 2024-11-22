@@ -9,7 +9,9 @@ import { cleanRemoteAuthority } from '../../../../platform/telemetry/common/tele
 import { INodeProcess } from '../../../../base/common/platform.js';
 export function resolveWorkbenchCommonProperties(storageService: IStorageService, release: string, hostname: string, commit: string | undefined, version: string | undefined, machineId: string, sqmId: string, devDeviceId: string, isInternalTelemetry: boolean, process: INodeProcess, remoteAuthority?: string): ICommonProperties {
     const result = resolveCommonProperties(release, hostname, process.arch, commit, version, machineId, sqmId, devDeviceId, isInternalTelemetry);
+
     const firstSessionDate = storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION)!;
+
     const lastSessionDate = storageService.get(lastSessionDateStorageKey, StorageScope.APPLICATION)!;
     // __GDPR__COMMON__ "common.version.shell" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
     result['common.version.shell'] = process.versions?.['electron'];
@@ -25,5 +27,6 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
     result['common.remoteAuthority'] = cleanRemoteAuthority(remoteAuthority);
     // __GDPR__COMMON__ "common.cli" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
     result['common.cli'] = !!process.env['VSCODE_CLI'];
+
     return result;
 }

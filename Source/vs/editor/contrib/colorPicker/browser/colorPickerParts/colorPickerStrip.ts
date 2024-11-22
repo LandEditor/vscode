@@ -28,6 +28,7 @@ export abstract class Strip extends Disposable {
 
 	constructor(container: HTMLElement, protected model: ColorPickerModel, type: ColorPickerWidgetType) {
 		super();
+
 		if (type === ColorPickerWidgetType.Standalone) {
 			this.domNode = dom.append(container, $('.standalone-strip'));
 			this.overlay = dom.append(this.domNode, $('.standalone-overlay'));
@@ -60,6 +61,7 @@ export abstract class Strip extends Disposable {
 			return;
 		}
 		const monitor = this._register(new GlobalPointerMoveMonitor());
+
 		const origin = dom.getDomNodePagePosition(this.domNode);
 		this.domNode.classList.add('grabbing');
 
@@ -102,8 +104,11 @@ export class OpacityStrip extends Strip {
 
 	protected override onDidChangeColor(color: Color): void {
 		super.onDidChangeColor(color);
+
 		const { r, g, b } = color.rgba;
+
 		const opaque = new Color(new RGBA(r, g, b, 1));
+
 		const transparent = new Color(new RGBA(r, g, b, 0));
 
 		this.overlay.style.background = `linear-gradient(to bottom, ${opaque} 0%, ${transparent} 100%)`;

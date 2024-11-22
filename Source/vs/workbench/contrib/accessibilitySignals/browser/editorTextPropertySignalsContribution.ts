@@ -30,13 +30,16 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
         .some(signal => observableFromValueWithChangeEvent(this, this._accessibilitySignalService.getEnabledState(signal, false)).read(reader)));
     private readonly _activeEditorObservable = observableFromEvent(this, this._editorService.onDidActiveEditorChange, (_) => {
         const activeTextEditorControl = this._editorService.activeTextEditorControl;
+
         const editor = isDiffEditor(activeTextEditorControl)
             ? activeTextEditorControl.getOriginalEditor()
             : isCodeEditor(activeTextEditorControl)
                 ? activeTextEditorControl
                 : undefined;
+
         return editor && editor.hasModel() ? { editor, model: editor.getModel() } : undefined;
     });
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -51,6 +54,7 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
                 return;
             }
             const activeEditor = this._activeEditorObservable.read(reader);
+
             if (activeEditor) {
                 this._registerAccessibilitySignalsForEditor(activeEditor.editor, activeEditor.model, store);
             }
@@ -58,21 +62,28 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
     }
     private _registerAccessibilitySignalsForEditor(editor: ICodeEditor, editorModel: ITextModel, store: DisposableStore): void {
         let lastLine = -1;
+
         const ignoredLineSignalsForCurrentLine = new Set<TextProperty>();
+
         const timeouts = store.add(new DisposableStore());
+
         const propertySources = this._textProperties.map(p => ({ source: p.createSource(editor, editorModel), property: p }));
+
         const didType = wasEventTriggeredRecently(editor.onDidChangeModelContent, 100, store);
         store.add(editor.onDidChangeCursorPosition(args => {
             timeouts.clear();
+
             if (args &&
                 args.reason !== CursorChangeReason.Explicit &&
                 args.reason !== CursorChangeReason.NotSet) {
                 // Ignore cursor changes caused by navigation (e.g. which happens when execution is paused).
                 ignoredLineSignalsForCurrentLine.clear();
+
                 return;
             }
             const trigger = (property: TextProperty, source: TextPropertySource, mode: 'line' | 'positional') => {
                 const signal = mode === 'line' ? property.lineSignal : property.positionSignal;
+
                 if (!signal
                     || !this._accessibilitySignalService.getEnabledState(signal, false).value
                     || !source.isPresent(position, mode, undefined)) {
@@ -94,10 +105,13 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
             };
             // React to cursor changes
             const position = args.position;
+
             const lineNumber = position.lineNumber;
+
             if (lineNumber !== lastLine) {
                 ignoredLineSignalsForCurrentLine.clear();
                 lastLine = lineNumber;
+
                 for (const p of propertySources) {
                     trigger(p.property, p.source, 'line');
                 }
@@ -112,10 +126,13 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
                     return;
                 }
                 let lastValueAtPosition: boolean | undefined = undefined;
+
                 let lastValueOnLine: boolean | undefined = undefined;
                 timeouts.add(autorun(reader => {
                     const newValueAtPosition = s.source.isPresentAtPosition(args.position, reader);
+
                     const newValueOnLine = s.source.isPresentOnLine(args.position.lineNumber, reader);
+
                     if (lastValueAtPosition !== undefined && lastValueAtPosition !== undefined) {
                         if (!lastValueAtPosition && newValueAtPosition) {
                             trigger(s.property, s.source, 'positional');
@@ -141,6 +158,7 @@ class TextPropertySource {
     public static notPresent = new TextPropertySource({ isPresentAtPosition: () => false, isPresentOnLine: () => false });
     public readonly isPresentOnLine: (lineNumber: number, reader: IReader | undefined) => boolean;
     public readonly isPresentAtPosition: (position: Position, reader: IReader | undefined) => boolean;
+
     constructor(options: {
         isPresentOnLine: (lineNumber: number, reader: IReader | undefined) => boolean;
         isPresentAtPosition?: (position: Position, reader: IReader | undefined) => boolean;
@@ -154,14 +172,17 @@ class TextPropertySource {
 }
 class MarkerTextProperty implements TextProperty {
     public readonly debounceWhileTyping = true;
+
     constructor(public readonly positionSignal: AccessibilitySignal, public readonly lineSignal: AccessibilitySignal, private readonly severity: MarkerSeverity, 
     @IMarkerService
     private readonly markerService: IMarkerService) { }
     createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
         const obs = observableSignalFromEvent('onMarkerChanged', this.markerService.onMarkerChanged);
+
         return new TextPropertySource({
             isPresentAtPosition: (position, reader) => {
                 obs.read(reader);
+
                 const hasMarker = this.markerService
                     .read({ resource: model.uri })
                     .some((m) => m.severity === this.severity &&
@@ -169,15 +190,18 @@ class MarkerTextProperty implements TextProperty {
                     position.lineNumber <= m.endLineNumber &&
                     m.startColumn <= position.column &&
                     position.column <= m.endColumn);
+
                 return hasMarker;
             },
             isPresentOnLine: (lineNumber, reader) => {
                 obs.read(reader);
+
                 const hasMarker = this.markerService
                     .read({ resource: model.uri })
                     .some((m) => m.severity === this.severity &&
                     m.startLineNumber <= lineNumber &&
                     lineNumber <= m.endLineNumber);
+
                 return hasMarker;
             }
         });
@@ -187,18 +211,23 @@ class FoldedAreaTextProperty implements TextProperty {
     public readonly lineSignal = AccessibilitySignal.foldedArea;
     createSource(editor: ICodeEditor, _model: ITextModel): TextPropertySource {
         const foldingController = FoldingController.get(editor);
+
         if (!foldingController) {
             return TextPropertySource.notPresent;
         }
         const foldingModel = observableFromPromise(foldingController.getFoldingModel() ?? Promise.resolve(undefined));
+
         return new TextPropertySource({
             isPresentOnLine(lineNumber, reader): boolean {
                 const m = foldingModel.read(reader);
+
                 const regionAtLine = m.value?.getRegionAtLine(lineNumber);
+
                 const hasFolding = !regionAtLine
                     ? false
                     : regionAtLine.isCollapsed &&
                         regionAtLine.startLineNumber === lineNumber;
+
                 return hasFolding;
             }
         });
@@ -206,19 +235,25 @@ class FoldedAreaTextProperty implements TextProperty {
 }
 class BreakpointTextProperty implements TextProperty {
     public readonly lineSignal = AccessibilitySignal.break;
+
     constructor(
     @IDebugService
     private readonly debugService: IDebugService) { }
     createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
         const signal = observableSignalFromEvent('onDidChangeBreakpoints', this.debugService.getModel().onDidChangeBreakpoints);
+
         const debugService = this.debugService;
+
         return new TextPropertySource({
             isPresentOnLine(lineNumber, reader): boolean {
                 signal.read(reader);
+
                 const breakpoints = debugService
                     .getModel()
                     .getBreakpoints({ uri: model.uri, lineNumber });
+
                 const hasBreakpoints = breakpoints.length > 0;
+
                 return hasBreakpoints;
             }
         });

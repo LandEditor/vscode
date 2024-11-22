@@ -24,6 +24,7 @@ export class PlaceholderTextContribution extends Disposable implements IEditorCo
         placeholder: string;
     } | undefined>({ owner: this, equalsFn: structuralEquals }, reader => {
         const p = this._placeholderText.read(reader);
+
         if (!p) {
             return undefined;
         }
@@ -40,6 +41,7 @@ export class PlaceholderTextContribution extends Disposable implements IEditorCo
         const element = h('div.editorPlaceholder');
         store.add(autorun(reader => {
             const data = this._state.read(reader);
+
             const shouldBeVisibile = data?.placeholder !== undefined;
             element.root.style.display = shouldBeVisibile ? 'block' : 'none';
             element.root.innerText = data?.placeholder ?? '';
@@ -62,6 +64,7 @@ export class PlaceholderTextContribution extends Disposable implements IEditorCo
             domNode: element.root,
         }));
     });
+
     constructor(private readonly _editor: ICodeEditor) {
         super();
         this._view.recomputeInitiallyAndOnChange(this._store);

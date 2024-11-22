@@ -21,6 +21,7 @@ const nullReporter = new class NullTelemetryReporter implements TelemetryReporte
 };
 class ExtensionReporter implements TelemetryReporter {
     private readonly _reporter: VSCodeTelemetryReporter;
+
     constructor(packageInfo: IPackageInfo) {
         this._reporter = new VSCodeTelemetryReporter(packageInfo.aiKey);
     }
@@ -35,10 +36,12 @@ class ExtensionReporter implements TelemetryReporter {
 }
 export function loadDefaultTelemetryReporter(): TelemetryReporter {
     const packageInfo = getPackageInfo();
+
     return packageInfo ? new ExtensionReporter(packageInfo) : nullReporter;
 }
 function getPackageInfo(): IPackageInfo | null {
     const extension = vscode.extensions.getExtension('Microsoft.vscode-markdown');
+
     if (extension && extension.packageJSON) {
         return {
             name: extension.packageJSON.name,

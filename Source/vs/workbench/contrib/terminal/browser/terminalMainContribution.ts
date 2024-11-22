@@ -21,6 +21,7 @@ import { IEmbedderTerminalService } from '../../../services/terminal/common/embe
  */
 export class TerminalMainContribution extends Disposable implements IWorkbenchContribution {
     static ID = 'terminalMain';
+
     constructor(
     @IEditorResolverService
     editorResolverService: IEditorResolverService, 
@@ -67,27 +68,33 @@ export class TerminalMainContribution extends Disposable implements IWorkbenchCo
         }, {
             createEditorInput: async ({ resource, options }) => {
                 let instance = terminalService.getInstanceFromResource(resource);
+
                 if (instance) {
                     const sourceGroup = terminalGroupService.getGroupForInstance(instance);
                     sourceGroup?.removeInstance(instance);
                 }
                 else { // Terminal from a different window
                     const terminalIdentifier = parseTerminalUri(resource);
+
                     if (!terminalIdentifier.instanceId) {
                         throw new Error('Terminal identifier without instanceId');
                     }
                     const primaryBackend = terminalService.getPrimaryBackend();
+
                     if (!primaryBackend) {
                         throw new Error('No terminal primary backend');
                     }
                     const attachPersistentProcess = await primaryBackend.requestDetachInstance(terminalIdentifier.workspaceId, terminalIdentifier.instanceId);
+
                     if (!attachPersistentProcess) {
                         throw new Error('No terminal persistent process to attach');
                     }
                     instance = terminalInstanceService.createInstance({ attachPersistentProcess }, TerminalLocation.Editor);
                 }
                 const resolvedResource = terminalEditorService.resolveResource(instance);
+
                 const editor = terminalEditorService.getInputFromResource(resolvedResource);
+
                 return {
                     editor,
                     options: {

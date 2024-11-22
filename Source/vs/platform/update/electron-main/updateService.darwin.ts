@@ -53,6 +53,7 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
         }
         this.logService.trace('update#handleRelaunch(): running raw#quitAndInstall()');
         this.doQuitAndInstall();
+
         return true;
     }
     protected override async initialize(): Promise<void> {
@@ -73,6 +74,7 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
     }
     protected buildUpdateFeedUrl(quality: string): string | undefined {
         let assetID: string;
+
         if (!this.productService.darwinUniversalAssetId) {
             assetID = process.arch === 'x64' ? 'darwin' : 'darwin-arm64';
         }
@@ -80,12 +82,14 @@ export class DarwinUpdateService extends AbstractUpdateService implements IRelau
             assetID = this.productService.darwinUniversalAssetId;
         }
         const url = createUpdateURL(assetID, quality, this.productService);
+
         try {
             electron.autoUpdater.setFeedURL({ url });
         }
         catch (e) {
             // application is very likely not signed
             this.logService.error('Failed to set update feed URL', e);
+
             return undefined;
         }
         return url;

@@ -19,6 +19,7 @@ import { ICustomEditorLabelService } from '../../services/editor/common/customEd
 export abstract class AbstractResourceEditorInput extends EditorInput implements EditorInputWithPreferredResource {
     override get capabilities(): EditorInputCapabilities {
         let capabilities = EditorInputCapabilities.CanSplitInGroup;
+
         if (this.fileService.hasProvider(this.resource)) {
             if (this.filesConfigurationService.isReadonly(this.resource)) {
                 capabilities |= EditorInputCapabilities.Readonly;
@@ -33,6 +34,7 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
         return capabilities;
     }
     private _preferredResource: URI;
+
     get preferredResource(): URI { return this._preferredResource; }
     constructor(readonly resource: URI, preferredResource: URI | undefined, 
     @ILabelService
@@ -90,8 +92,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.shortDescription;
+
             case Verbosity.LONG:
                 return this.longDescription;
+
             case Verbosity.MEDIUM:
             default:
                 return this.mediumDescription;
@@ -143,8 +147,10 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.shortTitle;
+
             case Verbosity.LONG:
                 return this.longTitle;
+
             default:
             case Verbosity.MEDIUM:
                 return this.mediumTitle;
@@ -162,8 +168,11 @@ export abstract class AbstractResourceEditorInput extends EditorInput implements
         // if explicitly configured by the user. Otherwise we pick the best limit for the
         // resource scheme.
         const defaultSizeLimit = getLargeFileConfirmationLimit(this.resource);
+
         let configuredSizeLimit: number | undefined = undefined;
+
         const configuredSizeLimitMb = this.textResourceConfigurationService.inspect<number>(this.resource, null, 'workbench.editorLargeFileConfirmation');
+
         if (isConfigured(configuredSizeLimitMb)) {
             configuredSizeLimit = configuredSizeLimitMb.value * ByteSize.MB; // normalize to MB
         }

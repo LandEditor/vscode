@@ -21,8 +21,10 @@ export abstract class Memory {
             return 0;
         }
         const topScore = items[0].score[0];
+
         for (let i = 0; i < items.length; i++) {
             const { score, completion: suggestion } = items[i];
+
             if (score[0] !== topScore) {
                 // stop when leaving the group of top matches
                 break;
@@ -76,20 +78,27 @@ export class LRUMemory extends Memory {
             return 0;
         }
         const lineSuffix = model.getLineContent(pos.lineNumber).substr(pos.column - 10, pos.column - 1);
+
         if (/\s$/.test(lineSuffix)) {
             return super.select(model, pos, items);
         }
         const topScore = items[0].score[0];
+
         let indexPreselect = -1;
+
         let indexRecency = -1;
+
         let seq = -1;
+
         for (let i = 0; i < items.length; i++) {
             if (items[i].score[0] !== topScore) {
                 // consider only top items
                 break;
             }
             const key = `${model.getLanguageId()}/${items[i].textLabel}`;
+
             const item = this._cache.peek(key);
+
             if (item && item.touch > seq && item.type === items[i].completion.kind && item.insertText === items[i].completion.insertText) {
                 seq = item.touch;
                 indexRecency = i;
@@ -117,7 +126,9 @@ export class LRUMemory extends Memory {
         MemItem
     ][]): void {
         this._cache.clear();
+
         const seq = 0;
+
         for (const [key, value] of data) {
             value.touch = seq;
             value.type = typeof value.type === 'number' ? value.type : CompletionItemKinds.fromString(value.type);
@@ -134,6 +145,7 @@ export class PrefixMemory extends Memory {
     private _seq = 0;
     memorize(model: ITextModel, pos: IPosition, item: CompletionItem): void {
         const { word } = model.getWordUntilPosition(pos);
+
         const key = `${model.getLanguageId()}/${word}`;
         this._trie.set(key, {
             type: item.completion.kind,
@@ -143,17 +155,21 @@ export class PrefixMemory extends Memory {
     }
     override select(model: ITextModel, pos: IPosition, items: CompletionItem[]): number {
         const { word } = model.getWordUntilPosition(pos);
+
         if (!word) {
             return super.select(model, pos, items);
         }
         const key = `${model.getLanguageId()}/${word}`;
+
         let item = this._trie.get(key);
+
         if (!item) {
             item = this._trie.findSubstr(key);
         }
         if (item) {
             for (let i = 0; i < items.length; i++) {
                 const { kind, insertText } = items[i].completion;
+
                 if (kind === item.type && insertText === item.insertText) {
                     return i;
                 }
@@ -173,6 +189,7 @@ export class PrefixMemory extends Memory {
         entries
             .sort((a, b) => -(a[1].touch - b[1].touch))
             .forEach((value, i) => value[1].touch = i);
+
         return entries.slice(0, 200);
     }
     fromJSON(data: [
@@ -180,8 +197,10 @@ export class PrefixMemory extends Memory {
         MemItem
     ][]): void {
         this._trie.clear();
+
         if (data.length > 0) {
             this._seq = data[0][1].touch + 1;
+
             for (const [key, value] of data) {
                 value.type = typeof value.type === 'number' ? value.type : CompletionItemKinds.fromString(value.type);
                 this._trie.set(key, value);
@@ -203,6 +222,7 @@ export class SuggestMemoryService implements ISuggestMemoryService {
     private readonly _persistSoon: RunOnceScheduler;
     private readonly _disposables = new DisposableStore();
     private _strategy?: Memory;
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService, 
@@ -231,14 +251,20 @@ export class SuggestMemoryService implements ISuggestMemoryService {
             overrideIdentifier: model.getLanguageIdAtPosition(pos.lineNumber, pos.column),
             resource: model.uri
         });
+
         if (this._strategy?.name !== mode) {
             this._saveState();
+
             const ctor = SuggestMemoryService._strategyCtors.get(mode) || NoMemory;
             this._strategy = new ctor();
+
             try {
                 const share = this._configService.getValue<boolean>('editor.suggest.shareSuggestSelections');
+
                 const scope = share ? StorageScope.PROFILE : StorageScope.WORKSPACE;
+
                 const raw = this._storageService.get(`${SuggestMemoryService._storagePrefix}/${mode}`, scope);
+
                 if (raw) {
                     this._strategy.fromJSON(JSON.parse(raw));
                 }
@@ -252,7 +278,9 @@ export class SuggestMemoryService implements ISuggestMemoryService {
     private _saveState() {
         if (this._strategy) {
             const share = this._configService.getValue<boolean>('editor.suggest.shareSuggestSelections');
+
             const scope = share ? StorageScope.PROFILE : StorageScope.WORKSPACE;
+
             const raw = JSON.stringify(this._strategy);
             this._storageService.store(`${SuggestMemoryService._storagePrefix}/${this._strategy.name}`, raw, scope, StorageTarget.MACHINE);
         }

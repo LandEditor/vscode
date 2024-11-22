@@ -54,6 +54,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
     private readonly contextKeys = new CounterSet<string>();
     private readonly outputChannelRegistry = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels);
     private readonly loggerDisposables = this._register(new DisposableMap());
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -66,6 +67,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService) {
         super();
+
         const contextKey = CONTEXT_LOG_LEVEL.bindTo(contextKeyService);
         contextKey.set(LogLevelToString(loggerService.getLogLevel()));
         this._register(loggerService.onDidChangeLogLevel(e => {
@@ -80,6 +82,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
         }));
         this._register(loggerService.onDidChangeVisibility(([resource, visibility]) => {
             const logger = loggerService.getRegisteredLogger(resource);
+
             if (logger) {
                 if (visibility) {
                     this.registerLogChannel(logger);
@@ -96,6 +99,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
         for (const logger of loggers) {
             if (logger.when) {
                 const contextKeyExpr = ContextKeyExpr.deserialize(logger.when);
+
                 if (contextKeyExpr) {
                     for (const key of contextKeyExpr.keys()) {
                         this.contextKeys.add(key);
@@ -127,6 +131,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
         for (const logger of loggers) {
             if (logger.when) {
                 const contextKeyExpr = ContextKeyExpr.deserialize(logger.when);
+
                 if (contextKeyExpr) {
                     for (const key of contextKeyExpr.keys()) {
                         this.contextKeys.delete(key);
@@ -138,24 +143,33 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
     }
     private registerLogChannel(logger: ILoggerResource): void {
         const channel = this.outputChannelRegistry.getChannel(logger.id);
+
         if (channel && this.uriIdentityService.extUri.isEqual(channel.file, logger.resource)) {
             return;
         }
         const disposables = new DisposableStore();
+
         const promise = createCancelablePromise(async (token) => {
             await whenProviderRegistered(logger.resource, this.fileService);
+
             try {
                 await this.whenFileExists(logger.resource, 1, token);
+
                 const existingChannel = this.outputChannelRegistry.getChannel(logger.id);
+
                 const remoteLogger = existingChannel?.file?.scheme === Schemas.vscodeRemote ? this.loggerService.getRegisteredLogger(existingChannel.file) : undefined;
+
                 if (remoteLogger) {
                     this.deregisterLogChannel(remoteLogger);
                 }
                 const hasToAppendRemote = existingChannel && logger.resource.scheme === Schemas.vscodeRemote;
+
                 const id = hasToAppendRemote ? `${logger.id}.remote` : logger.id;
+
                 const label = hasToAppendRemote ? nls.localize('remote name', "{0} (Remote)", logger.name ?? logger.id) : logger.name ?? logger.id;
                 this.outputChannelRegistry.registerChannel({ id, label, file: logger.resource, log: true, extensionId: logger.extensionId });
                 disposables.add(toDisposable(() => this.outputChannelRegistry.removeChannel(id)));
+
                 if (remoteLogger) {
                     this.registerLogChannel(remoteLogger);
                 }
@@ -174,6 +188,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
     }
     private async whenFileExists(file: URI, trial: number, token: CancellationToken): Promise<void> {
         const exists = await this.fileService.exists(file);
+
         if (exists) {
             return;
         }

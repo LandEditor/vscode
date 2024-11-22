@@ -121,7 +121,9 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 
 	private reinitialize(forceRefresh: boolean) {
 		const model = this._editor.getModel();
+
 		const isEnabled = model !== null && (this._editor.getOption(EditorOption.linkedEditing) || this._editor.getOption(EditorOption.renameOnType)) && this._providers.has(model);
+
 		if (isEnabled === this._enabled && !forceRefresh) {
 			return;
 		}
@@ -145,10 +147,13 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		);
 
 		const rangeUpdateScheduler = new Delayer(this._debounceInformation.get(model));
+
 		const triggerRangeUpdate = () => {
 			this._rangeUpdateTriggerPromise = rangeUpdateScheduler.trigger(() => this.updateRanges(), this._debounceDuration ?? this._debounceInformation.get(model));
 		};
+
 		const rangeSyncScheduler = new Delayer(0);
+
 		const triggerRangeSync = (token: number) => {
 			this._rangeSyncTriggerPromise = rangeSyncScheduler.trigger(() => this._syncRanges(token));
 		};
@@ -159,8 +164,10 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 			if (!this._ignoreChangeEvent) {
 				if (this._currentDecorations.length > 0) {
 					const referenceRange = this._currentDecorations.getRange(0);
+
 					if (referenceRange && e.changes.every(c => referenceRange.intersectRanges(c.range))) {
 						triggerRangeSync(this._syncRangesToken);
+
 						return;
 					}
 				}
@@ -184,6 +191,7 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		}
 
 		const model = this._editor.getModel();
+
 		const referenceRange = this._currentDecorations.getRange(0);
 
 		if (!referenceRange || referenceRange.startLineNumber !== referenceRange.endLineNumber) {
@@ -191,17 +199,22 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		}
 
 		const referenceValue = model.getValueInRange(referenceRange);
+
 		if (this._currentWordPattern) {
 			const match = referenceValue.match(this._currentWordPattern);
+
 			const matchLength = match ? match[0].length : 0;
+
 			if (matchLength !== referenceValue.length) {
 				return this.clearRanges();
 			}
 		}
 
 		const edits: ISingleEditOperation[] = [];
+
 		for (let i = 1, len = this._currentDecorations.length; i < len; i++) {
 			const mirrorRange = this._currentDecorations.getRange(i);
+
 			if (!mirrorRange) {
 				continue;
 			}
@@ -212,8 +225,11 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 				});
 			} else {
 				let oldValue = model.getValueInRange(mirrorRange);
+
 				let newValue = referenceValue;
+
 				let rangeStartColumn = mirrorRange.startColumn;
+
 				let rangeEndColumn = mirrorRange.endColumn;
 
 				const commonPrefixLength = strings.commonPrefixLength(oldValue, newValue);
@@ -242,6 +258,7 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		try {
 			this._editor.popUndoStop();
 			this._ignoreChangeEvent = true;
+
 			const prevEditOperationType = this._editor._getViewModel().getPrevEditOperationType();
 			this._editor.executeEdits('linkedEditing', edits);
 			this._editor._getViewModel().setPrevEditOperationType(prevEditOperationType);
@@ -252,12 +269,14 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 
 	public override dispose(): void {
 		this.clearRanges();
+
 		super.dispose();
 	}
 
 	public clearRanges(): void {
 		this._visibleContextKey.set(false);
 		this._currentDecorations.clear();
+
 		if (this._currentRequestCts) {
 			this._currentRequestCts.cancel();
 			this._currentRequestCts = null;
@@ -276,24 +295,30 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 	public async updateRanges(force = false): Promise<void> {
 		if (!this._editor.hasModel()) {
 			this.clearRanges();
+
 			return;
 		}
 
 		const position = this._editor.getPosition();
+
 		if (!this._enabled && !force || this._editor.getSelections().length > 1) {
 			// disabled or multicursor
 			this.clearRanges();
+
 			return;
 		}
 
 		const model = this._editor.getModel();
+
 		const modelVersionId = model.getVersionId();
+
 		if (this._currentRequestPosition && this._currentRequestModelVersion === modelVersionId) {
 			if (position.equals(this._currentRequestPosition)) {
 				return; // same position
 			}
 			if (this._currentDecorations.length > 0) {
 				const range = this._currentDecorations.getRange(0);
+
 				if (range && range.containsPosition(position)) {
 					return; // just moving inside the existing primary range
 				}
@@ -307,19 +332,24 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 		this._currentRequestModelVersion = modelVersionId;
 
 		const currentRequestCts = this._currentRequestCts = new CancellationTokenSource();
+
 		try {
 			const sw = new StopWatch(false);
+
 			const response = await getLinkedEditingRanges(this._providers, model, position, currentRequestCts.token);
 			this._debounceInformation.update(model, sw.elapsed());
+
 			if (currentRequestCts !== this._currentRequestCts) {
 				return;
 			}
 			this._currentRequestCts = null;
+
 			if (modelVersionId !== model.getVersionId()) {
 				return;
 			}
 
 			let ranges: IRange[] = [];
+
 			if (response?.ranges) {
 				ranges = response.ranges;
 			}
@@ -327,9 +357,11 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 			this._currentWordPattern = response?.wordPattern || this._languageWordPattern;
 
 			let foundReferenceRange = false;
+
 			for (let i = 0, len = ranges.length; i < len; i++) {
 				if (Range.containsPosition(ranges[i], position)) {
 					foundReferenceRange = true;
+
 					if (i !== 0) {
 						const referenceRange = ranges[i];
 						ranges.splice(i, 1);
@@ -342,6 +374,7 @@ export class LinkedEditingContribution extends Disposable implements IEditorCont
 			if (!foundReferenceRange) {
 				// Cannot do linked editing if the ranges are not where the cursor is...
 				this.clearRanges();
+
 				return;
 			}
 
@@ -404,6 +437,7 @@ export class LinkedEditingAction extends EditorAction {
 
 	override runCommand(accessor: ServicesAccessor, args: [URI, IPosition]): void | Promise<void> {
 		const editorService = accessor.get(ICodeEditorService);
+
 		const [uri, pos] = Array.isArray(args) && args || [undefined, undefined];
 
 		if (URI.isUri(uri) && Position.isIPosition(pos)) {
@@ -414,6 +448,7 @@ export class LinkedEditingAction extends EditorAction {
 				editor.setPosition(pos);
 				editor.invokeWithinContext(accessor => {
 					this.reportTelemetry(accessor, editor);
+
 					return this.run(accessor, editor);
 				});
 			}, onUnexpectedError);
@@ -424,6 +459,7 @@ export class LinkedEditingAction extends EditorAction {
 
 	run(_accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const controller = LinkedEditingContribution.get(editor);
+
 		if (controller) {
 			return Promise.resolve(controller.updateRanges(true));
 		}
@@ -456,6 +492,7 @@ function getLinkedEditingRanges(providers: LanguageFeatureRegistry<LinkedEditing
 			return await provider.provideLinkedEditingRanges(model, position, token);
 		} catch (e) {
 			onUnexpectedExternalError(e);
+
 			return undefined;
 		}
 	}), result => !!result && arrays.isNonEmptyArray(result?.ranges));
@@ -465,6 +502,7 @@ export const editorLinkedEditingBackground = registerColor('editor.linkedEditing
 
 registerModelAndPositionCommand('_executeLinkedEditingProvider', (_accessor, model, position) => {
 	const { linkedEditingRangeProvider } = _accessor.get(ILanguageFeaturesService);
+
 	return getLinkedEditingRanges(linkedEditingRangeProvider, model, position, CancellationToken.None);
 });
 

@@ -100,13 +100,17 @@ export class InlineAnchorWidget extends Disposable {
 		element.classList.add(InlineAnchorWidget.className, 'show-file-icons');
 
 		let iconText: string;
+
 		let iconClasses: string[];
 
 		let location: { readonly uri: URI; readonly range?: IRange };
+
 		let contextMenuId: MenuId;
+
 		let contextMenuArg: URI | { readonly uri: URI; readonly range?: IRange };
 
 		let updateContextKeys: (() => Promise<void>) | undefined;
+
 		if (this.data.kind === 'symbol') {
 			location = this.data.symbol.location;
 			contextMenuId = MenuId.ChatInlineSymbolAnchorContext;
@@ -124,12 +128,14 @@ export class InlineAnchorWidget extends Disposable {
 
 			updateContextKeys = async () => {
 				const modelRef = await textModelService.createModelReference(location.uri);
+
 				try {
 					if (this._isDisposed) {
 						return;
 					}
 
 					const model = modelRef.object.textEditorModel;
+
 					for (const [contextKey, registry] of providerContexts) {
 						contextKey.set(registry.has(model));
 					}
@@ -196,6 +202,7 @@ export class InlineAnchorWidget extends Disposable {
 		// Context menu
 		this._register(dom.addDisposableListener(element, dom.EventType.CONTEXT_MENU, async domEvent => {
 			const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+
 			dom.EventHelper.stop(domEvent, true);
 
 			try {
@@ -213,6 +220,7 @@ export class InlineAnchorWidget extends Disposable {
 				getAnchor: () => event,
 				getActions: () => {
 					const menu = menuService.getMenuActions(contextMenuId, contextKeyService, { arg: contextMenuArg });
+
 					return getFlatContextMenuActions(menu);
 				},
 			});
@@ -233,6 +241,7 @@ export class InlineAnchorWidget extends Disposable {
 
 	override dispose(): void {
 		this._isDisposed = true;
+
 		super.dispose();
 	}
 
@@ -262,9 +271,11 @@ registerAction2(class AddFileToChatAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor, resource: URI): Promise<void> {
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		const variablesService = accessor.get(IChatVariablesService);
 
 		const widget = chatWidgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
@@ -296,9 +307,11 @@ registerAction2(class CopyResourceAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const chatWidgetService = accessor.get(IChatMarkdownAnchorService);
+
 		const clipboardService = accessor.get(IClipboardService);
 
 		const anchor = chatWidgetService.lastFocusedAnchor;
+
 		if (!anchor) {
 			return;
 		}
@@ -337,9 +350,11 @@ registerAction2(class OpenToSideResourceAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const chatWidgetService = accessor.get(IChatMarkdownAnchorService);
+
 		const editorService = accessor.get(IEditorService);
 
 		const anchor = chatWidgetService.lastFocusedAnchor;
+
 		if (!anchor) {
 			return;
 		}
@@ -389,6 +404,7 @@ registerAction2(class GoToDefinitionAction extends Action2 {
 		await openEditorWithSelection(editorService, location);
 
 		const action = new DefinitionAction({ openToSide: false, openInPeek: false, muteMessage: true }, { title: { value: '', original: '' }, id: '', precondition: undefined });
+
 		return action.run(accessor);
 	}
 });
@@ -406,6 +422,7 @@ async function openEditorWithSelection(editorService: ICodeEditorService, locati
 
 async function runGoToCommand(accessor: ServicesAccessor, command: string, location: Location) {
 	const editorService = accessor.get(ICodeEditorService);
+
 	const commandService = accessor.get(ICommandService);
 
 	await openEditorWithSelection(editorService, location);

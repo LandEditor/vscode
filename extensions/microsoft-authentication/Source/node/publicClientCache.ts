@@ -44,7 +44,9 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 
 	async initialize() {
 		this._logger.debug('[initialize] Initializing PublicClientApplicationManager');
+
 		let keys: string[] | undefined;
+
 		try {
 			keys = await this._pcasSecretStorage.get();
 		} catch (e) {
@@ -57,6 +59,7 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 		}
 
 		const promises = new Array<Promise<ICachedPublicClientApplication>>();
+
 		for (const key of keys) {
 			try {
 				const { clientId, authority } = JSON.parse(key) as IPublicClientApplicationInfo;
@@ -68,13 +71,16 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 		}
 
 		const results = await Promise.allSettled(promises);
+
 		let pcasChanged = false;
+
 		for (const result of results) {
 			if (result.status === 'rejected') {
 				this._logger.error('[initialize] Error getting PCA:', result.reason);
 			} else {
 				if (!result.value.accounts.length) {
 					pcasChanged = true;
+
 					const pcaKey = JSON.stringify({ clientId: result.value.clientId, authority: result.value.authority });
 					this._pcaDisposables.get(pcaKey)?.dispose();
 					this._pcaDisposables.delete(pcaKey);
@@ -97,7 +103,9 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 	async getOrCreate(clientId: string, authority: string, refreshTokensToMigrate?: string[]): Promise<ICachedPublicClientApplication> {
 		// Use the clientId and authority as the key
 		const pcasKey = JSON.stringify({ clientId, authority });
+
 		let pca = this._pcas.get(pcasKey);
+
 		if (pca) {
 			this._logger.debug(`[getOrCreate] [${clientId}] [${authority}] PublicClientApplicationManager cache hit`);
 		} else {
@@ -110,11 +118,13 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 		// TODO: MSAL Migration. Remove this when we remove the old flow.
 		if (refreshTokensToMigrate?.length) {
 			this._logger.debug(`[getOrCreate] [${clientId}] [${authority}] Migrating refresh tokens to PCA...`);
+
 			for (const refreshToken of refreshTokensToMigrate) {
 				try {
 					// Use the refresh token to acquire a result. This will cache the refresh token for future operations.
 					// The scopes don't matter here since we can create any token from the refresh token.
 					const result = await pca.acquireTokenByRefreshToken({ refreshToken, forceCache: true, scopes: [] });
+
 					if (result?.account) {
 						this._logger.debug(`[getOrCreate] [${clientId}] [${authority}] Refresh token migrated to PCA.`);
 					}
@@ -131,6 +141,7 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 	private async _doCreatePublicClientApplication(clientId: string, authority: string, pcasKey: string) {
 		const pca = new CachedPublicClientApplication(clientId, authority, this._cloudName, this._globalMemento, this._secretStorage, this._logger);
 		this._pcas.set(pcasKey, pca);
+
 		const disposable = Disposable.from(
 			pca,
 			pca.onDidAccountsChange(e => this._onDidAccountsChangeEmitter.fire(e)),
@@ -147,6 +158,7 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 		this._pcaDisposables.set(pcasKey, disposable);
 		// Intialize the PCA after the `onDidAccountsChange` is set so we get initial state.
 		await pca.initialize();
+
 		return pca;
 	}
 
@@ -156,13 +168,16 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 
 	private async _handleSecretStorageChange() {
 		this._logger.debug(`[_handleSecretStorageChange] Handling PCAs secret storage change...`);
+
 		let result: string[] | undefined;
+
 		try {
 			result = await this._pcasSecretStorage.get();
 		} catch (_e) {
 			// The data in secret storage has been corrupted somehow so
 			// we store what we have in this window
 			await this._storePublicClientApplications();
+
 			return;
 		}
 		if (!result) {
@@ -171,6 +186,7 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 			this._pcas.clear();
 			this._pcaDisposables.clear();
 			this._logger.debug(`[_handleSecretStorageChange] Finished PCAs secret storage change.`);
+
 			return;
 		}
 
@@ -192,6 +208,7 @@ export class CachedPublicClientApplicationManager implements ICachedPublicClient
 			} catch (_e) {
 				// This really shouldn't happen, but should we do something about this?
 				this._logger.error(`Failed to parse new PublicClientApplication: ${newPca}`);
+
 				continue;
 			}
 		}
@@ -225,6 +242,7 @@ class PublicClientApplicationsSecretStorage {
 
 	async get(): Promise<string[] | undefined> {
 		const value = await this._secretStorage.get(this._key);
+
 		if (!value) {
 			return undefined;
 		}

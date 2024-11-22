@@ -19,6 +19,7 @@ interface IDiffEditorInputLabels {
     shortDescription: string | undefined;
     mediumDescription: string | undefined;
     longDescription: string | undefined;
+
     forceDescription: boolean;
     shortTitle: string;
     mediumTitle: string;
@@ -46,6 +47,7 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
     }
     private cachedModel: DiffEditorModel | undefined = undefined;
     private readonly labels = this.computeLabels();
+
     constructor(preferredName: string | undefined, preferredDescription: string | undefined, readonly original: EditorInput, readonly modified: EditorInput, private readonly forceOpenAsBinary: boolean | undefined, 
     @IEditorService
     editorService: IEditorService) {
@@ -54,12 +56,15 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
     private computeLabels(): IDiffEditorInputLabels {
         // Name
         let name: string;
+
         let forceDescription = false;
+
         if (this.preferredName) {
             name = this.preferredName;
         }
         else {
             const originalName = this.original.getName();
+
             const modifiedName = this.modified.getName();
             name = localize('sideBySideLabels', "{0} ↔ {1}", originalName, modifiedName);
             // Enforce description when the names are identical
@@ -67,8 +72,11 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
         }
         // Description
         let shortDescription: string | undefined;
+
         let mediumDescription: string | undefined;
+
         let longDescription: string | undefined;
+
         if (this.preferredDescription) {
             shortDescription = this.preferredDescription;
             mediumDescription = this.preferredDescription;
@@ -80,7 +88,9 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
             // Medium Description: try to be verbose by computing
             // a label that resembles the difference between the two
             const originalMediumDescription = this.original.getDescription(Verbosity.MEDIUM);
+
             const modifiedMediumDescription = this.modified.getDescription(Verbosity.MEDIUM);
+
             if ((typeof originalMediumDescription === 'string' && typeof modifiedMediumDescription === 'string') && // we can only `shorten` when both sides are strings...
                 (originalMediumDescription || modifiedMediumDescription) // ...however never when both sides are empty strings
             ) {
@@ -90,9 +100,13 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
         }
         // Title
         let shortTitle = this.computeLabel(this.original.getTitle(Verbosity.SHORT) ?? this.original.getName(), this.modified.getTitle(Verbosity.SHORT) ?? this.modified.getName(), ' ↔ ');
+
         let mediumTitle = this.computeLabel(this.original.getTitle(Verbosity.MEDIUM) ?? this.original.getName(), this.modified.getTitle(Verbosity.MEDIUM) ?? this.modified.getName(), ' ↔ ');
+
         let longTitle = this.computeLabel(this.original.getTitle(Verbosity.LONG) ?? this.original.getName(), this.modified.getTitle(Verbosity.LONG) ?? this.modified.getName(), ' ↔ ');
+
         const preferredTitle = this.getPreferredTitle();
+
         if (preferredTitle) {
             shortTitle = `${preferredTitle} (${shortTitle})`;
             mediumTitle = `${preferredTitle} (${mediumTitle})`;
@@ -118,8 +132,10 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.labels.shortDescription;
+
             case Verbosity.LONG:
                 return this.labels.longDescription;
+
             case Verbosity.MEDIUM:
             default:
                 return this.labels.mediumDescription;
@@ -129,8 +145,10 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.labels.shortTitle;
+
             case Verbosity.LONG:
                 return this.labels.longTitle;
+
             default:
             case Verbosity.MEDIUM:
                 return this.labels.mediumTitle;
@@ -144,6 +162,7 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
         const resolvedModel = await this.createModel();
         this.cachedModel?.dispose();
         this.cachedModel = resolvedModel;
+
         return this.cachedModel;
     }
     override prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(editorPanes: T[]): T | undefined {
@@ -167,6 +186,7 @@ export class DiffEditorInput extends SideBySideEditorInput implements IDiffEdito
     }
     override toUntyped(options?: IUntypedEditorOptions): (IResourceDiffEditorInput & IResourceSideBySideEditorInput) | undefined {
         const untyped = super.toUntyped(options);
+
         if (untyped) {
             return {
                 ...untyped,

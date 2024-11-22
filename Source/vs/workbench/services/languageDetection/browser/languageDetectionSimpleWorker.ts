@@ -34,15 +34,20 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
     private _modelOperations: ModelOperations | undefined;
     private _loadFailed: boolean = false;
     private modelIdToCoreId = new Map<string, string | undefined>();
+
     constructor(workerServer: IWorkerServer) {
         this._host = LanguageDetectionWorkerHost.getChannel(workerServer);
         this._workerTextModelSyncServer.bindToServer(workerServer);
     }
     public async $detectLanguage(uri: string, langBiases: Record<string, number> | undefined, preferHistory: boolean, supportedLangs?: string[]): Promise<string | undefined> {
         const languages: string[] = [];
+
         const confidences: number[] = [];
+
         const stopWatch = new StopWatch();
+
         const documentTextSample = this.getTextForDetection(uri);
+
         if (!documentTextSample) {
             return;
         }
@@ -52,35 +57,44 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
                     this.modelIdToCoreId.set(language.languageId, await this._host.$getLanguageId(language.languageId));
                 }
                 const coreId = this.modelIdToCoreId.get(language.languageId);
+
                 if (coreId && (!supportedLangs?.length || supportedLangs.includes(coreId))) {
                     languages.push(coreId);
                     confidences.push(language.confidence);
                 }
             }
             stopWatch.stop();
+
             if (languages.length) {
                 this._host.$sendTelemetryEvent(languages, confidences, stopWatch.elapsed());
+
                 return languages[0];
             }
             return undefined;
         };
+
         const historicalResolver = async () => this.runRegexpModel(documentTextSample, langBiases ?? {}, supportedLangs);
+
         if (preferHistory) {
             const history = await historicalResolver();
+
             if (history) {
                 return history;
             }
             const neural = await neuralResolver();
+
             if (neural) {
                 return neural;
             }
         }
         else {
             const neural = await neuralResolver();
+
             if (neural) {
                 return neural;
             }
             const history = await historicalResolver();
+
             if (history) {
                 return history;
             }
@@ -89,16 +103,19 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
     }
     private getTextForDetection(uri: string): string | undefined {
         const editorModel = this._workerTextModelSyncServer.getModel(uri);
+
         if (!editorModel) {
             return;
         }
         const end = editorModel.positionAt(10000);
+
         const content = editorModel.getValueInRange({
             startColumn: 1,
             startLineNumber: 1,
             endColumn: end.column,
             endLineNumber: end.lineNumber
         });
+
         return content;
     }
     private async getRegexpModel(): Promise<RegexpModel | undefined> {
@@ -109,18 +126,22 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             return this._regexpModel;
         }
         const uri: string = await this._host.$getRegexpModelUri();
+
         try {
             this._regexpModel = await importAMDNodeModule(uri, '') as RegexpModel;
+
             return this._regexpModel;
         }
         catch (e) {
             this._regexpLoadFailed = true;
             // console.warn('error loading language detection model', e);
+
             return;
         }
     }
     private async runRegexpModel(content: string, langBiases: Record<string, number>, supportedLangs?: string[]): Promise<string | undefined> {
         const regexpModel = await this.getRegexpModel();
+
         if (!regexpModel) {
             return;
         }
@@ -136,6 +157,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             }
         }
         const detected = regexpModel.detect(content, langBiases, supportedLangs);
+
         return detected;
     }
     private async getModelOperations(): Promise<ModelOperations> {
@@ -143,25 +165,32 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             return this._modelOperations;
         }
         const uri: string = await this._host.$getIndexJsUri();
+
         const { ModelOperations } = await importAMDNodeModule(uri, '') as typeof import('@vscode/vscode-languagedetection');
         this._modelOperations = new ModelOperations({
             modelJsonLoaderFunc: async () => {
                 const response = await fetch(await this._host.$getModelJsonUri());
+
                 try {
                     const modelJSON = await response.json();
+
                     return modelJSON;
                 }
                 catch (e) {
                     const message = `Failed to parse model JSON.`;
+
                     throw new Error(message);
                 }
             },
             weightsLoaderFunc: async () => {
                 const response = await fetch(await this._host.$getWeightsUri());
+
                 const buffer = await response.arrayBuffer();
+
                 return buffer;
             }
         });
+
         return this._modelOperations;
     }
     // This adjusts the language confidence scores to be more accurate based on:
@@ -181,6 +210,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             case 'xml':
             case 'php':
                 modelResult.confidence += LanguageDetectionSimpleWorker.positiveConfidenceCorrectionBucket1;
+
                 break;
             // case 'yaml': // YAML has been know to cause incorrect language detection because the language is pretty simple. We don't want to increase the confidence for this.
             case 'cpp':
@@ -189,6 +219,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             case 'cs':
             case 'c':
                 modelResult.confidence += LanguageDetectionSimpleWorker.positiveConfidenceCorrectionBucket2;
+
                 break;
             // For the following languages, we need to be extra confident that the language is correct because
             // we've had issues like #131912 that caused incorrect guesses. To enforce this, we subtract the
@@ -206,7 +237,9 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
                 // * Assembly, TeX - These languages didn't have clear language modes in the community
                 // * Markdown, Dockerfile - These languages are simple but they embed other languages
                 modelResult.confidence -= LanguageDetectionSimpleWorker.negativeConfidenceCorrection;
+
                 break;
+
             default:
                 break;
         }
@@ -217,15 +250,18 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             return;
         }
         let modelOperations: ModelOperations | undefined;
+
         try {
             modelOperations = await this.getModelOperations();
         }
         catch (e) {
             console.log(e);
             this._loadFailed = true;
+
             return;
         }
         let modelResults: ModelResult[] | undefined;
+
         try {
             modelResults = await modelOperations.runModel(content);
         }
@@ -238,22 +274,27 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             return;
         }
         const firstModelResult = this.adjustLanguageConfidence(modelResults[0]);
+
         if (firstModelResult.confidence < LanguageDetectionSimpleWorker.expectedRelativeConfidence) {
             return;
         }
         const possibleLanguages: ModelResult[] = [firstModelResult];
+
         for (let current of modelResults) {
             if (current === firstModelResult) {
                 continue;
             }
             current = this.adjustLanguageConfidence(current);
+
             const currentHighest = possibleLanguages[possibleLanguages.length - 1];
+
             if (currentHighest.confidence - current.confidence >= LanguageDetectionSimpleWorker.expectedRelativeConfidence) {
                 while (possibleLanguages.length) {
                     yield possibleLanguages.shift()!;
                 }
                 if (current.confidence > LanguageDetectionSimpleWorker.expectedRelativeConfidence) {
                     possibleLanguages.push(current);
+
                     continue;
                 }
                 return;
@@ -261,6 +302,7 @@ export class LanguageDetectionSimpleWorker implements ILanguageDetectionWorker {
             else {
                 if (current.confidence > LanguageDetectionSimpleWorker.expectedRelativeConfidence) {
                     possibleLanguages.push(current);
+
                     continue;
                 }
                 return;

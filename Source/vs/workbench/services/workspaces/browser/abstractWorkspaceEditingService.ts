@@ -31,6 +31,7 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
 import { Disposable } from '../../../../base/common/lifecycle.js';
 export abstract class AbstractWorkspaceEditingService extends Disposable implements IWorkspaceEditingService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IJSONEditingService
     private readonly jsonEditingService: IJSONEditingService, 
@@ -68,6 +69,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     async pickNewWorkspacePath(): Promise<URI | undefined> {
         const availableFileSystems = [Schemas.file];
+
         if (this.environmentService.remoteAuthority) {
             availableFileSystems.unshift(Schemas.vscodeRemote);
         }
@@ -78,6 +80,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
             defaultUri: joinPath(await this.fileDialogService.defaultWorkspacePath(), this.getNewWorkspaceName()),
             availableFileSystems
         });
+
         if (!workspacePath) {
             return; // canceled
         }
@@ -91,11 +94,13 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     private getNewWorkspaceName(): string {
         // First try with existing workspace name
         const configPathURI = this.getCurrentWorkspaceIdentifier()?.configPath;
+
         if (configPathURI && isSavedWorkspace(configPathURI, this.environmentService)) {
             return basename(configPathURI);
         }
         // Then fallback to first folder if any
         const folder = this.contextService.getWorkspace().folders.at(0);
+
         if (folder) {
             return `${basename(folder.uri)}.${WORKSPACE_EXTENSION}`;
         }
@@ -104,16 +109,21 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     async updateFolders(index: number, deleteCount?: number, foldersToAddCandidates?: IWorkspaceFolderCreationData[], donotNotifyError?: boolean): Promise<void> {
         const folders = this.contextService.getWorkspace().folders;
+
         let foldersToDelete: URI[] = [];
+
         if (typeof deleteCount === 'number') {
             foldersToDelete = folders.slice(index, index + deleteCount).map(folder => folder.uri);
         }
         let foldersToAdd: IWorkspaceFolderCreationData[] = [];
+
         if (Array.isArray(foldersToAddCandidates)) {
             foldersToAdd = foldersToAddCandidates.map(folderToAdd => ({ uri: removeTrailingPathSeparator(folderToAdd.uri), name: folderToAdd.name })); // Normalize
         }
         const wantsToDelete = foldersToDelete.length > 0;
+
         const wantsToAdd = foldersToAdd.length > 0;
+
         if (!wantsToAdd && !wantsToDelete) {
             return; // return early if there is nothing to do
         }
@@ -155,11 +165,14 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     addFolders(foldersToAddCandidates: IWorkspaceFolderCreationData[], donotNotifyError: boolean = false): Promise<void> {
         // Normalize
         const foldersToAdd = foldersToAddCandidates.map(folderToAdd => ({ uri: removeTrailingPathSeparator(folderToAdd.uri), name: folderToAdd.name }));
+
         return this.doAddFolders(foldersToAdd, undefined, donotNotifyError);
     }
     private async doAddFolders(foldersToAdd: IWorkspaceFolderCreationData[], index?: number, donotNotifyError: boolean = false): Promise<void> {
         const state = this.contextService.getWorkbenchState();
+
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         if (remoteAuthority) {
             // https://github.com/microsoft/vscode/issues/94191
             foldersToAdd = foldersToAdd.filter(folder => folder.uri.scheme !== Schemas.file && (folder.uri.scheme !== Schemas.vscodeRemote || isEqualAuthority(folder.uri.authority, remoteAuthority)));
@@ -170,6 +183,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
             let newWorkspaceFolders = this.contextService.getWorkspace().folders.map(folder => ({ uri: folder.uri }));
             newWorkspaceFolders.splice(typeof index === 'number' ? index : newWorkspaceFolders.length, 0, ...foldersToAdd);
             newWorkspaceFolders = distinct(newWorkspaceFolders, folder => this.uriIdentityService.extUri.getComparisonKey(folder.uri));
+
             if (state === WorkbenchState.EMPTY && newWorkspaceFolders.length === 0 || state === WorkbenchState.FOLDER && newWorkspaceFolders.length === 1) {
                 return; // return if the operation is a no-op for the current state
             }
@@ -206,6 +220,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     private includesSingleFolderWorkspace(folders: URI[]): boolean {
         if (this.contextService.getWorkbenchState() === WorkbenchState.FOLDER) {
             const workspaceFolder = this.contextService.getWorkspace().folders[0];
+
             return (folders.some(folder => this.uriIdentityService.extUri.isEqual(folder, workspaceFolder.uri)));
         }
         return false;
@@ -215,7 +230,9 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
             return;
         }
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         const untitledWorkspace = await this.workspacesService.createUntitledWorkspace(folders, remoteAuthority);
+
         if (path) {
             try {
                 await this.saveWorkspaceAs(untitledWorkspace, path);
@@ -226,6 +243,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
         }
         else {
             path = untitledWorkspace.configPath;
+
             if (!this.userDataProfileService.currentProfile.isDefault) {
                 await this.userDataProfilesService.setProfileForWorkspace(untitledWorkspace, this.userDataProfileService.currentProfile);
             }
@@ -234,6 +252,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     async saveAndEnterWorkspace(workspaceUri: URI): Promise<void> {
         const workspaceIdentifier = this.getCurrentWorkspaceIdentifier();
+
         if (!workspaceIdentifier) {
             return;
         }
@@ -247,6 +266,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
             return;
         }
         await this.saveWorkspaceAs(workspaceIdentifier, workspaceUri);
+
         return this.enterWorkspace(workspaceUri);
     }
     async isValidTargetWorkspacePath(workspaceUri: URI): Promise<boolean> {
@@ -254,7 +274,9 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     protected async saveWorkspaceAs(workspace: IWorkspaceIdentifier, targetConfigPathURI: URI): Promise<void> {
         const configPathURI = workspace.configPath;
+
         const isNotUntitledWorkspace = !isUntitledWorkspace(targetConfigPathURI, this.environmentService);
+
         if (isNotUntitledWorkspace && !this.userDataProfileService.currentProfile.isDefault) {
             const newWorkspace = await this.workspacesService.getWorkspaceIdentifier(targetConfigPathURI);
             await this.userDataProfilesService.setProfileForWorkspace(newWorkspace, this.userDataProfileService.currentProfile);
@@ -266,6 +288,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
         const isFromUntitledWorkspace = isUntitledWorkspace(configPathURI, this.environmentService);
         // Read the contents of the workspace file, update it to new location and save it.
         const raw = await this.fileService.readFile(configPathURI);
+
         const newRawWorkspaceContents = rewriteWorkspaceFileForNewLocation(raw.value.toString(), configPathURI, isFromUntitledWorkspace, targetConfigPathURI, this.uriIdentityService.extUri);
         await this.textFileService.create([{ resource: targetConfigPathURI, value: newRawWorkspaceContents, options: { overwrite: true } }]);
         // Set trust for the workspace file
@@ -275,17 +298,21 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
         const configPathURI = workspace.configPath;
         // First: try to save any existing model as it could be dirty
         const existingModel = this.textFileService.files.get(configPathURI);
+
         if (existingModel) {
             await existingModel.save({ force: true, reason: SaveReason.EXPLICIT });
+
             return;
         }
         // Second: if the file exists on disk, simply return
         const workspaceFileExists = await this.fileService.exists(configPathURI);
+
         if (workspaceFileExists) {
             return;
         }
         // Finally, we need to re-create the file as it was deleted
         const newWorkspace: IStoredWorkspace = { folders: [] };
+
         const newRawWorkspaceContents = rewriteWorkspaceFileForNewLocation(JSON.stringify(newWorkspace, null, '\t'), configPathURI, false, configPathURI, this.uriIdentityService.extUri);
         await this.textFileService.create([{ resource: configPathURI, value: newRawWorkspaceContents }]);
     }
@@ -293,7 +320,9 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
         switch (error.code) {
             case JSONEditingErrorCode.ERROR_INVALID_FILE:
                 this.onInvalidWorkspaceConfigurationFileError();
+
                 break;
+
             default:
                 this.notificationService.error(error.message);
         }
@@ -319,6 +348,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
             await this.migrateWorkspaceSettings(workspace);
         }
         await this.configurationService.initialize(workspace);
+
         return this.workspacesService.enterWorkspace(workspaceUri);
     }
     private migrateWorkspaceSettings(toWorkspace: IWorkspaceIdentifier): Promise<void> {
@@ -329,7 +359,9 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     private doCopyWorkspaceSettings(toWorkspace: IWorkspaceIdentifier, filter?: (config: IConfigurationPropertySchema) => boolean): Promise<void> {
         const configurationProperties = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).getConfigurationProperties();
+
         const targetWorkspaceConfiguration: any = {};
+
         for (const key of this.configurationService.keys().workspace) {
             if (configurationProperties[key]) {
                 if (filter && !filter(configurationProperties[key])) {
@@ -347,6 +379,7 @@ export abstract class AbstractWorkspaceEditingService extends Disposable impleme
     }
     protected getCurrentWorkspaceIdentifier(): IWorkspaceIdentifier | undefined {
         const identifier = toWorkspaceIdentifier(this.contextService.getWorkspace());
+
         if (isWorkspaceIdentifier(identifier)) {
             return identifier;
         }

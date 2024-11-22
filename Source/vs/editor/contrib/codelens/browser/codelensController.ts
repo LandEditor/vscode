@@ -80,7 +80,9 @@ export class CodeLensContribution implements IEditorContribution {
 
 	private _getLayoutInfo() {
 		const lineHeightFactor = Math.max(1.3, this._editor.getOption(EditorOption.lineHeight) / this._editor.getOption(EditorOption.fontSize));
+
 		let fontSize = this._editor.getOption(EditorOption.codeLensFontSize);
+
 		if (!fontSize || fontSize < 5) {
 			fontSize = (this._editor.getOption(EditorOption.fontSize) * .9) | 0;
 		}
@@ -93,7 +95,9 @@ export class CodeLensContribution implements IEditorContribution {
 	private _updateLensStyle(): void {
 
 		const { codeLensHeight, fontSize } = this._getLayoutInfo();
+
 		const fontFamily = this._editor.getOption(EditorOption.codeLensFontFamily);
+
 		const editorFontInfo = this._editor.getOption(EditorOption.fontInfo);
 
 		const { style } = this._editor.getContainerDomNode();
@@ -130,6 +134,7 @@ export class CodeLensContribution implements IEditorContribution {
 		this._localDispose();
 
 		const model = this._editor.getModel();
+
 		if (!model) {
 			return;
 		}
@@ -139,6 +144,7 @@ export class CodeLensContribution implements IEditorContribution {
 		}
 
 		const cachedLenses = this._codeLensCache.get(model);
+
 		if (cachedLenses) {
 			this._renderCodeLensSymbols(cachedLenses);
 		}
@@ -149,6 +155,7 @@ export class CodeLensContribution implements IEditorContribution {
 			if (cachedLenses) {
 				disposableTimeout(() => {
 					const cachedLensesNow = this._codeLensCache.get(model);
+
 					if (cachedLenses === cachedLensesNow) {
 						this._codeLensCache.delete(model);
 						this._onModelChange();
@@ -198,6 +205,7 @@ export class CodeLensContribution implements IEditorContribution {
 			this._editor.changeDecorations(decorationsAccessor => {
 				this._editor.changeViewZones(viewZonesAccessor => {
 					const toDispose: CodeLensWidget[] = [];
+
 					let lastLensLineNumber: number = -1;
 
 					this._lenses.forEach((lens) => {
@@ -262,14 +270,17 @@ export class CodeLensContribution implements IEditorContribution {
 				return;
 			}
 			let target = e.target.element;
+
 			if (target?.tagName === 'SPAN') {
 				target = target.parentElement;
 			}
 			if (target?.tagName === 'A') {
 				for (const lens of this._lenses) {
 					const command = lens.getCommand(target as HTMLLinkElement);
+
 					if (command) {
 						this._commandService.executeCommand(command.id, ...(command.arguments || [])).catch(err => this._notificationService.error(err));
+
 						break;
 					}
 				}
@@ -280,6 +291,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 	private _disposeAllLenses(decChangeAccessor: IModelDecorationsChangeAccessor | undefined, viewZoneChangeAccessor: IViewZoneChangeAccessor | undefined): void {
 		const helper = new CodeLensHelper();
+
 		for (const lens of this._lenses) {
 			lens.dispose(helper, viewZoneChangeAccessor);
 		}
@@ -295,11 +307,14 @@ export class CodeLensContribution implements IEditorContribution {
 		}
 
 		const maxLineNumber = this._editor.getModel().getLineCount();
+
 		const groups: CodeLensItem[][] = [];
+
 		let lastGroup: CodeLensItem[] | undefined;
 
 		for (const symbol of symbols.lenses) {
 			const line = symbol.symbol.range.startLineNumber;
+
 			if (line < 1 || line > maxLineNumber) {
 				// invalid code lens
 				continue;
@@ -319,18 +334,22 @@ export class CodeLensContribution implements IEditorContribution {
 		}
 
 		const scrollState = StableEditorScrollState.capture(this._editor);
+
 		const layoutInfo = this._getLayoutInfo();
 
 		this._editor.changeDecorations(decorationsAccessor => {
 			this._editor.changeViewZones(viewZoneAccessor => {
 
 				const helper = new CodeLensHelper();
+
 				let codeLensIndex = 0;
+
 				let groupsIndex = 0;
 
 				while (groupsIndex < groups.length && codeLensIndex < this._lenses.length) {
 
 					const symbolsLineNumber = groups[groupsIndex][0].symbol.range.startLineNumber;
+
 					const codeLensLineNumber = this._lenses[codeLensIndex].getLineNumber();
 
 					if (codeLensLineNumber < symbolsLineNumber) {
@@ -368,6 +387,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 	private _resolveCodeLensesInViewportSoon(): void {
 		const model = this._editor.getModel();
+
 		if (model) {
 			this._resolveCodeLensesScheduler.schedule();
 		}
@@ -379,14 +399,17 @@ export class CodeLensContribution implements IEditorContribution {
 		this._resolveCodeLensesPromise = undefined;
 
 		const model = this._editor.getModel();
+
 		if (!model) {
 			return;
 		}
 
 		const toResolve: CodeLensItem[][] = [];
+
 		const lenses: CodeLensWidget[] = [];
 		this._lenses.forEach((lens) => {
 			const request = lens.computeIfNecessary(model);
+
 			if (request) {
 				toResolve.push(request);
 				lenses.push(lens);
@@ -404,6 +427,7 @@ export class CodeLensContribution implements IEditorContribution {
 			const promises = toResolve.map((request, i) => {
 
 				const resolvedSymbols = new Array<CodeLens | undefined | null>(request.length);
+
 				const promises = request.map((request, i) => {
 					if (!request.symbol.command && typeof request.provider.resolveCodeLens === 'function') {
 						return Promise.resolve(request.provider.resolveCodeLens(model, request.symbol, token)).then(symbol => {
@@ -411,6 +435,7 @@ export class CodeLensContribution implements IEditorContribution {
 						}, onUnexpectedExternalError);
 					} else {
 						resolvedSymbols[i] = request.symbol;
+
 						return Promise.resolve(undefined);
 					}
 				});
@@ -450,6 +475,7 @@ export class CodeLensContribution implements IEditorContribution {
 	async getModel(): Promise<CodeLensModel | undefined> {
 		await this._getCodeLensModelPromise;
 		await this._resolveCodeLensesPromise;
+
 		return !this._currentCodeLensModel?.isDisposed
 			? this._currentCodeLensModel
 			: undefined;
@@ -475,22 +501,28 @@ registerEditorAction(class ShowLensesInCurrentLine extends EditorAction {
 		}
 
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const commandService = accessor.get(ICommandService);
+
 		const notificationService = accessor.get(INotificationService);
 
 		const lineNumber = editor.getSelection().positionLineNumber;
+
 		const codelensController = editor.getContribution<CodeLensContribution>(CodeLensContribution.ID);
+
 		if (!codelensController) {
 			return;
 		}
 
 		const model = await codelensController.getModel();
+
 		if (!model) {
 			// nothing
 			return;
 		}
 
 		const items: { label: string; command: Command }[] = [];
+
 		for (const lens of model.lenses) {
 			if (lens.symbol.command && lens.symbol.range.startLineNumber === lineNumber) {
 				items.push({
@@ -509,6 +541,7 @@ registerEditorAction(class ShowLensesInCurrentLine extends EditorAction {
 			canPickMany: false,
 			placeHolder: localize('placeHolder', "Select a command")
 		});
+
 		if (!item) {
 			// Nothing picked
 			return;
@@ -521,7 +554,9 @@ registerEditorAction(class ShowLensesInCurrentLine extends EditorAction {
 			// this is a best attempt approach which shouldn't be needed because eager model re-creates
 			// shouldn't happen due to focus in/out anymore
 			const newModel = await codelensController.getModel();
+
 			const newLens = newModel?.lenses.find(lens => lens.symbol.range.startLineNumber === lineNumber && lens.symbol.command?.title === command.title);
+
 			if (!newLens || !newLens.symbol.command) {
 				return;
 			}

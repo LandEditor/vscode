@@ -28,6 +28,7 @@ import { EditorGutter, IGutterItemInfo, IGutterItemView } from '../editorGutter.
 import { CodeEditorView, createSelectionsAutorun, TitleMenu } from './codeEditorView.js';
 export class InputCodeEditorView extends CodeEditorView {
     public readonly otherInputNumber = this.inputNumber === 1 ? 2 : 1;
+
     constructor(public readonly inputNumber: 1 | 2, viewModel: IObservable<MergeEditorViewModel | undefined>, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -52,16 +53,20 @@ export class InputCodeEditorView extends CodeEditorView {
         this._register(instantiationService.createInstance(TitleMenu, inputNumber === 1 ? MenuId.MergeInput1Toolbar : MenuId.MergeInput2Toolbar, this.htmlElements.toolbar));
         this._register(autorunOpts({ debugName: `input${this.inputNumber}: update labels & text model` }, reader => {
             const vm = this.viewModel.read(reader);
+
             if (!vm) {
                 return;
             }
             this.editor.setModel(this.inputNumber === 1 ? vm.model.input1.textModel : vm.model.input2.textModel);
+
             const title = this.inputNumber === 1
                 ? vm.model.input1.title || localize('input1', 'Input 1')
                 : vm.model.input2.title || localize('input2', 'Input 2');
+
             const description = this.inputNumber === 1
                 ? vm.model.input1.description
                 : vm.model.input2.description;
+
             const detail = this.inputNumber === 1
                 ? vm.model.input1.detail
                 : vm.model.input2.detail;
@@ -73,42 +78,59 @@ export class InputCodeEditorView extends CodeEditorView {
     }
     private readonly modifiedBaseRangeGutterItemInfos = derivedOpts({ debugName: `input${this.inputNumber}.modifiedBaseRangeGutterItemInfos` }, reader => {
         const viewModel = this.viewModel.read(reader);
+
         if (!viewModel) {
             return [];
         }
         const model = viewModel.model;
+
         const inputNumber = this.inputNumber;
+
         const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
+
         return model.modifiedBaseRanges.read(reader)
             .filter((r) => r.getInputDiffs(this.inputNumber).length > 0 && (showNonConflictingChanges || r.isConflicting || !model.isHandled(r).read(reader)))
             .map((baseRange, idx) => new ModifiedBaseRangeGutterItemModel(idx.toString(), baseRange, inputNumber, viewModel));
     });
     private readonly decorations = derivedOpts({ debugName: `input${this.inputNumber}.decorations` }, reader => {
         const viewModel = this.viewModel.read(reader);
+
         if (!viewModel) {
             return [];
         }
         const model = viewModel.model;
+
         const textModel = (this.inputNumber === 1 ? model.input1 : model.input2).textModel;
+
         const activeModifiedBaseRange = viewModel.activeModifiedBaseRange.read(reader);
+
         const result = new Array<IModelDeltaDecoration>();
+
         const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
+
         const showDeletionMarkers = this.showDeletionMarkers.read(reader);
+
         const diffWithThis = viewModel.baseCodeEditorView.read(reader) !== undefined && viewModel.baseShowDiffAgainst.read(reader) === this.inputNumber;
+
         const useSimplifiedDecorations = !diffWithThis && this.useSimplifiedDecorations.read(reader);
+
         for (const modifiedBaseRange of model.modifiedBaseRanges.read(reader)) {
             const range = modifiedBaseRange.getInputRange(this.inputNumber);
+
             if (!range) {
                 continue;
             }
             const blockClassNames = ['merge-editor-block'];
+
             let blockPadding: [
                 top: number,
                 right: number,
                 bottom: number,
                 left: number
             ] = [0, 0, 0, 0];
+
             const isHandled = model.isInputHandled(modifiedBaseRange, this.inputNumber).read(reader);
+
             if (isHandled) {
                 blockClassNames.push('handled');
             }
@@ -121,6 +143,7 @@ export class InputCodeEditorView extends CodeEditorView {
             }
             const inputClassName = this.inputNumber === 1 ? 'input i1' : 'input i2';
             blockClassNames.push(inputClassName);
+
             if (!modifiedBaseRange.isConflicting && !showNonConflictingChanges && isHandled) {
                 continue;
             }
@@ -145,10 +168,13 @@ export class InputCodeEditorView extends CodeEditorView {
                     } : undefined
                 }
             });
+
             if (!useSimplifiedDecorations && (modifiedBaseRange.isConflicting || !model.isHandled(modifiedBaseRange).read(reader))) {
                 const inputDiffs = modifiedBaseRange.getInputDiffs(this.inputNumber);
+
                 for (const diff of inputDiffs) {
                     const range = diff.outputRange.toInclusiveRange();
+
                     if (range) {
                         result.push({
                             range,
@@ -182,6 +208,7 @@ export class InputCodeEditorView extends CodeEditorView {
 export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
     private readonly model = this.viewModel.model;
     public readonly range = this.baseRange.getInputRange(this.inputNumber);
+
     constructor(public readonly id: string, private readonly baseRange: ModifiedBaseRange, private readonly inputNumber: 1 | 2, private readonly viewModel: MergeEditorViewModel) {
     }
     public readonly enabled = this.model.isUpToDate;
@@ -190,6 +217,7 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
             .getState(this.baseRange)
             .read(reader)
             .getInput(this.inputNumber);
+
         return input === InputState.second && !this.baseRange.isOrderRelevant
             ? InputState.first
             : input;
@@ -199,6 +227,7 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
         focused: boolean;
     }> = derived(this, reader => {
         const active = this.viewModel.activeModifiedBaseRange.read(reader);
+
         if (!this.model.hasBaseRange(this.baseRange)) {
             return { handled: false, focused: false }; // Invalid state, should only be observed temporarily
         }
@@ -226,21 +255,26 @@ export class ModifiedBaseRangeGutterItemModel implements IGutterItemInfo {
     }
     public getContextMenuActions(): readonly IAction[] {
         const state = this.model.getState(this.baseRange).get();
+
         const handled = this.model.isHandled(this.baseRange).get();
+
         const update = (newState: ModifiedBaseRangeState) => {
             transaction(tx => {
                 /** @description Context Menu: Update Base Range State */
                 return this.viewModel.setState(this.baseRange, newState, tx, this.inputNumber);
             });
         };
+
         function action(id: string, label: string, targetState: ModifiedBaseRangeState, checked: boolean) {
             const action = new Action(id, label, undefined, true, () => {
                 update(targetState);
             });
             action.checked = checked;
+
             return action;
         }
         const both = state.includesInput1 && state.includesInput2;
+
         return [
             this.baseRange.input1Diffs.length > 0
                 ? action('mergeEditor.acceptInput1', localize('mergeEditor.accept', 'Accept {0}', this.model.input1.title), state.toggle(1), state.includesInput1)
@@ -268,9 +302,11 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
     private readonly item: ISettableObservable<ModifiedBaseRangeGutterItemModel>;
     private readonly checkboxDiv: HTMLDivElement;
     private readonly isMultiLine = observableValue(this, false);
+
     constructor(item: ModifiedBaseRangeGutterItemModel, target: HTMLElement, contextMenuService: IContextMenuService) {
         super();
         this.item = observableValue(this, item);
+
         const checkBox = new Toggle({
             isChecked: false,
             title: '',
@@ -280,6 +316,7 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
         checkBox.domNode.classList.add('accept-conflict-group');
         this._register(addDisposableListener(checkBox.domNode, EventType.MOUSE_DOWN, (e) => {
             const item = this.item.get();
+
             if (!item) {
                 return;
             }
@@ -300,7 +337,9 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
         this._register(autorun(reader => {
             /** @description Update Checkbox */
             const item = this.item.read(reader)!;
+
             const value = item.toggleState.read(reader);
+
             const iconMap: Record<InputState, {
                 icon: ThemeIcon | undefined;
                 checked: boolean;
@@ -311,10 +350,12 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
                 [InputState.first]: { icon: Codicon.check, checked: true, title: localize('accept.first', "Undo accept") },
                 [InputState.second]: { icon: Codicon.checkAll, checked: true, title: localize('accept.second', "Undo accept (currently second)") },
             };
+
             const state = iconMap[value];
             checkBox.setIcon(state.icon);
             checkBox.checked = state.checked;
             checkBox.setTitle(state.title);
+
             if (!item.enabled.read(reader)) {
                 checkBox.disable();
             }
@@ -325,6 +366,7 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
         this._register(autorun(reader => {
             /** @description Update Checkbox CSS ClassNames */
             const state = this.item.read(reader).state.read(reader);
+
             const classNames = [
                 'merge-accept-gutter-marker',
                 state.handled && 'handled',
@@ -344,17 +386,23 @@ export class MergeConflictGutterItemView extends Disposable implements IGutterIt
     }
     layout(top: number, height: number, viewTop: number, viewHeight: number): void {
         const checkboxHeight = this.checkboxDiv.clientHeight;
+
         const middleHeight = height / 2 - checkboxHeight / 2;
+
         const margin = checkboxHeight;
+
         let effectiveCheckboxTop = top + middleHeight;
+
         const preferredViewPortRange = [
             margin,
             viewTop + viewHeight - margin - checkboxHeight
         ];
+
         const preferredParentRange = [
             top + margin,
             top + height - checkboxHeight - margin
         ];
+
         if (preferredParentRange[0] < preferredParentRange[1]) {
             effectiveCheckboxTop = clamp(effectiveCheckboxTop, preferredViewPortRange[0], preferredViewPortRange[1]);
             effectiveCheckboxTop = clamp(effectiveCheckboxTop, preferredParentRange[0], preferredParentRange[1]);

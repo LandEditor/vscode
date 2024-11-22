@@ -27,6 +27,7 @@ class EmptyDuplex extends Duplex {
 function createNullCompiler(): IncrementalCompiler {
     const result: IncrementalCompiler = function () { return new EmptyDuplex(); };
     result.src = () => new EmptyDuplex();
+
     return result;
 }
 const _defaultOnError = (err: string) => console.log(JSON.stringify(err, null, 4));
@@ -49,13 +50,17 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
         }
     }
     const parsed = ts.readConfigFile(projectPath, ts.sys.readFile);
+
     if (parsed.error) {
         printDiagnostic(parsed.error);
+
         return createNullCompiler();
     }
     const cmdLine = ts.parseJsonConfigFileContent(parsed.config, ts.sys, dirname(projectPath), existingOptions);
+
     if (cmdLine.errors.length > 0) {
         cmdLine.errors.forEach(printDiagnostic);
+
         return createNullCompiler();
     }
     function logFn(topic: string, message: string): void {
@@ -69,6 +74,7 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
             // give the file to the compiler
             if (file.isStream()) {
                 this.emit('error', 'no support for streams');
+
                 return;
             }
             builder.file(file);
@@ -87,6 +93,7 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
             // give the file to the compiler
             if (file.isStream()) {
                 this.emit('error', 'no support for streams');
+
                 return;
             }
             if (!file.contents) {
@@ -109,6 +116,7 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
         });
     }
     let result: IncrementalCompiler;
+
     if (config.transpileOnly) {
         const transpiler = !config.transpileWithSwc
             ? new TscTranspiler(logFn, printDiagnostic, projectPath, cmdLine)
@@ -124,14 +132,18 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
         base?: string;
     }) => {
         let _pos = 0;
+
         const _fileNames = cmdLine.fileNames.slice(0);
+
         return new class extends Readable {
             constructor() {
                 super({ objectMode: true });
             }
             _read() {
                 let more: boolean = true;
+
                 let path: string;
+
                 for (; more && _pos < _fileNames.length; _pos++) {
                     path = _fileNames[_pos];
                     more = this.push(new Vinyl({
@@ -148,5 +160,6 @@ export function create(projectPath: string, existingOptions: Partial<ts.Compiler
             }
         };
     };
+
     return <IncrementalCompiler>result;
 }

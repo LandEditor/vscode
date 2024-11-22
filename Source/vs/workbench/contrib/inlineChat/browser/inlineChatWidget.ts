@@ -125,6 +125,7 @@ export class InlineChatWidget {
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		this.scopedContextKeyService = this._store.add(_contextKeyService.createScoped(this._elements.chatWidget));
+
 		const scopedInstaService = _instantiationService.createChild(
 			new ServiceCollection([
 				IContextKeyService,
@@ -150,6 +151,7 @@ export class InlineChatWidget {
 						return true;
 					}
 					const emptyResponse = item.response.value.length === 0;
+
 					if (emptyResponse) {
 						return false;
 					}
@@ -175,9 +177,13 @@ export class InlineChatWidget {
 		this._store.add(this._chatWidget);
 
 		const ctxResponse = ChatContextKeys.isResponse.bindTo(this.scopedContextKeyService);
+
 		const ctxResponseVote = ChatContextKeys.responseVote.bindTo(this.scopedContextKeyService);
+
 		const ctxResponseSupportIssues = ChatContextKeys.responseSupportsIssueReporting.bindTo(this.scopedContextKeyService);
+
 		const ctxResponseError = ChatContextKeys.responseHasError.bindTo(this.scopedContextKeyService);
+
 		const ctxResponseErrorFiltered = ChatContextKeys.responseIsFiltered.bindTo(this.scopedContextKeyService);
 
 		const viewModelStore = this._store.add(new DisposableStore());
@@ -185,6 +191,7 @@ export class InlineChatWidget {
 			viewModelStore.clear();
 
 			const viewModel = this._chatWidget.viewModel;
+
 			if (!viewModel) {
 				return;
 			}
@@ -222,6 +229,7 @@ export class InlineChatWidget {
 
 		// context keys
 		this._ctxResponseFocused = CTX_INLINE_CHAT_RESPONSE_FOCUSED.bindTo(this._contextKeyService);
+
 		const tracker = this._store.add(trackFocus(this.domNode));
 		this._store.add(tracker.onDidBlur(() => this._ctxResponseFocused.set(false)));
 		this._store.add(tracker.onDidFocus(() => this._ctxResponseFocused.set(true)));
@@ -234,6 +242,7 @@ export class InlineChatWidget {
 
 		// BUTTON bar
 		const statusMenuOptions = _options.statusMenuId instanceof MenuId ? undefined : _options.statusMenuId.options;
+
 		const statusButtonBar = scopedInstaService.createInstance(MenuWorkbenchButtonBar, this._elements.toolbar1, statusMenuId, {
 			toolbarOptions: { primaryGroup: '0_main' },
 			telemetrySource: _options.chatWidgetViewOptions?.menus?.telemetrySource,
@@ -286,6 +295,7 @@ export class InlineChatWidget {
 
 		if (this._accessibilityService.isScreenReaderOptimized()) {
 			let label = defaultAriaLabel;
+
 			if (this._configurationService.getValue<boolean>(AccessibilityVerbositySettingId.InlineChat)) {
 				const kbLabel = this._keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getLabel();
 				label = kbLabel
@@ -315,6 +325,7 @@ export class InlineChatWidget {
 	layout(widgetDim: Dimension) {
 		const contentHeight = this.contentHeight;
 		this._isLayouting = true;
+
 		try {
 			this._doLayout(widgetDim);
 		} finally {
@@ -328,6 +339,7 @@ export class InlineChatWidget {
 
 	protected _doLayout(dimension: Dimension): void {
 		const extraHeight = this._getExtraHeight();
+
 		const statusHeight = getTotalHeight(this._elements.status);
 
 		// console.log('ZONE#Widget#layout', { height: dimension.height, extraHeight, progressHeight, followUpsHeight, statusHeight, LIST: dimension.height - progressHeight - followUpsHeight - statusHeight - extraHeight });
@@ -350,7 +362,9 @@ export class InlineChatWidget {
 			statusHeight: getTotalHeight(this._elements.status),
 			extraHeight: this._getExtraHeight()
 		};
+
 		const result = data.chatWidgetContentHeight + data.statusHeight + data.extraHeight;
+
 		return result;
 	}
 
@@ -359,9 +373,11 @@ export class InlineChatWidget {
 		// at least "maxWidgetHeight" high and at most the content height.
 
 		let maxWidgetOutputHeight = 100;
+
 		for (const item of this._chatWidget.viewModel?.getItems() ?? []) {
 			if (isResponseVM(item) && item.response.value.some(r => r.kind === 'textEditGroup' && !r.state?.applied)) {
 				maxWidgetOutputHeight = 270;
+
 				break;
 			}
 		}
@@ -369,6 +385,7 @@ export class InlineChatWidget {
 		let value = this.contentHeight;
 		value -= this._chatWidget.contentHeight;
 		value += Math.min(this._chatWidget.input.contentHeight + maxWidgetOutputHeight, this._chatWidget.contentHeight);
+
 		return value;
 	}
 
@@ -411,11 +428,14 @@ export class InlineChatWidget {
 
 	async getCodeBlockInfo(codeBlockIndex: number): Promise<ITextModel | undefined> {
 		const { viewModel } = this._chatWidget;
+
 		if (!viewModel) {
 			return undefined;
 		}
 		const items = viewModel.getItems().filter(i => isResponseVM(i));
+
 		const item = items.at(-1);
+
 		if (!item) {
 			return;
 		}
@@ -424,6 +444,7 @@ export class InlineChatWidget {
 
 	get responseContent(): string | undefined {
 		const requests = this._chatWidget.viewModel?.model.getRequests();
+
 		if (!isNonEmptyArray(requests)) {
 			return undefined;
 		}
@@ -441,6 +462,7 @@ export class InlineChatWidget {
 
 	updateInfo(message: string): void {
 		this._elements.infoLabel.classList.toggle('hidden', !message);
+
 		const renderedMessage = renderLabelWithIcons(message);
 		reset(this._elements.infoLabel, ...renderedMessage);
 		this._onDidChangeHeight.fire();
@@ -448,10 +470,14 @@ export class InlineChatWidget {
 
 	updateStatus(message: string, ops: { classes?: string[]; resetAfter?: number; keepMessage?: boolean; title?: string } = {}) {
 		const isTempMessage = typeof ops.resetAfter === 'number';
+
 		if (isTempMessage && !this._elements.statusLabel.dataset['state']) {
 			const statusLabel = this._elements.statusLabel.innerText;
+
 			const title = this._elements.statusLabel.dataset['title'];
+
 			const classes = Array.from(this._elements.statusLabel.classList.values());
+
 			setTimeout(() => {
 				this.updateStatus(statusLabel, { classes, keepMessage: true, title });
 			}, ops.resetAfter);
@@ -460,6 +486,7 @@ export class InlineChatWidget {
 		reset(this._elements.statusLabel, ...renderedMessage);
 		this._elements.statusLabel.className = `label status ${(ops.classes ?? []).join(' ')}`;
 		this._elements.statusLabel.classList.toggle('hidden', !message);
+
 		if (isTempMessage) {
 			this._elements.statusLabel.dataset['state'] = 'temp';
 		} else {
@@ -558,6 +585,7 @@ export class EditorBasedInlineChatWidget extends InlineChatWidget {
 
 	override reset() {
 		this._accessibleViewer.clear();
+
 		super.reset();
 	}
 
@@ -597,9 +625,13 @@ class HunkAccessibleDiffViewer extends AccessibleDiffViewer {
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		const width = observableValue('width', 0);
+
 		const diff = observableValue('diff', HunkAccessibleDiffViewer._asMapping(hunk));
+
 		const diffs = derived(r => [diff.read(r)]);
+
 		const lines = Math.min(10, 8 + diff.get().changedLineCount);
+
 		const height = models.getModifiedOptions().get(EditorOption.lineHeight) * lines;
 
 		super(parentNode, constObservable(true), () => { }, constObservable(false), width, constObservable(height), diffs, models, instantiationService);
@@ -614,10 +646,15 @@ class HunkAccessibleDiffViewer extends AccessibleDiffViewer {
 
 	private static _asMapping(hunk: HunkInformation): DetailedLineRangeMapping {
 		const ranges0 = hunk.getRanges0();
+
 		const rangesN = hunk.getRangesN();
+
 		const originalLineRange = LineRange.fromRangeInclusive(ranges0[0]);
+
 		const modifiedLineRange = LineRange.fromRangeInclusive(rangesN[0]);
+
 		const innerChanges: RangeMapping[] = [];
+
 		for (let i = 1; i < ranges0.length; i++) {
 			innerChanges.push(new RangeMapping(ranges0[i], rangesN[i]));
 		}

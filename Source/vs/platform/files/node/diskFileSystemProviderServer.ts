@@ -27,29 +27,46 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
     }
     call(ctx: T, command: string, arg?: any): Promise<any> {
         const uriTransformer = this.getUriTransformer(ctx);
+
         switch (command) {
             case 'stat': return this.stat(uriTransformer, arg[0]);
+
             case 'readdir': return this.readdir(uriTransformer, arg[0]);
+
             case 'open': return this.open(uriTransformer, arg[0], arg[1]);
+
             case 'close': return this.close(arg[0]);
+
             case 'read': return this.read(arg[0], arg[1], arg[2]);
+
             case 'readFile': return this.readFile(uriTransformer, arg[0], arg[1]);
+
             case 'write': return this.write(arg[0], arg[1], arg[2], arg[3], arg[4]);
+
             case 'writeFile': return this.writeFile(uriTransformer, arg[0], arg[1], arg[2]);
+
             case 'rename': return this.rename(uriTransformer, arg[0], arg[1], arg[2]);
+
             case 'copy': return this.copy(uriTransformer, arg[0], arg[1], arg[2]);
+
             case 'cloneFile': return this.cloneFile(uriTransformer, arg[0], arg[1]);
+
             case 'mkdir': return this.mkdir(uriTransformer, arg[0]);
+
             case 'delete': return this.delete(uriTransformer, arg[0], arg[1]);
+
             case 'watch': return this.watch(uriTransformer, arg[0], arg[1], arg[2], arg[3]);
+
             case 'unwatch': return this.unwatch(arg[0], arg[1]);
         }
         throw new Error(`IPC Command ${command} not found`);
     }
     listen(ctx: T, event: string, arg: any): Event<any> {
         const uriTransformer = this.getUriTransformer(ctx);
+
         switch (event) {
             case 'fileChange': return this.onFileChange(uriTransformer, arg[0]);
+
             case 'readFileStream': return this.onReadFileStream(uriTransformer, arg[0], arg[1]);
         }
         throw new Error(`Unknown event ${event}`);
@@ -59,6 +76,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
     //#region File Metadata Resolving
     private stat(uriTransformer: IURITransformer, _resource: UriComponents): Promise<IStat> {
         const resource = this.transformIncoming(uriTransformer, _resource, true);
+
         return this.provider.stat(resource);
     }
     private readdir(uriTransformer: IURITransformer, _resource: UriComponents): Promise<[
@@ -66,18 +84,23 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
         FileType
     ][]> {
         const resource = this.transformIncoming(uriTransformer, _resource);
+
         return this.provider.readdir(resource);
     }
     //#endregion
     //#region File Reading/Writing
     private async readFile(uriTransformer: IURITransformer, _resource: UriComponents, opts?: IFileAtomicReadOptions): Promise<VSBuffer> {
         const resource = this.transformIncoming(uriTransformer, _resource, true);
+
         const buffer = await this.provider.readFile(resource, opts);
+
         return VSBuffer.wrap(buffer);
     }
     private onReadFileStream(uriTransformer: IURITransformer, _resource: URI, opts: IFileReadStreamOptions): Event<ReadableStreamEventPayload<VSBuffer>> {
         const resource = this.transformIncoming(uriTransformer, _resource, true);
+
         const cts = new CancellationTokenSource();
+
         const emitter = new Emitter<ReadableStreamEventPayload<VSBuffer>>({
             onDidRemoveLastListener: () => {
                 // Ensure to cancel the read operation when there is no more
@@ -85,6 +108,7 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
                 cts.cancel();
             }
         });
+
         const fileStream = this.provider.readFileStream(resource, opts, cts.token);
         listenStream(fileStream, {
             onData: chunk => emitter.fire(VSBuffer.wrap(chunk)),
@@ -97,14 +121,17 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
                 cts.dispose();
             }
         });
+
         return emitter.event;
     }
     private writeFile(uriTransformer: IURITransformer, _resource: UriComponents, content: VSBuffer, opts: IFileWriteOptions): Promise<void> {
         const resource = this.transformIncoming(uriTransformer, _resource);
+
         return this.provider.writeFile(resource, content.buffer, opts);
     }
     private open(uriTransformer: IURITransformer, _resource: UriComponents, opts: IFileOpenOptions): Promise<number> {
         const resource = this.transformIncoming(uriTransformer, _resource, true);
+
         return this.provider.open(resource, opts);
     }
     private close(fd: number): Promise<void> {
@@ -115,8 +142,10 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
         number
     ]> {
         const buffer = VSBuffer.alloc(length);
+
         const bufferOffset = 0; // offset is 0 because we create a buffer to read into for each call
         const bytesRead = await this.provider.read(fd, pos, buffer.buffer, bufferOffset, length);
+
         return [buffer, bytesRead];
     }
     private write(fd: number, pos: number, data: VSBuffer, offset: number, length: number): Promise<number> {
@@ -126,27 +155,35 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
     //#region Move/Copy/Delete/Create Folder
     private mkdir(uriTransformer: IURITransformer, _resource: UriComponents): Promise<void> {
         const resource = this.transformIncoming(uriTransformer, _resource);
+
         return this.provider.mkdir(resource);
     }
     protected delete(uriTransformer: IURITransformer, _resource: UriComponents, opts: IFileDeleteOptions): Promise<void> {
         const resource = this.transformIncoming(uriTransformer, _resource);
+
         return this.provider.delete(resource, opts);
     }
     private rename(uriTransformer: IURITransformer, _source: UriComponents, _target: UriComponents, opts: IFileOverwriteOptions): Promise<void> {
         const source = this.transformIncoming(uriTransformer, _source);
+
         const target = this.transformIncoming(uriTransformer, _target);
+
         return this.provider.rename(source, target, opts);
     }
     private copy(uriTransformer: IURITransformer, _source: UriComponents, _target: UriComponents, opts: IFileOverwriteOptions): Promise<void> {
         const source = this.transformIncoming(uriTransformer, _source);
+
         const target = this.transformIncoming(uriTransformer, _target);
+
         return this.provider.copy(source, target, opts);
     }
     //#endregion
     //#region Clone File
     private cloneFile(uriTransformer: IURITransformer, _source: UriComponents, _target: UriComponents): Promise<void> {
         const source = this.transformIncoming(uriTransformer, _source);
+
         const target = this.transformIncoming(uriTransformer, _target);
+
         return this.provider.cloneFile(source, target);
     }
     //#endregion
@@ -166,19 +203,24 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
                 this.sessionToWatcher.delete(sessionId);
             }
         });
+
         return emitter.event;
     }
     private async watch(uriTransformer: IURITransformer, sessionId: string, req: number, _resource: UriComponents, opts: IWatchOptions): Promise<void> {
         const watcher = this.sessionToWatcher.get(sessionId);
+
         if (watcher) {
             const resource = this.transformIncoming(uriTransformer, _resource);
+
             const disposable = watcher.watch(req, resource, opts);
             this.watchRequests.set(sessionId + req, disposable);
         }
     }
     private async unwatch(sessionId: string, req: number): Promise<void> {
         const id = sessionId + req;
+
         const disposable = this.watchRequests.get(id);
+
         if (disposable) {
             dispose(disposable);
             this.watchRequests.delete(id);
@@ -188,10 +230,12 @@ export abstract class AbstractDiskFileSystemProviderChannel<T> extends Disposabl
     //#endregion
     override dispose(): void {
         super.dispose();
+
         for (const [, disposable] of this.watchRequests) {
             disposable.dispose();
         }
         this.watchRequests.clear();
+
         for (const [, disposable] of this.sessionToWatcher) {
             disposable.dispose();
         }
@@ -209,6 +253,7 @@ export abstract class AbstractSessionFileWatcher extends Disposable implements I
     // forward events from the watched paths for this session and
     // not other clients that asked to watch other paths.
     private readonly fileWatcher = this._register(new DiskFileSystemProvider(this.logService));
+
     constructor(private readonly uriTransformer: IURITransformer, sessionEmitter: Emitter<IFileChange[] | string>, private readonly logService: ILogService, private readonly environmentService: IEnvironmentService) {
         super();
         this.registerListeners(sessionEmitter);
@@ -233,10 +278,12 @@ export abstract class AbstractSessionFileWatcher extends Disposable implements I
     }
     watch(req: number, resource: URI, opts: IWatchOptions): IDisposable {
         const extraExcludes = this.getExtraExcludes(this.environmentService);
+
         if (Array.isArray(extraExcludes)) {
             opts.excludes = [...opts.excludes, ...extraExcludes];
         }
         this.watcherRequests.set(req, this.fileWatcher.watch(resource, opts));
+
         return toDisposable(() => {
             dispose(this.watcherRequests.get(req));
             this.watcherRequests.delete(req);
@@ -247,6 +294,7 @@ export abstract class AbstractSessionFileWatcher extends Disposable implements I
             disposable.dispose();
         }
         this.watcherRequests.clear();
+
         super.dispose();
     }
 }

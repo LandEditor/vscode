@@ -68,7 +68,9 @@ registerEditorContribution(FloatingEditorClickMenu.ID, FloatingEditorClickMenu, 
 //#endregion
 //#region Quick Access
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(QuickAccessExtensions.Quickaccess);
+
 const editorPickerContextKey = 'inEditorsPicker';
+
 const editorPickerContext = ContextKeyExpr.and(inQuickPickContext, ContextKeyExpr.has(editorPickerContextKey));
 quickAccessRegistry.registerQuickAccessProvider({
     ctor: ActiveGroupEditorsByMostRecentlyUsedQuickAccess,
@@ -204,6 +206,7 @@ registerAction2(MoveEditorGroupToNewWindowAction);
 registerAction2(CopyEditorGroupToNewWindowAction);
 registerAction2(RestoreEditorsToMainWindowAction);
 registerAction2(NewEmptyEditorWindowAction);
+
 const quickAccessNavigateNextInEditorPickerId = 'workbench.action.quickOpenNavigateNextInEditorPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigateNextInEditorPickerId,
@@ -213,6 +216,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.Tab,
     mac: { primary: KeyMod.WinCtrl | KeyCode.Tab }
 });
+
 const quickAccessNavigatePreviousInEditorPickerId = 'workbench.action.quickOpenNavigatePreviousInEditorPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigatePreviousInEditorPickerId,
@@ -312,6 +316,7 @@ function appendEditorToolItem(primary: ICommandAction, when: ContextKeyExpressio
         when,
         order
     };
+
     if (alternative) {
         item.alt = {
             id: alternative.id,
@@ -421,6 +426,7 @@ appendEditorToolItem({
     title: localize('swapDiffSides', "Swap Left and Right Side"),
     icon: Codicon.arrowSwap
 }, ContextKeyExpr.and(TextCompareEditorActiveContext, ActiveCompareEditorCanSwapContext), 15, undefined, undefined);
+
 const toggleWhitespace = registerIcon('diff-editor-toggle-whitespace', Codicon.whitespace, localize('toggleWhitespace', 'Icon for the toggle whitespace action in the diff editor.'));
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
     command: {

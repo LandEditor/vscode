@@ -18,6 +18,7 @@ function reviveIconPathUris(iconPath: {
     light?: URI | undefined;
 }) {
     iconPath.dark = URI.revive(iconPath.dark);
+
     if (iconPath.light) {
         iconPath.light = URI.revive(iconPath.light);
     }
@@ -30,6 +31,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
         resolve(items: TransferQuickPickItemOrSeparator[]): void;
         reject(error: Error): void;
     }> = {};
+
     constructor(extHostContext: IExtHostContext, 
     @IQuickInputService
     quickInputService: IQuickInputService) {
@@ -53,6 +55,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
                 }
             }
         };
+
         if (options.canPickMany) {
             return this._quickInputService.pick(contents, options as {
                 canPickMany: true;
@@ -89,6 +92,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
     // ---- input
     $input(options: IInputBoxOptions | undefined, validateInput: boolean, token: CancellationToken): Promise<string | undefined> {
         const inputOptions: IInputOptions = Object.create(null);
+
         if (options) {
             inputOptions.title = options.title;
             inputOptions.password = options.password;
@@ -109,9 +113,12 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
     private sessions = new Map<number, QuickInputSession>();
     $createOrUpdate(params: TransferQuickInput): Promise<void> {
         const sessionId = params.id;
+
         let session = this.sessions.get(sessionId);
+
         if (!session) {
             const store = new DisposableStore();
+
             const input = params.type === 'quickPick' ? this._quickInputService.createQuickPick() : this._quickInputService.createInputBox();
             store.add(input);
             store.add(input.onDidAccept(() => {
@@ -126,6 +133,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
             store.add(input.onDidHide(() => {
                 this._proxy.$onDidHide(sessionId);
             }));
+
             if (params.type === 'quickPick') {
                 // Add extra events specific for quickpick
                 const quickpick = input as IQuickPick<IQuickPickItem>;
@@ -147,6 +155,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
             this.sessions.set(sessionId, session);
         }
         const { input, handlesToItems } = session;
+
         for (const param in params) {
             if (param === 'id' || param === 'type') {
                 continue;
@@ -201,6 +210,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
     }
     $dispose(sessionId: number): Promise<void> {
         const session = this.sessions.get(sessionId);
+
         if (session) {
             session.store.dispose();
             this.sessions.delete(sessionId);

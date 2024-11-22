@@ -18,6 +18,7 @@ export class ColorizedBracketPairsDecorationProvider extends Disposable implemen
     private readonly colorProvider = new ColorProvider();
     private readonly onDidChangeEmitter = new Emitter<void>();
     public readonly onDidChange = this.onDidChangeEmitter.event;
+
     constructor(private readonly textModel: TextModel) {
         super();
         this.colorizationOptions = textModel.getOptions().bracketPairColorizationOptions;
@@ -50,6 +51,7 @@ export class ColorizedBracketPairsDecorationProvider extends Disposable implemen
             ownerId: 0,
             range: bracket.range,
         })).toArray();
+
         return result;
     }
     getAllDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[] {
@@ -64,6 +66,7 @@ export class ColorizedBracketPairsDecorationProvider extends Disposable implemen
 }
 class ColorProvider {
     public readonly unexpectedClosingBracketClassName = 'unexpected-closing-bracket';
+
     getInlineClassName(bracket: BracketInfo, independentColorPoolPerBracketType: boolean): string {
         if (bracket.isInvalid) {
             return this.unexpectedClosingBracketClassName;
@@ -85,12 +88,15 @@ registerThemingParticipant((theme, collector) => {
         editorBracketHighlightingForeground5,
         editorBracketHighlightingForeground6
     ];
+
     const colorProvider = new ColorProvider();
     collector.addRule(`.monaco-editor .${colorProvider.unexpectedClosingBracketClassName} { color: ${theme.getColor(editorBracketHighlightingUnexpectedBracketForeground)}; }`);
+
     const colorValues = colors
         .map(c => theme.getColor(c))
         .filter((c): c is Color => !!c)
         .filter(c => !c.isTransparent());
+
     for (let level = 0; level < 30; level++) {
         const color = colorValues[level % colorValues.length];
         collector.addRule(`.monaco-editor .${colorProvider.getInlineClassNameOfLevel(level)} { color: ${color}; }`);

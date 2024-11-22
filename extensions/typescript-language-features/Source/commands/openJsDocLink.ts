@@ -27,6 +27,7 @@ export class OpenJsDocLinkCommand implements Command {
     public readonly id = OpenJsDocLinkCommand.id;
     public async execute(args: OpenJsDocLinkCommand_Args): Promise<void> {
         const { line, character } = args.position;
+
         const position = new vscode.Position(line, character);
         await vscode.commands.executeCommand('vscode.open', vscode.Uri.from(args.file), {
             selection: new vscode.Range(position, position),

@@ -22,6 +22,7 @@ export class NotebookCellsLayout implements IRangeMap {
     protected _prefixSumComputer: ConstantTimePrefixSumComputer = new ConstantTimePrefixSumComputer([]);
     private _size = 0;
     private _paddingTop = 0;
+
     get paddingTop() {
         return this._paddingTop;
     }
@@ -59,9 +60,12 @@ export class NotebookCellsLayout implements IRangeMap {
         this._prefixSumComputer.removeValues(index, deleteCount);
         // inserts should also include whitespaces
         const newSizes = [];
+
         for (let i = 0; i < inserts.length; i++) {
             const insertIndex = i + index;
+
             const existingWhitespaces = this._whitespace.filter(ws => ws.afterPosition === insertIndex + 1);
+
             if (existingWhitespaces.length > 0) {
                 newSizes.push(inserts[i].size + existingWhitespaces.reduce((acc, ws) => acc + ws.size, 0));
             }
@@ -74,6 +78,7 @@ export class NotebookCellsLayout implements IRangeMap {
         // Loop through all items from the index where the splice started, to the end
         for (let i = index; i < this._items.length; i++) {
             const existingWhitespaces = this._whitespace.filter(ws => ws.afterPosition === i + 1);
+
             if (existingWhitespaces.length > 0) {
                 this._prefixSumComputer.setValue(i, this._items[i].size + existingWhitespaces.reduce((acc, ws) => acc + ws.size, 0));
             }
@@ -84,7 +89,9 @@ export class NotebookCellsLayout implements IRangeMap {
     }
     insertWhitespace(id: string, afterPosition: number, size: number): void {
         let priority = 0;
+
         const existingWhitespaces = this._whitespace.filter(ws => ws.afterPosition === afterPosition);
+
         if (existingWhitespaces.length > 0) {
             priority = Math.max(...existingWhitespaces.map(ws => ws.priority)) + 1;
         }
@@ -99,30 +106,41 @@ export class NotebookCellsLayout implements IRangeMap {
         // find item size of index
         if (afterPosition > 0) {
             const index = afterPosition - 1;
+
             const itemSize = this._items[index].size;
+
             const accSize = itemSize + size;
             this._prefixSumComputer.setValue(index, accSize);
         }
     }
     changeOneWhitespace(id: string, afterPosition: number, size: number): void {
         const whitespaceIndex = this._whitespace.findIndex(ws => ws.id === id);
+
         if (whitespaceIndex !== -1) {
             const whitespace = this._whitespace[whitespaceIndex];
+
             const oldAfterPosition = whitespace.afterPosition;
             whitespace.afterPosition = afterPosition;
+
             const oldSize = whitespace.size;
+
             const delta = size - oldSize;
             whitespace.size = size;
             this._size += delta;
+
             if (oldAfterPosition > 0 && oldAfterPosition <= this._items.length) {
                 const index = oldAfterPosition - 1;
+
                 const itemSize = this._items[index].size;
+
                 const accSize = itemSize;
                 this._prefixSumComputer.setValue(index, accSize);
             }
             if (afterPosition > 0 && afterPosition <= this._items.length) {
                 const index = afterPosition - 1;
+
                 const itemSize = this._items[index].size;
+
                 const accSize = itemSize + size;
                 this._prefixSumComputer.setValue(index, accSize);
             }
@@ -130,14 +148,18 @@ export class NotebookCellsLayout implements IRangeMap {
     }
     removeWhitespace(id: string): void {
         const whitespaceIndex = this._whitespace.findIndex(ws => ws.id === id);
+
         if (whitespaceIndex !== -1) {
             const whitespace = this._whitespace[whitespaceIndex];
             this._whitespace.splice(whitespaceIndex, 1);
             this._size -= whitespace.size; // Reduce the total size by the size of the removed whitespace
             if (whitespace.afterPosition > 0) {
                 const index = whitespace.afterPosition - 1;
+
                 const itemSize = this._items[index].size;
+
                 const remainingWhitespaces = this._whitespace.filter(ws => ws.afterPosition === whitespace.afterPosition);
+
                 const accSize = itemSize + remainingWhitespaces.reduce((acc, ws) => acc + ws.size, 0);
                 this._prefixSumComputer.setValue(index, accSize);
             }
@@ -150,22 +172,30 @@ export class NotebookCellsLayout implements IRangeMap {
      */
     getWhitespacePosition(id: string): number {
         const whitespace = this._whitespace.find(ws => ws.id === id);
+
         if (!whitespace) {
             throw new Error('Whitespace not found');
         }
         const afterPosition = whitespace.afterPosition;
+
         if (afterPosition === 0) {
             // find all whitespaces at the same position but with higher priority (smaller number)
             const whitespaces = this._whitespace.filter(ws => ws.afterPosition === afterPosition && ws.priority < whitespace.priority);
+
             return whitespaces.reduce((acc, ws) => acc + ws.size, 0) + this.paddingTop;
         }
         const whitespaceBeforeFirstItem = this._whitespace.filter(ws => ws.afterPosition === 0).reduce((acc, ws) => acc + ws.size, 0);
         // previous item index
         const index = afterPosition - 1;
+
         const previousItemPosition = this._prefixSumComputer.getPrefixSum(index);
+
         const previousItemSize = this._items[index].size;
+
         const previousWhitespace = this._whitespace.filter(ws => (ws.afterPosition <= afterPosition - 1 && ws.afterPosition > 0));
+
         const whitespaceBefore = previousWhitespace.reduce((acc, ws) => acc + ws.size, 0);
+
         return previousItemPosition + previousItemSize + whitespaceBeforeFirstItem + this.paddingTop + whitespaceBefore;
     }
     indexAt(position: number): number {
@@ -173,7 +203,9 @@ export class NotebookCellsLayout implements IRangeMap {
             return -1;
         }
         const whitespaceBeforeFirstItem = this._whitespace.filter(ws => ws.afterPosition === 0).reduce((acc, ws) => acc + ws.size, 0);
+
         const offset = position - (this._paddingTop + whitespaceBeforeFirstItem);
+
         if (offset <= 0) {
             return 0;
         }
@@ -184,6 +216,7 @@ export class NotebookCellsLayout implements IRangeMap {
     }
     indexAfter(position: number): number {
         const index = this.indexAt(position);
+
         return Math.min(index + 1, this._items.length);
     }
     positionAt(index: number): number {
@@ -198,12 +231,14 @@ export class NotebookCellsLayout implements IRangeMap {
             return -1;
         }
         const whitespaceBeforeFirstItem = this._whitespace.filter(ws => ws.afterPosition === 0).reduce((acc, ws) => acc + ws.size, 0);
+
         return this._prefixSumComputer.getPrefixSum(index /** count */) + this._paddingTop + whitespaceBeforeFirstItem;
     }
 }
 export class NotebookCellListView<T> extends ListView<T> {
     private _lastWhitespaceId: number = 0;
     private _renderingStack = 0;
+
     get inRenderingTransaction(): boolean {
         return this._renderingStack > 0;
     }
@@ -212,19 +247,23 @@ export class NotebookCellListView<T> extends ListView<T> {
     }
     protected override render(previousRenderRange: IRange, renderTop: number, renderHeight: number, renderLeft: number | undefined, scrollWidth: number | undefined, updateItemsInDOM?: boolean): void {
         this._renderingStack++;
+
         super.render(previousRenderRange, renderTop, renderHeight, renderLeft, scrollWidth, updateItemsInDOM);
         this._renderingStack--;
     }
     protected override _rerender(renderTop: number, renderHeight: number, inSmoothScrolling?: boolean | undefined): void {
         this._renderingStack++;
+
         super._rerender(renderTop, renderHeight, inSmoothScrolling);
         this._renderingStack--;
     }
     protected override createRangeMap(paddingTop: number): IRangeMap {
         const existingMap = this.rangeMap as NotebookCellsLayout | undefined;
+
         if (existingMap) {
             const layout = new NotebookCellsLayout(paddingTop);
             layout.restoreWhitespace(existingMap.getWhitespaces());
+
             return layout;
         }
         else {
@@ -233,21 +272,30 @@ export class NotebookCellListView<T> extends ListView<T> {
     }
     insertWhitespace(afterPosition: number, size: number): string {
         const scrollTop = this.scrollTop;
+
         const id = `${++this._lastWhitespaceId}`;
+
         const previousRenderRange = this.getRenderRange(this.lastRenderTop, this.lastRenderHeight);
+
         const elementPosition = this.elementTop(afterPosition);
+
         const aboveScrollTop = scrollTop > elementPosition;
         this.notebookRangeMap.insertWhitespace(id, afterPosition, size);
+
         const newScrolltop = aboveScrollTop ? scrollTop + size : scrollTop;
         this.render(previousRenderRange, newScrolltop, this.lastRenderHeight, undefined, undefined, false);
         this._rerender(newScrolltop, this.renderHeight, false);
         this.eventuallyUpdateScrollDimensions();
+
         return id;
     }
     changeOneWhitespace(id: string, newAfterPosition: number, newSize: number) {
         const scrollTop = this.scrollTop;
+
         const previousRenderRange = this.getRenderRange(this.lastRenderTop, this.lastRenderHeight);
+
         const currentPosition = this.notebookRangeMap.getWhitespacePosition(id);
+
         if (currentPosition > scrollTop) {
             this.notebookRangeMap.changeOneWhitespace(id, newAfterPosition, newSize);
             this.render(previousRenderRange, scrollTop, this.lastRenderHeight, undefined, undefined, false);
@@ -261,8 +309,11 @@ export class NotebookCellListView<T> extends ListView<T> {
     }
     removeWhitespace(id: string): void {
         const scrollTop = this.scrollTop;
+
         const previousRenderRange = this.getRenderRange(this.lastRenderTop, this.lastRenderHeight);
+
         const currentPosition = this.notebookRangeMap.getWhitespacePosition(id);
+
         if (currentPosition > scrollTop) {
             this.notebookRangeMap.removeWhitespace(id);
             this.render(previousRenderRange, scrollTop, this.lastRenderHeight, undefined, undefined, false);

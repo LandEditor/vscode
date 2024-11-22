@@ -39,6 +39,7 @@ export class ExpressionContainer implements IExpressionContainer {
     public valueChanged = false;
     private _value: string = '';
     protected children?: Promise<IExpression[]>;
+
     constructor(protected session: IDebugSession | undefined, protected readonly threadId: number | undefined, private _reference: number | undefined, private readonly id: string, public namedVariables: number | undefined = 0, public indexedVariables: number | undefined = 0, public memoryReference: string | undefined = undefined, private startOfVariables: number | undefined = 0, public presentationHint: DebugProtocol.VariablePresentationHint | undefined = undefined, public valueLocationReference: number | undefined = undefined) { }
     get reference(): number | undefined {
         return this._reference;
@@ -52,6 +53,7 @@ export class ExpressionContainer implements IExpressionContainer {
             return;
         }
         const response = await this.session!.variables(this.reference, this.threadId, undefined, undefined, undefined);
+
         if (!response || !response.body || !response.body.variables || response.body.variables.length !== 1) {
             return;
         }
@@ -85,20 +87,24 @@ export class ExpressionContainer implements IExpressionContainer {
         const children = this.namedVariables ? await this.fetchVariables(undefined, undefined, 'named') : [];
         // Use a dynamic chunk size based on the number of elements #9774
         let chunkSize = ExpressionContainer.BASE_CHUNK_SIZE;
+
         while (!!this.indexedVariables && this.indexedVariables > chunkSize * ExpressionContainer.BASE_CHUNK_SIZE) {
             chunkSize *= ExpressionContainer.BASE_CHUNK_SIZE;
         }
         if (!!this.indexedVariables && this.indexedVariables > chunkSize) {
             // There are a lot of children, create fake intermediate values that represent chunks #9537
             const numberOfChunks = Math.ceil(this.indexedVariables / chunkSize);
+
             for (let i = 0; i < numberOfChunks; i++) {
                 const start = (this.startOfVariables || 0) + i * chunkSize;
+
                 const count = Math.min(chunkSize, this.indexedVariables - i * chunkSize);
                 children.push(new Variable(this.session, this.threadId, this, this.reference, `[${start}..${start + count - 1}]`, '', '', undefined, count, undefined, { kind: 'virtual' }, undefined, undefined, true, start));
             }
             return children;
         }
         const variables = await this.fetchVariables(this.startOfVariables, this.indexedVariables, 'indexed');
+
         return children.concat(variables);
     }
     getId(): string {
@@ -117,19 +123,24 @@ export class ExpressionContainer implements IExpressionContainer {
     private async fetchVariables(start: number | undefined, count: number | undefined, filter: 'indexed' | 'named' | undefined): Promise<Variable[]> {
         try {
             const response = await this.session!.variables(this.reference || 0, this.threadId, filter, start, count);
+
             if (!response || !response.body || !response.body.variables) {
                 return [];
             }
             const nameCount = new Map<string, number>();
+
             const vars = response.body.variables.filter(v => !!v).map((v: IDebugProtocolVariableWithContext) => {
                 if (isString(v.value) && isString(v.name) && typeof v.variablesReference === 'number') {
                     const count = nameCount.get(v.name) || 0;
+
                     const idDuplicationIndex = count > 0 ? count.toString() : '';
                     nameCount.set(v.name, count + 1);
+
                     return new Variable(this.session, this.threadId, this, v.variablesReference, v.name, v.evaluateName, v.value, v.namedVariables, v.indexedVariables, v.memoryReference, v.presentationHint, v.type, v.__vscodeVariableMenuContext, true, 0, idDuplicationIndex, v.declarationLocationReference, v.valueLocationReference);
                 }
                 return new Variable(this.session, this.threadId, this, 0, '', undefined, nls.localize('invalidVariableAttributes', "Invalid variable attributes"), 0, 0, undefined, { kind: 'virtual' }, undefined, undefined, false);
             });
+
             if (this.session!.autoExpandLazyVariables) {
                 await Promise.all(vars.map(v => v.presentationHint?.lazy && v.evaluateLazy()));
             }
@@ -156,11 +167,14 @@ export class ExpressionContainer implements IExpressionContainer {
         if (!session || (!stackFrame && context !== 'repl')) {
             this.value = context === 'repl' ? nls.localize('startDebugFirst', "Please start a debug session to evaluate expressions") : Expression.DEFAULT_VALUE;
             this.reference = 0;
+
             return false;
         }
         this.session = session;
+
         try {
             const response = await session.evaluate(expression, stackFrame ? stackFrame.frameId : undefined, context, location);
+
             if (response && response.body) {
                 this.value = response.body.result || '';
                 this.reference = response.body.variablesReference;
@@ -170,6 +184,7 @@ export class ExpressionContainer implements IExpressionContainer {
                 this.type = response.body.type || this.type;
                 this.presentationHint = response.body.presentationHint;
                 this.valueLocationReference = response.body.valueLocationReference;
+
                 if (!keepLazyVars && response.body.presentationHint?.lazy) {
                     await this.evaluateLazy();
                 }
@@ -180,6 +195,7 @@ export class ExpressionContainer implements IExpressionContainer {
         catch (e) {
             this.value = e.message || '';
             this.reference = 0;
+
             return false;
         }
     }
@@ -223,10 +239,12 @@ export class VisualizedExpression implements IExpression {
     public async edit(newValue: string) {
         try {
             await this.visualizer.editTreeItem(this.treeId, this.treeItem, newValue);
+
             return true;
         }
         catch (e) {
             this.errorMessage = e.message;
+
             return false;
         }
     }
@@ -236,6 +254,7 @@ export class Expression extends ExpressionContainer implements IExpression {
     public available: boolean;
     private readonly _onDidChangeValue = new Emitter<IExpression>();
     public readonly onDidChangeValue: Event<IExpression> = this._onDidChangeValue.event;
+
     constructor(public name: string, id = generateUuid()) {
         super(undefined, undefined, 0, id);
         this.available = false;
@@ -248,6 +267,7 @@ export class Expression extends ExpressionContainer implements IExpression {
     async evaluate(session: IDebugSession | undefined, stackFrame: IStackFrame | undefined, context: string, keepLazyVars?: boolean, location?: IDebugEvaluatePosition): Promise<void> {
         const hadDefaultValue = this.value === Expression.DEFAULT_VALUE;
         this.available = await this.evaluateExpression(this.name, session, stackFrame, context, keepLazyVars, location);
+
         if (hadDefaultValue || this.valueChanged) {
             this._onDidChangeValue.fire(this);
         }
@@ -266,6 +286,7 @@ export class Expression extends ExpressionContainer implements IExpression {
 export class Variable extends ExpressionContainer implements IExpression {
     // Used to show the error message coming from the adapter when setting the value #7807
     public errorMessage: string | undefined;
+
     constructor(session: IDebugSession | undefined, threadId: number | undefined, public readonly parent: IExpressionContainer, reference: number | undefined, public readonly name: string, public evaluateName: string | undefined, value: string | undefined, namedVariables: number | undefined, indexedVariables: number | undefined, memoryReference: string | undefined, presentationHint: DebugProtocol.VariablePresentationHint | undefined, type: string | undefined = undefined, public readonly variableMenuContext: string | undefined = undefined, public readonly available = true, startOfVariables = 0, idDuplicationIndex = '', public readonly declarationLocationReference: number | undefined = undefined, valueLocationReference: number | undefined = undefined) {
         super(session, threadId, reference, `variable:${parent.getId()}:${name}:${idDuplicationIndex}`, namedVariables, indexedVariables, memoryReference, startOfVariables, presentationHint, valueLocationReference);
         this.value = value || '';
@@ -338,6 +359,7 @@ export class ErrorScope extends Scope {
 }
 export class StackFrame implements IStackFrame {
     private scopes: Promise<Scope[]> | undefined;
+
     constructor(public readonly thread: Thread, public readonly frameId: number, public readonly source: Source, public readonly name: string, public readonly presentationHint: string | undefined, public readonly range: IRange, private readonly index: number, public readonly canRestart: boolean, public readonly instructionPointerReference?: string) { }
     getId(): string {
         return `stackframe:${this.thread.getId()}:${this.index}:${this.source.name}`;
@@ -349,14 +371,17 @@ export class StackFrame implements IStackFrame {
                     return [];
                 }
                 const usedIds = new Set<number>();
+
                 return response.body.scopes.map(rs => {
                     // form the id based on the name and location so that it's the
                     // same across multiple pauses to retain expansion state
                     let id = 0;
+
                     do {
                         id = stringHash(`${rs.name}:${rs.line}:${rs.column}`, id);
                     } while (usedIds.has(id));
                     usedIds.add(id);
+
                     return new Scope(this, id, rs.name, rs.variablesReference, rs.expensive, rs.namedVariables, rs.indexedVariables, rs.line && rs.column && rs.endLine && rs.endColumn ? new Range(rs.line, rs.column, rs.endLine, rs.endColumn) : undefined);
                 });
             }, err => [new ErrorScope(this, 0, err.message)]);
@@ -365,13 +390,17 @@ export class StackFrame implements IStackFrame {
     }
     async getMostSpecificScopes(range: IRange): Promise<IScope[]> {
         const scopes = await this.getScopes();
+
         const nonExpensiveScopes = scopes.filter(s => !s.expensive);
+
         const haveRangeInfo = nonExpensiveScopes.some(s => !!s.range);
+
         if (!haveRangeInfo) {
             return nonExpensiveScopes;
         }
         const scopesContainingRange = nonExpensiveScopes.filter(scope => scope.range && Range.containsRange(scope.range, range))
             .sort((first, second) => (first.range!.endLineNumber - first.range!.startLineNumber) - (second.range!.endLineNumber - second.range!.startLineNumber));
+
         return scopesContainingRange.length ? scopesContainingRange : nonExpensiveScopes;
     }
     restart(): Promise<void> {
@@ -382,11 +411,14 @@ export class StackFrame implements IStackFrame {
     }
     toString(): string {
         const lineNumberToString = typeof this.range.startLineNumber === 'number' ? `:${this.range.startLineNumber}` : '';
+
         const sourceToString = `${this.source.inMemory ? this.source.name : this.source.uri.fsPath}${lineNumberToString}`;
+
         return sourceToString === UNKNOWN_SOURCE_LABEL ? this.name : `${this.name} (${sourceToString})`;
     }
     async openInEditor(editorService: IEditorService, preserveFocus?: boolean, sideBySide?: boolean, pinned?: boolean): Promise<IEditorPane | undefined> {
         const threadStopReason = this.thread.stoppedDetails?.reason;
+
         if (this.instructionPointerReference &&
             (threadStopReason === 'instruction breakpoint' ||
                 (threadStopReason === 'step' && this.thread.lastSteppingGranularity === 'instruction') ||
@@ -411,6 +443,7 @@ export class Thread implements IThread {
     public stopped: boolean;
     public reachedEndOfCallStack = false;
     public lastSteppingGranularity: DebugProtocol.SteppingGranularity | undefined;
+
     constructor(public readonly session: IDebugSession, public name: string, public readonly threadId: number) {
         this.callStack = [];
         this.staleCallStack = [];
@@ -435,10 +468,12 @@ export class Thread implements IThread {
     }
     getTopStackFrame(): IStackFrame | undefined {
         const callStack = this.getCallStack();
+
         const stopReason = this.stoppedDetails?.reason;
         // Allow stack frame without source and with instructionReferencePointer as top stack frame when using disassembly view.
         const firstAvailableStackFrame = callStack.find(sf => !!(((stopReason === 'instruction breakpoint' || (stopReason === 'step' && this.lastSteppingGranularity === 'instruction')) && sf.instructionPointerReference) ||
             (sf.source && sf.source.available && (KEEP_SUBTLE_FRAME_AT_TOP_REASONS.includes(stopReason!) || !isFrameDeemphasized(sf)))));
+
         return firstAvailableStackFrame;
     }
     get stateLabel(): string {
@@ -458,13 +493,16 @@ export class Thread implements IThread {
     async fetchCallStack(levels = 20): Promise<void> {
         if (this.stopped) {
             const start = this.callStack.length;
+
             const callStack = await this.getCallStackImpl(start, levels);
             this.reachedEndOfCallStack = callStack.length < levels;
+
             if (start < this.callStack.length) {
                 // Set the stack frames for exact position we requested. To make sure no concurrent requests create duplicate stack frames #30660
                 this.callStack.splice(start, this.callStack.length - start);
             }
             this.callStack = this.callStack.concat(callStack || []);
+
             if (typeof this.stoppedDetails?.totalFrames === 'number' && this.stoppedDetails.totalFrames === this.callStack.length) {
                 this.reachedEndOfCallStack = true;
             }
@@ -474,7 +512,9 @@ export class Thread implements IThread {
         try {
             const tokenSource = new CancellationTokenSource();
             this.callStackCancellationTokens.push(tokenSource);
+
             const response = await this.session.stackTrace(this.threadId, startFrame, levels, tokenSource.token);
+
             if (!response || !response.body || tokenSource.token.isCancellationRequested) {
                 return [];
             }
@@ -483,6 +523,7 @@ export class Thread implements IThread {
             }
             return response.body.stackFrames.map((rsf, index) => {
                 const source = this.session.getSource(rsf.source);
+
                 return new StackFrame(this, rsf.id, source, rsf.name, rsf.presentationHint, new Range(rsf.line, rsf.column, rsf.endLine || rsf.line, rsf.endColumn || rsf.column), startFrame + index, typeof rsf.canRestart === 'boolean' ? rsf.canRestart : true, rsf.instructionPointerReference);
             });
         }
@@ -553,6 +594,7 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
     public readonly onDidInvalidate = this.invalidateEmitter.event;
     /** @inheritdoc */
     public readonly writable = !!this.session.capabilities.supportsWriteMemoryRequest;
+
     constructor(private readonly memoryReference: string, private readonly session: IDebugSession) {
         super();
         this._register(session.onDidInvalidateMemory(e => {
@@ -563,12 +605,16 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
     }
     public async read(fromOffset: number, toOffset: number): Promise<MemoryRange[]> {
         const length = toOffset - fromOffset;
+
         const offset = fromOffset;
+
         const result = await this.session.readMemory(this.memoryReference, offset, length);
+
         if (result === undefined || !result.body?.data) {
             return [{ type: MemoryRangeType.Unreadable, offset, length }];
         }
         let data: VSBuffer;
+
         try {
             data = decodeBase64(result.body.data);
         }
@@ -576,7 +622,9 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
             return [{ type: MemoryRangeType.Error, offset, length, error: 'Invalid base64 data from debug adapter' }];
         }
         const unreadable = result.body.unreadableBytes || 0;
+
         const dataLength = length - unreadable;
+
         if (data.byteLength < dataLength) {
             const pad = VSBuffer.alloc(dataLength - data.byteLength);
             pad.buffer.fill(0);
@@ -595,8 +643,10 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
     }
     public async write(offset: number, data: VSBuffer): Promise<number> {
         const result = await this.session.writeMemory(this.memoryReference, offset, encodeBase64(data), true);
+
         const written = result?.body?.bytesWritten ?? data.byteLength;
         this.invalidate(offset, offset + written);
+
         return written;
     }
     public override dispose() {
@@ -647,6 +697,7 @@ export abstract class BaseBreakpoint extends Enablement implements IBaseBreakpoi
     public logMessage: string | undefined;
     public mode: string | undefined;
     public modeLabel: string | undefined;
+
     constructor(id: string, opts: IBaseBreakpointOptions) {
         super(opts.enabled ?? true, id);
         this.condition = opts.condition;
@@ -664,7 +715,9 @@ export abstract class BaseBreakpoint extends Enablement implements IBaseBreakpoi
             this.sessionData.set(sessionId, data);
         }
         const allData = Array.from(this.sessionData.values());
+
         const verifiedData = distinct(allData.filter(d => d.verified), d => `${d.line}:${d.column}`);
+
         if (verifiedData.length) {
             // In case multiple session verified the breakpoint and they provide different data show the intial data that the user set (corner case)
             this.data = verifiedData.length === 1 ? verifiedData[0] : undefined;
@@ -685,6 +738,7 @@ export abstract class BaseBreakpoint extends Enablement implements IBaseBreakpoi
     }
     get sessionsThatVerified() {
         const sessionIds: string[] = [];
+
         for (const [sessionId, data] of this.sessionData) {
             if (data.verified) {
                 sessionIds.push(sessionId);
@@ -693,12 +747,15 @@ export abstract class BaseBreakpoint extends Enablement implements IBaseBreakpoi
         return sessionIds;
     }
     abstract get supported(): boolean;
+
     getIdFromAdapter(sessionId: string): number | undefined {
         const data = this.sessionData.get(sessionId);
+
         return data ? data.id : undefined;
     }
     getDebugProtocolBreakpoint(sessionId: string): DebugProtocol.Breakpoint | undefined {
         const data = this.sessionData.get(sessionId);
+
         if (data) {
             const bp: DebugProtocol.Breakpoint = {
                 id: data.id,
@@ -712,6 +769,7 @@ export abstract class BaseBreakpoint extends Enablement implements IBaseBreakpoi
                 instructionReference: data.instructionReference,
                 offset: data.offset
             };
+
             return bp;
         }
         return undefined;
@@ -744,6 +802,7 @@ export class Breakpoint extends BaseBreakpoint implements IBreakpoint {
     private _lineNumber: number;
     private _column: number | undefined;
     public triggeredBy: string | undefined;
+
     constructor(opts: IBreakpointOptions, private readonly textFileService: ITextFileService, private readonly uriIdentityService: IUriIdentityService, private readonly logService: ILogService, id = generateUuid()) {
         super(id, opts);
         this._uri = opts.uri;
@@ -827,6 +886,7 @@ export class Breakpoint extends BaseBreakpoint implements IBreakpoint {
     }
     override setSessionData(sessionId: string, data: IBreakpointSessionData | undefined): void {
         super.setSessionData(sessionId, data);
+
         if (!this._adapterData) {
             this._adapterData = this.adapterData;
         }
@@ -889,6 +949,7 @@ export interface IFunctionBreakpointOptions extends IBaseBreakpointOptions {
 }
 export class FunctionBreakpoint extends BaseBreakpoint implements IFunctionBreakpoint {
     public name: string;
+
     constructor(opts: IFunctionBreakpointOptions, id = generateUuid()) {
         super(id, opts);
         this.name = opts.name;
@@ -936,9 +997,11 @@ export class DataBreakpoint extends BaseBreakpoint implements IDataBreakpoint {
     public readonly canPersist: boolean;
     public readonly accessTypes: DebugProtocol.DataBreakpointAccessType[] | undefined;
     public readonly accessType: DebugProtocol.DataBreakpointAccessType;
+
     constructor(opts: IDataBreakpointOptions, id = generateUuid()) {
         super(id, opts);
         this.description = opts.description;
+
         if ('dataId' in opts) { //  back compat with old saved variables in 1.87
             opts.src = { type: DataBreakpointSetType.Variable, dataId: opts.dataId as string };
         }
@@ -946,19 +1009,23 @@ export class DataBreakpoint extends BaseBreakpoint implements IDataBreakpoint {
         this.canPersist = opts.canPersist;
         this.accessTypes = opts.accessTypes;
         this.accessType = opts.accessType;
+
         if (opts.initialSessionData) {
             this.sessionDataIdForAddr.set(opts.initialSessionData.session, opts.initialSessionData.dataId);
         }
     }
     async toDAP(session: IDebugSession): Promise<DebugProtocol.DataBreakpoint | undefined> {
         let dataId: string;
+
         if (this.src.type === DataBreakpointSetType.Variable) {
             dataId = this.src.dataId;
         }
         else {
             let sessionDataId = this.sessionDataIdForAddr.get(session);
+
             if (!sessionDataId) {
                 sessionDataId = (await session.dataBytesBreakpointInfo(this.src.address, this.src.bytes))?.dataId;
+
                 if (!sessionDataId) {
                     return undefined;
                 }
@@ -1011,6 +1078,7 @@ export class ExceptionBreakpoint extends BaseBreakpoint implements IExceptionBre
     public readonly description: string | undefined;
     public readonly conditionDescription: string | undefined;
     private fallback: boolean = false;
+
     constructor(opts: IExceptionBreakpointOptions, id = generateUuid()) {
         super(id, opts);
         this.filter = opts.filter;
@@ -1082,6 +1150,7 @@ export class InstructionBreakpoint extends BaseBreakpoint implements IInstructio
     public readonly offset: number;
     public readonly canPersist: boolean;
     public readonly address: bigint;
+
     constructor(opts: IInstructionBreakpointOptions, id = generateUuid()) {
         super(id, opts);
         this.instructionReference = opts.instructionReference;
@@ -1146,6 +1215,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     private dataBreakpoints!: DataBreakpoint[];
     private watchExpressions!: Expression[];
     private instructionBreakpoints: InstructionBreakpoint[];
+
     constructor(debugStorage: DebugStorage, 
     @ITextFileService
     private readonly textFileService: ITextFileService, 
@@ -1195,11 +1265,14 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             return true;
         });
+
         let i = 1;
+
         while (this.sessions.some(s => s.getLabel() === session.getLabel())) {
             session.setName(`${session.configuration.name} ${++i}`);
         }
         let index = -1;
+
         if (session.parentSession) {
             // Make sure that child sessions are placed after the parent session
             index = findLastIdx(this.sessions, s => s.parentSession === session.parentSession || s === session.parentSession);
@@ -1226,6 +1299,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     rawUpdate(data: IRawModelUpdate): void {
         const session = this.sessions.find(p => p.getId() === data.sessionId);
+
         if (session) {
             session.rawUpdate(data);
             this._onDidChangeCallStack.fire(undefined);
@@ -1238,6 +1312,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             entry.completeDeferred.complete();
         });
         this.schedulers.clear();
+
         if (session) {
             session.clearThreads(removeThreads, reference);
             this._onDidChangeCallStack.fire(undefined);
@@ -1251,7 +1326,9 @@ export class DebugModel extends Disposable implements IDebugModel {
             return;
         }
         const totalFrames = thread.stoppedDetails?.totalFrames;
+
         const remainingFrames = (typeof totalFrames === 'number') ? (totalFrames - thread.getCallStack().length) : undefined;
+
         if (!levels || (remainingFrames && levels > remainingFrames)) {
             levels = remainingFrames;
         }
@@ -1268,11 +1345,13 @@ export class DebugModel extends Disposable implements IDebugModel {
         if (thread.session.capabilities.supportsDelayedStackTraceLoading) {
             // For improved performance load the first stack frame and then load the rest async.
             let topCallStack = Promise.resolve();
+
             const wholeCallStack = new Promise<void>((c, e) => {
                 topCallStack = thread.fetchCallStack(1).then(() => {
                     if (!fetchFullStack) {
                         c();
                         this._onDidChangeCallStack.fire();
+
                         return;
                     }
                     if (!this.schedulers.has(thread.getId())) {
@@ -1282,8 +1361,11 @@ export class DebugModel extends Disposable implements IDebugModel {
                             scheduler: new RunOnceScheduler(() => {
                                 thread.fetchCallStack(19).then(() => {
                                     const stale = thread.getStaleCallStack();
+
                                     const current = thread.getCallStack();
+
                                     let bottomOfCallStackChanged = stale.length !== current.length;
+
                                     for (let i = 1; i < stale.length && !bottomOfCallStackChanged; i++) {
                                         bottomOfCallStackChanged = !stale[i].equals(current[i]);
                                     }
@@ -1303,9 +1385,11 @@ export class DebugModel extends Disposable implements IDebugModel {
                     this._onDidChangeCallStack.fire();
                 });
             });
+
             return { topCallStack, wholeCallStack };
         }
         const wholeCallStack = thread.fetchCallStack();
+
         return { wholeCallStack, topCallStack: wholeCallStack };
     }
     getBreakpoints(filter?: {
@@ -1318,7 +1402,9 @@ export class DebugModel extends Disposable implements IDebugModel {
     }): IBreakpoint[] {
         if (filter) {
             const uriStr = filter.uri?.toString();
+
             const originalUriStr = filter.originalUri?.toString();
+
             return this.breakpoints.filter(bp => {
                 if (uriStr && bp.uri.toString() !== uriStr) {
                     return false;
@@ -1365,6 +1451,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         let didChangeBreakpoints = false;
         filters.forEach((d) => {
             let ebp = this.exceptionBreakpoints.filter((exbp) => exbp.matches(d)).pop();
+
             if (!ebp) {
                 didChangeBreakpoints = true;
                 ebp = new ExceptionBreakpoint({
@@ -1379,6 +1466,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             ebp.setSupportedSession(sessionId, true);
         });
+
         if (didChangeBreakpoints) {
             this._onDidChangeBreakpoints.fire(undefined);
         }
@@ -1421,6 +1509,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         this.breakpoints = this.breakpoints.concat(newBreakpoints);
         this.breakpointsActivated = true;
         this.sortAndDeDup();
+
         if (fireEvent) {
             this._onDidChangeBreakpoints.fire({ added: newBreakpoints, sessionOnly: false });
         }
@@ -1434,6 +1523,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         const updated: IBreakpoint[] = [];
         this.breakpoints.forEach(bp => {
             const bpData = data.get(bp.getId());
+
             if (bpData) {
                 bp.update(bpData);
                 updated.push(bp);
@@ -1449,6 +1539,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const bpData = data.get(bp.getId());
+
                 if (bpData) {
                     bp.setSessionData(sessionId, toBreakpointSessionData(bpData, capabilites));
                 }
@@ -1460,6 +1551,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const fbpData = data.get(fbp.getId());
+
                 if (fbpData) {
                     fbp.setSessionData(sessionId, toBreakpointSessionData(fbpData, capabilites));
                 }
@@ -1471,6 +1563,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const dbpData = data.get(dbp.getId());
+
                 if (dbpData) {
                     dbp.setSessionData(sessionId, toBreakpointSessionData(dbpData, capabilites));
                 }
@@ -1482,6 +1575,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const ebpData = data.get(ebp.getId());
+
                 if (ebpData) {
                     ebp.setSessionData(sessionId, toBreakpointSessionData(ebpData, capabilites));
                 }
@@ -1493,6 +1587,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const ibpData = data.get(ibp.getId());
+
                 if (ibpData) {
                     ibp.setSessionData(sessionId, toBreakpointSessionData(ibpData, capabilites));
                 }
@@ -1504,6 +1599,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     getDebugProtocolBreakpoint(breakpointId: string, sessionId: string): DebugProtocol.Breakpoint | undefined {
         const bp = this.breakpoints.find(bp => bp.getId() === breakpointId);
+
         if (bp) {
             return bp.getDebugProtocolBreakpoint(sessionId);
         }
@@ -1515,7 +1611,9 @@ export class DebugModel extends Disposable implements IDebugModel {
     registerBreakpointModes(debugType: string, modes: DebugProtocol.BreakpointMode[]) {
         for (const mode of modes) {
             const key = `${mode.mode}/${mode.label}`;
+
             const rec = this._breakpointModes.get(key);
+
             if (rec) {
                 for (const target of mode.appliesTo) {
                     if (!rec.appliesTo.includes(target)) {
@@ -1525,6 +1623,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             else {
                 const duplicate = [...this._breakpointModes.values()].find(r => r !== rec && r.label === mode.label);
+
                 if (duplicate) {
                     duplicate.label = `${duplicate.label} (${duplicate.firstFromDebugType})`;
                 }
@@ -1556,10 +1655,12 @@ export class DebugModel extends Disposable implements IDebugModel {
     setEnablement(element: IEnablement, enable: boolean): void {
         if (element instanceof Breakpoint || element instanceof FunctionBreakpoint || element instanceof ExceptionBreakpoint || element instanceof DataBreakpoint || element instanceof InstructionBreakpoint) {
             const changed: Array<IBreakpoint | IFunctionBreakpoint | IDataBreakpoint | IInstructionBreakpoint> = [];
+
             if (element.enabled !== enable && (element instanceof Breakpoint || element instanceof FunctionBreakpoint || element instanceof DataBreakpoint || element instanceof InstructionBreakpoint)) {
                 changed.push(element);
             }
             element.enabled = enable;
+
             if (enable) {
                 this.breakpointsActivated = true;
             }
@@ -1592,6 +1693,7 @@ export class DebugModel extends Disposable implements IDebugModel {
             }
             ibp.enabled = enable;
         });
+
         if (enable) {
             this.breakpointsActivated = true;
         }
@@ -1601,6 +1703,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         const newFunctionBreakpoint = new FunctionBreakpoint(opts, id);
         this.functionBreakpoints.push(newFunctionBreakpoint);
         this._onDidChangeBreakpoints.fire({ added: [newFunctionBreakpoint], sessionOnly: false });
+
         return newFunctionBreakpoint;
     }
     updateFunctionBreakpoint(id: string, update: {
@@ -1609,6 +1712,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         condition?: string;
     }): void {
         const functionBreakpoint = this.functionBreakpoints.find(fbp => fbp.getId() === id);
+
         if (functionBreakpoint) {
             if (typeof update.name === 'string') {
                 functionBreakpoint.name = update.name;
@@ -1624,6 +1728,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     removeFunctionBreakpoints(id?: string): void {
         let removed: FunctionBreakpoint[];
+
         if (id) {
             removed = this.functionBreakpoints.filter(fbp => fbp.getId() === id);
             this.functionBreakpoints = this.functionBreakpoints.filter(fbp => fbp.getId() !== id);
@@ -1644,6 +1749,7 @@ export class DebugModel extends Disposable implements IDebugModel {
         condition?: string;
     }): void {
         const dataBreakpoint = this.dataBreakpoints.find(fbp => fbp.getId() === id);
+
         if (dataBreakpoint) {
             if (typeof update.condition === 'string') {
                 dataBreakpoint.condition = update.condition;
@@ -1656,6 +1762,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     removeDataBreakpoints(id?: string): void {
         let removed: DataBreakpoint[];
+
         if (id) {
             removed = this.dataBreakpoints.filter(fbp => fbp.getId() === id);
             this.dataBreakpoints = this.dataBreakpoints.filter(fbp => fbp.getId() !== id);
@@ -1673,9 +1780,11 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     removeInstructionBreakpoints(instructionReference?: string, offset?: number): void {
         let removed: InstructionBreakpoint[] = [];
+
         if (instructionReference) {
             for (let i = 0; i < this.instructionBreakpoints.length; i++) {
                 const ibp = this.instructionBreakpoints[i];
+
                 if (ibp.instructionReference === instructionReference && (offset === undefined || ibp.offset === offset)) {
                     removed.push(ibp);
                     this.instructionBreakpoints.splice(i--, 1);
@@ -1695,10 +1804,12 @@ export class DebugModel extends Disposable implements IDebugModel {
         const we = new Expression(name || '');
         this.watchExpressions.push(we);
         this._onDidChangeWatchExpressions.fire(we);
+
         return we;
     }
     renameWatchExpression(id: string, newName: string): void {
         const filtered = this.watchExpressions.filter(we => we.getId() === id);
+
         if (filtered.length === 1) {
             filtered[0].name = newName;
             this._onDidChangeWatchExpressions.fire(filtered[0]);
@@ -1710,6 +1821,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     }
     moveWatchExpression(id: string, position: number): void {
         const we = this.watchExpressions.find(we => we.getId() === id);
+
         if (we) {
             this.watchExpressions = this.watchExpressions.filter(we => we.getId() !== id);
             this.watchExpressions = this.watchExpressions.slice(0, position).concat(we, this.watchExpressions.slice(position));
@@ -1719,6 +1831,7 @@ export class DebugModel extends Disposable implements IDebugModel {
     sourceIsNotAvailable(uri: uri): void {
         this.sessions.forEach(s => {
             const source = s.getSourceForUri(uri);
+
             if (source) {
                 source.available = false;
             }

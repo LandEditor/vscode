@@ -27,6 +27,7 @@ class WalkThroughModel extends EditorModel {
     }
     override dispose() {
         this.snippetRefs.forEach(ref => ref.dispose());
+
         super.dispose();
     }
 }
@@ -46,6 +47,7 @@ export class WalkThroughInput extends EditorInput {
     private promise: Promise<WalkThroughModel> | null = null;
     private maxTopScroll = 0;
     private maxBottomScroll = 0;
+
     get resource() { return this.options.resource; }
     constructor(private readonly options: WalkThroughInputOptions, 
     @IInstantiationService
@@ -92,16 +94,22 @@ export class WalkThroughInput extends EditorInput {
                     return new WalkThroughModel(content, []);
                 }
                 const snippets: Promise<IReference<ITextEditorModel>>[] = [];
+
                 let i = 0;
+
                 const renderer = new marked.marked.Renderer();
                 renderer.code = ({ lang }: marked.Tokens.Code) => {
                     i++;
+
                     const resource = this.options.resource.with({ scheme: Schemas.walkThroughSnippet, fragment: `${i}.${lang}` });
                     snippets.push(this.textModelResolverService.createModelReference(resource));
+
                     return `<div id="snippet-${resource.fragment}" class="walkThroughEditorContainer" ></div>`;
                 };
+
                 const m = new marked.Marked({ renderer }, markedGfmHeadingIdPlugin());
                 content = m.parse(content, { async: false });
+
                 return Promise.all(snippets)
                     .then(refs => new WalkThroughModel(content, refs));
             });

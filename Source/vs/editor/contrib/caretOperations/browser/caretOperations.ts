@@ -26,6 +26,7 @@ class MoveCaretAction extends EditorAction {
 		}
 
 		const commands: ICommand[] = [];
+
 		const selections = editor.getSelections();
 
 		for (const selection of selections) {

@@ -23,6 +23,7 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     private viewState: IEditorMemento<T>;
     private readonly groupListener = this._register(new MutableDisposable());
     private editorViewStateDisposables: Map<EditorInput, IDisposable> | undefined;
+
     constructor(id: string, group: IEditorGroup, viewStateStorageKey: string, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -44,10 +45,12 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     protected override setEditorVisible(visible: boolean): void {
         // Listen to close events to trigger `onWillCloseEditorInGroup`
         this.groupListener.value = this.group.onWillCloseEditor(e => this.onWillCloseEditor(e));
+
         super.setEditorVisible(visible);
     }
     private onWillCloseEditor(e: IEditorCloseEvent): void {
         const editor = e.editor;
+
         if (editor === this.input) {
             // React to editors closing to preserve or clear view state. This needs to happen
             // in the `onWillCloseEditor` because at that time the editor has not yet
@@ -58,11 +61,13 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     override clearInput(): void {
         // Preserve current input view state before clearing
         this.updateEditorViewState(this.input);
+
         super.clearInput();
     }
     protected override saveState(): void {
         // Preserve current input view state before shutting down
         this.updateEditorViewState(this.input);
+
         super.saveState();
     }
     private updateEditorViewState(input: EditorInput | undefined): void {
@@ -70,6 +75,7 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
             return; // ensure we have an input to handle view state for
         }
         const resource = this.toEditorViewStateResource(input);
+
         if (!resource) {
             return; // we need a resource
         }
@@ -109,10 +115,12 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     }
     override getViewState(): T | undefined {
         const input = this.input;
+
         if (!input || !this.tracksEditorViewState(input)) {
             return; // need valid input for view state
         }
         const resource = this.toEditorViewStateResource(input);
+
         if (!resource) {
             return; // need a resource for finding view state
         }
@@ -120,6 +128,7 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     }
     private saveEditorViewState(resource: URI): void {
         const editorViewState = this.computeEditorViewState(resource);
+
         if (!editorViewState) {
             return;
         }
@@ -136,6 +145,7 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
             return undefined; // not enabled for input
         }
         const resource = this.toEditorViewStateResource(input);
+
         if (!resource) {
             return; // need a resource for finding view state
         }
@@ -149,6 +159,7 @@ export abstract class AbstractEditorWithViewState<T extends object> extends Edit
     }
     override dispose(): void {
         super.dispose();
+
         if (this.editorViewStateDisposables) {
             for (const [, disposables] of this.editorViewStateDisposables) {
                 disposables.dispose();

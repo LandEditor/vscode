@@ -61,6 +61,7 @@ export class SnippetController2 implements IEditorContribution {
         enable(): void;
         disable(): void;
     };
+
     constructor(private readonly _editor: ICodeEditor, 
     @ILogService
     private readonly _logService: ILogService, 
@@ -115,6 +116,7 @@ export class SnippetController2 implements IEditorContribution {
         // don't listen while inserting the snippet
         // as that is the inflight state causing cancelation
         this._snippetListener.clear();
+
         if (opts.undoStopBefore) {
             this._editor.getModel().pushStackElement();
         }
@@ -143,12 +145,16 @@ export class SnippetController2 implements IEditorContribution {
                         return undefined;
                     }
                     const { activeChoice } = this._session;
+
                     if (!activeChoice || activeChoice.choice.options.length === 0) {
                         return undefined;
                     }
                     const word = model.getValueInRange(activeChoice.range);
+
                     const isAnyOfOptions = Boolean(activeChoice.choice.options.find(o => o.value === word));
+
                     const suggestions: CompletionItem[] = [];
+
                     for (let i = 0; i < activeChoice.choice.options.length; i++) {
                         const option = activeChoice.choice.options[i];
                         suggestions.push({
@@ -164,13 +170,18 @@ export class SnippetController2 implements IEditorContribution {
                     return { suggestions };
                 }
             };
+
             const model = this._editor.getModel();
+
             let registration: IDisposable | undefined;
+
             let isRegistered = false;
+
             const disable = () => {
                 registration?.dispose();
                 isRegistered = false;
             };
+
             const enable = () => {
                 if (!isRegistered) {
                     registration = this._languageFeaturesService.completionProvider.register({
@@ -207,6 +218,7 @@ export class SnippetController2 implements IEditorContribution {
         }
         if (this._session.isAtLastPlaceholder || !this._session.isSelectionWithinPlaceholders()) {
             this._editor.getModel().pushStackElement();
+
             return this.cancel();
         }
         this._inSnippet.set(true);
@@ -217,12 +229,15 @@ export class SnippetController2 implements IEditorContribution {
     private _handleChoice(): void {
         if (!this._session || !this._editor.hasModel()) {
             this._currentChoice = undefined;
+
             return;
         }
         const { activeChoice } = this._session;
+
         if (!activeChoice || !this._choiceCompletions) {
             this._choiceCompletions?.disable();
             this._currentChoice = undefined;
+
             return;
         }
         if (this._currentChoice !== activeChoice.choice) {
@@ -248,6 +263,7 @@ export class SnippetController2 implements IEditorContribution {
         this._session?.dispose();
         this._session = undefined;
         this._modelVersionId = -1;
+
         if (resetSelection) {
             // reset selection to the primary cursor when being asked
             // for. this happens when explicitly cancelling snippet mode,
@@ -274,6 +290,7 @@ export class SnippetController2 implements IEditorContribution {
     }
 }
 registerEditorContribution(SnippetController2.ID, SnippetController2, EditorContributionInstantiation.Lazy);
+
 const CommandCtor = EditorCommand.bindToContribution<SnippetController2>(SnippetController2.get);
 registerEditorCommand(new CommandCtor({
     id: 'jumpToNextSnippetPlaceholder',

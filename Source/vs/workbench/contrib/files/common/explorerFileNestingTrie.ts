@@ -29,6 +29,7 @@ type FilenameAttributes = {
  */
 export class ExplorerFileNestingTrie {
     private root = new PreTrie();
+
     constructor(config: [
         string,
         string[]
@@ -44,6 +45,7 @@ export class ExplorerFileNestingTrie {
     }
     private getAttributes(filename: string, dirname: string): FilenameAttributes {
         const lastDot = filename.lastIndexOf('.');
+
         if (lastDot < 1) {
             return {
                 dirname,
@@ -61,9 +63,12 @@ export class ExplorerFileNestingTrie {
     }
     nest(files: string[], dirname: string): Map<string, Set<string>> {
         const parentFinder = new PreTrie();
+
         for (const potentialParent of files) {
             const attributes = this.getAttributes(potentialParent, dirname);
+
             const children = this.root.get(potentialParent, attributes);
+
             for (const child of children) {
                 parentFinder.add(child, potentialParent);
             }
@@ -73,8 +78,11 @@ export class ExplorerFileNestingTrie {
                 return [];
             }
             seen.add(file);
+
             const attributes = this.getAttributes(file, dirname);
+
             const ancestors = parentFinder.get(file, attributes);
+
             if (ancestors.length === 0) {
                 return [file];
             }
@@ -83,14 +91,18 @@ export class ExplorerFileNestingTrie {
             }
             return ancestors.flatMap(a => findAllRootAncestors(a, seen));
         };
+
         const result = new Map<string, Set<string>>();
+
         for (const file of files) {
             let ancestors = findAllRootAncestors(file);
+
             if (ancestors.length === 0) {
                 ancestors = [file];
             }
             for (const ancestor of ancestors) {
                 let existing = result.get(ancestor);
+
                 if (!existing) {
                     result.set(ancestor, existing = new Set());
                 }
@@ -106,6 +118,7 @@ export class ExplorerFileNestingTrie {
 export class PreTrie {
     private value: SufTrie = new SufTrie();
     private map: Map<string, PreTrie> = new Map();
+
     constructor() { }
     add(key: string, value: string) {
         if (key === '') {
@@ -116,8 +129,11 @@ export class PreTrie {
         }
         else {
             const head = key[0];
+
             const rest = key.slice(1);
+
             let existing = this.map.get(head);
+
             if (!existing) {
                 this.map.set(head, existing = new PreTrie());
             }
@@ -127,9 +143,13 @@ export class PreTrie {
     get(key: string, attributes: FilenameAttributes): string[] {
         const results: string[] = [];
         results.push(...this.value.get(key, attributes));
+
         const head = key[0];
+
         const rest = key.slice(1);
+
         const existing = this.map.get(head);
+
         if (existing) {
             results.push(...existing.get(rest, attributes));
         }
@@ -137,10 +157,12 @@ export class PreTrie {
     }
     toString(indentation = ''): string {
         const lines = [];
+
         if (this.value.hasItems) {
             lines.push('* => \n' + this.value.toString(indentation + '  '));
         }
         [...this.map.entries()].map(([key, trie]) => lines.push('^' + key + ' => \n' + trie.toString(indentation + '  ')));
+
         return lines.map(l => indentation + l).join('\n');
     }
 }
@@ -150,9 +172,11 @@ export class SufTrie {
     private epsilon: SubstitutionString[] = [];
     private map: Map<string, SufTrie> = new Map();
     hasItems: boolean = false;
+
     constructor() { }
     add(key: string, value: string) {
         this.hasItems = true;
+
         if (key === '*') {
             this.star.push(new SubstitutionString(value));
         }
@@ -161,12 +185,15 @@ export class SufTrie {
         }
         else {
             const tail = key[key.length - 1];
+
             const rest = key.slice(0, key.length - 1);
+
             if (tail === '*') {
                 throw Error('Unexpected star in SufTrie key: ' + key);
             }
             else {
                 let existing = this.map.get(tail);
+
                 if (!existing) {
                     this.map.set(tail, existing = new SufTrie());
                 }
@@ -176,6 +203,7 @@ export class SufTrie {
     }
     get(key: string, attributes: FilenameAttributes): string[] {
         const results: string[] = [];
+
         if (key === '') {
             results.push(...this.epsilon.map(ss => ss.substitute(attributes)));
         }
@@ -183,8 +211,11 @@ export class SufTrie {
             results.push(...this.star.map(ss => ss.substitute(attributes, key)));
         }
         const tail = key[key.length - 1];
+
         const rest = key.slice(0, key.length - 1);
+
         const existing = this.map.get(tail);
+
         if (existing) {
             results.push(...existing.get(rest, attributes));
         }
@@ -192,6 +223,7 @@ export class SufTrie {
     }
     toString(indentation = ''): string {
         const lines = [];
+
         if (this.star.length) {
             lines.push('* => ' + this.star.join('; '));
         }
@@ -200,6 +232,7 @@ export class SufTrie {
             lines.push('ε => ' + this.epsilon.join('; '));
         }
         [...this.map.entries()].map(([key, trie]) => lines.push(key + '$' + ' => \n' + trie.toString(indentation + '  ')));
+
         return lines.map(l => indentation + l).join('\n');
     }
 }
@@ -214,21 +247,29 @@ class SubstitutionString {
     private tokens: (string | {
         capture: SubstitutionType;
     })[] = [];
+
     constructor(pattern: string) {
         substitutionStringTokenizer.lastIndex = 0;
+
         let token;
+
         let lastIndex = 0;
+
         while (token = substitutionStringTokenizer.exec(pattern)) {
             const prefix = pattern.slice(lastIndex, token.index);
             this.tokens.push(prefix);
+
             const type = token[1];
+
             switch (type) {
                 case SubstitutionType.basename:
                 case SubstitutionType.dirname:
                 case SubstitutionType.extname:
                 case SubstitutionType.capture:
                     this.tokens.push({ capture: type });
+
                     break;
+
                 default: throw Error('unknown substitution type: ' + type);
             }
             lastIndex = token.index + token[0].length;
@@ -245,8 +286,11 @@ class SubstitutionString {
             }
             switch (t.capture) {
                 case SubstitutionType.basename: return attributes.basename;
+
                 case SubstitutionType.dirname: return attributes.dirname;
+
                 case SubstitutionType.extname: return attributes.extname;
+
                 case SubstitutionType.capture: return capture || '';
             }
         }).join('');

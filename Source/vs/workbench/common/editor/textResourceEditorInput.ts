@@ -55,6 +55,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
     private async doSave(options: ITextFileSaveOptions | undefined, saveAs: boolean, group: GroupIdentifier | undefined): Promise<IUntypedEditorInput | undefined> {
         // Save / Save As
         let target: URI | undefined;
+
         if (saveAs) {
             target = await this.textFileService.saveAs(this.resource, undefined, { ...options, suggestedTarget: this.preferredResource });
         }
@@ -84,6 +85,7 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
     }
     private cachedModel: TextResourceEditorModel | undefined = undefined;
     private modelReference: Promise<IReference<ITextEditorModel>> | undefined = undefined;
+
     constructor(resource: URI, private name: string | undefined, private description: string | undefined, private preferredLanguageId: string | undefined, private preferredContents: string | undefined, 
     @ITextModelService
     private readonly textModelService: ITextModelService, 
@@ -138,18 +140,22 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
         // and want to show updated contents (if any) in future
         // `resolve` calls.
         const preferredContents = this.preferredContents;
+
         const preferredLanguageId = this.preferredLanguageId;
         this.preferredContents = undefined;
         this.preferredLanguageId = undefined;
+
         if (!this.modelReference) {
             this.modelReference = this.textModelService.createModelReference(this.resource);
         }
         const ref = await this.modelReference;
         // Ensure the resolved model is of expected type
         const model = ref.object;
+
         if (!(model instanceof TextResourceEditorModel)) {
             ref.dispose();
             this.modelReference = undefined;
+
             throw new Error(`Unexpected model for TextResourceEditorInput: ${this.resource}`);
         }
         this.cachedModel = model;
@@ -177,6 +183,7 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
             this.modelReference = undefined;
         }
         this.cachedModel = undefined;
+
         super.dispose();
     }
 }

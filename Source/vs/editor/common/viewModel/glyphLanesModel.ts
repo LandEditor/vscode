@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { Range } from '../core/range.js';
 import { GlyphMarginLane, IGlyphMarginLanesModel } from '../model.js';
+
 const MAX_LANE = GlyphMarginLane.Right;
 export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
     private lanes: Uint8Array;
@@ -14,6 +15,7 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
     }
     public reset(maxLine: number) {
         const bytes = Math.ceil(((maxLine + 1) * MAX_LANE) / 8);
+
         if (this.lanes.length < bytes) {
             this.lanes = new Uint8Array(bytes);
         }
@@ -37,7 +39,9 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
     }
     public getLanesAtLine(lineNumber: number): GlyphMarginLane[] {
         const lanes: GlyphMarginLane[] = [];
+
         let bit = MAX_LANE * lineNumber;
+
         for (let i = 0; i < MAX_LANE; i++) {
             if (this.persist & (1 << i) || this.lanes[bit >>> 3] & (1 << (bit % 8))) {
                 lanes.push(i + 1);
@@ -48,7 +52,9 @@ export class GlyphMarginLanesModel implements IGlyphMarginLanesModel {
     }
     private countAtLine(lineNumber: number): number {
         let bit = MAX_LANE * lineNumber;
+
         let count = 0;
+
         for (let i = 0; i < MAX_LANE; i++) {
             if (this.persist & (1 << i) || this.lanes[bit >>> 3] & (1 << (bit % 8))) {
                 count++;

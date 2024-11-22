@@ -7,8 +7,10 @@
     type ILoadResult<M, T extends ISandboxConfiguration> = import('vs/platform/window/electron-sandbox/window.js').ILoadResult<M, T>;
     type ILoadOptions<T extends ISandboxConfiguration> = import('vs/platform/window/electron-sandbox/window.js').ILoadOptions<T>;
     type IMainWindowSandboxGlobals = import('./vs/base/parts/sandbox/electron-sandbox/globals.js').IMainWindowSandboxGlobals;
+
     const preloadGlobals: IMainWindowSandboxGlobals = (window as any).vscode; // defined by preload.ts
     const safeProcess = preloadGlobals.process;
+
     async function load<M, T extends ISandboxConfiguration>(esModule: string, options: ILoadOptions<T>): Promise<ILoadResult<M, T>> {
         // Window Configuration from Preload Script
         const configuration = await resolveWindowConfiguration<T>();
@@ -26,6 +28,7 @@
         // ESM Import
         try {
             const result = await import(new URL(`${esModule}.js`, baseUrl).href);
+
             if (developerDeveloperKeybindingsDisposable && removeDeveloperKeybindingsAfterLoad) {
                 developerDeveloperKeybindingsDisposable();
             }
@@ -33,15 +36,18 @@
         }
         catch (error) {
             onUnexpectedError(error, enableDeveloperKeybindings && !forceDisableShowDevtoolsOnError);
+
             throw error;
         }
     }
     async function resolveWindowConfiguration<T extends ISandboxConfiguration>() {
         const timeout = setTimeout(() => { console.error(`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`); }, 10000);
         performance.mark('code/willWaitForWindowConfig');
+
         const configuration = await preloadGlobals.context.resolveConfiguration() as T;
         performance.mark('code/didWaitForWindowConfig');
         clearTimeout(timeout);
+
         return configuration;
     }
     function setupDeveloperKeybindings<T extends ISandboxConfiguration>(configuration: T, options: ILoadOptions<T>) {
@@ -51,9 +57,13 @@
             removeDeveloperKeybindingsAfterLoad: false,
             forceDisableShowDevtoolsOnError: false
         };
+
         const isDev = !!safeProcess.env['VSCODE_DEV'];
+
         const enableDeveloperKeybindings = Boolean(isDev || forceEnableDeveloperKeybindings);
+
         let developerDeveloperKeybindingsDisposable: Function | undefined = undefined;
+
         if (enableDeveloperKeybindings) {
             developerDeveloperKeybindingsDisposable = registerDeveloperKeybindings(disallowReloadKeybinding);
         }
@@ -66,6 +76,7 @@
     }
     function registerDeveloperKeybindings(disallowReloadKeybinding: boolean | undefined): Function {
         const ipcRenderer = preloadGlobals.ipcRenderer;
+
         const extractKey = function (e: KeyboardEvent) {
             return [
                 e.ctrlKey ? 'ctrl-' : '',
@@ -81,6 +92,7 @@
         const RELOAD_KB = (safeProcess.platform === 'darwin' ? 'meta-82' : 'ctrl-82'); // mac: Cmd-R, rest: Ctrl-R
         let listener: ((e: KeyboardEvent) => void) | undefined = function (e) {
             const key = extractKey(e);
+
             if (key === TOGGLE_DEV_TOOLS_KB || key === TOGGLE_DEV_TOOLS_KB_ALT) {
                 ipcRenderer.send('vscode:toggleDevTools');
             }
@@ -89,6 +101,7 @@
             }
         };
         window.addEventListener('keydown', listener);
+
         return function () {
             if (listener) {
                 window.removeEventListener('keydown', listener);
@@ -99,7 +112,9 @@
     function setupNLS<T extends ISandboxConfiguration>(configuration: T): void {
         globalThis._VSCODE_NLS_MESSAGES = configuration.nls.messages;
         globalThis._VSCODE_NLS_LANGUAGE = configuration.nls.language;
+
         let language = configuration.nls.language || 'en';
+
         if (language === 'zh-tw') {
             language = 'zh-Hant';
         }
@@ -114,6 +129,7 @@
             ipcRenderer.send('vscode:openDevTools');
         }
         console.error(`[uncaught exception]: ${error}`);
+
         if (error && typeof error !== 'string' && error.stack) {
             console.error(error.stack);
         }
@@ -126,6 +142,7 @@
         // Since we are building a URI, we normalize any backslash
         // to slashes and we ensure that the path begins with a '/'.
         let pathName = path.replace(/\\/g, '/');
+
         if (pathName.length > 0 && pathName.charAt(0) !== '/') {
             pathName = `/${pathName}`;
         }
@@ -150,30 +167,42 @@
         // DEV ---------------------------------------------------------------------------------------
         if (Array.isArray(configuration.cssModules) && configuration.cssModules.length > 0) {
             performance.mark('code/willAddCssLoader');
+
             const style = document.createElement('style');
             style.type = 'text/css';
             style.media = 'screen';
             style.id = 'vscode-css-loading';
+
             document.head.appendChild(style);
             globalThis._VSCODE_CSS_LOAD = function (url) {
                 style.textContent += `@import url(${url});\n`;
             };
+
             const importMap: {
                 imports: Record<string, string>;
             } = { imports: {} };
+
             for (const cssModule of configuration.cssModules) {
                 const cssUrl = new URL(cssModule, baseUrl).href;
+
                 const jsSrc = `globalThis._VSCODE_CSS_LOAD('${cssUrl}');\n`;
+
                 const blob = new Blob([jsSrc], { type: 'application/javascript' });
+
                 importMap.imports[cssUrl] = URL.createObjectURL(blob);
             }
             const ttp = window.trustedTypes?.createPolicy('vscode-bootstrapImportMap', { createScript(value) { return value; }, });
+
             const importMapSrc = JSON.stringify(importMap, undefined, 2);
+
             const importMapScript = document.createElement('script');
+
             importMapScript.type = 'importmap';
+
             importMapScript.setAttribute('nonce', '0c6a828f1297');
             // @ts-ignore
             importMapScript.textContent = ttp?.createScript(importMapSrc) ?? importMapSrc;
+
             document.head.appendChild(importMapScript);
             performance.mark('code/didAddCssLoader');
         }

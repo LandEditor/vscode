@@ -11,6 +11,7 @@ export function stringify(obj: any): string {
 export function parse(text: string): any {
     let data = JSON.parse(text);
     data = revive(data);
+
     return data;
 }
 export interface MarshalledObject {
@@ -38,7 +39,9 @@ export function revive<T = any>(obj: any, depth = 0): Revived<T> {
     if (typeof obj === 'object') {
         switch ((<MarshalledObject>obj).$mid) {
             case MarshalledId.Uri: return <any>URI.revive(obj);
+
             case MarshalledId.Regexp: return <any>new RegExp(obj.source, obj.flags);
+
             case MarshalledId.Date: return <any>new Date(obj.source);
         }
         if (obj instanceof VSBuffer

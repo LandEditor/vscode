@@ -5,6 +5,7 @@
 import { URI } from 'vscode-uri';
 export class PathMapper {
     private readonly projectRootPaths = new Map</* original path*/ string, /* parsed URI */ URI>();
+
     constructor(private readonly extensionUri: URI) { }
     /**
      * Copied from toResource in typescriptServiceClient.ts
@@ -18,6 +19,7 @@ export class PathMapper {
             });
         }
         const uri = filePathToResourceUri(filepath);
+
         if (!uri) {
             throw new Error(`Could not parse path ${filepath}`);
         }
@@ -25,10 +27,12 @@ export class PathMapper {
         // We allow reading files on unknown scheme as these may be loose files opened by the user.
         // However we block reading files on schemes that are on a known file system with an unknown root
         let allowRead: 'implicit' | 'block' | 'allow' = 'implicit';
+
         for (const projectRoot of this.projectRootPaths.values()) {
             if (uri.scheme === projectRoot.scheme) {
                 if (uri.toString().startsWith(projectRoot.toString())) {
                     allowRead = 'allow';
+
                     break;
                 }
                 // Tentatively block the read but a future loop may allow it
@@ -42,6 +46,7 @@ export class PathMapper {
     }
     addProjectRoot(projectRootPath: string) {
         const uri = filePathToResourceUri(projectRootPath);
+
         if (uri) {
             this.projectRootPaths.set(projectRootPath, uri);
         }
@@ -69,12 +74,16 @@ export function looksLikeNodeModules(filepath: string) {
 }
 function filePathToResourceUri(filepath: string): URI | undefined {
     const parts = filepath.match(/^\/([^\/]+)\/([^\/]*)(?:\/(.+))?$/);
+
     if (!parts) {
         return undefined;
     }
     const scheme = parts[1];
+
     const authority = parts[2] === 'ts-nul-authority' ? '' : parts[2];
+
     const path = parts[3];
+
     return URI.from({ scheme, authority, path: (path ? '/' + path : path) });
 }
 export function mapUri(uri: URI, mappedScheme: string): URI {
@@ -85,5 +94,6 @@ export function mapUri(uri: URI, mappedScheme: string): URI {
         uri = uri.with({ authority: 'ts-nul-authority' });
     }
     uri = uri.with({ scheme: mappedScheme, path: `/${uri.scheme}/${uri.authority || 'ts-nul-authority'}${uri.path}` });
+
     return uri;
 }

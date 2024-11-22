@@ -36,6 +36,7 @@ export class MessageController implements IEditorContribution {
         dispose: () => void;
     } | undefined;
     private _mouseOverMessage: boolean = false;
+
     constructor(editor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -103,6 +104,7 @@ export class MessageController implements IEditorContribution {
     closeMessage(): void {
         this._visible.reset();
         this._messageListeners.clear();
+
         if (this._messageWidget.value) {
             this._messageListeners.add(MessageWidget.fadeOut(this._messageWidget.value));
         }
@@ -131,9 +133,11 @@ class MessageWidget implements IContentWidget {
             clearTimeout(handle);
             messageWidget.getDomNode().removeEventListener('animationend', dispose);
         };
+
         const handle = setTimeout(dispose, 110);
         messageWidget.getDomNode().addEventListener('animationend', dispose);
         messageWidget.getDomNode().classList.add('fadeOut');
+
         return { dispose };
     }
     constructor(editor: ICodeEditor, { lineNumber, column }: IPosition, text: HTMLElement | string) {
@@ -143,10 +147,13 @@ class MessageWidget implements IContentWidget {
         this._domNode = document.createElement('div');
         this._domNode.classList.add('monaco-editor-overlaymessage');
         this._domNode.style.marginLeft = '-6px';
+
         const anchorTop = document.createElement('div');
         anchorTop.classList.add('anchor', 'top');
         this._domNode.appendChild(anchorTop);
+
         const message = document.createElement('div');
+
         if (typeof text === 'string') {
             message.classList.add('message');
             message.textContent = text;
@@ -156,6 +163,7 @@ class MessageWidget implements IContentWidget {
             message.appendChild(text);
         }
         this._domNode.appendChild(message);
+
         const anchorBottom = document.createElement('div');
         anchorBottom.classList.add('anchor', 'below');
         this._domNode.appendChild(anchorBottom);

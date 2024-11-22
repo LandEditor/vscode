@@ -54,7 +54,9 @@ CommandsRegistry.registerCommand({
     id: ADD_ROOT_FOLDER_COMMAND_ID,
     handler: async (accessor) => {
         const workspaceEditingService = accessor.get(IWorkspaceEditingService);
+
         const folders = await selectWorkspaceFolders(accessor);
+
         if (!folders || !folders.length) {
             return;
         }
@@ -65,8 +67,11 @@ CommandsRegistry.registerCommand({
     id: SET_ROOT_FOLDER_COMMAND_ID,
     handler: async (accessor) => {
         const workspaceEditingService = accessor.get(IWorkspaceEditingService);
+
         const contextService = accessor.get(IWorkspaceContextService);
+
         const folders = await selectWorkspaceFolders(accessor);
+
         if (!folders || !folders.length) {
             return;
         }
@@ -75,7 +80,9 @@ CommandsRegistry.registerCommand({
 });
 async function selectWorkspaceFolders(accessor: ServicesAccessor): Promise<URI[] | undefined> {
     const dialogsService = accessor.get(IFileDialogService);
+
     const pathService = accessor.get(IPathService);
+
     const folders = await dialogsService.showOpenDialog({
         openLabel: mnemonicButtonLabel(localize({ key: 'add', comment: ['&& denotes a mnemonic'] }, "&&Add")),
         title: localize('addFolderToWorkspaceTitle', "Add Folder to Workspace"),
@@ -84,6 +91,7 @@ async function selectWorkspaceFolders(accessor: ServicesAccessor): Promise<URI[]
         defaultUri: await dialogsService.defaultFolderPath(),
         availableFileSystems: [pathService.defaultUriScheme]
     });
+
     return folders;
 }
 CommandsRegistry.registerCommand(PICK_WORKSPACE_FOLDER_COMMAND_ID, async function (accessor, args?: [
@@ -91,17 +99,25 @@ CommandsRegistry.registerCommand(PICK_WORKSPACE_FOLDER_COMMAND_ID, async functio
     CancellationToken
 ]) {
     const quickInputService = accessor.get(IQuickInputService);
+
     const labelService = accessor.get(ILabelService);
+
     const contextService = accessor.get(IWorkspaceContextService);
+
     const modelService = accessor.get(IModelService);
+
     const languageService = accessor.get(ILanguageService);
+
     const folders = contextService.getWorkspace().folders;
+
     if (!folders.length) {
         return;
     }
     const folderPicks: IQuickPickItem[] = folders.map(folder => {
         const label = folder.name;
+
         const description = labelService.getUriLabel(dirname(folder.uri), { relative: true });
+
         return {
             label,
             description: description !== label ? description : undefined, // https://github.com/microsoft/vscode/issues/183418
@@ -109,7 +125,9 @@ CommandsRegistry.registerCommand(PICK_WORKSPACE_FOLDER_COMMAND_ID, async functio
             iconClasses: getIconClasses(modelService, languageService, folder.uri, FileKind.ROOT_FOLDER)
         };
     });
+
     const options: IPickOptions<IQuickPickItem> = (args ? args[0] : undefined) || Object.create(null);
+
     if (!options.activeItem) {
         options.activeItem = folderPicks[0];
     }
@@ -120,7 +138,9 @@ CommandsRegistry.registerCommand(PICK_WORKSPACE_FOLDER_COMMAND_ID, async functio
         options.matchOnDescription = true;
     }
     const token: CancellationToken = (args ? args[1] : undefined) || CancellationToken.None;
+
     const pick = await quickInputService.pick(folderPicks, options, token);
+
     if (pick) {
         return folders[folderPicks.indexOf(pick)];
     }
@@ -129,10 +149,14 @@ CommandsRegistry.registerCommand(PICK_WORKSPACE_FOLDER_COMMAND_ID, async functio
 // API Command registration
 interface IOpenFolderAPICommandOptions {
     forceNewWindow?: boolean;
+
     forceReuseWindow?: boolean;
     noRecentEntry?: boolean;
+
     forceLocalWindow?: boolean;
+
     forceProfile?: string;
+
     forceTempProfile?: boolean;
 }
 CommandsRegistry.registerCommand({
@@ -148,6 +172,7 @@ CommandsRegistry.registerCommand({
             const options: IPickAndOpenOptions = {
                 forceNewWindow: arg?.forceNewWindow
             };
+
             if (arg?.forceLocalWindow) {
                 options.remoteAuthority = null;
                 options.availableFileSystems = ['file'];
@@ -155,6 +180,7 @@ CommandsRegistry.registerCommand({
             return commandService.executeCommand('_files.pickFolderAndOpen', options);
         }
         const uri = URI.from(uriComponents, true);
+
         const options: IOpenWindowOptions = {
             forceNewWindow: arg?.forceNewWindow,
             forceReuseWindow: arg?.forceReuseWindow,
@@ -163,7 +189,9 @@ CommandsRegistry.registerCommand({
             forceProfile: arg?.forceProfile,
             forceTempProfile: arg?.forceTempProfile,
         };
+
         const uriToOpen: IWindowOpenable = (hasWorkspaceFileExtension(uri) || uri.scheme === Schemas.untitled) ? { workspaceUri: uri } : { folderUri: uri };
+
         return commandService.executeCommand('_files.windowOpen', [uriToOpen], options);
     },
     metadata: {
@@ -197,10 +225,12 @@ CommandsRegistry.registerCommand({
     id: 'vscode.newWindow',
     handler: (accessor: ServicesAccessor, options?: INewWindowAPICommandOptions) => {
         const commandService = accessor.get(ICommandService);
+
         const commandOptions: IOpenEmptyWindowOptions = {
             forceReuseWindow: options && options.reuseWindow,
             remoteAuthority: options && options.remoteAuthority
         };
+
         return commandService.executeCommand('_files.newWindow', commandOptions);
     },
     metadata: {
@@ -218,12 +248,14 @@ CommandsRegistry.registerCommand({
 // recent history commands
 CommandsRegistry.registerCommand('_workbench.removeFromRecentlyOpened', function (accessor: ServicesAccessor, uri: URI) {
     const workspacesService = accessor.get(IWorkspacesService);
+
     return workspacesService.removeRecentlyOpened([uri]);
 });
 CommandsRegistry.registerCommand({
     id: 'vscode.removeFromRecentlyOpened',
     handler: (accessor: ServicesAccessor, path: string | URI): Promise<void> => {
         const workspacesService = accessor.get(IWorkspacesService);
+
         if (typeof path === 'string') {
             path = path.match(/^[^:/?#]+:\/\//) ? URI.parse(path) : URI.file(path);
         }
@@ -247,10 +279,15 @@ interface RecentEntry {
 }
 CommandsRegistry.registerCommand('_workbench.addToRecentlyOpened', async function (accessor: ServicesAccessor, recentEntry: RecentEntry) {
     const workspacesService = accessor.get(IWorkspacesService);
+
     const uri = recentEntry.uri;
+
     const label = recentEntry.label;
+
     const remoteAuthority = recentEntry.remoteAuthority;
+
     let recent: IRecent | undefined = undefined;
+
     if (recentEntry.type === 'workspace') {
         const workspace = await workspacesService.getWorkspaceIdentifier(uri);
         recent = { workspace, label, remoteAuthority };
@@ -265,5 +302,6 @@ CommandsRegistry.registerCommand('_workbench.addToRecentlyOpened', async functio
 });
 CommandsRegistry.registerCommand('_workbench.getRecentlyOpened', async function (accessor: ServicesAccessor) {
     const workspacesService = accessor.get(IWorkspacesService);
+
     return workspacesService.getRecentlyOpened();
 });

@@ -45,6 +45,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     private labelElement!: HTMLElement;
     private detailsElement!: HTMLElement;
     private dropDownElement!: HTMLElement;
+
     constructor(action: IAction, 
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -53,6 +54,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     @IHoverService
     private readonly hoverService: IHoverService) {
         super(null, action);
+
         const workspace = this.contextService.getWorkspace();
         this._folder = workspace.folders.length === 1 ? workspace.folders[0] : null;
         this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.onWorkspaceFoldersChanged()));
@@ -66,6 +68,7 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     }
     setCount(settingsTarget: URI, count: number): void {
         const workspaceFolder = this.contextService.getWorkspaceFolder(settingsTarget);
+
         if (!workspaceFolder) {
             throw new Error('unknown folder');
         }
@@ -93,15 +96,18 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     }
     private onKeyUp(event: KeyboardEvent): void {
         const keyboardEvent = new StandardKeyboardEvent(event);
+
         switch (keyboardEvent.keyCode) {
             case KeyCode.Enter:
             case KeyCode.Space:
                 this.onClick(event);
+
                 return;
         }
     }
     override onClick(event: DOM.EventLike): void {
         DOM.EventHelper.stop(event, true);
+
         if (!this.folder || this._action.checked) {
             this.showMenu();
         }
@@ -117,12 +123,15 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     }
     private onWorkspaceFoldersChanged(): void {
         const oldFolder = this._folder;
+
         const workspace = this.contextService.getWorkspace();
+
         if (oldFolder) {
             this._folder = workspace.folders.filter(folder => isEqual(folder.uri, oldFolder.uri))[0] || workspace.folders[0];
         }
         this._folder = this._folder ? this._folder : workspace.folders.length === 1 ? workspace.folders[0] : null;
         this.update();
+
         if (this._action.checked) {
             this._action.run(this._folder);
         }
@@ -130,10 +139,13 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     private update(): void {
         let total = 0;
         this._folderSettingCounts.forEach(n => total += n);
+
         const workspace = this.contextService.getWorkspace();
+
         if (this._folder) {
             this.labelElement.textContent = this._folder.name;
             this.anchorElementHover.update(this._folder.name);
+
             const detailsText = this.labelWithCount(this._action.label, total);
             this.detailsElement.textContent = detailsText;
             this.dropDownElement.classList.toggle('hide', workspace.folders.length === 1 || !this._action.checked);
@@ -160,10 +172,13 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
     }
     private getDropdownMenuActions(): IAction[] {
         const actions: IAction[] = [];
+
         const workspaceFolders = this.contextService.getWorkspace().folders;
+
         if (this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE && workspaceFolders.length > 0) {
             actions.push(...workspaceFolders.map((folder, index) => {
                 const folderCount = this._folderSettingCounts.get(folder.uri.toString());
+
                 return {
                     id: 'folderSettingsTarget' + index,
                     label: this.labelWithCount(folder.name, folderCount),
@@ -200,6 +215,7 @@ export class SettingsTargetsWidget extends Widget {
     private _settingsTarget: SettingsTarget | null = null;
     private readonly _onDidTargetChange = this._register(new Emitter<SettingsTarget>());
     readonly onDidTargetChange: Event<SettingsTarget> = this._onDidTargetChange.event;
+
     constructor(parent: HTMLElement, options: ISettingsTargetsWidgetOptions | undefined, 
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -219,6 +235,7 @@ export class SettingsTargetsWidget extends Widget {
     }
     private resetLabels() {
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         const hostLabel = remoteAuthority && this.labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority);
         this.userLocalSettings.label = localize('userSettings', "User");
         this.userRemoteSettings.label = localize('userSettingsRemote', "Remote") + (hostLabel ? ` [${hostLabel}]` : '');
@@ -237,7 +254,9 @@ export class SettingsTargetsWidget extends Widget {
         this.userLocalSettings = new Action('userSettings', '', '.settings-tab', true, () => this.updateTarget(ConfigurationTarget.USER_LOCAL));
         this.userLocalSettings.tooltip = localize('userSettings', "User");
         this.userRemoteSettings = new Action('userSettingsRemote', '', '.settings-tab', true, () => this.updateTarget(ConfigurationTarget.USER_REMOTE));
+
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         const hostLabel = remoteAuthority && this.labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority);
         this.userRemoteSettings.tooltip = localize('userSettingsRemote', "Remote") + (hostLabel ? ` [${hostLabel}]` : '');
         this.workspaceSettings = new Action('workspaceSettings', '', '.settings-tab', false, () => this.updateTarget(ConfigurationTarget.WORKSPACE));
@@ -257,6 +276,7 @@ export class SettingsTargetsWidget extends Widget {
         this.userLocalSettings.checked = ConfigurationTarget.USER_LOCAL === this.settingsTarget;
         this.userRemoteSettings.checked = ConfigurationTarget.USER_REMOTE === this.settingsTarget;
         this.workspaceSettings.checked = ConfigurationTarget.WORKSPACE === this.settingsTarget;
+
         if (this.settingsTarget instanceof URI) {
             this.folderSettings.action.checked = true;
             this.folderSettings.folder = this.contextService.getWorkspaceFolder(this.settingsTarget as URI);
@@ -268,6 +288,7 @@ export class SettingsTargetsWidget extends Widget {
     setResultCount(settingsTarget: SettingsTarget, count: number): void {
         if (settingsTarget === ConfigurationTarget.WORKSPACE) {
             let label = localize('workspaceSettings', "Workspace");
+
             if (count) {
                 label += ` (${count})`;
             }
@@ -275,6 +296,7 @@ export class SettingsTargetsWidget extends Widget {
         }
         else if (settingsTarget === ConfigurationTarget.USER_LOCAL) {
             let label = localize('userSettings', "User");
+
             if (count) {
                 label += ` (${count})`;
             }
@@ -286,8 +308,10 @@ export class SettingsTargetsWidget extends Widget {
     }
     updateLanguageFilterIndicators(filter: string | undefined) {
         this.resetLabels();
+
         if (filter) {
             const languageToUse = this.languageService.getLanguageName(filter);
+
             if (languageToUse) {
                 const languageSuffix = ` [${languageToUse}]`;
                 this.userLocalSettings.label += languageSuffix;
@@ -300,6 +324,7 @@ export class SettingsTargetsWidget extends Widget {
     private onWorkbenchStateChanged(): void {
         this.folderSettings.folder = null;
         this.update();
+
         if (this.settingsTarget === ConfigurationTarget.WORKSPACE && this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
             this.updateTarget(ConfigurationTarget.USER_LOCAL);
         }
@@ -309,6 +334,7 @@ export class SettingsTargetsWidget extends Widget {
             settingsTarget instanceof URI &&
                 this.settingsTarget instanceof URI &&
                 isEqual(this.settingsTarget, settingsTarget);
+
         if (!isSameTarget) {
             this.settingsTarget = settingsTarget;
             this._onDidTargetChange.fire(this.settingsTarget);
@@ -339,6 +365,7 @@ export class SearchWidget extends Widget {
     readonly onDidChange: Event<string> = this._onDidChange.event;
     private readonly _onFocus: Emitter<void> = this._register(new Emitter<void>());
     readonly onFocus: Event<void> = this._onFocus.event;
+
     constructor(parent: HTMLElement, protected options: SearchOptions, 
     @IContextViewService
     private readonly contextViewService: IContextViewService, 
@@ -355,6 +382,7 @@ export class SearchWidget extends Widget {
         this.domNode = DOM.append(parent, DOM.$('div.settings-header-widget'));
         this.createSearchContainer(DOM.append(this.domNode, DOM.$('div.settings-search-container')));
         this.controlsDiv = DOM.append(this.domNode, DOM.$('div.settings-search-controls'));
+
         if (this.options.showResultCount) {
             this.countElement = DOM.append(this.controlsDiv, DOM.$('.settings-count-widget'));
             this.countElement.style.backgroundColor = asCssVariable(badgeBackground);
@@ -362,12 +390,15 @@ export class SearchWidget extends Widget {
             this.countElement.style.border = `1px solid ${asCssVariable(contrastBorder)}`;
         }
         this.inputBox.inputElement.setAttribute('aria-live', this.options.ariaLive || 'off');
+
         if (this.options.ariaLabelledBy) {
             this.inputBox.inputElement.setAttribute('aria-labelledBy', this.options.ariaLabelledBy);
         }
         const focusTracker = this._register(DOM.trackFocus(this.inputBox.inputElement));
         this._register(focusTracker.onDidFocus(() => this._onFocus.fire()));
+
         const focusKey = this.options.focusKey;
+
         if (focusKey) {
             this._register(focusTracker.onDidFocus(() => focusKey.set(true)));
             this._register(focusTracker.onDidBlur(() => focusKey.set(false)));
@@ -375,12 +406,14 @@ export class SearchWidget extends Widget {
     }
     private createSearchContainer(searchContainer: HTMLElement) {
         this.searchContainer = searchContainer;
+
         const searchInput = DOM.append(this.searchContainer, DOM.$('div.settings-search-input'));
         this.inputBox = this._register(this.createInputBox(searchInput));
         this._register(this.inputBox.onDidChange(value => this._onDidChange.fire(value)));
     }
     protected createInputBox(parent: HTMLElement): HistoryInputBox {
         const showHistoryHint = () => showHistoryKeybindingHint(this.keybindingService);
+
         return new ContextScopedHistoryInputBox(parent, this.contextViewService, { ...this.options, showHistoryHint }, this.contextKeyService);
     }
     showMessage(message: string): void {
@@ -403,10 +436,12 @@ export class SearchWidget extends Widget {
     }
     private getControlsWidth(): number {
         const countWidth = this.countElement ? DOM.getTotalWidth(this.countElement) : 0;
+
         return countWidth + 20;
     }
     focus() {
         this.inputBox.focus();
+
         if (this.getValue()) {
             this.inputBox.select();
         }
@@ -425,6 +460,7 @@ export class SearchWidget extends Widget {
     }
     override dispose(): void {
         this.options.focusKey?.set(false);
+
         super.dispose();
     }
 }
@@ -434,6 +470,7 @@ export class EditPreferenceWidget<T> extends Disposable {
     private readonly _editPreferenceDecoration = this.editor.createDecorationsCollection();
     private readonly _onClick = this._register(new Emitter<IEditorMouseEvent>());
     readonly onClick: Event<IEditorMouseEvent> = this._onClick.event;
+
     constructor(private editor: ICodeEditor) {
         super();
         this._register(this.editor.onMouseDown((e: IEditorMouseEvent) => {
@@ -451,6 +488,7 @@ export class EditPreferenceWidget<T> extends Disposable {
     }
     show(line: number, hoverMessage: string, preferences: T[]): void {
         this._preferences = preferences;
+
         const newDecoration: IModelDeltaDecoration[] = [];
         this._line = line;
         newDecoration.push({
@@ -477,6 +515,7 @@ export class EditPreferenceWidget<T> extends Disposable {
     }
     override dispose(): void {
         this.hide();
+
         super.dispose();
     }
 }

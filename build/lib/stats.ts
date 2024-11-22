@@ -25,6 +25,7 @@ class Entry {
                 const count = this.totalCount < 100
                     ? ansiColors.green(this.totalCount.toString())
                     : ansiColors.red(this.totalCount.toString());
+
                 return `Stats for '${ansiColors.grey(this.name)}': ${count} files, ${Math.round(this.totalSize / 1204)}KB`;
             }
         }
@@ -34,10 +35,13 @@ const _entries = new Map<string, Entry>();
 export function createStatsStream(group: string, log?: boolean): es.ThroughStream {
     const entry = new Entry(group, 0, 0);
     _entries.set(entry.name, entry);
+
     return es.through(function (data) {
         const file = data as File;
+
         if (typeof file.path === 'string') {
             entry.totalCount += 1;
+
             if (Buffer.isBuffer(file.contents)) {
                 entry.totalSize += file.contents.length;
             }

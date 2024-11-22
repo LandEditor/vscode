@@ -28,6 +28,7 @@ declare module 'vscode' {
 
 	export interface SettingInformationResult extends RelatedInformationBaseResult {
 		type: RelatedInformationType.SettingInformation;
+
 		setting: string;
 	}
 
@@ -43,7 +44,9 @@ declare module 'vscode' {
 
 	export namespace ai {
 		export function getRelatedInformation(query: string, types: RelatedInformationType[], token: CancellationToken): Thenable<RelatedInformationResult[]>;
+
 		export function registerRelatedInformationProvider(type: RelatedInformationType, provider: RelatedInformationProvider): Disposable;
+
 		export function registerEmbeddingVectorProvider(model: string, provider: EmbeddingVectorProvider): Disposable;
 	}
 }

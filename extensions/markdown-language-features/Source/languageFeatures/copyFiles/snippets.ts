@@ -11,6 +11,7 @@ export function resolveSnippet(snippetString: string, vars: ReadonlyMap<string, 
             return '$';
         }
         const entry = vars.get(name);
+
         if (typeof entry !== 'string') {
             return match;
         }

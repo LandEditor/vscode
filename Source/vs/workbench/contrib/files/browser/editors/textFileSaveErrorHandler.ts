@@ -32,7 +32,9 @@ import { IEditorIdentifier, SaveReason, SideBySideEditor } from '../../../../com
 import { hash } from '../../../../../base/common/hash.js';
 export const CONFLICT_RESOLUTION_CONTEXT = 'saveConflictResolutionContext';
 export const CONFLICT_RESOLUTION_SCHEME = 'conflictResolution';
+
 const LEARN_MORE_DIRTY_WRITE_IGNORE_KEY = 'learnMoreDirtyWriteError';
+
 const conflictEditorHelp = localize('userGuide', "Use the actions in the editor tool bar to either undo your changes or overwrite the content of the file with your changes.");
 // A handler for text file save error happening with conflict resolution actions
 export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHandler, IWorkbenchContribution {
@@ -40,6 +42,7 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
     private readonly messages = new ResourceMap<INotificationHandle>();
     private readonly conflictResolutionContext = new RawContextKey<boolean>(CONFLICT_RESOLUTION_CONTEXT, false, true).bindTo(this.contextKeyService);
     private activeConflictResolutionResource: URI | undefined = undefined;
+
     constructor(
     @INotificationService
     private readonly notificationService: INotificationService, 
@@ -56,6 +59,7 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
     @IStorageService
     private readonly storageService: IStorageService) {
         super();
+
         const provider = this._register(instantiationService.createInstance(TextFileContentProvider));
         this._register(textModelService.registerTextModelContentProvider(CONFLICT_RESOLUTION_SCHEME, provider));
         // Set as save error handler to service for text files
@@ -69,10 +73,14 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
     }
     private onActiveEditorChanged(): void {
         let isActiveEditorSaveConflictResolution = false;
+
         let activeConflictResolutionResource: URI | undefined;
+
         const activeInput = this.editorService.activeEditor;
+
         if (activeInput instanceof DiffEditorInput) {
             const resource = activeInput.original.resource;
+
             if (resource?.scheme === CONFLICT_RESOLUTION_SCHEME) {
                 isActiveEditorSaveConflictResolution = true;
                 activeConflictResolutionResource = activeInput.modified.resource;
@@ -83,6 +91,7 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
     }
     private onFileSavedOrReverted(resource: URI): void {
         const messageHandle = this.messages.get(resource);
+
         if (messageHandle) {
             messageHandle.close();
             this.messages.delete(resource);
@@ -90,9 +99,13 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
     }
     onSaveError(error: unknown, model: ITextFileEditorModel, options: ITextFileSaveOptions): void {
         const fileOperationError = error as FileOperationError;
+
         const resource = model.resource;
+
         let message: string;
+
         const primaryActions: Action[] = [];
+
         const secondaryActions: Action[] = [];
         // Dirty write prevention
         if (fileOperationError.fileOperationResult === FileOperationResult.FILE_MODIFIED_SINCE) {
@@ -116,8 +129,11 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
         // Any other save error
         else {
             const isWriteLocked = fileOperationError.fileOperationResult === FileOperationResult.FILE_WRITE_LOCKED;
+
             const triedToUnlock = isWriteLocked && (fileOperationError.options as IWriteFileOptions | undefined)?.unlock;
+
             const isPermissionDenied = fileOperationError.fileOperationResult === FileOperationResult.FILE_PERMISSION_DENIED;
+
             const canSaveElevated = resource.scheme === Schemas.file; // currently only supported for local schemes (https://github.com/microsoft/vscode/issues/48659)
             // Save Elevated
             if (canSaveElevated && (isPermissionDenied || triedToUnlock)) {
@@ -153,6 +169,7 @@ export class TextFileSaveErrorHandler extends Disposable implements ISaveErrorHa
         }
         // Show message and keep function to hide in case the file gets saved/reverted
         const actions: INotificationActions = { primary: primaryActions, secondary: secondaryActions };
+
         const handle = this.notificationService.notify({
             id: `${hash(model.resource.toString())}`, // unique per model (https://github.com/microsoft/vscode/issues/121539)
             severity: Severity.Error,
@@ -212,11 +229,14 @@ class ResolveSaveConflictAction extends Action {
     override async run(): Promise<void> {
         if (!this.model.isDisposed()) {
             const resource = this.model.resource;
+
             const name = basename(resource);
+
             const editorLabel = localize('saveConflictDiffLabel', "{0} (in file) ↔ {1} (in {2}) - Resolve save conflict", name, name, this.productService.nameLong);
             await TextFileContentProvider.open(resource, CONFLICT_RESOLUTION_SCHEME, editorLabel, this.editorService, { pinned: true });
             // Show additional help how to resolve the save conflict
             const actions = { primary: [this.instantiationService.createInstance(ResolveConflictLearnMoreAction)] };
+
             const handle = this.notificationService.notify({
                 id: `${hash(resource.toString())}`, // unique per model
                 severity: Severity.Info,
@@ -273,6 +293,7 @@ class SaveModelAsAction extends Action {
     override async run(): Promise<void> {
         if (!this.model.isDisposed()) {
             const editor = this.findEditor();
+
             if (editor) {
                 await this.editorService.save(editor, { saveAs: true, reason: SaveReason.EXPLICIT });
             }
@@ -280,7 +301,9 @@ class SaveModelAsAction extends Action {
     }
     private findEditor(): IEditorIdentifier | undefined {
         let preferredMatchingEditor: IEditorIdentifier | undefined;
+
         const editors = this.editorService.findEditors(this.model.resource, { supportSideBySide: SideBySideEditor.PRIMARY });
+
         for (const identifier of editors) {
             if (identifier.editor instanceof FileEditorInput) {
                 // We prefer a `FileEditorInput` for "Save As", but it is possible
@@ -288,6 +311,7 @@ class SaveModelAsAction extends Action {
                 // such we need to fallback to any other editor having the resource
                 // opened for running the save.
                 preferredMatchingEditor = identifier;
+
                 break;
             }
             else if (!preferredMatchingEditor) {
@@ -335,11 +359,14 @@ export const revertLocalChangesCommand = (accessor: ServicesAccessor, resource: 
 };
 async function acceptOrRevertLocalChangesCommand(accessor: ServicesAccessor, resource: URI, accept: boolean) {
     const editorService = accessor.get(IEditorService);
+
     const editorPane = editorService.activeEditorPane;
+
     if (!editorPane) {
         return;
     }
     const editor = editorPane.input;
+
     const group = editorPane.group;
     // Hide any previously shown message about how to use these actions
     clearPendingResolveSaveConflictMessages();

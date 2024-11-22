@@ -22,7 +22,9 @@ class CursorState {
 
 	public equals(other: CursorState): boolean {
 		const thisLen = this.selections.length;
+
 		const otherLen = other.selections.length;
+
 		if (thisLen !== otherLen) {
 			return false;
 		}
@@ -84,10 +86,13 @@ export class CursorUndoRedoController extends Disposable implements IEditorContr
 				return;
 			}
 			const prevState = new CursorState(e.oldSelections);
+
 			const isEqualToLastUndoStack = (this._undoStack.length > 0 && this._undoStack[this._undoStack.length - 1].cursorState.equals(prevState));
+
 			if (!isEqualToLastUndoStack) {
 				this._undoStack.push(new StackElement(prevState, editor.getScrollTop(), editor.getScrollLeft()));
 				this._redoStack = [];
+
 				if (this._undoStack.length > 50) {
 					// keep the cursor undo stack bounded
 					this._undoStack.shift();

@@ -13,11 +13,13 @@ import { renderStringAsPlaintext } from '../../../../base/browser/markdownRender
 import { MarkdownString } from '../../../../base/common/htmlContent.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { AccessibilityVoiceSettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
+
 const CHAT_RESPONSE_PENDING_ALLOWANCE_MS = 4000;
 export class ChatAccessibilityService extends Disposable implements IChatAccessibilityService {
     declare readonly _serviceBrand: undefined;
     private _pendingSignalMap: DisposableMap<number, AccessibilityProgressSignalScheduler> = this._register(new DisposableMap());
     private _requestId: number = 0;
+
     constructor(
     @IAccessibilitySignalService
     private readonly _accessibilitySignalService: IAccessibilitySignalService, 
@@ -31,18 +33,24 @@ export class ChatAccessibilityService extends Disposable implements IChatAccessi
         this._requestId++;
         this._accessibilitySignalService.playSignal(AccessibilitySignal.chatRequestSent, { allowManyInParallel: true });
         this._pendingSignalMap.set(this._requestId, this._instantiationService.createInstance(AccessibilityProgressSignalScheduler, CHAT_RESPONSE_PENDING_ALLOWANCE_MS, undefined));
+
         return this._requestId;
     }
     acceptResponse(response: IChatResponseViewModel | string | undefined, requestId: number, isVoiceInput?: boolean): void {
         this._pendingSignalMap.deleteAndDispose(requestId);
+
         const isPanelChat = typeof response !== 'string';
+
         const responseContent = typeof response === 'string' ? response : response?.response.toString();
         this._accessibilitySignalService.playSignal(AccessibilitySignal.chatResponseReceived, { allowManyInParallel: true });
+
         if (!response || !responseContent) {
             return;
         }
         const errorDetails = isPanelChat && response.errorDetails ? ` ${response.errorDetails.message}` : '';
+
         const plainTextResponse = renderStringAsPlaintext(new MarkdownString(responseContent));
+
         if (!isVoiceInput || this._configurationService.getValue(AccessibilityVoiceSettingId.AutoSynthesize) !== 'on') {
             status(plainTextResponse + errorDetails);
         }

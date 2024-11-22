@@ -94,9 +94,13 @@ export interface ITextFileService extends IDisposable {
      * file system.
      */
     getEncodedReadable(resource: URI, value: ITextSnapshot, options?: IWriteTextFileOptions): Promise<VSBufferReadable>;
+
     getEncodedReadable(resource: URI, value: string, options?: IWriteTextFileOptions): Promise<VSBuffer>;
+
     getEncodedReadable(resource: URI, value?: ITextSnapshot, options?: IWriteTextFileOptions): Promise<VSBufferReadable | undefined>;
+
     getEncodedReadable(resource: URI, value?: string, options?: IWriteTextFileOptions): Promise<VSBuffer | undefined>;
+
     getEncodedReadable(resource: URI, value?: string | ITextSnapshot, options?: IWriteTextFileOptions): Promise<VSBuffer | VSBufferReadable | undefined>;
     /**
      * Returns a stream of strings that uses the appropriate encoding. This method should
@@ -147,6 +151,7 @@ export class TextFileOperationError extends FileOperationError {
         return obj instanceof Error && !isUndefinedOrNull((obj as TextFileOperationError).textFileOperationResult);
     }
     override readonly options?: IReadTextFileOptions & IWriteTextFileOptions;
+
     constructor(message: string, public textFileOperationResult: TextFileOperationResult, options?: IReadTextFileOptions & IWriteTextFileOptions) {
         super(message, FileOperationResult.FILE_OTHER_ERROR);
         this.options = options;
@@ -154,6 +159,7 @@ export class TextFileOperationError extends FileOperationError {
 }
 export interface IResourceEncodings {
     getPreferredReadEncoding(resource: URI): Promise<IResourceEncoding>;
+
     getPreferredWriteEncoding(resource: URI, preferredEncoding?: string): Promise<IResourceEncoding>;
 }
 export interface IResourceEncoding {
@@ -423,11 +429,13 @@ export interface ITextFileEditorModel extends ITextEditorModel, IEncodingSupport
     revert(options?: IRevertOptions): Promise<void>;
     resolve(options?: ITextFileResolveOptions): Promise<void>;
     isDirty(): this is IResolvedTextFileEditorModel;
+
     getLanguageId(): string | undefined;
     isResolved(): this is IResolvedTextFileEditorModel;
 }
 export function isTextFileEditorModel(model: ITextEditorModel): model is ITextFileEditorModel {
     const candidate = model as ITextFileEditorModel;
+
     return areFunctions(candidate.setEncoding, candidate.getEncoding, candidate.save, candidate.revert, candidate.isDirty, candidate.getLanguageId);
 }
 export interface IResolvedTextFileEditorModel extends ITextFileEditorModel {
@@ -436,7 +444,9 @@ export interface IResolvedTextFileEditorModel extends ITextFileEditorModel {
 }
 export function snapshotToString(snapshot: ITextSnapshot): string {
     const chunks: string[] = [];
+
     let chunk: string | null;
+
     while (typeof (chunk = snapshot.read()) === 'string') {
         chunks.push(chunk);
     }
@@ -444,10 +454,12 @@ export function snapshotToString(snapshot: ITextSnapshot): string {
 }
 export function stringToSnapshot(value: string): ITextSnapshot {
     let done = false;
+
     return {
         read(): string | null {
             if (!done) {
                 done = true;
+
                 return value;
             }
             return null;
@@ -468,6 +480,7 @@ export function toBufferOrReadable(value: string | ITextSnapshot | undefined): V
     return {
         read: () => {
             const chunk = value.read();
+
             if (typeof chunk === 'string') {
                 return VSBuffer.fromString(chunk);
             }

@@ -27,6 +27,7 @@ export class ScreenReaderSupport {
     private _accessibilityPageSize: number = 1;
     private _primarySelection: Selection = new Selection(1, 1, 1, 1);
     private _screenReaderContentState: ScreenReaderContentState | undefined;
+
     constructor(private readonly _domNode: FastDomNode<HTMLElement>, private readonly _context: ViewContext, 
     @IKeybindingService
     private readonly _keybindingService: IKeybindingService, 
@@ -38,12 +39,14 @@ export class ScreenReaderSupport {
     public onConfigurationChanged(e: ViewConfigurationChangedEvent): void {
         this._updateConfigurationSettings();
         this._updateDomAttributes();
+
         if (this._accessibilityService.isScreenReaderOptimized()) {
             this.writeScreenReaderContent();
         }
     }
     private _updateConfigurationSettings(): void {
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._contentLeft = layoutInfo.contentLeft;
         this._contentWidth = layoutInfo.contentWidth;
@@ -59,7 +62,9 @@ export class ScreenReaderSupport {
         this._domNode.domNode.setAttribute('aria-autocomplete', options.get(EditorOption.readOnly) ? 'none' : 'both');
         this._domNode.domNode.setAttribute('aria-roledescription', localize('editor', "editor"));
         this._domNode.domNode.setAttribute('aria-label', ariaLabelForScreenReaderContent(options, this._keybindingService));
+
         const tabSize = this._context.viewModel.model.getOptions().tabSize;
+
         const spaceWidth = options.get(EditorOption.fontInfo).spaceWidth;
         this._domNode.domNode.style.tabSize = `${tabSize * spaceWidth}px`;
     }
@@ -75,8 +80,11 @@ export class ScreenReaderSupport {
         }
         // For correct alignment of the screen reader content, we need to apply the correct font
         applyFontInfo(this._domNode, this._fontInfo!);
+
         const verticalOffsetForPrimaryLineNumber = this._context.viewLayout.getVerticalOffsetForLineNumber(this._primarySelection.positionLineNumber);
+
         const editorScrollTop = this._context.viewLayout.getCurrentScrollTop();
+
         const top = verticalOffsetForPrimaryLineNumber - editorScrollTop;
         this._domNode.setTop(top);
         this._domNode.setLeft(this._contentLeft);
@@ -84,16 +92,19 @@ export class ScreenReaderSupport {
         this._domNode.setHeight(this._lineHeight);
         // Setting position within the screen reader content by modifying scroll position
         const textContentBeforeSelection = this._screenReaderContentState.value.substring(0, this._screenReaderContentState.selectionStart);
+
         const numberOfLinesOfContentBeforeSelection = newlinecount(textContentBeforeSelection);
         this._domNode.domNode.scrollTop = numberOfLinesOfContentBeforeSelection * this._lineHeight;
     }
     public setAriaOptions(): void { }
     public writeScreenReaderContent(): void {
         const focusedElement = getActiveWindow().document.activeElement;
+
         if (!focusedElement || focusedElement !== this._domNode.domNode) {
             return;
         }
         this._screenReaderContentState = this._getScreenReaderContentState();
+
         if (!this._screenReaderContentState) {
             return;
         }
@@ -126,15 +137,19 @@ export class ScreenReaderSupport {
                 return this._context.viewModel.modifyPosition(position, offset);
             }
         };
+
         return PagedScreenReaderStrategy.fromEditorSelection(simpleModel, this._primarySelection, this._accessibilityPageSize, this._accessibilityService.getAccessibilitySupport() === AccessibilitySupport.Unknown);
     }
     private _setSelectionOfScreenReaderContent(selectionOffsetStart: number, selectionOffsetEnd: number): void {
         const activeDocument = getActiveWindow().document;
+
         const activeDocumentSelection = activeDocument.getSelection();
+
         if (!activeDocumentSelection) {
             return;
         }
         const textContent = this._domNode.domNode.firstChild;
+
         if (!textContent) {
             return;
         }

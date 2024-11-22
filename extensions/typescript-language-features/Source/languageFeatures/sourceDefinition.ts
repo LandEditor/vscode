@@ -16,22 +16,30 @@ class SourceDefinitionCommand implements Command {
     public async execute() {
         if (this.client.apiVersion.lt(SourceDefinitionCommand.minVersion)) {
             vscode.window.showErrorMessage(vscode.l10n.t("Go to Source Definition failed. Requires TypeScript 4.7+."));
+
             return;
         }
         const activeEditor = vscode.window.activeTextEditor;
+
         if (!activeEditor) {
             vscode.window.showErrorMessage(vscode.l10n.t("Go to Source Definition failed. No resource provided."));
+
             return;
         }
         const resource = activeEditor.document.uri;
+
         const document = await vscode.workspace.openTextDocument(resource);
+
         if (!isSupportedLanguageMode(document)) {
             vscode.window.showErrorMessage(vscode.l10n.t("Go to Source Definition failed. Unsupported file type."));
+
             return;
         }
         const openedFiledPath = this.client.toOpenTsFilePath(document);
+
         if (!openedFiledPath) {
             vscode.window.showErrorMessage(vscode.l10n.t("Go to Source Definition failed. Unknown file type."));
+
             return;
         }
         await vscode.window.withProgress({
@@ -39,10 +47,14 @@ class SourceDefinitionCommand implements Command {
             title: vscode.l10n.t("Finding source definitions")
         }, async (_progress, token) => {
             const position = activeEditor.selection.anchor;
+
             const args = typeConverters.Position.toFileLocationRequestArgs(openedFiledPath, position);
+
             const response = await this.client.execute('findSourceDefinition', args, token);
+
             if (response.type === 'response' && response.body) {
                 const locations: vscode.Location[] = response.body.map(reference => typeConverters.Location.fromTextSpan(this.client.toResource(reference.file), reference));
+
                 if (locations.length) {
                     if (locations.length === 1) {
                         vscode.commands.executeCommand('vscode.open', locations[0].uri.with({
@@ -65,5 +77,6 @@ export function register(client: ITypeScriptServiceClient, commandManager: Comma
     }
     updateContext();
     commandManager.register(new SourceDefinitionCommand(client));
+
     return client.onTsServerStarted(() => updateContext());
 }

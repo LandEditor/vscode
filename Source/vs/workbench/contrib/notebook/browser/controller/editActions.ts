@@ -42,7 +42,9 @@ import { IEditorService } from '../../../../services/editor/common/editorService
 import { ILanguageDetectionService } from '../../../../services/languageDetection/common/languageDetectionWorkerService.js';
 
 const CLEAR_ALL_CELLS_OUTPUTS_COMMAND_ID = 'notebook.clearAllCellsOutputs';
+
 const EDIT_CELL_COMMAND_ID = 'notebook.cell.edit';
+
 const DELETE_CELL_COMMAND_ID = 'notebook.cell.delete';
 export const CLEAR_CELL_OUTPUTS_COMMAND_ID = 'notebook.cell.clearOutputs';
 export const SELECT_NOTEBOOK_INDENTATION_ID = 'notebook.selectIndentation';
@@ -84,7 +86,9 @@ registerAction2(class EditCellAction extends NotebookCellAction {
 		}
 
 		await context.notebookEditor.focusNotebookCell(context.cell, 'editor');
+
 		const foundEditor: ICodeEditor | undefined = context.cell ? findTargetCellEditor(context, context.cell) : undefined;
+
 		if (foundEditor && foundEditor.hasTextFocus() && InlineChatController.get(foundEditor)?.getWidgetPosition()?.lineNumber === foundEditor.getPosition()?.lineNumber) {
 			InlineChatController.get(foundEditor)?.focus();
 		}
@@ -185,12 +189,16 @@ registerAction2(class DeleteCellAction extends NotebookCellAction {
 		}
 
 		let confirmation: IConfirmationResult;
+
 		const notebookExecutionStateService = accessor.get(INotebookExecutionStateService);
+
 		const runState = notebookExecutionStateService.getCellExecution(context.cell.uri)?.state;
+
 		const configService = accessor.get(IConfigurationService);
 
 		if (runState === NotebookCellExecutionState.Executing && configService.getValue(NotebookSetting.confirmDeleteRunningCell)) {
 			const dialogService = accessor.get(IDialogService);
+
 			const primaryButton = localize('confirmDeleteButton', "Delete");
 
 			confirmation = await dialogService.confirm({
@@ -246,12 +254,15 @@ registerAction2(class ClearCellOutputsAction extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const notebookExecutionStateService = accessor.get(INotebookExecutionStateService);
+
 		const editor = context.notebookEditor;
+
 		if (!editor.hasModel() || !editor.textModel.length) {
 			return;
 		}
 
 		const cell = context.cell;
+
 		const index = editor.textModel.cells.indexOf(cell.model);
 
 		if (index < 0) {
@@ -262,6 +273,7 @@ registerAction2(class ClearCellOutputsAction extends NotebookCellAction {
 		editor.textModel.applyEdits([{ editType: CellEditType.Output, index, outputs: [] }], true, undefined, () => undefined, undefined, computeUndoRedo);
 
 		const runState = notebookExecutionStateService.getCellExecution(context.cell.uri)?.state;
+
 		if (runState !== NotebookCellExecutionState.Executing) {
 			context.notebookEditor.textModel.applyEdits([{
 				editType: CellEditType.PartialInternalMetadata, index, internalMetadata: {
@@ -308,7 +320,9 @@ registerAction2(class ClearAllCellOutputsAction extends NotebookAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void> {
 		const notebookExecutionStateService = accessor.get(INotebookExecutionStateService);
+
 		const editor = context.notebookEditor;
+
 		if (!editor.hasModel() || !editor.textModel.length) {
 			return;
 		}
@@ -321,6 +335,7 @@ registerAction2(class ClearAllCellOutputsAction extends NotebookAction {
 
 		const clearExecutionMetadataEdits = editor.textModel.cells.map((cell, index) => {
 			const runState = notebookExecutionStateService.getCellExecution(cell.uri)?.state;
+
 			if (runState !== NotebookCellExecutionState.Executing) {
 				return {
 					editType: CellEditType.PartialInternalMetadata, index, internalMetadata: {
@@ -335,6 +350,7 @@ registerAction2(class ClearAllCellOutputsAction extends NotebookAction {
 				return undefined;
 			}
 		}).filter(edit => !!edit) as ICellEditOperation[];
+
 		if (clearExecutionMetadataEdits.length) {
 			context.notebookEditor.textModel.applyEdits(clearExecutionMetadataEdits, true, undefined, () => undefined, undefined, computeUndoRedo);
 		}
@@ -394,6 +410,7 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 		}
 
 		const language = additionalArgs.length && typeof additionalArgs[0] === 'string' ? additionalArgs[0] : undefined;
+
 		const activeEditorContext = this.getEditorContextFromArgsOrActive(accessor);
 
 		if (!activeEditorContext || !activeEditorContext.notebookEditor.hasModel() || context.start >= activeEditorContext.notebookEditor.getLength()) {
@@ -419,17 +436,24 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 
 	private async showLanguagePicker(accessor: ServicesAccessor, context: IChangeCellContext) {
 		const topItems: ILanguagePickInput[] = [];
+
 		const mainItems: ILanguagePickInput[] = [];
 
 		const languageService = accessor.get(ILanguageService);
+
 		const modelService = accessor.get(IModelService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const languageDetectionService = accessor.get(ILanguageDetectionService);
+
 		const kernelService = accessor.get(INotebookKernelService);
 
 		let languages = context.notebookEditor.activeKernel?.supportedLanguages;
+
 		if (!languages) {
 			const matchResult = kernelService.getMatchingKernel(context.notebookEditor.textModel);
+
 			const allSupportedLanguages = matchResult.all.flatMap(kernel => kernel.supportedLanguages);
 			languages = allSupportedLanguages.length > 0 ? allSupportedLanguages : languageService.getRegisteredLanguageIds();
 		}
@@ -441,6 +465,7 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 
 		providerLanguages.forEach(languageId => {
 			let description: string;
+
 			if (context.cell.cellKind === CellKind.Markup ? (languageId === 'markdown') : (languageId === context.cell.language)) {
 				description = localize('languageDescription', "({0}) - Current Language", languageId);
 			} else {
@@ -448,6 +473,7 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 			}
 
 			const languageName = languageService.getLanguageName(languageId);
+
 			if (!languageName) {
 				// Notebook has unrecognized language
 				return;
@@ -485,6 +511,7 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 		];
 
 		const selection = await quickInputService.pick(picks, { placeHolder: localize('pickLanguageToConfigure', "Select Language Mode") });
+
 		const languageId = selection === autoDetectMode
 			? await languageDetectionService.detectLanguage(context.cell.uri)
 			: (selection as ILanguagePickInput)?.languageId;
@@ -505,12 +532,15 @@ registerAction2(class ChangeCellLanguageAction extends NotebookCellAction<ICellR
 		let fakeResource: URI | undefined;
 
 		const languageId = languageService.getLanguageIdByLanguageName(lang);
+
 		if (languageId) {
 			const extensions = languageService.getExtensions(languageId);
+
 			if (extensions.length) {
 				fakeResource = URI.file(extensions[0]);
 			} else {
 				const filenames = languageService.getFilenames(languageId);
+
 				if (filenames.length) {
 					fakeResource = URI.file(filenames[0]);
 				}
@@ -534,12 +564,18 @@ registerAction2(class DetectCellLanguageAction extends NotebookCellAction {
 
 	async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void> {
 		const languageDetectionService = accessor.get(ILanguageDetectionService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		const kernelService = accessor.get(INotebookKernelService);
+
 		const kernel = kernelService.getSelectedOrSuggestedKernel(context.notebookEditor.textModel);
+
 		const providerLanguages = [...kernel?.supportedLanguages ?? []];
 		providerLanguages.push('markdown');
+
 		const detection = await languageDetectionService.detectLanguage(context.cell.uri, providerLanguages);
+
 		if (detection) {
 			setCellToLanguage(detection, context);
 		} else {
@@ -552,6 +588,7 @@ async function setCellToLanguage(languageId: string, context: IChangeCellContext
 	if (languageId === 'markdown' && context.cell?.language !== 'markdown') {
 		const idx = context.notebookEditor.getCellIndex(context.cell);
 		await changeCellToKind(CellKind.Markup, { cell: context.cell, notebookEditor: context.notebookEditor, ui: true }, 'markdown', Mimes.markdown);
+
 		const newCell = context.notebookEditor.cellAt(idx);
 
 		if (newCell) {
@@ -584,10 +621,13 @@ registerAction2(class SelectNotebookIndentation extends NotebookAction {
 
 	private async showNotebookIndentationPicker(accessor: ServicesAccessor, context: INotebookActionContext) {
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const instantiationService = accessor.get(IInstantiationService);
 
 		const activeNotebook = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
 		if (!activeNotebook || activeNotebook.isDisposed) {
 			return quickInputService.pick([{ label: localize('noNotebookEditor', "No notebook editor active at this time") }]);
 		}
@@ -616,11 +656,13 @@ registerAction2(class SelectNotebookIndentation extends NotebookAction {
 		picks.unshift({ type: 'separator', label: localize('indentView', "change view") });
 
 		const action = await quickInputService.pick(picks, { placeHolder: localize('pickAction', "Select Action"), matchOnDetail: true });
+
 		if (!action) {
 			return;
 		}
 		action.run();
 		context.notebookEditor.focus();
+
 		return;
 	}
 });
@@ -649,6 +691,7 @@ registerAction2(class CommentSelectedCellsAction extends NotebookMultiCellAction
 			const textModel = await cellViewModel.resolveTextModel();
 
 			const commentsOptions = cellViewModel.commentOptions;
+
 			const cellCommentCommand = new LineCommentCommand(
 				languageConfigurationService,
 				new Selection(1, 1, textModel.getLineCount(), textModel.getLineMaxColumn(textModel.getLineCount())), // comment the entire cell
@@ -661,6 +704,7 @@ registerAction2(class CommentSelectedCellsAction extends NotebookMultiCellAction
 
 			// store any selections that are in the cell, allows them to be shifted by comments and preserved
 			const cellEditorSelections = cellViewModel.getSelections();
+
 			const initialTrackedRangesIDs: string[] = cellEditorSelections.map(selection => {
 				return textModel._setTrackedRange(null, selection, TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges);
 			});

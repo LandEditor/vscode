@@ -23,6 +23,7 @@ export class TimelineService implements ITimelineService {
     private readonly hasProviderContext: IContextKey<boolean>;
     private readonly providers = new Map<string, TimelineProvider>();
     private readonly providerSubscriptions = new Map<string, IDisposable>();
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -40,7 +41,9 @@ export class TimelineService implements ITimelineService {
     }
     getTimeline(id: string, uri: URI, options: TimelineOptions, tokenSource: CancellationTokenSource) {
         this.logService.trace(`TimelineService#getTimeline(${id}): uri=${uri.toString()}`);
+
         const provider = this.providers.get(id);
+
         if (provider === undefined) {
             return undefined;
         }
@@ -60,6 +63,7 @@ export class TimelineService implements ITimelineService {
                 }
                 result.items = result.items.map(item => ({ ...item, source: provider.id }));
                 result.items.sort((a, b) => (b.timestamp - a.timestamp) || b.source.localeCompare(a.source, undefined, { numeric: true, sensitivity: 'base' }));
+
                 return result;
             }),
             options: options,
@@ -70,12 +74,16 @@ export class TimelineService implements ITimelineService {
     }
     registerTimelineProvider(provider: TimelineProvider): IDisposable {
         this.logService.trace(`TimelineService#registerTimelineProvider: id=${provider.id}`);
+
         const id = provider.id;
+
         const existing = this.providers.get(id);
+
         if (existing) {
             // For now to deal with https://github.com/microsoft/vscode/issues/89553 allow any overwritting here (still will be blocked in the Extension Host)
             // TODO@eamodio: Ultimately will need to figure out a way to unregister providers when the Extension Host restarts/crashes
             // throw new Error(`Timeline Provider ${id} already exists.`);
+
             try {
                 existing?.dispose();
             }
@@ -83,10 +91,12 @@ export class TimelineService implements ITimelineService {
         }
         this.providers.set(id, provider);
         this.updateHasProviderContext();
+
         if (provider.onDidChange) {
             this.providerSubscriptions.set(id, provider.onDidChange(e => this._onDidChangeTimeline.fire(e)));
         }
         this._onDidChangeProviders.fire({ added: [id] });
+
         return {
             dispose: () => {
                 this.providers.delete(id);
@@ -96,6 +106,7 @@ export class TimelineService implements ITimelineService {
     }
     unregisterTimelineProvider(id: string): void {
         this.logService.trace(`TimelineService#unregisterTimelineProvider: id=${id}`);
+
         if (!this.providers.has(id)) {
             return;
         }

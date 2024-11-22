@@ -16,6 +16,7 @@ export class CharacterClassifier<T extends number> {
      */
     protected readonly _map: Map<number, number>;
     protected readonly _defaultValue: number;
+
     constructor(_defaultValue: T) {
         const defaultValue = toUint8(_defaultValue);
         this._defaultValue = defaultValue;
@@ -25,10 +26,12 @@ export class CharacterClassifier<T extends number> {
     private static _createAsciiMap(defaultValue: number): Uint8Array {
         const asciiMap = new Uint8Array(256);
         asciiMap.fill(defaultValue);
+
         return asciiMap;
     }
     public set(charCode: number, _value: T): void {
         const value = toUint8(_value);
+
         if (charCode >= 0 && charCode < 256) {
             this._asciiMap[charCode] = value;
         }
@@ -55,6 +58,7 @@ const enum Boolean {
 }
 export class CharacterSet {
     private readonly _actual: CharacterClassifier<Boolean>;
+
     constructor() {
         this._actual = new CharacterClassifier<Boolean>(Boolean.False);
     }

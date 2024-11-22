@@ -19,6 +19,7 @@ import { findExecutable, getShellIntegrationInjection, getWindowsBuildNumber, IS
 import { WindowsShellHelper } from './windowsShellHelper.js';
 import { IPty, IPtyForkOptions, IWindowsPtyForkOptions, spawn } from 'node-pty';
 import { chunkInput } from '../common/terminalProcess.js';
+
 const enum ShutdownConstants {
     /**
      * The amount of ms that must pass between data events after exit is queued before the actual
@@ -69,6 +70,7 @@ const posixShellTypeMap = new Map<string, PosixShellType>([
     ['sh', PosixShellType.Sh],
     ['zsh', PosixShellType.Zsh]
 ]);
+
 const generalShellTypeMap = new Map<string, GeneralShellType>([
     ['pwsh', GeneralShellType.PowerShell],
     ['python', GeneralShellType.Python],
@@ -107,6 +109,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
     private readonly _ptyOptions: IPtyForkOptions | IWindowsPtyForkOptions;
     private _isPtyPaused: boolean = false;
     private _unacknowledgedCharCount: number = 0;
+
     get exitMessage(): string | undefined { return this._exitMessage; }
     get currentTitle(): string { return this._windowsShellHelper?.shellTitle || this._currentTitle; }
     get shellType(): TerminalShellType | undefined { return isWindows ? this._windowsShellHelper?.shellType : posixShellTypeMap.get(this._currentTitle) || generalShellTypeMap.get(this._currentTitle); }
@@ -119,6 +122,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
     readonly onDidChangeProperty = this._onDidChangeProperty.event;
     private readonly _onProcessExit = this._register(new Emitter<number>());
     readonly onProcessExit = this._onProcessExit.event;
+
     constructor(readonly shellLaunchConfig: IShellLaunchConfig, cwd: string, cols: number, rows: number, env: IProcessEnvironment, 
     /**
      * environment used for `findExecutable`
@@ -129,7 +133,9 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
     @IProductService
     private readonly _productService: IProductService) {
         super();
+
         let name: string;
+
         if (isWindows) {
             name = path.basename(this.shellLaunchConfig.executable || '');
         }
@@ -141,7 +147,9 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         this._initialCwd = cwd;
         this._properties[ProcessPropertyType.InitialCwd] = this._initialCwd;
         this._properties[ProcessPropertyType.Cwd] = this._initialCwd;
+
         const useConpty = this._options.windowsEnableConpty && process.platform === 'win32' && getWindowsBuildNumber() >= 18309;
+
         const useConptyDll = useConpty && this._options.windowsUseConptyDll;
         this._ptyOptions = {
             name,
@@ -164,6 +172,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
                 this._register(this._delayedResizer.onTrigger(dimensions => {
                     this._delayedResizer?.dispose();
                     this._delayedResizer = undefined;
+
                     if (dimensions.cols && dimensions.rows) {
                         this.resize(dimensions.cols, dimensions.rows);
                     }
@@ -187,15 +196,20 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         injectedArgs: string[];
     } | undefined> {
         const results = await Promise.all([this._validateCwd(), this._validateExecutable()]);
+
         const firstError = results.find(r => r !== undefined);
+
         if (firstError) {
             return firstError;
         }
         let injection: IShellIntegrationConfigInjection | undefined;
+
         if (this._options.shellIntegration.enabled) {
             injection = getShellIntegrationInjection(this.shellLaunchConfig, this._options, this._ptyOptions.env, this._logService, this._productService);
+
             if (injection) {
                 this._onDidChangeProperty.fire({ type: ProcessPropertyType.UsedShellIntegrationInjection, value: true });
+
                 if (injection.envMixin) {
                     for (const [key, value] of Object.entries(injection.envMixin)) {
                         this._ptyOptions.env ||= {};
@@ -223,6 +237,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         }
         try {
             await this.setupPtyProcess(this.shellLaunchConfig, this._ptyOptions, injection);
+
             if (injection?.newArgs) {
                 return { injectedArgs: injection.newArgs };
             }
@@ -230,12 +245,14 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         }
         catch (err) {
             this._logService.trace('node-pty.node-pty.IPty#spawn native exception', err);
+
             return { message: `A native exception occurred during launch (${err.message})` };
         }
     }
     private async _validateCwd(): Promise<undefined | ITerminalLaunchError> {
         try {
             const result = await fs.promises.stat(this._initialCwd);
+
             if (!result.isDirectory()) {
                 return { message: localize('launchFail.cwdNotDirectory', "Starting directory (cwd) \"{0}\" is not a directory", this._initialCwd.toString()) };
             }
@@ -246,21 +263,27 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             }
         }
         this._onDidChangeProperty.fire({ type: ProcessPropertyType.InitialCwd, value: this._initialCwd });
+
         return undefined;
     }
     private async _validateExecutable(): Promise<undefined | ITerminalLaunchError> {
         const slc = this.shellLaunchConfig;
+
         if (!slc.executable) {
             throw new Error('IShellLaunchConfig.executable not set');
         }
         const cwd = slc.cwd instanceof URI ? slc.cwd.path : slc.cwd;
+
         const envPaths: string[] | undefined = (slc.env && slc.env.PATH) ? slc.env.PATH.split(path.delimiter) : undefined;
+
         const executable = await findExecutable(slc.executable, cwd, envPaths, this._executableEnv);
+
         if (!executable) {
             return { message: localize('launchFail.executableDoesNotExist', "Path to shell executable \"{0}\" does not exist", slc.executable) };
         }
         try {
             const result = await fs.promises.stat(executable);
+
             if (!result.isFile() && !result.isSymbolicLink()) {
                 return { message: localize('launchFail.executableIsNotFileOrSymlink', "Path to shell executable \"{0}\" is not a file or a symlink", slc.executable) };
             }
@@ -282,6 +305,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         const args = shellIntegrationInjection?.newArgs || shellLaunchConfig.args || [];
         await this._throttleKillSpawn();
         this._logService.trace('node-pty.IPty#spawn', shellLaunchConfig.executable, args, options);
+
         const ptyProcess = spawn(shellLaunchConfig.executable!, args, options);
         this._ptyProcess = ptyProcess;
         this._childProcessMonitor = this._register(new ChildProcessMonitor(ptyProcess.pid, this._logService));
@@ -292,6 +316,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         ptyProcess.onData(data => {
             // Handle flow control
             this._unacknowledgedCharCount += data.length;
+
             if (!this._isPtyPaused && this._unacknowledgedCharCount > FlowControlConstants.HighWatermarkChars) {
                 this._logService.trace(`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`);
                 this._isPtyPaused = true;
@@ -300,6 +325,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             // Refire the data event
             this._logService.trace('node-pty.IPty#onData', data);
             this._onProcessData.fire(data);
+
             if (this._closeTimeout) {
                 this._queueProcessExit();
             }
@@ -343,6 +369,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         // Wait to kill to process until the start up code has run. This prevents us from firing a process exit before a
         // process start.
         await this._processStartupComplete;
+
         if (this._store.isDisposed) {
             return;
         }
@@ -393,6 +420,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         this._onDidChangeProperty.fire({ type: ProcessPropertyType.Title, value: this._currentTitle });
         // If fig is installed it may change the title of the process
         const sanitizedTitle = this.currentTitle.replace(/ \(figterm\)$/g, '');
+
         if (sanitizedTitle.toLowerCase().startsWith('python')) {
             this._onDidChangeProperty.fire({ type: ProcessPropertyType.ShellType, value: GeneralShellType.Python });
         }
@@ -443,6 +471,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         switch (type) {
             case ProcessPropertyType.Cwd: {
                 const newCwd = await this.getCwd();
+
                 if (newCwd !== this._properties.cwd) {
                     this._properties.cwd = newCwd;
                     this._onDidChangeProperty.fire({ type: ProcessPropertyType.Cwd, value: this._properties.cwd });
@@ -451,6 +480,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             }
             case ProcessPropertyType.InitialCwd: {
                 const initialCwd = await this.getInitialCwd();
+
                 if (initialCwd !== this._properties.initialCwd) {
                     this._properties.initialCwd = initialCwd;
                     this._onDidChangeProperty.fire({ type: ProcessPropertyType.InitialCwd, value: this._properties.initialCwd });
@@ -459,6 +489,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             }
             case ProcessPropertyType.Title:
                 return this.currentTitle as IProcessPropertyMap[T];
+
             default:
                 return this.shellType as IProcessPropertyMap[T];
         }
@@ -477,6 +508,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         // Don't queue more writes if the queue is empty
         if (this._writeQueue.length === 0) {
             this._writeTimeout = undefined;
+
             return;
         }
         // Queue the next write
@@ -488,6 +520,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
     private _doWrite(): void {
         const object = this._writeQueue.shift()!;
         this._logService.trace('node-pty.IPty#write', object.data);
+
         if (object.isBinary) {
             this._ptyProcess!.write(Buffer.from(object.data, 'binary') as any);
         }
@@ -512,15 +545,18 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             if (this._delayedResizer) {
                 this._delayedResizer.cols = cols;
                 this._delayedResizer.rows = rows;
+
                 return;
             }
             this._logService.trace('node-pty.IPty#resize', cols, rows);
+
             try {
                 this._ptyProcess.resize(cols, rows);
             }
             catch (e) {
                 // Swallow error if the pty has already exited
                 this._logService.trace('node-pty.IPty#resize exception ' + e.message);
+
                 if (this._exitCode !== undefined &&
                     e.message !== 'ioctl(2) failed, EBADF' &&
                     e.message !== 'Cannot resize a pty that has already exited') {
@@ -536,6 +572,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
         // Prevent lower than 0 to heal from errors
         this._unacknowledgedCharCount = Math.max(this._unacknowledgedCharCount - charCount, 0);
         this._logService.trace(`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`);
+
         if (this._isPtyPaused && this._unacknowledgedCharCount < FlowControlConstants.LowWatermarkChars) {
             this._logService.trace(`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`);
             this._ptyProcess?.resume();
@@ -545,6 +582,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
     clearUnacknowledgedChars(): void {
         this._unacknowledgedCharCount = 0;
         this._logService.trace(`Flow control: Cleared all unacknowledged chars, forcing resume`);
+
         if (this._isPtyPaused) {
             this._ptyProcess?.resume();
             this._isPtyPaused = false;
@@ -564,6 +602,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
             return new Promise<string>(resolve => {
                 if (!this._ptyProcess) {
                     resolve(this._initialCwd);
+
                     return;
                 }
                 this._logService.trace('node-pty.IPty#pid');
@@ -583,6 +622,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
                 return this._initialCwd;
             }
             this._logService.trace('node-pty.IPty#pid');
+
             try {
                 return await fs.promises.readlink(`/proc/${this._ptyProcess.pid}/cwd`);
             }
@@ -610,6 +650,7 @@ class DelayedResizer extends Disposable {
         rows?: number;
         cols?: number;
     }>());
+
     get onTrigger(): Event<{
         rows?: number;
         cols?: number;

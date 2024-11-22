@@ -8,6 +8,7 @@ import { MediaPreview, reopenAsText } from './mediaPreview';
 import { escapeAttribute, getNonce } from './util/dom';
 class AudioPreviewProvider implements vscode.CustomReadonlyEditorProvider {
     public static readonly viewType = 'vscode.audioPreview';
+
     constructor(private readonly extensionRoot: vscode.Uri, private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry) { }
     public async openCustomDocument(uri: vscode.Uri) {
         return { uri, dispose: () => { } };
@@ -23,6 +24,7 @@ class AudioPreview extends MediaPreview {
             switch (message.type) {
                 case 'reopen-as-text': {
                     reopenAsText(resource, webviewEditor.viewColumn);
+
                     break;
                 }
             }
@@ -33,11 +35,15 @@ class AudioPreview extends MediaPreview {
     }
     protected async getWebviewContents(): Promise<string> {
         const version = Date.now().toString();
+
         const settings = {
             src: await this.getResourcePath(this.webviewEditor, this.resource, version),
         };
+
         const nonce = getNonce();
+
         const cspSource = this.webviewEditor.webview.cspSource;
+
         return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -67,6 +73,7 @@ class AudioPreview extends MediaPreview {
     private async getResourcePath(webviewEditor: vscode.WebviewPanel, resource: vscode.Uri, version: string): Promise<string | null> {
         if (resource.scheme === 'git') {
             const stat = await vscode.workspace.fs.stat(resource);
+
             if (stat.size === 0) {
                 // The file is stored on git lfs
                 return null;
@@ -84,6 +91,7 @@ class AudioPreview extends MediaPreview {
 }
 export function registerAudioPreviewSupport(context: vscode.ExtensionContext, binarySizeStatusBarEntry: BinarySizeStatusBarEntry): vscode.Disposable {
     const provider = new AudioPreviewProvider(context.extensionUri, binarySizeStatusBarEntry);
+
     return vscode.window.registerCustomEditorProvider(AudioPreviewProvider.viewType, provider, {
         supportsMultipleEditorsPerDocument: true,
         webviewOptions: {

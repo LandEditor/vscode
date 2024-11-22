@@ -11,6 +11,7 @@ import { IPartsSplash } from '../../../../platform/theme/common/themeService.js'
 class SplashStorageService implements ISplashStorageService {
     _serviceBrand: undefined;
     readonly saveWindowSplash: (splash: IPartsSplash) => Promise<void>;
+
     constructor(
     @INativeHostService
     nativeHostService: INativeHostService) {

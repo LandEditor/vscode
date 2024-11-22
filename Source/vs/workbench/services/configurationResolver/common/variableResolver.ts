@@ -17,14 +17,23 @@ import { ILabelService } from '../../../../platform/label/common/label.js';
 import { replaceAsync } from '../../../../base/common/strings.js';
 interface IVariableResolveContext {
     getFolderUri(folderName: string): uri | undefined;
+
     getWorkspaceFolderCount(): number;
+
     getConfigurationValue(folderUri: uri | undefined, section: string): string | undefined;
+
     getAppRoot(): string | undefined;
+
     getExecPath(): string | undefined;
+
     getFilePath(): string | undefined;
+
     getWorkspaceFolderPathForFile?(): string | undefined;
+
     getSelectedText(): string | undefined;
+
     getLineNumber(): string | undefined;
+
     getExtension(id: string): Promise<{
         readonly extensionLocation: uri;
     } | undefined>;
@@ -42,10 +51,12 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
     private _envVariablesPromise?: Promise<IProcessEnvironment>;
     private _userHomePromise?: Promise<string>;
     protected _contributedVariables: Map<string, () => Promise<string | undefined>> = new Map();
+
     constructor(_context: IVariableResolveContext, _labelService?: ILabelService, _userHomePromise?: Promise<string>, _envVariablesPromise?: Promise<IProcessEnvironment>) {
         this._context = _context;
         this._labelService = _labelService;
         this._userHomePromise = _userHomePromise;
+
         if (_envVariablesPromise) {
             this._envVariablesPromise = _envVariablesPromise.then(envVariables => {
                 return this.prepareEnv(envVariables);
@@ -59,6 +70,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             Object.keys(envVariables).forEach(key => {
                 ev[key.toLowerCase()] = envVariables[key];
             });
+
             return ev;
         }
         return envVariables;
@@ -74,6 +86,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             env: await this._envVariablesPromise,
             userHome: await this._userHomePromise
         };
+
         return this.recursiveResolve(environment, root ? root.uri : undefined, value);
     }
     private async resolveAnyBase(workspaceFolder: IWorkspaceFolder | undefined, config: any, commandValueMapping?: IStringDictionary<string>, resolvedVariables?: Map<string, string>): Promise<any> {
@@ -97,6 +110,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             env: await this._envVariablesPromise,
             userHome: await this._userHomePromise
         };
+
         return this.recursiveResolve(environmentPromises, workspaceFolder ? workspaceFolder.uri : undefined, result, commandValueMapping, resolvedVariables);
     }
     public async resolveAnyAsync(workspaceFolder: IWorkspaceFolder | undefined, config: any, commandValueMapping?: IStringDictionary<string>): Promise<any> {
@@ -107,7 +121,9 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
         resolvedVariables: Map<string, string>;
     }> {
         const resolvedVariables = new Map<string, string>();
+
         const newConfig = await this.resolveAnyBase(workspaceFolder, config, commandValueMapping, resolvedVariables);
+
         return { newConfig, resolvedVariables };
     }
     public resolveWithInteractionReplace(folder: IWorkspaceFolder | undefined, config: any, section?: string, variables?: IStringDictionary<string>): Promise<any> {
@@ -133,8 +149,10 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
         }
         else if (types.isObject(value)) {
             const result: IStringDictionary<string | IStringDictionary<string> | string[]> = Object.create(null);
+
             const replaced = await Promise.all(Object.keys(value).map(async (key) => {
                 const replaced = await this.resolveString(environment, folderUri, key, commandValueMapping, resolvedVariables);
+
                 return [replaced, await this.recursiveResolve(environment, folderUri, value[key], commandValueMapping, resolvedVariables)] as const;
             }));
             // two step process to preserve object key order
@@ -154,6 +172,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             }
             let resolvedValue = await this.evaluateSingleVariable(environment, match, variable, folderUri, commandValueMapping);
             resolvedVariables?.set(variable, resolvedValue);
+
             if ((resolvedValue !== match) && types.isString(resolvedValue) && resolvedValue.match(AbstractVariableResolverService.VARIABLE_REGEXP)) {
                 resolvedValue = await this.resolveString(environment, folderUri, resolvedValue, commandValueMapping, resolvedVariables);
             }
@@ -166,7 +185,9 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
     private async evaluateSingleVariable(environment: Environment, match: string, variable: string, folderUri: uri | undefined, commandValueMapping: IStringDictionary<string> | undefined): Promise<string> {
         // try to separate variable arguments from variable name
         let argument: string | undefined;
+
         const parts = variable.split(':');
+
         if (parts.length > 1) {
             variable = parts[0];
             argument = parts[1];
@@ -174,6 +195,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
         // common error handling for all variables that require an open editor
         const getFilePath = (variableKind: VariableKind): string => {
             const filePath = this._context.getFilePath();
+
             if (filePath) {
                 return normalizeDriveLetter(filePath);
             }
@@ -184,6 +206,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             const filePath = getFilePath(variableKind); // throws error if no editor open
             if (this._context.getWorkspaceFolderPathForFile) {
                 const folderPath = this._context.getWorkspaceFolderPathForFile();
+
                 if (folderPath) {
                     return normalizeDriveLetter(folderPath);
                 }
@@ -194,6 +217,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
         const getFolderUri = (variableKind: VariableKind): uri => {
             if (argument) {
                 const folder = this._context.getFolderUri(argument);
+
                 if (folder) {
                     return folder;
                 }
@@ -207,12 +231,14 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
             }
             throw new VariableError(variableKind, localize('canNotResolveWorkspaceFolder', "Variable {0} can not be resolved. Please open a folder.", match));
         };
+
         switch (variable) {
             case 'env':
                 if (argument) {
                     if (environment.env) {
                         // Depending on the source of the environment, on Windows, the values may all be lowercase.
                         const env = environment.env[isWindows ? argument.toLowerCase() : argument];
+
                         if (types.isString(env)) {
                             return env;
                         }
@@ -221,9 +247,11 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     return '';
                 }
                 throw new VariableError(VariableKind.Env, localize('missingEnvVarName', "Variable {0} can not be resolved because no environment variable name is given.", match));
+
             case 'config':
                 if (argument) {
                     const config = this._context.getConfigurationValue(folderUri, argument);
+
                     if (types.isUndefinedOrNull(config)) {
                         throw new VariableError(VariableKind.Config, localize('configNotFound', "Variable {0} can not be resolved because setting '{1}' not found.", match, argument));
                     }
@@ -233,29 +261,37 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     return config;
                 }
                 throw new VariableError(VariableKind.Config, localize('missingConfigName', "Variable {0} can not be resolved because no settings name is given.", match));
+
             case 'command':
                 return this.resolveFromMap(VariableKind.Command, match, argument, commandValueMapping, 'command');
+
             case 'input':
                 return this.resolveFromMap(VariableKind.Input, match, argument, commandValueMapping, 'input');
+
             case 'extensionInstallFolder':
                 if (argument) {
                     const ext = await this._context.getExtension(argument);
+
                     if (!ext) {
                         throw new VariableError(VariableKind.ExtensionInstallFolder, localize('extensionNotInstalled', "Variable {0} can not be resolved because the extension {1} is not installed.", match, argument));
                     }
                     return this.fsPath(ext.extensionLocation);
                 }
                 throw new VariableError(VariableKind.ExtensionInstallFolder, localize('missingExtensionName', "Variable {0} can not be resolved because no extension name is given.", match));
+
             default: {
                 switch (variable) {
                     case 'workspaceRoot':
                     case 'workspaceFolder':
                         return normalizeDriveLetter(this.fsPath(getFolderUri(VariableKind.WorkspaceFolder)));
+
                     case 'cwd':
                         return ((folderUri || argument) ? normalizeDriveLetter(this.fsPath(getFolderUri(VariableKind.Cwd))) : process.cwd());
+
                     case 'workspaceRootFolderName':
                     case 'workspaceFolderBasename':
                         return normalizeDriveLetter(paths.basename(this.fsPath(getFolderUri(VariableKind.WorkspaceFolderBasename))));
+
                     case 'userHome': {
                         if (environment.userHome) {
                             return environment.userHome;
@@ -264,6 +300,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     }
                     case 'lineNumber': {
                         const lineNumber = this._context.getLineNumber();
+
                         if (lineNumber) {
                             return lineNumber;
                         }
@@ -271,6 +308,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     }
                     case 'selectedText': {
                         const selectedText = this._context.getSelectedText();
+
                         if (selectedText) {
                             return selectedText;
                         }
@@ -278,37 +316,49 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     }
                     case 'file':
                         return getFilePath(VariableKind.File);
+
                     case 'fileWorkspaceFolder':
                         return getFolderPathForFile(VariableKind.FileWorkspaceFolder);
+
                     case 'fileWorkspaceFolderBasename':
                         return paths.basename(getFolderPathForFile(VariableKind.FileWorkspaceFolderBasename));
+
                     case 'relativeFile':
                         if (folderUri || argument) {
                             return paths.relative(this.fsPath(getFolderUri(VariableKind.RelativeFile)), getFilePath(VariableKind.RelativeFile));
                         }
                         return getFilePath(VariableKind.RelativeFile);
+
                     case 'relativeFileDirname': {
                         const dirname = paths.dirname(getFilePath(VariableKind.RelativeFileDirname));
+
                         if (folderUri || argument) {
                             const relative = paths.relative(this.fsPath(getFolderUri(VariableKind.RelativeFileDirname)), dirname);
+
                             return relative.length === 0 ? '.' : relative;
                         }
                         return dirname;
                     }
                     case 'fileDirname':
                         return paths.dirname(getFilePath(VariableKind.FileDirname));
+
                     case 'fileExtname':
                         return paths.extname(getFilePath(VariableKind.FileExtname));
+
                     case 'fileBasename':
                         return paths.basename(getFilePath(VariableKind.FileBasename));
+
                     case 'fileBasenameNoExtension': {
                         const basename = paths.basename(getFilePath(VariableKind.FileBasenameNoExtension));
+
                         return (basename.slice(0, basename.length - paths.extname(basename).length));
                     }
                     case 'fileDirnameBasename':
                         return paths.basename(paths.dirname(getFilePath(VariableKind.FileDirnameBasename)));
+
                     case 'execPath': {
                         const ep = this._context.getExecPath();
+
                         if (ep) {
                             return ep;
                         }
@@ -316,6 +366,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     }
                     case 'execInstallFolder': {
                         const ar = this._context.getAppRoot();
+
                         if (ar) {
                             return ar;
                         }
@@ -324,9 +375,11 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
                     case 'pathSeparator':
                     case '/':
                         return paths.sep;
+
                     default:
                         try {
                             const key = argument ? `${variable}:${argument}` : variable;
+
                             return this.resolveFromMap(VariableKind.Unknown, match, key, commandValueMapping, undefined);
                         }
                         catch (error) {
@@ -339,6 +392,7 @@ export class AbstractVariableResolverService implements IConfigurationResolverSe
     private resolveFromMap(variableKind: VariableKind, match: string, argument: string | undefined, commandValueMapping: IStringDictionary<string> | undefined, prefix: string | undefined): string {
         if (argument && commandValueMapping) {
             const v = (prefix === undefined) ? commandValueMapping[argument] : commandValueMapping[prefix + ':' + argument];
+
             if (typeof v === 'string') {
                 return v;
             }

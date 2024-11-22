@@ -16,21 +16,28 @@ class FileReferencesCommand implements Command {
     public async execute(resource?: vscode.Uri) {
         if (this.client.apiVersion.lt(FileReferencesCommand.minVersion)) {
             vscode.window.showErrorMessage(vscode.l10n.t("Find file references failed. Requires TypeScript 4.2+."));
+
             return;
         }
         resource ??= vscode.window.activeTextEditor?.document.uri;
+
         if (!resource) {
             vscode.window.showErrorMessage(vscode.l10n.t("Find file references failed. No resource provided."));
+
             return;
         }
         const document = await vscode.workspace.openTextDocument(resource);
+
         if (!isSupportedLanguageMode(document)) {
             vscode.window.showErrorMessage(vscode.l10n.t("Find file references failed. Unsupported file type."));
+
             return;
         }
         const openedFiledPath = this.client.toOpenTsFilePath(document);
+
         if (!openedFiledPath) {
             vscode.window.showErrorMessage(vscode.l10n.t("Find file references failed. Unknown file type."));
+
             return;
         }
         await vscode.window.withProgress({
@@ -40,13 +47,17 @@ class FileReferencesCommand implements Command {
             const response = await this.client.execute('fileReferences', {
                 file: openedFiledPath
             }, token);
+
             if (response.type !== 'response' || !response.body) {
                 return;
             }
             const locations: vscode.Location[] = response.body.refs.map(reference => typeConverters.Location.fromTextSpan(this.client.toResource(reference.file), reference));
+
             const config = vscode.workspace.getConfiguration('references');
+
             const existingSetting = config.inspect<string>('preferredLocation');
             await config.update('preferredLocation', 'view');
+
             try {
                 await vscode.commands.executeCommand('editor.action.showReferences', resource, new vscode.Position(0, 0), locations);
             }
@@ -62,5 +73,6 @@ export function register(client: ITypeScriptServiceClient, commandManager: Comma
     }
     updateContext();
     commandManager.register(new FileReferencesCommand(client));
+
     return client.onTsServerStarted(() => updateContext());
 }

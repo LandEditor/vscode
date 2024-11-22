@@ -9,6 +9,7 @@ export interface IFileWatcher extends IDisposable {
 }
 export function watch(location: string): IFileWatcher {
     const watcher = workspace.createFileSystemWatcher(new RelativePattern(location, '*'));
+
     return new class implements IFileWatcher {
         event = anyEvent(watcher.onDidCreate, watcher.onDidChange, watcher.onDidDelete);
         dispose() {

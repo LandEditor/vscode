@@ -83,7 +83,9 @@ const enum ActionOrder {
 const hasAnyTestProvider = ContextKeyGreaterExpr.create(TestingContextKeys.providerCount.key, 0);
 
 const LABEL_RUN_TESTS = localize2('runSelectedTests', "Run Tests");
+
 const LABEL_DEBUG_TESTS = localize2('debugSelectedTests', "Debug Tests");
+
 const LABEL_COVERAGE_TESTS = localize2('coverageSelectedTests', "Run Tests with Coverage");
 
 export class HideTestAction extends Action2 {
@@ -101,6 +103,7 @@ export class HideTestAction extends Action2 {
 
 	public override run(accessor: ServicesAccessor, ...elements: TestItemTreeElement[]) {
 		const service = accessor.get(ITestService);
+
 		for (const element of elements) {
 			service.excluded.toggle(element.test, true);
 		}
@@ -123,6 +126,7 @@ export class UnhideTestAction extends Action2 {
 
 	public override run(accessor: ServicesAccessor, ...elements: InternalTestItem[]) {
 		const service = accessor.get(ITestService);
+
 		for (const element of elements) {
 			if (element instanceof TestItemTreeElement) {
 				service.excluded.toggle(element.test, false);
@@ -143,6 +147,7 @@ export class UnhideAllTestsAction extends Action2 {
 	public override run(accessor: ServicesAccessor) {
 		const service = accessor.get(ITestService);
 		service.excluded.clear();
+
 		return Promise.resolve();
 	}
 }
@@ -174,6 +179,7 @@ abstract class RunVisibleAction extends ViewAction<TestingExplorerView> {
 	 */
 	public runInView(accessor: ServicesAccessor, view: TestingExplorerView, ...elements: TestItemTreeElement[]): Promise<unknown> {
 		const { include, exclude } = view.getTreeIncludeExclude(this.bitset, elements.map(e => e.test));
+
 		return accessor.get(ITestService).runTests({
 			tests: include,
 			exclude,
@@ -221,10 +227,13 @@ export class RunUsingProfileAction extends Action2 {
 
 	public override async run(acessor: ServicesAccessor, ...elements: TestItemTreeElement[]): Promise<any> {
 		const commandService = acessor.get(ICommandService);
+
 		const testService = acessor.get(ITestService);
+
 		const profile: ITestRunProfile | undefined = await commandService.executeCommand('vscode.pickTestProfile', {
 			onlyForTest: elements[0].test,
 		});
+
 		if (!profile) {
 			return;
 		}
@@ -263,7 +272,9 @@ export class SelectDefaultTestProfiles extends Action2 {
 
 	public override async run(acessor: ServicesAccessor, onlyGroup: TestRunProfileBitset) {
 		const commands = acessor.get(ICommandService);
+
 		const testProfileService = acessor.get(ITestProfileService);
+
 		const profiles = await commands.executeCommand<ITestRunProfile[]>('vscode.pickMultipleTestProfiles', {
 			showConfigureButtons: false,
 			selected: testProfileService.getGroupDefaultProfiles(onlyGroup),
@@ -297,10 +308,13 @@ export class ContinuousRunTestAction extends Action2 {
 
 	public override async run(accessor: ServicesAccessor, ...elements: TestItemTreeElement[]): Promise<any> {
 		const crService = accessor.get(ITestingContinuousRunService);
+
 		for (const element of elements) {
 			const id = element.test.item.extId;
+
 			if (crService.isSpecificallyEnabledFor(id)) {
 				crService.stop(id);
+
 				continue;
 			}
 
@@ -331,8 +345,11 @@ export class ContinuousRunUsingProfileTestAction extends Action2 {
 
 	public override async run(accessor: ServicesAccessor, ...elements: TestItemTreeElement[]): Promise<any> {
 		const crService = accessor.get(ITestingContinuousRunService);
+
 		const profileService = accessor.get(ITestProfileService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		const quickInputService = accessor.get(IQuickInputService);
 
 		for (const element of elements) {
@@ -363,7 +380,9 @@ export class ConfigureTestProfilesAction extends Action2 {
 
 	public override async run(acessor: ServicesAccessor, onlyGroup?: TestRunProfileBitset) {
 		const commands = acessor.get(ICommandService);
+
 		const testProfileService = acessor.get(ITestProfileService);
+
 		const profile = await commands.executeCommand<ITestRunProfile>('vscode.pickTestProfile', {
 			placeholder: localize('configureProfile', 'Select a profile to update'),
 			showConfigureButtons: false,
@@ -422,6 +441,7 @@ function selectContinuousRunProfiles(
 	type ItemType = IQuickPickItem & { profile: ITestRunProfile };
 
 	const items: ItemType[] = [];
+
 	for (const { controller, profiles } of profilesToPickFrom) {
 		for (const profile of profiles) {
 			if (profile.supportsContinuousRun) {
@@ -436,6 +456,7 @@ function selectContinuousRunProfiles(
 
 	if (items.length === 0) {
 		notificationService.info(localize('testing.noProfiles', 'No test continuous run-enabled profiles were found'));
+
 		return Promise.resolve([]);
 	}
 
@@ -445,7 +466,9 @@ function selectContinuousRunProfiles(
 	}
 
 	const qpItems: (ItemType | IQuickPickSeparator)[] = [];
+
 	const selectedItems: ItemType[] = [];
+
 	const lastRun = crs.lastRunProfileIds;
 
 	items.sort((a, b) => a.profile.group - b.profile.group
@@ -454,23 +477,27 @@ function selectContinuousRunProfiles(
 
 	for (let i = 0; i < items.length; i++) {
 		const item = items[i];
+
 		if (i === 0 || items[i - 1].profile.group !== item.profile.group) {
 			qpItems.push({ type: 'separator', label: testConfigurationGroupNames[item.profile.group] });
 		}
 
 		qpItems.push(item);
+
 		if (lastRun.has(item.profile.profileId)) {
 			selectedItems.push(item);
 		}
 	}
 
 	const disposables = new DisposableStore();
+
 	const quickpick = disposables.add(quickInputService.createQuickPick<IQuickPickItem & { profile: ITestRunProfile }>({ useSeparators: true }));
 	quickpick.title = localize('testing.selectContinuousProfiles', 'Select profiles to run when files change:');
 	quickpick.canSelectMany = true;
 	quickpick.items = qpItems;
 	quickpick.selectedItems = selectedItems;
 	quickpick.show();
+
 	return new Promise(resolve => {
 		disposables.add(quickpick.onDidAccept(() => {
 			resolve(quickpick.selectedItems.map(i => i.profile));
@@ -496,7 +523,9 @@ class StartContinuousRunAction extends Action2 {
 	}
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const crs = accessor.get(ITestingContinuousRunService);
+
 		const selected = await selectContinuousRunProfiles(crs, accessor.get(INotificationService), accessor.get(IQuickInputService), accessor.get(ITestProfileService).all());
+
 		if (selected.length) {
 			crs.start(selected);
 		}
@@ -531,6 +560,7 @@ abstract class ExecuteSelectedAction extends ViewAction<TestingExplorerView> {
 	 */
 	public runInView(accessor: ServicesAccessor, view: TestingExplorerView): Promise<ITestResult | undefined> {
 		const { include, exclude } = view.getTreeIncludeExclude(this.group);
+
 		return accessor.get(ITestService).runTests({ tests: include, exclude, group: this.group });
 	}
 }
@@ -545,6 +575,7 @@ export class GetSelectedProfiles extends Action2 {
 	 */
 	public override run(accessor: ServicesAccessor) {
 		const profiles = accessor.get(ITestProfileService);
+
 		return [
 			...profiles.getGroupDefaultProfiles(TestRunProfileBitset.Run),
 			...profiles.getGroupDefaultProfiles(TestRunProfileBitset.Debug),
@@ -571,7 +602,9 @@ export class GetExplorerSelection extends ViewAction<TestingExplorerView> {
 	 */
 	public override runInView(_accessor: ServicesAccessor, view: TestingExplorerView) {
 		const { include, exclude } = view.getTreeIncludeExclude(TestRunProfileBitset.Run, undefined, 'selected');
+
 		const mapper = (i: InternalTestItem) => i.item.extId;
+
 		return { include: include.map(mapper), exclude: exclude.map(mapper) };
 	}
 }
@@ -630,12 +663,15 @@ abstract class RunOrDebugAllTestsAction extends Action2 {
 
 	public async run(accessor: ServicesAccessor) {
 		const testService = accessor.get(ITestService);
+
 		const notifications = accessor.get(INotificationService);
 
 		const roots = [...testService.collection.rootItems].filter(r => r.children.size
 			|| r.expand === TestItemExpandState.Expandable || r.expand === TestItemExpandState.BusyExpanding);
+
 		if (!roots.length) {
 			notifications.info(this.noTestsFoundError);
+
 			return;
 		}
 
@@ -724,7 +760,9 @@ export class CancelTestRunAction extends Action2 {
 	 */
 	public async run(accessor: ServicesAccessor, resultId?: string, taskId?: string) {
 		const resultService = accessor.get(ITestResultService);
+
 		const testService = accessor.get(ITestService);
+
 		if (resultId) {
 			testService.cancelTestRun(resultId, taskId);
 		} else {
@@ -884,6 +922,7 @@ export class ShowMostRecentOutputAction extends Action2 {
 
 	public async run(accessor: ServicesAccessor) {
 		const viewService = accessor.get(IViewsService);
+
 		const testView = await viewService.openView<TestResultsView>(Testing.ResultsViewId, true);
 		testView?.showLatestRun();
 	}
@@ -989,9 +1028,11 @@ async function getTestsAtCursor(testService: ITestService, uriIdentityService: I
 	// whose range is equal to the closest one, we run them all.
 
 	let bestNodes: InternalTestItem[] = [];
+
 	let bestRange: Range | undefined;
 
 	let bestNodesBefore: InternalTestItem[] = [];
+
 	let bestRangeBefore: Range | undefined;
 
 	for await (const test of testsInFile(testService, uriIdentityService, uri)) {
@@ -1000,6 +1041,7 @@ async function getTestsAtCursor(testService: ITestService, uriIdentityService: I
 		}
 
 		const irange = Range.lift(test.item.range);
+
 		if (irange.containsPosition(position)) {
 			if (bestRange && Range.equalsRange(test.item.range, bestRange)) {
 				// check that a parent isn't already included (#180760)
@@ -1053,9 +1095,13 @@ abstract class ExecuteTestAtCursor extends Action2 {
 	 */
 	public async run(accessor: ServicesAccessor) {
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const activeEditorPane = editorService.activeEditorPane;
+
 		let editor = codeEditorService.getActiveCodeEditor();
+
 		if (!activeEditorPane || !editor) {
 			return;
 		}
@@ -1065,18 +1111,25 @@ abstract class ExecuteTestAtCursor extends Action2 {
 		}
 
 		const position = editor?.getPosition();
+
 		const model = editor?.getModel();
+
 		if (!position || !model || !('uri' in model)) {
 			return;
 		}
 
 		const testService = accessor.get(ITestService);
+
 		const profileService = accessor.get(ITestProfileService);
+
 		const uriIdentityService = accessor.get(IUriIdentityService);
+
 		const progressService = accessor.get(IProgressService);
+
 		const configurationService = accessor.get(IConfigurationService);
 
 		const saveBeforeTest = getTestingConfiguration(configurationService, TestingConfigKeys.SaveBeforeTest);
+
 		if (saveBeforeTest) {
 			await editorService.save({ editor: activeEditorPane.input, groupId: activeEditorPane.group.id });
 			await testService.syncTests();
@@ -1102,12 +1155,15 @@ abstract class ExecuteTestAtCursor extends Action2 {
 
 		if (testsToRun.length) {
 			await testService.runTests({ group: this.group, tests: testsToRun });
+
 			return;
 		}
 
 		const relatedTests = await testService.getTestsRelatedToCode(model.uri, position);
+
 		if (relatedTests.length) {
 			await testService.runTests({ group: this.group, tests: relatedTests });
+
 			return;
 		}
 
@@ -1177,7 +1233,9 @@ abstract class ExecuteTestsUnderUriAction extends Action2 {
 
 	public override async run(accessor: ServicesAccessor, uri: URI): Promise<unknown> {
 		const testService = accessor.get(ITestService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		const tests = await Iterable.asyncToArray(testsUnderUri(
 			testService,
 			accessor.get(IUriIdentityService),
@@ -1186,6 +1244,7 @@ abstract class ExecuteTestsUnderUriAction extends Action2 {
 
 		if (!tests.length) {
 			notificationService.notify({ message: localize('noTests', 'No tests found in the selected file or folder'), severity: Severity.Info });
+
 			return;
 		}
 
@@ -1244,6 +1303,7 @@ abstract class ExecuteTestsInCurrentFile extends Action2 {
 	 */
 	public run(accessor: ServicesAccessor) {
 		let editor = accessor.get(ICodeEditorService).getActiveCodeEditor();
+
 		if (!editor) {
 			return;
 		}
@@ -1251,21 +1311,27 @@ abstract class ExecuteTestsInCurrentFile extends Action2 {
 			editor = editor.getParentEditor();
 		}
 		const position = editor?.getPosition();
+
 		const model = editor?.getModel();
+
 		if (!position || !model || !('uri' in model)) {
 			return;
 		}
 
 		const testService = accessor.get(ITestService);
+
 		const demandedUri = model.uri.toString();
 
 		// Iterate through the entire collection and run any tests that are in the
 		// uri. See #138007.
 		const queue = [testService.collection.rootIds];
+
 		const discovered: InternalTestItem[] = [];
+
 		while (queue.length) {
 			for (const id of queue.pop()!) {
 				const node = testService.collection.getNodeById(id)!;
+
 				if (node.item.uri?.toString() === demandedUri) {
 					discovered.push(node);
 				} else {
@@ -1342,7 +1408,9 @@ export const discoverAndRunTests = async (
 	runTests: (tests: ReadonlyArray<InternalTestItem>) => Promise<ITestResult>,
 ): Promise<ITestResult | undefined> => {
 	const todo = Promise.all(ids.map(p => expandAndGetTestById(collection, p)));
+
 	const tests = (await showDiscoveringWhile(progress, todo)).filter(isDefined);
+
 	return tests.length ? await runTests(tests) : undefined;
 };
 
@@ -1380,9 +1448,12 @@ abstract class RunOrDebugFailedTests extends RunOrDebugExtsByPath {
 	 */
 	protected getTestExtIdsToRun(accessor: ServicesAccessor) {
 		const { results } = accessor.get(ITestResultService);
+
 		const ids = new Set<string>();
+
 		for (let i = results.length - 1; i >= 0; i--) {
 			const resultSet = results[i];
+
 			for (const test of resultSet.tests) {
 				if (isFailedState(test.ownComputedState)) {
 					ids.add(test.item.extId);
@@ -1415,21 +1486,28 @@ abstract class RunOrDebugLastRun extends Action2 {
 
 	protected getLastTestRunRequest(accessor: ServicesAccessor, runId?: string) {
 		const resultService = accessor.get(ITestResultService);
+
 		const lastResult = runId ? resultService.results.find(r => r.id === runId) : resultService.results[0];
+
 		return lastResult?.request;
 	}
 
 	/** @inheritdoc */
 	public override async run(accessor: ServicesAccessor, runId?: string) {
 		const resultService = accessor.get(ITestResultService);
+
 		const lastResult = runId ? resultService.results.find(r => r.id === runId) : resultService.results[0];
+
 		if (!lastResult) {
 			return;
 		}
 
 		const req = lastResult.request;
+
 		const testService = accessor.get(ITestService);
+
 		const profileService = accessor.get(ITestProfileService);
+
 		const profileExists = (t: { controllerId: string; profileId: number }) =>
 			profileService.getControllerProfiles(t.controllerId).some(p => p.profileId === t.profileId);
 
@@ -1652,9 +1730,11 @@ export class RefreshTestsAction extends Action2 {
 
 	public async run(accessor: ServicesAccessor, ...elements: TestItemTreeElement[]) {
 		const testService = accessor.get(ITestService);
+
 		const progressService = accessor.get(IProgressService);
 
 		const controllerIds = distinct(elements.filter(isDefined).map(e => e.test.controllerId));
+
 		return progressService.withProgress({ location: Testing.ViewletId }, async () => {
 			if (controllerIds.length) {
 				await Promise.all(controllerIds.map(id => testService.refreshTests(id)));
@@ -1720,10 +1800,13 @@ export class OpenCoverage extends Action2 {
 
 	public override run(accessor: ServicesAccessor) {
 		const results = accessor.get(ITestResultService).results;
+
 		const task = results.length && results[0].tasks.find(r => r.coverage);
+
 		if (!task) {
 			const notificationService = accessor.get(INotificationService);
 			notificationService.info(localize('testing.noCoverage', 'No coverage information available on the last test run.'));
+
 			return;
 		}
 
@@ -1738,6 +1821,7 @@ abstract class TestNavigationAction extends SymbolNavigationAction {
 	override runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: any[]) {
 		this.testService = accessor.get(ITestService);
 		this.uriIdentityService = accessor.get(IUriIdentityService);
+
 		return super.runEditorCommand(accessor, editor, ...args);
 	}
 
@@ -1752,6 +1836,7 @@ abstract class TestNavigationAction extends SymbolNavigationAction {
 abstract class GoToRelatedTestAction extends TestNavigationAction {
 	protected override async _getLocationModel(_languageFeaturesService: unknown, model: ITextModel, position: Position, token: CancellationToken): Promise<ReferencesModel | undefined> {
 		const tests = await this.testService.getTestsRelatedToCode(model.uri, position, token);
+
 		return new ReferencesModel(
 			tests.map(t => t.item.uri && ({ uri: t.item.uri, range: t.item.range || new Range(1, 1, 1, 1) })).filter(isDefined),
 			localize('relatedTests', 'Related Tests'),
@@ -1815,7 +1900,9 @@ class PeekRelatedTest extends GoToRelatedTestAction {
 abstract class GoToRelatedCodeAction extends TestNavigationAction {
 	protected override async _getLocationModel(_languageFeaturesService: unknown, model: ITextModel, position: Position, token: CancellationToken): Promise<ReferencesModel | undefined> {
 		const testsAtCursor = await getTestsAtCursor(this.testService, this.uriIdentityService, model.uri, position);
+
 		const code = await Promise.all(testsAtCursor.map(t => this.testService.getCodeRelatedToTest(t)));
+
 		return new ReferencesModel(code.flat(), localize('relatedCode', 'Related Code'));
 	}
 

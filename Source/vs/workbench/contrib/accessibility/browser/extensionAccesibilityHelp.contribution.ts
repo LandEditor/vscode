@@ -14,6 +14,7 @@ import { IViewsService } from '../../../services/views/common/viewsService.js';
 export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
     static ID = 'extensionAccessibilityHelpDialogContribution';
     private _viewHelpDialogMap = this._register(new DisposableMap<string, IDisposable>());
+
     constructor(
     @IKeybindingService
     keybindingService: IKeybindingService) {
@@ -38,7 +39,9 @@ export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
 }
 function registerAccessibilityHelpAction(keybindingService: IKeybindingService, viewDescriptor: IViewDescriptor): IDisposable {
     const disposableStore = new DisposableStore();
+
     const content = viewDescriptor.accessibilityHelpContent?.value;
+
     if (!content) {
         throw new Error('No content provided for the accessibility help dialog');
     }
@@ -49,6 +52,7 @@ function registerAccessibilityHelpAction(keybindingService: IKeybindingService, 
         when: FocusedViewContext.isEqualTo(viewDescriptor.id),
         getProvider: (accessor: ServicesAccessor) => {
             const viewsService = accessor.get(IViewsService);
+
             return new ExtensionContentProvider(viewDescriptor.id, { type: AccessibleViewType.Help }, () => content, () => viewsService.openView(viewDescriptor.id, true));
         },
     }));
@@ -56,5 +60,6 @@ function registerAccessibilityHelpAction(keybindingService: IKeybindingService, 
         disposableStore.clear();
         disposableStore.add(registerAccessibilityHelpAction(keybindingService, viewDescriptor));
     }));
+
     return disposableStore;
 }

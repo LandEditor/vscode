@@ -82,6 +82,7 @@ export interface IWindowUtilityProcessConfiguration extends IUtilityProcessConfi
 }
 function isWindowUtilityProcessConfiguration(config: IUtilityProcessConfiguration): config is IWindowUtilityProcessConfiguration {
     const candidate = config as IWindowUtilityProcessConfiguration;
+
     return typeof candidate.responseWindowId === 'number';
 }
 interface IUtilityProcessExitBaseEvent {
@@ -134,6 +135,7 @@ export class UtilityProcess extends Disposable {
     private processPid: number | undefined = undefined;
     private configuration: IUtilityProcessConfiguration | undefined = undefined;
     private killed = false;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -145,6 +147,7 @@ export class UtilityProcess extends Disposable {
     }
     protected log(msg: string, severity: Severity): void {
         let logMsg: string;
+
         if (this.configuration?.correlationId) {
             logMsg = `[UtilityProcess id: ${this.configuration?.correlationId}, type: ${this.configuration?.type}, pid: ${this.processPid ?? '<none>'}]: ${msg}`;
         }
@@ -154,26 +157,34 @@ export class UtilityProcess extends Disposable {
         switch (severity) {
             case Severity.Error:
                 this.logService.error(logMsg);
+
                 break;
+
             case Severity.Warning:
                 this.logService.warn(logMsg);
+
                 break;
+
             case Severity.Info:
                 this.logService.trace(logMsg);
+
                 break;
         }
     }
     private validateCanStart(): boolean {
         if (this.process) {
             this.log('Cannot start utility process because it is already running...', Severity.Error);
+
             return false;
         }
         return true;
     }
     start(configuration: IUtilityProcessConfiguration): boolean {
         const started = this.doStart(configuration);
+
         if (started && configuration.payload) {
             const posted = this.postMessage(configuration.payload);
+
             if (posted) {
                 this.log('payload sent via postMessage()', Severity.Info);
             }
@@ -185,13 +196,21 @@ export class UtilityProcess extends Disposable {
             return false;
         }
         this.configuration = configuration;
+
         const serviceName = `${this.configuration.type}-${this.id}`;
+
         const modulePath = FileAccess.asFileUri('bootstrap-fork.js').fsPath;
+
         const args = this.configuration.args ?? [];
+
         const execArgv = this.configuration.execArgv ?? [];
+
         const allowLoadingUnsignedLibraries = this.configuration.allowLoadingUnsignedLibraries;
+
         const respondToAuthRequestsFromMainProcess = this.configuration.respondToAuthRequestsFromMainProcess;
+
         const stdio = 'pipe';
+
         const env = this.createEnv(configuration);
         this.log('creating new...', Severity.Info);
         // Fork utility process
@@ -205,6 +224,7 @@ export class UtilityProcess extends Disposable {
         });
         // Register to events
         this.registerListeners(this.process, this.configuration, serviceName);
+
         return true;
     }
     private createEnv(configuration: IUtilityProcessConfiguration): {
@@ -215,10 +235,12 @@ export class UtilityProcess extends Disposable {
         } = configuration.env ? { ...configuration.env } : { ...deepClone(process.env) };
         // Apply supported environment variables from config
         env['VSCODE_ESM_ENTRYPOINT'] = configuration.entryPoint;
+
         if (typeof configuration.parentLifecycleBound === 'number') {
             env['VSCODE_PARENT_PID'] = String(configuration.parentLifecycleBound);
         }
         env['VSCODE_CRASH_REPORTER_PROCESS_TYPE'] = configuration.type;
+
         if (isWindows) {
             if (isUNCAccessRestrictionsDisabled()) {
                 env['NODE_DISABLE_UNC_ACCESS_CHECKS'] = '1';
@@ -251,6 +273,7 @@ export class UtilityProcess extends Disposable {
         // Spawn
         this._register(Event.fromNodeEventEmitter<void>(process, 'spawn')(() => {
             this.processPid = process.pid;
+
             if (typeof process.pid === 'number') {
                 UtilityProcess.all.set(process.pid, { pid: process.pid, name: isWindowUtilityProcessConfiguration(configuration) ? `${configuration.type} [${configuration.responseWindowId}]` : configuration.type });
             }
@@ -269,13 +292,16 @@ export class UtilityProcess extends Disposable {
         // V8 Error
         this._register(Event.fromNodeEventEmitter(process, 'error', (type, location, report) => ({ type, location, report }))(({ type, location, report }) => {
             this.log(`crashed due to ${type} from V8 at ${location}`, Severity.Info);
+
             let addons: string[] = [];
+
             try {
                 const reportJSON = JSON.parse(report);
                 addons = reportJSON.sharedObjects
                     .filter((sharedObject: string) => sharedObject.endsWith('.node'))
                     .map((addon: string) => {
                     const index = addon.indexOf('extensions') === -1 ? addon.indexOf('node_modules') : addon.indexOf('extensions');
+
                     return addon.substring(index);
                 });
             }
@@ -376,11 +402,13 @@ export class UtilityProcess extends Disposable {
             return false; // already killed, crashed or never started
         }
         this.process.postMessage(message, transfer);
+
         return true;
     }
     connect(payload?: unknown): Electron.MessagePortMain {
         const { port1: outPort, port2: utilityProcessPort } = new MessageChannelMain();
         this.postMessage(payload, [utilityProcessPort]);
+
         return outPort;
     }
     enableInspectPort(): boolean {
@@ -393,8 +421,10 @@ export class UtilityProcess extends Disposable {
         }
         // use (undocumented) _debugProcess feature of node if available
         const processExt = <ProcessExt>process;
+
         if (typeof processExt._debugProcess === 'function') {
             processExt._debugProcess(this.processPid);
+
             return true;
         }
         // not supported...
@@ -405,7 +435,9 @@ export class UtilityProcess extends Disposable {
             return; // already killed, crashed or never started
         }
         this.log('attempting to kill the process...', Severity.Info);
+
         const killed = this.process.kill();
+
         if (killed) {
             this.log('successfully killed the process', Severity.Info);
             this.killed = true;
@@ -435,6 +467,7 @@ export class UtilityProcess extends Disposable {
         }
         this.log('waiting to exit...', Severity.Info);
         await Promise.race([Event.toPromise(this.onExit), timeout(maxWaitTimeMs)]);
+
         if (this.process) {
             this.log(`did not exit within ${maxWaitTimeMs}ms, will kill it now...`, Severity.Info);
             this.kill();
@@ -455,12 +488,15 @@ export class WindowUtilityProcess extends UtilityProcess {
     }
     override start(configuration: IWindowUtilityProcessConfiguration): boolean {
         const responseWindow = this.windowsMainService.getWindowById(configuration.responseWindowId);
+
         if (!responseWindow?.win || responseWindow.win.isDestroyed() || responseWindow.win.webContents.isDestroyed()) {
             this.log('Refusing to start utility process because requesting window cannot be found or is destroyed...', Severity.Error);
+
             return true;
         }
         // Start utility process
         const started = super.doStart(configuration);
+
         if (!started) {
             return false;
         }
@@ -469,6 +505,7 @@ export class WindowUtilityProcess extends UtilityProcess {
         // Establish & exchange message ports
         const windowPort = this.connect(configuration.payload);
         responseWindow.win.webContents.postMessage(configuration.responseChannel, configuration.responseNonce, [windowPort]);
+
         return true;
     }
     private registerWindowListeners(window: BrowserWindow, configuration: IWindowUtilityProcessConfiguration): void {

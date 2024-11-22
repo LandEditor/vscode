@@ -32,8 +32,10 @@ export class Source {
     readonly uri: URI;
     available: boolean;
     raw: DebugProtocol.Source;
+
     constructor(raw_: DebugProtocol.Source | undefined, sessionId: string, uriIdentityService: IUriIdentityService, logService: ILogService) {
         let path: string;
+
         if (raw_) {
             this.raw = raw_;
             path = this.raw.path || this.raw.name || '';
@@ -81,33 +83,46 @@ export class Source {
         sourceReference?: number;
     } {
         let path: string;
+
         let sourceReference: number | undefined;
+
         let sessionId: string | undefined;
+
         switch (modelUri.scheme) {
             case Schemas.file:
                 path = normalize(modelUri.fsPath);
+
                 break;
+
             case DEBUG_SCHEME:
                 path = modelUri.path;
+
                 if (modelUri.query) {
                     const keyvalues = modelUri.query.split('&');
+
                     for (const keyvalue of keyvalues) {
                         const pair = keyvalue.split('=');
+
                         if (pair.length === 2) {
                             switch (pair[0]) {
                                 case 'session':
                                     sessionId = pair[1];
+
                                     break;
+
                                 case 'ref':
                                     sourceReference = parseInt(pair[1]);
+
                                     break;
                             }
                         }
                     }
                 }
                 break;
+
             default:
                 path = modelUri.toString();
+
                 break;
         }
         return {
@@ -142,11 +157,13 @@ export function getUriFromSource(raw: DebugProtocol.Source, path: string | undef
             query: `session=${sessionId}`
         }));
     };
+
     try {
         return _getUriFromSource(path);
     }
     catch (err) {
         logService.error('Invalid path from debug adapter: ' + path);
+
         return _getUriFromSource('/invalidDebugSource');
     }
 }

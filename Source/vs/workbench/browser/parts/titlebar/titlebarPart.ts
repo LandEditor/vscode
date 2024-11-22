@@ -227,7 +227,9 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 	get minimumHeight(): number {
 		const wcoEnabled = isWeb && isWCOEnabled();
+
 		let value = this.isCommandCenterVisible || wcoEnabled ? DEFAULT_CUSTOM_TITLEBAR_HEIGHT : 30;
+
 		if (wcoEnabled) {
 			value = Math.max(value, getWCOTitlebarAreaRect(getWindow(this.element))?.height ?? 0);
 		}
@@ -366,6 +368,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		// Actions
 		if (hasCustomTitlebar(this.configurationService, this.titleBarStyle) && this.actionToolBar) {
 			const affectsLayoutControl = event.affectsConfiguration(LayoutSettings.LAYOUT_ACTIONS);
+
 			const affectsActivityControl = event.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION);
 
 			if (affectsLayoutControl || affectsActivityControl) {
@@ -441,6 +444,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 			// Web-only home indicator and menu (not for auxiliary windows)
 			if (!this.isAuxiliary && isWeb) {
 				const homeIndicator = this.environmentService.options?.homeIndicator;
+
 				if (homeIndicator) {
 					const icon: ThemeIcon = getIconRegistry().getIcon(homeIndicator.icon) ? { id: homeIndicator.icon } : Codicon.code;
 
@@ -480,12 +484,14 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 		// Window Controls Container
 		if (!hasNativeTitlebar(this.configurationService, this.titleBarStyle)) {
 			let primaryWindowControlsLocation = isMacintosh ? 'left' : 'right';
+
 			if (isMacintosh && isNative) {
 
 				// Check if the locale is RTL, macOS will move traffic lights in RTL locales
 				// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/textInfo
 
 				const localeInfo = safeIntl.Locale(platformLocale) as any;
+
 				if (localeInfo?.textInfo?.direction === 'rtl') {
 					primaryWindowControlsLocation = 'right';
 				}
@@ -498,6 +504,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				// window control buttons.
 			} else {
 				this.windowControlsContainer = append(primaryWindowControlsLocation === 'left' ? this.leftContent : this.rightContent, $('div.window-controls-container'));
+
 				if (isWeb) {
 					// Web: its possible to have control overlays on both sides, for example on macOS
 					// with window controls on the left and PWA controls on the right.
@@ -520,6 +527,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				EventHelper.stop(e);
 
 				let targetMenu: MenuId;
+
 				if (isMacintosh && isHTMLElement(e.target) && isAncestor(e.target, this.title)) {
 					targetMenu = MenuId.TitleBarTitleContext;
 				} else {
@@ -578,6 +586,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 		// --- Editor Actions
 		const activeEditorPane = this.editorGroupsContainer.activeGroup?.activeEditorPane;
+
 		if (activeEditorPane && activeEditorPane instanceof EditorPane) {
 			const result = activeEditorPane.getActionViewItem(action, options);
 
@@ -634,6 +643,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 				this.editorActionsChangeDisposable.clear();
 
 				const activeGroup = this.editorGroupsContainer.activeGroup;
+
 				if (activeGroup) {
 					const editorActions = activeGroup.createEditorActions(this.editorActionsChangeDisposable);
 
@@ -700,6 +710,7 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 		if (update.activityActions) {
 			this.activityToolbarDisposables.clear();
+
 			if (this.activityActionsEnabled) {
 				this.activityToolbarDisposables.add(this.storageService.onDidChangeValue(StorageScope.PROFILE, AccountsActivityActionViewItem.ACCOUNTS_VISIBILITY_PREFERENCE_KEY, this._store)(() => updateToolBarActions()));
 			}
@@ -784,13 +795,17 @@ export class BrowserTitlebarPart extends Part implements ITitlebarPart {
 
 	private get activityActionsEnabled(): boolean {
 		const activityBarPosition = this.configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 		return !this.isAuxiliary && (activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM);
 	}
 
 	get hasZoomableElements(): boolean {
 		const hasMenubar = !(this.currentMenubarVisibility === 'hidden' || this.currentMenubarVisibility === 'compact' || (!isWeb && isMacintosh));
+
 		const hasCommandCenter = this.isCommandCenterVisible;
+
 		const hasToolBarActions = this.layoutControlEnabled || this.editorActionsEnabled || this.activityActionsEnabled;
+
 		return hasMenubar || hasCommandCenter || hasToolBarActions;
 	}
 
@@ -896,6 +911,7 @@ export class AuxiliaryBrowserTitlebarPart extends BrowserTitlebarPart implements
 		@IKeybindingService keybindingService: IKeybindingService,
 	) {
 		const id = AuxiliaryBrowserTitlebarPart.COUNTER++;
+
 		super(`workbench.parts.auxiliaryTitle.${id}`, getWindow(container), editorGroupsContainer, contextMenuService, configurationService, environmentService, instantiationService, themeService, storageService, layoutService, contextKeyService, hostService, editorGroupService, editorService, menuService, keybindingService);
 	}
 

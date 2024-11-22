@@ -35,8 +35,10 @@ interface IFocusNotifier {
 }
 function handleFocusEventsGroup(group: readonly IFocusNotifier[], handler: (isFocus: boolean) => void, onPartFocusChange?: (index: number, state: string) => void): IDisposable {
     const focusedIndices = new Set<number>();
+
     return combinedDisposable(...group.map((events, index) => combinedDisposable(events.onDidFocus(() => {
         onPartFocusChange?.(index, 'focus');
+
         if (!focusedIndices.size) {
             handler(true);
         }
@@ -44,6 +46,7 @@ function handleFocusEventsGroup(group: readonly IFocusNotifier[], handler: (isFo
     }), events.onDidBlur(() => {
         onPartFocusChange?.(index, 'blur');
         focusedIndices.delete(index);
+
         if (!focusedIndices.size) {
             handler(false);
         }
@@ -56,6 +59,7 @@ class NavigableContainerManager implements IDisposable {
     private readonly containers = new Set<INavigableContainer>();
     private lastContainer: INavigableContainer | undefined;
     private focused: IContextKey<boolean>;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -81,11 +85,13 @@ class NavigableContainerManager implements IDisposable {
     }
     static register(container: INavigableContainer): IDisposable {
         const instance = this.INSTANCE;
+
         if (!instance) {
             return Disposable.None;
         }
         instance.containers.add(container);
         instance.log('NavigableContainerManager.register', container.name);
+
         return combinedDisposable(handleFocusEventsGroup(container.focusNotifiers, (isFocus) => {
             if (isFocus) {
                 instance.log('NavigableContainerManager.focus', container.name);
@@ -94,6 +100,7 @@ class NavigableContainerManager implements IDisposable {
             }
             else {
                 instance.log('NavigableContainerManager.blur', container.name, instance.lastContainer?.name);
+
                 if (instance.lastContainer === container) {
                     instance.focused.set(false);
                     instance.lastContainer = undefined;
@@ -104,6 +111,7 @@ class NavigableContainerManager implements IDisposable {
         }), toDisposable(() => {
             instance.containers.delete(container);
             instance.log('NavigableContainerManager.unregister', container.name, instance.lastContainer?.name);
+
             if (instance.lastContainer === container) {
                 instance.focused.set(false);
                 instance.lastContainer = undefined;

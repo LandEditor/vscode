@@ -29,6 +29,7 @@ import { getActiveWindow } from '../../../base/browser/dom.js';
 import { IOpenedAuxiliaryWindow, IOpenedMainWindow, isOpenedAuxiliaryWindow } from '../../../platform/window/common/window.js';
 export class CloseWindowAction extends Action2 {
     static readonly ID = 'workbench.action.closeWindow';
+
     constructor() {
         super({
             id: CloseWindowAction.ID,
@@ -52,18 +53,22 @@ export class CloseWindowAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         return nativeHostService.closeWindow({ targetWindowId: getActiveWindow().vscodeWindowId });
     }
 }
 abstract class BaseZoomAction extends Action2 {
     private static readonly ZOOM_LEVEL_SETTING_KEY = 'window.zoomLevel';
     private static readonly ZOOM_PER_WINDOW_SETTING_KEY = 'window.zoomPerWindow';
+
     constructor(desc: Readonly<IAction2Options>) {
         super(desc);
     }
     protected async setZoomLevel(accessor: ServicesAccessor, levelOrReset: number | true): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         let target: ApplyZoomTarget;
+
         if (configurationService.getValue(BaseZoomAction.ZOOM_PER_WINDOW_SETTING_KEY) !== false) {
             target = ApplyZoomTarget.ACTIVE_WINDOW;
         }
@@ -71,6 +76,7 @@ abstract class BaseZoomAction extends Action2 {
             target = ApplyZoomTarget.ALL_WINDOWS;
         }
         let level: number;
+
         if (typeof levelOrReset === 'number') {
             level = Math.round(levelOrReset); // prevent fractional zoom levels
         }
@@ -82,6 +88,7 @@ abstract class BaseZoomAction extends Action2 {
             // otherwise, reset to the default zoom level
             else {
                 const defaultLevel = configurationService.getValue(BaseZoomAction.ZOOM_LEVEL_SETTING_KEY);
+
                 if (typeof defaultLevel === 'number') {
                     level = defaultLevel;
                 }
@@ -190,23 +197,34 @@ abstract class BaseSwitchWindow extends Action2 {
         tooltip: localize('close', "Close Window"),
         alwaysVisible: true
     };
+
     constructor(desc: Readonly<IAction2Options>) {
         super(desc);
     }
     protected abstract isQuickNavigate(): boolean;
     override async run(accessor: ServicesAccessor): Promise<void> {
         const quickInputService = accessor.get(IQuickInputService);
+
         const keybindingService = accessor.get(IKeybindingService);
+
         const modelService = accessor.get(IModelService);
+
         const languageService = accessor.get(ILanguageService);
+
         const nativeHostService = accessor.get(INativeHostService);
+
         const currentWindowId = getActiveWindow().vscodeWindowId;
+
         const windows = await nativeHostService.getWindows({ includeAuxiliaryWindows: true });
+
         const mainWindows = new Set<IOpenedMainWindow>();
+
         const mapMainWindowToAuxiliaryWindows = new Map<number, Set<IOpenedAuxiliaryWindow>>();
+
         for (const window of windows) {
             if (isOpenedAuxiliaryWindow(window)) {
                 let auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(window.parentId);
+
                 if (!auxiliaryWindows) {
                     auxiliaryWindows = new Set<IOpenedAuxiliaryWindow>();
                     mapMainWindowToAuxiliaryWindows.set(window.parentId, auxiliaryWindows);
@@ -222,16 +240,21 @@ abstract class BaseSwitchWindow extends Action2 {
         }
         function isWindowPickItem(candidate: unknown): candidate is IWindowPickItem {
             const windowPickItem = candidate as IWindowPickItem | undefined;
+
             return typeof windowPickItem?.windowId === 'number';
         }
         const picks: Array<QuickPickInput<IWindowPickItem>> = [];
+
         for (const window of mainWindows) {
             const auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(window.id);
+
             if (mapMainWindowToAuxiliaryWindows.size > 0) {
                 picks.push({ type: 'separator', label: auxiliaryWindows ? localize('windowGroup', "window group") : undefined });
             }
             const resource = window.filename ? URI.file(window.filename) : isSingleFolderWorkspaceIdentifier(window.workspace) ? window.workspace.uri : isWorkspaceIdentifier(window.workspace) ? window.workspace.configPath : undefined;
+
             const fileKind = window.filename ? FileKind.FILE : isSingleFolderWorkspaceIdentifier(window.workspace) ? FileKind.FOLDER : isWorkspaceIdentifier(window.workspace) ? FileKind.ROOT_FOLDER : FileKind.FILE;
+
             const pick: IWindowPickItem = {
                 windowId: window.id,
                 label: window.title,
@@ -241,6 +264,7 @@ abstract class BaseSwitchWindow extends Action2 {
                 buttons: currentWindowId !== window.id ? window.dirty ? [this.closeDirtyWindowAction] : [this.closeWindowAction] : undefined
             };
             picks.push(pick);
+
             if (auxiliaryWindows) {
                 for (const auxiliaryWindow of auxiliaryWindows) {
                     const pick: IWindowPickItem = {
@@ -259,6 +283,7 @@ abstract class BaseSwitchWindow extends Action2 {
             activeItem: (() => {
                 for (let i = 0; i < picks.length; i++) {
                     const pick = picks[i];
+
                     if (isWindowPickItem(pick) && pick.windowId === currentWindowId) {
                         let nextPick = picks[i + 1]; // try to select next window unless it's a separator
                         if (isWindowPickItem(nextPick)) {
@@ -280,6 +305,7 @@ abstract class BaseSwitchWindow extends Action2 {
                 context.removeItem();
             }
         });
+
         if (pick) {
             nativeHostService.focusWindow({ targetWindowId: pick.windowId });
         }
@@ -319,6 +345,7 @@ function canRunNativeTabsHandler(accessor: ServicesAccessor): boolean {
         return false;
     }
     const configurationService = accessor.get(IConfigurationService);
+
     return configurationService.getValue<unknown>('window.nativeTabs') === true;
 }
 export const NewWindowTabHandler: ICommandHandler = function (accessor: ServicesAccessor) {

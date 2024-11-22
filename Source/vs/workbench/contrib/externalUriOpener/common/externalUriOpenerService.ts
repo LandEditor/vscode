@@ -48,6 +48,7 @@ export interface IExternalUriOpenerService {
 export class ExternalUriOpenerService extends Disposable implements IExternalUriOpenerService, IExternalOpener {
     public readonly _serviceBrand: undefined;
     private readonly _providers = new LinkedList<IExternalOpenerProvider>();
+
     constructor(
     @IOpenerService
     openerService: IOpenerService, 
@@ -64,6 +65,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
     }
     registerExternalOpenerProvider(provider: IExternalOpenerProvider): IDisposable {
         const remove = this._providers.push(provider);
+
         return { dispose: remove };
     }
     private async getOpeners(targetUri: URI, allowOptional: boolean, ctx: {
@@ -71,6 +73,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         preferredOpenerId?: string;
     }, token: CancellationToken): Promise<IExternalUriOpener[]> {
         const allOpeners = await this.getAllOpenersForUri(targetUri);
+
         if (allOpeners.size === 0) {
             return [];
         }
@@ -80,6 +83,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
                 return [];
             }
             const preferredOpener = allOpeners.get(ctx.preferredOpenerId);
+
             if (preferredOpener) {
                 // Skip the `canOpen` check here since the opener was specifically requested.
                 return [preferredOpener];
@@ -87,6 +91,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         }
         // Check to see if we have a configured opener
         const configuredOpener = this.getConfiguredOpenerForUri(allOpeners, targetUri);
+
         if (configuredOpener) {
             // Skip the `canOpen` check here since the opener was specifically requested.
             return configuredOpener === defaultExternalUriOpenerId ? [] : [configuredOpener];
@@ -98,11 +103,13 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         }> = [];
         await Promise.all(Array.from(allOpeners.values()).map(async (opener) => {
             let priority: languages.ExternalUriOpenerPriority;
+
             try {
                 priority = await opener.canOpen(ctx.sourceUri, token);
             }
             catch (e) {
                 this.logService.error(e);
+
                 return;
             }
             switch (priority) {
@@ -110,14 +117,17 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
                 case languages.ExternalUriOpenerPriority.Default:
                 case languages.ExternalUriOpenerPriority.Preferred:
                     validOpeners.push({ opener, priority });
+
                     break;
             }
         }));
+
         if (validOpeners.length === 0) {
             return [];
         }
         // See if we have a preferred opener first
         const preferred = validOpeners.filter(x => x.priority === languages.ExternalUriOpenerPriority.Preferred).at(0);
+
         if (preferred) {
             return [preferred.opener];
         }
@@ -132,7 +142,9 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         preferredOpenerId?: string;
     }, token: CancellationToken): Promise<boolean> {
         const targetUri = typeof href === 'string' ? URI.parse(href) : href;
+
         const allOpeners = await this.getOpeners(targetUri, false, ctx, token);
+
         if (allOpeners.length === 0) {
             return false;
         }
@@ -147,6 +159,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         preferredOpenerId?: string;
     }, token: CancellationToken): Promise<IExternalUriOpener | undefined> {
         const allOpeners = await this.getOpeners(targetUri, true, ctx, token);
+
         if (allOpeners.length >= 1) {
             return allOpeners[0];
         }
@@ -159,16 +172,19 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
                 allOpeners.set(opener.id, opener);
             }
         }));
+
         return allOpeners;
     }
     private getConfiguredOpenerForUri(openers: Map<string, IExternalUriOpener>, targetUri: URI): IExternalUriOpener | 'default' | undefined {
         const config = this.configurationService.getValue<ExternalUriOpenersConfiguration>(externalUriOpenersSettingId) || {};
+
         for (const [uriGlob, id] of Object.entries(config)) {
             if (testUrlMatchesGlob(targetUri, uriGlob)) {
                 if (id === defaultExternalUriOpenerId) {
                     return 'default';
                 }
                 const entry = openers.get(id);
+
                 if (entry) {
                     return entry;
                 }
@@ -182,6 +198,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
         type PickItem = IQuickPickItem & {
             opener?: IExternalUriOpener | 'configureDefault';
         };
+
         const items: Array<PickItem | IQuickPickSeparator> = openers.map((opener): PickItem => {
             return {
                 label: opener.label,
@@ -197,9 +214,11 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
             label: nls.localize('selectOpenerConfigureTitle', "Configure default opener..."),
             opener: 'configureDefault'
         });
+
         const picked = await this.quickInputService.pick(items, {
             placeHolder: nls.localize('selectOpenerPlaceHolder', "How would you like to open: {0}", targetUri.toString())
         });
+
         if (!picked) {
             // Still cancel the default opener here since we prompted the user
             return true;
@@ -212,6 +231,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
                 jsonEditor: true,
                 revealSetting: { key: externalUriOpenersSettingId, edit: true }
             });
+
             return true;
         }
         else {

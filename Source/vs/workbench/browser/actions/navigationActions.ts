@@ -24,15 +24,24 @@ abstract class BaseNavigationAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const layoutService = accessor.get(IWorkbenchLayoutService);
+
         const editorGroupService = accessor.get(IEditorGroupsService);
+
         const paneCompositeService = accessor.get(IPaneCompositePartService);
+
         const isEditorFocus = layoutService.hasFocus(Parts.EDITOR_PART);
+
         const isPanelFocus = layoutService.hasFocus(Parts.PANEL_PART);
+
         const isSidebarFocus = layoutService.hasFocus(Parts.SIDEBAR_PART);
+
         const isAuxiliaryBarFocus = layoutService.hasFocus(Parts.AUXILIARYBAR_PART);
+
         let neighborPart: Parts | undefined;
+
         if (isEditorFocus) {
             const didNavigate = this.navigateAcrossEditorGroup(this.toGroupDirection(this.direction), editorGroupService);
+
             if (didNavigate) {
                 return;
             }
@@ -67,11 +76,14 @@ abstract class BaseNavigationAction extends Action2 {
             return false;
         }
         const activePanel = paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+
         if (!activePanel) {
             return false;
         }
         const activePanelId = activePanel.getId();
+
         const res = await paneCompositeService.openPaneComposite(activePanelId, ViewContainerLocation.Panel, true);
+
         if (!res) {
             return false;
         }
@@ -82,11 +94,14 @@ abstract class BaseNavigationAction extends Action2 {
             return false;
         }
         const activeViewlet = paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+
         if (!activeViewlet) {
             return false;
         }
         const activeViewletId = activeViewlet.getId();
+
         const viewlet = await paneCompositeService.openPaneComposite(activeViewletId, ViewContainerLocation.Sidebar, true);
+
         return !!viewlet;
     }
     private async navigateToAuxiliaryBar(layoutService: IWorkbenchLayoutService, paneCompositeService: IPaneCompositePartService): Promise<IComposite | boolean> {
@@ -94,11 +109,14 @@ abstract class BaseNavigationAction extends Action2 {
             return false;
         }
         const activePanel = paneCompositeService.getActivePaneComposite(ViewContainerLocation.AuxiliaryBar);
+
         if (!activePanel) {
             return false;
         }
         const activePanelId = activePanel.getId();
+
         const res = await paneCompositeService.openPaneComposite(activePanelId, ViewContainerLocation.AuxiliaryBar, true);
+
         if (!res) {
             return false;
         }
@@ -118,10 +136,12 @@ abstract class BaseNavigationAction extends Action2 {
         // Check to see if there is a group in between the last
         // active group and the direction of movement
         const groupInBetween = editorGroupService.findGroup({ direction: oppositeDirection }, editorGroupService.activeGroup);
+
         if (!groupInBetween) {
             // No group in between means we can return
             // focus to the last active editor group
             editorGroupService.activeGroup.focus();
+
             return true;
         }
         return false;
@@ -129,23 +149,31 @@ abstract class BaseNavigationAction extends Action2 {
     private toGroupDirection(direction: Direction): GroupDirection {
         switch (direction) {
             case Direction.Down: return GroupDirection.DOWN;
+
             case Direction.Left: return GroupDirection.LEFT;
+
             case Direction.Right: return GroupDirection.RIGHT;
+
             case Direction.Up: return GroupDirection.UP;
         }
     }
     private toOppositeDirection(direction: GroupDirection): GroupDirection {
         switch (direction) {
             case GroupDirection.UP: return GroupDirection.DOWN;
+
             case GroupDirection.RIGHT: return GroupDirection.LEFT;
+
             case GroupDirection.LEFT: return GroupDirection.RIGHT;
+
             case GroupDirection.DOWN: return GroupDirection.UP;
         }
     }
     private doNavigateToEditorGroup(scope: IFindGroupScope, editorGroupService: IEditorGroupsService): boolean {
         const targetGroup = editorGroupService.findGroup(scope, editorGroupService.activeGroup);
+
         if (targetGroup) {
             targetGroup.focus();
+
             return true;
         }
         return false;
@@ -197,18 +225,24 @@ abstract class BaseFocusAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const layoutService = accessor.get(IWorkbenchLayoutService);
+
         const editorService = accessor.get(IEditorService);
         this.focusNextOrPreviousPart(layoutService, editorService, this.focusNext);
     }
     private findVisibleNeighbour(layoutService: IWorkbenchLayoutService, part: Parts, next: boolean): Parts {
         const activeWindow = getActiveWindow();
+
         const windowIsAuxiliary = isAuxiliaryWindow(activeWindow);
+
         let neighbour: Parts;
+
         if (windowIsAuxiliary) {
             switch (part) {
                 case Parts.EDITOR_PART:
                     neighbour = Parts.STATUSBAR_PART;
+
                     break;
+
                 default:
                     neighbour = Parts.EDITOR_PART;
             }
@@ -217,22 +251,34 @@ abstract class BaseFocusAction extends Action2 {
             switch (part) {
                 case Parts.EDITOR_PART:
                     neighbour = next ? Parts.PANEL_PART : Parts.SIDEBAR_PART;
+
                     break;
+
                 case Parts.PANEL_PART:
                     neighbour = next ? Parts.AUXILIARYBAR_PART : Parts.EDITOR_PART;
+
                     break;
+
                 case Parts.AUXILIARYBAR_PART:
                     neighbour = next ? Parts.STATUSBAR_PART : Parts.PANEL_PART;
+
                     break;
+
                 case Parts.STATUSBAR_PART:
                     neighbour = next ? Parts.ACTIVITYBAR_PART : Parts.AUXILIARYBAR_PART;
+
                     break;
+
                 case Parts.ACTIVITYBAR_PART:
                     neighbour = next ? Parts.SIDEBAR_PART : Parts.STATUSBAR_PART;
+
                     break;
+
                 case Parts.SIDEBAR_PART:
                     neighbour = next ? Parts.EDITOR_PART : Parts.ACTIVITYBAR_PART;
+
                     break;
+
                 default:
                     neighbour = Parts.EDITOR_PART;
             }
@@ -244,6 +290,7 @@ abstract class BaseFocusAction extends Action2 {
     }
     private focusNextOrPreviousPart(layoutService: IWorkbenchLayoutService, editorService: IEditorService, next: boolean): void {
         let currentlyFocusedPart: Parts | undefined;
+
         if (editorService.activeEditorPane?.hasFocus() || layoutService.hasFocus(Parts.EDITOR_PART)) {
             currentlyFocusedPart = Parts.EDITOR_PART;
         }

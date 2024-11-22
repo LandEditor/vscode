@@ -37,7 +37,9 @@ import { watchExpressionsAdd, watchExpressionsRemoveAll } from './debugIcons.js'
 import { VariablesRenderer, VisualizedVariableRenderer } from './variablesView.js';
 
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
+
 let ignoreViewUpdates = false;
+
 let useCachedEvaluation = false;
 
 export class WatchExpressionsView extends ViewPane {
@@ -86,6 +88,7 @@ export class WatchExpressionsView extends ViewPane {
 
 		this.element.classList.add('debug-pane');
 		container.classList.add('debug-watch');
+
 		const treeContainer = renderViewTree(container);
 
 		const expressionsRenderer = this.instantiationService.createInstance(WatchExpressionsRenderer, this.expressionRenderer);
@@ -120,6 +123,7 @@ export class WatchExpressionsView extends ViewPane {
 		this._register(this.tree.onMouseDblClick(e => this.onMouseDblClick(e)));
 		this._register(this.debugService.getModel().onDidChangeWatchExpressions(async we => {
 			this.watchExpressionsExist.set(this.debugService.getModel().getWatchExpressions().length > 0);
+
 			if (!this.isBodyVisible()) {
 				this.needsRefresh = true;
 			} else {
@@ -129,6 +133,7 @@ export class WatchExpressionsView extends ViewPane {
 				}
 				await this.tree.updateChildren();
 				useCachedEvaluation = false;
+
 				if (we instanceof Expression) {
 					this.tree.reveal(we);
 				}
@@ -137,6 +142,7 @@ export class WatchExpressionsView extends ViewPane {
 		this._register(this.debugService.getViewModel().onDidFocusStackFrame(() => {
 			if (!this.isBodyVisible()) {
 				this.needsRefresh = true;
+
 				return;
 			}
 
@@ -155,11 +161,14 @@ export class WatchExpressionsView extends ViewPane {
 				this.watchExpressionsUpdatedScheduler.schedule();
 			}
 		}));
+
 		let horizontalScrolling: boolean | undefined;
 		this._register(this.debugService.getViewModel().onDidSelectExpression(e => {
 			const expression = e?.expression;
+
 			if (expression && this.tree.hasNode(expression)) {
 				horizontalScrolling = this.tree.options.horizontalScrolling;
+
 				if (horizontalScrolling) {
 					this.tree.updateOptions({ horizontalScrolling: false });
 				}
@@ -205,6 +214,7 @@ export class WatchExpressionsView extends ViewPane {
 		const element = e.element;
 		// double click on primitive value: open input box to be able to select and copy value.
 		const selectedExpression = this.debugService.getViewModel().getSelectedExpression();
+
 		if ((element instanceof Expression && element !== selectedExpression?.expression) || (element instanceof VisualizedExpression && element.treeItem.canEdit)) {
 			this.debugService.getViewModel().setSelectedExpression(element, false);
 		} else if (!element) {
@@ -215,11 +225,14 @@ export class WatchExpressionsView extends ViewPane {
 
 	private onContextMenu(e: ITreeContextMenuEvent<IExpression>): void {
 		const element = e.element;
+
 		const selection = this.tree.getSelection();
 
 		this.watchItemType.set(element instanceof Expression ? 'expression' : element instanceof Variable ? 'variable' : undefined);
+
 		const attributes = element instanceof Variable ? element.presentationHint?.attributes : undefined;
 		this.variableReadonly.set(!!attributes && attributes.indexOf('readOnly') >= 0 || !!element?.presentationHint?.lazy);
+
 		const actions = getFlatContextMenuActions(this.menu.getActions({ arg: element, shouldForwardArgs: true }));
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -262,8 +275,11 @@ class WatchExpressionsDataSource extends AbstractExpressionDataSource<IDebugServ
 	protected override doGetChildren(element: IDebugService | IExpression): Promise<Array<IExpression>> {
 		if (isDebugService(element)) {
 			const debugService = element as IDebugService;
+
 			const watchExpressions = debugService.getModel().getWatchExpressions();
+
 			const viewModel = debugService.getViewModel();
+
 			return Promise.all(watchExpressions.map(we => !!we.name && !useCachedEvaluation
 				? we.evaluate(viewModel.focusedSession!, viewModel.focusedStackFrame!, 'watch').then(() => we)
 				: Promise.resolve(we)));
@@ -301,13 +317,16 @@ export class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 				super.renderExpressionElement(node.element, node, data);
 			}
 		}));
+
 		super.renderExpressionElement(node.element, node, data);
 	}
 
 	protected renderExpression(expression: IExpression, data: IExpressionTemplateData, highlights: IHighlight[]): void {
 		let text: string;
 		data.type.textContent = '';
+
 		const showType = this.configurationService.getValue<IDebugConfiguration>('debug').showVariableTypes;
+
 		if (showType && expression.type) {
 			text = typeof expression.value === 'string' ? `${expression.name}: ` : expression.name;
 			//render type
@@ -317,6 +336,7 @@ export class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 		}
 
 		let title: string;
+
 		if (expression.type) {
 			if (showType) {
 				title = `${expression.name}`;
@@ -346,6 +366,7 @@ export class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 				onFinish: async (value: string, success: boolean) => {
 					if (success && value) {
 						const focusedFrame = this.debugService.getViewModel().focusedStackFrame;
+
 						if (focusedFrame && (expression instanceof Variable || expression instanceof Expression)) {
 							await expression.setExpression(value, focusedFrame);
 							this.debugService.getViewModel().updateViews();
@@ -374,7 +395,9 @@ export class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 
 	protected override renderActionBar(actionBar: ActionBar, expression: IExpression) {
 		const contextKeyService = getContextForWatchExpressionMenu(this.contextKeyService, expression);
+
 		const context = expression;
+
 		const menu = this.menuService.getMenuActions(MenuId.DebugWatchContext, contextKeyService, { arg: context, shouldForwardArgs: false });
 
 		const { primary } = getContextMenuActions(menu, 'inline');
@@ -421,11 +444,13 @@ class WatchExpressionsDragAndDrop implements ITreeDragAndDrop<IExpression> {
 		}
 
 		const expressions = (data as ElementsDragAndDropData<IExpression>).elements;
+
 		if (!(expressions.length > 0 && expressions[0] instanceof Expression)) {
 			return false;
 		}
 
 		let dropEffectPosition: ListDragOverEffectPosition | undefined = undefined;
+
 		if (targetIndex === undefined) {
 			// Hovering over the list
 			dropEffectPosition = ListDragOverEffectPosition.After;
@@ -436,6 +461,7 @@ class WatchExpressionsDragAndDrop implements ITreeDragAndDrop<IExpression> {
 				case ListViewTargetSector.TOP:
 				case ListViewTargetSector.CENTER_TOP:
 					dropEffectPosition = ListDragOverEffectPosition.Before; break;
+
 				case ListViewTargetSector.CENTER_BOTTOM:
 				case ListViewTargetSector.BOTTOM:
 					dropEffectPosition = ListDragOverEffectPosition.After; break;
@@ -467,14 +493,17 @@ class WatchExpressionsDragAndDrop implements ITreeDragAndDrop<IExpression> {
 		}
 
 		const draggedElement = (data as ElementsDragAndDropData<IExpression>).elements[0];
+
 		if (!(draggedElement instanceof Expression)) {
 			throw new Error('Invalid dragged element');
 		}
 
 		const watches = this.debugService.getModel().getWatchExpressions();
+
 		const sourcePosition = watches.indexOf(draggedElement);
 
 		let targetPosition;
+
 		if (targetElement instanceof Expression) {
 			targetPosition = watches.indexOf(targetElement);
 

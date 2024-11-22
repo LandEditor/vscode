@@ -13,6 +13,7 @@ export class BinaryEditorModel extends EditorModel {
     private readonly mime = Mimes.binary;
     private size: number | undefined;
     private etag: string | undefined;
+
     constructor(readonly resource: URI, private readonly name: string, 
     @IFileService
     private readonly fileService: IFileService) {
@@ -47,6 +48,7 @@ export class BinaryEditorModel extends EditorModel {
         if (this.fileService.hasProvider(this.resource)) {
             const stat = await this.fileService.stat(this.resource);
             this.etag = stat.etag;
+
             if (typeof stat.size === 'number') {
                 this.size = stat.size;
             }

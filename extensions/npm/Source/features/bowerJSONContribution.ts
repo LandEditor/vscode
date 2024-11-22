@@ -6,6 +6,7 @@ import { MarkdownString, CompletionItemKind, CompletionItem, DocumentSelector, S
 import { IJSONContribution, ISuggestionsCollector } from './jsonContributions';
 import { XHRRequest } from 'request-light';
 import { Location } from 'jsonc-parser';
+
 const USER_AGENT = 'Visual Studio Code';
 export class BowerJSONContribution implements IJSONContribution {
     private topRanked = ['twitter', 'bootstrap', 'angular-1.1.6', 'angular-latest', 'angulerjs', 'd3', 'myjquery', 'jq', 'abcdef1234567890', 'jQuery', 'jquery-1.11.1', 'jquery',
@@ -34,10 +35,12 @@ export class BowerJSONContribution implements IJSONContribution {
             'main': '${5:pathToMain}',
             'dependencies': {}
         };
+
         const proposal = new CompletionItem(l10n.t("Default bower.json"));
         proposal.kind = CompletionItemKind.Class;
         proposal.insertText = new SnippetString(JSON.stringify(defaultValue, null, '\t'));
         collector.add(proposal);
+
         return Promise.resolve(null);
     }
     public collectPropertySuggestions(_resource: Uri, location: Location, currentWord: string, addValue: boolean, isLast: boolean, collector: ISuggestionsCollector): Thenable<any> | null {
@@ -47,6 +50,7 @@ export class BowerJSONContribution implements IJSONContribution {
         if ((location.matches(['dependencies']) || location.matches(['devDependencies']))) {
             if (currentWord.length > 0) {
                 const queryUrl = 'https://registry.bower.io/packages/search/' + encodeURIComponent(currentWord);
+
                 return this.xhr({
                     url: queryUrl,
                     headers: { agent: USER_AGENT }
@@ -54,17 +58,23 @@ export class BowerJSONContribution implements IJSONContribution {
                     if (success.status === 200) {
                         try {
                             const obj = JSON.parse(success.responseText);
+
                             if (Array.isArray(obj)) {
                                 const results = <{
                                     name: string;
                                     description: string;
                                 }[]>obj;
+
                                 for (const result of results) {
                                     const name = result.name;
+
                                     const description = result.description || '';
+
                                     const insertText = new SnippetString().appendText(JSON.stringify(name));
+
                                     if (addValue) {
                                         insertText.appendText(': ').appendPlaceholder('latest');
+
                                         if (!isLast) {
                                             insertText.appendText(',');
                                         }
@@ -85,19 +95,23 @@ export class BowerJSONContribution implements IJSONContribution {
                     }
                     else {
                         collector.error(l10n.t("Request to the bower repository failed: {0}", success.responseText));
+
                         return 0;
                     }
                     return undefined;
                 }, (error) => {
                     collector.error(l10n.t("Request to the bower repository failed: {0}", error.responseText));
+
                     return 0;
                 });
             }
             else {
                 this.topRanked.forEach((name) => {
                     const insertText = new SnippetString().appendText(JSON.stringify(name));
+
                     if (addValue) {
                         insertText.appendText(': ').appendPlaceholder('latest');
+
                         if (!isLast) {
                             insertText.appendText(',');
                         }
@@ -110,6 +124,7 @@ export class BowerJSONContribution implements IJSONContribution {
                     collector.add(proposal);
                 });
                 collector.setAsIncomplete();
+
                 return Promise.resolve(null);
             }
         }
@@ -133,12 +148,14 @@ export class BowerJSONContribution implements IJSONContribution {
     public resolveSuggestion(_resource: Uri | undefined, item: CompletionItem): Thenable<CompletionItem | null> | null {
         if (item.kind === CompletionItemKind.Property && item.documentation === '') {
             let label = item.label;
+
             if (typeof label !== 'string') {
                 label = label.label;
             }
             return this.getInfo(label).then(documentation => {
                 if (documentation) {
                     item.documentation = documentation;
+
                     return item;
                 }
                 return null;
@@ -148,14 +165,17 @@ export class BowerJSONContribution implements IJSONContribution {
     }
     private getInfo(pack: string): Thenable<string | undefined> {
         const queryUrl = 'https://registry.bower.io/packages/' + encodeURIComponent(pack);
+
         return this.xhr({
             url: queryUrl,
             headers: { agent: USER_AGENT }
         }).then((success) => {
             try {
                 const obj = JSON.parse(success.responseText);
+
                 if (obj && obj.url) {
                     let url: string = obj.url;
+
                     if (url.indexOf('git://') === 0) {
                         url = url.substring(6);
                     }
@@ -179,11 +199,13 @@ export class BowerJSONContribution implements IJSONContribution {
         }
         if ((location.matches(['dependencies', '*']) || location.matches(['devDependencies', '*']))) {
             const pack = location.path[location.path.length - 1];
+
             if (typeof pack === 'string') {
                 return this.getInfo(pack).then(documentation => {
                     if (documentation) {
                         const str = new MarkdownString();
                         str.appendText(documentation);
+
                         return [str];
                     }
                     return null;

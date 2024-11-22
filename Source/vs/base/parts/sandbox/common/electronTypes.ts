@@ -156,6 +156,7 @@ export interface SaveDialogReturnValue {
 }
 export interface OpenDialogOptions {
     title?: string;
+
     defaultPath?: string;
     /**
      * Custom label for the confirmation button, when left empty the default label will

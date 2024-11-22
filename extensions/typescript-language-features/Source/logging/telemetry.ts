@@ -15,6 +15,7 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
         [prop: string]: string;
     } = {}) {
         const reporter = this.reporter;
+
         if (!reporter) {
             return;
         }

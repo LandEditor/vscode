@@ -23,6 +23,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor, context: contextMenuArg): void {
         const clipboardService = accessor.get(IClipboardService);
+
         if (context.value) {
             clipboardService.writeText(context.value);
         }
@@ -41,15 +42,21 @@ registerAction2(class extends Action2 {
             return [];
         }
         const uri = URI.revive(resource);
+
         const notebookKernelService = accessor.get(INotebookKernelService);
+
         const notebookService = accessor.get(INotebookService);
+
         const notebookTextModel = notebookService.getNotebookTextModel(uri);
+
         if (!notebookTextModel) {
             return [];
         }
         const selectedKernel = notebookKernelService.getMatchingKernel(notebookTextModel).selected;
+
         if (selectedKernel && selectedKernel.hasVariableProvider) {
             const variables = selectedKernel.provideVariables(notebookTextModel.uri, undefined, 'named', 0, CancellationToken.None);
+
             return await variables
                 .map(variable => { return variable; })
                 .toPromise();

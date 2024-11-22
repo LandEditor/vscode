@@ -48,6 +48,8 @@ export async function connect(window: BrowserWindow): Promise<MessagePortMain> {
         nonce: string;
         port: MessagePortMain;
     }>(validatedIpcMain, 'vscode:createMessageChannelResult', (e: IpcMainEvent, nonce: string) => ({ nonce, port: e.ports[0] }));
+
     const { port } = await Event.toPromise(Event.once(Event.filter(onMessageChannelResult, e => e.nonce === nonce)));
+
     return port;
 }

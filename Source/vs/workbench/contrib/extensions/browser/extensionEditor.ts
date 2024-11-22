@@ -111,9 +111,11 @@ function toMemoryString(bytes: number) {
 class NavBar extends Disposable {
 
 	private _onChange = this._register(new Emitter<{ id: string | null; focus: boolean }>());
+
 	get onChange(): Event<{ id: string | null; focus: boolean }> { return this._onChange.event; }
 
 	private _currentId: string | null = null;
+
 	get currentId(): string | null { return this._currentId; }
 
 	private actions: Action[];
@@ -121,6 +123,7 @@ class NavBar extends Disposable {
 
 	constructor(container: HTMLElement) {
 		super();
+
 		const element = append(container, $('.navbar'));
 		this.actions = [];
 		this.actionbar = this._register(new ActionBar(element));
@@ -146,8 +149,10 @@ class NavBar extends Disposable {
 
 	switch(id: string): boolean {
 		const action = this.actions.find(action => action.id === id);
+
 		if (action) {
 			action.run();
+
 			return true;
 		}
 		return false;
@@ -199,6 +204,7 @@ const CONTEXT_SHOW_PRE_RELEASE_VERSION = new RawContextKey<boolean>('showPreRele
 
 abstract class ExtensionWithDifferentGalleryVersionWidget extends ExtensionWidget {
 	private _gallery: IGalleryExtension | null = null;
+
 	get gallery(): IGalleryExtension | null { return this._gallery; }
 	set gallery(gallery: IGalleryExtension | null) {
 		if (this.extension && gallery && !areSameExtensions(this.extension.identifier, gallery.identifier)) {
@@ -211,6 +217,7 @@ abstract class ExtensionWithDifferentGalleryVersionWidget extends ExtensionWidge
 
 class VersionWidget extends ExtensionWithDifferentGalleryVersionWidget {
 	private readonly element: HTMLElement;
+
 	constructor(
 		container: HTMLElement,
 		hoverService: IHoverService
@@ -298,16 +305,22 @@ export class ExtensionEditor extends EditorPane {
 		root.tabIndex = 0; // this is required for the focus tracker on the editor
 		root.style.outline = 'none';
 		root.setAttribute('role', 'document');
+
 		const header = append(root, $('.header'));
 
 		const iconContainer = append(header, $('.icon-container'));
+
 		const icon = append(iconContainer, $<HTMLImageElement>('img.icon', { draggable: false, alt: '' }));
+
 		const remoteBadge = this.instantiationService.createInstance(RemoteBadgeWidget, iconContainer, true);
 
 		const details = append(header, $('.details'));
+
 		const title = append(details, $('.title'));
+
 		const name = append(title, $('span.name.clickable', { role: 'heading', tabIndex: 0 }));
 		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), name, localize('name', "Extension name")));
+
 		const versionWidget = new VersionWidget(title, this.hoverService);
 
 		const preview = append(title, $('span.preview'));
@@ -318,9 +331,12 @@ export class ExtensionEditor extends EditorPane {
 		builtin.textContent = localize('builtin', "Built-in");
 
 		const subtitle = append(details, $('.subtitle'));
+
 		const publisher = append(append(subtitle, $('.subtitle-entry')), $('.publisher.clickable', { tabIndex: 0 }));
 		publisher.setAttribute('role', 'button');
+
 		const publisherDisplayName = append(publisher, $('.publisher-name'));
+
 		const verifiedPublisherWidget = this.instantiationService.createInstance(VerifiedPublisherWidget, append(publisher, $('.verified-publisher')), false);
 
 		const resource = append(append(subtitle, $('.subtitle-entry.resource')), $('', { tabIndex: 0 }));
@@ -328,6 +344,7 @@ export class ExtensionEditor extends EditorPane {
 
 		const installCount = append(append(subtitle, $('.subtitle-entry')), $('span.install', { tabIndex: 0 }));
 		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), installCount, localize('install count', "Install count")));
+
 		const installCountWidget = this.instantiationService.createInstance(InstallCountWidget, installCount, false);
 
 		const rating = append(append(subtitle, $('.subtitle-entry')), $('span.rating.clickable', { tabIndex: 0 }));
@@ -349,6 +366,7 @@ export class ExtensionEditor extends EditorPane {
 		const description = append(details, $('.description'));
 
 		const installAction = this.instantiationService.createInstance(InstallDropdownAction);
+
 		const actions = [
 			this.instantiationService.createInstance(ExtensionRuntimeStateAction),
 			this.instantiationService.createInstance(ExtensionStatusLabelAction),
@@ -379,6 +397,7 @@ export class ExtensionEditor extends EditorPane {
 		];
 
 		const actionsAndStatusContainer = append(details, $('.actions-status-container'));
+
 		const extensionActionBar = this._register(new ActionBar(actionsAndStatusContainer, {
 			actionViewItemProvider: (action: IAction, options) => {
 				if (action instanceof DropDownExtensionAction) {
@@ -413,7 +432,9 @@ export class ExtensionEditor extends EditorPane {
 		}));
 
 		const otherExtensionContainers: IExtensionContainer[] = [];
+
 		const extensionStatusAction = this.instantiationService.createInstance(ExtensionStatusAction);
+
 		const extensionStatusWidget = this._register(this.instantiationService.createInstance(ExtensionStatusWidget, append(actionsAndStatusContainer, $('.status')), extensionStatusAction));
 
 		otherExtensionContainers.push(extensionStatusAction, new class extends ExtensionWidget {
@@ -432,6 +453,7 @@ export class ExtensionEditor extends EditorPane {
 		}));
 
 		const extensionContainers: ExtensionContainers = this.instantiationService.createInstance(ExtensionContainers, [...actions, ...widgets, ...otherExtensionContainers]);
+
 		for (const disposable of [...actions, ...widgets, ...otherExtensionContainers, extensionContainers]) {
 			this._register(disposable);
 		}
@@ -444,6 +466,7 @@ export class ExtensionEditor extends EditorPane {
 		this._register(onError(this.onError, this));
 
 		const body = append(root, $('.body'));
+
 		const navbar = new NavBar(body);
 
 		const content = append(body, $('.content'));
@@ -481,6 +504,7 @@ export class ExtensionEditor extends EditorPane {
 	override async setInput(input: ExtensionsInput, options: IExtensionEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
 		await super.setInput(input, options, context, token);
 		this.updatePreReleaseVersionContext();
+
 		if (this.template) {
 			await this.render(input.extension, this.template, !!options?.preserveFocus);
 		}
@@ -488,11 +512,13 @@ export class ExtensionEditor extends EditorPane {
 
 	override setOptions(options: IExtensionEditorOptions | undefined): void {
 		const currentOptions: IExtensionEditorOptions | undefined = this.options;
+
 		super.setOptions(options);
 		this.updatePreReleaseVersionContext();
 
 		if (this.input && this.template && currentOptions?.showPreReleaseVersion !== options?.showPreReleaseVersion) {
 			this.render((this.input as ExtensionsInput).extension, this.template, !!options?.preserveFocus);
+
 			return;
 		}
 
@@ -504,6 +530,7 @@ export class ExtensionEditor extends EditorPane {
 
 	private updatePreReleaseVersionContext(): void {
 		let showPreReleaseVersion = (<IExtensionEditorOptions | undefined>this.options)?.showPreReleaseVersion;
+
 		if (isUndefined(showPreReleaseVersion)) {
 			showPreReleaseVersion = !!(<ExtensionsInput>this.input).extension.gallery?.properties.isPreReleaseVersion;
 		}
@@ -552,6 +579,7 @@ export class ExtensionEditor extends EditorPane {
 		const token = this.transientDisposables.add(new CancellationTokenSource()).token;
 
 		const gallery = await this.getGalleryVersionToShow(extension, (this.options as IExtensionEditorOptions)?.showPreReleaseVersion);
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -583,8 +611,10 @@ export class ExtensionEditor extends EditorPane {
 
 		const location = extension.resourceExtension?.location ?? (extension.local?.source === 'resource' ? extension.local?.location : undefined);
 		template.resource.parentElement?.classList.toggle('hide', !location);
+
 		if (location) {
 			const workspaceFolder = this.contextService.getWorkspaceFolder(location);
+
 			if (workspaceFolder && extension.isWorkspaceScoped) {
 				template.resource.parentElement?.classList.add('clickable');
 				this.transientDisposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), template.resource, this.uriIdentityService.extUri.relativePath(workspaceFolder.uri, location)));
@@ -610,6 +640,7 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		const manifest = await this.extensionManifest.get().promise;
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -622,7 +653,9 @@ export class ExtensionEditor extends EditorPane {
 
 		// report telemetry
 		const extRecommendations = this.extensionRecommendationsService.getAllRecommendationsWithReason();
+
 		let recommendationsData = {};
+
 		if (extRecommendations[extension.identifier.id.toLowerCase()]) {
 			recommendationsData = { recommendationReason: extRecommendations[extension.identifier.id.toLowerCase()].reasonId };
 		}
@@ -649,6 +682,7 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		template.navbar.push(ExtensionEditorTab.Readme, localize('details', "Details"), localize('detailstooltip', "Extension details, rendered from the extension's 'README.md' file"));
+
 		if (manifest) {
 			template.navbar.push(ExtensionEditorTab.Features, localize('features', "Features"), localize('featurestooltip', "Lists features contributed by this extension"));
 		}
@@ -702,6 +736,7 @@ export class ExtensionEditor extends EditorPane {
 		this.contentDisposables.clear();
 		template.content.innerText = '';
 		this.activeElement = null;
+
 		if (id) {
 			const cts = new CancellationTokenSource();
 			this.contentDisposables.add(toDisposable(() => cts.dispose(true)));
@@ -711,6 +746,7 @@ export class ExtensionEditor extends EditorPane {
 						return;
 					}
 					this.activeElement = activeElement;
+
 					if (focus) {
 						this.focus();
 					}
@@ -721,9 +757,13 @@ export class ExtensionEditor extends EditorPane {
 	private open(id: string, extension: IExtension, template: IExtensionEditorTemplate, token: CancellationToken): Promise<IActiveElement | null> {
 		switch (id) {
 			case ExtensionEditorTab.Readme: return this.openDetails(extension, template, token);
+
 			case ExtensionEditorTab.Features: return this.openFeatures(template, token);
+
 			case ExtensionEditorTab.Changelog: return this.openChangelog(extension, template, token);
+
 			case ExtensionEditorTab.Dependencies: return this.openExtensionDependencies(extension, template, token);
+
 			case ExtensionEditorTab.ExtensionPack: return this.openExtensionPack(extension, template, token);
 		}
 		return Promise.resolve(null);
@@ -732,6 +772,7 @@ export class ExtensionEditor extends EditorPane {
 	private async openMarkdown(extension: IExtension, cacheResult: CacheResult<string>, noContentCopy: string, container: HTMLElement, webviewIndex: WebviewIndex, title: string, token: CancellationToken): Promise<IActiveElement | null> {
 		try {
 			const body = await this.renderMarkdown(extension, cacheResult, container, token);
+
 			if (token.isCancellationRequested) {
 				return Promise.resolve(null);
 			}
@@ -750,6 +791,7 @@ export class ExtensionEditor extends EditorPane {
 			webview.initialScrollProgress = this.initialScrollProgress.get(webviewIndex) || 0;
 
 			webview.claim(this, this.window, this.scopedContextKeyService);
+
 			setParentFlowTo(webview.container, container);
 			webview.layoutWebviewOverElement(container);
 
@@ -773,6 +815,7 @@ export class ExtensionEditor extends EditorPane {
 			this.contentDisposables.add(this.themeService.onDidColorThemeChange(async () => {
 				// Render again since syntax highlighting of code blocks may have changed
 				const body = await this.renderMarkdown(extension, cacheResult, container);
+
 				if (!isDisposed) { // Make sure we weren't disposed of in the meantime
 					webview.setHtml(body);
 				}
@@ -795,17 +838,20 @@ export class ExtensionEditor extends EditorPane {
 		} catch (e) {
 			const p = append(container, $('p.nocontent'));
 			p.textContent = noContentCopy;
+
 			return p;
 		}
 	}
 
 	private async renderMarkdown(extension: IExtension, cacheResult: CacheResult<string>, container: HTMLElement, token?: CancellationToken): Promise<string> {
 		const contents = await this.loadContents(() => cacheResult, container);
+
 		if (token?.isCancellationRequested) {
 			return '';
 		}
 
 		const content = await renderMarkdownDocument(contents, this.extensionService, this.languageService, { shouldSanitize: extension.type !== ExtensionType.System, token });
+
 		if (token?.isCancellationRequested) {
 			return '';
 		}
@@ -815,8 +861,11 @@ export class ExtensionEditor extends EditorPane {
 
 	private renderBody(body: string): string {
 		const nonce = generateUuid();
+
 		const colorMap = TokenizationRegistry.getColorMap();
+
 		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
+
 		return `<!DOCTYPE html>
 		<html>
 			<head>
@@ -880,7 +929,9 @@ export class ExtensionEditor extends EditorPane {
 
 	private async openDetails(extension: IExtension, template: IExtensionEditorTemplate, token: CancellationToken): Promise<IActiveElement | null> {
 		const details = append(template.content, $('.details'));
+
 		const readmeContainer = append(details, $('.readme-container'));
+
 		const additionalDetailsContainer = append(details, $('.additional-details-container'));
 
 		const layout = () => details.classList.toggle('narrow', this.dimension && this.dimension.width < 500);
@@ -888,7 +939,9 @@ export class ExtensionEditor extends EditorPane {
 		this.contentDisposables.add(toDisposable(arrays.insert(this.layoutParticipants, { layout })));
 
 		let activeElement: IActiveElement | null = null;
+
 		const manifest = await this.extensionManifest!.get().promise;
+
 		if (manifest && manifest.extensionPack?.length && this.shallRenderAsExtensionPack(manifest)) {
 			activeElement = await this.openExtensionPackReadme(extension, manifest, readmeContainer, token);
 		} else {
@@ -896,6 +949,7 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		this.renderAdditionalDetails(additionalDetailsContainer, extension);
+
 		return activeElement;
 	}
 
@@ -913,6 +967,7 @@ export class ExtensionEditor extends EditorPane {
 		extensionPackReadme.style.maxWidth = '882px';
 
 		const extensionPack = append(extensionPackReadme, $('div', { class: 'extension-pack' }));
+
 		if (manifest.extensionPack!.length <= 3) {
 			extensionPackReadme.classList.add('one-row');
 		} else if (manifest.extensionPack!.length <= 6) {
@@ -925,9 +980,11 @@ export class ExtensionEditor extends EditorPane {
 
 		const extensionPackHeader = append(extensionPack, $('div.header'));
 		extensionPackHeader.textContent = localize('extension pack', "Extension Pack ({0})", manifest.extensionPack!.length);
+
 		const extensionPackContent = append(extensionPack, $('div', { class: 'extension-pack-content' }));
 		extensionPackContent.setAttribute('tabindex', '0');
 		append(extensionPack, $('div.footer'));
+
 		const readmeContent = append(extensionPackReadme, $('div.readme-content'));
 
 		await Promise.all([
@@ -940,8 +997,11 @@ export class ExtensionEditor extends EditorPane {
 
 	private renderAdditionalDetails(container: HTMLElement, extension: IExtension): void {
 		const content = $('div', { class: 'additional-details-content', tabindex: '0' });
+
 		const scrollableContent = new DomScrollableElement(content, {});
+
 		const layout = () => scrollableContent.scanDomNode();
+
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, { layout });
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
 		this.contentDisposables.add(scrollableContent);
@@ -963,7 +1023,9 @@ export class ExtensionEditor extends EditorPane {
 		if (extension.categories.length) {
 			const categoriesContainer = append(container, $('.categories-container.additional-details-element'));
 			append(categoriesContainer, $('.additional-details-title', undefined, localize('categories', "Categories")));
+
 			const categoriesElement = append(categoriesContainer, $('.categories'));
+
 			for (const category of extension.categories) {
 				this.transientDisposables.add(onClick(append(categoriesElement, $('span.category', { tabindex: '0' }, category)),
 					() => this.extensionsWorkbenchService.openSearch(`@category:"${category}"`)));
@@ -973,6 +1035,7 @@ export class ExtensionEditor extends EditorPane {
 
 	private renderExtensionResources(container: HTMLElement, extension: IExtension): void {
 		const resources: [string, URI][] = [];
+
 		if (extension.url) {
 			resources.push([localize('Marketplace', "Marketplace"), URI.parse(extension.url)]);
 		}
@@ -997,7 +1060,9 @@ export class ExtensionEditor extends EditorPane {
 		if (resources.length || extension.publisherSponsorLink) {
 			const extensionResourcesContainer = append(container, $('.resources-container.additional-details-element'));
 			append(extensionResourcesContainer, $('.additional-details-title', undefined, localize('resources', "Resources")));
+
 			const resourcesElement = append(extensionResourcesContainer, $('.resources'));
+
 			for (const [label, uri] of resources) {
 				const resource = append(resourcesElement, $('a.resource', { tabindex: '0' }, label));
 				this.transientDisposables.add(onClick(resource, () => {
@@ -1011,6 +1076,7 @@ export class ExtensionEditor extends EditorPane {
 	private renderInstallInfo(container: HTMLElement, extension: ILocalExtension): void {
 		const installInfoContainer = append(container, $('.more-info-container.additional-details-element'));
 		append(installInfoContainer, $('.additional-details-title', undefined, localize('Install Info', "Installation")));
+
 		const installInfo = append(installInfoContainer, $('.more-info'));
 		append(installInfo,
 			$('.more-info-entry', undefined,
@@ -1023,6 +1089,7 @@ export class ExtensionEditor extends EditorPane {
 				$('code', undefined, extension.manifest.version)
 			)
 		);
+
 		if (extension.installedTimestamp) {
 			append(installInfo,
 				$('.more-info-entry', undefined,
@@ -1039,6 +1106,7 @@ export class ExtensionEditor extends EditorPane {
 					element
 				)
 			);
+
 			if (isNative && extension.source === 'resource' && extension.location.scheme === Schemas.file) {
 				element.classList.add('link');
 				element.title = extension.location.fsPath;
@@ -1053,6 +1121,7 @@ export class ExtensionEditor extends EditorPane {
 					element
 				)
 			);
+
 			if (isNative && extension.location.scheme === Schemas.file) {
 				element.classList.add('link');
 				element.title = extension.location.fsPath;
@@ -1073,6 +1142,7 @@ export class ExtensionEditor extends EditorPane {
 						$('div', { title: localize('disk space used', "Cache size") }, localize('cache size', "Cache")),
 						element)
 				);
+
 				if (isNative && extension.location.scheme === Schemas.file) {
 					element.classList.add('link');
 					element.title = cacheLocation.fsPath;
@@ -1084,8 +1154,10 @@ export class ExtensionEditor extends EditorPane {
 
 	private async getCacheLocation(extension: ILocalExtension): Promise<URI | undefined> {
 		let extensionCacheLocation = this.uriIdentityService.extUri.joinPath(this.userDataProfilesService.defaultProfile.globalStorageHome, extension.identifier.id.toLowerCase());
+
 		if (extension.location.scheme === Schemas.vscodeRemote) {
 			const environment = await this.remoteAgentService.getEnvironment();
+
 			if (!environment) {
 				return undefined;
 			}
@@ -1096,9 +1168,12 @@ export class ExtensionEditor extends EditorPane {
 
 	private renderMarketplaceInfo(container: HTMLElement, extension: IExtension): void {
 		const gallery = extension.gallery;
+
 		const moreInfoContainer = append(container, $('.more-info-container.additional-details-element'));
 		append(moreInfoContainer, $('.additional-details-title', undefined, localize('Marketplace Info', "Marketplace")));
+
 		const moreInfo = append(moreInfoContainer, $('.more-info'));
+
 		if (gallery) {
 			if (!extension.local) {
 				append(moreInfo,
@@ -1132,6 +1207,7 @@ export class ExtensionEditor extends EditorPane {
 
 	private async openFeatures(template: IExtensionEditorTemplate, token: CancellationToken): Promise<IActiveElement | null> {
 		const manifest = await this.loadContents(() => this.extensionManifest!.get(), template.content);
+
 		if (token.isCancellationRequested) {
 			return null;
 		}
@@ -1140,11 +1216,14 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		const extensionFeaturesTab = this.contentDisposables.add(this.instantiationService.createInstance(ExtensionFeaturesTab, manifest, (<IExtensionEditorOptions | undefined>this.options)?.feature));
+
 		const layout = () => extensionFeaturesTab.layout(template.content.clientHeight, template.content.clientWidth);
+
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, { layout });
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
 		append(template.content, extensionFeaturesTab.domNode);
 		layout();
+
 		return extensionFeaturesTab.domNode;
 	}
 
@@ -1155,10 +1234,12 @@ export class ExtensionEditor extends EditorPane {
 
 		if (arrays.isFalsyOrEmpty(extension.dependencies)) {
 			append(template.content, $('p.nocontent')).textContent = localize('noDependencies', "No Dependencies");
+
 			return Promise.resolve(template.content);
 		}
 
 		const content = $('div', { class: 'subcontent' });
+
 		const scrollableContent = new DomScrollableElement(content, {});
 		append(template.content, scrollableContent.getDomNode());
 		this.contentDisposables.add(scrollableContent);
@@ -1168,16 +1249,20 @@ export class ExtensionEditor extends EditorPane {
 			{
 				listBackground: editorBackground
 			});
+
 		const layout = () => {
 			scrollableContent.scanDomNode();
+
 			const scrollDimensions = scrollableContent.getScrollDimensions();
 			dependenciesTree.layout(scrollDimensions.height);
 		};
+
 		const removeLayoutParticipant = arrays.insert(this.layoutParticipants, { layout });
 		this.contentDisposables.add(toDisposable(removeLayoutParticipant));
 
 		this.contentDisposables.add(dependenciesTree);
 		scrollableContent.scanDomNode();
+
 		return Promise.resolve({ focus() { dependenciesTree.domFocus(); } });
 	}
 
@@ -1186,6 +1271,7 @@ export class ExtensionEditor extends EditorPane {
 			return Promise.resolve(null);
 		}
 		const manifest = await this.loadContents(() => this.extensionManifest!.get(), template.content);
+
 		if (token.isCancellationRequested) {
 			return null;
 		}
@@ -1201,10 +1287,12 @@ export class ExtensionEditor extends EditorPane {
 		}
 
 		const content = $('div', { class: 'subcontent' });
+
 		const scrollableContent = new DomScrollableElement(content, { useShadows: false });
 		append(parent, scrollableContent.getDomNode());
 
 		const extensionsGridView = this.instantiationService.createInstance(ExtensionsGridView, content, new Delegate());
+
 		const extensions: IExtension[] = await getExtensions(manifest.extensionPack!, this.extensionsWorkbenchService);
 		extensionsGridView.setExtensions(extensions);
 		scrollableContent.scanDomNode();
@@ -1220,6 +1308,7 @@ export class ExtensionEditor extends EditorPane {
 		container.classList.add('loading');
 
 		const result = this.contentDisposables.add(loadingTask());
+
 		const onDone = () => container.classList.remove('loading');
 		result.promise.then(onDone, onDone);
 
@@ -1302,12 +1391,14 @@ registerAction2(class StartExtensionEditorFindPreviousAction extends Action2 {
 registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) => {
 
 	const link = theme.getColor(textLinkForeground);
+
 	if (link) {
 		collector.addRule(`.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource { color: ${link}; }`);
 		collector.addRule(`.monaco-workbench .extension-editor .content .feature-contributions a { color: ${link}; }`);
 	}
 
 	const activeLink = theme.getColor(textLinkActiveForeground);
+
 	if (activeLink) {
 		collector.addRule(`.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource:hover,
 			.monaco-workbench .extension-editor .content .details .additional-details-container .resources-container a.resource:active { color: ${activeLink}; }`);
@@ -1316,12 +1407,14 @@ registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) =
 	}
 
 	const buttonHoverBackgroundColor = theme.getColor(buttonHoverBackground);
+
 	if (buttonHoverBackgroundColor) {
 		collector.addRule(`.monaco-workbench .extension-editor .content > .details > .additional-details-container .categories-container > .categories > .category:hover { background-color: ${buttonHoverBackgroundColor}; border-color: ${buttonHoverBackgroundColor}; }`);
 		collector.addRule(`.monaco-workbench .extension-editor .content > .details > .additional-details-container .tags-container > .tags > .tag:hover { background-color: ${buttonHoverBackgroundColor}; border-color: ${buttonHoverBackgroundColor}; }`);
 	}
 
 	const buttonForegroundColor = theme.getColor(buttonForeground);
+
 	if (buttonForegroundColor) {
 		collector.addRule(`.monaco-workbench .extension-editor .content > .details > .additional-details-container .categories-container > .categories > .category:hover { color: ${buttonForegroundColor}; }`);
 		collector.addRule(`.monaco-workbench .extension-editor .content > .details > .additional-details-container .tags-container > .tags > .tag:hover { color: ${buttonForegroundColor}; }`);
@@ -1331,6 +1424,7 @@ registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) =
 
 function getExtensionEditor(accessor: ServicesAccessor): ExtensionEditor | null {
 	const activeEditorPane = accessor.get(IEditorService).activeEditorPane;
+
 	if (activeEditorPane instanceof ExtensionEditor) {
 		return activeEditorPane;
 	}

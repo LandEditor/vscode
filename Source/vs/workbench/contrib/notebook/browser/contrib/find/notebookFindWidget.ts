@@ -29,8 +29,11 @@ import { INotebookFindScope } from '../../../common/notebookCommon.js';
 import { KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED } from '../../../common/notebookContextKeys.js';
 
 const FIND_HIDE_TRANSITION = 'find-hide-transition';
+
 const FIND_SHOW_TRANSITION = 'find-show-transition';
+
 let MAX_MATCHES_COUNT_WIDTH = 69;
+
 const PROGRESS_BAR_DELAY = 200; // show progress for at least 200ms
 
 export interface IShowNotebookFindWidgetOptions {
@@ -141,10 +144,12 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		if (e.equals(KeyCode.Enter)) {
 			this.find(false);
 			e.preventDefault();
+
 			return;
 		} else if (e.equals(KeyMod.Shift | KeyCode.Enter)) {
 			this.find(true);
 			e.preventDefault();
+
 			return;
 		}
 	}
@@ -153,6 +158,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		if (e.equals(KeyCode.Enter)) {
 			this.replaceOne();
 			e.preventDefault();
+
 			return;
 		}
 	}
@@ -160,7 +166,9 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 	protected onInputChanged(): boolean {
 		this._state.change({ searchString: this.inputValue }, false);
 		// this._findModel.research();
+
 		const findMatches = this._findModel.findMatches;
+
 		if (findMatches && findMatches.length) {
 			return true;
 		}
@@ -192,13 +200,16 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		}
 
 		const currentMatch = this._findModel.getCurrentMatch();
+
 		const cell = currentMatch.cell;
+
 		if (currentMatch.isModelMatch) {
 			const match = currentMatch.match as FindMatch;
 
 			this._progressBar.infinite().show(PROGRESS_BAR_DELAY);
 
 			const replacePattern = this.replacePattern;
+
 			const replaceString = replacePattern.buildReplaceString(match.matches, this._state.preserveCase);
 
 			const viewModel = this._notebookEditor.getViewModel();
@@ -221,6 +232,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		const replacePattern = this.replacePattern;
 
 		const cellFindMatches = this._findModel.findMatches;
+
 		const replaceStrings: string[] = [];
 		cellFindMatches.forEach(cellFindMatch => {
 			cellFindMatch.contentMatches.forEach(match => {
@@ -260,6 +272,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 
 	override async show(initialInput?: string, options?: IShowNotebookFindWidgetOptions): Promise<void> {
 		const searchStringUpdate = this._state.searchString !== initialInput;
+
 		super.show(initialInput, options);
 		this._state.change({ searchString: initialInput ?? this._state.searchString, isRevealed: true }, false);
 
@@ -367,6 +380,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 
 		if (this._state.matchesCount > 0) {
 			let matchesCount: string = String(this._state.matchesCount);
+
 			if (this._state.matchesCount >= MATCHES_LIMIT) {
 				matchesCount += '+';
 			}
@@ -396,6 +410,7 @@ class NotebookFindWidget extends SimpleFindReplaceWidget implements INotebookEdi
 		this._notebookEditor?.removeClassName(FIND_SHOW_TRANSITION);
 		this._notebookEditor?.removeClassName(FIND_HIDE_TRANSITION);
 		this._findModel.dispose();
+
 		super.dispose();
 	}
 }

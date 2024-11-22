@@ -53,6 +53,7 @@ export default class FileConfigurationManager extends Disposable {
 		token: vscode.CancellationToken
 	): Promise<void> {
 		const formattingOptions = this.getFormattingOptions(document);
+
 		if (formattingOptions) {
 			return this.ensureConfigurationOptions(document, formattingOptions, token);
 		}
@@ -60,6 +61,7 @@ export default class FileConfigurationManager extends Disposable {
 
 	private getFormattingOptions(document: vscode.TextDocument): FormattingOptions | undefined {
 		const editor = vscode.window.visibleTextEditors.find(editor => editor.document.uri.toString() === document.uri.toString());
+
 		if (!editor) {
 			return undefined;
 		}
@@ -76,14 +78,18 @@ export default class FileConfigurationManager extends Disposable {
 		token: vscode.CancellationToken
 	): Promise<void> {
 		const file = this.client.toOpenTsFilePath(document);
+
 		if (!file) {
 			return;
 		}
 
 		const currentOptions = this.getFileOptions(document, options);
+
 		const cachedOptions = this.formatOptions.get(document.uri);
+
 		if (cachedOptions) {
 			const cachedOptionsValue = await cachedOptions;
+
 			if (token.isCancellationRequested) {
 				return;
 			}
@@ -96,6 +102,7 @@ export default class FileConfigurationManager extends Disposable {
 		const task = (async () => {
 			try {
 				const response = await this.client.execute('configure', { file, ...currentOptions }, token);
+
 				return response.type === 'response' ? currentOptions : undefined;
 			} catch {
 				return undefined;
@@ -112,6 +119,7 @@ export default class FileConfigurationManager extends Disposable {
 		token: vscode.CancellationToken,
 	): Promise<void> {
 		const formattingOptions = this.getFormattingOptions(document);
+
 		if (!formattingOptions) {
 			return;
 		}
@@ -216,7 +224,9 @@ export default class FileConfigurationManager extends Disposable {
 	private getQuoteStylePreference(config: vscode.WorkspaceConfiguration) {
 		switch (config.get<string>('quoteStyle')) {
 			case 'single': return 'single';
+
 			case 'double': return 'double';
+
 			default: return 'auto';
 		}
 	}
@@ -230,6 +240,7 @@ export default class FileConfigurationManager extends Disposable {
 			const wildcardPrefix = this.client.apiVersion.gte(API.v540)
 				? ''
 				: path.parse(this.client.toTsFilePath(workspaceFolder)!).root;
+
 			return path.isAbsolute(p) ? p :
 				p.startsWith('*') ? wildcardPrefix + p :
 					isRelative ? this.client.toTsFilePath(vscode.Uri.joinPath(workspaceFolder, p))! :
@@ -239,7 +250,9 @@ export default class FileConfigurationManager extends Disposable {
 
 	private getOrganizeImportsPreferences(config: vscode.WorkspaceConfiguration): Proto.UserPreferences {
 		const organizeImportsCollation = config.get<'ordinal' | 'unicode'>('organizeImports.unicodeCollation');
+
 		const organizeImportsCaseSensitivity = config.get<'auto' | 'caseInsensitive' | 'caseSensitive'>('organizeImports.caseSensitivity');
+
 		return {
 			// More specific settings
 			organizeImportsTypeOrder: withDefaultAsUndefined(config.get<'auto' | 'last' | 'inline' | 'first'>('organizeImports.typeOrder', 'auto'), 'auto'),
@@ -289,8 +302,11 @@ export function getInlayHintsPreferences(config: vscode.WorkspaceConfiguration) 
 function getInlayParameterNameHintsPreference(config: vscode.WorkspaceConfiguration) {
 	switch (config.get<string>('inlayHints.parameterNames.enabled')) {
 		case 'none': return 'none';
+
 		case 'literals': return 'literals';
+
 		case 'all': return 'all';
+
 		default: return undefined;
 	}
 }
@@ -298,8 +314,11 @@ function getInlayParameterNameHintsPreference(config: vscode.WorkspaceConfigurat
 function getImportModuleSpecifierPreference(config: vscode.WorkspaceConfiguration) {
 	switch (config.get<string>('importModuleSpecifier')) {
 		case 'project-relative': return 'project-relative';
+
 		case 'relative': return 'relative';
+
 		case 'non-relative': return 'non-relative';
+
 		default: return undefined;
 	}
 }
@@ -307,8 +326,11 @@ function getImportModuleSpecifierPreference(config: vscode.WorkspaceConfiguratio
 function getImportModuleSpecifierEndingPreference(config: vscode.WorkspaceConfiguration) {
 	switch (config.get<string>('importModuleSpecifierEnding')) {
 		case 'minimal': return 'minimal';
+
 		case 'index': return 'index';
+
 		case 'js': return 'js';
+
 		default: return 'auto';
 	}
 }
@@ -316,7 +338,9 @@ function getImportModuleSpecifierEndingPreference(config: vscode.WorkspaceConfig
 function getJsxAttributeCompletionStyle(config: vscode.WorkspaceConfiguration) {
 	switch (config.get<string>('jsxAttributeCompletionStyle')) {
 		case 'braces': return 'braces';
+
 		case 'none': return 'none';
+
 		default: return 'auto';
 	}
 }

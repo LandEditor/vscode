@@ -55,6 +55,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
     private editorTabsVisibleContext: IContextKey<boolean>;
     private titleAreaVisibleContext: IContextKey<boolean>;
     private titleBarStyleContext: IContextKey<string>;
+
     constructor(
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -94,6 +95,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
         // Development
         const isDevelopment = !this.environmentService.isBuilt || this.environmentService.isExtensionDevelopment;
         IsDevelopmentContext.bindTo(this.contextKeyService).set(isDevelopment);
+
         setConstantContextKey(IsDevelopmentContext.key, isDevelopment);
         // Product Service
         ProductQualityContext.bindTo(this.contextKeyService).set(this.productService.quality || '');
@@ -218,6 +220,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
     }
     private updateVisiblePanesContextKeys(): void {
         const visibleEditorPanes = this.editorService.visibleEditorPanes;
+
         if (visibleEditorPanes.length > 0) {
             this.editorsVisibleContext.set(true);
         }
@@ -241,6 +244,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
     // Context keys depending on the state of other editor groups
     private updateEditorGroupsContextKeys(): void {
         const groupCount = this.editorGroupService.count;
+
         if (groupCount > 1) {
             this.multipleEditorGroupsContext.set(true);
         }
@@ -259,6 +263,7 @@ export class WorkbenchContextKeysHandler extends Disposable {
         }
         const isInputFocused = activeElementIsInput();
         this.inputFocusedContext.set(isInputFocused);
+
         if (isInputFocused) {
             const tracker = trackFocus(ownerDocument.activeElement as HTMLElement);
             Event.once(tracker.onDidBlur)(() => {
@@ -289,7 +294,9 @@ export class WorkbenchContextKeysHandler extends Disposable {
     private getWorkbenchStateString(): string {
         switch (this.contextService.getWorkbenchState()) {
             case WorkbenchState.EMPTY: return 'empty';
+
             case WorkbenchState.FOLDER: return 'folder';
+
             case WorkbenchState.WORKSPACE: return 'workspace';
         }
     }

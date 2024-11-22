@@ -29,10 +29,13 @@ export class GhostText {
             return '';
         }
         const lastPart = this.parts[this.parts.length - 1];
+
         const cappedLineText = lineText.substr(0, lastPart.column - 1);
+
         const text = new TextEdit([
             ...this.parts.map(p => new SingleTextEdit(Range.fromPositions(new Position(1, p.column)), p.lines.join('\n'))),
         ]).applyToString(cappedLineText);
+
         return text.substring(this.parts[0].column - 1);
     }
     isEmpty(): boolean {
@@ -60,6 +63,7 @@ export class GhostTextReplacement {
     public readonly parts: ReadonlyArray<GhostTextPart> = [
         new GhostTextPart(this.columnRange.endColumnExclusive, this.text, false),
     ];
+
     constructor(readonly lineNumber: number, readonly columnRange: ColumnRange, readonly text: string, public readonly additionalReservedLineCount: number = 0) { }
     readonly newLines = splitLines(this.text);
     renderForScreenReader(_lineText: string): string {
@@ -67,6 +71,7 @@ export class GhostTextReplacement {
     }
     render(documentText: string, debug: boolean = false): string {
         const replaceRange = this.columnRange.toRange(this.lineNumber);
+
         if (debug) {
             return new TextEdit([
                 new SingleTextEdit(Range.fromPositions(replaceRange.getStartPosition()), '('),

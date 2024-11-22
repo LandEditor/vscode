@@ -28,10 +28,12 @@ import { INotebookKernelService } from '../../../common/notebookKernelService.js
 import { getNotebookEditorFromEditorPane } from '../../notebookBrowser.js';
 import './cellChatActions.js';
 import { CTX_NOTEBOOK_CHAT_HAS_AGENT } from './notebookChatContext.js';
+
 const NotebookKernelVariableKey = 'kernelVariable';
 class NotebookChatContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.notebookChatContribution';
     private readonly _ctxHasProvider: IContextKey<boolean>;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -47,6 +49,7 @@ class NotebookChatContribution extends Disposable implements IWorkbenchContribut
     private readonly languageFeaturesService: ILanguageFeaturesService) {
         super();
         this._ctxHasProvider = CTX_NOTEBOOK_CHAT_HAS_AGENT.bindTo(contextKeyService);
+
         const updateNotebookAgentStatus = () => {
             const hasNotebookAgent = Boolean(chatAgentService.getDefaultAgent(ChatAgentLocation.Notebook));
             this._ctxHasProvider.set(hasNotebookAgent);
@@ -58,6 +61,7 @@ class NotebookChatContribution extends Disposable implements IWorkbenchContribut
             triggerCharacters: [chatVariableLeader],
             provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
                 const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
                 if (!widget || !widget.supportsFileReferences) {
                     return null;
                 }
@@ -65,11 +69,14 @@ class NotebookChatContribution extends Disposable implements IWorkbenchContribut
                     return null;
                 }
                 const variableNameDef = new RegExp(`${chatVariableLeader}\\w*`, 'g');
+
                 const range = computeCompletionRanges(model, position, variableNameDef, true);
+
                 if (!range) {
                     return null;
                 }
                 const result: CompletionList = { suggestions: [] };
+
                 const afterRange = new Range(position.lineNumber, range.replace.startColumn, position.lineNumber, range.replace.startColumn + `${chatVariableLeader}${NotebookKernelVariableKey}:`.length);
                 result.suggestions.push({
                     label: `${chatVariableLeader}${NotebookKernelVariableKey}`,
@@ -81,6 +88,7 @@ class NotebookChatContribution extends Disposable implements IWorkbenchContribut
                     sortText: 'z'
                 });
                 await this.addKernelVariableCompletion(widget, result, range, token);
+
                 return result;
             }
         }));
@@ -88,22 +96,28 @@ class NotebookChatContribution extends Disposable implements IWorkbenchContribut
     private async addKernelVariableCompletion(widget: IChatWidget, result: CompletionList, info: {
         insert: Range;
         replace: Range;
+
         varWord: IWordAtPosition | null;
     }, token: CancellationToken) {
         let pattern: string | undefined;
+
         if (info.varWord?.word && info.varWord.word.startsWith(chatVariableLeader)) {
             pattern = info.varWord.word.toLowerCase().slice(1);
         }
         const notebook = getNotebookEditorFromEditorPane(this.editorService.activeEditorPane)?.getViewModel()?.notebookDocument;
+
         if (!notebook) {
             return;
         }
         const selectedKernel = this.notebookKernelService.getMatchingKernel(notebook).selected;
+
         const hasVariableProvider = selectedKernel?.hasVariableProvider;
+
         if (!hasVariableProvider) {
             return;
         }
         const variables = await selectedKernel.provideVariables(notebook.uri, undefined, 'named', 0, CancellationToken.None);
+
         for await (const variable of variables) {
             if (pattern && !variable.name.toLowerCase().includes(pattern)) {
                 continue;
@@ -132,30 +146,43 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
     static readonly ID = 'notebook.chat.selectAndInsertKernelVariable';
     override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const notebookKernelService = accessor.get(INotebookKernelService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const notebook = getNotebookEditorFromEditorPane(editorService.activeEditorPane)?.getViewModel()?.notebookDocument;
+
         if (!notebook) {
             return;
         }
         const context = args[0];
+
         if (!context || !('widget' in context) || !('range' in context)) {
             return;
         }
         const widget = <IChatWidget>context.widget;
+
         const range = <Range | undefined>context.range;
+
         const variable = <string | undefined>context.variable;
+
         if (variable !== undefined) {
             this.addVariableReference(widget, variable, range, false);
+
             return;
         }
         const selectedKernel = notebookKernelService.getMatchingKernel(notebook).selected;
+
         const hasVariableProvider = selectedKernel?.hasVariableProvider;
+
         if (!hasVariableProvider) {
             return;
         }
         const variables = await selectedKernel.provideVariables(notebook.uri, undefined, 'named', 0, CancellationToken.None);
+
         const quickPickItems: IQuickPickItem[] = [];
+
         for await (const variable of variables) {
             quickPickItems.push({
                 label: variable.name,
@@ -164,6 +191,7 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
             });
         }
         const pickedVariable = await quickInputService.pick(quickPickItems, { placeHolder: 'Select a kernel variable' });
+
         if (!pickedVariable) {
             return;
         }
@@ -172,9 +200,12 @@ export class SelectAndInsertKernelVariableAction extends Action2 {
     private addVariableReference(widget: IChatWidget, variableName: string, range?: Range, updateText?: boolean) {
         if (range) {
             const text = `#kernelVariable:${variableName}`;
+
             if (updateText) {
                 const editor = widget.inputEditor;
+
                 const success = editor.executeEdits('chatInsertFile', [{ range, text: text + ' ' }]);
+
                 if (!success) {
                     return;
                 }

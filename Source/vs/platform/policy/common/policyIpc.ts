@@ -9,6 +9,7 @@ import { IChannel, IServerChannel } from '../../../base/parts/ipc/common/ipc.js'
 import { AbstractPolicyService, IPolicyService, PolicyDefinition, PolicyName, PolicyValue } from './policy.js';
 export class PolicyChannel implements IServerChannel {
     private readonly disposables = new DisposableStore();
+
     constructor(private service: IPolicyService) { }
     listen(_: unknown, event: string): Event<any> {
         switch (event) {
@@ -32,9 +33,11 @@ export class PolicyChannelClient extends AbstractPolicyService implements IPolic
         value: PolicyValue;
     }>, private readonly channel: IChannel) {
         super();
+
         for (const name in policiesData) {
             const { definition, value } = policiesData[name];
             this.policyDefinitions[name] = definition;
+
             if (value !== undefined) {
                 this.policies.set(name, value);
             }
@@ -42,6 +45,7 @@ export class PolicyChannelClient extends AbstractPolicyService implements IPolic
         this.channel.listen<object>('onDidChange')(policies => {
             for (const name in policies) {
                 const value = policies[name as keyof typeof policies];
+
                 if (value === null) {
                     this.policies.delete(name);
                 }
@@ -56,6 +60,7 @@ export class PolicyChannelClient extends AbstractPolicyService implements IPolic
         const result = await this.channel.call<{
             [name: PolicyName]: PolicyValue;
         }>('updatePolicyDefinitions', policyDefinitions);
+
         for (const name in result) {
             this.policies.set(name, result[name]);
         }

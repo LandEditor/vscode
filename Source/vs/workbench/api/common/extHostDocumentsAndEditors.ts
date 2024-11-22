@@ -20,6 +20,7 @@ import { Iterable } from '../../../base/common/iterator.js';
 import { Lazy } from '../../../base/common/lazy.js';
 class Reference<T> {
     private _count = 0;
+
     constructor(readonly value: T) { }
     ref() {
         this._count++;
@@ -41,6 +42,7 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
     readonly onDidRemoveDocuments: Event<readonly ExtHostDocumentData[]> = this._onDidRemoveDocuments.event;
     readonly onDidChangeVisibleTextEditors: Event<readonly vscode.TextEditor[]> = this._onDidChangeVisibleTextEditors.event;
     readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> = this._onDidChangeActiveTextEditor.event;
+
     constructor(
     @IExtHostRpcService
     private readonly _extHostRpc: IExtHostRpcService, 
@@ -51,12 +53,17 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
     }
     acceptDocumentsAndEditorsDelta(delta: IDocumentsAndEditorsDelta): void {
         const removedDocuments: ExtHostDocumentData[] = [];
+
         const addedDocuments: ExtHostDocumentData[] = [];
+
         const removedEditors: ExtHostTextEditor[] = [];
+
         if (delta.removedDocuments) {
             for (const uriComponent of delta.removedDocuments) {
                 const uri = URI.revive(uriComponent);
+
                 const data = this._documents.get(uri);
+
                 if (data?.unref()) {
                     this._documents.delete(uri);
                     removedDocuments.push(data.value);
@@ -66,6 +73,7 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
         if (delta.addedDocuments) {
             for (const data of delta.addedDocuments) {
                 const resource = URI.revive(data.uri);
+
                 let ref = this._documents.get(resource);
                 // double check -> only notebook cell documents should be
                 // referenced/opened more than once...
@@ -86,6 +94,7 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
             for (const id of delta.removedEditors) {
                 const editor = this._editors.get(id);
                 this._editors.delete(id);
+
                 if (editor) {
                     removedEditors.push(editor);
                 }
@@ -96,7 +105,9 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
                 const resource = URI.revive(data.documentUri);
                 assert.ok(this._documents.has(resource), `document '${resource}' does not exist`);
                 assert.ok(!this._editors.has(data.id), `editor '${data.id}' already exists!`);
+
                 const documentData = this._documents.get(resource)!.value;
+
                 const editor = new ExtHostTextEditor(data.id, this._extHostRpc.getProxy(MainContext.MainThreadTextEditors), this._logService, new Lazy(() => documentData.document), data.selections.map(typeConverters.Selection.to), data.options, data.visibleRanges.map(range => typeConverters.Range.to(range)), typeof data.editorPosition === 'number' ? typeConverters.ViewColumn.to(data.editorPosition) : undefined);
                 this._editors.set(data.id, editor);
             }
@@ -137,6 +148,7 @@ export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsSha
             return undefined;
         }
         const editor = this._editors.get(this._activeEditorId);
+
         if (internal) {
             return editor;
         }

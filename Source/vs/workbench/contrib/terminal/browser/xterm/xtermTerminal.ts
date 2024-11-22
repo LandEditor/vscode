@@ -50,12 +50,15 @@ const enum RenderConstants {
 
 function getFullBufferLineAsString(lineIndex: number, buffer: IBuffer): { lineData: string | undefined; lineIndex: number } {
 	let line = buffer.getLine(lineIndex);
+
 	if (!line) {
 		return { lineData: undefined, lineIndex };
 	}
 	let lineData = line.translateToString(true);
+
 	while (lineIndex > 0 && line.isWrapped) {
 		line = buffer.getLine(--lineIndex);
+
 		if (!line) {
 			break;
 		}
@@ -119,6 +122,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 	private readonly _anyFocusedTerminalHasSelection: IContextKey<boolean>;
 
 	private _lastFindResult: { resultIndex: number; resultCount: number } | undefined;
+
 	get findResult(): { resultIndex: number; resultCount: number } | undefined { return this._lastFindResult; }
 
 	get isStdinDisabled(): boolean { return !!this.raw.options.disableStdin; }
@@ -145,6 +149,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	get textureAtlas(): Promise<ImageBitmap> | undefined {
 		const canvas = this._webglAddon?.textureAtlas;
+
 		if (!canvas) {
 			return undefined;
 		}
@@ -184,7 +189,9 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		this._capabilities = options.capabilities;
 
 		const font = this._terminalConfigurationService.getFont(dom.getActiveWindow(), undefined, true);
+
 		const config = this._terminalConfigurationService.config;
+
 		const editorOptions = this._configurationService.getValue<IEditorOptions>('editor');
 
 		this.raw = this._register(new xtermCtor({
@@ -253,6 +260,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		// Refire events
 		this._register(this.raw.onSelectionChange(() => {
 			this._onDidChangeSelection.fire();
+
 			if (this.isFocused) {
 				this._anyFocusedTerminalHasSelection.set(this.raw.hasSelection());
 			}
@@ -290,8 +298,10 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 	*getBufferReverseIterator(): IterableIterator<string> {
 		for (let i = this.raw.buffer.active.length; i >= 0; i--) {
 			const { lineData, lineIndex } = getFullBufferLineAsString(i, this.raw.buffer.active);
+
 			if (lineData) {
 				i = lineIndex;
+
 				yield lineData;
 			}
 		}
@@ -315,13 +325,16 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		}
 		if (command) {
 			const length = command.getOutput()?.length;
+
 			const row = command.marker?.line;
+
 			if (!length || !row) {
 				throw new Error(`No row ${row} or output length ${length} for command ${command}`);
 			}
 			this.raw.select(0, row + 1, length - Math.floor(length / this.raw.cols));
 		}
 		const result = this._serializeAddon.serializeAsHTML({ onlySelection: true });
+
 		if (command) {
 			this.raw.clearSelection();
 		}
@@ -330,6 +343,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	attachToElement(container: HTMLElement, partialOptions?: Partial<IXtermAttachToElementOptions>): HTMLElement {
 		const options: IXtermAttachToElementOptions = { enableGpu: true, ...partialOptions };
+
 		if (!this._attached) {
 			this.raw.open(container);
 		}
@@ -355,8 +369,11 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		// as it must be disabled when a trackpad is used
 		ad.add(dom.addDisposableListener(this.raw.element, dom.EventType.MOUSE_WHEEL, (e: IMouseWheelEvent) => {
 			const classifier = MouseWheelClassifier.INSTANCE;
+
 			classifier.acceptStandardWheelEvent(new StandardWheelEvent(e));
+
 			const value = classifier.isPhysicalMouseWheel();
+
 			if (value !== this._isPhysicalMouseWheel) {
 				this._isPhysicalMouseWheel = value;
 				this._updateSmoothScrolling();
@@ -398,6 +415,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		this.raw.options.fastScrollSensitivity = config.fastScrollSensitivity;
 		this.raw.options.scrollSensitivity = config.mouseWheelScrollSensitivity;
 		this.raw.options.macOptionIsMeta = config.macOptionIsMeta;
+
 		const editorOptions = this._configurationService.getValue<IEditorOptions>('editor');
 		this.raw.options.altClickMovesCursor = config.altClickMovesCursor && editorOptions.multiCursorModifier === 'alt';
 		this.raw.options.macOptionClickForcesSelection = config.macOptionClickForcesSelection;
@@ -411,6 +429,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 			showTopBorder: true,
 		};
 		this._updateSmoothScrolling();
+
 		if (this._attached) {
 			if (this._attached.options.enableGpu) {
 				if (this._shouldLoadWebgl()) {
@@ -445,11 +464,13 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	async findNext(term: string, searchOptions: ISearchOptions): Promise<boolean> {
 		this._updateFindColors(searchOptions);
+
 		return (await this._getSearchAddon()).findNext(term, searchOptions);
 	}
 
 	async findPrevious(term: string, searchOptions: ISearchOptions): Promise<boolean> {
 		this._updateFindColors(searchOptions);
+
 		return (await this._getSearchAddon()).findPrevious(term, searchOptions);
 	}
 
@@ -460,11 +481,17 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		// - findMatch -> activeMatch
 		// - findMatchHighlight -> match
 		const terminalBackground = theme.getColor(TERMINAL_BACKGROUND_COLOR) || theme.getColor(PANEL_BACKGROUND);
+
 		const findMatchBackground = theme.getColor(TERMINAL_FIND_MATCH_BACKGROUND_COLOR);
+
 		const findMatchBorder = theme.getColor(TERMINAL_FIND_MATCH_BORDER_COLOR);
+
 		const findMatchOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR);
+
 		const findMatchHighlightBackground = theme.getColor(TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR);
+
 		const findMatchHighlightBorder = theme.getColor(TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR);
+
 		const findMatchHighlightOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR);
 		searchOptions.decorations = {
 			activeMatchBackground: findMatchBackground?.toString(),
@@ -490,6 +517,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 					this._lastFindResult = results;
 					this._onDidChangeFindResults.fire(results);
 				});
+
 				return this._searchAddon;
 			});
 		}
@@ -510,6 +538,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	getLongestViewportWrappedLineLength(): number {
 		let maxLineLength = 0;
+
 		for (let i = this.raw.buffer.active.length - 1; i >= this.raw.buffer.active.viewportY; i--) {
 			const lineInfo = this._getWrappedLineCount(i, this.raw.buffer.active);
 			maxLineLength = Math.max(maxLineLength, ((lineInfo.lineCount * this.raw.cols) - lineInfo.endSpaces) || 0);
@@ -520,10 +549,12 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	private _getWrappedLineCount(index: number, buffer: IBuffer): { lineCount: number; currentIndex: number; endSpaces: number } {
 		let line = buffer.getLine(index);
+
 		if (!line) {
 			throw new Error('Could not get line');
 		}
 		let currentIndex = index;
+
 		let endSpaces = 0;
 		// line.length may exceed cols as it doesn't necessarily trim the backing array on resize
 		for (let i = Math.min(line.length, this.raw.cols) - 1; i >= 0; i--) {
@@ -587,17 +618,21 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	selectMarkedRange(fromMarkerId: string, toMarkerId: string, scrollIntoView = false) {
 		const detectionCapability = this.shellIntegration.capabilities.get(TerminalCapability.BufferMarkDetection);
+
 		if (!detectionCapability) {
 			return;
 		}
 
 		const start = detectionCapability.getMark(fromMarkerId);
+
 		const end = detectionCapability.getMark(toMarkerId);
+
 		if (start === undefined || end === undefined) {
 			return;
 		}
 
 		this.raw.selectLines(start.line, end.line);
+
 		if (scrollIntoView) {
 			this.raw.scrollToLine(start.line);
 		}
@@ -616,6 +651,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		if (this.hasSelection() || (asHtml && command)) {
 			if (asHtml) {
 				const textAsHtml = await this.getSelectionAsHtml(command);
+
 				function listener(e: any) {
 					if (!e.clipboardData.types.includes('text/plain')) {
 						e.clipboardData.setData('text/plain', command?.getOutput() ?? '');
@@ -624,8 +660,11 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 					e.preventDefault();
 				}
 				const doc = dom.getDocument(this.raw.element);
+
 				doc.addEventListener('copy', listener);
+
 				doc.execCommand('copy');
+
 				doc.removeEventListener('copy', listener);
 			} else {
 				await this._clipboardService.writeText(this.raw.getSelection());
@@ -644,6 +683,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	private _setCursorStyle(style: ITerminalConfiguration['cursorStyle']): void {
 		const mapped = vscodeToXtermCursorStyle<'cursorStyle'>(style);
+
 		if (this.raw.options.cursorStyle !== mapped) {
 			this.raw.options.cursorStyle = mapped;
 		}
@@ -651,6 +691,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 	private _setCursorStyleInactive(style: ITerminalConfiguration['cursorStyleInactive']): void {
 		const mapped = vscodeToXtermCursorStyle(style);
+
 		if (this.raw.options.cursorInactiveStyle !== mapped) {
 			this.raw.options.cursorInactiveStyle = mapped;
 		}
@@ -673,13 +714,19 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		// - https://bugs.chromium.org/p/chromium/issues/detail?id=1476475
 		if (!XtermTerminal._checkedWebglCompatible) {
 			XtermTerminal._checkedWebglCompatible = true;
+
 			const checkCanvas = document.createElement('canvas');
+
 			const checkGl = checkCanvas.getContext('webgl2');
+
 			const debugInfo = checkGl?.getExtension('WEBGL_debug_renderer_info');
+
 			if (checkGl && debugInfo) {
 				const renderer = checkGl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+
 				if (renderer.startsWith('ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)')) {
 					this._disableWebglForThisSession();
+
 					return;
 				}
 			}
@@ -687,6 +734,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 
 		const Addon = await this._xtermAddonLoader.importAddon('webgl');
 		this._webglAddon = new Addon();
+
 		try {
 			this.raw.loadAddon(this._webglAddon);
 			this._logService.trace('Webgl was loaded');
@@ -773,14 +821,21 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		}
 
 		const config = this._terminalConfigurationService.config;
+
 		const hideOverviewRuler = ['never', 'gutter'].includes(config.shellIntegration?.decorationsEnabled ?? '');
 
 		const foregroundColor = theme.getColor(TERMINAL_FOREGROUND_COLOR);
+
 		const backgroundColor = this._xtermColorProvider.getBackgroundColor(theme);
+
 		const cursorColor = theme.getColor(TERMINAL_CURSOR_FOREGROUND_COLOR) || foregroundColor;
+
 		const cursorAccentColor = theme.getColor(TERMINAL_CURSOR_BACKGROUND_COLOR) || backgroundColor;
+
 		const selectionBackgroundColor = theme.getColor(TERMINAL_SELECTION_BACKGROUND_COLOR);
+
 		const selectionInactiveBackgroundColor = theme.getColor(TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR);
+
 		const selectionForegroundColor = theme.getColor(TERMINAL_SELECTION_FOREGROUND_COLOR) || undefined;
 
 		return {
@@ -843,6 +898,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		this._anyTerminalFocusContextKey.reset();
 		this._anyFocusedTerminalHasSelection.reset();
 		this._onDidDispose.fire();
+
 		super.dispose();
 	}
 }
@@ -859,11 +915,15 @@ export function getXtermScaledDimensions(w: Window, font: ITerminalFont, width: 
 	const scaledWidthAvailable = width * w.devicePixelRatio;
 
 	const scaledCharWidth = font.charWidth * w.devicePixelRatio + font.letterSpacing;
+
 	const cols = Math.max(Math.floor(scaledWidthAvailable / scaledCharWidth), 1);
 
 	const scaledHeightAvailable = height * w.devicePixelRatio;
+
 	const scaledCharHeight = Math.ceil(font.charHeight * w.devicePixelRatio);
+
 	const scaledLineHeight = Math.floor(scaledCharHeight * font.lineHeight);
+
 	const rows = Math.max(Math.floor(scaledHeightAvailable / scaledLineHeight), 1);
 
 	return { rows, cols };
@@ -872,10 +932,15 @@ export function getXtermScaledDimensions(w: Window, font: ITerminalFont, width: 
 function vscodeToXtermLogLevel(logLevel: LogLevel): XtermLogLevel {
 	switch (logLevel) {
 		case LogLevel.Trace: return 'trace';
+
 		case LogLevel.Debug: return 'debug';
+
 		case LogLevel.Info: return 'info';
+
 		case LogLevel.Warning: return 'warn';
+
 		case LogLevel.Error: return 'error';
+
 		default: return 'off';
 	}
 }

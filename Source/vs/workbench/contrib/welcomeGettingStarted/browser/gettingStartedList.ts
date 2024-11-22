@@ -34,6 +34,7 @@ export class GettingStartedIndexList<T extends {
     private isDisposed = false;
     private contextService: IContextKeyService;
     private contextKeysToWatch = new Set<string>();
+
     constructor(private options: GettingStartedIndexListOptions<T>) {
         super();
         this.contextService = options.contextService;
@@ -68,6 +69,7 @@ export class GettingStartedIndexList<T extends {
     }
     override dispose() {
         this.isDisposed = true;
+
         super.dispose();
     }
     setLimit(limit: number) {
@@ -80,14 +82,19 @@ export class GettingStartedIndexList<T extends {
     setEntries(entries: undefined | T[]) {
         let entryList = entries ?? [];
         this.itemCount = 0;
+
         const ranker = this.options.rankElement;
+
         if (ranker) {
             entryList = entryList.filter(e => ranker(e) !== null);
             entryList.sort((a, b) => ranker(b)! - ranker(a)!);
         }
         const activeEntries = entryList.filter(e => !e.when || this.contextService.contextMatchesRules(e.when));
+
         const limitedEntries = activeEntries.slice(0, this.options.limit);
+
         const toRender = limitedEntries.map(e => e.id);
+
         if (this.entries === entries && equals(toRender, this.lastRendered)) {
             return;
         }
@@ -99,10 +106,12 @@ export class GettingStartedIndexList<T extends {
         });
         this.lastRendered = toRender;
         this.itemCount = limitedEntries.length;
+
         while (this.list.firstChild) {
             this.list.firstChild.remove();
         }
         this.itemCount = limitedEntries.length;
+
         for (const entry of limitedEntries) {
             const rendered = this.options.renderElement(entry);
             this.list.appendChild(rendered);

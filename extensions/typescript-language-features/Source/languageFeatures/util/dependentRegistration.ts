@@ -8,11 +8,13 @@ import { ClientCapability, ITypeScriptServiceClient } from '../../typescriptServ
 import { Disposable } from '../../utils/dispose';
 export class Condition extends Disposable {
     private _value: boolean;
+
     constructor(private readonly getValue: () => boolean, onUpdate: (handler: () => void) => void) {
         super();
         this._value = this.getValue();
         onUpdate(() => {
             const newValue = this.getValue();
+
             if (newValue !== this._value) {
                 this._value = newValue;
                 this._onDidChange.fire();
@@ -37,6 +39,7 @@ class ConditionalRegistration {
     }
     private update() {
         const enabled = this.conditions.every(condition => condition.value);
+
         if (enabled) {
             this.registration ??= this.doRegister();
         }
@@ -55,6 +58,7 @@ export function requireMinVersion(client: ITypeScriptServiceClient, minVersion: 
 export function requireGlobalConfiguration(section: string, configValue: string) {
     return new Condition(() => {
         const config = vscode.workspace.getConfiguration(section, null);
+
         return !!config.get<boolean>(configValue);
     }, vscode.workspace.onDidChangeConfiguration);
 }

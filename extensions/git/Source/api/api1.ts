@@ -38,11 +38,13 @@ export class ApiRepositoryState implements RepositoryState {
     get workingTreeChanges(): Change[] { return this._repository.workingTreeGroup.resourceStates.map(r => new ApiChange(r)); }
     get untrackedChanges(): Change[] { return this._repository.untrackedGroup.resourceStates.map(r => new ApiChange(r)); }
     readonly onDidChange: Event<void> = this._repository.onDidRunGitStatus;
+
     constructor(private _repository: BaseRepository) { }
 }
 export class ApiRepositoryUIState implements RepositoryUIState {
     get selected(): boolean { return this._sourceControl.selected; }
     readonly onDidChange: Event<void> = mapEvent<boolean, void>(this._sourceControl.onDidChangeSelection, () => null);
+
     constructor(private _sourceControl: SourceControl) { }
 }
 export class ApiRepository implements Repository {
@@ -51,6 +53,7 @@ export class ApiRepository implements Repository {
     readonly state: RepositoryState = new ApiRepositoryState(this.repository);
     readonly ui: RepositoryUIState = new ApiRepositoryUIState(this.repository.sourceControl);
     readonly onDidCommit: Event<void> = mapEvent<OperationResult, void>(filterEvent(this.repository.onDidRunOperation, e => e.operation === Operation.Commit), () => null);
+
     constructor(readonly repository: BaseRepository) { }
     apply(patch: string, reverse?: boolean): Promise<void> {
         return this.repository.apply(patch, reverse);
@@ -217,6 +220,7 @@ export class ApiGit implements Git {
 }
 export class ApiImpl implements API {
     readonly git = new ApiGit(this._model);
+
     get state(): APIState {
         return this._model.state;
     }
@@ -240,12 +244,14 @@ export class ApiImpl implements API {
     }
     getRepository(uri: Uri): Repository | null {
         const result = this._model.getRepository(uri);
+
         return result ? new ApiRepository(result) : null;
     }
     async init(root: Uri, options?: InitOptions): Promise<Repository | null> {
         const path = root.fsPath;
         await this._model.git.init(path, options);
         await this._model.openRepository(path);
+
         return this.getRepository(root) || null;
     }
     async openRepository(root: Uri): Promise<Repository | null> {
@@ -253,14 +259,17 @@ export class ApiImpl implements API {
             return null;
         }
         await this._model.openRepository(root.fsPath);
+
         return this.getRepository(root) || null;
     }
     registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable {
         const disposables: Disposable[] = [];
+
         if (provider.publishRepository) {
             disposables.push(this._model.registerRemoteSourcePublisher(provider as RemoteSourcePublisher));
         }
         disposables.push(GitBaseApi.getAPI().registerRemoteSourceProvider(provider));
+
         return combinedDisposable(disposables);
     }
     registerRemoteSourcePublisher(publisher: RemoteSourcePublisher): Disposable {
@@ -283,7 +292,9 @@ export class ApiImpl implements API {
 function getRefType(type: RefType): string {
     switch (type) {
         case RefType.Head: return 'Head';
+
         case RefType.RemoteHead: return 'RemoteHead';
+
         case RefType.Tag: return 'Tag';
     }
     return 'unknown';
@@ -291,23 +302,41 @@ function getRefType(type: RefType): string {
 function getStatus(status: Status): string {
     switch (status) {
         case Status.INDEX_MODIFIED: return 'INDEX_MODIFIED';
+
         case Status.INDEX_ADDED: return 'INDEX_ADDED';
+
         case Status.INDEX_DELETED: return 'INDEX_DELETED';
+
         case Status.INDEX_RENAMED: return 'INDEX_RENAMED';
+
         case Status.INDEX_COPIED: return 'INDEX_COPIED';
+
         case Status.MODIFIED: return 'MODIFIED';
+
         case Status.DELETED: return 'DELETED';
+
         case Status.UNTRACKED: return 'UNTRACKED';
+
         case Status.IGNORED: return 'IGNORED';
+
         case Status.INTENT_TO_ADD: return 'INTENT_TO_ADD';
+
         case Status.INTENT_TO_RENAME: return 'INTENT_TO_RENAME';
+
         case Status.TYPE_CHANGED: return 'TYPE_CHANGED';
+
         case Status.ADDED_BY_US: return 'ADDED_BY_US';
+
         case Status.ADDED_BY_THEM: return 'ADDED_BY_THEM';
+
         case Status.DELETED_BY_US: return 'DELETED_BY_US';
+
         case Status.DELETED_BY_THEM: return 'DELETED_BY_THEM';
+
         case Status.BOTH_ADDED: return 'BOTH_ADDED';
+
         case Status.BOTH_DELETED: return 'BOTH_DELETED';
+
         case Status.BOTH_MODIFIED: return 'BOTH_MODIFIED';
     }
     return 'UNKNOWN';
@@ -316,22 +345,28 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
     const disposables: Disposable[] = [];
     disposables.push(commands.registerCommand('git.api.getRepositories', () => {
         const api = extension.getAPI(1);
+
         return api.repositories.map(r => r.rootUri.toString());
     }));
     disposables.push(commands.registerCommand('git.api.getRepositoryState', (uri: string) => {
         const api = extension.getAPI(1);
+
         const repository = api.getRepository(Uri.parse(uri));
+
         if (!repository) {
             return null;
         }
         const state = repository.state;
+
         const ref = (ref: Ref | undefined) => (ref && { ...ref, type: getRefType(ref.type) });
+
         const change = (change: Change) => ({
             uri: change.uri.toString(),
             originalUri: change.originalUri.toString(),
             renameUri: change.renameUri?.toString(),
             status: getStatus(change.status)
         });
+
         return {
             HEAD: ref(state.HEAD),
             refs: state.refs.map(ref),
@@ -346,5 +381,6 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
     disposables.push(commands.registerCommand('git.api.getRemoteSources', (opts?: PickRemoteSourceOptions) => {
         return commands.executeCommand('git-base.api.getRemoteSources', opts);
     }));
+
     return Disposable.from(...disposables);
 }

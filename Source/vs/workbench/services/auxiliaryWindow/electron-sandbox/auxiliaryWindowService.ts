@@ -29,6 +29,7 @@ type NativeCodeWindow = CodeWindow & {
 export class NativeAuxiliaryWindow extends AuxiliaryWindow {
     private skipUnloadConfirmation = false;
     private maximized = false;
+
     constructor(window: CodeWindow, container: HTMLElement, stylesHaveLoaded: Barrier, 
     @IConfigurationService
     configurationService: IConfigurationService, 
@@ -43,6 +44,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
     @IDialogService
     private readonly dialogService: IDialogService) {
         super(window, container, stylesHaveLoaded, configurationService, hostService, environmentService);
+
         if (!isMacintosh) {
             // For now, limit this to platforms that have clear maximised
             // transitions (Windows, Linux) via window buttons.
@@ -67,6 +69,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
     }
     private async handleFullScreenState(): Promise<void> {
         const fullscreen = await this.nativeHostService.isFullScreen({ targetWindowId: this.window.vscodeWindowId });
+
         if (fullscreen) {
             setFullscreen(true, this.window);
         }
@@ -80,7 +83,9 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
             return;
         }
         this.preventUnload(e);
+
         const confirmed = await this.instantiationService.invokeFunction(accessor => NativeAuxiliaryWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE));
+
         if (confirmed) {
             this.skipUnloadConfirmation = true;
             this.nativeHostService.closeWindow({ targetWindowId: this.window.vscodeWindowId });
@@ -92,7 +97,9 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
     }
     override createState(): IAuxiliaryWindowOpenOptions {
         const state = super.createState();
+
         const fullscreen = isFullscreen(this.window);
+
         return {
             ...state,
             bounds: state.bounds,
@@ -122,13 +129,16 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
     }
     protected override async resolveWindowId(auxiliaryWindow: NativeCodeWindow): Promise<number> {
         mark('code/auxiliaryWindow/willResolveWindowId');
+
         const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke('vscode:registerAuxiliaryWindow', this.nativeHostService.windowId);
         mark('code/auxiliaryWindow/didResolveWindowId');
+
         return windowId;
     }
     protected override createContainer(auxiliaryWindow: NativeCodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions) {
         // Zoom level (either explicitly provided or inherited from main window)
         let windowZoomLevel: number;
+
         if (typeof options?.zoomLevel === 'number') {
             windowZoomLevel = options.zoomLevel;
         }
@@ -136,6 +146,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
             windowZoomLevel = getZoomLevel(getActiveWindow());
         }
         applyZoom(windowZoomLevel, auxiliaryWindow);
+
         return super.createContainer(auxiliaryWindow, disposables);
     }
     protected override createAuxiliaryWindow(targetWindow: CodeWindow, container: HTMLElement, stylesHaveLoaded: Barrier): AuxiliaryWindow {

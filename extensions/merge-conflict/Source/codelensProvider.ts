@@ -8,11 +8,13 @@ export default class MergeConflictCodeLensProvider implements vscode.CodeLensPro
     private codeLensRegistrationHandle?: vscode.Disposable | null;
     private config?: interfaces.IExtensionConfiguration;
     private tracker: interfaces.IDocumentMergeConflictTracker;
+
     constructor(trackerService: interfaces.IDocumentMergeConflictTrackerService) {
         this.tracker = trackerService.createTracker('codelens');
     }
     begin(config: interfaces.IExtensionConfiguration) {
         this.config = config;
+
         if (this.config.enableCodeLens) {
             this.registerCodeLensProvider();
         }
@@ -38,8 +40,10 @@ export default class MergeConflictCodeLensProvider implements vscode.CodeLensPro
             return null;
         }
         const conflicts = await this.tracker.getConflicts(document);
+
         const conflictsCount = conflicts?.length ?? 0;
         vscode.commands.executeCommand('setContext', 'mergeConflictsCount', conflictsCount);
+
         if (!conflictsCount) {
             return null;
         }
@@ -50,24 +54,29 @@ export default class MergeConflictCodeLensProvider implements vscode.CodeLensPro
                 title: vscode.l10n.t("Accept Current Change"),
                 arguments: ['known-conflict', conflict]
             };
+
             const acceptIncomingCommand: vscode.Command = {
                 command: 'merge-conflict.accept.incoming',
                 title: vscode.l10n.t("Accept Incoming Change"),
                 arguments: ['known-conflict', conflict]
             };
+
             const acceptBothCommand: vscode.Command = {
                 command: 'merge-conflict.accept.both',
                 title: vscode.l10n.t("Accept Both Changes"),
                 arguments: ['known-conflict', conflict]
             };
+
             const diffCommand: vscode.Command = {
                 command: 'merge-conflict.compare',
                 title: vscode.l10n.t("Compare Changes"),
                 arguments: [conflict]
             };
+
             const range = document.lineAt(conflict.range.start.line).range;
             items.push(new vscode.CodeLens(range, acceptCurrentCommand), new vscode.CodeLens(range, acceptIncomingCommand), new vscode.CodeLens(range, acceptBothCommand), new vscode.CodeLens(range, diffCommand));
         });
+
         return items;
     }
     private registerCodeLensProvider() {

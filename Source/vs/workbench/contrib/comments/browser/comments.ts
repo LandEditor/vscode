@@ -10,6 +10,7 @@ export interface ICommentsView extends IView {
     readonly filters: CommentsFilters;
     focusFilter(): void;
     clearFilterText(): void;
+
     getFilterStats(): {
         total: number;
         filtered: number;

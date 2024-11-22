@@ -32,7 +32,9 @@ class OpenUrlAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const quickInputService = accessor.get(IQuickInputService);
+
         const urlService = accessor.get(IURLService);
+
         return quickInputService.input({ prompt: localize('urlToOpen', "URL to open") }).then(input => {
             if (input) {
                 const uri = URI.parse(input);
@@ -57,6 +59,7 @@ registerWorkbenchContribution2(TrustedDomainsFileSystemProvider.ID, TrustedDomai
 );
 registerWorkbenchContribution2(ExternalUriResolverContribution.ID, ExternalUriResolverContribution, WorkbenchPhase.BlockRestore // registration only
 );
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 configurationRegistry.registerConfiguration({
     ...workbenchConfigurationNodeBase,

@@ -12,6 +12,7 @@ export class PreviewManager implements vscode.CustomReadonlyEditorProvider {
     public static readonly viewType = 'imagePreview.previewEditor';
     private readonly _previews = new Set<ImagePreview>();
     private _activePreview: ImagePreview | undefined;
+
     constructor(private readonly extensionRoot: vscode.Uri, private readonly sizeStatusBarEntry: SizeStatusBarEntry, private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry, private readonly zoomStatusBarEntry: ZoomStatusBarEntry) { }
     public async openCustomDocument(uri: vscode.Uri) {
         return { uri, dispose: () => { } };
@@ -39,6 +40,7 @@ class ImagePreview extends MediaPreview {
     private _imageSize: string | undefined;
     private _imageZoom: Scale | undefined;
     private readonly emptyPngDataUri = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR42gEFAPr/AP///wAI/AL+Sr4t6gAAAABJRU5ErkJggg==';
+
     constructor(private readonly extensionRoot: vscode.Uri, resource: vscode.Uri, webviewEditor: vscode.WebviewPanel, private readonly sizeStatusBarEntry: SizeStatusBarEntry, binarySizeStatusBarEntry: BinarySizeStatusBarEntry, private readonly zoomStatusBarEntry: ZoomStatusBarEntry) {
         super(extensionRoot, resource, webviewEditor, binarySizeStatusBarEntry);
         this._register(webviewEditor.webview.onDidReceiveMessage(message => {
@@ -46,15 +48,18 @@ class ImagePreview extends MediaPreview {
                 case 'size': {
                     this._imageSize = message.value;
                     this.updateState();
+
                     break;
                 }
                 case 'zoom': {
                     this._imageZoom = message.value;
                     this.updateState();
+
                     break;
                 }
                 case 'reopen-as-text': {
                     reopenAsText(resource, webviewEditor.viewColumn);
+
                     break;
                 }
             }
@@ -101,6 +106,7 @@ class ImagePreview extends MediaPreview {
     }
     protected override updateState() {
         super.updateState();
+
         if (this.previewState === PreviewState.Disposed) {
             return;
         }
@@ -119,11 +125,15 @@ class ImagePreview extends MediaPreview {
     }
     protected override async getWebviewContents(): Promise<string> {
         const version = Date.now().toString();
+
         const settings = {
             src: await this.getResourcePath(this.webviewEditor, this.resource, version),
         };
+
         const nonce = getNonce();
+
         const cspSource = this.webviewEditor.webview.cspSource;
+
         return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,6 +163,7 @@ class ImagePreview extends MediaPreview {
     private async getResourcePath(webviewEditor: vscode.WebviewPanel, resource: vscode.Uri, version: string): Promise<string> {
         if (resource.scheme === 'git') {
             const stat = await vscode.workspace.fs.stat(resource);
+
             if (stat.size === 0) {
                 return this.emptyPngDataUri;
             }
@@ -169,10 +180,13 @@ class ImagePreview extends MediaPreview {
 }
 export function registerImagePreviewSupport(context: vscode.ExtensionContext, binarySizeStatusBarEntry: BinarySizeStatusBarEntry): vscode.Disposable {
     const disposables: vscode.Disposable[] = [];
+
     const sizeStatusBarEntry = new SizeStatusBarEntry();
     disposables.push(sizeStatusBarEntry);
+
     const zoomStatusBarEntry = new ZoomStatusBarEntry();
     disposables.push(zoomStatusBarEntry);
+
     const previewManager = new PreviewManager(context.extensionUri, sizeStatusBarEntry, binarySizeStatusBarEntry, zoomStatusBarEntry);
     disposables.push(vscode.window.registerCustomEditorProvider(PreviewManager.viewType, previewManager, {
         supportsMultipleEditorsPerDocument: true,
@@ -186,5 +200,6 @@ export function registerImagePreviewSupport(context: vscode.ExtensionContext, bi
     disposables.push(vscode.commands.registerCommand('imagePreview.copyImage', () => {
         previewManager.activePreview?.copyImage();
     }));
+
     return vscode.Disposable.from(...disposables);
 }

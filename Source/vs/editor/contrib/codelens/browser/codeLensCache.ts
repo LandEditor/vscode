@@ -17,6 +17,7 @@ export const ICodeLensCache = createDecorator<ICodeLensCache>('ICodeLensCache');
 export interface ICodeLensCache {
     readonly _serviceBrand: undefined;
     put(model: ITextModel, data: CodeLensModel): void;
+
     get(model: ITextModel): CodeLensModel | undefined;
     delete(model: ITextModel): void;
 }
@@ -35,6 +36,7 @@ export class CodeLensCache implements ICodeLensCache {
         }
     };
     private readonly _cache = new LRUCache<string, CacheItem>(20, 0.75);
+
     constructor(
     @IStorageService
     storageService: IStorageService) {
@@ -43,6 +45,7 @@ export class CodeLensCache implements ICodeLensCache {
         runWhenWindowIdle(mainWindow, () => storageService.remove(oldkey, StorageScope.WORKSPACE));
         // restore lens data on start
         const key = 'codelens/cache2';
+
         const raw = storageService.get(key, StorageScope.WORKSPACE, '{}');
         this._deserialize(raw);
         // store lens data on shutdown
@@ -60,13 +63,16 @@ export class CodeLensCache implements ICodeLensCache {
                 command: item.symbol.command && { id: '', title: item.symbol.command?.title },
             };
         });
+
         const copyModel = new CodeLensModel();
         copyModel.add({ lenses: copyItems, dispose: () => { } }, this._fakeProvider);
+
         const item = new CacheItem(model.getLineCount(), copyModel);
         this._cache.set(model.uri.toString(), item);
     }
     get(model: ITextModel) {
         const item = this._cache.get(model.uri.toString());
+
         return item && item.lineCount === model.getLineCount() ? item.data : undefined;
     }
     delete(model: ITextModel): void {
@@ -75,8 +81,10 @@ export class CodeLensCache implements ICodeLensCache {
     // --- persistence
     private _serialize(): string {
         const data: Record<string, ISerializedCacheData> = Object.create(null);
+
         for (const [key, value] of this._cache) {
             const lines = new Set<number>();
+
             for (const d of value.data.lenses) {
                 lines.add(d.symbol.range.startLineNumber);
             }
@@ -90,9 +98,12 @@ export class CodeLensCache implements ICodeLensCache {
     private _deserialize(raw: string): void {
         try {
             const data: Record<string, ISerializedCacheData> = JSON.parse(raw);
+
             for (const key in data) {
                 const element = data[key];
+
                 const lenses: CodeLens[] = [];
+
                 for (const line of element.lines) {
                     lenses.push({ range: new Range(line, 1, line, 11) });
                 }

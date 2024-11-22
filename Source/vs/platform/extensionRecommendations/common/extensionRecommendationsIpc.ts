@@ -7,6 +7,7 @@ import { IChannel, IServerChannel } from '../../../base/parts/ipc/common/ipc.js'
 import { IExtensionRecommendationNotificationService, IExtensionRecommendations, RecommendationsNotificationResult } from './extensionRecommendations.js';
 export class ExtensionRecommendationNotificationServiceChannelClient implements IExtensionRecommendationNotificationService {
     declare readonly _serviceBrand: undefined;
+
     constructor(private readonly channel: IChannel) { }
     get ignoredRecommendations(): string[] { throw new Error('not supported'); }
     promptImportantExtensionsInstallNotification(extensionRecommendations: IExtensionRecommendations): Promise<RecommendationsNotificationResult> {

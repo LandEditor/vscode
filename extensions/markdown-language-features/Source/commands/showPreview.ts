@@ -12,6 +12,7 @@ interface ShowPreviewSettings {
 }
 async function showPreview(webviewManager: MarkdownPreviewManager, telemetryReporter: TelemetryReporter, uri: vscode.Uri | undefined, previewSettings: ShowPreviewSettings): Promise<any> {
     let resource = uri;
+
     if (!(resource instanceof vscode.Uri)) {
         if (vscode.window.activeTextEditor) {
             // we are relaxed and don't check for markdown files

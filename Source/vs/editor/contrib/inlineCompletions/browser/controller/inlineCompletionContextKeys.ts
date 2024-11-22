@@ -46,6 +46,7 @@ export class InlineCompletionContextKeys extends Disposable {
 		this._register(autorun(reader => {
 			/** @description update context key: inlineCompletionVisible, suppressSuggestions */
 			const model = this.model.read(reader);
+
 			const state = model?.inlineCompletionState.read(reader);
 
 			const isInlineCompletionVisible = !!state?.inlineCompletion && state?.primaryGhostText !== undefined && !state?.primaryGhostText.isEmpty();
@@ -61,25 +62,30 @@ export class InlineCompletionContextKeys extends Disposable {
 			const model = this.model.read(reader);
 
 			let startsWithIndentation = false;
+
 			let startsWithIndentationLessThanTabSize = true;
 
 			const ghostText = model?.primaryGhostText.read(reader);
+
 			if (!!model?.selectedSuggestItem && ghostText && ghostText.parts.length > 0) {
 				const { column, lines } = ghostText.parts[0];
 
 				const firstLine = lines[0];
 
 				const indentationEndColumn = model.textModel.getLineIndentColumn(ghostText.lineNumber);
+
 				const inIndentation = column <= indentationEndColumn;
 
 				if (inIndentation) {
 					let firstNonWsIdx = firstNonWhitespaceIndex(firstLine);
+
 					if (firstNonWsIdx === -1) {
 						firstNonWsIdx = firstLine.length - 1;
 					}
 					startsWithIndentation = firstNonWsIdx > 0;
 
 					const tabSize = model.textModel.getOptions().tabSize;
+
 					const visibleColumnIndentation = CursorColumns.visibleColumnFromColumn(firstLine, firstNonWsIdx + 1, tabSize);
 					startsWithIndentationLessThanTabSize = visibleColumnIndentation < tabSize;
 				}

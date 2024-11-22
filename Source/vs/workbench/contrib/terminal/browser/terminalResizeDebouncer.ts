@@ -6,6 +6,7 @@ import { getWindow, runWhenWindowIdle } from '../../../../base/browser/dom.js';
 import { debounce } from '../../../../base/common/decorators.js';
 import { Disposable, MutableDisposable } from '../../../../base/common/lifecycle.js';
 import type { XtermTerminal } from './xterm/xtermTerminal.js';
+
 const enum Constants {
     /**
      * The _normal_ buffer length threshold at which point resizing starts being debounced.
@@ -17,6 +18,7 @@ export class TerminalResizeDebouncer extends Disposable {
     private _latestY: number = 0;
     private readonly _resizeXJob = this._register(new MutableDisposable());
     private readonly _resizeYJob = this._register(new MutableDisposable());
+
     constructor(private readonly _isVisible: () => boolean, private readonly _getXterm: () => XtermTerminal | undefined, private readonly _resizeBothCallback: (cols: number, rows: number) => void, private readonly _resizeXCallback: (cols: number) => void, private readonly _resizeYCallback: (rows: number) => void) {
         super();
     }
@@ -28,10 +30,12 @@ export class TerminalResizeDebouncer extends Disposable {
             this._resizeXJob.clear();
             this._resizeYJob.clear();
             this._resizeBothCallback(cols, rows);
+
             return;
         }
         // Resize in an idle callback if the terminal is not visible
         const win = getWindow(this._getXterm()!.raw.element);
+
         if (win && !this._isVisible()) {
             if (!this._resizeXJob.value) {
                 this._resizeXJob.value = runWhenWindowIdle(win, async () => {

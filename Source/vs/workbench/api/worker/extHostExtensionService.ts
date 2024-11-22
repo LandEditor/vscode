@@ -16,8 +16,10 @@ class WorkerRequireInterceptor extends RequireInterceptor {
     getModule(request: string, parent: URI): undefined | any {
         for (const alternativeModuleName of this._alternatives) {
             const alternative = alternativeModuleName(request);
+
             if (alternative) {
                 request = alternative;
+
                 break;
             }
         }
@@ -45,7 +47,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
     }
     protected async _loadCommonJSModule<T extends object | undefined>(extension: IExtensionDescription | null, module: URI, activationTimesBuilder: ExtensionActivationTimesBuilder): Promise<T> {
         module = module.with({ path: ensureSuffix(module.path, '.js') });
+
         const extensionId = extension?.identifier.value;
+
         if (extensionId) {
             performance.mark(`code/extHost/willFetchExtensionCode/${extensionId}`);
         }
@@ -53,7 +57,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
         // This needs to be done on the main thread due to a potential `resourceUriProvider` (workbench api)
         // which is only available in the main thread
         const browserUri = URI.revive(await this._mainThreadExtensionsProxy.$asBrowserUri(module));
+
         const response = await fetch(browserUri.toString(true));
+
         if (extensionId) {
             performance.mark(`code/extHost/didFetchExtensionCode/${extensionId}`);
         }
@@ -65,8 +71,11 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
         // Here we append #vscode-extension to serve as a marker, such that source maps
         // can be adjusted for the extra wrapping function.
         const sourceURL = `${module.toString(true)}#vscode-extension`;
+
         const fullSource = `${source}\n//# sourceURL=${sourceURL}`;
+
         let initFn: Function;
+
         try {
             initFn = new Function('module', 'exports', 'require', fullSource); // CodeQL [SM01632] js/eval-call there is no alternative until we move to ESM
         }
@@ -79,6 +88,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
             }
             console.error(`${module.toString(true)}${typeof err.line === 'number' ? ` line ${err.line}` : ''}${typeof err.column === 'number' ? ` column ${err.column}` : ''}`);
             console.error(err);
+
             throw err;
         }
         if (extension) {
@@ -86,20 +96,26 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
         }
         // define commonjs globals: `module`, `exports`, and `require`
         const _exports = {};
+
         const _module = { exports: _exports };
+
         const _require = (request: string) => {
             const result = this._fakeModules!.getModule(request, module);
+
             if (result === undefined) {
                 throw new Error(`Cannot load module '${request}'`);
             }
             return result;
         };
+
         try {
             activationTimesBuilder.codeLoadingStart();
+
             if (extensionId) {
                 performance.mark(`code/extHost/willLoadExtensionCode/${extensionId}`);
             }
             initFn(_module, _exports, _require);
+
             return <T>(_module.exports !== _exports ? _module.exports : _exports);
         }
         finally {
@@ -120,6 +136,7 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
             return;
         }
         const deadline = Date.now() + waitTimeout;
+
         while (Date.now() < deadline && !('__jsDebugIsReady' in globalThis)) {
             await timeout(10);
         }

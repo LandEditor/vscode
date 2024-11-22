@@ -18,6 +18,7 @@ export abstract class DelegatingEditor extends Disposable implements IEditor {
     private readonly _onDidDispose = this._register(new Emitter<void>());
     public readonly onDidDispose = this._onDidDispose.event;
     protected abstract get _targetEditor(): CodeEditorWidget;
+
     getId(): string { return this.getEditorType() + ':v2:' + this._id; }
     abstract getEditorType(): string;
     abstract updateOptions(newOptions: IEditorOptions): void;

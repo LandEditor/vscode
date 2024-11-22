@@ -5,6 +5,7 @@
 import { RunOnceScheduler } from '../../../base/common/async.js';
 import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
 import { AccessibilitySignal, IAccessibilitySignalService } from './accessibilitySignalService.js';
+
 const PROGRESS_SIGNAL_LOOP_DELAY = 5000;
 /**
  * Schedules a signal to play while progress is happening.
@@ -12,6 +13,7 @@ const PROGRESS_SIGNAL_LOOP_DELAY = 5000;
 export class AccessibilityProgressSignalScheduler extends Disposable {
     private _scheduler: RunOnceScheduler;
     private _signalLoop: IDisposable | undefined;
+
     constructor(msDelayTime: number, msLoopTime: number | undefined, 
     @IAccessibilitySignalService
     private readonly _accessibilitySignalService: IAccessibilitySignalService) {

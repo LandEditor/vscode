@@ -39,8 +39,11 @@ export interface IUserDataProfileManagementService {
     createAndEnterTransientProfile(): Promise<IUserDataProfile>;
     removeProfile(profile: IUserDataProfile): Promise<void>;
     updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<IUserDataProfile>;
+
     switchProfile(profile: IUserDataProfile): Promise<void>;
+
     getBuiltinProfileTemplates(): Promise<IProfileTemplateInfo[]>;
+
     getDefaultProfileToUse(): IUserDataProfile;
 }
 export interface IUserDataProfileTemplate {
@@ -55,6 +58,7 @@ export interface IUserDataProfileTemplate {
 }
 export function isUserDataProfileTemplate(thing: unknown): thing is IUserDataProfileTemplate {
     const candidate = thing as IUserDataProfileTemplate | undefined;
+
     return !!(candidate && typeof candidate === 'object'
         && (isUndefined(candidate.settings) || typeof candidate.settings === 'string')
         && (isUndefined(candidate.globalState) || typeof candidate.globalState === 'string')
@@ -87,6 +91,7 @@ export interface IUserDataProfileImportExportService {
     registerProfileContentHandler(id: string, profileContentHandler: IUserDataProfileContentHandler): IDisposable;
     unregisterProfileContentHandler(id: string): void;
     resolveProfileTemplate(uri: URI): Promise<IUserDataProfileTemplate | null>;
+
     exportProfile(profile: IUserDataProfile, exportFlags?: ProfileResourceTypeFlags): Promise<void>;
     createFromProfile(from: IUserDataProfile, options: IUserDataProfileCreateOptions, token: CancellationToken): Promise<IUserDataProfile | undefined>;
     createProfileFromTemplate(profileTemplate: IUserDataProfileTemplate, options: IUserDataProfileCreateOptions, token: CancellationToken): Promise<IUserDataProfile | undefined>;
@@ -103,7 +108,9 @@ export interface IProfileResourceTreeItem extends ITreeItem {
     readonly type: ProfileResourceType;
     readonly label: ITreeItemLabel;
     isFromDefaultProfile(): boolean;
+
     getChildren(): Promise<IProfileResourceChildTreeItem[] | undefined>;
+
     getContent(): Promise<string>;
 }
 export interface IProfileResourceChildTreeItem extends ITreeItem {

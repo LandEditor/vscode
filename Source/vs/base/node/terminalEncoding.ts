@@ -7,6 +7,7 @@
  */
 import { exec } from 'child_process';
 import { isWindows } from '../common/platform.js';
+
 const windowsTerminalEncodings = {
     '437': 'cp437', // United States
     '850': 'cp850', // Multilingual(Latin I)
@@ -24,7 +25,9 @@ const windowsTerminalEncodings = {
 };
 function toIconvLiteEncoding(encodingName: string): string {
     const normalizedEncodingName = encodingName.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
     const mapped = JSCHARDET_TO_ICONV_ENCODINGS[normalizedEncodingName];
+
     return mapped || normalizedEncodingName;
 }
 const JSCHARDET_TO_ICONV_ENCODINGS: {
@@ -33,11 +36,13 @@ const JSCHARDET_TO_ICONV_ENCODINGS: {
     'ibm866': 'cp866',
     'big5': 'cp950'
 };
+
 const UTF8 = 'utf8';
 export async function resolveTerminalEncoding(verbose?: boolean): Promise<string> {
     let rawEncodingPromise: Promise<string | undefined>;
     // Support a global environment variable to win over other mechanics
     const cliEncodingEnv = process.env['VSCODE_CLI_ENCODING'];
+
     if (cliEncodingEnv) {
         if (verbose) {
             console.log(`Found VSCODE_CLI_ENCODING variable: ${cliEncodingEnv}`);
@@ -56,6 +61,7 @@ export async function resolveTerminalEncoding(verbose?: boolean): Promise<string
                         console.log(`Output from "chcp" command is: ${stdout}`);
                     }
                     const windowsTerminalEncodingKeys = Object.keys(windowsTerminalEncodings) as Array<keyof typeof windowsTerminalEncodings>;
+
                     for (const key of windowsTerminalEncodingKeys) {
                         if (stdout.indexOf(key) >= 0) {
                             return resolve(windowsTerminalEncodings[key]);
@@ -76,6 +82,7 @@ export async function resolveTerminalEncoding(verbose?: boolean): Promise<string
         });
     }
     const rawEncoding = await rawEncodingPromise;
+
     if (verbose) {
         console.log(`Detected raw terminal encoding: ${rawEncoding}`);
     }

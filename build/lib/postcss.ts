@@ -7,6 +7,7 @@ import * as File from 'vinyl';
 import * as es from 'event-stream';
 export function gulpPostcss(plugins: postcss.AcceptedPlugin[], handleError?: (err: Error) => void) {
     const instance = postcss(plugins);
+
     return es.map((file: File, callback: (error?: any, file?: any) => void) => {
         if (file.isNull()) {
             return callback(null, file);

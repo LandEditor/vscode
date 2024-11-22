@@ -36,6 +36,7 @@ export class TerminalEditor extends EditorPane {
     private readonly _instanceMenu: IMenu;
     private _cancelContextMenu: boolean = false;
     private readonly _disposableStore = this._register(new DisposableStore());
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -72,10 +73,12 @@ export class TerminalEditor extends EditorPane {
         this._editorInput = newInput;
         await super.setInput(newInput, options, context, token);
         this._editorInput.terminalInstance?.attachToElement(this._overflowGuardElement!);
+
         if (this._lastDimension) {
             this.layout(this._lastDimension);
         }
         this._editorInput.terminalInstance?.setVisible(this.isVisible() && this._workbenchLayoutService.isVisible(Parts.EDITOR_PART, this.window));
+
         if (this._editorInput.terminalInstance) {
             // since the editor does not monitor focus changes, for ex. between the terminal
             // panel and the editors, this is needed so that the active instance gets set
@@ -86,6 +89,7 @@ export class TerminalEditor extends EditorPane {
     }
     override clearInput(): void {
         super.clearInput();
+
         if (this._overflowGuardElement && this._editorInput?.terminalInstance?.domElement.parentElement === this._overflowGuardElement) {
             this._editorInput.terminalInstance?.detachFromElement();
         }
@@ -114,8 +118,10 @@ export class TerminalEditor extends EditorPane {
         }
         this._register(dom.addDisposableListener(this._editorInstanceElement, 'mousedown', async (event: MouseEvent) => {
             const terminal = this._terminalEditorService.activeInstance;
+
             if (this._terminalEditorService.instances.length > 0 && terminal) {
                 const result = await terminal.handleMouseEvent(event, this._instanceMenu);
+
                 if (typeof result === 'object' && result.cancelContextMenu) {
                     this._cancelContextMenu = true;
                 }
@@ -123,10 +129,12 @@ export class TerminalEditor extends EditorPane {
         }));
         this._register(dom.addDisposableListener(this._editorInstanceElement, 'contextmenu', (event: MouseEvent) => {
             const rightClickBehavior = this._terminalConfigurationService.config.rightClickBehavior;
+
             if (rightClickBehavior === 'nothing' && !event.shiftKey) {
                 event.preventDefault();
                 event.stopImmediatePropagation();
                 this._cancelContextMenu = false;
+
                 return;
             }
             else if (!this._cancelContextMenu && rightClickBehavior !== 'copyPaste' && rightClickBehavior !== 'paste') {
@@ -141,6 +149,7 @@ export class TerminalEditor extends EditorPane {
     }
     layout(dimension: dom.Dimension): void {
         const instance = this._editorInput?.terminalInstance;
+
         if (instance) {
             instance.attachToElement(this._overflowGuardElement!);
             instance.layout(dimension);
@@ -156,9 +165,12 @@ export class TerminalEditor extends EditorPane {
             case TerminalCommandId.CreateTerminalEditor: {
                 if (action instanceof MenuItemAction) {
                     const location = { viewColumn: ACTIVE_GROUP };
+
                     const actions = getTerminalActionBarArgs(location, this._terminalProfileService.availableProfiles, this._getDefaultProfileName(), this._terminalProfileService.contributedProfiles, this._terminalService, this._dropdownMenu);
                     this._registerDisposableActions(actions.dropdownAction, actions.dropdownMenuActions);
+
                     const button = this._instantiationService.createInstance(DropdownWithPrimaryActionViewItem, action, actions.dropdownAction, actions.dropdownMenuActions, actions.className, { hoverDelegate: options.hoverDelegate });
+
                     return button;
                 }
             }
@@ -170,6 +182,7 @@ export class TerminalEditor extends EditorPane {
      */
     private _registerDisposableActions(dropdownAction: IAction, dropdownMenuActions: IAction[]): void {
         this._disposableStore.clear();
+
         if (dropdownAction instanceof Action) {
             this._disposableStore.add(dropdownAction);
         }
@@ -177,6 +190,7 @@ export class TerminalEditor extends EditorPane {
     }
     private _getDefaultProfileName(): string {
         let defaultProfileName;
+
         try {
             defaultProfileName = this._terminalProfileService.getDefaultProfileName();
         }

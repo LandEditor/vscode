@@ -16,6 +16,7 @@ import { IDisposable } from '../../../base/common/lifecycle.js';
 @extHostNamedCustomer(MainContext.MainThreadMessageService)
 export class MainThreadMessageService implements MainThreadMessageServiceShape {
     private extensionsListener: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @INotificationService
     private readonly _notificationService: INotificationService, 
@@ -58,10 +59,13 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
                 enabled: true,
                 run: () => {
                     resolve(command.handle);
+
                     return Promise.resolve();
                 }
             }));
+
             let source: string | INotificationSource | undefined;
+
             if (options.source) {
                 source = {
                     label: options.source.label,
@@ -72,6 +76,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
                 source = nls.localize('defaultSource', "Extension");
             }
             const secondaryActions: IAction[] = [];
+
             if (options.source) {
                 secondaryActions.push(toAction({
                     id: options.source.identifier.value,
@@ -100,12 +105,15 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
         handle: number;
     }[], useCustom?: boolean): Promise<number | undefined> {
         const buttons: IPromptButton<number>[] = [];
+
         let cancelButton: IPromptButton<number | undefined> | undefined = undefined;
+
         for (const command of commands) {
             const button: IPromptButton<number> = {
                 label: command.title,
                 run: () => command.handle
             };
+
             if (command.isCloseAffordance) {
                 cancelButton = button;
             }
@@ -135,6 +143,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
             cancelButton,
             custom: useCustom
         });
+
         return result;
     }
 }

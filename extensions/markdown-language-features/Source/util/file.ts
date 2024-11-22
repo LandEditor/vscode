@@ -21,6 +21,7 @@ export function isMarkdownFile(document: vscode.TextDocument) {
 }
 export function looksLikeMarkdownPath(resolvedHrefPath: vscode.Uri): boolean {
     const doc = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === resolvedHrefPath.toString());
+
     if (doc) {
         return isMarkdownFile(doc);
     }

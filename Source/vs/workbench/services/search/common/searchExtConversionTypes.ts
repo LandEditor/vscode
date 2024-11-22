@@ -399,8 +399,10 @@ export class OldFileSearchProviderConverter implements FileSearchProvider2 {
     provideFileSearchResults(pattern: string, options: FileSearchProviderOptions, token: CancellationToken): ProviderResult<URI[]> {
         const getResult = async () => {
             const newOpts = newToOldFileProviderOptions(options);
+
             return Promise.all(newOpts.map(o => this.provider.provideFileSearchResults({ pattern }, o, token)));
         };
+
         return getResult().then(e => coalesce(e).flat());
     }
 }
@@ -437,9 +439,12 @@ export function oldToNewTextSearchResult(result: TextSearchResult): TextSearchRe
     if (isTextSearchMatch(result)) {
         const ranges = asArray(result.ranges).map((r, i) => {
             const previewArr = asArray(result.preview.matches);
+
             const matchingPreviewRange = previewArr[i];
+
             return { sourceRange: r, previewRange: matchingPreviewRange };
         });
+
         return new TextSearchMatch2(result.uri, ranges, result.preview.text);
     }
     else {
@@ -455,11 +460,14 @@ export class OldTextSearchProviderConverter implements TextSearchProvider2 {
             }
             progress.report(oldToNewTextSearchResult(oldResult));
         };
+
         const getResult = async () => {
             return coalesce(await Promise.all(newToOldTextProviderOptions(options).map(o => this.provider.provideTextSearchResults(query, o, { report: (e) => progressShim(e) }, token))))
                 .reduce((prev, cur) => ({ limitHit: prev.limitHit || cur.limitHit }), { limitHit: false });
         };
+
         const oldResult = getResult();
+
         return oldResult.then((e) => {
             return {
                 limitHit: e.limitHit,
@@ -473,16 +481,19 @@ function validateProviderResult(result: TextSearchResult): boolean {
         if (Array.isArray(result.ranges)) {
             if (!Array.isArray(result.preview.matches)) {
                 console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same type.');
+
                 return false;
             }
             if ((<Range[]>result.preview.matches).length !== result.ranges.length) {
                 console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same length.');
+
                 return false;
             }
         }
         else {
             if (Array.isArray(result.preview.matches)) {
                 console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same length.');
+
                 return false;
             }
         }

@@ -18,6 +18,7 @@ export class ExtHostStorage implements ExtHostStorageShape {
     private _proxy: MainThreadStorageShape;
     private readonly _onDidChangeStorage = new Emitter<IStorageChangeEvent>();
     readonly onDidChangeStorage = this._onDidChangeStorage.event;
+
     constructor(mainContext: IExtHostRpcService, private readonly _logService: ILogService) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadStorage);
     }
@@ -26,7 +27,9 @@ export class ExtHostStorage implements ExtHostStorageShape {
     }
     async initializeExtensionStorage(shared: boolean, key: string, defaultValue?: object): Promise<object | undefined> {
         const value = await this._proxy.$initializeExtensionStorage(shared, key);
+
         let parsedValue: object | undefined;
+
         if (value) {
             parsedValue = this.safeParseValue(shared, key, value);
         }
@@ -37,6 +40,7 @@ export class ExtHostStorage implements ExtHostStorageShape {
     }
     $acceptValue(shared: boolean, key: string, value: string): void {
         const parsedValue = this.safeParseValue(shared, key, value);
+
         if (parsedValue) {
             this._onDidChangeStorage.fire({ shared, key, value: parsedValue });
         }

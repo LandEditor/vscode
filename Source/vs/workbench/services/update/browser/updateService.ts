@@ -24,6 +24,7 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
     private _onStateChange = this._register(new Emitter<State>());
     readonly onStateChange: Event<State> = this._onStateChange.event;
     private _state: State = State.Uninitialized;
+
     get state(): State { return this._state; }
     set state(state: State) {
         this._state = state;
@@ -39,6 +40,7 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
     }
     async isLatestVersion(): Promise<boolean | undefined> {
         const update = await this.doCheckForUpdates(false);
+
         if (update === undefined) {
             return undefined; // no update provider
         }
@@ -52,7 +54,9 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
             const updateProvider = this.environmentService.options.updateProvider;
             // State -> Checking for Updates
             this.state = State.CheckingForUpdates(explicit);
+
             const update = await updateProvider.checkForUpdate();
+
             if (update) {
                 // State -> Downloaded
                 this.state = State.Ready({ version: update.version, productVersion: update.version });

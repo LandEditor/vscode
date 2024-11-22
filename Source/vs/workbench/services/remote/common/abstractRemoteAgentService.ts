@@ -23,6 +23,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
     declare readonly _serviceBrand: undefined;
     private readonly _connection: IRemoteAgentConnection | null;
     private _environment: Promise<IRemoteAgentEnvironment | null> | null;
+
     constructor(
     @IRemoteSocketFactoryService
     private readonly remoteSocketFactoryService: IRemoteSocketFactoryService, 
@@ -39,6 +40,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
     @ILogService
     logService: ILogService) {
         super();
+
         if (this._environmentService.remoteAuthority) {
             this._connection = this._register(new RemoteAgentConnection(this._environmentService.remoteAuthority, productService.commit, productService.quality, this.remoteSocketFactoryService, this._remoteAuthorityResolverService, signService, logService));
         }
@@ -58,6 +60,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
             this._environment = this._withChannel(async (channel, connection) => {
                 const env = await RemoteExtensionEnvironmentChannelClient.getEnvironmentData(channel, connection.remoteAuthority, this.userDataProfileService.currentProfile.isDefault ? undefined : this.userDataProfileService.currentProfile.id);
                 this._remoteAuthorityResolverService._setAuthorityConnectionToken(connection.remoteAuthority, env.connectionToken);
+
                 return env;
             }, null);
         }
@@ -82,6 +85,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
         return this._withTelemetryChannel(async (channel) => {
             const start = Date.now();
             await RemoteExtensionEnvironmentChannelClient.ping(channel);
+
             return Date.now() - start;
         }, undefined);
     }
@@ -93,6 +97,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
     }
     private _withChannel<R>(callback: (channel: IChannel, connection: IRemoteAgentConnection) => Promise<R>, fallback: R): Promise<R> {
         const connection = this.getConnection();
+
         if (!connection) {
             return Promise.resolve(fallback);
         }
@@ -100,6 +105,7 @@ export abstract class AbstractRemoteAgentService extends Disposable implements I
     }
     private _withTelemetryChannel<R>(callback: (channel: IChannel, connection: IRemoteAgentConnection) => Promise<R>, fallback: R): Promise<R> {
         const connection = this.getConnection();
+
         if (!connection) {
             return Promise.resolve(fallback);
         }
@@ -114,18 +120,22 @@ class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection
     readonly remoteAuthority: string;
     private _connection: Promise<Client<RemoteAgentConnectionContext>> | null;
     private _initialConnectionMs: number | undefined;
+
     constructor(remoteAuthority: string, private readonly _commit: string | undefined, private readonly _quality: string | undefined, private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService, private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService, private readonly _signService: ISignService, private readonly _logService: ILogService) {
         super();
         this.remoteAuthority = remoteAuthority;
         this._connection = null;
     }
     end: () => Promise<void> = () => Promise.resolve();
+
     getChannel<T extends IChannel>(channelName: string): T {
         return <T>getDelayedChannel(this._getOrCreateConnection().then(c => c.getChannel(channelName)));
     }
     withChannel<T extends IChannel, R>(channelName: string, callback: (channel: T) => Promise<R>): Promise<R> {
         const channel = this.getChannel<T>(channelName);
+
         const result = callback(channel);
+
         return result;
     }
     registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(channelName: string, channel: T): void {
@@ -148,6 +158,7 @@ class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection
     }
     private async _createConnection(): Promise<Client<RemoteAgentConnectionContext>> {
         let firstCall = true;
+
         const options: IConnectionOptions = {
             commit: this._commit,
             quality: this._quality,
@@ -160,6 +171,7 @@ class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection
                         this._onReconnecting.fire(undefined);
                     }
                     const { authority } = await this._remoteAuthorityResolverService.resolveAuthority(this.remoteAuthority);
+
                     return { connectTo: authority.connectTo, connectionToken: authority.connectionToken };
                 }
             },
@@ -168,8 +180,11 @@ class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection
             logService: this._logService,
             ipcLogger: false ? new IPCLogger(`Local \u2192 Remote`, `Remote \u2192 Local`) : null
         };
+
         let connection: ManagementPersistentConnection;
+
         const start = Date.now();
+
         try {
             connection = this._register(await connectRemoteAgentManagement(options, this.remoteAuthority, `renderer`));
         }
@@ -181,9 +196,11 @@ class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection
         });
         this.end = () => {
             connection.protocol.sendDisconnect();
+
             return connection.protocol.drain();
         };
         this._register(connection.onDidStateChange(e => this._onDidStateChange.fire(e)));
+
         return connection.client;
     }
 }

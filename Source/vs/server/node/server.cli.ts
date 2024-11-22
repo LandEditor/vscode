@@ -43,10 +43,12 @@ const isSupportedForCmd = (optionId: keyof RemoteParsedArgs) => {
         case 'builtin-extensions-dir':
         case 'telemetry':
             return false;
+
         default:
             return true;
     }
 };
+
 const isSupportedForPipe = (optionId: keyof RemoteParsedArgs) => {
     switch (optionId) {
         case 'version':
@@ -72,25 +74,35 @@ const isSupportedForPipe = (optionId: keyof RemoteParsedArgs) => {
         case 'remote':
         case 'locate-shell-integration-path':
             return true;
+
         default:
             return false;
     }
 };
+
 const cliPipe = process.env['VSCODE_IPC_HOOK_CLI'] as string;
+
 const cliCommand = process.env['VSCODE_CLIENT_COMMAND'] as string;
+
 const cliCommandCwd = process.env['VSCODE_CLIENT_COMMAND_CWD'] as string;
+
 const cliRemoteAuthority = process.env['VSCODE_CLI_AUTHORITY'] as string;
+
 const cliStdInFilePath = process.env['VSCODE_STDIN_FILE_PATH'] as string;
 export async function main(desc: ProductDescription, args: string[]): Promise<void> {
     if (!cliPipe && !cliCommand) {
         console.log('Command is only available in WSL or inside a Visual Studio Code terminal.');
+
         return;
     }
     // take the local options and remove the ones that don't apply
     const options: OptionDescriptions<Required<RemoteParsedArgs>> = { ...OPTIONS, gitCredential: { type: 'string' }, openExternal: { type: 'boolean' } };
+
     const isSupported = cliCommand ? isSupportedForCmd : isSupportedForPipe;
+
     for (const optionId in OPTIONS) {
         const optId = <keyof RemoteParsedArgs>optionId;
+
         if (!isSupported(optId)) {
             delete options[optId];
         }
@@ -112,57 +124,76 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
             console.warn(`Option '${deprecatedOption}' is deprecated: ${message}`);
         }
     };
+
     const parsedArgs = parseArgs(args, options, errorReporter);
+
     const mapFileUri = cliRemoteAuthority ? mapFileToRemoteUri : (uri: string) => uri;
+
     const verbose = !!parsedArgs['verbose'];
+
     if (parsedArgs.help) {
         console.log(buildHelpMessage(desc.productName, desc.executableName, desc.version, options));
+
         return;
     }
     if (parsedArgs.version) {
         console.log(buildVersionMessage(desc.version, desc.commit));
+
         return;
     }
     if (parsedArgs['locate-shell-integration-path']) {
         let file: string;
+
         switch (parsedArgs['locate-shell-integration-path']) {
             // Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
             case 'bash':
                 file = 'shellIntegration-bash.sh';
+
                 break;
             // Usage: `if ($env:TERM_PROGRAM -eq "vscode") { . "$(code --locate-shell-integration-path pwsh)" }`
             case 'pwsh':
                 file = 'shellIntegration.ps1';
+
                 break;
             // Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"`
             case 'zsh':
                 file = 'shellIntegration-rc.zsh';
+
                 break;
             // Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
             case 'fish':
                 file = 'shellIntegration.fish';
+
                 break;
+
             default: throw new Error('Error using --locate-shell-integration-path: Invalid shell type');
         }
         console.log(join(getAppRoot(), 'out', 'vs', 'workbench', 'contrib', 'terminal', 'common', 'scripts', file));
+
         return;
     }
     if (cliPipe) {
         if (parsedArgs['openExternal']) {
             openInBrowser(parsedArgs['_'], verbose);
+
             return;
         }
     }
     let remote: string | null | undefined = parsedArgs.remote;
+
     if (remote === 'local' || remote === 'false' || remote === '') {
         remote = null; // null represent a local window
     }
     const folderURIs = (parsedArgs['folder-uri'] || []).map(mapFileUri);
     parsedArgs['folder-uri'] = folderURIs;
+
     const fileURIs = (parsedArgs['file-uri'] || []).map(mapFileUri);
     parsedArgs['file-uri'] = fileURIs;
+
     const inputPaths = parsedArgs['_'];
+
     let hasReadStdinArg = false;
+
     for (const input of inputPaths) {
         if (input === '-') {
             hasReadStdinArg = true;
@@ -172,12 +203,16 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
         }
     }
     parsedArgs['_'] = [];
+
     let readFromStdinPromise: Promise<void> | undefined;
+
     if (hasReadStdinArg && hasStdinWithoutTty()) {
         try {
             let stdinFilePath = cliStdInFilePath;
+
             if (!stdinFilePath) {
                 stdinFilePath = getStdinFilePath();
+
                 const readFromStdinDone = new DeferredPromise<void>();
                 await readFromStdin(stdinFilePath, verbose, () => readFromStdinDone.complete()); // throws error if file can not be written
                 if (!parsedArgs.wait) {
@@ -204,8 +239,10 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
         parsedArgs.extensionTestsPath = mapFileUri(pathToURI(parsedArgs['extensionTestsPath']).href);
     }
     const crashReporterDirectory = parsedArgs['crash-reporter-directory'];
+
     if (crashReporterDirectory !== undefined && !crashReporterDirectory.match(/^([a-zA-Z]:[\\\/])/)) {
         console.log(`The crash reporter directory '${crashReporterDirectory}' must be an absolute Windows path (e.g. c:/crashes)`);
+
         return;
     }
     if (cliCommand) {
@@ -215,20 +252,25 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
             parsedArgs['uninstall-extension']?.forEach(id => cmdLine.push('--uninstall-extension', id));
             ['list-extensions', 'force', 'show-versions', 'category'].forEach(opt => {
                 const value = parsedArgs[<keyof NativeParsedArgs>opt];
+
                 if (value !== undefined) {
                     cmdLine.push(`--${opt}=${value}`);
                 }
             });
+
             if (parsedArgs['update-extensions']) {
                 cmdLine.push('--update-extensions');
             }
             const childProcess = cp.fork(FileAccess.asFileUri('server-main').fsPath, cmdLine, { stdio: 'inherit' });
             childProcess.on('error', err => console.log(err));
+
             return;
         }
         const newCommandline: string[] = [];
+
         for (const key in parsedArgs) {
             const val = parsedArgs[key as keyof typeof parsedArgs];
+
             if (typeof val === 'boolean') {
                 if (val) {
                     newCommandline.push('--' + key);
@@ -247,8 +289,10 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
             newCommandline.push(`--remote=${remote || cliRemoteAuthority}`);
         }
         const ext = extname(cliCommand);
+
         if (ext === '.bat' || ext === '.cmd') {
             const processCwd = cliCommandCwd || cwd();
+
             if (verbose) {
                 console.log(`Invoking: cmd.exe /C ${cliCommand} ${newCommandline.join(' ')} in ${processCwd}`);
             }
@@ -259,8 +303,10 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
         }
         else {
             const cliCwd = dirname(cliCommand);
+
             const env = { ...process.env, ELECTRON_RUN_AS_NODE: '1' };
             newCommandline.unshift('resources/app/out/cli.js');
+
             if (verbose) {
                 console.log(`Invoking: cd "${cliCwd}" && ELECTRON_RUN_AS_NODE=1 "${cliCommand}" "${newCommandline.join('" "')}"`);
             }
@@ -286,6 +332,7 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
             }).catch(e => {
                 console.error('Error when requesting status:', e);
             });
+
             return;
         }
         if (parsedArgs['install-extension'] !== undefined || parsedArgs['uninstall-extension'] !== undefined || parsedArgs['list-extensions'] || parsedArgs['update-extensions']) {
@@ -300,12 +347,15 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
             }).catch(e => {
                 console.error('Error when invoking the extension management command:', e);
             });
+
             return;
         }
         let waitMarkerFilePath: string | undefined = undefined;
+
         if (parsedArgs['wait']) {
             if (!fileURIs.length) {
                 console.log('At least one file must be provided to wait for.');
+
                 return;
             }
             waitMarkerFilePath = createWaitMarkerFileSync(verbose);
@@ -325,6 +375,7 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
         }, verbose).catch(e => {
             console.error('Error when invoking the open command:', e);
         });
+
         if (waitMarkerFilePath) {
             waitForFileDeleted(waitMarkerFilePath);
         }
@@ -351,6 +402,7 @@ async function waitForFileDeleted(path: string) {
 }
 function openInBrowser(args: string[], verbose: boolean) {
     const uris: string[] = [];
+
     for (const location of args) {
         try {
             if (/^(http|https|file):\/\//.test(location)) {
@@ -379,9 +431,11 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
     }
     return new Promise<string>((resolve, reject) => {
         const message = JSON.stringify(args);
+
         if (!cliPipe) {
             console.log('Message ' + message);
             resolve('');
+
             return;
         }
         const opts: http.RequestOptions = {
@@ -393,9 +447,11 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
                 'accept': 'application/json'
             }
         };
+
         const req = http.request(opts, res => {
             if (res.headers['content-type'] !== 'application/json') {
                 reject('Error in response: Invalid content type: Expected \'application/json\', is: ' + res.headers['content-type']);
+
                 return;
             }
             const chunks: string[] = [];
@@ -406,8 +462,10 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<string> {
             res.on('error', (err) => fatal('Error in response.', err));
             res.on('end', () => {
                 const content = chunks.join('');
+
                 try {
                     const obj = JSON.parse(content);
+
                     if (res.statusCode === 200) {
                         resolve(obj);
                     }
@@ -437,13 +495,17 @@ const preferredCwd = process.env.PWD || cwd(); // prefer process.env.PWD as it d
 function pathToURI(input: string): url.URL {
     input = input.trim();
     input = resolve(preferredCwd, input);
+
     return url.pathToFileURL(input);
 }
 function translatePath(input: string, mapFileUri: (input: string) => string, folderURIS: string[], fileURIS: string[]) {
     const url = pathToURI(input);
+
     const mappedUri = mapFileUri(url.href);
+
     try {
         const stat = fs.lstatSync(fs.realpathSync(input));
+
         if (stat.isFile()) {
             fileURIS.push(mappedUri);
         }

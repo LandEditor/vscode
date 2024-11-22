@@ -8,6 +8,7 @@ import { IConfigurationService } from '../../../../../../platform/configuration/
 import { ServicesAccessor } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { INotebookActionContext, NOTEBOOK_ACTIONS_CATEGORY } from '../../controller/coreActions.js';
 import { NotebookSetting } from '../../../common/notebookCommon.js';
+
 const TOGGLE_CELL_TOOLBAR_POSITION = 'notebook.toggleCellToolbarPosition';
 export class ToggleCellToolbarPositionAction extends Action2 {
     constructor() {
@@ -25,13 +26,17 @@ export class ToggleCellToolbarPositionAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, context: any): Promise<void> {
         const editor = context && context.ui ? (context as INotebookActionContext).notebookEditor : undefined;
+
         if (editor && editor.hasModel()) {
             // from toolbar
             const viewType = editor.textModel.viewType;
+
             const configurationService = accessor.get(IConfigurationService);
+
             const toolbarPosition = configurationService.getValue<string | {
                 [key: string]: string;
             }>(NotebookSetting.cellToolbarLocation);
+
             const newConfig = this.togglePosition(viewType, toolbarPosition);
             await configurationService.updateValue(NotebookSetting.cellToolbarLocation, newConfig);
         }
@@ -46,12 +51,14 @@ export class ToggleCellToolbarPositionAction extends Action2 {
             if (['left', 'right', 'hidden'].indexOf(toolbarPosition) >= 0) {
                 // valid position
                 const newViewValue = toolbarPosition === 'right' ? 'left' : 'right';
+
                 const config: {
                     [key: string]: string;
                 } = {
                     default: toolbarPosition
                 };
                 config[viewType] = newViewValue;
+
                 return config;
             }
             else {
@@ -62,16 +69,20 @@ export class ToggleCellToolbarPositionAction extends Action2 {
                     default: 'right',
                 };
                 config[viewType] = 'left';
+
                 return config;
             }
         }
         else {
             const oldValue = toolbarPosition[viewType] ?? toolbarPosition['default'] ?? 'right';
+
             const newViewValue = oldValue === 'right' ? 'left' : 'right';
+
             const newConfig = {
                 ...toolbarPosition
             };
             newConfig[viewType] = newViewValue;
+
             return newConfig;
         }
     }

@@ -35,18 +35,25 @@ export class URLHandlerRouter implements IClientRouter<string> {
         if (Array.isArray(arg) && arg.length > 0) {
             const uri = URI.revive(arg[0]);
             this.logService.trace('URLHandlerRouter#routeCall() with URI argument', uri.toString(true));
+
             if (uri.query) {
                 const match = /\bwindowId=(\d+)/.exec(uri.query);
+
                 if (match) {
                     const windowId = match[1];
                     this.logService.trace(`URLHandlerRouter#routeCall(): found windowId query parameter with value "${windowId}"`, uri.toString(true));
+
                     const regex = new RegExp(`window:${windowId}`);
+
                     const connection = hub.connections.find(c => {
                         this.logService.trace('URLHandlerRouter#routeCall(): testing connection', c.ctx);
+
                         return regex.test(c.ctx);
                     });
+
                     if (connection) {
                         this.logService.trace('URLHandlerRouter#routeCall(): found a connection to route', uri.toString(true));
+
                         return connection;
                     }
                     else {

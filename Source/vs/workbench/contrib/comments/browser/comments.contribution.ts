@@ -88,7 +88,9 @@ registerAction2(class Reply extends Action2 {
     }
     override run(accessor: ServicesAccessor, marshalledCommentThread: MarshalledCommentThreadInternal): void {
         const commentService = accessor.get(ICommentService);
+
         const editorService = accessor.get(IEditorService);
+
         const uriIdentityService = accessor.get(IUriIdentityService);
         revealCommentThread(commentService, editorService, uriIdentityService, marshalledCommentThread.thread, marshalledCommentThread.thread.comments![marshalledCommentThread.thread.comments!.length - 1], true);
     }
@@ -139,6 +141,7 @@ registerSingleton(ICommentService, CommentService, InstantiationType.Delayed);
 export class UnresolvedCommentsBadge extends Disposable implements IWorkbenchContribution {
     private readonly activity = this._register(new MutableDisposable<IDisposable>());
     private totalUnresolved = 0;
+
     constructor(
     @ICommentService
     private readonly _commentService: ICommentService, 
@@ -150,6 +153,7 @@ export class UnresolvedCommentsBadge extends Disposable implements IWorkbenchCon
     }
     private onAllCommentsChanged(e: IWorkspaceCommentThreadsEvent): void {
         let unresolved = 0;
+
         for (const thread of e.commentThreads) {
             if (thread.state === CommentThreadState.Unresolved) {
                 unresolved++;
@@ -159,6 +163,7 @@ export class UnresolvedCommentsBadge extends Disposable implements IWorkbenchCon
     }
     private onCommentsUpdated(): void {
         let unresolved = 0;
+
         for (const resource of this._commentService.commentsModel.resourceCommentThreads) {
             for (const thread of resource.commentThreads) {
                 if (thread.threadState === CommentThreadState.Unresolved) {
@@ -173,6 +178,7 @@ export class UnresolvedCommentsBadge extends Disposable implements IWorkbenchCon
             return;
         }
         this.totalUnresolved = unresolved;
+
         const message = nls.localize('totalUnresolvedComments', '{0} Unresolved Comments', this.totalUnresolved);
         this.activity.value = this.activityService.showViewActivity(COMMENTS_VIEW_ID, { badge: new NumberBadge(this.totalUnresolved, () => message) });
     }

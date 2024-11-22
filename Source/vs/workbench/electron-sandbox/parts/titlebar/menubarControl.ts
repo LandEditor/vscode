@@ -63,6 +63,7 @@ export class NativeMenubarControl extends MenubarControl {
 
 		for (const topLevelMenuName of Object.keys(this.topLevelTitles)) {
 			const menu = this.menus[topLevelMenuName];
+
 			if (menu) {
 				this.mainMenuDisposables.add(menu.onDidChange(() => this.updateMenubar()));
 			}
@@ -78,6 +79,7 @@ export class NativeMenubarControl extends MenubarControl {
 
 		// Send menus to main process to be rendered by Electron
 		const menubarData = { menus: {}, keybindings: {} };
+
 		if (this.getMenubarMenus(menubarData)) {
 			this.menubarService.updateMenubar(this.nativeHostService.windowId, menubarData);
 		}
@@ -89,12 +91,16 @@ export class NativeMenubarControl extends MenubarControl {
 		}
 
 		menubarData.keybindings = this.getAdditionalKeybindings();
+
 		for (const topLevelMenuName of Object.keys(this.topLevelTitles)) {
 			const menu = this.menus[topLevelMenuName];
+
 			if (menu) {
 				const menubarMenu: IMenubarMenu = { items: [] };
+
 				const menuActions = getFlatContextMenuActions(menu.getActions({ shouldForwardArgs: true }));
 				this.populateMenuItems(menuActions, menubarMenu, menubarData.keybindings);
+
 				if (menubarMenu.items.length === 0) {
 					return false; // Menus are incomplete
 				}
@@ -176,8 +182,10 @@ export class NativeMenubarControl extends MenubarControl {
 
 	private getAdditionalKeybindings(): { [id: string]: IMenubarKeybinding } {
 		const keybindings: { [id: string]: IMenubarKeybinding } = {};
+
 		if (isMacintosh) {
 			const keybinding = this.getMenubarKeybinding('workbench.action.quit');
+
 			if (keybinding) {
 				keybindings['workbench.action.quit'] = keybinding;
 			}
@@ -188,18 +196,21 @@ export class NativeMenubarControl extends MenubarControl {
 
 	private getMenubarKeybinding(id: string): IMenubarKeybinding | undefined {
 		const binding = this.keybindingService.lookupKeybinding(id);
+
 		if (!binding) {
 			return undefined;
 		}
 
 		// first try to resolve a native accelerator
 		const electronAccelerator = binding.getElectronAccelerator();
+
 		if (electronAccelerator) {
 			return { label: electronAccelerator, userSettingsLabel: binding.getUserSettingsLabel() ?? undefined };
 		}
 
 		// we need this fallback to support keybindings that cannot show in electron menus (e.g. chords)
 		const acceleratorLabel = binding.getLabel();
+
 		if (acceleratorLabel) {
 			return { label: acceleratorLabel, isNative: false, userSettingsLabel: binding.getUserSettingsLabel() ?? undefined };
 		}

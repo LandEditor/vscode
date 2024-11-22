@@ -52,13 +52,16 @@ export abstract class EditorPane extends Composite implements IEditorPane {
     readonly onDidChangeControl = this._onDidChangeControl.event;
     //#endregion
     private static readonly EDITOR_MEMENTOS = new Map<string, EditorMemento<any>>();
+
     get minimumWidth() { return DEFAULT_EDITOR_MIN_DIMENSIONS.width; }
     get maximumWidth() { return DEFAULT_EDITOR_MAX_DIMENSIONS.width; }
     get minimumHeight() { return DEFAULT_EDITOR_MIN_DIMENSIONS.height; }
     get maximumHeight() { return DEFAULT_EDITOR_MAX_DIMENSIONS.height; }
     protected _input: EditorInput | undefined;
+
     get input(): EditorInput | undefined { return this._input; }
     protected _options: IEditorOptions | undefined;
+
     get options(): IEditorOptions | undefined { return this._options; }
     get window() { return getWindowById(this.group.windowId, true).window; }
     /**
@@ -138,7 +141,9 @@ export abstract class EditorPane extends Composite implements IEditorPane {
     }
     protected getEditorMemento<T>(editorGroupService: IEditorGroupsService, configurationService: ITextResourceConfigurationService, key: string, limit: number = 10): IEditorMemento<T> {
         const mementoKey = `${this.getId()}${key}`;
+
         let editorMemento = EditorPane.EDITOR_MEMENTOS.get(mementoKey);
+
         if (!editorMemento) {
             editorMemento = this._register(new EditorMemento(this.getId(), key, this.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE), limit, editorGroupService, configurationService));
             EditorPane.EDITOR_MEMENTOS.set(mementoKey, editorMemento);
@@ -161,6 +166,7 @@ export abstract class EditorPane extends Composite implements IEditorPane {
     override dispose(): void {
         this._input = undefined;
         this._options = undefined;
+
         super.dispose();
     }
 }
@@ -173,6 +179,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
     private cleanedUp = false;
     private editorDisposables: Map<EditorInput, IDisposable> | undefined;
     private shareEditorState = false;
+
     constructor(readonly id: string, private readonly key: string, private readonly memento: MementoObject, private readonly limit: number, private readonly editorGroupService: IEditorGroupsService, private readonly configurationService: ITextResourceConfigurationService) {
         super();
         this.updateConfiguration(undefined);
@@ -190,12 +197,14 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
     saveEditorState(group: IEditorGroup, editor: EditorInput, state: T): void;
     saveEditorState(group: IEditorGroup, resourceOrEditor: URI | EditorInput, state: T): void {
         const resource = this.doGetResource(resourceOrEditor);
+
         if (!resource || !group) {
             return; // we are not in a good state to save any state for a resource
         }
         const cache = this.doLoad();
         // Ensure mementos for resource map
         let mementosForResource = cache.get(resource.toString());
+
         if (!mementosForResource) {
             mementosForResource = Object.create(null) as MapGroupToMemento<T>;
             cache.set(resource.toString(), mementosForResource);
@@ -215,11 +224,14 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
     loadEditorState(group: IEditorGroup, editor: EditorInput): T | undefined;
     loadEditorState(group: IEditorGroup, resourceOrEditor: URI | EditorInput): T | undefined {
         const resource = this.doGetResource(resourceOrEditor);
+
         if (!resource || !group) {
             return; // we are not in a good state to load any state for a resource
         }
         const cache = this.doLoad();
+
         const mementosForResource = cache.get(resource.toString());
+
         if (mementosForResource) {
             const mementoForResourceAndGroup = mementosForResource[group.id];
             // Return state for group if present
@@ -240,13 +252,16 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
             this.editorDisposables?.delete(resourceOrEditor);
         }
         const resource = this.doGetResource(resourceOrEditor);
+
         if (resource) {
             const cache = this.doLoad();
             // Clear state for group
             if (group) {
                 const mementosForResource = cache.get(resource.toString());
+
                 if (mementosForResource) {
                     delete mementosForResource[group.id];
+
                     if (isEmptyObject(mementosForResource)) {
                         cache.delete(resource.toString());
                     }
@@ -274,13 +289,16 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
         // We need a copy of the keys to not iterate over
         // newly inserted elements.
         const cacheKeys = [...cache.keys()];
+
         for (const cacheKey of cacheKeys) {
             const resource = URI.parse(cacheKey);
+
             if (!comparer.isEqualOrParent(resource, source)) {
                 continue; // not matching our resource
             }
             // Determine new resulting target resource
             let targetResource: URI;
+
             if (isEqual(source, resource)) {
                 targetResource = target; // file got moved
             }
@@ -290,6 +308,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
             }
             // Don't modify LRU state
             const value = cache.get(cacheKey, Touch.None);
+
             if (value) {
                 cache.delete(cacheKey);
                 cache.set(targetResource.toString(), value);
@@ -307,6 +326,7 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
             this.cache = new LRUCache<string, MapGroupToMemento<T>>(this.limit);
             // Restore from serialized map state
             const rawEditorMemento = this.memento[this.key];
+
             if (Array.isArray(rawEditorMemento)) {
                 this.cache.fromJSON(rawEditorMemento);
             }
@@ -327,14 +347,17 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
         // Remove groups from states that no longer exist. Since we modify the
         // cache and its is a LRU cache make a copy to ensure iteration succeeds
         const entries = [...cache.entries()];
+
         for (const [resource, mapGroupToMementos] of entries) {
             for (const group of Object.keys(mapGroupToMementos)) {
                 const groupId: GroupIdentifier = Number(group);
+
                 if (groupId === EditorMemento.SHARED_EDITOR_STATE && this.shareEditorState) {
                     continue; // skip over shared entries if sharing is enabled
                 }
                 if (!this.editorGroupService.getGroup(groupId)) {
                     delete mapGroupToMementos[groupId];
+
                     if (isEmptyObject(mapGroupToMementos)) {
                         cache.delete(resource);
                     }

@@ -31,8 +31,10 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 
 function announceCursorChange(previousCursorState: CursorState[], cursorState: CursorState[]): void {
 	const cursorDiff = cursorState.filter(cs => !previousCursorState.find(pcs => pcs.equals(cs)));
+
 	if (cursorDiff.length >= 1) {
 		const cursorPositions = cursorDiff.map(cs => `line ${cs.viewState.position.lineNumber} column ${cs.viewState.position.column}`).join(', ');
+
 		const msg = cursorDiff.length === 1 ? nls.localize('cursorAdded', "Cursor added: {0}", cursorPositions) : nls.localize('cursorsAdded', "Cursors added: {0}", cursorPositions);
 		status(msg);
 	}
@@ -69,6 +71,7 @@ export class InsertCursorAbove extends EditorAction {
 		}
 
 		let useLogicalLine = true;
+
 		if (args && args.logicalLine === false) {
 			useLogicalLine = false;
 		}
@@ -79,6 +82,7 @@ export class InsertCursorAbove extends EditorAction {
 		}
 
 		viewModel.model.pushStackElement();
+
 		const previousCursorState = viewModel.getCursorStates();
 		viewModel.setCursorStates(
 			args.source,
@@ -121,6 +125,7 @@ export class InsertCursorBelow extends EditorAction {
 		}
 
 		let useLogicalLine = true;
+
 		if (args && args.logicalLine === false) {
 			useLogicalLine = false;
 		}
@@ -131,6 +136,7 @@ export class InsertCursorBelow extends EditorAction {
 		}
 
 		viewModel.model.pushStackElement();
+
 		const previousCursorState = viewModel.getCursorStates();
 		viewModel.setCursorStates(
 			args.source,
@@ -183,9 +189,13 @@ class InsertCursorAtEndOfEachLineSelected extends EditorAction {
 		}
 
 		const model = editor.getModel();
+
 		const selections = editor.getSelections();
+
 		const viewModel = editor._getViewModel();
+
 		const previousCursorState = viewModel.getCursorStates();
+
 		const newSelections: Selection[] = [];
 		selections.forEach((sel) => this.getCursorsForSelection(sel, model, newSelections));
 
@@ -212,15 +222,19 @@ class InsertCursorAtEndOfLineSelected extends EditorAction {
 		}
 
 		const selections = editor.getSelections();
+
 		const lineCount = editor.getModel().getLineCount();
 
 		const newSelections: Selection[] = [];
+
 		for (let i = selections[0].startLineNumber; i <= lineCount; i++) {
 			newSelections.push(new Selection(i, selections[0].startColumn, i, selections[0].endColumn));
 		}
 
 		const viewModel = editor._getViewModel();
+
 		const previousCursorState = viewModel.getCursorStates();
+
 		if (newSelections.length > 0) {
 			editor.setSelections(newSelections);
 		}
@@ -246,12 +260,15 @@ class InsertCursorAtTopOfLineSelected extends EditorAction {
 		const selections = editor.getSelections();
 
 		const newSelections: Selection[] = [];
+
 		for (let i = selections[0].startLineNumber; i >= 1; i--) {
 			newSelections.push(new Selection(i, selections[0].startColumn, i, selections[0].endColumn));
 		}
 
 		const viewModel = editor._getViewModel();
+
 		const previousCursorState = viewModel.getCursorStates();
+
 		if (newSelections.length > 0) {
 			editor.setSelections(newSelections);
 		}
@@ -287,9 +304,13 @@ export class MultiCursorSession {
 		// Otherwise, the selection gives the search text, and the find widget gives the search settings
 		// The exception is the find state disassociation case: when beginning with a single, collapsed selection
 		let isDisconnectedFromFindController = false;
+
 		let wholeWord: boolean;
+
 		let matchCase: boolean;
+
 		const selections = editor.getSelections();
+
 		if (selections.length === 1 && selections[0].isEmpty()) {
 			isDisconnectedFromFindController = true;
 			wholeWord = true;
@@ -303,11 +324,13 @@ export class MultiCursorSession {
 		const s = editor.getSelection();
 
 		let searchText: string;
+
 		let currentMatch: Selection | null = null;
 
 		if (s.isEmpty()) {
 			// selection is empty => expand to current word
 			const word = editor.getConfiguredWordAtPosition(s.getStartPosition());
+
 			if (!word) {
 				return null;
 			}
@@ -336,11 +359,13 @@ export class MultiCursorSession {
 		}
 
 		const nextMatch = this._getNextMatch();
+
 		if (!nextMatch) {
 			return null;
 		}
 
 		const allSelections = this._editor.getSelections();
+
 		return new MultiCursorSessionResult(allSelections.concat(nextMatch), nextMatch, ScrollType.Smooth);
 	}
 
@@ -350,11 +375,13 @@ export class MultiCursorSession {
 		}
 
 		const nextMatch = this._getNextMatch();
+
 		if (!nextMatch) {
 			return null;
 		}
 
 		const allSelections = this._editor.getSelections();
+
 		return new MultiCursorSessionResult(allSelections.slice(0, allSelections.length - 1).concat(nextMatch), nextMatch, ScrollType.Smooth);
 	}
 
@@ -366,13 +393,16 @@ export class MultiCursorSession {
 		if (this.currentMatch) {
 			const result = this.currentMatch;
 			this.currentMatch = null;
+
 			return result;
 		}
 
 		this.findController.highlightFindOptions();
 
 		const allSelections = this._editor.getSelections();
+
 		const lastAddedSelection = allSelections[allSelections.length - 1];
+
 		const nextMatch = this._editor.getModel().findNextMatch(this.searchText, lastAddedSelection.getEndPosition(), false, this.matchCase, this.wholeWord ? this._editor.getOption(EditorOption.wordSeparators) : null, false);
 
 		if (!nextMatch) {
@@ -387,11 +417,13 @@ export class MultiCursorSession {
 		}
 
 		const previousMatch = this._getPreviousMatch();
+
 		if (!previousMatch) {
 			return null;
 		}
 
 		const allSelections = this._editor.getSelections();
+
 		return new MultiCursorSessionResult(allSelections.concat(previousMatch), previousMatch, ScrollType.Smooth);
 	}
 
@@ -401,11 +433,13 @@ export class MultiCursorSession {
 		}
 
 		const previousMatch = this._getPreviousMatch();
+
 		if (!previousMatch) {
 			return null;
 		}
 
 		const allSelections = this._editor.getSelections();
+
 		return new MultiCursorSessionResult(allSelections.slice(0, allSelections.length - 1).concat(previousMatch), previousMatch, ScrollType.Smooth);
 	}
 
@@ -417,13 +451,16 @@ export class MultiCursorSession {
 		if (this.currentMatch) {
 			const result = this.currentMatch;
 			this.currentMatch = null;
+
 			return result;
 		}
 
 		this.findController.highlightFindOptions();
 
 		const allSelections = this._editor.getSelections();
+
 		const lastAddedSelection = allSelections[allSelections.length - 1];
+
 		const previousMatch = this._editor.getModel().findPreviousMatch(this.searchText, lastAddedSelection.getStartPosition(), false, this.matchCase, this.wholeWord ? this._editor.getOption(EditorOption.wordSeparators) : null, false);
 
 		if (!previousMatch) {
@@ -440,6 +477,7 @@ export class MultiCursorSession {
 		this.findController.highlightFindOptions();
 
 		const editorModel = this._editor.getModel();
+
 		if (searchScope) {
 			return editorModel.findMatches(this.searchText, searchScope, false, this.matchCase, this.wholeWord ? this._editor.getOption(EditorOption.wordSeparators) : null, false, Constants.MAX_SAFE_SMALL_INTEGER);
 		}
@@ -469,6 +507,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 
 	public override dispose(): void {
 		this._endSession();
+
 		super.dispose();
 	}
 
@@ -476,6 +515,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 		if (!this._session) {
 			// Create a new session
 			const session = MultiCursorSession.create(this._editor, findController);
+
 			if (!session) {
 				return;
 			}
@@ -483,6 +523,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 			this._session = session;
 
 			const newState: INewFindReplaceState = { searchString: this._session.searchText };
+
 			if (this._session.isDisconnectedFromFindController) {
 				newState.wholeWordOverride = FindOptionOverride.True;
 				newState.matchCaseOverride = FindOptionOverride.True;
@@ -509,6 +550,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 
 	private _endSession(): void {
 		this._sessionDispose.clear();
+
 		if (this._session && this._session.isDisconnectedFromFindController) {
 			const newState: INewFindReplaceState = {
 				wholeWordOverride: FindOptionOverride.NotSet,
@@ -531,6 +573,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 			return selection;
 		}
 		const word = this._editor.getConfiguredWordAtPosition(selection.getStartPosition());
+
 		if (!word) {
 			return selection;
 		}
@@ -542,6 +585,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 			return;
 		}
 		this._setSelections(result.selections);
+
 		if (result.revealRange) {
 			this._editor.revealRangeInCenterIfOutsideViewport(result.revealRange, result.revealScrollType);
 		}
@@ -558,22 +602,30 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 		if (!this._session) {
 			// If there are multiple cursors, handle the case where they do not all select the same text.
 			const allSelections = this._editor.getSelections();
+
 			if (allSelections.length > 1) {
 				const findState = findController.getState();
+
 				const matchCase = findState.matchCase;
+
 				const selectionsContainSameText = modelRangesContainSameText(this._editor.getModel(), allSelections, matchCase);
+
 				if (!selectionsContainSameText) {
 					const model = this._editor.getModel();
+
 					const resultingSelections: Selection[] = [];
+
 					for (let i = 0, len = allSelections.length; i < len; i++) {
 						resultingSelections[i] = this._expandEmptyToWord(model, allSelections[i]);
 					}
 					this._editor.setSelections(resultingSelections);
+
 					return;
 				}
 			}
 		}
 		this._beginSessionIfNeeded(findController);
+
 		if (this._session) {
 			this._applySessionResult(this._session.addSelectionToNextFindMatch());
 		}
@@ -581,6 +633,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 
 	public addSelectionToPreviousFindMatch(findController: CommonFindController): void {
 		this._beginSessionIfNeeded(findController);
+
 		if (this._session) {
 			this._applySessionResult(this._session.addSelectionToPreviousFindMatch());
 		}
@@ -588,6 +641,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 
 	public moveSelectionToNextFindMatch(findController: CommonFindController): void {
 		this._beginSessionIfNeeded(findController);
+
 		if (this._session) {
 			this._applySessionResult(this._session.moveSelectionToNextFindMatch());
 		}
@@ -595,6 +649,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 
 	public moveSelectionToPreviousFindMatch(findController: CommonFindController): void {
 		this._beginSessionIfNeeded(findController);
+
 		if (this._session) {
 			this._applySessionResult(this._session.moveSelectionToPreviousFindMatch());
 		}
@@ -616,6 +671,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 		// - and we're searching for a regex
 		if (findState.isRevealed && findState.searchString.length > 0 && findState.isRegex) {
 			const editorModel = this._editor.getModel();
+
 			if (findState.searchScope) {
 				matches = editorModel.findMatches(findState.searchString, findState.searchScope, findState.isRegex, findState.matchCase, findState.wholeWord ? this._editor.getOption(EditorOption.wordSeparators) : null, false, Constants.MAX_SAFE_SMALL_INTEGER);
 			} else {
@@ -624,6 +680,7 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 		} else {
 
 			this._beginSessionIfNeeded(findController);
+
 			if (!this._session) {
 				return;
 			}
@@ -636,11 +693,14 @@ export class MultiCursorSelectionController extends Disposable implements IEdito
 			// Have the primary cursor remain the one where the action was invoked
 			for (let i = 0, len = matches.length; i < len; i++) {
 				const match = matches[i];
+
 				const intersection = match.range.intersectRanges(editorSelection);
+
 				if (intersection) {
 					// bingo!
 					matches[i] = matches[0];
 					matches[0] = match;
+
 					break;
 				}
 			}
@@ -660,13 +720,17 @@ export abstract class MultiCursorSelectionControllerAction extends EditorAction 
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const multiCursorController = MultiCursorSelectionController.get(editor);
+
 		if (!multiCursorController) {
 			return;
 		}
 		const viewModel = editor._getViewModel();
+
 		if (viewModel) {
 			const previousCursorState = viewModel.getCursorStates();
+
 			const findController = CommonFindController.get(editor);
+
 			if (findController) {
 				this._run(multiCursorController, findController);
 			} else {
@@ -886,7 +950,9 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 				this.updateSoon.schedule();
 			}
 		}));
+
 		const findController = CommonFindController.get(editor);
+
 		if (findController) {
 			this._register(findController.getState().onFindReplaceStateChange((e) => {
 				this._update();
@@ -907,25 +973,33 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 			return null;
 		}
 		const s = editor.getSelection();
+
 		if (s.startLineNumber !== s.endLineNumber) {
 			// multiline forbidden for perf reasons
 			return null;
 		}
 		const multiCursorController = MultiCursorSelectionController.get(editor);
+
 		if (!multiCursorController) {
 			return null;
 		}
 		const findController = CommonFindController.get(editor);
+
 		if (!findController) {
 			return null;
 		}
 		let r = multiCursorController.getSession(findController);
+
 		if (!r) {
 			const allSelections = editor.getSelections();
+
 			if (allSelections.length > 1) {
 				const findState = findController.getState();
+
 				const matchCase = findState.matchCase;
+
 				const selectionsContainSameText = modelRangesContainSameText(editor.getModel(), allSelections, matchCase);
+
 				if (!selectionsContainSameText) {
 					return null;
 				}
@@ -953,16 +1027,19 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 
 		// TODO: better handling of this case
 		const findState = findController.getState();
+
 		const caseSensitive = findState.matchCase;
 
 		// Return early if the find widget shows the exact same matches
 		if (findState.isRevealed) {
 			let findStateSearchString = findState.searchString;
+
 			if (!caseSensitive) {
 				findStateSearchString = findStateSearchString.toLowerCase();
 			}
 
 			let mySearchString = r.searchText;
+
 			if (!caseSensitive) {
 				mySearchString = mySearchString.toLowerCase();
 			}
@@ -980,6 +1057,7 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 
 		if (!this.state) {
 			this._decorations.clear();
+
 			return;
 		}
 
@@ -988,6 +1066,7 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 		}
 
 		const model = this.editor.getModel();
+
 		if (model.isTooLargeForTokenization()) {
 			// the file is too large, so searching word under cursor in the whole document would be blocking the UI.
 			return;
@@ -1000,6 +1079,7 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 
 		// do not overlap with selection (issue #64 and #512)
 		const matches: Range[] = [];
+
 		for (let i = 0, j = 0, len = allMatches.length, lenJ = selections.length; i < len;) {
 			const match = allMatches[i];
 
@@ -1009,6 +1089,7 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 				i++;
 			} else {
 				const cmp = Range.compareRangesUsingStarts(match, selections[j]);
+
 				if (cmp < 0) {
 					// match is before sel
 					if (selections[j].isEmpty() || !Range.areIntersecting(match, selections[j])) {
@@ -1027,7 +1108,9 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 		}
 
 		const occurrenceHighlighting: boolean = this.editor.getOption(EditorOption.occurrencesHighlight) !== 'off';
+
 		const hasSemanticHighlights = this._languageFeaturesService.documentHighlightProvider.has(model) && occurrenceHighlighting;
+
 		const decorations = matches.map(r => {
 			return {
 				range: r,
@@ -1040,18 +1123,22 @@ export class SelectionHighlighter extends Disposable implements IEditorContribut
 
 	public override dispose(): void {
 		this._setState(null);
+
 		super.dispose();
 	}
 }
 
 function modelRangesContainSameText(model: ITextModel, ranges: Range[], matchCase: boolean): boolean {
 	const selectedText = getValueInRange(model, ranges[0], !matchCase);
+
 	for (let i = 1, len = ranges.length; i < len; i++) {
 		const range = ranges[i];
+
 		if (range.isEmpty()) {
 			return false;
 		}
 		const thisSelectedText = getValueInRange(model, range, !matchCase);
+
 		if (selectedText !== thisSelectedText) {
 			return false;
 		}
@@ -1061,6 +1148,7 @@ function modelRangesContainSameText(model: ITextModel, ranges: Range[], matchCas
 
 function getValueInRange(model: ITextModel, range: Range, toLowerCase: boolean): string {
 	const text = model.getValueInRange(range);
+
 	return (toLowerCase ? text.toLowerCase() : text);
 }
 
@@ -1089,8 +1177,11 @@ export class FocusNextCursor extends EditorAction {
 		}
 
 		viewModel.model.pushStackElement();
+
 		const previousCursorState = Array.from(viewModel.getCursorStates());
+
 		const firstCursor = previousCursorState.shift();
+
 		if (!firstCursor) {
 			return;
 		}
@@ -1127,8 +1218,11 @@ export class FocusPreviousCursor extends EditorAction {
 		}
 
 		viewModel.model.pushStackElement();
+
 		const previousCursorState = Array.from(viewModel.getCursorStates());
+
 		const firstCursor = previousCursorState.pop();
+
 		if (!firstCursor) {
 			return;
 		}

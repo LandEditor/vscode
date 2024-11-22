@@ -20,19 +20,28 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
     readonly name = 'notifications';
     readonly when = NotificationFocusedContext;
     readonly type = AccessibleViewType.View;
+
     getProvider(accessor: ServicesAccessor) {
         const accessibleViewService = accessor.get(IAccessibleViewService);
+
         const listService = accessor.get(IListService);
+
         const commandService = accessor.get(ICommandService);
+
         const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
         function getProvider() {
             const notification = getNotificationFromContext(listService);
+
             if (!notification) {
                 return;
             }
             commandService.executeCommand('notifications.showList');
+
             let notificationIndex: number | undefined;
+
             const list = listService.lastFocusedList;
+
             if (list instanceof WorkbenchList) {
                 notificationIndex = list.indexOf(notification);
             }
@@ -41,8 +50,10 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
             }
             function focusList(): void {
                 commandService.executeCommand('notifications.showList');
+
                 if (list && notificationIndex !== undefined) {
                     list.domFocus();
+
                     try {
                         list.setFocus([notificationIndex]);
                     }
@@ -51,23 +62,28 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
             }
             function getContentForNotification(): string | undefined {
                 const notification = getNotificationFromContext(listService);
+
                 const message = notification?.message.original.toString();
+
                 if (!notification) {
                     return;
                 }
                 return notification.source ? localize('notification.accessibleViewSrc', '{0} Source: {1}', message, notification.source) : localize('notification.accessibleView', '{0}', message);
             }
             const content = getContentForNotification();
+
             if (!content) {
                 return;
             }
             notification.onDidClose(() => accessibleViewService.next());
+
             return new AccessibleContentProvider(AccessibleViewProviderId.Notification, { type: AccessibleViewType.View }, () => content, () => focusList(), 'accessibility.verbosity.notification', undefined, getActionsFromNotification(notification, accessibilitySignalService), () => {
                 if (!list) {
                     return;
                 }
                 focusList();
                 list.focusNext();
+
                 return getContentForNotification();
             }, () => {
                 if (!list) {
@@ -75,6 +91,7 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
                 }
                 focusList();
                 list.focusPrevious();
+
                 return getContentForNotification();
             });
         }
@@ -83,8 +100,10 @@ export class NotificationAccessibleView implements IAccessibleViewImplentation {
 }
 function getActionsFromNotification(notification: INotificationViewItem, accessibilitySignalService: IAccessibilitySignalService): IAction[] | undefined {
     let actions = undefined;
+
     if (notification.actions) {
         actions = [];
+
         if (notification.actions.primary) {
             actions.push(...notification.actions.primary);
         }
@@ -95,6 +114,7 @@ function getActionsFromNotification(notification: INotificationViewItem, accessi
     if (actions) {
         for (const action of actions) {
             action.class = ThemeIcon.asClassName(Codicon.bell);
+
             const initialAction = action.run;
             action.run = () => {
                 initialAction();
@@ -103,6 +123,7 @@ function getActionsFromNotification(notification: INotificationViewItem, accessi
         }
     }
     const manageExtension = actions?.find(a => a.label.includes('Manage Extension'));
+
     if (manageExtension) {
         manageExtension.class = ThemeIcon.asClassName(Codicon.gear);
     }

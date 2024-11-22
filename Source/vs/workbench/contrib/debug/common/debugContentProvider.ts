@@ -34,6 +34,7 @@ import { ErrorNoTelemetry } from '../../../../base/common/errors.js';
 export class DebugContentProvider implements IWorkbenchContribution, ITextModelContentProvider {
     private static INSTANCE: DebugContentProvider;
     private readonly pendingUpdates = new Map<string, CancellationTokenSource>();
+
     constructor(
     @ITextModelService
     textModelResolverService: ITextModelService, 
@@ -66,11 +67,13 @@ export class DebugContentProvider implements IWorkbenchContribution, ITextModelC
      */
     private createOrUpdateContentModel(resource: uri, createIfNotExists: boolean): Promise<ITextModel> | null {
         const model = this.modelService.getModel(resource);
+
         if (!model && !createIfNotExists) {
             // nothing to do
             return null;
         }
         let session: IDebugSession | undefined;
+
         if (resource.query) {
             const data = Source.getEncodedDebugData(resource);
             session = this.debugService.getModel().getSession(data.sessionId);
@@ -84,12 +87,16 @@ export class DebugContentProvider implements IWorkbenchContribution, ITextModelC
         }
         const createErrModel = (errMsg?: string) => {
             this.debugService.sourceIsNotAvailable(resource);
+
             const languageSelection = this.languageService.createById(PLAINTEXT_LANGUAGE_ID);
+
             const message = errMsg
                 ? localize('canNotResolveSourceWithError', "Could not load source '{0}': {1}.", resource.path, errMsg)
                 : localize('canNotResolveSource', "Could not load source '{0}'.", resource.path);
+
             return this.modelService.createModel(message, languageSelection, resource);
         };
+
         return session.loadSource(resource).then(response => {
             if (response && response.body) {
                 if (model) {
@@ -104,6 +111,7 @@ export class DebugContentProvider implements IWorkbenchContribution, ITextModelC
                     return this.editorWorkerService.computeMoreMinimalEdits(model.uri, [{ text: newContent, range: model.getFullModelRange() }]).then(edits => {
                         // remove token
                         this.pendingUpdates.delete(model.id);
+
                         if (!myToken.token.isCancellationRequested && edits && edits.length > 0) {
                             // use the evil-edit as these models show in readonly-editor only
                             model.applyEdits(edits.map(edit => EditOperation.replace(Range.lift(edit.range), edit.text)));
@@ -114,7 +122,9 @@ export class DebugContentProvider implements IWorkbenchContribution, ITextModelC
                 else {
                     // create text model
                     const mime = response.body.mimeType || getMimeTypes(resource)[0];
+
                     const languageSelection = this.languageService.createByMimeType(mime);
+
                     return this.modelService.createModel(response.body.content, languageSelection, resource);
                 }
             }

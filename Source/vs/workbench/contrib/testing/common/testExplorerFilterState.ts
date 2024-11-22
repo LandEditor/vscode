@@ -62,7 +62,9 @@ export interface ITestExplorerFilterState {
     didSelectTestInExplorer(testId: string): void;
 }
 export const ITestExplorerFilterState = createDecorator<ITestExplorerFilterState>('testingFilterState');
+
 const tagRe = /!?@([^ ,:]+)/g;
+
 const trimExtraWhitespace = (str: string) => str.replace(/\s\s+/g, ' ').trim();
 export class TestExplorerFilterState extends Disposable implements ITestExplorerFilterState {
     declare _serviceBrand: undefined;
@@ -94,6 +96,7 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
     public readonly onDidRequestInputFocus = this.focusEmitter.event;
     private selectTestInExplorerEmitter = this._register(new Emitter<string | undefined>());
     public readonly onDidSelectTestInExplorer = this.selectTestInExplorerEmitter.event;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService) {
@@ -116,18 +119,25 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
         this.globList = [];
         this.includeTags.clear();
         this.excludeTags.clear();
+
         let globText = '';
+
         let lastIndex = 0;
+
         for (const match of text.matchAll(tagRe)) {
             let nextIndex = match.index + match[0].length;
+
             const tag = match[0];
+
             if (allTestFilterTerms.includes(tag as TestFilterTerm)) {
                 this.termFilterState[tag as TestFilterTerm] = true;
             }
             // recognize and parse @ctrlId:tagId or quoted like @ctrlId:"tag \\"id"
             if (text[nextIndex] === ':') {
                 nextIndex++;
+
                 let delimiter = text[nextIndex];
+
                 if (delimiter !== `"` && delimiter !== `'`) {
                     delimiter = ' ';
                 }
@@ -135,6 +145,7 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
                     nextIndex++;
                 }
                 let tagId = '';
+
                 while (nextIndex < text.length && text[nextIndex] !== delimiter) {
                     if (text[nextIndex] === '\\') {
                         tagId += text[nextIndex + 1];
@@ -157,6 +168,7 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
             lastIndex = nextIndex;
         }
         globText += text.slice(lastIndex).trim();
+
         if (globText.length) {
             for (const filter of splitGlobAware(globText, ',').map(s => s.trim()).filter(s => !!s.length)) {
                 if (filter.startsWith('!')) {
@@ -176,6 +188,7 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
     /** @inheritdoc */
     public toggleFilteringFor(term: TestFilterTerm, shouldFilter?: boolean) {
         const text = this.text.value.trim();
+
         if (shouldFilter !== false && !this.termFilterState[term]) {
             this.setText(text ? `${text} ${term}` : term);
         }

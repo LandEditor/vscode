@@ -30,6 +30,7 @@ class TerminalQuickFixContribution extends DisposableStore implements ITerminalC
 	}
 
 	private _addon?: TerminalQuickFixAddon;
+
 	get addon(): TerminalQuickFixAddon | undefined { return this._addon; }
 
 	private readonly _quickFixMenuItems = this.add(new MutableDisposable());

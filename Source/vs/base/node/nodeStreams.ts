@@ -14,8 +14,10 @@ export class StreamSplitter extends Transform {
     private buffer: Buffer | undefined;
     private readonly splitter: Buffer | number;
     private readonly spitterLen: number;
+
     constructor(splitter: string | number | Buffer) {
         super();
+
         if (typeof splitter === 'number') {
             this.splitter = splitter;
             this.spitterLen = 1;
@@ -34,10 +36,12 @@ export class StreamSplitter extends Transform {
             this.buffer = Buffer.concat([this.buffer, chunk]);
         }
         let offset = 0;
+
         while (offset < this.buffer.length) {
             const index = typeof this.splitter === 'number'
                 ? this.buffer.indexOf(this.splitter, offset)
                 : binaryIndexOf(this.buffer, this.splitter, offset);
+
             if (index === -1) {
                 break;
             }

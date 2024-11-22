@@ -13,12 +13,15 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
     private static handlePool: number = 0;
     private proxy: MainThreadQuickDiffShape;
     private providers: Map<number, vscode.QuickDiffProvider> = new Map();
+
     constructor(mainContext: IMainContext, private readonly uriTransformer: IURITransformer | undefined) {
         this.proxy = mainContext.getProxy(MainContext.MainThreadQuickDiff);
     }
     $provideOriginalResource(handle: number, uriComponents: UriComponents, token: CancellationToken): Promise<UriComponents | null> {
         const uri = URI.revive(uriComponents);
+
         const provider = this.providers.get(handle);
+
         if (!provider) {
             return Promise.resolve(null);
         }
@@ -29,6 +32,7 @@ export class ExtHostQuickDiff implements ExtHostQuickDiffShape {
         const handle = ExtHostQuickDiff.handlePool++;
         this.providers.set(handle, quickDiffProvider);
         this.proxy.$registerQuickDiffProvider(handle, DocumentSelector.from(selector, this.uriTransformer), label, rootUri);
+
         return {
             dispose: () => {
                 this.proxy.$unregisterQuickDiffProvider(handle);

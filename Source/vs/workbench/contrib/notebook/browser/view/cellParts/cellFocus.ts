@@ -14,6 +14,7 @@ export class CellFocusPart extends CellContentPart {
                 notebookEditor.focusElement(this.currentCell);
             }
         }, true));
+
         if (focusSinkElement) {
             this._register(DOM.addDisposableListener(focusSinkElement, DOM.EventType.FOCUS, () => {
                 if (this.currentCell && (this.currentCell as CodeCellViewModel).outputsViewModels.length) {

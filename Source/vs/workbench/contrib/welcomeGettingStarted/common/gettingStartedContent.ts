@@ -29,10 +29,12 @@ export async function moduleToContent(resource: URI): Promise<string> {
         throw new Error('Getting Started: invalid resource');
     }
     const query = JSON.parse(resource.query);
+
     if (!query.moduleId) {
         throw new Error('Getting Started: invalid resource');
     }
     const provider = gettingStartedContentRegistry.getProvider(query.moduleId);
+
     if (!provider) {
         throw new Error(`Getting Started: no provider registered for ${query.moduleId}`);
     }
@@ -42,7 +44,9 @@ gettingStartedContentRegistry.registerProvider('vs/workbench/contrib/welcomeGett
 gettingStartedContentRegistry.registerProvider('vs/workbench/contrib/welcomeGettingStarted/common/media/notebookProfile', notebookProfileContent);
 // Register empty media for accessibility walkthrough
 gettingStartedContentRegistry.registerProvider('vs/workbench/contrib/welcomeGettingStarted/common/media/empty', () => '');
+
 const setupIcon = registerIcon('getting-started-setup', Codicon.zap, localize('getting-started-setup-icon', "Icon used for the setup category of welcome page"));
+
 const beginnerIcon = registerIcon('getting-started-beginner', Codicon.lightbulb, localize('getting-started-beginner-icon', "Icon used for the beginner category of welcome page"));
 export type BuiltinGettingStartedStep = {
     id: string;
@@ -206,6 +210,7 @@ export const startEntries: GettingStartedStartEntryContent = [
         }
     },
 ];
+
 const Button = (title: string, href: string) => `[${title}](${href})`;
 export const walkthroughs: GettingStartedWalkthroughContent = [
     {

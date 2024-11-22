@@ -22,11 +22,13 @@ interface IStorageData {
 class IntegrityStorage {
     private static readonly KEY = 'integrityService';
     private value: IStorageData | null;
+
     constructor(private readonly storageService: IStorageService) {
         this.value = this._read();
     }
     private _read(): IStorageData | null {
         const jsonValue = this.storageService.get(IntegrityStorage.KEY, StorageScope.APPLICATION);
+
         if (!jsonValue) {
             return null;
         }
@@ -71,6 +73,7 @@ export class IntegrityService implements IIntegrityService {
     }
     private async _compute(): Promise<void> {
         const { isPure } = await this.isPure();
+
         if (isPure) {
             return; // all is good
         }
@@ -81,7 +84,9 @@ export class IntegrityService implements IIntegrityService {
 ----------------------------------------------
 
 `);
+
         const storedData = this._storage.get();
+
         if (storedData?.dontShowPrompt && storedData.commit === this.productService.commit) {
             return; // Do not prompt
         }
@@ -90,11 +95,15 @@ export class IntegrityService implements IIntegrityService {
     private async _isPure(): Promise<IntegrityTestResult> {
         const expectedChecksums = this.productService.checksums || {};
         await this.lifecycleService.when(LifecyclePhase.Eventually);
+
         const allResults = await Promise.all(Object.keys(expectedChecksums).map(filename => this._resolve(<AppResourcePath>filename, expectedChecksums[filename])));
+
         let isPure = true;
+
         for (let i = 0, len = allResults.length; i < len; i++) {
             if (!allResults[i].isPure) {
                 isPure = false;
+
                 break;
             }
         }
@@ -105,8 +114,10 @@ export class IntegrityService implements IIntegrityService {
     }
     private async _resolve(filename: AppResourcePath, expected: string): Promise<ChecksumPair> {
         const fileUri = FileAccess.asFileUri(filename);
+
         try {
             const checksum = await this.checksumService.checksum(fileUri);
+
             return IntegrityService._createChecksumPair(fileUri, checksum, expected);
         }
         catch (error) {
@@ -123,7 +134,9 @@ export class IntegrityService implements IIntegrityService {
     }
     private _showNotification(): void {
         const checksumFailMoreInfoUrl = this.productService.checksumFailMoreInfoUrl;
+
         const message = localize('integrity.prompt', "Your {0} installation appears to be corrupt. Please reinstall.", this.productService.nameShort);
+
         if (checksumFailMoreInfoUrl) {
             this.notificationService.prompt(Severity.Warning, message, [
                 {

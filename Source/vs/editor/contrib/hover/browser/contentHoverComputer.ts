@@ -32,6 +32,7 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 		}
 
 		const model = editor.getModel();
+
 		const lineNumber = anchor.range.startLineNumber;
 
 		if (lineNumber > model.getLineCount()) {
@@ -47,6 +48,7 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 			}
 
 			const startColumn = (d.range.startLineNumber === lineNumber) ? d.range.startColumn : 1;
+
 			const endColumn = (d.range.endLineNumber === lineNumber) ? d.range.endColumn : maxColumn;
 
 			if (d.options.showIfCollapsed) {
@@ -89,9 +91,11 @@ export class ContentHoverComputer implements IHoverComputer<ContentHoverComputer
 		}
 
 		const anchor = options.anchor;
+
 		const lineDecorations = ContentHoverComputer._getLineDecorations(this._editor, anchor);
 
 		let result: IHoverPart[] = [];
+
 		for (const participant of this._participants) {
 			result = result.concat(participant.computeSync(anchor, lineDecorations, options.source));
 		}

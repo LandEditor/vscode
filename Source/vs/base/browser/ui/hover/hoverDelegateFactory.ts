@@ -4,13 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 import { IHoverDelegate, IScopedHoverDelegate } from './hoverDelegate.js';
 import { Lazy } from '../../../common/lazy.js';
+
 const nullHoverDelegateFactory = () => ({
     get delay(): number { return -1; },
     dispose: () => { },
     showHover: () => { return undefined; },
 });
+
 let hoverDelegateFactory: (placement: 'mouse' | 'element', enableInstantHover: boolean) => IScopedHoverDelegate = nullHoverDelegateFactory;
+
 const defaultHoverDelegateMouse = new Lazy<IHoverDelegate>(() => hoverDelegateFactory('mouse', false));
+
 const defaultHoverDelegateElement = new Lazy<IHoverDelegate>(() => hoverDelegateFactory('element', false));
 // TODO: Remove when getDefaultHoverDelegate is no longer used
 export function setHoverDelegateFactory(hoverDelegateProvider: ((placement: 'mouse' | 'element', enableInstantHover: boolean) => IScopedHoverDelegate)): void {

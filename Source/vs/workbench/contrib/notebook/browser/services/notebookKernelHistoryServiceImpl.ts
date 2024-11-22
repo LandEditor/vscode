@@ -24,6 +24,7 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     private _mostRecentKernelsMap: {
         [key: string]: LinkedMap<string, string>;
     } = {};
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService, 
@@ -43,14 +44,19 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
         all: INotebookKernel[];
     } {
         const allAvailableKernels = this._notebookKernelService.getMatchingKernel(notebook);
+
         const allKernels = allAvailableKernels.all;
+
         const selectedKernel = allAvailableKernels.selected;
         // We will suggest the only kernel
         const suggested = allAvailableKernels.all.length === 1 ? allAvailableKernels.all[0] : undefined;
         this._notebookLoggingService.debug('History', `getMatchingKernels: ${allAvailableKernels.all.length} kernels available for ${notebook.uri.path}. Selected: ${allAvailableKernels.selected?.label}. Suggested: ${suggested?.label}`);
+
         const mostRecentKernelIds = this._mostRecentKernelsMap[notebook.notebookType] ? [...this._mostRecentKernelsMap[notebook.notebookType].values()] : [];
+
         const all = mostRecentKernelIds.map(kernelId => allKernels.find(kernel => kernel.id === kernelId)).filter(kernel => !!kernel) as INotebookKernel[];
         this._notebookLoggingService.debug('History', `mru: ${mostRecentKernelIds.length} kernels in history, ${all.length} registered already.`);
+
         return {
             selected: selectedKernel ?? suggested,
             all
@@ -58,9 +64,12 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     }
     addMostRecentKernel(kernel: INotebookKernel): void {
         const key = kernel.id;
+
         const viewType = kernel.viewType;
+
         const recentKeynels = this._mostRecentKernelsMap[viewType] ?? new LinkedMap<string, string>();
         recentKeynels.set(key, key, Touch.AsOld);
+
         if (recentKeynels.size > MAX_KERNELS_IN_HISTORY) {
             const reserved = [...recentKeynels.entries()].slice(0, MAX_KERNELS_IN_HISTORY);
             recentKeynels.fromJSON(reserved);
@@ -69,6 +78,7 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     }
     private _saveState(): void {
         let notEmpty = false;
+
         for (const [_, kernels] of Object.entries(this._mostRecentKernelsMap)) {
             notEmpty = notEmpty || kernels.size > 0;
         }
@@ -82,6 +92,7 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     }
     private _loadState(): void {
         const serialized = this._storageService.get(NotebookKernelHistoryService.STORAGE_KEY, StorageScope.WORKSPACE);
+
         if (serialized) {
             try {
                 this._deserialize(JSON.parse(serialized));
@@ -96,6 +107,7 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     }
     private _serialize(): ISerializedKernelsList {
         const result: ISerializedKernelsList = Object.create(null);
+
         for (const [viewType, kernels] of Object.entries(this._mostRecentKernelsMap)) {
             result[viewType] = {
                 entries: [...kernels.values()]
@@ -105,12 +117,15 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
     }
     private _deserialize(serialized: ISerializedKernelsList): void {
         this._mostRecentKernelsMap = {};
+
         for (const [viewType, kernels] of Object.entries(serialized)) {
             const linkedMap = new LinkedMap<string, string>();
+
             const mapValues: [
                 string,
                 string
             ][] = [];
+
             for (const entry of kernels.entries) {
                 mapValues.push([entry, entry]);
             }

@@ -79,6 +79,7 @@ export class MarkersWidgetAccessibilityProvider implements IListAccessibilityPro
 	public getAriaLabel(element: MarkerElement | MarkerTableItem): string | null {
 		if (element instanceof ResourceMarkers) {
 			const path = this.labelService.getUriLabel(element.resource, { relative: true }) || element.resource.fsPath;
+
 			return Messages.MARKERS_TREE_ARIA_LABEL_RESOURCE(element.markers.length, element.name, paths.dirname(path));
 		}
 		if (element instanceof Marker || element instanceof MarkerTableItem) {
@@ -106,7 +107,9 @@ export class VirtualDelegate implements IListVirtualDelegate<MarkerElement> {
 	getHeight(element: MarkerElement): number {
 		if (element instanceof Marker) {
 			const viewModel = this.markersViewState.getViewModel(element);
+
 			const noOfLines = !viewModel || viewModel.multiline ? element.lines.length : 1;
+
 			return noOfLines * VirtualDelegate.LINE_HEIGHT;
 		}
 		return VirtualDelegate.LINE_HEIGHT;
@@ -165,9 +168,11 @@ export class ResourceMarkersRenderer implements ITreeRenderer<ResourceMarkers, R
 
 	renderTemplate(container: HTMLElement): IResourceMarkersTemplateData {
 		const resourceLabelContainer = dom.append(container, dom.$('.resource-label-container'));
+
 		const resourceLabel = this.labels.create(resourceLabelContainer, { supportHighlights: true });
 
 		const badgeWrapper = dom.append(container, dom.$('.count-badge-wrapper'));
+
 		const count = new CountBadge(badgeWrapper, {}, defaultCountBadgeStyles);
 
 		return { count, resourceLabel };
@@ -175,17 +180,20 @@ export class ResourceMarkersRenderer implements ITreeRenderer<ResourceMarkers, R
 
 	renderElement(node: ITreeNode<ResourceMarkers, ResourceMarkersFilterData>, _: number, templateData: IResourceMarkersTemplateData): void {
 		const resourceMarkers = node.element;
+
 		const uriMatches = node.filterData && node.filterData.uriMatches || [];
 
 		templateData.resourceLabel.setFile(resourceMarkers.resource, { matches: uriMatches });
 
 		this.updateCount(node, templateData);
+
 		const nodeRenders = this.renderedNodes.get(resourceMarkers) ?? [];
 		this.renderedNodes.set(resourceMarkers, [...nodeRenders, templateData]);
 	}
 
 	disposeElement(node: ITreeNode<ResourceMarkers, ResourceMarkersFilterData>, index: number, templateData: IResourceMarkersTemplateData): void {
 		const nodeRenders = this.renderedNodes.get(node.element) ?? [];
+
 		const nodeRenderIndex = nodeRenders.findIndex(nodeRender => templateData === nodeRender);
 
 		if (nodeRenderIndex < 0) {
@@ -240,6 +248,7 @@ export class MarkerRenderer implements ITreeRenderer<Marker, MarkerFilterData, I
 	renderTemplate(container: HTMLElement): IMarkerTemplateData {
 		const data: IMarkerTemplateData = Object.create(null);
 		data.markerWidget = new MarkerWidget(container, this.markersViewState, this.hoverService, this.openerService, this.instantiationService);
+
 		return data;
 	}
 
@@ -254,6 +263,7 @@ export class MarkerRenderer implements ITreeRenderer<Marker, MarkerFilterData, I
 }
 
 const expandedIcon = registerIcon('markers-view-multi-line-expanded', Codicon.chevronUp, localize('expandedIcon', 'Icon indicating that multiple lines are shown in the markers view.'));
+
 const collapsedIcon = registerIcon('markers-view-multi-line-collapsed', Codicon.chevronDown, localize('collapsedIcon', 'Icon indicating that multiple lines are collapsed in the markers view.'));
 
 const toggleMultilineAction = 'problems.action.toggleMultiline';
@@ -309,6 +319,7 @@ class MarkerWidget extends Disposable {
 	render(element: Marker, filterData: MarkerFilterData | undefined): void {
 		this.actionBar.clear();
 		this.disposables.clear();
+
 		dom.clearNode(this.messageAndDetailsContainer);
 
 		this.iconContainer.className = `marker-icon ${Severity.toString(MarkerSeverity.toSeverity(element.marker.severity))}`;
@@ -322,6 +333,7 @@ class MarkerWidget extends Disposable {
 
 	private renderQuickfixActionbar(marker: Marker): void {
 		const viewModel = this.markersViewModel.getViewModel(marker);
+
 		if (viewModel) {
 			const quickFixAction = viewModel.quickFixAction;
 			this.actionBar.push([quickFixAction], { icon: true, label: false });
@@ -333,6 +345,7 @@ class MarkerWidget extends Disposable {
 			}, this, this.disposables);
 			quickFixAction.onShowQuickFixes(() => {
 				const quickFixActionViewItem = <QuickFixActionViewItem>this.actionBar.viewItems[0];
+
 				if (quickFixActionViewItem) {
 					quickFixActionViewItem.showQuickFixes();
 				}
@@ -352,7 +365,9 @@ class MarkerWidget extends Disposable {
 		this.disposables.add(toDisposable(() => multilineActionbar.dispose()));
 
 		const viewModel = this.markersViewModel.getViewModel(marker);
+
 		const multiline = viewModel && viewModel.multiline;
+
 		const action = new Action(toggleMultilineAction);
 		action.enabled = !!viewModel && marker.lines.length > 1;
 		action.tooltip = multiline ? localize('single line', "Show message in single line") : localize('multi line', "Show message in multiple lines");
@@ -363,17 +378,24 @@ class MarkerWidget extends Disposable {
 
 	private renderMessageAndDetails(element: Marker, filterData: MarkerFilterData | undefined): void {
 		const { marker, lines } = element;
+
 		const viewState = this.markersViewModel.getViewModel(element);
+
 		const multiline = !viewState || viewState.multiline;
+
 		const lineMatches = filterData && filterData.lineMatches || [];
 		this.messageAndDetailsContainerHover.update(element.marker.message);
 
 		const lineElements: HTMLElement[] = [];
+
 		for (let index = 0; index < (multiline ? lines.length : 1); index++) {
 			const lineElement = dom.append(this.messageAndDetailsContainer, dom.$('.marker-message-line'));
+
 			const messageElement = dom.append(lineElement, dom.$('.marker-message'));
+
 			const highlightedLabel = this.disposables.add(new HighlightedLabel(messageElement));
 			highlightedLabel.set(lines[index].length > 1000 ? `${lines[index].substring(0, 1000)}...` : lines[index], lineMatches[index]);
+
 			if (lines[index] === '') {
 				lineElement.style.height = `${VirtualDelegate.LINE_HEIGHT}px`;
 			}
@@ -388,19 +410,24 @@ class MarkerWidget extends Disposable {
 
 		if (marker.source || marker.code) {
 			const source = this.disposables.add(new HighlightedLabel(dom.append(parent, dom.$('.marker-source'))));
+
 			const sourceMatches = filterData && filterData.sourceMatches || [];
 			source.set(marker.source, sourceMatches);
 
 			if (marker.code) {
 				if (typeof marker.code === 'string') {
 					const code = this.disposables.add(new HighlightedLabel(dom.append(parent, dom.$('.marker-code'))));
+
 					const codeMatches = filterData && filterData.codeMatches || [];
 					code.set(marker.code, codeMatches);
 				} else {
 					const container = dom.$('.marker-code');
+
 					const code = this.disposables.add(new HighlightedLabel(container));
+
 					const link = marker.code.target.toString(true);
 					this.disposables.add(new Link(parent, { href: link, label: container, title: link }, undefined, this._hoverService, this._openerService));
+
 					const codeMatches = filterData && filterData.codeMatches || [];
 					code.set(marker.code.value, codeMatches);
 				}
@@ -425,6 +452,7 @@ export class RelatedInformationRenderer implements ITreeRenderer<RelatedInformat
 		const data: IRelatedInformationTemplateData = Object.create(null);
 
 		dom.append(container, dom.$('.actions'));
+
 		dom.append(container, dom.$('.icon'));
 
 		data.resourceLabel = new HighlightedLabel(dom.append(container, dom.$('.related-info-resource')));
@@ -435,12 +463,15 @@ export class RelatedInformationRenderer implements ITreeRenderer<RelatedInformat
 		separator.style.paddingRight = '4px';
 
 		data.description = new HighlightedLabel(dom.append(container, dom.$('.marker-description')));
+
 		return data;
 	}
 
 	renderElement(node: ITreeNode<RelatedInformation, RelatedInformationFilterData>, _: number, templateData: IRelatedInformationTemplateData): void {
 		const relatedInformation = node.element.raw;
+
 		const uriMatches = node.filterData && node.filterData.uriMatches || [];
+
 		const messageMatches = node.filterData && node.filterData.messageMatches || [];
 
 		const resourceLabelTitle = this.labelService.getUriLabel(relatedInformation.resource, { relative: true });
@@ -488,6 +519,7 @@ export class Filter implements ITreeFilter<MarkerElement, FilterData> {
 		// Fiter by text. Do not apply negated filters on resources instead use exclude patterns
 		if (this.options.textFilter.text && !this.options.textFilter.negate) {
 			const uriMatches = FilterOptions._filter(this.options.textFilter.text, basename(resourceMarkers.resource));
+
 			if (uriMatches) {
 				return { visibility: true, data: { type: FilterDataType.ResourceMarkers, uriMatches: uriMatches || [] } };
 			}
@@ -511,13 +543,16 @@ export class Filter implements ITreeFilter<MarkerElement, FilterData> {
 		}
 
 		const lineMatches: IMatch[][] = [];
+
 		for (const line of marker.lines) {
 			const lineMatch = FilterOptions._messageFilter(this.options.textFilter.text, line);
 			lineMatches.push(lineMatch || []);
 		}
 
 		const sourceMatches = marker.marker.source ? FilterOptions._filter(this.options.textFilter.text, marker.marker.source) : undefined;
+
 		const codeMatches = marker.marker.code ? FilterOptions._filter(this.options.textFilter.text, typeof marker.marker.code === 'string' ? marker.marker.code : marker.marker.code.value) : undefined;
+
 		const matched = sourceMatches || codeMatches || lineMatches.some(lineMatch => lineMatch.length > 0);
 
 		// Matched and not negated
@@ -544,7 +579,9 @@ export class Filter implements ITreeFilter<MarkerElement, FilterData> {
 		}
 
 		const uriMatches = FilterOptions._filter(this.options.textFilter.text, basename(relatedInformation.raw.resource));
+
 		const messageMatches = FilterOptions._messageFilter(this.options.textFilter.text, paths.basename(relatedInformation.raw.message));
+
 		const matched = uriMatches || messageMatches;
 
 		// Matched and not negated
@@ -593,6 +630,7 @@ export class MarkerViewModel extends Disposable {
 	}
 
 	private _multiline: boolean = true;
+
 	get multiline(): boolean {
 		return this._multiline;
 	}
@@ -605,6 +643,7 @@ export class MarkerViewModel extends Disposable {
 	}
 
 	private _quickFixAction: QuickFixAction | null = null;
+
 	get quickFixAction(): QuickFixAction {
 		if (!this._quickFixAction) {
 			this._quickFixAction = this._register(this.instantiationService.createInstance(QuickFixAction, this.marker));
@@ -658,6 +697,7 @@ export class MarkerViewModel extends Disposable {
 
 	private openFileAtMarker(element: Marker): Promise<void> {
 		const { resource, selection } = { resource: element.resource, selection: element.range };
+
 		return this.editorService.openEditor({
 			resource,
 			options: {
@@ -671,6 +711,7 @@ export class MarkerViewModel extends Disposable {
 
 	private getModel(waitForModel: boolean): Promise<ITextModel | null> {
 		const model = this.modelService.getModel(this.marker.resource);
+
 		if (model) {
 			return Promise.resolve(model);
 		}
@@ -727,6 +768,7 @@ export class MarkersViewModel extends Disposable {
 	add(marker: Marker): void {
 		if (!this.markersViewStates.has(marker.id)) {
 			const viewModel = this.instantiationService.createInstance(MarkerViewModel, marker);
+
 			const disposables: IDisposable[] = [viewModel];
 			viewModel.multiline = this.multiline;
 			viewModel.onDidChange(() => {
@@ -744,12 +786,15 @@ export class MarkersViewModel extends Disposable {
 
 	remove(resource: URI): void {
 		const markers = this.markersPerResource.get(resource.toString()) || [];
+
 		for (const marker of markers) {
 			const value = this.markersViewStates.get(marker.id);
+
 			if (value) {
 				dispose(value.disposables);
 			}
 			this.markersViewStates.delete(marker.id);
+
 			if (this.hoveredMarker === marker) {
 				this.hoveredMarker = null;
 			}
@@ -759,6 +804,7 @@ export class MarkersViewModel extends Disposable {
 
 	getViewModel(marker: Marker): MarkerViewModel | null {
 		const value = this.markersViewStates.get(marker.id);
+
 		return value ? value.viewModel : null;
 	}
 
@@ -767,6 +813,7 @@ export class MarkersViewModel extends Disposable {
 		this.hoverDelayer.trigger(() => {
 			if (this.hoveredMarker) {
 				const model = this.getViewModel(this.hoveredMarker);
+
 				if (model) {
 					model.showLightBulb();
 				}
@@ -781,12 +828,14 @@ export class MarkersViewModel extends Disposable {
 	}
 
 	private _multiline: boolean = true;
+
 	get multiline(): boolean {
 		return this._multiline;
 	}
 
 	set multiline(value: boolean) {
 		let changed = false;
+
 		if (this._multiline !== value) {
 			this._multiline = value;
 			changed = true;
@@ -799,12 +848,14 @@ export class MarkersViewModel extends Disposable {
 			}
 		});
 		this.bulkUpdate = false;
+
 		if (changed) {
 			this._onDidChange.fire(undefined);
 		}
 	}
 
 	private _viewMode: MarkersViewMode = MarkersViewMode.Tree;
+
 	get viewMode(): MarkersViewMode {
 		return this._viewMode;
 	}
@@ -823,6 +874,7 @@ export class MarkersViewModel extends Disposable {
 		this.markersViewStates.forEach(({ disposables }) => dispose(disposables));
 		this.markersViewStates.clear();
 		this.markersPerResource.clear();
+
 		super.dispose();
 	}
 

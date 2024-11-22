@@ -22,6 +22,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
     private readonly regex: RegexToggle;
     private readonly wholeWords: WholeWordsToggle;
     private readonly caseSensitive: CaseSensitiveToggle;
+
     constructor(editor: ICodeEditor, state: FindReplaceState, keybindingService: IKeybindingService) {
         super();
         this._editor = editor;
@@ -34,11 +35,13 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
         this._domNode.style.zIndex = '12';
         this._domNode.setAttribute('role', 'presentation');
         this._domNode.setAttribute('aria-hidden', 'true');
+
         const toggleStyles = {
             inputActiveOptionBorder: asCssVariable(inputActiveOptionBorder),
             inputActiveOptionForeground: asCssVariable(inputActiveOptionForeground),
             inputActiveOptionBackground: asCssVariable(inputActiveOptionBackground),
         };
+
         const hoverDelegate = this._register(createInstantHoverDelegate());
         this.caseSensitive = this._register(new CaseSensitiveToggle({
             appendTitle: this._keybindingLabelFor(FIND_IDS.ToggleCaseSensitiveCommand),
@@ -79,6 +82,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
         this._editor.addOverlayWidget(this);
         this._register(this._state.onFindReplaceStateChange((e) => {
             let somethingChanged = false;
+
             if (e.isRegex) {
                 this.regex.checked = this._state.isRegex;
                 somethingChanged = true;
@@ -100,6 +104,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
     }
     private _keybindingLabelFor(actionId: string): string {
         const kb = this._keybindingService.lookupKeybinding(actionId);
+
         if (!kb) {
             return '';
         }
@@ -107,6 +112,7 @@ export class FindOptionsWidget extends Widget implements IOverlayWidget {
     }
     public override dispose(): void {
         this._editor.removeOverlayWidget(this);
+
         super.dispose();
     }
     // ----- IOverlayWidget API

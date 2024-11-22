@@ -23,6 +23,7 @@ class SnippetBodyInsights {
     readonly isTrivial: boolean;
     readonly usesClipboardVariable: boolean;
     readonly usesSelectionVariable: boolean;
+
     constructor(body: string) {
         // init with defaults
         this.isBogous = false;
@@ -32,8 +33,11 @@ class SnippetBodyInsights {
         this.codeSnippet = body;
         // check snippet...
         const textmateSnippet = new SnippetParser().parse(body, false);
+
         const placeholders = new Map<string, number>();
+
         let placeholderMax = 0;
+
         for (const placeholder of textmateSnippet.placeholders) {
             placeholderMax = Math.max(placeholderMax, placeholder.index);
         }
@@ -47,8 +51,10 @@ class SnippetBodyInsights {
             this.isTrivial = last instanceof Placeholder && last.isFinalTabstop;
         }
         const stack = [...textmateSnippet.children];
+
         while (stack.length > 0) {
             const marker = stack.shift()!;
+
             if (marker instanceof Variable) {
                 if (marker.children.length === 0 && !KnownSnippetVariableNames[marker.name]) {
                     // a 'variable' without a default value and not being one of our supported
@@ -56,6 +62,7 @@ class SnippetBodyInsights {
                     // a bug we had before. So `${foo}` becomes `${N:foo}`
                     const index = placeholders.has(marker.name) ? placeholders.get(marker.name)! : ++placeholderMax;
                     placeholders.set(marker.name, index);
+
                     const synthetic = new Placeholder(index).appendChild(new Text(marker.name));
                     textmateSnippet.replace(marker, [synthetic]);
                     this.isBogous = true;
@@ -63,10 +70,13 @@ class SnippetBodyInsights {
                 switch (marker.name) {
                     case 'CLIPBOARD':
                         this.usesClipboardVariable = true;
+
                         break;
+
                     case 'SELECTION':
                     case 'TM_SELECTED_TEXT':
                         this.usesSelectionVariable = true;
+
                         break;
                 }
             }
@@ -83,6 +93,7 @@ class SnippetBodyInsights {
 export class Snippet {
     private readonly _bodyInsights: WindowIdleValue<SnippetBodyInsights>;
     readonly prefixLow: string;
+
     constructor(readonly isFileTemplate: boolean, readonly scopes: string[], readonly name: string, readonly prefix: string, readonly description: string, readonly body: string, readonly source: string, readonly snippetSource: SnippetSource, readonly snippetIdentifier: string, readonly extensionId?: ExtensionIdentifier) {
         this.prefixLow = prefix.toLowerCase();
         this._bodyInsights = new WindowIdleValue(getActiveWindow(), () => new SnippetBodyInsights(this.body));
@@ -128,6 +139,7 @@ export class SnippetFile {
     readonly isGlobalSnippets: boolean;
     readonly isUserSnippets: boolean;
     private _loadPromise?: Promise<this>;
+
     constructor(readonly source: SnippetSource, readonly location: URI, public defaultScopes: string[] | undefined, private readonly _extension: IExtensionDescription | undefined, private readonly _fileService: IFileService, private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService) {
         this.isGlobalSnippets = extname(location.path) === '.code-snippets';
         this.isUserSnippets = !this._extension;
@@ -150,6 +162,7 @@ export class SnippetFile {
         // for `my.code-snippets` files we need to look at each snippet
         for (const snippet of this.data) {
             const len = snippet.scopes.length;
+
             if (len === 0) {
                 // always accept
                 bucket.push(snippet);
@@ -159,12 +172,14 @@ export class SnippetFile {
                     // match
                     if (snippet.scopes[i] === selector) {
                         bucket.push(snippet);
+
                         break; // match only once!
                     }
                 }
             }
         }
         const idx = selector.lastIndexOf('.');
+
         if (idx >= 0) {
             this._scopeSelect(selector.substring(0, idx), bucket);
         }
@@ -175,6 +190,7 @@ export class SnippetFile {
         }
         else {
             const content = await this._fileService.readFile(this.location);
+
             return content.value.toString();
         }
     }
@@ -182,6 +198,7 @@ export class SnippetFile {
         if (!this._loadPromise) {
             this._loadPromise = Promise.resolve(this._load()).then(content => {
                 const data = <JsonSerializedSnippets>jsonParse(content);
+
                 if (getNodeType(data) === 'object') {
                     for (const [name, scopeOrTemplate] of Object.entries(data)) {
                         if (isJsonSerializedSnippet(scopeOrTemplate)) {
@@ -205,6 +222,7 @@ export class SnippetFile {
     }
     private _parseSnippet(name: string, snippet: JsonSerializedSnippet, bucket: Snippet[]): void {
         let { isFileTemplate, prefix, body, description } = snippet;
+
         if (!prefix) {
             prefix = '';
         }
@@ -218,6 +236,7 @@ export class SnippetFile {
             description = description.join('\n');
         }
         let scopes: string[];
+
         if (this.defaultScopes) {
             scopes = this.defaultScopes;
         }
@@ -228,6 +247,7 @@ export class SnippetFile {
             scopes = [];
         }
         let source: string;
+
         if (this._extension) {
             // extension snippet -> show the name of the extension
             source = this._extension.displayName || this._extension.name;

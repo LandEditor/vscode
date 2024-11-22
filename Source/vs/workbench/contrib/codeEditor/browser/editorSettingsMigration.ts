@@ -10,8 +10,10 @@ Registry.as<IConfigurationMigrationRegistry>(Extensions.ConfigurationMigration)
     key: `editor.${item.key}`,
     migrateFn: (value, accessor) => {
         const configurationKeyValuePairs: ConfigurationKeyValuePairs = [];
+
         const writer: ISettingsWriter = (key, value) => configurationKeyValuePairs.push([`editor.${key}`, { value }]);
         item.migrate(value, key => accessor(`editor.${key}`), writer);
+
         return configurationKeyValuePairs;
     }
 })));

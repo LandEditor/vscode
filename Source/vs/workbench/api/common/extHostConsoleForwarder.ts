@@ -11,6 +11,7 @@ export abstract class AbstractExtHostConsoleForwarder {
     private readonly _mainThreadConsole: MainThreadConsoleShape;
     private readonly _includeStack: boolean;
     private readonly _logNative: boolean;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -37,6 +38,7 @@ export abstract class AbstractExtHostConsoleForwarder {
      */
     private _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error' | 'debug', severity: 'log' | 'warn' | 'error' | 'debug') {
         const that = this;
+
         const original = console[method];
         Object.defineProperty(console, method, {
             set: () => { },
@@ -51,6 +53,7 @@ export abstract class AbstractExtHostConsoleForwarder {
             severity,
             arguments: safeStringifyArgumentsToArray(args, this._includeStack)
         });
+
         if (this._logNative) {
             this._nativeConsoleLogMessage(method, original, args);
         }
@@ -77,6 +80,7 @@ function safeStringifyArgumentsToArray(args: IArguments, includeStack: boolean):
             // itself because currently cannot serialize the error over entirely.
             else if (arg instanceof Error) {
                 const errorObj = arg;
+
                 if (errorObj.stack) {
                     arg = errorObj.stack;
                 }
@@ -91,12 +95,14 @@ function safeStringifyArgumentsToArray(args: IArguments, includeStack: boolean):
     // to start the stacktrace where the console message was being written
     if (includeStack) {
         const stack = new Error().stack;
+
         if (stack) {
             argsArray.push({ __$stack: stack.split('\n').slice(3).join('\n') } satisfies IStackArgument);
         }
     }
     try {
         const res = safeStringify(argsArray);
+
         if (res.length > MAX_LENGTH) {
             return 'Output omitted for a large object that exceeds the limits';
         }

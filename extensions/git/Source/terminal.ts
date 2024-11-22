@@ -7,12 +7,14 @@ import { dispose, filterEvent, IDisposable } from './util';
 import { Model } from './model';
 export interface ITerminalEnvironmentProvider {
     featureDescription?: string;
+
     getTerminalEnv(): {
         [key: string]: string;
     };
 }
 export class TerminalEnvironmentManager {
     private readonly disposable: IDisposable;
+
     constructor(private readonly context: ExtensionContext, private readonly envProviders: (ITerminalEnvironmentProvider | undefined)[]) {
         this.disposable = filterEvent(workspace.onDidChangeConfiguration, e => e.affectsConfiguration('git'))(this.refresh, this);
         this.refresh();
@@ -20,12 +22,15 @@ export class TerminalEnvironmentManager {
     private refresh(): void {
         const config = workspace.getConfiguration('git', null);
         this.context.environmentVariableCollection.clear();
+
         if (!config.get<boolean>('enabled', true)) {
             return;
         }
         const features: string[] = [];
+
         for (const envProvider of this.envProviders) {
             const terminalEnv = envProvider?.getTerminalEnv() ?? {};
+
             for (const name of Object.keys(terminalEnv)) {
                 this.context.environmentVariableCollection.replace(name, terminalEnv[name]);
             }
@@ -47,20 +52,27 @@ export class TerminalShellExecutionManager {
         'mv', 'rebase', 'reset', 'restore', 'revert', 'rm', 'pull', 'push', 'stash', 'switch'
     ]);
     private readonly disposables: IDisposable[] = [];
+
     constructor(private readonly model: Model, private readonly logger: LogOutputChannel) {
         window.onDidEndTerminalShellExecution(this.onDidEndTerminalShellExecution, this, this.disposables);
     }
     private onDidEndTerminalShellExecution(e: TerminalShellExecutionEndEvent): void {
         const { execution, exitCode, shellIntegration } = e;
+
         const [executable, subcommand] = execution.commandLine.value.split(/\s+/);
+
         const cwd = execution.cwd ?? shellIntegration.cwd;
+
         if (executable.toLowerCase() !== 'git' || !this.subcommands.has(subcommand?.toLowerCase()) || !cwd || exitCode !== 0) {
             return;
         }
         this.logger.trace(`[TerminalShellExecutionManager][onDidEndTerminalShellExecution] Matched git subcommand: ${subcommand}`);
+
         const repository = this.model.getRepository(cwd);
+
         if (!repository) {
             this.logger.trace(`[TerminalShellExecutionManager][onDidEndTerminalShellExecution] Unable to find repository for current working directory: ${cwd.toString()}`);
+
             return;
         }
         repository.status();

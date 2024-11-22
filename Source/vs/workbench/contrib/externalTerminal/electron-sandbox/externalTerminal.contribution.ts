@@ -18,6 +18,7 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 import { TerminalContextKeys } from '../../terminal/common/terminalContextKey.js';
 import { IRemoteAuthorityResolverService } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
+
 const OPEN_NATIVE_CONSOLE_COMMAND_ID = 'workbench.action.terminal.openNativeConsole';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: OPEN_NATIVE_CONSOLE_COMMAND_ID,
@@ -28,21 +29,28 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         const historyService = accessor.get(IHistoryService);
         // Open external terminal in local workspaces
         const terminalService = accessor.get(IExternalTerminalService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const remoteAuthorityResolverService = accessor.get(IRemoteAuthorityResolverService);
+
         const root = historyService.getLastActiveWorkspaceRoot();
+
         const config = configurationService.getValue<IExternalTerminalSettings>('terminal.external');
         // It's a local workspace, open the root
         if (root?.scheme === Schemas.file) {
             terminalService.openTerminal(config, root.fsPath);
+
             return;
         }
         // If it's a remote workspace, open the canonical URI if it is a local folder
         try {
             if (root?.scheme === Schemas.vscodeRemote) {
                 const canonicalUri = await remoteAuthorityResolverService.getCanonicalURI(root);
+
                 if (canonicalUri.scheme === Schemas.file) {
                     terminalService.openTerminal(config, canonicalUri.fsPath);
+
                     return;
                 }
             }
@@ -51,15 +59,19 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         // Open the current file's folder if it's local or its canonical URI is local
         // Opens current file's folder, if no folder is open in editor
         const activeFile = historyService.getLastActiveFile(Schemas.file);
+
         if (activeFile?.scheme === Schemas.file) {
             terminalService.openTerminal(config, paths.dirname(activeFile.fsPath));
+
             return;
         }
         try {
             if (activeFile?.scheme === Schemas.vscodeRemote) {
                 const canonicalUri = await remoteAuthorityResolverService.getCanonicalURI(activeFile);
+
                 if (canonicalUri.scheme === Schemas.file) {
                     terminalService.openTerminal(config, canonicalUri.fsPath);
+
                     return;
                 }
             }
@@ -77,6 +89,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 });
 export class ExternalTerminalContribution implements IWorkbenchContribution {
     public _serviceBrand: undefined;
+
     constructor(
     @IExternalTerminalService
     private readonly _externalTerminalService: IExternalTerminalService) {
@@ -84,6 +97,7 @@ export class ExternalTerminalContribution implements IWorkbenchContribution {
     }
     private async _updateConfiguration(): Promise<void> {
         const terminals = await this._externalTerminalService.getDefaultTerminalForPlatforms();
+
         const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
         configurationRegistry.registerConfiguration({
             id: 'externalTerminal',

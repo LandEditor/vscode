@@ -24,6 +24,7 @@ export class TaskError {
     public severity: Severity;
     public message: string;
     public code: TaskErrors;
+
     constructor(severity: Severity, message: string, code: TaskErrors) {
         this.severity = severity;
         this.message = message;
@@ -32,7 +33,9 @@ export class TaskError {
 }
 export namespace Triggers {
     export const shortcut: string = 'shortcut';
+
     export const command: string = 'command';
+
     export const reconnect: string = 'reconnect';
 }
 export interface ITaskSummary {
@@ -69,10 +72,12 @@ export interface IResolveSet {
         cwd?: string;
         path?: string;
     };
+
     variables: Set<string>;
 }
 export interface IResolvedVariables {
     process?: string;
+
     variables: Map<string, string>;
 }
 export interface ITaskSystemInfo {
@@ -92,8 +97,11 @@ export interface ITaskSystem {
     rerun(): ITaskExecuteResult | undefined;
     isActive(): Promise<boolean>;
     isActiveSync(): boolean;
+
     getActiveTasks(): Task[];
+
     getLastInstance(task: Task): Task | undefined;
+
     getBusyTasks(): Task[];
     canAutoTerminate(): boolean;
     terminate(task: Task): Promise<ITaskTerminateResponse>;

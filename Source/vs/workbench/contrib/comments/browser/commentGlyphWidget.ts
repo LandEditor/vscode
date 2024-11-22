@@ -14,8 +14,11 @@ import { CommentThreadState } from '../../../../editor/common/languages.js';
 import { Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
 import { Emitter } from '../../../../base/common/event.js';
 export const overviewRulerCommentingRangeForeground = registerColor('editorGutter.commentRangeForeground', { dark: opaque(listInactiveSelectionBackground, editorBackground), light: darken(opaque(listInactiveSelectionBackground, editorBackground), .05), hcDark: Color.white, hcLight: Color.black }, nls.localize('editorGutterCommentRangeForeground', 'Editor gutter decoration color for commenting ranges. This color should be opaque.'));
+
 const overviewRulerCommentForeground = registerColor('editorOverviewRuler.commentForeground', overviewRulerCommentingRangeForeground, nls.localize('editorOverviewRuler.commentForeground', 'Editor overview ruler decoration color for resolved comments. This color should be opaque.'));
+
 const overviewRulerCommentUnresolvedForeground = registerColor('editorOverviewRuler.commentUnresolvedForeground', overviewRulerCommentForeground, nls.localize('editorOverviewRuler.commentUnresolvedForeground', 'Editor overview ruler decoration color for unresolved comments. This color should be opaque.'));
+
 const editorGutterCommentGlyphForeground = registerColor('editorGutter.commentGlyphForeground', { dark: editorForeground, light: editorForeground, hcDark: Color.black, hcLight: Color.white }, nls.localize('editorGutterCommentGlyphForeground', 'Editor gutter decoration color for commenting glyphs.'));
 registerColor('editorGutter.commentUnresolvedGlyphForeground', editorGutterCommentGlyphForeground, nls.localize('editorGutterCommentUnresolvedGlyphForeground', 'Editor gutter decoration color for commenting glyphs for unresolved comment threads.'));
 export class CommentGlyphWidget extends Disposable {
@@ -27,6 +30,7 @@ export class CommentGlyphWidget extends Disposable {
     private _commentsOptions: ModelDecorationOptions;
     private readonly _onDidChangeLineNumber = this._register(new Emitter<number>());
     public readonly onDidChangeLineNumber = this._onDidChangeLineNumber.event;
+
     constructor(editor: ICodeEditor, lineNumber: number) {
         super();
         this._commentsOptions = this.createDecorationOptions();
@@ -34,6 +38,7 @@ export class CommentGlyphWidget extends Disposable {
         this._commentsDecorations = this._editor.createDecorationsCollection();
         this._register(this._commentsDecorations.onDidChange(e => {
             const range = (this._commentsDecorations.length > 0 ? this._commentsDecorations.getRange(0) : null);
+
             if (range && range.endLineNumber !== this._lineNumber) {
                 this._lineNumber = range.endLineNumber;
                 this._onDidChangeLineNumber.fire(this._lineNumber);
@@ -44,6 +49,7 @@ export class CommentGlyphWidget extends Disposable {
     }
     private createDecorationOptions(): ModelDecorationOptions {
         const unresolved = this._threadState === CommentThreadState.Unresolved;
+
         const decorationOptions: IModelDecorationOptions = {
             description: CommentGlyphWidget.description,
             isWholeLine: true,
@@ -54,6 +60,7 @@ export class CommentGlyphWidget extends Disposable {
             collapseOnReplaceEdit: true,
             linesDecorationsClassName: `comment-range-glyph comment-thread${unresolved ? '-unresolved' : ''}`
         };
+
         return ModelDecorationOptions.createDynamic(decorationOptions);
     }
     setThreadState(state: CommentThreadState | undefined): void {
@@ -79,6 +86,7 @@ export class CommentGlyphWidget extends Disposable {
     }
     getPosition(): IContentWidgetPosition {
         const range = (this._commentsDecorations.length > 0 ? this._commentsDecorations.getRange(0) : null);
+
         return {
             position: {
                 lineNumber: range ? range.endLineNumber : this._lineNumber,

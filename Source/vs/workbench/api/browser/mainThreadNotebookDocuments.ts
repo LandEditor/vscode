@@ -19,6 +19,7 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
     private readonly _proxy: ExtHostNotebookDocumentsShape;
     private readonly _documentEventListenersMapping = new ResourceMap<DisposableStore>();
     private readonly _modelReferenceCollection: BoundModelReferenceCollection;
+
     constructor(extHostContext: IExtHostContext, 
     @INotebookEditorModelResolverService
     private readonly _notebookEditorModelResolverService: INotebookEditorModelResolverService, 
@@ -47,6 +48,7 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
                     versionId: event.versionId,
                     rawEvents: []
                 };
+
                 for (const e of event.rawEvents) {
                     switch (e.kind) {
                         case NotebookCellsChangeType.ModelChange:
@@ -58,7 +60,9 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
                                     NotebookCellDto[]
                                 ])
                             });
+
                             break;
+
                         case NotebookCellsChangeType.Move:
                             eventDto.rawEvents.push({
                                 kind: e.kind,
@@ -66,14 +70,18 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
                                 length: e.length,
                                 newIdx: e.newIdx,
                             });
+
                             break;
+
                         case NotebookCellsChangeType.Output:
                             eventDto.rawEvents.push({
                                 kind: e.kind,
                                 index: e.index,
                                 outputs: e.outputs.map(NotebookDto.toNotebookOutputDto)
                             });
+
                             break;
+
                         case NotebookCellsChangeType.OutputItem:
                             eventDto.rawEvents.push({
                                 kind: e.kind,
@@ -82,12 +90,15 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
                                 outputItems: e.outputItems.map(NotebookDto.toNotebookOutputItemDto),
                                 append: e.append
                             });
+
                             break;
+
                         case NotebookCellsChangeType.ChangeCellLanguage:
                         case NotebookCellsChangeType.ChangeCellContent:
                         case NotebookCellsChangeType.ChangeCellMetadata:
                         case NotebookCellsChangeType.ChangeCellInternalMetadata:
                             eventDto.rawEvents.push(e);
+
                             break;
                     }
                 }
@@ -130,12 +141,15 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
             // If we aren't adding content, we don't need to resolve the full editor model yet.
             // This will allow us to adjust settings when the editor is opened, e.g. scratchpad
             const notebook = await this._notebookEditorModelResolverService.createUntitledNotebookTextModel(options.viewType);
+
             return notebook.uri;
         }
     }
     async $tryOpenNotebook(uriComponents: UriComponents): Promise<URI> {
         const uri = URI.revive(uriComponents);
+
         const ref = await this._notebookEditorModelResolverService.resolve(uri, undefined);
+
         if (uriComponents.scheme === 'untitled') {
             // untitled notebooks are disposed when they get saved. we should not hold a reference
             // to such a disposed notebook and therefore dispose the reference as well
@@ -144,13 +158,17 @@ export class MainThreadNotebookDocuments implements MainThreadNotebookDocumentsS
             });
         }
         this._modelReferenceCollection.add(uri, ref);
+
         return uri;
     }
     async $trySaveNotebook(uriComponents: UriComponents) {
         const uri = URI.revive(uriComponents);
+
         const ref = await this._notebookEditorModelResolverService.resolve(uri);
+
         const saveResult = await ref.object.save();
         ref.dispose();
+
         return saveResult;
     }
 }

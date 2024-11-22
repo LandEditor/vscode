@@ -35,6 +35,7 @@ import { accessibilityHelpIsShown, accessibleViewIsShown } from '../../../access
 import { matchesFuzzyIconAware, parseLabelWithIcons } from '../../../../../base/common/iconLabels.js';
 export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccessProvider {
     protected readonly onDidActiveTextEditorControlChange = this.editorService.onDidActiveEditorChange;
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService, 
@@ -55,6 +56,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
     //#region DocumentSymbols (text editor required)
     private get configuration() {
         const editorConfig = this.configurationService.getValue<IWorkbenchEditorConfiguration>().workbench?.editor;
+
         return {
             openEditorPinned: !editorConfig?.enablePreviewFromQuickOpen || !editorConfig?.enablePreview,
             openSideBySideDirection: editorConfig?.openSideBySideDirection
@@ -73,6 +75,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
     protected override gotoLocation(context: IQuickAccessTextEditorContext, options: {
         range: IRange;
         keyMods: IKeyMods;
+
         forceSideBySide?: boolean;
         preserveFocus?: boolean;
     }): void {
@@ -94,6 +97,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
     //#endregion
     //#region public methods to use this picker from other pickers
     private static readonly SYMBOL_PICKS_TIMEOUT = 8000;
+
     async getSymbolPicks(model: ITextModel, filter: string, options: {
         extraContainerLabel?: string;
     }, disposables: DisposableStore, token: CancellationToken): Promise<Array<IGotoSymbolQuickPickItem | IQuickPickSeparator>> {
@@ -105,6 +109,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
             this.waitForLanguageSymbolRegistry(model, disposables),
             timeout(GotoSymbolQuickAccessProvider.SYMBOL_PICKS_TIMEOUT)
         ]);
+
         if (!result || token.isCancellationRequested) {
             return [];
         }
@@ -126,10 +131,12 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
         useSeparators: true;
     }>): IDisposable {
         const pane = this.editorService.activeEditorPane;
+
         if (!pane) {
             return Disposable.None;
         }
         const cts = new CancellationTokenSource();
+
         const disposables = new DisposableStore();
         disposables.add(toDisposable(() => cts.dispose(true)));
         picker.busy = true;
@@ -139,16 +146,20 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
             }
             if (cts.token.isCancellationRequested) {
                 outline.dispose();
+
                 return;
             }
             disposables.add(outline);
+
             const viewState = outline.captureViewState();
             disposables.add(toDisposable(() => {
                 if (picker.selectedItems.length === 0) {
                     viewState.dispose();
                 }
             }));
+
             const entries = outline.config.quickPickDataSource.getQuickPickElements();
+
             const items: IGotoSymbolQuickPickItem[] = entries.map((entry, idx) => {
                 return {
                     kind: SymbolKind.File,
@@ -162,29 +173,38 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
             });
             disposables.add(picker.onDidAccept(() => {
                 picker.hide();
+
                 const [entry] = picker.selectedItems;
+
                 if (entry && entries[entry.index]) {
                     outline.reveal(entries[entry.index].element, {}, false, false);
                 }
             }));
+
             const updatePickerItems = () => {
                 const filteredItems = items.filter(item => {
                     if (picker.value === '@') {
                         // default, no filtering, scoring...
                         item.score = 0;
                         item.highlights = undefined;
+
                         return true;
                     }
                     const trimmedQuery = picker.value.substring(AbstractGotoSymbolQuickAccessProvider.PREFIX.length).trim();
+
                     const parsedLabel = parseLabelWithIcons(item.label);
+
                     const score = fuzzyScore(trimmedQuery, trimmedQuery.toLowerCase(), 0, parsedLabel.text, parsedLabel.text.toLowerCase(), 0, { firstMatchCanBeWeak: true, boostFullMatch: true });
+
                     if (!score) {
                         return false;
                     }
                     item.score = score[1];
                     item.highlights = { label: matchesFuzzyIconAware(trimmedQuery, parsedLabel) ?? undefined };
+
                     return true;
                 });
+
                 if (filteredItems.length === 0) {
                     const label = localize('empty', 'No matching entries');
                     picker.items = [{ label, index: -1, kind: SymbolKind.String }];
@@ -196,10 +216,12 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
             };
             updatePickerItems();
             disposables.add(picker.onDidChangeValue(updatePickerItems));
+
             const previewDisposable = new MutableDisposable();
             disposables.add(previewDisposable);
             disposables.add(picker.onDidChangeActive(() => {
                 const [entry] = picker.activeItems;
+
                 if (entry && entries[entry.index]) {
                     previewDisposable.value = outline.preview(entries[entry.index].element);
                 }
@@ -213,11 +235,13 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
         }).finally(() => {
             picker.busy = false;
         });
+
         return disposables;
     }
 }
 class GotoSymbolAction extends Action2 {
     static readonly ID = 'workbench.action.gotoSymbol';
+
     constructor() {
         super({
             id: GotoSymbolAction.ID,

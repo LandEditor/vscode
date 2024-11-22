@@ -46,6 +46,7 @@ const profiles = {
 };
 async function applyProfile(configService: IConfigurationService, profile: Record<string, any>): Promise<void> {
     const promises = [];
+
     for (const settingKey in profile) {
         promises.push(configService.updateValue(settingKey, profile[settingKey]));
     }
@@ -66,11 +67,13 @@ registerAction2(class extends Action2 {
             return;
         }
         const configService = accessor.get(IConfigurationService);
+
         return applyProfile(configService, profiles[args.profile]);
     }
 });
 function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
     const setProfileArgs = args as ISetProfileArgs;
+
     return setProfileArgs.profile === NotebookProfileType.colab ||
         setProfileArgs.profile === NotebookProfileType.default ||
         setProfileArgs.profile === NotebookProfileType.jupyter;

@@ -42,6 +42,7 @@ export class WebviewEditor extends EditorPane {
     private readonly _onDidFocusWebview = this._register(new Emitter<void>());
     public override get onDidFocus(): Event<any> { return this._onDidFocusWebview.event; }
     private readonly _scopedContextKeyService = this._register(new MutableDisposable<IScopedContextKeyService>());
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -60,6 +61,7 @@ export class WebviewEditor extends EditorPane {
     @IContextKeyService
     private readonly _contextKeyService: IContextKeyService) {
         super(WebviewEditor.ID, group, telemetryService, themeService, storageService);
+
         const part = _editorGroupsService.getPart(group);
         this._register(Event.any(part.onDidScroll, part.onDidAddGroup, part.onDidRemoveGroup, part.onDidMoveGroup)(() => {
             if (this.webview && this._visible) {
@@ -84,16 +86,19 @@ export class WebviewEditor extends EditorPane {
         this._isDisposed = true;
         this._element?.remove();
         this._element = undefined;
+
         super.dispose();
     }
     public override layout(dimension: DOM.Dimension): void {
         this._dimension = dimension;
+
         if (this.webview && this._visible) {
             this.synchronizeWebviewContainerDimensions(this.webview, dimension);
         }
     }
     public override focus(): void {
         super.focus();
+
         if (!this._onFocusWindowHandler.value && !isWeb) {
             // Make sure we restore focus when switching back to a VS Code window
             this._onFocusWindowHandler.value = this._hostService.onDidChangeFocus(focused => {
@@ -106,6 +111,7 @@ export class WebviewEditor extends EditorPane {
     }
     protected override setEditorVisible(visible: boolean): void {
         this._visible = visible;
+
         if (this.input instanceof WebviewInput && this.webview) {
             if (visible) {
                 this.claimWebview(this.input);
@@ -128,16 +134,19 @@ export class WebviewEditor extends EditorPane {
             return;
         }
         const alreadyOwnsWebview = input instanceof WebviewInput && input.webview === this.webview;
+
         if (this.webview && !alreadyOwnsWebview) {
             this.webview.release(this);
         }
         await super.setInput(input, options, context, token);
         await input.resolve();
+
         if (token.isCancellationRequested || this._isDisposed) {
             return;
         }
         if (input instanceof WebviewInput) {
             input.updateGroup(this.group.id);
+
             if (!alreadyOwnsWebview) {
                 this.claimWebview(input);
             }
@@ -148,6 +157,7 @@ export class WebviewEditor extends EditorPane {
     }
     private claimWebview(input: WebviewInput): void {
         input.claim(this, this.window, this.scopedContextKeyService);
+
         if (this._element) {
             this._element.setAttribute('aria-flowto', input.webview.container.id);
             DOM.setParentFlowTo(input.webview.container, this._element);
@@ -176,6 +186,7 @@ export class WebviewEditor extends EditorPane {
         store.add(webviewContentFocusTracker.onDidFocus(() => this._onDidFocusWebview.fire()));
         // Track focus in webview element
         store.add(webview.onDidFocus(() => this._onDidFocusWebview.fire()));
+
         return store;
     }
 }

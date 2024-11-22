@@ -10,8 +10,11 @@ import * as nls from '../../../../nls.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IDebugConfiguration, IDebugSession, IExpression, INestingReplElement, IReplElement, IReplElementSource, IStackFrame } from './debug.js';
 import { ExpressionContainer } from './debugModel.js';
+
 const MAX_REPL_LENGTH = 10000;
+
 let topReplElementCounter = 0;
+
 const getUniqueId = () => `topReplElement:${topReplElementCounter++}`;
 /**
  * General case of data from DAP the `output` event. {@link ReplVariableElement}
@@ -20,14 +23,17 @@ const getUniqueId = () => `topReplElement:${topReplElementCounter++}`;
 export class ReplOutputElement implements INestingReplElement {
     private _count = 1;
     private _onDidChangeCount = new Emitter<void>();
+
     constructor(public session: IDebugSession, private id: string, public value: string, public severity: severity, public sourceData?: IReplElementSource, public readonly expression?: IExpression) {
     }
     toString(includeSource = false): string {
         let valueRespectCount = this.value;
+
         for (let i = 1; i < this.count; i++) {
             valueRespectCount += (valueRespectCount.endsWith('\n') ? '' : '\n') + this.value;
         }
         const sourceStr = (this.sourceData && includeSource) ? ` ${this.sourceData.source.name}` : '';
+
         return valueRespectCount + sourceStr;
     }
     getId(): string {
@@ -54,6 +60,7 @@ export class ReplOutputElement implements INestingReplElement {
 export class ReplVariableElement implements INestingReplElement {
     public readonly hasChildren: boolean;
     private readonly id = generateUuid();
+
     constructor(private readonly session: IDebugSession, public readonly expression: IExpression, public readonly severity: severity, public readonly sourceData?: IReplElementSource) {
         this.hasChildren = expression.hasChildren;
     }
@@ -102,6 +109,7 @@ export class RawObjectReplElement implements IExpression, INestingReplElement {
     }
     getChildren(): Promise<IExpression[]> {
         let result: IExpression[] = [];
+
         if (Array.isArray(this.valueObj)) {
             result = (<any[]>this.valueObj).slice(0, RawObjectReplElement.MAX_CHILDREN)
                 .map((v, index) => new RawObjectReplElement(`${this.id}:${index}`, String(index), v));
@@ -118,6 +126,7 @@ export class RawObjectReplElement implements IExpression, INestingReplElement {
 }
 export class ReplEvaluationInput implements IReplElement {
     private id: string;
+
     constructor(public value: string) {
         this.id = generateUuid();
     }
@@ -130,6 +139,7 @@ export class ReplEvaluationInput implements IReplElement {
 }
 export class ReplEvaluationResult extends ExpressionContainer implements IReplElement {
     private _available = true;
+
     get available(): boolean {
         return this._available;
     }
@@ -139,6 +149,7 @@ export class ReplEvaluationResult extends ExpressionContainer implements IReplEl
     override async evaluateExpression(expression: string, session: IDebugSession | undefined, stackFrame: IStackFrame | undefined, context: string): Promise<boolean> {
         const result = await super.evaluateExpression(expression, session, stackFrame, context);
         this._available = result;
+
         return result;
     }
     override toString(): string {
@@ -150,6 +161,7 @@ export class ReplGroup implements INestingReplElement {
     private id: string;
     private ended = false;
     static COUNTER = 0;
+
     constructor(public readonly session: IDebugSession, public name: string, public autoExpand: boolean, public sourceData?: IReplElementSource) {
         this.id = `replGroup:${ReplGroup.COUNTER++}`;
     }
@@ -161,10 +173,12 @@ export class ReplGroup implements INestingReplElement {
     }
     toString(includeSource = false): string {
         const sourceStr = (includeSource && this.sourceData) ? ` ${this.sourceData.source.name}` : '';
+
         return this.name + sourceStr;
     }
     addChild(child: IReplElement): void {
         const lastElement = this.children.length ? this.children[this.children.length - 1] : undefined;
+
         if (lastElement instanceof ReplGroup && !lastElement.hasEnded) {
             lastElement.addChild(child);
         }
@@ -177,6 +191,7 @@ export class ReplGroup implements INestingReplElement {
     }
     end(): void {
         const lastElement = this.children.length ? this.children[this.children.length - 1] : undefined;
+
         if (lastElement instanceof ReplGroup && !lastElement.hasEnded) {
             lastElement.end();
         }
@@ -207,19 +222,23 @@ export class ReplModel {
     private replElements: IReplElement[] = [];
     private readonly _onDidChangeElements = new Emitter<IReplElement | undefined>();
     readonly onDidChangeElements = this._onDidChangeElements.event;
+
     constructor(private readonly configurationService: IConfigurationService) { }
     getReplElements(): IReplElement[] {
         return this.replElements;
     }
     async addReplExpression(session: IDebugSession, stackFrame: IStackFrame | undefined, expression: string): Promise<void> {
         this.addReplElement(new ReplEvaluationInput(expression));
+
         const result = new ReplEvaluationResult(expression);
         await result.evaluateExpression(expression, session, stackFrame, 'repl');
         this.addReplElement(result);
     }
     appendToRepl(session: IDebugSession, { output, expression, sev, source }: INewReplElementData): void {
         const clearAnsiSequence = '\u001b[2J';
+
         const clearAnsiIndex = output.lastIndexOf(clearAnsiSequence);
+
         if (clearAnsiIndex !== -1) {
             // [2J is the ansi escape sequence for clearing the display http://ascii-table.com/ansi-escape-sequences.php
             this.removeReplExpressions();
@@ -232,11 +251,14 @@ export class ReplModel {
             this.addReplElement(output
                 ? new ReplOutputElement(session, getUniqueId(), output, sev, source, expression)
                 : new ReplVariableElement(session, expression, sev, source));
+
             return;
         }
         const previousElement = this.replElements.length ? this.replElements[this.replElements.length - 1] : undefined;
+
         if (previousElement instanceof ReplOutputElement && previousElement.severity === sev) {
             const config = this.configurationService.getValue<IDebugConfiguration>('debug');
+
             if (previousElement.value === output && areSourcesEqual(previousElement.sourceData, source) && config.console.collapseIdenticalLines) {
                 previousElement.count++;
                 // No need to fire an event, just the count updates and badge will adjust automatically
@@ -245,6 +267,7 @@ export class ReplModel {
             if (!previousElement.value.endsWith('\n') && !previousElement.value.endsWith('\r\n') && previousElement.count === 1) {
                 this.replElements[this.replElements.length - 1] = new ReplOutputElement(session, getUniqueId(), previousElement.value + output, sev, source);
                 this._onDidChangeElements.fire(undefined);
+
                 return;
             }
         }
@@ -257,17 +280,20 @@ export class ReplModel {
     }
     endGroup(): void {
         const lastElement = this.replElements[this.replElements.length - 1];
+
         if (lastElement instanceof ReplGroup) {
             lastElement.end();
         }
     }
     private addReplElement(newElement: IReplElement): void {
         const lastElement = this.replElements.length ? this.replElements[this.replElements.length - 1] : undefined;
+
         if (lastElement instanceof ReplGroup && !lastElement.hasEnded) {
             lastElement.addChild(newElement);
         }
         else {
             this.replElements.push(newElement);
+
             if (this.replElements.length > MAX_REPL_LENGTH) {
                 this.replElements.splice(0, this.replElements.length - MAX_REPL_LENGTH);
             }
@@ -284,6 +310,7 @@ export class ReplModel {
     clone() {
         const newRepl = new ReplModel(this.configurationService);
         newRepl.replElements = this.replElements.slice();
+
         return newRepl;
     }
 }

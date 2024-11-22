@@ -10,10 +10,14 @@ import { CharCode } from '../../../base/common/charCode.js';
  */
 export function computeIndentLevel(line: string, tabSize: number): number {
     let indent = 0;
+
     let i = 0;
+
     const len = line.length;
+
     while (i < len) {
         const chCode = line.charCodeAt(i);
+
         if (chCode === CharCode.Space) {
             indent++;
         }

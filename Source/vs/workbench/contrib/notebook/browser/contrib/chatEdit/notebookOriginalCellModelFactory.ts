@@ -16,6 +16,7 @@ export const INotebookOriginalCellModelFactory = createDecorator<INotebookOrigin
 
 export interface INotebookOriginalCellModelFactory {
 	readonly _serviceBrand: undefined;
+
 	getOrCreate(uri: URI, cellValue: string, language: string, cellKind: CellKind): IReference<ITextModel>;
 }
 
@@ -29,8 +30,11 @@ export class OriginalNotebookCellModelReferenceCollection extends ReferenceColle
 
 	protected override createReferencedObject(_key: string, uri: URI, cellValue: string, language: string, cellKind: CellKind): ITextModel {
 		const scheme = `${uri.scheme}-chat-edit`;
+
 		const originalCellUri = URI.from({ scheme, fragment: uri.fragment, path: uri.path });
+
 		const languageSelection = this._languageService.getLanguageIdByLanguageName(language) ? this._languageService.createById(language) : cellKind === CellKind.Markup ? this._languageService.createById('markdown') : null;
+
 		return this.modelService.createModel(cellValue, languageSelection, originalCellUri);
 	}
 	protected override destroyReferencedObject(_key: string, model: ITextModel): void {
@@ -41,6 +45,7 @@ export class OriginalNotebookCellModelReferenceCollection extends ReferenceColle
 export class OriginalNotebookCellModelFactory implements INotebookOriginalCellModelFactory {
 	readonly _serviceBrand: undefined;
 	private readonly _data: OriginalNotebookCellModelReferenceCollection;
+
 	constructor(@IInstantiationService instantiationService: IInstantiationService) {
 		this._data = instantiationService.createInstance(OriginalNotebookCellModelReferenceCollection);
 	}

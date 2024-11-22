@@ -41,6 +41,7 @@ export class MultiDiffSourceResolverService implements IMultiDiffSourceResolverS
             throw new BugIndicatingError('Duplicate resolver');
         }
         this._resolvers.add(resolver);
+
         return toDisposable(() => this._resolvers.delete(resolver));
     }
     resolve(uri: URI): Promise<IResolvedMultiDiffSource | undefined> {

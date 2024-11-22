@@ -33,6 +33,7 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
     private static readonly CHAT_EXTENSION_INSTALLED_KEY = 'chat.extensionInstalled';
     private readonly chatInstallEntitledContextKey = ChatContextKeys.installEntitled.bindTo(this.contextService);
     private resolvedEntitlement: boolean | undefined = undefined;
+
     constructor(
     @IContextKeyService
     private readonly contextService: IContextKeyService, 
@@ -51,6 +52,7 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
     @IStorageService
     private readonly storageService: IStorageService) {
         super();
+
         if (!this.productService.gitHubEntitlement) {
             return;
         }
@@ -59,6 +61,7 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
     }
     private async checkExtensionInstallation(): Promise<void> {
         const extensions = await this.extensionManagementService.getInstalled();
+
         const installed = extensions.find(value => ExtensionIdentifier.equals(value.identifier.id, this.productService.gitHubEntitlement?.extensionId));
         this.updateExtensionInstalled(installed ? true : false);
     }
@@ -67,12 +70,14 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
             for (const extension of result.removed) {
                 if (ExtensionIdentifier.equals(this.productService.gitHubEntitlement?.extensionId, extension.identifier)) {
                     this.updateExtensionInstalled(false);
+
                     break;
                 }
             }
             for (const extension of result.added) {
                 if (ExtensionIdentifier.equals(this.productService.gitHubEntitlement?.extensionId, extension.identifier)) {
                     this.updateExtensionInstalled(true);
+
                     break;
                 }
             }
@@ -106,7 +111,9 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
         }
         const cts = new CancellationTokenSource();
         this._register(toDisposable(() => cts.dispose(true)));
+
         let context: IRequestContext;
+
         try {
             context = await this.requestService.request({
                 type: 'GET',
@@ -123,10 +130,12 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
             return false;
         }
         const result = await asText(context);
+
         if (!result) {
             return false;
         }
         let parsedResult: any;
+
         try {
             parsedResult = JSON.parse(result);
         }
@@ -135,6 +144,7 @@ class ChatInstallEntitlementContribution extends Disposable implements IWorkbenc
         }
         this.resolvedEntitlement = Boolean(parsedResult[this.productService.gitHubEntitlement!.enablementKey]);
         this.telemetryService.publicLog2<ChatInstallEntitlementEnablementEvent, ChatInstallEntitlementEnablementClassification>('chatInstallEntitlement', { entitled: this.resolvedEntitlement });
+
         return this.resolvedEntitlement;
     }
     private updateExtensionInstalled(isExtensionInstalled: boolean): void {

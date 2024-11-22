@@ -14,6 +14,7 @@ import { TerminalShellExecutionCommandLineConfidence } from '../common/extHostTy
 @extHostNamedCustomer(MainContext.MainThreadTerminalShellIntegration)
 export class MainThreadTerminalShellIntegration extends Disposable implements MainThreadTerminalShellIntegrationShape {
     private readonly _proxy: ExtHostTerminalShellIntegrationShape;
+
     constructor(extHostContext: IExtHostContext, 
     @ITerminalService
     private readonly _terminalService: ITerminalService, 
@@ -21,6 +22,7 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
     workbenchEnvironmentService: IWorkbenchEnvironmentService) {
         super();
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTerminalShellIntegration);
+
         const instanceDataListeners: Map<number, IDisposable> = new Map();
         this._register(toDisposable(() => {
             for (const listener of instanceDataListeners.values()) {
@@ -36,6 +38,7 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
         this._store.add(onDidAddCommandDetection(e => this._proxy.$shellIntegrationChange(e.instanceId)));
         // onDidStartTerminalShellExecution
         const commandDetectionStartEvent = this._store.add(this._terminalService.createOnInstanceCapabilityEvent(TerminalCapability.CommandDetection, e => e.onCommandExecuted));
+
         let currentCommand: ITerminalCommand | undefined;
         this._store.add(commandDetectionStartEvent.event(e => {
             // Prevent duplicate events from being sent in case command detection double fires the
@@ -45,6 +48,7 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
             }
             // String paths are not exposed in the extension API
             currentCommand = e.data;
+
             const instanceId = e.instance.instanceId;
             this._proxy.$shellExecutionStart(instanceId, e.data.command, convertToExtHostCommandLineConfidence(e.data), e.data.isTrusted, this._convertCwdToUri(e.data.cwd));
             // TerminalShellExecution.createDataStream
@@ -56,6 +60,7 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
         const commandDetectionEndEvent = this._store.add(this._terminalService.createOnInstanceCapabilityEvent(TerminalCapability.CommandDetection, e => e.onCommandFinished));
         this._store.add(commandDetectionEndEvent.event(e => {
             currentCommand = undefined;
+
             const instanceId = e.instance.instanceId;
             instanceDataListeners.get(instanceId)?.dispose();
             // Send end in a microtask to ensure the data events are sent first
@@ -82,8 +87,10 @@ function convertToExtHostCommandLineConfidence(command: ITerminalCommand): Termi
     switch (command.commandLineConfidence) {
         case 'high':
             return TerminalShellExecutionCommandLineConfidence.High;
+
         case 'medium':
             return TerminalShellExecutionCommandLineConfidence.Medium;
+
         case 'low':
         default:
             return TerminalShellExecutionCommandLineConfidence.Low;

@@ -47,6 +47,7 @@ Registry
 });
 // schema
 const languageScopeSchemaId = 'vscode://schemas/snippets';
+
 const snippetSchemaProperties: IJSONSchemaMap = {
     prefix: {
         description: nls.localize('snippetSchema.json.prefix', 'The prefix to use when selecting the snippet in intellisense'),
@@ -68,6 +69,7 @@ const snippetSchemaProperties: IJSONSchemaMap = {
         type: ['string', 'array']
     }
 };
+
 const languageScopeSchema: IJSONSchema = {
     id: languageScopeSchemaId,
     allowComments: true,
@@ -85,7 +87,9 @@ const languageScopeSchema: IJSONSchema = {
         additionalProperties: false
     }
 };
+
 const globalSchemaId = 'vscode://schemas/global-snippets';
+
 const globalSchema: IJSONSchema = {
     id: globalSchemaId,
     allowComments: true,
@@ -109,6 +113,7 @@ const globalSchema: IJSONSchema = {
         additionalProperties: false
     }
 };
+
 const reg = Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(JSONContributionRegistry.Extensions.JSONContribution);
 reg.registerSchema(languageScopeSchemaId, languageScopeSchema);
 reg.registerSchema(globalSchemaId, globalSchema);

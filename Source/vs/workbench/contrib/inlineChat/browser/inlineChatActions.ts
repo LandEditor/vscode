@@ -77,6 +77,7 @@ export class StartSessionAction extends EditorAction2 {
 	override runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 
 		const ctrl = InlineChatController.get(editor);
+
 		if (!ctrl) {
 			return;
 		}
@@ -86,7 +87,9 @@ export class StartSessionAction extends EditorAction2 {
 		}
 
 		let options: InlineChatRunOptions | undefined;
+
 		const arg = _args[0];
+
 		if (arg && InlineChatRunOptions.isInlineChatRunOptions(arg)) {
 			options = arg;
 		}
@@ -110,8 +113,10 @@ export class UnstashSessionAction extends EditorAction2 {
 
 	override async runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 		const ctrl = InlineChatController.get(editor);
+
 		if (ctrl) {
 			const session = ctrl.unstashLastSession();
+
 			if (session) {
 				ctrl.run({
 					existingSession: session,
@@ -136,11 +141,14 @@ export abstract class AbstractInlineChatAction extends EditorAction2 {
 
 	override runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ..._args: any[]) {
 		const editorService = accessor.get(IEditorService);
+
 		const logService = accessor.get(ILogService);
 
 		let ctrl = InlineChatController.get(editor);
+
 		if (!ctrl) {
 			const { activeTextEditorControl } = editorService;
+
 			if (isCodeEditor(activeTextEditorControl)) {
 				editor = activeTextEditorControl;
 			} else if (isDiffEditor(activeTextEditorControl)) {
@@ -151,6 +159,7 @@ export abstract class AbstractInlineChatAction extends EditorAction2 {
 
 		if (!ctrl) {
 			logService.warn('[IE] NO controller found for action', this.desc.id, editor.getModel()?.uri);
+
 			return;
 		}
 
@@ -336,13 +345,17 @@ export class RerunAction extends AbstractInlineChatAction {
 
 	override async runInlineChatCommand(accessor: ServicesAccessor, ctrl: InlineChatController, _editor: ICodeEditor, ..._args: any[]): Promise<void> {
 		const chatService = accessor.get(IChatService);
+
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		const model = ctrl.chatWidget.viewModel?.model;
+
 		if (!model) {
 			return;
 		}
 
 		const lastRequest = model.getRequests().at(-1);
+
 		if (lastRequest) {
 			const widget = chatWidgetService.getWidgetBySessionId(model.sessionId);
 			await chatService.resendRequest(lastRequest, {

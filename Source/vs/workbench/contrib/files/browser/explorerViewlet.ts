@@ -37,10 +37,13 @@ import { isMacintosh, isWeb } from '../../../../base/common/platform.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { isMouseEvent } from '../../../../base/browser/dom.js';
+
 const explorerViewIcon = registerIcon('explorer-view-icon', Codicon.files, localize('explorerViewIcon', 'View icon of the explorer view.'));
+
 const openEditorsViewIcon = registerIcon('open-editors-view-icon', Codicon.book, localize('openEditorsIcon', 'View icon of the open editors view.'));
 export class ExplorerViewletViewsContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.explorerViewletViews';
+
     constructor(
     @IWorkspaceContextService
     private readonly workspaceContextService: IWorkspaceContextService, 
@@ -55,17 +58,26 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
     }
     private registerViews(): void {
         mark('code/willRegisterExplorerViews');
+
         const viewDescriptors = viewsRegistry.getViews(VIEW_CONTAINER);
+
         const viewDescriptorsToRegister: IViewDescriptor[] = [];
+
         const viewDescriptorsToDeregister: IViewDescriptor[] = [];
+
         const openEditorsViewDescriptor = this.createOpenEditorsViewDescriptor();
+
         if (!viewDescriptors.some(v => v.id === openEditorsViewDescriptor.id)) {
             viewDescriptorsToRegister.push(openEditorsViewDescriptor);
         }
         const explorerViewDescriptor = this.createExplorerViewDescriptor();
+
         const registeredExplorerViewDescriptor = viewDescriptors.find(v => v.id === explorerViewDescriptor.id);
+
         const emptyViewDescriptor = this.createEmptyViewDescriptor();
+
         const registeredEmptyViewDescriptor = viewDescriptors.find(v => v.id === emptyViewDescriptor.id);
+
         if (this.workspaceContextService.getWorkbenchState() === WorkbenchState.EMPTY || this.workspaceContextService.getWorkspace().folders.length === 0) {
             if (registeredExplorerViewDescriptor) {
                 viewDescriptorsToDeregister.push(registeredExplorerViewDescriptor);
@@ -137,6 +149,7 @@ export class ExplorerViewletViewsContribution extends Disposable implements IWor
 }
 export class ExplorerViewPaneContainer extends ViewPaneContainer {
     private viewletVisibleContextKey: IContextKey<boolean>;
+
     constructor(
     @IWorkbenchLayoutService
     layoutService: IWorkbenchLayoutService, 
@@ -177,9 +190,12 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
                             return; // only delay when user clicks
                         }
                         const openEditorsView = this.getOpenEditorsView();
+
                         if (openEditorsView) {
                             let delay = 0;
+
                             const config = this.configurationService.getValue<IFilesConfiguration>();
+
                             if (!!config.workbench?.editor?.enablePreview) {
                                 // delay open editors view when preview is enabled
                                 // to accomodate for the user doing a double click
@@ -212,10 +228,12 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
     }
     override setVisible(visible: boolean): void {
         this.viewletVisibleContextKey.set(visible);
+
         super.setVisible(visible);
     }
     override focus(): void {
         const explorerView = this.getView(VIEW_ID);
+
         if (explorerView && this.panes.every(p => !p.isExpanded())) {
             explorerView.setExpanded(true);
         }
@@ -248,14 +266,23 @@ export const VIEW_CONTAINER: ViewContainer = viewContainerRegistry.registerViewC
         order: 0
     },
 }, ViewContainerLocation.Sidebar, { isDefault: true });
+
 const openFolder = localize('openFolder', "Open Folder");
+
 const addAFolder = localize('addAFolder', "add a folder");
+
 const openRecent = localize('openRecent', "Open Recent");
+
 const addRootFolderButton = `[${openFolder}](command:${AddRootFolderAction.ID})`;
+
 const addAFolderButton = `[${addAFolder}](command:${AddRootFolderAction.ID})`;
+
 const openFolderButton = `[${openFolder}](command:${(isMacintosh && !isWeb) ? OpenFileFolderAction.ID : OpenFolderAction.ID})`;
+
 const openFolderViaWorkspaceButton = `[${openFolder}](command:${OpenFolderViaWorkspaceAction.ID})`;
+
 const openRecentButton = `[${openRecent}](command:${OpenRecentAction.ID})`;
+
 const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
 viewsRegistry.registerViewWelcomeContent(EmptyView.ID, {
     content: localize({ key: 'noWorkspaceHelp', comment: ['Please do not translate the word "command", it is part of our internal syntax which must not change'] }, "You have not yet added a folder to the workspace.\n{0}", addRootFolderButton),

@@ -13,6 +13,7 @@ class ExcludeHintItem {
     public configFileName?: string;
     private readonly _item: vscode.StatusBarItem;
     private _currentHint?: Hint;
+
     constructor(private readonly telemetryReporter: TelemetryReporter) {
         this._item = vscode.window.createStatusBarItem('status.typescript.exclude', vscode.StatusBarAlignment.Right, 98 /* to the right of typescript version status (99) */);
         this._item.name = vscode.l10n.t("TypeScript: Configure Excludes");
@@ -56,7 +57,9 @@ function createLargeProjectMonitorFromTypeScript(item: ExcludeHintItem, client: 
         }
         else {
             item.show();
+
             const configFileName = body.projectName;
+
             if (configFileName) {
                 item.configFileName = configFileName;
                 vscode.window.showWarningMessage<LargeProjectMessageItem>(item.getCurrentHint().message, {
@@ -78,6 +81,7 @@ function onConfigureExcludesSelected(client: ITypeScriptServiceClient, configFil
     }
     else {
         const root = client.getWorkspaceRootForResource(vscode.Uri.file(configFileName));
+
         if (root) {
             openOrCreateConfig(client.apiVersion, /tsconfig\.?.*\.json/.test(configFileName) ? ProjectType.TypeScript : ProjectType.JavaScript, root, client.configuration);
         }
@@ -85,14 +89,17 @@ function onConfigureExcludesSelected(client: ITypeScriptServiceClient, configFil
 }
 export function create(client: ITypeScriptServiceClient): vscode.Disposable {
     const toDispose: vscode.Disposable[] = [];
+
     const item = new ExcludeHintItem(client.telemetryReporter);
     toDispose.push(vscode.commands.registerCommand('js.projectStatus.command', () => {
         if (item.configFileName) {
             onConfigureExcludesSelected(client, item.configFileName);
         }
         const { message } = item.getCurrentHint();
+
         return vscode.window.showInformationMessage(message);
     }));
     toDispose.push(createLargeProjectMonitorFromTypeScript(item, client));
+
     return vscode.Disposable.from(...toDispose);
 }

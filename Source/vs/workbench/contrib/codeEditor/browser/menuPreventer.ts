@@ -15,6 +15,7 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
     private _editor: ICodeEditor;
     private _altListeningMouse: boolean;
     private _altMouseTriggered: boolean;
+
     constructor(editor: ICodeEditor) {
         super();
         this._editor = editor;

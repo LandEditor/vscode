@@ -9,6 +9,7 @@ import { ICellOutput, IOutputDto, IOutputItemDto, compressOutputItemStreams, isT
 export class NotebookCellOutputTextModel extends Disposable implements ICellOutput {
     private _onDidChangeData = this._register(new Emitter<void>());
     onDidChangeData = this._onDidChangeData.event;
+
     get outputs() {
         return this._rawOutput.outputs || [];
     }
@@ -22,10 +23,12 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
      * Alternative output id that's reused when the output is updated.
      */
     private _alternativeOutputId: string;
+
     get alternativeOutputId(): string {
         return this._alternativeOutputId;
     }
     private _versionId = 0;
+
     get versionId() {
         return this._versionId;
     }
@@ -61,7 +64,9 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
     private versionedBufferLengths: Record<string, Record<number, number>> = {};
     appendedSinceVersion(versionId: number, mime: string): VSBuffer | undefined {
         const bufferLength = this.versionedBufferLengths[mime]?.[versionId];
+
         const output = this.outputs.find(output => output.mime === mime);
+
         if (bufferLength && output) {
             return output.data.slice(bufferLength);
         }
@@ -72,9 +77,11 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
             // Look for the mimes in the items, and keep track of their order.
             // Merge the streams into one output item, per mime type.
             const mimeOutputs = new Map<string, Uint8Array[]>();
+
             const mimeTypes: string[] = [];
             this.outputs.forEach(item => {
                 let items: Uint8Array[];
+
                 if (mimeOutputs.has(item.mime)) {
                     items = mimeOutputs.get(item.mime)!;
                 }
@@ -92,6 +99,7 @@ export class NotebookCellOutputTextModel extends Disposable implements ICellOutp
                     mime,
                     data: compressionResult.data
                 });
+
                 if (compressionResult.didCompression) {
                     // we can't rely on knowing buffer lengths if we've erased previous lines
                     this.versionedBufferLengths = {};

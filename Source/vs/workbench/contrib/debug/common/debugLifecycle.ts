@@ -11,6 +11,7 @@ import { IDebugConfiguration, IDebugService } from './debug.js';
 import { ILifecycleService, ShutdownReason } from '../../../services/lifecycle/common/lifecycle.js';
 export class DebugLifecycle implements IWorkbenchContribution {
     private disposable: IDisposable;
+
     constructor(
     @ILifecycleService
     lifecycleService: ILifecycleService, 
@@ -24,10 +25,12 @@ export class DebugLifecycle implements IWorkbenchContribution {
     }
     private shouldVetoShutdown(_reason: ShutdownReason): boolean | Promise<boolean> {
         const rootSessions = this.debugService.getModel().getSessions().filter(s => s.parentSession === undefined);
+
         if (rootSessions.length === 0) {
             return false;
         }
         const shouldConfirmOnExit = this.configurationService.getValue<IDebugConfiguration>('debug').confirmOnExit;
+
         if (shouldConfirmOnExit === 'never') {
             return false;
         }
@@ -38,6 +41,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
     }
     private async showWindowCloseConfirmation(numSessions: number): Promise<boolean> {
         let message: string;
+
         if (numSessions === 1) {
             message = nls.localize('debug.debugSessionCloseConfirmationSingular', "There is an active debug session, are you sure you want to stop it?");
         }
@@ -49,6 +53,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
             type: 'warning',
             primaryButton: nls.localize({ key: 'debug.stop', comment: ['&& denotes a mnemonic'] }, "&&Stop Debugging")
         });
+
         return !res.confirmed;
     }
 }

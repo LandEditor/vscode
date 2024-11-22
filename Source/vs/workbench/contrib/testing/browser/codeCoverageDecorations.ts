@@ -49,10 +49,15 @@ import { TestId } from '../common/testId.js';
 import { ITestService } from '../common/testService.js';
 import { CoverageDetails, DetailType, IDeclarationCoverage, IStatementCoverage } from '../common/testTypes.js';
 import { TestingContextKeys } from '../common/testingContextKeys.js';
+
 const CLASS_HIT = 'coverage-deco-hit';
+
 const CLASS_MISS = 'coverage-deco-miss';
+
 const TOGGLE_INLINE_COMMAND_TEXT = localize('testing.toggleInlineCoverage', 'Toggle Inline');
+
 const TOGGLE_INLINE_COMMAND_ID = 'testing.toggleInlineCoverage';
+
 const BRANCH_MISS_INDICATOR_CHARS = 4;
 export class CodeCoverageDecorations extends Disposable implements IEditorContribution {
     private loadingCancellation?: CancellationTokenSource;
@@ -66,6 +71,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
     }>();
     private hoveredSubject?: unknown;
     private details?: CoverageDetailsModel;
+
     constructor(private readonly editor: ICodeEditor, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -77,18 +83,24 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
     private readonly log: ILogService) {
         super();
         this.summaryWidget = new Lazy(() => this._register(instantiationService.createInstance(CoverageToolbarWidget, this.editor)));
+
         const modelObs = observableFromEvent(this, editor.onDidChangeModel, () => editor.getModel());
+
         const configObs = observableFromEvent(this, editor.onDidChangeConfiguration, i => i);
+
         const fileCoverage = derived(reader => {
             const report = coverage.selected.read(reader);
+
             if (!report) {
                 return;
             }
             const model = modelObs.read(reader);
+
             if (!model) {
                 return;
             }
             const file = report.getUri(model.uri);
+
             if (!file) {
                 return;
             }
@@ -97,6 +109,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         });
         this._register(autorun(reader => {
             const c = fileCoverage.read(reader);
+
             if (c) {
                 this.apply(editor.getModel()!, c.file, c.testId, coverage.showInline.read(reader));
             }
@@ -104,9 +117,11 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
                 this.clear();
             }
         }));
+
         const toolbarEnabled = observableConfigValue(TestingConfigKeys.CoverageToolbarEnabled, true, configurationService);
         this._register(autorun(reader => {
             const c = fileCoverage.read(reader);
+
             if (c && toolbarEnabled.read(reader)) {
                 this.summaryWidget.value.setCoverage(c.file, c.testId);
             }
@@ -116,8 +131,10 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         }));
         this._register(autorun(reader => {
             const c = fileCoverage.read(reader);
+
             if (c) {
                 const evt = configObs.read(reader);
+
                 if (evt?.hasChanged(EditorOption.lineHeight) !== false) {
                     this.updateEditorStyles();
                 }
@@ -125,6 +142,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         }));
         this._register(editor.onMouseMove(e => {
             const model = editor.getModel();
+
             if (e.target.type === MouseTargetType.GUTTER_LINE_NUMBERS && model) {
                 this.hoverLineNumber(editor.getModel()!);
             }
@@ -137,12 +155,14 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         }));
         this._register(editor.onWillChangeModel(() => {
             const model = editor.getModel();
+
             if (!this.details || !model) {
                 return;
             }
             // Decorations adjust to local changes made in-editor, keep them synced in case the file is reopened:
             for (const decoration of model.getAllDecorations()) {
                 const own = this.decorationIds.get(decoration.id);
+
                 if (own) {
                     own.detail.range = decoration.range;
                 }
@@ -151,17 +171,21 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
     }
     private updateEditorStyles() {
         const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
         const { style } = this.editor.getContainerDomNode();
         style.setProperty('--vscode-testing-coverage-lineHeight', `${lineHeight}px`);
     }
     private hoverInlineDecoration(model: ITextModel, position: Position) {
         const allDecorations = model.getDecorationsInRange(Range.fromPositions(position));
+
         const decoration = mapFindFirst(allDecorations, ({ id }) => this.decorationIds.has(id) ? { id, deco: this.decorationIds.get(id)! } : undefined);
+
         if (decoration === this.hoveredSubject) {
             return;
         }
         this.hoveredStore.clear();
         this.hoveredSubject = decoration;
+
         if (!decoration) {
             return;
         }
@@ -187,6 +211,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         model.changeDecorations(e => {
             for (const [id, decoration] of this.decorationIds) {
                 const { applyHoverOptions, options } = decoration;
+
                 const dup = { ...options };
                 applyHoverOptions(dup);
                 e.changeDecorationOptions(id, dup);
@@ -206,6 +231,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
     }
     private async apply(model: ITextModel, coverage: FileCoverage, testId: TestId | undefined, showInlineByDefault: boolean) {
         const details = this.details = await this.loadDetails(coverage, testId, model);
+
         if (!details) {
             return this.clear();
         }
@@ -213,18 +239,23 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
         model.changeDecorations(e => {
             for (const detailRange of details.ranges) {
                 const { metadata: { detail, description }, range, primary } = detailRange;
+
                 if (detail.type === DetailType.Branch) {
                     const hits = detail.detail.branches![detail.branch].count;
+
                     const cls = hits ? CLASS_HIT : CLASS_MISS;
                     // don't bother showing the miss indicator if the condition wasn't executed at all:
                     const showMissIndicator = !hits && range.isEmpty() && detail.detail.branches!.some(b => b.count);
+
                     const options: IModelDecorationOptions = {
                         showIfCollapsed: showMissIndicator, // only avoid collapsing if we want to show the miss indicator
                         description: 'coverage-gutter',
                         lineNumberClassName: `coverage-deco-gutter ${cls}`,
                     };
+
                     const applyHoverOptions = (target: IModelDecorationOptions) => {
                         target.hoverMessage = description;
+
                         if (showMissIndicator) {
                             target.after = {
                                 content: '\xa0'.repeat(BRANCH_MISS_INDICATOR_CHARS), // nbsp
@@ -235,11 +266,13 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
                         }
                         else {
                             target.className = `coverage-deco-inline ${cls}`;
+
                             if (primary && typeof hits === 'number') {
                                 target.before = countBadge(hits);
                             }
                         }
                     };
+
                     if (showInlineByDefault) {
                         applyHoverOptions(options);
                     }
@@ -247,18 +280,22 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
                 }
                 else if (detail.type === DetailType.Statement) {
                     const cls = detail.count ? CLASS_HIT : CLASS_MISS;
+
                     const options: IModelDecorationOptions = {
                         showIfCollapsed: false,
                         description: 'coverage-inline',
                         lineNumberClassName: `coverage-deco-gutter ${cls}`,
                     };
+
                     const applyHoverOptions = (target: IModelDecorationOptions) => {
                         target.className = `coverage-deco-inline ${cls}`;
                         target.hoverMessage = description;
+
                         if (primary && typeof detail.count === 'number') {
                             target.before = countBadge(detail.count);
                         }
                     };
+
                     if (showInlineByDefault) {
                         applyHoverOptions(options);
                     }
@@ -284,10 +321,12 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
     private async loadDetails(coverage: FileCoverage, testId: TestId | undefined, textModel: ITextModel) {
         const cts = this.loadingCancellation = new CancellationTokenSource();
         this.displayedStore.add(this.loadingCancellation);
+
         try {
             const details = testId
                 ? await coverage.detailsForTest(testId, this.loadingCancellation.token)
                 : await coverage.details(this.loadingCancellation.token);
+
             if (cts.token.isCancellationRequested) {
                 return;
             }
@@ -325,6 +364,7 @@ type DetailRange = {
 };
 export class CoverageDetailsModel {
     public readonly ranges: DetailRange[] = [];
+
     constructor(public readonly details: CoverageDetails[], textModel: ITextModel) {
         //#region decoration generation
         // Coverage from a provider can have a range that contains smaller ranges,
@@ -336,6 +376,7 @@ export class CoverageDetailsModel {
             primary: true,
             metadata: { detail, description: this.describe(detail, textModel) }
         }));
+
         for (const { range, metadata: { detail } } of detailRanges) {
             if (detail.type === DetailType.Statement && detail.branches) {
                 for (let i = 0; i < detail.branches.length; i++) {
@@ -354,19 +395,26 @@ export class CoverageDetailsModel {
         // type ordering is done so that function declarations come first on a tie so that
         // single-statement functions (`() => foo()` for example) get inline decorations.
         detailRanges.sort((a, b) => Range.compareRangesUsingStarts(a.range, b.range) || a.metadata.detail.type - b.metadata.detail.type);
+
         const stack: DetailRange[] = [];
+
         const result: DetailRange[] = this.ranges = [];
+
         const pop = () => {
             const next = stack.pop()!;
+
             const prev = stack[stack.length - 1];
+
             if (prev) {
                 prev.range = prev.range.setStartPosition(next.range.endLineNumber, next.range.endColumn);
             }
             result.push(next);
         };
+
         for (const item of detailRanges) {
             // 1. Ensure that any ranges in the stack that ended before this are flushed
             const start = item.range.getStartPosition();
+
             while (stack[stack.length - 1]?.range.containsPosition(start) === false) {
                 pop();
             }
@@ -374,14 +422,17 @@ export class CoverageDetailsModel {
             // without worry about overlay.
             if (item.range.isEmpty()) {
                 result.push(item);
+
                 continue;
             }
             // 2. Take the last (overlapping) item in the stack, push range before
             // the `item.range` into the result and modify its stack to push the start
             // until after the `item.range` ends.
             const prev = stack[stack.length - 1];
+
             if (prev) {
                 const primary = prev.primary;
+
                 const si = prev.range.setEndPosition(start.lineNumber, start.column);
                 prev.range = prev.range.setStartPosition(item.range.endLineNumber, item.range.endColumn);
                 prev.primary = false;
@@ -405,8 +456,10 @@ export class CoverageDetailsModel {
         }
         else if (detail.type === DetailType.Statement) {
             const text = wrapName(model.getValueInRange(tidyLocation(detail.location)).trim() || `<empty statement>`);
+
             if (detail.branches?.length) {
                 const covered = detail.branches.filter(b => !!b.count).length;
+
                 return new MarkdownString().appendMarkdown(localize('coverage.branches', '{0} of {1} of branches in {2} were covered.', covered, detail.branches.length, text));
             }
             else {
@@ -415,8 +468,11 @@ export class CoverageDetailsModel {
         }
         else if (detail.type === DetailType.Branch) {
             const text = wrapName(model.getValueInRange(tidyLocation(detail.detail.location)).trim() || `<empty statement>`);
+
             const { count, label } = detail.detail.branches![detail.branch];
+
             const label2 = label ? wrapInBackticks(label) : `#${detail.branch + 1}`;
+
             if (!count) {
                 return new MarkdownString().appendMarkdown(localize('coverage.branchNotCovered', 'Branch {0} in {1} was not covered.', label2, text));
             }
@@ -470,6 +526,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
         ]),
     ]);
     private readonly bars: ManagedTestCoverageBars;
+
     constructor(private readonly editor: ICodeEditor, 
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -495,6 +552,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
             orientation: ActionsOrientation.HORIZONTAL,
             actionViewItemProvider: (action, options) => {
                 const vm = new CodiconActionViewItem(undefined, action, options);
+
                 if (action instanceof ActionWithIcon) {
                     vm.themeIcon = action.icon;
                 }
@@ -535,6 +593,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
     public setCoverage(coverage: FileCoverage, testId: TestId | undefined) {
         this.current = { coverage, testId };
         this.bars.setCoverageInfo(coverage);
+
         if (!coverage) {
             this.hide();
         }
@@ -545,18 +604,23 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
     }
     private setActions() {
         this.actionBar.clear();
+
         const current = this.current;
+
         if (!current) {
             return;
         }
         const toggleAction = new ActionWithIcon('toggleInline', this.coverage.showInline.get()
             ? localize('testing.hideInlineCoverage', 'Hide Inline Coverage')
             : localize('testing.showInlineCoverage', 'Show Inline Coverage'), testingCoverageReport, undefined, () => this.coverage.showInline.set(!this.coverage.showInline.get(), undefined));
+
         const kb = this.keybindingService.lookupKeybinding(TOGGLE_INLINE_COMMAND_ID);
+
         if (kb) {
             toggleAction.tooltip = `${TOGGLE_INLINE_COMMAND_TEXT} (${kb.getLabel()})`;
         }
         this.actionBar.push(toggleAction);
+
         if (current.testId) {
             const testItem = current.coverage.fromResult.getTestById(current.testId.toString());
             assert(!!testItem, 'got coverage for an unreported test');
@@ -572,7 +636,9 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
             return;
         }
         this.registered = true;
+
         let viewZoneId: string;
+
         const ds = this.showStore;
         this.editor.addOverlayWidget(this);
         this.editor.changeViewZones(accessor => {
@@ -599,6 +665,7 @@ class CoverageToolbarWidget extends Disposable implements IOverlayWidget {
     }
     private rerunTest() {
         const current = this.current;
+
         if (current) {
             this.isRunning = true;
             this.setActions();
@@ -661,6 +728,7 @@ registerAction2(class ToggleCoverageToolbar extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const config = accessor.get(IConfigurationService);
+
         const value = getTestingConfiguration(config, TestingConfigKeys.CoverageToolbarEnabled);
         config.updateValue(TestingConfigKeys.CoverageToolbarEnabled, !value);
     }
@@ -683,9 +751,13 @@ registerAction2(class FilterCoverageToTestInEditor extends Action2 {
     }
     run(accessor: ServicesAccessor, coverageOrUri?: FileCoverage | URI, editor?: ICodeEditor): void {
         const testCoverageService = accessor.get(ITestCoverageService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const activeEditor = isCodeEditor(editor) ? editor : accessor.get(ICodeEditorService).getActiveCodeEditor();
+
         let coverage: FileCoverage | undefined;
+
         if (coverageOrUri instanceof FileCoverage) {
             coverage = coverageOrUri;
         }
@@ -700,13 +772,17 @@ registerAction2(class FilterCoverageToTestInEditor extends Action2 {
             return;
         }
         const tests = [...coverage.perTestData].map(TestId.fromString);
+
         const commonPrefix = TestId.getLengthOfCommonPrefix(tests.length, i => tests[i]);
+
         const result = coverage.fromResult;
+
         const previousSelection = testCoverageService.filterToTest.get();
         type TItem = {
             label: string;
             testId: TestId | undefined;
         };
+
         const items: QuickPickInput<TItem>[] = [
             { label: coverUtils.labels.allTests, testId: undefined },
             { type: 'separator' },
@@ -716,6 +792,7 @@ registerAction2(class FilterCoverageToTestInEditor extends Action2 {
         // user picks from the quickpick. Scroll position is restored if the user
         // exits without picking an item, or picks "all tets".
         const scrollTop = activeEditor?.getScrollTop() || 0;
+
         const revealScrollCts = new MutableDisposable<CancellationTokenSource>();
         quickInputService.pick(items, {
             activeItem: items.find((item): item is TItem => 'item' in item && item.item === coverage),
@@ -730,6 +807,7 @@ registerAction2(class FilterCoverageToTestInEditor extends Action2 {
                     const cts = revealScrollCts.value = new CancellationTokenSource();
                     coverage.detailsForTest(entry.testId, cts.token).then(details => {
                         const first = details.find(d => d.type === DetailType.Statement);
+
                         if (!cts.token.isCancellationRequested && first) {
                             activeEditor?.revealLineNearTop(first.location instanceof Position ? first.location.lineNumber : first.location.startLineNumber);
                         }

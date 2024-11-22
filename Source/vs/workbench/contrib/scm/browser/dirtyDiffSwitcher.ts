@@ -16,22 +16,30 @@ export interface IQuickDiffSelectItem extends ISelectOptionItem {
 }
 export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSelectItem> {
     private readonly optionsItems: IQuickDiffSelectItem[];
+
     constructor(action: IAction, providers: string[], selected: string, 
     @IContextViewService
     contextViewService: IContextViewService, 
     @IThemeService
     themeService: IThemeService) {
         const items = providers.map(provider => ({ provider, text: provider }));
+
         let startingSelection = providers.indexOf(selected);
+
         if (startingSelection === -1) {
             startingSelection = 0;
         }
         const styles = { ...defaultSelectBoxStyles };
+
         const theme = themeService.getColorTheme();
+
         const editorBackgroundColor = theme.getColor(editorBackground);
+
         const peekTitleColor = theme.getColor(peekViewTitleBackground);
+
         const opaqueTitleColor = peekTitleColor?.makeOpaque(editorBackgroundColor!) ?? editorBackgroundColor!;
         styles.selectBackground = opaqueTitleColor.lighten(.6).toString();
+
         super(null, action, items, startingSelection, contextViewService, styles, { ariaLabel: nls.localize('remotes', 'Switch quick diff base') });
         this.optionsItems = items;
     }
@@ -50,6 +58,7 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 export class SwitchQuickDiffBaseAction extends Action {
     public static readonly ID = 'quickDiff.base.switch';
     public static readonly LABEL = nls.localize('quickDiff.base.switch', "Switch Quick Diff Base");
+
     constructor(private readonly callback: (event?: IQuickDiffSelectItem) => void) {
         super(SwitchQuickDiffBaseAction.ID, SwitchQuickDiffBaseAction.LABEL, undefined, undefined);
     }

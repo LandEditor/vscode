@@ -25,6 +25,7 @@ import { IContextMenuService } from '../../../../platform/contextview/browser/co
 import { HoverPosition } from '../../../../base/browser/ui/hover/hoverWidget.js';
 import { verifiedPublisherIcon as verifiedPublisherThemeIcon } from './extensionsIcons.js';
 import { IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+
 const EXTENSION_LIST_ELEMENT_HEIGHT = 72;
 export interface IExtensionsViewState {
     onFocus: Event<IExtension>;
@@ -70,26 +71,47 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
     get templateId() { return 'extension'; }
     renderTemplate(root: HTMLElement): ITemplateData {
         const recommendationWidget = this.instantiationService.createInstance(RecommendationWidget, append(root, $('.extension-bookmark-container')));
+
         const preReleaseWidget = this.instantiationService.createInstance(PreReleaseBookmarkWidget, append(root, $('.extension-bookmark-container')));
+
         const element = append(root, $('.extension-list-item'));
+
         const iconContainer = append(element, $('.icon-container'));
+
         const icon = append(iconContainer, $<HTMLImageElement>('img.icon', { alt: '' }));
+
         const iconRemoteBadgeWidget = this.instantiationService.createInstance(RemoteBadgeWidget, iconContainer, false);
+
         const extensionPackBadgeWidget = this.instantiationService.createInstance(ExtensionPackBadgeWidget, iconContainer);
+
         const details = append(element, $('.details'));
+
         const headerContainer = append(details, $('.header-container'));
+
         const header = append(headerContainer, $('.header'));
+
         const name = append(header, $('span.name'));
+
         const installCount = append(header, $('span.install-count'));
+
         const ratings = append(header, $('span.ratings'));
+
         const syncIgnore = append(header, $('span.sync-ignored'));
+
         const activationStatus = append(header, $('span.activation-status'));
+
         const headerRemoteBadgeWidget = this.instantiationService.createInstance(RemoteBadgeWidget, header, false);
+
         const description = append(details, $('.description.ellipsis'));
+
         const footer = append(details, $('.footer'));
+
         const publisher = append(footer, $('.author.ellipsis'));
+
         const verifiedPublisherWidget = this.instantiationService.createInstance(VerifiedPublisherWidget, append(publisher, $(`.verified-publisher`)), true);
+
         const publisherDisplayName = append(publisher, $('.publisher-name.ellipsis'));
+
         const actionbar = new ActionBar(footer, {
             actionViewItemProvider: (action: IAction, options: IActionViewItemOptions) => {
                 if (action instanceof ButtonWithDropDownExtensionAction) {
@@ -110,7 +132,9 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
         });
         actionbar.setFocusable(false);
         actionbar.onDidRun(({ error }) => error && this.notificationService.error(error));
+
         const extensionStatusIconAction = this.instantiationService.createInstance(ExtensionStatusAction);
+
         const actions = [
             this.instantiationService.createInstance(ExtensionStatusLabelAction),
             this.instantiationService.createInstance(MigrateDeprecatedExtensionAction, true),
@@ -126,7 +150,9 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
             extensionStatusIconAction,
             this.instantiationService.createInstance(ManageExtensionAction)
         ];
+
         const extensionHoverWidget = this.instantiationService.createInstance(ExtensionHoverWidget, { target: root, position: this.options.hoverOptions.position }, extensionStatusIconAction);
+
         const widgets = [
             recommendationWidget,
             preReleaseWidget,
@@ -140,9 +166,12 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
             this.instantiationService.createInstance(InstallCountWidget, installCount, true),
             this.instantiationService.createInstance(RatingsWidget, ratings, true),
         ];
+
         const extensionContainers: ExtensionContainers = this.instantiationService.createInstance(ExtensionContainers, [...actions, ...widgets]);
         actionbar.push(actions, { icon: true, label: true });
+
         const disposable = combinedDisposable(...actions, ...widgets, actionbar, extensionContainers);
+
         return {
             root, element, icon, name, installCount, ratings, description, publisherDisplayName, disposables: [disposable], actionbar,
             extensionDisposables: [],
@@ -167,13 +196,16 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
     renderElement(extension: IExtension, index: number, data: ITemplateData): void {
         data.element.classList.remove('loading');
         data.root.setAttribute('data-extension-id', extension.identifier.id);
+
         if (extension.state !== ExtensionState.Uninstalled && !extension.server) {
             // Get the extension if it is installed and has no server information
             extension = this.extensionsWorkbenchService.local.filter(e => e.server === extension.server && areSameExtensions(e.identifier, extension.identifier))[0] || extension;
         }
         data.extensionDisposables = dispose(data.extensionDisposables);
+
         const updateEnablement = () => {
             const disabled = extension.state === ExtensionState.Installed && extension.local && !this.extensionEnablementService.isEnabled(extension.local);
+
             const deprecated = !!extension.deprecationInfo;
             data.element.classList.toggle('deprecated', deprecated);
             data.root.classList.toggle('disabled', disabled);
@@ -182,6 +214,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
         this.extensionService.onDidChangeExtensions(() => updateEnablement(), this, data.extensionDisposables);
         data.extensionDisposables.push(addDisposableListener(data.icon, 'error', () => data.icon.src = extension.iconUrlFallback, { once: true }));
         data.icon.src = extension.iconUrl;
+
         if (!data.icon.complete) {
             data.icon.style.visibility = 'hidden';
             data.icon.onload = () => data.icon.style.visibility = 'inherit';
@@ -191,6 +224,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
         }
         data.name.textContent = extension.displayName;
         data.description.textContent = extension.description;
+
         const updatePublisher = () => {
             data.publisherDisplayName.textContent = !extension.resourceExtension && extension.local?.source !== 'resource' ? extension.publisherDisplayName : '';
         };
@@ -199,6 +233,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
         data.installCount.style.display = '';
         data.ratings.style.display = '';
         data.extension = extension;
+
         if (extension.gallery && extension.gallery.properties && extension.gallery.properties.localizedLanguages && extension.gallery.properties.localizedLanguages.length) {
             data.description.textContent = extension.gallery.properties.localizedLanguages.map(name => name[0].toLocaleUpperCase() + name.slice(1)).join(', ');
         }
@@ -223,6 +258,7 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 }
 registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) => {
     const verifiedPublisherIconColor = theme.getColor(extensionVerifiedPublisherIconColor);
+
     if (verifiedPublisherIconColor) {
         const disabledVerifiedPublisherIconColor = verifiedPublisherIconColor.transparent(.5).makeOpaque(WORKBENCH_BACKGROUND(theme));
         collector.addRule(`.extensions-list .monaco-list .monaco-list-row.disabled:not(.selected) .author .verified-publisher ${ThemeIcon.asCSSSelector(verifiedPublisherThemeIcon)} { color: ${disabledVerifiedPublisherIconColor}; }`);

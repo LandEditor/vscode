@@ -68,6 +68,7 @@ export class GlobalCompositeBar extends Disposable {
 		super();
 
 		this.element = document.createElement('div');
+
 		const contextMenuAlignmentOptions = () => ({
 			anchorAlignment: configurationService.getValue('workbench.sideBar.location') === 'left' ? AnchorAlignment.RIGHT : AnchorAlignment.LEFT,
 			anchorAxisAlignment: AnchorAxisAlignment.HORIZONTAL
@@ -184,9 +185,12 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 
 	private updateItemActivity(): void {
 		const activities = this.activityService.getActivity(this.compositeBarActionItem.id);
+
 		let activity = activities[0];
+
 		if (activity) {
 			const { badge, priority } = activity;
+
 			if (badge instanceof NumberBadge && activities.length > 1) {
 				const cumulativeNumberBadge = this.getCumulativeNumberBadge(activities, priority ?? 0);
 				activity = { badge: cumulativeNumberBadge };
@@ -197,10 +201,13 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 
 	private getCumulativeNumberBadge(activityCache: IActivity[], priority: number): NumberBadge {
 		const numberActivities = activityCache.filter(activity => activity.badge instanceof NumberBadge && (activity.priority ?? 0) === priority);
+
 		const number = numberActivities.reduce((result, activity) => { return result + (<NumberBadge>activity.badge).number; }, 0);
+
 		const descriptorFn = (): string => {
 			return numberActivities.reduce((result, activity, index) => {
 				result = result + (<NumberBadge>activity.badge).getDescription();
+
 				if (index < numberActivities.length - 1) {
 					result = `${result}\n`;
 				}
@@ -217,6 +224,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 
 		this._register(addDisposableListener(this.container, EventType.MOUSE_DOWN, async (e: MouseEvent) => {
 			EventHelper.stop(e, true);
+
 			const isLeftClick = e?.button !== 2;
 			// Left-click run
 			if (isLeftClick) {
@@ -230,6 +238,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 			e.stopPropagation();
 
 			const disposables = new DisposableStore();
+
 			const actions = await this.resolveContextMenuActions(disposables);
 
 			const event = new StandardMouseEvent(getWindow(this.container), e);
@@ -243,6 +252,7 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 
 		this._register(addDisposableListener(this.container, EventType.KEY_UP, (e: KeyboardEvent) => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
 				EventHelper.stop(e, true);
 				this.run();
@@ -261,8 +271,11 @@ abstract class AbstractGlobalActivityActionViewItem extends CompositeBarActionVi
 
 	private async run(): Promise<void> {
 		const disposables = new DisposableStore();
+
 		const menu = disposables.add(this.menuService.createMenu(this.menuId, this.contextKeyService));
+
 		const actions = await this.resolveMainMenuActions(menu, disposables);
+
 		const { anchorAlignment, anchorAxisAlignment } = this.contextMenuAlignmentOptions() ?? { anchorAlignment: undefined, anchorAxisAlignment: undefined };
 
 		this.contextMenuService.showContextMenu({
@@ -318,6 +331,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			name: localize('accounts', "Accounts"),
 			classNames: ThemeIcon.asClassNameArray(GlobalCompositeBar.ACCOUNTS_ICON)
 		});
+
 		super(MenuId.AccountsContext, action, options, contextMenuActionsProvider, contextMenuAlignmentOptions, themeService, hoverService, menuService, contextMenuService, contextKeyService, configurationService, keybindingService, activityService);
 		this._register(action);
 		this.registerListeners();
@@ -356,6 +370,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		// Resolving the menu doesn't need to happen immediately, so we can wait until after the workbench has been restored
 		// and only run this when the system is idle.
 		await this.lifecycleService.when(LifecyclePhase.Restored);
+
 		if (this._store.isDisposed) {
 			return;
 		}
@@ -367,6 +382,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 	private async doInitialize(): Promise<void> {
 		const providerIds = this.authenticationService.getProviderIds();
+
 		const results = await Promise.allSettled(providerIds.map(providerId => this.addAccountsFromProvider(providerId)));
 
 		// Log any errors that occurred while initializing. We try to be best effort here to show the most amount of accounts
@@ -385,17 +401,22 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		await super.resolveMainMenuActions(accountsMenu, disposables);
 
 		const providers = this.authenticationService.getProviderIds();
+
 		const otherCommands = accountsMenu.getActions();
+
 		let menus: IAction[] = [];
 
 		for (const providerId of providers) {
 			if (!this.initialized) {
 				const noAccountsAvailableAction = disposables.add(new Action('noAccountsAvailable', localize('loading', "Loading..."), undefined, false));
 				menus.push(noAccountsAvailableAction);
+
 				break;
 			}
 			const providerLabel = this.authenticationService.getProvider(providerId).label;
+
 			const accounts = this.groupedAccounts.get(providerId);
+
 			if (!accounts) {
 				if (this.problematicProviders.has(providerId)) {
 					const providerUnavailableAction = disposables.add(new Action('providerUnavailable', localize('authProviderUnavailable', '{0} is currently unavailable', providerLabel), undefined, false));
@@ -446,6 +467,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		otherCommands.forEach((group, i) => {
 			const actions = group[1];
 			menus = menus.concat(actions);
+
 			if (i !== otherCommands.length - 1) {
 				menus.push(new Separator());
 			}
@@ -457,6 +479,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 	protected override async resolveContextMenuActions(disposables: DisposableStore): Promise<IAction[]> {
 		const actions = await super.resolveContextMenuActions(disposables);
 		this.fillContextMenuActions(actions);
+
 		return actions;
 	}
 
@@ -466,13 +489,16 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 	private async addOrUpdateAccount(providerId: string, account: AuthenticationSessionAccount): Promise<void> {
 		let accounts = this.groupedAccounts.get(providerId);
+
 		if (!accounts) {
 			accounts = [];
 			this.groupedAccounts.set(providerId, accounts);
 		}
 
 		const sessionFromEmbedder = await this.sessionFromEmbedder.value;
+
 		let canSignOut = true;
+
 		if (
 			sessionFromEmbedder												// if we have a session from the embedder
 			&& !sessionFromEmbedder.canSignOut								// and that session says we can't sign out
@@ -486,6 +512,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 		}
 
 		const existingAccount = accounts.find(a => a.label === account.label);
+
 		if (existingAccount) {
 			// if we have an existing account and we discover that we
 			// can't sign out of it, update the account to mark it as "can't sign out"
@@ -499,16 +526,19 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 
 	private removeAccount(providerId: string, account: AuthenticationSessionAccount): void {
 		const accounts = this.groupedAccounts.get(providerId);
+
 		if (!accounts) {
 			return;
 		}
 
 		const index = accounts.findIndex(a => a.id === account.id);
+
 		if (index === -1) {
 			return;
 		}
 
 		accounts.splice(index, 1);
+
 		if (accounts.length === 0) {
 			this.groupedAccounts.delete(providerId);
 		}
@@ -561,6 +591,7 @@ export class GlobalActivityActionViewItem extends AbstractGlobalActivityActionVi
 			name: localize('manage', "Manage"),
 			classNames: ThemeIcon.asClassNameArray(userDataProfileService.currentProfile.icon ? ThemeIcon.fromId(userDataProfileService.currentProfile.icon) : DEFAULT_ICON)
 		});
+
 		super(MenuId.GlobalActivity, action, options, contextMenuActionsProvider, contextMenuAlignmentOptions, themeService, hoverService, menuService, contextMenuService, contextKeyService, configurationService, keybindingService, activityService);
 		this._register(action);
 		this._register(this.userDataProfileService.onDidChangeCurrentProfile(e => {
@@ -683,6 +714,7 @@ export class SimpleGlobalActivityActionViewItem extends GlobalActivityActionView
 
 function simpleActivityContextMenuActions(storageService: IStorageService, isAccount: boolean): IAction[] {
 	const currentElementContextMenuActions: IAction[] = [];
+
 	if (isAccount) {
 		currentElementContextMenuActions.push(
 			toAction({ id: 'hideAccounts', label: localize('hideAccounts', "Hide Accounts"), run: () => setAccountsActionVisible(storageService, false) }),

@@ -90,14 +90,17 @@ export interface ProcessItem {
 export function sanitizeProcessEnvironment(env: IProcessEnvironment, ...preserve: string[]): void {
     const set = preserve.reduce<Record<string, boolean>>((set, key) => {
         set[key] = true;
+
         return set;
     }, {});
+
     const keysToRemove = [
         /^ELECTRON_.+$/,
         /^VSCODE_(?!(PORTABLE|SHELL_LOGIN|ENV_REPLACE|ENV_APPEND|ENV_PREPEND)).+$/,
         /^SNAP(|_.*)$/,
         /^GDK_PIXBUF_.+$/,
     ];
+
     const envKeys = Object.keys(env);
     envKeys
         .filter(key => !set[key])
@@ -105,6 +108,7 @@ export function sanitizeProcessEnvironment(env: IProcessEnvironment, ...preserve
         for (let i = 0; i < keysToRemove.length; i++) {
             if (envKey.search(keysToRemove[i]) !== -1) {
                 delete env[envKey];
+
                 break;
             }
         }
@@ -123,6 +127,7 @@ export function removeDangerousEnvVariables(env: IProcessEnvironment | undefined
     // Unset `DEBUG`, as an invalid value might lead to process crashes
     // See https://github.com/microsoft/vscode/issues/130072
     delete env['DEBUG'];
+
     if (isLinux) {
         // Unset `LD_PRELOAD`, as it might lead to process crashes
         // See https://github.com/microsoft/vscode/issues/134177

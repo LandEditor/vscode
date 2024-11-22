@@ -11,5 +11,6 @@ export interface IKeyboardLayoutData {
 export interface INativeKeyboardLayoutService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeKeyboardLayout: Event<IKeyboardLayoutData>;
+
     getKeyboardLayoutData(): Promise<IKeyboardLayoutData>;
 }

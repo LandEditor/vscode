@@ -87,6 +87,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		this._context.addEventHandler(this);
 
 		const fontFamily = this._context.configuration.options.get(EditorOption.fontFamily);
+
 		const fontSize = this._context.configuration.options.get(EditorOption.fontSize);
 
 		this._glyphRasterizer = this._register(new MandatoryMutableDisposable(new GlyphRasterizer(fontSize, fontFamily)));
@@ -126,7 +127,9 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		this._queueBufferUpdate(e);
 
 		const fontFamily = this._context.configuration.options.get(EditorOption.fontFamily);
+
 		const fontSize = this._context.configuration.options.get(EditorOption.fontSize);
+
 		if (
 			this._glyphRasterizer.value.fontFamily !== fontFamily ||
 			this._glyphRasterizer.value.fontSize !== fontSize
@@ -139,6 +142,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 
 	public override onDecorationsChanged(e: ViewDecorationsChangedEvent): boolean {
 		this._invalidateAllLines();
+
 		return true;
 	}
 
@@ -172,6 +176,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		// TODO: This currently invalidates everything after the deleted line, it could shift the
 		//       line data up to retain some up to date lines
 		this._invalidateLinesFrom(e.fromLineNumber);
+
 		return true;
 	}
 
@@ -188,6 +193,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		this._scrollOffsetValueBuffer[0] = (e?.scrollLeft ?? this._context.viewLayout.getCurrentScrollLeft()) * dpr;
 		this._scrollOffsetValueBuffer[1] = (e?.scrollTop ?? this._context.viewLayout.getCurrentScrollTop()) * dpr;
 		this._device.queue.writeBuffer(this._scrollOffsetBindBuffer, 0, this._scrollOffsetValueBuffer);
+
 		return true;
 	}
 
@@ -212,6 +218,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 	private _invalidateLinesFrom(lineNumber: number): void {
 		for (const i of [0, 1]) {
 			const upToDateLines = this._upToDateLines[i];
+
 			for (const upToDateLine of upToDateLines) {
 				if (upToDateLine >= lineNumber) {
 					upToDateLines.delete(upToDateLine);
@@ -224,6 +231,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 
 	public override onLinesDeleted(e: ViewLinesDeletedEvent): boolean {
 		this._queueBufferUpdate(e);
+
 		return true;
 	}
 
@@ -232,6 +240,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		this._scrollOffsetValueBuffer[0] = (e?.scrollLeft ?? this._context.viewLayout.getCurrentScrollLeft()) * dpr;
 		this._scrollOffsetValueBuffer[1] = (e?.scrollTop ?? this._context.viewLayout.getCurrentScrollTop()) * dpr;
 		this._device.queue.writeBuffer(this._scrollOffsetBindBuffer, 0, this._scrollOffsetValueBuffer);
+
 		return true;
 	}
 
@@ -252,21 +261,33 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		// Pre-allocate variables to be shared within the loop - don't trust the JIT compiler to do
 		// this optimization to avoid additional blocking time in garbage collector
 		let chars = '';
+
 		let y = 0;
+
 		let x = 0;
+
 		let absoluteOffsetX = 0;
+
 		let absoluteOffsetY = 0;
+
 		let xOffset = 0;
+
 		let glyph: Readonly<ITextureAtlasPageGlyph>;
+
 		let cellIndex = 0;
 
 		let tokenStartIndex = 0;
+
 		let tokenEndIndex = 0;
+
 		let tokenMetadata = 0;
 
 		let lineData: ViewLineRenderingData;
+
 		let content: string = '';
+
 		let fillStartIndex = 0;
+
 		let fillEndIndex = 0;
 
 		let tokens: IViewLineTokens;
@@ -280,14 +301,18 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 
 		// Update cell data
 		const cellBuffer = new Float32Array(this._cellValueBuffers[this._activeDoubleBufferIndex]);
+
 		const lineIndexCount = this._viewGpuContext.maxGpuCols * Constants.IndicesPerCell;
 
 		const upToDateLines = this._upToDateLines[this._activeDoubleBufferIndex];
+
 		let dirtyLineStart = Number.MAX_SAFE_INTEGER;
+
 		let dirtyLineEnd = 0;
 
 		// Handle any queued buffer updates
 		const queuedBufferUpdates = this._queuedBufferUpdates[this._activeDoubleBufferIndex];
+
 		while (queuedBufferUpdates.length) {
 			const e = queuedBufferUpdates.shift()!;
 
@@ -299,12 +324,15 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 					dirtyLineStart = 1;
 					dirtyLineEnd = this._finalRenderedLine;
 					this._finalRenderedLine = 0;
+
 					break;
 				}
 				case ViewEventType.ViewLinesDeleted: {
 					// Shift content below deleted line up
 					const deletedLineContentStartIndex = (e.fromLineNumber - 1) * this._viewGpuContext.maxGpuCols * Constants.IndicesPerCell;
+
 					const deletedLineContentEndIndex = (e.toLineNumber) * this._viewGpuContext.maxGpuCols * Constants.IndicesPerCell;
+
 					const nullContentStartIndex = (this._finalRenderedLine - (e.toLineNumber - e.fromLineNumber + 1)) * this._viewGpuContext.maxGpuCols * Constants.IndicesPerCell;
 					cellBuffer.set(cellBuffer.subarray(deletedLineContentEndIndex), deletedLineContentStartIndex);
 
@@ -315,6 +343,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 					dirtyLineStart = Math.min(dirtyLineStart, e.fromLineNumber);
 					dirtyLineEnd = this._finalRenderedLine;
 					this._finalRenderedLine -= e.toLineNumber - e.fromLineNumber + 1;
+
 					break;
 				}
 				case ViewEventType.ViewZonesChanged: {
@@ -325,6 +354,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 					dirtyLineStart = 1;
 					dirtyLineEnd = this._finalRenderedLine;
 					this._finalRenderedLine = 0;
+
 					break;
 				}
 			}
@@ -337,6 +367,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 				fillStartIndex = ((y - 1) * this._viewGpuContext.maxGpuCols) * Constants.IndicesPerCell;
 				fillEndIndex = (y * this._viewGpuContext.maxGpuCols) * Constants.IndicesPerCell;
 				cellBuffer.fill(0, fillStartIndex, fillEndIndex);
+
 				continue;
 			}
 
@@ -354,8 +385,10 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 			tokens = lineData.tokens;
 			tokenStartIndex = lineData.minColumn - 1;
 			tokenEndIndex = 0;
+
 			for (let tokenIndex = 0, tokensLen = tokens.getCount(); tokenIndex < tokensLen; tokenIndex++) {
 				tokenEndIndex = tokens.getEndOffset(tokenIndex);
+
 				if (tokenEndIndex <= tokenStartIndex) {
 					// The faux indent part of the line should have no token type
 					continue;
@@ -369,6 +402,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 						break;
 					}
 					chars = content.charAt(x);
+
 					if (chars === ' ' || chars === '\t') {
 						// Zero out glyph to ensure it doesn't get rendered
 						cellIndex = ((y - 1) * this._viewGpuContext.maxGpuCols + x) * Constants.IndicesPerCell;
@@ -430,6 +464,7 @@ export class FullFileRenderStrategy extends ViewEventHandler implements IGpuRend
 		this._activeDoubleBufferIndex = this._activeDoubleBufferIndex ? 0 : 1;
 
 		this._visibleObjectCount = visibleObjectCount;
+
 		return visibleObjectCount;
 	}
 

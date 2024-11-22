@@ -13,6 +13,7 @@ export function deprecated(_target: any, key: string, descriptor: any): void {
     const fn = descriptor.value;
     descriptor.value = function () {
         console.warn(`Git extension API method '${key}' is deprecated.`);
+
         return fn.apply(this, arguments);
     };
 }
@@ -21,9 +22,12 @@ export class GitExtensionImpl implements GitExtension {
     private _onDidChangeEnablement = new EventEmitter<boolean>();
     readonly onDidChangeEnablement: Event<boolean> = this._onDidChangeEnablement.event;
     private _model: Model | undefined = undefined;
+
     set model(model: Model | undefined) {
         this._model = model;
+
         const enabled = !!model;
+
         if (this.enabled === enabled) {
             return;
         }

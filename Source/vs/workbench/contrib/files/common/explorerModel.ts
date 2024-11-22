@@ -38,6 +38,7 @@ export class ExplorerModel implements IDisposable {
 	) {
 		const setRoots = () => this._roots = this.contextService.getWorkspace().folders
 			.map(folder => new ExplorerItem(folder.uri, fileService, configService, filesConfigService, undefined, true, false, false, false, folder.name));
+
 		setRoots();
 
 		this._listener = this.contextService.onDidChangeWorkspaceFolders(() => {
@@ -70,8 +71,10 @@ export class ExplorerModel implements IDisposable {
 	 */
 	findClosest(resource: URI): ExplorerItem | null {
 		const folder = this.contextService.getWorkspaceFolder(resource);
+
 		if (folder) {
 			const root = this.roots.find(r => this.uriIdentityService.extUri.isEqual(r.resource, folder.uri));
+
 			if (root) {
 				return root.find(resource);
 			}
@@ -243,12 +246,14 @@ export class ExplorerItem {
 
 		// Stop merging when a folder is not resolved to avoid loosing local data
 		const mergingDirectories = disk.isDirectory || local.isDirectory;
+
 		if (mergingDirectories && local._isDirectoryResolved && !disk._isDirectoryResolved) {
 			return;
 		}
 
 		// Properties
 		local.resource = disk.resource;
+
 		if (!local.isRoot) {
 			local.updateName(disk.name);
 		}
@@ -322,23 +327,30 @@ export class ExplorerItem {
 				// Mtime is only used when the sort order is 'modified'
 				const resolveMetadata = sortOrder === SortOrder.Modified;
 				this.error = undefined;
+
 				try {
 					const stat = await this.fileService.resolve(this.resource, { resolveSingleChildDescendants: true, resolveMetadata });
+
 					const resolved = ExplorerItem.create(this.fileService, this.configService, this.filesConfigService, stat, this);
 					ExplorerItem.mergeLocalWithDisk(resolved, this);
 				} catch (e) {
 					this.error = e;
+
 					throw e;
 				}
 				this._isDirectoryResolved = true;
 			}
 
 			const items: ExplorerItem[] = [];
+
 			if (nestingConfig.enabled) {
 				const fileChildren: [string, ExplorerItem][] = [];
+
 				const dirChildren: [string, ExplorerItem][] = [];
+
 				for (const child of this.children.entries()) {
 					child[1].nestedParent = undefined;
+
 					if (child[1].isDirectory) {
 						dirChildren.push(child);
 					} else {
@@ -352,8 +364,10 @@ export class ExplorerItem {
 
 				for (const [fileEntryName, fileEntryItem] of fileChildren) {
 					const nestedItems = nested.get(fileEntryName);
+
 					if (nestedItems !== undefined) {
 						fileEntryItem.nestedChildren = [];
+
 						for (const name of nestedItems.keys()) {
 							const child = assertIsDefined(this.children.get(name));
 							fileEntryItem.nestedChildren.push(child);
@@ -381,6 +395,7 @@ export class ExplorerItem {
 	private get fileNester(): ExplorerFileNestingTrie {
 		if (!this.root._fileNester) {
 			const nestingConfig = this.configService.getValue<IFilesConfiguration>({ resource: this.root.resource }).explorer.fileNesting;
+
 			const patterns = Object.entries(nestingConfig.patterns)
 				.filter(entry =>
 					typeof (entry[0]) === 'string' && typeof (entry[1]) === 'string' && entry[0] && entry[1])
@@ -462,6 +477,7 @@ export class ExplorerItem {
 		// Return if path found
 		// For performance reasons try to do the comparison as fast as possible
 		const ignoreCase = !this.fileService.hasCapability(resource, FileSystemProviderCapabilities.PathCaseSensitive);
+
 		if (resource && this.resource.scheme === resource.scheme && equalsIgnoreCase(this.resource.authority, resource.authority) &&
 			(ignoreCase ? startsWithIgnoreCase(resource.path, this.resource.path) : resource.path.startsWith(this.resource.path))) {
 			return this.findByPath(rtrim(resource.path, posix.sep), this.resource.path.length, ignoreCase);
@@ -482,6 +498,7 @@ export class ExplorerItem {
 			}
 
 			let indexOfNextSep = path.indexOf(posix.sep, index);
+
 			if (indexOfNextSep === -1) {
 				// If there is no separator take the remainder of the path
 				indexOfNextSep = path.length;

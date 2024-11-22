@@ -31,6 +31,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
     private readonly _loggingEnabled = observableConfigValue('editor.experimental.asyncTokenizationLogging', false, this._configurationService);
     private _applyStateStackDiffFn?: typeof applyStateStackDiff;
     private _initialState?: StateStack;
+
     constructor(private readonly _model: ITextModel, private readonly _worker: Proxied<TextMateTokenizationWorker>, private readonly _languageIdCodec: ILanguageIdCodec, private readonly _backgroundTokenizationStore: IBackgroundTokenizationStore, private readonly _configurationService: IConfigurationService, private readonly _maxTokenizationLineLength: IObservable<number>) {
         super();
         this._register(keepObserved(this._loggingEnabled));
@@ -46,10 +47,13 @@ export class TextMateWorkerTokenizerController extends Disposable {
         }));
         this._register(this._model.onDidChangeLanguage((e) => {
             const languageId = this._model.getLanguageId();
+
             const encodedLanguageId = this._languageIdCodec.encodeLanguageId(languageId);
             this._worker.$acceptModelLanguageChanged(this.controllerId, languageId, encodedLanguageId);
         }));
+
         const languageId = this._model.getLanguageId();
+
         const encodedLanguageId = this._languageIdCodec.encodeLanguageId(languageId);
         this._worker.$acceptNewModel({
             uri: this._model.uri,
@@ -86,6 +90,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
         //                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                ^^^^^^^^^^^^^^^^^^^^^^^^^
         //                | past changes                                                   | future states
         let tokens = ContiguousMultilineTokensBuilder.deserialize(new Uint8Array(rawTokens));
+
         if (this._shouldLog) {
             console.log('received background tokenization result', {
                 fileName: this._model.uri.fsPath.split('\\').pop(),
@@ -112,6 +117,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
             // Filter tokens in lines that got changed in the future to prevent flickering
             // These tokens are recomputed anyway.
             const b = new ContiguousMultilineTokensBuilder();
+
             for (const t of tokens) {
                 for (let i = t.startLineNumber; i <= t.endLineNumber; i++) {
                     const result = curToFutureTransformerTokens.transform(i - 1);
@@ -133,6 +139,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
             }
         }
         const curToFutureTransformerStates = MonotonousIndexTransformer.fromMany(this._pendingChanges.map((c) => fullLineArrayEditFromModelContentChange(c.changes)));
+
         if (!this._applyStateStackDiffFn || !this._initialState) {
             const { applyStateStackDiff, INITIAL } = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
             this._applyStateStackDiffFn = applyStateStackDiff;
@@ -141,9 +148,12 @@ export class TextMateWorkerTokenizerController extends Disposable {
         // Apply state deltas to _states and _backgroundTokenizationStore
         for (const d of stateDeltas) {
             let prevState = d.startLineNumber <= 1 ? this._initialState : this._states.getEndState(d.startLineNumber - 1);
+
             for (let i = 0; i < d.stateDeltas.length; i++) {
                 const delta = d.stateDeltas[i];
+
                 let state: StateStack;
+
                 if (delta) {
                     state = this._applyStateStackDiffFn(prevState, delta)!;
                     this._states.setEndState(d.startLineNumber + i, state);
@@ -152,6 +162,7 @@ export class TextMateWorkerTokenizerController extends Disposable {
                     state = this._states.getEndState(d.startLineNumber + i)!;
                 }
                 const offset = curToFutureTransformerStates.transform(d.startLineNumber + i - 1);
+
                 if (offset !== undefined) {
                     // Only set the state if there is no future change in this line,
                     // as this might make consumers believe that the state/tokens are accurate

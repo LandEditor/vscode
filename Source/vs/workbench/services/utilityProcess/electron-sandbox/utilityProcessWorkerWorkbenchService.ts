@@ -70,6 +70,7 @@ export class UtilityProcessWorkerWorkbenchService extends Disposable implements 
         return this._utilityProcessWorkerService;
     }
     private readonly restoredBarrier = new Barrier();
+
     constructor(readonly windowId: number, 
     @ILogService
     private readonly logService: ILogService, 
@@ -86,7 +87,9 @@ export class UtilityProcessWorkerWorkbenchService extends Disposable implements 
         await Promise.race([this.restoredBarrier.wait(), timeout(2000)]);
         // Get ready to acquire the message port from the utility process worker
         const nonce = generateUuid();
+
         const responseChannel = 'vscode:createUtilityProcessWorkerMessageChannelResult';
+
         const portPromise = acquirePort(undefined /* we trigger the request via service call! */, responseChannel, nonce);
         // Actually talk with the utility process service
         // to create a new process from a worker
@@ -103,7 +106,9 @@ export class UtilityProcessWorkerWorkbenchService extends Disposable implements 
                 reply: { windowId: this.windowId }
             });
         }));
+
         const port = await portPromise;
+
         const client = disposables.add(new MessagePortClient(port, `window:${this.windowId},module:${process.moduleId}`));
         this.logService.trace('Renderer->UtilityProcess#createWorkerChannel: connection established');
         onDidTerminate.then(({ reason }) => {
@@ -114,6 +119,7 @@ export class UtilityProcessWorkerWorkbenchService extends Disposable implements 
                 this.logService.error(`[UtilityProcessWorker]: terminated unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`);
             }
         });
+
         return { client, onDidTerminate, dispose: () => disposables.dispose() };
     }
     notifyRestored(): void {

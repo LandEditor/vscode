@@ -24,6 +24,7 @@ function toSize(value: number | string): string {
 }
 export function applyObservableDecorations(editor: CodeEditorWidget, decorations: IObservable<IModelDeltaDecoration[]>): IDisposable {
     const d = new DisposableStore();
+
     let decorationIds: string[] = [];
     d.add(autorunOpts({ debugName: () => `Apply decorations from ${decorations.debugName}` }, reader => {
         const d = decorations.read(reader);
@@ -38,6 +39,7 @@ export function applyObservableDecorations(editor: CodeEditorWidget, decorations
             });
         }
     });
+
     return d;
 }
 export function* leftJoin<TLeft, TRight>(left: Iterable<TLeft>, right: readonly TRight[], compare: (left: TLeft, right: TRight) => CompareResult): IterableIterator<{
@@ -45,9 +47,12 @@ export function* leftJoin<TLeft, TRight>(left: Iterable<TLeft>, right: readonly 
     rights: TRight[];
 }> {
     const rightQueue = new ArrayQueue(right);
+
     for (const leftElement of left) {
         rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
+
         const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
+
         yield { left: leftElement, rights: equals || [] };
     }
 }
@@ -56,12 +61,15 @@ export function* join<TLeft, TRight>(left: Iterable<TLeft>, right: readonly TRig
     rights: TRight[];
 }> {
     const rightQueue = new ArrayQueue(right);
+
     for (const leftElement of left) {
         const skipped = rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
+
         if (skipped) {
             yield { rights: skipped };
         }
         const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
+
         yield { left: leftElement, rights: equals || [] };
     }
 }
@@ -79,6 +87,7 @@ export function thenIfNotDisposed<T>(promise: Promise<T>, then: () => void): IDi
         }
         then();
     });
+
     return toDisposable(() => {
         disposed = true;
     });
@@ -88,11 +97,13 @@ export function setFields<T extends {}>(obj: T, fields: Partial<T>): T {
 }
 export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
     const result = {} as any as T;
+
     for (const key in source1) {
         result[key] = source1[key];
     }
     for (const key in source2) {
         const source2Value = source2[key];
+
         if (typeof result[key] === 'object' && source2Value && typeof source2Value === 'object') {
             result[key] = deepMerge<any>(result[key], source2Value);
         }
@@ -105,12 +116,14 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 export class PersistentStore<T> {
     private hasValue = false;
     private value: Readonly<T> | undefined = undefined;
+
     constructor(private readonly key: string, 
     @IStorageService
     private readonly storageService: IStorageService) { }
     public get(): Readonly<T> | undefined {
         if (!this.hasValue) {
             const value = this.storageService.get(this.key, StorageScope.PROFILE);
+
             if (value !== undefined) {
                 try {
                     this.value = JSON.parse(value) as any;

@@ -11,10 +11,13 @@ export interface ISettingsWriter {
 }
 export class EditorSettingMigration {
     public static items: EditorSettingMigration[] = [];
+
     constructor(public readonly key: string, public readonly migrate: (value: any, read: ISettingsReader, write: ISettingsWriter) => void) { }
     apply(options: any): void {
         const value = EditorSettingMigration._read(options, this.key);
+
         const read = (key: string) => EditorSettingMigration._read(options, key);
+
         const write = (key: string, value: any) => EditorSettingMigration._write(options, key, value);
         this.migrate(value, read, write);
     }
@@ -23,18 +26,22 @@ export class EditorSettingMigration {
             return undefined;
         }
         const firstDotIndex = key.indexOf('.');
+
         if (firstDotIndex >= 0) {
             const firstSegment = key.substring(0, firstDotIndex);
+
             return this._read(source[firstSegment], key.substring(firstDotIndex + 1));
         }
         return source[key];
     }
     private static _write(target: any, key: string, value: any): void {
         const firstDotIndex = key.indexOf('.');
+
         if (firstDotIndex >= 0) {
             const firstSegment = key.substring(0, firstDotIndex);
             target[firstSegment] = target[firstSegment] || {};
             this._write(target[firstSegment], key.substring(firstDotIndex + 1), value);
+
             return;
         }
         target[key] = value;
@@ -52,6 +59,7 @@ function registerSimpleEditorSettingMigration(key: string, values: [
             for (const [oldValue, newValue] of values) {
                 if (value === oldValue) {
                     write(key, newValue);
+
                     return;
                 }
             }
@@ -82,6 +90,7 @@ registerSimpleEditorSettingMigration('wordBasedSuggestions', [[true, 'matchingDo
 registerEditorSettingMigration('autoClosingBrackets', (value, read, write) => {
     if (value === false) {
         write('autoClosingBrackets', 'never');
+
         if (typeof read('autoClosingQuotes') === 'undefined') {
             write('autoClosingQuotes', 'never');
         }
@@ -93,6 +102,7 @@ registerEditorSettingMigration('autoClosingBrackets', (value, read, write) => {
 registerEditorSettingMigration('renderIndentGuides', (value, read, write) => {
     if (typeof value !== 'undefined') {
         write('renderIndentGuides', undefined);
+
         if (typeof read('guides.indentation') === 'undefined') {
             write('guides.indentation', !!value);
         }
@@ -101,11 +111,13 @@ registerEditorSettingMigration('renderIndentGuides', (value, read, write) => {
 registerEditorSettingMigration('highlightActiveIndentGuide', (value, read, write) => {
     if (typeof value !== 'undefined') {
         write('highlightActiveIndentGuide', undefined);
+
         if (typeof read('guides.highlightActiveIndentation') === 'undefined') {
             write('guides.highlightActiveIndentation', !!value);
         }
     }
 });
+
 const suggestFilteredTypesMapping: Record<string, string> = {
     method: 'showMethods',
     function: 'showFunctions',
@@ -138,6 +150,7 @@ registerEditorSettingMigration('suggest.filteredTypes', (value, read, write) => 
     if (value && typeof value === 'object') {
         for (const entry of Object.entries(suggestFilteredTypesMapping)) {
             const v = value[entry[0]];
+
             if (v === false) {
                 if (typeof read(`suggest.${entry[1]}`) === 'undefined') {
                     write(`suggest.${entry[1]}`, false);
@@ -150,6 +163,7 @@ registerEditorSettingMigration('suggest.filteredTypes', (value, read, write) => 
 registerEditorSettingMigration('quickSuggestions', (input, read, write) => {
     if (typeof input === 'boolean') {
         const value = input ? 'on' : 'off';
+
         const newValue = { comments: value, strings: value, other: value };
         write('quickSuggestions', newValue);
     }
@@ -158,6 +172,7 @@ registerEditorSettingMigration('quickSuggestions', (input, read, write) => {
 registerEditorSettingMigration('experimental.stickyScroll.enabled', (value, read, write) => {
     if (typeof value === 'boolean') {
         write('experimental.stickyScroll.enabled', undefined);
+
         if (typeof read('stickyScroll.enabled') === 'undefined') {
             write('stickyScroll.enabled', value);
         }
@@ -166,6 +181,7 @@ registerEditorSettingMigration('experimental.stickyScroll.enabled', (value, read
 registerEditorSettingMigration('experimental.stickyScroll.maxLineCount', (value, read, write) => {
     if (typeof value === 'number') {
         write('experimental.stickyScroll.maxLineCount', undefined);
+
         if (typeof read('stickyScroll.maxLineCount') === 'undefined') {
             write('stickyScroll.maxLineCount', value);
         }
@@ -175,7 +191,9 @@ registerEditorSettingMigration('experimental.stickyScroll.maxLineCount', (value,
 registerEditorSettingMigration('codeActionsOnSave', (value, read, write) => {
     if (value && typeof value === 'object') {
         let toBeModified = false;
+
         const newValue = {} as any;
+
         for (const entry of Object.entries(value)) {
             if (typeof entry[1] === 'boolean') {
                 toBeModified = true;
@@ -194,6 +212,7 @@ registerEditorSettingMigration('codeActionsOnSave', (value, read, write) => {
 registerEditorSettingMigration('codeActionWidget.includeNearbyQuickfixes', (value, read, write) => {
     if (typeof value === 'boolean') {
         write('codeActionWidget.includeNearbyQuickfixes', undefined);
+
         if (typeof read('codeActionWidget.includeNearbyQuickFixes') === 'undefined') {
             write('codeActionWidget.includeNearbyQuickFixes', value);
         }

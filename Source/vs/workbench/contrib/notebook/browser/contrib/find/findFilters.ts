@@ -16,6 +16,7 @@ export class NotebookFindFilters extends Disposable {
     private readonly _onDidChange: Emitter<INotebookFindChangeEvent> = this._register(new Emitter<INotebookFindChangeEvent>());
     readonly onDidChange: Event<INotebookFindChangeEvent> = this._onDidChange.event;
     private _markupInput: boolean = true;
+
     get markupInput(): boolean {
         return this._markupInput;
     }
@@ -26,6 +27,7 @@ export class NotebookFindFilters extends Disposable {
         }
     }
     private _markupPreview: boolean = true;
+
     get markupPreview(): boolean {
         return this._markupPreview;
     }
@@ -36,6 +38,7 @@ export class NotebookFindFilters extends Disposable {
         }
     }
     private _codeInput: boolean = true;
+
     get codeInput(): boolean {
         return this._codeInput;
     }
@@ -46,6 +49,7 @@ export class NotebookFindFilters extends Disposable {
         }
     }
     private _codeOutput: boolean = true;
+
     get codeOutput(): boolean {
         return this._codeOutput;
     }
@@ -56,6 +60,7 @@ export class NotebookFindFilters extends Disposable {
         }
     }
     private _findScope: INotebookFindScope = { findScopeType: NotebookFindScopeType.None };
+
     get findScope(): INotebookFindScope {
         return this._findScope;
     }
@@ -69,6 +74,7 @@ export class NotebookFindFilters extends Disposable {
     private readonly _initialMarkupPreview: boolean;
     private readonly _initialCodeInput: boolean;
     private readonly _initialCodeOutput: boolean;
+
     constructor(markupInput: boolean, markupPreview: boolean, codeInput: boolean, codeOutput: boolean, findScope: INotebookFindScope) {
         super();
         this._markupInput = markupInput;

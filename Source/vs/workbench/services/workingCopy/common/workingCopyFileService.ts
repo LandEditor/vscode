@@ -226,6 +226,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
     readonly onDidRunWorkingCopyFileOperation = this._onDidRunWorkingCopyFileOperation.event;
     //#endregion
     private correlationIds = 0;
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -263,7 +264,9 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         // validate create operation before starting
         if (isFile) {
             const validateCreates = await Promises.settled(operations.map(operation => this.fileService.canCreateFile(operation.resource, { overwrite: operation.overwrite })));
+
             const error = validateCreates.find(validateCreate => validateCreate instanceof Error);
+
             if (error instanceof Error) {
                 throw error;
             }
@@ -276,6 +279,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         await this._onWillRunWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
         // now actually create on disk
         let stats: IFileStatWithMetadata[];
+
         try {
             if (isFile) {
                 stats = await Promises.settled(operations.map(operation => this.fileService.createFile(operation.resource, (operation as ICreateFileOperation).contents, { overwrite: operation.overwrite })));
@@ -287,10 +291,12 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         catch (error) {
             // error event
             await this._onDidFailWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
             throw error;
         }
         // after event
         await this._onDidRunWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
         return stats;
     }
     async move(operations: IMoveOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<IFileStatWithMetadata[]> {
@@ -304,6 +310,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         // validate move/copy operation before starting
         for (const { file: { source, target }, overwrite } of operations) {
             const validateMoveOrCopy = await (move ? this.fileService.canMove(source, target, overwrite) : this.fileService.canCopy(source, target, overwrite));
+
             if (validateMoveOrCopy instanceof Error) {
                 throw validateMoveOrCopy;
             }
@@ -314,6 +321,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         // before event
         const event = { correlationId: this.correlationIds++, operation: move ? FileOperation.MOVE : FileOperation.COPY, files };
         await this._onWillRunWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
         try {
             for (const { file: { source, target }, overwrite } of operations) {
                 // if source and target are not equal, handle dirty working copies
@@ -336,16 +344,19 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         catch (error) {
             // error event
             await this._onDidFailWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
             throw error;
         }
         // after event
         await this._onDidRunWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
         return stats;
     }
     async delete(operations: IDeleteOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<void> {
         // validate delete operation before starting
         for (const operation of operations) {
             const validateDelete = await this.fileService.canDelete(operation.resource, { recursive: operation.recursive, useTrash: operation.useTrash });
+
             if (validateDelete instanceof Error) {
                 throw validateDelete;
             }
@@ -372,6 +383,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
         catch (error) {
             // error event
             await this._onDidFailWorkingCopyFileOperation.fireAsync(event, CancellationToken.None /* intentional: we currently only forward cancellation to participants */);
+
             throw error;
         }
         // after event
@@ -389,6 +401,7 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
     //#endregion
     //#region Save participants (stored file working copies only)
     private readonly saveParticipants = this._register(this.instantiationService.createInstance(StoredFileWorkingCopySaveParticipant));
+
     get hasSaveParticipants(): boolean { return this.saveParticipants.length > 0; }
     addSaveParticipant(participant: IStoredFileWorkingCopySaveParticipant): IDisposable {
         return this.saveParticipants.addSaveParticipant(participant);
@@ -401,10 +414,12 @@ export class WorkingCopyFileService extends Disposable implements IWorkingCopyFi
     private readonly workingCopyProviders: WorkingCopyProvider[] = [];
     registerWorkingCopyProvider(provider: WorkingCopyProvider): IDisposable {
         const remove = insert(this.workingCopyProviders, provider);
+
         return toDisposable(remove);
     }
     getDirty(resource: URI): IWorkingCopy[] {
         const dirtyWorkingCopies = new Set<IWorkingCopy>();
+
         for (const provider of this.workingCopyProviders) {
             for (const workingCopy of provider(resource)) {
                 if (workingCopy.isDirty()) {

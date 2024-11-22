@@ -25,6 +25,7 @@ export interface IV8ProfileNode {
 export interface IV8CallFrame {
     url: string;
     scriptId: string;
+
     functionName: string;
     lineNumber: number;
     columnNumber: number;

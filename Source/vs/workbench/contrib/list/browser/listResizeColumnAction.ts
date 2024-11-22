@@ -20,8 +20,11 @@ export class ListResizeColumnAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const listService = accessor.get(IListService);
+
         const instantiationService = accessor.get(IInstantiationService);
+
         const list = listService.lastFocusedList;
+
         if (list instanceof Table) {
             await instantiationService.createInstance(TableColumnResizeQuickPick, list).show();
         }

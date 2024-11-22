@@ -20,7 +20,9 @@ import { ResourceContextKey } from '../../../common/contextkeys.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { ILocalizedString } from '../../../../platform/action/common/action.js';
+
 const timelineViewIcon = registerIcon('timeline-view-icon', Codicon.history, localize('timelineViewIcon', 'View icon of the timeline view.'));
+
 const timelineOpenIcon = registerIcon('timeline-open', Codicon.history, localize('timelineOpenIcon', 'Icon for the open timeline action.'));
 export class TimelinePaneDescriptor implements IViewDescriptor {
     readonly id = TimelinePaneId;
@@ -59,10 +61,13 @@ configurationRegistry.registerConfiguration({
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([new TimelinePaneDescriptor()], VIEW_CONTAINER);
 namespace OpenTimelineAction {
     export const ID = 'files.openTimeline';
+
     export const LABEL = localize('files.openTimeline', "Open Timeline");
+
     export function handler(): ICommandHandler {
         return (accessor, arg) => {
             const service = accessor.get(ITimelineService);
+
             return service.setUri(arg);
         };
     }
@@ -78,6 +83,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, ({
     },
     when: ContextKeyExpr.and(ExplorerFolderContext.toNegated(), ResourceContextKey.HasResource, TimelineHasProviderContext)
 }));
+
 const timelineFilter = registerIcon('timeline-filter', Codicon.filter, localize('timelineFilter', 'Icon for the filter timeline action.'));
 MenuRegistry.appendMenuItem(MenuId.TimelineTitle, {
     submenu: MenuId.TimelineFilterSubMenu,

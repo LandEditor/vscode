@@ -40,6 +40,7 @@ registerAction2(class ToggleQueryDetailsAction extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: any[]) {
         const contextService = accessor.get(IContextKeyService).getContext(getActiveElement());
+
         if (contextService.getValue(SearchEditorConstants.InSearchEditor.serialize())) {
             (accessor.get(IEditorService).activeEditorPane as SearchEditor).toggleQueryDetails(args[0]?.show);
         }
@@ -64,6 +65,7 @@ registerAction2(class CloseReplaceAction extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             searchView.searchAndReplaceWidget.toggleReplace(false);
             searchView.searchAndReplaceWidget.focus();
@@ -156,10 +158,14 @@ registerAction2(class OpenMatchAction extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             const tree: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch> = searchView.getControl();
+
             const viewer = searchView.getControl();
+
             const focus = tree.getFocus()[0];
+
             if (isSearchTreeFolderMatch(focus)) {
                 viewer.toggleCollapsed(focus);
             }
@@ -187,6 +193,7 @@ registerAction2(class OpenMatchToSideAction extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             const tree: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch> = searchView.getControl();
             searchView.open(<FileMatchOrMatch>tree.getFocus()[0], false, true, true);
@@ -208,6 +215,7 @@ registerAction2(class AddCursorsAtSearchResultsAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<any> {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             const tree: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch> = searchView.getControl();
             searchView.openEditorWithMultiCursor(<FileMatchOrMatch>tree.getFocus()[0]);
@@ -231,7 +239,9 @@ registerAction2(class FocusNextInputAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<any> {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             // cast as we cannot import SearchEditor as a value b/c cyclic dependency.
             (editorService.activeEditorPane as SearchEditor).focusNextInput();
@@ -255,7 +265,9 @@ registerAction2(class FocusPreviousInputAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<any> {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             // cast as we cannot import SearchEditor as a value b/c cyclic dependency.
             (editorService.activeEditorPane as SearchEditor).focusPrevInput();
@@ -284,6 +296,7 @@ registerAction2(class FocusSearchFromResultsAction extends Action2 {
 });
 registerAction2(class ToggleSearchOnTypeAction extends Action2 {
     private static readonly searchOnTypeKey = 'search.searchOnType';
+
     constructor() {
         super({
             id: Constants.SearchCommandIds.ToggleSearchOnTypeActionId,
@@ -293,7 +306,9 @@ registerAction2(class ToggleSearchOnTypeAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<any> {
         const configurationService = accessor.get(IConfigurationService);
+
         const searchOnType = configurationService.getValue<boolean>(ToggleSearchOnTypeAction.searchOnTypeKey);
+
         return configurationService.updateValue(ToggleSearchOnTypeAction.searchOnTypeKey, !searchOnType);
     }
 });
@@ -394,7 +409,9 @@ const focusSearchListCommand: ICommandHandler = accessor => {
 };
 async function focusNextSearchResult(accessor: ServicesAccessor): Promise<any> {
     const editorService = accessor.get(IEditorService);
+
     const input = editorService.activeEditor;
+
     if (input instanceof SearchEditorInput) {
         // cast as we cannot import SearchEditor as a value b/c cyclic dependency.
         return (editorService.activeEditorPane as SearchEditor).focusNextResult();
@@ -403,7 +420,9 @@ async function focusNextSearchResult(accessor: ServicesAccessor): Promise<any> {
 }
 async function focusPreviousSearchResult(accessor: ServicesAccessor): Promise<any> {
     const editorService = accessor.get(IEditorService);
+
     const input = editorService.activeEditor;
+
     if (input instanceof SearchEditorInput) {
         // cast as we cannot import SearchEditor as a value b/c cyclic dependency.
         return (editorService.activeEditorPane as SearchEditor).focusPreviousResult();
@@ -415,6 +434,7 @@ async function findOrReplaceInFiles(accessor: ServicesAccessor, expandSearchRepl
         if (openedView) {
             const searchAndReplaceWidget = openedView.searchAndReplaceWidget;
             searchAndReplaceWidget.toggleReplace(expandSearchReplaceWidget);
+
             const updatedText = openedView.updateTextFromFindWidgetOrSelection({ allowUnselectedWord: !expandSearchReplaceWidget });
             openedView.searchAndReplaceWidget.focus(undefined, updatedText, updatedText);
         }

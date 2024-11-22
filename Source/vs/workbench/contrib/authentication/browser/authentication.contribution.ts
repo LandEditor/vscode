@@ -22,6 +22,7 @@ import { IAuthenticationUsageService } from '../../../services/authentication/br
 
 const codeExchangeProxyCommand = CommandsRegistry.registerCommand('workbench.getCodeExchangeProxyEndpoints', function (accessor, _) {
 	const environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
+
 	return environmentService.options?.codeExchangeProxyEndpoints;
 });
 
@@ -35,6 +36,7 @@ class AuthenticationDataRenderer extends Disposable implements IExtensionFeature
 
 	render(manifest: IExtensionManifest): IRenderedData<ITableData> {
 		const authentication = manifest.contributes?.authentication || [];
+
 		if (!authentication.length) {
 			return { data: { headers: [], rows: [] }, dispose: () => { } };
 		}

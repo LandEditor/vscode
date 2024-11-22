@@ -24,6 +24,7 @@ export class TextModelDiffs extends Disposable {
     }
     constructor(private readonly baseTextModel: ITextModel, private readonly textModel: ITextModel, private readonly diffComputer: IMergeDiffComputer) {
         super();
+
         const recomputeSignal = observableSignal('recompute');
         this._register(autorun(reader => {
             /** @description Update diff state */
@@ -52,7 +53,9 @@ export class TextModelDiffs extends Disposable {
     private _isInitializing = true;
     private _recompute(reader: IReader): void {
         this._recomputeCount++;
+
         const currentRecomputeIdx = this._recomputeCount;
+
         if (this._state.get() === TextModelDiffState.initializing) {
             this._isInitializing = true;
         }
@@ -60,6 +63,7 @@ export class TextModelDiffs extends Disposable {
             /** @description Starting Diff Computation. */
             this._state.set(this._isInitializing ? TextModelDiffState.initializing : TextModelDiffState.updating, tx, TextModelDiffChangeReason.other);
         });
+
         const result = this.diffComputer.computeDiff(this.baseTextModel, this.textModel, reader);
         result.then((result) => {
             if (this._isDisposed) {
@@ -91,11 +95,14 @@ export class TextModelDiffs extends Disposable {
         this.ensureUpToDate();
         diffToRemoves.sort(compareBy((d) => d.inputRange.startLineNumber, numberComparator));
         diffToRemoves.reverse();
+
         let diffs = this._diffs.get();
+
         for (const diffToRemove of diffToRemoves) {
             // TODO improve performance
             const len = diffs.length;
             diffs = diffs.filter((d) => d !== diffToRemove);
+
             if (len === diffs.length) {
                 throw new BugIndicatingError();
             }
@@ -114,10 +121,15 @@ export class TextModelDiffs extends Disposable {
      */
     public applyEditRelativeToOriginal(edit: LineRangeEdit, transaction: ITransaction | undefined, group?: UndoRedoGroup): void {
         this.ensureUpToDate();
+
         const editMapping = new DetailedLineRangeMapping(edit.range, this.baseTextModel, new LineRange(edit.range.startLineNumber, edit.newLines.length), this.textModel);
+
         let firstAfter = false;
+
         let delta = 0;
+
         const newDiffs = new Array<DetailedLineRangeMapping>();
+
         for (const diff of this.diffs.get()) {
             if (diff.inputRange.touches(edit.range)) {
                 throw new BugIndicatingError('Edit must be conflict free.');
@@ -151,7 +163,9 @@ export class TextModelDiffs extends Disposable {
     }
     private getResultLine(lineNumber: number, reader?: IReader): number | DetailedLineRangeMapping {
         let offset = 0;
+
         const diffs = reader ? this.diffs.read(reader) : this.diffs.get();
+
         for (const diff of diffs) {
             if (diff.inputRange.contains(lineNumber) || diff.inputRange.endLineNumberExclusive === lineNumber) {
                 return diff;
@@ -167,10 +181,12 @@ export class TextModelDiffs extends Disposable {
     }
     public getResultLineRange(baseRange: LineRange, reader?: IReader): LineRange {
         let start = this.getResultLine(baseRange.startLineNumber, reader);
+
         if (typeof start !== 'number') {
             start = start.outputRange.startLineNumber;
         }
         let endExclusive = this.getResultLine(baseRange.endLineNumberExclusive, reader);
+
         if (typeof endExclusive !== 'number') {
             endExclusive = endExclusive.outputRange.endLineNumberExclusive;
         }

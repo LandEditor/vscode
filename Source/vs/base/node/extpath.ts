@@ -25,12 +25,15 @@ export function realcaseSync(path: string): string | null {
         return path;
     }
     const dir = dirname(path);
+
     if (path === dir) { // end recursion
         return path;
     }
     const name = (basename(path) /* can be '' for windows drive letters */ || path).toLowerCase();
+
     try {
         const entries = readdirSync(dir);
+
         const found = entries.filter(e => e.toLowerCase() === name); // use a case insensitive search
         if (found.length === 1) {
             // on a case sensitive filesystem we cannot determine here, whether the file exists or not, hence we need the 'file exists' precondition
@@ -42,6 +45,7 @@ export function realcaseSync(path: string): string | null {
         else if (found.length > 1) {
             // must be a case sensitive $filesystem
             const ix = found.indexOf(name);
+
             if (ix >= 0) { // case sensitive
                 const prefix = realcaseSync(dir); // recurse
                 if (prefix) {
@@ -63,15 +67,18 @@ export async function realcase(path: string, token?: CancellationToken): Promise
         return path;
     }
     const dir = dirname(path);
+
     if (path === dir) { // end recursion
         return path;
     }
     const name = (basename(path) /* can be '' for windows drive letters */ || path).toLowerCase();
+
     try {
         if (token?.isCancellationRequested) {
             return null;
         }
         const entries = await Promises.readdir(dir);
+
         const found = entries.filter(e => e.toLowerCase() === name); // use a case insensitive search
         if (found.length === 1) {
             // on a case sensitive filesystem we cannot determine here, whether the file exists or not, hence we need the 'file exists' precondition
@@ -83,6 +90,7 @@ export async function realcase(path: string, token?: CancellationToken): Promise
         else if (found.length > 1) {
             // must be a case sensitive $filesystem
             const ix = found.indexOf(name);
+
             if (ix >= 0) { // case sensitive
                 const prefix = await realcase(dir, token); // recurse
                 if (prefix) {
@@ -112,6 +120,7 @@ export async function realpath(path: string): Promise<string> {
         // to not resolve links but to simply see if the path is read accessible or not.
         const normalizedPath = normalizePath(path);
         await fs.promises.access(normalizedPath, fs.constants.R_OK);
+
         return normalizedPath;
     }
 }

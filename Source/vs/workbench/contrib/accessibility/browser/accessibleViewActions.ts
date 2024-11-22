@@ -14,11 +14,13 @@ import { accessibilityHelpIsShown, accessibleViewContainsCodeBlocks, accessibleV
 import { AccessibleViewProviderId, IAccessibleViewService } from '../../../../platform/accessibility/browser/accessibleView.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
 import { InlineCompletionsController } from '../../../../editor/contrib/inlineCompletions/browser/controller/inlineCompletionsController.js';
+
 const accessibleViewMenu = {
     id: MenuId.AccessibleView,
     group: 'navigation',
     when: accessibleViewIsShown
 };
+
 const commandPalette = {
     id: MenuId.CommandPalette,
     group: '',
@@ -148,6 +150,7 @@ class AccessibleViewGoToSymbolAction extends Action2 {
 registerAction2(AccessibleViewGoToSymbolAction);
 function registerCommand<T extends Command>(command: T): T {
     command.register();
+
     return command;
 }
 export const AccessibilityHelpAction = registerCommand(new MultiCommand({
@@ -307,12 +310,16 @@ class AccessibleViewAcceptInlineCompletionAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const codeEditorService = accessor.get(ICodeEditorService);
+
         const editor = codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor();
+
         if (!editor) {
             return;
         }
         const model = InlineCompletionsController.get(editor)?.model.get();
+
         const state = model?.inlineCompletionState.get();
+
         if (!model || !state) {
             return;
         }

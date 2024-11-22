@@ -22,7 +22,9 @@ export interface IWorkerFileSystemHandle {
 }
 export interface IWorkerFileSystemDirectoryHandle extends IWorkerFileSystemHandle {
     readonly kind: 'directory';
+
     getDirectoryHandle(name: string): Promise<IWorkerFileSystemDirectoryHandle>;
+
     getFileHandle(name: string): Promise<IWorkerFileSystemFileHandle>;
     resolve(possibleDescendant: IWorkerFileSystemHandle): Promise<string[] | null>;
     entries(): AsyncIterableIterator<[
@@ -32,6 +34,7 @@ export interface IWorkerFileSystemDirectoryHandle extends IWorkerFileSystemHandl
 }
 export interface IWorkerFileSystemFileHandle extends IWorkerFileSystemHandle {
     readonly kind: 'file';
+
     getFile(): Promise<{
         arrayBuffer(): Promise<ArrayBuffer>;
     }>;

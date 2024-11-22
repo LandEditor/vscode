@@ -5,6 +5,7 @@
 import { ExtensionHostKind } from './extensionHostKind.js';
 export class LocalProcessRunningLocation {
     public readonly kind = ExtensionHostKind.LocalProcess;
+
     constructor(public readonly affinity: number) { }
     public equals(other: ExtensionRunningLocation) {
         return (this.kind === other.kind && this.affinity === other.affinity);
@@ -18,6 +19,7 @@ export class LocalProcessRunningLocation {
 }
 export class LocalWebWorkerRunningLocation {
     public readonly kind = ExtensionHostKind.LocalWebWorker;
+
     constructor(public readonly affinity: number) { }
     public equals(other: ExtensionRunningLocation) {
         return (this.kind === other.kind && this.affinity === other.affinity);

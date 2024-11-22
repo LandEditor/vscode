@@ -32,6 +32,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
     // TODO@TylerLeonhardt: support multiple chat providers eventually
     private _currentChat: QuickChat | undefined;
     private _container: HTMLElement | undefined;
+
     constructor(
     @IQuickInputService
     private readonly quickInputService: IQuickInputService, 
@@ -46,6 +47,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
     }
     get focused(): boolean {
         const widget = this._input?.widget as HTMLElement | undefined;
+
         if (!widget) {
             return false;
         }
@@ -74,6 +76,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
             if (this._currentChat && options?.query) {
                 this._currentChat.focus();
                 this._currentChat.setValue(options.query, options.selection);
+
                 if (!options.isPartialQuery) {
                     this._currentChat.acceptInput();
                 }
@@ -89,6 +92,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
         this._container ??= dom.$('.interactive-session');
         this._input.widget = this._container;
         this._input.show();
+
         if (!this._currentChat) {
             this._currentChat = this.instantiationService.createInstance(QuickChat);
             // show needs to come after the quickpick is shown
@@ -104,8 +108,10 @@ export class QuickChatService extends Disposable implements IQuickChatService {
             this._onDidClose.fire();
         }));
         this._currentChat.focus();
+
         if (options?.query) {
             this._currentChat.setValue(options.query, options.selection);
+
             if (!options.isPartialQuery) {
                 this._currentChat.acceptInput();
             }
@@ -133,6 +139,7 @@ class QuickChat extends Disposable {
     private _currentQuery: string | undefined;
     private readonly maintainScrollTimer: MutableDisposable<IDisposable> = this._register(new MutableDisposable<IDisposable>());
     private _deferUpdatingDynamicLayout: boolean = false;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -155,7 +162,9 @@ class QuickChat extends Disposable {
     focus(selection?: Selection): void {
         if (this.widget) {
             this.widget.focusInput();
+
             const value = this.widget.inputEditor.getValue();
+
             if (value) {
                 this.widget.inputEditor.setSelection(selection ?? {
                     startLineNumber: 1,
@@ -231,6 +240,7 @@ class QuickChat extends Disposable {
         }));
         this._register(this.widget.onDidClear(() => this.clear()));
         this._register(this.widget.onDidChangeHeight((e) => this.sash.layout()));
+
         const width = parent.offsetWidth;
         this._register(this.sash.onDidStart(() => {
             this.widget.isDynamicChatTreeItemLayoutEnabled = false;
@@ -252,12 +262,14 @@ class QuickChat extends Disposable {
     }
     async openChatView(): Promise<void> {
         const widget = await showChatView(this.viewsService);
+
         if (!widget?.viewModel || !this.model) {
             return;
         }
         for (const request of this.model.getRequests()) {
             if (request.response?.response.value || request.response?.result) {
                 const message: IChatProgress[] = [];
+
                 for (const item of request.response.response.value) {
                     if (item.kind === 'textEditGroup') {
                         for (const group of item.edits) {
@@ -282,6 +294,7 @@ class QuickChat extends Disposable {
             }
         }
         const value = this.widget.inputEditor.getValue();
+
         if (value) {
             widget.inputEditor.setValue(value);
         }
@@ -296,6 +309,7 @@ class QuickChat extends Disposable {
     }
     private updateModel(): void {
         this.model ??= this.chatService.startSession(ChatAgentLocation.Panel, CancellationToken.None);
+
         if (!this.model) {
             throw new Error('Could not start chat session');
         }

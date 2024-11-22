@@ -10,6 +10,7 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
     if (e.charCode) {
         // "keypress" events mostly
         const char = String.fromCharCode(e.charCode).toUpperCase();
+
         return KeyCodeUtils.fromString(char);
     }
     const keyCode = e.keyCode;
@@ -20,16 +21,21 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
     else if (browser.isFirefox) {
         switch (keyCode) {
             case 59: return KeyCode.Semicolon;
+
             case 60:
                 if (platform.isLinux) {
                     return KeyCode.IntlBackslash;
                 }
                 break;
+
             case 61: return KeyCode.Equal;
             // based on: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#numpad_keys
             case 107: return KeyCode.NumpadAdd;
+
             case 109: return KeyCode.NumpadSubtract;
+
             case 173: return KeyCode.Minus;
+
             case 224:
                 if (platform.isMacintosh) {
                     return KeyCode.Meta;
@@ -69,11 +75,15 @@ export interface IKeyboardEvent {
     stopPropagation(): void;
 }
 const ctrlKeyMod = (platform.isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd);
+
 const altKeyMod = KeyMod.Alt;
+
 const shiftKeyMod = KeyMod.Shift;
+
 const metaKeyMod = (platform.isMacintosh ? KeyMod.CtrlCmd : KeyMod.WinCtrl);
 export function printKeyboardEvent(e: KeyboardEvent): string {
     const modifiers: string[] = [];
+
     if (e.ctrlKey) {
         modifiers.push(`ctrl`);
     }
@@ -90,6 +100,7 @@ export function printKeyboardEvent(e: KeyboardEvent): string {
 }
 export function printStandardKeyboardEvent(e: StandardKeyboardEvent): string {
     const modifiers: string[] = [];
+
     if (e.ctrlKey) {
         modifiers.push(`ctrl`);
     }
@@ -117,6 +128,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
     public readonly code: string;
     private _asKeybinding: number;
     private _asKeyCodeChord: KeyCodeChord;
+
     constructor(source: KeyboardEvent) {
         const e = source;
         this.browserEvent = e;
@@ -155,10 +167,12 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
     }
     private _computeKeybinding(): number {
         let key = KeyCode.Unknown;
+
         if (this.keyCode !== KeyCode.Ctrl && this.keyCode !== KeyCode.Shift && this.keyCode !== KeyCode.Alt && this.keyCode !== KeyCode.Meta) {
             key = this.keyCode;
         }
         let result = 0;
+
         if (this.ctrlKey) {
             result |= ctrlKeyMod;
         }
@@ -172,10 +186,12 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
             result |= metaKeyMod;
         }
         result |= key;
+
         return result;
     }
     private _computeKeyCodeChord(): KeyCodeChord {
         let key = KeyCode.Unknown;
+
         if (this.keyCode !== KeyCode.Ctrl && this.keyCode !== KeyCode.Shift && this.keyCode !== KeyCode.Alt && this.keyCode !== KeyCode.Meta) {
             key = this.keyCode;
         }

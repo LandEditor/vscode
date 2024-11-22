@@ -436,6 +436,7 @@ declare module 'vscode' {
 	export interface ResourceLabelFormatter {
 		scheme: string;
 		authority?: string;
+
 		formatting: ResourceLabelFormatting;
 	}
 
@@ -454,7 +455,9 @@ declare module 'vscode' {
 
 	export namespace workspace {
 		export function registerRemoteAuthorityResolver(authorityPrefix: string, resolver: RemoteAuthorityResolver): Disposable;
+
 		export function registerResourceLabelFormatter(formatter: ResourceLabelFormatter): Disposable;
+
 		export function getRemoteExecServer(authority: string): Thenable<ExecServer | undefined>;
 	}
 

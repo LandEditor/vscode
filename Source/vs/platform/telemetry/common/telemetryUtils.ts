@@ -19,6 +19,7 @@ import { ICustomEndpointTelemetryService, ITelemetryData, ITelemetryEndpoint, IT
 export class TelemetryTrustedValue<T> {
     // This is merely used as an identifier as the instance will be lost during serialization over the exthost
     public readonly isTrustedTelemetryValue = true;
+
     constructor(public readonly value: T) { }
 }
 export class NullTelemetryServiceShape implements ITelemetryService {
@@ -39,6 +40,7 @@ export class NullTelemetryServiceShape implements ITelemetryService {
 export const NullTelemetryService = new NullTelemetryServiceShape();
 export class NullEndpointTelemetryService implements ICustomEndpointTelemetryService {
     _serviceBrand: undefined;
+
     async publicLog(_endpoint: ITelemetryEndpoint, _eventName: string, _data?: ITelemetryData): Promise<void> {
         // noop
     }
@@ -116,7 +118,9 @@ export function isLoggingOnly(productService: IProductService, environmentServic
  */
 export function getTelemetryLevel(configurationService: IConfigurationService): TelemetryLevel {
     const newConfig = configurationService.getValue<TelemetryConfiguration>(TELEMETRY_SETTING_ID);
+
     const crashReporterConfig = configurationService.getValue<boolean | undefined>(TELEMETRY_CRASH_REPORTER_SETTING_ID);
+
     const oldConfig = configurationService.getValue<boolean | undefined>(TELEMETRY_OLD_SETTING_ID);
     // If `telemetry.enableCrashReporter` is false or `telemetry.enableTelemetry' is false, disable telemetry
     if (oldConfig === false || crashReporterConfig === false) {
@@ -126,10 +130,13 @@ export function getTelemetryLevel(configurationService: IConfigurationService): 
     switch (newConfig ?? TelemetryConfiguration.ON) {
         case TelemetryConfiguration.ON:
             return TelemetryLevel.USAGE;
+
         case TelemetryConfiguration.ERROR:
             return TelemetryLevel.ERROR;
+
         case TelemetryConfiguration.CRASH:
             return TelemetryLevel.CRASH;
+
         case TelemetryConfiguration.OFF:
             return TelemetryLevel.NONE;
     }
@@ -145,13 +152,18 @@ export function validateTelemetryData(data?: any): {
     measurements: Measurements;
 } {
     const properties: Properties = {};
+
     const measurements: Measurements = {};
+
     const flat: Record<string, any> = {};
     flatten(data, flat);
+
     for (let prop in flat) {
         // enforce property names less than 150 char, take the last 150 char
         prop = prop.length > 150 ? prop.substr(prop.length - 149) : prop;
+
         const value = flat[prop];
+
         if (typeof value === 'number') {
             measurements[prop] = value;
         }
@@ -181,6 +193,7 @@ export function cleanRemoteAuthority(remoteAuthority?: string): string {
         return 'none';
     }
     const remoteName = getRemoteName(remoteAuthority);
+
     return telemetryAllowedAuthorities.has(remoteName) ? remoteName : 'other';
 }
 function flatten(obj: any, result: {
@@ -191,7 +204,9 @@ function flatten(obj: any, result: {
     }
     for (const item of Object.getOwnPropertyNames(obj)) {
         const value = obj[item];
+
         const index = prefix ? prefix + item : item;
+
         if (Array.isArray(value)) {
             result[index] = safeStringify(value);
         }
@@ -220,7 +235,9 @@ function flatten(obj: any, result: {
  */
 export function isInternalTelemetry(productService: IProductService, configService: IConfigurationService) {
     const msftInternalDomains = productService.msftInternalDomains || [];
+
     const internalTesting = configService.getValue<boolean>('telemetry.internalTesting');
+
     return verifyMicrosoftInternalDomain(msftInternalDomains) || internalTesting;
 }
 interface IPathEnvironment {
@@ -246,13 +263,16 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
         return stack;
     }
     let updatedStack = stack;
+
     const cleanUpIndexes: [
         number,
         number
     ][] = [];
+
     for (const regexp of cleanupPatterns) {
         while (true) {
             const result = regexp.exec(stack);
+
             if (!result) {
                 break;
             }
@@ -260,11 +280,15 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
         }
     }
     const nodeModulesRegex = /^[\\\/]?(node_modules|node_modules\.asar)[\\\/]/;
+
     const fileRegex = /(file:\/\/)?([a-zA-Z]:(\\\\|\\|\/)|(\\\\|\\|\/))?([\w-\._]+(\\\\|\\|\/))+[\w-\._]*/g;
+
     let lastIndex = 0;
     updatedStack = '';
+
     while (true) {
         const result = fileRegex.exec(stack);
+
         if (!result) {
             break;
         }
@@ -288,6 +312,7 @@ function anonymizeFilePaths(stack: string, cleanupPatterns: RegExp[]): string {
  */
 function removePropertiesWithPossibleUserInfo(property: string): string {
     // If for some reason it is undefined we skip it (this shouldn't be possible);
+
     if (!property) {
         return property;
     }
@@ -331,6 +356,7 @@ export function cleanData(data: Record<string, any>, cleanUpPatterns: RegExp[]):
             }
             // Lastly, remove commonly leaked PII
             updatedProperty = removePropertiesWithPossibleUserInfo(updatedProperty);
+
             return updatedProperty;
         }
         return undefined;

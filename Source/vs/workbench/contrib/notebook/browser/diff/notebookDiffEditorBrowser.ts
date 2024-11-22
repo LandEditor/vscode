@@ -36,9 +36,13 @@ export interface INotebookTextDiffEditor {
         cell: IGenericCellViewModel;
         output: ICellOutputViewModel;
     }>;
+
     getOverflowContainerDomNode(): HTMLElement;
+
     getLayoutInfo(): NotebookLayoutInfo;
+
     getScrollTop(): number;
+
     getScrollHeight(): number;
     layoutNotebookCell(cell: IDiffElementViewModelBase, height: number): void;
     createOutput(cellDiffViewModel: DiffElementCellViewModelBase, cellViewModel: IDiffNestedCellViewModel, output: IInsetRenderOutput, getOffset: () => number, diffSide: DiffSide): void;
@@ -50,6 +54,7 @@ export interface INotebookTextDiffEditor {
      */
     triggerScroll(event: IMouseWheelEvent): void;
     delegateVerticalScrollbarPointerDown(browserEvent: PointerEvent): void;
+
     getCellByInfo(cellInfo: ICommonCellInfo): IGenericCellViewModel;
     focusNotebookCell(cell: IGenericCellViewModel, focus: 'editor' | 'container' | 'output'): Promise<void>;
     focusNextNotebookCell(cell: IGenericCellViewModel, focus: 'editor' | 'container' | 'output'): Promise<void>;

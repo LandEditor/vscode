@@ -133,6 +133,7 @@ export class BreadcrumbsWidget {
 			this._domNode.style.height = `${dim.height}px`;
 			disposables.add(this._updateScrollbar());
 		}));
+
 		return disposables;
 	}
 
@@ -148,6 +149,7 @@ export class BreadcrumbsWidget {
 
 	private _style(styleElement: HTMLStyleElement, style: IBreadcrumbsWidgetStyles): void {
 		let content = '';
+
 		if (style.breadcrumbsBackground) {
 			content += `.monaco-breadcrumbs { background-color: ${style.breadcrumbsBackground}}`;
 		}
@@ -173,6 +175,7 @@ export class BreadcrumbsWidget {
 
 	domFocus(): void {
 		const idx = this._focusedItemIdx >= 0 ? this._focusedItemIdx : this._items.length - 1;
+
 		if (idx >= 0 && idx < this._items.length) {
 			this._focus(idx, undefined);
 		} else {
@@ -206,8 +209,10 @@ export class BreadcrumbsWidget {
 
 	private _focus(nth: number, payload: any): void {
 		this._focusedItemIdx = -1;
+
 		for (let i = 0; i < this._nodes.length; i++) {
 			const node = this._nodes[i];
+
 			if (i !== nth) {
 				node.classList.remove('focused');
 			} else {
@@ -222,6 +227,7 @@ export class BreadcrumbsWidget {
 
 	reveal(item: BreadcrumbsItem): void {
 		const idx = this._items.indexOf(item);
+
 		if (idx >= 0) {
 			this._reveal(idx, false);
 		}
@@ -236,11 +242,14 @@ export class BreadcrumbsWidget {
 			return;
 		}
 		const node = this._nodes[nth];
+
 		if (!node) {
 			return;
 		}
 		const { width } = this._scrollable.getScrollDimensions();
+
 		const { scrollLeft } = this._scrollable.getScrollPosition();
+
 		if (!minimal || node.offsetLeft > scrollLeft + width || node.offsetLeft < scrollLeft) {
 			this._scrollable.setRevealOnScroll(false);
 			this._scrollable.setScrollPosition({ scrollLeft: node.offsetLeft });
@@ -258,8 +267,10 @@ export class BreadcrumbsWidget {
 
 	private _select(nth: number, payload: any): void {
 		this._selectedItemIdx = -1;
+
 		for (let i = 0; i < this._nodes.length; i++) {
 			const node = this._nodes[i];
+
 			if (i !== nth) {
 				node.classList.remove('selected');
 			} else {
@@ -276,7 +287,9 @@ export class BreadcrumbsWidget {
 
 	setItems(items: BreadcrumbsItem[]): void {
 		let prefix: number | undefined;
+
 		let removed: BreadcrumbsItem[] = [];
+
 		try {
 			prefix = commonPrefixLength(this._items, items, (a, b) => a.equals(b));
 			removed = this._items.splice(prefix, this._items.length - prefix, ...items.slice(prefix));
@@ -287,14 +300,17 @@ export class BreadcrumbsWidget {
 			const newError = new Error(`BreadcrumbsItem#setItems: newItems: ${items.length}, prefix: ${prefix}, removed: ${removed.length}`);
 			newError.name = e.name;
 			newError.stack = e.stack;
+
 			throw newError;
 		}
 	}
 
 	private _render(start: number): void {
 		let didChange = false;
+
 		for (; start < this._items.length && start < this._nodes.length; start++) {
 			const item = this._items[start];
+
 			const node = this._nodes[start];
 			this._renderItem(item, node);
 			didChange = true;
@@ -302,6 +318,7 @@ export class BreadcrumbsWidget {
 		// case a: more nodes -> remove them
 		while (start < this._nodes.length) {
 			const free = this._nodes.pop();
+
 			if (free) {
 				this._freeNodes.push(free);
 				free.remove();
@@ -312,7 +329,9 @@ export class BreadcrumbsWidget {
 		// case b: more items -> render them
 		for (; start < this._items.length; start++) {
 			const item = this._items[start];
+
 			const node = this._freeNodes.length > 0 ? this._freeNodes.pop() : document.createElement('div');
+
 			if (node) {
 				this._renderItem(item, node);
 				this._domNode.appendChild(node);
@@ -328,6 +347,7 @@ export class BreadcrumbsWidget {
 	private _renderItem(item: BreadcrumbsItem, container: HTMLDivElement): void {
 		dom.clearNode(container);
 		container.className = '';
+
 		try {
 			item.render(container);
 		} catch (err) {
@@ -337,6 +357,7 @@ export class BreadcrumbsWidget {
 		container.tabIndex = -1;
 		container.setAttribute('role', 'listitem');
 		container.classList.add('monaco-breadcrumb-item');
+
 		const iconContainer = dom.$(ThemeIcon.asCSSSelector(this._separatorIcon));
 		container.appendChild(iconContainer);
 	}
@@ -347,9 +368,11 @@ export class BreadcrumbsWidget {
 		}
 		for (let el: HTMLElement | null = event.target; el; el = el.parentElement) {
 			const idx = this._nodes.indexOf(el as HTMLDivElement);
+
 			if (idx >= 0) {
 				this._focus(idx, event);
 				this._select(idx, event);
+
 				break;
 			}
 		}

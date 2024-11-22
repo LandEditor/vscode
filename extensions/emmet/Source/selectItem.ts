@@ -13,16 +13,22 @@ export function fetchSelectItem(direction: string): void {
         return;
     }
     const editor = vscode.window.activeTextEditor;
+
     const document = editor.document;
+
     const rootNode = getRootNode(document, true);
+
     if (!rootNode) {
         return;
     }
     const newSelections: vscode.Selection[] = [];
     editor.selections.forEach(selection => {
         const selectionStart = selection.isReversed ? selection.active : selection.anchor;
+
         const selectionEnd = selection.isReversed ? selection.anchor : selection.active;
+
         let updatedSelection;
+
         if (isStyleSheet(editor.document.languageId)) {
             updatedSelection = direction === 'next' ?
                 nextItemStylesheet(document, selectionStart, selectionEnd, <CssNode>rootNode) :

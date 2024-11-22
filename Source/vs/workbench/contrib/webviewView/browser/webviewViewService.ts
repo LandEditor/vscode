@@ -94,7 +94,9 @@ export class WebviewViewService extends Disposable implements IWebviewViewServic
         }
         this._resolvers.set(viewType, resolver);
         this._onNewResolverRegistered.fire({ viewType: viewType });
+
         const pending = this._awaitingRevival.get(viewType);
+
         if (pending) {
             resolver.resolve(pending.webview, CancellationToken.None).then(() => {
                 this._awaitingRevival.delete(viewType);
@@ -107,12 +109,14 @@ export class WebviewViewService extends Disposable implements IWebviewViewServic
     }
     resolve(viewType: string, webview: WebviewView, cancellation: CancellationToken): Promise<void> {
         const resolver = this._resolvers.get(viewType);
+
         if (!resolver) {
             if (this._awaitingRevival.has(viewType)) {
                 throw new Error('View already awaiting revival');
             }
             const { promise, resolve } = promiseWithResolvers<void>();
             this._awaitingRevival.set(viewType, { webview, resolve });
+
             return promise;
         }
         return resolver.resolve(webview, cancellation);

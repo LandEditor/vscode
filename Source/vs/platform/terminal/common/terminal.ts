@@ -313,6 +313,7 @@ export interface IPtyService {
 	 * Lists all orphaned processes, ie. those without a connected frontend.
 	 */
 	listProcesses(): Promise<IProcessDetails[]>;
+
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
 	/**
 	 * Measures and returns the latency of the current and all other processes to the pty host.
@@ -324,9 +325,12 @@ export interface IPtyService {
 	input(id: number, data: string): Promise<void>;
 	resize(id: number, cols: number, rows: number): Promise<void>;
 	clearBuffer(id: number): Promise<void>;
+
 	getInitialCwd(id: number): Promise<string>;
+
 	getCwd(id: number): Promise<string>;
 	acknowledgeDataEvent(id: number, charCount: number): Promise<void>;
+
 	setUnicodeVersion(id: number, version: '6' | '11'): Promise<void>;
 	processBinary(id: number, data: string): Promise<void>;
 	/** Confirm the process is _not_ an orphan. */
@@ -335,10 +339,15 @@ export interface IPtyService {
 	updateIcon(id: number, userInitiated: boolean, icon: TerminalIcon, color?: string): Promise<void>;
 
 	getDefaultSystemShell(osOverride?: OperatingSystem): Promise<string>;
+
 	getEnvironment(): Promise<IProcessEnvironment>;
+
 	getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix'): Promise<string>;
+
 	getRevivedPtyNewId(workspaceId: string, id: number): Promise<number | undefined>;
+
 	setTerminalLayoutInfo(args: ISetTerminalLayoutInfoArgs): Promise<void>;
+
 	getTerminalLayoutInfo(args: IGetTerminalLayoutInfoArgs): Promise<ITerminalsLayoutInfo | undefined>;
 	reduceConnectionGraceTime(): Promise<void>;
 	requestDetachInstance(workspaceId: string, instanceId: number): Promise<IProcessDetails | undefined>;
@@ -385,6 +394,7 @@ export interface IPtyHostController {
 
 	restartPtyHost(): Promise<void>;
 	acceptPtyHostResolvedVariables(requestId: number, resolved: string[]): Promise<void>;
+
 	getProfiles(workspaceId: string, profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]>;
 }
 
@@ -779,6 +789,7 @@ export interface ITerminalChildProcess {
 	setUnicodeVersion(version: '6' | '11'): Promise<void>;
 
 	getInitialCwd(): Promise<string>;
+
 	getCwd(): Promise<string>;
 	refreshProperty<T extends ProcessPropertyType>(property: T): Promise<IProcessPropertyMap[T]>;
 	updateProperty<T extends ProcessPropertyType>(property: T, value: IProcessPropertyMap[T]): Promise<void>;
@@ -1038,16 +1049,25 @@ export interface ITerminalBackend extends ITerminalBackendPtyServiceContribution
 	attachToProcess(id: number): Promise<ITerminalChildProcess | undefined>;
 	attachToRevivedProcess(id: number): Promise<ITerminalChildProcess | undefined>;
 	listProcesses(): Promise<IProcessDetails[]>;
+
 	getLatency(): Promise<IPtyHostLatencyMeasurement[]>;
+
 	getDefaultSystemShell(osOverride?: OperatingSystem): Promise<string>;
+
 	getProfiles(profiles: unknown, defaultProfile: unknown, includeDetectedProfiles?: boolean): Promise<ITerminalProfile[]>;
+
 	getWslPath(original: string, direction: 'unix-to-win' | 'win-to-unix'): Promise<string>;
+
 	getEnvironment(): Promise<IProcessEnvironment>;
+
 	getShellEnvironment(): Promise<IProcessEnvironment | undefined>;
+
 	setTerminalLayoutInfo(layoutInfo?: ITerminalsLayoutInfoById): Promise<void>;
 	updateTitle(id: number, title: string, titleSource: TitleEventSource): Promise<void>;
 	updateIcon(id: number, userInitiated: boolean, icon: TerminalIcon, color?: string): Promise<void>;
+
 	getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined>;
+
 	getPerformanceMarks(): Promise<performance.PerformanceMark[]>;
 	reduceConnectionGraceTime(): Promise<void>;
 	requestDetachInstance(workspaceId: string, instanceId: number): Promise<IProcessDetails | undefined>;
@@ -1101,6 +1121,7 @@ class TerminalBackendRegistry implements ITerminalBackendRegistry {
 
 	registerTerminalBackend(backend: ITerminalBackend): void {
 		const key = this._sanitizeRemoteAuthority(backend.remoteAuthority);
+
 		if (this._backends.has(key)) {
 			throw new Error(`A terminal backend with remote authority '${key}' was already registered.`);
 		}

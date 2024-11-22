@@ -22,6 +22,7 @@ interface IFileOperation {
 }
 class Noop implements IFileOperation {
     readonly uris = [];
+
     async perform() { return this; }
     toString(): string {
         return '(noop)';
@@ -29,6 +30,7 @@ class Noop implements IFileOperation {
 }
 class RenameEdit {
     readonly type = 'rename';
+
     constructor(readonly newUri: URI, readonly oldUri: URI, readonly options: WorkspaceFileEditOptions) { }
 }
 class RenameOperation implements IFileOperation {
@@ -42,10 +44,13 @@ class RenameOperation implements IFileOperation {
     }
     async perform(token: CancellationToken): Promise<IFileOperation> {
         const moves: IMoveOperation[] = [];
+
         const undoes: RenameEdit[] = [];
+
         for (const edit of this._edits) {
             // check: not overwriting, but ignoring, and the target file exists
             const skip = edit.options.overwrite === undefined && edit.options.ignoreIfExists && await this._fileService.exists(edit.newUri);
+
             if (!skip) {
                 moves.push({
                     file: { source: edit.oldUri, target: edit.newUri },
@@ -59,6 +64,7 @@ class RenameOperation implements IFileOperation {
             return new Noop();
         }
         await this._workingCopyFileService.move(moves, token, this._undoRedoInfo);
+
         return new RenameOperation(undoes, { isUndoing: true }, this._workingCopyFileService, this._fileService);
     }
     toString(): string {
@@ -67,6 +73,7 @@ class RenameOperation implements IFileOperation {
 }
 class CopyEdit {
     readonly type = 'copy';
+
     constructor(readonly newUri: URI, readonly oldUri: URI, readonly options: WorkspaceFileEditOptions) { }
 }
 class CopyOperation implements IFileOperation {
@@ -83,9 +90,11 @@ class CopyOperation implements IFileOperation {
     async perform(token: CancellationToken): Promise<IFileOperation> {
         // (1) create copy operations, remove noops
         const copies: ICopyOperation[] = [];
+
         for (const edit of this._edits) {
             //check: not overwriting, but ignoring, and the target file exists
             const skip = edit.options.overwrite === undefined && edit.options.ignoreIfExists && await this._fileService.exists(edit.newUri);
+
             if (!skip) {
                 copies.push({ file: { source: edit.oldUri, target: edit.newUri }, overwrite: edit.options.overwrite });
             }
@@ -95,9 +104,12 @@ class CopyOperation implements IFileOperation {
         }
         // (2) perform the actual copy and use the return stats to build undo edits
         const stats = await this._workingCopyFileService.copy(copies, token, this._undoRedoInfo);
+
         const undoes: DeleteEdit[] = [];
+
         for (let i = 0; i < stats.length; i++) {
             const stat = stats[i];
+
             const edit = this._edits[i];
             undoes.push(new DeleteEdit(stat.resource, { recursive: true, folder: this._edits[i].options.folder || stat.isDirectory, ...edit.options }, false));
         }
@@ -109,6 +121,7 @@ class CopyOperation implements IFileOperation {
 }
 class CreateEdit {
     readonly type = 'create';
+
     constructor(readonly newUri: URI, readonly options: WorkspaceFileEditOptions, readonly contents: VSBuffer | undefined) { }
 }
 class CreateOperation implements IFileOperation {
@@ -126,8 +139,11 @@ class CreateOperation implements IFileOperation {
     }
     async perform(token: CancellationToken): Promise<IFileOperation> {
         const folderCreates: ICreateOperation[] = [];
+
         const fileCreates: ICreateFileOperation[] = [];
+
         const undoes: DeleteEdit[] = [];
+
         for (const edit of this._edits) {
             if (edit.newUri.scheme === Schemas.untitled) {
                 continue; // ignore, will be handled by a later edit
@@ -150,6 +166,7 @@ class CreateOperation implements IFileOperation {
         }
         await this._workingCopyFileService.createFolder(folderCreates, token, this._undoRedoInfo);
         await this._workingCopyFileService.create(fileCreates, token, this._undoRedoInfo);
+
         return this._instaService.createInstance(DeleteOperation, undoes, { isUndoing: true });
     }
     toString(): string {
@@ -158,6 +175,7 @@ class CreateOperation implements IFileOperation {
 }
 class DeleteEdit {
     readonly type = 'delete';
+
     constructor(readonly oldUri: URI, readonly options: WorkspaceFileEditOptions, readonly undoesCreate: boolean) { }
 }
 class DeleteOperation implements IFileOperation {
@@ -178,9 +196,12 @@ class DeleteOperation implements IFileOperation {
     async perform(token: CancellationToken): Promise<IFileOperation> {
         // delete file
         const deletes: IDeleteOperation[] = [];
+
         const undoes: CreateEdit[] = [];
+
         for (const edit of this._edits) {
             let fileStat: IFileStatWithMetadata | undefined;
+
             try {
                 fileStat = await this._fileService.resolve(edit.oldUri, { resolveMetadata: true });
             }
@@ -197,6 +218,7 @@ class DeleteOperation implements IFileOperation {
             });
             // read file contents for undo operation. when a file is too large it won't be restored
             let fileContent: IFileContent | undefined;
+
             if (!edit.undoesCreate && !edit.options.folder && !(typeof edit.options.maxSize === 'number' && fileStat.size > edit.options.maxSize)) {
                 try {
                     fileContent = await this._fileService.readFile(edit.oldUri);
@@ -213,6 +235,7 @@ class DeleteOperation implements IFileOperation {
             return new Noop();
         }
         await this._workingCopyFileService.delete(deletes, token, this._undoRedoInfo);
+
         if (undoes.length === 0) {
             return new Noop();
         }
@@ -225,6 +248,7 @@ class DeleteOperation implements IFileOperation {
 class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
     readonly type = UndoRedoElementType.Workspace;
     readonly resources: readonly URI[];
+
     constructor(readonly label: string, readonly code: string, readonly operations: IFileOperation[], readonly confirmBeforeUndo: boolean) {
         this.resources = operations.flatMap(op => op.uris);
     }
@@ -237,6 +261,7 @@ class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
     private async _reverse() {
         for (let i = 0; i < this.operations.length; i++) {
             const op = this.operations[i];
+
             const undo = await op.perform(CancellationToken.None);
             this.operations[i] = undo;
         }
@@ -253,8 +278,11 @@ export class BulkFileEdits {
     private readonly _undoRedoService: IUndoRedoService) { }
     async apply(): Promise<readonly URI[]> {
         const undoOperations: IFileOperation[] = [];
+
         const undoRedoInfo = { undoRedoGroupId: this._undoRedoGroup.id };
+
         const edits: Array<RenameEdit | CopyEdit | DeleteEdit | CreateEdit> = [];
+
         for (const edit of this._edits) {
             if (edit.newResource && edit.oldResource && !edit.options?.copy) {
                 edits.push(new RenameEdit(edit.newResource, edit.oldResource, edit.options ?? {}));
@@ -274,9 +302,12 @@ export class BulkFileEdits {
         }
         const groups: Array<RenameEdit | CopyEdit | DeleteEdit | CreateEdit>[] = [];
         groups[0] = [edits[0]];
+
         for (let i = 1; i < edits.length; i++) {
             const edit = edits[i];
+
             const lastGroup = groups.at(-1);
+
             if (lastGroup?.[0].type === edit.type) {
                 lastGroup.push(edit);
             }
@@ -289,18 +320,26 @@ export class BulkFileEdits {
                 break;
             }
             let op: IFileOperation | undefined;
+
             switch (group[0].type) {
                 case 'rename':
                     op = this._instaService.createInstance(RenameOperation, <RenameEdit[]>group, undoRedoInfo);
+
                     break;
+
                 case 'copy':
                     op = this._instaService.createInstance(CopyOperation, <CopyEdit[]>group, undoRedoInfo);
+
                     break;
+
                 case 'delete':
                     op = this._instaService.createInstance(DeleteOperation, <DeleteEdit[]>group, undoRedoInfo);
+
                     break;
+
                 case 'create':
                     op = this._instaService.createInstance(CreateOperation, <CreateEdit[]>group, undoRedoInfo);
+
                     break;
             }
             if (op) {
@@ -311,6 +350,7 @@ export class BulkFileEdits {
         }
         const undoRedoElement = new FileUndoRedoElement(this._label, this._code, undoOperations, this._confirmBeforeUndo);
         this._undoRedoService.pushElement(undoRedoElement, this._undoRedoGroup, this._undoRedoSource);
+
         return undoRedoElement.resources;
     }
 }

@@ -35,6 +35,7 @@ export class BannerPart extends Part implements IBannerService {
     readonly height: number = 26;
     readonly minimumWidth: number = 0;
     readonly maximumWidth: number = Number.POSITIVE_INFINITY;
+
     get minimumHeight(): number {
         return this.visible ? this.height : 0;
     }
@@ -53,6 +54,7 @@ export class BannerPart extends Part implements IBannerService {
     private actionBar: ActionBar | undefined;
     private messageActionsContainer: HTMLElement | undefined;
     private focusedActionIndex: number = -1;
+
     constructor(
     @IThemeService
     themeService: IThemeService, 
@@ -79,6 +81,7 @@ export class BannerPart extends Part implements IBannerService {
         // Track focus
         const scopedContextKeyService = this._register(this.contextKeyService.createScoped(this.element));
         BannerFocused.bindTo(scopedContextKeyService).set(true);
+
         return this.element;
     }
     private close(item: IBannerItem): void {
@@ -94,8 +97,10 @@ export class BannerPart extends Part implements IBannerService {
     }
     private focusActionLink(): void {
         const length = this.item?.actions?.length ?? 0;
+
         if (this.focusedActionIndex < length) {
             const actionLink = this.messageActionsContainer?.children[this.focusedActionIndex];
+
             if (isHTMLElement(actionLink)) {
                 this.actionBar?.setFocusable(false);
                 actionLink.focus();
@@ -118,6 +123,7 @@ export class BannerPart extends Part implements IBannerService {
         if (typeof message === 'string') {
             const element = $('span');
             element.innerText = message;
+
             return element;
         }
         return this.markdownRenderer.render(message).element;
@@ -153,23 +159,27 @@ export class BannerPart extends Part implements IBannerService {
     show(item: IBannerItem): void {
         if (item.id === this.item?.id) {
             this.setVisibility(true);
+
             return;
         }
         // Clear previous item
         clearNode(this.element);
         // Banner aria label
         const ariaLabel = this.getAriaLabel(item);
+
         if (ariaLabel) {
             this.element.setAttribute('aria-label', ariaLabel);
         }
         // Icon
         const iconContainer = append(this.element, $('div.icon-container'));
         iconContainer.setAttribute('aria-hidden', 'true');
+
         if (ThemeIcon.isThemeIcon(item.icon)) {
             iconContainer.appendChild($(`div${ThemeIcon.asCSSSelector(item.icon)}`));
         }
         else {
             iconContainer.classList.add('custom-icon');
+
             if (URI.isUri(item.icon)) {
                 iconContainer.style.backgroundImage = asCSSUrl(item.icon);
             }
@@ -180,6 +190,7 @@ export class BannerPart extends Part implements IBannerService {
         messageContainer.appendChild(this.getBannerMessage(item.message));
         // Message Actions
         this.messageActionsContainer = append(this.element, $('div.message-actions-container'));
+
         if (item.actions) {
             for (const action of item.actions) {
                 this._register(this.instantiationService.createInstance(Link, this.messageActionsContainer, { ...action, tabIndex: -1 }, {}));
@@ -188,7 +199,9 @@ export class BannerPart extends Part implements IBannerService {
         // Action
         const actionBarContainer = append(this.element, $('div.action-container'));
         this.actionBar = this._register(new ActionBar(actionBarContainer));
+
         const label = item.closeLabel ?? 'Close Banner';
+
         const closeAction = this._register(new Action('banner.close', label, ThemeIcon.asClassName(widgetClose), true, () => this.close(item)));
         this.actionBar.push(closeAction, { icon: true, label: false });
         this.actionBar.setFocusable(false);
@@ -239,6 +252,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 class FocusBannerAction extends Action2 {
     static readonly ID = 'workbench.action.focusBanner';
     static readonly LABEL = localize2('focusBanner', "Focus Banner");
+
     constructor() {
         super({
             id: FocusBannerAction.ID,

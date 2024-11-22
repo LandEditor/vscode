@@ -15,6 +15,7 @@ export class FetchFileSystemProvider implements IFileSystemProviderWithFileReadW
     async readFile(resource: URI): Promise<Uint8Array> {
         try {
             const res = await fetch(resource.toString(true));
+
             if (res.status === 200) {
                 return new Uint8Array(await res.arrayBuffer());
             }

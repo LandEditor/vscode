@@ -12,6 +12,7 @@ export class ViewContext {
     public readonly viewModel: IViewModel;
     public readonly viewLayout: IViewLayout;
     public readonly theme: EditorTheme;
+
     constructor(configuration: IEditorConfiguration, theme: IColorTheme, model: IViewModel) {
         this.configuration = configuration;
         this.theme = new EditorTheme(theme);

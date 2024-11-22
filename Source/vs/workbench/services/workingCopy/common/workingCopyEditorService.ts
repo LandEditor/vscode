@@ -46,6 +46,7 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
     private readonly _onDidRegisterHandler = this._register(new Emitter<IWorkingCopyEditorHandler>());
     readonly onDidRegisterHandler = this._onDidRegisterHandler.event;
     private readonly handlers = new Set<IWorkingCopyEditorHandler>();
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService) {
@@ -55,6 +56,7 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
         // Add to registry and emit as event
         this.handlers.add(handler);
         this._onDidRegisterHandler.fire(handler);
+
         return toDisposable(() => this.handlers.delete(handler));
     }
     findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {

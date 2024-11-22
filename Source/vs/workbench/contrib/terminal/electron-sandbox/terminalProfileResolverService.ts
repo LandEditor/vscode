@@ -33,6 +33,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
         super({
             getDefaultSystemShell: async (remoteAuthority, platform) => {
                 const backend = await terminalInstanceService.getBackend(remoteAuthority);
+
                 if (!backend) {
                     throw new ErrorNoTelemetry(`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`);
                 }
@@ -40,6 +41,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
             },
             getEnvironment: async (remoteAuthority) => {
                 const backend = await terminalInstanceService.getBackend(remoteAuthority);
+
                 if (!backend) {
                     throw new ErrorNoTelemetry(`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`);
                 }

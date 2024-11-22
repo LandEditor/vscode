@@ -61,8 +61,10 @@ export class EditorPaneDescriptor implements IEditorPaneDescriptor {
     ]>, readonly typeId: string, readonly name: string) { }
     instantiate(instantiationService: IInstantiationService, group: IEditorGroup): EditorPane {
         EditorPaneDescriptor._onWillInstantiateEditorPane.fire({ typeId: this.typeId });
+
         const pane = instantiationService.createInstance(this.ctor, group);
         EditorPaneDescriptor.instantiatedEditorPanes.add(this.typeId);
+
         return pane;
     }
     describes(editorPane: EditorPane): boolean {
@@ -73,12 +75,14 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
     private readonly mapEditorPanesToEditors = new Map<EditorPaneDescriptor, readonly SyncDescriptor<EditorInput>[]>();
     registerEditorPane(editorPaneDescriptor: EditorPaneDescriptor, editorDescriptors: readonly SyncDescriptor<EditorInput>[]): IDisposable {
         this.mapEditorPanesToEditors.set(editorPaneDescriptor, editorDescriptors);
+
         return toDisposable(() => {
             this.mapEditorPanesToEditors.delete(editorPaneDescriptor);
         });
     }
     getEditorPane(editor: EditorInput): EditorPaneDescriptor | undefined {
         const descriptors = this.findEditorPaneDescriptors(editor);
+
         if (descriptors.length === 0) {
             return undefined;
         }
@@ -89,18 +93,22 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
     }
     private findEditorPaneDescriptors(editor: EditorInput, byInstanceOf?: boolean): EditorPaneDescriptor[] {
         const matchingEditorPaneDescriptors: EditorPaneDescriptor[] = [];
+
         for (const editorPane of this.mapEditorPanesToEditors.keys()) {
             const editorDescriptors = this.mapEditorPanesToEditors.get(editorPane) || [];
+
             for (const editorDescriptor of editorDescriptors) {
                 const editorClass = editorDescriptor.ctor;
                 // Direct check on constructor type (ignores prototype chain)
                 if (!byInstanceOf && editor.constructor === editorClass) {
                     matchingEditorPaneDescriptors.push(editorPane);
+
                     break;
                 }
                 // Normal instanceof check
                 else if (byInstanceOf && editor instanceof editorClass) {
                     matchingEditorPaneDescriptors.push(editorPane);
+
                     break;
                 }
             }
@@ -120,8 +128,10 @@ export class EditorPaneRegistry implements IEditorPaneRegistry {
     }
     getEditors(): SyncDescriptor<EditorInput>[] {
         const editorClasses: SyncDescriptor<EditorInput>[] = [];
+
         for (const editorPane of this.mapEditorPanesToEditors.keys()) {
             const editorDescriptors = this.mapEditorPanesToEditors.get(editorPane);
+
             if (editorDescriptors) {
                 editorClasses.push(...editorDescriptors.map(editorDescriptor => editorDescriptor.ctor));
             }
@@ -134,8 +144,11 @@ Registry.add(EditorExtensions.EditorPane, new EditorPaneRegistry());
 //#region Editor Close Tracker
 export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): Promise<void> {
     const editorService = accessor.get(IEditorService);
+
     const uriIdentityService = accessor.get(IUriIdentityService);
+
     const workingCopyService = accessor.get(IWorkingCopyService);
+
     return new Promise(resolve => {
         let remainingResources = [...resources];
         // Observe any editor closing from this moment on
@@ -144,6 +157,7 @@ export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): 
                 return; // ignore move events where the editor will open in another group
             }
             let primaryResource = EditorResourceAccessor.getOriginalUri(event.editor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
             let secondaryResource = EditorResourceAccessor.getOriginalUri(event.editor, { supportSideBySide: SideBySideEditor.SECONDARY });
             // Specially handle an editor getting replaced: if the new active editor
             // matches any of the resources from the closed editor, ignore those
@@ -151,7 +165,9 @@ export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): 
             // (see https://github.com/microsoft/vscode/issues/134299)
             if (event.context === EditorCloseContext.REPLACE) {
                 const newPrimaryResource = EditorResourceAccessor.getOriginalUri(editorService.activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
                 const newSecondaryResource = EditorResourceAccessor.getOriginalUri(editorService.activeEditor, { supportSideBySide: SideBySideEditor.SECONDARY });
+
                 if (uriIdentityService.extUri.isEqual(primaryResource, newPrimaryResource)) {
                     primaryResource = undefined;
                 }
@@ -188,6 +204,7 @@ export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): 
                 // we have to also check if the editors to track for are dirty and if so wait
                 // for them to get saved.
                 const dirtyResources = resources.filter(resource => workingCopyService.isDirty(resource));
+
                 if (dirtyResources.length > 0) {
                     await Promises.settled(dirtyResources.map(async (resource) => await new Promise<void>(resolve => {
                         if (!workingCopyService.isDirty(resource)) {
@@ -197,12 +214,14 @@ export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): 
                         const listener = workingCopyService.onDidChangeDirty(workingCopy => {
                             if (!workingCopy.isDirty() && uriIdentityService.extUri.isEqual(resource, workingCopy.resource)) {
                                 listener.dispose();
+
                                 return resolve();
                             }
                         });
                     })));
                 }
                 listener.dispose();
+
                 return resolve();
             }
         });
@@ -212,6 +231,7 @@ export function whenEditorClosed(accessor: ServicesAccessor, resources: URI[]): 
 //#region ARIA
 export function computeEditorAriaLabel(input: EditorInput, index: number | undefined, group: IEditorGroup | undefined, groupCount: number | undefined): string {
     let ariaLabel = input.getAriaLabel();
+
     if (group && !group.isPinned(input)) {
         ariaLabel = localize('preview', "{0}, preview", ariaLabel);
     }

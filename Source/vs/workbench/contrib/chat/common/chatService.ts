@@ -24,6 +24,7 @@ import { IToolConfirmationMessages } from './languageModelToolsService.js';
 
 export interface IChatRequest {
 	message: string;
+
 	variables: Record<string, IChatRequestVariableValue[]>;
 }
 
@@ -183,6 +184,7 @@ export interface IChatTextEdit {
 	uri: URI;
 	edits: TextEdit[];
 	kind: 'textEdit';
+
 	done?: boolean;
 }
 
@@ -393,6 +395,7 @@ export interface IChatSendRequestData extends IChatSendRequestResponseState {
 
 export interface IChatEditorLocationData {
 	type: ChatAgentLocation.Editor;
+
 	document: URI;
 	selection: ISelection;
 	wholeRange: IRange;
@@ -441,7 +444,9 @@ export interface IChatService {
 	isEnabled(location: ChatAgentLocation): boolean;
 	hasSessions(): boolean;
 	startSession(location: ChatAgentLocation, token: CancellationToken): ChatModel | undefined;
+
 	getSession(sessionId: string): IChatModel | undefined;
+
 	getOrRestoreSession(sessionId: string): IChatModel | undefined;
 	loadSessionFromContent(data: IExportableChatData | ISerializableChatData): IChatModel | undefined;
 
@@ -456,7 +461,9 @@ export interface IChatService {
 	cancelCurrentRequestForSession(sessionId: string): void;
 	clearSession(sessionId: string): void;
 	addCompleteRequest(sessionId: string, message: IParsedChatRequest | string, variableData: IChatRequestVariableData | undefined, attempt: number | undefined, response: IChatCompleteResponse): void;
+
 	getHistory(): IChatDetail[];
+
 	setChatSessionTitle(sessionId: string, title: string): void;
 	clearAllHistoryEntries(): void;
 	removeHistoryEntry(sessionId: string): void;

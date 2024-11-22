@@ -17,12 +17,14 @@ import { IRecursiveWatcherOptions } from '../../platform/files/common/watcher.js
 import { IConfigurationService } from '../../platform/configuration/common/configuration.js';
 export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystemProviderChannel<RemoteAgentConnectionContext> {
     private readonly uriTransformerCache = new Map<string, IURITransformer>();
+
     constructor(logService: ILogService, private readonly environmentService: IServerEnvironmentService, private readonly configurationService: IConfigurationService) {
         super(new DiskFileSystemProvider(logService), logService);
         this._register(this.provider);
     }
     protected override getUriTransformer(ctx: RemoteAgentConnectionContext): IURITransformer {
         let transformer = this.uriTransformerCache.get(ctx.remoteAuthority);
+
         if (!transformer) {
             transformer = createURITransformer(ctx.remoteAuthority);
             this.uriTransformerCache.set(ctx.remoteAuthority, transformer);
@@ -32,6 +34,7 @@ export class RemoteAgentFileSystemProviderChannel extends AbstractDiskFileSystem
     protected override transformIncoming(uriTransformer: IURITransformer, _resource: UriComponents, supportVSCodeResource = false): URI {
         if (supportVSCodeResource && _resource.path === '/vscode-resource' && _resource.query) {
             const requestResourcePath = JSON.parse(_resource.query).requestResourcePath;
+
             return URI.from({ scheme: 'file', path: requestResourcePath });
         }
         return URI.revive(uriTransformer.transformIncoming(_resource));
@@ -47,11 +50,15 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
     }
     protected override getRecursiveWatcherOptions(environmentService: IServerEnvironmentService): IRecursiveWatcherOptions | undefined {
         const fileWatcherPolling = environmentService.args['file-watcher-polling'];
+
         if (fileWatcherPolling) {
             const segments = fileWatcherPolling.split(delimiter);
+
             const pollingInterval = Number(segments[0]);
+
             if (pollingInterval > 0) {
                 const usePolling = segments.length > 1 ? segments.slice(1) : true;
+
                 return { usePolling, pollingInterval };
             }
         }

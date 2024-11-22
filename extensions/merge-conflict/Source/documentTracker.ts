@@ -10,6 +10,7 @@ import TelemetryReporter from '@vscode/extension-telemetry';
 class ScanTask {
     public origins: Set<string> = new Set<string>();
     public delayTask: Delayer<interfaces.IDocumentMergeConflict[]>;
+
     constructor(delayTime: number, initialOrigin: string) {
         this.origins.add(initialOrigin);
         this.delayTask = new Delayer<interfaces.IDocumentMergeConflict[]>(delayTime);
@@ -37,15 +38,18 @@ class OriginDocumentMergeConflictTracker implements interfaces.IDocumentMergeCon
 export default class DocumentMergeConflictTracker implements vscode.Disposable, interfaces.IDocumentMergeConflictTrackerService {
     private cache: Map<string, ScanTask> = new Map();
     private delayExpireTime: number = 0;
+
     constructor(private readonly telemetryReporter: TelemetryReporter) { }
     getConflicts(document: vscode.TextDocument, origin: string): PromiseLike<interfaces.IDocumentMergeConflict[]> {
         // Attempt from cache
         const key = this.getCacheKey(document);
+
         if (!key) {
             // Document doesn't have a uri, can't cache it, so return
             return Promise.resolve(this.getConflictsOrEmpty(document, [origin]));
         }
         let cacheItem = this.cache.get(key);
+
         if (!cacheItem) {
             cacheItem = new ScanTask(this.delayExpireTime, origin);
             this.cache.set(key, cacheItem);
@@ -56,6 +60,7 @@ export default class DocumentMergeConflictTracker implements vscode.Disposable, 
         return cacheItem.delayTask.trigger(() => {
             const conflicts = this.getConflictsOrEmpty(document, Array.from(cacheItem!.origins));
             this.cache?.delete(key!);
+
             return conflicts;
         });
     }
@@ -64,10 +69,12 @@ export default class DocumentMergeConflictTracker implements vscode.Disposable, 
             return false;
         }
         const key = this.getCacheKey(document);
+
         if (!key) {
             return false;
         }
         const task = this.cache.get(key);
+
         if (!task) {
             return false;
         }
@@ -78,6 +85,7 @@ export default class DocumentMergeConflictTracker implements vscode.Disposable, 
     }
     forget(document: vscode.TextDocument) {
         const key = this.getCacheKey(document);
+
         if (key) {
             this.cache.delete(key);
         }
@@ -88,10 +96,12 @@ export default class DocumentMergeConflictTracker implements vscode.Disposable, 
     private readonly seenDocumentsWithConflicts = new Set<string>();
     private getConflictsOrEmpty(document: vscode.TextDocument, _origins: string[]): interfaces.IDocumentMergeConflict[] {
         const containsConflict = MergeConflictParser.containsConflict(document);
+
         if (!containsConflict) {
             return [];
         }
         const conflicts = MergeConflictParser.scanDocument(document, this.telemetryReporter);
+
         const key = document.uri.toString();
         // Don't report telemetry for the same document twice. This is an approximation, but good enough.
         // Otherwise redo/undo could trigger this event multiple times.

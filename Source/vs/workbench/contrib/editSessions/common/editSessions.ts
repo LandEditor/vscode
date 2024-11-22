@@ -40,6 +40,7 @@ export interface IEditSessionsStorageService {
     write(resource: SyncResource, content: string | EditSession): Promise<string>;
     delete(resource: SyncResource, ref: string | null): Promise<void>;
     list(resource: SyncResource): Promise<IResourceRefHandle[]>;
+
     getMachineById(machineId: string): Promise<string | undefined>;
 }
 export const IEditSessionsLogService = createDecorator<IEditSessionsLogService>('IEditSessionsLogService');
@@ -92,8 +93,10 @@ export function decodeEditSessionFileContent(version: number, content: string): 
     switch (version) {
         case 1:
             return VSBuffer.fromString(content);
+
         case 2:
             return decodeBase64(content);
+
         default:
             throw new Error('Upgrade to a newer version to decode this content.');
     }
@@ -101,6 +104,7 @@ export function decodeEditSessionFileContent(version: number, content: string): 
 export function hashedEditSessionId(editSessionId: string) {
     const sha1 = new StringSHA1();
     sha1.update(editSessionId);
+
     return sha1.digest();
 }
 export const editSessionsLogId = 'editSessions';

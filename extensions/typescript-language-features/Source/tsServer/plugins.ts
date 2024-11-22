@@ -24,6 +24,7 @@ namespace TypeScriptServerPlugin {
 export class PluginManager extends Disposable {
     private readonly _pluginConfigurations = new Map<string, {}>();
     private _plugins?: Map<string, ReadonlyArray<TypeScriptServerPlugin>>;
+
     constructor() {
         super();
         vscode.extensions.onDidChange(() => {
@@ -31,6 +32,7 @@ export class PluginManager extends Disposable {
                 return;
             }
             const newPlugins = this.readPlugins();
+
             if (!arrays.equals(Array.from(this._plugins.values()).flat(), Array.from(newPlugins.values()).flat(), TypeScriptServerPlugin.equals)) {
                 this._plugins = newPlugins;
                 this._onDidUpdatePlugins.fire(this);
@@ -39,6 +41,7 @@ export class PluginManager extends Disposable {
     }
     public get plugins(): ReadonlyArray<TypeScriptServerPlugin> {
         this._plugins ??= this.readPlugins();
+
         return Array.from(this._plugins.values()).flat();
     }
     private readonly _onDidUpdatePlugins = this._register(new vscode.EventEmitter<this>());
@@ -60,10 +63,13 @@ export class PluginManager extends Disposable {
     }
     private readPlugins() {
         const pluginMap = new Map<string, ReadonlyArray<TypeScriptServerPlugin>>();
+
         for (const extension of vscode.extensions.all) {
             const pack = extension.packageJSON;
+
             if (pack.contributes && Array.isArray(pack.contributes.typescriptServerPlugins)) {
                 const plugins: TypeScriptServerPlugin[] = [];
+
                 for (const plugin of pack.contributes.typescriptServerPlugins) {
                     plugins.push({
                         extension,

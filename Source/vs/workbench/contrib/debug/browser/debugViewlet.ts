@@ -39,6 +39,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
     private breakpointView: ViewPane | undefined;
     private paneListeners = new Map<string, IDisposable>();
     private readonly stopActionViewItemDisposables = this._register(new DisposableStore());
+
     constructor(
     @IWorkbenchLayoutService
     layoutService: IWorkbenchLayoutService, 
@@ -89,6 +90,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
     }
     override focus(): void {
         super.focus();
+
         if (this.startDebugActionViewItem) {
             this.startDebugActionViewItem.focus();
         }
@@ -99,6 +101,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
     override getActionViewItem(action: IAction, options: IBaseActionViewItemOptions): IActionViewItem | undefined {
         if (action.id === DEBUG_START_COMMAND_ID) {
             this.startDebugActionViewItem = this.instantiationService.createInstance(StartDebugActionViewItem, null, action, options);
+
             return this.startDebugActionViewItem;
         }
         if (action.id === FOCUS_SESSION_ID) {
@@ -106,7 +109,9 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
         }
         if (action.id === STOP_ID || action.id === DISCONNECT_ID) {
             this.stopActionViewItemDisposables.clear();
+
             const item = this.instantiationService.invokeFunction(accessor => createDisconnectMenuItemAction(action as MenuItemAction, this.stopActionViewItemDisposables, accessor, { hoverDelegate: options.hoverDelegate }));
+
             if (item) {
                 return item;
             }
@@ -115,6 +120,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
     }
     focusView(id: string): void {
         const view = this.getView(id);
+
         if (view) {
             view.focus();
         }
@@ -137,6 +143,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
         disposable: IDisposable;
     }[]): void {
         super.addPanes(panes);
+
         for (const { pane: pane } of panes) {
             // attach event listener to
             if (pane.id === BREAKPOINTS_VIEW_ID) {
@@ -150,6 +157,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
     }
     override removePanes(panes: ViewPane[]): void {
         super.removePanes(panes);
+
         for (const pane of panes) {
             dispose(this.paneListeners.get(pane.id));
             this.paneListeners.delete(pane.id);
@@ -208,19 +216,25 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const debugService = accessor.get(IDebugService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const configurationManager = debugService.getConfigurationManager();
+
         let launch: ILaunch | undefined;
+
         if (configurationManager.selectedConfiguration.name) {
             launch = configurationManager.selectedConfiguration.launch;
         }
         else {
             const launches = configurationManager.getLaunches().filter(l => !l.hidden);
+
             if (launches.length === 1) {
                 launch = launches[0];
             }
             else {
                 const picks = launches.map(l => ({ label: l.name, launch: l }));
+
                 const picked = await quickInputService.pick<{
                     label: string;
                     launch: ILaunch;
@@ -228,6 +242,7 @@ registerAction2(class extends Action2 {
                     activeItem: picks[0],
                     placeHolder: nls.localize({ key: 'selectWorkspaceFolder', comment: ['User picks a workspace folder or a workspace configuration file here. Workspace configuration files can contain settings and thus a launch.json configuration can be written into one.'] }, "Select a workspace folder to create a launch.json file in or add it to the workspace config file")
                 });
+
                 if (picked) {
                     launch = picked.launch;
                 }
@@ -254,6 +269,7 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         if (viewsService.isViewVisible(REPL_VIEW_ID)) {
             viewsService.closeView(REPL_VIEW_ID);
         }

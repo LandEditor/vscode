@@ -59,14 +59,18 @@ function isResponseFiltered(context: ICodeBlockActionContext) {
 abstract class ChatCodeBlockAction extends Action2 {
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		let context = args[0];
+
 		if (!isCodeBlockActionContext(context)) {
 			const codeEditorService = accessor.get(ICodeEditorService);
+
 			const editor = codeEditorService.getFocusedCodeEditor() || codeEditorService.getActiveCodeEditor();
+
 			if (!editor) {
 				return;
 			}
 
 			context = getContextFromEditor(editor, accessor);
+
 			if (!isCodeBlockActionContext(context)) {
 				return;
 			}
@@ -97,6 +101,7 @@ export function registerChatCodeBlockActions() {
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const context = args[0];
+
 			if (!isCodeBlockActionContext(context) || isResponseFiltered(context)) {
 				return;
 			}
@@ -128,29 +133,36 @@ export function registerChatCodeBlockActions() {
 	CopyAction?.addImplementation(50000, 'chat-codeblock', (accessor) => {
 		// get active code editor
 		const editor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
 		if (!editor) {
 			return false;
 		}
 
 		const editorModel = editor.getModel();
+
 		if (!editorModel) {
 			return false;
 		}
 
 		const context = getContextFromEditor(editor, accessor);
+
 		if (!context) {
 			return false;
 		}
 
 		const noSelection = editor.getSelections()?.length === 1 && editor.getSelection()?.isEmpty();
+
 		const copiedText = noSelection ?
 			editorModel.getValue() :
 			editor.getSelections()?.reduce((acc, selection) => acc + editorModel.getValueInRange(selection), '') ?? '';
+
 		const totalCharacters = editorModel.getValueLength();
 
 		// Report copy to extensions
 		const chatService = accessor.get(IChatService);
+
 		const element = context.element as IChatResponseViewModel | undefined;
+
 		if (element) {
 			chatService.notifyUserAction({
 				agentId: element.agent?.id,
@@ -172,6 +184,7 @@ export function registerChatCodeBlockActions() {
 		// Copy full cell if no selection, otherwise fall back on normal editor implementation
 		if (noSelection) {
 			accessor.get(IClipboardService).writeText(context.code);
+
 			return true;
 		}
 
@@ -256,6 +269,7 @@ export function registerChatCodeBlockActions() {
 
 		override runWithContext(accessor: ServicesAccessor, context: ICodeBlockActionContext) {
 			const operation = accessor.get(IInstantiationService).createInstance(InsertCodeBlockOperation);
+
 			return operation.run(context);
 		}
 	});
@@ -285,6 +299,7 @@ export function registerChatCodeBlockActions() {
 			}
 
 			const editorService = accessor.get(IEditorService);
+
 			const chatService = accessor.get(IChatService);
 
 			editorService.openEditor({ contents: context.code, languageId: context.languageId, resource: undefined } satisfies IUntitledTextResourceEditorInput);
@@ -351,9 +366,13 @@ export function registerChatCodeBlockActions() {
 			}
 
 			const chatService = accessor.get(IChatService);
+
 			const terminalService = accessor.get(ITerminalService);
+
 			const editorService = accessor.get(IEditorService);
+
 			const terminalEditorService = accessor.get(ITerminalEditorService);
+
 			const terminalGroupService = accessor.get(ITerminalGroupService);
 
 			let terminal = await terminalService.getActiveOrCreateInstance();
@@ -364,6 +383,7 @@ export function registerChatCodeBlockActions() {
 
 			terminalService.setActiveInstance(terminal);
 			await terminal.focusWhenReady(true);
+
 			if (terminal.target === TerminalLocation.Editor) {
 				const existingEditors = editorService.findEditors(terminal.resource);
 				terminalEditorService.openEditor(terminal, { viewColumn: existingEditors?.[0].groupId });
@@ -392,27 +412,37 @@ export function registerChatCodeBlockActions() {
 
 	function navigateCodeBlocks(accessor: ServicesAccessor, reverse?: boolean): void {
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const chatWidgetService = accessor.get(IChatWidgetService);
+
 		const widget = chatWidgetService.lastFocusedWidget;
+
 		if (!widget) {
 			return;
 		}
 
 		const editor = codeEditorService.getFocusedCodeEditor();
+
 		const editorUri = editor?.getModel()?.uri;
+
 		const curCodeBlockInfo = editorUri ? widget.getCodeBlockInfoForEditor(editorUri) : undefined;
+
 		const focused = !widget.inputEditor.hasWidgetFocus() && widget.getFocus();
+
 		const focusedResponse = isResponseVM(focused) ? focused : undefined;
 
 		const currentResponse = curCodeBlockInfo ?
 			curCodeBlockInfo.element :
 			(focusedResponse ?? widget.viewModel?.getItems().reverse().find((item): item is IChatResponseViewModel => isResponseVM(item)));
+
 		if (!currentResponse || !isResponseVM(currentResponse)) {
 			return;
 		}
 
 		widget.reveal(currentResponse);
+
 		const responseCodeblocks = widget.getCodeBlockInfosForResponse(currentResponse);
+
 		const focusIdx = curCodeBlockInfo ?
 			(curCodeBlockInfo.codeBlockIndex + (reverse ? -1 : 1) + responseCodeblocks.length) % responseCodeblocks.length :
 			reverse ? responseCodeblocks.length - 1 : 0;
@@ -467,17 +497,23 @@ export function registerChatCodeBlockActions() {
 
 function getContextFromEditor(editor: ICodeEditor, accessor: ServicesAccessor): ICodeBlockActionContext | undefined {
 	const chatWidgetService = accessor.get(IChatWidgetService);
+
 	const chatCodeBlockContextProviderService = accessor.get(IChatCodeBlockContextProviderService);
+
 	const model = editor.getModel();
+
 	if (!model) {
 		return;
 	}
 
 	const widget = chatWidgetService.lastFocusedWidget;
+
 	const codeBlockInfo = widget?.getCodeBlockInfoForEditor(model.uri);
+
 	if (!codeBlockInfo) {
 		for (const provider of chatCodeBlockContextProviderService.providers) {
 			const context = provider.getCodeBlockContext(editor);
+
 			if (context) {
 				return context;
 			}
@@ -499,6 +535,7 @@ export function registerChatCodeCompareBlockActions() {
 	abstract class ChatCompareCodeBlockAction extends Action2 {
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const context = args[0];
+
 			if (!isCodeCompareBlockActionContext(context)) {
 				return;
 				// TODO@jrieken derive context
@@ -530,6 +567,7 @@ export function registerChatCodeCompareBlockActions() {
 		async runWithContext(accessor: ServicesAccessor, context: ICodeCompareBlockActionContext): Promise<any> {
 
 			const editorService = accessor.get(IEditorService);
+
 			const instaService = accessor.get(IInstantiationService);
 
 			const editor = instaService.createInstance(DefaultChatTextEditor);
@@ -561,6 +599,7 @@ export function registerChatCodeCompareBlockActions() {
 
 		async runWithContext(accessor: ServicesAccessor, context: ICodeCompareBlockActionContext): Promise<any> {
 			const instaService = accessor.get(IInstantiationService);
+
 			const editor = instaService.createInstance(DefaultChatTextEditor);
 			editor.discard(context.element, context.edit);
 		}

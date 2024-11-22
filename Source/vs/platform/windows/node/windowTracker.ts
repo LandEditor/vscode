@@ -9,9 +9,11 @@ export class ActiveWindowManager extends Disposable {
     private readonly disposables = this._register(new DisposableStore());
     private firstActiveWindowIdPromise: CancelablePromise<number | undefined> | undefined;
     private activeWindowId: number | undefined;
+
     constructor({ onDidOpenMainWindow, onDidFocusMainWindow, getActiveWindowId }: {
         onDidOpenMainWindow: Event<number>;
         onDidFocusMainWindow: Event<number>;
+
         getActiveWindowId(): Promise<number | undefined>;
     }) {
         super();
@@ -42,6 +44,7 @@ export class ActiveWindowManager extends Disposable {
     }
     async getActiveClientId(): Promise<string | undefined> {
         const id = this.firstActiveWindowIdPromise ? (await this.firstActiveWindowIdPromise) : this.activeWindowId;
+
         return `window:${id}`;
     }
 }

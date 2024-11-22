@@ -10,8 +10,11 @@ import * as gzip from 'gulp-gzip';
 import { ClientAssertionCredential } from '@azure/identity';
 import path = require('path');
 import { readFileSync } from 'fs';
+
 const azure = require('gulp-azure-storage');
+
 const commit = process.env['BUILD_SOURCEVERSION'];
+
 const credential = new ClientAssertionCredential(process.env['AZURE_TENANT_ID']!, process.env['AZURE_CLIENT_ID']!, () => Promise.resolve(process.env['AZURE_ID_TOKEN']!));
 
 interface NlsMetadata {
@@ -73,13 +76,18 @@ function main(): Promise<void> {
                                 main: ['package']
                             }
                         };
+
                         break;
+
                     case 'nls.metadata.header.json':
                         parsedJson = { header: parsedJson };
+
                         break;
+
                     case 'nls.metadata.json': {
                         // put nls.metadata.json content in Core NlsMetadata format
                         const modules = Object.keys(parsedJson);
+
                         const json: NlsMetadata = {
                             keys: {},
                             messages: {},
@@ -87,23 +95,30 @@ function main(): Promise<void> {
                                 main: []
                             }
                         };
+
                         for (const module of modules) {
                             json.messages[module] = parsedJson[module].messages;
                             json.keys[module] = parsedJson[module].keys;
                             json.bundles.main.push(module);
                         }
                         parsedJson = json;
+
                         break;
                     }
                 }
                 // Get extension id and use that as the key
                 const folderPath = path.join(file.base, file.relative.split('/')[0]);
+
                 const manifest = readFileSync(path.join(folderPath, 'package.json'), 'utf-8');
+
                 const manifestJson = JSON.parse(manifest);
+
                 const key = manifestJson.publisher + '.' + manifestJson.name;
+
                 return { [key]: parsedJson };
             },
         }));
+
         const nlsMessagesJs = vfs.src('out-build/nls.messages.js', { base: 'out-build' });
         es.merge(combinedMetadataJson, nlsMessagesJs)
             .pipe(gzip({ append: false }))

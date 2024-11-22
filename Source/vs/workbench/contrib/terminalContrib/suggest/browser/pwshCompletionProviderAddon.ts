@@ -90,6 +90,7 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 			capabilities.onDidRemoveCapabilityType
 		), () => {
 			const commandDetection = capabilities.get(TerminalCapability.CommandDetection);
+
 			if (commandDetection) {
 				if (this._promptInputModel !== commandDetection.promptInputModel) {
 					this._promptInputModel = commandDetection.promptInputModel;
@@ -103,8 +104,10 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 		// Attempt to load cached pwsh commands if not already loaded
 		if (PwshCompletionProviderAddon.cachedPwshCommands.size === 0) {
 			const config = this._storageService.get(Constants.CachedPwshCommandsStorageKey, StorageScope.APPLICATION, undefined);
+
 			if (config !== undefined) {
 				const completions = JSON.parse(config);
+
 				for (const c of completions) {
 					PwshCompletionProviderAddon.cachedPwshCommands.add(c);
 				}
@@ -128,8 +131,11 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 		this._register(xterm.onData(() => {
 			this._lastUserDataTimestamp = Date.now();
 		}));
+
 		const config = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection);
+
 		const enabled = config.enabled;
+
 		if (!enabled) {
 			return;
 		}
@@ -145,10 +151,13 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 
 		// Pass the sequence along to the capability
 		const [command, ...args] = data.split(';');
+
 		switch (command) {
 			case VSCodeSuggestOscPt.Completions:
 				this._handleCompletionsSequence(this._terminal, data, command, args);
+
 				return true;
+
 			case VSCodeSuggestOscPt.CompletionsPwshCommands:
 				return this._handleCompletionsPwshCommandsSequence(this._terminal, data, command, args);
 		}
@@ -163,16 +172,19 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 		// Nothing to handle if the terminal is not attached
 		if (!terminal.element || !this._enableWidget || !this._promptInputModel) {
 			this._resolveCompletions(undefined);
+
 			return;
 		}
 
 		// Only show the suggest widget if the terminal is focused
 		if (!dom.isAncestorOfActiveElement(terminal.element)) {
 			this._resolveCompletions(undefined);
+
 			return;
 		}
 
 		let replacementIndex = 0;
+
 		let replacementLength = this._promptInputModel.cursorIndex;
 
 		this._currentPromptInputState = {
@@ -186,6 +198,7 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 		let leadingLineContent = this._currentPromptInputState.prefix.substring(replacementIndex, replacementIndex + replacementLength);
 
 		const firstChar = leadingLineContent.length === 0 ? '' : leadingLineContent[0];
+
 		const isGlobalCommand = !leadingLineContent.includes(' ') && firstChar !== '[';
 
 		// This is a TabExpansion2 result
@@ -195,7 +208,9 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 			leadingLineContent = this._promptInputModel.prefix;
 		}
 		const payload = data.slice(command.length + args[0].length + args[1].length + args[2].length + 4/*semi-colons*/);
+
 		const rawCompletions: PwshCompletion | PwshCompletion[] | CompressedPwshCompletion[] | CompressedPwshCompletion = args.length === 0 || payload.length === 0 ? undefined : JSON.parse(payload);
+
 		const completions = parseCompletionsFromShell(rawCompletions, replacementIndex, replacementLength);
 
 		// This is a global command, add cached commands list to completions
@@ -216,11 +231,15 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 
 	private async _handleCompletionsPwshCommandsSequence(terminal: Terminal, data: string, command: string, args: string[]): Promise<boolean> {
 		const type = args[0];
+
 		const rawCompletions: PwshCompletion | PwshCompletion[] | CompressedPwshCompletion[] | CompressedPwshCompletion = JSON.parse(data.slice(command.length + type.length + 2/*semi-colons*/));
+
 		const completions = parseCompletionsFromShell(rawCompletions, 0, 0);
 
 		const set = PwshCompletionProviderAddon.cachedPwshCommands;
+
 		set.clear();
+
 		for (const c of completions) {
 			set.add(c);
 		}
@@ -241,11 +260,13 @@ export class PwshCompletionProviderAddon extends Disposable implements ITerminal
 
 	private _getCompletionsPromise(): Promise<ITerminalCompletion[] | undefined> {
 		this._completionsDeferred = new DeferredPromise<ITerminalCompletion[] | undefined>();
+
 		return this._completionsDeferred.p;
 	}
 
 	provideCompletions(value: string, cursorPosition: number, token: CancellationToken): Promise<ITerminalCompletion[] | undefined> {
 		const builtinCompletionsConfig = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection).builtinCompletions;
+
 		if (!this._codeCompletionsRequested && builtinCompletionsConfig.pwshCode) {
 			this._onDidRequestSendText.fire(RequestCompletionsSequence.Code);
 			this._codeCompletionsRequested = true;
@@ -290,6 +311,7 @@ export function parseCompletionsFromShell(rawCompletions: PwshCompletion | PwshC
 		return [];
 	}
 	let typedRawCompletions: PwshCompletion[];
+
 	if (!Array.isArray(rawCompletions)) {
 		typedRawCompletions = [rawCompletions];
 	} else {
@@ -324,6 +346,7 @@ function rawCompletionToITerminalCompletion(rawCompletion: PwshCompletion, repla
 	// `.` and `..` entries because they are optimized not for navigating to different directories
 	// but for passing as args.
 	let label = rawCompletion.CompletionText;
+
 	if (
 		rawCompletion.ResultType === 4 &&
 		!label.match(/^[\-+]$/) && // Don't add a `/` to `-` or `+` (navigate location history)
@@ -341,7 +364,9 @@ function rawCompletionToITerminalCompletion(rawCompletion: PwshCompletion, repla
 	// and file extension score boost. An example of where this improves the experience is typing
 	// `git`, `git.exe` should appear at the top and beat `git-lfs.exe`. Keep the same icon though.
 	const icon = getIcon(rawCompletion.ResultType, rawCompletion.CustomIcon);
+
 	const isExecutable = rawCompletion.ResultType === 2 && rawCompletion.CompletionText.match(/\.[a-z0-9]{2,4}$/i);
+
 	if (isExecutable) {
 		rawCompletion.ResultType = 3;
 	}
@@ -361,6 +386,7 @@ function rawCompletionToITerminalCompletion(rawCompletion: PwshCompletion, repla
 function getIcon(resultType: number, customIconId?: string): ThemeIcon {
 	if (customIconId) {
 		const icon: ThemeIcon | undefined = customIconId in Codicon ? (Codicon as { [id: string]: ThemeIcon | undefined })[customIconId] : Codicon.symbolText;
+
 		if (icon) {
 			return icon;
 		}

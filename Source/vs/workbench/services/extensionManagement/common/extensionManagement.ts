@@ -40,7 +40,9 @@ export interface IExtensionManagementServerService {
 	readonly localExtensionManagementServer: IExtensionManagementServer | null;
 	readonly remoteExtensionManagementServer: IExtensionManagementServer | null;
 	readonly webExtensionManagementServer: IExtensionManagementServer | null;
+
 	getExtensionManagementServer(extension: IExtension): IExtensionManagementServer | null;
+
 	getExtensionInstallLocation(extension: IExtension): ExtensionInstallLocation | null;
 }
 
@@ -76,7 +78,9 @@ export interface IWorkbenchExtensionManagementService extends IProfileAwareExten
 	readonly onProfileAwareDidUpdateExtensionMetadata: Event<DidUpdateExtensionMetadata>;
 
 	getExtensions(locations: URI[]): Promise<IResourceExtension[]>;
+
 	getInstalledWorkspaceExtensionLocations(): URI[];
+
 	getInstalledWorkspaceExtensions(includeInvalid: boolean): Promise<ILocalExtension[]>;
 
 	canInstall(extension: IGalleryExtension | IResourceExtension): Promise<true | IMarkdownString>;

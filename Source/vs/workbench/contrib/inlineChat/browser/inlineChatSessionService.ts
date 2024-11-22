@@ -36,7 +36,9 @@ export interface IInlineChatSessionService {
         headless?: boolean;
     }, token: CancellationToken): Promise<Session | undefined>;
     moveSession(session: Session, newEditor: ICodeEditor): void;
+
     getCodeEditor(session: Session): ICodeEditor;
+
     getSession(editor: ICodeEditor, uri: URI): Session | undefined;
     releaseSession(session: Session): void;
     stashSession(session: Session, editor: ICodeEditor, undoCancelEdits: IValidEditOperation[]): StashedSession;

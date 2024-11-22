@@ -15,6 +15,7 @@ class ContextMenuContribution extends Disposable implements IWorkbenchContributi
     @IContextMenuService
     contextMenuService: IContextMenuService) {
         super();
+
         const update = (visible: boolean) => layoutService.activeContainer.classList.toggle('context-menu-visible', visible);
         this._register(contextMenuService.onDidShowContextMenu(() => update(true)));
         this._register(contextMenuService.onDidHideContextMenu(() => update(false)));

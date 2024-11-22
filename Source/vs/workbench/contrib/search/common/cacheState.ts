@@ -14,6 +14,7 @@ enum LoadingPhase {
 }
 export class FileQueryCacheState {
     private readonly _cacheKey = defaultGenerator.nextId();
+
     get cacheKey(): string {
         if (this.loadingPhase === LoadingPhase.Loaded || !this.previousCacheState) {
             return this._cacheKey;
@@ -22,19 +23,24 @@ export class FileQueryCacheState {
     }
     get isLoaded(): boolean {
         const isLoaded = this.loadingPhase === LoadingPhase.Loaded;
+
         return isLoaded || !this.previousCacheState ? isLoaded : this.previousCacheState.isLoaded;
     }
     get isUpdating(): boolean {
         const isUpdating = this.loadingPhase === LoadingPhase.Loading;
+
         return isUpdating || !this.previousCacheState ? isUpdating : this.previousCacheState.isUpdating;
     }
     private readonly query = this.cacheQuery(this._cacheKey);
     private loadingPhase = LoadingPhase.Created;
     private loadPromise: Promise<void> | undefined;
+
     constructor(private cacheQuery: (cacheKey: string) => IFileQuery, private loadFn: (query: IFileQuery) => Promise<any>, private disposeFn: (cacheKey: string) => Promise<void>, private previousCacheState: FileQueryCacheState | undefined) {
         if (this.previousCacheState) {
             const current = Object.assign({}, this.query, { cacheKey: null });
+
             const previous = Object.assign({}, this.previousCacheState.query, { cacheKey: null });
+
             if (!equals(current, previous)) {
                 this.previousCacheState.dispose();
                 this.previousCacheState = undefined;
@@ -50,6 +56,7 @@ export class FileQueryCacheState {
             try {
                 await this.loadFn(this.query);
                 this.loadingPhase = LoadingPhase.Loaded;
+
                 if (this.previousCacheState) {
                     this.previousCacheState.dispose();
                     this.previousCacheState = undefined;
@@ -57,9 +64,11 @@ export class FileQueryCacheState {
             }
             catch (error) {
                 this.loadingPhase = LoadingPhase.Errored;
+
                 throw error;
             }
         })();
+
         return this;
     }
     dispose(): void {

@@ -46,12 +46,19 @@ export const enum ConfigurationTarget {
 export function ConfigurationTargetToString(configurationTarget: ConfigurationTarget) {
 	switch (configurationTarget) {
 		case ConfigurationTarget.APPLICATION: return 'APPLICATION';
+
 		case ConfigurationTarget.USER: return 'USER';
+
 		case ConfigurationTarget.USER_LOCAL: return 'USER_LOCAL';
+
 		case ConfigurationTarget.USER_REMOTE: return 'USER_REMOTE';
+
 		case ConfigurationTarget.WORKSPACE: return 'WORKSPACE';
+
 		case ConfigurationTarget.WORKSPACE_FOLDER: return 'WORKSPACE_FOLDER';
+
 		case ConfigurationTarget.DEFAULT: return 'DEFAULT';
+
 		case ConfigurationTarget.MEMORY: return 'MEMORY';
 	}
 }
@@ -138,8 +145,11 @@ export interface IConfigurationService {
 	 *
 	 */
 	getValue<T>(): T;
+
 	getValue<T>(section: string): T;
+
 	getValue<T>(overrides: IConfigurationOverrides): T;
+
 	getValue<T>(section: string, overrides: IConfigurationOverrides): T;
 
 	/**
@@ -218,24 +228,33 @@ export function toValuesTree(properties: { [qualifiedKey: string]: any }, confli
 
 export function addToValueTree(settingsTreeRoot: any, key: string, value: any, conflictReporter: (message: string) => void): void {
 	const segments = key.split('.');
+
 	const last = segments.pop()!;
 
 	let curr = settingsTreeRoot;
+
 	for (let i = 0; i < segments.length; i++) {
 		const s = segments[i];
+
 		let obj = curr[s];
+
 		switch (typeof obj) {
 			case 'undefined':
 				obj = curr[s] = Object.create(null);
+
 				break;
+
 			case 'object':
 				if (obj === null) {
 					conflictReporter(`Ignoring ${key} as ${segments.slice(0, i + 1).join('.')} is null`);
+
 					return;
 				}
 				break;
+
 			default:
 				conflictReporter(`Ignoring ${key} as ${segments.slice(0, i + 1).join('.')} is ${JSON.stringify(obj)}`);
+
 				return;
 		}
 		curr = obj;
@@ -254,21 +273,26 @@ export function addToValueTree(settingsTreeRoot: any, key: string, value: any, c
 
 export function removeFromValueTree(valueTree: any, key: string): void {
 	const segments = key.split('.');
+
 	doRemoveFromValueTree(valueTree, segments);
 }
 
 function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
 	const first = segments.shift()!;
+
 	if (segments.length === 0) {
 		// Reached last segment
 		delete valueTree[first];
+
 		return;
 	}
 
 	if (Object.keys(valueTree).indexOf(first) !== -1) {
 		const value = valueTree[first];
+
 		if (typeof value === 'object' && !Array.isArray(value)) {
 			doRemoveFromValueTree(value, segments);
+
 			if (Object.keys(value).length === 0) {
 				delete valueTree[first];
 			}
@@ -284,6 +308,7 @@ export function getConfigurationValue<T>(config: any, settingPath: string, defau
 export function getConfigurationValue<T>(config: any, settingPath: string, defaultValue?: T): T | undefined {
 	function accessSetting(config: any, path: string[]): any {
 		let current = config;
+
 		for (const component of path) {
 			if (typeof current !== 'object' || current === null) {
 				return undefined;
@@ -294,6 +319,7 @@ export function getConfigurationValue<T>(config: any, settingPath: string, defau
 	}
 
 	const path = settingPath.split('.');
+
 	const result = accessSetting(config, path);
 
 	return typeof result === 'undefined' ? defaultValue : result;

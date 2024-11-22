@@ -29,6 +29,7 @@ export class AttachedViews {
             this._onDidChangeVisibleRanges.fire({ view, state });
         });
         this._views.add(view);
+
         return view;
     }
     public detachView(view: IAttachedView): void {
@@ -70,6 +71,7 @@ export class AttachedViewHandler extends Disposable {
     }
     public handleStateChange(state: IAttachedViewState): void {
         this._lineRanges = state.visibleLineRanges;
+
         if (state.stabilized) {
             this.runner.cancel();
             this.update();
@@ -90,6 +92,7 @@ export abstract class AbstractTokens extends Disposable {
     protected readonly _onDidChangeTokens = this._register(new Emitter<IModelTokensChangedEvent>());
     /** @internal, should not be exposed by the text model! */
     public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> = this._onDidChangeTokens.event;
+
     constructor(protected readonly _languageIdCodec: ILanguageIdCodec, protected readonly _textModel: TextModel, protected getLanguageId: () => string) {
         super();
     }

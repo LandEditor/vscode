@@ -11,9 +11,11 @@ export async function shouldPasteTerminalText(accessor: ServicesAccessor, text: 
     modifiedText: string;
 }> {
     const configurationService = accessor.get(IConfigurationService);
+
     const dialogService = accessor.get(IDialogService);
     // If the clipboard has only one line, a warning should never show
     const textForLines = text.split(/\r?\n/);
+
     if (textForLines.length === 1) {
         return true;
     }
@@ -51,10 +53,14 @@ export async function shouldPasteTerminalText(accessor: ServicesAccessor, text: 
         }
     }
     const displayItemsCount = 3;
+
     const maxPreviewLineLength = 30;
+
     let detail = localize('preview', "Preview:");
+
     for (let i = 0; i < Math.min(textForLines.length, displayItemsCount); i++) {
         const line = textForLines[i];
+
         const cleanedLine = line.length > maxPreviewLineLength ? `${line.slice(0, maxPreviewLineLength)}…` : line;
         detail += `\n${cleanedLine}`;
     }
@@ -83,6 +89,7 @@ export async function shouldPasteTerminalText(accessor: ServicesAccessor, text: 
             label: localize('doNotAskAgain', "Do not ask me again")
         }
     });
+
     if (!result) {
         return false;
     }

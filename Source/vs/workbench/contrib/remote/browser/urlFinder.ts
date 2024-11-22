@@ -28,6 +28,7 @@ export class UrlFinder extends Disposable {
     }> = new Emitter();
     public readonly onDidMatchLocalUrl = this._onDidMatchLocalUrl.event;
     private listeners: Map<ITerminalInstance | string, IDisposable> = new Map();
+
     constructor(terminalService: ITerminalService, debugService: IDebugService) {
         super();
         // Terminal
@@ -69,8 +70,10 @@ export class UrlFinder extends Disposable {
     }> = new Map();
     private processNewReplElements(session: IDebugSession) {
         const oldReplPosition = this.replPositions.get(session.getId());
+
         const replElements = session.getReplElements();
         this.replPositions.set(session.getId(), { position: replElements.length - 1, tail: replElements[replElements.length - 1] });
+
         if (!oldReplPosition && replElements.length > 0) {
             replElements.forEach(element => this.processData(element.toString()));
         }
@@ -78,6 +81,7 @@ export class UrlFinder extends Disposable {
             // Process lines until we reach the old "tail"
             for (let i = replElements.length - 1; i >= 0; i--) {
                 const element = replElements[i];
+
                 if (element === oldReplPosition.tail) {
                     break;
                 }
@@ -89,7 +93,9 @@ export class UrlFinder extends Disposable {
     }
     override dispose() {
         super.dispose();
+
         const listeners = this.listeners.values();
+
         for (const listener of listeners) {
             listener.dispose();
         }
@@ -97,11 +103,14 @@ export class UrlFinder extends Disposable {
     private processData(data: string) {
         // strip ANSI terminal codes
         data = removeAnsiEscapeCodes(data);
+
         const urlMatches = data.match(UrlFinder.localUrlRegex) || [];
+
         if (urlMatches && urlMatches.length > 0) {
             urlMatches.forEach((match) => {
                 // check if valid url
                 let serverUrl;
+
                 try {
                     serverUrl = new URL(match);
                 }
@@ -111,10 +120,13 @@ export class UrlFinder extends Disposable {
                 if (serverUrl) {
                     // check if the port is a valid integer value
                     const portMatch = match.match(UrlFinder.extractPortRegex);
+
                     const port = parseFloat(serverUrl.port ? serverUrl.port : (portMatch ? portMatch[2] : 'NaN'));
+
                     if (!isNaN(port) && Number.isInteger(port) && port > 0 && port <= 65535) {
                         // normalize the host name
                         let host = serverUrl.hostname;
+
                         if (host !== '0.0.0.0' && host !== '127.0.0.1') {
                             host = 'localhost';
                         }
@@ -130,6 +142,7 @@ export class UrlFinder extends Disposable {
         else {
             // Try special python case
             const pythonMatch = data.match(UrlFinder.localPythonServerRegex);
+
             if (pythonMatch && pythonMatch.length === 3) {
                 this._onDidMatchLocalUrl.fire({ host: pythonMatch[1], port: Number(pythonMatch[2]) });
             }

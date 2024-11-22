@@ -52,12 +52,14 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     private readonly modelResolveQueue = this._register(new ResourceQueue());
     saveErrorHandler = (() => {
         const notificationService = this.notificationService;
+
         return {
             onSaveError(error: Error, model: ITextFileEditorModel): void {
                 notificationService.error(localize({ key: 'genericSaveError', comment: ['{0} is the resource that failed to save and {1} the error message'] }, "Failed to save '{0}': {1}", model.name, toErrorMessage(error, false)));
             }
         };
     })();
+
     get models(): TextFileEditorModel[] {
         return [...this.mapResourceToModel.values()];
     }
@@ -131,6 +133,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // when the resolve actually takes long. At most we only want the queue
         // to have a size of 2 (1 running resolve and 1 queued resolve).
         const queueSize = this.modelResolveQueue.queueSize(model.resource);
+
         if (queueSize <= 1) {
             this.modelResolveQueue.queueFor(model.resource, async () => {
                 try {
@@ -159,6 +162,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
                 languageId?: string;
                 encoding?: string;
             }[] = [];
+
             for (const { source, target } of e.files) {
                 if (source) {
                     if (this.uriIdentityService.extUri.isEqual(source, target)) {
@@ -166,6 +170,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
                     }
                     // find all models that related to source (can be many if resource is a folder)
                     const sourceModels: TextFileEditorModel[] = [];
+
                     for (const model of this.models) {
                         if (this.uriIdentityService.extUri.isEqualOrParent(model.resource, source)) {
                             sourceModels.push(model);
@@ -177,6 +182,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
                         const sourceModelResource = sourceModel.resource;
                         // If the source is the actual model, just use target as new resource
                         let targetModelResource: URI;
+
                         if (this.uriIdentityService.extUri.isEqual(sourceModelResource, source)) {
                             targetModelResource = target;
                         }
@@ -202,6 +208,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // Move / Copy: restore dirty flag on models to restore that were dirty
         if ((e.operation === FileOperation.MOVE || e.operation === FileOperation.COPY)) {
             const modelsToRestore = this.mapCorrelationIdToModelsToRestore.get(e.correlationId);
+
             if (modelsToRestore) {
                 this.mapCorrelationIdToModelsToRestore.delete(e.correlationId);
                 modelsToRestore.forEach(model => {
@@ -222,17 +229,20 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
                 e.waitUntil((async () => {
                     for (const { target } of e.files) {
                         const model = this.get(target);
+
                         if (model && !model.isDisposed()) {
                             await model.revert();
                         }
                     }
                 })());
+
                 break;
             // Move/Copy: restore models that were resolved before the operation took place
             case FileOperation.MOVE:
             case FileOperation.COPY:
                 e.waitUntil((async () => {
                     const modelsToRestore = this.mapCorrelationIdToModelsToRestore.get(e.correlationId);
+
                     if (modelsToRestore) {
                         this.mapCorrelationIdToModelsToRestore.delete(e.correlationId);
                         await Promises.settled(modelsToRestore.map(async (modelToRestore) => {
@@ -262,6 +272,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
                         }));
                     }
                 })());
+
                 break;
         }
     }
@@ -276,6 +287,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // to ensure that we never resolve a model more than once
         // in parallel.
         await this.joinPendingResolves(model.resource);
+
         if (model.isDirty() || model.isDisposed() || !this.has(model.resource)) {
             return; // the model possibly got dirty or disposed, so return early then
         }
@@ -287,6 +299,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // to ensure that we never resolve a model more than once
         // in parallel.
         const pendingResolve = this.joinPendingResolves(resource);
+
         if (pendingResolve) {
             await pendingResolve;
         }
@@ -295,7 +308,9 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     }
     private async doResolve(resourceOrModel: URI | TextFileEditorModel, options?: ITextFileEditorModelResolveOrCreateOptions): Promise<TextFileEditorModel> {
         let model: TextFileEditorModel | undefined;
+
         let resource: URI;
+
         if (URI.isUri(resourceOrModel)) {
             resource = resourceOrModel;
             model = this.get(resource);
@@ -305,6 +320,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
             model = resourceOrModel;
         }
         let modelResolve: Promise<void>;
+
         let didCreateModel = false;
         // Model exists
         if (model) {
@@ -339,6 +355,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // Model does not exist
         else {
             didCreateModel = true;
+
             const newModel = model = this.instantiationService.createInstance(TextFileEditorModel, resource, options ? options.encoding : undefined, options ? options.languageId : undefined);
             modelResolve = model.resolve(options);
             this.registerModel(newModel);
@@ -385,6 +402,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     }
     private joinPendingResolves(resource: URI): Promise<void> | undefined {
         const pendingModelResolve = this.mapResourceToPendingModelResolvers.get(resource);
+
         if (!pendingModelResolve) {
             return;
         }
@@ -397,12 +415,15 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // the pending resolve and then all trigger the resolve
         // at the same time.
         let currentModelCopyResolve: Promise<void> | undefined;
+
         while (this.mapResourceToPendingModelResolvers.has(resource)) {
             const nextPendingModelResolve = this.mapResourceToPendingModelResolvers.get(resource);
+
             if (nextPendingModelResolve === currentModelCopyResolve) {
                 return; // already awaited on - return
             }
             currentModelCopyResolve = nextPendingModelResolve;
+
             try {
                 await nextPendingModelResolve;
             }
@@ -427,6 +448,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     }
     add(resource: URI, model: TextFileEditorModel): void {
         const knownModel = this.mapResourceToModel.get(resource);
+
         if (knownModel === model) {
             return; // already cached
         }
@@ -439,12 +461,15 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     }
     remove(resource: URI): void {
         const removed = this.mapResourceToModel.delete(resource);
+
         const disposeListener = this.mapResourceToDisposeListener.get(resource);
+
         if (disposeListener) {
             dispose(disposeListener);
             this.mapResourceToDisposeListener.delete(resource);
         }
         const modelListener = this.mapResourceToModelListeners.get(resource);
+
         if (modelListener) {
             dispose(modelListener);
             this.mapResourceToModelListeners.delete(resource);
@@ -474,8 +499,10 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
     private async doCanDispose(model: TextFileEditorModel): Promise<true> {
         // Await any pending resolves first before proceeding
         const pendingResolve = this.joinPendingResolves(model.resource);
+
         if (pendingResolve) {
             await pendingResolve;
+
             return this.canDispose(model);
         }
         // dirty model: we do not allow to dispose dirty models to prevent
@@ -483,6 +510,7 @@ export class TextFileEditorModelManager extends Disposable implements ITextFileE
         // either saved or reverted
         if (model.isDirty()) {
             await Event.toPromise(model.onDidChangeDirty);
+
             return this.canDispose(model);
         }
         return true;

@@ -8,6 +8,7 @@ import { MediaPreview, reopenAsText } from './mediaPreview';
 import { escapeAttribute, getNonce } from './util/dom';
 class VideoPreviewProvider implements vscode.CustomReadonlyEditorProvider {
     public static readonly viewType = 'vscode.videoPreview';
+
     constructor(private readonly extensionRoot: vscode.Uri, private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry) { }
     public async openCustomDocument(uri: vscode.Uri) {
         return { uri, dispose: () => { } };
@@ -23,6 +24,7 @@ class VideoPreview extends MediaPreview {
             switch (message.type) {
                 case 'reopen-as-text': {
                     reopenAsText(resource, webviewEditor.viewColumn);
+
                     break;
                 }
             }
@@ -33,14 +35,19 @@ class VideoPreview extends MediaPreview {
     }
     protected async getWebviewContents(): Promise<string> {
         const version = Date.now().toString();
+
         const configurations = vscode.workspace.getConfiguration('mediaPreview.video');
+
         const settings = {
             src: await this.getResourcePath(this.webviewEditor, this.resource, version),
             autoplay: configurations.get('autoPlay'),
             loop: configurations.get('loop'),
         };
+
         const nonce = getNonce();
+
         const cspSource = this.webviewEditor.webview.cspSource;
+
         return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,6 +77,7 @@ class VideoPreview extends MediaPreview {
     private async getResourcePath(webviewEditor: vscode.WebviewPanel, resource: vscode.Uri, version: string): Promise<string | null> {
         if (resource.scheme === 'git') {
             const stat = await vscode.workspace.fs.stat(resource);
+
             if (stat.size === 0) {
                 // The file is stored on git lfs
                 return null;
@@ -87,6 +95,7 @@ class VideoPreview extends MediaPreview {
 }
 export function registerVideoPreviewSupport(context: vscode.ExtensionContext, binarySizeStatusBarEntry: BinarySizeStatusBarEntry): vscode.Disposable {
     const provider = new VideoPreviewProvider(context.extensionUri, binarySizeStatusBarEntry);
+
     return vscode.window.registerCustomEditorProvider(VideoPreviewProvider.viewType, provider, {
         supportsMultipleEditorsPerDocument: true,
         webviewOptions: {

@@ -5,6 +5,7 @@
 import { compareBy, numberComparator } from '../../../../base/common/arrays.js';
 export class ArrayEdit {
     public readonly edits: readonly SingleArrayEdit[];
+
     constructor(
     /**
      * Disjoint edits that are applied in parallel
@@ -35,10 +36,12 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
     public static fromMany(transformations: ArrayEdit[]): IIndexTransformer {
         // TODO improve performance by combining transformations first
         const transformers = transformations.map(t => new MonotonousIndexTransformer(t));
+
         return new CombinedIndexTransformer(transformers);
     }
     private idx = 0;
     private offset = 0;
+
     constructor(private readonly transformation: ArrayEdit) {
     }
     /**
@@ -46,6 +49,7 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
      */
     transform(index: number): number | undefined {
         let nextChange = this.transformation.edits[this.idx] as SingleArrayEdit | undefined;
+
         while (nextChange && nextChange.offset + nextChange.length <= index) {
             this.offset += nextChange.newLength - nextChange.length;
             this.idx++;
@@ -64,6 +68,7 @@ export class CombinedIndexTransformer implements IIndexTransformer {
     transform(index: number): number | undefined {
         for (const transformer of this.transformers) {
             const result = transformer.transform(index);
+
             if (result === undefined) {
                 return undefined;
             }

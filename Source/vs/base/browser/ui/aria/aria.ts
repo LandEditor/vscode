@@ -6,30 +6,39 @@ import * as dom from '../../dom.js';
 import './aria.css';
 // Use a max length since we are inserting the whole msg in the DOM and that can cause browsers to freeze for long messages #94233
 const MAX_MESSAGE_LENGTH = 20000;
+
 let ariaContainer: HTMLElement;
+
 let alertContainer: HTMLElement;
+
 let alertContainer2: HTMLElement;
+
 let statusContainer: HTMLElement;
+
 let statusContainer2: HTMLElement;
 export function setARIAContainer(parent: HTMLElement) {
     ariaContainer = document.createElement('div');
     ariaContainer.className = 'monaco-aria-container';
+
     const createAlertContainer = () => {
         const element = document.createElement('div');
         element.className = 'monaco-alert';
         element.setAttribute('role', 'alert');
         element.setAttribute('aria-atomic', 'true');
         ariaContainer.appendChild(element);
+
         return element;
     };
     alertContainer = createAlertContainer();
     alertContainer2 = createAlertContainer();
+
     const createStatusContainer = () => {
         const element = document.createElement('div');
         element.className = 'monaco-status';
         element.setAttribute('aria-live', 'polite');
         element.setAttribute('aria-atomic', 'true');
         ariaContainer.appendChild(element);
+
         return element;
     };
     statusContainer = createStatusContainer();
@@ -71,6 +80,7 @@ export function status(msg: string): void {
 }
 function insertMessage(target: HTMLElement, msg: string): void {
     dom.clearNode(target);
+
     if (msg.length > MAX_MESSAGE_LENGTH) {
         msg = msg.substr(0, MAX_MESSAGE_LENGTH);
     }

@@ -14,6 +14,7 @@ export class BlockCommentCommand implements ICommand {
     private readonly _selection: Selection;
     private readonly _insertSpace: boolean;
     private _usedEndToken: string | null;
+
     constructor(selection: Selection, insertSpace: boolean, private readonly languageConfigurationService: ILanguageConfigurationService) {
         this._selection = selection;
         this._insertSpace = insertSpace;
@@ -24,13 +25,17 @@ export class BlockCommentCommand implements ICommand {
             return false;
         }
         const needleLength = needle.length;
+
         const haystackLength = haystack.length;
+
         if (offset + needleLength > haystackLength) {
             return false;
         }
         for (let i = 0; i < needleLength; i++) {
             const codeA = haystack.charCodeAt(offset + i);
+
             const codeB = needle.charCodeAt(i);
+
             if (codeA === codeB) {
                 continue;
             }
@@ -48,16 +53,25 @@ export class BlockCommentCommand implements ICommand {
     }
     private _createOperationsForBlockComment(selection: Range, startToken: string, endToken: string, insertSpace: boolean, model: ITextModel, builder: IEditOperationBuilder): void {
         const startLineNumber = selection.startLineNumber;
+
         const startColumn = selection.startColumn;
+
         const endLineNumber = selection.endLineNumber;
+
         const endColumn = selection.endColumn;
+
         const startLineText = model.getLineContent(startLineNumber);
+
         const endLineText = model.getLineContent(endLineNumber);
+
         let startTokenIndex = startLineText.lastIndexOf(startToken, startColumn - 1 + startToken.length);
+
         let endTokenIndex = endLineText.indexOf(endToken, endColumn - 1 - endToken.length);
+
         if (startTokenIndex !== -1 && endTokenIndex !== -1) {
             if (startLineNumber === endLineNumber) {
                 const lineBetweenTokens = startLineText.substring(startTokenIndex + startToken.length, endTokenIndex);
+
                 if (lineBetweenTokens.indexOf(endToken) >= 0) {
                     // force to add a block comment
                     startTokenIndex = -1;
@@ -66,7 +80,9 @@ export class BlockCommentCommand implements ICommand {
             }
             else {
                 const startLineAfterStartToken = startLineText.substring(startTokenIndex + startToken.length);
+
                 const endLineBeforeEndToken = endLineText.substring(0, endTokenIndex);
+
                 if (startLineAfterStartToken.indexOf(endToken) >= 0 || endLineBeforeEndToken.indexOf(endToken) >= 0) {
                     // force to add a block comment
                     startTokenIndex = -1;
@@ -75,6 +91,7 @@ export class BlockCommentCommand implements ICommand {
             }
         }
         let ops: ISingleEditOperation[];
+
         if (startTokenIndex !== -1 && endTokenIndex !== -1) {
             // Consider spaces as part of the comment tokens
             if (insertSpace && startTokenIndex + startToken.length < startLineText.length && startLineText.charCodeAt(startTokenIndex + startToken.length) === CharCode.Space) {
@@ -98,6 +115,7 @@ export class BlockCommentCommand implements ICommand {
     }
     public static _createRemoveBlockCommentOperations(r: Range, startToken: string, endToken: string): ISingleEditOperation[] {
         const res: ISingleEditOperation[] = [];
+
         if (!Range.isEmpty(r)) {
             // Remove block comment start
             res.push(EditOperation.delete(new Range(r.startLineNumber, r.startColumn - startToken.length, r.startLineNumber, r.startColumn)));
@@ -112,6 +130,7 @@ export class BlockCommentCommand implements ICommand {
     }
     public static _createAddBlockCommentOperations(r: Range, startToken: string, endToken: string, insertSpace: boolean): ISingleEditOperation[] {
         const res: ISingleEditOperation[] = [];
+
         if (!Range.isEmpty(r)) {
             // Insert block comment start
             res.push(EditOperation.insert(new Position(r.startLineNumber, r.startColumn), startToken + (insertSpace ? ' ' : '')));
@@ -126,10 +145,14 @@ export class BlockCommentCommand implements ICommand {
     }
     public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
         const startLineNumber = this._selection.startLineNumber;
+
         const startColumn = this._selection.startColumn;
         model.tokenization.tokenizeIfCheap(startLineNumber);
+
         const languageId = model.getLanguageIdAtPosition(startLineNumber, startColumn);
+
         const config = this.languageConfigurationService.getLanguageConfiguration(languageId).comments;
+
         if (!config || !config.blockCommentStartToken || !config.blockCommentEndToken) {
             // Mode does not support block comments
             return;
@@ -138,13 +161,17 @@ export class BlockCommentCommand implements ICommand {
     }
     public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
         const inverseEditOperations = helper.getInverseEditOperations();
+
         if (inverseEditOperations.length === 2) {
             const startTokenEditOperation = inverseEditOperations[0];
+
             const endTokenEditOperation = inverseEditOperations[1];
+
             return new Selection(startTokenEditOperation.range.endLineNumber, startTokenEditOperation.range.endColumn, endTokenEditOperation.range.startLineNumber, endTokenEditOperation.range.startColumn);
         }
         else {
             const srcRange = inverseEditOperations[0].range;
+
             const deltaColumn = this._usedEndToken ? -this._usedEndToken.length - 1 : 0; // minus 1 space before endToken
             return new Selection(srcRange.endLineNumber, srcRange.endColumn + deltaColumn, srcRange.endLineNumber, srcRange.endColumn + deltaColumn);
         }

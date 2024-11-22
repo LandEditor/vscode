@@ -20,6 +20,7 @@ import * as jws from 'jws';
 
 function e(name: string): string {
     const result = process.env[name];
+
     if (typeof result !== 'string') {
         throw new Error(`Missing env: ${name}`);
     }
@@ -134,6 +135,7 @@ interface ReleaseDetailsMessage extends ReleaseResultMessage {
 	files: ReleaseDetailsFileInfo[];
 	comments: string[];
 	cancellationReason: string;
+
 	downloadCenterInfo: DownloadCenterInfo;
 }
 
@@ -165,6 +167,7 @@ type FileHashType = 'sha256' | 'sha1';
 
 interface FileDownloadDetails {
 	portalName: string;
+
 	downloadUrl: string;
 }
 
@@ -222,6 +225,7 @@ interface AccessPermissionsInfo {
 
 interface DownloadCenterLocaleInfo {
 	cultureCode?: string;
+
 	downloadTitle?: string;
 	shortName?: string;
 	shortDescription?: string;
@@ -261,6 +265,7 @@ interface ReleaseRequestMessage {
 	accessPermissionsInfo: AccessPermissionsInfo;
 	jwsToken?: string;
 	publisherId?: string;
+
 	downloadCenterInfo?: DownloadCenterInfo;
 }
 
@@ -270,19 +275,24 @@ function getCertificateBuffer(input: string) {
 
 function getThumbprint(input: string, algorithm: string): Buffer {
 	const buffer = getCertificateBuffer(input);
+
 	return crypto.createHash(algorithm).update(buffer).digest();
 }
 
 function getKeyFromPFX(pfx: string): string {
 	const pfxCertificatePath = path.join(os.tmpdir(), 'cert.pfx');
+
 	const pemKeyPath = path.join(os.tmpdir(), 'key.pem');
 
 	try {
 		const pfxCertificate = Buffer.from(pfx, 'base64');
 		fs.writeFileSync(pfxCertificatePath, pfxCertificate);
 		cp.execSync(`openssl pkcs12 -in "${pfxCertificatePath}" -nocerts -nodes -out "${pemKeyPath}" -passin pass:`);
+
 		const raw = fs.readFileSync(pemKeyPath, 'utf-8');
+
 		const result = raw.match(/-----BEGIN PRIVATE KEY-----[\s\S]+?-----END PRIVATE KEY-----/g)![0];
+
 		return result;
 	} finally {
 		fs.rmSync(pfxCertificatePath, { force: true });
@@ -292,14 +302,18 @@ function getKeyFromPFX(pfx: string): string {
 
 function getCertificatesFromPFX(pfx: string): string[] {
 	const pfxCertificatePath = path.join(os.tmpdir(), 'cert.pfx');
+
 	const pemCertificatePath = path.join(os.tmpdir(), 'cert.pem');
 
 	try {
 		const pfxCertificate = Buffer.from(pfx, 'base64');
 		fs.writeFileSync(pfxCertificatePath, pfxCertificate);
 		cp.execSync(`openssl pkcs12 -in "${pfxCertificatePath}" -nokeys -out "${pemCertificatePath}" -passin pass:`);
+
 		const raw = fs.readFileSync(pemCertificatePath, 'utf-8');
+
 		const matches = raw.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g);
+
 		return matches ? matches.reverse() : [];
 	} finally {
 		fs.rmSync(pfxCertificatePath, { force: true });
@@ -318,8 +332,11 @@ class ESRPReleaseService {
 		containerClient: ContainerClient
 	) {
 		const authKey = getKeyFromPFX(authCertificatePfx);
+
 		const authCertificate = getCertificatesFromPFX(authCertificatePfx)[0];
+
 		const requestSigningKey = getKeyFromPFX(requestSigningCertificatePfx);
+
 		const requestSigningCertificates = getCertificatesFromPFX(requestSigningCertificatePfx);
 
 		const app = new ConfidentialClientApplication({
@@ -354,6 +371,7 @@ class ESRPReleaseService {
 
 	async createRelease(version: string, filePath: string, friendlyFileName: string) {
 		const correlationId = crypto.randomUUID();
+
 		const blobClient = this.containerClient.getBlockBlobClient(correlationId);
 
 		this.log(`Uploading ${filePath} to ${blobClient.url}`);
@@ -362,6 +380,7 @@ class ESRPReleaseService {
 
 		try {
 			this.log(`Submitting release for ${version}: ${filePath}`);
+
 			const submitReleaseResult = await this.submitRelease(version, filePath, friendlyFileName, correlationId, blobClient);
 
 			this.log(`Successfully submitted release ${submitReleaseResult.operationId}. Polling for completion...`);
@@ -369,6 +388,7 @@ class ESRPReleaseService {
 			// Poll every 5 seconds, wait 60 minutes max -> poll 60/5*60=720 times
 			for (let i = 0; i < 720; i++) {
 				await new Promise(c => setTimeout(c, 5000));
+
 				const releaseStatus = await this.getReleaseStatus(submitReleaseResult.operationId);
 
 				if (releaseStatus.status === 'pass') {
@@ -385,6 +405,7 @@ class ESRPReleaseService {
 			}
 
 			this.log('Successfully created release:', releaseDetails.files[0].fileDownloadDetails![0].downloadUrl);
+
 			return releaseDetails.files[0].fileDownloadDetails![0].downloadUrl;
 		} finally {
 			this.log(`Deleting blob ${blobClient.url}`);
@@ -401,6 +422,7 @@ class ESRPReleaseService {
 		blobClient: BlobClient
 	): Promise<ReleaseSubmitResponse> {
 		const size = fs.statSync(filePath).size;
+
 		const hash = await hashStream('sha256', fs.createReadStream(filePath));
 
 		const message: ReleaseRequestMessage = {
@@ -459,6 +481,7 @@ class ESRPReleaseService {
 
 		if (!res.ok) {
 			const text = await res.text();
+
 			throw new Error(`Failed to submit release: ${res.statusText}\n${text}`);
 		}
 
@@ -476,6 +499,7 @@ class ESRPReleaseService {
 
 		if (!res.ok) {
 			const text = await res.text();
+
 			throw new Error(`Failed to get release status: ${res.statusText}\n${text}`);
 		}
 
@@ -493,6 +517,7 @@ class ESRPReleaseService {
 
 		if (!res.ok) {
 			const text = await res.text();
+
 			throw new Error(`Failed to get release status: ${res.statusText}\n${text}`);
 		}
 
@@ -519,13 +544,16 @@ class ESRPReleaseService {
 class State {
     private statePath: string;
     private set = new Set<string>();
+
     constructor() {
         const pipelineWorkspacePath = e('PIPELINE_WORKSPACE');
+
         const previousState = fs.readdirSync(pipelineWorkspacePath)
             .map(name => /^artifacts_processed_(\d+)$/.exec(name))
             .filter((match): match is RegExpExecArray => !!match)
             .map(match => ({ name: match![0], attempt: Number(match![1]) }))
             .sort((a, b) => b.attempt - a.attempt)[0];
+
         if (previousState) {
             const previousStatePath = path.join(pipelineWorkspacePath, previousState.name, previousState.name + '.txt');
             fs.readFileSync(previousStatePath, 'utf8').split(/\n/).filter(name => !!name).forEach(name => this.set.add(name));
@@ -562,9 +590,12 @@ const azdoFetchOptions = {
 };
 async function requestAZDOAPI<T>(path: string): Promise<T> {
     const abortController = new AbortController();
+
     const timeout = setTimeout(() => abortController.abort(), 2 * 60 * 1000);
+
     try {
         const res = await fetch(`${e('BUILDS_API_URL')}${path}?api-version=6.0`, { ...azdoFetchOptions, signal: abortController.signal });
+
         if (!res.ok) {
             throw new Error(`Unexpected status code: ${res.status}`);
         }
@@ -587,6 +618,7 @@ async function getPipelineArtifacts(): Promise<Artifact[]> {
     const result = await requestAZDOAPI<{
         readonly value: Artifact[];
     }>('artifacts');
+
     return result.value.filter(a => /^vscode_/.test(a.name) && !/sbom$/.test(a.name));
 }
 interface Timeline {
@@ -601,9 +633,12 @@ async function getPipelineTimeline(): Promise<Timeline> {
 }
 async function downloadArtifact(artifact: Artifact, downloadPath: string): Promise<void> {
     const abortController = new AbortController();
+
     const timeout = setTimeout(() => abortController.abort(), 4 * 60 * 1000);
+
     try {
         const res = await fetch(artifact.resource.downloadUrl, { ...azdoFetchOptions, signal: abortController.signal });
+
         if (!res.ok) {
             throw new Error(`Unexpected status code: ${res.status}`);
         }
@@ -631,6 +666,7 @@ async function unzip(packagePath: string, outputPath: string): Promise<string[]>
                         }
                         const filePath = path.join(outputPath, entry.fileName);
                         fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
                         const ostream = fs.createWriteStream(filePath);
                         ostream.on('finish', () => {
                             result.push(filePath);
@@ -666,20 +702,26 @@ function getPlatform(product: string, os: string, arch: string, type: string, is
                     switch (type) {
                         case 'archive':
                             return `win32-${arch}-archive`;
+
                         case 'setup':
                             return `win32-${arch}`;
+
                         case 'user-setup':
                             return `win32-${arch}-user`;
+
                         default:
                             throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
                     }
                 }
                 case 'server':
                     return `server-win32-${arch}`;
+
                 case 'web':
                     return `server-win32-${arch}-web`;
+
                 case 'cli':
                     return `cli-win32-${arch}`;
+
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -687,10 +729,13 @@ function getPlatform(product: string, os: string, arch: string, type: string, is
             switch (product) {
                 case 'server':
                     return `server-alpine-${arch}`;
+
                 case 'web':
                     return `server-alpine-${arch}-web`;
+
                 case 'cli':
                     return `cli-alpine-${arch}`;
+
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -698,26 +743,33 @@ function getPlatform(product: string, os: string, arch: string, type: string, is
             switch (type) {
                 case 'snap':
                     return `linux-snap-${arch}`;
+
                 case 'archive-unsigned':
                     switch (product) {
                         case 'client':
                             return `linux-${arch}`;
+
                         case 'server':
                             return isLegacy ? `server-linux-legacy-${arch}` : `server-linux-${arch}`;
+
                         case 'web':
                             if (arch === 'standalone') {
                                 return 'web-standalone';
                             }
                             return isLegacy ? `server-linux-legacy-${arch}-web` : `server-linux-${arch}-web`;
+
                         default:
                             throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
                     }
                 case 'deb-package':
                     return `linux-deb-${arch}`;
+
                 case 'rpm-package':
                     return `linux-rpm-${arch}`;
+
                 case 'cli':
                     return `cli-linux-${arch}`;
+
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -728,18 +780,22 @@ function getPlatform(product: string, os: string, arch: string, type: string, is
                         return 'darwin';
                     }
                     return `darwin-${arch}`;
+
                 case 'server':
                     if (arch === 'x64') {
                         return 'server-darwin';
                     }
                     return `server-darwin-${arch}`;
+
                 case 'web':
                     if (arch === 'x64') {
                         return 'server-darwin-web';
                     }
                     return `server-darwin-${arch}-web`;
+
                 case 'cli':
                     return `cli-darwin-${arch}`;
+
                 default:
                     throw new Error(`Unrecognized: ${product} ${os} ${arch} ${type}`);
             }
@@ -752,9 +808,11 @@ function getRealType(type: string) {
     switch (type) {
         case 'user-setup':
             return 'setup';
+
         case 'deb-package':
         case 'rpm-package':
             return 'package';
+
         default:
             return type;
     }
@@ -772,18 +830,29 @@ async function processArtifact(
 
 	// getPlatform needs the unprocessedType
 	const { cosmosDBAccessToken, blobServiceAccessToken } = JSON.parse(e('PUBLISH_AUTH_TOKENS'));
+
 	const quality = e('VSCODE_QUALITY');
+
 	const version = e('BUILD_SOURCEVERSION');
+
 	const { product, os, arch, unprocessedType } = match.groups!;
+
 	const isLegacy = artifact.name.includes('_legacy');
+
 	const platform = getPlatform(product, os, arch, unprocessedType, isLegacy);
+
 	const type = getRealType(unprocessedType);
+
 	const size = fs.statSync(filePath).size;
+
 	const stream = fs.createReadStream(filePath);
+
 	const [hash, sha256hash] = await Promise.all([hashStream('sha1', stream), hashStream('sha256', stream)]); // CodeQL [SM04514] Using SHA1 only for legacy reasons, we are actually only respecting SHA256
 
 	const log = (...args: any[]) => console.log(`[${artifact.name}]`, ...args);
+
 	const blobServiceClient = new BlobServiceClient(`https://${e('VSCODE_STAGING_BLOB_STORAGE_ACCOUNT_NAME')}.blob.core.windows.net/`, { getToken: async () => blobServiceAccessToken });
+
 	const containerClient = blobServiceClient.getContainerClient('staging');
 
 	const releaseService = await ESRPReleaseService.create(
@@ -796,7 +865,9 @@ async function processArtifact(
 	);
 
 	const friendlyFileName = `${quality}/${version}/${path.basename(filePath)}`;
+
 	const url = `${e('PRSS_CDN_URL')}/${friendlyFileName}`;
+
 	const res = await retry(() => fetch(url));
 
 	if (res.status === 200) {
@@ -810,7 +881,9 @@ async function processArtifact(
 
 	await retry(async (attempt) => {
 		log(`Creating asset in Cosmos DB (attempt ${attempt})...`);
+
 		const client = new CosmosClient({ endpoint: e('AZURE_DOCUMENTDB_ENDPOINT')!, tokenProvider: () => Promise.resolve(`type=aad&ver=1.0&sig=${cosmosDBAccessToken.token}`) });
+
 		const scripts = client.database('builds').container(quality).scripts;
 		await scripts.storedProcedure('createAsset').execute('', [version, asset, true]);
 	});
@@ -827,10 +900,12 @@ async function main() {
 	if (!isMainThread) {
 		const { artifact, artifactFilePath } = workerData;
 		await processArtifact(artifact, artifactFilePath);
+
 		return;
 	}
 
 	const done = new State();
+
 	const processing = new Set<string>();
 
 	for (const name of done) {
@@ -838,6 +913,7 @@ async function main() {
 	}
 
 	const stages = new Set<string>(['Compile', 'CompileCLI']);
+
 	if (e('VSCODE_BUILD_STAGE_WINDOWS') === 'True') { stages.add('Windows'); }
 	if (e('VSCODE_BUILD_STAGE_LINUX') === 'True') { stages.add('Linux'); }
 	if (e('VSCODE_BUILD_STAGE_LINUX_LEGACY_SERVER') === 'True') { stages.add('LinuxLegacyServer'); }
@@ -846,12 +922,16 @@ async function main() {
 	if (e('VSCODE_BUILD_STAGE_WEB') === 'True') { stages.add('Web'); }
 
 	let resultPromise = Promise.resolve<PromiseSettledResult<void>[]>([]);
+
 	const operations: { name: string; operation: Promise<void> }[] = [];
 
 	while (true) {
 		const [timeline, artifacts] = await Promise.all([retry(() => getPipelineTimeline()), retry(() => getPipelineArtifacts())]);
+
 		const stagesCompleted = new Set<string>(timeline.records.filter(r => r.type === 'Stage' && r.state === 'completed' && stages.has(r.name)).map(r => r.name));
+
 		const stagesInProgress = [...stages].filter(s => !stagesCompleted.has(s));
+
 		const artifactsInProgress = artifacts.filter(a => processing.has(a.name));
 
 		if (stagesInProgress.length === 0 && artifacts.length === done.size + processing.size) {
@@ -877,16 +957,21 @@ async function main() {
 				const start = Date.now();
 				console.log(`[${artifact.name}] Downloading (attempt ${attempt})...`);
 				await downloadArtifact(artifact, artifactZipPath);
+
 				const archiveSize = fs.statSync(artifactZipPath).size;
+
 				const downloadDurationS = (Date.now() - start) / 1000;
+
 				const downloadSpeedKBS = Math.round((archiveSize / 1024) / downloadDurationS);
 				console.log(`[${artifact.name}] Successfully downloaded after ${Math.floor(downloadDurationS)} seconds(${downloadSpeedKBS} KB/s).`);
 			});
 
 			const artifactFilePaths = await unzip(artifactZipPath, e('AGENT_TEMPDIRECTORY'));
+
 			const artifactFilePath = artifactFilePaths.filter(p => !/_manifest/.test(p))[0];
 
 			processing.add(artifact.name);
+
 			const promise = new Promise<void>((resolve, reject) => {
 				const worker = new Worker(__filename, { workerData: { artifact, artifactFilePath } });
 				worker.on('error', reject);
@@ -901,6 +986,7 @@ async function main() {
 
 			const operation = promise.then(() => {
 				processing.delete(artifact.name);
+
 				done.add(artifact.name);
 				console.log(`\u2705 ${artifact.name} `);
 			});

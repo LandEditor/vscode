@@ -98,6 +98,7 @@ registerEditorAction(class PasteAsAction extends EditorAction {
 
 	public override run(_accessor: ServicesAccessor, editor: ICodeEditor, args?: SchemaToType<typeof PasteAsAction.argsSchema>) {
 		let preference: PastePreference | undefined;
+
 		if (args) {
 			if ('kind' in args) {
 				preference = { only: new HierarchicalKind(args.kind) };

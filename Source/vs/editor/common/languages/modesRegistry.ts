@@ -17,17 +17,20 @@ export class EditorModesRegistry {
     private readonly _languages: ILanguageExtensionPoint[];
     private readonly _onDidChangeLanguages = new Emitter<void>();
     public readonly onDidChangeLanguages: Event<void> = this._onDidChangeLanguages.event;
+
     constructor() {
         this._languages = [];
     }
     public registerLanguage(def: ILanguageExtensionPoint): IDisposable {
         this._languages.push(def);
         this._onDidChangeLanguages.fire(undefined);
+
         return {
             dispose: () => {
                 for (let i = 0, len = this._languages.length; i < len; i++) {
                     if (this._languages[i] === def) {
                         this._languages.splice(i, 1);
+
                         return;
                     }
                 }

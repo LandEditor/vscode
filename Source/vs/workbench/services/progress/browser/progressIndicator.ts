@@ -97,14 +97,19 @@ namespace ProgressIndicatorState {
         Work
     }
     export const None = { type: Type.None } as const;
+
     export const Done = { type: Type.Done } as const;
+
     export const Infinite = { type: Type.Infinite } as const;
+
     export class While {
         readonly type = Type.While;
+
         constructor(readonly whilePromise: Promise<unknown>, readonly whileStart: number, readonly whileDelay: number) { }
     }
     export class Work {
         readonly type = Type.Work;
+
         constructor(readonly total: number | undefined, readonly worked: number | undefined) { }
     }
     export type State = typeof None | typeof Done | typeof Infinite | While | Work;
@@ -121,6 +126,7 @@ export interface IProgressScope {
 }
 export class ScopedProgressIndicator extends Disposable implements IProgressIndicator {
     private progressState: ProgressIndicatorState.State = ProgressIndicatorState.None;
+
     constructor(private readonly progressBar: ProgressBar, private readonly scope: IProgressScope) {
         super();
         this.registerListeners();
@@ -143,8 +149,10 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
         // Replay Infinite Progress from Promise
         if (this.progressState.type === ProgressIndicatorState.Type.While) {
             let delay: number | undefined;
+
             if (this.progressState.whileDelay > 0) {
                 const remainingDelay = this.progressState.whileDelay - (Date.now() - this.progressState.whileStart);
+
                 if (remainingDelay > 0) {
                     delay = remainingDelay;
                 }
@@ -192,6 +200,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
         return {
             total: (total: number) => {
                 this.progressState = new ProgressIndicatorState.Work(total, this.progressState.type === ProgressIndicatorState.Type.Work ? this.progressState.worked : undefined);
+
                 if (this.scope.isActive) {
                     this.progressBar.total(total);
                 }
@@ -200,6 +209,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
                 // Verify first that we are either not active or the progressbar has a total set
                 if (!this.scope.isActive || this.progressBar.hasTotal()) {
                     this.progressState = new ProgressIndicatorState.Work(this.progressState.type === ProgressIndicatorState.Type.Work ? this.progressState.total : undefined, this.progressState.type === ProgressIndicatorState.Type.Work && typeof this.progressState.worked === 'number' ? this.progressState.worked + worked : worked);
+
                     if (this.scope.isActive) {
                         this.progressBar.worked(worked);
                     }
@@ -212,6 +222,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
             },
             done: () => {
                 this.progressState = ProgressIndicatorState.Done;
+
                 if (this.scope.isActive) {
                     this.progressBar.stop().hide();
                 }
@@ -225,6 +236,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
         }
         // Keep Promise in State
         this.progressState = new ProgressIndicatorState.While(promise, delay || 0, Date.now());
+
         try {
             this.doShowWhile(delay);
             await promise;
@@ -237,6 +249,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
             if (this.progressState.type !== ProgressIndicatorState.Type.While || this.progressState.whilePromise === promise) {
                 // The while promise is either null or equal the promise we last hooked on
                 this.progressState = ProgressIndicatorState.None;
+
                 if (this.scope.isActive) {
                     this.progressBar.stop().hide();
                 }
@@ -253,6 +266,7 @@ export class ScopedProgressIndicator extends Disposable implements IProgressIndi
 export abstract class AbstractProgressScope extends Disposable implements IProgressScope {
     private readonly _onDidChangeActive = this._register(new Emitter<void>());
     readonly onDidChangeActive = this._onDidChangeActive.event;
+
     get isActive() { return this._isActive; }
     constructor(private scopeId: string, private _isActive: boolean) {
         super();

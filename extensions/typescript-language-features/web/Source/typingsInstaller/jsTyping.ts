@@ -43,12 +43,15 @@ export function validatePackageNameWorker(packageName: string, supportScopedPack
     // scoped packages are not currently supported
     if (supportScopedPackage) {
         const matches = /^@([^/]+)\/([^/]+)$/.exec(packageName);
+
         if (matches) {
             const scopeResult = validatePackageNameWorker(matches[1], /*supportScopedPackage*/ false);
+
             if (scopeResult !== NameValidationResult.Ok) {
                 return { name: matches[1], isScopeName: true, result: scopeResult };
             }
             const packageResult = validatePackageNameWorker(matches[2], /*supportScopedPackage*/ false);
+
             if (packageResult !== NameValidationResult.Ok) {
                 return { name: matches[2], isScopeName: false, result: packageResult };
             }

@@ -6,12 +6,16 @@ import * as vscode from 'vscode';
 import { detectNpmScriptsForFolder, findScriptAtPosition, runScript, IFolderTaskItem } from './tasks';
 export function runSelectedScript(context: vscode.ExtensionContext) {
     const editor = vscode.window.activeTextEditor;
+
     if (!editor) {
         return;
     }
     const document = editor.document;
+
     const contents = document.getText();
+
     const script = findScriptAtPosition(editor.document, contents, editor.selection.anchor);
+
     if (script) {
         runScript(context, script, document);
     }
@@ -25,12 +29,16 @@ export async function selectAndRunScriptFromFolder(context: vscode.ExtensionCont
         return;
     }
     const selectedFolder = selectedFolders[0];
+
     const taskList: IFolderTaskItem[] = await detectNpmScriptsForFolder(context, selectedFolder);
+
     if (taskList && taskList.length > 0) {
         const quickPick = vscode.window.createQuickPick<IFolderTaskItem>();
         quickPick.placeholder = 'Select an npm script to run in folder';
         quickPick.items = taskList;
+
         const toDispose: vscode.Disposable[] = [];
+
         const pickPromise = new Promise<IFolderTaskItem | undefined>((c) => {
             toDispose.push(quickPick.onDidAccept(() => {
                 toDispose.forEach(d => d.dispose());
@@ -42,8 +50,10 @@ export async function selectAndRunScriptFromFolder(context: vscode.ExtensionCont
             }));
         });
         quickPick.show();
+
         const result = await pickPromise;
         quickPick.dispose();
+
         if (result) {
             vscode.tasks.executeTask(result.task);
         }

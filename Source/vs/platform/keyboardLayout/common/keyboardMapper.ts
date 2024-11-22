@@ -12,6 +12,7 @@ export interface IKeyboardMapper {
 export class CachedKeyboardMapper implements IKeyboardMapper {
     private _actual: IKeyboardMapper;
     private _cache: Map<string, ResolvedKeybinding[]>;
+
     constructor(actual: IKeyboardMapper) {
         this._actual = actual;
         this._cache = new Map<string, ResolvedKeybinding[]>();
@@ -24,10 +25,13 @@ export class CachedKeyboardMapper implements IKeyboardMapper {
     }
     public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {
         const hashCode = keybinding.getHashCode();
+
         const resolved = this._cache.get(hashCode);
+
         if (!resolved) {
             const r = this._actual.resolveKeybinding(keybinding);
             this._cache.set(hashCode, r);
+
             return r;
         }
         return resolved;

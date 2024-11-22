@@ -18,11 +18,14 @@ function getExtensionSchemaAssociations() {
         extension: Extension<any>;
         label: string;
     }[] = [];
+
     for (const extension of extensions.all) {
         const jsonValidations = extension.packageJSON?.contributes?.jsonValidation;
+
         if (Array.isArray(jsonValidations)) {
             for (const jsonValidation of jsonValidations) {
                 let uri = jsonValidation.url;
+
                 if (typeof uri === 'string') {
                     if (uri[0] === '.' && uri[1] === '/') {
                         uri = Uri.joinPath(extension.extensionUri, uri).toString(false);
@@ -52,19 +55,26 @@ function getExtensionSchemaAssociations() {
 //
 function getSettingsSchemaAssociations(uri: string) {
     const resourceUri = Uri.parse(uri);
+
     const workspaceFolder = workspace.getWorkspaceFolder(resourceUri);
+
     const settings = workspace.getConfiguration('json', resourceUri).inspect<JSONSchemaSettings[]>('schemas');
+
     const associations: {
         fullUri: string;
         workspaceFolder: WorkspaceFolder | undefined;
         label: string;
     }[] = [];
+
     const folderSettingSchemas = settings?.workspaceFolderValue;
+
     if (workspaceFolder && Array.isArray(folderSettingSchemas)) {
         for (const setting of folderSettingSchemas) {
             const uri = setting.url;
+
             if (typeof uri === 'string') {
                 let fullUri = uri;
+
                 if (uri[0] === '.' && uri[1] === '/') {
                     fullUri = Uri.joinPath(workspaceFolder.uri, uri).toString(false);
                 }
@@ -73,11 +83,14 @@ function getSettingsSchemaAssociations(uri: string) {
         }
     }
     const userSettingSchemas = settings?.globalValue;
+
     if (Array.isArray(userSettingSchemas)) {
         for (const setting of userSettingSchemas) {
             const uri = setting.url;
+
             if (typeof uri === 'string') {
                 let fullUri = uri;
+
                 if (workspaceFolder && uri[0] === '.' && uri[1] === '/') {
                     fullUri = Uri.joinPath(workspaceFolder.uri, uri).toString(false);
                 }
@@ -104,24 +117,34 @@ function getSettingsSchemaAssociations(uri: string) {
 }
 function showSchemaList(input: ShowSchemasInput) {
     const extensionSchemaAssocations = getExtensionSchemaAssociations();
+
     const settingsSchemaAssocations = getSettingsSchemaAssociations(input.uri);
+
     const extensionEntries = [];
+
     const settingsEntries = [];
+
     const otherEntries = [];
+
     for (const schemaUri of input.schemas) {
         const extensionEntry = extensionSchemaAssocations.findExtension(schemaUri);
+
         if (extensionEntry) {
             extensionEntries.push(extensionEntry);
+
             continue;
         }
         const settingsEntry = settingsSchemaAssocations.findSetting(schemaUri);
+
         if (settingsEntry) {
             settingsEntries.push(settingsEntry);
+
             continue;
         }
         otherEntries.push({ label: schemaUri, uri: Uri.parse(schemaUri) });
     }
     const items: ShowSchemasItem[] = [...extensionEntries, ...settingsEntries, ...otherEntries];
+
     if (items.length === 0) {
         items.push({
             label: l10n.t('No schema configured for this file'),
@@ -131,12 +154,14 @@ function showSchemaList(input: ShowSchemasInput) {
     }
     items.push({ label: '', kind: QuickPickItemKind.Separator });
     items.push({ label: l10n.t('Learn more about JSON schema configuration...'), uri: Uri.parse('https://code.visualstudio.com/docs/languages/json#_json-schemas-and-settings') });
+
     const quickPick = window.createQuickPick<ShowSchemasItem>();
     quickPick.placeholder = items.length ? l10n.t('Select the schema to use for {0}', input.uri) : undefined;
     quickPick.items = items;
     quickPick.show();
     quickPick.onDidAccept(() => {
         const uri = quickPick.selectedItems[0].uri;
+
         if (uri) {
             commands.executeCommand('vscode.open', uri);
             quickPick.dispose();
@@ -144,6 +169,7 @@ function showSchemaList(input: ShowSchemasInput) {
     });
     quickPick.onDidTriggerItemButton(b => {
         const index = b.item.buttons?.indexOf(b.button);
+
         if (index !== undefined && index >= 0 && b.item.buttonCommands && b.item.buttonCommands[index]) {
             b.item.buttonCommands[index]();
         }
@@ -153,19 +179,25 @@ export function createLanguageStatusItem(documentSelector: DocumentSelector, sta
     const statusItem = languages.createLanguageStatusItem('json.projectStatus', documentSelector);
     statusItem.name = l10n.t('JSON Validation Status');
     statusItem.severity = LanguageStatusSeverity.Information;
+
     const showSchemasCommand = commands.registerCommand('_json.showAssociatedSchemaList', showSchemaList);
+
     const activeEditorListener = window.onDidChangeActiveTextEditor(() => {
         updateLanguageStatus();
     });
+
     async function updateLanguageStatus() {
         const document = window.activeTextEditor?.document;
+
         if (document) {
             try {
                 statusItem.text = '$(loading~spin)';
                 statusItem.detail = l10n.t('Loading JSON info');
                 statusItem.command = undefined;
+
                 const schemas = (await statusRequest(document.uri.toString())).schemas;
                 statusItem.detail = undefined;
+
                 if (schemas.length === 0) {
                     statusItem.text = l10n.t('No Schema Validation');
                     statusItem.detail = l10n.t('no JSON schema configured');
@@ -197,18 +229,24 @@ export function createLanguageStatusItem(documentSelector: DocumentSelector, sta
         }
     }
     updateLanguageStatus();
+
     return Disposable.from(statusItem, activeEditorListener, showSchemasCommand);
 }
 export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
     let statusItem: Disposable | undefined;
+
     const activeLimits: Map<TextDocument, number> = new Map();
+
     const toDispose: Disposable[] = [];
     toDispose.push(window.onDidChangeActiveTextEditor(textEditor => {
         statusItem?.dispose();
         statusItem = undefined;
+
         const doc = textEditor?.document;
+
         if (doc) {
             const limit = activeLimits.get(doc);
+
             if (limit !== undefined) {
                 statusItem = newItem(limit);
             }
@@ -217,9 +255,11 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
     toDispose.push(workspace.onDidCloseTextDocument(document => {
         activeLimits.delete(document);
     }));
+
     function update(document: TextDocument, limitApplied: number | false) {
         if (limitApplied === false) {
             activeLimits.delete(document);
+
             if (statusItem && document === window.activeTextEditor?.document) {
                 statusItem.dispose();
                 statusItem = undefined;
@@ -227,6 +267,7 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
         }
         else {
             activeLimits.set(document, limitApplied);
+
             if (document === window.activeTextEditor?.document) {
                 if (!statusItem || limitApplied !== activeLimits.get(document)) {
                     statusItem?.dispose();
@@ -247,6 +288,7 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
     };
 }
 const openSettingsCommand = 'workbench.action.openSettings';
+
 const configureSettingsLabel = l10n.t('Configure');
 export function createDocumentSymbolsLimitItem(documentSelector: DocumentSelector, settingId: string, limit: number): Disposable {
     const statusItem = languages.createLanguageStatusItem('json.documentSymbolsStatus', documentSelector);
@@ -255,5 +297,6 @@ export function createDocumentSymbolsLimitItem(documentSelector: DocumentSelecto
     statusItem.text = l10n.t('Outline');
     statusItem.detail = l10n.t('only {0} document symbols shown for performance reasons', limit);
     statusItem.command = { command: openSettingsCommand, arguments: [settingId], title: configureSettingsLabel };
+
     return Disposable.from(statusItem);
 }

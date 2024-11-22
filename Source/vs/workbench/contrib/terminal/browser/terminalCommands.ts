@@ -10,6 +10,7 @@ export function setupTerminalCommands(): void {
 function registerOpenTerminalAtIndexCommands(): void {
     for (let i = 0; i < 9; i++) {
         const terminalIndex = i;
+
         const visibleIndex = i + 1;
         KeybindingsRegistry.registerCommandAndKeybindingRule({
             id: `workbench.action.terminal.focusAtIndex${visibleIndex}`,
@@ -18,6 +19,7 @@ function registerOpenTerminalAtIndexCommands(): void {
             primary: 0,
             handler: accessor => {
                 accessor.get(ITerminalGroupService).setActiveInstanceByIndex(terminalIndex);
+
                 return accessor.get(ITerminalGroupService).showPanel(true);
             }
         });

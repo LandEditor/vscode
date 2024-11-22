@@ -15,6 +15,7 @@ export class SmartSnippetInserter {
     private static hasOpenBrace(scanner: JSONScanner): boolean {
         while (scanner.scan() !== JSONSyntaxKind.EOF) {
             const kind = scanner.getToken();
+
             if (kind === JSONSyntaxKind.OpenBraceToken) {
                 return true;
             }
@@ -23,11 +24,16 @@ export class SmartSnippetInserter {
     }
     private static offsetToPosition(model: ITextModel, offset: number): Position {
         let offsetBeforeLine = 0;
+
         const eolLength = model.getEOL().length;
+
         const lineCount = model.getLineCount();
+
         for (let lineNumber = 1; lineNumber <= lineCount; lineNumber++) {
             const lineTotalLength = model.getLineLength(lineNumber) + eolLength;
+
             const offsetAfterLine = offsetBeforeLine + lineTotalLength;
+
             if (offsetAfterLine > offset) {
                 return new Position(lineNumber, offset - offsetBeforeLine + 1);
             }
@@ -44,11 +50,17 @@ export class SmartSnippetInserter {
             BEFORE_OBJECT = 2
         }
         let currentState = State.INVALID;
+
         let lastValidPos = -1;
+
         let lastValidState = State.INVALID;
+
         const scanner = createJSONScanner(model.getValue());
+
         let arrayLevel = 0;
+
         let objLevel = 0;
+
         const checkRangeStatus = (pos: number, state: State) => {
             if (state !== State.INVALID && arrayLevel === 1 && objLevel === 0) {
                 currentState = state;
@@ -62,42 +74,58 @@ export class SmartSnippetInserter {
                 }
             }
         };
+
         while (scanner.scan() !== JSONSyntaxKind.EOF) {
             const currentPos = scanner.getPosition();
+
             const kind = scanner.getToken();
+
             let goodKind = false;
+
             switch (kind) {
                 case JSONSyntaxKind.OpenBracketToken:
                     goodKind = true;
                     arrayLevel++;
                     checkRangeStatus(currentPos, State.BEFORE_OBJECT);
+
                     break;
+
                 case JSONSyntaxKind.CloseBracketToken:
                     goodKind = true;
                     arrayLevel--;
                     checkRangeStatus(currentPos, State.INVALID);
+
                     break;
+
                 case JSONSyntaxKind.CommaToken:
                     goodKind = true;
                     checkRangeStatus(currentPos, State.BEFORE_OBJECT);
+
                     break;
+
                 case JSONSyntaxKind.OpenBraceToken:
                     goodKind = true;
                     objLevel++;
                     checkRangeStatus(currentPos, State.INVALID);
+
                     break;
+
                 case JSONSyntaxKind.CloseBraceToken:
                     goodKind = true;
                     objLevel--;
                     checkRangeStatus(currentPos, State.AFTER_OBJECT);
+
                     break;
+
                 case JSONSyntaxKind.Trivia:
                 case JSONSyntaxKind.LineBreakTrivia:
                     goodKind = true;
             }
             if (currentPos >= desiredPosition && (currentState !== State.INVALID || lastValidPos !== -1)) {
                 let acceptPosition: number;
+
                 let acceptState: State;
+
                 if (currentState !== State.INVALID) {
                     acceptPosition = (goodKind ? currentPos : scanner.getTokenOffset());
                     acceptState = currentState;
@@ -115,6 +143,7 @@ export class SmartSnippetInserter {
                 }
                 else {
                     scanner.setPosition(acceptPosition);
+
                     return {
                         position: this.offsetToPosition(model, acceptPosition),
                         prepend: '',
@@ -125,6 +154,7 @@ export class SmartSnippetInserter {
         }
         // no valid position found!
         const modelLineCount = model.getLineCount();
+
         return {
             position: new Position(modelLineCount, model.getLineMaxColumn(modelLineCount)),
             prepend: '\n[',

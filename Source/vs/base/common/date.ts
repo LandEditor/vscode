@@ -7,10 +7,15 @@ import { localize } from '../../nls.js';
 import { LANGUAGE_DEFAULT } from './platform.js';
 
 const minute = 60;
+
 const hour = minute * 60;
+
 const day = hour * 24;
+
 const week = day * 7;
+
 const month = day * 30;
+
 const year = day * 365;
 
 /**
@@ -28,6 +33,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	const seconds = Math.round((new Date().getTime() - date) / 1000);
+
 	if (seconds < -30) {
 		return localize('date.fromNow.in', 'in {0}', fromNow(new Date().getTime() + seconds * 1000, false));
 	}
@@ -37,6 +43,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	let value: number;
+
 	if (seconds < minute) {
 		value = seconds;
 
@@ -65,6 +72,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < hour) {
 		value = Math.floor(seconds / minute);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -90,6 +98,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < day) {
 		value = Math.floor(seconds / hour);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -115,6 +124,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < week) {
 		value = Math.floor(seconds / day);
+
 		if (appendAgoLabel) {
 			return value === 1
 				? localize('date.fromNow.days.singular.ago', '{0} day ago', value)
@@ -128,6 +138,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < month) {
 		value = Math.floor(seconds / week);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -153,6 +164,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < year) {
 		value = Math.floor(seconds / month);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -177,6 +189,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	value = Math.floor(seconds / year);
+
 	if (appendAgoLabel) {
 		if (value === 1) {
 			return useFullTimeWords
@@ -207,6 +220,7 @@ export function fromNowByDay(date: number | Date, appendAgoLabel?: boolean, useF
 
 	const todayMidnightTime = new Date();
 	todayMidnightTime.setHours(0, 0, 0, 0);
+
 	const yesterdayMidnightTime = new Date(todayMidnightTime.getTime());
 	yesterdayMidnightTime.setDate(yesterdayMidnightTime.getDate() - 1);
 
@@ -229,6 +243,7 @@ export function fromNowByDay(date: number | Date, appendAgoLabel?: boolean, useF
  */
 export function getDurationString(ms: number, useFullTimeWords?: boolean) {
 	const seconds = Math.abs(ms / 1000);
+
 	if (seconds < 1) {
 		return useFullTimeWords
 			? localize('duration.ms.full', '{0} milliseconds', ms)

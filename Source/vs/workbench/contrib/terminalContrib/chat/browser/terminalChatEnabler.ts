@@ -10,6 +10,7 @@ export class TerminalChatEnabler {
     static Id = 'terminalChat.enabler';
     private readonly _ctxHasProvider: IContextKey<boolean>;
     private readonly _store = new DisposableStore();
+
     constructor(
     @IChatAgentService
     chatAgentService: IChatAgentService, 

@@ -30,12 +30,14 @@ export class MarkdownString implements IMarkdownString {
     public supportThemeIcons?: boolean;
     public supportHtml?: boolean;
     public baseUri?: URI;
+
     constructor(value: string = '', isTrustedOrOptions: boolean | {
         isTrusted?: boolean | MarkdownStringTrustedOptions;
         supportThemeIcons?: boolean;
         supportHtml?: boolean;
     } = false) {
         this.value = value;
+
         if (typeof this.value !== 'string') {
             throw illegalArgument('value');
         }
@@ -59,10 +61,12 @@ export class MarkdownString implements IMarkdownString {
     }
     appendMarkdown(value: string): MarkdownString {
         this.value += value;
+
         return this;
     }
     appendCodeblock(langId: string, code: string): MarkdownString {
         this.value += `\n${appendEscapedMarkdownCodeBlockFence(code, langId)}\n`;
+
         return this;
     }
     appendLink(target: URI | string, label: string, title?: string): MarkdownString {
@@ -70,14 +74,17 @@ export class MarkdownString implements IMarkdownString {
         this.value += this._escape(label, ']');
         this.value += '](';
         this.value += this._escape(String(target), ')');
+
         if (title) {
             this.value += ` "${this._escape(this._escape(title, '"'), ')')}"`;
         }
         this.value += ')';
+
         return this;
     }
     private _escape(value: string, ch: string): string {
         const r = new RegExp(escapeRegExpCharacters(ch), 'g');
+
         return value.replace(r, (match, offset) => {
             if (value.charAt(offset - 1) !== '\\') {
                 return `\\${match}`;
@@ -135,6 +142,7 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
 export function appendEscapedMarkdownCodeBlockFence(code: string, langId: string) {
     const longestFenceLength = code.match(/^`+/gm)?.reduce((a, b) => (a.length > b.length ? a : b)).length ??
         0;
+
     const desiredFenceLength = longestFenceLength >= 3 ? longestFenceLength + 1 : 3;
     // the markdown result
     return [
@@ -157,16 +165,25 @@ export function parseHrefAndDimensions(href: string): {
     dimensions: string[];
 } {
     const dimensions: string[] = [];
+
     const splitted = href.split('|').map(s => s.trim());
     href = splitted[0];
+
     const parameters = splitted[1];
+
     if (parameters) {
         const heightFromParams = /height=(\d+)/.exec(parameters);
+
         const widthFromParams = /width=(\d+)/.exec(parameters);
+
         const height = heightFromParams ? heightFromParams[1] : '';
+
         const width = widthFromParams ? widthFromParams[1] : '';
+
         const widthIsFinite = isFinite(parseInt(width));
+
         const heightIsFinite = isFinite(parseInt(height));
+
         if (widthIsFinite) {
             dimensions.push(`width="${width}"`);
         }

@@ -15,6 +15,7 @@ import { DisposableStore } from '../../../../base/common/lifecycle.js';
 export class UserDataProfileStorageService extends AbstractUserDataProfileStorageService implements IUserDataProfileStorageService {
     private readonly _onDidChange = this._register(new Emitter<IProfileStorageChanges>());
     readonly onDidChange: Event<IProfileStorageChanges> = this._onDidChange.event;
+
     constructor(
     @IStorageService
     storageService: IStorageService, 
@@ -23,6 +24,7 @@ export class UserDataProfileStorageService extends AbstractUserDataProfileStorag
     @ILogService
     private readonly logService: ILogService) {
         super(true, storageService);
+
         const disposables = this._register(new DisposableStore());
         this._register(Event.filter(storageService.onDidChangeTarget, e => e.scope === StorageScope.PROFILE, disposables)(() => this.onDidChangeStorageTargetInCurrentProfile()));
         this._register(storageService.onDidChangeValue(StorageScope.PROFILE, undefined, disposables)(e => this.onDidChangeStorageValueInCurrentProfile(e)));

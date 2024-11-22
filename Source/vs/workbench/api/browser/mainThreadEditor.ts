@@ -28,12 +28,16 @@ export interface IFocusTracker {
 export class MainThreadTextEditorProperties {
     public static readFromEditor(previousProperties: MainThreadTextEditorProperties | null, model: ITextModel, codeEditor: ICodeEditor | null): MainThreadTextEditorProperties {
         const selections = MainThreadTextEditorProperties._readSelectionsFromCodeEditor(previousProperties, codeEditor);
+
         const options = MainThreadTextEditorProperties._readOptionsFromCodeEditor(previousProperties, model, codeEditor);
+
         const visibleRanges = MainThreadTextEditorProperties._readVisibleRangesFromCodeEditor(previousProperties, codeEditor);
+
         return new MainThreadTextEditorProperties(selections, options, visibleRanges);
     }
     private static _readSelectionsFromCodeEditor(previousProperties: MainThreadTextEditorProperties | null, codeEditor: ICodeEditor | null): Selection[] {
         let result: Selection[] | null = null;
+
         if (codeEditor) {
             result = codeEditor.getSelections();
         }
@@ -56,9 +60,12 @@ export class MainThreadTextEditorProperties {
             }
         }
         let cursorStyle: TextEditorCursorStyle;
+
         let lineNumbers: RenderLineNumbersType;
+
         if (codeEditor) {
             const options = codeEditor.getOptions();
+
             const lineNumbersOpts = options.get(EditorOption.lineNumbers);
             cursorStyle = options.get(EditorOption.cursorStyle);
             lineNumbers = lineNumbersOpts.renderType;
@@ -72,6 +79,7 @@ export class MainThreadTextEditorProperties {
             lineNumbers = RenderLineNumbersType.On;
         }
         const modelOptions = model.getOptions();
+
         return {
             insertSpaces: modelOptions.insertSpaces,
             tabSize: modelOptions.tabSize,
@@ -95,6 +103,7 @@ export class MainThreadTextEditorProperties {
             selections: null,
             visibleRanges: null
         };
+
         if (!oldProps || !MainThreadTextEditorProperties._selectionsEqual(oldProps.selections, this.selections)) {
             delta.selections = {
                 selections: this.selections,
@@ -150,6 +159,7 @@ export class MainThreadTextEditor {
     private readonly _codeEditorListeners = new DisposableStore();
     private _properties: MainThreadTextEditorProperties | null;
     private readonly _onPropertiesChanged: Emitter<IEditorPropertiesChangeData>;
+
     constructor(id: string, model: ITextModel, codeEditor: ICodeEditor, focusTracker: IFocusTracker, mainThreadDocuments: MainThreadDocuments, modelService: IModelService, clipboardService: IClipboardService) {
         this._id = id;
         this._model = model;
@@ -177,6 +187,7 @@ export class MainThreadTextEditor {
     private _setProperties(newProperties: MainThreadTextEditorProperties, selectionChangeSource: string | null): void {
         const delta = newProperties.generateDelta(this._properties, selectionChangeSource);
         this._properties = newProperties;
+
         if (delta) {
             this._onPropertiesChanged.fire(delta);
         }
@@ -200,6 +211,7 @@ export class MainThreadTextEditor {
         }
         this._codeEditorListeners.clear();
         this._codeEditor = codeEditor;
+
         if (this._codeEditor) {
             // Catch early the case that this code editor gets a different model set and disassociate from this model
             this._codeEditorListeners.add(this._codeEditor.onDidChangeModel(() => {
@@ -211,6 +223,7 @@ export class MainThreadTextEditor {
             this._codeEditorListeners.add(this._codeEditor.onDidBlurEditorWidget(() => {
                 this._focusTracker.onLostFocus();
             }));
+
             let nextSelectionChangeSource: string | null = null;
             this._codeEditorListeners.add(this._mainThreadDocuments.onIsCaughtUpWithContentChanges((uri) => {
                 if (uri.toString() === this._model.uri.toString()) {
@@ -219,6 +232,7 @@ export class MainThreadTextEditor {
                     this._updatePropertiesNow(selectionChangeSource);
                 }
             }));
+
             const isValidCodeEditor = () => {
                 // Due to event timings, it is possible that there is a model change event not yet delivered to us.
                 // > e.g. a model change event is emitted to a listener which then decides to update editor options
@@ -226,6 +240,7 @@ export class MainThreadTextEditor {
                 // So simply check that the model is still attached to this code editor
                 return (this._codeEditor && this._codeEditor.getModel() === this._model);
             };
+
             const updateProperties = (selectionChangeSource: string | null) => {
                 // Some editor events get delivered faster than model content changes. This is
                 // problematic, as this leads to editor properties reaching the extension host
@@ -285,6 +300,7 @@ export class MainThreadTextEditor {
     public setSelections(selections: ISelection[]): void {
         if (this._codeEditor) {
             this._codeEditor.setSelections(selections);
+
             return;
         }
         const newSelections = selections.map(Selection.liftSelection);
@@ -292,10 +308,13 @@ export class MainThreadTextEditor {
     }
     private _setIndentConfiguration(newConfiguration: ITextEditorConfigurationUpdate): void {
         const creationOpts = this._modelService.getCreationOptions(this._model.getLanguageId(), this._model.uri, this._model.isForSimpleWidget);
+
         if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
             // one of the options was set to 'auto' => detect indentation
             let insertSpaces = creationOpts.insertSpaces;
+
             let tabSize = creationOpts.tabSize;
+
             if (newConfiguration.insertSpaces !== 'auto' && typeof newConfiguration.insertSpaces !== 'undefined') {
                 insertSpaces = newConfiguration.insertSpaces;
             }
@@ -303,9 +322,11 @@ export class MainThreadTextEditor {
                 tabSize = newConfiguration.tabSize;
             }
             this._model.detectIndentation(insertSpaces, tabSize);
+
             return;
         }
         const newOpts: ITextModelUpdateOptions = {};
+
         if (typeof newConfiguration.insertSpaces !== 'undefined') {
             newOpts.insertSpaces = newConfiguration.insertSpaces;
         }
@@ -319,6 +340,7 @@ export class MainThreadTextEditor {
     }
     public setConfiguration(newConfiguration: ITextEditorConfigurationUpdate): void {
         this._setIndentConfiguration(newConfiguration);
+
         if (!this._codeEditor) {
             return;
         }
@@ -330,16 +352,23 @@ export class MainThreadTextEditor {
         }
         if (typeof newConfiguration.lineNumbers !== 'undefined') {
             let lineNumbers: 'on' | 'off' | 'relative' | 'interval';
+
             switch (newConfiguration.lineNumbers) {
                 case RenderLineNumbersType.On:
                     lineNumbers = 'on';
+
                     break;
+
                 case RenderLineNumbersType.Relative:
                     lineNumbers = 'relative';
+
                     break;
+
                 case RenderLineNumbersType.Interval:
                     lineNumbers = 'interval';
+
                     break;
+
                 default:
                     lineNumbers = 'off';
             }
@@ -359,6 +388,7 @@ export class MainThreadTextEditor {
             return;
         }
         const ranges: Range[] = [];
+
         for (let i = 0, len = Math.floor(_ranges.length / 4); i < len; i++) {
             ranges[i] = new Range(_ranges[4 * i], _ranges[4 * i + 1], _ranges[4 * i + 2], _ranges[4 * i + 3]);
         }
@@ -371,18 +401,27 @@ export class MainThreadTextEditor {
         switch (revealType) {
             case TextEditorRevealType.Default:
                 this._codeEditor.revealRange(range, ScrollType.Smooth);
+
                 break;
+
             case TextEditorRevealType.InCenter:
                 this._codeEditor.revealRangeInCenter(range, ScrollType.Smooth);
+
                 break;
+
             case TextEditorRevealType.InCenterIfOutsideViewport:
                 this._codeEditor.revealRangeInCenterIfOutsideViewport(range, ScrollType.Smooth);
+
                 break;
+
             case TextEditorRevealType.AtTop:
                 this._codeEditor.revealRangeAtTop(range, ScrollType.Smooth);
+
                 break;
+
             default:
                 console.warn(`Unknown revealType: ${revealType}`);
+
                 break;
         }
     }
@@ -406,6 +445,7 @@ export class MainThreadTextEditor {
         }
         if (!this._codeEditor) {
             // console.warn('applyEdits on invisible editor');
+
             return false;
         }
         if (typeof opts.setEndOfLine !== 'undefined') {
@@ -418,10 +458,12 @@ export class MainThreadTextEditor {
                 forceMoveMarkers: edit.forceMoveMarkers
             };
         });
+
         if (opts.undoStopBefore) {
             this._codeEditor.pushUndoStop();
         }
         this._codeEditor.executeEdits('MainThreadTextEditor', transformedEdits);
+
         if (opts.undoStopAfter) {
             this._codeEditor.pushUndoStop();
         }
@@ -433,10 +475,13 @@ export class MainThreadTextEditor {
         }
         // check if clipboard is required and only iff read it (async)
         let clipboardText: string | undefined;
+
         const needsTemplate = SnippetParser.guessNeedsClipboard(template);
+
         if (needsTemplate) {
             const state = new EditorState(this._codeEditor, CodeEditorStateFlag.Value | CodeEditorStateFlag.Position);
             clipboardText = await this._clipboardService.readText();
+
             if (!state.validate(this._codeEditor)) {
                 return false;
             }
@@ -445,6 +490,7 @@ export class MainThreadTextEditor {
             return false;
         }
         const snippetController = SnippetController2.get(this._codeEditor);
+
         if (!snippetController) {
             return false;
         }
@@ -456,6 +502,7 @@ export class MainThreadTextEditor {
             undoStopBefore: opts.undoStopBefore, undoStopAfter: opts.undoStopAfter,
             clipboardText
         });
+
         return true;
     }
 }

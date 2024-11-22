@@ -21,7 +21,9 @@ import { MergedEnvironmentVariableCollection } from '../common/environmentVariab
 
 export function getWindowsBuildNumber(): number {
 	const osVersion = (/(\d+)\.(\d+)\.(\d+)/g).exec(os.release());
+
 	let buildNumber: number = 0;
+
 	if (osVersion && osVersion.length === 4) {
 		buildNumber = parseInt(osVersion[3]);
 	}
@@ -37,19 +39,23 @@ export async function findExecutable(command: string, cwd?: string, paths?: stri
 		cwd = process.cwd();
 	}
 	const dir = path.dirname(command);
+
 	if (dir !== '.') {
 		// We have a directory and the directory is relative (see above). Make the path absolute
 		// to the current working directory.
 		const fullPath = path.join(cwd, command);
+
 		return await exists(fullPath) ? fullPath : undefined;
 	}
 	const envPath = getCaseInsensitive(env, 'PATH');
+
 	if (paths === undefined && isString(envPath)) {
 		paths = envPath.split(path.delimiter);
 	}
 	// No PATH environment. Make path absolute to the cwd.
 	if (paths === undefined || paths.length === 0) {
 		const fullPath = path.join(cwd, command);
+
 		return await exists(fullPath) ? fullPath : undefined;
 	}
 	// We have a simple file name. We get the path variable from the env
@@ -57,6 +63,7 @@ export async function findExecutable(command: string, cwd?: string, paths?: stri
 	for (const pathEntry of paths) {
 		// The path entry is absolute.
 		let fullPath: string;
+
 		if (path.isAbsolute(pathEntry)) {
 			fullPath = path.join(pathEntry, command);
 		} else {
@@ -68,16 +75,19 @@ export async function findExecutable(command: string, cwd?: string, paths?: stri
 		}
 		if (isWindows) {
 			let withExtension = fullPath + '.com';
+
 			if (await exists(withExtension)) {
 				return withExtension;
 			}
 			withExtension = fullPath + '.exe';
+
 			if (await exists(withExtension)) {
 				return withExtension;
 			}
 		}
 	}
 	const fullPath = path.join(cwd, command);
+
 	return await exists(fullPath) ? fullPath : undefined;
 }
 
@@ -117,6 +127,7 @@ export function getShellIntegrationInjection(
 	// - There is no executable (not sure what script to run)
 	// - The terminal is used by a feature like tasks or debugging
 	const useWinpty = isWindows && (!options.windowsEnableConpty || getWindowsBuildNumber() < 18309);
+
 	if (
 		// The global setting is disabled
 		!options.shellIntegration.enabled ||
@@ -133,9 +144,13 @@ export function getShellIntegrationInjection(
 	}
 
 	const originalArgs = shellLaunchConfig.args;
+
 	const shell = process.platform === 'win32' ? path.basename(shellLaunchConfig.executable).toLowerCase() : path.basename(shellLaunchConfig.executable);
+
 	const appRoot = path.dirname(FileAccess.asFileUri('').fsPath);
+
 	let newArgs: string[] | undefined;
+
 	const envMixin: IProcessEnvironment = {
 		'VSCODE_INJECTION': '1'
 	};
@@ -158,6 +173,7 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(newArgs[newArgs.length - 1], appRoot, '');
 			envMixin['VSCODE_STABLE'] = productService.quality === 'stable' ? '1' : '0';
+
 			if (options.shellIntegration.suggestEnabled) {
 				envMixin['VSCODE_SUGGEST'] = '1';
 			}
@@ -176,9 +192,11 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(newArgs[newArgs.length - 1], appRoot);
 			envMixin['VSCODE_STABLE'] = productService.quality === 'stable' ? '1' : '0';
+
 			return { newArgs, envMixin };
 		}
 		logService.warn(`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`, shellLaunchConfig.args);
+
 		return undefined;
 	}
 
@@ -198,6 +216,7 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(newArgs[newArgs.length - 1], appRoot);
 			envMixin['VSCODE_STABLE'] = productService.quality === 'stable' ? '1' : '0';
+
 			return { newArgs, envMixin };
 		}
 		case 'fish': {
@@ -218,6 +237,7 @@ export function getShellIntegrationInjection(
 
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(newArgs[newArgs.length - 1], appRoot);
+
 			return { newArgs, envMixin };
 		}
 		case 'pwsh': {
@@ -235,6 +255,7 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(newArgs[newArgs.length - 1], appRoot, '');
 			envMixin['VSCODE_STABLE'] = productService.quality === 'stable' ? '1' : '0';
+
 			return { newArgs, envMixin };
 		}
 		case 'zsh': {
@@ -254,6 +275,7 @@ export function getShellIntegrationInjection(
 
 			// Move .zshrc into $ZDOTDIR as the way to activate the script
 			let username: string;
+
 			try {
 				username = os.userInfo().username;
 			} catch {
@@ -261,8 +283,10 @@ export function getShellIntegrationInjection(
 			}
 			const zdotdir = path.join(os.tmpdir(), `${username}-${productService.applicationName}-zsh`);
 			envMixin['ZDOTDIR'] = zdotdir;
+
 			const userZdotdir = env?.ZDOTDIR ?? os.homedir() ?? `~`;
 			envMixin['USER_ZDOTDIR'] = userZdotdir;
+
 			const filesToCopy: IShellIntegrationConfigInjection['filesToCopy'] = [];
 			filesToCopy.push({
 				source: path.join(appRoot, 'out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-rc.zsh'),
@@ -280,10 +304,12 @@ export function getShellIntegrationInjection(
 				source: path.join(appRoot, 'out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-login.zsh'),
 				dest: path.join(zdotdir, '.zlogin')
 			});
+
 			return { newArgs, envMixin, filesToCopy };
 		}
 	}
 	logService.warn(`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`, shellLaunchConfig.args);
+
 	return undefined;
 }
 
@@ -303,11 +329,14 @@ function addEnvMixinPathPrefix(options: ITerminalProcessOptions, envMixin: IProc
 	if ((isMacintosh || shell === 'fish') && options.environmentVariableCollections) {
 		// Deserialize and merge
 		const deserialized = deserializeEnvironmentVariableCollections(options.environmentVariableCollections);
+
 		const merged = new MergedEnvironmentVariableCollection(deserialized);
 
 		// Get all prepend PATH entries
 		const pathEntry = merged.getVariableMap({ workspaceFolder: options.workspaceFolder }).get('PATH');
+
 		const prependToPath: string[] = [];
+
 		if (pathEntry) {
 			for (const mutator of pathEntry) {
 				if (mutator.type === EnvironmentVariableMutatorType.Prepend) {
@@ -346,9 +375,13 @@ shellIntegrationArgs.set(ShellIntegrationExecutable.ZshLogin, ['-il']);
 shellIntegrationArgs.set(ShellIntegrationExecutable.Bash, ['--init-file', '{0}/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration-bash.sh']);
 shellIntegrationArgs.set(ShellIntegrationExecutable.Fish, ['--init-command', 'source "{0}/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration.fish"']);
 shellIntegrationArgs.set(ShellIntegrationExecutable.FishLogin, ['-l', '--init-command', 'source "{0}/out/vs/workbench/contrib/terminal/common/scripts/shellIntegration.fish"']);
+
 const pwshLoginArgs = ['-login', '-l'];
+
 const shLoginArgs = ['--login', '-l'];
+
 const shInteractiveArgs = ['-i', '--interactive'];
+
 const pwshImpliedArgs = ['-nol', '-nologo'];
 
 function arePwshLoginArgs(originalArgs: string | string[]): boolean {

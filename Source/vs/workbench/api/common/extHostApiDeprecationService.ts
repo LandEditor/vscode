@@ -16,6 +16,7 @@ export class ExtHostApiDeprecationService implements IExtHostApiDeprecationServi
     declare readonly _serviceBrand: undefined;
     private readonly _reportedUsages = new Set<string>();
     private readonly _telemetryShape: extHostProtocol.MainThreadTelemetryShape;
+
     constructor(
     @IExtHostRpcService
     rpc: IExtHostRpcService, 
@@ -25,10 +26,12 @@ export class ExtHostApiDeprecationService implements IExtHostApiDeprecationServi
     }
     public report(apiId: string, extension: IExtensionDescription, migrationSuggestion: string): void {
         const key = this.getUsageKey(apiId, extension);
+
         if (this._reportedUsages.has(key)) {
             return;
         }
         this._reportedUsages.add(key);
+
         if (extension.isUnderDevelopment) {
             this._extHostLogService.warn(`[Deprecation Warning] '${apiId}' is deprecated. ${migrationSuggestion}`);
         }

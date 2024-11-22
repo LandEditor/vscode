@@ -13,7 +13,9 @@ export interface IAccessibilityService {
     alwaysUnderlineAccessKeys(): Promise<boolean>;
     isScreenReaderOptimized(): boolean;
     isMotionReduced(): boolean;
+
     getAccessibilitySupport(): AccessibilitySupport;
+
     setAccessibilitySupport(accessibilitySupport: AccessibilitySupport): void;
     alert(message: string): void;
     status(message: string): void;

@@ -279,6 +279,7 @@ export interface IMenuChangeEvent {
 
 export interface IMenu extends IDisposable {
 	readonly onDidChange: Event<IMenuChangeEvent>;
+
 	getActions(options?: IMenuActionOptions): [string, Array<MenuItemAction | SubmenuItemAction>][];
 }
 
@@ -341,6 +342,7 @@ class MenuRegistryChangeEvent {
 
 	static for(id: MenuId): MenuRegistryChangeEvent {
 		let value = this._all.get(id);
+
 		if (!value) {
 			value = new MenuRegistryChangeEvent(id);
 			this._all.set(id, value);
@@ -350,6 +352,7 @@ class MenuRegistryChangeEvent {
 
 	static merge(events: IMenuRegistryChangeEvent[]): IMenuRegistryChangeEvent {
 		const ids = new Set<MenuId>();
+
 		for (const item of events) {
 			if (item instanceof MenuRegistryChangeEvent) {
 				ids.add(item.id);
@@ -368,7 +371,9 @@ class MenuRegistryChangeEvent {
 export interface IMenuRegistry {
 	readonly onDidChangeMenu: Event<IMenuRegistryChangeEvent>;
 	addCommand(userCommand: ICommandAction): IDisposable;
+
 	getCommand(id: string): ICommandAction | undefined;
+
 	getCommands(): ICommandsMap;
 
 	/**
@@ -377,6 +382,7 @@ export interface IMenuRegistry {
 	 */
 	appendMenuItems(items: Iterable<{ id: MenuId; item: IMenuItem | ISubmenuItem }>): IDisposable;
 	appendMenuItem(menu: MenuId, item: IMenuItem | ISubmenuItem): IDisposable;
+
 	getMenuItems(loc: MenuId): Array<IMenuItem | ISubmenuItem>;
 }
 
@@ -408,17 +414,20 @@ export const MenuRegistry: IMenuRegistry = new class implements IMenuRegistry {
 	getCommands(): ICommandsMap {
 		const map = new Map<string, ICommandAction>();
 		this._commands.forEach((value, key) => map.set(key, value));
+
 		return map;
 	}
 
 	appendMenuItem(id: MenuId, item: IMenuItem | ISubmenuItem): IDisposable {
 		let list = this._menuItems.get(id);
+
 		if (!list) {
 			list = new LinkedList();
 			this._menuItems.set(id, list);
 		}
 		const rm = list.push(item);
 		this._onDidChangeMenu.fire(MenuRegistryChangeEvent.for(id));
+
 		return toDisposable(() => {
 			rm();
 			this._onDidChangeMenu.fire(MenuRegistryChangeEvent.for(id));
@@ -427,6 +436,7 @@ export const MenuRegistry: IMenuRegistry = new class implements IMenuRegistry {
 
 	appendMenuItems(items: Iterable<{ id: MenuId; item: IMenuItem | ISubmenuItem }>): IDisposable {
 		const result = new DisposableStore();
+
 		for (const { id, item } of items) {
 			result.add(this.appendMenuItem(id, item));
 		}
@@ -435,6 +445,7 @@ export const MenuRegistry: IMenuRegistry = new class implements IMenuRegistry {
 
 	getMenuItems(id: MenuId): Array<IMenuItem | ISubmenuItem> {
 		let result: Array<IMenuItem | ISubmenuItem>;
+
 		if (this._menuItems.has(id)) {
 			result = [...this._menuItems.get(id)!];
 		} else {
@@ -454,6 +465,7 @@ export const MenuRegistry: IMenuRegistry = new class implements IMenuRegistry {
 		for (const item of result) {
 			if (isIMenuItem(item)) {
 				set.add(item.command.id);
+
 				if (item.alt) {
 					set.add(item.alt.id);
 				}
@@ -528,6 +540,7 @@ export class MenuItemAction implements IAction {
 				condition: ContextKeyExpression; icon?: Icon; tooltip?: string | ILocalizedString; title?: string | ILocalizedString;
 			};
 			this.checked = contextKeyService.contextMatchesRules(toggled.condition);
+
 			if (this.checked && toggled.tooltip) {
 				this.tooltip = typeof toggled.tooltip === 'string' ? toggled.tooltip : toggled.tooltip.value;
 			}

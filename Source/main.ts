@@ -19,6 +19,7 @@ import { resolveNLSConfiguration } from './vs/base/node/nls.js';
 import { getUNCHost, addUNCHostToAllowlist } from './vs/base/node/unc.js';
 import { INLSConfiguration } from './vs/nls.js';
 import { NativeParsedArgs } from './vs/platform/environment/common/argv.js';
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 perf.mark('code/didStartMain');
 perf.mark('code/willLoadMainBundle', {
@@ -30,6 +31,7 @@ perf.mark('code/willLoadMainBundle', {
 perf.mark('code/didLoadMainBundle');
 // Enable portable support
 const portable = configurePortable(product);
+
 const args = parseCLIArgs();
 // Configure static command line arguments
 const argvConfig = configureCommandlineSwitchesSync(args);
@@ -55,6 +57,7 @@ else {
 const userDataPath = getUserDataPath(args, product.nameShort ?? 'code-oss-dev');
 if (process.platform === 'win32') {
     const userDataUNCHost = getUNCHost(userDataPath);
+
     if (userDataUNCHost) {
         addUNCHostToAllowlist(userDataUNCHost); // enables to use UNC paths in userDataPath
     }
@@ -109,6 +112,7 @@ let nlsConfigurationPromise: Promise<INLSConfiguration> | undefined = undefined;
 // the 'C' locale is the user's only configured locale.
 // No matter the OS, if the array is empty, default back to 'en'.
 const osLocale = processZhLocale((app.getPreferredSystemLanguages()?.[0] ?? 'en').toLowerCase());
+
 const userLocale = getUserDefinedLocale(argvConfig);
 if (userLocale) {
     nlsConfigurationPromise = resolveNLSConfiguration({
@@ -145,6 +149,7 @@ app.once('ready', function () {
 });
 async function onReady() {
     perf.mark('code/mainAppReady');
+
     try {
         const [, nlsConfig] = await Promise.all([
             mkdirpIgnoreError(codeCachePath),
@@ -179,6 +184,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
         // bypass any specified proxy for the given semi-colon-separated list of hosts
         'proxy-bypass-list'
     ];
+
     if (process.platform === 'linux') {
         // Force enable screen readers on Linux via this flag
         SUPPORTED_ELECTRON_SWITCHES.push('force-renderer-accessibility');
@@ -212,6 +218,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
                     // Password store
                     // TODO@TylerLeonhardt: Remove this migration in 3 months
                     let migratedArgvValue = argvValue;
+
                     if (argvValue === 'gnome' || argvValue === 'gnome-keyring') {
                         migratedArgvValue = 'gnome-libsecret';
                     }
@@ -233,6 +240,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
                         console.error(`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`);
                     }
                     break;
+
                 case 'log-level':
                     if (typeof argvValue === 'string') {
                         process.argv.push('--log', argvValue);
@@ -243,6 +251,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
                         }
                     }
                     break;
+
                 case 'use-inmemory-secretstorage':
                     if (argvValue) {
                         process.argv.push('--use-inmemory-secretstorage');
@@ -261,6 +270,7 @@ function configureCommandlineSwitchesSync(cliArgs: NativeParsedArgs) {
     app.commandLine.appendSwitch('disable-blink-features', blinkFeaturesToDisable);
     // Support JS Flags
     const jsFlags = getJSFlags(cliArgs);
+
     if (jsFlags) {
         app.commandLine.appendSwitch('js-flags', jsFlags);
     }
@@ -283,7 +293,9 @@ interface IArgvConfig {
 function readArgvConfigSync(): IArgvConfig {
     // Read or create the argv.json config file sync before app('ready')
     const argvConfigPath = getArgvConfigPath();
+
     let argvConfig: IArgvConfig | undefined = undefined;
+
     try {
         argvConfig = parse(fs.readFileSync(argvConfigPath).toString());
     }
@@ -305,6 +317,7 @@ function createDefaultArgvConfigSync(argvConfigPath: string): void {
     try {
         // Ensure argv config parent exists
         const argvConfigPathDirname = path.dirname(argvConfigPath);
+
         if (!fs.existsSync(argvConfigPathDirname)) {
             fs.mkdirSync(argvConfigPathDirname);
         }
@@ -332,10 +345,12 @@ function createDefaultArgvConfigSync(argvConfigPath: string): void {
 }
 function getArgvConfigPath(): string {
     const vscodePortable = process.env['VSCODE_PORTABLE'];
+
     if (vscodePortable) {
         return path.join(vscodePortable, 'argv.json');
     }
     let dataFolderName = product.dataFolderName;
+
     if (process.env['VSCODE_DEV']) {
         dataFolderName = `${dataFolderName}-dev`;
     }
@@ -343,9 +358,12 @@ function getArgvConfigPath(): string {
 }
 function configureCrashReporter(): void {
     let crashReporterDirectory = args['crash-reporter-directory'];
+
     let submitURL = '';
+
     if (crashReporterDirectory) {
         crashReporterDirectory = path.normalize(crashReporterDirectory);
+
         if (!path.isAbsolute(crashReporterDirectory)) {
             console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`);
             app.exit(1);
@@ -367,20 +385,29 @@ function configureCrashReporter(): void {
     // Otherwise we configure the crash reporter from product.json
     else {
         const appCenter = product.appCenter;
+
         if (appCenter) {
             const isWindows = (process.platform === 'win32');
+
             const isLinux = (process.platform === 'linux');
+
             const isDarwin = (process.platform === 'darwin');
+
             const crashReporterId = argvConfig['crash-reporter-id'];
+
             const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
             if (crashReporterId && uuidPattern.test(crashReporterId)) {
                 if (isWindows) {
                     switch (process.arch) {
                         case 'x64':
                             submitURL = appCenter['win32-x64'];
+
                             break;
+
                         case 'arm64':
                             submitURL = appCenter['win32-arm64'];
+
                             break;
                     }
                 }
@@ -392,9 +419,12 @@ function configureCrashReporter(): void {
                         switch (process.arch) {
                             case 'x64':
                                 submitURL = appCenter['darwin'];
+
                                 break;
+
                             case 'arm64':
                                 submitURL = appCenter['darwin-arm64'];
+
                                 break;
                         }
                     }
@@ -406,7 +436,9 @@ function configureCrashReporter(): void {
                 // Send the id for child node process that are explicitly starting crash reporter.
                 // For vscode this is ExtensionHost process currently.
                 const argv = process.argv;
+
                 const endOfArgsMarkerIndex = argv.indexOf('--');
+
                 if (endOfArgsMarkerIndex === -1) {
                     argv.push('--crash-reporter-id', crashReporterId);
                 }
@@ -421,7 +453,9 @@ function configureCrashReporter(): void {
     }
     // Start crash reporter for all processes
     const productName = (product.crashReporter ? product.crashReporter.productName : undefined) || product.nameShort;
+
     const companyName = (product.crashReporter ? product.crashReporter.companyName : undefined) || 'Microsoft';
+
     const uploadToServer = Boolean(!process.env['VSCODE_DEV'] && submitURL && !crashReporterDirectory);
     crashReporter.start({
         companyName,
@@ -472,6 +506,7 @@ function registerListeners(): void {
      * macOS: react to open-url requests.
      */
     const openUrls: string[] = [];
+
     const onOpenUrl = function (event: {
         preventDefault: () => void;
     }, url: string) {
@@ -483,6 +518,7 @@ function registerListeners(): void {
     });
     (globalThis as any)['getOpenUrls'] = function () {
         app.removeListener('open-url', onOpenUrl);
+
         return openUrls;
     };
 }
@@ -497,6 +533,7 @@ function getCodeCachePath(): string | undefined {
     }
     // require commit id
     const commit = product.commit;
+
     if (!commit) {
         return undefined;
     }
@@ -506,6 +543,7 @@ async function mkdirpIgnoreError(dir: string | undefined): Promise<string | unde
     if (typeof dir === 'string') {
         try {
             await fs.promises.mkdir(dir, { recursive: true });
+
             return dir;
         }
         catch (error) {
@@ -542,12 +580,14 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
     // If it fails we try the app locale.
     // If that fails we fall back to English.
     const nlsConfiguration = nlsConfigurationPromise ? await nlsConfigurationPromise : undefined;
+
     if (nlsConfiguration) {
         return nlsConfiguration;
     }
     // Try to use the app locale which is only valid
     // after the app ready event has been fired.
     let userLocale = app.getLocale();
+
     if (!userLocale) {
         return {
             userLocale: 'en',
@@ -561,6 +601,7 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
     }
     // See above the comment about the loader and case sensitiveness
     userLocale = processZhLocale(userLocale.toLowerCase());
+
     return resolveNLSConfiguration({
         userLocale,
         osLocale,
@@ -577,6 +618,7 @@ async function resolveNlsConfiguration(): Promise<INLSConfiguration> {
  */
 function getUserDefinedLocale(argvConfig: IArgvConfig): string | undefined {
     const locale = args['locale'];
+
     if (locale) {
         return locale.toLowerCase(); // a directly provided --locale always wins
     }

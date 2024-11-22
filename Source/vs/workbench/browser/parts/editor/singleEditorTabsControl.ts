@@ -30,12 +30,14 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     private get breadcrumbsControl() { return this.breadcrumbsControlFactory?.control; }
     protected override create(parent: HTMLElement): HTMLElement {
         super.create(parent);
+
         const titleContainer = this.titleContainer = parent;
         titleContainer.draggable = true;
         // Container listeners
         this.registerContainerListeners(titleContainer);
         // Gesture Support
         this._register(Gesture.addTarget(titleContainer));
+
         const labelContainer = document.createElement('div');
         labelContainer.classList.add('label-container');
         titleContainer.appendChild(labelContainer);
@@ -55,11 +57,13 @@ export class SingleEditorTabsControl extends EditorTabsControl {
         this._register(toDisposable(() => titleContainer.classList.remove('breadcrumbs'))); // important to remove because the container is a shared dom node
         // Create editor actions toolbar
         this.createEditorActionsToolBar(titleContainer, ['title-actions']);
+
         return titleContainer;
     }
     private registerContainerListeners(titleContainer: HTMLElement): void {
         // Drag & Drop support
         let lastDragEvent: DragEvent | undefined = undefined;
+
         let isNewWindowOperation = false;
         this._register(new DragAndDropObserver(titleContainer, {
             onDragStart: e => { isNewWindowOperation = this.onGroupDragStart(e, titleContainer); },
@@ -93,6 +97,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     private onTitleAuxClick(e: MouseEvent): void {
         if (e.button === 1 /* Middle Button */ && this.tabsModel.activeEditor) {
             EventHelper.stop(e, true /* for https://github.com/microsoft/vscode/issues/56715 */);
+
             if (!preventEditorClose(this.tabsModel, this.tabsModel.activeEditor, EditorCloseMethod.MOUSE, this.groupsView.partOptions)) {
                 this.groupView.closeEditor(this.tabsModel.activeEditor);
             }
@@ -104,6 +109,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
         // to check on the target
         // (https://github.com/microsoft/vscode/issues/107543)
         const target = e.initialTarget;
+
         if (!(isHTMLElement(target)) || !this.editorLabel || !isAncestor(target, this.editorLabel.element)) {
             return;
         }
@@ -122,6 +128,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     }
     private doHandleOpenEditor(): boolean {
         const activeEditorChanged = this.ifActiveEditorChanged(() => this.redraw());
+
         if (!activeEditorChanged) {
             this.ifActiveEditorPropertiesChanged(() => this.redraw());
         }
@@ -166,6 +173,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     }
     override updateOptions(oldOptions: IEditorPartOptions, newOptions: IEditorPartOptions): void {
         super.updateOptions(oldOptions, newOptions);
+
         if (oldOptions.labelFormat !== newOptions.labelFormat || !equals(oldOptions.decorations, newOptions.decorations)) {
             this.redraw();
         }
@@ -184,6 +192,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
             (!this.activeLabel.editor || !this.tabsModel.isActive(this.activeLabel.editor)) // active editor changed from editorA => editorB
         ) {
             fn();
+
             return true;
         }
         return false;
@@ -203,8 +212,11 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     }
     private redraw(): void {
         const editor = this.tabsModel.activeEditor ?? undefined;
+
         const options = this.groupsView.partOptions;
+
         const isEditorPinned = editor ? this.tabsModel.isPinned(editor) : false;
+
         const isGroupActive = this.groupsView.activeGroup === this.groupView;
         this.activeLabel = { editor, pinned: isEditorPinned };
         // Update Breadcrumbs
@@ -219,6 +231,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
         }
         // Clear if there is no editor
         const [titleContainer, editorLabel] = assertAllDefined(this.titleContainer, this.editorLabel);
+
         if (!editor) {
             titleContainer.classList.remove('dirty');
             editorLabel.clear();
@@ -230,7 +243,9 @@ export class SingleEditorTabsControl extends EditorTabsControl {
             this.updateEditorDirty(editor);
             // Editor Label
             const { labelFormat } = this.groupsView.partOptions;
+
             let description: string;
+
             if (this.breadcrumbsControl && !this.breadcrumbsControl.isHidden()) {
                 description = ''; // hide description when showing breadcrumbs
             }
@@ -255,6 +270,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
                 icon: editor.getIcon(),
                 hideIcon: options.showIcons === false,
             });
+
             if (isGroupActive) {
                 titleContainer.style.color = this.getColor(TAB_ACTIVE_FOREGROUND) || '';
             }
@@ -268,7 +284,9 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     private getVerbosity(style: string | undefined): Verbosity {
         switch (style) {
             case 'short': return Verbosity.SHORT;
+
             case 'long': return Verbosity.LONG;
+
             default: return Verbosity.MEDIUM;
         }
     }
@@ -291,6 +309,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
     }
     layout(dimensions: IEditorTitleControlDimensions): Dimension {
         this.breadcrumbsControl?.layout(undefined);
+
         return new Dimension(dimensions.container.width, this.getHeight());
     }
 }

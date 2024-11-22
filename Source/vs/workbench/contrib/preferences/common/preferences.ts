@@ -32,7 +32,9 @@ export interface IEndpointDetails {
 export const IPreferencesSearchService = createDecorator<IPreferencesSearchService>('preferencesSearchService');
 export interface IPreferencesSearchService {
     readonly _serviceBrand: undefined;
+
     getLocalSearchProvider(filter: string): ISearchProvider;
+
     getRemoteSearchProvider(filter: string, newExtensionsOnly?: boolean): ISearchProvider | undefined;
 }
 export interface ISearchProvider {
@@ -91,6 +93,7 @@ export type ExtensionToggleData = {
     recommendedExtensionsGalleryInfo: IStringDictionary<IGalleryExtension>;
     commonlyUsed: string[];
 };
+
 let cachedExtensionToggleData: ExtensionToggleData | undefined;
 export async function getExperimentalExtensionToggleData(extensionGalleryService: IExtensionGalleryService, productService: IProductService): Promise<ExtensionToggleData | undefined> {
     if (!ENABLE_EXTENSION_TOGGLE_SETTINGS) {
@@ -106,17 +109,22 @@ export async function getExperimentalExtensionToggleData(extensionGalleryService
         const settingsEditorRecommendedExtensions: IStringDictionary<IExtensionRecommendations> = {};
         Object.keys(productService.extensionRecommendations).forEach(extensionId => {
             const extensionInfo = productService.extensionRecommendations![extensionId];
+
             if (extensionInfo.onSettingsEditorOpen) {
                 settingsEditorRecommendedExtensions[extensionId] = extensionInfo;
             }
         });
+
         const recommendedExtensionsGalleryInfo: IStringDictionary<IGalleryExtension> = {};
+
         for (const key in settingsEditorRecommendedExtensions) {
             const extensionId = key;
             // Recommend prerelease if not on Stable.
             const isStable = productService.quality === 'stable';
+
             try {
                 const extensions = await raceTimeout(extensionGalleryService.getExtensions([{ id: extensionId, preRelease: !isStable }], CancellationToken.None), EXTENSION_FETCH_TIMEOUT_MS);
+
                 if (extensions?.length === 1) {
                     recommendedExtensionsGalleryInfo[key] = extensions[0];
                 }
@@ -136,6 +144,7 @@ export async function getExperimentalExtensionToggleData(extensionGalleryService
             recommendedExtensionsGalleryInfo,
             commonlyUsed: productService.commonlyUsedSettings
         };
+
         return cachedExtensionToggleData;
     }
     return undefined;
@@ -145,7 +154,9 @@ export async function getExperimentalExtensionToggleData(extensionGalleryService
  */
 export function compareTwoNullableNumbers(a: number | undefined, b: number | undefined): number {
     const aOrMax = a ?? Number.MAX_SAFE_INTEGER;
+
     const bOrMax = b ?? Number.MAX_SAFE_INTEGER;
+
     if (aOrMax < bOrMax) {
         return -1;
     }

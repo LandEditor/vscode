@@ -63,6 +63,7 @@ namespace SchemaAssociationNotification {
 type Settings = {
     json?: {
         schemas?: JSONSchemaSettings[];
+
         format?: {
             enable?: boolean;
         };
@@ -91,14 +92,23 @@ export type JSONSchemaSettings = {
 };
 export namespace SettingIds {
     export const enableFormatter = 'json.format.enable';
+
     export const enableKeepLines = 'json.format.keepLines';
+
     export const enableValidation = 'json.validate.enable';
+
     export const enableSchemaDownload = 'json.schemaDownload.enable';
+
     export const maxItemsComputed = 'json.maxItemsComputed';
+
     export const editorFoldingMaximumRegions = 'editor.foldingMaximumRegions';
+
     export const editorColorDecoratorsLimit = 'editor.colorDecoratorsLimit';
+
     export const editorSection = 'editor';
+
     export const foldingMaximumRegions = 'foldingMaximumRegions';
+
     export const colorDecoratorsLimit = 'colorDecoratorsLimit';
 }
 export interface TelemetryReporter {
@@ -122,10 +132,15 @@ export interface SchemaRequestService {
     clearCache?(): Promise<string[]>;
 }
 export const languageServerDescription = l10n.t('JSON Language Server');
+
 let resultLimit = 5000;
+
 let jsonFoldingLimit = 5000;
+
 let jsoncFoldingLimit = 5000;
+
 let jsonColorDecoratorLimit = 5000;
+
 let jsoncColorDecoratorLimit = 5000;
 export interface AsyncDisposable {
     dispose(): Promise<void>;
@@ -133,7 +148,9 @@ export interface AsyncDisposable {
 export async function startClient(context: ExtensionContext, newLanguageClient: LanguageClientConstructor, runtime: Runtime): Promise<AsyncDisposable> {
     const languageParticipants = getLanguageParticipants();
     context.subscriptions.push(languageParticipants);
+
     let client: Disposable | undefined = await startClientWithParticipants(context, languageParticipants, newLanguageClient, runtime);
+
     let restartTrigger: Disposable | undefined;
     languageParticipants.onDidChange(() => {
         if (restartTrigger) {
@@ -143,6 +160,7 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
             if (client) {
                 runtime.logOutputChannel.info('Extensions have changed, restarting JSON server...');
                 runtime.logOutputChannel.info('');
+
                 const oldClient = client;
                 client = undefined;
                 await oldClient.dispose();
@@ -150,6 +168,7 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
             }
         }, 2000);
     });
+
     return {
         dispose: async () => {
             restartTrigger?.dispose();
@@ -159,15 +178,22 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
 }
 async function startClientWithParticipants(context: ExtensionContext, languageParticipants: LanguageParticipants, newLanguageClient: LanguageClientConstructor, runtime: Runtime): Promise<AsyncDisposable> {
     const toDispose: Disposable[] = [];
+
     let rangeFormatting: Disposable | undefined = undefined;
+
     const documentSelector = languageParticipants.documentSelector;
+
     const schemaResolutionErrorStatusBarItem = window.createStatusBarItem('status.json.resolveError', StatusBarAlignment.Right, 0);
     schemaResolutionErrorStatusBarItem.name = l10n.t('JSON: Schema Resolution Error');
     schemaResolutionErrorStatusBarItem.text = '$(alert)';
     toDispose.push(schemaResolutionErrorStatusBarItem);
+
     const fileSchemaErrors = new Map<string, string>();
+
     let schemaDownloadEnabled = true;
+
     let isClientReady = false;
+
     const documentSymbolsLimitStatusbarItem = createLimitStatusItem((limit: number) => createDocumentSymbolsLimitItem(documentSelector, SettingIds.maxItemsComputed, limit));
     toDispose.push(documentSymbolsLimitStatusbarItem);
     toDispose.push(commands.registerCommand('json.clearCache', async () => {
@@ -180,25 +206,32 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     toDispose.push(commands.registerCommand('json.sort', async () => {
         if (isClientReady) {
             const textEditor = window.activeTextEditor;
+
             if (textEditor) {
                 const documentOptions = textEditor.options;
+
                 const textEdits = await getSortTextEdits(textEditor.document, documentOptions.tabSize, documentOptions.insertSpaces);
+
                 const success = await textEditor.edit(mutator => {
                     for (const edit of textEdits) {
                         mutator.replace(client.protocol2CodeConverter.asRange(edit.range), edit.newText);
                     }
                 });
+
                 if (!success) {
                     window.showErrorMessage(l10n.t('Failed to sort the JSONC document, please consider opening an issue.'));
                 }
             }
         }
     }));
+
     function filterSchemaErrorDiagnostics(uri: Uri, diagnostics: Diagnostic[]): Diagnostic[] {
         const schemaErrorIndex = diagnostics.findIndex(isSchemaResolveError);
+
         if (schemaErrorIndex !== -1) {
             const schemaResolveDiagnostic = diagnostics[schemaErrorIndex];
             fileSchemaErrors.set(uri.toString(), schemaResolveDiagnostic.message);
+
             if (!schemaDownloadEnabled) {
                 diagnostics = diagnostics.filter(d => !isSchemaResolveError(d));
             }
@@ -228,6 +261,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             },
             provideDiagnostics: async (uriOrDoc, previousResolutId, token, next) => {
                 const diagnostics = await next(uriOrDoc, previousResolutId, token);
+
                 if (diagnostics && diagnostics.kind === DocumentDiagnosticReportKind.Full) {
                     const uri = uriOrDoc instanceof Uri ? uriOrDoc : uriOrDoc.uri;
                     diagnostics.items = filterSchemaErrorDiagnostics(uri, diagnostics.items);
@@ -242,6 +276,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             provideCompletionItem(document: TextDocument, position: Position, context: CompletionContext, token: CancellationToken, next: ProvideCompletionItemsSignature): ProviderResult<CompletionItem[] | CompletionList> {
                 function update(item: CompletionItem) {
                     const range = item.range;
+
                     if (range instanceof Range && range.end.isAfter(position) && range.start.isBeforeOrEqual(position)) {
                         item.range = { inserting: new Range(range.start, position), replacing: range };
                     }
@@ -256,6 +291,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
                     return r;
                 }
                 const r = next(document, position, context, token);
+
                 if (isThenable<CompletionItem[] | CompletionList | null | undefined>(r)) {
                     return r.then(updateProposals);
                 }
@@ -269,6 +305,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
                     return r;
                 }
                 const r = next(document, position, token);
+
                 if (isThenable<Hover | null | undefined>(r)) {
                     return r.then(updateHover);
                 }
@@ -276,6 +313,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             },
             provideFoldingRanges(document: TextDocument, context: FoldingContext, token: CancellationToken, next: ProvideFoldingRangeSignature) {
                 const r = next(document, context, token);
+
                 if (isThenable<FoldingRange[] | null | undefined>(r)) {
                     return r;
                 }
@@ -283,6 +321,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             },
             provideDocumentColors(document: TextDocument, token: CancellationToken, next: ProvideDocumentColorsSignature) {
                 const r = next(document, token);
+
                 if (isThenable<ColorInformation[] | null | undefined>(r)) {
                     return r;
                 }
@@ -290,6 +329,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             },
             provideDocumentSymbols(document: TextDocument, token: CancellationToken, next: ProvideDocumentSymbolsSignature) {
                 type T = SymbolInformation[] | DocumentSymbol[];
+
                 function countDocumentSymbols(symbols: DocumentSymbol[]): number {
                     return symbols.reduce((previousValue, s) => previousValue + 1 + countDocumentSymbols(s.children), 0);
                 }
@@ -306,6 +346,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
                     return r;
                 }
                 const r = next(document, token);
+
                 if (isThenable<T | undefined | null>(r)) {
                     return r.then(checkLimit);
                 }
@@ -317,13 +358,16 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     // Create the language client and start the client.
     const client = newLanguageClient('json', languageServerDescription, clientOptions);
     client.registerProposedFeatures();
+
     const schemaDocuments: {
         [uri: string]: boolean;
     } = {};
     // handle content request
     client.onRequest(VSCodeContentRequest.type, async (uriPath: string) => {
         const uri = Uri.parse(uriPath);
+
         const uriString = uri.toString();
+
         if (uri.scheme === 'untitled') {
             throw new ResponseError(3, l10n.t('Unable to load {0}', uriString));
         }
@@ -331,7 +375,9 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             try {
                 runtime.logOutputChannel.info('read schema from vscode: ' + uriString);
                 ensureFilesystemWatcherInstalled(uri);
+
                 const content = await workspace.fs.readFile(uri);
+
                 return new TextDecoder().decode(content);
             }
             catch (e) {
@@ -342,6 +388,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             try {
                 const document = await workspace.openTextDocument(uri);
                 schemaDocuments[uriString] = true;
+
                 return document.getText();
             }
             catch (e) {
@@ -372,18 +419,22 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     });
     await client.start();
     isClientReady = true;
+
     const handleContentChange = (uriString: string) => {
         if (schemaDocuments[uriString]) {
             client.sendNotification(SchemaContentChangeNotification.type, uriString);
+
             return true;
         }
         return false;
     };
+
     const handleActiveEditorChange = (activeEditor?: TextEditor) => {
         if (!activeEditor) {
             return;
         }
         const activeDocUri = activeEditor.document.uri.toString();
+
         if (activeDocUri && fileSchemaErrors.has(activeDocUri)) {
             schemaResolutionErrorStatusBarItem.show();
         }
@@ -391,31 +442,40 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             schemaResolutionErrorStatusBarItem.hide();
         }
     };
+
     const handleContentClosed = (uriString: string) => {
         if (handleContentChange(uriString)) {
             delete schemaDocuments[uriString];
         }
         fileSchemaErrors.delete(uriString);
     };
+
     const watchers: Map<string, Disposable> = new Map();
     toDispose.push(new Disposable(() => {
         for (const d of watchers.values()) {
             d.dispose();
         }
     }));
+
     const ensureFilesystemWatcherInstalled = (uri: Uri) => {
         const uriString = uri.toString();
+
         if (!watchers.has(uriString)) {
             try {
                 const watcher = workspace.createFileSystemWatcher(new RelativePattern(uri, '*'));
+
                 const handleChange = (uri: Uri) => {
                     runtime.logOutputChannel.info('schema change detected ' + uri.toString());
                     client.sendNotification(SchemaContentChangeNotification.type, uriString);
                 };
+
                 const createListener = watcher.onDidCreate(handleChange);
+
                 const changeListener = watcher.onDidChange(handleChange);
+
                 const deleteListener = watcher.onDidDelete(() => {
                     const watcher = watchers.get(uriString);
+
                     if (watcher) {
                         watcher.dispose();
                         watchers.delete(uriString);
@@ -431,12 +491,15 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     toDispose.push(workspace.onDidChangeTextDocument(e => handleContentChange(e.document.uri.toString())));
     toDispose.push(workspace.onDidCloseTextDocument(d => handleContentClosed(d.uri.toString())));
     toDispose.push(window.onDidChangeActiveTextEditor(handleActiveEditorChange));
+
     const handleRetryResolveSchemaCommand = () => {
         if (window.activeTextEditor) {
             schemaResolutionErrorStatusBarItem.text = '$(watch)';
+
             const activeDocUri = window.activeTextEditor.document.uri.toString();
             client.sendRequest(ForceValidateRequest.type, activeDocUri).then((diagnostics) => {
                 const schemaErrorIndex = diagnostics.findIndex(isSchemaResolveError);
+
                 if (schemaErrorIndex !== -1) {
                     // Show schema resolution errors in status bar only; ref: #51032
                     const schemaResolveDiagnostic = diagnostics[schemaErrorIndex];
@@ -470,8 +533,10 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
         }
     }));
     toDispose.push(createLanguageStatusItem(documentSelector, (uri: string) => client.sendRequest(LanguageStatusRequest.type, uri)));
+
     function updateFormatterRegistration() {
         const formatEnabled = workspace.getConfiguration().get(SettingIds.enableFormatter);
+
         if (!formatEnabled && rangeFormatting) {
             rangeFormatting.dispose();
             rangeFormatting = undefined;
@@ -480,18 +545,22 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             rangeFormatting = languages.registerDocumentRangeFormattingEditProvider(documentSelector, {
                 provideDocumentRangeFormattingEdits(document: TextDocument, range: Range, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]> {
                     const filesConfig = workspace.getConfiguration('files', document);
+
                     const fileFormattingOptions = {
                         trimTrailingWhitespace: filesConfig.get<boolean>('trimTrailingWhitespace'),
                         trimFinalNewlines: filesConfig.get<boolean>('trimFinalNewlines'),
                         insertFinalNewline: filesConfig.get<boolean>('insertFinalNewline'),
                     };
+
                     const params: DocumentRangeFormattingParams = {
                         textDocument: client.code2ProtocolConverter.asTextDocumentIdentifier(document),
                         range: client.code2ProtocolConverter.asRange(range),
                         options: client.code2ProtocolConverter.asFormattingOptions(options, fileFormattingOptions)
                     };
+
                     return client.sendRequest(DocumentRangeFormattingRequest.type, params, token).then(client.protocol2CodeConverter.asTextEdits, (error) => {
                         client.handleFailedRequest(DocumentRangeFormattingRequest.type, undefined, error, []);
+
                         return Promise.resolve([]);
                     });
                 }
@@ -500,6 +569,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     }
     function updateSchemaDownloadSetting() {
         schemaDownloadEnabled = workspace.getConfiguration().get(SettingIds.enableSchemaDownload) !== false;
+
         if (schemaDownloadEnabled) {
             schemaResolutionErrorStatusBarItem.tooltip = l10n.t('Unable to resolve schema. Click to retry.');
             schemaResolutionErrorStatusBarItem.command = '_json.retryResolveSchema';
@@ -512,6 +582,7 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
     }
     async function getSortTextEdits(document: TextDocument, tabSize: string | number = 4, insertSpaces: string | boolean = true): Promise<TextEdit[]> {
         const filesConfig = workspace.getConfiguration('files', document);
+
         const options: SortOptions = {
             tabSize: Number(tabSize),
             insertSpaces: Boolean(insertSpaces),
@@ -519,10 +590,12 @@ async function startClientWithParticipants(context: ExtensionContext, languagePa
             trimFinalNewlines: filesConfig.get<boolean>('trimFinalNewlines'),
             insertFinalNewline: filesConfig.get<boolean>('insertFinalNewline'),
         };
+
         const params: DocumentSortingParams = {
             uri: document.uri.toString(),
             options
         };
+
         const edits = await client.sendRequest(DocumentSortingRequest.type, params);
         // Here we convert the JSON objects to real TextEdit objects
         return edits.map((edit) => {
@@ -541,16 +614,20 @@ function getSchemaAssociations(_context: ExtensionContext): ISchemaAssociation[]
     const associations: ISchemaAssociation[] = [];
     extensions.all.forEach(extension => {
         const packageJSON = extension.packageJSON;
+
         if (packageJSON && packageJSON.contributes && packageJSON.contributes.jsonValidation) {
             const jsonValidation = packageJSON.contributes.jsonValidation;
+
             if (Array.isArray(jsonValidation)) {
                 jsonValidation.forEach(jv => {
                     let { fileMatch, url } = jv;
+
                     if (typeof fileMatch === 'string') {
                         fileMatch = [fileMatch];
                     }
                     if (Array.isArray(fileMatch) && typeof url === 'string') {
                         let uri: string = url;
+
                         if (uri[0] === '.' && uri[1] === '/') {
                             uri = Uri.joinPath(extension.extensionUri, uri).toString();
                         }
@@ -571,20 +648,27 @@ function getSchemaAssociations(_context: ExtensionContext): ISchemaAssociation[]
             }
         }
     });
+
     return associations;
 }
 function getSettings(): Settings {
     const configuration = workspace.getConfiguration();
+
     const httpSettings = workspace.getConfiguration('http');
+
     const normalizeLimit = (settingValue: any) => Math.trunc(Math.max(0, Number(settingValue))) || 5000;
     resultLimit = normalizeLimit(workspace.getConfiguration().get(SettingIds.maxItemsComputed));
+
     const editorJSONSettings = workspace.getConfiguration(SettingIds.editorSection, { languageId: 'json' });
+
     const editorJSONCSettings = workspace.getConfiguration(SettingIds.editorSection, { languageId: 'jsonc' });
     jsonFoldingLimit = normalizeLimit(editorJSONSettings.get(SettingIds.foldingMaximumRegions));
     jsoncFoldingLimit = normalizeLimit(editorJSONCSettings.get(SettingIds.foldingMaximumRegions));
     jsonColorDecoratorLimit = normalizeLimit(editorJSONSettings.get(SettingIds.colorDecoratorsLimit));
     jsoncColorDecoratorLimit = normalizeLimit(editorJSONCSettings.get(SettingIds.colorDecoratorsLimit));
+
     const schemas: JSONSchemaSettings[] = [];
+
     const settings: Settings = {
         http: {
             proxy: httpSettings.get('proxy'),
@@ -611,6 +695,7 @@ function getSettings(): Settings {
         if (schemaSettings) {
             for (const setting of schemaSettings) {
                 const url = getSchemaId(setting, settingsLocation);
+
                 if (url) {
                     const schemaSetting: JSONSchemaSettings = { url, fileMatch: setting.fileMatch, folderUri, schema: setting.schema };
                     schemas.push(schemaSetting);
@@ -618,11 +703,15 @@ function getSettings(): Settings {
             }
         }
     };
+
     const folders = workspace.workspaceFolders ?? [];
+
     const schemaConfigInfo = workspace.getConfiguration('json', null).inspect<JSONSchemaSettings[]>('schemas');
+
     if (schemaConfigInfo) {
         // settings in user config
         collectSchemaSettings(schemaConfigInfo.globalValue, undefined, undefined);
+
         if (workspace.workspaceFile) {
             if (schemaConfigInfo.workspaceValue) {
                 const settingsLocation = Uri.joinPath(workspace.workspaceFile, '..');
@@ -631,6 +720,7 @@ function getSettings(): Settings {
             }
             for (const folder of folders) {
                 const folderUri = folder.uri;
+
                 const folderSchemaConfigInfo = workspace.getConfiguration('json', folderUri).inspect<JSONSchemaSettings[]>('schemas');
                 collectSchemaSettings(folderSchemaConfigInfo?.workspaceFolderValue, folderUri.toString(false), folderUri);
             }
@@ -646,6 +736,7 @@ function getSettings(): Settings {
 }
 function getSchemaId(schema: JSONSchemaSettings, settingsLocation?: Uri): string | undefined {
     let url = schema.url;
+
     if (!url) {
         if (schema.schema) {
             url = schema.schema.id || `vscode://schemas/custom/${encodeURIComponent(hash(schema.schema).toString(16))}`;
@@ -662,6 +753,7 @@ function isThenable<T>(obj: ProviderResult<T>): obj is Thenable<T> {
 function updateMarkdownString(h: MarkdownString): MarkdownString {
     const n = new MarkdownString(h.value, true);
     n.isTrusted = h.isTrusted;
+
     return n;
 }
 function isSchemaResolveError(d: Diagnostic) {

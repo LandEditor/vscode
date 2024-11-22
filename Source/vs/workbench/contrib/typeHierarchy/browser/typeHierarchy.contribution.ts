@@ -23,8 +23,11 @@ import { KeybindingWeight } from '../../../../platform/keybinding/common/keybind
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { TypeHierarchyTreePeekWidget } from './typeHierarchyPeek.js';
 import { TypeHierarchyDirection, TypeHierarchyModel, TypeHierarchyProviderRegistry } from '../common/typeHierarchy.js';
+
 const _ctxHasTypeHierarchyProvider = new RawContextKey<boolean>('editorHasTypeHierarchyProvider', false, localize('editorHasTypeHierarchyProvider', 'Whether a type hierarchy provider is available'));
+
 const _ctxTypeHierarchyVisible = new RawContextKey<boolean>('typeHierarchyVisible', false, localize('typeHierarchyVisible', 'Whether type hierarchy peek is currently showing'));
+
 const _ctxTypeHierarchyDirection = new RawContextKey<string>('typeHierarchyDirection', undefined, { type: 'string', description: localize('typeHierarchyDirection', 'whether type hierarchy shows super types or subtypes') });
 function sanitizedDirection(candidate: string): TypeHierarchyDirection {
     return candidate === TypeHierarchyDirection.Subtypes || candidate === TypeHierarchyDirection.Supertypes
@@ -43,6 +46,7 @@ class TypeHierarchyController implements IEditorContribution {
     private readonly _disposables = new DisposableStore();
     private readonly _sessionDisposables = new DisposableStore();
     private _widget?: TypeHierarchyTreePeekWidget;
+
     constructor(readonly _editor: ICodeEditor, 
     @IContextKeyService
     private readonly _contextKeyService: IContextKeyService, 
@@ -66,16 +70,21 @@ class TypeHierarchyController implements IEditorContribution {
     // Peek
     async startTypeHierarchyFromEditor(): Promise<void> {
         this._sessionDisposables.clear();
+
         if (!this._editor.hasModel()) {
             return;
         }
         const document = this._editor.getModel();
+
         const position = this._editor.getPosition();
+
         if (!TypeHierarchyProviderRegistry.has(document)) {
             return;
         }
         const cts = new CancellationTokenSource();
+
         const model = TypeHierarchyModel.create(document, position, cts.token);
+
         const direction = sanitizedDirection(this._storageService.get(TypeHierarchyController._storageDirectionKey, StorageScope.PROFILE, TypeHierarchyDirection.Subtypes));
         this._showTypeHierarchyWidget(position, direction, model, cts);
     }
@@ -105,6 +114,7 @@ class TypeHierarchyController implements IEditorContribution {
         }).catch(err => {
             if (isCancellationError(err)) {
                 this.endTypeHierarchy();
+
                 return;
             }
             this._widget!.showMessage(localize('error', "Failed to show type hierarchy"));
@@ -115,11 +125,14 @@ class TypeHierarchyController implements IEditorContribution {
             return;
         }
         const model = this._widget.getModel();
+
         const typeItem = this._widget.getFocused();
+
         if (!typeItem || !model) {
             return;
         }
         const newEditor = await this._editorService.openCodeEditor({ resource: typeItem.item.uri }, this._editor);
+
         if (!newEditor) {
             return;
         }

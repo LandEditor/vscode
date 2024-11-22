@@ -20,7 +20,9 @@ function isLineChanged(lineNumber: number, changes: readonly TextEditorChange[])
 		}
 
 		const startLineNumber = change.modifiedStartLineNumber;
+
 		const endLineNumber = change.modifiedEndLineNumber || startLineNumber;
+
 		if (lineNumber >= startLineNumber && lineNumber <= endLineNumber) {
 			return true;
 		}
@@ -52,7 +54,9 @@ function mapLineNumber(lineNumber: number, changes: readonly TextEditorChange[])
 		} else if (change.kind === TextEditorChangeKind.Modification) {
 			// Modification
 			const originalLineCount = change.originalEndLineNumber - change.originalStartLineNumber + 1;
+
 			const modifiedLineCount = change.modifiedEndLineNumber - change.modifiedStartLineNumber + 1;
+
 			if (originalLineCount !== modifiedLineCount) {
 				lineNumber = lineNumber - (modifiedLineCount - originalLineCount);
 			}
@@ -66,13 +70,16 @@ function mapLineNumber(lineNumber: number, changes: readonly TextEditorChange[])
 
 function processTextEditorChangesWithBlameInformation(blameInformation: BlameInformation[], changes: readonly TextEditorChange[]): TextEditorChange[] {
 	const [notYetCommittedBlameInformation] = blameInformation.filter(b => b.id === notCommittedYetId);
+
 	if (!notYetCommittedBlameInformation) {
 		return [...changes];
 	}
 
 	const changesWithBlameInformation: TextEditorChange[] = [];
+
 	for (const change of changes) {
 		const originalStartLineNumber = mapLineNumber(change.originalStartLineNumber, changes);
+
 		const originalEndLineNumber = mapLineNumber(change.originalEndLineNumber, changes);
 
 		if (notYetCommittedBlameInformation.ranges.some(range =>
@@ -132,6 +139,7 @@ export class GitBlameController {
 
 	private _onDidCloseRepository(repository: Repository): void {
 		const disposables = this._repositoryDisposables.get(repository);
+
 		if (disposables) {
 			dispose(disposables);
 		}
@@ -142,6 +150,7 @@ export class GitBlameController {
 
 	private _onDidRunGitStatus(repository: Repository): void {
 		let repositoryBlameInformation = this._repositoryBlameInformation.get(repository);
+
 		if (!repositoryBlameInformation) {
 			return;
 		}
@@ -175,6 +184,7 @@ export class GitBlameController {
 
 	private async _getBlameInformation(resource: Uri): Promise<BlameInformation[] | undefined> {
 		const repository = this._model.getRepository(resource);
+
 		if (!repository || !repository.HEAD?.commit) {
 			return undefined;
 		}
@@ -185,12 +195,14 @@ export class GitBlameController {
 		} satisfies RepositoryBlameInformation;
 
 		let resourceBlameInformation = repositoryBlameInformation.blameInformation.get(resource);
+
 		if (repositoryBlameInformation.commit === repository.HEAD.commit && resourceBlameInformation) {
 			return resourceBlameInformation.blameInformation;
 		}
 
 		const staged = repository.indexGroup.resourceStates
 			.some(r => pathEquals(resource.fsPath, r.resourceUri.fsPath));
+
 		const blameInformation = await repository.blame2(resource.fsPath) ?? [];
 		resourceBlameInformation = { staged, blameInformation } satisfies ResourceBlameInformation;
 
@@ -205,11 +217,13 @@ export class GitBlameController {
 	@throttle
 	private async _updateTextEditorBlameInformation(textEditor: TextEditor | undefined): Promise<void> {
 		const diffInformation = textEditor?.diffInformation;
+
 		if (!diffInformation || diffInformation.isStale) {
 			return;
 		}
 
 		const resourceBlameInformation = await this._getBlameInformation(textEditor.document.uri);
+
 		if (!resourceBlameInformation) {
 			return;
 		}
@@ -223,15 +237,18 @@ export class GitBlameController {
 			diffInformation.changes);
 
 		const lineBlameInformation: LineBlameInformation[] = [];
+
 		for (const lineNumber of textEditor.selections.map(s => s.active.line)) {
 			// Check if the line is contained in the diff information
 			if (isLineChanged(lineNumber + 1, diffInformation.changes)) {
 				lineBlameInformation.push({ lineNumber, blameInformation: l10n.t('Not Committed Yet') });
+
 				continue;
 			}
 
 			// Map the line number to the git blame ranges
 			const lineNumberWithDiff = mapLineNumber(lineNumber + 1, diffInformationWithBlame);
+
 			const blameInformation = resourceBlameInformation.find(blameInformation => {
 				return blameInformation.ranges.find(range => {
 					return lineNumberWithDiff >= range.startLineNumber && lineNumberWithDiff <= range.endLineNumber;
@@ -284,6 +301,7 @@ class GitBlameEditorDecoration {
 		}
 
 		const enabled = this._isEnabled();
+
 		for (const textEditor of window.visibleTextEditors) {
 			if (enabled) {
 				this._updateDecorations(textEditor);
@@ -295,6 +313,7 @@ class GitBlameEditorDecoration {
 
 	private _isEnabled(): boolean {
 		const config = workspace.getConfiguration('git');
+
 		return config.get<boolean>('blame.editorDecoration.enabled', false);
 	}
 
@@ -304,8 +323,10 @@ class GitBlameEditorDecoration {
 		}
 
 		const blameInformation = this._controller.textEditorBlameInformation.get(textEditor);
+
 		if (!blameInformation) {
 			textEditor.setDecorations(this._decorationType, []);
+
 			return;
 		}
 
@@ -313,6 +334,7 @@ class GitBlameEditorDecoration {
 			const contentText = typeof blame.blameInformation === 'string'
 				? blame.blameInformation
 				: `${blame.blameInformation.message ?? ''}, ${blame.blameInformation.authorName ?? ''} (${fromNow(blame.blameInformation.date ?? Date.now(), true, true)})`;
+
 			return this._createDecoration(blame.lineNumber, contentText);
 		});
 

@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { EditContext } from './editContextFactory.js';
+
 const COLOR_FOR_CONTROL_BOUNDS = 'blue';
+
 const COLOR_FOR_SELECTION_BOUNDS = 'red';
+
 const COLOR_FOR_CHARACTER_BOUNDS = 'green';
 export class DebugEditContext {
     private _isDebugging = true;
@@ -15,6 +18,7 @@ export class DebugEditContext {
         characterBounds: DOMRect[];
     } | null = null;
     private _editContext: EditContext;
+
     constructor(window: Window, options?: EditContextInit | undefined) {
         this._editContext = EditContext.create(window, options);
     }
@@ -64,6 +68,7 @@ export class DebugEditContext {
     private readonly _oncharacterboundsupdateWrapper = new EventListenerWrapper('characterboundsupdate', this);
     private readonly _oncompositionstartWrapper = new EventListenerWrapper('compositionstart', this);
     private readonly _oncompositionendWrapper = new EventListenerWrapper('compositionend', this);
+
     get ontextupdate(): EventHandler | null { return this._ontextupdateWrapper.eventHandler; }
     set ontextupdate(value: EventHandler | null) { this._ontextupdateWrapper.eventHandler = value; }
     get ontextformatupdate(): EventHandler | null { return this._ontextformatupdateWrapper.eventHandler; }
@@ -101,6 +106,7 @@ export class DebugEditContext {
             return;
         }
         const debugListener = this._listenerMap.get(listener);
+
         if (debugListener) {
             this._editContext.removeEventListener(type, debugListener, options);
             this._listenerMap.delete(listener);
@@ -124,6 +130,7 @@ export class DebugEditContext {
     public renderDebug() {
         this._disposables.forEach(d => d.dispose());
         this._disposables = [];
+
         if (!this._isDebugging || this._listenerMap.size === 0) {
             return;
         }
@@ -154,21 +161,28 @@ function createDiv(text: string, selectionStart: number, selectionEnd: number) {
     ret.style.whiteSpace = 'pre';
     ret.style.font = '12px monospace';
     ret.style.pointerEvents = 'none';
+
     const before = text.substring(0, selectionStart);
+
     const selected = text.substring(selectionStart, selectionEnd) || '|';
+
     const after = text.substring(selectionEnd) + ' ';
+
     const beforeNode = document.createTextNode(before);
     ret.appendChild(beforeNode);
+
     const selectedNode = document.createElement('span');
     selectedNode.style.backgroundColor = 'yellow';
     selectedNode.appendChild(document.createTextNode(selected));
     selectedNode.style.minWidth = '2px';
     selectedNode.style.minHeight = '16px';
     ret.appendChild(selectedNode);
+
     const afterNode = document.createTextNode(after);
     ret.appendChild(afterNode);
     // eslint-disable-next-line no-restricted-syntax
     document.body.appendChild(ret);
+
     return {
         dispose: () => {
             ret.remove();
@@ -188,6 +202,7 @@ function createRect(rect: DOMRect, color: 'green' | 'blue' | 'red') {
     ret.style.height = rect.height + 'px';
     // eslint-disable-next-line no-restricted-syntax
     document.body.appendChild(ret);
+
     return {
         dispose: () => {
             ret.remove();
@@ -196,6 +211,7 @@ function createRect(rect: DOMRect, color: 'green' | 'blue' | 'red') {
 }
 class EventListenerWrapper {
     private _eventHandler: EventHandler | null = null;
+
     constructor(private readonly _eventType: string, private readonly _target: EventTarget) {
     }
     get eventHandler(): EventHandler | null {
@@ -206,6 +222,7 @@ class EventListenerWrapper {
             this._target.removeEventListener(this._eventType, this._eventHandler);
         }
         this._eventHandler = value;
+
         if (value) {
             this._target.addEventListener(this._eventType, value);
         }

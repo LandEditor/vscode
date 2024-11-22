@@ -19,6 +19,7 @@ export class ExtensionsProposedApi {
     private readonly _envEnablesProposedApiForAll: boolean;
     private readonly _envEnabledExtensions: Set<string>;
     private readonly _productEnabledExtensions: Map<string, string[]>;
+
     constructor(
     @ILogService
     private readonly _logService: ILogService, 
@@ -36,9 +37,11 @@ export class ExtensionsProposedApi {
         if (productService.extensionEnabledApiProposals) {
             for (const [k, value] of Object.entries(productService.extensionEnabledApiProposals)) {
                 const key = ExtensionIdentifier.toKey(k);
+
                 const proposalNames = value.filter(name => {
                     if (!allApiProposals[<ApiProposalName>name]) {
                         _logService.warn(`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
+
                         return false;
                     }
                     return true;
@@ -58,6 +61,7 @@ export class ExtensionsProposedApi {
         if (isNonEmptyArray(extension.enabledApiProposals)) {
             extension.enabledApiProposals = extension.enabledApiProposals.filter(name => {
                 const result = Boolean(allApiProposals[<ApiProposalName>name]);
+
                 if (!result) {
                     this._logService.error(`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
                 }
@@ -71,16 +75,21 @@ export class ExtensionsProposedApi {
             const productEnabledProposals = this._productEnabledExtensions.get(key)!;
             // check for difference between product.json-declaration and package.json-declaration
             const productSet = new Set(productEnabledProposals);
+
             const extensionSet = new Set(extension.enabledApiProposals);
+
             const diff = new Set([...extensionSet].filter(a => !productSet.has(a)));
+
             if (diff.size > 0) {
                 this._logService.error(`Extension '${key}' appears in product.json but enables LESS API proposals than the extension wants.\npackage.json (LOSES): ${[...extensionSet].join(', ')}\nproduct.json (WINS): ${[...productSet].join(', ')}`);
+
                 if (this._environmentService.isExtensionDevelopment) {
                     this._logService.error(`Proceeding with EXTRA proposals (${[...diff].join(', ')}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`);
                     productEnabledProposals.push(...diff);
                 }
             }
             extension.enabledApiProposals = productEnabledProposals;
+
             return;
         }
         if (this._envEnablesProposedApiForAll || this._envEnabledExtensions.has(key)) {
@@ -102,7 +111,9 @@ class ApiProposalsMarkdowneRenderer extends Disposable implements IExtensionFeat
     }
     render(manifest: IExtensionManifest): IRenderedData<IMarkdownString> {
         const enabledApiProposals = manifest.originalEnabledApiProposals ?? manifest.enabledApiProposals ?? [];
+
         const data = new MarkdownString();
+
         if (enabledApiProposals.length) {
             for (const proposal of enabledApiProposals) {
                 data.appendMarkdown(`- \`${proposal}\`\n`);

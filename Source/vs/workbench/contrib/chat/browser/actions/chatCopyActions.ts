@@ -27,14 +27,19 @@ export function registerChatCopyActions() {
         }
         run(accessor: ServicesAccessor, ...args: any[]) {
             const clipboardService = accessor.get(IClipboardService);
+
             const chatWidgetService = accessor.get(IChatWidgetService);
+
             const widget = chatWidgetService.lastFocusedWidget;
+
             if (widget) {
                 const viewModel = widget.viewModel;
+
                 const sessionAsText = viewModel?.getItems()
                     .filter((item): item is (IChatRequestViewModel | IChatResponseViewModel) => isRequestVM(item) || (isResponseVM(item) && !item.errorDetails?.responseIsFiltered))
                     .map(item => stringifyItem(item))
                     .join('\n\n');
+
                 if (sessionAsText) {
                     clipboardService.writeText(sessionAsText);
                 }
@@ -57,10 +62,12 @@ export function registerChatCopyActions() {
         }
         run(accessor: ServicesAccessor, ...args: any[]) {
             const item = args[0];
+
             if (!isRequestVM(item) && !isResponseVM(item)) {
                 return;
             }
             const clipboardService = accessor.get(IClipboardService);
+
             const text = stringifyItem(item, false);
             clipboardService.writeText(text);
         }

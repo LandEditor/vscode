@@ -30,6 +30,7 @@ import { IActivityService, NumberBadge } from '../../../services/activity/common
 import { IExtensionService } from '../../../services/extensions/common/extensions.js';
 import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 declare const ResizeObserver: any;
+
 const storageKeys = {
     webviewState: 'webviewState',
 } as const;
@@ -37,6 +38,7 @@ export class WebviewViewPane extends ViewPane {
     private static _originStore?: ExtensionKeyedWebviewOriginStore;
     private static getOriginStore(storageService: IStorageService): ExtensionKeyedWebviewOriginStore {
         this._originStore ??= new ExtensionKeyedWebviewOriginStore('webviewViews.origins', storageService);
+
         return this._originStore;
     }
     private readonly _webview = this._register(new MutableDisposable<IOverlayWebview>());
@@ -53,6 +55,7 @@ export class WebviewViewPane extends ViewPane {
     private readonly viewState: MementoObject;
     private readonly extensionId?: ExtensionIdentifier;
     private _repositionTimeout?: any;
+
     constructor(options: IViewletViewOptions, 
     @IConfigurationService
     configurationService: IConfigurationService, 
@@ -109,6 +112,7 @@ export class WebviewViewPane extends ViewPane {
     override dispose() {
         this._onDispose.fire();
         clearTimeout(this._repositionTimeout);
+
         super.dispose();
     }
     override focus(): void {
@@ -119,6 +123,7 @@ export class WebviewViewPane extends ViewPane {
         super.renderBody(container);
         this._container = container;
         this._rootContainer = undefined;
+
         if (!this._resizeObserver) {
             this._resizeObserver = new ResizeObserver(() => {
                 setTimeout(() => {
@@ -136,6 +141,7 @@ export class WebviewViewPane extends ViewPane {
             this.viewState[storageKeys.webviewState] = this._webview.value.state;
         }
         this.memento.saveMemento();
+
         super.saveState();
     }
     protected override layoutBody(height: number, width: number): void {
@@ -156,7 +162,9 @@ export class WebviewViewPane extends ViewPane {
             return;
         }
         this._activated = true;
+
         const origin = this.extensionId ? WebviewViewPane.getOriginStore(this.storageService).getOrigin(this.id, this.extensionId) : undefined;
+
         const webview = this.webviewService.createWebviewOverlay({
             origin,
             providedViewType: this.id,
@@ -167,6 +175,7 @@ export class WebviewViewPane extends ViewPane {
         });
         webview.state = this.viewState[storageKeys.webviewState];
         this._webview.value = webview;
+
         if (this._container) {
             this.layoutWebview();
         }
@@ -185,10 +194,13 @@ export class WebviewViewPane extends ViewPane {
             }));
         }
         this._webviewDisposables.add(new WebviewWindowDragMonitor(getWindow(this.element), () => this._webview.value));
+
         const source = this._webviewDisposables.add(new CancellationTokenSource());
         this.withProgress(async () => {
             await this.extensionService.activateByEvent(`onView:${this.id}`);
+
             const self = this;
+
             const webviewView: WebviewView = {
                 webview,
                 onDidChangeVisibility: this.onDidChangeBodyVisibility,
@@ -214,6 +226,7 @@ export class WebviewViewPane extends ViewPane {
     }
     protected override updateTitle(value: string | undefined) {
         this.setTitle = value;
+
         super.updateTitle(typeof value === 'string' ? value : this.defaultTitle);
     }
     protected updateBadge(badge: IViewBadge | undefined) {
@@ -222,6 +235,7 @@ export class WebviewViewPane extends ViewPane {
             return;
         }
         this.badge = badge;
+
         if (badge) {
             const activity = {
                 badge: new NumberBadge(badge.value, () => badge.tooltip),
@@ -238,6 +252,7 @@ export class WebviewViewPane extends ViewPane {
     }
     private doLayoutWebview(dimension?: Dimension) {
         const webviewEntry = this._webview.value;
+
         if (!this._container || !webviewEntry) {
             return;
         }

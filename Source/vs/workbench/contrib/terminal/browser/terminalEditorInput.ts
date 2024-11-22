@@ -33,8 +33,10 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
     private _group: IEditorGroup | undefined;
     protected readonly _onDidRequestAttach = this._register(new Emitter<ITerminalInstance>());
     readonly onDidRequestAttach = this._onDidRequestAttach.event;
+
     setGroup(group: IEditorGroup | undefined) {
         this._group = group;
+
         if (group?.scopedContextKeyService) {
             this._terminalInstance?.setParentContextKeyService(group.scopedContextKeyService);
         }
@@ -62,6 +64,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
         const instance = this._terminalInstanceService.createInstance(this._copyLaunchConfig || {}, TerminalLocation.Editor);
         instance.focusWhenReady();
         this._copyLaunchConfig = undefined;
+
         return this._instantiationService.createInstance(TerminalEditorInput, instance.resource, instance);
     }
     /**
@@ -82,6 +85,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
             return false;
         }
         const confirmOnKill = this._configurationService.getValue<ConfirmOnKill>(TerminalSettingId.ConfirmOnKill);
+
         if (confirmOnKill === 'editor' || confirmOnKill === 'always') {
             return this._terminalInstance?.hasChildProcesses || false;
         }
@@ -96,6 +100,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
                 terminals.map(terminal => terminal.editor.getName()).join('\n') + '\n\n' + localize('confirmDirtyTerminals.detail', "Closing will terminate the running processes in the terminals.") :
                 localize('confirmDirtyTerminal.detail', "Closing will terminate the running processes in this terminal.")
         });
+
         return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL;
     }
     override async revert(): Promise<void> {
@@ -119,16 +124,19 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
     private readonly _dialogService: IDialogService) {
         super();
         this._terminalEditorFocusContextKey = TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
+
         if (_terminalInstance) {
             this._setupInstanceListeners();
         }
     }
     private _setupInstanceListeners(): void {
         const instance = this._terminalInstance;
+
         if (!instance) {
             return;
         }
         const instanceOnDidFocusListener = instance.onDidFocus(() => this._terminalEditorFocusContextKey.set(true));
+
         const instanceOnDidBlurListener = instance.onDidBlur(() => this._terminalEditorFocusContextKey.reset());
         this._register(toDisposable(() => {
             if (!this._isDetached && !this._isShuttingDown) {
@@ -138,6 +146,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
             }
             dispose([instanceOnDidFocusListener, instanceOnDidBlurListener]);
         }));
+
         const disposeListeners = [
             instance.onExit((e) => {
                 if (!instance.waitOnExit) {
@@ -158,6 +167,7 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
             dispose(disposeListeners);
             // Don't touch processes if the shutdown was a result of reload as they will be reattached
             const shouldPersistTerminals = this._configurationService.getValue<boolean>(TerminalSettingId.EnablePersistentSessions) && e.reason === ShutdownReason.RELOAD;
+
             if (shouldPersistTerminals) {
                 instance.detachProcessAndDispose(TerminalExitReason.Shutdown);
             }
@@ -180,11 +190,14 @@ export class TerminalEditorInput extends EditorInput implements IEditorCloseHand
             return [];
         }
         const extraClasses: string[] = ['terminal-tab', 'predefined-file-icon'];
+
         const colorClass = getColorClass(this._terminalInstance);
+
         if (colorClass) {
             extraClasses.push(colorClass);
         }
         const uriClasses = getUriClasses(this._terminalInstance, this._themeService.getColorTheme().type);
+
         if (uriClasses) {
             extraClasses.push(...uriClasses);
         }

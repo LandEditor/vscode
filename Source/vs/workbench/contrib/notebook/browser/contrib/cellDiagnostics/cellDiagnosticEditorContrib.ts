@@ -45,11 +45,13 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 	private updateEnabled() {
 		const settingEnabled = this.configurationService.getValue(NotebookSetting.cellFailureDiagnostics);
+
 		if (this.enabled && (!settingEnabled || Iterable.isEmpty(this.chatAgentService.getAgents()))) {
 			this.enabled = false;
 			this.clearAll();
 		} else if (!this.enabled && settingEnabled && !Iterable.isEmpty(this.chatAgentService.getAgents())) {
 			this.enabled = true;
+
 			if (!this.listening) {
 				this.listening = true;
 				this._register(Event.accumulate<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent>(
@@ -65,11 +67,14 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		}
 
 		const handled = new Set<number>();
+
 		for (const e of changes.reverse()) {
 
 			const notebookUri = this.notebookEditor.textModel?.uri;
+
 			if (e.type === NotebookExecutionType.cell && notebookUri && e.affectsNotebook(notebookUri) && !handled.has(e.cellHandle)) {
 				handled.add(e.cellHandle);
+
 				if (!!e.changed) {
 					// cell is running
 					this.clear(e.cellHandle);
@@ -88,6 +93,7 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 
 	public clear(cellHandle: number) {
 		const disposables = this.diagnosticsByHandle.get(cellHandle);
+
 		if (disposables) {
 			for (const disposable of disposables) {
 				disposable.dispose();
@@ -103,14 +109,18 @@ export class CellDiagnostics extends Disposable implements INotebookEditorContri
 		}
 
 		const cell = this.notebookEditor.getCellByHandle(cellHandle);
+
 		if (!cell || cell.cellKind !== CellKind.Code) {
 			return;
 		}
 
 		const metadata = cell.model.internalMetadata;
+
 		if (cell instanceof CodeCellViewModel && !metadata.lastRunSuccess && metadata?.error?.location) {
 			const disposables: IDisposable[] = [];
+
 			const errorLabel = metadata.error.name ? `${metadata.error.name}: ${metadata.error.message}` : metadata.error.message;
+
 			const marker = this.createMarkerData(errorLabel, metadata.error.location);
 			this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [marker]);
 			disposables.push(toDisposable(() => this.markerService.changeOne(CellDiagnostics.ID, cell.uri, [])));

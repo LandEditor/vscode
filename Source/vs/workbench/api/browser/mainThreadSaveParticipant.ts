@@ -14,6 +14,7 @@ import { IDisposable } from '../../../base/common/lifecycle.js';
 import { raceCancellationError } from '../../../base/common/async.js';
 class ExtHostSaveParticipant implements ITextFileSaveParticipant {
     private readonly _proxy: ExtHostDocumentSaveParticipantShape;
+
     constructor(extHostContext: IExtHostContext) {
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocumentSaveParticipant);
     }
@@ -32,6 +33,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
                 return undefined;
             }).then(resolve, reject);
         });
+
         return raceCancellationError(p, token);
     }
 }
@@ -39,6 +41,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 @extHostCustomer
 export class SaveParticipant {
     private _saveParticipantDisposable: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @IInstantiationService
     instantiationService: IInstantiationService, 

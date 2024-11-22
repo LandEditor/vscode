@@ -37,15 +37,20 @@ export class BaseCodeEditorView extends CodeEditorView {
         this._register(autorun(reader => {
             /** @description update labels & text model */
             const vm = this.viewModel.read(reader);
+
             if (!vm) {
                 return;
             }
             this.editor.setModel(vm.model.base);
             reset(this.htmlElements.title, ...renderLabelWithIcons(localize('base', 'Base')));
+
             const baseShowDiffAgainst = vm.baseShowDiffAgainst.read(reader);
+
             let node: Node | undefined = undefined;
+
             if (baseShowDiffAgainst) {
                 const label = localize('compareWith', 'Comparing with {0}', baseShowDiffAgainst === 1 ? vm.model.input1.title : vm.model.input2.title);
+
                 const tooltip = localize('compareWithTooltip', 'Differences are highlighted with a background color.');
                 node = h('span', { title: tooltip }, [label]).root;
             }
@@ -55,31 +60,42 @@ export class BaseCodeEditorView extends CodeEditorView {
     }
     private readonly decorations = derived(this, reader => {
         const viewModel = this.viewModel.read(reader);
+
         if (!viewModel) {
             return [];
         }
         const model = viewModel.model;
+
         const textModel = model.base;
+
         const activeModifiedBaseRange = viewModel.activeModifiedBaseRange.read(reader);
+
         const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
+
         const showDeletionMarkers = this.showDeletionMarkers.read(reader);
+
         const result: IModelDeltaDecoration[] = [];
+
         for (const modifiedBaseRange of model.modifiedBaseRanges.read(reader)) {
             const range = modifiedBaseRange.baseRange;
+
             if (!range) {
                 continue;
             }
             const isHandled = model.isHandled(modifiedBaseRange).read(reader);
+
             if (!modifiedBaseRange.isConflicting && isHandled && !showNonConflictingChanges) {
                 continue;
             }
             const blockClassNames = ['merge-editor-block'];
+
             let blockPadding: [
                 top: number,
                 right: number,
                 bottom: number,
                 left: number
             ] = [0, 0, 0, 0];
+
             if (isHandled) {
                 blockClassNames.push('handled');
             }
@@ -88,10 +104,13 @@ export class BaseCodeEditorView extends CodeEditorView {
                 blockPadding = [0, 2, 0, 2];
             }
             blockClassNames.push('base');
+
             const inputToDiffAgainst = viewModel.baseShowDiffAgainst.read(reader);
+
             if (inputToDiffAgainst) {
                 for (const diff of modifiedBaseRange.getInputDiffs(inputToDiffAgainst)) {
                     const range = diff.inputRange.toInclusiveRange();
+
                     if (range) {
                         result.push({
                             range,

@@ -27,6 +27,7 @@ import { DownloadServiceChannel } from '../../../../platform/download/common/dow
 import { RemoteLoggerChannelClient } from '../../../../platform/log/common/logIpc.js';
 export class LabelContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.remoteLabel';
+
     constructor(
     @ILabelService
     private readonly labelService: ILabelService, 
@@ -37,6 +38,7 @@ export class LabelContribution implements IWorkbenchContribution {
     private registerFormatters(): void {
         this.remoteAgentService.getEnvironment().then(remoteEnvironment => {
             const os = remoteEnvironment?.os || OS;
+
             const formatting: ResourceLabelFormatting = {
                 label: '${path}',
                 separator: os === OperatingSystem.Windows ? '\\' : '/',
@@ -48,6 +50,7 @@ export class LabelContribution implements IWorkbenchContribution {
                 scheme: Schemas.vscodeRemote,
                 formatting
             });
+
             if (remoteEnvironment) {
                 this.labelService.registerFormatter({
                     scheme: Schemas.vscodeUserData,
@@ -66,7 +69,9 @@ class RemoteChannelsContribution extends Disposable implements IWorkbenchContrib
     @ILoggerService
     loggerService: ILoggerService) {
         super();
+
         const connection = remoteAgentService.getConnection();
+
         if (connection) {
             connection.registerChannel('download', new DownloadServiceChannel(downloadService));
             connection.withChannel('logger', async (channel) => this._register(new RemoteLoggerChannelClient(loggerService, channel)));
@@ -75,6 +80,7 @@ class RemoteChannelsContribution extends Disposable implements IWorkbenchContrib
 }
 class RemoteInvalidWorkspaceDetector extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.remoteInvalidWorkspaceDetector';
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -107,11 +113,14 @@ class RemoteInvalidWorkspaceDetector extends Disposable implements IWorkbenchCon
     }
     private async validateRemoteWorkspace(): Promise<void> {
         const workspace = this.contextService.getWorkspace();
+
         const workspaceUriToStat = workspace.configuration ?? workspace.folders.at(0)?.uri;
+
         if (!workspaceUriToStat) {
             return; // only when in workspace
         }
         const exists = await this.fileService.exists(workspaceUriToStat);
+
         if (exists) {
             return; // all good!
         }
@@ -121,6 +130,7 @@ class RemoteInvalidWorkspaceDetector extends Disposable implements IWorkbenchCon
             detail: localize('invalidWorkspaceDetail', "Please select another workspace to open."),
             primaryButton: localize({ key: 'invalidWorkspacePrimary', comment: ['&& denotes a mnemonic'] }, "&&Open Workspace...")
         });
+
         if (res.confirmed) {
             // Pick Workspace
             if (workspace.configuration) {
@@ -135,6 +145,7 @@ const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegist
 registerWorkbenchContribution2(LabelContribution.ID, LabelContribution, WorkbenchPhase.BlockStartup);
 workbenchContributionsRegistry.registerWorkbenchContribution(RemoteChannelsContribution, LifecyclePhase.Restored);
 registerWorkbenchContribution2(RemoteInvalidWorkspaceDetector.ID, RemoteInvalidWorkspaceDetector, WorkbenchPhase.BlockStartup);
+
 const enableDiagnostics = true;
 if (enableDiagnostics) {
     class TriggerReconnectAction extends Action2 {

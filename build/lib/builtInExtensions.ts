@@ -31,10 +31,15 @@ export interface IExtensionDefinition {
     };
 }
 const root = path.dirname(path.dirname(__dirname));
+
 const productjson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../product.json'), 'utf8'));
+
 const builtInExtensions = <IExtensionDefinition[]>productjson.builtInExtensions || [];
+
 const webBuiltInExtensions = <IExtensionDefinition[]>productjson.webBuiltInExtensions || [];
+
 const controlFilePath = path.join(os.homedir(), '.vscode-oss-dev', 'extensions', 'control.json');
+
 const ENABLE_LOGGING = !process.env['VSCODE_BUILD_BUILTIN_EXTENSIONS_SILENCE_PLEASE'];
 function log(...messages: string[]): void {
     if (ENABLE_LOGGING) {
@@ -46,12 +51,15 @@ function getExtensionPath(extension: IExtensionDefinition): string {
 }
 function isUpToDate(extension: IExtensionDefinition): boolean {
     const packagePath = path.join(getExtensionPath(extension), 'package.json');
+
     if (!fs.existsSync(packagePath)) {
         return false;
     }
     const packageContents = fs.readFileSync(packagePath, { encoding: 'utf8' });
+
     try {
         const diskVersion = JSON.parse(packageContents).version;
+
         return (diskVersion === extension.version);
     }
     catch (err) {
@@ -60,6 +68,7 @@ function isUpToDate(extension: IExtensionDefinition): boolean {
 }
 function getExtensionDownloadStream(extension: IExtensionDefinition) {
     const galleryServiceUrl = productjson.extensionsGallery?.serviceUrl;
+
     return (galleryServiceUrl ? ext.fromMarketplace(galleryServiceUrl, extension) : ext.fromGithub(extension))
         .pipe(rename(p => p.dirname = `${extension.name}/${p.dirname}`));
 }
@@ -67,6 +76,7 @@ export function getExtensionStream(extension: IExtensionDefinition) {
     // if the extension exists on disk, use those files instead of downloading anew
     if (isUpToDate(extension)) {
         log('[extensions]', `${extension.name}@${extension.version} up to date`, ansiColors.green('✔︎'));
+
         return vfs.src(['**'], { cwd: getExtensionPath(extension), dot: true })
             .pipe(rename(p => p.dirname = `${extension.name}/${p.dirname}`));
     }
@@ -74,12 +84,16 @@ export function getExtensionStream(extension: IExtensionDefinition) {
 }
 function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
     const galleryServiceUrl = productjson.extensionsGallery?.serviceUrl;
+
     const source = ansiColors.blue(galleryServiceUrl ? '[marketplace]' : '[github]');
+
     if (isUpToDate(extension)) {
         log(source, `${extension.name}@${extension.version}`, ansiColors.green('✔︎'));
+
         return es.readArray([]);
     }
     rimraf.sync(getExtensionPath(extension));
+
     return getExtensionDownloadStream(extension)
         .pipe(vfs.dest('.build/builtInExtensions'))
         .on('end', () => log(source, extension.name, ansiColors.green('✔︎')));
@@ -87,27 +101,35 @@ function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
 function syncExtension(extension: IExtensionDefinition, controlState: 'disabled' | 'marketplace'): Stream {
     if (extension.platforms) {
         const platforms = new Set(extension.platforms);
+
         if (!platforms.has(process.platform)) {
             log(ansiColors.gray('[skip]'), `${extension.name}@${extension.version}: Platform '${process.platform}' not supported: [${extension.platforms}]`, ansiColors.green('✔︎'));
+
             return es.readArray([]);
         }
     }
     switch (controlState) {
         case 'disabled':
             log(ansiColors.blue('[disabled]'), ansiColors.gray(extension.name));
+
             return es.readArray([]);
+
         case 'marketplace':
             return syncMarketplaceExtension(extension);
+
         default:
             if (!fs.existsSync(controlState)) {
                 log(ansiColors.red(`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but that path does not exist.`));
+
                 return es.readArray([]);
             }
             else if (!fs.existsSync(path.join(controlState, 'package.json'))) {
                 log(ansiColors.red(`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but there is no 'package.json' file in that directory.`));
+
                 return es.readArray([]);
             }
             log(ansiColors.blue('[local]'), `${extension.name}: ${ansiColors.cyan(controlState)}`, ansiColors.green('✔︎'));
+
             return es.readArray([]);
     }
 }
@@ -129,14 +151,18 @@ function writeControlFile(control: IControlFile): void {
 export function getBuiltInExtensions(): Promise<void> {
     log('Synchronizing built-in extensions...');
     log(`You can manage built-in extensions with the ${ansiColors.cyan('--builtin')} flag`);
+
     const control = readControlFile();
+
     const streams: Stream[] = [];
+
     for (const extension of [...builtInExtensions, ...webBuiltInExtensions]) {
         const controlState = control[extension.name] || 'marketplace';
         control[extension.name] = controlState;
         streams.push(syncExtension(extension, controlState));
     }
     writeControlFile(control);
+
     return new Promise((resolve, reject) => {
         es.merge(streams)
             .on('error', reject)

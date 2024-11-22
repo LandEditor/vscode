@@ -15,10 +15,12 @@ class TextualDocumentHighlightProvider implements DocumentHighlightProvider, Mul
     selector: LanguageFilter = { language: '*' };
     provideDocumentHighlights(model: ITextModel, position: Position, token: CancellationToken): ProviderResult<DocumentHighlight[]> {
         const result: DocumentHighlight[] = [];
+
         const word = model.getWordAtPosition({
             lineNumber: position.lineNumber,
             column: position.column
         });
+
         if (!word) {
             return Promise.resolve(result);
         }
@@ -26,6 +28,7 @@ class TextualDocumentHighlightProvider implements DocumentHighlightProvider, Mul
             return;
         }
         const matches = model.findMatches(word.word, true, false, true, USUAL_WORD_SEPARATORS, false);
+
         return matches.map(m => ({
             range: m.range,
             kind: DocumentHighlightKind.Text
@@ -33,10 +36,12 @@ class TextualDocumentHighlightProvider implements DocumentHighlightProvider, Mul
     }
     provideMultiDocumentHighlights(primaryModel: ITextModel, position: Position, otherModels: ITextModel[], token: CancellationToken): ProviderResult<ResourceMap<DocumentHighlight[]>> {
         const result = new ResourceMap<DocumentHighlight[]>();
+
         const word = primaryModel.getWordAtPosition({
             lineNumber: position.lineNumber,
             column: position.column
         });
+
         if (!word) {
             return Promise.resolve(result);
         }
@@ -45,10 +50,12 @@ class TextualDocumentHighlightProvider implements DocumentHighlightProvider, Mul
                 continue;
             }
             const matches = model.findMatches(word.word, true, false, true, USUAL_WORD_SEPARATORS, false);
+
             const highlights = matches.map(m => ({
                 range: m.range,
                 kind: DocumentHighlightKind.Text
             }));
+
             if (highlights) {
                 result.set(model.uri, highlights);
             }

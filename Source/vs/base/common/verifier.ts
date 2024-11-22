@@ -33,6 +33,7 @@ export class SetVerifier<T> extends Verifier<Set<T>> {
 }
 export class EnumVerifier<T> extends Verifier<T> {
     private readonly allowedValues: ReadonlyArray<T>;
+
     constructor(defaultValue: T, allowedValues: ReadonlyArray<T>) {
         super(defaultValue);
         this.allowedValues = allowedValues;
@@ -61,6 +62,7 @@ export function verifyObject<T extends Object>(verifiers: {
     [K in keyof T]: IVerifier<T[K]>;
 }, value: Object): T {
     const result = Object.create(null);
+
     for (const key in verifiers) {
         if (Object.hasOwnProperty.call(verifiers, key)) {
             const verifier = verifiers[key];

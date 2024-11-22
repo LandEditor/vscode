@@ -15,6 +15,7 @@ export abstract class OffsetEdits {
     }
     static asEditOperations(offsetEdit: OffsetEdit, doc: ITextModel): IIdentifiedSingleEditOperation[] {
         const edits: IIdentifiedSingleEditOperation[] = [];
+
         for (const singleEdit of offsetEdit.edits) {
             const range = Range.fromPositions(doc.getPositionAt(singleEdit.replaceRange.start), doc.getPositionAt(singleEdit.replaceRange.start + singleEdit.replaceRange.length));
             edits.push(EditOperation.replace(range, singleEdit.newText));
@@ -24,16 +25,22 @@ export abstract class OffsetEdits {
     static fromContentChanges(contentChanges: readonly IModelContentChange[]) {
         const editsArr = contentChanges.map(c => new SingleOffsetEdit(OffsetRange.ofStartAndLength(c.rangeOffset, c.rangeLength), c.text));
         editsArr.reverse();
+
         const edits = new OffsetEdit(editsArr);
+
         return edits;
     }
     static fromLineRangeMapping(original: ITextModel, modified: ITextModel, changes: readonly DetailedLineRangeMapping[]): OffsetEdit {
         const edits: SingleOffsetEdit[] = [];
+
         for (const c of changes) {
             for (const i of c.innerChanges ?? []) {
                 const newText = modified.getValueInRange(i.modifiedRange);
+
                 const startOrig = original.getOffsetAt(i.originalRange.getStartPosition());
+
                 const endExOrig = original.getOffsetAt(i.originalRange.getEndPosition());
+
                 const origRange = new OffsetRange(startOrig, endExOrig);
                 edits.push(new SingleOffsetEdit(origRange, newText));
             }

@@ -51,9 +51,12 @@ export function registerDiffEditorCommands(): void {
             title: localize2('compare.previousChange', 'Go to Previous Change'),
         }
     });
+
     function getActiveTextDiffEditor(accessor: ServicesAccessor, args: any[]): TextDiffEditor | undefined {
         const editorService = accessor.get(IEditorService);
+
         const resource = args.length > 0 && args[0] instanceof URI ? args[0] : undefined;
+
         for (const editor of [editorService.activeEditorPane, ...editorService.visibleEditorPanes]) {
             if (editor instanceof TextDiffEditor && (!resource || editor.input instanceof DiffEditorInput && isEqual(editor.input.primary.resource, resource))) {
                 return editor;
@@ -63,6 +66,7 @@ export function registerDiffEditorCommands(): void {
     }
     function navigateInDiffEditor(accessor: ServicesAccessor, args: any[], next: boolean): void {
         const activeTextDiffEditor = getActiveTextDiffEditor(accessor, args);
+
         if (activeTextDiffEditor) {
             activeTextDiffEditor.getControl()?.goToDiff(next ? 'next' : 'previous');
         }
@@ -74,14 +78,19 @@ export function registerDiffEditorCommands(): void {
     }
     function focusInDiffEditor(accessor: ServicesAccessor, args: any[], mode: FocusTextDiffEditorMode): void {
         const activeTextDiffEditor = getActiveTextDiffEditor(accessor, args);
+
         if (activeTextDiffEditor) {
             switch (mode) {
                 case FocusTextDiffEditorMode.Original:
                     activeTextDiffEditor.getControl()?.getOriginalEditor().focus();
+
                     break;
+
                 case FocusTextDiffEditorMode.Modified:
                     activeTextDiffEditor.getControl()?.getModifiedEditor().focus();
+
                     break;
+
                 case FocusTextDiffEditorMode.Toggle:
                     if (activeTextDiffEditor.getControl()?.getModifiedEditor().hasWidgetFocus()) {
                         return focusInDiffEditor(accessor, args, FocusTextDiffEditorMode.Original);
@@ -94,35 +103,48 @@ export function registerDiffEditorCommands(): void {
     }
     function toggleDiffSideBySide(accessor: ServicesAccessor, args: any[]): void {
         const configService = accessor.get(ITextResourceConfigurationService);
+
         const activeTextDiffEditor = getActiveTextDiffEditor(accessor, args);
+
         const m = activeTextDiffEditor?.getControl()?.getModifiedEditor()?.getModel();
+
         if (!m) {
             return;
         }
         const key = 'diffEditor.renderSideBySide';
+
         const val = configService.getValue(m.uri, key);
         configService.updateValue(m.uri, key, !val);
     }
     function toggleDiffIgnoreTrimWhitespace(accessor: ServicesAccessor, args: any[]): void {
         const configService = accessor.get(ITextResourceConfigurationService);
+
         const activeTextDiffEditor = getActiveTextDiffEditor(accessor, args);
+
         const m = activeTextDiffEditor?.getControl()?.getModifiedEditor()?.getModel();
+
         if (!m) {
             return;
         }
         const key = 'diffEditor.ignoreTrimWhitespace';
+
         const val = configService.getValue(m.uri, key);
         configService.updateValue(m.uri, key, !val);
     }
     async function swapDiffSides(accessor: ServicesAccessor, args: any[]): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const diffEditor = getActiveTextDiffEditor(accessor, args);
+
         const activeGroup = diffEditor?.group;
+
         const diffInput = diffEditor?.input;
+
         if (!diffEditor || typeof activeGroup === 'undefined' || !(diffInput instanceof DiffEditorInput) || !diffInput.modified.resource) {
             return;
         }
         const untypedDiffInput = diffInput.toUntyped({ preserveViewState: activeGroup.id, preserveResource: true });
+
         if (!untypedDiffInput) {
             return;
         }

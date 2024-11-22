@@ -41,6 +41,7 @@ export class ExtHostCell {
     readonly cellKind: notebookCommon.CellKind;
     private _apiCell: vscode.NotebookCell | undefined;
     private _mime: string | undefined;
+
     constructor(readonly notebook: ExtHostNotebookDocument, private readonly _extHostDocument: ExtHostDocumentsAndEditors, private readonly _cellData: extHostProtocol.NotebookCellDto) {
         this.handle = _cellData.handle;
         this.uri = URI.revive(_cellData.uri);
@@ -56,7 +57,9 @@ export class ExtHostCell {
     get apiCell(): vscode.NotebookCell {
         if (!this._apiCell) {
             const that = this;
+
             const data = this._extHostDocument.getDocument(this.uri);
+
             if (!data) {
                 throw new Error(`MISSING extHostDocument for notebook cell: ${this.uri}`);
             }
@@ -80,19 +83,24 @@ export class ExtHostCell {
     }
     setOutputItems(outputId: string, append: boolean, newOutputItems: extHostProtocol.NotebookOutputItemDto[]) {
         const newItems = newOutputItems.map(extHostTypeConverters.NotebookCellOutputItem.to);
+
         const output = this._outputs.find(op => op.id === outputId);
+
         if (output) {
             if (!append) {
                 output.items.length = 0;
             }
             output.items.push(...newItems);
+
             if (output.items.length > 1 && output.items.every(item => notebookCommon.isTextStreamMime(item.mime))) {
                 // Look for the mimes in the items, and keep track of their order.
                 // Merge the streams into one output item, per mime type.
                 const mimeOutputs = new Map<string, Uint8Array[]>();
+
                 const mimeTypes: string[] = [];
                 output.items.forEach(item => {
                     let items: Uint8Array[];
+
                     if (mimeOutputs.has(item.mime)) {
                         items = mimeOutputs.get(item.mime)!;
                     }
@@ -134,6 +142,7 @@ export class ExtHostNotebookDocument {
     private _versionId: number = 0;
     private _isDirty: boolean = false;
     private _disposed: boolean = false;
+
     constructor(private readonly _proxy: extHostProtocol.MainThreadNotebookDocumentsShape, private readonly _textDocumentsAndEditors: ExtHostDocumentsAndEditors, private readonly _textDocuments: ExtHostDocuments, readonly uri: URI, data: extHostProtocol.INotebookModelAddedData) {
         this._notebookType = data.viewType;
         this._metadata = Object.freeze(data.metadata ?? Object.create(null));
@@ -149,6 +158,7 @@ export class ExtHostNotebookDocument {
     get apiNotebook(): vscode.NotebookDocument {
         if (!this._notebook) {
             const that = this;
+
             const apiObject: vscode.NotebookDocument = {
                 get uri() { return that.uri; },
                 get version() { return that._versionId; },
@@ -160,10 +170,12 @@ export class ExtHostNotebookDocument {
                 get cellCount() { return that._cells.length; },
                 cellAt(index) {
                     index = that._validateIndex(index);
+
                     return that._cells[index].apiCell;
                 },
                 getCells(range) {
                     const cells = range ? that._getCells(range) : that._cells;
+
                     return cells.map(cell => cell.apiCell);
                 },
                 save() {
@@ -189,6 +201,7 @@ export class ExtHostNotebookDocument {
         this._versionId = event.versionId;
         this._isDirty = isDirty;
         this.acceptDocumentPropertiesChanged({ metadata: newMetadata });
+
         const result = {
             notebook: this.apiNotebook,
             metadata: newMetadata,
@@ -198,6 +211,7 @@ export class ExtHostNotebookDocument {
         type RelaxedCellChange = Partial<vscode.NotebookDocumentCellChange> & {
             cell: vscode.NotebookCell;
         };
+
         const relaxedCellChanges: RelaxedCellChange[] = [];
         // -- apply change and populate content changes
         for (const rawEvent of event.rawEvents) {
@@ -236,9 +250,12 @@ export class ExtHostNotebookDocument {
         }
         // -- compact cellChanges
         const map = new Map<vscode.NotebookCell, number>();
+
         for (let i = 0; i < relaxedCellChanges.length; i++) {
             const relaxedCellChange = relaxedCellChanges[i];
+
             const existing = map.get(relaxedCellChange.cell);
+
             if (existing === undefined) {
                 const newLen = result.cellChanges.push({
                     document: undefined,
@@ -260,10 +277,12 @@ export class ExtHostNotebookDocument {
         Object.freeze(result);
         Object.freeze(result.cellChanges);
         Object.freeze(result.contentChanges);
+
         return result;
     }
     private _validateIndex(index: number): number {
         index = index | 0;
+
         if (index < 0) {
             return 0;
         }
@@ -276,7 +295,9 @@ export class ExtHostNotebookDocument {
     }
     private _validateRange(range: vscode.NotebookRange): vscode.NotebookRange {
         let start = range.start | 0;
+
         let end = range.end | 0;
+
         if (start < 0) {
             start = 0;
         }
@@ -287,7 +308,9 @@ export class ExtHostNotebookDocument {
     }
     private _getCells(range: vscode.NotebookRange): ExtHostCell[] {
         range = this._validateRange(range);
+
         const result: ExtHostCell[] = [];
+
         for (let i = range.start; i < range.end; i++) {
             result.push(this._cells[i]);
         }
@@ -304,19 +327,26 @@ export class ExtHostNotebookDocument {
             return;
         }
         const contentChangeEvents: RawContentChangeEvent[] = [];
+
         const addedCellDocuments: extHostProtocol.IModelAddedData[] = [];
+
         const removedCellDocuments: URI[] = [];
         splices.reverse().forEach(splice => {
             const cellDtos = splice[2];
+
             const newCells = cellDtos.map(cell => {
                 const extCell = new ExtHostCell(this, this._textDocumentsAndEditors, cell);
+
                 if (!initialization) {
                     addedCellDocuments.push(ExtHostCell.asModelAddData(cell));
                 }
                 return extCell;
             });
+
             const changeEvent = new RawContentChangeEvent(splice[0], splice[1], [], newCells);
+
             const deletedItems = this._cells.splice(splice[0], splice[1], ...newCells);
+
             for (const cell of deletedItems) {
                 removedCellDocuments.push(cell.uri);
                 changeEvent.deletedItems.push(cell.apiCell);
@@ -327,6 +357,7 @@ export class ExtHostNotebookDocument {
             addedDocuments: addedCellDocuments,
             removedDocuments: removedCellDocuments
         });
+
         if (bucket) {
             for (const changeEvent of contentChangeEvents) {
                 bucket.push(changeEvent.asApiEvent());
@@ -336,10 +367,12 @@ export class ExtHostNotebookDocument {
     private _moveCells(index: number, length: number, newIdx: number, bucket: vscode.NotebookDocumentContentChange[]): void {
         const cells = this._cells.splice(index, length);
         this._cells.splice(newIdx, 0, ...cells);
+
         const changes = [
             new RawContentChangeEvent(index, length, cells.map(c => c.apiCell), []),
             new RawContentChangeEvent(newIdx, 0, [], cells)
         ];
+
         for (const change of changes) {
             bucket.push(change.asApiEvent());
         }
@@ -354,6 +387,7 @@ export class ExtHostNotebookDocument {
     }
     private _changeCellLanguage(index: number, newLanguageId: string): void {
         const cell = this._cells[index];
+
         if (cell.apiCell.document.languageId !== newLanguageId) {
             this._textDocuments.$acceptModelLanguageChanged(cell.uri, newLanguageId);
         }

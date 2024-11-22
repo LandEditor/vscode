@@ -64,6 +64,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		}
 
 		const width = activeComposite.getOptimalWidth();
+
 		if (typeof width !== 'number') {
 			return;
 		}
@@ -126,6 +127,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		this.updateCompositeBar();
 
 		const id = this.getActiveComposite()?.getId();
+
 		if (id) {
 			this.onTitleAreaUpdate(id);
 		}
@@ -136,7 +138,9 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 
 		const container = assertIsDefined(this.getContainer());
 		container.style.backgroundColor = this.getColor(SIDE_BAR_BACKGROUND) || '';
+
 		const borderColor = this.getColor(SIDE_BAR_BORDER) || this.getColor(contrastBorder);
+
 		const isPositionLeft = this.layoutService.getSideBarPosition() === Position.RIGHT;
 
 		container.style.color = this.getColor(SIDE_BAR_FOREGROUND) || '';
@@ -153,6 +157,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 
 	protected getCompositeBarOptions(): IPaneCompositeBarOptions {
 		const $this = this;
+
 		return {
 			partContainerClass: 'auxiliarybar',
 			pinnedViewContainersKey: AuxiliaryBarPart.pinnedPanelsKey,
@@ -188,6 +193,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 
 		if (this.getCompositeBarPosition() === CompositeBarPosition.TITLE) {
 			const viewsSubmenuAction = this.getViewsSubmenuAction();
+
 			if (viewsSubmenuAction) {
 				actions.push(new Separator());
 				actions.push(viewsSubmenuAction);
@@ -195,6 +201,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		}
 
 		const activityBarPositionMenu = this.menuService.getMenuActions(MenuId.ActivityBarPositionMenu, this.contextKeyService, { shouldForwardArgs: true, renderShortTitle: true });
+
 		const positionActions = getContextMenuActions(activityBarPositionMenu).secondary;
 
 		actions.push(...[
@@ -212,17 +219,23 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 	// TODO@benibenj chache this
 	protected getCompositeBarPosition(): CompositeBarPosition {
 		const activityBarPosition = this.configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 		switch (activityBarPosition) {
 			case ActivityBarPosition.TOP: return CompositeBarPosition.TOP;
+
 			case ActivityBarPosition.BOTTOM: return CompositeBarPosition.BOTTOM;
+
 			case ActivityBarPosition.HIDDEN: return CompositeBarPosition.TITLE;
+
 			case ActivityBarPosition.DEFAULT: return CompositeBarPosition.TITLE;
+
 			default: return CompositeBarPosition.TITLE;
 		}
 	}
 
 	protected override createHeaderArea() {
 		const headerArea = super.createHeaderArea();
+
 		const globalHeaderContainer = $('.auxiliary-bar-global-header');
 
 		// Add auxillary header action
@@ -239,6 +252,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		this.headerFooterCompositeBarDispoables.add(menu.onDidChange(() => toolBar.setActions(prepareActions(menu.getPrimaryActions()))));
 
 		headerArea.appendChild(globalHeaderContainer);
+
 		return headerArea;
 	}
 

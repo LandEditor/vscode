@@ -15,6 +15,7 @@ export class SuggestAlternatives {
     private _acceptNext: ((selected: ISelectedSuggestion) => any) | undefined;
     private _listener: IDisposable | undefined;
     private _ignore: boolean | undefined;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService) {
@@ -34,12 +35,15 @@ export class SuggestAlternatives {
         // no suggestions -> nothing to do
         if (model.items.length === 0) {
             this.reset();
+
             return;
         }
         // no alternative suggestions -> nothing to do
         const nextIndex = SuggestAlternatives._moveIndex(true, model, index);
+
         if (nextIndex === index) {
             this.reset();
+
             return;
         }
         this._acceptNext = acceptNext;
@@ -54,8 +58,10 @@ export class SuggestAlternatives {
     }
     private static _moveIndex(fwd: boolean, model: CompletionModel, index: number): number {
         let newIndex = index;
+
         for (let rounds = model.items.length; rounds > 0; rounds--) {
             newIndex = (newIndex + model.items.length + (fwd ? +1 : -1)) % model.items.length;
+
             if (newIndex === index) {
                 break;
             }

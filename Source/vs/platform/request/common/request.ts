@@ -50,6 +50,7 @@ class LoggableHeaders {
 	toJSON(): any {
 		if (!this.headers) {
 			const headers = Object.create(null);
+
 			for (const key in this.original) {
 				if (key.toLowerCase() === 'authorization' || key.toLowerCase() === 'proxy-authorization') {
 					headers[key] = '*****';
@@ -77,12 +78,15 @@ export abstract class AbstractRequestService extends Disposable implements IRequ
 	protected async logAndRequest(options: IRequestOptions, request: () => Promise<IRequestContext>): Promise<IRequestContext> {
 		const prefix = `[network] #${++this.counter}: ${options.url}`;
 		this.logService.trace(`${prefix} - begin`, options.type, new LoggableHeaders(options.headers ?? {}));
+
 		try {
 			const result = await request();
 			this.logService.trace(`${prefix} - end`, options.type, result.res.statusCode, result.res.headers);
+
 			return result;
 		} catch (error) {
 			this.logService.error(`${prefix} - error`, options.type, getErrorMessage(error));
+
 			throw error;
 		}
 	}
@@ -107,6 +111,7 @@ export async function asText(context: IRequestContext): Promise<string | null> {
 		return null;
 	}
 	const buffer = await streamToBuffer(context.stream);
+
 	return buffer.toString();
 }
 
@@ -125,11 +130,14 @@ export async function asJson<T = {}>(context: IRequestContext): Promise<T | null
 		return null;
 	}
 	const buffer = await streamToBuffer(context.stream);
+
 	const str = buffer.toString();
+
 	try {
 		return JSON.parse(str);
 	} catch (err) {
 		err.message += ':\n' + str;
+
 		throw err;
 	}
 }
@@ -141,6 +149,7 @@ export function updateProxyConfigurationsScope(scope: ConfigurationScope): void 
 let proxyConfiguration: IConfigurationNode | undefined;
 function registerProxyConfigurations(scope: ConfigurationScope): void {
 	const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+
 	const oldProxyConfiguration = proxyConfiguration;
 	proxyConfiguration = {
 		id: 'http',

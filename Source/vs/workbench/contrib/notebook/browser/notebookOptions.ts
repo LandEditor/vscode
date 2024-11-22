@@ -15,6 +15,7 @@ import { BareFontInfo } from '../../../../editor/common/config/fontInfo.js';
 import { ConfigurationTarget, IConfigurationChangeEvent, IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { InteractiveWindowCollapseCodeCells, NotebookCellDefaultCollapseConfig, NotebookCellInternalMetadata, NotebookSetting, ShowCellStatusBarType } from '../common/notebookCommon.js';
 import { INotebookExecutionStateService } from '../common/notebookExecutionStateService.js';
+
 const SCROLLABLE_ELEMENT_PADDING_TOP = 18;
 export const OutputInnerContainerTopPadding = 4;
 export interface NotebookDisplayOptions {
@@ -114,6 +115,7 @@ const defaultConfigConstants = Object.freeze({
     markdownCellGutter: 32,
     focusIndicatorLeftMargin: 4
 });
+
 const compactConfigConstants = Object.freeze({
     codeCellLeftMargin: 8,
     cellRunGutter: 36,
@@ -128,6 +130,7 @@ export class NotebookOptions extends Disposable {
     protected readonly _onDidChangeOptions = this._register(new Emitter<NotebookOptionsChangeEvent>());
     readonly onDidChangeOptions = this._onDidChangeOptions.event;
     private _editorTopPadding: number = 12;
+
     constructor(readonly targetWindow: CodeWindow, private isReadonly: boolean, private readonly overrides: {
         cellToolbarInteraction: string;
         globalToolbar: boolean;
@@ -141,36 +144,57 @@ export class NotebookOptions extends Disposable {
     @ICodeEditorService
     private readonly codeEditorService: ICodeEditorService) {
         super();
+
         const showCellStatusBar = this.configurationService.getValue<ShowCellStatusBarType>(NotebookSetting.showCellStatusBar);
+
         const globalToolbar = overrides?.globalToolbar ?? this.configurationService.getValue<boolean | undefined>(NotebookSetting.globalToolbar) ?? true;
+
         const stickyScrollEnabled = overrides?.stickyScrollEnabled ?? this.configurationService.getValue<boolean | undefined>(NotebookSetting.stickyScrollEnabled) ?? false;
+
         const stickyScrollMode = this._computeStickyScrollModeOption();
+
         const consolidatedOutputButton = this.configurationService.getValue<boolean | undefined>(NotebookSetting.consolidatedOutputButton) ?? true;
+
         const consolidatedRunButton = this.configurationService.getValue<boolean | undefined>(NotebookSetting.consolidatedRunButton) ?? false;
+
         const dragAndDropEnabled = overrides?.dragAndDropEnabled ?? this.configurationService.getValue<boolean | undefined>(NotebookSetting.dragAndDropEnabled) ?? true;
+
         const cellToolbarLocation = this.configurationService.getValue<string | {
             [key: string]: string;
         }>(NotebookSetting.cellToolbarLocation) ?? { 'default': 'right' };
+
         const cellToolbarInteraction = overrides?.cellToolbarInteraction ?? this.configurationService.getValue<string>(NotebookSetting.cellToolbarVisibility);
+
         const compactView = this.configurationService.getValue<boolean | undefined>(NotebookSetting.compactView) ?? true;
+
         const focusIndicator = this._computeFocusIndicatorOption();
+
         const insertToolbarPosition = this._computeInsertToolbarPositionOption(this.isReadonly);
+
         const insertToolbarAlignment = this._computeInsertToolbarAlignmentOption();
+
         const showFoldingControls = this._computeShowFoldingControlsOption();
         // const { bottomToolbarGap, bottomToolbarHeight } = this._computeBottomToolbarDimensions(compactView, insertToolbarPosition, insertToolbarAlignment);
+
         const fontSize = this.configurationService.getValue<number>('editor.fontSize');
+
         const markupFontSize = this.configurationService.getValue<number>(NotebookSetting.markupFontSize);
+
         const markdownLineHeight = this.configurationService.getValue<number>(NotebookSetting.markdownLineHeight);
+
         let editorOptionsCustomizations = this.configurationService.getValue<Partial<{
             'editor.indentSize': 'tabSize' | number;
             'editor.tabSize': number;
             'editor.insertSpaces': boolean;
         }>>(NotebookSetting.cellEditorOptionsCustomizations) ?? {};
         editorOptionsCustomizations = isObject(editorOptionsCustomizations) ? editorOptionsCustomizations : {};
+
         const interactiveWindowCollapseCodeCells: InteractiveWindowCollapseCodeCells = this.configurationService.getValue(NotebookSetting.interactiveWindowCollapseCodeCells);
         // TOOD @rebornix remove after a few iterations of deprecated setting
         let outputLineHeightSettingValue: number;
+
         const deprecatedOutputLineHeightSetting = this.configurationService.getValue<number>(NotebookSetting.outputLineHeightDeprecated);
+
         if (deprecatedOutputLineHeightSetting !== undefined) {
             this._migrateDeprecatedSetting(NotebookSetting.outputLineHeightDeprecated, NotebookSetting.outputLineHeight);
             outputLineHeightSettingValue = deprecatedOutputLineHeightSetting;
@@ -179,7 +203,9 @@ export class NotebookOptions extends Disposable {
             outputLineHeightSettingValue = this.configurationService.getValue<number>(NotebookSetting.outputLineHeight);
         }
         let outputFontSize: number;
+
         const deprecatedOutputFontSizeSetting = this.configurationService.getValue<number>(NotebookSetting.outputFontSizeDeprecated);
+
         if (deprecatedOutputFontSizeSetting !== undefined) {
             this._migrateDeprecatedSetting(NotebookSetting.outputFontSizeDeprecated, NotebookSetting.outputFontSize);
             outputFontSize = deprecatedOutputFontSizeSetting;
@@ -188,7 +214,9 @@ export class NotebookOptions extends Disposable {
             outputFontSize = this.configurationService.getValue<number>(NotebookSetting.outputFontSize) || fontSize;
         }
         let outputFontFamily: string;
+
         const deprecatedOutputFontFamilySetting = this.configurationService.getValue<string>(NotebookSetting.outputFontFamilyDeprecated);
+
         if (deprecatedOutputFontFamilySetting !== undefined) {
             this._migrateDeprecatedSetting(NotebookSetting.outputFontFamilyDeprecated, NotebookSetting.outputFontFamily);
             outputFontFamily = deprecatedOutputFontFamilySetting;
@@ -197,7 +225,9 @@ export class NotebookOptions extends Disposable {
             outputFontFamily = this.configurationService.getValue<string>(NotebookSetting.outputFontFamily);
         }
         let outputScrolling: boolean;
+
         const deprecatedOutputScrollingSetting = this.configurationService.getValue<boolean>(NotebookSetting.outputScrollingDeprecated);
+
         if (deprecatedOutputScrollingSetting !== undefined) {
             this._migrateDeprecatedSetting(NotebookSetting.outputScrollingDeprecated, NotebookSetting.outputScrolling);
             outputScrolling = deprecatedOutputScrollingSetting;
@@ -206,10 +236,15 @@ export class NotebookOptions extends Disposable {
             outputScrolling = this.configurationService.getValue<boolean>(NotebookSetting.outputScrolling);
         }
         const outputLineHeight = this._computeOutputLineHeight(outputLineHeightSettingValue, outputFontSize);
+
         const outputWordWrap = this.configurationService.getValue<boolean>(NotebookSetting.outputWordWrap);
+
         const outputLineLimit = this.configurationService.getValue<number>(NotebookSetting.textOutputLineLimit) ?? 30;
+
         const linkifyFilePaths = this.configurationService.getValue<boolean>(NotebookSetting.LinkifyOutputFilePaths) ?? true;
+
         const minimalErrors = this.configurationService.getValue<boolean>(NotebookSetting.minimalErrorRendering);
+
         const editorTopPadding = this._computeEditorTopPadding();
         this._layoutConfiguration = {
             ...(compactView ? compactConfigConstants : defaultConfigConstants),
@@ -275,14 +310,18 @@ export class NotebookOptions extends Disposable {
     }
     private _computeEditorTopPadding(): number {
         let decorationTriggeredAdjustment = false;
+
         const updateEditorTopPadding = (top: number) => {
             this._editorTopPadding = top;
+
             const configuration = Object.assign({}, this._layoutConfiguration);
             configuration.editorTopPadding = this._editorTopPadding;
             this._layoutConfiguration = configuration;
             this._onDidChangeOptions.fire({ editorTopPadding: true });
         };
+
         const decorationCheckSet = new Set<string>();
+
         const onDidAddDecorationType = (e: string) => {
             if (decorationTriggeredAdjustment) {
                 return;
@@ -292,8 +331,10 @@ export class NotebookOptions extends Disposable {
             }
             try {
                 const options = this.codeEditorService.resolveDecorationOptions(e, true);
+
                 if (options.afterContentClassName || options.beforeContentClassName) {
                     const cssRules = this.codeEditorService.resolveDecorationCSSRules(e);
+
                     if (cssRules !== null) {
                         for (let i = 0; i < cssRules.length; i++) {
                             // The following ways to index into the list are equivalent
@@ -304,6 +345,7 @@ export class NotebookOptions extends Disposable {
                                 const editorOptions = this.configurationService.getValue<IEditorOptions>('editor');
                                 updateEditorTopPadding(BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.getInstance(this.targetWindow).value).lineHeight + 2);
                                 decorationTriggeredAdjustment = true;
+
                                 break;
                             }
                         }
@@ -317,10 +359,12 @@ export class NotebookOptions extends Disposable {
         };
         this._register(this.codeEditorService.onDecorationTypeRegistered(onDidAddDecorationType));
         this.codeEditorService.listDecorationTypes().forEach(onDidAddDecorationType);
+
         return this._editorTopPadding;
     }
     private _migrateDeprecatedSetting(deprecatedKey: string, key: string): void {
         const deprecatedSetting = this.configurationService.inspect(deprecatedKey);
+
         if (deprecatedSetting.application !== undefined) {
             this.configurationService.updateValue(deprecatedKey, undefined, ConfigurationTarget.APPLICATION);
             this.configurationService.updateValue(key, deprecatedSetting.application.value, ConfigurationTarget.APPLICATION);
@@ -348,15 +392,18 @@ export class NotebookOptions extends Disposable {
     }
     private _computeOutputLineHeight(lineHeight: number, outputFontSize: number): number {
         const minimumLineHeight = 9;
+
         if (lineHeight === 0) {
             // use editor line height
             const editorOptions = this.configurationService.getValue<IEditorOptions>('editor');
+
             const fontInfo = FontMeasurements.readFontInfo(this.targetWindow, BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.getInstance(this.targetWindow).value));
             lineHeight = fontInfo.lineHeight;
         }
         else if (lineHeight < minimumLineHeight) {
             // Values too small to be line heights in pixels are in ems.
             let fontSize = outputFontSize;
+
             if (fontSize === 0) {
                 fontSize = this.configurationService.getValue<number>('editor.fontSize');
             }
@@ -364,6 +411,7 @@ export class NotebookOptions extends Disposable {
         }
         // Enforce integer, minimum constraints
         lineHeight = Math.round(lineHeight);
+
         if (lineHeight < minimumLineHeight) {
             lineHeight = minimumLineHeight;
         }
@@ -371,32 +419,59 @@ export class NotebookOptions extends Disposable {
     }
     private _updateConfiguration(e: IConfigurationChangeEvent) {
         const cellStatusBarVisibility = e.affectsConfiguration(NotebookSetting.showCellStatusBar);
+
         const cellToolbarLocation = e.affectsConfiguration(NotebookSetting.cellToolbarLocation);
+
         const cellToolbarInteraction = e.affectsConfiguration(NotebookSetting.cellToolbarVisibility);
+
         const compactView = e.affectsConfiguration(NotebookSetting.compactView);
+
         const focusIndicator = e.affectsConfiguration(NotebookSetting.focusIndicator);
+
         const insertToolbarPosition = e.affectsConfiguration(NotebookSetting.insertToolbarLocation);
+
         const insertToolbarAlignment = e.affectsConfiguration(NotebookSetting.experimentalInsertToolbarAlignment);
+
         const globalToolbar = e.affectsConfiguration(NotebookSetting.globalToolbar);
+
         const stickyScrollEnabled = e.affectsConfiguration(NotebookSetting.stickyScrollEnabled);
+
         const stickyScrollMode = e.affectsConfiguration(NotebookSetting.stickyScrollMode);
+
         const consolidatedOutputButton = e.affectsConfiguration(NotebookSetting.consolidatedOutputButton);
+
         const consolidatedRunButton = e.affectsConfiguration(NotebookSetting.consolidatedRunButton);
+
         const showFoldingControls = e.affectsConfiguration(NotebookSetting.showFoldingControls);
+
         const dragAndDropEnabled = e.affectsConfiguration(NotebookSetting.dragAndDropEnabled);
+
         const fontSize = e.affectsConfiguration('editor.fontSize');
+
         const outputFontSize = e.affectsConfiguration(NotebookSetting.outputFontSize);
+
         const markupFontSize = e.affectsConfiguration(NotebookSetting.markupFontSize);
+
         const markdownLineHeight = e.affectsConfiguration(NotebookSetting.markdownLineHeight);
+
         const fontFamily = e.affectsConfiguration('editor.fontFamily');
+
         const outputFontFamily = e.affectsConfiguration(NotebookSetting.outputFontFamily);
+
         const editorOptionsCustomizations = e.affectsConfiguration(NotebookSetting.cellEditorOptionsCustomizations);
+
         const interactiveWindowCollapseCodeCells = e.affectsConfiguration(NotebookSetting.interactiveWindowCollapseCodeCells);
+
         const outputLineHeight = e.affectsConfiguration(NotebookSetting.outputLineHeight);
+
         const outputScrolling = e.affectsConfiguration(NotebookSetting.outputScrolling);
+
         const outputWordWrap = e.affectsConfiguration(NotebookSetting.outputWordWrap);
+
         const outputLinkifyFilePaths = e.affectsConfiguration(NotebookSetting.LinkifyOutputFilePaths);
+
         const minimalError = e.affectsConfiguration(NotebookSetting.minimalErrorRendering);
+
         if (!cellStatusBarVisibility
             && !cellToolbarLocation
             && !cellToolbarInteraction
@@ -427,6 +502,7 @@ export class NotebookOptions extends Disposable {
             return;
         }
         let configuration = Object.assign({}, this._layoutConfiguration);
+
         if (cellStatusBarVisibility) {
             configuration.showCellStatusBar = this.configurationService.getValue<ShowCellStatusBarType>(NotebookSetting.showCellStatusBar);
         }
@@ -579,10 +655,12 @@ export class NotebookOptions extends Disposable {
     }
     getCellEditorContainerLeftMargin() {
         const { codeCellLeftMargin, cellRunGutter } = this._layoutConfiguration;
+
         return codeCellLeftMargin + cellRunGutter;
     }
     computeCollapsedMarkdownCellHeight(viewType: string): number {
         const { bottomToolbarGap } = this.computeBottomToolbarDimensions(viewType);
+
         return this._layoutConfiguration.markdownCellTopMargin
             + this._layoutConfiguration.collapsedIndicatorHeight
             + bottomToolbarGap
@@ -590,6 +668,7 @@ export class NotebookOptions extends Disposable {
     }
     computeBottomToolbarOffset(totalHeight: number, viewType: string) {
         const { bottomToolbarGap, bottomToolbarHeight } = this.computeBottomToolbarDimensions(viewType);
+
         return totalHeight
             - bottomToolbarGap
             - bottomToolbarHeight / 2;
@@ -639,8 +718,11 @@ export class NotebookOptions extends Disposable {
         bottomToolbarHeight: number;
     } {
         const configuration = this._layoutConfiguration;
+
         const cellToolbarPosition = this.computeCellToolbarLocation(viewType);
+
         const { bottomToolbarGap, bottomToolbarHeight } = this._computeBottomToolbarDimensions(configuration.compactView, configuration.insertToolbarPosition, configuration.insertToolbarAlignment, cellToolbarPosition);
+
         return {
             bottomToolbarGap,
             bottomToolbarHeight
@@ -648,6 +730,7 @@ export class NotebookOptions extends Disposable {
     }
     computeCellToolbarLocation(viewType?: string): 'right' | 'left' | 'hidden' {
         const cellToolbarLocation = this._layoutConfiguration.cellToolbarLocation;
+
         if (typeof cellToolbarLocation === 'string') {
             if (cellToolbarLocation === 'left' || cellToolbarLocation === 'right' || cellToolbarLocation === 'hidden') {
                 return cellToolbarLocation;
@@ -656,19 +739,28 @@ export class NotebookOptions extends Disposable {
         else {
             if (viewType) {
                 const notebookSpecificSetting = cellToolbarLocation[viewType] ?? cellToolbarLocation['default'];
+
                 let cellToolbarLocationForCurrentView: 'right' | 'left' | 'hidden' = 'right';
+
                 switch (notebookSpecificSetting) {
                     case 'left':
                         cellToolbarLocationForCurrentView = 'left';
+
                         break;
+
                     case 'right':
                         cellToolbarLocationForCurrentView = 'right';
+
                         break;
+
                     case 'hidden':
                         cellToolbarLocationForCurrentView = 'hidden';
+
                         break;
+
                     default:
                         cellToolbarLocationForCurrentView = 'right';
+
                         break;
                 }
                 return cellToolbarLocationForCurrentView;
@@ -681,6 +773,7 @@ export class NotebookOptions extends Disposable {
             return SCROLLABLE_ELEMENT_PADDING_TOP;
         }
         const cellToolbarLocation = this.computeCellToolbarLocation(viewType);
+
         if (cellToolbarLocation === 'left' || cellToolbarLocation === 'right') {
             return SCROLLABLE_ELEMENT_PADDING_TOP;
         }
@@ -699,6 +792,7 @@ export class NotebookOptions extends Disposable {
     }
     private statusBarIsVisible(internalMetadata: NotebookCellInternalMetadata, cellUri: URI): boolean {
         const exe = this.notebookExecutionStateService.getCellExecution(cellUri);
+
         if (this._layoutConfiguration.showCellStatusBar === 'visible') {
             return true;
         }
@@ -757,6 +851,7 @@ export class NotebookOptions extends Disposable {
     }
     computeIndicatorPosition(totalHeight: number, foldHintHeight: number, viewType?: string) {
         const { bottomToolbarGap } = this.computeBottomToolbarDimensions(viewType);
+
         return {
             bottomIndicatorTop: totalHeight - bottomToolbarGap - this._layoutConfiguration.cellBottomMargin - foldHintHeight,
             verticalIndicatorHeight: totalHeight - bottomToolbarGap - foldHintHeight

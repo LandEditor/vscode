@@ -6,6 +6,7 @@ import { AutorunObserver } from './autorun.js';
 import { IObservable, ObservableValue, TransactionImpl } from './base.js';
 import { Derived } from './derived.js';
 import { FromEventObservable } from './utils.js';
+
 let globalObservableLogger: IObservableLogger | undefined;
 export function setLogger(logger: IObservableLogger): void {
     globalObservableLogger = logger;
@@ -71,6 +72,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
         ]));
     }
     private readonly changedObservablesSets = new WeakMap<object, Set<IObservable<any, any>>>();
+
     formatChanges(changes: Set<IObservable<any, any>>): ConsoleText | undefined {
         if (changes.size === 0) {
             return undefined;
@@ -84,6 +86,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
         this.changedObservablesSets.set(derived, new Set());
         derived.handleChange = (observable, change) => {
             this.changedObservablesSets.get(derived)!.add(observable);
+
             return existingHandleChange.apply(derived, [observable, change]);
         };
     }
@@ -111,6 +114,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
         this.changedObservablesSets.set(autorun, new Set());
         autorun.handleChange = (observable, change) => {
             this.changedObservablesSets.get(autorun)!.add(observable);
+
             return existingHandleChange.apply(autorun, [observable, change]);
         };
     }
@@ -130,6 +134,7 @@ export class ConsoleObservableLogger implements IObservableLogger {
     }
     handleBeginTransaction(transaction: TransactionImpl): void {
         let transactionName = transaction.getDebugName();
+
         if (transactionName === undefined) {
             transactionName = '';
         }
@@ -153,8 +158,11 @@ type ConsoleText = (ConsoleText | undefined)[] | {
 };
 function consoleTextToArgs(text: ConsoleText): unknown[] {
     const styles = new Array<any>();
+
     const data: unknown[] = [];
+
     let firstArg = '';
+
     function process(t: ConsoleText): void {
         if ('length' in t) {
             for (const item of t) {
@@ -166,6 +174,7 @@ function consoleTextToArgs(text: ConsoleText): unknown[] {
         else if ('text' in t) {
             firstArg += `%c${t.text}`;
             styles.push(t.style);
+
             if (t.data) {
                 data.push(...t.data);
             }
@@ -175,8 +184,10 @@ function consoleTextToArgs(text: ConsoleText): unknown[] {
         }
     }
     process(text);
+
     const result = [firstArg, ...styles];
     result.push(...data);
+
     return result;
 }
 function normalText(text: string): ConsoleText {
@@ -200,6 +211,7 @@ function styled(text: string, options: {
     const style: Record<string, string> = {
         color: options.color,
     };
+
     if (options.strikeThrough) {
         style['text-decoration'] = 'line-through';
     }
@@ -215,15 +227,19 @@ function formatValue(value: unknown, availableLen: number): string {
     switch (typeof value) {
         case 'number':
             return '' + value;
+
         case 'string':
             if (value.length + 2 <= availableLen) {
                 return `"${value}"`;
             }
             return `"${value.substr(0, availableLen - 7)}"+...`;
+
         case 'boolean':
             return value ? 'true' : 'false';
+
         case 'undefined':
             return 'undefined';
+
         case 'object':
             if (value === null) {
                 return 'null';
@@ -232,50 +248,62 @@ function formatValue(value: unknown, availableLen: number): string {
                 return formatArray(value, availableLen);
             }
             return formatObject(value, availableLen);
+
         case 'symbol':
             return value.toString();
+
         case 'function':
             return `[[Function${value.name ? ' ' + value.name : ''}]]`;
+
         default:
             return '' + value;
     }
 }
 function formatArray(value: unknown[], availableLen: number): string {
     let result = '[ ';
+
     let first = true;
+
     for (const val of value) {
         if (!first) {
             result += ', ';
         }
         if (result.length - 5 > availableLen) {
             result += '...';
+
             break;
         }
         first = false;
         result += `${formatValue(val, availableLen - result.length)}`;
     }
     result += ' ]';
+
     return result;
 }
 function formatObject(value: object, availableLen: number): string {
     let result = '{ ';
+
     let first = true;
+
     for (const [key, val] of Object.entries(value)) {
         if (!first) {
             result += ', ';
         }
         if (result.length - 5 > availableLen) {
             result += '...';
+
             break;
         }
         first = false;
         result += `${key}: ${formatValue(val, availableLen - result.length)}`;
     }
     result += ' }';
+
     return result;
 }
 function repeat(str: string, count: number): string {
     let result = '';
+
     for (let i = 1; i <= count; i++) {
         result += str;
     }

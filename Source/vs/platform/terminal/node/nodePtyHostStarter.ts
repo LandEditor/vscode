@@ -28,7 +28,9 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
                 VSCODE_RECONNECT_SCROLLBACK: this._reconnectConstants.scrollback
             }
         };
+
         const ptyHostDebug = parsePtyHostDebugPort(this._environmentService.args, this._environmentService.isBuilt);
+
         if (ptyHostDebug) {
             if (ptyHostDebug.break && ptyHostDebug.port) {
                 opts.debugBrk = ptyHostDebug.port;
@@ -38,8 +40,10 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
             }
         }
         const client = new Client(FileAccess.asFileUri('bootstrap-fork').fsPath, opts);
+
         const store = new DisposableStore();
         store.add(client);
+
         return {
             client,
             store,

@@ -21,12 +21,14 @@ import { ILogService } from '../../log/common/log.js';
 const vscodeResourcesMime = 'application/vnd.code.resources';
 export class BrowserClipboardService extends Disposable implements IClipboardService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @ILayoutService
     private readonly layoutService: ILayoutService, 
     @ILogService
     private readonly logService: ILogService) {
         super();
+
         if (isSafari || isWebkitWebView) {
             this.installWebKitWriteTextWorkaround();
         }
@@ -41,12 +43,18 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
     async readImage(): Promise<Uint8Array> {
         try {
             const clipboardItems = await navigator.clipboard.read();
+
             const clipboardItem = clipboardItems[0];
+
             const supportedImageTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/tiff', 'image/bmp'];
+
             const mimeType = supportedImageTypes.find(type => clipboardItem.types.includes(type));
+
             if (mimeType) {
                 const blob = await clipboardItem.getType(mimeType);
+
                 const buffer = await blob.arrayBuffer();
+
                 return new Uint8Array(buffer);
             }
             else {
@@ -104,6 +112,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
         // With type: only in-memory is supported
         if (type) {
             this.mapTextToType.set(type, text);
+
             return;
         }
         if (this.webKitPendingClipboardWritePromise) {
@@ -126,7 +135,9 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
     }
     private fallbackWriteText(text: string): void {
         const activeDocument = getActiveDocument();
+
         const activeElement = activeDocument.activeElement;
+
         const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
         textArea.style.height = '1px';
         textArea.style.width = '1px';
@@ -135,6 +146,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
         textArea.focus();
         textArea.select();
         activeDocument.execCommand('copy');
+
         if (isHTMLElement(activeElement)) {
             activeElement.focus();
         }
@@ -166,6 +178,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
     private resources: URI[] = []; // unsupported in web (only in-memory)
     private resourcesStateHash: number | undefined = undefined;
     private static readonly MAX_RESOURCE_STATE_SOURCE_LENGTH = 1000;
+
     async writeResources(resources: URI[]): Promise<void> {
         // Guard access to navigator.clipboard with try/catch
         // as we have seen DOMExceptions in certain browsers
@@ -200,10 +213,13 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
         // due to security policies.
         try {
             const items = await getActiveWindow().navigator.clipboard.read();
+
             for (const item of items) {
                 if (item.types.includes(`web ${vscodeResourcesMime}`)) {
                     const blob = await item.getType(`web ${vscodeResourcesMime}`);
+
                     const resources = (JSON.parse(await blob.text()) as URI[]).map(x => URI.from(x));
+
                     return resources;
                 }
             }
@@ -212,6 +228,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
             // Noop
         }
         const resourcesStateHash = await this.computeResourcesStateHash();
+
         if (this.resourcesStateHash !== resourcesStateHash) {
             this.clearResourcesState(); // state mismatch, resources no longer valid
         }
@@ -226,6 +243,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
         // As such, we compute the hash of the current clipboard
         // and use that to later validate the resources clipboard.
         const clipboardText = await this.readText();
+
         return hash(clipboardText.substring(0, BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH));
     }
     async hasResources(): Promise<boolean> {
@@ -234,6 +252,7 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
         // due to security policies.
         try {
             const items = await getActiveWindow().navigator.clipboard.read();
+
             for (const item of items) {
                 if (item.types.includes(`web ${vscodeResourcesMime}`)) {
                     return true;

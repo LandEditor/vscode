@@ -42,6 +42,7 @@ export class BulkCellEdits {
         this._edits = this._edits.map(e => {
             if (e.resource.scheme === CellUri.scheme) {
                 const uri = CellUri.parse(e.resource)?.notebook;
+
                 if (!uri) {
                     throw new Error(`Invalid notebook URI: ${e.resource}`);
                 }
@@ -54,22 +55,29 @@ export class BulkCellEdits {
     }
     async apply(): Promise<readonly URI[]> {
         const resources: URI[] = [];
+
         const editsByNotebook = groupBy(this._edits, (a, b) => compare(a.resource.toString(), b.resource.toString()));
+
         for (const group of editsByNotebook) {
             if (this._token.isCancellationRequested) {
                 break;
             }
             const [first] = group;
+
             const ref = await this._notebookModelService.resolve(first.resource);
             // check state
             if (typeof first.notebookVersionId === 'number' && ref.object.notebook.versionId !== first.notebookVersionId) {
                 ref.dispose();
+
                 throw new Error(`Notebook '${first.resource}' has changed in the meantime`);
             }
             // apply edits
             const edits = group.map(entry => entry.cellEdit);
+
             const computeUndo = !ref.object.isReadonly();
+
             const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
             const initialSelectionState: ISelectionState | undefined = editor?.textModel?.uri.toString() === ref.object.notebook.uri.toString() ? {
                 kind: SelectionStateType.Index,
                 focus: editor.getFocus(),

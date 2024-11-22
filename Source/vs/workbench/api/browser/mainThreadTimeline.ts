@@ -14,6 +14,7 @@ import { revive } from '../../../base/common/marshalling.js';
 export class MainThreadTimeline implements MainThreadTimelineShape {
     private readonly _proxy: ExtHostTimelineShape;
     private readonly _providerEmitters = new Map<string, Emitter<TimelineChangeEvent>>();
+
     constructor(context: IExtHostContext, 
     @ILogService
     private readonly logService: ILogService, 
@@ -23,9 +24,13 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
     }
     $registerTimelineProvider(provider: TimelineProviderDescriptor): void {
         this.logService.trace(`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`);
+
         const proxy = this._proxy;
+
         const emitters = this._providerEmitters;
+
         let onDidChange = emitters.get(provider.id);
+
         if (onDidChange === undefined) {
             onDidChange = new Emitter<TimelineChangeEvent>();
             emitters.set(provider.id, onDidChange);
@@ -48,6 +53,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
     }
     $emitTimelineChangeEvent(e: TimelineChangeEvent): void {
         this.logService.trace(`MainThreadTimeline#emitChangeEvent: id=${e.id}, uri=${e.uri?.toString(true)}`);
+
         const emitter = this._providerEmitters.get(e.id);
         emitter?.fire(e);
     }

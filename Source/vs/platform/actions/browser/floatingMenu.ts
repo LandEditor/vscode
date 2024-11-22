@@ -64,17 +64,21 @@ export abstract class AbstractFloatingClickMenu extends Disposable {
 	/** Should be called in implementation constructors after they initialized */
 	protected render() {
 		const menuDisposables = this._register(new DisposableStore());
+
 		const renderMenuAsFloatingClickBtn = () => {
 			menuDisposables.clear();
+
 			if (!this.isVisible()) {
 				return;
 			}
 			const actions = getFlatActionBarActions(this.menu.getActions({ renderShortTitle: true, shouldForwardArgs: true }));
+
 			if (actions.length === 0) {
 				return;
 			}
 			// todo@jrieken find a way to handle N actions, like showing a context menu
 			const [first] = actions;
+
 			const widget = this.createWidget(first, menuDisposables);
 			menuDisposables.add(widget);
 			menuDisposables.add(widget.onClick(() => first.run(this.getActionArg())));
@@ -116,9 +120,11 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 
 	protected override createWidget(action: IAction, disposable: DisposableStore): FloatingClickWidget {
 		const w = this.instantiationService.createInstance(FloatingClickWidget, action.label);
+
 		const node = w.getDomNode();
 		this.options.container.appendChild(node);
 		disposable.add(toDisposable(() => node.remove()));
+
 		return w;
 	}
 

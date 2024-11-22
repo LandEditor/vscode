@@ -17,8 +17,11 @@ import { IDisposable, dispose } from '../../../common/lifecycle.js';
 import * as platform from '../../../common/platform.js';
 import { INewScrollDimensions, INewScrollPosition, IScrollDimensions, IScrollPosition, ScrollEvent, Scrollable, ScrollbarVisibility } from '../../../common/scrollable.js';
 import './media/scrollbars.css';
+
 const HIDE_TIMEOUT = 500;
+
 const SCROLL_WHEEL_SENSITIVITY = 50;
+
 const SCROLL_WHEEL_SMOOTH_SCROLL_ENABLED = true;
 export interface IOverviewRulerLayoutInfo {
     parent: HTMLElement;
@@ -29,6 +32,7 @@ class MouseWheelClassifierItem {
     public deltaX: number;
     public deltaY: number;
     public score: number;
+
     constructor(timestamp: number, deltaX: number, deltaY: number) {
         this.timestamp = timestamp;
         this.deltaX = deltaX;
@@ -42,6 +46,7 @@ export class MouseWheelClassifier {
     private _memory: MouseWheelClassifierItem[];
     private _front: number;
     private _rear: number;
+
     constructor() {
         this._capacity = 5;
         this._memory = [];
@@ -55,24 +60,31 @@ export class MouseWheelClassifier {
         }
         // 0.5 * last + 0.25 * 2nd last + 0.125 * 3rd last + ...
         let remainingInfluence = 1;
+
         let score = 0;
+
         let iteration = 1;
+
         let index = this._rear;
+
         do {
             const influence = (index === this._front ? remainingInfluence : Math.pow(2, -iteration));
             remainingInfluence -= influence;
             score += this._memory[index].score * influence;
+
             if (index === this._front) {
                 break;
             }
             index = (this._capacity + index - 1) % this._capacity;
             iteration++;
         } while (true);
+
         return (score <= 0.5);
     }
     public acceptStandardWheelEvent(e: StandardWheelEvent): void {
         if (isChrome) {
             const targetWindow = dom.getWindow(e.browserEvent);
+
             const pageZoomFactor = getZoomFactor(targetWindow);
             // On Chrome, the incoming delta events are multiplied with the OS zoom factor.
             // The OS zoom factor can be reverse engineered by using the device pixel ratio and the configured zoom factor into account.
@@ -84,7 +96,9 @@ export class MouseWheelClassifier {
     }
     public accept(timestamp: number, deltaX: number, deltaY: number): void {
         let previousItem = null;
+
         const item = new MouseWheelClassifierItem(timestamp, deltaX, deltaY);
+
         if (this._front === -1 && this._rear === -1) {
             this._memory[0] = item;
             this._front = 0;
@@ -93,6 +107,7 @@ export class MouseWheelClassifier {
         else {
             previousItem = this._memory[this._rear];
             this._rear = (this._rear + 1) % this._capacity;
+
             if (this._rear === this._front) {
                 // Drop oldest
                 this._front = (this._front + 1) % this._capacity;
@@ -112,6 +127,7 @@ export class MouseWheelClassifier {
             return 1;
         }
         let score: number = 0.5;
+
         if (!this._isAlmostInt(item.deltaX) || !this._isAlmostInt(item.deltaY)) {
             // non-integer deltas => indicator that this is not a physical mouse wheel
             score += 0.25;
@@ -120,15 +136,23 @@ export class MouseWheelClassifier {
         // These can be identified by seeing whether they are the module of one another.
         if (previousItem) {
             const absDeltaX = Math.abs(item.deltaX);
+
             const absDeltaY = Math.abs(item.deltaY);
+
             const absPreviousDeltaX = Math.abs(previousItem.deltaX);
+
             const absPreviousDeltaY = Math.abs(previousItem.deltaY);
             // Min 1 to avoid division by zero, module 1 will still be 0.
             const minDeltaX = Math.max(Math.min(absDeltaX, absPreviousDeltaX), 1);
+
             const minDeltaY = Math.max(Math.min(absDeltaY, absPreviousDeltaY), 1);
+
             const maxDeltaX = Math.max(absDeltaX, absPreviousDeltaX);
+
             const maxDeltaY = Math.max(absDeltaY, absPreviousDeltaY);
+
             const isSameModulo = (maxDeltaX % minDeltaX === 0 && maxDeltaY % minDeltaY === 0);
+
             if (isSameModulo) {
                 score -= 0.5;
             }
@@ -137,6 +161,7 @@ export class MouseWheelClassifier {
     }
     private _isAlmostInt(value: number): boolean {
         const delta = Math.abs(Math.round(value) - value);
+
         return (delta < 0.01);
     }
 }
@@ -173,6 +198,7 @@ export abstract class AbstractScrollableElement extends Widget {
             this._onDidScroll(e);
             this._onScroll.fire(e);
         }));
+
         const scrollbarHost: ScrollbarHost = {
             onMouseWheel: (mouseWheelEvent: StandardWheelEvent) => this._onMouseWheel(mouseWheelEvent),
             onDragStart: () => this._onDragStart(),
@@ -188,6 +214,7 @@ export abstract class AbstractScrollableElement extends Widget {
         this._domNode.appendChild(element);
         this._domNode.appendChild(this._horizontalScrollbar.domNode.domNode);
         this._domNode.appendChild(this._verticalScrollbar.domNode.domNode);
+
         if (this._options.useShadows) {
             this._leftShadowDomNode = createFastDomNode(document.createElement('div'));
             this._leftShadowDomNode.setClassName('shadow');
@@ -217,6 +244,7 @@ export abstract class AbstractScrollableElement extends Widget {
     }
     public override dispose(): void {
         this._mouseWheelToDispose = dispose(this._mouseWheelToDispose);
+
         super.dispose();
     }
     /**
@@ -289,6 +317,7 @@ export abstract class AbstractScrollableElement extends Widget {
         }
         this._horizontalScrollbar.updateOptions(this._options);
         this._verticalScrollbar.updateOptions(this._options);
+
         if (!this._options.lazyRender) {
             this._render();
         }
@@ -302,6 +331,7 @@ export abstract class AbstractScrollableElement extends Widget {
     // -------------------- mouse wheel scrolling --------------------
     private _setListeningToMouseWheel(shouldListen: boolean): void {
         const isListening = (this._mouseWheelToDispose.length > 0);
+
         if (isListening === shouldListen) {
             // No change
             return;
@@ -321,15 +351,20 @@ export abstract class AbstractScrollableElement extends Widget {
             return;
         }
         const classifier = MouseWheelClassifier.INSTANCE;
+
         if (SCROLL_WHEEL_SMOOTH_SCROLL_ENABLED) {
             classifier.acceptStandardWheelEvent(e);
         }
         // useful for creating unit tests:
         // console.log(`${Date.now()}, ${e.deltaY}, ${e.deltaX}`);
+
         let didScroll = false;
+
         if (e.deltaY || e.deltaX) {
             let deltaY = e.deltaY * this._options.mouseWheelScrollSensitivity;
+
             let deltaX = e.deltaX * this._options.mouseWheelScrollSensitivity;
+
             if (this._options.scrollPredominantAxis) {
                 if (this._options.scrollYToX && deltaX + deltaY === 0) {
                     // when configured to map Y to X and we both see
@@ -351,6 +386,7 @@ export abstract class AbstractScrollableElement extends Widget {
             // Convert vertical scrolling to horizontal if shift is held, this
             // is handled at a higher level on Mac
             const shiftConvert = !platform.isMacintosh && e.browserEvent && e.browserEvent.shiftKey;
+
             if ((this._options.scrollYToX || shiftConvert) && !deltaX) {
                 deltaX = deltaY;
                 deltaY = 0;
@@ -361,7 +397,9 @@ export abstract class AbstractScrollableElement extends Widget {
                 deltaY = deltaY * this._options.fastScrollSensitivity;
             }
             const futureScrollPosition = this._scrollable.getFutureScrollPosition();
+
             let desiredScrollPosition: INewScrollPosition = {};
+
             if (deltaY) {
                 const deltaScrollTop = SCROLL_WHEEL_SENSITIVITY * deltaY;
                 // Here we convert values such as -0.3 to -1 or 0.3 to 1, otherwise low speed scrolling will never scroll
@@ -376,10 +414,12 @@ export abstract class AbstractScrollableElement extends Widget {
             }
             // Check that we are scrolling towards a location which is valid
             desiredScrollPosition = this._scrollable.validateScrollPosition(desiredScrollPosition);
+
             if (futureScrollPosition.scrollLeft !== desiredScrollPosition.scrollLeft || futureScrollPosition.scrollTop !== desiredScrollPosition.scrollTop) {
                 const canPerformSmoothScroll = (SCROLL_WHEEL_SMOOTH_SCROLL_ENABLED
                     && this._options.mouseWheelSmoothScroll
                     && classifier.isPhysicalMouseWheel());
+
                 if (canPerformSmoothScroll) {
                     this._scrollable.setScrollPositionSmooth(desiredScrollPosition);
                 }
@@ -390,6 +430,7 @@ export abstract class AbstractScrollableElement extends Widget {
             }
         }
         let consumeMouseWheel = didScroll;
+
         if (!consumeMouseWheel && this._options.alwaysConsumeMouseWheel) {
             consumeMouseWheel = true;
         }
@@ -404,6 +445,7 @@ export abstract class AbstractScrollableElement extends Widget {
     private _onDidScroll(e: ScrollEvent): void {
         this._shouldRender = this._horizontalScrollbar.onDidScroll(e) || this._shouldRender;
         this._shouldRender = this._verticalScrollbar.onDidScroll(e) || this._shouldRender;
+
         if (this._options.useShadows) {
             this._shouldRender = true;
         }
@@ -431,12 +473,18 @@ export abstract class AbstractScrollableElement extends Widget {
         this._shouldRender = false;
         this._horizontalScrollbar.render();
         this._verticalScrollbar.render();
+
         if (this._options.useShadows) {
             const scrollState = this._scrollable.getCurrentScrollPosition();
+
             const enableTop = scrollState.scrollTop > 0;
+
             const enableLeft = scrollState.scrollLeft > 0;
+
             const leftClassName = (enableLeft ? ' left' : '');
+
             const topClassName = (enableTop ? ' top' : '');
+
             const topLeftClassName = (enableLeft || enableTop ? ' top-left-corner' : '');
             this._leftShadowDomNode!.setClassName(`shadow${leftClassName}`);
             this._topShadowDomNode!.setClassName(`shadow${topClassName}`);
@@ -481,11 +529,13 @@ export class ScrollableElement extends AbstractScrollableElement {
     constructor(element: HTMLElement, options: ScrollableElementCreationOptions) {
         options = options || {};
         options.mouseWheelSmoothScroll = false;
+
         const scrollable = new Scrollable({
             forceIntegerValues: true,
             smoothScrollDuration: 0,
             scheduleAtNextAnimationFrame: (callback) => dom.scheduleAtNextAnimationFrame(dom.getWindow(element), callback)
         });
+
         super(element, options, scrollable);
         this._register(scrollable);
     }
@@ -516,14 +566,17 @@ export class SmoothScrollableElement extends AbstractScrollableElement {
 }
 export class DomScrollableElement extends AbstractScrollableElement {
     private _element: HTMLElement;
+
     constructor(element: HTMLElement, options: ScrollableElementCreationOptions) {
         options = options || {};
         options.mouseWheelSmoothScroll = false;
+
         const scrollable = new Scrollable({
             forceIntegerValues: false, // See https://github.com/microsoft/vscode/issues/139877
             smoothScrollDuration: 0,
             scheduleAtNextAnimationFrame: (callback) => dom.scheduleAtNextAnimationFrame(dom.getWindow(element), callback)
         });
+
         super(element, options, scrollable);
         this._register(scrollable);
         this._element = element;

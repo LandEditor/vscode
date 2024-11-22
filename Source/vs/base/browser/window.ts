@@ -7,6 +7,7 @@ export type CodeWindow = Window & typeof globalThis & {
 };
 export function ensureCodeWindow(targetWindow: Window, fallbackWindowId: number): asserts targetWindow is CodeWindow {
     const codeWindow = targetWindow as Partial<CodeWindow>;
+
     if (typeof codeWindow.vscodeWindowId !== 'number') {
         Object.defineProperty(codeWindow, 'vscodeWindowId', {
             get: () => fallbackWindowId
@@ -20,5 +21,6 @@ export function isAuxiliaryWindow(obj: Window): obj is CodeWindow {
         return false;
     }
     const candidate = obj as CodeWindow | undefined;
+
     return typeof candidate?.vscodeWindowId === 'number';
 }

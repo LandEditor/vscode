@@ -110,20 +110,24 @@ class ThemeDataRenderer extends Disposable implements IExtensionFeatureMarkdownR
     }
     render(manifest: IExtensionManifest): IRenderedData<IMarkdownString> {
         const markdown = new MarkdownString();
+
         if (manifest.contributes?.themes) {
             markdown.appendMarkdown(`### ${nls.localize('color themes', "Color Themes")}\n\n`);
+
             for (const theme of manifest.contributes.themes) {
                 markdown.appendMarkdown(`- ${theme.label}\n`);
             }
         }
         if (manifest.contributes?.iconThemes) {
             markdown.appendMarkdown(`### ${nls.localize('file icon themes', "File Icon Themes")}\n\n`);
+
             for (const theme of manifest.contributes.iconThemes) {
                 markdown.appendMarkdown(`- ${theme.label}\n`);
             }
         }
         if (manifest.contributes?.productIconThemes) {
             markdown.appendMarkdown(`### ${nls.localize('product icon themes', "Product Icon Themes")}\n\n`);
+
             for (const theme of manifest.contributes.productIconThemes) {
                 markdown.appendMarkdown(`- ${theme.label}\n`);
             }
@@ -149,6 +153,7 @@ export interface ThemeChangeEvent<T> {
 }
 export interface IThemeData {
     id: string;
+
     settingsId: string | null;
     location?: URI;
 }
@@ -156,6 +161,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
     private extensionThemes: T[];
     private readonly onDidChangeEmitter = new Emitter<ThemeChangeEvent<T>>();
     public readonly onDidChange: Event<ThemeChangeEvent<T>> = this.onDidChangeEmitter.event;
+
     constructor(private readonly themesExtPoint: IExtensionPoint<IThemeExtensionPoint[]>, private create: (theme: IThemeExtensionPoint, themeLocation: URI, extensionData: ExtensionData) => T, private idRequired = false, private builtInTheme: T | undefined = undefined) {
         this.extensionThemes = [];
         this.initialize();
@@ -168,11 +174,14 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
             const previousIds: {
                 [key: string]: T;
             } = {};
+
             const added: T[] = [];
+
             for (const theme of this.extensionThemes) {
                 previousIds[theme.id] = theme;
             }
             this.extensionThemes.length = 0;
+
             for (const ext of extensions) {
                 const extensionData = ExtensionData.fromName(ext.description.publisher, ext.description.name, ext.description.isBuiltin);
                 this.onThemes(extensionData, ext.description.extensionLocation, ext.value, this.extensionThemes, ext.collector);
@@ -192,24 +201,29 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
     private onThemes(extensionData: ExtensionData, extensionLocation: URI, themeContributions: IThemeExtensionPoint[], resultingThemes: T[] = [], log?: ExtensionMessageCollector): T[] {
         if (!Array.isArray(themeContributions)) {
             log?.error(nls.localize('reqarray', "Extension point `{0}` must be an array.", this.themesExtPoint.name));
+
             return resultingThemes;
         }
         themeContributions.forEach(theme => {
             if (!theme.path || !types.isString(theme.path)) {
                 log?.error(nls.localize('reqpath', "Expected string in `contributes.{0}.path`. Provided value: {1}", this.themesExtPoint.name, String(theme.path)));
+
                 return;
             }
             if (this.idRequired && (!theme.id || !types.isString(theme.id))) {
                 log?.error(nls.localize('reqid', "Expected string in `contributes.{0}.id`. Provided value: {1}", this.themesExtPoint.name, String(theme.id)));
+
                 return;
             }
             const themeLocation = resources.joinPath(extensionLocation, theme.path);
+
             if (!resources.isEqualOrParent(themeLocation, extensionLocation)) {
                 log?.warn(nls.localize('invalid.path.1', "Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.", this.themesExtPoint.name, themeLocation.path, extensionLocation.path));
             }
             const themeData = this.create(theme, themeLocation, extensionData);
             resultingThemes.push(themeData);
         });
+
         return resultingThemes;
     }
     public findThemeById(themeId: string): T | undefined {
@@ -217,6 +231,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
             return this.builtInTheme;
         }
         const allThemes = this.getThemes();
+
         for (const t of allThemes) {
             if (t.id === themeId) {
                 return t;
@@ -229,7 +244,9 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
             return this.builtInTheme;
         }
         const allThemes = this.getThemes();
+
         let defaultTheme: T | undefined = undefined;
+
         for (const t of allThemes) {
             if (t.settingsId === settingsId) {
                 return t;
@@ -251,6 +268,7 @@ export class ThemeRegistry<T extends IThemeData> implements IDisposable {
     }
     public getMarketplaceThemes(manifest: any, extensionLocation: URI, extensionData: ExtensionData): T[] {
         const themes = manifest?.contributes?.[this.themesExtPoint.name];
+
         if (Array.isArray(themes)) {
             return this.onThemes(extensionData, extensionLocation, themes);
         }

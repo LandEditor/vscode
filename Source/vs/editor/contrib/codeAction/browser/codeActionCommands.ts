@@ -102,6 +102,7 @@ export class CodeActionCommand extends EditorCommand {
 			kind: HierarchicalKind.Empty,
 			apply: CodeActionAutoApply.IfSingle,
 		});
+
 		return triggerCodeActionsForEditorSelection(editor,
 			typeof userArgs?.kind === 'string'
 				? args.preferred
@@ -154,6 +155,7 @@ export class RefactorAction extends EditorAction {
 			kind: CodeActionKind.Refactor,
 			apply: CodeActionAutoApply.Never
 		});
+
 		return triggerCodeActionsForEditorSelection(editor,
 			typeof userArgs?.kind === 'string'
 				? args.preferred
@@ -196,6 +198,7 @@ export class SourceAction extends EditorAction {
 			kind: CodeActionKind.Source,
 			apply: CodeActionAutoApply.Never
 		});
+
 		return triggerCodeActionsForEditorSelection(editor,
 			typeof userArgs?.kind === 'string'
 				? args.preferred

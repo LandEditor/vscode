@@ -32,6 +32,7 @@ class DecorationRule {
 			return data.map(DecorationRule.keyOf).join(',');
 		} else {
 			const { color, letter } = data;
+
 			if (ThemeIcon.isThemeIcon(letter)) {
 				return `${color}+${letter.id}`;
 			} else {
@@ -52,6 +53,7 @@ class DecorationRule {
 
 	constructor(readonly themeService: IThemeService, data: IDecorationData | IDecorationData[], key: string) {
 		this.data = data;
+
 		const suffix = hash(key).toString(36);
 		this.itemColorClassName = `${DecorationRule._classNamesPrefix}-itemColor-${suffix}`;
 		this.itemBadgeClassName = `${DecorationRule._classNamesPrefix}-itemBadge-${suffix}`;
@@ -79,6 +81,7 @@ class DecorationRule {
 		const { color, letter } = data;
 		// label
 		createCSSRule(`.${this.itemColorClassName}`, `color: ${getColor(color)};`, element);
+
 		if (ThemeIcon.isThemeIcon(letter)) {
 			this._createIconCSSRule(letter, color, element);
 		} else if (letter) {
@@ -93,11 +96,13 @@ class DecorationRule {
 
 		// badge or icon
 		const letters: string[] = [];
+
 		let icon: ThemeIcon | undefined;
 
 		for (const d of data) {
 			if (ThemeIcon.isThemeIcon(d.letter)) {
 				icon = d.letter;
+
 				break;
 			} else if (d.letter) {
 				letters.push(d.letter);
@@ -124,14 +129,17 @@ class DecorationRule {
 	private _createIconCSSRule(icon: ThemeIcon, color: string | undefined, element: HTMLStyleElement) {
 
 		const modifier = ThemeIcon.getModifier(icon);
+
 		if (modifier) {
 			icon = ThemeIcon.modify(icon, undefined);
 		}
 		const iconContribution = getIconRegistry().getIcon(icon.id);
+
 		if (!iconContribution) {
 			return;
 		}
 		const definition = this.themeService.getProductIconTheme().getIcon(iconContribution);
+
 		if (!definition) {
 			return;
 		}
@@ -176,6 +184,7 @@ class DecorationStyles {
 		data.sort((a, b) => (b.weight || 0) - (a.weight || 0));
 
 		const key = DecorationRule.keyOf(data);
+
 		let rule = this._decorationRules.get(key);
 
 		if (!rule) {
@@ -188,9 +197,13 @@ class DecorationStyles {
 		rule.acquire();
 
 		const labelClassName = rule.itemColorClassName;
+
 		let badgeClassName = rule.itemBadgeClassName;
+
 		const iconClassName = rule.iconBadgeClassName;
+
 		let tooltip = distinct(data.filter(d => !isFalsyOrWhitespace(d.tooltip)).map(d => d.tooltip)).join(' • ');
+
 		const strikethrough = data.some(d => d.strikethrough);
 
 		if (onlyChildren) {
@@ -282,6 +295,7 @@ export class DecorationsService implements IDecorationsService {
 		// remove everything what came from this provider
 		const removeAll = () => {
 			const uris: URI[] = [];
+
 			for (const [uri, map] of this._data) {
 				if (map.delete(provider)) {
 					uris.push(uri);
@@ -315,6 +329,7 @@ export class DecorationsService implements IDecorationsService {
 
 	private _ensureEntry(uri: URI): DecorationEntry {
 		let map = this._data.get(uri);
+
 		if (!map) {
 			// nothing known about this uri
 			map = new Map();
@@ -326,6 +341,7 @@ export class DecorationsService implements IDecorationsService {
 	getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined {
 
 		const all: IDecorationData[] = [];
+
 		let containsChildren: boolean = false;
 
 		const map = this._ensureEntry(uri);
@@ -333,6 +349,7 @@ export class DecorationsService implements IDecorationsService {
 		for (const provider of this._provider) {
 
 			let data = map.get(provider);
+
 			if (data === undefined) {
 				// sets data if fetch is sync
 				data = this._fetchData(map, uri, provider);
@@ -347,6 +364,7 @@ export class DecorationsService implements IDecorationsService {
 		if (includeChildren) {
 			// (resolved) children
 			const iter = this._data.findSuperstr(uri);
+
 			if (iter) {
 				for (const tuple of iter) {
 					for (const data of tuple[1].values()) {
@@ -370,16 +388,20 @@ export class DecorationsService implements IDecorationsService {
 
 		// check for pending request and cancel it
 		const pendingRequest = map.get(provider);
+
 		if (pendingRequest instanceof DecorationDataRequest) {
 			pendingRequest.source.cancel();
 			map.delete(provider);
 		}
 
 		const cts = new CancellationTokenSource();
+
 		const dataOrThenable = provider.provideDecorations(uri, cts.token);
+
 		if (!isThenable<IDecorationData | Promise<IDecorationData | undefined> | undefined>(dataOrThenable)) {
 			// sync -> we have a result now
 			cts.dispose();
+
 			return this._keepItem(map, provider, uri, dataOrThenable);
 
 		} else {
@@ -397,14 +419,17 @@ export class DecorationsService implements IDecorationsService {
 			}));
 
 			map.set(provider, request);
+
 			return null;
 		}
 	}
 
 	private _keepItem(map: DecorationEntry, provider: IDecorationsProvider, uri: URI, data: IDecorationData | undefined): IDecorationData | null {
 		const deco = data ? data : null;
+
 		const old = map.get(provider);
 		map.set(provider, deco);
+
 		if (deco || old) {
 			// only fire event when something changed
 			this._onDidChangeDecorationsDelayed.fire(uri);

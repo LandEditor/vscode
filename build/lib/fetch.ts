@@ -36,26 +36,33 @@ export function fetchUrls(urls: string[] | string, options: IFetchOptions): es.T
 }
 export async function fetchUrl(url: string, options: IFetchOptions, retries = 10, retryDelay = 1000): Promise<VinylFile> {
     const verbose = !!options.verbose || !!process.env['CI'] || !!process.env['BUILD_ARTIFACTSTAGINGDIRECTORY'];
+
     try {
         let startTime = 0;
+
         if (verbose) {
             log(`Start fetching ${ansiColors.magenta(url)}${retries !== 10 ? ` (${10 - retries} retry)` : ''}`);
             startTime = new Date().getTime();
         }
         const controller = new AbortController();
+
         const timeout = setTimeout(() => controller.abort(), 30 * 1000);
+
         try {
             const response = await fetch(url, {
                 ...options.nodeFetchOptions,
                 signal: controller.signal as any /* Typings issue with lib.dom.d.ts */
             });
+
             if (verbose) {
                 log(`Fetch completed: Status ${response.status}. Took ${ansiColors.magenta(`${new Date().getTime() - startTime} ms`)}`);
             }
             if (response.ok && (response.status >= 200 && response.status < 300)) {
                 const contents = Buffer.from(await response.arrayBuffer());
+
                 if (options.checksumSha256) {
                     const actualSHA256Checksum = crypto.createHash('sha256').update(contents).digest('hex');
+
                     if (actualSHA256Checksum !== options.checksumSha256) {
                         throw new Error(`Checksum mismatch for ${ansiColors.cyan(url)} (expected ${options.checksumSha256}, actual ${actualSHA256Checksum}))`);
                     }
@@ -77,6 +84,7 @@ export async function fetchUrl(url: string, options: IFetchOptions, retries = 10
                 });
             }
             let err = `Request ${ansiColors.magenta(url)} failed with status code: ${response.status}`;
+
             if (response.status === 403) {
                 err += ' (you may be rate limited)';
             }
@@ -92,6 +100,7 @@ export async function fetchUrl(url: string, options: IFetchOptions, retries = 10
         }
         if (retries > 0) {
             await new Promise(resolve => setTimeout(resolve, retryDelay));
+
             return fetchUrl(url, options, retries - 1, retryDelay);
         }
         throw e;
@@ -127,9 +136,11 @@ export function fetchGithub(repo: string, options: IGitHubAssetOptions): Stream 
         nodeFetchOptions: { headers: ghApiHeaders }
     }).pipe(through2.obj(async function (file, _enc, callback) {
         const assetFilter = typeof options.name === 'string' ? (name: string) => name === options.name : options.name;
+
         const asset = JSON.parse(file.contents.toString()).assets.find((a: {
             name: string;
         }) => assetFilter(a.name));
+
         if (!asset) {
             return callback(new Error(`Could not find asset in release of ${repo} @ ${options.version}`));
         }

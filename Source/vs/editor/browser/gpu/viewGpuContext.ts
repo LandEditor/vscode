@@ -143,6 +143,7 @@ export class ViewGpuContext extends Disposable {
 	 */
 	public static canRender(options: ViewLineOptions, viewportData: ViewportData, lineNumber: number): boolean {
 		const data = viewportData.getViewLineRenderingData(lineNumber);
+
 		if (
 			data.containsRTL ||
 			data.maxColumn > GpuRenderLimits.maxGpuCols ||
@@ -160,7 +161,9 @@ export class ViewGpuContext extends Disposable {
 	 */
 	public static canRenderDetailed(options: ViewLineOptions, viewportData: ViewportData, lineNumber: number): string[] {
 		const data = viewportData.getViewLineRenderingData(lineNumber);
+
 		const reasons: string[] = [];
+
 		if (data.containsRTL) {
 			reasons.push('containsRTL');
 		}

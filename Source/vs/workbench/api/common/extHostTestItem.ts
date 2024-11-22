@@ -11,8 +11,10 @@ import type * as vscode from 'vscode';
 import * as Convert from './extHostTypeConverters.js';
 import { URI } from '../../../base/common/uri.js';
 import { ExtHostDocumentsAndEditors } from './extHostDocumentsAndEditors.js';
+
 const testItemPropAccessor = <K extends keyof vscode.TestItem>(api: IExtHostTestItemApi, defaultValue: vscode.TestItem[K], equals: (a: vscode.TestItem[K], b: vscode.TestItem[K]) => boolean, toUpdate: (newValue: vscode.TestItem[K], oldValue: vscode.TestItem[K]) => ExtHostTestItemEvent) => {
     let value = defaultValue;
+
     return {
         enumerable: true,
         configurable: false,
@@ -29,7 +31,9 @@ const testItemPropAccessor = <K extends keyof vscode.TestItem>(api: IExtHostTest
     };
 };
 type WritableProps = Pick<vscode.TestItem, 'range' | 'label' | 'description' | 'sortText' | 'canResolveChildren' | 'busy' | 'error' | 'tags'>;
+
 const strictEqualComparator = <T>(a: T, b: T) => a === b;
+
 const propComparators: {
     [K in keyof Required<WritableProps>]: (a: vscode.TestItem[K], b: vscode.TestItem[K]) => boolean;
 } = {
@@ -58,13 +62,17 @@ const propComparators: {
         return true;
     },
 };
+
 const evSetProps = <T>(fn: (newValue: T) => Partial<ITestItem>): (newValue: T) => ExtHostTestItemEvent => v => ({ op: TestItemEventOp.SetProp, update: fn(v) });
+
 const makePropDescriptors = (api: IExtHostTestItemApi, label: string): {
     [K in keyof Required<WritableProps>]: PropertyDescriptor;
 } => ({
     range: (() => {
         let value: vscode.Range | undefined;
+
         const updateProps = evSetProps<vscode.Range | undefined>(r => ({ range: editorRange.Range.lift(Convert.Range.from(r)) }));
+
         return {
             enumerable: true,
             configurable: false,
@@ -73,6 +81,7 @@ const makePropDescriptors = (api: IExtHostTestItemApi, label: string): {
             },
             set(newValue: vscode.Range | undefined) {
                 api.listener?.({ op: TestItemEventOp.DocumentSynced });
+
                 if (!propComparators.range(value, newValue)) {
                     value = newValue;
                     api.listener?.(updateProps(newValue));
@@ -95,19 +104,24 @@ const makePropDescriptors = (api: IExtHostTestItemApi, label: string): {
         old: previous.map(Convert.TestTag.from),
     })),
 });
+
 const toItemFromPlain = (item: ITestItem.Serialized): TestItemImpl => {
     const testId = TestId.fromString(item.extId);
+
     const testItem = new TestItemImpl(testId.controllerId, testId.localId, item.label, URI.revive(item.uri) || undefined);
     testItem.range = Convert.Range.to(item.range || undefined);
     testItem.description = item.description || undefined;
     testItem.sortText = item.sortText || undefined;
     testItem.tags = item.tags.map(t => Convert.TestTag.to({ id: denamespaceTestTag(t).tagId }));
+
     return testItem;
 };
 export const toItemFromContext = (context: ITestItemContext): TestItemImpl => {
     let node: TestItemImpl | undefined;
+
     for (const test of context.tests) {
         const next = toItemFromPlain(test.item);
+
         getPrivateApiFor(next).parent = node;
         node = next;
     }
@@ -162,6 +176,7 @@ export class TestItemImpl implements vscode.TestItem {
 }
 export class TestItemRootImpl extends TestItemImpl {
     public readonly _isRoot = true;
+
     constructor(controllerId: string, label: string) {
         super(controllerId, controllerId, label, undefined);
     }

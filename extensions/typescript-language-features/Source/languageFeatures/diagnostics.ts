@@ -35,6 +35,7 @@ export const enum DiagnosticKind {
 }
 class FileDiagnostics {
     private readonly _diagnostics = new Map<DiagnosticKind, ReadonlyArray<vscode.Diagnostic>>();
+
     constructor(public readonly file: vscode.Uri, public language: DiagnosticLanguage) { }
     public updateDiagnostics(language: DiagnosticLanguage, kind: DiagnosticKind, diagnostics: ReadonlyArray<vscode.Diagnostic>, ranges: ReadonlyArray<vscode.Range> | undefined): boolean {
         if (language !== this.language) {
@@ -42,6 +43,7 @@ class FileDiagnostics {
             this.language = language;
         }
         const existing = this._diagnostics.get(kind);
+
         if (existing?.length === 0 && diagnostics.length === 0) {
             // No need to update
             return false;
@@ -50,6 +52,7 @@ class FileDiagnostics {
             return this.updateRegionDiagnostics(diagnostics, ranges!);
         }
         this._diagnostics.set(kind, diagnostics);
+
         return true;
     }
     public getAllDiagnostics(settings: DiagnosticSettings): vscode.Diagnostic[] {
@@ -73,16 +76,20 @@ class FileDiagnostics {
     private updateRegionDiagnostics(diagnostics: ReadonlyArray<vscode.Diagnostic>, ranges: ReadonlyArray<vscode.Range>): boolean {
         if (!this._diagnostics.get(DiagnosticKind.Semantic)) {
             this._diagnostics.set(DiagnosticKind.Semantic, diagnostics);
+
             return true;
         }
         const oldDiagnostics = this._diagnostics.get(DiagnosticKind.Semantic)!;
+
         const newDiagnostics = oldDiagnostics.filter(diag => !ranges.some(range => diag.range.intersection(range)));
         newDiagnostics.push(...diagnostics);
         this._diagnostics.set(DiagnosticKind.Semantic, newDiagnostics);
+
         return true;
     }
     private getSuggestionDiagnostics(settings: DiagnosticSettings) {
         const enableSuggestions = settings.getEnableSuggestions(this.language);
+
         return this.get(DiagnosticKind.Suggestion).filter(x => {
             if (!enableSuggestions) {
                 // Still show unused
@@ -132,8 +139,10 @@ class DiagnosticSettings {
     }
     private update(language: DiagnosticLanguage, f: (x: LanguageDiagnosticSettings) => LanguageDiagnosticSettings): boolean {
         const currentSettings = this.get(language);
+
         const newSettings = f(currentSettings);
         this._languageSettings.set(language, newSettings);
+
         return !areLanguageDiagnosticSettingsEqual(currentSettings, newSettings);
     }
 }
@@ -145,6 +154,7 @@ class DiagnosticsTelemetryManager extends Disposable {
     private readonly _diagnosticSnapshotsMap = new ResourceMap<readonly vscode.Diagnostic[]>(uri => uri.toString(), { onCaseInsensitiveFileSystem: false });
     private _timeout: NodeJS.Timeout | undefined;
     private _telemetryEmitter: NodeJS.Timeout | undefined;
+
     constructor(private readonly _telemetryReporter: TelemetryReporter, private readonly _diagnosticsCollection: vscode.DiagnosticCollection) {
         super();
         this._register(vscode.workspace.onDidChangeTextDocument(e => {
@@ -193,6 +203,7 @@ class DiagnosticsTelemetryManager extends Disposable {
         this._diagnosticsCollection.forEach((uri, diagnostics) => {
             const previousDiagnostics = this._diagnosticSnapshotsMap.get(uri);
             this._diagnosticSnapshotsMap.set(uri, diagnostics);
+
             const diagnosticsDiff = diagnostics.filter((diagnostic) => !previousDiagnostics?.some((previousDiagnostic) => equals(diagnostic, previousDiagnostic)));
             diagnosticsDiff.forEach((diagnostic) => {
                 const code = diagnostic.code;
@@ -236,6 +247,7 @@ export class DiagnosticsManager extends Disposable {
     private readonly _pendingUpdates: ResourceMap<any>;
     private readonly _updateDelay = 50;
     private readonly _diagnosticsTelemetryManager: DiagnosticsTelemetryManager | undefined;
+
     constructor(owner: string, configuration: TypeScriptServiceConfiguration, telemetryReporter: TelemetryReporter, onCaseInsensitiveFileSystem: boolean) {
         super();
         this._diagnostics = new ResourceMap<FileDiagnostics>(undefined, { onCaseInsensitiveFileSystem });
@@ -248,6 +260,7 @@ export class DiagnosticsManager extends Disposable {
     }
     public override dispose() {
         super.dispose();
+
         for (const value of this._pendingUpdates.values()) {
             clearTimeout(value);
         }
@@ -259,19 +272,23 @@ export class DiagnosticsManager extends Disposable {
     }
     public setValidate(language: DiagnosticLanguage, value: boolean) {
         const didUpdate = this._settings.setValidate(language, value);
+
         if (didUpdate) {
             this.rebuildAll();
         }
     }
     public setEnableSuggestions(language: DiagnosticLanguage, value: boolean) {
         const didUpdate = this._settings.setEnableSuggestions(language, value);
+
         if (didUpdate) {
             this.rebuildAll();
         }
     }
     public updateDiagnostics(file: vscode.Uri, language: DiagnosticLanguage, kind: DiagnosticKind, diagnostics: ReadonlyArray<vscode.Diagnostic>, ranges: ReadonlyArray<vscode.Range> | undefined): void {
         let didUpdate = false;
+
         const entry = this._diagnostics.get(file);
+
         if (entry) {
             didUpdate = entry.updateDiagnostics(language, kind, diagnostics, ranges);
         }
@@ -294,6 +311,7 @@ export class DiagnosticsManager extends Disposable {
     }
     public deleteDiagnostic(resource: vscode.Uri, diagnostic: vscode.Diagnostic): void {
         const fileDiagnostics = this._diagnostics.get(resource);
+
         if (fileDiagnostics) {
             fileDiagnostics.delete(diagnostic);
             this.rebuildFile(fileDiagnostics);
@@ -320,6 +338,7 @@ export class DiagnosticsManager extends Disposable {
     }
     private rebuildAll(): void {
         this._currentDiagnostics.clear();
+
         for (const fileDiagnostic of this._diagnostics.values()) {
             this.rebuildFile(fileDiagnostic);
         }

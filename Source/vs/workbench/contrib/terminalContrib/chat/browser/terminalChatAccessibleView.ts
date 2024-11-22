@@ -16,13 +16,19 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplenta
     readonly name = 'terminalInlineChat';
     readonly type = AccessibleViewType.View;
     readonly when = TerminalChatContextKeys.focused;
+
     getProvider(accessor: ServicesAccessor) {
         const terminalService = accessor.get(ITerminalService);
+
         const menuService = accessor.get(IMenuService);
+
         const actions: IAction[] = [];
+
         const contextKeyService = TerminalChatController.activeChatController?.scopedContextKeyService;
+
         if (contextKeyService) {
             const menuActions = menuService.getMenuActions(MENU_TERMINAL_CHAT_WIDGET_STATUS, contextKeyService);
+
             for (const action of menuActions) {
                 for (const a of action[1]) {
                     if (a instanceof MenuItemAction) {
@@ -32,10 +38,12 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplenta
             }
         }
         const controller: TerminalChatController | undefined = terminalService.activeInstance?.getContribution(TerminalChatController.ID) ?? undefined;
+
         if (!controller?.lastResponseContent) {
             return;
         }
         const responseContent = controller.lastResponseContent;
+
         return new AccessibleContentProvider(AccessibleViewProviderId.TerminalChat, { type: AccessibleViewType.View }, () => { return responseContent; }, () => {
             controller.focus();
         }, AccessibilityVerbositySettingId.InlineChat, undefined, actions);

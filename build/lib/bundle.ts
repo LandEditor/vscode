@@ -15,6 +15,7 @@ interface IBuildModuleInfo {
     defineLocation: IPosition | null;
     dependencies: string[];
     shim: string;
+
     exports: any;
 }
 interface IBuildModuleInfoMap {
@@ -27,6 +28,7 @@ interface ILoaderPlugin {
 }
 interface ILoaderPluginWriteFunc {
     (something: string): void;
+
     getEntryPoint(): string;
     asModule(moduleId: string, code: string): void;
 }
@@ -102,6 +104,7 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
         }
         entryPointsMap[module.name] = module;
     });
+
     const allMentionedModulesMap: {
         [modules: string]: boolean;
     } = {};
@@ -114,13 +117,18 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
             allMentionedModulesMap[excludedModule] = true;
         });
     });
+
     const code = require('fs').readFileSync(path.join(__dirname, '../../src/vs/loader.js'));
+
     const r: Function = <any>vm.runInThisContext('(function(require, module, exports) { ' + code + '\n});');
+
     const loaderModule = { exports: {} };
     r.call({}, require, loaderModule, loaderModule.exports);
+
     const loader: any = loaderModule.exports;
     config.isBuild = true;
     config.paths = config.paths || {};
+
     if (!config.paths['vs/css']) {
         config.paths['vs/css'] = 'out-build/vs/css.build';
     }
@@ -130,15 +138,19 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
     loader(['require'], (localRequire: any) => {
         const resolvePath = (entry: IExtraFile) => {
             let r = localRequire.toUrl(entry.path);
+
             if (!r.endsWith('.js')) {
                 r += '.js';
             }
             // avoid packaging the build version of plugins:
             r = r.replace('vs/css.build.js', 'vs/css.js');
+
             return { path: r, amdModuleId: entry.amdModuleId };
         };
+
         for (const moduleId in entryPointsMap) {
             const entryPoint = entryPointsMap[moduleId];
+
             if (entryPoint.prepend) {
                 entryPoint.prepend = entryPoint.prepend.map(resolvePath);
             }
@@ -146,7 +158,9 @@ export function bundle(entryPoints: IEntryPoint[], config: ILoaderConfig, callba
     });
     loader(Object.keys(allMentionedModulesMap), () => {
         const modules = <IBuildModuleInfo[]>loader.getBuildInfo();
+
         const partialResult = emitEntryPoints(modules, entryPointsMap);
+
         const cssInlinedResources = loader('vs/css').getInlinedResources();
         callback(null, {
             files: partialResult.files,
@@ -160,21 +174,29 @@ function emitEntryPoints(modules: IBuildModuleInfo[], entryPoints: IEntryPointMa
     modules.forEach((m: IBuildModuleInfo) => {
         modulesMap[m.id] = m;
     });
+
     const modulesGraph: IGraph = {};
     modules.forEach((m: IBuildModuleInfo) => {
         modulesGraph[m.id] = m.dependencies;
     });
+
     const sortedModules = topologicalSort(modulesGraph);
+
     let result: IConcatFile[] = [];
+
     const usedPlugins: IPluginMap = {};
+
     const bundleData: IBundleData = {
         graph: modulesGraph,
         bundles: {}
     };
     Object.keys(entryPoints).forEach((moduleToBundle: string) => {
         const info = entryPoints[moduleToBundle];
+
         const rootNodes = [moduleToBundle].concat(info.include || []);
+
         const allDependencies = visit(rootNodes, modulesGraph);
+
         const excludes: string[] = ['require', 'exports', 'module'].concat(info.exclude || []);
         excludes.forEach((excludeRoot: string) => {
             const allExcludes = visit([excludeRoot], modulesGraph);
@@ -182,18 +204,22 @@ function emitEntryPoints(modules: IBuildModuleInfo[], entryPoints: IEntryPointMa
                 delete allDependencies[exclude];
             });
         });
+
         const includedModules = sortedModules.filter((module: string) => {
             return allDependencies[module];
         });
         bundleData.bundles[moduleToBundle] = includedModules;
+
         const res = emitEntryPoint(modulesMap, modulesGraph, moduleToBundle, includedModules, info.prepend || [], info.dest);
         result = result.concat(res.files);
+
         for (const pluginName in res.usedPlugins) {
             usedPlugins[pluginName] = usedPlugins[pluginName] || res.usedPlugins[pluginName];
         }
     });
     Object.keys(usedPlugins).forEach((pluginName: string) => {
         const plugin = usedPlugins[pluginName];
+
         if (typeof plugin.finishBuild === 'function') {
             const write = (filename: string, contents: string) => {
                 result.push({
@@ -207,6 +233,7 @@ function emitEntryPoints(modules: IBuildModuleInfo[], entryPoints: IEntryPointMa
             plugin.finishBuild(write);
         }
     });
+
     return {
         // TODO@TS 2.1.2
         files: extractStrings(removeAllDuplicateTSBoilerplate(result)),
@@ -216,14 +243,19 @@ function emitEntryPoints(modules: IBuildModuleInfo[], entryPoints: IEntryPointMa
 function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
     const parseDefineCall = (moduleMatch: string, depsMatch: string) => {
         const module = moduleMatch.replace(/^"|"$/g, '');
+
         let deps = depsMatch.split(',');
         deps = deps.map((dep) => {
             dep = dep.trim();
             dep = dep.replace(/^"|"$/g, '');
             dep = dep.replace(/^'|'$/g, '');
+
             let prefix: string | null = null;
+
             let _path: string | null = null;
+
             const pieces = dep.split('!');
+
             if (pieces.length > 1) {
                 prefix = pieces[0] + '!';
                 _path = pieces[1];
@@ -234,10 +266,12 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
             }
             if (/^\.\//.test(_path) || /^\.\.\//.test(_path)) {
                 const res = path.join(path.dirname(module), _path).replace(/\\/g, '/');
+
                 return prefix + res;
             }
             return prefix + _path;
         });
+
         return {
             module: module,
             deps: deps
@@ -256,6 +290,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
         } = {};
         destFile.sources.forEach((source) => {
             const matches = source.contents.match(/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/);
+
             if (!matches) {
                 return;
             }
@@ -265,10 +300,12 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
                 useCounts[dep] = (useCounts[dep] || 0) + 1;
             });
         });
+
         const sortedByUseModules = Object.keys(useCounts);
         sortedByUseModules.sort((a, b) => {
             return useCounts[b] - useCounts[a];
         });
+
         const replacementMap: {
             [moduleId: string]: number;
         } = {};
@@ -278,6 +315,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
         destFile.sources.forEach((source) => {
             source.contents = source.contents.replace(/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/, (_, moduleMatch, depsMatch) => {
                 const defineCall = parseDefineCall(moduleMatch, depsMatch);
+
                 return `define(__m[${replacementMap[defineCall.module]}/*${defineCall.module}*/], __M([${defineCall.deps.map(dep => replacementMap[dep] + '/*' + dep + '*/').join(',')}])`;
             });
         });
@@ -300,6 +338,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
             contents: '}).call(this);'
         });
     });
+
     return destFiles;
 }
 function removeAllDuplicateTSBoilerplate(destFiles: IConcatFile[]): IConcatFile[] {
@@ -309,10 +348,12 @@ function removeAllDuplicateTSBoilerplate(destFiles: IConcatFile[]): IConcatFile[
             source.contents = removeDuplicateTSBoilerplate(source.contents, SEEN_BOILERPLATE);
         });
     });
+
     return destFiles;
 }
 export function removeAllTSBoilerplate(source: string) {
     const seen = new Array<boolean>(BOILERPLATE.length).fill(true, 0, 10);
+
     return removeDuplicateTSBoilerplate(source, seen);
 }
 // Taken from typescript compiler => emitFiles
@@ -330,12 +371,17 @@ const BOILERPLATE = [
 ];
 function removeDuplicateTSBoilerplate(source: string, SEEN_BOILERPLATE: boolean[] = []): string {
     const lines = source.split(/\r\n|\n|\r/);
+
     const newLines: string[] = [];
+
     let IS_REMOVING_BOILERPLATE = false, END_BOILERPLATE: RegExp;
+
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+
         if (IS_REMOVING_BOILERPLATE) {
             newLines.push('');
+
             if (END_BOILERPLATE!.test(line)) {
                 IS_REMOVING_BOILERPLATE = false;
             }
@@ -343,6 +389,7 @@ function removeDuplicateTSBoilerplate(source: string, SEEN_BOILERPLATE: boolean[
         else {
             for (let j = 0; j < BOILERPLATE.length; j++) {
                 const boilerplate = BOILERPLATE[j];
+
                 if (boilerplate.start.test(line)) {
                     if (SEEN_BOILERPLATE[j]) {
                         IS_REMOVING_BOILERPLATE = true;
@@ -378,7 +425,9 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
         sources: [],
         dest: dest
     }, results: IConcatFile[] = [mainResult];
+
     const usedPlugins: IPluginMap = {};
+
     const getLoaderPlugin = (pluginName: string): ILoaderPlugin => {
         if (!usedPlugins[pluginName]) {
             usedPlugins[pluginName] = modulesMap[pluginName].exports;
@@ -387,17 +436,22 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
     };
     includedModules.forEach((c: string) => {
         const bangIndex = c.indexOf('!');
+
         if (bangIndex >= 0) {
             const pluginName = c.substr(0, bangIndex);
+
             const plugin = getLoaderPlugin(pluginName);
             mainResult.sources.push(emitPlugin(entryPoint, plugin, pluginName, c.substr(bangIndex + 1)));
+
             return;
         }
         const module = modulesMap[c];
+
         if (module.path === 'empty:') {
             return;
         }
         const contents = readFileAndRemoveBOM(module.path);
+
         if (module.shim) {
             mainResult.sources.push(emitShimmedModule(c, deps[c], module.shim, module.path, contents));
         }
@@ -411,16 +465,19 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
                 defineLocation: module.defineLocation,
                 dependencies: module.dependencies
             };
+
             throw new Error(`Cannot bundle module '${module.id}' for entry point '${entryPoint}' because it has no shim and it lacks a defineLocation: ${JSON.stringify(moduleCopy)}`);
         }
     });
     Object.keys(usedPlugins).forEach((pluginName: string) => {
         const plugin = usedPlugins[pluginName];
+
         if (typeof plugin.writeFile === 'function') {
             const req: ILoaderPluginReqFunc = <any>(() => {
                 throw new Error('no-no!');
             });
             req.toUrl = something => something;
+
             const write = (filename: string, contents: string) => {
                 results.push({
                     dest: filename,
@@ -433,8 +490,10 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
             plugin.writeFile(pluginName, entryPoint, req, write, {});
         }
     });
+
     const toIFile = (entry: IExtraFile): IFile => {
         let contents = readFileAndRemoveBOM(entry.path);
+
         if (entry.amdModuleId) {
             contents = contents.replace(/^define\(/m, `define("${entry.amdModuleId}",`);
         }
@@ -443,8 +502,10 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
             contents: contents
         };
     };
+
     const toPrepend = (prepend || []).map(toIFile);
     mainResult.sources = toPrepend.concat(mainResult.sources);
+
     return {
         files: results,
         usedPlugins: usedPlugins
@@ -452,6 +513,7 @@ function emitEntryPoint(modulesMap: IBuildModuleInfoMap, deps: IGraph, entryPoin
 }
 function readFileAndRemoveBOM(path: string): string {
     const BOM_CHAR_CODE = 65279;
+
     let contents = fs.readFileSync(path, 'utf8');
     // Remove BOM
     if (contents.charCodeAt(0) === BOM_CHAR_CODE) {
@@ -461,6 +523,7 @@ function readFileAndRemoveBOM(path: string): string {
 }
 function emitPlugin(entryPoint: string, plugin: ILoaderPlugin, pluginName: string, moduleName: string): IFile {
     let result = '';
+
     if (typeof plugin.write === 'function') {
         const write: ILoaderPluginWriteFunc = <any>((what: string) => {
             result += what;
@@ -484,7 +547,9 @@ function emitNamedModule(moduleId: string, defineCallPosition: IPosition, path: 
     const defineCallOffset = positionToOffset(contents, defineCallPosition.line, defineCallPosition.col);
     // `parensOffset` is the position in code: define|()
     const parensOffset = contents.indexOf('(', defineCallOffset);
+
     const insertStr = '"' + moduleId + '", ';
+
     return {
         path: path,
         contents: contents.substr(0, parensOffset + 1) + insertStr + contents.substr(parensOffset + 1)
@@ -492,7 +557,9 @@ function emitNamedModule(moduleId: string, defineCallPosition: IPosition, path: 
 }
 function emitShimmedModule(moduleId: string, myDeps: string[], factory: string, path: string, contents: string): IFile {
     const strDeps = (myDeps.length > 0 ? '"' + myDeps.join('", "') + '"' : '');
+
     const strDefine = 'define("' + moduleId + '", [' + strDeps + '], ' + factory + ');';
+
     return {
         path: path,
         contents: contents + '\n;\n' + strDefine
@@ -506,7 +573,9 @@ function positionToOffset(str: string, desiredLine: number, desiredCol: number):
         return desiredCol - 1;
     }
     let line = 1;
+
     let lastNewLineOffset = -1;
+
     do {
         if (desiredLine === line) {
             return lastNewLineOffset + 1 + desiredCol - 1;
@@ -514,6 +583,7 @@ function positionToOffset(str: string, desiredLine: number, desiredCol: number):
         lastNewLineOffset = str.indexOf('\n', lastNewLineOffset + 1);
         line++;
     } while (lastNewLineOffset >= 0);
+
     return -1;
 }
 /**
@@ -521,12 +591,15 @@ function positionToOffset(str: string, desiredLine: number, desiredCol: number):
  */
 function visit(rootNodes: string[], graph: IGraph): INodeSet {
     const result: INodeSet = {};
+
     const queue = rootNodes;
     rootNodes.forEach((node) => {
         result[node] = true;
     });
+
     while (queue.length > 0) {
         const el = queue.shift();
+
         const myEdges = graph[el!] || [];
         myEdges.forEach((toNode) => {
             if (!result[toNode]) {
@@ -562,14 +635,18 @@ function topologicalSort(graph: IGraph): string[] {
             S.push(node);
         }
     });
+
     while (S.length > 0) {
         // Ensure the exact same order all the time with the same inputs
         S.sort();
+
         const n: string = S.shift()!;
         L.push(n);
+
         const myInverseEdges = inverseEdges[n] || [];
         myInverseEdges.forEach((m: string) => {
             outgoingEdgeCount[m]--;
+
             if (outgoingEdgeCount[m] === 0) {
                 delete outgoingEdgeCount[m];
                 S.push(m);

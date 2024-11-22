@@ -16,10 +16,12 @@ export class ResourcePool<T extends IDisposable> extends Disposable {
         if (this.pool.length > 0) {
             const item = this.pool.pop()!;
             this._inUse.add(item);
+
             return item;
         }
         const item = this._register(this._itemFactory());
         this._inUse.add(item);
+
         return item;
     }
     release(item: T): void {

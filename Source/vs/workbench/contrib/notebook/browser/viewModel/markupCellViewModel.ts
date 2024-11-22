@@ -31,11 +31,13 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
         return this._layoutInfo;
     }
     private _previewHeight = 0;
+
     set renderedMarkdownHeight(newHeight: number) {
         this._previewHeight = newHeight;
         this._updateTotalHeight(this._computeTotalHeight());
     }
     private _chatHeight = 0;
+
     set chatHeight(newHeight: number) {
         this._chatHeight = newHeight;
         this._updateTotalHeight(this._computeTotalHeight());
@@ -45,6 +47,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     }
     private _editorHeight = 0;
     private _statusBarHeight = 0;
+
     set editorHeight(newHeight: number) {
         this._editorHeight = newHeight;
         this._statusBarHeight = this.viewContext.notebookOptions.computeStatusBarHeight();
@@ -55,6 +58,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     }
     protected readonly _onDidChangeLayout = this._register(new Emitter<MarkupCellLayoutChangeEvent>());
     readonly onDidChangeLayout = this._onDidChangeLayout.event;
+
     get foldingState() {
         return this.foldingDelegate.getFoldingState(this.foldingDelegate.getCellIndex(this));
     }
@@ -96,6 +100,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     @ICodeEditorService
     codeEditorService: ICodeEditorService) {
         super(viewType, model, UUID.generateUuid(), viewContext, configurationService, textModelService, undoRedoService, codeEditorService);
+
         const { bottomToolbarGap } = this.viewContext.notebookOptions.computeBottomToolbarDimensions(this.viewType);
         this._layoutInfo = {
             chatHeight: 0,
@@ -115,6 +120,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
         };
         this._register(this.onDidChangeState(e => {
             this.viewContext.eventDispatcher.emit([new NotebookCellStateChangedEvent(e, this.model)]);
+
             if (e.foldingStateChanged) {
                 this._updateTotalHeight(this._computeTotalHeight(), CellLayoutContext.Fold);
             }
@@ -122,8 +128,11 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     }
     private _computeTotalHeight(): number {
         const layoutConfiguration = this.viewContext.notebookOptions.getLayoutConfiguration();
+
         const { bottomToolbarGap } = this.viewContext.notebookOptions.computeBottomToolbarDimensions(this.viewType);
+
         const foldHintHeight = this._computeFoldHintHeight();
+
         if (this.getEditState() === CellEditState.Editing) {
             return this._editorHeight
                 + layoutConfiguration.markdownCellTopMargin
@@ -146,6 +155,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     }
     override updateOptions(e: NotebookOptionsChangeEvent) {
         super.updateOptions(e);
+
         if (e.cellStatusBarVisibility || e.insertToolbarPosition || e.cellToolbarLocation) {
             this._updateTotalHeight(this._computeTotalHeight());
         }
@@ -154,8 +164,10 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
      * we put outputs stuff here to make compiler happy
      */
     outputsViewModels: ICellOutputViewModel[] = [];
+
     getOutputOffset(index: number): number {
         // throw new Error('Method not implemented.');
+
         return -1;
     }
     updateOutputHeight(index: number, height: number): void {
@@ -171,7 +183,9 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     }
     layoutChange(state: MarkupCellLayoutChangeEvent) {
         let totalHeight: number;
+
         let foldHintHeight: number;
+
         if (!this.isInputCollapsed) {
             totalHeight = state.totalHeight === undefined ?
                 (this._layoutInfo.layoutState ===
@@ -190,6 +204,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
             foldHintHeight = 0;
         }
         let commentOffset: number;
+
         if (this.getEditState() === CellEditState.Editing) {
             const notebookLayoutConfiguration = this.viewContext.notebookOptions.getLayoutConfiguration();
             commentOffset = notebookLayoutConfiguration.editorToolbarHeight
@@ -258,6 +273,7 @@ export class MarkupCellViewModel extends BaseCellViewModel implements ICellViewM
     public readonly hasFindResult: Event<boolean> = this._hasFindResult.event;
     startFind(value: string, options: INotebookFindOptions): CellFindMatch | null {
         const matches = super.cellStartFind(value, options);
+
         if (matches === null) {
             return null;
         }

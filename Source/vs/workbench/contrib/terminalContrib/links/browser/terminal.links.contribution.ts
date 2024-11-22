@@ -37,6 +37,7 @@ class TerminalLinkContribution extends DisposableStore implements ITerminalContr
     private _linkManager: TerminalLinkManager | undefined;
     private _terminalLinkQuickpick: TerminalLinkQuickpick | undefined;
     private _linkResolver: TerminalLinkResolver;
+
     constructor(private readonly _ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -78,6 +79,7 @@ class TerminalLinkContribution extends DisposableStore implements ITerminalContr
             });
         }
         const links = await this._getLinks();
+
         return await this._terminalLinkQuickpick.show(this._ctx.instance, links);
     }
     private async _getLinks(): Promise<{

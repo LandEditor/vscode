@@ -7,6 +7,7 @@ import { getCellMetadata, getVSCodeCellLanguageId, removeVSCodeCellLanguageId, s
 import { CellMetadata } from './common';
 import type * as nbformat from '@jupyterlab/nbformat';
 import { generateUuid } from './helper';
+
 const noop = () => {
     //
 };
@@ -25,7 +26,9 @@ export function activate(context: ExtensionContext) {
     workspace.onWillSaveNotebookDocument(waitForPendingModelUpdates, undefined, context.subscriptions);
 }
 type NotebookDocumentChangeEventEx = Omit<NotebookDocumentChangeEvent, 'metadata'>;
+
 let mergedEvents: NotebookDocumentChangeEventEx | undefined;
+
 let timer: NodeJS.Timeout;
 function triggerDebouncedNotebookDocumentChangeEvent() {
     if (timer) {
@@ -66,6 +69,7 @@ export function debounceOnDidChangeNotebookDocument() {
         }
         timer = setTimeout(triggerDebouncedNotebookDocumentChangeEvent, 200);
     });
+
     return Disposable.from(disposable, new Disposable(() => {
         clearTimeout(timer);
     }));
@@ -78,7 +82,9 @@ function waitForPendingModelUpdates(e: NotebookDocumentWillSaveEvent) {
         return;
     }
     triggerDebouncedNotebookDocumentChangeEvent();
+
     const promises = pendingNotebookCellModelUpdates.get(e.notebook);
+
     if (!promises) {
         return;
     }
@@ -86,8 +92,10 @@ function waitForPendingModelUpdates(e: NotebookDocumentWillSaveEvent) {
 }
 function cleanup(notebook: NotebookDocument, promise: PromiseLike<void>) {
     const pendingUpdates = pendingNotebookCellModelUpdates.get(notebook);
+
     if (pendingUpdates) {
         pendingUpdates.delete(promise);
+
         if (!pendingUpdates.size) {
             pendingNotebookCellModelUpdates.delete(notebook);
         }
@@ -103,9 +111,11 @@ function trackAndUpdateCellMetadata(notebook: NotebookDocument, updates: {
 }[]) {
     const pendingUpdates = pendingNotebookCellModelUpdates.get(notebook) ?? new Set<Thenable<void>>();
     pendingNotebookCellModelUpdates.set(notebook, pendingUpdates);
+
     const edit = new WorkspaceEdit();
     updates.forEach(({ cell, metadata }) => {
         const newMetadata = { ...cell.metadata, ...metadata };
+
         if (!metadata.execution_count && newMetadata.execution_count) {
             newMetadata.execution_count = null;
         }
@@ -114,8 +124,10 @@ function trackAndUpdateCellMetadata(notebook: NotebookDocument, updates: {
         }
         edit.set(cell.notebook.uri, [NotebookEdit.updateCellMetadata(cell.index, sortObjectPropertiesRecursively(newMetadata))]);
     });
+
     const promise = workspace.applyEdit(edit).then(noop, noop);
     pendingUpdates.add(promise);
+
     const clean = () => cleanup(notebook, promise);
     promise.then(clean, clean);
 }
@@ -124,9 +136,11 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
         return;
     }
     const notebook = e.notebook;
+
     const notebookMetadata = getNotebookMetadata(e.notebook);
     // use the preferred language from document metadata or the first cell language as the notebook preferred cell language
     const preferredCellLanguage = notebookMetadata.metadata?.language_info?.name;
+
     const updates: {
         cell: NotebookCell;
         metadata: CellMetadata & {
@@ -143,10 +157,14 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
             return;
         }
         const currentMetadata = e.metadata ? getCellMetadata({ metadata: e.metadata }) : getCellMetadata({ cell: e.cell });
+
         const languageIdInMetadata = getVSCodeCellLanguageId(currentMetadata);
+
         const metadata: CellMetadata = JSON.parse(JSON.stringify(currentMetadata));
         metadata.metadata = metadata.metadata || {};
+
         let metadataUpdated = false;
+
         if (e.executionSummary?.executionOrder && typeof e.executionSummary.success === 'boolean' && currentMetadata.execution_count !== e.executionSummary?.executionOrder) {
             metadata.execution_count = e.executionSummary.executionOrder;
             metadataUpdated = true;
@@ -199,12 +217,14 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEventEx) {
             // Don't edit the metadata directly, always get a clone (prevents accidental singletons and directly editing the objects).
             const metadata: CellMetadata = { ...JSON.parse(JSON.stringify(cellMetadata || {})) };
             metadata.metadata = metadata.metadata || {};
+
             if (isCellIdRequired(notebookMetadata) && !cellMetadata?.id) {
                 metadata.id = generateCellId(e.notebook);
             }
             updates.push({ cell, metadata });
         });
     });
+
     if (updates.length) {
         trackAndUpdateCellMetadata(notebook, updates);
     }
@@ -226,15 +246,20 @@ function generateCellId(notebook: NotebookDocument) {
         // Details of the id can be found here https://jupyter.org/enhancement-proposals/62-cell-id/cell-id.html#adding-an-id-field,
         // & here https://jupyter.org/enhancement-proposals/62-cell-id/cell-id.html#updating-older-formats
         const id = generateUuid().replace(/-/g, '').substring(0, 8);
+
         let duplicate = false;
+
         for (let index = 0; index < notebook.cellCount; index++) {
             const cell = notebook.cellAt(index);
+
             const existingId = getCellMetadata({ cell })?.id;
+
             if (!existingId) {
                 continue;
             }
             if (existingId === id) {
                 duplicate = true;
+
                 break;
             }
         }

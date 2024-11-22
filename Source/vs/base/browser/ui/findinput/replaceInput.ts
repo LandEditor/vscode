@@ -36,6 +36,7 @@ export interface IReplaceInputOptions {
 }
 
 const NLS_DEFAULT_LABEL = nls.localize('defaultLabel', "input");
+
 const NLS_PRESERVE_CASE_LABEL = nls.localize('label.preserveCaseToggle', "Preserve Case");
 
 class PreserveCaseToggle extends Toggle {
@@ -94,9 +95,13 @@ export class ReplaceInput extends Widget {
 		this.label = options.label || NLS_DEFAULT_LABEL;
 
 		const appendPreserveCaseLabel = options.appendPreserveCaseLabel || '';
+
 		const history = options.history || [];
+
 		const flexibleHeight = !!options.flexibleHeight;
+
 		const flexibleWidth = !!options.flexibleWidth;
+
 		const flexibleMaxHeight = options.flexibleMaxHeight;
 
 		this.domNode = document.createElement('div');
@@ -123,6 +128,7 @@ export class ReplaceInput extends Widget {
 		}));
 		this._register(this.preserveCase.onChange(viaKeyboard => {
 			this._onDidOptionChange.fire(viaKeyboard);
+
 			if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 				this.inputBox.focus();
 			}
@@ -143,8 +149,10 @@ export class ReplaceInput extends Widget {
 		this.onkeydown(this.domNode, (event: IKeyboardEvent) => {
 			if (event.equals(KeyCode.LeftArrow) || event.equals(KeyCode.RightArrow) || event.equals(KeyCode.Escape)) {
 				const index = indexes.indexOf(<HTMLElement>this.domNode.ownerDocument.activeElement);
+
 				if (index >= 0) {
 					let newIndex: number = -1;
+
 					if (event.equals(KeyCode.RightArrow)) {
 						newIndex = (index + 1) % indexes.length;
 					} else if (event.equals(KeyCode.LeftArrow)) {

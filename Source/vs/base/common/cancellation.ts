@@ -21,6 +21,7 @@ export interface CancellationToken {
 }
 const shortcutEvent: Event<any> = Object.freeze(function (callback, context?): IDisposable {
     const handle = setTimeout(callback.bind(context), 0);
+
     return { dispose() { clearTimeout(handle); } };
 });
 export namespace CancellationToken {
@@ -41,6 +42,7 @@ export namespace CancellationToken {
         isCancellationRequested: false,
         onCancellationRequested: Event.None
     });
+
     export const Cancelled = Object.freeze<CancellationToken>({
         isCancellationRequested: true,
         onCancellationRequested: shortcutEvent
@@ -52,6 +54,7 @@ class MutableToken implements CancellationToken {
     public cancel() {
         if (!this._isCancelled) {
             this._isCancelled = true;
+
             if (this._emitter) {
                 this._emitter.fire(undefined);
                 this.dispose();
@@ -80,6 +83,7 @@ class MutableToken implements CancellationToken {
 export class CancellationTokenSource {
     private _token?: CancellationToken = undefined;
     private _parentListener?: IDisposable = undefined;
+
     constructor(parent?: CancellationToken) {
         this._parentListener = parent && parent.onCancellationRequested(this.cancel, this);
     }
@@ -108,6 +112,7 @@ export class CancellationTokenSource {
             this.cancel();
         }
         this._parentListener?.dispose();
+
         if (!this._token) {
             // ensure to initialize with an empty token if we had none
             this._token = CancellationToken.None;
@@ -121,5 +126,6 @@ export class CancellationTokenSource {
 export function cancelOnDispose(store: DisposableStore): CancellationToken {
     const source = new CancellationTokenSource();
     store.add({ dispose() { source.cancel(); } });
+
     return source.token;
 }

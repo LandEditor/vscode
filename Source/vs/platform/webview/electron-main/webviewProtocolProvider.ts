@@ -12,6 +12,7 @@ export class WebviewProtocolProvider extends Disposable {
         ['/fake.html', 'fake.html'],
         ['/service-worker.js', 'service-worker.js'],
     ]);
+
     constructor() {
         super();
         // Register the protocol for loading webview html
@@ -21,10 +22,14 @@ export class WebviewProtocolProvider extends Disposable {
     private handleWebviewRequest(request: Electron.ProtocolRequest, callback: (response: string | Electron.ProtocolResponse) => void) {
         try {
             const uri = URI.parse(request.url);
+
             const entry = WebviewProtocolProvider.validWebviewFilePaths.get(uri.path);
+
             if (typeof entry === 'string') {
                 const relativeResourcePath: AppResourcePath = `vs/workbench/contrib/webview/browser/pre/${entry}`;
+
                 const url = FileAccess.asFileUri(relativeResourcePath);
+
                 return callback({
                     path: url.fsPath,
                     headers: {

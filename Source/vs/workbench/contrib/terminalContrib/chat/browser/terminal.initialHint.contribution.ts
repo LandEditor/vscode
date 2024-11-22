@@ -30,21 +30,27 @@ import { TerminalInstance } from '../../../terminal/browser/terminalInstance.js'
 import { TerminalInitialHintSettingId } from '../common/terminalInitialHintConfiguration.js';
 import './media/terminalInitialHint.css';
 import { TerminalChatCommandId } from './terminalChat.js';
+
 const $ = dom.$;
+
 const enum Constants {
     InitialHintHideStorageKey = 'terminal.initialHint.hide'
 }
 export class InitialHintAddon extends Disposable implements ITerminalAddon {
     private readonly _onDidRequestCreateHint = this._register(new Emitter<void>());
+
     get onDidRequestCreateHint(): Event<void> { return this._onDidRequestCreateHint.event; }
     private readonly _disposables = this._register(new MutableDisposable<DisposableStore>());
+
     constructor(private readonly _capabilities: ITerminalCapabilityStore, private readonly _onDidChangeAgents: Event<IChatAgent | undefined>) {
         super();
     }
     activate(terminal: RawXtermTerminal): void {
         const store = this._register(new DisposableStore());
         this._disposables.value = store;
+
         const capability = this._capabilities.get(TerminalCapability.CommandDetection);
+
         if (capability) {
             store.add(Event.once(capability.promptInputModel.onDidStartInput)(() => this._onDidRequestCreateHint.fire()));
         }
@@ -53,6 +59,7 @@ export class InitialHintAddon extends Disposable implements ITerminalAddon {
                 if (e.id === TerminalCapability.CommandDetection) {
                     const capability = e.capability;
                     store.add(Event.once(capability.promptInputModel.onDidStartInput)(() => this._onDidRequestCreateHint.fire()));
+
                     if (!capability.promptInputModel.value) {
                         this._onDidRequestCreateHint.fire();
                     }
@@ -79,6 +86,7 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
     private _xterm: IXtermTerminal & {
         raw: RawXtermTerminal;
     } | undefined;
+
     constructor(private readonly _ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IChatAgentService
     private readonly _chatAgentService: IChatAgentService, 
@@ -122,7 +130,9 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
     }
     private _createHint(): void {
         const instance = this._ctx.instance instanceof TerminalInstance ? this._ctx.instance : undefined;
+
         const commandDetectionCapability = instance?.capabilities.get(TerminalCapability.CommandDetection);
+
         if (!instance || !this._xterm || this._hintWidget || !commandDetectionCapability || commandDetectionCapability.promptInputModel.value || !!instance.shellLaunchConfig.attachPersistentProcess) {
             return;
         }
@@ -131,6 +141,7 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
         }
         if (!this._decoration) {
             const marker = this._xterm.raw.registerMarker();
+
             if (!marker) {
                 return;
             }
@@ -142,6 +153,7 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
                 marker,
                 x: this._xterm.raw.buffer.active.cursorX + 1,
             });
+
             if (this._decoration) {
                 this._register(this._decoration);
             }
@@ -152,7 +164,9 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
                 this.dispose();
             }
         }));
+
         const inputModel = commandDetectionCapability.promptInputModel;
+
         if (inputModel) {
             this._register(inputModel.onDidChangeInput(() => {
                 if (inputModel.value) {
@@ -167,16 +181,20 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
         this._register(this._decoration.onRender((e) => {
             if (!this._hintWidget && this._xterm?.isFocused && this._terminalGroupService.instances.length + this._terminalEditorService.instances.length === 1) {
                 const terminalAgents = this._chatAgentService.getActivatedAgents().filter(candidate => candidate.locations.includes(ChatAgentLocation.Terminal));
+
                 if (terminalAgents?.length) {
                     const widget = this._register(this._instantiationService.createInstance(TerminalInitialHintWidget, instance));
                     this._addon?.dispose();
                     this._hintWidget = widget.getDomNode(terminalAgents);
+
                     if (!this._hintWidget) {
                         return;
                     }
                     e.appendChild(this._hintWidget);
                     e.classList.add('terminal-initial-hint');
+
                     const font = this._xterm.getFont();
+
                     if (font) {
                         e.style.fontFamily = font.fontFamily;
                         e.style.fontSize = font.fontSize + 'px';
@@ -185,6 +203,7 @@ export class TerminalInitialHintContribution extends Disposable implements ITerm
             }
             if (this._hintWidget && this._xterm) {
                 const decoration = this._hintWidget.parentElement;
+
                 if (decoration) {
                     decoration.style.width = (this._xterm.raw.cols - this._xterm.raw.buffer.active.cursorX) / this._xterm!.raw.cols * 100 + '%';
                 }
@@ -198,6 +217,7 @@ class TerminalInitialHintWidget extends Disposable {
     private readonly _toDispose: DisposableStore = this._register(new DisposableStore());
     private _isVisible = false;
     private _ariaLabel: string = '';
+
     constructor(private readonly _instance: ITerminalInstance, 
     @IChatAgentService
     private readonly _chatAgentService: IChatAgentService, 
@@ -236,11 +256,14 @@ class TerminalInitialHintWidget extends Disposable {
     }
     private _getHintInlineChat(agents: IChatAgent[]) {
         let providerName = (agents.length === 1 ? agents[0].fullName : undefined) ?? this._productService.nameShort;
+
         const defaultAgent = this._chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
+
         if (defaultAgent?.extensionId.value === agents[0].extensionId.value) {
             providerName = defaultAgent.fullName ?? providerName;
         }
         let ariaLabel = `Ask ${providerName} something or start typing to dismiss.`;
+
         const handleClick = () => {
             this._storageService.store(Constants.InitialHintHideStorageKey, true, StorageScope.APPLICATION, StorageTarget.USER);
             this._telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', {
@@ -255,28 +278,37 @@ class TerminalInitialHintWidget extends Disposable {
                 this.dispose();
             }
         }));
+
         const hintHandler: IContentActionHandler = {
             disposables: this._toDispose,
             callback: (index, _event) => {
                 switch (index) {
                     case '0':
                         handleClick();
+
                         break;
                 }
             }
         };
+
         const hintElement = $('div.terminal-initial-hint');
         hintElement.style.display = 'block';
+
         const keybindingHint = this._keybindingService.lookupKeybinding(TerminalChatCommandId.Start);
+
         const keybindingHintLabel = keybindingHint?.getLabel();
+
         if (keybindingHint && keybindingHintLabel) {
             const actionPart = localize('emptyHintText', 'Press {0} to ask {1} to do something. ', keybindingHintLabel, providerName);
+
             const [before, after] = actionPart.split(keybindingHintLabel).map((fragment) => {
                 const hintPart = $('a', undefined, fragment);
                 this._toDispose.add(dom.addDisposableListener(hintPart, dom.EventType.CLICK, handleClick));
+
                 return hintPart;
             });
             hintElement.appendChild(before);
+
             const label = hintHandler.disposables.add(new KeybindingLabel(hintElement, OS));
             label.set(keybindingHint);
             label.element.style.width = 'min-content';
@@ -284,7 +316,9 @@ class TerminalInitialHintWidget extends Disposable {
             label.element.style.cursor = 'pointer';
             this._toDispose.add(dom.addDisposableListener(label.element, dom.EventType.CLICK, handleClick));
             hintElement.appendChild(after);
+
             const typeToDismiss = localize('hintTextDismiss', 'Start typing to dismiss.');
+
             const textHint2 = $('span.detail', undefined, typeToDismiss);
             hintElement.appendChild(textHint2);
             ariaLabel = actionPart.concat(typeToDismiss);
@@ -296,6 +330,7 @@ class TerminalInitialHintWidget extends Disposable {
                     'Preserve double-square brackets and their order',
                 ]
             }, '[[Ask {0} to do something]] or start typing to dismiss.', providerName);
+
             const rendered = renderFormattedText(hintMsg, { actionHandler: hintHandler });
             hintElement.appendChild(rendered);
         }
@@ -305,6 +340,7 @@ class TerminalInitialHintWidget extends Disposable {
         if (!this._domNode) {
             this._domNode = $('.terminal-initial-hint');
             this._domNode!.style.paddingLeft = '4px';
+
             const { hintElement, ariaLabel } = this._getHintInlineChat(agents);
             this._domNode.append(hintElement);
             this._ariaLabel = ariaLabel.concat(localize('disableHint', ' Toggle {0} in settings to disable this hint.', AccessibilityVerbositySettingId.TerminalChat));
@@ -333,6 +369,7 @@ class TerminalInitialHintWidget extends Disposable {
     }
     override dispose(): void {
         this._domNode?.remove();
+
         super.dispose();
     }
 }

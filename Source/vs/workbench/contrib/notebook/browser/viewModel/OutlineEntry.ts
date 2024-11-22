@@ -18,6 +18,7 @@ export class OutlineEntry {
     private _children: OutlineEntry[] = [];
     private _parent: OutlineEntry | undefined;
     private _markerInfo: IOutlineMarkerInfo | undefined;
+
     get icon(): ThemeIcon {
         if (this.symbolKind) {
             return SymbolKinds.toIcon(this.symbolKind);
@@ -50,6 +51,7 @@ export class OutlineEntry {
         if (this.cell.cellKind === CellKind.Code) {
             // a code cell can have marker
             const marker = markerService.read({ resource: this.cell.uri, severities: MarkerSeverity.Error | MarkerSeverity.Warning });
+
             if (marker.length === 0) {
                 this._markerInfo = undefined;
             }
@@ -61,8 +63,10 @@ export class OutlineEntry {
         else {
             // a markdown cell can inherit markers from its children
             let topChild: MarkerSeverity | undefined;
+
             for (const child of this.children) {
                 child.updateMarkers(markerService);
+
                 if (child.markerInfo) {
                     topChild = !topChild ? child.markerInfo.topSev : Math.max(child.markerInfo.topSev, topChild);
                 }
@@ -72,6 +76,7 @@ export class OutlineEntry {
     }
     clearMarkers(): void {
         this._markerInfo = undefined;
+
         for (const child of this.children) {
             child.clearMarkers();
         }
@@ -81,17 +86,21 @@ export class OutlineEntry {
             return this;
         }
         parents.push(this);
+
         for (const child of this.children) {
             const result = child.find(cell, parents);
+
             if (result) {
                 return result;
             }
         }
         parents.pop();
+
         return undefined;
     }
     asFlatList(bucket: OutlineEntry[]): void {
         bucket.push(this);
+
         for (const child of this.children) {
             child.asFlatList(bucket);
         }

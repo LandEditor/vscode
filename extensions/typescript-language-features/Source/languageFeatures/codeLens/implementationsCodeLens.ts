@@ -24,15 +24,18 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
     }
     public async resolveCodeLens(codeLens: ReferencesCodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens> {
         const args = typeConverters.Position.toFileLocationRequestArgs(codeLens.file, codeLens.range.start);
+
         const response = await this.client.execute('implementation', args, token, {
             lowPriority: true,
             executionTarget: ExecutionTarget.Semantic,
             cancelOnResourceChange: codeLens.document,
         });
+
         if (response.type !== 'response' || !response.body) {
             codeLens.command = response.type === 'cancelled'
                 ? TypeScriptBaseCodeLensProvider.cancelledCommand
                 : TypeScriptBaseCodeLensProvider.errorCommand;
+
             return codeLens;
         }
         const locations = response.body
@@ -46,6 +49,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
             location.range.start.line === codeLens.range.start.line &&
             location.range.start.character === codeLens.range.start.character));
         codeLens.command = this.getCommand(locations, codeLens);
+
         return codeLens;
     }
     private getCommand(locations: vscode.Location[], codeLens: ReferencesCodeLens): vscode.Command | undefined {
@@ -67,6 +71,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
         switch (item.kind) {
             case PConst.Kind.interface:
                 return getSymbolRange(document, item);
+
             case PConst.Kind.class:
             case PConst.Kind.method:
             case PConst.Kind.memberVariable:

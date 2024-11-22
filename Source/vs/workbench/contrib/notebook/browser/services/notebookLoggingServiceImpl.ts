@@ -6,11 +6,13 @@ import * as nls from '../../../../../nls.js';
 import { Disposable } from '../../../../../base/common/lifecycle.js';
 import { INotebookLoggingService } from '../../common/notebookLoggingService.js';
 import { ILogger, ILoggerService } from '../../../../../platform/log/common/log.js';
+
 const logChannelId = 'notebook.rendering';
 export class NotebookLoggingService extends Disposable implements INotebookLoggingService {
     _serviceBrand: undefined;
     static ID: string = 'notebook';
     private readonly _logger: ILogger;
+
     constructor(
     @ILoggerService
     loggerService: ILoggerService) {

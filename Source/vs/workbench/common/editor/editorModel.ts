@@ -36,6 +36,7 @@ export class EditorModel extends Disposable {
      */
     override dispose(): void {
         this._onWillDispose.fire();
+
         super.dispose();
     }
 }

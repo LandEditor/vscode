@@ -17,6 +17,7 @@ import { applyTextEditorOptions } from '../../../common/editor/editorOptions.js'
 import { SimpleCommentEditor } from './simpleCommentEditor.js';
 export class CommentsInputContentProvider extends Disposable implements ITextModelContentProvider, IEditorContribution {
     public static readonly ID = 'comments.input.contentProvider';
+
     constructor(
     @ITextModelService
     textModelService: ITextModelService, 
@@ -43,6 +44,7 @@ export class CommentsInputContentProvider extends Disposable implements ITextMod
     }
     async provideTextContent(resource: URI): Promise<ITextModel | null> {
         const existing = this._modelService.getModel(resource);
+
         return existing ?? this._modelService.createModel('', this._languageService.createById('markdown'), resource);
     }
 }

@@ -42,6 +42,7 @@ export abstract class BasePty extends Disposable implements Partial<ITerminalChi
     readonly onProcessExit = this._onProcessExit.event;
     protected readonly _onRestoreCommands = this._register(new Emitter<ISerializedCommandDetectionCapability>());
     readonly onRestoreCommands = this._onRestoreCommands.event;
+
     constructor(readonly id: number, readonly shouldPersist: boolean) {
         super();
     }
@@ -64,10 +65,14 @@ export abstract class BasePty extends Disposable implements Partial<ITerminalChi
         switch (type) {
             case ProcessPropertyType.Cwd:
                 this._properties.cwd = value;
+
                 break;
+
             case ProcessPropertyType.InitialCwd:
                 this._properties.initialCwd = value;
+
                 break;
+
             case ProcessPropertyType.ResolvedShellLaunchConfig:
                 if (value.cwd && typeof value.cwd !== 'string') {
                     value.cwd = URI.revive(value.cwd);
@@ -77,8 +82,10 @@ export abstract class BasePty extends Disposable implements Partial<ITerminalChi
     }
     async handleReplay(e: IPtyHostProcessReplayEvent) {
         mark(`code/terminal/willHandleReplay/${this.id}`);
+
         try {
             this._inReplay = true;
+
             for (const innerEvent of e.events) {
                 if (innerEvent.cols !== 0 || innerEvent.rows !== 0) {
                     // never override with 0x0 as that is a marker for an unknown initial size

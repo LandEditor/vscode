@@ -26,10 +26,12 @@ export class StatusbarViewModel extends Disposable {
     private _entries: IStatusbarViewModelEntry[] = []; // Intentionally not using a map here since multiple entries can have the same ID
     get entries(): IStatusbarViewModelEntry[] { return this._entries.slice(0); }
     private _lastFocusedEntry: IStatusbarViewModelEntry | undefined;
+
     get lastFocusedEntry(): IStatusbarViewModelEntry | undefined {
         return this._lastFocusedEntry && !this.isHidden(this._lastFocusedEntry.id) ? this._lastFocusedEntry : undefined;
     }
     private hidden = new Set<string>();
+
     constructor(private readonly storageService: IStorageService) {
         super();
         this.restoreState();
@@ -37,6 +39,7 @@ export class StatusbarViewModel extends Disposable {
     }
     private restoreState(): void {
         const hiddenRaw = this.storageService.get(StatusbarViewModel.HIDDEN_ENTRIES_KEY, StorageScope.PROFILE);
+
         if (hiddenRaw) {
             try {
                 this.hidden = new Set(JSON.parse(hiddenRaw));
@@ -55,6 +58,7 @@ export class StatusbarViewModel extends Disposable {
         // Load latest state of hidden entries
         this.hidden.clear();
         this.restoreState();
+
         const changed = new Set<string>();
         // Check for each entry that is now visible
         for (const id of currentlyHidden) {
@@ -90,6 +94,7 @@ export class StatusbarViewModel extends Disposable {
     }
     remove(entry: IStatusbarViewModelEntry): void {
         const index = this._entries.indexOf(entry);
+
         if (index >= 0) {
             // Remove from entries
             this._entries.splice(index, 1);
@@ -140,23 +145,30 @@ export class StatusbarViewModel extends Disposable {
     private focusEntry(delta: number, restartPosition: number): void {
         const getVisibleEntry = (start: number) => {
             let indexToFocus = start;
+
             let entry = (indexToFocus >= 0 && indexToFocus < this._entries.length) ? this._entries[indexToFocus] : undefined;
+
             while (entry && this.isHidden(entry.id)) {
                 indexToFocus += delta;
                 entry = (indexToFocus >= 0 && indexToFocus < this._entries.length) ? this._entries[indexToFocus] : undefined;
             }
             return entry;
         };
+
         const focused = this.getFocusedEntry();
+
         if (focused) {
             const entry = getVisibleEntry(this._entries.indexOf(focused) + delta);
+
             if (entry) {
                 this._lastFocusedEntry = entry;
                 entry.labelContainer.focus();
+
                 return;
             }
         }
         const entry = getVisibleEntry(restartPosition);
+
         if (entry) {
             this._lastFocusedEntry = entry;
             entry.labelContainer.focus();
@@ -168,6 +180,7 @@ export class StatusbarViewModel extends Disposable {
         // By identifier
         if (typeof arg1 === 'string') {
             const id = arg1;
+
             for (const entry of this._entries) {
                 if (entry.id === id) {
                     this.updateVisibility(entry, trigger);
@@ -177,6 +190,7 @@ export class StatusbarViewModel extends Disposable {
         // By entry
         else {
             const entry = arg1;
+
             const isHidden = this.isHidden(entry.id);
             // Use CSS to show/hide item container
             if (isHidden) {
@@ -206,15 +220,20 @@ export class StatusbarViewModel extends Disposable {
         // - those with `priority: string` that must be sorted
         //   relative to another entry if possible
         const mapEntryWithNumberedPriorityToIndex = new Map<IStatusbarViewModelEntry, number /* priority of entry as number */>();
+
         const mapEntryWithRelativePriority = new Map<string /* id of entry to position after */, Map<string, IStatusbarViewModelEntry>>();
+
         for (let i = 0; i < this._entries.length; i++) {
             const entry = this._entries[i];
+
             if (typeof entry.priority.primary === 'number') {
                 mapEntryWithNumberedPriorityToIndex.set(entry, i);
             }
             else {
                 const referenceEntryId = entry.priority.primary.id;
+
                 let entries = mapEntryWithRelativePriority.get(referenceEntryId);
+
                 if (!entries) {
                     // It is possible that this entry references another entry
                     // that itself references an entry. In that case, we want
@@ -222,6 +241,7 @@ export class StatusbarViewModel extends Disposable {
                     for (const relativeEntries of mapEntryWithRelativePriority.values()) {
                         if (relativeEntries.has(referenceEntryId)) {
                             entries = relativeEntries;
+
                             break;
                         }
                     }
@@ -255,12 +275,15 @@ export class StatusbarViewModel extends Disposable {
             }
             return 0;
         });
+
         let sortedEntries: IStatusbarViewModelEntry[];
         // Entries with location: sort in accordingly
         if (mapEntryWithRelativePriority.size > 0) {
             sortedEntries = [];
+
             for (const entry of sortedEntriesWithNumberedPriority) {
                 const relativeEntriesMap = mapEntryWithRelativePriority.get(entry.id);
+
                 const relativeEntries = relativeEntriesMap ? Array.from(relativeEntriesMap.values()) : undefined;
                 // Fill relative entries to LEFT
                 if (relativeEntries) {
@@ -294,11 +317,15 @@ export class StatusbarViewModel extends Disposable {
     }
     private doMarkFirstLastVisibleStatusbarItem(entries: IStatusbarViewModelEntry[]): void {
         let firstVisibleItem: IStatusbarViewModelEntry | undefined;
+
         let lastVisibleItem: IStatusbarViewModelEntry | undefined;
+
         for (const entry of entries) {
             // Clear previous first
             entry.container.classList.remove('first-visible-item', 'last-visible-item');
+
             const isVisible = !this.isHidden(entry.id);
+
             if (isVisible) {
                 if (!firstVisibleItem) {
                     firstVisibleItem = entry;

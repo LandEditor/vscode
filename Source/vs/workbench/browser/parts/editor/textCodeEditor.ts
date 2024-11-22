@@ -50,10 +50,12 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState> extends
             return undefined;
         }
         const model = this.editorControl.getModel();
+
         if (!model) {
             return undefined; // view state always needs a model
         }
         const modelUri = model.uri;
+
         if (!modelUri) {
             return undefined; // model URI is needed to make sure we save the view state correctly
         }
@@ -64,6 +66,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState> extends
     }
     override setOptions(options: ITextEditorOptions | undefined): void {
         super.setOptions(options);
+
         if (options) {
             applyTextEditorOptions(options, assertIsDefined(this.editorControl), ScrollType.Smooth);
         }
@@ -77,6 +80,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState> extends
     }
     protected override setEditorVisible(visible: boolean): void {
         super.setEditorVisible(visible);
+
         if (visible) {
             this.editorControl?.onVisible();
         }

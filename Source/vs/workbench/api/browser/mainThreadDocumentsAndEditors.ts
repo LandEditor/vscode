@@ -72,6 +72,7 @@ class DocumentAndEditorStateDelta {
 		ret += `\tRemoved Editors: [${this.removedEditors.map(e => e.id).join(', ')}]\n`;
 		ret += `\tAdded Editors: [${this.addedEditors.map(e => e.id).join(', ')}]\n`;
 		ret += `\tNew Active Editor: ${this.newActiveEditor}\n`;
+
 		return ret;
 	}
 }
@@ -87,8 +88,11 @@ class DocumentAndEditorState {
 			);
 		}
 		const documentDelta = diffSets(before.documents, after.documents);
+
 		const editorDelta = diffMaps(before.textEditors, after.textEditors);
+
 		const oldActiveEditor = before.activeEditor !== after.activeEditor ? before.activeEditor : undefined;
+
 		const newActiveEditor = before.activeEditor !== after.activeEditor ? after.activeEditor : undefined;
 
 		return new DocumentAndEditorStateDelta(
@@ -156,6 +160,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	private _onDidRemoveEditor(e: ICodeEditor): void {
 		const id = e.getId();
+
 		if (this._toDisposeOnEditorRemove.has(id)) {
 			this._toDisposeOnEditorRemove.deleteAndDispose(id);
 			this._updateState();
@@ -171,6 +176,7 @@ class MainThreadDocumentAndEditorStateComputer {
 		if (!this._currentState) {
 			// too early
 			this._updateState();
+
 			return;
 		}
 
@@ -192,6 +198,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 		// models: ignore too large models
 		const models = new Set<ITextModel>();
+
 		for (const model of this._modelService.getModels()) {
 			if (shouldSynchronizeModel(model)) {
 				models.add(model);
@@ -200,6 +207,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 		// editor: only take those that have a not too large model
 		const editors = new Map<string, TextEditorSnapshot>();
+
 		let activeEditor: string | null = null; // Strict null work. This doesn't like being undefined!
 
 		for (const editor of this._codeEditorService.listCodeEditors()) {
@@ -207,12 +215,14 @@ class MainThreadDocumentAndEditorStateComputer {
 				continue;
 			}
 			const model = editor.getModel();
+
 			if (editor.hasModel() && model && shouldSynchronizeModel(model)
 				&& !model.isDisposed() // model disposed
 				&& Boolean(this._modelService.getModel(model.uri)) // model disposing, the flag didn't flip yet but the model service already removed it
 			) {
 				const apiEditor = new TextEditorSnapshot(editor);
 				editors.set(apiEditor.id, apiEditor);
+
 				if (editor.hasTextFocus() || (widgetFocusCandidate === editor && editor.hasWidgetFocus())) {
 					// text focus has priority, widget focus is tricky because multiple
 					// editors might claim widget focus at the same time. therefore we use a
@@ -228,6 +238,7 @@ class MainThreadDocumentAndEditorStateComputer {
 		// one of editor we have just computed
 		if (!activeEditor) {
 			let candidate: IEditor | undefined;
+
 			if (this._activeEditorOrder === ActiveEditorOrder.Editor) {
 				candidate = this._getActiveEditorFromEditorPart() || this._getActiveEditorFromPanel();
 			} else {
@@ -245,7 +256,9 @@ class MainThreadDocumentAndEditorStateComputer {
 
 		// compute new state and compare against old
 		const newState = new DocumentAndEditorState(models, editors, activeEditor);
+
 		const delta = DocumentAndEditorState.compute(this._currentState, newState);
+
 		if (!delta.isEmpty) {
 			this._currentState = newState;
 			this._onDidChangeState(delta);
@@ -254,8 +267,10 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	private _getActiveEditorFromPanel(): IEditor | undefined {
 		const panel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+
 		if (panel instanceof AbstractTextEditor) {
 			const control = panel.getControl();
+
 			if (isCodeEditor(control)) {
 				return control;
 			}
@@ -266,6 +281,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	private _getActiveEditorFromEditorPart(): IEditor | undefined {
 		let activeTextEditorControl = this._editorService.activeTextEditorControl;
+
 		if (isDiffEditor(activeTextEditorControl)) {
 			activeTextEditorControl = activeTextEditorControl.getModifiedEditor();
 		}
@@ -319,6 +335,7 @@ export class MainThreadDocumentsAndEditors {
 	private _onDelta(delta: DocumentAndEditorStateDelta): void {
 
 		const removedEditors: string[] = [];
+
 		const addedEditors: MainThreadTextEditor[] = [];
 
 		// removed models
@@ -336,6 +353,7 @@ export class MainThreadDocumentsAndEditors {
 		// removed editors
 		for (const { id } of delta.removedEditors) {
 			const mainThreadEditor = this._textEditors.get(id);
+
 			if (mainThreadEditor) {
 				mainThreadEditor.dispose();
 				this._textEditors.delete(id);
@@ -344,7 +362,9 @@ export class MainThreadDocumentsAndEditors {
 		}
 
 		const extHostDelta: IDocumentsAndEditorsDelta = Object.create(null);
+
 		let empty = true;
+
 		if (delta.newActiveEditor !== undefined) {
 			empty = false;
 			extHostDelta.newActiveEditor = delta.newActiveEditor;
@@ -392,6 +412,7 @@ export class MainThreadDocumentsAndEditors {
 
 	private _toTextEditorAddData(textEditor: MainThreadTextEditor): ITextEditorAddData {
 		const props = textEditor.getProperties();
+
 		return {
 			id: textEditor.getId(),
 			documentUri: textEditor.getModel().uri,

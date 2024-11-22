@@ -108,8 +108,11 @@ export class TokenMetadata {
     }
     public static getClassNameFromMetadata(metadata: number): string {
         const foreground = this.getForeground(metadata);
+
         let className = 'mtk' + foreground;
+
         const fontStyle = this.getFontStyle(metadata);
+
         if (fontStyle & FontStyle.Italic) {
             className += ' mtki';
         }
@@ -126,8 +129,11 @@ export class TokenMetadata {
     }
     public static getInlineStyleFromMetadata(metadata: number, colorMap: string[]): string {
         const foreground = this.getForeground(metadata);
+
         const fontStyle = this.getFontStyle(metadata);
+
         let result = `color: ${colorMap[foreground]};`;
+
         if (fontStyle & FontStyle.Italic) {
             result += 'font-style: italic;';
         }
@@ -135,6 +141,7 @@ export class TokenMetadata {
             result += 'font-weight: bold;';
         }
         let textDecoration = '';
+
         if (fontStyle & FontStyle.Underline) {
             textDecoration += ' underline';
         }
@@ -148,7 +155,9 @@ export class TokenMetadata {
     }
     public static getPresentationFromMetadata(metadata: number): ITokenPresentation {
         const foreground = this.getForeground(metadata);
+
         const fontStyle = this.getFontStyle(metadata);
+
         return {
             foreground: foreground,
             italic: Boolean(fontStyle & FontStyle.Italic),

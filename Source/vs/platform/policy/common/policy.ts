@@ -17,6 +17,7 @@ export interface IPolicyService {
     readonly _serviceBrand: undefined;
     readonly onDidChange: Event<readonly PolicyName[]>;
     updatePolicyDefinitions(policyDefinitions: IStringDictionary<PolicyDefinition>): Promise<IStringDictionary<PolicyValue>>;
+
     getPolicyValue(name: PolicyName): PolicyValue | undefined;
     serialize(): IStringDictionary<{
         definition: PolicyDefinition;
@@ -29,9 +30,11 @@ export abstract class AbstractPolicyService extends Disposable implements IPolic
     protected policies = new Map<PolicyName, PolicyValue>();
     protected readonly _onDidChange = this._register(new Emitter<readonly PolicyName[]>());
     readonly onDidChange = this._onDidChange.event;
+
     async updatePolicyDefinitions(policyDefinitions: IStringDictionary<PolicyDefinition>): Promise<IStringDictionary<PolicyValue>> {
         const size = Object.keys(this.policyDefinitions).length;
         this.policyDefinitions = { ...policyDefinitions, ...this.policyDefinitions };
+
         if (size !== Object.keys(this.policyDefinitions).length) {
             await this._updatePolicyDefinitions(policyDefinitions);
         }
@@ -57,6 +60,7 @@ export abstract class AbstractPolicyService extends Disposable implements IPolic
 export class NullPolicyService implements IPolicyService {
     readonly _serviceBrand: undefined;
     readonly onDidChange = Event.None;
+
     async updatePolicyDefinitions() { return {}; }
     getPolicyValue() { return undefined; }
     serialize() { return undefined; }

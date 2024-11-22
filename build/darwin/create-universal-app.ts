@@ -6,6 +6,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as minimatch from 'minimatch';
 import { makeUniversalApp } from 'vscode-universal-bundler';
+
 const root = path.dirname(path.dirname(__dirname));
 async function main(buildDir?: string) {
 	const arch = process.env['VSCODE_ARCH'];
@@ -15,11 +16,17 @@ async function main(buildDir?: string) {
 	}
 
 	const product = JSON.parse(fs.readFileSync(path.join(root, 'product.json'), 'utf8'));
+
 	const appName = product.nameLong + '.app';
+
 	const x64AppPath = path.join(buildDir, 'VSCode-darwin-x64', appName);
+
 	const arm64AppPath = path.join(buildDir, 'VSCode-darwin-arm64', appName);
+
 	const asarRelativePath = path.join('Contents', 'Resources', 'app', 'node_modules.asar');
+
 	const outAppPath = path.join(buildDir, `VSCode-darwin-${arch}`, appName);
+
 	const productJsonPath = path.resolve(outAppPath, 'Contents', 'Resources', 'app', 'product.json');
 
 	const filesToSkip = [

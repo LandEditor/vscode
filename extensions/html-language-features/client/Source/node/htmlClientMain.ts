@@ -9,13 +9,17 @@ import { ServerOptions, TransportKind, LanguageClientOptions, LanguageClient } f
 import { TextDecoder } from 'util';
 import * as fs from 'fs';
 import TelemetryReporter from '@vscode/extension-telemetry';
+
 let telemetry: TelemetryReporter | undefined;
+
 let client: AsyncDisposable | undefined;
 // this method is called when vs code is activated
 export async function activate(context: ExtensionContext) {
     const clientPackageJSON = getPackageInfo(context);
     telemetry = new TelemetryReporter(clientPackageJSON.aiKey);
+
     const serverMain = `./server/${clientPackageJSON.main.indexOf('/dist/') !== -1 ? 'dist' : 'out'}/node/htmlServerMain`;
+
     const serverModule = context.asAbsolutePath(serverMain);
     // The debug options for the server
     const debugOptions = { execArgv: ['--nolazy', '--inspect=' + (8000 + Math.round(Math.random() * 999))] };
@@ -25,12 +29,15 @@ export async function activate(context: ExtensionContext) {
         run: { module: serverModule, transport: TransportKind.ipc },
         debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
     };
+
     const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
         return new LanguageClient(id, name, serverOptions, clientOptions);
     };
+
     const timer = {
         setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
             const handle = setTimeout(callback, ms, ...args);
+
             return { dispose: () => clearTimeout(handle) };
         }
     };
@@ -52,11 +59,13 @@ interface IPackageInfo {
 }
 function getPackageInfo(context: ExtensionContext): IPackageInfo {
     const location = context.asAbsolutePath('./package.json');
+
     try {
         return JSON.parse(fs.readFileSync(location).toString());
     }
     catch (e) {
         console.log(`Problems reading ${location}: ${e}`);
+
         return { name: '', version: '', aiKey: '', main: '' };
     }
 }

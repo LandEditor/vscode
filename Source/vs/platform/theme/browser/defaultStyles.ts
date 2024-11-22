@@ -26,6 +26,7 @@ function overrideStyles<T extends {
     const result: {
         [P in keyof T]: string | undefined;
     } = { ...styles };
+
     for (const key in override) {
         const val = override[key];
         result[key] = val !== undefined ? asCssVariable(val) : undefined;

@@ -79,7 +79,9 @@ const mapExtToMediaMimes: MapExtToMediaMimes = {
 };
 export function getMediaOrTextMime(path: string): string | undefined {
     const ext = extname(path);
+
     const textMime = mapExtToTextMimes[ext.toLowerCase()];
+
     if (textMime !== undefined) {
         return textMime;
     }
@@ -89,6 +91,7 @@ export function getMediaOrTextMime(path: string): string | undefined {
 }
 export function getMediaMime(path: string): string | undefined {
     const ext = extname(path);
+
     return mapExtToMediaMimes[ext.toLowerCase()];
 }
 export function getExtensionForMimeType(mimeType: string): string | undefined {
@@ -104,6 +107,7 @@ export function normalizeMimeType(mimeType: string): string;
 export function normalizeMimeType(mimeType: string, strict: true): string | undefined;
 export function normalizeMimeType(mimeType: string, strict?: true): string | undefined {
     const match = _simplePattern.exec(mimeType);
+
     if (!match) {
         return strict
             ? undefined

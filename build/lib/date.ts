@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from 'path';
 import * as fs from 'fs';
+
 const root = path.join(__dirname, '..', '..');
 /**
  * Writes a `outDir/date` file with the contents of the build
@@ -14,14 +15,17 @@ export function writeISODate(outDir: string) {
     const result = () => new Promise<void>((resolve, _) => {
         const outDirectory = path.join(root, outDir);
         fs.mkdirSync(outDirectory, { recursive: true });
+
         const date = new Date().toISOString();
         fs.writeFileSync(path.join(outDirectory, 'date'), date, 'utf8');
         resolve();
     });
     result.taskName = 'build-date-file';
+
     return result;
 }
 export function readISODate(outDir: string): string {
     const outDirectory = path.join(root, outDir);
+
     return fs.readFileSync(path.join(outDirectory, 'date'), 'utf8');
 }

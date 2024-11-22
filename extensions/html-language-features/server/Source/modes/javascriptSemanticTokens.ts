@@ -15,16 +15,23 @@ export function getSemanticTokenLegend() {
 }
 export function* getSemanticTokens(jsLanguageService: ts.LanguageService, document: TextDocument, fileName: string): Iterable<SemanticTokenData> {
     const { spans } = jsLanguageService.getEncodedSemanticClassifications(fileName, { start: 0, length: document.getText().length }, '2020' as ts.SemanticClassificationFormat);
+
     for (let i = 0; i < spans.length;) {
         const offset = spans[i++];
+
         const length = spans[i++];
+
         const tsClassification = spans[i++];
+
         const tokenType = getTokenTypeFromClassification(tsClassification);
+
         if (tokenType === undefined) {
             continue;
         }
         const tokenModifiers = getTokenModifierFromClassification(tsClassification);
+
         const startPos = document.positionAt(offset);
+
         yield {
             start: startPos,
             length: length,
@@ -85,6 +92,7 @@ tokenTypes[TokenType.enumMember] = 'enumMember';
 tokenTypes[TokenType.property] = 'property';
 tokenTypes[TokenType.function] = 'function';
 tokenTypes[TokenType.method] = 'method';
+
 const tokenModifiers: string[] = [];
 tokenModifiers[TokenModifier.async] = 'async';
 tokenModifiers[TokenModifier.declaration] = 'declaration';

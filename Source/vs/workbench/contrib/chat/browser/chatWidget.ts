@@ -175,6 +175,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		this.viewModelDisposables.clear();
 
 		this._viewModel = viewModel;
+
 		if (viewModel) {
 			this.viewModelDisposables.add(viewModel);
 		}
@@ -187,6 +188,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	private parsedChatRequest: IParsedChatRequest | undefined;
+
 	get parsedInput() {
 		if (this.parsedChatRequest === undefined) {
 			if (!this.viewModel) {
@@ -204,6 +206,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	private readonly _location: IChatWidgetLocationOptions;
+
 	get location() {
 		return this._location.location;
 	}
@@ -282,6 +285,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			let currentEditSession: IChatEditingSession | undefined = undefined;
 			this._register(this.onDidChangeViewModel(async () => {
 				const sessionId = this._viewModel?.sessionId;
+
 				if (sessionId) {
 					if (sessionId !== currentEditSession?.chatSessionId) {
 						currentEditSession = await this.chatEditingService.startOrContinueEditingSession(sessionId, { silent: true });
@@ -298,16 +302,19 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 		this._register(codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, _source: ICodeEditor | null, _sideBySide?: boolean): Promise<ICodeEditor | null> => {
 			const resource = input.resource;
+
 			if (resource.scheme !== Schemas.vscodeChatCodeBlock) {
 				return null;
 			}
 
 			const responseId = resource.path.split('/').at(1);
+
 			if (!responseId) {
 				return null;
 			}
 
 			const item = this.viewModel?.getItems().find(item => item.id === responseId);
+
 			if (!item) {
 				return null;
 			}
@@ -323,9 +330,12 @@ export class ChatWidget extends Disposable implements IChatWidget {
 					const editor = codeBlockPart.editor;
 
 					let relativeTop = 0;
+
 					const editorDomNode = editor.getDomNode();
+
 					if (editorDomNode) {
 						const row = dom.findParentWithClass(editorDomNode, 'monaco-list-row');
+
 						if (row) {
 							relativeTop = dom.getTopLeftOffset(editorDomNode).top - dom.getTopLeftOffset(row).top;
 						}
@@ -353,6 +363,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		}));
 
 		const loadedWelcomeContent = storageService.getObject(`${PersistWelcomeMessageContentKey}.${this.location}`, StorageScope.APPLICATION);
+
 		if (isChatWelcomeMessageContent(loadedWelcomeContent)) {
 			this.persistedWelcomeMessage = loadedWelcomeContent;
 		}
@@ -361,6 +372,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	}
 
 	private _lastSelectedAgent: IChatAgentData | undefined;
+
 	set lastSelectedAgent(agent: IChatAgentData | undefined) {
 		this.parsedChatRequest = undefined;
 		this._lastSelectedAgent = agent;
@@ -398,13 +410,17 @@ export class ChatWidget extends Disposable implements IChatWidget {
 	render(parent: HTMLElement): void {
 		const viewId = 'viewId' in this.viewContext ? this.viewContext.viewId : undefined;
 		this.editorOptions = this._register(this.instantiationService.createInstance(ChatEditorOptions, viewId, this.styles.listForeground, this.styles.inputEditorBackground, this.styles.resultEditorBackground));
+
 		const renderInputOnTop = this.viewOptions.renderInputOnTop ?? false;
+
 		const renderFollowups = this.viewOptions.renderFollowups ?? !renderInputOnTop;
+
 		const renderStyle = this.viewOptions.renderStyle;
 
 		this.container = dom.append(parent, $('.interactive-session'));
 		this.welcomeMessageContainer = dom.append(this.container, $('.chat-welcome-view-container', { style: 'display: none' }));
 		this.renderWelcomeViewContentIfNeeded();
+
 		if (renderInputOnTop) {
 			this.createInput(this.container, { renderFollowups, renderStyle });
 			this.listContainer = dom.append(this.container, $(`.interactive-list`));
@@ -443,6 +459,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 				return this._register(this.instantiationService.createInstance(contrib, this));
 			} catch (err) {
 				this.logService.error('Failed to instantiate chat widget contrib', toErrorMessage(err));
+
 				return undefined;
 			}
 		}).filter(isDefined);
@@ -482,15 +499,19 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			return;
 		}
 		const items = this.viewModel?.getItems();
+
 		if (!items) {
 			return;
 		}
 		const responseItems = items.filter(i => isResponseVM(i));
+
 		const targetIndex = responseItems.indexOf(item);
+
 		if (targetIndex === undefined) {
 			return;
 		}
 		const indexToFocus = type === 'next' ? targetIndex + 1 : targetIndex - 1;
+
 		if (indexToFocus < 0 || indexToFocus > responseItems.length - 1) {
 			return;
 		}
@@ -544,6 +565,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			}
 
 			this.lastItem = treeItems[treeItems.length - 1]?.element;
+
 			if (this.lastItem) {
 				ChatContextKeys.lastItemId.bindTo(this.contextKeyService).set([this.lastItem.id]);
 			}
@@ -559,21 +581,26 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 	private renderWelcomeViewContentIfNeeded() {
 		const welcomeContent = this.viewModel?.model.welcomeMessage ?? this.persistedWelcomeMessage;
+
 		if (welcomeContent && this.welcomeMessageContainer.children.length === 0 && !this.viewOptions.renderStyle) {
 			const tips = this.viewOptions.supportsAdditionalParticipants
 				? new MarkdownString(localize('chatWidget.tips', "{0} or type {1} to attach context\n\n{2} to chat with extensions\n\nType {3} to use commands", '$(attach)', '#', '$(mention)', '/'), { supportThemeIcons: true })
 				: new MarkdownString(localize('chatWidget.tips.withoutParticipants', "{0} or type {1} to attach context", '$(attach)', '#'), { supportThemeIcons: true });
+
 			const welcomePart = this._register(this.instantiationService.createInstance(
 				ChatViewWelcomePart,
 				{ ...welcomeContent, tips, },
 				{ location: this.location }
 			));
+
 			dom.append(this.welcomeMessageContainer, welcomePart.element);
 		}
 
 		if (!this.viewOptions.renderStyle && this.viewModel) {
 			const treeItems = this.viewModel.getItems();
+
 			dom.setVisibility(treeItems.length === 0, this.welcomeMessageContainer);
+
 			dom.setVisibility(treeItems.length !== 0, this.listContainer);
 		}
 	}
@@ -616,7 +643,9 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 	private createList(listContainer: HTMLElement, options: IChatListItemRendererOptions): void {
 		const scopedInstantiationService = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.contextKeyService])));
+
 		const delegate = scopedInstantiationService.createInstance(ChatListDelegate, this.viewOptions.defaultElementHeight ?? 200);
+
 		const rendererDelegate: IChatRendererDelegate = {
 			getListLength: () => this.tree.getNode(null).visibleChildrenCount,
 			onDidScroll: this.onDidScroll,
@@ -642,6 +671,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		}));
 		this._register(this.renderer.onDidClickRerunWithAgentOrCommandDetection(item => {
 			const request = this.chatService.getSession(item.sessionId)?.getRequests().find(candidate => candidate.id === item.requestId);
+
 			if (request) {
 				const options: IChatSendRequestOptions = {
 					noCommandDetection: true,
@@ -711,6 +741,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		e.browserEvent.stopPropagation();
 
 		const selected = e.element;
+
 		const scopedContextKeyService = this.contextKeyService.createOverlay([
 			[ChatContextKeys.responseIsFiltered.key, isResponseVM(selected) && !!selected.errorDetails?.responseIsFiltered]
 		]);
@@ -727,11 +758,14 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		// If the list was previously scrolled all the way down, ensure it stays scrolled down, if scroll lock is on
 		if (this.tree.scrollHeight !== this.previousTreeScrollHeight) {
 			const lastItem = this.viewModel?.getItems().at(-1);
+
 			const lastResponseIsRendering = isResponseVM(lastItem) && lastItem.renderData;
+
 			if (!lastResponseIsRendering || this.scrollLock) {
 				// Due to rounding, the scrollTop + renderHeight will not exactly match the scrollHeight.
 				// Consider the tree to be scrolled all the way down if it is within 2px of the bottom.
 				const lastElementWasVisible = this.tree.scrollTop + this.tree.renderHeight >= this.previousTreeScrollHeight - 2;
+
 				if (lastElementWasVisible) {
 					dom.scheduleAtNextAnimationFrame(dom.getWindow(this.listContainer), () => {
 						// Can't set scrollTop during this event listener, the list might overwrite the change
@@ -781,14 +815,17 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			}
 
 			let msg = '';
+
 			if (e.followup.agentId && e.followup.agentId !== this.chatAgentService.getDefaultAgent(this.location)?.id) {
 				const agent = this.chatAgentService.getAgent(e.followup.agentId);
+
 				if (!agent) {
 					return;
 				}
 
 				this.lastSelectedAgent = agent;
 				msg = `${chatAgentLeader}${agent.name} `;
+
 				if (e.followup.subCommand) {
 					msg += `${chatSubcommandLeader}${e.followup.subCommand} `;
 				}
@@ -863,6 +900,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 			this.requestInProgress.set(this.viewModel.requestInProgress);
 
 			this.onDidChangeItems();
+
 			if (events.some(e => e?.kind === 'addRequest') && this.visible) {
 				this.scrollToEnd();
 			}
@@ -915,7 +953,9 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 	focus(item: ChatTreeItem): void {
 		const items = this.tree.getNode(null).children;
+
 		const node = items.find(i => i.element?.id === item.id);
+
 		if (!node) {
 			return;
 		}
@@ -964,37 +1004,47 @@ export class ChatWidget extends Disposable implements IChatWidget {
 				inputState[c.id] = c.getInputState();
 			}
 		});
+
 		return inputState;
 	}
 
 	private async _acceptInput(query: { query: string } | { prefix: string } | undefined, options?: IChatAcceptInputOptions): Promise<IChatResponseModel | undefined> {
 		if (this.viewModel) {
 			this._onDidAcceptInput.fire();
+
 			if (!this.viewOptions.autoScroll) {
 				this.scrollLock = false;
 			}
 
 			const editorValue = this.getInput();
+
 			const requestId = this.chatAccessibilityService.acceptRequest();
+
 			const input = !query ? editorValue :
 				'query' in query ? query.query :
 					`${query.prefix} ${editorValue}`;
+
 			const isUserQuery = !query || 'prefix' in query;
 
 			const requests = this.viewModel.model.getRequests();
+
 			for (let i = requests.length - 1; i >= 0; i -= 1) {
 				const request = requests[i];
+
 				if (request.isHidden) {
 					this.chatService.removeRequest(this.viewModel.sessionId, request.id);
 				}
 			}
 
 			let attachedContext = this.inputPart.getAttachedAndImplicitContext();
+
 			let workingSet: URI[] | undefined;
+
 			if (this.location === ChatAgentLocation.EditingSession) {
 				const currentEditingSession = this.chatEditingService.currentEditingSessionObs.get();
 
 				const unconfirmedSuggestions = new ResourceSet();
+
 				const uniqueWorkingSetEntries = new ResourceSet(); // NOTE: this is used for bookkeeping so the UI can avoid rendering references in the UI that are already shown in the working set
 				const editingSessionAttachedContext: IChatRequestVariableEntry[] = [];
 				// Pick up everything that the user sees is part of the working set.
@@ -1026,10 +1076,12 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 				// Collect file variables from previous requests before sending the request
 				const previousRequests = this.viewModel.model.getRequests();
+
 				for (const request of previousRequests) {
 					for (const variable of request.variableData.variables) {
 						if (URI.isUri(variable.value) && variable.isFile && maximumFileEntries > 0) {
 							const uri = variable.value;
+
 							if (!uniqueWorkingSetEntries.has(uri)) {
 								editingSessionAttachedContext.push(variable);
 								uniqueWorkingSetEntries.add(variable.value);
@@ -1070,16 +1122,21 @@ export class ChatWidget extends Disposable implements IChatWidget {
 				this._onDidSubmitAgent.fire({ agent: result.agent, slashCommand: result.slashCommand });
 				result.responseCompletePromise.then(() => {
 					const responses = this.viewModel?.getItems().filter(isResponseVM);
+
 					const lastResponse = responses?.[responses.length - 1];
 					this.chatAccessibilityService.acceptResponse(lastResponse, requestId, options?.isVoiceInput);
+
 					if (lastResponse?.result?.nextQuestion) {
 						const { prompt, participant, command } = lastResponse.result.nextQuestion;
+
 						const question = formatChatQuestion(this.chatAgentService, this.location, prompt, participant, command);
+
 						if (question) {
 							this.input.setValue(question, false);
 						}
 					}
 				});
+
 				return result.responseCreatedPromise;
 			}
 		}
@@ -1108,7 +1165,9 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		}
 
 		const items = this.tree.getNode(null).children;
+
 		const lastItem = items[items.length - 1];
+
 		if (!lastItem) {
 			return;
 		}
@@ -1123,10 +1182,13 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 		const inputPartMaxHeight = this._dynamicMessageLayoutData?.enabled ? this._dynamicMessageLayoutData.maxHeight : height;
 		this.inputPart.layout(inputPartMaxHeight, width);
+
 		const inputPartHeight = this.inputPart.inputPartHeight;
+
 		const lastElementVisible = this.tree.scrollTop + this.tree.renderHeight >= this.tree.scrollHeight - 2;
 
 		const listHeight = Math.max(0, height - inputPartHeight);
+
 		if (!this.viewOptions.autoScroll) {
 			this.listContainer.style.setProperty('--chat-current-response-min-height', listHeight * .75 + 'px');
 		}
@@ -1141,7 +1203,9 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		this.renderer.layout(width);
 
 		const lastItem = this.viewModel?.getItems().at(-1);
+
 		const lastResponseIsRendering = isResponseVM(lastItem) && lastItem.renderData;
+
 		if (lastElementVisible && (!lastResponseIsRendering || this.viewOptions.autoScroll)) {
 			this.scrollToEnd();
 		}
@@ -1173,15 +1237,20 @@ export class ChatWidget extends Disposable implements IChatWidget {
 					return;
 				}
 				const renderHeight = e.height;
+
 				const diff = e.scrollHeight - renderHeight - e.scrollTop;
+
 				if (diff === 0) {
 					return;
 				}
 
 				const possibleMaxHeight = (this._dynamicMessageLayoutData?.maxHeight ?? maxHeight);
+
 				const width = this.bodyDimension?.width ?? this.container.offsetWidth;
 				this.inputPart.layout(possibleMaxHeight, width);
+
 				const inputPartHeight = this.inputPart.inputPartHeight;
+
 				const newHeight = Math.min(renderHeight + diff, possibleMaxHeight - inputPartHeight);
 				this.layout(newHeight + inputPartHeight, width);
 			});
@@ -1190,14 +1259,19 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 	updateDynamicChatTreeItemLayout(numOfChatTreeItems: number, maxHeight: number) {
 		this._dynamicMessageLayoutData = { numOfMessages: numOfChatTreeItems, maxHeight, enabled: true };
+
 		let hasChanged = false;
+
 		let height = this.bodyDimension!.height;
+
 		let width = this.bodyDimension!.width;
+
 		if (maxHeight < this.bodyDimension!.height) {
 			height = maxHeight;
 			hasChanged = true;
 		}
 		const containerWidth = this.container.offsetWidth;
+
 		if (this.bodyDimension?.width !== containerWidth) {
 			width = containerWidth;
 			hasChanged = true;
@@ -1225,6 +1299,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 
 		const width = this.bodyDimension?.width ?? this.container.offsetWidth;
 		this.inputPart.layout(this._dynamicMessageLayoutData.maxHeight, width);
+
 		const inputHeight = this.inputPart.inputPartHeight;
 
 		const totalMessages = this.viewModel.getItems();
@@ -1232,6 +1307,7 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		const messages = totalMessages.slice(-this._dynamicMessageLayoutData.numOfMessages);
 
 		const needsRerender = messages.some(m => m.currentRenderedHeight === undefined);
+
 		const listHeight = needsRerender
 			? this._dynamicMessageLayoutData.maxHeight
 			: messages.reduce((acc, message) => acc + message.currentRenderedHeight!, 0);

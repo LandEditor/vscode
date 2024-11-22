@@ -9,6 +9,7 @@ export class Navigation {
     private readonly _disposables: vscode.Disposable[] = [];
     private readonly _ctxCanNavigate = new ContextKey<boolean>('references-view.canNavigate');
     private _delegate?: SymbolItemNavigation<unknown>;
+
     constructor(private readonly _view: vscode.TreeView<unknown>) {
         this._disposables.push(vscode.commands.registerCommand('references-view.next', () => this.next(false)), vscode.commands.registerCommand('references-view.prev', () => this.previous(false)));
     }
@@ -24,6 +25,7 @@ export class Navigation {
             return undefined;
         }
         const [sel] = this._view.selection;
+
         if (sel) {
             return sel;
         }
@@ -43,11 +45,14 @@ export class Navigation {
             return;
         }
         const item = this._anchor();
+
         if (!item) {
             return;
         }
         const newItem = this._delegate.previous(item);
+
         const newLocation = this._delegate.location(newItem);
+
         if (newLocation) {
             this._view.reveal(newItem, { select: true, focus: true });
             this._open(newLocation, preserveFocus);
@@ -58,11 +63,14 @@ export class Navigation {
             return;
         }
         const item = this._anchor();
+
         if (!item) {
             return;
         }
         const newItem = this._delegate.next(item);
+
         const newLocation = this._delegate.location(newItem);
+
         if (newLocation) {
             this._view.reveal(newItem, { select: true, focus: true });
             this._open(newLocation, preserveFocus);

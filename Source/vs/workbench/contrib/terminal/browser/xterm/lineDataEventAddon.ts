@@ -14,6 +14,7 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
     private _isOsSet = false;
     private readonly _onLineData = this._register(new Emitter<string>());
     readonly onLineData = this._onLineData.event;
+
     constructor(private readonly _initializationPromise?: Promise<void>) {
         super();
     }
@@ -26,6 +27,7 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
         // Fire onLineData when a line feed occurs, taking into account wrapped lines
         this._register(xterm.onLineFeed(() => {
             const newLine = buffer.active.getLine(buffer.active.baseY + buffer.active.cursorY);
+
             if (newLine && !newLine.isWrapped) {
                 this._sendLineData(buffer.active, buffer.active.baseY + buffer.active.cursorY - 1);
             }
@@ -48,18 +50,22 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
             this._register(xterm.parser.registerCsiHandler({ final: 'H' }, () => {
                 const buffer = xterm.buffer;
                 this._sendLineData(buffer.active, buffer.active.baseY + buffer.active.cursorY);
+
                 return false;
             }));
         }
     }
     private _sendLineData(buffer: IBuffer, lineIndex: number): void {
         let line = buffer.getLine(lineIndex);
+
         if (!line) {
             return;
         }
         let lineData = line.translateToString(true);
+
         while (lineIndex > 0 && line.isWrapped) {
             line = buffer.getLine(--lineIndex);
+
             if (!line) {
                 break;
             }

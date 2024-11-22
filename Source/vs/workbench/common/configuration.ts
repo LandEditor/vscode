@@ -77,6 +77,7 @@ const configurationMigrationRegistry = new ConfigurationMigrationRegistry();
 Registry.add(Extensions.ConfigurationMigration, configurationMigrationRegistry);
 export class ConfigurationMigrationWorkbenchContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.configurationMigration';
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -93,6 +94,7 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
     }
     private async migrateConfigurations(migrations: ConfigurationMigration[]): Promise<void> {
         await this.migrateConfigurationsForFolder(undefined, migrations);
+
         for (const folder of this.workspaceService.getWorkspace().folders) {
             await this.migrateConfigurationsForFolder(folder, migrations);
         }
@@ -102,6 +104,7 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
     }
     private async migrateConfigurationsForFolderAndOverride(migration: ConfigurationMigration, resource?: URI): Promise<void> {
         const inspectData = this.configurationService.inspect(migration.key, { resource });
+
         const targetPairs: [
             keyof IConfigurationValue<any>,
             ConfigurationTarget
@@ -117,8 +120,10 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
             ['userRemote', ConfigurationTarget.USER_REMOTE],
             ['workspace', ConfigurationTarget.WORKSPACE],
         ];
+
         for (const [dataKey, target] of targetPairs) {
             const inspectValue = inspectData[dataKey] as IInspectValue<any> | undefined;
+
             if (!inspectValue) {
                 continue;
             }
@@ -129,8 +134,10 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
                 ],
                 string[]
             ][] = [];
+
             if (inspectValue.value !== undefined) {
                 const keyValuePairs = await this.runMigration(migration, dataKey, inspectValue.value, resource, undefined);
+
                 for (const keyValuePair of keyValuePairs ?? []) {
                     migrationValues.push([keyValuePair, []]);
                 }
@@ -138,6 +145,7 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
             for (const { identifiers, value } of inspectValue.overrides ?? []) {
                 if (value !== undefined) {
                     const keyValuePairs = await this.runMigration(migration, dataKey, value, resource, identifiers);
+
                     for (const keyValuePair of keyValuePairs ?? []) {
                         migrationValues.push([keyValuePair, identifiers]);
                     }
@@ -152,7 +160,9 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
     private async runMigration(migration: ConfigurationMigration, dataKey: keyof IConfigurationValue<any>, value: any, resource: URI | undefined, overrideIdentifiers: string[] | undefined): Promise<ConfigurationKeyValuePairs | undefined> {
         const valueAccessor = (key: string) => {
             const inspectData = this.configurationService.inspect(key, { resource });
+
             const inspectValue = inspectData[dataKey] as IInspectValue<any> | undefined;
+
             if (!inspectValue) {
                 return undefined;
             }
@@ -161,7 +171,9 @@ export class ConfigurationMigrationWorkbenchContribution extends Disposable impl
             }
             return inspectValue.overrides?.find(({ identifiers }) => equals(identifiers, overrideIdentifiers))?.value;
         };
+
         const result = await migration.migrateFn(value, valueAccessor);
+
         return Array.isArray(result) ? result : [[migration.key, result]];
     }
 }
@@ -169,6 +181,7 @@ export class DynamicWorkbenchSecurityConfiguration extends Disposable implements
     static readonly ID = 'workbench.contrib.dynamicWorkbenchSecurityConfiguration';
     private readonly _ready = new DeferredPromise<void>();
     readonly ready = this._ready.p;
+
     constructor(
     @IRemoteAgentService
     private readonly remoteAgentService: IRemoteAgentService) {
@@ -186,6 +199,7 @@ export class DynamicWorkbenchSecurityConfiguration extends Disposable implements
     private async doCreate(): Promise<void> {
         if (!isWindows) {
             const remoteEnvironment = await this.remoteAgentService.getEnvironment();
+
             if (remoteEnvironment?.os !== OperatingSystem.Windows) {
                 return;
             }
@@ -221,6 +235,7 @@ export class DynamicWindowConfiguration extends Disposable implements IWorkbench
     static readonly ID = 'workbench.contrib.dynamicWindowConfiguration';
     private configurationNode: IConfigurationNode | undefined;
     private newWindowProfile: IUserDataProfile | undefined;
+
     constructor(
     @IUserDataProfilesService
     private readonly userDataProfilesService: IUserDataProfilesService, 
@@ -240,6 +255,7 @@ export class DynamicWindowConfiguration extends Disposable implements IWorkbench
     }
     private registerNewWindowProfileConfiguration(): void {
         const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
         const configurationNode: IConfigurationNode = {
             ...windowConfigurationNodeBase,
             'properties': {
@@ -253,6 +269,7 @@ export class DynamicWindowConfiguration extends Disposable implements IWorkbench
                 }
             }
         };
+
         if (this.configurationNode) {
             registry.updateConfigurations({ add: [configurationNode], remove: [this.configurationNode] });
         }
@@ -267,10 +284,12 @@ export class DynamicWindowConfiguration extends Disposable implements IWorkbench
     }
     private checkAndResetNewWindowProfileConfig(): void {
         const newWindowProfileName = this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE);
+
         if (!newWindowProfileName) {
             return;
         }
         const profile = this.newWindowProfile ? this.userDataProfilesService.profiles.find(profile => profile.id === this.newWindowProfile!.id) : undefined;
+
         if (newWindowProfileName === profile?.name) {
             return;
         }

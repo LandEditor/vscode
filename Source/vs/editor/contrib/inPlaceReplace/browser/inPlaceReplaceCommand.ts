@@ -10,6 +10,7 @@ export class InPlaceReplaceCommand implements ICommand {
     private readonly _editRange: Range;
     private readonly _originalSelection: Selection;
     private readonly _text: string;
+
     constructor(editRange: Range, originalSelection: Selection, text: string) {
         this._editRange = editRange;
         this._originalSelection = originalSelection;
@@ -20,7 +21,9 @@ export class InPlaceReplaceCommand implements ICommand {
     }
     public computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection {
         const inverseEditOperations = helper.getInverseEditOperations();
+
         const srcRange = inverseEditOperations[0].range;
+
         if (!this._originalSelection.isEmpty()) {
             // Preserve selection and extends to typed text
             return new Selection(srcRange.endLineNumber, srcRange.endColumn - this._text.length, srcRange.endLineNumber, srcRange.endColumn);

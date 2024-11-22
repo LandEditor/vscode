@@ -13,12 +13,14 @@ export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape
     private static _providerHandlePool: number = 0;
     private readonly _proxy: extHostProtocol.MainThreadCodeMapperShape;
     private readonly providers = new Map<number, vscode.MappedEditsProvider2>();
+
     constructor(mainContext: extHostProtocol.IMainContext) {
         this._proxy = mainContext.getProxy(extHostProtocol.MainContext.MainThreadCodeMapper);
     }
     async $mapCode(handle: number, internalRequest: extHostProtocol.ICodeMapperRequestDto, token: CancellationToken): Promise<ICodeMapperResult | null> {
         // Received request to map code from the main thread
         const provider = this.providers.get(handle);
+
         if (!provider) {
             throw new Error(`Received request to map code for unknown provider handle ${handle}`);
         }
@@ -32,6 +34,7 @@ export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape
                 });
             }
         };
+
         const request: vscode.MappedEditsRequest = {
             codeBlocks: internalRequest.codeBlocks.map(block => {
                 return {
@@ -57,13 +60,16 @@ export class ExtHostCodeMapper implements extHostProtocol.ExtHostCodeMapperShape
                 }
             })
         };
+
         const result = await provider.provideMappedEdits(request, stream, token);
+
         return result ?? null;
     }
     registerMappedEditsProvider(extension: IExtensionDescription, provider: vscode.MappedEditsProvider2): vscode.Disposable {
         const handle = ExtHostCodeMapper._providerHandlePool++;
         this._proxy.$registerCodeMapperProvider(handle);
         this.providers.set(handle, provider);
+
         return {
             dispose: () => {
                 return this._proxy.$unregisterCodeMapperProvider(handle);

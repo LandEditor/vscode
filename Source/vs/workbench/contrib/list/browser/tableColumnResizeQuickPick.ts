@@ -23,7 +23,9 @@ export class TableColumnResizeQuickPick extends Disposable {
                 items.push({ label, index });
             }
         });
+
         const column = await this._quickInputService.pick<IColumnResizeQuickPickItem>(items, { placeHolder: localize('table.column.selection', "Select the column to resize, type to filter.") });
+
         if (!column) {
             return;
         }
@@ -32,7 +34,9 @@ export class TableColumnResizeQuickPick extends Disposable {
             prompt: localize('table.column.resizeValue.prompt', "Please enter a width in percentage for the '{0}' column.", column.label),
             validateInput: (input: string) => this._validateColumnResizeValue(input)
         });
+
         const percentageValue = value ? Number.parseInt(value) : undefined;
+
         if (!percentageValue) {
             return;
         }
@@ -43,6 +47,7 @@ export class TableColumnResizeQuickPick extends Disposable {
         severity: Severity;
     } | null | undefined> {
         const percentage = Number.parseInt(input);
+
         if (input && !Number.isInteger(percentage)) {
             return localize('table.column.resizeValue.invalidType', "Please enter an integer.");
         }

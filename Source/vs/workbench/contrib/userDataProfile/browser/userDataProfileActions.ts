@@ -11,6 +11,7 @@ import { IUserDataProfileManagementService, PROFILES_CATEGORY } from '../../../s
 class CreateTransientProfileAction extends Action2 {
     static readonly ID = 'workbench.profiles.actions.createTemporaryProfile';
     static readonly TITLE = localize2('create temporary profile', "Create a Temporary Profile");
+
     constructor() {
         super({
             id: CreateTransientProfileAction.ID,
@@ -49,6 +50,7 @@ registerAction2(class ResetWorkspacesAction extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const userDataProfilesService = accessor.get(IUserDataProfilesService);
+
         return userDataProfilesService.resetWorkspaces();
     }
 });

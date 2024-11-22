@@ -19,6 +19,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
     private _cellStateListeners: IDisposable[] = [];
     private _enabled: boolean = false;
     private _cellStatusItems: string[] = [];
+
     constructor(private readonly _notebookEditor: INotebookEditor) {
         super();
         this._register(this._notebookEditor.onDidChangeModel(() => {
@@ -33,6 +34,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
     private _update() {
         this._localStore.clear();
         this._cellStateListeners.forEach(listener => listener.dispose());
+
         if (!this._notebookEditor.hasModel()) {
             return;
         }
@@ -57,6 +59,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
         this._localStore.add(this._notebookEditor.onDidChangeViewCells(e => {
             [...e.splices].reverse().forEach(splice => {
                 const [start, deleted, newCells] = splice;
+
                 const deletedCells = this._cellStateListeners.splice(start, deleted, ...newCells.map(cell => {
                     return cell.onDidChangeLayout((e: ICommonCellViewModelLayoutChangeInfo) => {
                         this._log(cell, e);
@@ -65,8 +68,11 @@ export class TroubleshootController extends Disposable implements INotebookEdito
                 dispose(deletedCells);
             });
         }));
+
         const vm = this._notebookEditor.getViewModel();
+
         let items: INotebookDeltaCellStatusBarItems[] = [];
+
         if (this._enabled) {
             items = this._getItemsForCells();
         }
@@ -74,6 +80,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
     }
     private _getItemsForCells(): INotebookDeltaCellStatusBarItems[] {
         const items: INotebookDeltaCellStatusBarItems[] = [];
+
         for (let i = 0; i < this._notebookEditor.getLength(); i++) {
             items.push({
                 handle: i,
@@ -90,6 +97,7 @@ export class TroubleshootController extends Disposable implements INotebookEdito
     }
     override dispose() {
         dispose(this._cellStateListeners);
+
         super.dispose();
     }
 }
@@ -105,7 +113,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor) {
             return;
         }
@@ -124,7 +134,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor || !editor.hasModel()) {
             return;
         }

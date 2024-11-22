@@ -141,6 +141,7 @@ export class TestingExplorerView extends ViewPane {
 
 	public override focus() {
 		super.focus();
+
 		if (this.lastFocusState === LastFocusState.Tree) {
 			this.viewModel.tree.domFocus();
 		} else {
@@ -156,6 +157,7 @@ export class TestingExplorerView extends ViewPane {
 	 */
 	public getTreeIncludeExclude(profileOrBitset: ITestRunProfile | TestRunProfileBitset, withinItems?: InternalTestItem[], filterToType: 'visible' | 'selected' = 'visible') {
 		const projection = this.viewModel.projection.value;
+
 		if (!projection) {
 			return { include: [], exclude: [] };
 		}
@@ -163,11 +165,14 @@ export class TestingExplorerView extends ViewPane {
 		// To calculate includes and excludes, we include the first children that
 		// have a majority of their items included too, and then apply exclusions.
 		const include = new Set<InternalTestItem>();
+
 		const exclude: InternalTestItem[] = [];
 
 		const runnableWithProfileOrBitset = new Map<InternalTestItem, boolean>();
+
 		const isRunnableWithProfileOrBitset = (item: InternalTestItem) => {
 			let value = runnableWithProfileOrBitset.get(item);
+
 			if (value === undefined) {
 				value = typeof profileOrBitset === 'number'
 					? !!this.testProfileService.getDefaultProfileForTest(profileOrBitset, item)
@@ -187,6 +192,7 @@ export class TestingExplorerView extends ViewPane {
 
 			// If the current node is not visible or runnable in the current profile, it's excluded
 			const inTree = this.viewModel.tree.getNode(element);
+
 			if (!inTree.visible) {
 				if (alreadyIncluded) { exclude.push(element.test); }
 				return;
@@ -224,6 +230,7 @@ export class TestingExplorerView extends ViewPane {
 
 		if (filterToType === 'selected') {
 			const sel = this.viewModel.tree.getSelection().filter(isDefined);
+
 			if (sel.length) {
 
 				L:
@@ -247,6 +254,7 @@ export class TestingExplorerView extends ViewPane {
 
 		for (const root of withinItems || this.testService.collection.rootItems) {
 			const element = projection.getElementByTestId(root.item.extId);
+
 			if (!element) {
 				continue;
 			}
@@ -321,11 +329,15 @@ export class TestingExplorerView extends ViewPane {
 			case TestCommandId.FilterAction:
 				this.filter.value = this.instantiationService.createInstance(TestingExplorerFilter, action, options);
 				this.filterFocusListener.value = this.filter.value.onDidFocus(() => this.lastFocusState = LastFocusState.Input);
+
 				return this.filter.value;
+
 			case TestCommandId.RunSelectedAction:
 				return this.getRunGroupDropdown(TestRunProfileBitset.Run, action, options);
+
 			case TestCommandId.DebugSelectedAction:
 				return this.getRunGroupDropdown(TestRunProfileBitset.Debug, action, options);
+
 			default:
 				return super.getActionViewItem(action, options);
 		}
@@ -336,8 +348,11 @@ export class TestingExplorerView extends ViewPane {
 		const profileActions: IAction[] = [];
 
 		let participatingGroups = 0;
+
 		let hasConfigurable = false;
+
 		const defaults = this.testProfileService.getGroupDefaultProfiles(group);
+
 		for (const { profiles, controller } of this.testProfileService.all()) {
 			let hasAdded = false;
 
@@ -386,12 +401,14 @@ export class TestingExplorerView extends ViewPane {
 			contextKeys.push(['testing.profile.context.group', 'coverage']);
 		}
 		const key = this.contextKeyService.createOverlay(contextKeys);
+
 		const menu = this.menuService.getMenuActions(MenuId.TestProfilesContext, key);
 
 		// fill if there are any actions
 		const menuActions = getFlatContextMenuActions(menu);
 
 		const postActions: IAction[] = [];
+
 		if (profileActions.length > 1) {
 			postActions.push(new Action(
 				'selectDefaultTestConfigurations',
@@ -423,11 +440,13 @@ export class TestingExplorerView extends ViewPane {
 	 */
 	public override saveState() {
 		this.filter.value?.saveState();
+
 		super.saveState();
 	}
 
 	private getRunGroupDropdown(group: TestRunProfileBitset, defaultAction: IAction, options: IActionViewItemOptions) {
 		const dropdownActions = this.getTestConfigGroupActions(group);
+
 		if (dropdownActions.length < 2) {
 			return super.getActionViewItem(defaultAction, options);
 		}
@@ -457,6 +476,7 @@ export class TestingExplorerView extends ViewPane {
 		});
 		bar.push(new Action(TestCommandId.FilterAction));
 		bar.getContainer().classList.add('testing-filter-action-bar');
+
 		return bar;
 	}
 
@@ -536,7 +556,9 @@ class ResultSummaryView extends Disposable {
 
 	private render() {
 		const { results } = this.resultService;
+
 		const { count, root, status, duration, rerun } = this.elements;
+
 		if (!results.length) {
 			if (this.elementsWereAttached) {
 				root.remove();
@@ -544,11 +566,14 @@ class ResultSummaryView extends Disposable {
 			}
 			this.container.innerText = localize('noResults', 'No test results yet.');
 			this.badgeDisposable.clear();
+
 			return;
 		}
 
 		const live = results.filter(r => !r.completedAt) as LiveTestResult[];
+
 		let counts: CountSummary;
+
 		if (live.length) {
 			status.className = ThemeIcon.asClassName(spinningLoading);
 			counts = collectTestStateCounts(true, live);
@@ -559,6 +584,7 @@ class ResultSummaryView extends Disposable {
 			rerun.style.display = 'none';
 		} else {
 			const last = results[0];
+
 			const dominantState = mapFindFirst(statesInOrder, s => last.counts[s] > 0 ? s : undefined);
 			status.className = ThemeIcon.asClassName(icons.testingStatesToIcons.get(dominantState ?? TestResultState.Unset)!);
 			counts = collectTestStateCounts(false, [last]);
@@ -605,8 +631,10 @@ class ResultSummaryView extends Disposable {
 		switch (countBadgeType) {
 			case TestingCountBadge.Passed:
 				return localize('testingCountBadgePassed', '{0} passed tests', count);
+
 			case TestingCountBadge.Skipped:
 				return localize('testingCountBadgeSkipped', '{0} skipped tests', count);
+
 			default:
 				return localize('testingCountBadgeFailed', '{0} failed tests', count);
 		}
@@ -735,7 +763,9 @@ class TestingExplorerViewModel extends Disposable {
 		const collapseStateSaver = this._register(new RunOnceScheduler(() => {
 			// reuse the last view state to avoid making a bunch of object garbage:
 			const state = this.tree.getOptimizedViewState(this.lastViewState.get({}));
+
 			const projection = this.projection.value;
+
 			if (projection) {
 				projection.lastState = state;
 			}
@@ -886,6 +916,7 @@ class TestingExplorerViewModel extends Disposable {
 		const filterText = observableFromEvent(this.filterState.text.onDidChange, () => this.filterState.text);
 		this._register(autorun(reader => {
 			filterText.read(reader);
+
 			if (this.filterState.isFilteringFor(TestFilterTerm.OpenedFiles)) {
 				this.filter.filterToDocumentUri([...allOpenEditorInputs.read(reader)]);
 			} else {
@@ -918,6 +949,7 @@ class TestingExplorerViewModel extends Disposable {
 	private revealById(id: string | undefined, expand = true, focus = true) {
 		if (!id) {
 			this.hasPendingReveal = false;
+
 			return;
 		}
 
@@ -926,7 +958,9 @@ class TestingExplorerViewModel extends Disposable {
 		// If the item itself is visible in the tree, show it. Otherwise, expand
 		// its closest parent.
 		let expandToLevel = 0;
+
 		const idPath = [...TestId.fromString(id).idsFromRoot()];
+
 		for (let i = idPath.length - 1; i >= expandToLevel; i--) {
 			const element = projection.getElementByTestId(idPath[i].toString());
 			// Skip all elements that aren't in the tree.
@@ -953,9 +987,11 @@ class TestingExplorerViewModel extends Disposable {
 			// target focus target to the first collapsed element.
 
 			let focusTarget = element;
+
 			for (let n: TestItemTreeElement | null = element; n instanceof TestItemTreeElement; n = n.parent) {
 				if (n.test && this.testService.excluded.contains(n.test)) {
 					this.filterState.toggleFilteringFor(TestFilterTerm.Hidden, true);
+
 					break;
 				}
 
@@ -966,6 +1002,7 @@ class TestingExplorerViewModel extends Disposable {
 
 			this.filterState.reveal.set(undefined, undefined);
 			this.hasPendingReveal = false;
+
 			if (focus) {
 				this.tree.domFocus();
 			}
@@ -999,6 +1036,7 @@ class TestingExplorerViewModel extends Disposable {
 	 */
 	private tryPeekError(item: TestItemTreeElement) {
 		const lookup = item.test && this.testResults.getStateById(item.test.item.extId);
+
 		return lookup && lookup[1].tasks.some(s => isFailedState(s.state))
 			? this.peekOpener.tryPeekFirstError(lookup[0], lookup[1], { preserveFocus: true })
 			: false;
@@ -1006,6 +1044,7 @@ class TestingExplorerViewModel extends Disposable {
 
 	private onContextMenu(evt: ITreeContextMenuEvent<TestExplorerTreeElement | null>) {
 		const element = evt.element;
+
 		if (!(element instanceof TestItemTreeElement)) {
 			return;
 		}
@@ -1021,8 +1060,11 @@ class TestingExplorerViewModel extends Disposable {
 
 	private handleExecuteKeypress(evt: IKeyboardEvent) {
 		const focused = this.tree.getFocus();
+
 		const selected = this.tree.getSelection();
+
 		let targeted: (TestExplorerTreeElement | null)[];
+
 		if (focused.length === 1 && selected.includes(focused[0])) {
 			evt.browserEvent?.preventDefault();
 			targeted = selected;
@@ -1043,6 +1085,7 @@ class TestingExplorerViewModel extends Disposable {
 
 	private reevaluateWelcomeState() {
 		const shouldShowWelcome = this.testService.collection.busyProviders === 0 && testCollectionIsEmpty(this.testService.collection);
+
 		const welcomeExperience = shouldShowWelcome
 			? (this.filterState.isFilteringFor(TestFilterTerm.CurrentDoc) ? WelcomeExperience.ForDocument : WelcomeExperience.ForWorkspace)
 			: WelcomeExperience.None;
@@ -1061,6 +1104,7 @@ class TestingExplorerViewModel extends Disposable {
 		this.projection.clear();
 
 		const lastState = this.lastViewState.get({});
+
 		if (this._viewMode.get() === TestExplorerViewMode.List) {
 			this.projection.value = this.instantiationService.createInstance(ListProjection, lastState);
 		} else {
@@ -1075,6 +1119,7 @@ class TestingExplorerViewModel extends Disposable {
 		});
 
 		this.applyProjectionChanges();
+
 		return this.projection.value;
 	}
 
@@ -1105,9 +1150,11 @@ const enum FilterResult {
 
 const hasNodeInOrParentOfUri = (collection: IMainThreadTestCollection, ident: IUriIdentityService, testUri: URI, fromNode?: string) => {
 	const queue: Iterable<string>[] = [fromNode ? [fromNode] : collection.rootIds];
+
 	while (queue.length) {
 		for (const id of queue.pop()!) {
 			const node = collection.getNodeById(id);
+
 			if (!node) {
 				continue;
 			}
@@ -1160,9 +1207,12 @@ class TestsFilter implements ITreeFilter<TestExplorerTreeElement> {
 		switch (Math.min(this.testFilterText(element), this.testLocation(element), this.testState(element), this.testTags(element))) {
 			case FilterResult.Exclude:
 				return TreeVisibility.Hidden;
+
 			case FilterResult.Include:
 				this.lastIncludedTests?.add(element);
+
 				return TreeVisibility.Visible;
+
 			default:
 				return TreeVisibility.Recurse;
 		}
@@ -1218,9 +1268,11 @@ class TestsFilter implements ITreeFilter<TestExplorerTreeElement> {
 		}
 
 		const fuzzy = this.state.fuzzy.value;
+
 		for (let e: TestItemTreeElement | null = element; e; e = e.parent) {
 			// start as included if the first glob is a negation
 			let included = this.state.globList[0].include === false ? FilterResult.Include : FilterResult.Inherit;
+
 			const data = e.test.item.label.toLowerCase();
 
 			for (const { include, text } of this.state.globList) {
@@ -1249,26 +1301,31 @@ class TreeSorter implements ITreeSorter<TestExplorerTreeElement> {
 		}
 
 		const durationDelta = (b.duration || 0) - (a.duration || 0);
+
 		if (this.viewModel.viewSorting === TestExplorerViewSorting.ByDuration && durationDelta !== 0) {
 			return durationDelta;
 		}
 
 		const stateDelta = cmpPriority(a.state, b.state);
+
 		if (this.viewModel.viewSorting === TestExplorerViewSorting.ByStatus && stateDelta !== 0) {
 			return stateDelta;
 		}
 
 		let inSameLocation = false;
+
 		if (a instanceof TestItemTreeElement && b instanceof TestItemTreeElement && a.test.item.uri && b.test.item.uri && a.test.item.uri.toString() === b.test.item.uri.toString() && a.test.item.range && b.test.item.range) {
 			inSameLocation = true;
 
 			const delta = a.test.item.range.startLineNumber - b.test.item.range.startLineNumber;
+
 			if (delta !== 0) {
 				return delta;
 			}
 		}
 
 		const sa = a.test.item.sortText;
+
 		const sb = b.test.item.sortText;
 		// If tests are in the same location and there's no preferred sortText,
 		// keep the extension's insertion order (#163449).
@@ -1278,15 +1335,20 @@ class TreeSorter implements ITreeSorter<TestExplorerTreeElement> {
 
 class NoTestsForDocumentWidget extends Disposable {
 	private readonly el: HTMLElement;
+
 	constructor(
 		container: HTMLElement,
 		@ITestExplorerFilterState filterState: ITestExplorerFilterState
 	) {
 		super();
+
 		const el = this.el = dom.append(container, dom.$('.testing-no-test-placeholder'));
+
 		const emptyParagraph = dom.append(el, dom.$('p'));
 		emptyParagraph.innerText = localize('testingNoTest', 'No tests were found in this file.');
+
 		const buttonLabel = localize('testingFindExtension', 'Show Workspace Tests');
+
 		const button = this._register(new Button(el, { title: buttonLabel, ...defaultButtonStyles }));
 		button.label = buttonLabel;
 		this._register(button.onDidClick(() => filterState.toggleFilteringFor(TestFilterTerm.CurrentDoc, false)));
@@ -1308,8 +1370,11 @@ class TestExplorerActionRunner extends ActionRunner {
 		}
 
 		const selection = this.getSelectedTests();
+
 		const contextIsSelected = selection.some(s => s === context);
+
 		const actualContext = contextIsSelected ? selection : [context];
+
 		const actionable = actualContext.filter((t): t is TestItemTreeElement => t instanceof TestItemTreeElement);
 		await action.run(...actionable);
 	}
@@ -1398,6 +1463,7 @@ class ErrorRenderer implements ITreeRenderer<TestTreeErrorMessage, FuzzyScore, I
 
 	renderTemplate(container: HTMLElement): IErrorTemplateData {
 		const label = dom.append(container, dom.$('.error'));
+
 		return { label, disposable: new DisposableStore() };
 	}
 
@@ -1457,10 +1523,13 @@ class TestItemRenderer extends Disposable
 		const wrapper = dom.append(container, dom.$('.test-item'));
 
 		const icon = dom.append(wrapper, dom.$('.computed-state'));
+
 		const label = dom.append(wrapper, dom.$('.label'));
+
 		const disposable = new DisposableStore();
 
 		dom.append(wrapper, dom.$(ThemeIcon.asCSSSelector(icons.testingHiddenIcon)));
+
 		const actionBar = disposable.add(new ActionBar(wrapper, {
 			actionRunner: this.actionRunner,
 			actionViewItemProvider: (action, options) =>
@@ -1471,12 +1540,14 @@ class TestItemRenderer extends Disposable
 
 		disposable.add(this.crService.onDidChange(changed => {
 			const id = templateData.current?.test.item.extId;
+
 			if (id && (!changed || changed === id || TestId.isChild(id, changed))) {
 				this.fillActionBar(templateData.current!, templateData);
 			}
 		}));
 
 		const templateData: ITestElementTemplateData = { wrapper, label, actionBar, icon, elementDisposable: new DisposableStore(), templateDisposable: disposable };
+
 		return templateData;
 	}
 
@@ -1496,7 +1567,9 @@ class TestItemRenderer extends Disposable
 
 	private fillActionBar(element: TestItemTreeElement, data: ITestElementTemplateData) {
 		const { actions, contextOverlay } = getActionableElementActions(this.contextKeyService, this.menuService, this.testService, this.crService, this.profiles, element);
+
 		const crSelf = !!contextOverlay.getContextKeyValue(TestingContextKeys.isContinuousModeOn.key);
+
 		const crChild = !crSelf && this.crService.isEnabledForAChildOf(element.test.item.extId);
 		data.actionBar.domNode.classList.toggle('testing-is-continuous-run', crSelf || crChild);
 		data.actionBar.clear();
@@ -1527,11 +1600,13 @@ class TestItemRenderer extends Disposable
 				: node.element.state);
 
 		data.icon.className = 'computed-state ' + (icon ? ThemeIcon.asClassName(icon) : '');
+
 		if (node.element.retired) {
 			data.icon.className += ' retired';
 		}
 
 		data.elementDisposable.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), data.label, getLabelForTestTreeElement(node.element)));
+
 		if (node.element.test.item.label.trim()) {
 			dom.reset(data.label, ...renderLabelWithIcons(node.element.test.item.label));
 		} else {
@@ -1539,6 +1614,7 @@ class TestItemRenderer extends Disposable
 		}
 
 		let description = node.element.description;
+
 		if (node.element.duration !== undefined) {
 			description = description
 				? `${description}: ${formatDuration(node.element.duration)}`
@@ -1572,10 +1648,13 @@ const getActionableElementActions = (
 	element: TestItemTreeElement,
 ) => {
 	const test = element instanceof TestItemTreeElement ? element.test : undefined;
+
 	const contextKeys: [string, unknown][] = getTestItemContextOverlay(test, test ? profiles.capabilitiesForTest(test.item) : 0);
 	contextKeys.push(['view', Testing.ExplorerViewId]);
+
 	if (test) {
 		const ctrl = testService.getTestController(test.controllerId);
+
 		const supportsCr = !!ctrl && profiles.getControllerProfiles(ctrl.id).some(p =>
 			p.supportsContinuousRun && canUseProfileWithTest(p, test));
 		contextKeys.push([
@@ -1603,6 +1682,7 @@ const getActionableElementActions = (
 	}
 
 	const contextOverlay = contextKeyService.createOverlay(contextKeys);
+
 	const menu = menuService.getMenuActions(MenuId.TestItem, contextOverlay, {
 		shouldForwardArgs: true,
 	});
@@ -1615,6 +1695,7 @@ const getActionableElementActions = (
 registerThemingParticipant((theme, collector) => {
 	if (theme.type === 'dark') {
 		const foregroundColor = theme.getColor(foreground);
+
 		if (foregroundColor) {
 			const fgWithOpacity = new Color(new RGBA(foregroundColor.rgba.r, foregroundColor.rgba.g, foregroundColor.rgba.b, 0.65));
 			collector.addRule(`.test-explorer .test-explorer-messages { color: ${fgWithOpacity}; }`);

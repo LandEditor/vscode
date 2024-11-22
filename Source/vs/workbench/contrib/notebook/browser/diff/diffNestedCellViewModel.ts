@@ -14,6 +14,7 @@ import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.
 import { INotebookService } from '../../common/notebookService.js';
 export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCellViewModel, IGenericCellViewModel {
     private _id: string;
+
     get id() {
         return this._id;
     }
@@ -57,6 +58,7 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
         this._focusInputInOutput = v;
     }
     private _outputViewModels: ICellOutputViewModel[];
+
     get outputsViewModels() {
         return this._outputViewModels;
     }
@@ -64,6 +66,7 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
     protected _outputsTop: PrefixSumComputer | null = null;
     protected readonly _onDidChangeOutputLayout = this._register(new Emitter<void>());
     readonly onDidChangeOutputLayout = this._onDidChangeOutputLayout.event;
+
     constructor(readonly textModel: NotebookCellTextModel, 
     @INotebookService
     private _notebookService: INotebookService) {
@@ -72,6 +75,7 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
         this._outputViewModels = this.textModel.outputs.map(output => new CellOutputViewModel(this, output, this._notebookService));
         this._register(this.textModel.onDidChangeOutputs((splice) => {
             this._outputCollection.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(() => 0));
+
             const removed = this._outputViewModels.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(output => new CellOutputViewModel(this, output, this._notebookService)));
             removed.forEach(vm => vm.dispose());
             this._outputsTop = null;
@@ -82,6 +86,7 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
     private _ensureOutputsTop() {
         if (!this._outputsTop) {
             const values = new Uint32Array(this._outputCollection.length);
+
             for (let i = 0; i < this._outputCollection.length; i++) {
                 values[i] = this._outputCollection[i];
             }
@@ -90,6 +95,7 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
     }
     getOutputOffset(index: number): number {
         this._ensureOutputsTop();
+
         if (index >= this._outputCollection.length) {
             throw new Error('Output index out of range!');
         }
@@ -101,12 +107,14 @@ export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCe
         }
         this._ensureOutputsTop();
         this._outputCollection[index] = height;
+
         if (this._outputsTop!.setValue(index, height)) {
             this._onDidChangeOutputLayout.fire();
         }
     }
     getOutputTotalHeight() {
         this._ensureOutputsTop();
+
         return this._outputsTop?.getTotalSum() ?? 0;
     }
     public override dispose(): void {

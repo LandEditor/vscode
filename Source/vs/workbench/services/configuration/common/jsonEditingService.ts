@@ -21,6 +21,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 export class JSONEditingService implements IJSONEditingService {
     public _serviceBrand: undefined;
     private queue: Queue<void>;
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -35,6 +36,7 @@ export class JSONEditingService implements IJSONEditingService {
     }
     private async doWriteConfiguration(resource: URI, values: IJSONValue[]): Promise<void> {
         const reference = await this.resolveAndValidate(resource, true);
+
         try {
             await this.writeToBuffer(reference.object.textEditorModel, values);
         }
@@ -44,6 +46,7 @@ export class JSONEditingService implements IJSONEditingService {
     }
     private async writeToBuffer(model: ITextModel, values: IJSONValue[]): Promise<any> {
         let hasEdits: boolean = false;
+
         for (const value of values) {
             const edit = this.getEdits(model, value)[0];
             hasEdits = !!edit && this.applyEditsToBuffer(edit, model);
@@ -54,23 +57,31 @@ export class JSONEditingService implements IJSONEditingService {
     }
     private applyEditsToBuffer(edit: Edit, model: ITextModel): boolean {
         const startPosition = model.getPositionAt(edit.offset);
+
         const endPosition = model.getPositionAt(edit.offset + edit.length);
+
         const range = new Range(startPosition.lineNumber, startPosition.column, endPosition.lineNumber, endPosition.column);
+
         const currentText = model.getValueInRange(range);
+
         if (edit.content !== currentText) {
             const editOperation = currentText ? EditOperation.replace(range, edit.content) : EditOperation.insert(startPosition, edit.content);
             model.pushEditOperations([new Selection(startPosition.lineNumber, startPosition.column, startPosition.lineNumber, startPosition.column)], [editOperation], () => []);
+
             return true;
         }
         return false;
     }
     private getEdits(model: ITextModel, configurationValue: IJSONValue): Edit[] {
         const { tabSize, insertSpaces } = model.getOptions();
+
         const eol = model.getEOL();
+
         const { path, value } = configurationValue;
         // With empty path the entire file is being replaced, so we just use JSON.stringify
         if (!path.length) {
             const content = JSON.stringify(value, null, insertSpaces ? ' '.repeat(tabSize) : '\t');
+
             return [{
                     content,
                     length: content.length,
@@ -81,6 +92,7 @@ export class JSONEditingService implements IJSONEditingService {
     }
     private async resolveModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
         const exists = await this.fileService.exists(resource);
+
         if (!exists) {
             await this.textFileService.write(resource, '{}', { encoding: 'utf8' });
         }
@@ -89,19 +101,24 @@ export class JSONEditingService implements IJSONEditingService {
     private hasParseErrors(model: ITextModel): boolean {
         const parseErrors: json.ParseError[] = [];
         json.parse(model.getValue(), parseErrors, { allowTrailingComma: true, allowEmptyContent: true });
+
         return parseErrors.length > 0;
     }
     private async resolveAndValidate(resource: URI, checkDirty: boolean): Promise<IReference<IResolvedTextEditorModel>> {
         const reference = await this.resolveModelReference(resource);
+
         const model = reference.object.textEditorModel;
+
         if (this.hasParseErrors(model)) {
             reference.dispose();
+
             return this.reject<IReference<IResolvedTextEditorModel>>(JSONEditingErrorCode.ERROR_INVALID_FILE);
         }
         return reference;
     }
     private reject<T>(code: JSONEditingErrorCode): Promise<T> {
         const message = this.toErrorMessage(code);
+
         return Promise.reject(new JSONEditingError(message, code));
     }
     private toErrorMessage(error: JSONEditingErrorCode): string {

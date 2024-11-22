@@ -10,10 +10,12 @@ import ContentProvider from './contentProvider';
 import Decorator from './mergeDecorator';
 import * as interfaces from './interfaces';
 import TelemetryReporter from '@vscode/extension-telemetry';
+
 const ConfigurationSectionName = 'merge-conflict';
 export default class ServiceWrapper implements vscode.Disposable {
     private services: vscode.Disposable[] = [];
     private telemetryReporter: TelemetryReporter;
+
     constructor(private context: vscode.ExtensionContext) {
         const { aiKey } = context.extension.packageJSON as {
             aiKey: string;
@@ -23,6 +25,7 @@ export default class ServiceWrapper implements vscode.Disposable {
     }
     begin() {
         const configuration = this.createExtensionConfiguration();
+
         const documentTracker = new DocumentTracker(this.telemetryReporter);
         this.services.push(documentTracker, new CommandHandler(documentTracker), new CodeLensProvider(documentTracker), new ContentProvider(this.context), new Decorator(this.context, documentTracker));
         this.services.forEach((service: any) => {
@@ -40,8 +43,11 @@ export default class ServiceWrapper implements vscode.Disposable {
     }
     createExtensionConfiguration(): interfaces.IExtensionConfiguration {
         const workspaceConfiguration = vscode.workspace.getConfiguration(ConfigurationSectionName);
+
         const codeLensEnabled: boolean = workspaceConfiguration.get('codeLens.enabled', true);
+
         const decoratorsEnabled: boolean = workspaceConfiguration.get('decorators.enabled', true);
+
         return {
             enableCodeLens: codeLensEnabled,
             enableDecorations: decoratorsEnabled,

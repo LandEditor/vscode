@@ -9,6 +9,7 @@ import { EditorInput } from '../../../common/editor/editorInput.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
+
 const RuntimeExtensionsEditorIcon = registerIcon('runtime-extensions-editor-label-icon', Codicon.extensions, nls.localize('runtimeExtensionEditorLabelIcon', 'Icon of the runtime extensions editor label.'));
 export class RuntimeExtensionsInput extends EditorInput {
     static readonly ID = 'workbench.runtimeExtensions.input';

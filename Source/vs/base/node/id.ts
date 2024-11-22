@@ -52,15 +52,19 @@ export const virtualMachineHint: { value(): number } = new class {
 	value(): number {
 		if (this._value === undefined) {
 			let vmOui = 0;
+
 			let interfaceCount = 0;
 
 			const interfaces = networkInterfaces();
+
 			for (const name in interfaces) {
 				const networkInterface = interfaces[name];
+
 				if (networkInterface) {
 					for (const { mac, internal } of networkInterface) {
 						if (!internal) {
 							interfaceCount += 1;
+
 							if (this._isVirtualMachineMacAddress(mac.toUpperCase())) {
 								vmOui += 1;
 							}
@@ -93,10 +97,13 @@ export async function getMachineId(errorLogger: (error: any) => void): Promise<s
 async function getMacMachineId(errorLogger: (error: any) => void): Promise<string | undefined> {
 	try {
 		const crypto = await import('crypto');
+
 		const macAddress = getMac();
+
 		return crypto.createHash('sha256').update(macAddress, 'utf8').digest('hex');
 	} catch (err) {
 		errorLogger(err);
+
 		return undefined;
 	}
 }
@@ -105,10 +112,12 @@ const SQM_KEY: string = 'Software\\Microsoft\\SQMClient';
 export async function getSqmMachineId(errorLogger: (error: any) => void): Promise<string> {
 	if (isWindows) {
 		const Registry = await import('@vscode/windows-registry');
+
 		try {
 			return Registry.GetStringRegKey('HKEY_LOCAL_MACHINE', SQM_KEY, 'MachineId') || '';
 		} catch (err) {
 			errorLogger(err);
+
 			return '';
 		}
 	}
@@ -118,10 +127,13 @@ export async function getSqmMachineId(errorLogger: (error: any) => void): Promis
 export async function getdevDeviceId(errorLogger: (error: any) => void): Promise<string> {
 	try {
 		const deviceIdPackage = await import('@vscode/deviceid');
+
 		const id = await deviceIdPackage.getDeviceId();
+
 		return id;
 	} catch (err) {
 		errorLogger(err);
+
 		return uuid.generateUuid();
 	}
 }

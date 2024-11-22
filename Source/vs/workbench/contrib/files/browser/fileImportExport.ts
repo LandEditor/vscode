@@ -61,6 +61,7 @@ interface IWebkitDataTransferItemEntryReader {
 }
 export class BrowserFileUpload {
     private static readonly MAX_PARALLEL_UPLOADS = 20;
+
     constructor(
     @IProgressService
     private readonly progressService: IProgressService, 
@@ -84,6 +85,7 @@ export class BrowserFileUpload {
         }, async (progress) => this.doUpload(target, this.toTransfer(source), progress, cts.token), () => cts.dispose(true));
         // Also indicate progress in the files view
         this.progressService.withProgress({ location: VIEW_ID, delay: 500 }, () => uploadPromise);
+
         return uploadPromise;
     }
     private toTransfer(source: DragEvent | FileList): IWebkitDataTransfer {
@@ -116,6 +118,7 @@ export class BrowserFileUpload {
         // measure since this is a DND operation. As such, we copy the items into
         // an array we own as early as possible before using it.
         const entries: IWebkitDataTransferItemEntry[] = [];
+
         for (const item of items) {
             entries.push(item.webkitGetAsEntry());
         }
@@ -123,6 +126,7 @@ export class BrowserFileUpload {
             isFile: boolean;
             resource: URI;
         }[] = [];
+
         const operation: IBrowserUploadOperation = {
             startTime: Date.now(),
             progressScheduler: new RunOnceWorker<IProgressStep>(steps => { progress.report(steps[steps.length - 1]); }, 1000),
@@ -141,6 +145,7 @@ export class BrowserFileUpload {
                 // Confirm overwrite as needed
                 if (target && entry.name && target.getChild(entry.name)) {
                     const { confirmed } = await this.dialogService.confirm(getFileOverwriteConfirm(entry.name));
+
                     if (!confirmed) {
                         return;
                     }
@@ -148,12 +153,14 @@ export class BrowserFileUpload {
                         undoLabel: localize('overwrite', "Overwrite {0}", entry.name),
                         progressLabel: localize('overwriting', "Overwriting {0}", entry.name),
                     });
+
                     if (token.isCancellationRequested) {
                         return;
                     }
                 }
                 // Upload entry
                 const result = await this.doUploadEntry(entry, target.resource, target, progress, operation, token);
+
                 if (result) {
                     results.push(result);
                 }
@@ -162,6 +169,7 @@ export class BrowserFileUpload {
         operation.progressScheduler.dispose();
         // Open uploaded file in editor only if we upload just one
         const firstUploadedFile = results[0];
+
         if (!token.isCancellationRequested && firstUploadedFile?.isFile) {
             await this.editorService.openEditor({ resource: firstUploadedFile.resource, options: { pinned: true } });
         }
@@ -175,12 +183,15 @@ export class BrowserFileUpload {
         }
         // Report progress
         let fileBytesUploaded = 0;
+
         const reportProgress = (fileSize: number, bytesUploaded: number): void => {
             fileBytesUploaded += bytesUploaded;
             operation.totalBytesUploaded += bytesUploaded;
+
             const bytesUploadedPerSecond = operation.totalBytesUploaded / ((Date.now() - operation.startTime) / 1000);
             // Small file
             let message: string;
+
             if (fileSize < ByteSize.MB) {
                 if (operation.filesTotal === 1) {
                     message = `${entry.name}`;
@@ -200,8 +211,10 @@ export class BrowserFileUpload {
         reportProgress(0, 0);
         // Handle file upload
         const resource = joinPath(parentResource, entry.name);
+
         if (entry.isFile) {
             const file = await new Promise<File>((resolve, reject) => entry.file(resolve, reject));
+
             if (token.isCancellationRequested) {
                 return undefined;
             }
@@ -220,15 +233,20 @@ export class BrowserFileUpload {
         else {
             // Create target folder
             await this.fileService.createFolder(resource);
+
             if (token.isCancellationRequested) {
                 return undefined;
             }
             // Recursive upload files in this directory
             const dirReader = entry.createReader();
+
             const childEntries: IWebkitDataTransferItemEntry[] = [];
+
             let done = false;
+
             do {
                 const childEntriesChunk = await new Promise<IWebkitDataTransferItemEntry[]>((resolve, reject) => dirReader.readEntries(resolve, reject));
+
                 if (childEntriesChunk.length > 0) {
                     childEntries.push(...childEntriesChunk);
                 }
@@ -240,8 +258,11 @@ export class BrowserFileUpload {
             operation.filesTotal += childEntries.length;
             // Split up files from folders to upload
             const folderTarget = target && target.getChild(entry.name) || undefined;
+
             const fileChildEntries: IWebkitDataTransferItemEntry[] = [];
+
             const folderChildEntries: IWebkitDataTransferItemEntry[] = [];
+
             for (const childEntry of childEntries) {
                 if (childEntry.isFile) {
                     fileChildEntries.push(childEntry);
@@ -269,11 +290,14 @@ export class BrowserFileUpload {
             // in-memory
             highWaterMark: 10
         });
+
         const writeFilePromise = this.fileService.writeFile(resource, writeableStream);
         // Read the file in chunks using File.stream() web APIs
         try {
             const reader: ReadableStreamDefaultReader<Uint8Array> = file.stream().getReader();
+
             let res = await reader.read();
+
             while (!res.done) {
                 if (token.isCancellationRequested) {
                     break;
@@ -282,6 +306,7 @@ export class BrowserFileUpload {
                 // in case the `highWaterMark` is reached
                 const buffer = VSBuffer.wrap(res.value);
                 await writeableStream.write(buffer);
+
                 if (token.isCancellationRequested) {
                     break;
                 }
@@ -364,6 +389,7 @@ export class ExternalFileImport {
         }, async () => await this.doImport(target, source, targetWindow, cts.token), () => cts.dispose(true));
         // Also indicate progress in the files view
         this.progressService.withProgress({ location: VIEW_ID, delay: 500 }, () => importPromise);
+
         return importPromise;
     }
     private async doImport(target: ExplorerItem, source: DragEvent, targetWindow: Window, token: CancellationToken): Promise<void> {
@@ -372,7 +398,9 @@ export class ExternalFileImport {
         await Promise.all(candidateFiles.map(resource => this.fileService.activateProvider(resource.scheme)));
         // Check for dropped external files to be folders
         const files = coalesce(candidateFiles.filter(resource => this.fileService.hasProvider(resource)));
+
         const resolvedFiles = await this.fileService.resolveAll(files.map(file => ({ resource: file })));
+
         if (token.isCancellationRequested) {
             return;
         }
@@ -380,6 +408,7 @@ export class ExternalFileImport {
         this.hostService.focus(targetWindow);
         // Handle folders by adding to workspace if we are in workspace context and if dropped on top
         const folders = resolvedFiles.filter(resolvedFile => resolvedFile.success && resolvedFile.stat?.isDirectory).map(resolvedFile => ({ uri: resolvedFile.stat!.resource }));
+
         if (folders.length > 0 && target.isRoot) {
             enum ImportChoice {
                 Copy = 1,
@@ -393,9 +422,11 @@ export class ExternalFileImport {
                     run: () => ImportChoice.Copy
                 }
             ];
+
             let message: string;
             // We only allow to add a folder to the workspace if there is already a workspace folder with that scheme
             const workspaceFolderSchemas = this.contextService.getWorkspace().folders.map(folder => folder.uri.scheme);
+
             if (folders.some(folder => workspaceFolderSchemas.indexOf(folder.uri.scheme) >= 0)) {
                 buttons.unshift({
                     label: folders.length > 1 ?
@@ -436,41 +467,52 @@ export class ExternalFileImport {
         if (resources && resources.length > 0) {
             // Resolve target to check for name collisions and ask user
             const targetStat = await this.fileService.resolve(target.resource);
+
             if (token.isCancellationRequested) {
                 return;
             }
             // Check for name collisions
             const targetNames = new Set<string>();
+
             const caseSensitive = this.fileService.hasCapability(target.resource, FileSystemProviderCapabilities.PathCaseSensitive);
+
             if (targetStat.children) {
                 targetStat.children.forEach(child => {
                     targetNames.add(caseSensitive ? child.name : child.name.toLowerCase());
                 });
             }
             let inaccessibleFileCount = 0;
+
             const resourcesFiltered = coalesce((await Promises.settled(resources.map(async (resource) => {
                 const fileDoesNotExist = !(await this.fileService.exists(resource));
+
                 if (fileDoesNotExist) {
                     inaccessibleFileCount++;
+
                     return undefined;
                 }
                 if (targetNames.has(caseSensitive ? basename(resource) : basename(resource).toLowerCase())) {
                     const confirmationResult = await this.dialogService.confirm(getFileOverwriteConfirm(basename(resource)));
+
                     if (!confirmationResult.confirmed) {
                         return undefined;
                     }
                 }
                 return resource;
             }))));
+
             if (inaccessibleFileCount > 0) {
                 this.notificationService.error(inaccessibleFileCount > 1 ? localize('filesInaccessible', "Some or all of the dropped files could not be accessed for import.") : localize('fileInaccessible', "The dropped file could not be accessed for import."));
             }
             // Copy resources through bulk edit API
             const resourceFileEdits = resourcesFiltered.map(resource => {
                 const sourceFileName = basename(resource);
+
                 const targetFile = joinPath(target.resource, sourceFileName);
+
                 return new ResourceFileEdit(resource, targetFile, { overwrite: true, copy: true });
             });
+
             const undoLevel = this.configurationService.getValue<IFilesConfiguration>().explorer.confirmUndo;
             await this.explorerService.applyBulkEdit(resourceFileEdits, {
                 undoLabel: resourcesFiltered.length === 1 ?
@@ -484,8 +526,10 @@ export class ExternalFileImport {
             });
             // if we only add one file, just open it directly
             const autoOpen = this.configurationService.getValue<IFilesConfiguration>().explorer.autoOpenDroppedFile;
+
             if (autoOpen && resourceFileEdits.length === 1) {
                 const item = this.explorerService.findClosest(resourceFileEdits[0].newResource!);
+
                 if (item && !item.isDirectory) {
                     this.editorService.openEditor({ resource: item.resource, options: { pinned: true } });
                 }
@@ -505,6 +549,7 @@ interface IDownloadOperation {
 }
 export class FileDownload {
     private static readonly LAST_USED_DOWNLOAD_PATH_STORAGE_KEY = 'workbench.explorer.downloadPath';
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -530,6 +575,7 @@ export class FileDownload {
         }, async (progress) => this.doDownload(source, progress, cts), () => cts.dispose(true));
         // Also indicate progress in the files view
         this.progressService.withProgress({ location: VIEW_ID, delay: 500 }, () => downloadPromise);
+
         return downloadPromise;
     }
     private async doDownload(sources: ExplorerItem[], progress: IProgress<IProgressStep>, cts: CancellationTokenSource): Promise<void> {
@@ -550,6 +596,7 @@ export class FileDownload {
     }
     private async doDownloadBrowser(resource: URI, progress: IProgress<IProgressStep>, cts: CancellationTokenSource): Promise<void> {
         const stat = await this.fileService.resolve(resource, { resolveMetadata: true });
+
         if (cts.token.isCancellationRequested) {
             return;
         }
@@ -557,9 +604,11 @@ export class FileDownload {
         const preferFileSystemAccessWebApis = stat.isDirectory || stat.size > maxBlobDownloadSize;
         // Folder: use FS APIs to download files and folders if available and preferred
         const activeWindow = getActiveWindow();
+
         if (preferFileSystemAccessWebApis && WebFileSystemAccess.supported(activeWindow)) {
             try {
                 const parentFolder: FileSystemDirectoryHandle = await activeWindow.showDirectoryPicker();
+
                 const operation: IDownloadOperation = {
                     startTime: Date.now(),
                     progressScheduler: new RunOnceWorker<IProgressStep>(steps => { progress.report(steps[steps.length - 1]); }, 1000),
@@ -568,6 +617,7 @@ export class FileDownload {
                     totalBytesDownloaded: 0,
                     fileBytesDownloaded: 0
                 };
+
                 if (stat.isDirectory) {
                     const targetFolder = await parentFolder.getDirectoryHandle(stat.name, { create: true });
                     await this.downloadFolderBrowser(stat, targetFolder, operation, cts.token);
@@ -585,6 +635,7 @@ export class FileDownload {
         // File: use traditional download to circumvent browser limitations
         else if (stat.isFile) {
             let bufferOrUri: Uint8Array | URI;
+
             try {
                 bufferOrUri = (await this.fileService.readFile(stat.resource, { limits: { size: maxBlobDownloadSize } }, cts.token)).value.buffer;
             }
@@ -598,12 +649,15 @@ export class FileDownload {
     }
     private async downloadFileBufferedBrowser(resource: URI, target: FileSystemWritableFileStream, operation: IDownloadOperation, token: CancellationToken): Promise<void> {
         const contents = await this.fileService.readFileStream(resource, undefined, token);
+
         if (token.isCancellationRequested) {
             target.close();
+
             return;
         }
         return new Promise<void>((resolve, reject) => {
             const sourceStream = contents.value;
+
             const disposables = new DisposableStore();
             disposables.add(toDisposable(() => target.close()));
             disposables.add(createSingleCallFunction(token.onCancellationRequested)(() => {
@@ -628,6 +682,7 @@ export class FileDownload {
     }
     private async downloadFileUnbufferedBrowser(resource: URI, target: FileSystemWritableFileStream, operation: IDownloadOperation, token: CancellationToken): Promise<void> {
         const contents = await this.fileService.readFile(resource, undefined, token);
+
         if (!token.isCancellationRequested) {
             target.write(contents.value.buffer);
             this.reportProgress(contents.name, contents.size, contents.value.byteLength, operation);
@@ -641,6 +696,7 @@ export class FileDownload {
         this.reportProgress(file.name, 0, 0, operation);
         // Start to download
         const targetFile = await targetFolder.getFileHandle(file.name, { create: true });
+
         const targetFileWriter = await targetFile.createWritable();
         // For large files, write buffered using streams
         if (file.size > ByteSize.MB) {
@@ -652,6 +708,7 @@ export class FileDownload {
     private async downloadFolderBrowser(folder: IFileStatWithMetadata, targetFolder: FileSystemDirectoryHandle, operation: IDownloadOperation, token: CancellationToken): Promise<void> {
         if (folder.children) {
             operation.filesTotal += (folder.children.map(child => child.isFile)).length;
+
             for (const child of folder.children) {
                 if (token.isCancellationRequested) {
                     return;
@@ -661,6 +718,7 @@ export class FileDownload {
                 }
                 else {
                     const childFolder = await targetFolder.getDirectoryHandle(child.name, { create: true });
+
                     const resolvedChildFolder = await this.fileService.resolve(child.resource, { resolveMetadata: true });
                     await this.downloadFolderBrowser(resolvedChildFolder, childFolder, operation, token);
                 }
@@ -670,9 +728,11 @@ export class FileDownload {
     private reportProgress(name: string, fileSize: number, bytesDownloaded: number, operation: IDownloadOperation): void {
         operation.fileBytesDownloaded += bytesDownloaded;
         operation.totalBytesDownloaded += bytesDownloaded;
+
         const bytesDownloadedPerSecond = operation.totalBytesDownloaded / ((Date.now() - operation.startTime) / 1000);
         // Small file
         let message: string;
+
         if (fileSize < ByteSize.MB) {
             if (operation.filesTotal === 1) {
                 message = name;
@@ -690,8 +750,11 @@ export class FileDownload {
     }
     private async doDownloadNative(explorerItem: ExplorerItem, progress: IProgress<IProgressStep>, cts: CancellationTokenSource): Promise<void> {
         progress.report({ message: explorerItem.name });
+
         let defaultUri: URI;
+
         const lastUsedDownloadPath = this.storageService.get(FileDownload.LAST_USED_DOWNLOAD_PATH_STORAGE_KEY, StorageScope.APPLICATION);
+
         if (lastUsedDownloadPath) {
             defaultUri = joinPath(URI.file(lastUsedDownloadPath), explorerItem.name);
         }
@@ -706,6 +769,7 @@ export class FileDownload {
             title: localize('chooseWhereToDownload', "Choose Where to Download"),
             defaultUri
         });
+
         if (destination) {
             // Remember as last used download folder
             this.storageService.store(FileDownload.LAST_USED_DOWNLOAD_PATH_STORAGE_KEY, dirname(destination).fsPath, StorageScope.APPLICATION, StorageTarget.MACHINE);

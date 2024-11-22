@@ -26,6 +26,7 @@ export class TMScopeRegistry {
     private _scopeNameToLanguageRegistration: {
         [scopeName: string]: IValidGrammarDefinition;
     };
+
     constructor() {
         this._scopeNameToLanguageRegistration = Object.create(null);
     }
@@ -35,6 +36,7 @@ export class TMScopeRegistry {
     public register(def: IValidGrammarDefinition): void {
         if (this._scopeNameToLanguageRegistration[def.scopeName]) {
             const existingRegistration = this._scopeNameToLanguageRegistration[def.scopeName];
+
             if (!resources.isEqual(existingRegistration.location, def.location)) {
                 console.warn(`Overwriting grammar scope name to file mapping for scope ${def.scopeName}.\n` +
                     `Old grammar file: ${existingRegistration.location.toString()}.\n` +

@@ -26,10 +26,12 @@ export interface IStartArguments {
 export interface ILaunchMainService {
     readonly _serviceBrand: undefined;
     start(args: NativeParsedArgs, userEnv: IProcessEnvironment): Promise<void>;
+
     getMainProcessId(): Promise<number>;
 }
 export class LaunchMainService implements ILaunchMainService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -55,11 +57,13 @@ export class LaunchMainService implements ILaunchMainService {
         }
         // Check early for open-url which is handled in URL service
         const urlsToOpen = this.parseOpenUrl(args);
+
         if (urlsToOpen.length) {
             let whenWindowReady: Promise<unknown> = Promise.resolve();
             // Create a window if there is none
             if (this.windowsMainService.getWindowCount() === 0) {
                 const window = (await this.windowsMainService.openEmptyWindow({ context: OpenContext.DESKTOP })).at(0);
+
                 if (window) {
                     whenWindowReady = window.ready();
                 }
@@ -94,9 +98,13 @@ export class LaunchMainService implements ILaunchMainService {
     }
     private async startOpenWindow(args: NativeParsedArgs, userEnv: IProcessEnvironment): Promise<void> {
         const context = isLaunchedFromCli(userEnv) ? OpenContext.CLI : OpenContext.DESKTOP;
+
         let usedWindows: ICodeWindow[] = [];
+
         const waitMarkerFileURI = args.wait && args.waitMarkerFilePath ? URI.file(args.waitMarkerFilePath) : undefined;
+
         const remoteAuthority = args.remote || undefined;
+
         const baseConfig: IOpenConfiguration = {
             context,
             cli: args,
@@ -135,14 +143,20 @@ export class LaunchMainService implements ILaunchMainService {
             // Otherwise check for settings
             else {
                 const windowConfig = this.configurationService.getValue<IWindowSettings | undefined>('window');
+
                 const openWithoutArgumentsInNewWindowConfig = windowConfig?.openWithoutArgumentsInNewWindow || 'default' /* default */;
+
                 switch (openWithoutArgumentsInNewWindowConfig) {
                     case 'on':
                         openNewWindow = true;
+
                         break;
+
                     case 'off':
                         openNewWindow = false;
+
                         break;
+
                     default:
                         openNewWindow = !isMacintosh; // prefer to restore running instance on macOS
                 }
@@ -158,6 +172,7 @@ export class LaunchMainService implements ILaunchMainService {
             // Focus existing window or open if none opened
             else {
                 const lastActive = this.windowsMainService.getLastActiveWindow();
+
                 if (lastActive) {
                     this.windowsMainService.openExistingWindow(lastActive, baseConfig);
                     usedWindows = [lastActive];
@@ -196,6 +211,7 @@ export class LaunchMainService implements ILaunchMainService {
     }
     async getMainProcessId(): Promise<number> {
         this.logService.trace('Received request for process ID from other instance.');
+
         return process.pid;
     }
 }

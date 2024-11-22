@@ -22,6 +22,7 @@ export interface IUserDataInitializationService extends IUserDataInitializer {
 }
 export class UserDataInitializationService implements IUserDataInitializationService {
     _serviceBrand: any;
+
     constructor(private readonly initializers: IUserDataInitializer[] = []) {
     }
     async whenInitializationFinished(): Promise<void> {

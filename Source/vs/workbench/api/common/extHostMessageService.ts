@@ -13,6 +13,7 @@ function isMessageItem(item: any): item is vscode.MessageItem {
 }
 export class ExtHostMessageService {
     private _proxy: MainThreadMessageServiceShape;
+
     constructor(mainContext: IMainContext, 
     @ILogService
     private readonly _logService: ILogService) {
@@ -25,7 +26,9 @@ export class ExtHostMessageService {
         const options: MainThreadMessageOptions = {
             source: { identifier: extension.identifier, label: extension.displayName || extension.name }
         };
+
         let items: (string | vscode.MessageItem)[];
+
         if (typeof optionsOrFirstItem === 'string' || isMessageItem(optionsOrFirstItem)) {
             items = [optionsOrFirstItem, ...rest];
         }
@@ -43,15 +46,19 @@ export class ExtHostMessageService {
             isCloseAffordance: boolean;
             handle: number;
         }[] = [];
+
         let hasCloseAffordance = false;
+
         for (let handle = 0; handle < items.length; handle++) {
             const command = items[handle];
+
             if (typeof command === 'string') {
                 commands.push({ title: command, handle, isCloseAffordance: false });
             }
             else if (typeof command === 'object') {
                 const { title, isCloseAffordance } = command;
                 commands.push({ title, isCloseAffordance: !!isCloseAffordance, handle });
+
                 if (isCloseAffordance) {
                     if (hasCloseAffordance) {
                         this._logService.warn(`[${extension.identifier}] Only one message item can have 'isCloseAffordance':`, command);

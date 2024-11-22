@@ -9,6 +9,7 @@ import { INotebookRendererMessagingService } from '../../contrib/notebook/common
 @extHostNamedCustomer(MainContext.MainThreadNotebookRenderers)
 export class MainThreadNotebookRenderers extends Disposable implements MainThreadNotebookRenderersShape {
     private readonly proxy: ExtHostNotebookRenderersShape;
+
     constructor(extHostContext: IExtHostContext, 
     @INotebookRendererMessagingService
     private readonly messaging: INotebookRendererMessagingService) {

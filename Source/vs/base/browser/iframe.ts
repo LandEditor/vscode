@@ -23,7 +23,9 @@ function getParentWindowIfSameOrigin(w: Window): Window | null {
     // Cannot really tell if we have access to the parent window unless we try to access something in it
     try {
         const location = w.location;
+
         const parentLocation = w.parent.location;
+
         if (location.origin !== 'null' && parentLocation.origin !== 'null' && location.origin !== parentLocation.origin) {
             return null;
         }
@@ -40,13 +42,18 @@ export class IframeUtils {
      */
     private static getSameOriginWindowChain(targetWindow: Window): IWindowChainElement[] {
         let windowChainCache = sameOriginWindowChainCache.get(targetWindow);
+
         if (!windowChainCache) {
             windowChainCache = [];
             sameOriginWindowChainCache.set(targetWindow, windowChainCache);
+
             let w: Window | null = targetWindow;
+
             let parent: Window | null;
+
             do {
                 parent = getParentWindowIfSameOrigin(w);
+
                 if (parent) {
                     windowChainCache.push({
                         window: new WeakRef(w),
@@ -75,11 +82,14 @@ export class IframeUtils {
             };
         }
         let top = 0, left = 0;
+
         const windowChain = this.getSameOriginWindowChain(childWindow);
+
         for (const windowChainEl of windowChain) {
             const windowInChain = windowChainEl.window.deref();
             top += windowInChain?.scrollY ?? 0;
             left += windowInChain?.scrollX ?? 0;
+
             if (windowInChain === ancestorWindow) {
                 break;
             }
@@ -105,13 +115,18 @@ export async function parentOriginHash(parentOrigin: string, salt: string): Prom
         throw new Error(`'crypto.subtle' is not available so webviews will not work. This is likely because the editor is not running in a secure context (https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).`);
     }
     const strData = JSON.stringify({ parentOrigin, salt });
+
     const encoder = new TextEncoder();
+
     const arrData = encoder.encode(strData);
+
     const hash = await crypto.subtle.digest('sha-256', arrData);
+
     return sha256AsBase32(hash);
 }
 function sha256AsBase32(bytes: ArrayBuffer): string {
     const array = Array.from(new Uint8Array(bytes));
+
     const hexArray = array.map(b => b.toString(16).padStart(2, '0')).join('');
     // sha256 has 256 bits, so we need at most ceil(lg(2^256-1)/lg(32)) = 52 chars to represent it in base 32
     return BigInt(`0x${hexArray}`).toString(32).padStart(52, '0');

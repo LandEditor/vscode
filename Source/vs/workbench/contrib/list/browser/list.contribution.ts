@@ -8,6 +8,7 @@ import { registerAction2 } from '../../../../platform/actions/common/actions.js'
 import { ListResizeColumnAction } from './listResizeColumnAction.js';
 export class ListContext implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.listContext';
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService) {

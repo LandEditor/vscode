@@ -20,11 +20,15 @@ export function readKeyboardConfig(configurationService: IConfigurationService):
         dispatch: any;
         mapAltGrToCtrlAlt: any;
     } | undefined>('keyboard');
+
     const dispatch = (keyboard?.dispatch === 'keyCode' ? DispatchConfig.KeyCode : DispatchConfig.Code);
+
     const mapAltGrToCtrlAlt = Boolean(keyboard?.mapAltGrToCtrlAlt);
+
     return { dispatch, mapAltGrToCtrlAlt };
 }
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigExtensions.Configuration);
+
 const keyboardConfiguration: IConfigurationNode = {
     'id': 'keyboard',
     'order': 15,

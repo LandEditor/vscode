@@ -22,6 +22,7 @@ import { isWeb, isWebAndHasSharedArrayBuffers, supportsReadableByteStreams } fro
 
 
 const validateSetting = 'validate.enable';
+
 const suggestionSetting = 'suggestionActions.enabled';
 
 export default class LanguageProvider extends Disposable {
@@ -44,9 +45,12 @@ export default class LanguageProvider extends Disposable {
 
 	private get documentSelector(): DocumentSelector {
 		const semantic: vscode.DocumentFilter[] = [];
+
 		const syntax: vscode.DocumentFilter[] = [];
+
 		for (const language of this.description.languageIds) {
 			syntax.push({ language });
+
 			for (const scheme of fileSchemes.getSemanticSupportedSchemes()) {
 				semantic.push({ language, scheme });
 			}
@@ -102,6 +106,7 @@ export default class LanguageProvider extends Disposable {
 
 	public handlesUri(resource: vscode.Uri): boolean {
 		const ext = extname(resource.path).slice(1).toLowerCase();
+
 		return this.description.standardFileExtensions.includes(ext) || this.handlesConfigFile(resource);
 	}
 
@@ -111,6 +116,7 @@ export default class LanguageProvider extends Disposable {
 
 	private handlesConfigFile(resource: vscode.Uri) {
 		const base = basename(resource.fsPath);
+
 		return !!base && (!!this.description.configFilePattern && this.description.configFilePattern.test(base));
 	}
 
@@ -164,7 +170,9 @@ export default class LanguageProvider extends Disposable {
 		}
 
 		const config = vscode.workspace.getConfiguration(this.id, file);
+
 		const reportUnnecessary = config.get<boolean>('showUnused', true);
+
 		const reportDeprecated = config.get<boolean>('showDeprecated', true);
 		this.client.diagnosticsManager.updateDiagnostics(file, this._diagnosticLanguage, diagnosticsKind, diagnostics.filter(diag => {
 			// Don't bother reporting diagnostics we know will not be rendered

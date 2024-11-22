@@ -11,6 +11,7 @@ import { RemoteAgentConnectionStatusListener, RemoteMarkers } from './remote.js'
 import { RemoteStatusIndicator } from './remoteIndicator.js';
 import { AutomaticPortForwarding, ForwardedPortsView, PortRestore } from './remoteExplorer.js';
 import { InitialRemoteConnectionHealthContribution } from './remoteConnectionHealth.js';
+
 const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 registerWorkbenchContribution2(ShowCandidateContribution.ID, ShowCandidateContribution, WorkbenchPhase.BlockRestore);
 registerWorkbenchContribution2(TunnelFactoryContribution.ID, TunnelFactoryContribution, WorkbenchPhase.BlockRestore);

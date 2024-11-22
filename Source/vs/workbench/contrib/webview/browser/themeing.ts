@@ -21,6 +21,7 @@ export class WebviewThemeDataProvider extends Disposable {
     private _cachedWebViewThemeData: WebviewThemeData | undefined = undefined;
     private readonly _onThemeDataChanged = this._register(new Emitter<void>());
     public readonly onThemeDataChanged = this._onThemeDataChanged.event;
+
     constructor(
     @IWorkbenchThemeService
     private readonly _themeService: IWorkbenchThemeService, 
@@ -30,6 +31,7 @@ export class WebviewThemeDataProvider extends Disposable {
         this._register(this._themeService.onDidColorThemeChange(() => {
             this._reset();
         }));
+
         const webviewConfigurationKeys = ['editor.fontFamily', 'editor.fontWeight', 'editor.fontSize', 'accessibility.underlineLinks'];
         this._register(this._configurationService.onDidChangeConfiguration(e => {
             if (webviewConfigurationKeys.some(key => e.affectsConfiguration(key))) {
@@ -43,18 +45,26 @@ export class WebviewThemeDataProvider extends Disposable {
     public getWebviewThemeData(): WebviewThemeData {
         if (!this._cachedWebViewThemeData) {
             const configuration = this._configurationService.getValue<IEditorOptions>('editor');
+
             const editorFontFamily = configuration.fontFamily || EDITOR_FONT_DEFAULTS.fontFamily;
+
             const editorFontWeight = configuration.fontWeight || EDITOR_FONT_DEFAULTS.fontWeight;
+
             const editorFontSize = configuration.fontSize || EDITOR_FONT_DEFAULTS.fontSize;
+
             const linkUnderlines = this._configurationService.getValue('accessibility.underlineLinks');
+
             const theme = this._themeService.getColorTheme();
+
             const exportedColors = colorRegistry.getColorRegistry().getColors().reduce<Record<string, string>>((colors, entry) => {
                 const color = theme.getColor(entry.id);
+
                 if (color) {
                     colors['vscode-' + entry.id.replace('.', '-')] = color.toString();
                 }
                 return colors;
             }, {});
+
             const styles = {
                 'vscode-font-family': DEFAULT_FONT_FAMILY,
                 'vscode-font-weight': 'normal',
@@ -65,6 +75,7 @@ export class WebviewThemeDataProvider extends Disposable {
                 'text-link-decoration': linkUnderlines ? 'underline' : 'none',
                 ...exportedColors
             };
+
             const activeTheme = ApiThemeClassName.fromTheme(theme);
             this._cachedWebViewThemeData = { styles, activeTheme, themeLabel: theme.label, themeId: theme.settingsId };
         }
@@ -85,8 +96,11 @@ namespace ApiThemeClassName {
     export function fromTheme(theme: IWorkbenchColorTheme): ApiThemeClassName {
         switch (theme.type) {
             case ColorScheme.LIGHT: return ApiThemeClassName.light;
+
             case ColorScheme.DARK: return ApiThemeClassName.dark;
+
             case ColorScheme.HIGH_CONTRAST_DARK: return ApiThemeClassName.highContrast;
+
             case ColorScheme.HIGH_CONTRAST_LIGHT: return ApiThemeClassName.highContrastLight;
         }
     }

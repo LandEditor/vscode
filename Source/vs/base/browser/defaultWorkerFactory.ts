@@ -30,21 +30,26 @@ function getWorker(esmWorkerLocation: URI | undefined, label: string): Worker | 
     // Option for hosts to overwrite the worker script (used in the standalone editor)
     interface IMonacoEnvironment {
         getWorker?(moduleId: string, label: string): Worker | Promise<Worker>;
+
         getWorkerUrl?(moduleId: string, label: string): string;
     }
     const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
+
     if (monacoEnvironment) {
         if (typeof monacoEnvironment.getWorker === 'function') {
             return monacoEnvironment.getWorker('workerMain.js', label);
         }
         if (typeof monacoEnvironment.getWorkerUrl === 'function') {
             const workerUrl = monacoEnvironment.getWorkerUrl('workerMain.js', label);
+
             return new Worker(ttPolicy ? ttPolicy.createScriptURL(workerUrl) as unknown as string : workerUrl, { name: label, type: 'module' });
         }
     }
     if (esmWorkerLocation) {
         const workerUrl = getWorkerBootstrapUrl(label, esmWorkerLocation.toString(true));
+
         const worker = new Worker(ttPolicy ? ttPolicy.createScriptURL(workerUrl) as unknown as string : workerUrl, { name: label, type: 'module' });
+
         return whenESMWorkerReady(worker);
     }
     throw new Error(`You must define a function MonacoEnvironment.getWorkerUrl or MonacoEnvironment.getWorker`);
@@ -56,12 +61,16 @@ function getWorkerBootstrapUrl(label: string, workerScriptUrl: string): string {
     }
     else {
         const start = workerScriptUrl.lastIndexOf('?');
+
         const end = workerScriptUrl.lastIndexOf('#', start);
+
         const params = start > 0
             ? new URLSearchParams(workerScriptUrl.substring(start + 1, ~end ? end : undefined))
             : new URLSearchParams();
         COI.addSearchParam(params, true, true);
+
         const search = params.toString();
+
         if (!search) {
             workerScriptUrl = `${workerScriptUrl}#${label}`;
         }
@@ -83,6 +92,7 @@ function getWorkerBootstrapUrl(label: string, workerScriptUrl: string): string {
             `globalThis.postMessage({ type: 'vscode-worker-ready' });`,
             `/*${label}*/`
         ]).join('')], { type: 'application/javascript' });
+
     return URL.createObjectURL(blob);
 }
 function whenESMWorkerReady(worker: Worker): Promise<Worker> {
@@ -110,11 +120,14 @@ class WebWorker extends Disposable implements IWorker {
     private readonly id: number;
     private readonly label: string;
     private worker: Promise<Worker> | null;
+
     constructor(esmWorkerLocation: URI | undefined, moduleId: string, id: number, label: string, onMessageCallback: IWorkerCallback, onErrorCallback: (err: any) => void) {
         super();
         this.id = id;
         this.label = label;
+
         const workerOrPromise = getWorker(esmWorkerLocation, label);
+
         if (isPromiseLike(workerOrPromise)) {
             this.worker = workerOrPromise;
         }
@@ -127,6 +140,7 @@ class WebWorker extends Disposable implements IWorker {
                 onMessageCallback(ev.data);
             };
             w.onmessageerror = onErrorCallback;
+
             if (typeof w.addEventListener === 'function') {
                 w.addEventListener('error', onErrorCallback);
             }
@@ -158,6 +172,7 @@ class WebWorker extends Disposable implements IWorker {
 }
 export class WorkerDescriptor implements IWorkerDescriptor {
     public readonly esmModuleLocation: URI | undefined;
+
     constructor(public readonly moduleId: string, readonly label: string | undefined) {
         this.esmModuleLocation = FileAccess.asBrowserUri(`${moduleId}Main.js` as AppResourcePath);
     }
@@ -165,11 +180,13 @@ export class WorkerDescriptor implements IWorkerDescriptor {
 class DefaultWorkerFactory implements IWorkerFactory {
     private static LAST_WORKER_ID = 0;
     private _webWorkerFailedBeforeError: any;
+
     constructor() {
         this._webWorkerFailedBeforeError = false;
     }
     public create(desc: IWorkerDescriptor, onMessageCallback: IWorkerCallback, onErrorCallback: (err: any) => void): IWorker {
         const workerId = (++DefaultWorkerFactory.LAST_WORKER_ID);
+
         if (this._webWorkerFailedBeforeError) {
             throw this._webWorkerFailedBeforeError;
         }
@@ -184,5 +201,6 @@ export function createWebWorker<T extends object>(moduleId: string, label: strin
 export function createWebWorker<T extends object>(workerDescriptor: IWorkerDescriptor): IWorkerClient<T>;
 export function createWebWorker<T extends object>(arg0: string | IWorkerDescriptor, arg1?: string | undefined): IWorkerClient<T> {
     const workerDescriptor = (typeof arg0 === 'string' ? new WorkerDescriptor(arg0, arg1) : arg0);
+
     return new SimpleWorkerClient<T>(new DefaultWorkerFactory(), workerDescriptor);
 }

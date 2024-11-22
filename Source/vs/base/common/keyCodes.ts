@@ -411,6 +411,7 @@ class KeyCodeStrMap {
     public _strToKeyCode: {
         [str: string]: KeyCode;
     };
+
     constructor() {
         this._keyCodeToStr = [];
         this._strToKeyCode = Object.create(null);
@@ -427,7 +428,9 @@ class KeyCodeStrMap {
     }
 }
 const uiMap = new KeyCodeStrMap();
+
 const userSettingsUSMap = new KeyCodeStrMap();
+
 const userSettingsGeneralMap = new KeyCodeStrMap();
 export const EVENT_KEY_CODE_MAP: {
     [keyCode: number]: KeyCode;
@@ -435,10 +438,13 @@ export const EVENT_KEY_CODE_MAP: {
 export const NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE: {
     [nativeKeyCode: string]: KeyCode;
 } = {};
+
 const scanCodeIntToStr: string[] = [];
+
 const scanCodeStrToInt: {
     [code: string]: number;
 } = Object.create(null);
+
 const scanCodeLowerCaseStrToInt: {
     [code: string]: number;
 } = Object.create(null);
@@ -476,6 +482,7 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
         string,
         string
     ];
+
     const mappings: IMappingEntry[] = [
         // immutable, scanCode, scanCodeStr, keyCode, keyCodeStr, eventKeyCode, vkey, usUserSettingsLabel, generalUserSettingsLabel
         [1, ScanCode.None, 'None', KeyCode.Unknown, 'unknown', 0, 'VK_UNKNOWN', empty, empty],
@@ -710,17 +717,23 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
         [1, ScanCode.None, empty, KeyCode.Unknown, empty, 0, 'VK_PA1', empty, empty],
         [1, ScanCode.None, empty, KeyCode.Unknown, empty, 0, 'VK_OEM_CLEAR', empty, empty],
     ];
+
     const seenKeyCode: boolean[] = [];
+
     const seenScanCode: boolean[] = [];
+
     for (const mapping of mappings) {
         const [immutable, scanCode, scanCodeStr, keyCode, keyCodeStr, eventKeyCode, vkey, usUserSettingsLabel, generalUserSettingsLabel] = mapping;
+
         if (!seenScanCode[scanCode]) {
             seenScanCode[scanCode] = true;
             scanCodeIntToStr[scanCode] = scanCodeStr;
             scanCodeStrToInt[scanCodeStr] = scanCode;
             scanCodeLowerCaseStrToInt[scanCodeStr.toLowerCase()] = scanCode;
+
             if (immutable) {
                 IMMUTABLE_CODE_TO_KEY_CODE[scanCode] = keyCode;
+
                 if ((keyCode !== KeyCode.Unknown)
                     && (keyCode !== KeyCode.Enter)
                     && (keyCode !== KeyCode.Ctrl)
@@ -733,6 +746,7 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
         }
         if (!seenKeyCode[keyCode]) {
             seenKeyCode[keyCode] = true;
+
             if (!keyCodeStr) {
                 throw new Error(`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`);
             }
@@ -781,10 +795,13 @@ export namespace KeyCodeUtils {
         switch (keyCode) {
             case KeyCode.UpArrow:
                 return 'Up';
+
             case KeyCode.DownArrow:
                 return 'Down';
+
             case KeyCode.LeftArrow:
                 return 'Left';
+
             case KeyCode.RightArrow:
                 return 'Right';
         }
@@ -799,5 +816,6 @@ export const enum KeyMod {
 }
 export function KeyChord(firstPart: number, secondPart: number): number {
     const chordPart = ((secondPart & 0x0000FFFF) << 16) >>> 0;
+
     return (firstPart | chordPart) >>> 0;
 }

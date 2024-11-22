@@ -22,12 +22,16 @@ export interface DOMEventMap extends HTMLElementEventMap, DocumentEventMap, Wind
 }
 export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
     private emitter: Emitter<DOMEventMap[K]>;
+
     get event(): BaseEvent<DOMEventMap[K]> {
         return this.emitter.event;
     }
     constructor(element: Window & typeof globalThis, type: WindowEventMap, useCapture?: boolean);
+
     constructor(element: Document, type: DocumentEventMap, useCapture?: boolean);
+
     constructor(element: EventHandler, type: K, useCapture?: boolean);
+
     constructor(element: EventHandler, type: K, useCapture?: boolean) {
         const fn = (e: Event) => this.emitter.fire(e as DOMEventMap[K]);
         this.emitter = new Emitter({

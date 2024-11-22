@@ -28,9 +28,11 @@ export class DiffAlgorithmResult {
 export class SequenceDiff {
     public static invert(sequenceDiffs: SequenceDiff[], doc1Length: number): SequenceDiff[] {
         const result: SequenceDiff[] = [];
+
         forEachAdjacent(sequenceDiffs, (a, b) => {
             result.push(SequenceDiff.fromOffsetPairs(a ? a.getEndExclusives() : OffsetPair.zero, b ? b.getStarts() : new OffsetPair(doc1Length, (a ? a.seq2Range.endExclusive - a.seq1Range.endExclusive : 0) + doc1Length)));
         });
+
         return result;
     }
     public static fromOffsetPairs(start: OffsetPair, endExclusive: OffsetPair): SequenceDiff {
@@ -38,6 +40,7 @@ export class SequenceDiff {
     }
     public static assertSorted(sequenceDiffs: SequenceDiff[]): void {
         let last: SequenceDiff | undefined = undefined;
+
         for (const cur of sequenceDiffs) {
             if (last) {
                 if (!(last.seq1Range.endExclusive <= cur.seq1Range.start && last.seq2Range.endExclusive <= cur.seq2Range.start)) {
@@ -80,7 +83,9 @@ export class SequenceDiff {
     }
     public intersect(other: SequenceDiff): SequenceDiff | undefined {
         const i1 = this.seq1Range.intersect(other.seq1Range);
+
         const i2 = this.seq2Range.intersect(other.seq2Range);
+
         if (!i1 || !i2) {
             return undefined;
         }
@@ -96,6 +101,7 @@ export class SequenceDiff {
 export class OffsetPair {
     public static readonly zero = new OffsetPair(0, 0);
     public static readonly max = new OffsetPair(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+
     constructor(public readonly offset1: number, public readonly offset2: number) {
     }
     public toString(): string {
@@ -113,6 +119,7 @@ export class OffsetPair {
 }
 export interface ISequence {
     getElement(offset: number): number;
+
     get length(): number;
     /**
      * The higher the score, the better that offset can be used to split the sequence.
@@ -139,6 +146,7 @@ export class InfiniteTimeout implements ITimeout {
 export class DateTimeout implements ITimeout {
     private readonly startTime = Date.now();
     private valid = true;
+
     constructor(private timeout: number) {
         if (timeout <= 0) {
             throw new BugIndicatingError('timeout must be positive');
@@ -147,6 +155,7 @@ export class DateTimeout implements ITimeout {
     // Recommendation: Set a log-point `{this.disable()}` in the body
     public isValid(): boolean {
         const valid = Date.now() - this.startTime < this.timeout;
+
         if (!valid && this.valid) {
             this.valid = false; // timeout reached
         }

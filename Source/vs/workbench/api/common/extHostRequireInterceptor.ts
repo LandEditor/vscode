@@ -29,6 +29,7 @@ interface INodeModuleFactory extends Partial<IAlternativeModuleProvider> {
 export abstract class RequireInterceptor {
     protected readonly _factories: Map<string, INodeModuleFactory>;
     protected readonly _alternatives: ((moduleName: string) => string | undefined)[];
+
     constructor(private _apiFactory: IExtensionApiFactory, private _extensionRegistry: IExtensionRegistries, 
     @IInstantiationService
     private readonly _instaService: IInstantiationService, 
@@ -46,11 +47,14 @@ export abstract class RequireInterceptor {
     async install(): Promise<void> {
         this._installInterceptor();
         performance.mark('code/extHost/willWaitForConfig');
+
         const configProvider = await this._extHostConfiguration.getConfigProvider();
         performance.mark('code/extHost/didWaitForConfig');
+
         const extensionPaths = await this._extHostExtensionService.getExtensionPathIndex();
         this.register(new VSCodeNodeModuleFactory(this._apiFactory, extensionPaths, this._extensionRegistry, configProvider, this._logService));
         this.register(this._instaService.createInstance(NodeModuleAliasingModuleFactory));
+
         if (this._initData.remote.isRemote) {
             this.register(this._instaService.createInstance(OpenNodeModuleFactory, extensionPaths, this._initData.environment.appUriScheme));
         }
@@ -85,6 +89,7 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
         ['vscode-windows-registry', '@vscode/windows-registry'],
     ]);
     private readonly re?: RegExp;
+
     constructor(
     @IExtHostInitDataService
     initData: IExtHostInitDataService) {
@@ -94,7 +99,9 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
             // and likewise the more complex form ${appRoot}/node_modules.asar.unpacked/@vcode/foo/bin
             // to ['${appRoot}/node_modules.asar.unpacked/',' @vscode/foo', '/bin'].
             const npmIdChrs = `[a-z0-9_.-]`;
+
             const npmModuleName = `@${npmIdChrs}+\\/${npmIdChrs}+|${npmIdChrs}+`;
+
             const moduleFolders = 'node_modules|node_modules\\.asar(?:\\.unpacked)?';
             this.re = new RegExp(`^(${root}/${moduleFolders}\\/)(${npmModuleName})(.*)$`, 'i');
         }
@@ -104,15 +111,19 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
             return;
         }
         const result = this.re.exec(this.forceForwardSlashes(name));
+
         if (!result) {
             return;
         }
         const [, prefix, moduleName, suffix] = result;
+
         const dealiased = NodeModuleAliasingModuleFactory.aliased.get(moduleName);
+
         if (dealiased === undefined) {
             return;
         }
         console.warn(`${moduleName} as been renamed to ${dealiased}, please update your imports`);
+
         return prefix + dealiased + suffix;
     }
     private forceForwardSlashes(str: string) {
@@ -125,13 +136,16 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
     public readonly nodeModuleName = 'vscode';
     private readonly _extApiImpl = new ExtensionIdentifierMap<typeof vscode>();
     private _defaultApiImpl?: typeof vscode;
+
     constructor(private readonly _apiFactory: IExtensionApiFactory, private readonly _extensionPaths: ExtensionPaths, private readonly _extensionRegistry: IExtensionRegistries, private readonly _configProvider: ExtHostConfigProvider, private readonly _logService: ILogService) {
     }
     public load(_request: string, parent: URI): any {
         // get extension id from filename and api for extension
         const ext = this._extensionPaths.findSubstr(parent);
+
         if (ext) {
             let apiImpl = this._extApiImpl.get(ext.identifier);
+
             if (!apiImpl) {
                 apiImpl = this._apiFactory(ext, this._extensionRegistry, this._configProvider);
                 this._extApiImpl.set(ext.identifier, apiImpl);
@@ -166,10 +180,12 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
     private _original?: IOriginalOpen;
     private _impl: IOpenModule;
     private _mainThreadTelemetry: MainThreadTelemetryShape;
+
     constructor(private readonly _extensionPaths: ExtensionPaths, private readonly _appUriScheme: string, 
     @IExtHostRpcService
     rpcService: IExtHostRpcService) {
         this._mainThreadTelemetry = rpcService.getProxy(MainContext.MainThreadTelemetry);
+
         const mainThreadWindow = rpcService.getProxy(MainContext.MainThreadWindow);
         this._impl = (target, options) => {
             const uri: URI = URI.parse(target);
@@ -189,15 +205,18 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
     public load(request: string, parent: URI, original: LoadFunction): any {
         // get extension id from filename and api for extension
         const extension = this._extensionPaths.findSubstr(parent);
+
         if (extension) {
             this._extensionId = extension.identifier.value;
             this.sendShimmingTelemetry();
         }
         this._original = original(request);
+
         return this._impl;
     }
     private callOriginal(target: string, options: OpenOptions | undefined): Thenable<any> {
         this.sendNoForwardTelemetry();
+
         return this._original!(target, options);
     }
     private sendShimmingTelemetry(): void {

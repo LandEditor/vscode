@@ -26,6 +26,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
     private mainExtensionDescription: IExtensionDescription | undefined;
     private debuggerWhen: ContextKeyExpression | undefined;
     private debuggerHiddenWhen: ContextKeyExpression | undefined;
+
     constructor(private adapterManager: IAdapterManager, dbgContribution: IDebuggerContribution, extensionDescription: IExtensionDescription, 
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -93,11 +94,14 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
     }
     async startDebugging(configuration: IConfig, parentSessionId: string): Promise<boolean> {
         const parentSession = this.debugService.getModel().getSession(parentSessionId);
+
         return await this.debugService.startDebugging(undefined, configuration, { parentSession }, undefined);
     }
     async createDebugAdapter(session: IDebugSession): Promise<IDebugAdapter> {
         await this.adapterManager.activateDebuggers('onDebugAdapterProtocolTracker', this.type);
+
         const da = this.adapterManager.createDebugAdapter(session);
+
         if (da) {
             return Promise.resolve(da);
         }
@@ -105,6 +109,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
     }
     async substituteVariables(folder: IWorkspaceFolder | undefined, config: IConfig): Promise<IConfig> {
         const substitutedConfig = await this.adapterManager.substituteVariables(this.type, folder, config);
+
         return await this.configurationResolverService.resolveWithInteractionReplace(folder, substitutedConfig, 'launch', this.variables, substitutedConfig.__configurationTarget);
     }
     runInTerminal(args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined> {
@@ -160,14 +165,20 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
     getInitialConfigurationContent(initialConfigs?: IConfig[]): Promise<string> {
         // at this point we got some configs from the package.json and/or from registered DebugConfigurationProviders
         let initialConfigurations = this.debuggerContribution.initialConfigurations || [];
+
         if (initialConfigs) {
             initialConfigurations = initialConfigurations.concat(initialConfigs);
         }
         const eol = this.resourcePropertiesService.getEOL(URI.from({ scheme: Schemas.untitled, path: '1' })) === '\r\n' ? '\r\n' : '\n';
+
         const configs = JSON.stringify(initialConfigurations, null, '\t').split('\n').map(line => '\t' + line).join(eol).trim();
+
         const comment1 = nls.localize('launch.config.comment1', "Use IntelliSense to learn about possible attributes.");
+
         const comment2 = nls.localize('launch.config.comment2', "Hover to view descriptions of existing attributes.");
+
         const comment3 = nls.localize('launch.config.comment3', "For more information, visit: {0}", 'https://go.microsoft.com/fwlink/?linkid=830387');
+
         let content = [
             '{',
             `\t// ${comment1}`,
@@ -179,6 +190,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
         ].join(eol);
         // fix formatting
         const editorConfig = this.configurationService.getValue<any>();
+
         if (editorConfig.editor && editorConfig.editor.insertSpaces) {
             content = content.replace(new RegExp('\t', 'g'), ' '.repeat(editorConfig.editor.tabSize));
         }
@@ -189,10 +201,12 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
     }
     getCustomTelemetryEndpoint(): ITelemetryEndpoint | undefined {
         const aiKey = this.debuggerContribution.aiKey;
+
         if (!aiKey) {
             return undefined;
         }
         const sendErrorTelemtry = cleanRemoteAuthority(this.environmentService.remoteAuthority) !== 'other';
+
         return {
             id: `${this.getMainExtensionDescriptor().publisher}.${this.type}`,
             aiKey,
@@ -206,12 +220,16 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
         // fill in the default configuration attributes shared by all adapters.
         return Object.keys(this.debuggerContribution.configurationAttributes).map(request => {
             const definitionId = `${this.type}:${request}`;
+
             const platformSpecificDefinitionId = `${this.type}:${request}:platform`;
+
             const attributes: IJSONSchema = this.debuggerContribution.configurationAttributes[request];
+
             const defaultRequired = ['name', 'type', 'request'];
             attributes.required = attributes.required && attributes.required.length ? defaultRequired.concat(attributes.required) : defaultRequired;
             attributes.additionalProperties = false;
             attributes.type = 'object';
+
             if (!attributes.properties) {
                 attributes.properties = {};
             }
@@ -230,6 +248,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
                 enum: [request],
                 description: nls.localize('debugRequest', "Request type of configuration. Can be \"launch\" or \"attach\"."),
             };
+
             for (const prop in definitions['common'].properties) {
                 properties[prop] = {
                     $ref: `#/definitions/common/properties/${prop}`
@@ -264,6 +283,7 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
                     }
                 }
             };
+
             return attributesCopy;
         });
     }

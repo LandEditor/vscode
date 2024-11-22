@@ -39,18 +39,23 @@ export class HoldToSpeak extends AbstractInlineChatAction {
 }
 function holdForSpeech(accessor: ServicesAccessor, ctrl: InlineChatController, action: Action2): void {
     const configService = accessor.get(IConfigurationService);
+
     const speechService = accessor.get(ISpeechService);
+
     const keybindingService = accessor.get(IKeybindingService);
+
     const commandService = accessor.get(ICommandService);
     // enabled or possible?
     if (!configService.getValue<boolean>(InlineChatConfigKeys.HoldToSpeech || !speechService.hasSpeechProvider)) {
         return;
     }
     const holdMode = keybindingService.enableKeybindingHoldMode(action.desc.id);
+
     if (!holdMode) {
         return;
     }
     let listening = false;
+
     const handle = disposableTimeout(() => {
         // start VOICE input
         commandService.executeCommand(StartVoiceChatAction.ID, { voice: { disableTimeout: true } } satisfies IChatExecuteActionContext);

@@ -24,6 +24,7 @@ export interface ICreateReadStreamOptions extends IFileReadStreamOptions {
  */
 export async function readFileIntoStream<T>(provider: IFileSystemProviderWithOpenReadWriteCloseCapability, resource: URI, target: WriteableStream<T>, transformer: IDataTransformer<VSBuffer, T>, options: ICreateReadStreamOptions, token: CancellationToken): Promise<void> {
     let error: Error | undefined = undefined;
+
     try {
         await doReadFileIntoStream(provider, resource, target, transformer, options, token);
     }
@@ -45,15 +46,23 @@ async function doReadFileIntoStream<T>(provider: IFileSystemProviderWithOpenRead
     throwIfCancelled(token);
     // open handle through provider
     const handle = await provider.open(resource, { create: false });
+
     try {
         // Check for cancellation
         throwIfCancelled(token);
+
         let totalBytesRead = 0;
+
         let bytesRead = 0;
+
         let allowedRemainingBytes = (options && typeof options.length === 'number') ? options.length : undefined;
+
         let buffer = VSBuffer.alloc(Math.min(options.bufferSize, typeof allowedRemainingBytes === 'number' ? allowedRemainingBytes : options.bufferSize));
+
         let posInFile = options && typeof options.position === 'number' ? options.position : 0;
+
         let posInBuffer = 0;
+
         do {
             // read from source (handle) at current position (pos) into buffer (buffer) at
             // buffer position (posInBuffer) up to the size of the buffer (buffer.byteLength).
@@ -61,6 +70,7 @@ async function doReadFileIntoStream<T>(provider: IFileSystemProviderWithOpenRead
             posInFile += bytesRead;
             posInBuffer += bytesRead;
             totalBytesRead += bytesRead;
+
             if (typeof allowedRemainingBytes === 'number') {
                 allowedRemainingBytes -= bytesRead;
             }
@@ -74,6 +84,7 @@ async function doReadFileIntoStream<T>(provider: IFileSystemProviderWithOpenRead
         // wrap up with last buffer (also respect maxBytes if provided)
         if (posInBuffer > 0) {
             let lastChunkLength = posInBuffer;
+
             if (typeof allowedRemainingBytes === 'number') {
                 lastChunkLength = Math.min(posInBuffer, allowedRemainingBytes);
             }

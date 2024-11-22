@@ -21,7 +21,9 @@ function createProviderComparer(uri: URI): (a: QuickDiffProvider, b: QuickDiffPr
             return 0;
         }
         const aIsParent = isEqualOrParent(uri, a.rootUri!);
+
         const bIsParent = isEqualOrParent(uri, b.rootUri!);
+
         if (aIsParent && bIsParent) {
             return a.rootUri!.fsPath.length - b.rootUri!.fsPath.length;
         }
@@ -41,6 +43,7 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
     private quickDiffProviders: Set<QuickDiffProvider> = new Set();
     private readonly _onDidChangeQuickDiffProviders = this._register(new Emitter<void>());
     readonly onDidChangeQuickDiffProviders = this._onDidChangeQuickDiffProviders.event;
+
     constructor(
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService) {
@@ -49,6 +52,7 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
     addQuickDiffProvider(quickDiff: QuickDiffProvider): IDisposable {
         this.quickDiffProviders.add(quickDiff);
         this._onDidChangeQuickDiffProviders.fire();
+
         return {
             dispose: () => {
                 this.quickDiffProviders.delete(quickDiff);
@@ -67,15 +71,19 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
         const providers = Array.from(this.quickDiffProviders)
             .filter(provider => !provider.rootUri || this.uriIdentityService.extUri.isEqualOrParent(uri, provider.rootUri))
             .sort(createProviderComparer(uri));
+
         const diffs = await Promise.all(providers.map(async (provider) => {
             const scoreValue = provider.selector ? score(provider.selector, uri, language, isSynchronized, undefined, undefined) : 10;
+
             const diff: Partial<QuickDiff> = {
                 originalResource: scoreValue > 0 ? await provider.getOriginalResource(uri) ?? undefined : undefined,
                 label: provider.label,
                 isSCM: provider.isSCM
             };
+
             return diff;
         }));
+
         return diffs.filter<QuickDiff>(this.isQuickDiff);
     }
 }

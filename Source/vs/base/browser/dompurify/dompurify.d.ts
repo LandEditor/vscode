@@ -141,6 +141,7 @@ declare namespace DOMPurify {
 		attrValue: string;
 		keepAttr: boolean;
 		allowedAttributes: { [key: string]: boolean };
+
 		forceKeepAttr?: boolean | undefined;
 	}
 }

@@ -10,6 +10,7 @@ import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHel
 import type { IBufferLine, Terminal } from '@xterm/xterm';
 import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
 import { ITerminalBackend, ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
+
 const enum Constants {
     /**
      * The max line length to try extract word links from.
@@ -31,6 +32,7 @@ const lineNumberPrefixMatchers = [
     //     16:5  error ...
     /^ *(?<link>(?<line>\d+):(?<col>\d+)?)/
 ];
+
 const gitDiffMatchers = [
     // --- a/some/file
     // +++ b/some/file
@@ -44,6 +46,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
     // - Window old max length: 260 ($MAX_PATH)
     // - Linux max length: 4096 ($PATH_MAX)
     readonly maxLinkLength = 500;
+
     constructor(readonly xterm: Terminal, private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & {
         backend?: Pick<ITerminalBackend, 'getWslPath'>;
     }, private readonly _linkResolver: ITerminalLinkResolver, 
@@ -58,6 +61,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
         const links: ITerminalSimpleLink[] = [];
         // Get the text representation of the wrapped line
         const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+
         if (text === '' || text.length > Constants.MaxLineLength) {
             return [];
         }
@@ -66,13 +70,18 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
         // that aren't possible using the regular mechanism.
         for (const matcher of lineNumberPrefixMatchers) {
             const match = text.match(matcher);
+
             const group = match?.groups;
+
             if (!group) {
                 continue;
             }
             const link = group?.link;
+
             const line = group?.line;
+
             const col = group?.col;
+
             if (!link || line === undefined) {
                 continue;
             }
@@ -83,14 +92,17 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
             this._logService.trace('terminalMultiLineLinkDetector#detect candidate', link);
             // Scan up looking for the first line that could be a path
             let possiblePath: string | undefined;
+
             for (let index = startLine - 1; index >= 0; index--) {
                 // Ignore lines that aren't at the beginning of a wrapped line
                 if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
                     continue;
                 }
                 const text = getXtermLineContent(this.xterm.buffer.active, index, index, this.xterm.cols);
+
                 if (!text.match(/^\s*\d/)) {
                     possiblePath = text;
+
                     break;
                 }
             }
@@ -99,8 +111,10 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
             }
             // Check if the first non-matching line is an absolute or relative link
             const linkStat = await this._linkResolver.resolveLink(this._processManager, possiblePath);
+
             if (linkStat) {
                 let type: TerminalBuiltinLinkType;
+
                 if (linkStat.isDirectory) {
                     if (this._isDirectoryInsideWorkspace(linkStat.uri)) {
                         type = TerminalBuiltinLinkType.LocalFolderInWorkspace;
@@ -119,6 +133,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
                     endColumn: 1 + text.length,
                     endLineNumber: 1
                 }, startLine);
+
                 const simpleLink: ITerminalSimpleLink = {
                     text: link,
                     uri: linkStat.uri,
@@ -139,13 +154,18 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
         if (links.length === 0) {
             for (const matcher of gitDiffMatchers) {
                 const match = text.match(matcher);
+
                 const group = match?.groups;
+
                 if (!group) {
                     continue;
                 }
                 const link = group?.link;
+
                 const toFileLine = group?.toFileLine;
+
                 const toFileCount = group?.toFileCount;
+
                 if (!link || toFileLine === undefined) {
                     continue;
                 }
@@ -156,15 +176,19 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
                 this._logService.trace('terminalMultiLineLinkDetector#detect candidate', link);
                 // Scan up looking for the first line that could be a path
                 let possiblePath: string | undefined;
+
                 for (let index = startLine - 1; index >= 0; index--) {
                     // Ignore lines that aren't at the beginning of a wrapped line
                     if (this.xterm.buffer.active.getLine(index)!.isWrapped) {
                         continue;
                     }
                     const text = getXtermLineContent(this.xterm.buffer.active, index, index, this.xterm.cols);
+
                     const match = text.match(/\+\+\+ b\/(?<path>.+)/);
+
                     if (match) {
                         possiblePath = match.groups?.path;
+
                         break;
                     }
                 }
@@ -173,8 +197,10 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
                 }
                 // Check if the first non-matching line is an absolute or relative link
                 const linkStat = await this._linkResolver.resolveLink(this._processManager, possiblePath);
+
                 if (linkStat) {
                     let type: TerminalBuiltinLinkType;
+
                     if (linkStat.isDirectory) {
                         if (this._isDirectoryInsideWorkspace(linkStat.uri)) {
                             type = TerminalBuiltinLinkType.LocalFolderInWorkspace;
@@ -193,6 +219,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
                         endColumn: 1 + link.length,
                         endLineNumber: 1
                     }, startLine);
+
                     const simpleLink: ITerminalSimpleLink = {
                         text: link,
                         uri: linkStat.uri,
@@ -215,6 +242,7 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
     }
     private _isDirectoryInsideWorkspace(uri: URI) {
         const folders = this._workspaceContextService.getWorkspace().folders;
+
         for (let i = 0; i < folders.length; i++) {
             if (this._uriIdentityService.extUri.isEqualOrParent(uri, folders[i].uri)) {
                 return true;

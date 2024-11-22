@@ -45,7 +45,9 @@ registerSingleton(ISearchHistoryService, SearchHistoryService, InstantiationType
 replaceContributions();
 notebookSearchContributions();
 searchWidgetContributions();
+
 const SEARCH_MODE_CONFIG = 'search.mode';
+
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
     id: VIEWLET_ID,
     title: nls.localize2('search', "Search"),
@@ -54,6 +56,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewCo
     icon: searchViewIcon,
     order: 1,
 }, ViewContainerLocation.Sidebar, { doNotRegisterOpenCommand: true });
+
 const viewDescriptor: IViewDescriptor = {
     id: VIEW_ID,
     containerIcon: searchViewIcon,
@@ -376,7 +379,9 @@ configurationRegistry.registerConfiguration({
 CommandsRegistry.registerCommand('_executeWorkspaceSymbolProvider', async function (accessor, ...args): Promise<IWorkspaceSymbol[]> {
     const [query] = args;
     assertType(typeof query === 'string');
+
     const result = await getWorkspaceSymbols(query);
+
     return result.map(item => item.symbol);
 });
 // todo: @andreamah get rid of this after a few iterations

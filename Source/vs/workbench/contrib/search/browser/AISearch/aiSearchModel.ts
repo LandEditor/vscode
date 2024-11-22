@@ -43,6 +43,7 @@ export class AITextSearchHeadingImpl extends TextSearchHeadingImpl<IAITextQuery>
     }
     override set query(query: IAITextQuery | null) {
         this.clearQuery();
+
         if (!query) {
             return;
         }
@@ -54,8 +55,10 @@ export class AITextSearchHeadingImpl extends TextSearchHeadingImpl<IAITextQuery>
     }
     private _createBaseFolderMatch(resource: URI, id: string, index: number, query: IAITextQuery): ISearchTreeFolderMatch {
         const folderMatch: ISearchTreeFolderMatch = this._register(this.createWorkspaceRootWithResourceImpl(resource, id, index, query));
+
         const disposable = folderMatch.onChange((event) => this._onChange.fire(event));
         this._register(folderMatch.onDispose(() => disposable.dispose()));
+
         return folderMatch;
     }
     private createWorkspaceRootWithResourceImpl(resource: URI, id: string, index: number, query: IAITextQuery): ISearchTreeFolderMatchWorkspaceRoot {
@@ -105,8 +108,10 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
         const fileMatch = this.instantiationService.createInstance(AIFileMatch, this._query.contentPattern, this._query.previewOptions, this._query.maxResults, this, rawFileMatch, this, rawFileMatch.resource.toString() + '_' + Date.now().toString(), this.latestRank++);
         fileMatch.createMatches();
         this.doAddFile(fileMatch);
+
         const disposable = fileMatch.onChange(({ didRemove }) => this.onFileChange(fileMatch, didRemove));
         this._register(fileMatch.onDispose(() => disposable.dispose()));
+
         return fileMatch;
     }
     isAIContributed(): boolean {
@@ -114,6 +119,7 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
     }
     private onFileChange(fileMatch: ISearchTreeFileMatch, removed = false): void {
         let added = false;
+
         if (!this._fileMatches.has(fileMatch.id())) {
             this.doAddFile(fileMatch);
             added = true;
@@ -147,12 +153,15 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
     addFileMatch(raw: IFileMatch[], silent: boolean, searchInstanceID: string): void {
         // when adding a fileMatch that has intermediate directories
         const added: ISearchTreeFileMatch[] = [];
+
         const updated: ISearchTreeFileMatch[] = [];
         raw.forEach(rawFileMatch => {
             const fileMatch = this.createAndConfigureFileMatch(rawFileMatch, searchInstanceID);
             added.push(fileMatch);
         });
+
         const elements = [...added, ...updated];
+
         if (!silent && elements.length) {
             this._onChange.fire({ elements, added: !!added.length });
         }
@@ -193,12 +202,14 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
     }
     doRemoveFile(fileMatches: ISearchTreeFileMatch[], dispose: boolean = true, trigger: boolean = true, keepReadonly = false): void {
         const removed = [];
+
         for (const match of fileMatches as ISearchTreeFileMatch[]) {
             if (this._fileMatches.get(match.id())) {
                 if (keepReadonly && match.hasReadonlyMatches()) {
                     continue;
                 }
                 this._fileMatches.delete(match.id());
+
                 if (dispose) {
                     match.dispose();
                 }
@@ -245,6 +256,7 @@ export class AIFolderMatchWorkspaceRootImpl extends Disposable implements ISearc
     override dispose(): void {
         this.disposeMatches();
         this._onDispose.fire();
+
         super.dispose();
     }
 }
@@ -263,10 +275,14 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
     }
     getFullRange(): Range | undefined {
         let earliestStart: IPosition | undefined = undefined;
+
         let latestEnd: IPosition | undefined = undefined;
+
         for (const match of this.matches()) {
             const matchStart = match.range().getStartPosition();
+
             const matchEnd = match.range().getEndPosition();
+
             if (earliestStart === undefined) {
                 earliestStart = matchStart;
             }
@@ -287,6 +303,7 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
     }
     private rangeAsString(): undefined | string {
         const range = this.getFullRange();
+
         if (!range) {
             return undefined;
         }
@@ -294,6 +311,7 @@ class AIFileMatch extends FileMatchImpl implements ISearchTreeAIFileMatch {
     }
     override name(): string {
         const range = this.rangeAsString();
+
         return super.name() + range ? ' ' + range : '';
     }
     override createMatches(): void {

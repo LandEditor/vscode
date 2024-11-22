@@ -16,9 +16,12 @@ export class ReplAccessibilityHelp implements IAccessibleViewImplentation {
     name = 'replHelp';
     when = ContextKeyExpr.equals('focusedView', 'workbench.panel.repl.view');
     type: AccessibleViewType = AccessibleViewType.Help;
+
     getProvider(accessor: ServicesAccessor) {
         const viewsService = accessor.get(IViewsService);
+
         const replView = getReplView(viewsService);
+
         if (!replView) {
             return undefined;
         }
@@ -30,6 +33,7 @@ class ReplAccessibilityHelpProvider extends Disposable implements IAccessibleVie
     public readonly verbositySettingKey = AccessibilityVerbositySettingId.Debug;
     public readonly options = { type: AccessibleViewType.Help };
     private _treeHadFocus = false;
+
     constructor(private readonly _replView: Repl) {
         super();
         this._treeHadFocus = !!_replView.getFocusedElement();

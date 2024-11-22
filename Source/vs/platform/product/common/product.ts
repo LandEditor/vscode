@@ -13,6 +13,7 @@ let product: IProductConfiguration;
 const vscodeGlobal = (globalThis as any).vscode;
 if (typeof vscodeGlobal !== 'undefined' && typeof vscodeGlobal.context !== 'undefined') {
     const configuration: ISandboxConfiguration | undefined = vscodeGlobal.context.configuration();
+
     if (configuration) {
         product = configuration.product;
     }

@@ -18,6 +18,7 @@ import { ISerializedTerminalInstanceContext } from '../common/terminal.js';
  */
 export class InstanceContext {
     readonly instanceId: number;
+
     constructor(instance: ITerminalInstance) {
         // Only store the instance to avoid contexts holding on to disposed instances.
         this.instanceId = instance.instanceId;
@@ -36,6 +37,7 @@ export class TerminalContextActionRunner extends ActionRunner {
             // arg1: The (first) focused instance
             // arg2: All selected instances
             await action.run(context?.[0], context);
+
             return;
         }
         return super.runAction(action, context);

@@ -8,6 +8,7 @@ export class ContentHoverResult {
     constructor(public readonly hoverParts: IHoverPart[], public readonly isComplete: boolean, public readonly options: ContentHoverComputerOptions) { }
     public filter(anchor: HoverAnchor): ContentHoverResult {
         const filteredHoverParts = this.hoverParts.filter((m) => m.isValidForHoverAnchor(anchor));
+
         if (filteredHoverParts.length === this.hoverParts.length) {
             return this;
         }

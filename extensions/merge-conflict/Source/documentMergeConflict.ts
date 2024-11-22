@@ -12,6 +12,7 @@ export class DocumentMergeConflict implements interfaces.IDocumentMergeConflict 
     public commonAncestors: interfaces.IMergeRegion[];
     public splitter: vscode.Range;
     private applied = false;
+
     constructor(descriptor: interfaces.IDocumentMergeConflictDescriptor, private readonly telemetryReporter: TelemetryReporter) {
         this.range = descriptor.range;
         this.current = descriptor.current;
@@ -24,8 +25,10 @@ export class DocumentMergeConflict implements interfaces.IDocumentMergeConflict 
             switch (type) {
                 case interfaces.CommitType.Current:
                     return 'current';
+
                 case interfaces.CommitType.Incoming:
                     return 'incoming';
+
                 case interfaces.CommitType.Both:
                     return 'both';
             }
@@ -38,8 +41,10 @@ export class DocumentMergeConflict implements interfaces.IDocumentMergeConflict 
             }
         */
         this.telemetryReporter.sendTelemetryEvent('mergeMarkers.accept', { resolution: commitTypeToString(type) });
+
         if (edit) {
             this.applyEdit(type, editor.document, edit);
+
             return Promise.resolve(true);
         }
         return editor.edit((edit) => this.applyEdit(type, editor.document, edit));
@@ -72,6 +77,7 @@ export class DocumentMergeConflict implements interfaces.IDocumentMergeConflict 
         else if (type === interfaces.CommitType.Both) {
             // Replace [ Conflict Range ] with [ Current Content ] + \n + [ Incoming Content ]
             const currentContent = document.getText(this.current.content);
+
             const incomingContent = document.getText(this.incoming.content);
             edit.replace(this.range, currentContent.concat(incomingContent));
         }
@@ -81,6 +87,7 @@ export class DocumentMergeConflict implements interfaces.IDocumentMergeConflict 
     }) {
         if (this.isNewlineOnly(content)) {
             edit.replace(this.range, '');
+
             return;
         }
         // Replace [ Conflict Range ] with [ Current Content ]

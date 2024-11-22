@@ -6,8 +6,11 @@
 import { workspace, Uri } from 'vscode';
 import { getExtensionContext } from './main';
 import { TextDecoder } from 'util';
+
 const emojiRegex = /:([-+_a-z0-9]+):/g;
+
 let emojiMap: Record<string, string> | undefined;
+
 let emojiMapPromise: Promise<void> | undefined;
 export async function ensureEmojis() {
     if (emojiMap === undefined) {
@@ -19,6 +22,7 @@ export async function ensureEmojis() {
 }
 async function loadEmojiMap() {
     const context = getExtensionContext();
+
     const uri = (Uri as any).joinPath(context.extensionUri, 'resources', 'emojis.json');
     emojiMap = JSON.parse(new TextDecoder('utf8').decode(await workspace.fs.readFile(uri)));
 }

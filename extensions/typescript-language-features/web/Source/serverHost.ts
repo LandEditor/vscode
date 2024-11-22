@@ -26,11 +26,14 @@ function createServerHost(
 	exit: () => void,
 ): ServerHostWithImport {
 	const currentDirectory = '/';
+
 	const fs = apiClient?.vscode.workspace.fileSystem;
 
 	// Internals
 	const combinePaths: (path: string, ...paths: (string | undefined)[]) => string = (ts as any).combinePaths;
+
 	const byteOrderMarkIndicator = '\uFEFF';
+
 	const matchFiles: (
 		path: string,
 		extensions: readonly string[] | undefined,
@@ -42,18 +45,26 @@ function createServerHost(
 		getFileSystemEntries: (path: string) => { files: readonly string[]; directories: readonly string[] },
 		realpath: (path: string) => string
 	) => string[] = (ts as any).matchFiles;
+
 	const generateDjb2Hash = (ts as any).generateDjb2Hash;
 
 	// Legacy web
 	const memoize: <T>(callback: () => T) => () => T = (ts as any).memoize;
+
 	const ensureTrailingDirectorySeparator: (path: string) => string = (ts as any).ensureTrailingDirectorySeparator;
+
 	const getDirectoryPath: (path: string) => string = (ts as any).getDirectoryPath;
+
 	const directorySeparator: string = (ts as any).directorySeparator;
+
 	const executingFilePath = findArgument(args, '--executingFilePath') || location + '';
+
 	const getExecutingDirectoryPath = memoize(() => memoize(() => ensureTrailingDirectorySeparator(getDirectoryPath(executingFilePath))));
+
 	const getWebPath = (path: string) => path.startsWith(directorySeparator) ? path.replace(directorySeparator, getExecutingDirectoryPath()) : undefined;
 
 	const textDecoder = new TextDecoder();
+
 	const textEncoder = new TextEncoder();
 
 	return {
@@ -75,6 +86,7 @@ function createServerHost(
 			const packageRoot = combinePaths(root, moduleName);
 
 			let packageJson: any | undefined;
+
 			try {
 				const packageJsonResponse = await fetch(combinePaths(packageRoot, 'package.json'));
 				packageJson = await packageJsonResponse.json();
@@ -83,13 +95,16 @@ function createServerHost(
 			}
 
 			const browser = packageJson.browser;
+
 			if (!browser) {
 				return { module: undefined, error: new Error(`Could not load plugin. No 'browser' field found in package.json.`) };
 			}
 
 			const scriptPath = combinePaths(packageRoot, browser);
+
 			try {
 				const { default: module } = await import(/* webpackIgnore: true */ scriptPath);
+
 				return { module, error: undefined };
 			} catch (e) {
 				return { module: undefined, error: e };
@@ -109,10 +124,12 @@ function createServerHost(
 
 			if (!fs) {
 				const webPath = getWebPath(path);
+
 				if (webPath) {
 					const request = new XMLHttpRequest();
 					request.open('GET', webPath, /* asynchronous */ false);
 					request.send();
+
 					return request.status === 200 ? request.responseText : undefined;
 				} else {
 					return undefined;
@@ -120,6 +137,7 @@ function createServerHost(
 			}
 
 			let uri;
+
 			try {
 				uri = pathMapper.toResource(path);
 			} catch (e) {
@@ -127,6 +145,7 @@ function createServerHost(
 			}
 
 			let contents: Uint8Array | undefined;
+
 			try {
 				// We need to slice the bytes since we can't pass a shared array to text decoder
 				contents = fs.readFile(uri);
@@ -150,7 +169,9 @@ function createServerHost(
 			}
 
 			const uri = pathMapper.toResource(path);
+
 			let ret = 0;
+
 			try {
 				ret = fs.stat(uri).size;
 			} catch (_error) {
@@ -175,15 +196,19 @@ function createServerHost(
 			}
 
 			let uri;
+
 			try {
 				uri = pathMapper.toResource(path);
 			} catch (e) {
 				return;
 			}
 			const encoded = textEncoder.encode(data);
+
 			try {
 				fs.writeFile(uri, encoded);
+
 				const name = basename(uri.path);
+
 				if (uri.scheme !== 'vscode-global-typings' && (name === 'package.json' || name === 'package-lock.json' || name === 'package-lock.kdl')) {
 					fs.writeFile(mapUri(uri, 'vscode-node-modules'), encoded);
 				}
@@ -199,6 +224,7 @@ function createServerHost(
 
 			if (!fs) {
 				const webPath = getWebPath(path);
+
 				if (!webPath) {
 					return false;
 				}
@@ -206,16 +232,19 @@ function createServerHost(
 				const request = new XMLHttpRequest();
 				request.open('HEAD', webPath, /* asynchronous */ false);
 				request.send();
+
 				return request.status === 200;
 			}
 
 			let uri;
+
 			try {
 				uri = pathMapper.toResource(path);
 			} catch (e) {
 				return false;
 			}
 			let ret = false;
+
 			try {
 				ret = fs.stat(uri).type === FileType.File;
 			} catch (_error) {
@@ -236,6 +265,7 @@ function createServerHost(
 			}
 
 			let uri;
+
 			try {
 				uri = pathMapper.toResource(path);
 			} catch (_error) {
@@ -243,6 +273,7 @@ function createServerHost(
 			}
 
 			let stat: FileStat | undefined = undefined;
+
 			try {
 				stat = fs.stat(uri);
 			} catch (_error) {
@@ -266,6 +297,7 @@ function createServerHost(
 		},
 		createDirectory(path: string): void {
 			logger.logVerbose('fs.createDirectory', { path });
+
 			if (!fs) {
 				throw new Error('not supported');
 			}
@@ -300,7 +332,9 @@ function createServerHost(
 			}
 
 			const uri = pathMapper.toResource(path);
+
 			let s: FileStat | undefined = undefined;
+
 			try {
 				s = fs.stat(uri);
 			} catch (_e) {
@@ -356,6 +390,7 @@ function createServerHost(
 		}
 
 		let uri: URI;
+
 		try {
 			uri = pathMapper.toResource(path);
 		} catch {
@@ -366,16 +401,20 @@ function createServerHost(
 			uri = mapUri(uri, 'vscode-node-modules');
 		}
 		const out = [uri.scheme];
+
 		if (uri.authority) { out.push(uri.authority); }
 		for (const part of uri.path.split('/')) {
 			switch (part) {
 				case '':
 				case '.':
 					break;
+
 				case '..':
 					//delete if there is something there to delete
 					out.pop();
+
 					break;
+
 				default:
 					out.push(part);
 			}
@@ -389,9 +428,13 @@ function createServerHost(
 		}
 
 		const uri = pathMapper.toResource(path || '.');
+
 		let entries: [string, FileType][] = [];
+
 		const files: string[] = [];
+
 		const directories: string[] = [];
+
 		try {
 			entries = fs.readDirectory(uri);
 		} catch (_e) {
@@ -416,6 +459,7 @@ function createServerHost(
 		}
 		files.sort();
 		directories.sort();
+
 		return { files, directories };
 	}
 }
@@ -431,12 +475,16 @@ export async function createSys(
 ) {
 	if (hasArgument(args, '--enableProjectWideIntelliSenseOnWeb')) {
 		const enabledExperimentalTypeAcquisition = hasArgument(args, '--experimentalTypeAcquisition');
+
 		const connection = new ClientConnection<Requests>(fsPort);
 		await connection.serviceReady();
 
 		const apiClient = new ApiClient(connection);
+
 		const fs = apiClient.vscode.workspace.fileSystem;
+
 		const sys = createServerHost(ts, logger, apiClient, args, watchManager, pathMapper, enabledExperimentalTypeAcquisition, onExit);
+
 		return { sys, fs };
 	} else {
 		return { sys: createServerHost(ts, logger, undefined, args, watchManager, pathMapper, false, onExit) };

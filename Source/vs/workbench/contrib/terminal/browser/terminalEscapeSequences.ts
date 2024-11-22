@@ -97,9 +97,11 @@ export function ITermSequence(osc: ITermOscPt, data?: string): string {
 }
 function oscSequence(ps: number, pt: string, data?: string): string {
     let result = `\x1b]${ps};${pt}`;
+
     if (data) {
         result += `;${data}`;
     }
     result += `\x07`;
+
     return result;
 }

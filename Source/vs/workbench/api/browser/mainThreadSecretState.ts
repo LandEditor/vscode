@@ -13,6 +13,7 @@ import { IBrowserWorkbenchEnvironmentService } from '../../services/environment/
 export class MainThreadSecretState extends Disposable implements MainThreadSecretStateShape {
     private readonly _proxy: ExtHostSecretStateShape;
     private readonly _sequencer = new SequencerByKey<string>();
+
     constructor(extHostContext: IExtHostContext, 
     @ISecretStorageService
     private readonly secretStorageService: ISecretStorageService, 
@@ -25,6 +26,7 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
         this._register(this.secretStorageService.onDidChangeSecret((e: string) => {
             try {
                 const { extensionId, key } = this.parseKey(e);
+
                 if (extensionId && key) {
                     this._proxy.$onDidChangePassword({ extensionId, key });
                 }
@@ -36,16 +38,20 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
     }
     $getPassword(extensionId: string, key: string): Promise<string | undefined> {
         this.logService.trace(`[mainThreadSecretState] Getting password for ${extensionId} extension: `, key);
+
         return this._sequencer.queue(extensionId, () => this.doGetPassword(extensionId, key));
     }
     private async doGetPassword(extensionId: string, key: string): Promise<string | undefined> {
         const fullKey = this.getKey(extensionId, key);
+
         const password = await this.secretStorageService.get(fullKey);
         this.logService.trace(`[mainThreadSecretState] ${password ? 'P' : 'No p'}assword found for: `, extensionId, key);
+
         return password;
     }
     $setPassword(extensionId: string, key: string, value: string): Promise<void> {
         this.logService.trace(`[mainThreadSecretState] Setting password for ${extensionId} extension: `, key);
+
         return this._sequencer.queue(extensionId, () => this.doSetPassword(extensionId, key, value));
     }
     private async doSetPassword(extensionId: string, key: string, value: string): Promise<void> {
@@ -55,6 +61,7 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
     }
     $deletePassword(extensionId: string, key: string): Promise<void> {
         this.logService.trace(`[mainThreadSecretState] Deleting password for ${extensionId} extension: `, key);
+
         return this._sequencer.queue(extensionId, () => this.doDeletePassword(extensionId, key));
     }
     private async doDeletePassword(extensionId: string, key: string): Promise<void> {

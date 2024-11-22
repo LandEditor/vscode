@@ -22,12 +22,16 @@ export interface StartSessionOptions {
 }
 export function startWorkerSession(ts: typeof import('typescript/lib/tsserverlibrary'), host: ts.server.ServerHost, fs: FileSystem | undefined, options: StartSessionOptions, port: MessagePort, pathMapper: PathMapper, logger: Logger): void {
     const indent: (str: string) => string = (ts as any).server.indent;
+
     const worker = new class WorkerSession extends ts.server.Session<{}> {
         private readonly wasmCancellationToken: WasmCancellationToken;
         private readonly listener: (message: any) => void;
+
         constructor() {
             const cancellationToken = new WasmCancellationToken();
+
             const typingsInstaller = options.disableAutomaticTypingAcquisition || !fs ? ts.server.nullTypingsInstaller : new WebTypingsInstallerClient(host, '/vscode-global-typings/ts-nul-authority/projects');
+
             super({
                 host,
                 cancellationToken,
@@ -46,17 +50,20 @@ export function startWorkerSession(ts: typeof import('typescript/lib/tsserverlib
                         return () => false;
                     }
                     const typedArray = new Int32Array(data.$cancellationData, 0, 1);
+
                     return () => {
                         return Atomics.load(typedArray, 0) === 1;
                     };
                 }
                 const shouldCancel = retrieveCheck2(message.data);
+
                 if (shouldCancel) {
                     this.wasmCancellationToken.shouldCancel = shouldCancel;
                 }
                 try {
                     if (message.data.command === 'updateOpen') {
                         const args = message.data.arguments as ts.server.protocol.UpdateOpenRequestArgs;
+
                         for (const open of args.openFiles ?? []) {
                             if (open.projectRootPath) {
                                 pathMapper.addProjectRoot(open.projectRootPath);

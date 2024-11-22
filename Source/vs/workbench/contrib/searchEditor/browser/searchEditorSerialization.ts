@@ -17,14 +17,18 @@ import { searchMatchComparer } from '../../search/browser/searchCompare.js';
 import { ICellMatch, isNotebookFileMatch } from '../../search/browser/notebookSearch/notebookSearchModelBase.js';
 // Using \r\n on Windows inserts an extra newline between results.
 const lineDelimiter = '\n';
+
 const translateRangeLines = (n: number) => (range: Range) => new Range(range.startLineNumber + n, range.startColumn, range.endLineNumber + n, range.endColumn);
+
 const matchToSearchResultFormat = (match: ISearchTreeMatch, longestLineNumber: number): {
     line: string;
     ranges: Range[];
     lineNumber: string;
 }[] => {
     const getLinePrefix = (i: number) => `${match.range().startLineNumber + i}`;
+
     const fullMatchLines = match.fullPreviewLines();
+
     const results: {
         line: string;
         ranges: Range[];
@@ -33,18 +37,26 @@ const matchToSearchResultFormat = (match: ISearchTreeMatch, longestLineNumber: n
     fullMatchLines
         .forEach((sourceLine, i) => {
         const lineNumber = getLinePrefix(i);
+
         const paddingStr = ' '.repeat(longestLineNumber - lineNumber.length);
+
         const prefix = `  ${paddingStr}${lineNumber}: `;
+
         const prefixOffset = prefix.length;
         // split instead of replace to avoid creating a new string object
         const line = prefix + (sourceLine.split(/\r?\n?$/, 1)[0] || '');
+
         const rangeOnThisLine = ({ start, end }: {
             start?: number;
             end?: number;
         }) => new Range(1, (start ?? 1) + prefixOffset, 1, (end ?? sourceLine.length + 1) + prefixOffset);
+
         const matchRange = match.rangeInPreview();
+
         const matchIsSingleLine = matchRange.startLineNumber === matchRange.endLineNumber;
+
         let lineRange;
+
         if (matchIsSingleLine) {
             lineRange = (rangeOnThisLine({ start: matchRange.startColumn, end: matchRange.endColumn }));
         }
@@ -59,6 +71,7 @@ const matchToSearchResultFormat = (match: ISearchTreeMatch, longestLineNumber: n
         }
         results.push({ lineNumber: lineNumber, line, ranges: [lineRange] });
     });
+
     return results;
 };
 type SearchResultSerialization = {
@@ -67,27 +80,36 @@ type SearchResultSerialization = {
 };
 function fileMatchToSearchResultFormat(fileMatch: ISearchTreeFileMatch, labelFormatter: (x: URI) => string): SearchResultSerialization[] {
     const textSerializations = fileMatch.textMatches().length > 0 ? matchesToSearchResultFormat(fileMatch.resource, fileMatch.textMatches().sort(searchMatchComparer), fileMatch.context, labelFormatter) : undefined;
+
     const cellSerializations = (isNotebookFileMatch(fileMatch)) ? fileMatch.cellMatches().sort((a, b) => a.cellIndex - b.cellIndex).sort().filter(cellMatch => cellMatch.contentMatches.length > 0).map((cellMatch, index) => cellMatchToSearchResultFormat(cellMatch, labelFormatter, index === 0)) : [];
+
     return [textSerializations, ...cellSerializations].filter(x => !!x) as SearchResultSerialization[];
 }
 function matchesToSearchResultFormat(resource: URI, sortedMatches: ISearchTreeMatch[], matchContext: Map<number, string>, labelFormatter: (x: URI) => string, shouldUseHeader = true): SearchResultSerialization {
     const longestLineNumber = sortedMatches[sortedMatches.length - 1].range().endLineNumber.toString().length;
+
     const text: string[] = shouldUseHeader ? [`${labelFormatter(resource)}:`] : [];
+
     const matchRanges: Range[] = [];
+
     const targetLineNumberToOffset: Record<string, number> = {};
+
     const context: {
         line: string;
         lineNumber: number;
     }[] = [];
     matchContext.forEach((line, lineNumber) => context.push({ line, lineNumber }));
     context.sort((a, b) => a.lineNumber - b.lineNumber);
+
     let lastLine: number | undefined = undefined;
+
     const seenLines = new Set<string>();
     sortedMatches.forEach(match => {
         matchToSearchResultFormat(match, longestLineNumber).forEach(match => {
             if (!seenLines.has(match.lineNumber)) {
                 while (context.length && context[0].lineNumber < +match.lineNumber) {
                     const { line, lineNumber } = context.shift()!;
+
                     if (lastLine !== undefined && lineNumber !== lastLine + 1) {
                         text.push('');
                     }
@@ -102,6 +124,7 @@ function matchesToSearchResultFormat(resource: URI, sortedMatches: ISearchTreeMa
             matchRanges.push(...match.ranges.map(translateRangeLines(targetLineNumberToOffset[match.lineNumber])));
         });
     });
+
     while (context.length) {
         const { line, lineNumber } = context.shift()!;
         text.push(`  ${lineNumber}  ${line}`);
@@ -132,7 +155,9 @@ const contentPatternToSearchConfiguration = (pattern: ITextQuery, includes: stri
 };
 export const serializeSearchConfiguration = (config: Partial<SearchConfiguration>): string => {
     const removeNullFalseAndUndefined = <T>(a: (T | null | false | undefined)[]) => a.filter(a => a !== false && a !== null && a !== undefined) as T[];
+
     const escapeNewlines = (str: string) => str.replace(/\\/g, '\\\\').replace(/\n/g, '\\n');
+
     return removeNullFalseAndUndefined([
         `# Query: ${escapeNewlines(config.query ?? '')}`,
         (config.isCaseSensitive || config.matchWholeWord || config.isRegexp || config.useExcludeSettingsAndIgnoreFiles === false)
@@ -170,12 +195,16 @@ export const defaultSearchConfig = (): SearchConfiguration => ({
 });
 export const extractSearchQueryFromLines = (lines: string[]): SearchConfiguration => {
     const query = defaultSearchConfig();
+
     const unescapeNewlines = (str: string) => {
         let out = '';
+
         for (let i = 0; i < str.length; i++) {
             if (str[i] === '\\') {
                 i++;
+
                 const escaped = str[i];
+
                 if (escaped === 'n') {
                     out += '\n';
                 }
@@ -192,26 +221,38 @@ export const extractSearchQueryFromLines = (lines: string[]): SearchConfiguratio
         }
         return out;
     };
+
     const parseYML = /^# ([^:]*): (.*)$/;
+
     for (const line of lines) {
         const parsed = parseYML.exec(line);
+
         if (!parsed) {
             continue;
         }
         const [, key, value] = parsed;
+
         switch (key) {
             case 'Query':
                 query.query = unescapeNewlines(value);
+
                 break;
+
             case 'Including':
                 query.filesToInclude = value;
+
                 break;
+
             case 'Excluding':
                 query.filesToExclude = value;
+
                 break;
+
             case 'ContextLines':
                 query.contextLines = +value;
+
                 break;
+
             case 'Flags': {
                 query.isRegexp = value.indexOf('RegExp') !== -1;
                 query.isCaseSensitive = value.indexOf('CaseSensitive') !== -1;
@@ -222,6 +263,7 @@ export const extractSearchQueryFromLines = (lines: string[]): SearchConfiguratio
         }
     }
     query.showIncludesExcludes = !!(query.filesToInclude || query.filesToExclude || !query.useExcludeSettingsAndIgnoreFiles);
+
     return query;
 };
 export const serializeSearchResultForEditor = (searchResult: ISearchResult, rawIncludePattern: string, rawExcludePattern: string, contextLines: number, labelFormatter: (x: URI) => string, sortOrder: SearchSortOrder, limitHit?: boolean): {
@@ -233,49 +275,65 @@ export const serializeSearchResultForEditor = (searchResult: ISearchResult, rawI
         throw Error('Internal Error: Expected query, got null');
     }
     const config = contentPatternToSearchConfiguration(searchResult.query, rawIncludePattern, rawExcludePattern, contextLines);
+
     const filecount = searchResult.fileCount() > 1 ? localize('numFiles', "{0} files", searchResult.fileCount()) : localize('oneFile', "1 file");
+
     const resultcount = searchResult.count() > 1 ? localize('numResults', "{0} results", searchResult.count()) : localize('oneResult', "1 result");
+
     const info = [
         searchResult.count()
             ? `${resultcount} - ${filecount}`
             : localize('noResults', "No Results"),
     ];
+
     if (limitHit) {
         info.push(localize('searchMaxResultsWarning', "The result set only contains a subset of all matches. Be more specific in your search to narrow down the results."));
     }
     info.push('');
+
     const matchComparer = (a: ISearchTreeFileMatch | ISearchTreeFolderMatch, b: ISearchTreeFileMatch | ISearchTreeFolderMatch) => searchMatchComparer(a, b, sortOrder);
+
     const allResults = flattenSearchResultSerializations(searchResult.folderMatches().sort(matchComparer)
         .map(folderMatch => folderMatch.allDownstreamFileMatches().sort(matchComparer)
         .flatMap(fileMatch => fileMatchToSearchResultFormat(fileMatch, labelFormatter))).flat());
+
     return {
         matchRanges: allResults.matchRanges.map(translateRangeLines(info.length)),
         text: info.concat(allResults.text).join(lineDelimiter),
         config
     };
 };
+
 const flattenSearchResultSerializations = (serializations: SearchResultSerialization[]): SearchResultSerialization => {
     const text: string[] = [];
+
     const matchRanges: Range[] = [];
     serializations.forEach(serialized => {
         serialized.matchRanges.map(translateRangeLines(text.length)).forEach(range => matchRanges.push(range));
         serialized.text.forEach(line => text.push(line));
         text.push(''); // new line
     });
+
     return { text, matchRanges };
 };
 export const parseSavedSearchEditor = async (accessor: ServicesAccessor, resource: URI) => {
     const textFileService = accessor.get(ITextFileService);
+
     const text = (await textFileService.read(resource)).value;
+
     return parseSerializedSearchEditor(text);
 };
 export const parseSerializedSearchEditor = (text: string) => {
     const headerlines = [];
+
     const bodylines = [];
+
     let inHeader = true;
+
     for (const line of text.split(/\r?\n/g)) {
         if (inHeader) {
             headerlines.push(line);
+
             if (line === '') {
                 inHeader = false;
             }

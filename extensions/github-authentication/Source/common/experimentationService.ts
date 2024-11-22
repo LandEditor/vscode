@@ -8,30 +8,44 @@ import { getExperimentationService, IExperimentationService, IExperimentationTel
 export class ExperimentationTelemetry implements IExperimentationTelemetry {
     private sharedProperties: Record<string, string> = {};
     private experimentationServicePromise: Promise<IExperimentationService> | undefined;
+
     constructor(private readonly context: vscode.ExtensionContext, private baseReporter: TelemetryReporter) { }
     private async createExperimentationService(): Promise<IExperimentationService> {
         let targetPopulation: TargetPopulation;
+
         switch (vscode.env.uriScheme) {
             case 'vscode':
                 targetPopulation = TargetPopulation.Public;
+
                 break;
+
             case 'vscode-insiders':
                 targetPopulation = TargetPopulation.Insiders;
+
                 break;
+
             case 'vscode-exploration':
                 targetPopulation = TargetPopulation.Internal;
+
                 break;
+
             case 'code-oss':
                 targetPopulation = TargetPopulation.Team;
+
                 break;
+
             default:
                 targetPopulation = TargetPopulation.Public;
+
                 break;
         }
         const id = this.context.extension.id;
+
         const version = this.context.extension.packageJSON.version;
+
         const experimentationService = getExperimentationService(id, version, targetPopulation, this, this.context.globalState);
         await experimentationService.initialFetch;
+
         return experimentationService;
     }
     /**
@@ -65,6 +79,7 @@ export class ExperimentationTelemetry implements IExperimentationTelemetry {
     }
     postEvent(eventName: string, props: Map<string, string>): void {
         const event: Record<string, string> = {};
+
         for (const [key, value] of props) {
             event[key] = value;
         }

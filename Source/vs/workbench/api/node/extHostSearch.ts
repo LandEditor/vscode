@@ -27,6 +27,7 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
     private _numThreadsPromise: Promise<number | undefined> | undefined;
     private readonly _disposables = new DisposableStore();
     private isDisposed = false;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -42,8 +43,10 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
         this.getNumThreads = this.getNumThreads.bind(this);
         this.getNumThreadsCached = this.getNumThreadsCached.bind(this);
         this.handleConfigurationChanged = this.handleConfigurationChanged.bind(this);
+
         const outputChannel = new OutputChannel('RipgrepSearchUD', this._logService);
         this._disposables.add(this.registerTextSearchProvider(Schemas.vscodeUserData, new RipgrepSearchProvider(outputChannel, this.getNumThreadsCached)));
+
         if (initData.remote.isRemote && initData.remote.authority) {
             this._registerEHSearchProviders();
         }
@@ -62,7 +65,9 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
     }
     async getNumThreads(): Promise<number | undefined> {
         const configProvider = await this.configurationService.getConfigProvider();
+
         const numThreads = configProvider.getConfiguration('search').get<number>('ripgrep.maxThreads');
+
         return numThreads;
     }
     async getNumThreadsCached(): Promise<number | undefined> {
@@ -83,6 +88,7 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
             return;
         }
         this._registeredEHSearchProvider = true;
+
         const outputChannel = new OutputChannel('RipgrepSearchEH', this._logService);
         this._disposables.add(this.registerTextSearchProvider(Schemas.file, new RipgrepSearchProvider(outputChannel, this.getNumThreadsCached)));
         this._disposables.add(this.registerInternalFileSearchProvider(Schemas.file, new SearchService('fileSearchProvider', this.getNumThreadsCached)));
@@ -92,6 +98,7 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
         this._internalFileSearchProvider = provider;
         this._internalFileSearchHandle = handle;
         this._proxy.$registerFileSearchProvider(handle, this._transformScheme(scheme));
+
         return toDisposable(() => {
             this._internalFileSearchProvider = null;
             this._proxy.$unregisterProvider(handle);
@@ -99,11 +106,14 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
     }
     override $provideFileSearchResults(handle: number, session: number, rawQuery: IRawFileQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
         const query = reviveQuery(rawQuery);
+
         if (handle === this._internalFileSearchHandle) {
             const start = Date.now();
+
             return this.doInternalFileSearch(handle, session, query, token).then(result => {
                 const elapsed = Date.now() - start;
                 this._logService.debug(`Ext host file search time: ${elapsed}ms`);
+
                 return result;
             });
         }
@@ -116,16 +126,19 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
             }
             if (Array.isArray(ev)) {
                 handleFileMatch(ev.map(m => URI.file(m.path)));
+
                 return;
             }
             if (ev.message) {
                 this._logService.debug('ExtHostSearch', ev.message);
             }
         };
+
         if (!this._internalFileSearchProvider) {
             throw new Error('No internal file search handler');
         }
         const numThreads = await this.getNumThreadsCached();
+
         return <Promise<ISearchCompleteStats>>this._internalFileSearchProvider.doFileSearch(rawQuery, numThreads, onResult, token);
     }
     private async doInternalFileSearch(handle: number, session: number, rawQuery: IFileQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
@@ -135,6 +148,7 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
     }
     override $clearCache(cacheKey: string): Promise<void> {
         this._internalFileSearchProvider?.clearCache(cacheKey);
+
         return super.$clearCache(cacheKey);
     }
     protected override createTextSearchManager(query: ITextQuery, provider: vscode.TextSearchProvider2): TextSearchManager {

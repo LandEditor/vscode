@@ -37,6 +37,7 @@ export async function readFromStdin(targetPath: string, verbose: boolean, onEnd?
         import('@vscode/iconv-lite-umd'), // lazy load encoding module for usage
         fs.promises.appendFile(targetPath, '') // make sure file exists right away (https://github.com/microsoft/vscode/issues/155341)
     ]);
+
     if (!iconv.default.encodingExists(encoding)) {
         console.log(`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`);
         encoding = 'utf8';
@@ -47,6 +48,7 @@ export async function readFromStdin(targetPath: string, verbose: boolean, onEnd?
     // file descriptor.
     // (https://github.com/microsoft/vscode/issues/148952)
     const appendFileQueue = new Queue();
+
     const decoder = iconv.default.getDecoder(encoding);
     process.stdin.on('data', chunk => {
         const chunkStr = decoder.write(chunk);

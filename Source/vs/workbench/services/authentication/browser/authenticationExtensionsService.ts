@@ -53,8 +53,10 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
         children.forEach((child: string) => {
             acc[child] = parent;
         });
+
         return acc;
     }, {});
+
     constructor(
     @IActivityService
     private readonly activityService: IActivityService, 
@@ -94,6 +96,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     private async updateNewSessionRequests(providerId: string, addedSessions: readonly AuthenticationSession[]): Promise<void> {
         const existingRequestsForProvider = this._signInRequestItems.get(providerId);
+
         if (!existingRequestsForProvider) {
             return;
         }
@@ -102,6 +105,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
                 const sessionRequest = existingRequestsForProvider[requestedScopes];
                 sessionRequest?.disposables.forEach(item => item.dispose());
                 delete existingRequestsForProvider[requestedScopes];
+
                 if (Object.keys(existingRequestsForProvider).length === 0) {
                     this._signInRequestItems.delete(providerId);
                 }
@@ -113,14 +117,17 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     private async updateAccessRequests(providerId: string, removedSessions: readonly AuthenticationSession[]) {
         const providerRequests = this._sessionAccessRequestItems.get(providerId);
+
         if (providerRequests) {
             Object.keys(providerRequests).forEach(extensionId => {
                 removedSessions.forEach(removed => {
                     const indexOfSession = providerRequests[extensionId].possibleSessions.findIndex(session => session.id === removed.id);
+
                     if (indexOfSession) {
                         providerRequests[extensionId].possibleSessions.splice(indexOfSession, 1);
                     }
                 });
+
                 if (!providerRequests[extensionId].possibleSessions.length) {
                     this.removeAccessRequest(providerId, extensionId);
                 }
@@ -129,6 +136,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     private updateBadgeCount(): void {
         this._accountBadgeDisposable.clear();
+
         let numberOfRequests = 0;
         this._signInRequestItems.forEach(providerRequests => {
             Object.keys(providerRequests).forEach(request => {
@@ -138,6 +146,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
         this._sessionAccessRequestItems.forEach(accessRequest => {
             numberOfRequests += Object.keys(accessRequest).length;
         });
+
         if (numberOfRequests > 0) {
             const badge = new NumberBadge(numberOfRequests, () => nls.localize('sign in', "Sign in requested"));
             this._accountBadgeDisposable.value = this.activityService.showAccountsActivity({ badge });
@@ -145,6 +154,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     private removeAccessRequest(providerId: string, extensionId: string): void {
         const providerRequests = this._sessionAccessRequestItems.get(providerId) || {};
+
         if (providerRequests[extensionId]) {
             dispose(providerRequests[extensionId].disposables);
             delete providerRequests[extensionId];
@@ -154,25 +164,31 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     //#region Account/Session Preference
     updateAccountPreference(extensionId: string, providerId: string, account: AuthenticationSessionAccount): void {
         const realExtensionId = ExtensionIdentifier.toKey(extensionId);
+
         const parentExtensionId = this._inheritAuthAccountPreferenceChildToParent[realExtensionId] ?? realExtensionId;
+
         const key = this._getKey(parentExtensionId, providerId);
         // Store the preference in the workspace and application storage. This allows new workspaces to
         // have a preference set already to limit the number of prompts that are shown... but also allows
         // a specific workspace to override the global preference.
         this.storageService.store(key, account.label, StorageScope.WORKSPACE, StorageTarget.MACHINE);
         this.storageService.store(key, account.label, StorageScope.APPLICATION, StorageTarget.MACHINE);
+
         const childrenExtensions = this._inheritAuthAccountPreferenceParentToChildren[parentExtensionId];
+
         const extensionIds = childrenExtensions ? [parentExtensionId, ...childrenExtensions] : [parentExtensionId];
         this._onDidAccountPreferenceChange.fire({ extensionIds, providerId });
     }
     getAccountPreference(extensionId: string, providerId: string): string | undefined {
         const realExtensionId = ExtensionIdentifier.toKey(extensionId);
+
         const key = this._getKey(this._inheritAuthAccountPreferenceChildToParent[realExtensionId] ?? realExtensionId, providerId);
         // If a preference is set in the workspace, use that. Otherwise, use the global preference.
         return this.storageService.get(key, StorageScope.WORKSPACE) ?? this.storageService.get(key, StorageScope.APPLICATION);
     }
     removeAccountPreference(extensionId: string, providerId: string): void {
         const realExtensionId = ExtensionIdentifier.toKey(extensionId);
+
         const key = this._getKey(this._inheritAuthAccountPreferenceChildToParent[realExtensionId] ?? realExtensionId, providerId);
         // This won't affect any other workspaces that have a preference set, but it will remove the preference
         // for this workspace and the global preference. This is only paired with a call to updateSessionPreference...
@@ -250,6 +266,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
                 run: () => SessionPromptChoice.Cancel
             }
         });
+
         if (result !== SessionPromptChoice.Cancel) {
             this._authenticationAccessService.updateAllowedExtensions(provider.id, accountName, [{ id: extensionId, name: extensionName, allowed: result === SessionPromptChoice.Allow }]);
             this.removeAccessRequest(provider.id, extensionId);
@@ -261,17 +278,21 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
      */
     async selectSession(providerId: string, extensionId: string, extensionName: string, scopes: string[], availableSessions: AuthenticationSession[]): Promise<AuthenticationSession> {
         const allAccounts = await this._authenticationService.getAccounts(providerId);
+
         if (!allAccounts.length) {
             throw new Error('No accounts available');
         }
         const disposables = new DisposableStore();
+
         const quickPick = disposables.add(this.quickInputService.createQuickPick<{
             label: string;
             session?: AuthenticationSession;
             account?: AuthenticationSessionAccount;
         }>());
         quickPick.ignoreFocusOut = true;
+
         const accountsWithSessions = new Set<string>();
+
         const items: {
             label: string;
             session?: AuthenticationSession;
@@ -299,17 +320,22 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
             comment: ['The placeholder {0} is the name of an extension. {1} is the name of the type of account, such as Microsoft or GitHub.']
         }, "The extension '{0}' wants to access a {1} account", extensionName, this._authenticationService.getProvider(providerId).label);
         quickPick.placeholder = nls.localize('getSessionPlateholder', "Select an account for '{0}' to use or Esc to cancel", extensionName);
+
         return await new Promise((resolve, reject) => {
             disposables.add(quickPick.onDidAccept(async (_) => {
                 quickPick.dispose();
+
                 let session = quickPick.selectedItems[0].session;
+
                 if (!session) {
                     const account = quickPick.selectedItems[0].account;
+
                     try {
                         session = await this._authenticationService.createSession(providerId, scopes, { account });
                     }
                     catch (e) {
                         reject(e);
+
                         return;
                     }
                 }
@@ -330,7 +356,9 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     private async completeSessionAccessRequest(provider: IAuthenticationProvider, extensionId: string, extensionName: string, scopes: string[]): Promise<void> {
         const providerRequests = this._sessionAccessRequestItems.get(provider.id) || {};
+
         const existingRequest = providerRequests[extensionId];
+
         if (!existingRequest) {
             return;
         }
@@ -338,7 +366,9 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
             return;
         }
         const possibleSessions = existingRequest.possibleSessions;
+
         let session: AuthenticationSession | undefined;
+
         if (provider.supportsMultipleAccounts) {
             try {
                 session = await this.selectSession(provider.id, extensionId, extensionName, scopes, possibleSessions);
@@ -349,6 +379,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
         }
         else {
             const approved = await this.showGetSessionPrompt(provider, possibleSessions[0].account.label, extensionId, extensionName);
+
             if (approved) {
                 session = possibleSessions[0];
             }
@@ -359,11 +390,14 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
     }
     requestSessionAccess(providerId: string, extensionId: string, extensionName: string, scopes: string[], possibleSessions: AuthenticationSession[]): void {
         const providerRequests = this._sessionAccessRequestItems.get(providerId) || {};
+
         const hasExistingRequest = providerRequests[extensionId];
+
         if (hasExistingRequest) {
             return;
         }
         const provider = this._authenticationService.getProvider(providerId);
+
         const menuItem = MenuRegistry.appendMenuItem(MenuId.AccountsContext, {
             group: '3_accessRequests',
             command: {
@@ -374,6 +408,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
                 }, "Grant access to {0} for {1}... (1)", provider.label, extensionName)
             }
         });
+
         const accessCommand = CommandsRegistry.registerCommand({
             id: `${providerId}${extensionId}Access`,
             handler: async (accessor) => {
@@ -399,6 +434,7 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
             });
         }
         let provider: IAuthenticationProvider;
+
         try {
             provider = this._authenticationService.getProvider(providerId);
         }
@@ -406,15 +442,19 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
             return;
         }
         const providerRequests = this._signInRequestItems.get(providerId);
+
         const scopesList = scopes.join(SCOPESLIST_SEPARATOR);
+
         const extensionHasExistingRequest = providerRequests
             && providerRequests[scopesList]
             && providerRequests[scopesList].requestingExtensionIds.includes(extensionId);
+
         if (extensionHasExistingRequest) {
             return;
         }
         // Construct a commandId that won't clash with others generated here, nor likely with an extension's command
         const commandId = `${providerId}:${extensionId}:signIn${Object.keys(providerRequests || []).length}`;
+
         const menuItem = MenuRegistry.appendMenuItem(MenuId.AccountsContext, {
             group: '2_signInRequests',
             command: {
@@ -425,15 +465,18 @@ export class AuthenticationExtensionsService extends Disposable implements IAuth
                 }, "Sign in with {0} to use {1} (1)", provider.label, extensionName)
             }
         });
+
         const signInCommand = CommandsRegistry.registerCommand({
             id: commandId,
             handler: async (accessor) => {
                 const authenticationService = accessor.get(IAuthenticationService);
+
                 const session = await authenticationService.createSession(providerId, scopes);
                 this._authenticationAccessService.updateAllowedExtensions(providerId, session.account.label, [{ id: extensionId, name: extensionName, allowed: true }]);
                 this._updateAccountAndSessionPreferences(providerId, extensionId, session);
             }
         });
+
         if (providerRequests) {
             const existingRequest = providerRequests[scopesList] || { disposables: [], requestingExtensionIds: [] };
             providerRequests[scopesList] = {

@@ -38,6 +38,7 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
     static readonly ID = 'workbench.contrib.chatMovedViewWelcomeView';
     private static readonly hideMovedChatWelcomeViewStorageKey = 'workbench.chat.hideMovedChatWelcomeView';
     private readonly showWelcomeViewCtx = ChatContextKeys.shouldShowMovedViewWelcome.bindTo(this.contextKeyService);
+
     constructor(
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -65,6 +66,7 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
         // If the view is already hidden, then we just want to register keybindings.
         if (hidden) {
             this.registerKeybindings();
+
             return;
         }
         await this.hideViewIfCopilotIsNotInstalled();
@@ -81,7 +83,9 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
     }
     private async hideViewIfCopilotIsNotInstalled(): Promise<void> {
         const extensions = await this.extensionManagementService.getInstalled();
+
         const installed = extensions.find(value => ExtensionIdentifier.equals(value.identifier.id, this.productService.gitHubEntitlement?.extensionId));
+
         if (!installed) {
             this.markViewToHide();
         }
@@ -89,20 +93,25 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
     private hideViewIfOldViewIsMovedFromDefaultLocation(): void {
         // If the chat view is not actually moved to the new view container, then we should hide the welcome view.
         const newViewContainer = this.viewDescriptorService.getViewContainerById(CHAT_SIDEBAR_PANEL_ID);
+
         if (!newViewContainer) {
             return;
         }
         const currentChatViewContainer = this.viewDescriptorService.getViewContainerByViewId(CHAT_VIEW_ID);
+
         if (currentChatViewContainer !== newViewContainer) {
             this.markViewToHide();
+
             return;
         }
         // If the chat view is in the new location, but the old view container was in the auxiliary bar anyway, then we should hide the welcome view.
         const oldViewContainer = this.viewDescriptorService.getViewContainerById(CHAT_SIDEBAR_OLD_VIEW_PANEL_ID);
+
         if (!oldViewContainer) {
             return;
         }
         const oldLocation = this.viewDescriptorService.getViewContainerLocation(oldViewContainer);
+
         if (oldLocation === ViewContainerLocation.AuxiliaryBar) {
             this.markViewToHide();
         }
@@ -135,18 +144,25 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
             id: '_chatMovedViewWelcomeView.restore',
             handler: async () => {
                 const oldViewContainer = this.viewDescriptorService.getViewContainerById(CHAT_SIDEBAR_OLD_VIEW_PANEL_ID);
+
                 const newViewContainer = this.viewDescriptorService.getViewContainerById(CHAT_SIDEBAR_PANEL_ID);
+
                 if (!oldViewContainer || !newViewContainer) {
                     this.markViewToHide();
+
                     return;
                 }
                 const oldLocation = this.viewDescriptorService.getViewContainerLocation(oldViewContainer);
+
                 const newLocation = this.viewDescriptorService.getViewContainerLocation(newViewContainer);
+
                 if (oldLocation === newLocation || oldLocation === null || newLocation === null) {
                     this.markViewToHide();
+
                     return;
                 }
                 const viewContainerIds = this.paneCompositePartService.getPaneCompositeIds(oldLocation);
+
                 const targetIndex = viewContainerIds.indexOf(oldViewContainer.id);
                 this.viewDescriptorService.moveViewContainerToLocation(newViewContainer, oldLocation, targetIndex);
                 this.viewsService.openViewContainer(newViewContainer.id, true);
@@ -165,8 +181,11 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
         // This is a welcome view container intended to show up where the old chat view was positioned to inform
         // the user that we have changed the default location and how they can move it back or use the new location.
         const title = localize2('chat.viewContainer.movedChat.label', "Chat (Old Location)");
+
         const icon = Codicon.commentDiscussion;
+
         const viewContainerId = CHAT_SIDEBAR_OLD_VIEW_PANEL_ID;
+
         const viewContainer: ViewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
             id: viewContainerId,
             title,
@@ -176,7 +195,9 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
             hideIfEmpty: true,
             order: 100,
         }, ViewContainerLocation.Sidebar, { doNotRegisterOpenCommand: true });
+
         const viewId = 'workbench.chat.movedView.welcomeView';
+
         const viewDescriptor: IViewDescriptor = {
             id: viewId,
             name: title,
@@ -187,13 +208,19 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
             ctorDescriptor: new SyncDescriptor(MovedChatViewPane, [{ id: viewId }]),
         };
         Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([viewDescriptor], viewContainer);
+
         const secondarySideBarLeft = this.configurationService.getValue('workbench.sideBar.location') !== 'left';
+
         let welcomeViewMainMessage = secondarySideBarLeft ?
             localize('chatMovedMainMessage1Left', "Chat has been moved to the Secondary Side Bar on the left for a more integrated AI experience in your editor.") :
             localize('chatMovedMainMessage1Right', "Chat has been moved to the Secondary Side Bar on the right for a more integrated AI experience in your editor.");
+
         const chatViewKeybinding = this.keybindingService.lookupKeybinding(CHAT_SIDEBAR_PANEL_ID)?.getLabel();
+
         const copilotIcon = `$(${this.productService.defaultChatAgent?.icon ?? 'comment-discussion'})`;
+
         let quicklyAccessMessage = undefined;
+
         if (this.hasCommandCenterChat() && chatViewKeybinding) {
             quicklyAccessMessage = localize('chatMovedCommandCenterAndKeybind', "You can quickly access Chat via the new Copilot icon ({0}) in the editor title bar or with the keyboard shortcut {1}.", copilotIcon, chatViewKeybinding);
         }
@@ -207,9 +234,13 @@ export class MoveChatViewContribution extends Disposable implements IWorkbenchCo
             welcomeViewMainMessage = `${welcomeViewMainMessage}\n\n${quicklyAccessMessage}`;
         }
         const okButton = `[${localize('ok', "Got it")}](command:_chatMovedViewWelcomeView.ok)`;
+
         const restoreButton = `[${localize('restore', "Restore Old Location")}](command:_chatMovedViewWelcomeView.restore)`;
+
         const welcomeViewFooterMessage = localize('chatMovedFooterMessage', "[Learn more](command:_chatMovedViewWelcomeView.learnMore) about the Secondary Side Bar.");
+
         const viewsRegistry = Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry);
+
         return viewsRegistry.registerViewWelcomeContent(viewId, {
             content: [welcomeViewMainMessage, okButton, restoreButton, welcomeViewFooterMessage].join('\n\n'),
             renderSecondaryButtons: true,

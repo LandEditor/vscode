@@ -67,6 +67,7 @@ export class ExtensionHostProfileService extends Disposable implements IExtensio
             return;
         }
         this._state = state;
+
         if (this._state === ProfileSessionState.Running) {
             this.updateProfilingStatusBarIndicator(true);
         }
@@ -77,6 +78,7 @@ export class ExtensionHostProfileService extends Disposable implements IExtensio
     }
     private updateProfilingStatusBarIndicator(visible: boolean): void {
         this.profilingStatusBarIndicatorLabelUpdater.clear();
+
         if (visible) {
             const indicator: IStatusbarEntry = {
                 name: nls.localize('status.profiler', "Extension Profiler"),
@@ -86,11 +88,14 @@ export class ExtensionHostProfileService extends Disposable implements IExtensio
                 tooltip: nls.localize('selectAndStartDebug', "Click to stop profiling."),
                 command: 'workbench.action.extensionHostProfiler.stop'
             };
+
             const timeStarted = Date.now();
+
             const handle = disposableWindowInterval(mainWindow, () => {
                 this.profilingStatusBarIndicator?.update({ ...indicator, text: nls.localize('profilingExtensionHostTime', "Profiling Extension Host ({0} sec)", Math.round((new Date().getTime() - timeStarted) / 1000)), });
             }, 1000);
             this.profilingStatusBarIndicatorLabelUpdater.value = handle;
+
             if (!this.profilingStatusBarIndicator) {
                 this.profilingStatusBarIndicator = this._statusbarService.addEntry(indicator, 'status.profiler', StatusbarAlignment.RIGHT);
             }
@@ -110,6 +115,7 @@ export class ExtensionHostProfileService extends Disposable implements IExtensio
             return null;
         }
         const inspectPorts = await this._extensionService.getInspectPorts(ExtensionHostKind.LocalProcess, true);
+
         if (inspectPorts.length === 0) {
             return this._dialogService.confirm({
                 type: 'info',
@@ -127,6 +133,7 @@ export class ExtensionHostProfileService extends Disposable implements IExtensio
             console.warn(`There are multiple extension hosts available for profiling. Picking the first one...`);
         }
         this._setState(ProfileSessionState.Starting);
+
         return this._instantiationService.createInstance(ExtensionHostProfiler, inspectPorts[0].host, inspectPorts[0].port).start().then((value) => {
             this._profileSession = value;
             this._setState(ProfileSessionState.Running);

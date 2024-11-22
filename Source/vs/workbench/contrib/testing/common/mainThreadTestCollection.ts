@@ -13,6 +13,7 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
     private busyProvidersChangeEmitter = new Emitter<number>();
     private expandPromises = new WeakMap<IncrementalTestCollectionItem, {
         pendingLvl: number;
+
         doneLvl: number;
         prom: Promise<void>;
     }>();
@@ -38,6 +39,7 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
         return Iterable.map(this.roots.values(), r => r.item.extId);
     }
     public readonly onBusyProvidersChange = this.busyProvidersChangeEmitter.event;
+
     constructor(uriIdentityService: ITestUriCanonicalizer, private readonly expandActual: (id: string, levels: number) => Promise<void>) {
         super(uriIdentityService);
     }
@@ -46,17 +48,21 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
      */
     public expand(testId: string, levels: number): Promise<void> {
         const test = this.items.get(testId);
+
         if (!test) {
             return Promise.resolve();
         }
         // simple cache to avoid duplicate/unnecessary expansion calls
         const existing = this.expandPromises.get(test);
+
         if (existing && existing.pendingLvl >= levels) {
             return existing.prom;
         }
         const prom = this.expandActual(test.item.extId, levels);
+
         const record = { doneLvl: existing ? existing.doneLvl : -1, pendingLvl: levels, prom };
         this.expandPromises.set(test, record);
+
         return prom.then(() => {
             record.doneLvl = levels;
         });
@@ -78,7 +84,9 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
      */
     public getReviverDiff() {
         const ops: TestsDiff = [{ op: TestDiffOpType.IncrementPendingExtHosts, amount: this.pendingRootCount }];
+
         const queue = [this.rootIds];
+
         while (queue.length) {
             for (const child of queue.pop()!) {
                 const item = this.items.get(child)!;
@@ -100,7 +108,9 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
      */
     public override apply(diff: TestsDiff) {
         const prevBusy = this.busyControllerCount;
+
         super.apply(diff);
+
         if (prevBusy !== this.busyControllerCount) {
             this.busyProvidersChangeEmitter.fire(this.busyControllerCount);
         }
@@ -111,11 +121,13 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
      */
     public clear() {
         const ops: TestsDiff = [];
+
         for (const root of this.roots) {
             ops.push({ op: TestDiffOpType.Remove, itemId: root.item.extId });
         }
         this.roots.clear();
         this.items.clear();
+
         return ops;
     }
     /**
@@ -130,6 +142,7 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
                 return;
             }
             const s = this.testsByUrl.get(node.item.uri);
+
             if (!s) {
                 this.testsByUrl.set(node.item.uri, new Set([node]));
             }
@@ -142,10 +155,12 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
                 return;
             }
             const s = this.testsByUrl.get(node.item.uri);
+
             if (!s) {
                 return;
             }
             s.delete(node);
+
             if (s.size === 0) {
                 this.testsByUrl.delete(node.item.uri);
             }
@@ -156,9 +171,11 @@ export class MainThreadTestCollection extends AbstractIncrementalTestCollection<
     }
     private *getIterator() {
         const queue = [this.rootIds];
+
         while (queue.length) {
             for (const id of queue.pop()!) {
                 const node = this.getNodeById(id)!;
+
                 yield node;
                 queue.push(node.children);
             }

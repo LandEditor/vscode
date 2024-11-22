@@ -258,12 +258,14 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 			for (const editor of group.editors) {
 				const resource = editor.resource;
+
 				if (!resource || !this.uriIdentityService.extUri.isEqualOrParent(resource, source)) {
 					continue; // not matching our resource
 				}
 
 				// Determine new resulting target resource
 				let targetResource: URI;
+
 				if (this.uriIdentityService.extUri.isEqual(source, resource)) {
 					targetResource = target; // file got moved
 				} else {
@@ -273,6 +275,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 				// Delegate rename() to editor instance
 				const moveResult = await editor.rename(group.id, targetResource);
+
 				if (!moveResult) {
 					return; // not target - ignore
 				}
@@ -324,6 +327,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		}
 
 		const configuration = this.configurationService.getValue<IWorkbenchEditorConfiguration>();
+
 		if (typeof configuration.workbench?.editor?.closeOnFileDelete === 'boolean') {
 			this.closeOnFileDelete = configuration.workbench.editor.closeOnFileDelete;
 		} else {
@@ -335,6 +339,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		for (const editor of this.getAllNonDirtyEditors({ includeUntitled: false, supportSideBySide: true })) {
 			(async () => {
 				const resource = editor.resource;
+
 				if (!resource) {
 					return;
 				}
@@ -352,6 +357,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					}
 
 					let matches = false;
+
 					if (arg1 instanceof FileChangesEvent) {
 						matches = arg1.contains(resource, FileChangeType.DELETED);
 					} else {
@@ -369,6 +375,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					// This only applies to external file events, so we need to check for the isExternal
 					// flag.
 					let exists = false;
+
 					if (isExternal && this.fileService.hasProvider(resource)) {
 						await timeout(100);
 						exists = await this.fileService.exists(resource);
@@ -421,8 +428,10 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	get activeTextEditorControl(): ICodeEditor | IDiffEditor | undefined {
 		const activeEditorPane = this.activeEditorPane;
+
 		if (activeEditorPane) {
 			const activeControl = activeEditorPane.getControl();
+
 			if (isCodeEditor(activeControl) || isDiffEditor(activeControl)) {
 				return activeControl;
 			}
@@ -438,6 +447,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		let activeCodeEditor: ICodeEditor | undefined = undefined;
 
 		const activeTextEditorControl = this.activeTextEditorControl;
+
 		if (isDiffEditor(activeTextEditorControl)) {
 			activeCodeEditor = activeTextEditorControl.getModifiedEditor();
 		} else {
@@ -495,8 +505,10 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	private doGetVisibleTextEditorControls(editorPanes: IVisibleEditorPane[]): Array<ICodeEditor | IDiffEditor> {
 		const visibleTextEditorControls: Array<ICodeEditor | IDiffEditor> = [];
+
 		for (const editorPane of editorPanes) {
 			const controls: Array<IEditorControl | undefined> = [];
+
 			if (editorPane instanceof SideBySideEditorPane) {
 				controls.push(editorPane.getPrimaryEditorPane()?.getControl());
 				controls.push(editorPane.getSecondaryEditorPane()?.getControl());
@@ -532,9 +544,12 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	openEditor(editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput, group?: PreferredGroup): Promise<IEditorPane | undefined>;
 	openEditor(editor: IResourceDiffEditorInput, group?: PreferredGroup): Promise<ITextDiffEditorPane | undefined>;
 	openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined>;
+
 	async openEditor(editor: EditorInput | IUntypedEditorInput, optionsOrPreferredGroup?: IEditorOptions | PreferredGroup, preferredGroup?: PreferredGroup): Promise<IEditorPane | undefined> {
 		let typedEditor: EditorInput | undefined = undefined;
+
 		let options = isEditorInput(editor) ? optionsOrPreferredGroup as IEditorOptions : editor.options;
+
 		let group: IEditorGroup | undefined = undefined;
 
 		if (isPreferredGroup(optionsOrPreferredGroup)) {
@@ -565,7 +580,9 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		// If group still isn't defined because of a disabled override we resolve it
 		if (!group) {
 			let activation: EditorActivation | undefined = undefined;
+
 			const findGroupResult = this.instantiationService.invokeFunction(findGroup, { editor: typedEditor, options }, preferredGroup);
+
 			if (findGroupResult instanceof Promise) {
 				([group, activation] = await findGroupResult);
 			} else {
@@ -588,6 +605,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	openEditors(editors: EditorInputWithOptions[], group?: PreferredGroup, options?: IOpenEditorsOptions): Promise<IEditorPane[]>;
 	openEditors(editors: IUntypedEditorInput[], group?: PreferredGroup, options?: IOpenEditorsOptions): Promise<IEditorPane[]>;
 	openEditors(editors: Array<EditorInputWithOptions | IUntypedEditorInput>, group?: PreferredGroup, options?: IOpenEditorsOptions): Promise<IEditorPane[]>;
+
 	async openEditors(editors: Array<EditorInputWithOptions | IUntypedEditorInput>, preferredGroup?: PreferredGroup, options?: IOpenEditorsOptions): Promise<IEditorPane[]> {
 
 		// Pass all editors to trust service to determine if
@@ -595,6 +613,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		// are asked to validate trust.
 		if (options?.validateTrust) {
 			const editorsTrusted = await this.handleWorkspaceTrust(editors);
+
 			if (!editorsTrusted) {
 				return [];
 			}
@@ -602,8 +621,10 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 		// Find target groups for editors to open
 		const mapGroupToTypedEditors = new Map<IEditorGroup, Array<EditorInputWithOptions>>();
+
 		for (const editor of editors) {
 			let typedEditor: EditorInputWithOptions | undefined = undefined;
+
 			let group: IEditorGroup | undefined = undefined;
 
 			// Resolve override unless disabled
@@ -629,6 +650,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			// If group still isn't defined because of a disabled override we resolve it
 			if (!group) {
 				const findGroupResult = this.instantiationService.invokeFunction(findGroup, typedEditor, preferredGroup);
+
 				if (findGroupResult instanceof Promise) {
 					([group] = await findGroupResult);
 				} else {
@@ -638,6 +660,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 			// Update map of groups to editors
 			let targetGroupEditors = mapGroupToTypedEditors.get(group);
+
 			if (!targetGroupEditors) {
 				targetGroupEditors = [];
 				mapGroupToTypedEditors.set(group, targetGroupEditors);
@@ -648,6 +671,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 		// Open in target groups
 		const result: Promise<IEditorPane | undefined>[] = [];
+
 		for (const [group, editors] of mapGroupToTypedEditors) {
 			result.push(group.openEditors(editors));
 		}
@@ -659,12 +683,16 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		const { resources, diffMode, mergeMode } = this.extractEditorResources(editors);
 
 		const trustResult = await this.workspaceTrustRequestService.requestOpenFilesTrust(resources);
+
 		switch (trustResult) {
 			case WorkspaceTrustUriResponse.Open:
 				return true;
+
 			case WorkspaceTrustUriResponse.OpenInNewWindow:
 				await this.hostService.openWindow(resources.map(resource => ({ fileUri: resource })), { forceNewWindow: true, diffMode, mergeMode });
+
 				return false;
+
 			case WorkspaceTrustUriResponse.Cancel:
 				return false;
 		}
@@ -672,7 +700,9 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	private extractEditorResources(editors: Array<EditorInputWithOptions | IUntypedEditorInput>): { resources: URI[]; diffMode?: boolean; mergeMode?: boolean } {
 		const resources = new ResourceSet();
+
 		let diffMode = false;
+
 		let mergeMode = false;
 
 		for (const editor of editors) {
@@ -680,6 +710,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			// Typed Editor
 			if (isEditorInputWithOptions(editor)) {
 				const resource = EditorResourceAccessor.getOriginalUri(editor.editor, { supportSideBySide: SideBySideEditor.BOTH });
+
 				if (URI.isUri(resource)) {
 					resources.add(resource);
 				} else if (resource) {
@@ -779,11 +810,13 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 		for (const { editor, groupId } of editors) {
 			const group = this.editorGroupsContainer.getGroup(groupId);
+
 			if (!group) {
 				continue;
 			}
 
 			let editors = mapGroupToEditors.get(group);
+
 			if (!editors) {
 				editors = [];
 				mapGroupToEditors.set(group, editors);
@@ -808,6 +841,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	findEditors(arg1: URI | IResourceEditorInputIdentifier, options: IFindEditorOptions | undefined, arg2?: IEditorGroup | GroupIdentifier): readonly IEditorIdentifier[] | readonly EditorInput[] | EditorInput | undefined;
 	findEditors(arg1: URI | IResourceEditorInputIdentifier, options: IFindEditorOptions | undefined, arg2?: IEditorGroup | GroupIdentifier): readonly IEditorIdentifier[] | readonly EditorInput[] | EditorInput | undefined {
 		const resource = URI.isUri(arg1) ? arg1 : arg1.resource;
+
 		const typeId = URI.isUri(arg1) ? undefined : arg1.typeId;
 
 		// Do a quick check for the resource via the editor observer
@@ -846,6 +880,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				}
 
 				const editors = targetGroup.findEditors(resource, options);
+
 				for (const editor of editors) {
 					if (editor.typeId === typeId) {
 						return editor;
@@ -871,6 +906,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				// Editor identifier provided, result is single
 				else {
 					const editor = this.findEditors(arg1, options, group);
+
 					if (editor) {
 						editors.push(editor);
 					}
@@ -888,13 +924,16 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	//#region replaceEditors()
 
 	async replaceEditors(replacements: IUntypedEditorReplacement[], group: IEditorGroup | GroupIdentifier): Promise<void>;
+
 	async replaceEditors(replacements: IEditorReplacement[], group: IEditorGroup | GroupIdentifier): Promise<void>;
+
 	async replaceEditors(replacements: Array<IEditorReplacement | IUntypedEditorReplacement>, group: IEditorGroup | GroupIdentifier): Promise<void> {
 		const targetGroup = typeof group === 'number' ? this.editorGroupsContainer.getGroup(group) : group;
 
 		// Convert all replacements to typed editors unless already
 		// typed and handle overrides properly.
 		const typedReplacements: IEditorReplacement[] = [];
+
 		for (const replacement of replacements) {
 			let typedReplacement: IEditorReplacement | undefined = undefined;
 
@@ -957,7 +996,9 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		// editors are potentially bringing up some UI and thus run
 		// sequentially.
 		const editorsToSaveParallel: IEditorIdentifier[] = [];
+
 		const editorsToSaveSequentially: IEditorIdentifier[] = [];
+
 		if (options?.saveAs) {
 			editorsToSaveSequentially.push(...uniqueEditors);
 		} else {
@@ -992,6 +1033,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			// is untitled or we "Save As". This also allows the user to review
 			// the contents of the editor before making a decision.
 			const editorPane = await this.openEditor(editor, groupId);
+
 			const editorOptions: IEditorOptions = {
 				pinned: true,
 				viewState: editorPane?.getViewState()
@@ -1009,6 +1051,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			// current one.
 			if (!editor.matches(result)) {
 				const targetGroups = editor.hasCapability(EditorInputCapabilities.Untitled) ? this.editorGroupsContainer.groups.map(group => group.id) /* untitled replaces across all groups */ : [groupId];
+
 				for (const targetGroup of targetGroups) {
 					if (result instanceof EditorInput) {
 						await this.replaceEditors([{ editor, replacement: result, options: editorOptions }], targetGroup);
@@ -1085,6 +1128,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	private getUniqueEditors(editors: IEditorIdentifier[]): IEditorIdentifier[] {
 		const uniqueEditors: IEditorIdentifier[] = [];
+
 		for (const { editor, groupId } of editors) {
 			if (uniqueEditors.some(uniqueEditor => uniqueEditor.editor.matches(editor))) {
 				continue;

@@ -30,6 +30,7 @@ export class UserDataProfilesReadonlyService extends BaseUserDataProfilesService
     }
     protected override getStoredProfiles(): StoredUserDataProfile[] {
         const storedProfilesState = this.stateReadonlyService.getItem<UriDto<StoredUserDataProfileState>[]>(UserDataProfilesReadonlyService.PROFILES_KEY, []);
+
         return storedProfilesState.map(p => ({ ...p, location: isString(p.location) ? this.uriIdentityService.extUri.joinPath(this.profilesHome, p.location) : URI.revive(p.location) }));
     }
     protected override getStoredProfileAssociations(): StoredProfileAssociations {
@@ -84,6 +85,7 @@ export class ServerUserDataProfilesService extends UserDataProfilesService imple
     }
     override async init(): Promise<void> {
         await (this.stateService as StateService).init();
+
         return super.init();
     }
 }

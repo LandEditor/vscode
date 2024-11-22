@@ -34,12 +34,18 @@ export interface IWorkspaceTrustManagementService {
     isWorkspaceTrusted(): boolean;
     isWorkspaceTrustForced(): boolean;
     canSetParentFolderTrust(): boolean;
+
     setParentFolderTrust(trusted: boolean): Promise<void>;
     canSetWorkspaceTrust(): boolean;
+
     setWorkspaceTrust(trusted: boolean): Promise<void>;
+
     getUriTrustInfo(uri: URI): Promise<IWorkspaceTrustUriInfo>;
+
     setUrisTrust(uri: URI[], trusted: boolean): Promise<void>;
+
     getTrustedUris(): URI[];
+
     setTrustedUris(uris: URI[]): Promise<void>;
     addWorkspaceTrustTransitionParticipant(participant: IWorkspaceTrustTransitionParticipant): IDisposable;
 }

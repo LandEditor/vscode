@@ -24,6 +24,7 @@ export class FileStorage extends Disposable {
     private readonly flushDelayer = this._register(new ThrottledDelayer<void>(this.saveStrategy === SaveStrategy.IMMEDIATE ? 0 : 100 /* buffer saves over a short time */));
     private initializing: Promise<void> | undefined = undefined;
     private closing: Promise<void> | undefined = undefined;
+
     constructor(private readonly storagePath: URI, private readonly saveStrategy: SaveStrategy, private readonly logService: ILogService, private readonly fileService: IFileService) {
         super();
     }
@@ -45,9 +46,12 @@ export class FileStorage extends Disposable {
         }
     }
     getItem<T>(key: string, defaultValue: T): T;
+
     getItem<T>(key: string, defaultValue?: T): T | undefined;
+
     getItem<T>(key: string, defaultValue?: T): T | undefined {
         const res = this.storage[key];
+
         if (isUndefinedOrNull(res)) {
             return defaultValue;
         }
@@ -61,6 +65,7 @@ export class FileStorage extends Disposable {
         data?: object | string | number | boolean | undefined | null;
     }[]): void {
         let save = false;
+
         for (const { key, data } of items) {
             // Shortcut for data that did not change
             if (this.storage[key] === data) {
@@ -104,6 +109,7 @@ export class FileStorage extends Disposable {
         await this.initializing;
         // Return early if the database has not changed
         const serializedDatabase = JSON.stringify(this.storage, null, 4);
+
         if (serializedDatabase === this.lastSavedStorageContents) {
             return;
         }
@@ -126,6 +132,7 @@ export class FileStorage extends Disposable {
 export class StateReadonlyService extends Disposable implements IStateReadService {
     declare readonly _serviceBrand: undefined;
     protected readonly fileStorage: FileStorage;
+
     constructor(saveStrategy: SaveStrategy, 
     @IEnvironmentService
     environmentService: IEnvironmentService, 
@@ -140,13 +147,16 @@ export class StateReadonlyService extends Disposable implements IStateReadServic
         await this.fileStorage.init();
     }
     getItem<T>(key: string, defaultValue: T): T;
+
     getItem<T>(key: string, defaultValue?: T): T | undefined;
+
     getItem<T>(key: string, defaultValue?: T): T | undefined {
         return this.fileStorage.getItem(key, defaultValue);
     }
 }
 export class StateService extends StateReadonlyService implements IStateService {
     declare readonly _serviceBrand: undefined;
+
     setItem(key: string, data?: object | string | number | boolean | undefined | null): void {
         this.fileStorage.setItem(key, data);
     }

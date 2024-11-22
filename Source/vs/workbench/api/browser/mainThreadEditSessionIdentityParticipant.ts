@@ -14,6 +14,7 @@ import { WorkspaceFolder } from '../../../platform/workspace/common/workspace.js
 class ExtHostEditSessionIdentityCreateParticipant implements IEditSessionIdentityCreateParticipant {
     private readonly _proxy: ExtHostWorkspaceShape;
     private readonly timeout = 10000;
+
     constructor(extHostContext: IExtHostContext) {
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostWorkspace);
     }
@@ -22,12 +23,14 @@ class ExtHostEditSessionIdentityCreateParticipant implements IEditSessionIdentit
             setTimeout(() => reject(new Error(localize('timeout.onWillCreateEditSessionIdentity', "Aborted onWillCreateEditSessionIdentity-event after 10000ms"))), this.timeout);
             this._proxy.$onWillCreateEditSessionIdentity(workspaceFolder.uri, token, this.timeout).then(resolve, reject);
         });
+
         return raceCancellationError(p, token);
     }
 }
 @extHostCustomer
 export class EditSessionIdentityCreateParticipant {
     private _saveParticipantDisposable: IDisposable;
+
     constructor(extHostContext: IExtHostContext, 
     @IInstantiationService
     instantiationService: IInstantiationService, 

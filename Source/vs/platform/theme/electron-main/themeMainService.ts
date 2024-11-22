@@ -14,29 +14,40 @@ import { IColorScheme } from '../../window/common/window.js';
 // These default colors match our default themes
 // editor background color ("Dark Modern", etc...)
 const DEFAULT_BG_LIGHT = '#FFFFFF';
+
 const DEFAULT_BG_DARK = '#1F1F1F';
+
 const DEFAULT_BG_HC_BLACK = '#000000';
+
 const DEFAULT_BG_HC_LIGHT = '#FFFFFF';
+
 const THEME_STORAGE_KEY = 'theme';
+
 const THEME_BG_STORAGE_KEY = 'themeBackground';
+
 const THEME_WINDOW_SPLASH = 'windowSplash';
 namespace ThemeSettings {
     export const DETECT_COLOR_SCHEME = 'window.autoDetectColorScheme';
+
     export const SYSTEM_COLOR_THEME = 'window.systemColorTheme';
 }
 export const IThemeMainService = createDecorator<IThemeMainService>('themeMainService');
 export interface IThemeMainService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeColorScheme: Event<IColorScheme>;
+
     getBackgroundColor(): string;
     saveWindowSplash(windowId: number | undefined, splash: IPartsSplash): void;
+
     getWindowSplash(): IPartsSplash | undefined;
+
     getColorScheme(): IColorScheme;
 }
 export class ThemeMainService extends Disposable implements IThemeMainService {
     declare readonly _serviceBrand: undefined;
     private readonly _onDidChangeColorScheme = this._register(new Emitter<IColorScheme>());
     readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
+
     constructor(
     @IStateService
     private stateService: IStateService, 
@@ -64,23 +75,33 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
             switch (this.configurationService.getValue<'default' | 'auto' | 'light' | 'dark'>(ThemeSettings.SYSTEM_COLOR_THEME)) {
                 case 'dark':
                     electron.nativeTheme.themeSource = 'dark';
+
                     break;
+
                 case 'light':
                     electron.nativeTheme.themeSource = 'light';
+
                     break;
+
                 case 'auto':
                     switch (this.getBaseTheme()) {
                         case 'vs':
                             electron.nativeTheme.themeSource = 'light';
+
                             break;
+
                         case 'vs-dark':
                             electron.nativeTheme.themeSource = 'dark';
+
                             break;
+
                         default: electron.nativeTheme.themeSource = 'system';
                     }
                     break;
+
                 default:
                     electron.nativeTheme.themeSource = 'system';
+
                     break;
             }
         }
@@ -112,21 +133,29 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
     }
     getBackgroundColor(): string {
         const colorScheme = this.getColorScheme();
+
         if (colorScheme.highContrast && this.configurationService.getValue('window.autoDetectHighContrast')) {
             return colorScheme.dark ? DEFAULT_BG_HC_BLACK : DEFAULT_BG_HC_LIGHT;
         }
         let background = this.stateService.getItem<string | null>(THEME_BG_STORAGE_KEY, null);
+
         if (!background) {
             switch (this.getBaseTheme()) {
                 case 'vs':
                     background = DEFAULT_BG_LIGHT;
+
                     break;
+
                 case 'hc-black':
                     background = DEFAULT_BG_HC_BLACK;
+
                     break;
+
                 case 'hc-light':
                     background = DEFAULT_BG_HC_LIGHT;
+
                     break;
+
                 default: background = DEFAULT_BG_DARK;
             }
         }
@@ -134,10 +163,14 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
     }
     private getBaseTheme(): 'vs' | 'vs-dark' | 'hc-black' | 'hc-light' {
         const baseTheme = this.stateService.getItem<string>(THEME_STORAGE_KEY, 'vs-dark').split(' ')[0];
+
         switch (baseTheme) {
             case 'vs': return 'vs';
+
             case 'hc-black': return 'hc-black';
+
             case 'hc-light': return 'hc-light';
+
             default: return 'vs-dark';
         }
     }
@@ -159,6 +192,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
         for (const window of electron.BrowserWindow.getAllWindows()) {
             if (window.id === windowId) {
                 window.setBackgroundColor(splash.colorInfo.background);
+
                 break;
             }
         }

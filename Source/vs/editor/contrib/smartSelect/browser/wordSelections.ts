@@ -12,9 +12,11 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
     constructor(private readonly selectSubwords = true) { }
     provideSelectionRanges(model: ITextModel, positions: Position[]): SelectionRange[][] {
         const result: SelectionRange[][] = [];
+
         for (const position of positions) {
             const bucket: SelectionRange[] = [];
             result.push(bucket);
+
             if (this.selectSubwords) {
                 this._addInWordRanges(bucket, model, position);
             }
@@ -26,17 +28,23 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
     }
     private _addInWordRanges(bucket: SelectionRange[], model: ITextModel, pos: Position): void {
         const obj = model.getWordAtPosition(pos);
+
         if (!obj) {
             return;
         }
         const { word, startColumn } = obj;
+
         const offset = pos.column - startColumn;
+
         let start = offset;
+
         let end = offset;
+
         let lastCh: number = 0;
         // LEFT anchor (start)
         for (; start >= 0; start--) {
             const ch = word.charCodeAt(start);
+
             if ((start !== offset) && (ch === CharCode.Underline || ch === CharCode.Dash)) {
                 // foo-bar OR foo_bar
                 break;
@@ -51,6 +59,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
         // RIGHT anchor (end)
         for (; end < word.length; end++) {
             const ch = word.charCodeAt(end);
+
             if (isUpperAsciiLetter(ch) && isLowerAsciiLetter(lastCh)) {
                 // fooBar
                 break;
@@ -67,6 +76,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
     }
     private _addWordRanges(bucket: SelectionRange[], model: ITextModel, pos: Position): void {
         const word = model.getWordAtPosition(pos);
+
         if (word) {
             bucket.push({ range: new Range(pos.lineNumber, word.startColumn, pos.lineNumber, word.endColumn) });
         }

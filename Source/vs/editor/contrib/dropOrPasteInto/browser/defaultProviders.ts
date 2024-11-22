@@ -39,6 +39,7 @@ abstract class SimplePasteAndDropProvider implements DocumentDropEditProvider, D
 
 	async provideDocumentPasteEdits(_model: ITextModel, _ranges: readonly IRange[], dataTransfer: IReadonlyVSDataTransfer, context: DocumentPasteContext, token: CancellationToken): Promise<DocumentPasteEditsSession | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
+
 		if (!edit) {
 			return undefined;
 		}
@@ -51,6 +52,7 @@ abstract class SimplePasteAndDropProvider implements DocumentDropEditProvider, D
 
 	async provideDocumentDropEdits(_model: ITextModel, _position: IPosition, dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentDropEditsSession | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
+
 		if (!edit) {
 			return;
 		}
@@ -77,6 +79,7 @@ export class DefaultTextPasteOrDropEditProvider extends SimplePasteAndDropProvid
 
 	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, _token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const textEntry = dataTransfer.get(Mimes.text);
+
 		if (!textEntry) {
 			return;
 		}
@@ -88,6 +91,7 @@ export class DefaultTextPasteOrDropEditProvider extends SimplePasteAndDropProvid
 		}
 
 		const insertText = await textEntry.asString();
+
 		return {
 			handledMimeType: Mimes.text,
 			title: localize('text.label', "Insert Plain Text"),
@@ -108,23 +112,27 @@ class PathProvider extends SimplePasteAndDropProvider {
 
 	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
+
 		if (!entries.length || token.isCancellationRequested) {
 			return;
 		}
 
 		let uriCount = 0;
+
 		const insertText = entries
 			.map(({ uri, originalText }) => {
 				if (uri.scheme === Schemas.file) {
 					return uri.fsPath;
 				} else {
 					uriCount++;
+
 					return originalText;
 				}
 			})
 			.join(' ');
 
 		let label: string;
+
 		if (uriCount > 0) {
 			// Dropping at least one generic uri (such as https) so use most generic label
 			label = entries.length > 1
@@ -159,12 +167,14 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 
 	protected async getEdit(dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
+
 		if (!entries.length || token.isCancellationRequested) {
 			return;
 		}
 
 		const relativeUris = coalesce(entries.map(({ uri }) => {
 			const root = this._workspaceContextService.getWorkspaceFolder(uri);
+
 			return root ? relativePath(root.uri, uri) : undefined;
 		}));
 
@@ -199,7 +209,9 @@ class PasteHtmlProvider implements DocumentPasteEditProvider {
 		}
 
 		const entry = dataTransfer.get('text/html');
+
 		const htmlText = await entry?.asString();
+
 		if (!htmlText || token.isCancellationRequested) {
 			return;
 		}
@@ -218,12 +230,15 @@ class PasteHtmlProvider implements DocumentPasteEditProvider {
 
 async function extractUriList(dataTransfer: IReadonlyVSDataTransfer): Promise<{ readonly uri: URI; readonly originalText: string }[]> {
 	const urlListEntry = dataTransfer.get(Mimes.uriList);
+
 	if (!urlListEntry) {
 		return [];
 	}
 
 	const strUriList = await urlListEntry.asString();
+
 	const entries: { readonly uri: URI; readonly originalText: string }[] = [];
+
 	for (const entry of UriList.parse(strUriList)) {
 		try {
 			entries.push({ uri: URI.parse(entry), originalText: entry });

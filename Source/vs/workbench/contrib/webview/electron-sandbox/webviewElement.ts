@@ -65,6 +65,7 @@ export class ElectronWebviewElement extends WebviewElement {
         super(initInfo, webviewThemeDataProvider, configurationService, contextMenuService, notificationService, environmentService, fileService, logService, remoteAuthorityResolverService, telemetryService, tunnelService, instantiationService, accessibilityService);
         this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(configurationService, mainProcessService, _nativeHostService);
         this._webviewMainService = ProxyChannel.toService<IWebviewManagerService>(mainProcessService.getChannel('webview'));
+
         if (initInfo.options.enableFindWidget) {
             this._register(this.onDidHtmlChange((newContent) => {
                 if (this._findStarted && this._cachedHtmlContent !== newContent) {
@@ -80,6 +81,7 @@ export class ElectronWebviewElement extends WebviewElement {
     override dispose(): void {
         // Make sure keyboard handler knows it closed (#71800)
         this._webviewKeyboardHandler.didBlur();
+
         super.dispose();
     }
     protected override webviewContentEndpoint(iframeId: string): string {
@@ -90,9 +92,13 @@ export class ElectronWebviewElement extends WebviewElement {
         // This lets us transfer the resulting buffer to the webview.
         return consumeStream<VSBuffer, ArrayBufferLike>(stream, (buffers: readonly VSBuffer[]) => {
             const totalLength = buffers.reduce((prev, curr) => prev + curr.byteLength, 0);
+
             const ret = new ArrayBuffer(totalLength);
+
             const view = new Uint8Array(ret);
+
             let offset = 0;
+
             for (const element of buffers) {
                 view.set(element.buffer, offset);
                 offset += element.byteLength;
@@ -148,6 +154,7 @@ export class ElectronWebviewElement extends WebviewElement {
     }
     protected override handleFocusChange(isFocused: boolean): void {
         super.handleFocusChange(isFocused);
+
         if (isFocused) {
             this._webviewKeyboardHandler.didFocus();
         }

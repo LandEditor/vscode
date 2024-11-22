@@ -18,6 +18,7 @@ interface ActionGroup {
     readonly icon?: ThemeIcon;
 }
 const uncategorizedCodeActionGroup = Object.freeze<ActionGroup>({ kind: HierarchicalKind.Empty, title: localize('codeAction.widget.id.more', 'More Actions...') });
+
 const codeActionGroups = Object.freeze<ActionGroup[]>([
     { kind: CodeActionKind.QuickFix, title: localize('codeAction.widget.id.quickfix', 'Quick Fix') },
     { kind: CodeActionKind.RefactorExtract, title: localize('codeAction.widget.id.extract', 'Extract'), icon: Codicon.wrench },
@@ -43,19 +44,24 @@ export function toMenuItems(inputCodeActions: readonly CodeActionItem[], showHea
     }
     // Group code actions
     const menuEntries = codeActionGroups.map(group => ({ group, actions: [] as CodeActionItem[] }));
+
     for (const action of inputCodeActions) {
         const kind = action.action.kind ? new HierarchicalKind(action.action.kind) : HierarchicalKind.None;
+
         for (const menuEntry of menuEntries) {
             if (menuEntry.group.kind.contains(kind)) {
                 menuEntry.actions.push(action);
+
                 break;
             }
         }
     }
     const allMenuItems: IActionListItem<CodeActionItem>[] = [];
+
     for (const menuEntry of menuEntries) {
         if (menuEntry.actions.length) {
             allMenuItems.push({ kind: ActionListItemKind.Header, group: menuEntry.group });
+
             for (const action of menuEntry.actions) {
                 const group = menuEntry.group;
                 allMenuItems.push({

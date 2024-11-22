@@ -44,6 +44,7 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
     readonly label: string = localize('label', "Explorer");
     private readonly _onDidChange = new Emitter<URI[]>();
     private readonly toDispose = new DisposableStore();
+
     constructor(
     @IExplorerService
     private explorerService: IExplorerService, 
@@ -62,6 +63,7 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
     }
     async provideDecorations(resource: URI): Promise<IDecorationData | undefined> {
         const fileStat = this.explorerService.findClosest(resource);
+
         if (!fileStat) {
             throw new Error('ExplorerItem not found');
         }

@@ -34,7 +34,9 @@ interface CSSFormatSettings {
 const cssFormatSettingKeys: (keyof CSSFormatSettings)[] = ['newlineBetweenSelectors', 'newlineBetweenRules', 'spaceAroundSelectorSeparator', 'braceStyle', 'preserveNewLines', 'maxPreserveNewLines'];
 export async function startClient(context: ExtensionContext, newLanguageClient: LanguageClientConstructor, runtime: Runtime): Promise<BaseLanguageClient> {
     const customDataSource = getCustomDataSource(context.subscriptions);
+
     const documentSelector = ['css', 'scss', 'less'];
+
     const formatterRegistrations: FormatterRegistration[] = documentSelector.map(languageId => ({
         languageId, settingId: `${languageId}.format.enable`, provider: undefined
     }));
@@ -54,6 +56,7 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
                 // testing the replace / insert mode
                 function updateRanges(item: CompletionItem) {
                     const range = item.range;
+
                     if (range instanceof Range && range.end.isAfter(position) && range.start.isBeforeOrEqual(position)) {
                         item.range = { inserting: new Range(range.start, position), replacing: range };
                     }
@@ -75,7 +78,9 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
                     return r;
                 }
                 const isThenable = <T>(obj: ProviderResult<T>): obj is Thenable<T> => obj && (<any>obj)['then'];
+
                 const r = next(document, position, context, token);
+
                 if (isThenable<CompletionItem[] | CompletionList | null | undefined>(r)) {
                     return r.then(updateProposals);
                 }
@@ -99,14 +104,19 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
     }
     serveFileSystemRequests(client, runtime);
     context.subscriptions.push(initCompletionProvider());
+
     function initCompletionProvider(): Disposable {
         const regionCompletionRegExpr = /^(\s*)(\/(\*\s*(#\w*)?)?)?$/;
+
         return languages.registerCompletionItemProvider(documentSelector, {
             provideCompletionItems(doc: TextDocument, pos: Position) {
                 const lineUntilPos = doc.getText(new Range(new Position(pos.line, 0), pos));
+
                 const match = lineUntilPos.match(regionCompletionRegExpr);
+
                 if (match) {
                     const range = new Range(new Position(pos.line, match[1].length), pos);
+
                     const beginProposal = new CompletionItem('#region', CompletionItemKind.Snippet);
                     beginProposal.range = range;
                     TextEdit.replace(range, '/* #region */');
@@ -114,12 +124,14 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
                     beginProposal.documentation = l10n.t('Folding Region Start');
                     beginProposal.filterText = match[2];
                     beginProposal.sortText = 'za';
+
                     const endProposal = new CompletionItem('#endregion', CompletionItemKind.Snippet);
                     endProposal.range = range;
                     endProposal.insertText = '/* #endregion */';
                     endProposal.documentation = l10n.t('Folding Region End');
                     endProposal.sortText = 'zb';
                     endProposal.filterText = match[2];
+
                     return [beginProposal, endProposal];
                 }
                 return null;
@@ -127,8 +139,10 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
         });
     }
     commands.registerCommand('_css.applyCodeAction', applyCodeAction);
+
     function applyCodeAction(uri: string, documentVersion: number, edits: TextEdit[]) {
         const textEditor = window.activeTextEditor;
+
         if (textEditor && textEditor.document.uri.toString() === uri) {
             if (textEditor.document.version !== documentVersion) {
                 window.showInformationMessage(l10n.t('CSS fix is outdated and can\'t be applied to the document.'));
@@ -146,6 +160,7 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
     }
     function updateFormatterRegistration(registration: FormatterRegistration) {
         const formatEnabled = workspace.getConfiguration().get(registration.settingId);
+
         if (!formatEnabled && registration.provider) {
             registration.provider.dispose();
             registration.provider = undefined;
@@ -154,11 +169,13 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
             registration.provider = languages.registerDocumentRangeFormattingEditProvider(registration.languageId, {
                 provideDocumentRangeFormattingEdits(document: TextDocument, range: Range, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]> {
                     const filesConfig = workspace.getConfiguration('files', document);
+
                     const fileFormattingOptions = {
                         trimTrailingWhitespace: filesConfig.get<boolean>('trimTrailingWhitespace'),
                         trimFinalNewlines: filesConfig.get<boolean>('trimFinalNewlines'),
                         insertFinalNewline: filesConfig.get<boolean>('insertFinalNewline'),
                     };
+
                     const params: DocumentRangeFormattingParams = {
                         textDocument: client.code2ProtocolConverter.asTextDocumentIdentifier(document),
                         range: client.code2ProtocolConverter.asRange(range),
@@ -166,9 +183,11 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
                     };
                     // add the css formatter options from the settings
                     const formatterSettings = workspace.getConfiguration(registration.languageId, document).get<CSSFormatSettings>('format');
+
                     if (formatterSettings) {
                         for (const key of cssFormatSettingKeys) {
                             const val = formatterSettings[key];
+
                             if (val !== undefined && val !== null) {
                                 params.options[key] = val;
                             }
@@ -176,6 +195,7 @@ export async function startClient(context: ExtensionContext, newLanguageClient: 
                     }
                     return client.sendRequest(DocumentRangeFormattingRequest.type, params, token).then(client.protocol2CodeConverter.asTextEdits, (error) => {
                         client.handleFailedRequest(DocumentRangeFormattingRequest.type, undefined, error, []);
+
                         return Promise.resolve([]);
                     });
                 }

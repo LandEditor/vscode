@@ -45,6 +45,7 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 		logService: ILogService,
 	) {
 		super(logService);
+
 		if (environmentService.options?.configurationDefaults) {
 			this.configurationRegistry.registerDefaultConfigurations([{ overrides: environmentService.options.configurationDefaults }]);
 		}
@@ -56,6 +57,7 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 
 	override async initialize(): Promise<ConfigurationModel> {
 		await this.initializeCachedConfigurationDefaultsOverrides();
+
 		return super.initialize();
 	}
 
@@ -63,6 +65,7 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 		this.updateCache = true;
 		this.cachedConfigurationDefaultsOverrides = {};
 		this.updateCachedConfigurationDefaultsOverrides();
+
 		return super.reload();
 	}
 
@@ -78,6 +81,7 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 					// Read only when the cache exists
 					if (localStorage.getItem(DefaultConfiguration.DEFAULT_OVERRIDES_CACHE_EXISTS_KEY)) {
 						const content = await this.configurationCache.read(this.cacheKey);
+
 						if (content) {
 							this.cachedConfigurationDefaultsOverrides = JSON.parse(content);
 						}
@@ -91,6 +95,7 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 
 	protected override onDidUpdateConfiguration(properties: string[], defaultsOverrides?: boolean): void {
 		super.onDidUpdateConfiguration(properties, defaultsOverrides);
+
 		if (defaultsOverrides) {
 			this.updateCachedConfigurationDefaultsOverrides();
 		}
@@ -101,7 +106,9 @@ export class DefaultConfiguration extends BaseDefaultConfiguration {
 			return;
 		}
 		const cachedConfigurationDefaultsOverrides: IStringDictionary<any> = {};
+
 		const configurationDefaultsOverrides = this.configurationRegistry.getConfigurationDefaultsOverrides();
+
 		for (const [key, value] of configurationDefaultsOverrides) {
 			if (!OVERRIDE_PROPERTY_REGEX.test(key) && value.value !== undefined) {
 				cachedConfigurationDefaultsOverrides[key] = value.value;
@@ -144,8 +151,11 @@ export class ApplicationConfiguration extends UserSettings {
 
 	override async loadConfiguration(): Promise<ConfigurationModel> {
 		const model = await super.loadConfiguration();
+
 		const value = model.getValue<string[]>(APPLY_ALL_PROFILES_SETTING);
+
 		const allProfilesSettings = Array.isArray(value) ? value : [];
+
 		return this.parseOptions.include || allProfilesSettings.length
 			? this.reparse({ ...this.parseOptions, include: allProfilesSettings })
 			: model;
@@ -181,13 +191,17 @@ export class UserConfiguration extends Disposable {
 		this.settingsResource = settingsResource;
 		this.tasksResource = tasksResource;
 		this.configurationParseOptions = configurationParseOptions;
+
 		return this.doReset();
 	}
 
 	private async doReset(settingsConfiguration?: ConfigurationModel): Promise<ConfigurationModel> {
 		const folder = this.uriIdentityService.extUri.dirname(this.settingsResource);
+
 		const standAloneConfigurationResources: [string, URI][] = this.tasksResource ? [[TASKS_CONFIGURATION_KEY, this.tasksResource]] : [];
+
 		const fileServiceBasedConfiguration = new FileServiceBasedConfiguration(folder.toString(), this.settingsResource, standAloneConfigurationResources, this.configurationParseOptions, this.fileService, this.uriIdentityService, this.logService);
+
 		const configurationModel = await fileServiceBasedConfiguration.loadConfiguration(settingsConfiguration);
 		this.userConfiguration.value = fileServiceBasedConfiguration;
 
@@ -212,6 +226,7 @@ export class UserConfiguration extends Disposable {
 
 	reparse(parseOptions?: Partial<ConfigurationParseOptions>): ConfigurationModel {
 		this.configurationParseOptions = { ...this.configurationParseOptions, ...parseOptions };
+
 		return this.userConfiguration.value!.reparse(this.configurationParseOptions);
 	}
 
@@ -266,9 +281,11 @@ class FileServiceBasedConfiguration extends Disposable {
 			return Promise.all(resources.map(async resource => {
 				try {
 					const content = await this.fileService.readFile(resource, { atomic: true });
+
 					return content.value.toString();
 				} catch (error) {
 					this.logService.trace(`Error while resolving configuration file '${resource.toString()}': ${errors.getErrorMessage(error)}`);
+
 					if ((<FileOperationError>error).fileOperationResult !== FileOperationResult.FILE_NOT_FOUND
 						&& (<FileOperationError>error).fileOperationResult !== FileOperationResult.FILE_NOT_DIRECTORY) {
 						this.logService.error(error);
@@ -300,6 +317,7 @@ class FileServiceBasedConfiguration extends Disposable {
 		}
 		for (let index = 0; index < standAloneConfigurationContents.length; index++) {
 			const contents = standAloneConfigurationContents[index][1];
+
 			if (contents !== undefined) {
 				const standAloneConfigurationModelParser = new StandaloneConfigurationModelParser(this.standAloneConfigurationResources[index][1].toString(), this.standAloneConfigurationResources[index][0], this.logService);
 				standAloneConfigurationModelParser.parse(contents);
@@ -321,6 +339,7 @@ class FileServiceBasedConfiguration extends Disposable {
 		const oldContents = this._folderSettingsModelParser.configurationModel.contents;
 		this._folderSettingsParseOptions = configurationParseOptions;
 		this._folderSettingsModelParser.reparse(this._folderSettingsParseOptions);
+
 		if (!equals(oldContents, this._folderSettingsModelParser.configurationModel.contents)) {
 			this.consolidate();
 		}
@@ -387,6 +406,7 @@ export class RemoteUserConfiguration extends Disposable {
 				const userConfiguration = this._register(new FileServiceBasedRemoteUserConfiguration(environment.settingsPath, { scopes: REMOTE_MACHINE_SCOPES }, this._fileService, uriIdentityService, logService));
 				this._register(userConfiguration.onDidChangeConfiguration(configurationModel => this.onDidUserConfigurationChange(configurationModel)));
 				this._userConfigurationInitializationPromise = userConfiguration.initialize();
+
 				const configurationModel = await this._userConfigurationInitializationPromise;
 				this._userConfiguration.dispose();
 				this._userConfiguration = userConfiguration;
@@ -403,6 +423,7 @@ export class RemoteUserConfiguration extends Disposable {
 
 		// Initialize cached configuration
 		let configurationModel = await this._userConfiguration.initialize();
+
 		if (this._userConfigurationInitializationPromise) {
 			// Use user configuration
 			configurationModel = await this._userConfigurationInitializationPromise;
@@ -432,6 +453,7 @@ export class RemoteUserConfiguration extends Disposable {
 	private async updateCache(): Promise<void> {
 		if (this._userConfiguration instanceof FileServiceBasedRemoteUserConfiguration) {
 			let content: string | undefined;
+
 			try {
 				content = await this._userConfiguration.resolveContent();
 			} catch (error) {
@@ -496,11 +518,13 @@ class FileServiceBasedRemoteUserConfiguration extends Disposable {
 	async initialize(): Promise<ConfigurationModel> {
 		const exists = await this.fileService.exists(this.configurationResource);
 		this.onResourceExists(exists);
+
 		return this.reload();
 	}
 
 	async resolveContent(): Promise<string> {
 		const content = await this.fileService.readFile(this.configurationResource, { atomic: true });
+
 		return content.value.toString();
 	}
 
@@ -508,6 +532,7 @@ class FileServiceBasedRemoteUserConfiguration extends Disposable {
 		try {
 			const content = await this.resolveContent();
 			this.parser.parse(content, this.parseOptions);
+
 			return this.parser.configurationModel;
 		} catch (e) {
 			return ConfigurationModel.createEmptyModel(this.logService);
@@ -517,6 +542,7 @@ class FileServiceBasedRemoteUserConfiguration extends Disposable {
 	reparse(configurationParseOptions: ConfigurationParseOptions): ConfigurationModel {
 		this.parseOptions = configurationParseOptions;
 		this.parser.reparse(this.parseOptions);
+
 		return this.parser.configurationModel;
 	}
 
@@ -528,6 +554,7 @@ class FileServiceBasedRemoteUserConfiguration extends Disposable {
 
 		// Find changes that affect the resource
 		let affectedByChanges = false;
+
 		if (event.contains(this.configurationResource, FileChangeType.ADDED)) {
 			affectedByChanges = true;
 			this.onResourceExists(true);
@@ -596,6 +623,7 @@ class CachedRemoteUserConfiguration extends Disposable {
 		this.parseOptions = configurationParseOptions;
 		this.parser.reparse(this.parseOptions);
 		this.configurationModel = this.parser.configurationModel;
+
 		return this.configurationModel;
 	}
 
@@ -606,7 +634,9 @@ class CachedRemoteUserConfiguration extends Disposable {
 	async reload(): Promise<ConfigurationModel> {
 		try {
 			const content = await this.configurationCache.read(this.key);
+
 			const parsed: { content: string } = JSON.parse(content);
+
 			if (parsed.content) {
 				this.parser.parse(parsed.content, this.parseOptions);
 				this.configurationModel = this.parser.configurationModel;
@@ -636,6 +666,7 @@ export class WorkspaceConfiguration extends Disposable {
 	public readonly onDidUpdateConfiguration = this._onDidUpdateConfiguration.event;
 
 	private _initialized: boolean = false;
+
 	get initialized(): boolean { return this._initialized; }
 	constructor(
 		private readonly configurationCache: IConfigurationCache,
@@ -651,6 +682,7 @@ export class WorkspaceConfiguration extends Disposable {
 	async initialize(workspaceIdentifier: IWorkspaceIdentifier, workspaceTrusted: boolean): Promise<void> {
 		this._workspaceIdentifier = workspaceIdentifier;
 		this._isWorkspaceTrusted = workspaceTrusted;
+
 		if (!this._initialized) {
 			if (this.configurationCache.needsCaching(this._workspaceIdentifier.configPath)) {
 				this._workspaceConfiguration = this._cachedConfiguration;
@@ -690,11 +722,13 @@ export class WorkspaceConfiguration extends Disposable {
 
 	updateWorkspaceTrust(trusted: boolean): ConfigurationModel {
 		this._isWorkspaceTrusted = trusted;
+
 		return this.reparseWorkspaceSettings();
 	}
 
 	reparseWorkspaceSettings(): ConfigurationModel {
 		this._workspaceConfiguration.reparseWorkspaceSettings({ scopes: WORKSPACE_SCOPES, skipRestricted: this.isUntrusted() });
+
 		return this.getConfiguration();
 	}
 
@@ -704,6 +738,7 @@ export class WorkspaceConfiguration extends Disposable {
 
 	private async waitAndInitialize(workspaceIdentifier: IWorkspaceIdentifier): Promise<void> {
 		await whenProviderRegistered(workspaceIdentifier.configPath, this.fileService);
+
 		if (!(this._workspaceConfiguration instanceof FileServiceBasedWorkspaceConfiguration)) {
 			const fileServiceBasedWorkspaceConfiguration = this._register(new FileServiceBasedWorkspaceConfiguration(this.fileService, this.uriIdentityService, this.logService));
 			await fileServiceBasedWorkspaceConfiguration.load(workspaceIdentifier, { scopes: WORKSPACE_SCOPES, skipRestricted: this.isUntrusted() });
@@ -774,6 +809,7 @@ class FileServiceBasedWorkspaceConfiguration extends Disposable {
 
 	async resolveContent(workspaceIdentifier: IWorkspaceIdentifier): Promise<string> {
 		const content = await this.fileService.readFile(workspaceIdentifier.configPath, { atomic: true });
+
 		return content.value.toString();
 	}
 
@@ -785,10 +821,12 @@ class FileServiceBasedWorkspaceConfiguration extends Disposable {
 			this.workspaceConfigWatcher = this._register(this.watchWorkspaceConfigurationFile());
 		}
 		let contents = '';
+
 		try {
 			contents = await this.resolveContent(this._workspaceIdentifier);
 		} catch (error) {
 			const exists = await this.fileService.exists(this._workspaceIdentifier.configPath);
+
 			if (exists) {
 				this.logService.error(error);
 			}
@@ -816,6 +854,7 @@ class FileServiceBasedWorkspaceConfiguration extends Disposable {
 	reparseWorkspaceSettings(configurationParseOptions: ConfigurationParseOptions): ConfigurationModel {
 		this.workspaceConfigurationModelParser.reparseWorkspaceSettings(configurationParseOptions);
 		this.consolidate();
+
 		return this.getWorkspaceSettings();
 	}
 
@@ -851,8 +890,11 @@ class CachedWorkspaceConfiguration {
 	async load(workspaceIdentifier: IWorkspaceIdentifier, configurationParseOptions: ConfigurationParseOptions): Promise<void> {
 		try {
 			const key = this.getKey(workspaceIdentifier);
+
 			const contents = await this.configurationCache.read(key);
+
 			const parsed: { content: string } = JSON.parse(contents);
+
 			if (parsed.content) {
 				this.workspaceConfigurationModelParser = new WorkspaceConfigurationModelParser(key.key, this.logService);
 				this.workspaceConfigurationModelParser.parse(parsed.content, configurationParseOptions);
@@ -885,6 +927,7 @@ class CachedWorkspaceConfiguration {
 	reparseWorkspaceSettings(configurationParseOptions: ConfigurationParseOptions): ConfigurationModel {
 		this.workspaceConfigurationModelParser.reparseWorkspaceSettings(configurationParseOptions);
 		this.consolidate();
+
 		return this.getWorkspaceSettings();
 	}
 
@@ -899,6 +942,7 @@ class CachedWorkspaceConfiguration {
 	async updateWorkspace(workspaceIdentifier: IWorkspaceIdentifier, content: string | undefined): Promise<void> {
 		try {
 			const key = this.getKey(workspaceIdentifier);
+
 			if (content) {
 				await this.configurationCache.write(key, JSON.stringify({ content }));
 			} else {
@@ -943,7 +987,9 @@ class CachedFolderConfiguration {
 	async loadConfiguration(): Promise<ConfigurationModel> {
 		try {
 			const contents = await this.configurationCache.read(this.key);
+
 			const { content: configurationContents }: { content: IStringDictionary<string> } = JSON.parse(contents.toString());
+
 			if (configurationContents) {
 				for (const key of Object.keys(configurationContents)) {
 					if (key === FOLDER_SETTINGS_NAME) {
@@ -963,6 +1009,7 @@ class CachedFolderConfiguration {
 
 	async updateConfiguration(settingsContent: string | undefined, standAloneConfigurationContents: [string, string | undefined][]): Promise<void> {
 		const content: any = {};
+
 		if (settingsContent) {
 			content[FOLDER_SETTINGS_NAME] = settingsContent;
 		}
@@ -971,6 +1018,7 @@ class CachedFolderConfiguration {
 				content[key] = contents;
 			}
 		});
+
 		if (Object.keys(content).length) {
 			await this.configurationCache.write(this.key, JSON.stringify({ content }));
 		} else {
@@ -986,6 +1034,7 @@ class CachedFolderConfiguration {
 		this._folderSettingsParseOptions = configurationParseOptions;
 		this._folderSettingsModelParser.reparse(this._folderSettingsParseOptions);
 		this.consolidate();
+
 		return this.configurationModel;
 	}
 
@@ -1024,6 +1073,7 @@ export class FolderConfiguration extends Disposable {
 		this.scopes = WorkbenchState.WORKSPACE === this.workbenchState ? FOLDER_SCOPES : WORKSPACE_SCOPES;
 		this.configurationFolder = uriIdentityService.extUri.joinPath(workspaceFolder.uri, configFolderRelativePath);
 		this.cachedFolderConfiguration = new CachedFolderConfiguration(workspaceFolder.uri, configFolderRelativePath, { scopes: this.scopes, skipRestricted: this.isUntrusted() }, configurationCache, logService);
+
 		if (useCache && this.configurationCache.needsCaching(workspaceFolder.uri)) {
 			this.folderConfiguration = this.cachedFolderConfiguration;
 			whenProviderRegistered(workspaceFolder.uri, fileService)
@@ -1044,12 +1094,14 @@ export class FolderConfiguration extends Disposable {
 
 	updateWorkspaceTrust(trusted: boolean): ConfigurationModel {
 		this.workspaceTrusted = trusted;
+
 		return this.reparse();
 	}
 
 	reparse(): ConfigurationModel {
 		const configurationModel = this.folderConfiguration.reparse({ scopes: this.scopes, skipRestricted: this.isUntrusted() });
 		this.updateCache();
+
 		return configurationModel;
 	}
 
@@ -1068,7 +1120,9 @@ export class FolderConfiguration extends Disposable {
 
 	private createFileServiceBasedConfiguration(fileService: IFileService, uriIdentityService: IUriIdentityService, logService: ILogService) {
 		const settingsResource = uriIdentityService.extUri.joinPath(this.configurationFolder, `${FOLDER_SETTINGS_NAME}.json`);
+
 		const standAloneConfigurationResources: [string, URI][] = [TASKS_CONFIGURATION_KEY, LAUNCH_CONFIGURATION_KEY].map(name => ([name, uriIdentityService.extUri.joinPath(this.configurationFolder, `${name}.json`)]));
+
 		return new FileServiceBasedConfiguration(this.configurationFolder.toString(), settingsResource, standAloneConfigurationResources, { scopes: this.scopes, skipRestricted: this.isUntrusted() }, fileService, uriIdentityService, logService);
 	}
 

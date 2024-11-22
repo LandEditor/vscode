@@ -12,6 +12,7 @@ import { ITextModelService } from '../../../../editor/common/services/resolverSe
 import { ITextResourcePropertiesService, ITextResourceConfigurationService } from '../../../../editor/common/services/textResourceConfiguration.js';
 class UserDataSyncUtilService implements IUserDataSyncUtilService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IKeybindingService
     private readonly keybindingsService: IKeybindingService, 
@@ -26,6 +27,7 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
     }
     async resolveUserBindings(userBindings: string[]): Promise<IStringDictionary<string>> {
         const keys: IStringDictionary<string> = {};
+
         for (const userbinding of userBindings) {
             keys[userbinding] = this.keybindingsService.resolveUserBinding(userbinding).map(part => part.getUserSettingsLabel()).join(' ');
         }
@@ -34,9 +36,12 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
     async resolveFormattingOptions(resource: URI): Promise<FormattingOptions> {
         try {
             const modelReference = await this.textModelService.createModelReference(resource);
+
             const { insertSpaces, tabSize } = modelReference.object.textEditorModel.getOptions();
+
             const eol = modelReference.object.textEditorModel.getEOL();
             modelReference.dispose();
+
             return { eol, insertSpaces, tabSize };
         }
         catch (e) {

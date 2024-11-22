@@ -74,8 +74,11 @@ export interface ITokenizationTextModelPart {
      * @internal
     */
     tokenizeLineWithEdit(lineNumber: number, edit: LineEditWithAdditionalLines): ITokenizeLineWithEditResult;
+
     getLanguageId(): string;
+
     getLanguageIdAtPosition(lineNumber: number, column: number): string;
+
     setLanguageId(languageId: string, source?: string): void;
     readonly backgroundTokenizationState: BackgroundTokenizationState;
 }

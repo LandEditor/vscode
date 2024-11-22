@@ -140,6 +140,7 @@ export class PatternInputWidget extends Widget {
 	private render(options: IOptions): void {
 		this.domNode = document.createElement('div');
 		this.domNode.classList.add('monaco-findInput');
+
 		const history = options.history || [];
 
 		this.inputBox = new ContextScopedHistoryInputBox(this.domNode, this.contextViewProvider, {
@@ -175,9 +176,12 @@ export class PatternInputWidget extends Widget {
 			case KeyCode.Enter:
 				this.onSearchSubmit();
 				this._onSubmit.fire(false);
+
 				return;
+
 			case KeyCode.Escape:
 				this._onCancel.fire();
+
 				return;
 		}
 	}
@@ -226,11 +230,13 @@ export class IncludePatternInputWidget extends PatternInputWidget {
 		}));
 		this._register(this.useSearchInEditorsBox.onChange(viaKeyboard => {
 			this._onChangeSearchInEditorsBoxEmitter.fire();
+
 			if (!viaKeyboard) {
 				this.inputBox.focus();
 			}
 		}));
 		controlsDiv.appendChild(this.useSearchInEditorsBox.domNode);
+
 		super.renderSubcontrols(controlsDiv);
 	}
 }
@@ -279,12 +285,14 @@ export class ExcludePatternInputWidget extends PatternInputWidget {
 		}));
 		this._register(this.useExcludesAndIgnoreFilesBox.onChange(viaKeyboard => {
 			this._onChangeIgnoreBoxEmitter.fire();
+
 			if (!viaKeyboard) {
 				this.inputBox.focus();
 			}
 		}));
 
 		controlsDiv.appendChild(this.useExcludesAndIgnoreFilesBox.domNode);
+
 		super.renderSubcontrols(controlsDiv);
 	}
 }

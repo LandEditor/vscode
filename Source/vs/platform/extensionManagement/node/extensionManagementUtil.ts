@@ -9,6 +9,7 @@ import { ExtensionManagementError, ExtensionManagementErrorCode } from '../commo
 import { IExtensionManifest } from '../../extensions/common/extensions.js';
 export function fromExtractError(e: Error): ExtensionManagementError {
     let errorCode = ExtensionManagementErrorCode.Extract;
+
     if (e instanceof ExtractError) {
         if (e.type === 'CorruptZip') {
             errorCode = ExtensionManagementErrorCode.CorruptZip;
@@ -21,6 +22,7 @@ export function fromExtractError(e: Error): ExtensionManagementError {
 }
 export async function getManifest(vsixPath: string): Promise<IExtensionManifest> {
     let data;
+
     try {
         data = await buffer(vsixPath, 'extension/package.json');
     }

@@ -31,6 +31,7 @@ export class CachedResponse<T extends Proto.Response> {
     private async reset(document: vscode.TextDocument, resolve: Resolve<T>): Promise<ServerResponse.Response<T>> {
         this.version = document.version;
         this.document = document.uri.toString();
+
         return this.response = resolve();
     }
 }

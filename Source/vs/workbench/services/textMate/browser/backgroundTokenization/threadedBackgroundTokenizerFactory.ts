@@ -32,6 +32,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
     private _currentTheme: IRawTheme | null = null;
     private _currentTokenColorMap: string[] | null = null;
     private _grammarDefinitions: IValidGrammarDefinition[] = [];
+
     constructor(private readonly _reportTokenizationTime: (timeMs: number, languageId: string, sourceExtensionId: string | undefined, lineLength: number, isRandomSample: boolean) => void, private readonly _shouldTokenizeAsync: () => boolean, 
     @IExtensionResourceLoaderService
     private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService, 
@@ -56,6 +57,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
             return undefined;
         }
         const store = new DisposableStore();
+
         const controllerContainer = this._getWorkerProxy().then((workerProxy) => {
             if (store.isDisposed || !workerProxy) {
                 return undefined;
@@ -65,14 +67,17 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
                 const controller = new TextMateWorkerTokenizerController(textModel, workerProxy, this._languageService.languageIdCodec, tokenStore, this._configurationService, maxTokenizationLineLength);
                 controllerContainer.controller = controller;
                 this._workerTokenizerControllers.set(controller.controllerId, controller);
+
                 return toDisposable(() => {
                     controllerContainer.controller = undefined;
                     this._workerTokenizerControllers.delete(controller.controllerId);
                     controller.dispose();
                 });
             }));
+
             return controllerContainer;
         });
+
         return {
             dispose() {
                 store.dispose();
@@ -108,6 +113,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
     public acceptTheme(theme: IRawTheme, colorMap: string[]): void {
         this._currentTheme = theme;
         this._currentTokenColorMap = colorMap;
+
         if (this._currentTheme && this._currentTokenColorMap && this._workerProxy) {
             this._workerProxy.$acceptTheme(this._currentTheme, this._currentTokenColorMap);
         }
@@ -120,18 +126,25 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
     }
     private async _createWorkerProxy(): Promise<Proxied<TextMateTokenizationWorker> | null> {
         const onigurumaModuleLocation: AppResourcePath = `${nodeModulesPath}/vscode-oniguruma`;
+
         const onigurumaModuleLocationAsar: AppResourcePath = `${nodeModulesAsarPath}/vscode-oniguruma`;
+
         const useAsar = canASAR && this._environmentService.isBuilt && !isWeb;
+
         const onigurumaLocation: AppResourcePath = useAsar ? onigurumaModuleLocationAsar : onigurumaModuleLocation;
+
         const onigurumaWASM: AppResourcePath = `${onigurumaLocation}/release/onig.wasm`;
+
         const createData: ICreateData = {
             grammarDefinitions: this._grammarDefinitions,
             onigurumaWASMUri: FileAccess.asBrowserUri(onigurumaWASM).toString(true),
         };
+
         const worker = this._worker = createWebWorker<TextMateTokenizationWorker>('vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker', 'TextMateWorker');
         TextMateWorkerHost.setChannel(worker, {
             $readFile: async (_resource: UriComponents): Promise<string> => {
                 const resource = URI.revive(_resource);
+
                 return this._extensionResourceLoaderService.readExtensionResource(resource);
             },
             $setTokensAndStates: async (controllerId: number, versionId: number, tokens: Uint8Array, lineEndStateDeltas: StateDeltas[]): Promise<void> => {
@@ -148,11 +161,13 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
             }
         });
         await worker.proxy.$init(createData);
+
         if (this._worker !== worker) {
             // disposed in the meantime
             return null;
         }
         this._workerProxy = worker.proxy;
+
         if (this._currentTheme && this._currentTokenColorMap) {
             this._workerProxy.$acceptTheme(this._currentTheme, this._currentTokenColorMap);
         }
@@ -163,6 +178,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
             controller.dispose();
         }
         this._workerTokenizerControllers.clear();
+
         if (this._worker) {
             this._worker.dispose();
             this._worker = null;
@@ -173,7 +189,9 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 }
 function keepAliveWhenAttached(textModel: ITextModel, factory: () => IDisposable): IDisposable {
     const disposableStore = new DisposableStore();
+
     const subStore = disposableStore.add(new DisposableStore());
+
     function checkAttached() {
         if (textModel.isAttachedToEditor()) {
             subStore.add(factory());
@@ -186,5 +204,6 @@ function keepAliveWhenAttached(textModel: ITextModel, factory: () => IDisposable
     disposableStore.add(textModel.onDidChangeAttached(() => {
         checkAttached();
     }));
+
     return disposableStore;
 }

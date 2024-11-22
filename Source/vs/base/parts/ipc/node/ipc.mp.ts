@@ -18,6 +18,7 @@ class Protocol implements IMessagePassingProtocol {
         }
         return VSBuffer.alloc(0);
     });
+
     constructor(private port: MessagePortMain) {
         // we must call start() to ensure messages are flowing
         port.start();
@@ -47,18 +48,22 @@ export interface IClientConnectionFilter {
 export class Server extends IPCServer {
     private static getOnDidClientConnect(filter?: IClientConnectionFilter): Event<ClientConnectionEvent> {
         assertType(isUtilityProcess(process), 'Electron Utility Process');
+
         const onCreateMessageChannel = new Emitter<MessagePortMain>();
         process.parentPort.on('message', (e: MessageEvent) => {
             if (filter?.handledClientConnection(e)) {
                 return;
             }
             const port = e.ports.at(0);
+
             if (port) {
                 onCreateMessageChannel.fire(port);
             }
         });
+
         return Event.map(onCreateMessageChannel.event, port => {
             const protocol = new Protocol(port);
+
             const result: ClientConnectionEvent = {
                 protocol,
                 // Not part of the standard spec, but in Electron we get a `close` event
@@ -66,6 +71,7 @@ export class Server extends IPCServer {
                 // (https://github.com/electron/electron/blob/11-x-y/docs/api/message-port-main.md#event-close)
                 onDidClientDisconnect: Event.fromNodeEventEmitter(port, 'close')
             };
+
             return result;
         });
     }

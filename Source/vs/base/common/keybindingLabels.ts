@@ -17,6 +17,7 @@ export interface KeyLabelProvider<T extends Modifiers> {
 }
 export class ModifierLabelProvider {
     public readonly modifierLabels: ModifierLabels[];
+
     constructor(mac: ModifierLabels, windows: ModifierLabels, linux: ModifierLabels = windows) {
         this.modifierLabels = [null!]; // index 0 will never me accessed.
         this.modifierLabels[OperatingSystem.Macintosh] = mac;
@@ -28,9 +29,12 @@ export class ModifierLabelProvider {
             return null;
         }
         const result: string[] = [];
+
         for (let i = 0, len = chords.length; i < len; i++) {
             const chord = chords[i];
+
             const keyLabel = keyLabelProvider(chord);
+
             if (keyLabel === null) {
                 // this keybinding cannot be expressed...
                 return null;

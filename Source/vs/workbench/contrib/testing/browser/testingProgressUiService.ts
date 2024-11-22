@@ -35,6 +35,7 @@ export class TestingProgressTrigger extends Disposable {
 
 		const barContributionRegistration = autorun(reader => {
 			const hasCoverage = !!testCoverageService.selected.read(reader);
+
 			if (!hasCoverage) {
 				return;
 			}
@@ -52,6 +53,7 @@ export class TestingProgressTrigger extends Disposable {
 		}
 
 		const cfg = getTestingConfiguration(this.configurationService, TestingConfigKeys.OpenResults);
+
 		if (cfg === AutoOpenTesting.NeverOpen) {
 			return;
 		}
@@ -88,9 +90,13 @@ export type CountSummary = ReturnType<typeof collectTestStateCounts>;
 
 export const collectTestStateCounts = (isRunning: boolean, results: ReadonlyArray<ITestResult>) => {
 	let passed = 0;
+
 	let failed = 0;
+
 	let skipped = 0;
+
 	let running = 0;
+
 	let queued = 0;
 
 	for (const result of results) {
@@ -114,6 +120,7 @@ export const collectTestStateCounts = (isRunning: boolean, results: ReadonlyArra
 
 export const getTestProgressText = ({ isRunning, passed, runSoFar, totalWillBeRun, skipped, failed }: CountSummary) => {
 	let percent = passed / runSoFar * 100;
+
 	if (failed > 0) {
 		// fix: prevent from rounding to 100 if there's any failed test
 		percent = Math.min(percent, 99.9);

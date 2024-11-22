@@ -44,16 +44,19 @@ export class InlineCompletionsHintsWidget extends Disposable {
 
 		if (!this.alwaysShowToolbar.read(reader) || !ghostText || ghostText.parts.length === 0) {
 			this.sessionPosition = undefined;
+
 			return null;
 		}
 
 		const firstColumn = ghostText.parts[0].column;
+
 		if (this.sessionPosition && this.sessionPosition.lineNumber !== ghostText.lineNumber) {
 			this.sessionPosition = undefined;
 		}
 
 		const position = new Position(ghostText.lineNumber, Math.min(firstColumn, this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER));
 		this.sessionPosition = position;
+
 		return position;
 	});
 
@@ -67,6 +70,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 		this._register(autorunWithStore((reader, store) => {
 			/** @description setup content widget */
 			const model = this.model.read(reader);
+
 			if (!model || !this.alwaysShowToolbar.read(reader)) {
 				return;
 			}
@@ -87,6 +91,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 				store.add(autorun(reader => {
 					/** @description request explicit */
 					const position = this.position.read(reader);
+
 					if (!position) {
 						return;
 					}
@@ -94,6 +99,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 						model.triggerExplicitly();
 					}
 				}));
+
 				return contentWidget;
 			});
 
@@ -108,6 +114,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 }
 
 const inlineSuggestionHintsNextIcon = registerIcon('inline-suggestion-hints-next', Codicon.chevronRight, localize('parameterHintsNextIcon', 'Icon for show next parameter hint.'));
+
 const inlineSuggestionHintsPreviousIcon = registerIcon('inline-suggestion-hints-previous', Codicon.chevronLeft, localize('parameterHintsPreviousIcon', 'Icon for show previous parameter hint.'));
 
 export class InlineSuggestionHintsContentWidget extends Disposable implements IContentWidget {
@@ -132,12 +139,16 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 			true,
 			() => this._commandService.executeCommand(commandId),
 		);
+
 		const kb = this.keybindingService.lookupKeybinding(commandId, this._contextKeyService);
+
 		let tooltip = label;
+
 		if (kb) {
 			tooltip = localize({ key: 'content', comment: ['A label', 'A keybinding'] }, '{0} ({1})', label, kb.getLabel());
 		}
 		action.tooltip = tooltip;
+
 		return action;
 	}
 
@@ -187,6 +198,7 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 				if (action === this.availableSuggestionCountAction) {
 					const a = new ActionViewItemWithClassName(undefined, action, { label: true, icon: false });
 					a.setClass('availableSuggestionCount');
+
 					return a;
 				}
 				return undefined;
@@ -213,6 +225,7 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		this._register(autorun(reader => {
 			/** @description counts */
 			const suggestionCount = this._suggestionCount.read(reader);
+
 			const currentSuggestionIdx = this._currentSuggestionIdx.read(reader);
 
 			if (suggestionCount !== undefined) {
@@ -233,6 +246,7 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		this._register(autorun(reader => {
 			/** @description extra commands */
 			const extraCommands = this._extraCommands.read(reader);
+
 			const extraActions = extraCommands.map<IAction>(c => ({
 				class: undefined,
 				id: c.id,
@@ -284,6 +298,7 @@ class ActionViewItemWithClassName extends ActionViewItem {
 
 	override render(container: HTMLElement): void {
 		super.render(container);
+
 		if (this._className) {
 			container.classList.add(this._className);
 		}
@@ -297,6 +312,7 @@ class ActionViewItemWithClassName extends ActionViewItem {
 class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(this._action.id, this._contextKeyService);
+
 		if (!kb) {
 			return super.updateLabel();
 		}

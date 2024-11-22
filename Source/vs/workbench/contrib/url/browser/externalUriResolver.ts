@@ -8,12 +8,14 @@ import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
 export class ExternalUriResolverContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.externalUriResolver';
+
     constructor(
     @IOpenerService
     _openerService: IOpenerService, 
     @IBrowserWorkbenchEnvironmentService
     _workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService) {
         super();
+
         if (_workbenchEnvironmentService.options?.resolveExternalUri) {
             this._register(_openerService.registerExternalUriResolver({
                 resolveExternalUri: async (resource) => {

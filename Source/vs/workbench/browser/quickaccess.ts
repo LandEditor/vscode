@@ -40,8 +40,11 @@ export interface IWorkbenchQuickAccessConfiguration {
 export function getQuickNavigateHandler(id: string, next?: boolean): ICommandHandler {
     return accessor => {
         const keybindingService = accessor.get(IKeybindingService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const keys = keybindingService.lookupKeybindings(id);
+
         const quickNavigate = { keybindings: keys };
         quickInputService.navigate(!!next, quickNavigate);
     };
@@ -65,6 +68,7 @@ export class PickerEditorState extends Disposable {
             return; // return early if already done
         }
         const activeEditorPane = this.editorService.activeEditorPane;
+
         if (activeEditorPane) {
             this._editorViewState = {
                 group: activeEditorPane.group,
@@ -79,7 +83,9 @@ export class PickerEditorState extends Disposable {
      */
     async openTransientEditor(editor: IResourceEditorInput | ITextResourceEditorInput | IUntitledTextResourceEditorInput | IUntypedEditorInput, group?: IEditorGroup | GroupIdentifier | SIDE_GROUP_TYPE | ACTIVE_GROUP_TYPE | AUX_WINDOW_GROUP_TYPE): Promise<IEditorPane | undefined> {
         editor.options = { ...editor.options, transient: true };
+
         const editorPane = await this.editorService.openEditor(editor, group);
+
         if (editorPane?.input && editorPane.input !== this._editorViewState?.editor && editorPane.group.isTransient(editorPane.input)) {
             this.openedTransientEditors.add(editorPane.input);
         }

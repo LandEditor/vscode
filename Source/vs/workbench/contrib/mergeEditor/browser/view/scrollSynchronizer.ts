@@ -21,11 +21,13 @@ export class ScrollSynchronizer extends Disposable {
     private get shouldAlignBase() { return this.layout.get().kind === 'mixed' && !this.layout.get().showBaseAtTop; }
     constructor(private readonly viewModel: IObservable<MergeEditorViewModel | undefined>, private readonly input1View: InputCodeEditorView, private readonly input2View: InputCodeEditorView, private readonly baseView: IObservable<BaseCodeEditorView | undefined>, private readonly inputResultView: ResultCodeEditorView, private readonly layout: IObservable<IMergeEditorLayout>) {
         super();
+
         const handleInput1OnScroll = this.updateScrolling = () => {
             if (!this.model) {
                 return;
             }
             this.input2View.editor.setScrollTop(this.input1View.editor.getScrollTop(), ScrollType.Immediate);
+
             if (this.shouldAlignResult) {
                 this.inputResultView.editor.setScrollTop(this.input1View.editor.getScrollTop(), ScrollType.Immediate);
             }
@@ -34,6 +36,7 @@ export class ScrollSynchronizer extends Disposable {
                 this.synchronizeScrolling(this.input1View.editor, this.inputResultView.editor, mappingInput1Result);
             }
             const baseView = this.baseView.get();
+
             if (baseView) {
                 if (this.shouldAlignBase) {
                     this.baseView.get()?.editor.setScrollTop(this.input1View.editor.getScrollTop(), ScrollType.Immediate);
@@ -60,6 +63,7 @@ export class ScrollSynchronizer extends Disposable {
             }
             if (c.scrollTopChanged) {
                 this.input1View.editor.setScrollTop(c.scrollTop, ScrollType.Immediate);
+
                 if (this.shouldAlignResult) {
                     this.inputResultView.editor.setScrollTop(this.input2View.editor.getScrollTop(), ScrollType.Immediate);
                 }
@@ -68,6 +72,7 @@ export class ScrollSynchronizer extends Disposable {
                     this.synchronizeScrolling(this.input2View.editor, this.inputResultView.editor, mappingInput2Result);
                 }
                 const baseView = this.baseView.get();
+
                 if (baseView && this.model) {
                     if (this.shouldAlignBase) {
                         this.baseView.get()?.editor.setScrollTop(c.scrollTop, ScrollType.Immediate);
@@ -93,11 +98,14 @@ export class ScrollSynchronizer extends Disposable {
                 else {
                     const mapping1 = this.model?.resultInput1Mapping.get();
                     this.synchronizeScrolling(this.inputResultView.editor, this.input1View.editor, mapping1);
+
                     const mapping2 = this.model?.resultInput2Mapping.get();
                     this.synchronizeScrolling(this.inputResultView.editor, this.input2View.editor, mapping2);
                 }
                 const baseMapping = this.model?.resultBaseMapping.get();
+
                 const baseView = this.baseView.get();
+
                 if (baseView && this.model) {
                     this.synchronizeScrolling(this.inputResultView.editor, baseView.editor, baseMapping);
                 }
@@ -111,6 +119,7 @@ export class ScrollSynchronizer extends Disposable {
         this._store.add(autorunWithStore((reader, store) => {
             /** @description set baseViewEditor.onDidScrollChange */
             const baseView = this.baseView.read(reader);
+
             if (baseView) {
                 store.add(baseView.editor.onDidScrollChange(this.reentrancyBarrier.makeExclusiveOrSkip((c) => {
                     if (c.scrollTopChanged) {
@@ -124,6 +133,7 @@ export class ScrollSynchronizer extends Disposable {
                         else {
                             const baseInput1Mapping = new DocumentLineRangeMap(this.model.baseInput1Diffs.get(), -1);
                             this.synchronizeScrolling(baseView.editor, this.input1View.editor, baseInput1Mapping);
+
                             const baseInput2Mapping = new DocumentLineRangeMap(this.model.baseInput2Diffs.get(), -1);
                             this.synchronizeScrolling(baseView.editor, this.input2View.editor, baseInput2Mapping);
                         }
@@ -144,18 +154,28 @@ export class ScrollSynchronizer extends Disposable {
             return;
         }
         const visibleRanges = scrollingEditor.getVisibleRanges();
+
         if (visibleRanges.length === 0) {
             return;
         }
         const topLineNumber = visibleRanges[0].startLineNumber - 1;
+
         const result = mapping.project(topLineNumber);
+
         const sourceRange = result.inputRange;
+
         const targetRange = result.outputRange;
+
         const resultStartTopPx = targetEditor.getTopForLineNumber(targetRange.startLineNumber);
+
         const resultEndPx = targetEditor.getTopForLineNumber(targetRange.endLineNumberExclusive);
+
         const sourceStartTopPx = scrollingEditor.getTopForLineNumber(sourceRange.startLineNumber);
+
         const sourceEndPx = scrollingEditor.getTopForLineNumber(sourceRange.endLineNumberExclusive);
+
         const factor = Math.min((scrollingEditor.getScrollTop() - sourceStartTopPx) / (sourceEndPx - sourceStartTopPx), 1);
+
         const resultScrollPosition = resultStartTopPx + (resultEndPx - resultStartTopPx) * factor;
         targetEditor.setScrollTop(resultScrollPosition, ScrollType.Immediate);
     }

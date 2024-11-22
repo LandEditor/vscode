@@ -43,9 +43,13 @@ const linkSuffixRegex = new Lazy<RegExp>(() => generateLinkSuffixRegex(false));
 
 function generateLinkSuffixRegex(eolOnly: boolean) {
 	let ri = 0;
+
 	let ci = 0;
+
 	let rei = 0;
+
 	let cei = 0;
+
 	function r(): string {
 		return `(?<row${ri++}>\\d+)`;
 	}
@@ -140,6 +144,7 @@ function generateLinkSuffixRegex(eolOnly: boolean) {
  */
 export function removeLinkSuffix(link: string): string {
 	const suffix = getLinkSuffix(link)?.suffix;
+
 	if (!suffix) {
 		return link;
 	}
@@ -153,7 +158,9 @@ export function removeLinkSuffix(link: string): string {
 export function removeLinkQueryString(link: string): string {
 	// Skip ? in UNC paths
 	const start = link.startsWith('\\\\?\\') ? 4 : 0;
+
 	const index = link.indexOf('?', start);
+
 	if (index === -1) {
 		return link;
 	}
@@ -164,10 +171,13 @@ export function detectLinkSuffixes(line: string): ILinkSuffix[] {
 	// Find all suffixes on the line. Since the regex global flag is used, lastIndex will be updated
 	// in place such that there are no overlapping matches.
 	let match: RegExpExecArray | null;
+
 	const results: ILinkSuffix[] = [];
 	linkSuffixRegex.value.lastIndex = 0;
+
 	while ((match = linkSuffixRegex.value.exec(line)) !== null) {
 		const suffix = toLinkSuffix(match);
+
 		if (suffix === null) {
 			break;
 		}
@@ -186,6 +196,7 @@ export function getLinkSuffix(link: string): ILinkSuffix | null {
 
 export function toLinkSuffix(match: RegExpExecArray | null): ILinkSuffix | null {
 	const groups = match?.groups;
+
 	if (!groups || match.length < 1) {
 		return null;
 	}
@@ -234,6 +245,7 @@ function binaryInsertList(list: IParsedLink[], newItems: IParsedLink[]) {
 function binaryInsert(list: IParsedLink[], newItem: IParsedLink, low: number, high: number) {
 	if (list.length === 0) {
 		list.push(newItem);
+
 		return;
 	}
 	if (low > high) {
@@ -241,6 +253,7 @@ function binaryInsert(list: IParsedLink[], newItem: IParsedLink, low: number, hi
 	}
 	// Find the index where the newItem would be inserted
 	const mid = Math.floor((low + high) / 2);
+
 	if (
 		mid >= list.length ||
 		(newItem.path.index < list[mid].path.index && (mid === 0 || newItem.path.index > list[mid - 1].path.index))
@@ -266,16 +279,22 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 
 	// 1: Detect link suffixes on the line
 	const suffixes = detectLinkSuffixes(line);
+
 	for (const suffix of suffixes) {
 		const beforeSuffix = line.substring(0, suffix.suffix.index);
+
 		const possiblePathMatch = beforeSuffix.match(linkWithSuffixPathCharacters);
+
 		if (possiblePathMatch && possiblePathMatch.index !== undefined && possiblePathMatch.groups?.path) {
 			let linkStartIndex = possiblePathMatch.index;
+
 			let path = possiblePathMatch.groups.path;
 			// Extract a path prefix if it exists (not part of the path, but part of the underlined
 			// section)
 			let prefix: ILinkPartialRange | undefined = undefined;
+
 			const prefixMatch = path.match(/^(?<prefix>['"]+)/);
+
 			if (prefixMatch?.groups?.prefix) {
 				prefix = {
 					index: linkStartIndex,
@@ -356,10 +375,14 @@ function detectPathsNoSuffix(line: string, os: OperatingSystem): IParsedLink[] {
 	const results: IParsedLink[] = [];
 
 	const regex = new RegExp(os === OperatingSystem.Windows ? winLocalLinkClause : unixLocalLinkClause, 'g');
+
 	let match;
+
 	while ((match = regex.exec(line)) !== null) {
 		let text = match[0];
+
 		let index = match.index;
+
 		if (!text) {
 			// Something matched but does not comply with the given match index, since this would
 			// most likely a bug the regex itself we simply do nothing here

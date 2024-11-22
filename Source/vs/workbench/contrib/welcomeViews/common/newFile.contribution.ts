@@ -18,7 +18,9 @@ import { IQuickInputService, IQuickPickItem, IQuickPickSeparator } from '../../.
 import { Registry } from '../../../../platform/registry/common/platform.js';
 import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
+
 const builtInSource = localize('Built-In', "Built-In");
+
 const category: ILocalizedString = localize2('Create', 'Create');
 registerAction2(class extends Action2 {
     constructor() {
@@ -52,6 +54,7 @@ type NewFileItem = {
 class NewFileTemplatesManager extends Disposable {
     static Instance: NewFileTemplatesManager | undefined;
     private menu: IMenu;
+
     constructor(
     @IQuickInputService
     private readonly quickInputService: IQuickInputService, 
@@ -74,6 +77,7 @@ class NewFileTemplatesManager extends Disposable {
     }
     private allEntries(): NewFileItem[] {
         const items: NewFileItem[] = [];
+
         for (const [groupName, group] of this.menu.getActions({ renderShortTitle: true })) {
             for (const action of group) {
                 if (action instanceof MenuItemAction) {
@@ -85,11 +89,13 @@ class NewFileTemplatesManager extends Disposable {
     }
     async run(): Promise<boolean> {
         const entries = this.allEntries();
+
         if (entries.length === 0) {
             throw Error('Unexpected empty new items list');
         }
         else if (entries.length === 1) {
             this.commandService.executeCommand(entries[0].commandID);
+
             return true;
         }
         else {
@@ -98,15 +104,19 @@ class NewFileTemplatesManager extends Disposable {
     }
     private async selectNewEntry(entries: NewFileItem[]): Promise<boolean> {
         const { promise: resultPromise, resolve: resolveResult } = promiseWithResolvers<boolean>();
+
         const disposables = new DisposableStore();
+
         const qp = this.quickInputService.createQuickPick({ useSeparators: true });
         qp.title = localize('newFileTitle', "New File...");
         qp.placeholder = localize('newFilePlaceholder', "Select File Type or Enter File Name...");
         qp.sortByLabel = false;
         qp.matchOnDetail = true;
         qp.matchOnDescription = true;
+
         const sortCategories = (a: NewFileItem, b: NewFileItem): number => {
             const categoryPriority: Record<string, number> = { 'file': 1, 'notebook': 2 };
+
             if (categoryPriority[a.group] && categoryPriority[b.group]) {
                 if (categoryPriority[a.group] !== categoryPriority[b.group]) {
                     return categoryPriority[b.group] - categoryPriority[a.group];
@@ -126,18 +136,23 @@ class NewFileTemplatesManager extends Disposable {
             }
             return a.from.localeCompare(b.from);
         };
+
         const displayCategory: Record<string, string> = {
             'file': localize('file', "File"),
             'notebook': localize('notebook', "Notebook"),
         };
+
         const refreshQp = (entries: NewFileItem[]) => {
             const items: (((IQuickPickItem & NewFileItem) | IQuickPickSeparator))[] = [];
+
             let lastSeparator: string | undefined;
             entries
                 .sort((a, b) => -sortCategories(a, b))
                 .forEach((entry) => {
                 const command = entry.commandID;
+
                 const keybinding = this.keybindingService.lookupKeybinding(command || '', this.contextKeyService);
+
                 if (lastSeparator !== entry.group) {
                     items.push({
                         type: 'separator',
@@ -167,6 +182,7 @@ class NewFileTemplatesManager extends Disposable {
         disposables.add(qp.onDidChangeValue((val: string) => {
             if (val === '') {
                 refreshQp(entries);
+
                 return;
             }
             const currentTextEntry: NewFileItem = {
@@ -182,6 +198,7 @@ class NewFileTemplatesManager extends Disposable {
             const selected = qp.selectedItems[0] as (IQuickPickItem & NewFileItem);
             resolveResult(!!selected);
             qp.hide();
+
             if (selected) {
                 await this.commandService.executeCommand(selected.commandID, selected.commandArgs);
             }
@@ -197,6 +214,7 @@ class NewFileTemplatesManager extends Disposable {
             resolveResult(false);
         }));
         qp.show();
+
         return resultPromise;
     }
 }

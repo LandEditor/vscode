@@ -22,6 +22,7 @@ import { ILanguageDetectionService, LanguageDetectionHintConfig } from '../../..
 import { LifecyclePhase } from '../../../../../services/lifecycle/common/lifecycle.js';
 class CellStatusBarLanguagePickerProvider implements INotebookCellStatusBarItemProvider {
     readonly viewType = '*';
+
     constructor(
     @INotebookService
     private readonly _notebookService: INotebookService, 
@@ -29,17 +30,22 @@ class CellStatusBarLanguagePickerProvider implements INotebookCellStatusBarItemP
     private readonly _languageService: ILanguageService) { }
     async provideCellStatusBarItems(uri: URI, index: number, _token: CancellationToken): Promise<INotebookCellStatusBarItemList | undefined> {
         const doc = this._notebookService.getNotebookTextModel(uri);
+
         const cell = doc?.cells[index];
+
         if (!cell) {
             return;
         }
         const statusBarItems: INotebookCellStatusBarItem[] = [];
+
         let displayLanguage = cell.language;
+
         if (cell.cellKind === CellKind.Markup) {
             displayLanguage = 'markdown';
         }
         else {
             const registeredId = this._languageService.getLanguageIdByLanguageName(cell.language);
+
             if (registeredId) {
                 displayLanguage = this._languageService.getLanguageName(displayLanguage) ?? displayLanguage;
             }
@@ -62,6 +68,7 @@ class CellStatusBarLanguagePickerProvider implements INotebookCellStatusBarItemP
             alignment: CellStatusbarAlignment.Right,
             priority: -Number.MAX_SAFE_INTEGER
         });
+
         return {
             items: statusBarItems
         };
@@ -75,6 +82,7 @@ class CellStatusBarLanguageDetectionProvider implements INotebookCellStatusBarIt
         cellLanguage: string;
         guess?: string;
     }>();
+
     constructor(
     @INotebookService
     private readonly _notebookService: INotebookService, 
@@ -90,23 +98,30 @@ class CellStatusBarLanguageDetectionProvider implements INotebookCellStatusBarIt
     private readonly _keybindingService: IKeybindingService) { }
     async provideCellStatusBarItems(uri: URI, index: number, token: CancellationToken): Promise<INotebookCellStatusBarItemList | undefined> {
         const doc = this._notebookService.getNotebookTextModel(uri);
+
         const cell = doc?.cells[index];
+
         if (!cell) {
             return;
         }
         const enablementConfig = this._configurationService.getValue<LanguageDetectionHintConfig>('workbench.editor.languageDetectionHints');
+
         const enabled = typeof enablementConfig === 'object' && enablementConfig?.notebookEditors;
+
         if (!enabled) {
             return;
         }
         const cellUri = cell.uri;
+
         const contentVersion = cell.textModel?.getVersionId();
+
         if (!contentVersion) {
             return;
         }
         const currentLanguageId = cell.cellKind === CellKind.Markup ?
             'markdown' :
             (this._languageService.getLanguageIdByLanguageName(cell.language) || cell.language);
+
         if (!this.cache.has(cellUri)) {
             this.cache.set(cellUri, {
                 cellLanguage: currentLanguageId, // force a re-compute upon a change in configured language
@@ -115,22 +130,30 @@ class CellStatusBarLanguageDetectionProvider implements INotebookCellStatusBarIt
             });
         }
         const cached = this.cache.get(cellUri)!;
+
         if (cached.cellLanguage !== currentLanguageId || (cached.updateTimestamp < Date.now() - 1000 && cached.contentVersion !== contentVersion)) {
             cached.updateTimestamp = Date.now();
             cached.cellLanguage = currentLanguageId;
             cached.contentVersion = contentVersion;
+
             const kernel = this._notebookKernelService.getSelectedOrSuggestedKernel(doc);
+
             if (kernel) {
                 const supportedLangs = [...kernel.supportedLanguages, 'markdown'];
                 cached.guess = await this._languageDetectionService.detectLanguage(cell.uri, supportedLangs);
             }
         }
         const items: INotebookCellStatusBarItem[] = [];
+
         if (cached.guess && currentLanguageId !== cached.guess) {
             const detectedName = this._languageService.getLanguageName(cached.guess) || cached.guess;
+
             let tooltip = localize('notebook.cell.status.autoDetectLanguage', "Accept Detected Language: {0}", detectedName);
+
             const keybinding = this._keybindingService.lookupKeybinding(DETECT_CELL_LANGUAGE);
+
             const label = keybinding?.getLabel();
+
             if (label) {
                 tooltip += ` (${label})`;
             }
@@ -152,6 +175,7 @@ class BuiltinCellStatusBarProviders extends Disposable {
     @INotebookCellStatusBarService
     notebookCellStatusBarService: INotebookCellStatusBarService) {
         super();
+
         const builtinProviders = [
             CellStatusBarLanguagePickerProvider,
             CellStatusBarLanguageDetectionProvider,

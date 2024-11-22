@@ -15,6 +15,7 @@ type IManagedHoverResolvedContent = IMarkdownString | string | HTMLElement | und
 export class ManagedHoverWidget implements IDisposable {
     private _hoverWidget: IHoverWidget | undefined;
     private _cancellationTokenSource: CancellationTokenSource | undefined;
+
     constructor(private hoverDelegate: IHoverDelegate, private target: IHoverDelegateTarget | HTMLElement, private fadeInAnimation: boolean) {
     }
     async update(content: IManagedHoverContent, focus?: boolean, options?: IManagedHoverOptions): Promise<void> {
@@ -27,6 +28,7 @@ export class ManagedHoverWidget implements IDisposable {
             return;
         }
         let resolvedContent;
+
         if (content === undefined || isString(content) || isHTMLElement(content)) {
             resolvedContent = content;
         }
@@ -41,8 +43,10 @@ export class ManagedHoverWidget implements IDisposable {
             }
             // compute the content
             this._cancellationTokenSource = new CancellationTokenSource();
+
             const token = this._cancellationTokenSource.token;
             resolvedContent = await content.markdown(token);
+
             if (resolvedContent === undefined) {
                 resolvedContent = content.markdownNotSupportedFallback;
             }
@@ -56,6 +60,7 @@ export class ManagedHoverWidget implements IDisposable {
     }
     private show(content: IManagedHoverResolvedContent, focus?: boolean, options?: IManagedHoverOptions): void {
         const oldHoverWidget = this._hoverWidget;
+
         if (this.hasContent(content)) {
             const hoverOptions: IHoverDelegateOptions = {
                 content,

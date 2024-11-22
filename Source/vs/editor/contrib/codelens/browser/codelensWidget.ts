@@ -24,6 +24,7 @@ class CodeLensViewZone implements IViewZone {
     heightInPx: number;
     private _lastHeight?: number;
     private readonly _onHeight: () => void;
+
     constructor(afterLineNumber: number, heightInPx: number, onHeight: () => void) {
         this.afterLineNumber = afterLineNumber;
         this.heightInPx = heightInPx;
@@ -56,6 +57,7 @@ class CodeLensContentWidget implements IContentWidget {
     private readonly _commands = new Map<string, Command>();
     private _widgetPosition?: IContentWidgetPosition;
     private _isEmpty: boolean = true;
+
     constructor(editor: IActiveCodeEditor, line: number) {
         this._editor = editor;
         this._id = `codelens.widget-${(CodeLensContentWidget._idPool++)}`;
@@ -65,16 +67,22 @@ class CodeLensContentWidget implements IContentWidget {
     }
     withCommands(lenses: Array<CodeLens | undefined | null>, animate: boolean): void {
         this._commands.clear();
+
         const children: HTMLElement[] = [];
+
         let hasSymbol = false;
+
         for (let i = 0; i < lenses.length; i++) {
             const lens = lenses[i];
+
             if (!lens) {
                 continue;
             }
             hasSymbol = true;
+
             if (lens.command) {
                 const title = renderLabelWithIcons(lens.command.title.trim());
+
                 if (lens.command.id) {
                     const id = `c${(CodeLensContentWidget._idPool++)}`;
                     children.push(dom.$('a', { id, title: lens.command.tooltip, role: 'button' }, ...title));
@@ -95,6 +103,7 @@ class CodeLensContentWidget implements IContentWidget {
         else {
             // symbols and commands
             dom.reset(this._domNode, ...children);
+
             if (this._isEmpty && animate) {
                 this._domNode.classList.add('fadein');
             }
@@ -130,6 +139,7 @@ export class CodeLensHelper {
     private readonly _removeDecorations: string[];
     private readonly _addDecorations: IModelDeltaDecoration[];
     private readonly _addDecorationsCallbacks: IDecorationIdCallback[];
+
     constructor() {
         this._removeDecorations = [];
         this._addDecorations = [];
@@ -144,6 +154,7 @@ export class CodeLensHelper {
     }
     commit(changeAccessor: IModelDecorationsChangeAccessor): void {
         const resultingDecorations = changeAccessor.deltaDecorations(this._removeDecorations, this._addDecorations);
+
         for (let i = 0, len = resultingDecorations.length; i < len; i++) {
             this._addDecorationsCallbacks[i](resultingDecorations[i]);
         }
@@ -161,13 +172,16 @@ export class CodeLensWidget {
     private _decorationIds: string[];
     private _data: CodeLensItem[];
     private _isDisposed: boolean = false;
+
     constructor(data: CodeLensItem[], editor: IActiveCodeEditor, helper: CodeLensHelper, viewZoneChangeAccessor: IViewZoneChangeAccessor, heightInPx: number, updateCallback: () => void) {
         this._editor = editor;
         this._data = data;
         // create combined range, track all ranges with decorations,
         // check if there is already something to render
         this._decorationIds = [];
+
         let range: Range | undefined;
+
         const lenses: CodeLens[] = [];
         this._data.forEach((codeLensData, i) => {
             if (codeLensData.symbol.command) {
@@ -187,6 +201,7 @@ export class CodeLensWidget {
         });
         this._viewZone = new CodeLensViewZone(range!.startLineNumber - 1, heightInPx, updateCallback);
         this._viewZoneId = viewZoneChangeAccessor.addZone(this._viewZone);
+
         if (lenses.length > 0) {
             this._createContentWidgetIfNecessary();
             this._contentWidget!.withCommands(lenses, false);
@@ -205,6 +220,7 @@ export class CodeLensWidget {
         this._decorationIds.forEach(helper.removeDecoration, helper);
         this._decorationIds = [];
         viewZoneChangeAccessor?.removeZone(this._viewZoneId);
+
         if (this._contentWidget) {
             this._editor.removeContentWidget(this._contentWidget);
             this._contentWidget = undefined;
@@ -217,7 +233,9 @@ export class CodeLensWidget {
     isValid(): boolean {
         return this._decorationIds.some((id, i) => {
             const range = this._editor.getModel().getDecorationRange(id);
+
             const symbol = this._data[i].symbol;
+
             return !!(range && Range.isEmpty(symbol.range) === range.isEmpty());
         });
     }
@@ -235,6 +253,7 @@ export class CodeLensWidget {
     updateHeight(height: number, viewZoneChangeAccessor: IViewZoneChangeAccessor): void {
         this._viewZone.heightInPx = height;
         viewZoneChangeAccessor.layoutZone(this._viewZoneId);
+
         if (this._contentWidget) {
             this._editor.layoutContentWidget(this._contentWidget);
         }
@@ -246,6 +265,7 @@ export class CodeLensWidget {
         // Read editor current state
         for (let i = 0; i < this._decorationIds.length; i++) {
             const range = model.getDecorationRange(this._decorationIds[i]);
+
             if (range) {
                 this._data[i].symbol.range = range;
             }
@@ -255,8 +275,10 @@ export class CodeLensWidget {
     updateCommands(symbols: Array<CodeLens | undefined | null>): void {
         this._createContentWidgetIfNecessary();
         this._contentWidget!.withCommands(symbols, true);
+
         for (let i = 0; i < this._data.length; i++) {
             const resolved = symbols[i];
+
             if (resolved) {
                 const { symbol } = this._data[i];
                 symbol.command = resolved.command || symbol.command;
@@ -268,6 +290,7 @@ export class CodeLensWidget {
     }
     getLineNumber(): number {
         const range = this._editor.getModel().getDecorationRange(this._decorationIds[0]);
+
         if (range) {
             return range.startLineNumber;
         }
@@ -276,9 +299,11 @@ export class CodeLensWidget {
     update(viewZoneChangeAccessor: IViewZoneChangeAccessor): void {
         if (this.isValid()) {
             const range = this._editor.getModel().getDecorationRange(this._decorationIds[0]);
+
             if (range) {
                 this._viewZone.afterLineNumber = range.startLineNumber - 1;
                 viewZoneChangeAccessor.layoutZone(this._viewZoneId);
+
                 if (this._contentWidget) {
                     this._contentWidget.updatePosition(range.startLineNumber);
                     this._editor.layoutContentWidget(this._contentWidget);

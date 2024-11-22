@@ -22,6 +22,7 @@ export class WorkbenchEditorWorkerService extends EditorWorkerService {
     @ILanguageFeaturesService
     languageFeaturesService: ILanguageFeaturesService) {
         const workerDescriptor = new WorkerDescriptor('vs/editor/common/services/editorSimpleWorker', 'TextEditorWorker');
+
         super(workerDescriptor, modelService, configurationService, logService, languageConfigurationService, languageFeaturesService);
     }
 }

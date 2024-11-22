@@ -52,6 +52,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
             return undefined;
         }
         const data = this.toJson(input);
+
         try {
             return JSON.stringify(data);
         }
@@ -61,6 +62,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
     }
     public deserialize(_instantiationService: IInstantiationService, serializedEditorInput: string): WebviewInput {
         const data = this.fromJson(JSON.parse(serializedEditorInput));
+
         return this._webviewWorkbenchService.openRevivedWebview({
             webviewInitInfo: {
                 providedViewType: data.providedId,
@@ -107,6 +109,7 @@ export function reviveWebviewExtensionDescription(extensionId: string | undefine
         return undefined;
     }
     const location = reviveUri(extensionLocation);
+
     if (!location) {
         return undefined;
     }
@@ -120,7 +123,9 @@ function reviveIconPath(data: SerializedIconPath | undefined) {
         return undefined;
     }
     const light = reviveUri(data.light);
+
     const dark = reviveUri(data.dark);
+
     return light && dark ? { light, dark } : undefined;
 }
 function reviveUri(data: string | UriComponents): URI;

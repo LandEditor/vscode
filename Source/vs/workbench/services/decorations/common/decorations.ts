@@ -37,5 +37,6 @@ export interface IDecorationsService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent>;
     registerDecorationsProvider(provider: IDecorationsProvider): IDisposable;
+
     getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined;
 }

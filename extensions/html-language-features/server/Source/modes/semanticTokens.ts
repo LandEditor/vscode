@@ -13,6 +13,7 @@ export interface SemanticTokenProvider {
         types: string[];
         modifiers: string[];
     };
+
     getSemanticTokens(document: TextDocument, ranges?: Range[]): Promise<number[]>;
 }
 export function newSemanticTokenProvider(languageModes: LanguageModes): SemanticTokenProvider {
@@ -21,9 +22,11 @@ export function newSemanticTokenProvider(languageModes: LanguageModes): Semantic
         types: string[];
         modifiers: string[];
     } = { types: [], modifiers: [] };
+
     const legendMappings: {
         [modeId: string]: LegendMapping;
     } = {};
+
     for (const mode of languageModes.getAllModes()) {
         if (mode.getSemanticTokenLegend && mode.getSemanticTokens) {
             const modeLegend = mode.getSemanticTokenLegend();
@@ -34,12 +37,15 @@ export function newSemanticTokenProvider(languageModes: LanguageModes): Semantic
         legend,
         async getSemanticTokens(document: TextDocument, ranges?: Range[]): Promise<number[]> {
             const allTokens: SemanticTokenData[] = [];
+
             for (const mode of languageModes.getAllModesInDocument(document)) {
                 if (mode.getSemanticTokens) {
                     const mapping = legendMappings[mode.getId()];
+
                     const tokens = await mode.getSemanticTokens(document);
                     applyTypesMapping(tokens, mapping.types);
                     applyModifiersMapping(tokens, mapping.modifiers);
+
                     for (const token of tokens) {
                         allTokens.push(token);
                     }
@@ -51,10 +57,14 @@ export function newSemanticTokenProvider(languageModes: LanguageModes): Semantic
 }
 function createMapping(origLegend: string[], newLegend: string[]): number[] | undefined {
     const mapping: number[] = [];
+
     let needsMapping = false;
+
     for (let origIndex = 0; origIndex < origLegend.length; origIndex++) {
         const entry = origLegend[origIndex];
+
         let newIndex = newLegend.indexOf(entry);
+
         if (newIndex === -1) {
             newIndex = newLegend.length;
             newLegend.push(entry);
@@ -75,9 +85,12 @@ function applyModifiersMapping(tokens: SemanticTokenData[], modifiersMapping: nu
     if (modifiersMapping) {
         for (const token of tokens) {
             let modifierSet = token.modifierSet;
+
             if (modifierSet) {
                 let index = 0;
+
                 let result = 0;
+
                 while (modifierSet > 0) {
                     if ((modifierSet & 1) !== 0) {
                         result = result + (1 << modifiersMapping[index]);
@@ -92,6 +105,7 @@ function applyModifiersMapping(tokens: SemanticTokenData[], modifiersMapping: nu
 }
 function encodeTokens(tokens: SemanticTokenData[], ranges: Range[] | undefined, document: TextDocument): number[] {
     const resultTokens = tokens.sort((d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character);
+
     if (ranges) {
         ranges = ranges.sort((d1, d2) => d1.start.line - d2.start.line || d1.start.character - d2.start.character);
     }
@@ -99,13 +113,20 @@ function encodeTokens(tokens: SemanticTokenData[], ranges: Range[] | undefined, 
         ranges = [Range.create(Position.create(0, 0), Position.create(document.lineCount, 0))];
     }
     let rangeIndex = 0;
+
     let currRange = ranges[rangeIndex++];
+
     let prefLine = 0;
+
     let prevChar = 0;
+
     const encodedResult: number[] = [];
+
     for (let k = 0; k < resultTokens.length && currRange; k++) {
         const curr = resultTokens[k];
+
         const start = curr.start;
+
         while (currRange && beforeOrSame(currRange.end, start)) {
             currRange = ranges[rangeIndex++];
         }

@@ -211,6 +211,7 @@ export abstract class MenubarControl extends Disposable {
 		this.topLevelTitles = {};
 
 		const [, mainMenuActions] = this.mainMenu.getActions()[0];
+
 		for (const mainMenuAction of mainMenuActions) {
 			if (mainMenuAction instanceof SubmenuItemAction && typeof mainMenuAction.item.title !== 'string') {
 				this.menus[mainMenuAction.item.title.original] = this.mainMenuDisposables.add(this.menuService.createMenu(mainMenuAction.item.submenu, this.contextKeyService, { emitEventsForSubmenuChanges: true }));
@@ -225,6 +226,7 @@ export abstract class MenubarControl extends Disposable {
 
 	protected calculateActionLabel(action: { id: string; label: string }): string {
 		const label = action.label;
+
 		switch (action.id) {
 			default:
 				break;
@@ -310,9 +312,13 @@ export abstract class MenubarControl extends Disposable {
 	private createOpenRecentMenuAction(recent: IRecent): IOpenRecentAction {
 
 		let label: string;
+
 		let uri: URI;
+
 		let commandId: string;
+
 		let openable: IWindowOpenable;
+
 		const remoteAuthority = recent.remoteAuthority;
 
 		if (isRecentFolder(recent)) {
@@ -352,6 +358,7 @@ export abstract class MenubarControl extends Disposable {
 		}
 
 		const hasBeenNotified = this.storageService.getBoolean('menubar/accessibleMenubarNotified', StorageScope.APPLICATION, false);
+
 		const usingCustomMenubar = !hasNativeTitlebar(this.configurationService);
 
 		if (hasBeenNotified || usingCustomMenubar || !this.accessibilityService.isScreenReaderOptimized()) {
@@ -500,6 +507,7 @@ export class CustomMenubarControl extends MenubarControl {
 		const settingValue = this.configurationService.getValue<boolean>('window.customMenuBarAltFocus');
 
 		let disableMenuBarAltBehavior = false;
+
 		if (typeof settingValue === 'boolean') {
 			disableMenuBarAltBehavior = !settingValue;
 		}
@@ -511,11 +519,13 @@ export class CustomMenubarControl extends MenubarControl {
 		switch (nextAction.id) {
 			case OpenRecentAction.ID:
 				target.push(...this.getOpenRecentActions());
+
 				break;
 
 			case 'workbench.action.showAboutDialog':
 				if (!isMacintosh && !isWeb) {
 					const updateAction = this.getUpdateAction();
+
 					if (updateAction) {
 						updateAction.label = mnemonicMenuLabel(updateAction.label);
 						target.push(updateAction);
@@ -532,6 +542,7 @@ export class CustomMenubarControl extends MenubarControl {
 
 	private get currentEnableMenuBarMnemonics(): boolean {
 		let enableMenuBarMnemonics = this.configurationService.getValue<boolean>('window.enableMenuBarMnemonics');
+
 		if (typeof enableMenuBarMnemonics !== 'boolean') {
 			enableMenuBarMnemonics = true;
 		}
@@ -546,9 +557,11 @@ export class CustomMenubarControl extends MenubarControl {
 
 		// Menu bar lives in activity bar and should flow based on its location
 		const currentSidebarLocation = this.configurationService.getValue<string>('workbench.sideBar.location');
+
 		const horizontalDirection = currentSidebarLocation === 'right' ? HorizontalDirection.Left : HorizontalDirection.Right;
 
 		const activityBarLocation = this.configurationService.getValue<string>('workbench.activityBar.location');
+
 		const verticalDirection = activityBarLocation === ActivityBarPosition.BOTTOM ? VerticalDirection.Above : VerticalDirection.Below;
 
 		return { horizontal: horizontalDirection, vertical: verticalDirection };
@@ -658,6 +671,7 @@ export class CustomMenubarControl extends MenubarControl {
 			// Append web navigation menu items to the file menu when not compact
 			if (topLevelTitle === 'File' && this.currentCompactMenuMode === undefined) {
 				const webActions = this.getWebNavigationActions();
+
 				if (webActions.length) {
 					target.push(...webActions);
 				}
@@ -666,6 +680,7 @@ export class CustomMenubarControl extends MenubarControl {
 
 		for (const title of Object.keys(this.topLevelTitles)) {
 			const menu = this.menus[title];
+
 			if (firstTime && menu) {
 				this.reinstallDisposables.add(menu.onDidChange(() => {
 					if (!this.focusInsideMenubar) {
@@ -688,6 +703,7 @@ export class CustomMenubarControl extends MenubarControl {
 			}
 
 			const actions: IAction[] = [];
+
 			if (menu) {
 				updateActions(this.toActionsArray(menu), actions, title);
 			}
@@ -708,8 +724,10 @@ export class CustomMenubarControl extends MenubarControl {
 		}
 
 		const webNavigationActions = [];
+
 		for (const groups of this.webNavigationMenu.getActions()) {
 			const [, actions] = groups;
+
 			for (const action of actions) {
 				if (action instanceof MenuItemAction) {
 					const title = typeof action.item.title === 'string'

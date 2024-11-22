@@ -9,6 +9,7 @@ export class Query {
     }
     static suggestions(query: string): string[] {
         const commands = ['installed', 'updates', 'enabled', 'disabled', 'builtin', 'featured', 'popular', 'recommended', 'recentlyPublished', 'workspaceUnsupported', 'deprecated', 'sort', 'category', 'tag', 'ext', 'id'] as const;
+
         const subcommands = {
             'sort': ['installs', 'rating', 'name', 'publishedDate', 'updateDate'],
             'category': EXTENSION_CATEGORIES.map(c => `"${c.toLowerCase()}"`),
@@ -16,9 +17,13 @@ export class Query {
             'ext': [''],
             'id': ['']
         } as const;
+
         const queryContains = (substr: string) => query.indexOf(substr) > -1;
+
         const hasSort = subcommands.sort.some(subcommand => queryContains(`@sort:${subcommand}`));
+
         const hasCategory = subcommands.category.some(subcommand => queryContains(`@category:${subcommand}`));
+
         return commands.flatMap(command => {
             if (hasSort && command === 'sort' || hasCategory && command === 'category') {
                 return [];
@@ -36,12 +41,15 @@ export class Query {
         let sortBy = '';
         value = value.replace(/@sort:(\w+)(-\w*)?/g, (match, by: string, order: string) => {
             sortBy = by;
+
             return '';
         });
+
         return new Query(value, sortBy);
     }
     toString(): string {
         let result = this.value;
+
         if (this.sortBy) {
             result = `${result}${result ? ' ' : ''}@sort:${this.sortBy}`;
         }

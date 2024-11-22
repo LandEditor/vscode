@@ -29,8 +29,11 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, item: ITimelineCommandArgument): Promise<void> {
         const workingCopyHistoryService = accessor.get(IWorkingCopyHistoryService);
+
         const nativeHostService = accessor.get(INativeHostService);
+
         const { entry } = await findLocalHistoryEntry(workingCopyHistoryService, item);
+
         if (entry) {
             await nativeHostService.showItemInFolder(entry.location.with({ scheme: Schemas.file }).fsPath);
         }

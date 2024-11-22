@@ -8,6 +8,7 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 import { IWorkspaceFolder } from './workspace.js';
 export interface IEditSessionIdentityProvider {
     readonly scheme: string;
+
     getEditSessionIdentifier(workspaceFolder: IWorkspaceFolder, token: CancellationToken): Promise<string | undefined>;
     provideEditSessionIdentityMatch(workspaceFolder: IWorkspaceFolder, identity1: string, identity2: string, token: CancellationToken): Promise<EditSessionIdentityMatch | undefined>;
 }
@@ -15,6 +16,7 @@ export const IEditSessionIdentityService = createDecorator<IEditSessionIdentityS
 export interface IEditSessionIdentityService {
     readonly _serviceBrand: undefined;
     registerEditSessionIdentityProvider(provider: IEditSessionIdentityProvider): IDisposable;
+
     getEditSessionIdentifier(workspaceFolder: IWorkspaceFolder, cancellationToken: CancellationToken): Promise<string | undefined>;
     provideEditSessionIdentityMatch(workspaceFolder: IWorkspaceFolder, identity1: string, identity2: string, cancellationToken: CancellationToken): Promise<EditSessionIdentityMatch | undefined>;
     addEditSessionIdentityCreateParticipant(participants: IEditSessionIdentityCreateParticipant): IDisposable;

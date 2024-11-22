@@ -19,6 +19,7 @@ export class ChatMarkdownAnchorService extends Disposable implements IChatMarkdo
     declare readonly _serviceBrand: undefined;
     private _widgets: InlineAnchorWidget[] = [];
     private _lastFocusedWidget: InlineAnchorWidget | undefined = undefined;
+
     get lastFocusedAnchor(): InlineAnchorWidget | undefined {
         return this._lastFocusedWidget;
     }
@@ -31,6 +32,7 @@ export class ChatMarkdownAnchorService extends Disposable implements IChatMarkdo
         }
         // Keep in our lists list
         this._widgets.push(widget);
+
         const element = widget.getHTMLElement();
         // Check for currently being focused
         if (isActiveElement(element)) {

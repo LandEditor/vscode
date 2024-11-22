@@ -8,6 +8,7 @@ import { Emitter, Event } from '../../../common/event.js';
 import { DisposableStore } from '../../../common/lifecycle.js';
 export interface IResizeEvent {
     dimension: Dimension;
+
     done: boolean;
     north?: boolean;
     east?: boolean;
@@ -29,6 +30,7 @@ export class ResizableHTMLElement {
     private _minSize = new Dimension(0, 0);
     private _maxSize = new Dimension(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
     private _preferredSize?: Dimension;
+
     constructor() {
         this.domNode = document.createElement('div');
         this._eastSash = new Sash(this.domNode, { getVerticalSashLeft: () => this._size.width }, { orientation: Orientation.VERTICAL });
@@ -39,8 +41,11 @@ export class ResizableHTMLElement {
         this._northSash.orthogonalEndSash = this._eastSash;
         this._southSash.orthogonalStartSash = this._westSash;
         this._southSash.orthogonalEndSash = this._eastSash;
+
         let currentSize: Dimension | undefined;
+
         let deltaY = 0;
+
         let deltaX = 0;
         this._sashListener.add(Event.any(this._northSash.onDidStart, this._eastSash.onDidStart, this._southSash.onDidStart, this._westSash.onDidStart)(() => {
             if (currentSize === undefined) {
@@ -117,10 +122,13 @@ export class ResizableHTMLElement {
     }
     layout(height: number = this.size.height, width: number = this.size.width): void {
         const { height: minHeight, width: minWidth } = this._minSize;
+
         const { height: maxHeight, width: maxWidth } = this._maxSize;
         height = Math.max(minHeight, Math.min(maxHeight, height));
         width = Math.max(minWidth, Math.min(maxWidth, width));
+
         const newSize = new Dimension(width, height);
+
         if (!Dimension.equals(newSize, this._size)) {
             this.domNode.style.height = height + 'px';
             this.domNode.style.width = width + 'px';

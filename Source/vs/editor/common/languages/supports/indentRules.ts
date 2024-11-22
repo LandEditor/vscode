@@ -17,6 +17,7 @@ function resetGlobalRegex(reg: RegExp) {
 }
 export class IndentRulesSupport {
     private readonly _indentationRules: IndentationRule;
+
     constructor(indentationRules: IndentationRule) {
         this._indentationRules = indentationRules;
     }
@@ -52,6 +53,7 @@ export class IndentRulesSupport {
     }
     public getIndentMetadata(text: string): number {
         let ret = 0;
+
         if (this.shouldIncrease(text)) {
             ret += IndentConsts.INCREASE_MASK;
         }

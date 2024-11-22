@@ -21,6 +21,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
     declare readonly _serviceBrand: undefined;
     private impl: ITelemetryService = NullTelemetryService;
     public readonly sendErrorTelemetry = true;
+
     get sessionId(): string { return this.impl.sessionId; }
     get machineId(): string { return this.impl.machineId; }
     get sqmId(): string { return this.impl.sqmId; }
@@ -58,10 +59,13 @@ export class TelemetryService extends Disposable implements ITelemetryService {
      */
     private initializeService(environmentService: IBrowserWorkbenchEnvironmentService, logService: ILogService, loggerService: ILoggerService, configurationService: IConfigurationService, storageService: IStorageService, productService: IProductService, remoteAgentService: IRemoteAgentService) {
         const telemetrySupported = supportsTelemetry(productService, environmentService) && productService.aiConfig?.ariaKey;
+
         if (telemetrySupported && getTelemetryLevel(configurationService) !== TelemetryLevel.NONE && this.impl === NullTelemetryService) {
             // If remote server is present send telemetry through that, else use the client side appender
             const appenders: ITelemetryAppender[] = [];
+
             const isInternal = isInternalTelemetry(productService, configurationService);
+
             if (!isLoggingOnly(productService, environmentService)) {
                 if (remoteAgentService.getConnection() !== null) {
                     const remoteTelemetryProvider = {
@@ -75,11 +79,13 @@ export class TelemetryService extends Disposable implements ITelemetryService {
                 }
             }
             appenders.push(new TelemetryLogAppender(logService, loggerService, environmentService, productService));
+
             const config: ITelemetryServiceConfig = {
                 appenders,
                 commonProperties: resolveWorkbenchCommonProperties(storageService, productService.commit, productService.version, isInternal, environmentService.remoteAuthority, productService.embedderIdentifier, productService.removeTelemetryMachineId, environmentService.options && environmentService.options.resolveCommonTelemetryProperties),
                 sendErrorTelemetry: this.sendErrorTelemetry,
             };
+
             return this._register(new BaseTelemetryService(config, configurationService, productService));
         }
         return this.impl;

@@ -181,6 +181,7 @@ export const presentationSchema: IJSONSchema = {
         order: 1
     }
 };
+
 const defaultCompound: ICompound = { name: 'Compound', configurations: [] };
 export const launchSchema: IJSONSchema = {
     id: launchSchemaId,
@@ -268,6 +269,7 @@ class DebuggersDataRenderer extends Disposable implements IExtensionFeatureTable
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.debuggers || [];
+
         if (!contrib.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -275,12 +277,14 @@ class DebuggersDataRenderer extends Disposable implements IExtensionFeatureTable
             nls.localize('debugger name', "Name"),
             nls.localize('debugger type', "Type"),
         ];
+
         const rows: IRowData[][] = contrib.map(d => {
             return [
                 d.label ?? '',
                 d.type
             ];
         });
+
         return {
             data: {
                 headers,

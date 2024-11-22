@@ -37,6 +37,7 @@ class ListDelegate implements IListVirtualDelegate<ISCMRepository> {
 export class SCMRepositoriesViewPane extends ViewPane {
     private list!: WorkbenchList<ISCMRepository>;
     private readonly disposables = new DisposableStore();
+
     constructor(options: IViewPaneOptions, 
     @ISCMViewService
     protected scmViewService: ISCMViewService, 
@@ -64,7 +65,9 @@ export class SCMRepositoriesViewPane extends ViewPane {
     }
     protected override renderBody(container: HTMLElement): void {
         super.renderBody(container);
+
         const listContainer = append(container, $('.scm-view.scm-repositories-view'));
+
         const updateProviderCountVisibility = () => {
             const value = this.configurationService.getValue<'hidden' | 'auto' | 'visible'>('scm.providerCountBadge');
             listContainer.classList.toggle('hide-provider-counts', value === 'hidden');
@@ -72,8 +75,11 @@ export class SCMRepositoriesViewPane extends ViewPane {
         };
         this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.providerCountBadge'), this.disposables)(updateProviderCountVisibility));
         updateProviderCountVisibility();
+
         const delegate = new ListDelegate();
+
         const renderer = this.instantiationService.createInstance(RepositoryRenderer, MenuId.SCMSourceControlInline, getActionViewItemProvider(this.instantiationService));
+
         const identityProvider = { getId: (r: ISCMRepository) => r.provider.id };
         this.list = this.instantiationService.createInstance(WorkbenchList, `SCM Main`, listContainer, delegate, [renderer], {
             identityProvider,
@@ -93,6 +99,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
         this._register(this.list.onContextMenu(this.onListContextMenu, this));
         this._register(this.scmViewService.onDidChangeRepositories(this.onDidChangeRepositories, this));
         this._register(this.scmViewService.onDidChangeVisibleRepositories(this.updateListSelection, this));
+
         if (this.orientation === Orientation.VERTICAL) {
             this._register(this.configurationService.onDidChangeConfiguration(e => {
                 if (e.affectsConfiguration('scm.repositories.visible')) {
@@ -120,7 +127,9 @@ export class SCMRepositoriesViewPane extends ViewPane {
             return;
         }
         const visibleCount = this.configurationService.getValue<number>('scm.repositories.visible');
+
         const empty = this.list.length === 0;
+
         const size = Math.min(this.list.length, visibleCount) * 22;
         this.minimumBodySize = visibleCount === 0 ? 22 : size;
         this.maximumBodySize = visibleCount === 0 ? Number.POSITIVE_INFINITY : empty ? Number.POSITIVE_INFINITY : size;
@@ -130,9 +139,13 @@ export class SCMRepositoriesViewPane extends ViewPane {
             return;
         }
         const provider = e.element.provider;
+
         const menus = this.scmViewService.menus.getRepositoryMenus(provider);
+
         const menu = menus.repositoryContextMenu;
+
         const actions = collectContextMenuActions(menu);
+
         const actionRunner = this._register(new RepositoryActionRunner(() => {
             return this.list.getSelectedElements();
         }));
@@ -153,21 +166,28 @@ export class SCMRepositoriesViewPane extends ViewPane {
     }
     private updateListSelection(): void {
         const oldSelection = this.list.getSelection();
+
         const oldSet = new Set(Iterable.map(oldSelection, i => this.list.element(i)));
+
         const set = new Set(this.scmViewService.visibleRepositories);
+
         const added = new Set(Iterable.filter(set, r => !oldSet.has(r)));
+
         const removed = new Set(Iterable.filter(oldSet, r => !set.has(r)));
+
         if (added.size === 0 && removed.size === 0) {
             return;
         }
         const selection = oldSelection
             .filter(i => !removed.has(this.list.element(i)));
+
         for (let i = 0; i < this.list.length; i++) {
             if (added.has(this.list.element(i))) {
                 selection.push(i);
             }
         }
         this.list.setSelection(selection);
+
         if (selection.length > 0 && selection.indexOf(this.list.getFocus()[0]) === -1) {
             this.list.setAnchor(selection[0]);
             this.list.setFocus([selection[0]]);
@@ -175,6 +195,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
     }
     override dispose(): void {
         this.disposables.dispose();
+
         super.dispose();
     }
 }

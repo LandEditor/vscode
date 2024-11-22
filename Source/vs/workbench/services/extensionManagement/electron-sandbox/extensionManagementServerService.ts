@@ -20,6 +20,7 @@ export class ExtensionManagementServerService extends Disposable implements IExt
     readonly localExtensionManagementServer: IExtensionManagementServer;
     readonly remoteExtensionManagementServer: IExtensionManagementServer | null = null;
     readonly webExtensionManagementServer: IExtensionManagementServer | null = null;
+
     constructor(
     @ISharedProcessService
     sharedProcessService: ISharedProcessService, 
@@ -30,9 +31,12 @@ export class ExtensionManagementServerService extends Disposable implements IExt
     @IInstantiationService
     instantiationService: IInstantiationService) {
         super();
+
         const localExtensionManagementService = this._register(instantiationService.createInstance(NativeExtensionManagementService, sharedProcessService.getChannel('extensions')));
         this.localExtensionManagementServer = { extensionManagementService: localExtensionManagementService, id: 'local', label: localize('local', "Local") };
+
         const remoteAgentConnection = remoteAgentService.getConnection();
+
         if (remoteAgentConnection) {
             const extensionManagementService = instantiationService.createInstance(NativeRemoteExtensionManagementService, remoteAgentConnection.getChannel<IChannel>('extensions'), this.localExtensionManagementServer);
             this.remoteExtensionManagementServer = {
@@ -53,6 +57,7 @@ export class ExtensionManagementServerService extends Disposable implements IExt
     }
     getExtensionInstallLocation(extension: IExtension): ExtensionInstallLocation | null {
         const server = this.getExtensionManagementServer(extension);
+
         return server === this.remoteExtensionManagementServer ? ExtensionInstallLocation.Remote : ExtensionInstallLocation.Local;
     }
 }

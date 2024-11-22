@@ -25,9 +25,11 @@ export interface INormalizedVersion {
     isMinimum: boolean;
 }
 const VERSION_REGEXP = /^(\^|>=)?((\d+)|x)\.((\d+)|x)\.((\d+)|x)(\-.*)?$/;
+
 const NOT_BEFORE_REGEXP = /^-(\d{4})(\d{2})(\d{2})$/;
 export function isValidVersionStr(version: string): boolean {
     version = version.trim();
+
     return (version === '*' || VERSION_REGEXP.test(version));
 }
 export function parseVersion(version: string): IParsedVersion | null {
@@ -35,6 +37,7 @@ export function parseVersion(version: string): IParsedVersion | null {
         return null;
     }
     version = version.trim();
+
     if (version === '*') {
         return {
             hasCaret: false,
@@ -49,6 +52,7 @@ export function parseVersion(version: string): IParsedVersion | null {
         };
     }
     const m = version.match(VERSION_REGEXP);
+
     if (!m) {
         return null;
     }
@@ -69,11 +73,17 @@ export function normalizeVersion(version: IParsedVersion | null): INormalizedVer
         return null;
     }
     const majorBase = version.majorBase;
+
     const majorMustEqual = version.majorMustEqual;
+
     const minorBase = version.minorBase;
+
     let minorMustEqual = version.minorMustEqual;
+
     const patchBase = version.patchBase;
+
     let patchMustEqual = version.patchMustEqual;
+
     if (version.hasCaret) {
         if (majorBase === 0) {
             patchMustEqual = false;
@@ -84,8 +94,10 @@ export function normalizeVersion(version: IParsedVersion | null): INormalizedVer
         }
     }
     let notBefore = 0;
+
     if (version.preRelease) {
         const match = NOT_BEFORE_REGEXP.exec(version.preRelease);
+
         if (match) {
             const [, year, month, day] = match;
             notBefore = Date.UTC(Number(year), Number(month) - 1, Number(day));

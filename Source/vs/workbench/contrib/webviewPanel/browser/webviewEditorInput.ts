@@ -33,6 +33,7 @@ export class WebviewInput extends EditorInput {
     private _group?: GroupIdentifier;
     private _webview: IOverlayWebview;
     private _hasTransfered = false;
+
     get resource() {
         return URI.from({
             scheme: Schemas.webviewPanel,
@@ -41,6 +42,7 @@ export class WebviewInput extends EditorInput {
     }
     public readonly viewType: string;
     public readonly providedId: string | undefined;
+
     constructor(init: WebviewInputInitInfo, webview: IOverlayWebview, private readonly _iconManager: WebviewIconManager) {
         super();
         this.viewType = init.viewType;
@@ -98,6 +100,7 @@ export class WebviewInput extends EditorInput {
         }
         this._hasTransfered = true;
         other._webview = this._webview;
+
         return other;
     }
     public claim(claimant: unknown, targetWindow: CodeWindow, scopedContextKeyService: IContextKeyService | undefined): void {

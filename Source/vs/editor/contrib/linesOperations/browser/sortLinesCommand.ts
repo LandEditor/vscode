@@ -18,6 +18,7 @@ export class SortLinesCommand implements ICommand {
     private readonly selection: Selection;
     private readonly descending: boolean;
     private selectionId: string | null;
+
     constructor(selection: Selection, descending: boolean) {
         this.selection = selection;
         this.descending = descending;
@@ -25,6 +26,7 @@ export class SortLinesCommand implements ICommand {
     }
     public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
         const op = sortLines(model, this.selection, this.descending);
+
         if (op) {
             builder.addEditOperation(op.range, op.text);
         }
@@ -38,6 +40,7 @@ export class SortLinesCommand implements ICommand {
             return false;
         }
         const data = getSortData(model, selection, descending);
+
         if (!data) {
             return false;
         }
@@ -51,7 +54,9 @@ export class SortLinesCommand implements ICommand {
 }
 function getSortData(model: ITextModel, selection: Selection, descending: boolean) {
     const startLineNumber = selection.startLineNumber;
+
     let endLineNumber = selection.endLineNumber;
+
     if (selection.endColumn === 1) {
         endLineNumber--;
     }
@@ -82,6 +87,7 @@ function getSortData(model: ITextModel, selection: Selection, descending: boolea
  */
 function sortLines(model: ITextModel, selection: Selection, descending: boolean): ISingleEditOperation | null {
     const data = getSortData(model, selection, descending);
+
     if (!data) {
         return null;
     }

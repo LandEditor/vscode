@@ -23,12 +23,15 @@ export async function performAsyncTextEdit(model: ITextModel, edit: AsyncTextEdi
                 stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
             }
         }]);
+
     let first = true;
+
     for await (const part of edit.newText) {
         if (model.isDisposed()) {
             break;
         }
         const range = model.getDecorationRange(id);
+
         if (!range) {
             throw new Error('FAILED to perform async replace edit because the anchor decoration was removed');
         }
@@ -38,6 +41,7 @@ export async function performAsyncTextEdit(model: ITextModel, edit: AsyncTextEdi
         obs?.start();
         model.pushEditOperations(null, [edit], (undoEdits) => {
             progress?.report(undoEdits);
+
             return null;
         });
         obs?.stop();
@@ -46,7 +50,9 @@ export async function performAsyncTextEdit(model: ITextModel, edit: AsyncTextEdi
 }
 export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSingleEditOperation, wordsPerSec: number, token: CancellationToken): AsyncTextEdit {
     wordsPerSec = Math.max(30, wordsPerSec);
+
     const stream = new AsyncIterableSource<string>();
+
     let newText = edit.text ?? '';
     interval.cancelAndSet(() => {
         if (token.isCancellationRequested) {
@@ -55,6 +61,7 @@ export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSing
         const r = getNWords(newText, 1);
         stream.emitOne(r.value);
         newText = newText.substring(r.value.length);
+
         if (r.isFullString) {
             interval.cancel();
             stream.resolve();
@@ -67,6 +74,7 @@ export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSing
         stream.resolve();
         d.dispose();
     });
+
     return {
         range: edit.range,
         newText: stream.asyncIterable

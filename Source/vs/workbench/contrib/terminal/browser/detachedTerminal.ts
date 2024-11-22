@@ -33,15 +33,18 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
         this._register(_xterm);
         // Initialize contributions
         const contributionDescs = TerminalExtensionsRegistry.getTerminalContributions();
+
         for (const desc of contributionDescs) {
             if (this._contributions.has(desc.id)) {
                 onUnexpectedError(new Error(`Cannot have two terminal contributions with the same id ${desc.id}`));
+
                 continue;
             }
             if (desc.canRunInDetachedTerminals === false) {
                 continue;
             }
             let contribution: ITerminalContribution;
+
             try {
                 contribution = instantiationService.createInstance(desc.ctor, {
                     instance: this,
@@ -79,6 +82,7 @@ export class DetachedTerminal extends Disposable implements IDetachedTerminalIns
     }
     attachToElement(container: HTMLElement, options?: Partial<IXtermAttachToElementOptions> | undefined): void {
         this.domElement = container;
+
         const screenElement = this._xterm.attachToElement(container, options);
         this._widgets.attachToElement(screenElement);
     }
@@ -114,6 +118,7 @@ export class DetachedProcessInfo implements ITerminalProcessInfo {
     capabilities = new TerminalCapabilityStore();
     shellIntegrationNonce = '';
     extEnvironmentVariableCollection: IMergedEnvironmentVariableCollection | undefined;
+
     constructor(initialValues: Partial<ITerminalProcessInfo>) {
         Object.assign(this, initialValues);
     }

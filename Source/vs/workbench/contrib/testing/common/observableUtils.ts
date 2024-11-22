@@ -16,6 +16,7 @@ export function onObservableChange<T>(observable: IObservable<unknown, T>, callb
         }
     };
     observable.addObserver(o);
+
     return {
         dispose() {
             observable.removeObserver(o);

@@ -14,6 +14,7 @@ export function deepClone<T>(obj: T): T {
     Object.entries(obj).forEach(([key, value]) => {
         result[key] = value && typeof value === 'object' ? deepClone(value) : value;
     });
+
     return result;
 }
 export function deepFreeze<T>(obj: T): T {
@@ -21,12 +22,15 @@ export function deepFreeze<T>(obj: T): T {
         return obj;
     }
     const stack: any[] = [obj];
+
     while (stack.length > 0) {
         const obj = stack.shift();
         Object.freeze(obj);
+
         for (const key in obj) {
             if (_hasOwnProperty.call(obj, key)) {
                 const prop = obj[key];
+
                 if (typeof prop === 'object' && !Object.isFrozen(prop) && !isTypedArray(prop)) {
                     stack.push(prop);
                 }
@@ -44,11 +48,13 @@ function _cloneAndChange(obj: any, changer: (orig: any) => any, seen: Set<any>):
         return obj;
     }
     const changed = changer(obj);
+
     if (typeof changed !== 'undefined') {
         return changed;
     }
     if (Array.isArray(obj)) {
         const r1: any[] = [];
+
         for (const e of obj) {
             r1.push(_cloneAndChange(e, changer, seen));
         }
@@ -59,13 +65,16 @@ function _cloneAndChange(obj: any, changer: (orig: any) => any, seen: Set<any>):
             throw new Error('Cannot clone recursive data-structure');
         }
         seen.add(obj);
+
         const r2 = {};
+
         for (const i2 in obj) {
             if (_hasOwnProperty.call(obj, i2)) {
                 (r2 as any)[i2] = _cloneAndChange(obj[i2], changer, seen);
             }
         }
         seen.delete(obj);
+
         return r2;
     }
     return obj;
@@ -114,7 +123,9 @@ export function equals(one: any, other: any): boolean {
         return false;
     }
     let i: number;
+
     let key: string;
+
     if (Array.isArray(one)) {
         if (one.length !== other.length) {
             return false;
@@ -127,15 +138,19 @@ export function equals(one: any, other: any): boolean {
     }
     else {
         const oneKeys: string[] = [];
+
         for (key in one) {
             oneKeys.push(key);
         }
         oneKeys.sort();
+
         const otherKeys: string[] = [];
+
         for (key in other) {
             otherKeys.push(key);
         }
         otherKeys.sort();
+
         if (!equals(oneKeys, otherKeys)) {
             return false;
         }
@@ -154,6 +169,7 @@ export function equals(one: any, other: any): boolean {
  */
 export function safeStringify(obj: any): string {
     const seen = new Set<any>();
+
     return JSON.stringify(obj, (key, value) => {
         if (isObject(value) || Array.isArray(value)) {
             if (seen.has(value)) {
@@ -184,26 +200,33 @@ type obj = {
  */
 export function distinct(base: obj, target: obj): obj {
     const result = Object.create(null);
+
     if (!base || !target) {
         return result;
     }
     const targetKeys = Object.keys(target);
     targetKeys.forEach(k => {
         const baseValue = base[k];
+
         const targetValue = target[k];
+
         if (!equals(baseValue, targetValue)) {
             result[k] = targetValue;
         }
     });
+
     return result;
 }
 export function getCaseInsensitive(target: obj, key: string): unknown {
     const lowercaseKey = key.toLowerCase();
+
     const equivalentKey = Object.keys(target).find(k => k.toLowerCase() === lowercaseKey);
+
     return equivalentKey ? target[equivalentKey] : target[key];
 }
 export function filter(obj: obj, predicate: (key: string, value: any) => boolean): obj {
     const result = Object.create(null);
+
     for (const [key, value] of Object.entries(obj)) {
         if (predicate(key, value)) {
             result[key] = value;
@@ -213,6 +236,7 @@ export function filter(obj: obj, predicate: (key: string, value: any) => boolean
 }
 export function getAllPropertyNames(obj: object): string[] {
     let res: string[] = [];
+
     while (Object.prototype !== obj) {
         res = res.concat(Object.getOwnPropertyNames(obj));
         obj = Object.getPrototypeOf(obj);
@@ -221,6 +245,7 @@ export function getAllPropertyNames(obj: object): string[] {
 }
 export function getAllMethodNames(obj: object): string[] {
     const methods: string[] = [];
+
     for (const prop of getAllPropertyNames(obj)) {
         if (typeof (obj as any)[prop] === 'function') {
             methods.push(prop);
@@ -232,11 +257,13 @@ export function createProxyObject<T extends object>(methodNames: string[], invok
     const createProxyMethod = (method: string): () => unknown => {
         return function () {
             const args = Array.prototype.slice.call(arguments, 0);
+
             return invoke(method, args);
         };
     };
     // eslint-disable-next-line local/code-no-dangerous-type-assertions
     const result = {} as T;
+
     for (const methodName of methodNames) {
         (<any>result)[methodName] = createProxyMethod(methodName);
     }
@@ -248,6 +275,7 @@ export function mapValues<T extends {}, R>(obj: T, fn: (value: T[keyof T], key: 
     const result: {
         [key: string]: R;
     } = {};
+
     for (const [key, value] of Object.entries(obj)) {
         result[key] = fn(<T[keyof T]>value, key);
     }

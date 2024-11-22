@@ -17,7 +17,9 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
 import { Codicon } from '../../../../base/common/codicons.js';
 import Severity from '../../../../base/common/severity.js';
+
 const REMOTE_UNSUPPORTED_CONNECTION_CHOICE_KEY = 'remote.unsupportedConnectionChoice';
+
 const BANNER_REMOTE_UNSUPPORTED_CONNECTION_DISMISSED_KEY = 'workbench.banner.remote.unsupportedConnection.dismissed';
 export class InitialRemoteConnectionHealthContribution implements IWorkbenchContribution {
     constructor(
@@ -69,10 +71,12 @@ export class InitialRemoteConnectionHealthContribution implements IWorkbenchCont
                 label: localize('remember', "Do not show again"),
             }
         });
+
         if (result === ConnectionChoice.LearnMore) {
             return await this._confirmConnection();
         }
         const allowed = result === ConnectionChoice.Allow;
+
         if (allowed && checkboxChecked) {
             this.storageService.store(`${REMOTE_UNSUPPORTED_CONNECTION_CHOICE_KEY}.${this._environmentService.remoteAuthority}`, allowed, StorageScope.PROFILE, StorageTarget.MACHINE);
         }
@@ -81,8 +85,10 @@ export class InitialRemoteConnectionHealthContribution implements IWorkbenchCont
     private async _checkInitialRemoteConnectionHealth(): Promise<void> {
         try {
             const environment = await this._remoteAgentService.getRawEnvironment();
+
             if (environment && environment.isUnsupportedGlibc) {
                 let allowed = this.storageService.getBoolean(`${REMOTE_UNSUPPORTED_CONNECTION_CHOICE_KEY}.${this._environmentService.remoteAuthority}`, StorageScope.PROFILE);
+
                 if (allowed === undefined) {
                     allowed = await this._confirmConnection();
                 }
@@ -90,6 +96,7 @@ export class InitialRemoteConnectionHealthContribution implements IWorkbenchCont
                     const bannerDismissedVersion = this.storageService.get(`${BANNER_REMOTE_UNSUPPORTED_CONNECTION_DISMISSED_KEY}`, StorageScope.PROFILE) ?? '';
                     // Ignore patch versions and dismiss the banner if the major and minor versions match.
                     const shouldShowBanner = bannerDismissedVersion.slice(0, bannerDismissedVersion.lastIndexOf('.')) !== this.productService.version.slice(0, this.productService.version.lastIndexOf('.'));
+
                     if (shouldShowBanner) {
                         const actions = [
                             {
@@ -111,6 +118,7 @@ export class InitialRemoteConnectionHealthContribution implements IWorkbenchCont
                 }
                 else {
                     this.hostService.openWindow({ forceReuseWindow: true, remoteAuthority: null });
+
                     return;
                 }
             }
@@ -186,6 +194,7 @@ export class InitialRemoteConnectionHealthContribution implements IWorkbenchCont
     }
     private async _measureExtHostLatency() {
         const measurement = await remoteConnectionLatencyMeasurer.measure(this._remoteAgentService);
+
         if (measurement === undefined) {
             return;
         }

@@ -118,6 +118,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 		this._register(this._textBuffer.onDidChangeContent(() => {
 			this._hash = null;
+
 			if (!this._textModel) {
 				this._onDidChangeContent.fire('content');
 			}
@@ -132,12 +133,14 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	private _versionId: number = 1;
 	private _alternativeId: number = 1;
+
 	get alternativeId(): number {
 		return this._alternativeId;
 	}
 
 	private readonly _textModelDisposables = this._register(new DisposableStore());
 	private _textModel: TextModel | undefined = undefined;
+
 	get textModel(): TextModel | undefined {
 		return this._textModel;
 	}
@@ -149,6 +152,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 		this._textModelDisposables.clear();
 		this._textModel = m;
+
 		if (this._textModel) {
 			this.setRegisteredLanguage(this._languageService, this._textModel.getLanguageId(), this.language);
 
@@ -174,6 +178,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		// The language defined in the cell might not be supported in the editor so the text model might be using the default fallback
 		// If so let's not modify the language
 		const isFallBackLanguage = (newLanguage === PLAINTEXT_LANGUAGE_ID || newLanguage === 'jupyter');
+
 		if (!languageService.isRegisteredLanguageId(currentLanguage) && isFallBackLanguage) {
 			// notify to display warning, but don't change the language
 			this._onDidChangeLanguage.fire(currentLanguage);
@@ -185,6 +190,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	private readonly autoDetectLanguageThrottler = this._register(new ThrottledDelayer<void>(NotebookCellTextModel.AUTO_DETECT_LANGUAGE_THROTTLE_DELAY));
 	private _autoLanguageDetectionEnabled: boolean = false;
 	private _hasLanguageSetExplicitly: boolean = false;
+
 	get hasLanguageSetExplicitly(): boolean { return this._hasLanguageSetExplicitly; }
 
 	constructor(
@@ -225,6 +231,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		const newLanguage = await this._languageDetectionService?.detectLanguage(this.uri);
+
 		if (!newLanguage) {
 			return;
 		}
@@ -266,7 +273,9 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	getValue(): string {
 		const fullRange = this.getFullModelRange();
+
 		const eol = this.textBuffer.getEOL();
+
 		if (eol === '\n') {
 			return this.textBuffer.getValueInRange(fullRange, model.EndOfLinePreference.LF);
 		} else {
@@ -280,12 +289,16 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		const shaComputer = new StringSHA1();
+
 		const snapshot = this.textBuffer.createSnapshot(false);
+
 		let text: string | null;
+
 		while ((text = snapshot.read())) {
 			shaComputer.update(text);
 		}
 		this._textBufferHash = shaComputer.digest();
+
 		return this._textBufferHash;
 	}
 
@@ -301,6 +314,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			})),
 			metadata: op.metadata
 		}))]);
+
 		return this._hash;
 	}
 
@@ -314,6 +328,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	getFullModelRange() {
 		const lineCount = this.textBuffer.getLineCount();
+
 		return new Range(1, 1, lineCount, this.textBuffer.getLineLength(lineCount) + 1);
 	}
 
@@ -323,6 +338,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			// update
 			for (let i = 0; i < commonLen; i++) {
 				const currentOutput = this.outputs[splice.start + i];
+
 				const newOutput = splice.newOutputs[i];
 
 				this.replaceOutput(currentOutput.outputId, newOutput);
@@ -354,6 +370,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		});
 		newOutputItem.dispose();
 		this._onDidChangeOutputItems.fire();
+
 		return true;
 	}
 
@@ -365,12 +382,14 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		}
 
 		const output = this.outputs[outputIndex];
+
 		if (append) {
 			output.appendData(items);
 		} else {
 			output.replaceData({ outputId: outputId, outputs: items, metadata: output.metadata });
 		}
 		this._onDidChangeOutputItems.fire();
+
 		return true;
 	}
 
@@ -381,6 +400,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 		for (let i = 0; i < this.outputs.length; i++) {
 			const l = left[i];
+
 			const r = right[i];
 
 			if (l.outputs.length !== r.outputs.length) {
@@ -470,6 +490,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	private static linesAreEqual(aLines: string[], b: string) {
 		const bLines = splitLines(b);
+
 		if (aLines.length !== bLines.length) {
 			return false;
 		}
@@ -488,6 +509,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		const emptyDisposedTextBuffer = new PieceTreeTextBuffer([], '', '\n', false, false, true, true);
 		emptyDisposedTextBuffer.dispose();
 		this._textBuffer = emptyDisposedTextBuffer;
+
 		super.dispose();
 	}
 }
@@ -509,6 +531,7 @@ export function cloneNotebookCellTextModel(cell: NotebookCellTextModel) {
 function computeRunStartTimeAdjustment(oldMetadata: NotebookCellInternalMetadata, newMetadata: NotebookCellInternalMetadata): number | undefined {
 	if (oldMetadata.runStartTime !== newMetadata.runStartTime && typeof newMetadata.runStartTime === 'number') {
 		const offset = Date.now() - newMetadata.runStartTime;
+
 		return offset < 0 ? Math.abs(offset) : 0;
 	} else {
 		return newMetadata.runStartTimeAdjustment;
@@ -521,6 +544,7 @@ export function getFormattedMetadataJSON(transientCellMetadata: TransientCellMet
 
 	if (transientCellMetadata) {
 		const keys = new Set([...Object.keys(metadata)]);
+
 		for (const key of keys) {
 			if (!(transientCellMetadata[key as keyof NotebookCellMetadata])
 			) {

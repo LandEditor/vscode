@@ -74,13 +74,18 @@ registerAction2(class RemoveAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, context: ISearchActionContext | undefined): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const searchView = getSearchView(viewsService);
+
         if (!searchView) {
             return;
         }
         let element = context?.element;
+
         let viewer = context?.viewer;
+
         if (!viewer) {
             viewer = searchView.getControl();
         }
@@ -88,7 +93,9 @@ registerAction2(class RemoveAction extends Action2 {
             element = viewer.getFocus()[0] ?? undefined;
         }
         const elementsToRemove = getElementsToOperateOn(viewer, element, configurationService.getValue<ISearchConfigurationProperties>('search'));
+
         let focusElement = viewer.getFocus()[0] ?? undefined;
+
         if (elementsToRemove.length === 0) {
             return;
         }
@@ -96,11 +103,14 @@ registerAction2(class RemoveAction extends Action2 {
             focusElement = element;
         }
         let nextFocusElement;
+
         const shouldRefocusMatch = shouldRefocus(elementsToRemove, focusElement);
+
         if (focusElement && shouldRefocusMatch) {
             nextFocusElement = await getElementToFocusAfterRemoved(viewer, focusElement, elementsToRemove);
         }
         const searchResult = searchView.searchResult;
+
         if (searchResult) {
             searchResult.batchRemove(elementsToRemove);
         }
@@ -119,6 +129,7 @@ registerAction2(class RemoveAction extends Action2 {
             viewer.setSelection(viewer.getFocus());
         }
         viewer.domFocus();
+
         return;
     }
 });
@@ -224,16 +235,22 @@ registerAction2(class ReplaceAllInFolderAction extends Action2 {
 //#region Helpers
 async function performReplace(accessor: ServicesAccessor, context: ISearchActionContext | undefined) {
     const configurationService = accessor.get(IConfigurationService);
+
     const viewsService = accessor.get(IViewsService);
+
     const viewlet: SearchView | undefined = getSearchView(viewsService);
+
     const viewer: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch> | undefined = context?.viewer ?? viewlet?.getControl();
+
     if (!viewer) {
         return;
     }
     const element: RenderableMatch | null = context?.element ?? viewer.getFocus()[0];
     // since multiple elements can be selected, we need to check the type of the FolderMatch/FileMatch/Match before we perform the replace.
     const elementsToReplace = getElementsToOperateOn(viewer, element ?? undefined, configurationService.getValue<ISearchConfigurationProperties>('search'));
+
     let focusElement = viewer.getFocus()[0];
+
     if (!focusElement || (focusElement && !arrayContainsElementOrParent(focusElement, elementsToReplace)) || (isSearchResult(focusElement))) {
         focusElement = element;
     }
@@ -241,10 +258,12 @@ async function performReplace(accessor: ServicesAccessor, context: ISearchAction
         return;
     }
     let nextFocusElement;
+
     if (focusElement) {
         nextFocusElement = await getElementToFocusAfterRemoved(viewer, focusElement, elementsToReplace);
     }
     const searchResult = viewlet?.searchResult;
+
     if (searchResult) {
         await searchResult.batchReplace(elementsToReplace);
     }
@@ -257,8 +276,10 @@ async function performReplace(accessor: ServicesAccessor, context: ISearchAction
             viewer.reveal(nextFocusElement);
             viewer.setFocus([nextFocusElement], getSelectionKeyboardEvent());
             viewer.setSelection([nextFocusElement], getSelectionKeyboardEvent());
+
             if (isSearchTreeMatch(nextFocusElement)) {
                 const useReplacePreview = configurationService.getValue<ISearchConfiguration>().search.useReplacePreview;
+
                 if (!useReplacePreview || hasToOpenFile(accessor, nextFocusElement) || nextFocusElement instanceof MatchInNotebook) {
                     viewlet?.open(nextFocusElement, true);
                 }
@@ -278,7 +299,9 @@ function hasToOpenFile(accessor: ServicesAccessor, currBottomElem: RenderableMat
         return false;
     }
     const activeEditor = accessor.get(IEditorService).activeEditor;
+
     const file = activeEditor?.resource;
+
     if (file) {
         return accessor.get(IUriIdentityService).extUri.isEqual(file, currBottomElem.parent().resource);
     }
@@ -329,6 +352,7 @@ function compareLevels(elem1: RenderableMatch, elem2: RenderableMatch) {
  */
 export async function getElementToFocusAfterRemoved(viewer: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch>, element: RenderableMatch, elementsToRemove: RenderableMatch[]): Promise<RenderableMatch | undefined> {
     const navigator: ITreeNavigator<any> = viewer.navigate(element);
+
     if (isSearchTreeFolderMatch(element)) {
         while (!!navigator.next() && (!isSearchTreeFolderMatch(navigator.current()) || arrayContainsElementOrParent(navigator.current(), elementsToRemove))) { }
     }
@@ -349,10 +373,13 @@ export async function getElementToFocusAfterRemoved(viewer: WorkbenchCompressibl
  */
 export async function getLastNodeFromSameType(viewer: WorkbenchCompressibleAsyncDataTree<ISearchResult, RenderableMatch>, element: RenderableMatch): Promise<RenderableMatch | undefined> {
     let lastElem: RenderableMatch | null = viewer.lastVisibleElement ?? null;
+
     while (lastElem) {
         const compareVal = compareLevels(element, lastElem);
+
         if (compareVal === -1) {
             const expanded = await viewer.expand(lastElem);
+
             if (!expanded) {
                 return lastElem;
             }
@@ -360,6 +387,7 @@ export async function getLastNodeFromSameType(viewer: WorkbenchCompressibleAsync
         }
         else if (compareVal === 1) {
             const potentialLastElem = viewer.getParentElement(lastElem);
+
             if (isSearchResult(potentialLastElem)) {
                 break;
             }

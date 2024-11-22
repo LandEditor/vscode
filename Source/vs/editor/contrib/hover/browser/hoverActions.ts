@@ -74,12 +74,15 @@ export class ShowOrFocusHoverAction extends EditorAction {
 		}
 
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
 
 		const focusArgument = args?.focus;
+
 		let focusOption = HoverFocusBehavior.FocusIfVisible;
+
 		if (Object.values(HoverFocusBehavior).includes(focusArgument)) {
 			focusOption = focusArgument;
 		} else if (typeof focusArgument === 'boolean' && focusArgument) {
@@ -88,6 +91,7 @@ export class ShowOrFocusHoverAction extends EditorAction {
 
 		const showContentHover = (focus: boolean) => {
 			const position = editor.getPosition();
+
 			const range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
 			controller.showContentHover(range, HoverStartMode.Immediate, HoverStartSource.Keyboard, focus);
 		};
@@ -127,6 +131,7 @@ export class ShowDefinitionPreviewHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -137,7 +142,9 @@ export class ShowDefinitionPreviewHoverAction extends EditorAction {
 		}
 
 		const range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
+
 		const goto = GotoDefinitionAtPositionEditorContribution.get(editor);
+
 		if (!goto) {
 			return;
 		}
@@ -174,6 +181,7 @@ export class ScrollUpHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -206,6 +214,7 @@ export class ScrollDownHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -238,6 +247,7 @@ export class ScrollLeftHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -270,6 +280,7 @@ export class ScrollRightHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -303,6 +314,7 @@ export class PageUpHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -336,6 +348,7 @@ export class PageDownHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -369,6 +382,7 @@ export class GoToTopHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -403,6 +417,7 @@ export class GoToBottomHoverAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = ContentHoverController.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -423,6 +438,7 @@ export class IncreaseHoverVerbosityLevel extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args?: { index: number; focus: boolean }): void {
 		const hoverController = ContentHoverController.get(editor);
+
 		if (!hoverController) {
 			return;
 		}
@@ -444,6 +460,7 @@ export class DecreaseHoverVerbosityLevel extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args?: { index: number; focus: boolean }): void {
 		const hoverController = ContentHoverController.get(editor);
+
 		if (!hoverController) {
 			return;
 		}

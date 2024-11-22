@@ -68,8 +68,11 @@ registerAction2(class extends NotebookCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
         const editor = context.notebookEditor;
+
         const activeCell = context.cell;
+
         const idx = editor.getCellIndex(activeCell);
+
         if (typeof idx !== 'number') {
             return;
         }
@@ -78,7 +81,9 @@ registerAction2(class extends NotebookCellAction {
             return;
         }
         const newCell = editor.cellAt(idx - 1);
+
         const newFocusMode = newCell.cellKind === CellKind.Markup && newCell.getEditState() === CellEditState.Preview ? 'container' : 'editor';
+
         const focusEditorLine = newCell.textBuffer.getLineCount();
         await editor.focusNotebookCell(newCell, newFocusMode, { focusEditorLine: focusEditorLine });
     }
@@ -244,14 +249,20 @@ interface IInsertCellWithChatArgs extends INotebookActionContext {
 }
 async function startChat(accessor: ServicesAccessor, context: INotebookActionContext, index: number, input?: string, autoSend?: boolean, source?: string) {
     const configurationService = accessor.get(IConfigurationService);
+
     const commandService = accessor.get(ICommandService);
+
     if (configurationService.getValue<boolean>(NotebookSetting.cellGenerate) || configurationService.getValue<boolean>(NotebookSetting.cellChat)) {
         const activeCell = context.notebookEditor.getActiveCell();
+
         const targetCell = activeCell?.getTextLength() === 0 && source !== 'insertToolbar' ? activeCell : (await insertNewCell(accessor, context, CellKind.Code, 'below', true));
+
         if (targetCell) {
             targetCell.enableAutoLanguageDetection();
             await context.notebookEditor.revealFirstLineIfOutsideViewport(targetCell);
+
             const codeEditor = context.notebookEditor.codeEditors.find(ce => ce[0] === targetCell)?.[1];
+
             if (codeEditor) {
                 codeEditor.focus();
                 commandService.executeCommand('inlineChat.start');
@@ -310,12 +321,15 @@ registerAction2(class extends NotebookAction {
     }
     override getEditorContextFromArgsOrActive(accessor: ServicesAccessor, ...args: any[]): IInsertCellWithChatArgs | undefined {
         const [firstArg] = args;
+
         if (!firstArg) {
             const notebookEditor = getEditorFromArgsOrActivePane(accessor);
+
             if (!notebookEditor) {
                 return undefined;
             }
             const activeCell = notebookEditor.getActiveCell();
+
             if (!activeCell) {
                 return undefined;
             }
@@ -330,10 +344,12 @@ registerAction2(class extends NotebookAction {
             return undefined;
         }
         const notebookEditor = getEditorFromArgsOrActivePane(accessor);
+
         if (!notebookEditor) {
             return undefined;
         }
         const cell = firstArg.index <= 0 ? undefined : notebookEditor.cellAt(firstArg.index - 1);
+
         return {
             cell,
             notebookEditor,
@@ -496,15 +512,19 @@ registerAction2(class extends NotebookCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext) {
         const cell = context.cell;
+
         if (!cell) {
             return;
         }
         const notebookEditor = context.notebookEditor;
+
         const controller = NotebookChatController.get(notebookEditor);
+
         if (!controller) {
             return;
         }
         const prompt = controller.getPromptFromCache(cell);
+
         if (prompt) {
             controller.restore(cell, prompt);
         }
@@ -531,15 +551,19 @@ export class AcceptChangesAndRun extends AbstractInlineChatAction {
     }
     override async runInlineChatCommand(accessor: ServicesAccessor, ctrl: InlineChatController, codeEditor: ICodeEditor, hunk?: HunkInformation | any): Promise<void> {
         const editor = getContextFromActiveEditor(accessor.get(IEditorService));
+
         if (!editor) {
             return;
         }
         const matchedCell = editor.notebookEditor.codeEditors.find(e => e[1] === codeEditor);
+
         const cell = matchedCell?.[0];
+
         if (!cell) {
             return;
         }
         ctrl.acceptSession();
+
         return editor.notebookEditor.executeNotebookCells(Iterable.single(cell));
     }
 }

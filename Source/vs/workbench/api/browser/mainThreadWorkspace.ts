@@ -36,6 +36,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
     } = Object.create(null);
     private readonly _proxy: ExtHostWorkspaceShape;
     private readonly _queryBuilder = this._instantiationService.createInstance(QueryBuilder);
+
     constructor(extHostContext: IExtHostContext, 
     @ISearchService
     private readonly _searchService: ISearchService, 
@@ -66,6 +67,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
     @IWorkspaceTrustRequestService
     private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService) {
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostWorkspace);
+
         const workspace = this._contextService.getWorkspace();
         // The workspace file is provided be a unknown file system provider. It might come
         // from the extension host. So initialize now knowing that `rootPath` is undefined.
@@ -81,6 +83,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
     }
     dispose(): void {
         this._toDispose.dispose();
+
         for (const requestId in this._activeCancelTokens) {
             const tokenSource = this._activeCancelTokens[requestId];
             tokenSource.cancel();
@@ -94,11 +97,14 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
         const workspaceFoldersToAdd = foldersToAdd.map(f => ({ uri: URI.revive(f.uri), name: f.name }));
         // Indicate in status message
         this._notificationService.status(this.getStatusMessage(extensionName, workspaceFoldersToAdd.length, deleteCount), { hideAfter: 10 * 1000 /* 10s */ });
+
         return this._workspaceEditingService.updateFolders(index, deleteCount, workspaceFoldersToAdd, true);
     }
     private getStatusMessage(extensionName: string, addCount: number, removeCount: number): string {
         let message: string;
+
         const wantsToAdd = addCount > 0;
+
         const wantsToDelete = removeCount > 0;
         // Add Folders
         if (wantsToAdd && !wantsToDelete) {
@@ -143,8 +149,11 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
     // --- search ---
     $startFileSearch(_includeFolder: UriComponents | null, options: IFileQueryBuilderOptions<UriComponents>, token: CancellationToken): Promise<UriComponents[] | null> {
         const includeFolder = URI.revive(_includeFolder);
+
         const workspace = this._contextService.getWorkspace();
+
         const query = this._queryBuilder.file(includeFolder ? [includeFolder] : workspace.folders, revive(options));
+
         return this._searchService.fileSearch(query, token).then(result => {
             return result.results.map(m => m.resource);
         }, err => {
@@ -156,15 +165,20 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
     }
     $startTextSearch(pattern: IPatternInfo, _folder: UriComponents | null, options: ITextQueryBuilderOptions<UriComponents>, requestId: number, token: CancellationToken): Promise<ITextSearchComplete | null> {
         const folder = URI.revive(_folder);
+
         const workspace = this._contextService.getWorkspace();
+
         const folders = folder ? [folder] : workspace.folders.map(folder => folder.uri);
+
         const query = this._queryBuilder.text(pattern, folders, revive(options));
         query._reason = 'startTextSearch';
+
         const onProgress = (p: ISearchProgressItem) => {
             if ((<IFileMatch>p).results) {
                 this._proxy.$handleTextSearchResult(<IFileMatch>p, requestId);
             }
         };
+
         const search = this._searchService.textSearch(query, token, onProgress).then(result => {
             return { limitHit: result.limitHit };
         }, err => {
@@ -173,6 +187,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
             }
             return null;
         });
+
         return search;
     }
     $checkExists(folders: readonly UriComponents[], includes: string[], token: CancellationToken): Promise<boolean> {
@@ -183,12 +198,15 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
         saveAs: boolean;
     }): Promise<UriComponents | undefined> {
         const uri = URI.revive(uriComponents);
+
         const editors = [...this._editorService.findEditors(uri, { supportSideBySide: SideBySideEditor.PRIMARY })];
+
         const result = await this._editorService.save(editors, {
             reason: SaveReason.EXPLICIT,
             saveAs: options.saveAs,
             force: !options.saveAs
         });
+
         return this._saveResultToUris(result).at(0);
     }
     private _saveResultToUris(result: ISaveEditorsResult): URI[] {
@@ -249,6 +267,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
             scheme: scheme,
             provideCanonicalUri: async (uri: UriComponents, targetScheme: string, token: CancellationToken) => {
                 const result = await this._proxy.$provideCanonicalUri(uri, targetScheme, token);
+
                 if (result) {
                     return URI.revive(result);
                 }

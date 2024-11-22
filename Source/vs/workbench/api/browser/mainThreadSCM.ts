@@ -50,6 +50,7 @@ function getIconFromIconDto(iconDto?: UriComponents | {
             light: UriComponents;
             dark: UriComponents;
         };
+
         return { light: URI.revive(icon.light), dark: URI.revive(icon.dark) };
     }
 }
@@ -57,9 +58,12 @@ function toISCMHistoryItem(historyItemDto: SCMHistoryItemDto): ISCMHistoryItem {
     const references = historyItemDto.references?.map(r => ({
         ...r, icon: getIconFromIconDto(r.icon)
     }));
+
     const newLineIndex = historyItemDto.message.indexOf('\n');
+
     const subject = newLineIndex === -1 ?
         historyItemDto.message : `${historyItemDto.message.substring(0, newLineIndex)}\u2026`;
+
     return { ...historyItemDto, subject, references };
 }
 function toISCMHistoryItemRef(historyItemRefDto?: SCMHistoryItemRefDto, color?: ColorIdentifier): ISCMHistoryItemRef | undefined {
@@ -72,6 +76,7 @@ class SCMInputBoxContentProvider extends Disposable implements ITextModelContent
     }
     async provideTextContent(resource: URI): Promise<ITextModel | null> {
         const existing = this.modelService.getModel(resource);
+
         if (existing) {
             return existing;
         }
@@ -81,10 +86,12 @@ class SCMInputBoxContentProvider extends Disposable implements ITextModelContent
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
     readonly resources: ISCMResource[] = [];
     private _resourceTree: ResourceTree<ISCMResource, ISCMResourceGroup> | undefined;
+
     get resourceTree(): ResourceTree<ISCMResource, ISCMResourceGroup> {
         if (!this._resourceTree) {
             const rootUri = this.provider.rootUri ?? URI.file('/');
             this._resourceTree = new ResourceTree<ISCMResource, ISCMResourceGroup>(this, rootUri, this._uriIdentService.extUri);
+
             for (const resource of this.resources) {
                 this._resourceTree.add(resource.sourceUri, resource);
             }
@@ -95,6 +102,7 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
     readonly onDidChange: Event<void> = this._onDidChange.event;
     private readonly _onDidChangeResources = new Emitter<void>();
     readonly onDidChangeResources = this._onDidChangeResources.event;
+
     get hideWhenEmpty(): boolean { return !!this.features.hideWhenEmpty; }
     constructor(private readonly sourceControlHandle: number, private readonly handle: number, public provider: ISCMProvider, public features: SCMGroupFeatures, public label: string, public id: string, public readonly multiDiffEditorEnableViewChanges: boolean, private readonly _uriIdentService: IUriIdentityService) { }
     toJSON(): any {
@@ -137,18 +145,22 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
         owner: this,
         equalsFn: structuralEquals
     }, undefined);
+
     get historyItemRef(): IObservable<ISCMHistoryItemRef | undefined> { return this._historyItemRef; }
     private readonly _historyItemRemoteRef = observableValueOpts<ISCMHistoryItemRef | undefined>({
         owner: this,
         equalsFn: structuralEquals
     }, undefined);
+
     get historyItemRemoteRef(): IObservable<ISCMHistoryItemRef | undefined> { return this._historyItemRemoteRef; }
     private readonly _historyItemBaseRef = observableValueOpts<ISCMHistoryItemRef | undefined>({
         owner: this,
         equalsFn: structuralEquals
     }, undefined);
+
     get historyItemBaseRef(): IObservable<ISCMHistoryItemRef | undefined> { return this._historyItemBaseRef; }
     private readonly _historyItemRefChanges = observableValue<ISCMHistoryItemRefsChangeEvent>(this, { added: [], modified: [], removed: [], silent: false });
+
     get historyItemRefChanges(): IObservable<ISCMHistoryItemRefsChangeEvent> { return this._historyItemRefChanges; }
     constructor(private readonly proxy: ExtHostSCMShape, private readonly handle: number) { }
     async resolveHistoryItemRefsCommonAncestor(historyItemRefs: string[]): Promise<string | undefined> {
@@ -156,14 +168,17 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
     }
     async provideHistoryItemRefs(historyItemsRefs?: string[]): Promise<ISCMHistoryItemRef[] | undefined> {
         const historyItemRefs = await this.proxy.$provideHistoryItemRefs(this.handle, historyItemsRefs, CancellationToken.None);
+
         return historyItemRefs?.map(ref => ({ ...ref, icon: getIconFromIconDto(ref.icon) }));
     }
     async provideHistoryItems(options: ISCMHistoryOptions): Promise<ISCMHistoryItem[] | undefined> {
         const historyItems = await this.proxy.$provideHistoryItems(this.handle, options, CancellationToken.None);
+
         return historyItems?.map(historyItem => toISCMHistoryItem(historyItem));
     }
     async provideHistoryItemChanges(historyItemId: string, historyItemParentId: string | undefined): Promise<ISCMHistoryItemChange[] | undefined> {
         const changes = await this.proxy.$provideHistoryItemChanges(this.handle, historyItemId, historyItemParentId, CancellationToken.None);
+
         return changes?.map(change => ({
             uri: URI.revive(change.uri),
             originalUri: change.originalUri && URI.revive(change.originalUri),
@@ -180,7 +195,9 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
     }
     $onDidChangeHistoryItemRefs(historyItemRefs: SCMHistoryItemRefsChangeEventDto): void {
         const added = historyItemRefs.added.map(ref => toISCMHistoryItemRef(ref)!);
+
         const modified = historyItemRefs.modified.map(ref => toISCMHistoryItemRef(ref)!);
+
         const removed = historyItemRefs.removed.map(ref => toISCMHistoryItemRef(ref)!);
         this._historyItemRefChanges.set({ added, modified, removed, silent: historyItemRefs.silent }, undefined);
     }
@@ -188,6 +205,7 @@ class MainThreadSCMHistoryProvider implements ISCMHistoryProvider {
 class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     private static ID_HANDLE = 0;
     private _id = `scm${MainThreadSCMProvider.ID_HANDLE++}`;
+
     get id(): string { return this._id; }
     readonly groups: MainThreadSCMResourceGroup[] = [];
     private readonly _onDidChangeResourceGroups = new Emitter<void>();
@@ -206,6 +224,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     // 	// 	.filter(g => g.resources.elements.length > 0 || !g.features.hideWhenEmpty);
     // }
     private features: SCMProviderFeatures = {};
+
     get handle(): number { return this._handle; }
     get label(): string { return this._label; }
     get rootUri(): URI | undefined { return this._rootUri; }
@@ -213,22 +232,29 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     get contextValue(): string { return this._providerId; }
     get acceptInputCommand(): Command | undefined { return this.features.acceptInputCommand; }
     private readonly _count = observableValue<number | undefined>(this, undefined);
+
     get count() { return this._count; }
     private readonly _statusBarCommands = observableValue<readonly Command[] | undefined>(this, undefined);
+
     get statusBarCommands() { return this._statusBarCommands; }
     private readonly _name: string | undefined;
+
     get name(): string { return this._name ?? this._label; }
     private readonly _commitTemplate = observableValue<string>(this, '');
+
     get commitTemplate() { return this._commitTemplate; }
     private readonly _actionButton = observableValue<ISCMActionButtonDescriptor | undefined>(this, undefined);
+
     get actionButton(): IObservable<ISCMActionButtonDescriptor | undefined> { return this._actionButton; }
     private _quickDiff: IDisposable | undefined;
     public readonly isSCM: boolean = true;
     private readonly _historyProvider = observableValue<MainThreadSCMHistoryProvider | undefined>(this, undefined);
+
     get historyProvider() { return this._historyProvider; }
     constructor(private readonly proxy: ExtHostSCMShape, private readonly _handle: number, private readonly _providerId: string, private readonly _label: string, private readonly _rootUri: URI | undefined, private readonly _inputBoxTextModel: ITextModel, private readonly _quickDiffService: IQuickDiffService, private readonly _uriIdentService: IUriIdentityService, private readonly _workspaceContextService: IWorkspaceContextService) {
         if (_rootUri) {
             const folder = this._workspaceContextService.getWorkspaceFolder(_rootUri);
+
             if (folder?.uri.toString() === _rootUri.toString()) {
                 this._name = folder.name;
             }
@@ -239,6 +265,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     }
     $updateSourceControl(features: SCMProviderFeatures): void {
         this.features = { ...this.features, ...features };
+
         if (typeof features.commitTemplate !== 'undefined') {
             this._commitTemplate.set(features.commitTemplate, undefined);
         }
@@ -281,6 +308,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
         const groups = _groups.map(([handle, id, label, features, multiDiffEditorEnableViewChanges]) => {
             const group = new MainThreadSCMResourceGroup(this.handle, handle, this, features, label, id, multiDiffEditorEnableViewChanges, this._uriIdentService);
             this._groupsByHandle[handle] = group;
+
             return group;
         });
         this.groups.splice(this.groups.length, 0, ...groups);
@@ -288,6 +316,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     }
     $updateGroup(handle: number, features: SCMGroupFeatures): void {
         const group = this._groupsByHandle[handle];
+
         if (!group) {
             return;
         }
@@ -295,6 +324,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     }
     $updateGroupLabel(handle: number, label: string): void {
         const group = this._groupsByHandle[handle];
+
         if (!group) {
             return;
         }
@@ -303,18 +333,25 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     $spliceGroupResourceStates(splices: SCMRawResourceSplices[]): void {
         for (const [groupHandle, groupSlices] of splices) {
             const group = this._groupsByHandle[groupHandle];
+
             if (!group) {
                 console.warn(`SCM group ${groupHandle} not found in provider ${this.label}`);
+
                 continue;
             }
             // reverse the splices sequence in order to apply them correctly
             groupSlices.reverse();
+
             for (const [start, deleteCount, rawResources] of groupSlices) {
                 const resources = rawResources.map(rawResource => {
                     const [handle, sourceUri, icons, tooltip, strikeThrough, faded, contextValue, command, multiDiffEditorOriginalUri, multiDiffEditorModifiedUri] = rawResource;
+
                     const [light, dark] = icons;
+
                     const icon = ThemeIcon.isThemeIcon(light) ? light : URI.revive(light);
+
                     const iconDark = (ThemeIcon.isThemeIcon(dark) ? dark : URI.revive(dark)) || icon;
+
                     const decorations = {
                         icon: icon,
                         iconDark: iconDark,
@@ -322,6 +359,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
                         strikeThrough,
                         faded
                     };
+
                     return new MainThreadSCMResource(this.proxy, this.handle, groupHandle, handle, URI.revive(sourceUri), group, decorations, contextValue || undefined, command, URI.revive(multiDiffEditorOriginalUri), URI.revive(multiDiffEditorModifiedUri));
                 });
                 group.splice(start, deleteCount, resources);
@@ -331,6 +369,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
     }
     $unregisterGroup(handle: number): void {
         const group = this._groupsByHandle[handle];
+
         if (!group) {
             return;
         }
@@ -343,6 +382,7 @@ class MainThreadSCMProvider implements ISCMProvider, QuickDiffProvider {
             return null;
         }
         const result = await this.proxy.$provideOriginalResource(this.handle, uri, CancellationToken.None);
+
         return result && URI.revive(result);
     }
     $onDidChangeHistoryProviderCurrentHistoryItemRefs(historyItemRef?: SCMHistoryItemRefDto, historyItemRemoteRef?: SCMHistoryItemRefDto, historyItemBaseRef?: SCMHistoryItemRefDto): void {
@@ -374,6 +414,7 @@ export class MainThreadSCM implements MainThreadSCMShape {
     private _repositoryBarriers = new Map<number, Barrier>();
     private _repositoryDisposables = new Map<number, IDisposable>();
     private readonly _disposables = new DisposableStore();
+
     constructor(extHostContext: IExtHostContext, 
     @ISCMService
     private readonly scmService: ISCMService, 
@@ -403,12 +444,17 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $registerSourceControl(handle: number, id: string, label: string, rootUri: UriComponents | undefined, inputBoxDocumentUri: UriComponents): Promise<void> {
         this._repositoryBarriers.set(handle, new Barrier());
+
         const inputBoxTextModelRef = await this.textModelService.createModelReference(URI.revive(inputBoxDocumentUri));
+
         const provider = new MainThreadSCMProvider(this._proxy, handle, id, label, rootUri ? URI.revive(rootUri) : undefined, inputBoxTextModelRef.object.textEditorModel, this.quickDiffService, this._uriIdentService, this.workspaceContextService);
+
         const repository = this.scmService.registerSCMProvider(provider);
         this._repositories.set(handle, repository);
+
         const disposable = combinedDisposable(inputBoxTextModelRef, Event.filter(this.scmViewService.onDidFocusRepository, r => r === repository)(_ => this._proxy.$setSelectedSourceControl(handle)), repository.input.onDidChange(({ value }) => this._proxy.$onInputBoxValueChange(handle, value)));
         this._repositoryDisposables.set(handle, disposable);
+
         if (this.scmViewService.focusedRepository === repository) {
             setTimeout(() => this._proxy.$setSelectedSourceControl(handle), 0);
         }
@@ -419,7 +465,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $updateSourceControl(handle: number, features: SCMProviderFeatures): Promise<void> {
         await this._repositoryBarriers.get(handle)?.wait();
+
         const repository = this._repositories.get(handle);
+
         if (!repository) {
             return;
         }
@@ -428,7 +476,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $unregisterSourceControl(handle: number): Promise<void> {
         await this._repositoryBarriers.get(handle)?.wait();
+
         const repository = this._repositories.get(handle);
+
         if (!repository) {
             return;
         }
@@ -445,7 +495,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
         boolean
     ][], splices: SCMRawResourceSplices[]): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -455,7 +507,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $updateGroup(sourceControlHandle: number, groupHandle: number, features: SCMGroupFeatures): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -464,7 +518,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $updateGroupLabel(sourceControlHandle: number, groupHandle: number, label: string): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -473,7 +529,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $spliceResourceStates(sourceControlHandle: number, splices: SCMRawResourceSplices[]): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -482,7 +540,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $unregisterGroup(sourceControlHandle: number, handle: number): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -491,7 +551,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $setInputBoxValue(sourceControlHandle: number, value: string): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -499,7 +561,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $setInputBoxPlaceholder(sourceControlHandle: number, placeholder: string): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -507,7 +571,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $setInputBoxEnablement(sourceControlHandle: number, enabled: boolean): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -515,7 +581,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $setInputBoxVisibility(sourceControlHandle: number, visible: boolean): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -523,7 +591,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $showValidationMessage(sourceControlHandle: number, message: string | IMarkdownString, type: InputValidationType): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -531,13 +601,16 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $setValidationProviderIsEnabled(sourceControlHandle: number, enabled: boolean): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
         if (enabled) {
             repository.input.validateInput = async (value, pos): Promise<IInputValidation | undefined> => {
                 const result = await this._proxy.$validateInput(sourceControlHandle, value, pos);
+
                 return result && { message: result[0], type: result[1] };
             };
         }
@@ -547,7 +620,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $onDidChangeHistoryProviderCurrentHistoryItemRefs(sourceControlHandle: number, historyItemRef?: SCMHistoryItemRefDto, historyItemRemoteRef?: SCMHistoryItemRefDto, historyItemBaseRef?: SCMHistoryItemRefDto): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }
@@ -556,7 +631,9 @@ export class MainThreadSCM implements MainThreadSCMShape {
     }
     async $onDidChangeHistoryProviderHistoryItemRefs(sourceControlHandle: number, historyItemRefs: SCMHistoryItemRefsChangeEventDto): Promise<void> {
         await this._repositoryBarriers.get(sourceControlHandle)?.wait();
+
         const repository = this._repositories.get(sourceControlHandle);
+
         if (!repository) {
             return;
         }

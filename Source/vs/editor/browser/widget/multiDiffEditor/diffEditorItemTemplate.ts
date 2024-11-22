@@ -33,6 +33,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
     private readonly _editorContentHeight = observableValue<number>(this, 500);
     public readonly contentHeight = derived(this, reader => {
         const h = this._collapsed.read(reader) ? 0 : this._editorContentHeight.read(reader);
+
         return h + this._outerEditorHeight;
     });
     private readonly _modifiedContentWidth = observableValue<number>(this, 0);
@@ -41,7 +42,9 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
     private readonly _originalWidth = observableValue<number>(this, 0);
     public readonly maxScroll = derived(this, reader => {
         const scroll1 = this._modifiedContentWidth.read(reader) - this._modifiedWidth.read(reader);
+
         const scroll2 = this._originalContentWidth.read(reader) - this._originalWidth.read(reader);
+
         if (scroll1 > scroll2) {
             return { maxScroll: scroll1, width: this._modifiedWidth.read(reader) };
         }
@@ -79,12 +82,14 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
         : undefined;
     private readonly _outerEditorHeight: number;
     private readonly _contextKeyService: IScopedContextKeyService;
+
     constructor(private readonly _container: HTMLElement, private readonly _overflowWidgetsDomNode: HTMLElement, private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
     @IContextKeyService
     _parentContextKeyService: IContextKeyService) {
         super();
+
         const btn = new Button(this._elements.collapseButton, {});
         this._register(autorun(reader => {
             btn.element.className = '';
@@ -128,6 +133,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
         this._container.appendChild(this._elements.root);
         this._outerEditorHeight = this._headerHeight;
         this._contextKeyService = this._register(_parentContextKeyService.createScoped(this._elements.actions));
+
         const instantiationService = this._register(this._instantiationService.createChild(new ServiceCollection([IContextKeyService, this._contextKeyService])));
         this._register(instantiationService.createInstance(MenuWorkbenchToolBar, this._elements.actions, MenuId.MultiDiffEditorFileToolbar, {
             actionRunner: this._register(new ActionRunnerWithContext(() => (this._viewModel.get()?.modifiedUri))),
@@ -150,6 +156,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
     private _data: TemplateData | undefined;
     public setData(data: TemplateData | undefined): void {
         this._data = data;
+
         function updateOptions(options: IDiffEditorOptions): IDiffEditorOptions {
             return {
                 ...options,
@@ -174,15 +181,21 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
                 this.editor.setDiffModel(null, tx);
                 this._dataStore.clear();
             });
+
             return;
         }
         const value = data.viewModel.documentDiffItem;
         globalTransaction(tx => {
             this._resourceLabel?.setUri(data.viewModel.modifiedUri ?? data.viewModel.originalUri!, { strikethrough: data.viewModel.modifiedUri === undefined });
+
             let isRenamed = false;
+
             let isDeleted = false;
+
             let isAdded = false;
+
             let flag = '';
+
             if (data.viewModel.modifiedUri && data.viewModel.originalUri && data.viewModel.modifiedUri.path !== data.viewModel.originalUri.path) {
                 flag = 'R';
                 isRenamed = true;
@@ -205,6 +218,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
             this.editor.setDiffModel(data.viewModel.diffEditorViewModelRef, tx);
             this.editor.updateOptions(updateOptions(value.options ?? {}));
         });
+
         if (value.onOptionsDidChange) {
             this._dataStore.add(value.onOptionsDidChange(() => {
                 this.editor.updateOptions(updateOptions(value.options ?? {}));
@@ -215,6 +229,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
                 this.setData(undefined);
             }
         });
+
         if (data.viewModel.documentDiffItem.contextKeys) {
             for (const [key, value] of Object.entries(data.viewModel.documentDiffItem.contextKeys)) {
                 this._contextKeyService.createKey(key, value);
@@ -232,6 +247,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
         this._elements.root.style.position = 'absolute';
         // For sticky scroll
         const maxDelta = verticalRange.length - this._headerHeight;
+
         const delta = Math.max(0, Math.min(viewPort.start - verticalRange.start, maxDelta));
         this._elements.header.style.transform = `translateY(${delta}px)`;
         globalTransaction(tx => {
@@ -240,6 +256,7 @@ export class DiffEditorItemTemplate extends Disposable implements IPooledObject<
                 height: verticalRange.length - this._outerEditorHeight,
             });
         });
+
         try {
             this._isSettingScrollTop = true;
             this._lastScrollTop = editorScroll;

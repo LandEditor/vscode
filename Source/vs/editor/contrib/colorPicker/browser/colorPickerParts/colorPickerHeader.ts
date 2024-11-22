@@ -29,9 +29,11 @@ export class ColorPickerHeader extends Disposable {
 		super();
 
 		this._domNode = $('.colorpicker-header');
+
 		dom.append(container, this._domNode);
 
 		this._pickedColorNode = dom.append(this._domNode, $('.picked-color'));
+
 		dom.append(this._pickedColorNode, $('span.codicon.codicon-color-mode'));
 		this._pickedColorPresentation = dom.append(this._pickedColorNode, document.createElement('span'));
 		this._pickedColorPresentation.classList.add('picked-color-presentation');

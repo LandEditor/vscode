@@ -23,6 +23,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
         progress: IProgress<IProgressStep>;
     }>();
     private readonly _proxy: ExtHostProgressShape;
+
     constructor(extHostContext: IExtHostContext, 
     @IProgressService
     progressService: IProgressService, 
@@ -37,6 +38,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
     }
     async $startProgress(handle: number, options: IProgressOptions, extensionId?: string): Promise<void> {
         const task = this._createTask(handle);
+
         if (options.location === ProgressLocation.Notification && extensionId) {
             const notificationOptions: IProgressNotificationOptions = {
                 ...options,
@@ -53,6 +55,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
     }
     $progressEnd(handle: number): void {
         const entry = this._progress.get(handle);
+
         if (entry) {
             entry.resolve();
             this._progress.delete(handle);

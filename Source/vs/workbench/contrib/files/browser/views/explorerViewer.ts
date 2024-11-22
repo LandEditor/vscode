@@ -127,8 +127,11 @@ export class ExplorerDataSource implements IAsyncDataSource<ExplorerItem | Explo
 		}
 
 		const hasError = element.error;
+
 		const sortOrder = this.explorerService.sortOrderConfiguration.sortOrder;
+
 		const children = element.fetchChildren(sortOrder);
+
 		if (Array.isArray(children)) {
 			// fast path when children are known sync (i.e. nested children)
 			return children;
@@ -148,6 +151,7 @@ export class ExplorerDataSource implements IAsyncDataSource<ExplorerItem | Explo
 						// Single folder create a dummy explorer item to show error
 						const placeholder = new ExplorerItem(element.resource, this.fileService, this.configService, this.filesConfigService, undefined, undefined, false);
 						placeholder.error = e;
+
 						return [placeholder];
 					} else {
 						explorerRootErrorEmitter.fire(element.resource);
@@ -197,22 +201,26 @@ class ExplorerFindHighlightTree implements IExplorerFindHighlightTree {
 
 	private readonly _tree = new Map<string, FindHighlightLayer>();
 	private readonly _highlightedItems = new Map<string, ExplorerItem>();
+
 	get highlightedItems(): ExplorerItem[] {
 		return Array.from(this._highlightedItems.values());
 	}
 
 	get(item: ExplorerItem): number {
 		const rootLayer = this._tree.get(item.root.name);
+
 		if (rootLayer === undefined) {
 			return 0;
 		}
 
 		const relPath = relativePath(item.root.resource, item.resource);
+
 		if (relPath === undefined || relPath.startsWith('..')) {
 			throw new Error('Resource is not a child of the root');
 		}
 
 		let treeLayer = rootLayer;
+
 		for (const segment of relPath.split('/')) {
 			if (!treeLayer.stats[segment]) {
 				return 0;
@@ -228,6 +236,7 @@ class ExplorerFindHighlightTree implements IExplorerFindHighlightTree {
 
 	add(resource: URI, root: ExplorerItem): void {
 		const relPath = relativePath(root.resource, resource);
+
 		if (relPath === undefined || relPath.startsWith('..')) {
 			throw new Error('Resource is not a child of the root');
 		}
@@ -237,6 +246,7 @@ class ExplorerFindHighlightTree implements IExplorerFindHighlightTree {
 		}
 
 		let treeLayer = this._tree.get(root.name)!;
+
 		for (const stat of relPath.split('/').slice(0, -1)) {
 			if (!treeLayer.stats[stat]) {
 				treeLayer.stats[stat] = { total: 0, stats: {} };
@@ -261,6 +271,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 	private explorerFindActiveContextKey: IContextKey<boolean>;
 	private phantomParents = new Set<ExplorerItem>();
 	private findHighlightTree = new ExplorerFindHighlightTree();
+
 	get highlightTree(): IExplorerFindHighlightTree {
 		return this.findHighlightTree;
 	}
@@ -346,7 +357,9 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 	private startFilterSession(): void {
 		const tree = this.treeProvider();
+
 		const input = tree.getInput();
+
 		if (!input) {
 			return;
 		}
@@ -363,6 +376,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		const roots = Array.from(this.filterSessionStartState.rootsWithProviders);
+
 		const searchResults = await this.getSearchResults(pattern, roots, matchType, token);
 
 		if (token.isCancellationRequested) {
@@ -370,6 +384,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		this.clearPhantomElements();
+
 		for (const { explorerRoot, files, directories } of searchResults) {
 			this.addWorkspaceFilterResults(explorerRoot, files, directories);
 		}
@@ -378,6 +393,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		await tree.setInput(this.filterSessionStartState.input);
 
 		const hitMaxResults = searchResults.some(({ hitMaxResults }) => hitMaxResults);
+
 		return { warningMessage: hitMaxResults ? localize('searchMaxResultsWarning', "The result set only contains a subset of all matches. Be more specific in your search to narrow down the results.") : undefined };
 	}
 
@@ -389,20 +405,24 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 		for (const { resource, isDirectory } of results) {
 			const element = root.find(resource);
+
 			if (element && element.root === root) {
 				// File is already in the model
 				element.markItemAndParentsAsFiltered();
+
 				continue;
 			}
 
 			// File is not in the model, create phantom items for the file and it's parents
 			const phantomElements = this.createPhantomItems(resource, root, isDirectory);
+
 			if (phantomElements.length === 0) {
 				throw new Error('Phantom item was not created even though it is not in the model');
 			}
 
 			// Store the first ancestor of the file which is already present in the model
 			const firstPhantomParent = phantomElements[0].parent!;
+
 			if (!(firstPhantomParent instanceof PhantomExplorerItem)) {
 				this.phantomParents.add(firstPhantomParent);
 			}
@@ -414,6 +434,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 	private createPhantomItems(resource: URI, root: ExplorerItem, resourceIsDirectory: boolean): PhantomExplorerItem[] {
 		const relativePathToRoot = relativePath(root.resource, resource);
+
 		if (!relativePathToRoot) {
 			throw new Error('Resource is not a child of the root');
 		}
@@ -421,12 +442,16 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		const phantomElements: PhantomExplorerItem[] = [];
 
 		let currentItem = root;
+
 		let currentResource = root.resource;
+
 		const pathSegments = relativePathToRoot.split('/');
+
 		for (const stat of pathSegments) {
 			currentResource = currentResource.with({ path: `${currentResource.path}/${stat}` });
 
 			let child = currentItem.getChild(stat);
+
 			if (!child) {
 				const isDirectory = pathSegments[pathSegments.length - 1] === stat ? resourceIsDirectory : true;
 				child = new PhantomExplorerItem(currentResource, this.fileService, this.configurationService, this.filesConfigService, currentItem, isDirectory);
@@ -479,6 +504,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		const roots = Array.from(this.highlightSessionStartState.rootsWithProviders);
+
 		const searchResults = await this.getSearchResults(pattern, roots, matchType, token);
 
 		if (token.isCancellationRequested) {
@@ -486,16 +512,19 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		this.clearHighlights();
+
 		for (const { explorerRoot, files, directories } of searchResults) {
 			this.addWorkspaceHighlightResults(explorerRoot, files.concat(directories));
 		}
 
 		const hitMaxResults = searchResults.some(({ hitMaxResults }) => hitMaxResults);
+
 		return { warningMessage: hitMaxResults ? localize('searchMaxResultsWarning', "The result set only contains a subset of all matches. Be more specific in your search to narrow down the results.") : undefined };
 	}
 
 	private addWorkspaceHighlightResults(root: ExplorerItem, resources: URI[]): void {
 		const highlightedDirectories = new Set<ExplorerItem>();
+
 		const storeDirectories = (item: ExplorerItem | undefined) => {
 			while (item) {
 				highlightedDirectories.add(item);
@@ -505,14 +534,17 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 		for (const resource of resources) {
 			const element = root.find(resource);
+
 			if (element && element.root === root) {
 				// File is already in the model
 				this.findHighlightTree.add(resource, root);
 				storeDirectories(element.parent);
+
 				continue;
 			}
 
 			const firstParent = findFirstParent(resource, root);
+
 			if (firstParent) {
 				this.findHighlightTree.add(resource, root);
 				storeDirectories(firstParent);
@@ -520,6 +552,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		const tree = this.treeProvider();
+
 		for (const directory of highlightedDirectories) {
 			tree.rerender(directory);
 		}
@@ -532,6 +565,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 	private clearHighlights(): void {
 		const tree = this.treeProvider();
+
 		for (const item of this.findHighlightTree.highlightedItems) {
 			if (tree.hasNode(item)) {
 				tree.rerender(item);
@@ -552,7 +586,9 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 	private async getSearchResults(pattern: string, roots: ExplorerItem[], matchType: TreeFindMatchType, token: CancellationToken): Promise<{ explorerRoot: ExplorerItem; files: URI[]; directories: URI[]; hitMaxResults: boolean }[]> {
 		const patternLowercase = pattern.toLowerCase();
+
 		const isFuzzyMatch = matchType === TreeFindMatchType.Fuzzy;
+
 		return await Promise.all(roots.map((root, index) => this.searchInWorkspace(patternLowercase, root, index, isFuzzyMatch, token)));
 	}
 
@@ -560,6 +596,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		const segmentMatchPattern = caseInsensitiveGlobPattern(isFuzzyMatch ? fuzzyMatchingGlobPattern(patternLowercase) : continousMatchingGlobPattern(patternLowercase));
 
 		const searchExcludePattern = getExcludes(this.configurationService.getValue<ISearchConfiguration>({ resource: root.resource })) || {};
+
 		const searchOptions: IFileQuery = {
 			folderQueries: [{ folder: root.resource }],
 			type: QueryType.File,
@@ -569,7 +606,9 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		};
 
 		let fileResults: ISearchComplete | undefined;
+
 		let folderResults: ISearchComplete | undefined;
+
 		try {
 			[fileResults, folderResults] = await Promise.all([
 				this.searchService.fileSearch({ ...searchOptions, filePattern: `**/${segmentMatchPattern}`, maxResults: 512 }, token),
@@ -586,6 +625,7 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 		}
 
 		const fileResultResources = fileResults.results.map(result => result.resource);
+
 		const directoryResources = getMatchingDirectoriesFromFiles(folderResults.results.map(result => result.resource), root, segmentMatchPattern);
 
 		return { explorerRoot: root, files: fileResultResources, directories: directoryResources, hitMaxResults: !!fileResults.limitHit || !!folderResults.limitHit };
@@ -594,14 +634,18 @@ export class ExplorerFindProvider implements IAsyncFindProvider<ExplorerItem> {
 
 function getMatchingDirectoriesFromFiles(resources: URI[], root: ExplorerItem, segmentMatchPattern: string): URI[] {
 	const uniqueDirectories = new ResourceSet();
+
 	for (const resource of resources) {
 		const relativePathToRoot = relativePath(root.resource, resource);
+
 		if (!relativePathToRoot) {
 			throw new Error('Resource is not a child of the root');
 		}
 
 		let dirResource = root.resource;
+
 		const stats = relativePathToRoot.split('/').slice(0, -1);
+
 		for (const stat of stats) {
 			dirResource = dirResource.with({ path: `${dirResource.path}/${stat}` });
 			uniqueDirectories.add(dirResource);
@@ -609,9 +653,12 @@ function getMatchingDirectoriesFromFiles(resources: URI[], root: ExplorerItem, s
 	}
 
 	const matchingDirectories: URI[] = [];
+
 	for (const dirResource of uniqueDirectories) {
 		const stats = dirResource.path.split('/');
+
 		const dirStat = stats[stats.length - 1];
+
 		if (!dirStat || !glob.match(segmentMatchPattern, dirStat)) {
 			continue;
 		}
@@ -624,16 +671,22 @@ function getMatchingDirectoriesFromFiles(resources: URI[], root: ExplorerItem, s
 
 function findFirstParent(resource: URI, root: ExplorerItem): ExplorerItem | undefined {
 	const relativePathToRoot = relativePath(root.resource, resource);
+
 	if (!relativePathToRoot) {
 		throw new Error('Resource is not a child of the root');
 	}
 
 	let currentItem = root;
+
 	let currentResource = root.resource;
+
 	const pathSegments = relativePathToRoot.split('/');
+
 	for (const stat of pathSegments) {
 		currentResource = currentResource.with({ path: `${currentResource.path}/${stat}` });
+
 		const child = currentItem.getChild(stat);
+
 		if (!child) {
 			return currentItem;
 		}
@@ -660,8 +713,10 @@ function continousMatchingGlobPattern(pattern: string): string {
 
 function caseInsensitiveGlobPattern(pattern: string): string {
 	let caseInsensitiveFilePattern = '';
+
 	for (let i = 0; i < pattern.length; i++) {
 		const char = pattern[i];
+
 		if (/[a-zA-Z]/.test(char)) {
 			caseInsensitiveFilePattern += `[${char.toLowerCase()}${char.toUpperCase()}]`;
 		} else {
@@ -683,6 +738,7 @@ export interface ICompressedNavigationController {
 	next(): void;
 	first(): void;
 	last(): void;
+
 	setIndex(index: number): void;
 	updateCollapsed(collapsed: boolean): void;
 }
@@ -713,7 +769,9 @@ export class CompressedNavigationController implements ICompressedNavigationCont
 
 	private updateLabels(templateData: IFileTemplateData): void {
 		this._labels = Array.from(templateData.container.querySelectorAll('.label-name')) as HTMLElement[];
+
 		let parents = '';
+
 		for (let i = 0; i < this.labels.length; i++) {
 			const ariaLabel = parents.length ? `${this.items[i].name}, compact, ${parents}` : this.items[i].name;
 			this.labels[i].setAttribute('aria-label', ariaLabel);
@@ -773,6 +831,7 @@ export class CompressedNavigationController implements ICompressedNavigationCont
 
 	updateCollapsed(collapsed: boolean): void {
 		this.collapsed = collapsed;
+
 		for (let i = 0; i < this.labels.length; i++) {
 			this.labels[i].setAttribute('aria-expanded', collapsed ? 'false' : 'true');
 		}
@@ -821,6 +880,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 		const updateOffsetStyles = () => {
 			const indent = this.configurationService.getValue<number>('workbench.tree.indent');
+
 			const offset = Math.max(22 - indent, 0); // derived via inspection
 			container.style.setProperty(`--vscode-explorer-align-offset-margin-left`, `${offset}px`);
 		};
@@ -847,6 +907,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 	renderTemplate(container: HTMLElement): IFileTemplateData {
 		const templateDisposables = new DisposableStore();
+
 		const label = templateDisposables.add(this.labels.create(container, { supportHighlights: true }));
 		templateDisposables.add(label.onDidRender(() => {
 			try {
@@ -866,6 +927,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		}));
 
 		const templateData: IFileTemplateData = { templateDisposables, elementDisposables: templateDisposables.add(new DisposableStore()), label, container, contribs };
+
 		return templateData;
 	}
 
@@ -896,6 +958,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		templateData.currentContext = stat;
 
 		const editable = node.element.elements.filter(e => this.explorerService.isEditable(e));
+
 		const editableData = editable.length === 0 ? undefined : this.explorerService.getEditableData(editable[0]);
 
 		// File Label
@@ -904,11 +967,13 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 			templateData.label.element.style.display = 'flex';
 
 			const id = `compressed-explorer_${CompressedNavigationController.ID++}`;
+
 			const labels = node.element.elements.map(e => e.name);
 
 			// If there is a fuzzy score, we need to adjust the offset of the score
 			// to align with the last stat of the compressed label
 			let fuzzyScore = node.filterData as FuzzyScore | undefined;
+
 			if (fuzzyScore && fuzzyScore.length > 2) {
 				const filterDataOffset = labels.join('/').length - labels[labels.length - 1].length;
 				fuzzyScore = [fuzzyScore[0], fuzzyScore[1] + filterDataOffset, ...fuzzyScore.slice(2)];
@@ -935,6 +1000,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 			templateData.elementDisposables.add(toDisposable(() => {
 				const nodeControllers = this.compressedNavigationControllers.get(stat) ?? [];
+
 				const renderedIndex = nodeControllers.findIndex(controller => controller === compressedNavigationController);
 
 				if (renderedIndex < 0) {
@@ -960,7 +1026,9 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 	private renderStat(stat: ExplorerItem, label: string | string[], domId: string | undefined, filterData: FuzzyScore | undefined, templateData: IFileTemplateData): void {
 		templateData.label.element.style.display = 'flex';
+
 		const extraClasses = ['explorer-item'];
+
 		if (this.explorerService.isCut(stat)) {
 			extraClasses.push('cut');
 		}
@@ -975,6 +1043,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		// when explorer arrows are hidden or there are no folder icons, nests get misaligned as they are forced to have arrows and files typically have icons
 		// Apply some CSS magic to get things looking as reasonable as possible.
 		const themeIsUnhappyWithNesting = theme.hasFileIcons && (theme.hidesExplorerArrows || !theme.hasFolderIcons);
+
 		const realignNestedChildren = stat.nestedParent && themeIsUnhappyWithNesting;
 		templateData.contribs.forEach(c => c.setResource(stat.resource));
 		templateData.label.setResource({ resource: stat.resource, name: label }, {
@@ -987,6 +1056,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		});
 
 		const highlightResults = stat.isDirectory ? this.highlightTree.get(stat) : 0;
+
 		if (highlightResults > 0) {
 			const badge = new CountBadge(templateData.label.element.lastElementChild as HTMLElement, {}, { ...defaultCountBadgeStyles, badgeBackground: asCssVariable(listFilterMatchHighlight), badgeBorder: asCssVariable(listFilterMatchHighlightBorder) });
 			badge.setCount(highlightResults);
@@ -1000,11 +1070,15 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 		// Use a file label only for the icon next to the input box
 		const label = this.labels.create(container);
+
 		const extraClasses = ['explorer-item', 'explorer-item-edited'];
+
 		const fileKind = stat.isRoot ? FileKind.ROOT_FOLDER : stat.isDirectory ? FileKind.FOLDER : FileKind.FILE;
 
 		const theme = this.themeService.getFileIconTheme();
+
 		const themeIsUnhappyWithNesting = theme.hasFileIcons && (theme.hidesExplorerArrows || !theme.hasFolderIcons);
+
 		const realignNestedChildren = stat.nestedParent && themeIsUnhappyWithNesting;
 
 		const labelOptions: IFileLabelOptions = {
@@ -1016,6 +1090,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 
 		const parent = stat.name ? dirname(stat.resource) : stat.resource;
+
 		const value = stat.name || '';
 
 		label.setFile(joinPath(parent, value || ' '), labelOptions); // Use icon for ' ' if name is empty.
@@ -1028,6 +1103,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 			validationOptions: {
 				validation: (value) => {
 					const message = editableData.validationMessage(value);
+
 					if (!message || message.severity !== Severity.Error) {
 						return null;
 					}
@@ -1044,6 +1120,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		});
 
 		const lastDot = value.lastIndexOf('.');
+
 		let currentSelectionState = 'prefix';
 
 		inputBox.value = value;
@@ -1052,9 +1129,11 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 
 		const done = createSingleCallFunction((success: boolean, finishEditing: boolean) => {
 			label.element.style.display = 'none';
+
 			const value = inputBox.value;
 			dispose(toDispose);
 			label.element.remove();
+
 			if (finishEditing) {
 				editableData.onFinish(value, success);
 			}
@@ -1063,6 +1142,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 		const showInputBoxNotification = () => {
 			if (inputBox.isInputValid()) {
 				const message = editableData.validationMessage(inputBox.value);
+
 				if (message) {
 					inputBox.showMessage({
 						content: message.content,
@@ -1084,6 +1164,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 			DOM.addStandardDisposableListener(inputBox.inputElement, DOM.EventType.KEY_DOWN, (e: IKeyboardEvent) => {
 				if (e.equals(KeyCode.F2)) {
 					const dotIndex = inputBox.value.lastIndexOf('.');
+
 					if (stat.isDirectory || dotIndex === -1) {
 						return;
 					}
@@ -1113,6 +1194,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 					await timeout(0);
 
 					const ownerDocument = inputBox.inputElement.ownerDocument;
+
 					if (!ownerDocument.hasFocus()) {
 						break;
 					} if (DOM.isActiveElement(inputBox.inputElement)) {
@@ -1161,7 +1243,9 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 	getAriaLevel(element: ExplorerItem): number {
 		// We need to comput aria level on our own since children of compact folders will otherwise have an incorrect level	#107235
 		let depth = 0;
+
 		let parent = element.parent;
+
 		while (parent) {
 			parent = parent.parent;
 			depth++;
@@ -1235,6 +1319,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 		}));
 		this.toDispose.push(this.editorService.onDidVisibleEditorsChange(() => {
 			const editors = this.editorService.visibleEditors;
+
 			let shouldFire = false;
 
 			for (const e of editors) {
@@ -1243,9 +1328,11 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 				}
 
 				const stat = this.explorerService.findClosest(e.resource);
+
 				if (stat && stat.isExcluded) {
 					// A filtered resource suddenly became visible since user opened an editor
 					shouldFire = true;
+
 					break;
 				}
 			}
@@ -1254,6 +1341,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 				if (!editors.includes(e)) {
 					// Editor that was affecting filtering is no longer visible
 					shouldFire = true;
+
 					break;
 				}
 			}
@@ -1272,10 +1360,13 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 	private updateConfiguration(): void {
 		let shouldFire = false;
+
 		let updatedGitIgnoreSetting = false;
 		this.contextService.getWorkspace().folders.forEach(folder => {
 			const configuration = this.configurationService.getValue<IFilesConfiguration>({ resource: folder.uri });
+
 			const excludesConfig: glob.IExpression = configuration?.files?.exclude || Object.create(null);
+
 			const parseIgnoreFile: boolean = configuration.explorer.excludeGitIgnore;
 
 			// If we should be parsing ignoreFiles for this workspace and don't have an ignore tree initialize one
@@ -1317,7 +1408,9 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 	private async processIgnoreFile(root: string, ignoreFileResource: URI, update?: boolean) {
 		// Get the name of the directory which the ignore file is in
 		const dirUri = dirname(ignoreFileResource);
+
 		const ignoreTree = this.ignoreTreesPerRoot.get(root);
+
 		if (!ignoreTree) {
 			return;
 		}
@@ -1336,6 +1429,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 		} else {
 			// Otherwise we create a new ignorefile and add it to the tree
 			const ignoreParent = ignoreTree.findSubstr(dirUri);
+
 			const ignoreFile = new IgnoreFile(content.value.toString(), dirUri.path, ignoreParent);
 			ignoreTree.set(dirUri, ignoreFile);
 			// If we haven't seen this resource before then we need to add it to the list of resources we're tracking
@@ -1352,6 +1446,7 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 		// Add newly visited .gitignore files to the ignore tree
 		if (stat.name === '.gitignore' && this.ignoreTreesPerRoot.has(stat.root.resource.toString())) {
 			this.processIgnoreFile(stat.root.resource.toString(), stat.resource, false);
+
 			return true;
 		}
 
@@ -1360,8 +1455,10 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 	private isVisible(stat: ExplorerItem, parentVisibility: TreeVisibility): boolean {
 		stat.isExcluded = false;
+
 		if (parentVisibility === TreeVisibility.Hidden) {
 			stat.isExcluded = true;
+
 			return false;
 		}
 		if (this.explorerService.getEditableData(stat)) {
@@ -1370,18 +1467,25 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 
 		// Hide those that match Hidden Patterns
 		const cached = this.hiddenExpressionPerRoot.get(stat.root.resource.toString());
+
 		const globMatch = cached?.parsed(path.relative(stat.root.resource.path, stat.resource.path), stat.name, name => !!(stat.parent && stat.parent.getChild(name)));
 		// Small optimization to only traverse gitIgnore if the globMatch from fileExclude returned nothing
 		const ignoreFile = globMatch ? undefined : this.ignoreTreesPerRoot.get(stat.root.resource.toString())?.findSubstr(stat.resource);
+
 		const isIncludedInTraversal = ignoreFile?.isPathIncludedInTraversal(stat.resource.path, stat.isDirectory);
 		// Doing !undefined returns true and we want it to be false when undefined because that means it's not included in the ignore file
 		const isIgnoredByIgnoreFile = isIncludedInTraversal === undefined ? false : !isIncludedInTraversal;
+
 		if (isIgnoredByIgnoreFile || globMatch || stat.parent?.isExcluded) {
 			stat.isExcluded = true;
+
 			const editors = this.editorService.visibleEditors;
+
 			const editor = editors.find(e => e.resource && this.uriIdentityService.extUri.isEqualOrParent(e.resource, stat.resource));
+
 			if (editor && stat.root === this.explorerService.findClosestRoot(stat.resource)) {
 				this.editorsAffectingFilter.add(editor);
+
 				return true; // Show all opened files and their parents
 			}
 
@@ -1409,7 +1513,9 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 		if (statA.isRoot) {
 			if (statB.isRoot) {
 				const workspaceA = this.contextService.getWorkspaceFolder(statA.resource);
+
 				const workspaceB = this.contextService.getWorkspaceFolder(statB.resource);
+
 				return workspaceA && workspaceB ? (workspaceA.index - workspaceB.index) : -1;
 			}
 
@@ -1421,27 +1527,38 @@ export class FileSorter implements ITreeSorter<ExplorerItem> {
 		}
 
 		const sortOrder = this.explorerService.sortOrderConfiguration.sortOrder;
+
 		const lexicographicOptions = this.explorerService.sortOrderConfiguration.lexicographicOptions;
+
 		const reverse = this.explorerService.sortOrderConfiguration.reverse;
+
 		if (reverse) {
 			[statA, statB] = [statB, statA];
 		}
 
 		let compareFileNames;
+
 		let compareFileExtensions;
+
 		switch (lexicographicOptions) {
 			case 'upper':
 				compareFileNames = compareFileNamesUpper;
 				compareFileExtensions = compareFileExtensionsUpper;
+
 				break;
+
 			case 'lower':
 				compareFileNames = compareFileNamesLower;
 				compareFileExtensions = compareFileExtensionsLower;
+
 				break;
+
 			case 'unicode':
 				compareFileNames = compareFileNamesUnicode;
 				compareFileExtensions = compareFileExtensionsUnicode;
+
 				break;
+
 			default:
 				// 'default'
 				compareFileNames = compareFileNamesDefault;
@@ -1589,19 +1706,24 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 					}
 
 					this.compressedDropTargetDisposable.dispose();
+
 					return false;
 				}
 			}
 		}
 
 		this.compressedDropTargetDisposable.dispose();
+
 		return this.handleDragOver(data, target, targetIndex, targetSector, originalEvent);
 	}
 
 	private handleDragOver(data: IDragAndDropData, target: ExplorerItem | undefined, targetIndex: number | undefined, targetSector: ListViewTargetSector | undefined, originalEvent: DragEvent): boolean | ITreeDragOverReaction {
 		const isCopy = originalEvent && ((originalEvent.ctrlKey && !isMacintosh) || (originalEvent.altKey && isMacintosh));
+
 		const isNative = data instanceof NativeDragAndDropData;
+
 		const effectType = (isNative || isCopy) ? ListDragOverEffectType.Copy : ListDragOverEffectType.Move;
+
 		const effect = { type: effectType, position: ListDragOverEffectPosition.Over };
 
 		// Native DND
@@ -1619,6 +1741,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		// In-Explorer DND
 		else {
 			const items = FileDragAndDrop.getStatsFromDragAndDropData(data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>);
+
 			const isRootsReorder = items.every(item => item.isRoot);
 
 			if (!target) {
@@ -1673,10 +1796,12 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				}
 
 				let dropEffectPosition: ListDragOverEffectPosition | undefined = undefined;
+
 				switch (targetSector) {
 					case ListViewTargetSector.TOP:
 					case ListViewTargetSector.CENTER_TOP:
 						dropEffectPosition = ListDragOverEffectPosition.Before; break;
+
 					case ListViewTargetSector.CENTER_BOTTOM:
 					case ListViewTargetSector.BOTTOM:
 						dropEffectPosition = ListDragOverEffectPosition.After; break;
@@ -1719,6 +1844,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 	getDragLabel(elements: ExplorerItem[], originalEvent: DragEvent): string | undefined {
 		if (elements.length === 1) {
 			const stat = FileDragAndDrop.getCompressedStatFromDragEvent(elements[0], originalEvent);
+
 			return stat.name;
 		}
 
@@ -1727,6 +1853,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
 		const items = FileDragAndDrop.getStatsFromDragAndDropData(data as ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>, originalEvent);
+
 		if (items && items.length && originalEvent.dataTransfer) {
 			// Apply some datatransfer types to allow for dragging the element outside of the application
 			this.instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, items, originalEvent));
@@ -1734,6 +1861,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			// The only custom data transfer we set from the explorer is a file transfer
 			// to be able to DND between multiple code file explorers across windows
 			const fileResources = items.filter(s => s.resource.scheme === Schemas.file).map(r => r.resource.fsPath);
+
 			if (fileResources.length) {
 				originalEvent.dataTransfer.setData(CodeDataTransfers.FILES, JSON.stringify(fileResources));
 			}
@@ -1764,6 +1892,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			return;
 		}
 		const resolvedTarget = target;
+
 		if (!resolvedTarget) {
 			return;
 		}
@@ -1795,11 +1924,13 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private async handleExplorerDrop(data: ElementsDragAndDropData<ExplorerItem, ExplorerItem[]>, target: ExplorerItem, targetIndex: number | undefined, targetSector: ListViewTargetSector | undefined, originalEvent: DragEvent): Promise<void> {
 		const elementsData = FileDragAndDrop.getStatsFromDragAndDropData(data);
+
 		const distinctItems = new Map(elementsData.map(element => [element, this.isCollapsed(element)]));
 
 		for (const [item, collapsed] of distinctItems) {
 			if (collapsed) {
 				const nestedChildren = item.nestedChildren;
+
 				if (nestedChildren) {
 					for (const child of nestedChildren) {
 						// if parent is collapsed, then the nested children is considered collapsed to operate as a group
@@ -1811,15 +1942,18 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		}
 
 		const items = distinctParents([...distinctItems.keys()], s => s.resource);
+
 		const isCopy = (originalEvent.ctrlKey && !isMacintosh) || (originalEvent.altKey && isMacintosh);
 
 		// Handle confirm setting
 		const confirmDragAndDrop = !isCopy && this.configurationService.getValue<boolean>(FileDragAndDrop.CONFIRM_DND_SETTING_KEY);
+
 		if (confirmDragAndDrop) {
 			const message = items.length > 1 && items.every(s => s.isRoot) ? localize('confirmRootsMove', "Are you sure you want to change the order of multiple root folders in your workspace?")
 				: items.length > 1 ? localize('confirmMultiMove', "Are you sure you want to move the following {0} files into '{1}'?", items.length, target.name)
 					: items[0].isRoot ? localize('confirmRootMove', "Are you sure you want to change the order of root folder '{0}' in your workspace?", items[0].name)
 						: localize('confirmMove', "Are you sure you want to move '{0}' into '{1}'?", items[0].name, target.name);
+
 			const detail = items.length > 1 && !items.every(s => s.isRoot) ? getFileNamesMessage(items.map(i => i.resource)) : undefined;
 
 			const confirmation = await this.dialogService.confirm({
@@ -1844,6 +1978,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		await this.doHandleRootDrop(items.filter(s => s.isRoot), target, targetSector);
 
 		const sources = items.filter(s => !s.isRoot);
+
 		if (isCopy) {
 			return this.doHandleExplorerDropOnCopy(sources, target);
 		}
@@ -1857,9 +1992,13 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		}
 
 		const folders = this.contextService.getWorkspace().folders;
+
 		let targetIndex: number | undefined;
+
 		const sourceIndices: number[] = [];
+
 		const workspaceCreationData: IWorkspaceFolderCreationData[] = [];
+
 		const rootsToMove: IWorkspaceFolderCreationData[] = [];
 
 		for (let index = 0; index < folders.length; index++) {
@@ -1877,6 +2016,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			for (const root of roots) {
 				if (this.uriIdentityService.extUri.isEqual(folders[index].uri, root.resource)) {
 					sourceIndices.push(index);
+
 					break;
 				}
 			}
@@ -1894,6 +2034,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				case ListViewTargetSector.BOTTOM:
 				case ListViewTargetSector.CENTER_BOTTOM:
 					targetIndex++;
+
 					break;
 			}
 			// Adjust target index if source was located before target.
@@ -1914,9 +2055,12 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 		// Reuse duplicate action when user copies
 		const explorerConfig = this.configurationService.getValue<IFilesConfiguration>().explorer;
+
 		const resourceFileEdits: ResourceFileEdit[] = [];
+
 		for (const { resource, isDirectory } of sources) {
 			const allowOverwrite = explorerConfig.incrementalNaming === 'disabled';
+
 			const newResource = await findValidPasteFileTarget(this.explorerService,
 				this.fileService,
 				this.dialogService,
@@ -1924,6 +2068,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 				{ resource, isDirectory, allowOverwrite },
 				explorerConfig.incrementalNaming
 			);
+
 			if (!newResource) {
 				continue;
 			}
@@ -1939,6 +2084,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 		const editors = resourceFileEdits.filter(edit => {
 			const item = edit.newResource ? this.explorerService.findClosest(edit.newResource) : undefined;
+
 			return item && !item.isDirectory;
 		}).map(edit => ({ resource: edit.newResource, options: { pinned: true } }));
 
@@ -1949,7 +2095,9 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 		// Do not allow moving readonly items
 		const resourceFileEdits = sources.filter(source => !source.isReadonly).map(source => new ResourceFileEdit(source.resource, joinPath(target.resource, source.name)));
+
 		const labelSuffix = getFileOrFolderLabelSuffix(sources);
+
 		const options = {
 			confirmBeforeUndo: this.configurationService.getValue<IFilesConfiguration>().explorer.confirmUndo === UndoConfirmLevel.Verbose,
 			undoLabel: localize('move', "Move {0}", labelSuffix),
@@ -1964,6 +2112,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 			if ((<FileOperationError>error).fileOperationResult === FileOperationResult.FILE_MOVE_CONFLICT) {
 
 				const overwrites: URI[] = [];
+
 				for (const edit of resourceFileEdits) {
 					if (edit.newResource && await this.fileService.exists(edit.newResource)) {
 						overwrites.push(edit.newResource);
@@ -1972,7 +2121,9 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 				// Move with overwrite if the user confirms
 				const confirm = getMultipleFilesOverwriteConfirm(overwrites);
+
 				const { confirmed } = await this.dialogService.confirm(confirm);
+
 				if (confirmed) {
 					await this.explorerService.applyBulkEdit(resourceFileEdits.map(re => new ResourceFileEdit(re.oldResource, re.newResource, { overwrite: true })), options);
 				}
@@ -1993,6 +2144,7 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		// Detect compressed folder dragging
 		if (dragStartEvent && data.elements.length === 1) {
 			data.context = [FileDragAndDrop.getCompressedStatFromDragEvent(data.elements[0], dragStartEvent)];
+
 			return data.context;
 		}
 
@@ -2001,12 +2153,14 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 
 	private static getCompressedStatFromDragEvent(stat: ExplorerItem, dragEvent: DragEvent): ExplorerItem {
 		const target = DOM.getWindow(dragEvent).document.elementFromPoint(dragEvent.clientX, dragEvent.clientY);
+
 		const iconLabelName = getIconLabelNameFromHTMLElement(target);
 
 		if (iconLabelName) {
 			const { count, index } = iconLabelName;
 
 			let i = count - 1;
+
 			while (i > index && stat.parent) {
 				stat = stat.parent;
 				i--;
@@ -2037,6 +2191,7 @@ function getIconLabelNameFromHTMLElement(target: HTMLElement | EventTarget | Ele
 	while (element && !element.classList.contains('monaco-list-row')) {
 		if (element.classList.contains('label-name') && element.hasAttribute('data-icon-label-count')) {
 			const count = Number(element.getAttribute('data-icon-label-count'));
+
 			const index = Number(element.getAttribute('data-icon-label-index'));
 
 			if (isNumber(count) && isNumber(index)) {

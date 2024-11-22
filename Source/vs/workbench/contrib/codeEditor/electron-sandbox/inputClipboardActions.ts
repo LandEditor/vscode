@@ -31,6 +31,7 @@ if (platform.isMacintosh) {
         weight: 0,
         when: undefined,
     });
+
     function bindExecuteCommand(command: 'cut' | 'copy' | 'paste') {
         return () => {
             getActiveWindow().document.execCommand(command);

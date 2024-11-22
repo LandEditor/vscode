@@ -9,8 +9,11 @@ import { VSBuffer } from '../../base/common/buffer.js';
 import { ProcessTimeRunOnceScheduler } from '../../base/common/async.js';
 function printTime(ms: number): string {
     let h = 0;
+
     let m = 0;
+
     let s = 0;
+
     if (ms >= 1000) {
         s = Math.floor(ms / 1000);
         ms -= s * 1000;
@@ -24,9 +27,13 @@ function printTime(ms: number): string {
         m -= h * 60;
     }
     const _h = h ? `${h}h` : ``;
+
     const _m = m ? `${m}m` : ``;
+
     const _s = s ? `${s}s` : ``;
+
     const _ms = ms ? `${ms}ms` : ``;
+
     return `${_h}${_m}${_s}${_ms}`;
 }
 export class ManagementConnection {
@@ -39,6 +46,7 @@ export class ManagementConnection {
     private _disposed: boolean;
     private _disconnectRunner1: ProcessTimeRunOnceScheduler;
     private _disconnectRunner2: ProcessTimeRunOnceScheduler;
+
     constructor(private readonly _logService: ILogService, private readonly _reconnectionToken: string, remoteAddress: string, protocol: PersistentProtocol) {
         this._reconnectionGraceTime = ProtocolConstants.ReconnectionGraceTime;
         this._reconnectionShortGraceTime = ProtocolConstants.ReconnectionShortGraceTime;
@@ -86,6 +94,7 @@ export class ManagementConnection {
         this._disposed = true;
         this._disconnectRunner1.dispose();
         this._disconnectRunner2.dispose();
+
         const socket = this.protocol.getSocket();
         this.protocol.sendDisconnect();
         this.protocol.dispose();

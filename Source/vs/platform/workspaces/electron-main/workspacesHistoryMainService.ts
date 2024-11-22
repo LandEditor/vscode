@@ -29,6 +29,7 @@ export interface IWorkspacesHistoryMainService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeRecentlyOpened: CommonEvent<void>;
     addRecentlyOpened(recents: IRecent[]): Promise<void>;
+
     getRecentlyOpened(): Promise<IRecentlyOpened>;
     removeRecentlyOpened(paths: URI[]): Promise<void>;
     clearRecentlyOpened(options?: {
@@ -41,6 +42,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
     declare readonly _serviceBrand: undefined;
     private readonly _onDidChangeRecentlyOpened = this._register(new Emitter<void>());
     readonly onDidChangeRecentlyOpened = this._onDidChangeRecentlyOpened.event;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -65,7 +67,9 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
     //#region Workspaces History
     async addRecentlyOpened(recentToAdd: IRecent[]): Promise<void> {
         let workspaces: Array<IRecentFolder | IRecentWorkspace> = [];
+
         let files: IRecentFile[] = [];
+
         for (const recent of recentToAdd) {
             // Workspace
             if (isRecentWorkspace(recent)) {
@@ -82,7 +86,9 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
             // File
             else {
                 const alreadyExistsInHistory = this.containsFile(files, recent.fileUri);
+
                 const shouldBeFiltered = recent.fileUri.scheme === Schemas.file && WorkspacesHistoryMainService.COMMON_FILES_FILTER.indexOf(basename(recent.fileUri)) >= 0;
+
                 if (!alreadyExistsInHistory && !shouldBeFiltered) {
                     files.push(recent);
                     // Add to recent documents (Windows only, macOS later)
@@ -95,6 +101,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         const mergedEntries = await this.mergeEntriesFromStorage({ workspaces, files });
         workspaces = mergedEntries.workspaces;
         files = mergedEntries.files;
+
         if (workspaces.length > WorkspacesHistoryMainService.MAX_TOTAL_RECENT_ENTRIES) {
             workspaces.length = WorkspacesHistoryMainService.MAX_TOTAL_RECENT_ENTRIES;
         }
@@ -111,6 +118,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
     async removeRecentlyOpened(recentToRemove: URI[]): Promise<void> {
         const keep = (recent: IRecent) => {
             const uri = this.location(recent);
+
             for (const resourceToRemove of recentToRemove) {
                 if (extUriBiasedIgnorePathCase.isEqual(resourceToRemove, uri)) {
                     return false;
@@ -118,9 +126,13 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
             }
             return true;
         };
+
         const mru = await this.getRecentlyOpened();
+
         const workspaces = mru.workspaces.filter(keep);
+
         const files = mru.files.filter(keep);
+
         if (workspaces.length !== mru.workspaces.length || files.length !== mru.files.length) {
             await this.saveRecentlyOpened({ files, workspaces });
             this._onDidChangeRecentlyOpened.fire();
@@ -144,6 +156,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
                 detail: localize('confirmClearDetail', "This action is irreversible!"),
                 cancelId: 1
             });
+
             if (response !== 0) {
                 return;
             }
@@ -160,12 +173,14 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         // Build maps for more efficient lookup of existing entries that
         // are passed in by storing based on workspace/file identifier
         const mapWorkspaceIdToWorkspace = new ResourceMap<IRecentFolder | IRecentWorkspace>(uri => extUriBiasedIgnorePathCase.getComparisonKey(uri));
+
         if (existingEntries?.workspaces) {
             for (const workspace of existingEntries.workspaces) {
                 mapWorkspaceIdToWorkspace.set(this.location(workspace), workspace);
             }
         }
         const mapFileIdToFile = new ResourceMap<IRecentFile>(uri => extUriBiasedIgnorePathCase.getComparisonKey(uri));
+
         if (existingEntries?.files) {
             for (const file of existingEntries.files) {
                 mapFileIdToFile.set(this.location(file), file);
@@ -173,8 +188,10 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         }
         // Merge in entries from storage, preserving existing known entries
         const recentFromStorage = await this.getRecentlyOpenedFromStorage();
+
         for (const recentWorkspaceFromStorage of recentFromStorage.workspaces) {
             const existingRecentWorkspace = mapWorkspaceIdToWorkspace.get(this.location(recentWorkspaceFromStorage));
+
             if (existingRecentWorkspace) {
                 existingRecentWorkspace.label = existingRecentWorkspace.label ?? recentWorkspaceFromStorage.label;
             }
@@ -184,6 +201,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         }
         for (const recentFileFromStorage of recentFromStorage.files) {
             const existingRecentFile = mapFileIdToFile.get(this.location(recentFileFromStorage));
+
             if (existingRecentFile) {
                 existingRecentFile.label = existingRecentFile.label ?? recentFileFromStorage.label;
             }
@@ -199,9 +217,11 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
     private async getRecentlyOpenedFromStorage(): Promise<IRecentlyOpened> {
         // Wait for global storage to be ready
         await this.applicationStorageMainService.whenReady;
+
         let storedRecentlyOpened: object | undefined = undefined;
         // First try with storage service
         const storedRecentlyOpenedRaw = this.applicationStorageMainService.get(WorkspacesHistoryMainService.RECENTLY_OPENED_STORAGE_KEY, StorageScope.APPLICATION);
+
         if (typeof storedRecentlyOpenedRaw === 'string') {
             try {
                 storedRecentlyOpened = JSON.parse(storedRecentlyOpenedRaw);
@@ -282,10 +302,13 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
             // Also: Windows will not show our custom category at all if there is any entry which was removed
             // by the user! See https://github.com/microsoft/vscode/issues/15052
             const toRemove: URI[] = [];
+
             for (const item of app.getJumpListSettings().removedItems) {
                 const args = item.args;
+
                 if (args) {
                     const match = /^--(folder|file)-uri\s+"([^"]+)"$/.exec(args);
+
                     if (match) {
                         toRemove.push(URI.parse(match[2]));
                     }
@@ -294,10 +317,14 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
             await this.removeRecentlyOpened(toRemove);
             // Add entries
             let hasWorkspaces = false;
+
             const items: JumpListItem[] = coalesce((await this.getRecentlyOpened()).workspaces.slice(0, WorkspacesHistoryMainService.MAX_WINDOWS_JUMP_LIST_ENTRIES).map(recent => {
                 const workspace = isRecentWorkspace(recent) ? recent.workspace : recent.folderUri;
+
                 const { title, description } = this.getWindowsJumpListLabel(workspace, recent.label);
+
                 let args;
+
                 if (URI.isUri(workspace)) {
                     args = `--folder-uri "${workspace.toString()}"`;
                 }
@@ -315,6 +342,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
                     iconIndex: 0
                 };
             }));
+
             if (items.length > 0) {
                 jumpList.push({
                     type: 'custom',
@@ -327,8 +355,10 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         jumpList.push({
             type: 'recent' // this enables to show files in the "recent" category
         });
+
         try {
             const res = app.setJumpList(jumpList);
+
             if (res && res !== 'ok') {
                 this.logService.warn(`updateWindowsJumpList#setJumpList unexpected result: ${res}`);
             }
@@ -355,6 +385,7 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         }
         // Workspace: normal
         let filename = basename(workspace.configPath);
+
         if (filename.endsWith(WORKSPACE_EXTENSION)) {
             filename = filename.substr(0, filename.length - WORKSPACE_EXTENSION.length - 1);
         }
@@ -370,14 +401,19 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         // We clear all documents first to ensure an up-to-date view on the set. Since entries
         // can get deleted on disk, this ensures that the list is always valid
         app.clearRecentDocuments();
+
         const mru = await this.getRecentlyOpened();
         // Collect max-N recent workspaces that are known to exist
         const workspaceEntries: string[] = [];
+
         let entries = 0;
+
         for (let i = 0; i < mru.workspaces.length && entries < WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_WORKSPACES; i++) {
             const loc = this.location(mru.workspaces[i]);
+
             if (loc.scheme === Schemas.file) {
                 const workspacePath = originalFSPath(loc);
+
                 if (await Promises.exists(workspacePath)) {
                     workspaceEntries.push(workspacePath);
                     entries++;
@@ -386,10 +422,13 @@ export class WorkspacesHistoryMainService extends Disposable implements IWorkspa
         }
         // Collect max-N recent files that are known to exist
         const fileEntries: string[] = [];
+
         for (let i = 0; i < mru.files.length && entries < WorkspacesHistoryMainService.MAX_MACOS_DOCK_RECENT_ENTRIES_TOTAL; i++) {
             const loc = this.location(mru.files[i]);
+
             if (loc.scheme === Schemas.file) {
                 const filePath = originalFSPath(loc);
+
                 if (WorkspacesHistoryMainService.COMMON_FILES_FILTER.includes(basename(loc)) || // skip some well known file entries
                     workspaceEntries.includes(filePath) // prefer a workspace entry over a file entry (e.g. for .code-workspace)
                 ) {

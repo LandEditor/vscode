@@ -38,6 +38,7 @@ export function register(
 		requireMinVersion(client, minVersion),
 	], () => {
 		const ext = vscode.extensions.getExtension('github.copilot');
+
 		if (!ext) {
 			return new vscode.Disposable(() => { });
 		}
@@ -45,6 +46,7 @@ export function register(
 		const disposers: vscode.Disposable[] = [];
 		ext.activate().then(() => {
 			const relatedAPI = ext.exports as CopilotApi | undefined;
+
 			if (relatedAPI?.registerRelatedFilesProvider) {
 				for (const syntax of selector.syntax) {
 					if (!syntax.language) {
@@ -56,11 +58,13 @@ export function register(
 					};
 					disposers.push(relatedAPI.registerRelatedFilesProvider(id, async (uri, _context, token) => {
 						let document;
+
 						try {
 							document = await vscode.workspace.openTextDocument(uri);
 						} catch {
 							if (!vscode.window.activeTextEditor) {
 								vscode.window.showErrorMessage(vscode.l10n.t("Related files provider failed. No active text editor."));
+
 								return { entries: [] };
 							}
 							// something is REALLY wrong if you can't open the active text editor's document, so don't catch that
@@ -69,14 +73,17 @@ export function register(
 
 						if (!isSupportedLanguageMode(document)) {
 							vscode.window.showErrorMessage(vscode.l10n.t("Related files provider failed. Copilot requested file with unsupported language mode."));
+
 							return { entries: [] };
 						}
 
 						const file = client.toOpenTsFilePath(document);
+
 						if (!file) {
 							return { entries: [] };
 						}
 						const response = await client.execute('copilotRelated', { file, }, token) as Proto.CopilotRelatedResponse;
+
 						if (response.type !== 'response' || !response.body) {
 							return { entries: [] };
 						}

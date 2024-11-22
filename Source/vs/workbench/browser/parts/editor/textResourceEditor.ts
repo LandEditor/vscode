@@ -54,6 +54,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
     override async setInput(input: AbstractTextResourceEditorInput, options: ITextEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
         // Set input and resolve
         await super.setInput(input, options, context, token);
+
         const resolvedModel = await input.resolve();
         // Check for cancellation
         if (token.isCancellationRequested) {
@@ -65,11 +66,13 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
         }
         // Set Editor Model
         const control = assertIsDefined(this.editorControl);
+
         const textEditorModel = resolvedModel.textEditorModel;
         control.setModel(textEditorModel);
         // Restore view state (unless provided by options)
         if (!isTextEditorViewState(options?.viewState)) {
             const editorViewState = this.loadEditorViewState(input, context);
+
             if (editorViewState) {
                 if (options?.selection) {
                     editorViewState.cursorState = []; // prevent duplicate selections via options
@@ -93,10 +96,12 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
      */
     revealLastLine(): void {
         const control = this.editorControl;
+
         if (!control) {
             return;
         }
         const model = control.getModel();
+
         if (model) {
             const lastLine = model.getLineCount();
             control.revealPosition({ lineNumber: lastLine, column: model.getLineMaxColumn(lastLine) }, ScrollType.Smooth);
@@ -114,6 +119,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 }
 export class TextResourceEditor extends AbstractTextResourceEditor {
     static readonly ID = 'workbench.editors.textResourceEditor';
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -142,6 +148,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
         // Install a listener for paste to update this editors
         // language if the paste includes a specific language
         const control = this.editorControl;
+
         if (control) {
             this._register(control.onDidPaste(e => this.onDidEditorPaste(e, control)));
         }
@@ -157,14 +164,17 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
             return; // not for readonly editors
         }
         const textModel = codeEditor.getModel();
+
         if (!textModel) {
             return; // require a live model
         }
         const pasteIsWholeContents = textModel.getLineCount() === e.range.endLineNumber && textModel.getLineMaxColumn(e.range.endLineNumber) === e.range.endColumn;
+
         if (!pasteIsWholeContents) {
             return; // document had existing content after the pasted text, don't override.
         }
         const currentLanguageId = textModel.getLanguageId();
+
         if (currentLanguageId !== PLAINTEXT_LANGUAGE_ID) {
             return; // require current languageId to be unspecific
         }
@@ -182,6 +192,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
         // the paste changed the first line
         else {
             const guess = this.languageService.guessLanguageIdByFilepathOrFirstLine(textModel.uri, textModel.getLineContent(1).substr(0, ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT)) ?? undefined;
+
             if (guess) {
                 candidateLanguage = { id: guess, source: 'guess' };
             }

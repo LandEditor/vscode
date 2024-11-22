@@ -19,9 +19,11 @@ function rangesEqual(a: ICellRange[], b: ICellRange[]) {
 // Challenge is List View talks about `element`, which needs extra work to convert to ICellRange as we support Folding and Cell Move
 export class NotebookCellSelectionCollection extends Disposable {
     private readonly _onDidChangeSelection = this._register(new Emitter<string>());
+
     get onDidChangeSelection(): Event<string> { return this._onDidChangeSelection.event; }
     private _primary: ICellRange | null = null;
     private _selections: ICellRange[] = [];
+
     get selections(): ICellRange[] {
         return this._selections;
     }
@@ -32,6 +34,7 @@ export class NotebookCellSelectionCollection extends Disposable {
         const changed = primary !== this._primary || !rangesEqual(this._selections, selections);
         this._primary = primary;
         this._selections = selections;
+
         if (changed || forceEventEmit) {
             this._onDidChangeSelection.fire(source);
         }

@@ -53,6 +53,7 @@ export const INotebookOriginalModelReferenceFactory = createDecorator<INotebookO
 
 export interface INotebookOriginalModelReferenceFactory {
 	readonly _serviceBrand: undefined;
+
 	getOrCreate(fileEntry: IModifiedFileEntry, viewType: string): Promise<IReference<NotebookTextModel>>;
 }
 
@@ -61,6 +62,7 @@ export class NotebookChatEditorControllerContrib extends Disposable implements I
 
 	public static readonly ID: string = 'workbench.notebook.chatEditorController';
 	readonly _serviceBrand: undefined;
+
 	constructor(
 		notebookEditor: INotebookEditor,
 		@IInstantiationService instantiationService: IInstantiationService,
@@ -68,6 +70,7 @@ export class NotebookChatEditorControllerContrib extends Disposable implements I
 
 	) {
 		super();
+
 		if (configurationService.getValue<boolean>('notebook.experimental.chatEdits')) {
 			this._register(instantiationService.createInstance(NotebookChatEditorController, notebookEditor));
 		}
@@ -78,6 +81,7 @@ export class NotebookChatEditorControllerContrib extends Disposable implements I
 class NotebookChatEditorController extends Disposable {
 	private readonly deletedCellDecorator: NotebookDeletedCellDecorator;
 	private readonly insertedCellDecorator: NotebookInsertedCellDecorator;
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 		@IChatEditingService private readonly _chatEditingService: IChatEditingService,
@@ -87,16 +91,22 @@ class NotebookChatEditorController extends Disposable {
 		super();
 		this.deletedCellDecorator = this._register(instantiationService.createInstance(NotebookDeletedCellDecorator, notebookEditor));
 		this.insertedCellDecorator = this._register(instantiationService.createInstance(NotebookInsertedCellDecorator, notebookEditor));
+
 		const notebookModel = observableFromEvent(this.notebookEditor.onDidChangeModel, e => e);
+
 		const entryObs = observableValue<IModifiedFileEntry | undefined>('fileentry', undefined);
+
 		const notebookDiff = observableValue<{ cellDiff: CellDiffInfo[]; modelVersion: number } | undefined>('cellDiffInfo', undefined);
+
 		const originalModel = observableValue<NotebookTextModel | undefined>('originalModel', undefined);
 		this._register(toDisposable(() => {
 			disposeDecorators();
 		}));
 		this._register(autorun(r => {
 			const session = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!model || !session) {
 				return;
 			}
@@ -104,6 +114,7 @@ class NotebookChatEditorController extends Disposable {
 
 			if (!entry || entry.state.read(r) !== WorkingSetEntryState.Modified) {
 				disposeDecorators();
+
 				return;
 			}
 			// If we have a new entry for the file, then clear old decorators.
@@ -116,7 +127,9 @@ class NotebookChatEditorController extends Disposable {
 
 		this._register(autorunWithStore(async (r, store) => {
 			const entry = entryObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!entry || !model) {
 				return;
 			}
@@ -140,20 +153,26 @@ class NotebookChatEditorController extends Disposable {
 				this.deletedCellDecorator.clear();
 				this.insertedCellDecorator.clear();
 			}));
+
 			const result = this._register(await this.originalModelRefFactory.getOrCreate(entry, model.viewType));
 			originalModel.set(result.object, undefined);
 		}));
 
 		const onDidChangeVisibleRanges = observableFromEvent(this.notebookEditor.onDidChangeVisibleRanges, () => this.notebookEditor.visibleRanges);
+
 		const decorators = new Map<NotebookCellTextModel, { editor: ICodeEditor } & IDisposable>();
+
 		const disposeDecorators = () => {
 			dispose(Array.from(decorators.values()));
 			decorators.clear();
 		};
 		this._register(autorun(r => {
 			const entry = entryObs.read(r);
+
 			const diffInfo = notebookDiff.read(r);
+
 			const modified = notebookModel.read(r);
+
 			const original = originalModel.read(r);
 			onDidChangeVisibleRanges.read(r);
 
@@ -164,14 +183,19 @@ class NotebookChatEditorController extends Disposable {
 			diffInfo.cellDiff.forEach((diff) => {
 				if (diff.type === 'modified') {
 					const modifiedCell = modified.cells[diff.modifiedCellIndex];
+
 					const originalCellValue = original.cells[diff.originalCellIndex].getValue();
+
 					const editor = this.notebookEditor.codeEditors.find(([vm,]) => vm.handle === modifiedCell.handle)?.[1];
+
 					if (editor && decorators.get(modifiedCell)?.editor !== editor) {
 						decorators.get(modifiedCell)?.dispose();
+
 						const decorator = this.instantiationService.createInstance(NotebookCellDiffDecorator, editor, originalCellValue, modifiedCell.cellKind);
 						decorators.set(modifiedCell, decorator);
 						this._register(editor.onDidDispose(() => {
 							decorator.dispose();
+
 							if (decorators.get(modifiedCell) === decorator) {
 								decorators.set(modifiedCell, decorator);
 							}
@@ -182,9 +206,13 @@ class NotebookChatEditorController extends Disposable {
 		}));
 		this._register(autorun(r => {
 			const entry = entryObs.read(r);
+
 			const diffInfo = notebookDiff.read(r);
+
 			const modified = notebookModel.read(r);
+
 			const original = originalModel.read(r);
+
 			if (!entry || !modified || !original || (diffInfo && diffInfo.modelVersion !== modified.versionId)) {
 				return;
 			}
@@ -192,6 +220,7 @@ class NotebookChatEditorController extends Disposable {
 				// User reverted or accepted the changes, hence original === modified.
 				this.deletedCellDecorator.clear();
 				this.insertedCellDecorator.clear();
+
 				return;
 			}
 			this.insertedCellDecorator.apply(diffInfo.cellDiff);
@@ -226,6 +255,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 
 		const shouldBeReadOnly = derived(this, r => {
 			const value = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!value || value.state.read(r) !== ChatEditingSessionState.StreamingEdits) {
 				return false;
 			}
@@ -234,10 +264,12 @@ class NotebookCellDiffDecorator extends DisposableStore {
 
 
 		let actualReadonly: boolean | undefined;
+
 		let actualDeco: 'off' | 'editable' | 'on' | undefined;
 
 		this.add(autorun(r => {
 			const value = shouldBeReadOnly.read(r);
+
 			if (value) {
 				actualReadonly ??= this.editor.getOption(EditorOption.readOnly);
 				actualDeco ??= this.editor.getOption(EditorOption.renderValidationDecorations);
@@ -262,6 +294,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 
 	override dispose(): void {
 		this._clearRendering();
+
 		super.dispose();
 	}
 
@@ -275,21 +308,28 @@ class NotebookCellDiffDecorator extends DisposableStore {
 		}
 		if (!this.editor.hasModel()) {
 			this._clearRendering();
+
 			return;
 		}
 		if (this.editor.getOption(EditorOption.inDiffEditor)) {
 			this._clearRendering();
+
 			return;
 		}
 		const model = this.editor.getModel();
+
 		if (!model) {
 			this._clearRendering();
+
 			return;
 		}
 
 		const version = model.getVersionId();
+
 		const originalModel = this.getOrCreateOriginalModel();
+
 		const diff = originalModel ? await this.computeDiff() : undefined;
+
 		if (this.isDisposed) {
 			return;
 		}
@@ -317,23 +357,30 @@ class NotebookCellDiffDecorator extends DisposableStore {
 			return this._originalModel;
 		}
 		const model = this.editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const cellUri = model.uri;
+
 		const languageId = model.getLanguageId();
 
 		const scheme = `${CellUri.scheme}-chat-edit`;
+
 		const originalCellUri = URI.from({ scheme, fragment: cellUri.fragment, path: cellUri.path });
+
 		const languageSelection = this._languageService.getLanguageIdByLanguageName(languageId) ? this._languageService.createById(languageId) : this.cellKind === CellKind.Markup ? this._languageService.createById('markdown') : null;
+
 		return this._originalModel = this.add(this.modelService.createModel(this.originalCellValue, languageSelection, originalCellUri));
 	}
 	private async computeDiff() {
 		const model = this.editor.getModel();
+
 		if (!model) {
 			return;
 		}
 		const originalModel = this.getOrCreateOriginalModel();
+
 		if (!originalModel) {
 			return;
 		}
@@ -351,10 +398,12 @@ class NotebookCellDiffDecorator extends DisposableStore {
 			...diffAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
 		});
+
 		const chatDiffWholeLineAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffWholeLineAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 		const createOverviewDecoration = (overviewRulerColor: string, minimapColor: string) => {
 			return ModelDecorationOptions.createDynamic({
 				description: 'chat-editing-decoration',
@@ -362,8 +411,11 @@ class NotebookCellDiffDecorator extends DisposableStore {
 				minimap: { color: themeColorFromId(minimapColor), position: MinimapPosition.Gutter },
 			});
 		};
+
 		const modifiedDecoration = createOverviewDecoration(overviewRulerModifiedForeground, minimapGutterModifiedBackground);
+
 		const addedDecoration = createOverviewDecoration(overviewRulerAddedForeground, minimapGutterAddedBackground);
+
 		const deletedDecoration = createOverviewDecoration(overviewRulerDeletedForeground, minimapGutterDeletedBackground);
 
 		this.editor.changeViewZones((viewZoneChangeAccessor) => {
@@ -371,13 +423,18 @@ class NotebookCellDiffDecorator extends DisposableStore {
 				viewZoneChangeAccessor.removeZone(id);
 			}
 			this._viewZones = [];
+
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
+
 			const mightContainNonBasicASCII = originalModel?.mightContainNonBasicASCII();
+
 			const mightContainRTL = originalModel?.mightContainRTL();
+
 			const renderOptions = RenderOptions.fromEditor(this.editor);
 
 			for (const diffEntry of diff.changes) {
 				const originalRange = diffEntry.original;
+
 				if (originalModel) {
 					originalModel.tokenization.forceTokenization(Math.max(1, originalRange.endLineNumberExclusive - 1));
 				}
@@ -387,7 +444,9 @@ class NotebookCellDiffDecorator extends DisposableStore {
 					mightContainNonBasicASCII,
 					mightContainRTL,
 				);
+
 				const decorations: InlineDecoration[] = [];
+
 				for (const i of diffEntry.innerChanges || []) {
 					decorations.push(new InlineDecoration(
 						i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
@@ -424,10 +483,13 @@ class NotebookCellDiffDecorator extends DisposableStore {
 					});
 				}
 				const domNode = document.createElement('div');
+
 				domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
+
 				const result = renderLines(source, renderOptions, decorations, domNode);
 
 				const isCreatedContent = decorations.length === 1 && decorations[0].range.isEmpty() && decorations[0].range.startLineNumber === 1;
+
 				if (!isCreatedContent) {
 					const viewZoneData: IViewZone = {
 						afterLineNumber: diffEntry.modified.startLineNumber - 1,
@@ -447,6 +509,7 @@ class NotebookCellDiffDecorator extends DisposableStore {
 
 class NotebookInsertedCellDecorator extends Disposable {
 	private readonly decorators = this._register(new DisposableStore());
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 	) {
@@ -455,10 +518,12 @@ class NotebookInsertedCellDecorator extends Disposable {
 	}
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
+
 		if (!model) {
 			return;
 		}
 		const cells = diffInfo.filter(diff => diff.type === 'insert').map((diff) => model.cells[diff.modifiedCellIndex]);
+
 		const ids = this.notebookEditor.deltaCellDecorations([], cells.map(cell => ({
 			handle: cell.handle,
 			options: { className: 'nb-insertHighlight', outputClassName: 'nb-insertHighlight' }
@@ -485,6 +550,7 @@ class NotebookModelSynchronizer extends Disposable {
 	public readonly onDidAccept = this._onDidAccept.event;
 	private snapshot?: { bytes: VSBuffer; dirty: boolean };
 	private isEditFromUs: boolean = false;
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 		public readonly entry: IModifiedFileEntry,
@@ -514,14 +580,19 @@ class NotebookModelSynchronizer extends Disposable {
 		}));
 
 		const cancellationTokenStore = this._register(new DisposableStore());
+
 		let cancellationToken = cancellationTokenStore.add(new CancellationTokenSource());
+
 		const updateNotebookModel = (entry: IModifiedFileEntry, viewType: string, token: CancellationToken) => {
 			this.throttledUpdateNotebookModel.trigger(() => this.updateNotebookModel(entry, viewType, token));
 		};
+
 		const modelObs = observableFromEvent(notebookEditor.onDidChangeModel, e => e);
+
 		const modifiedModel = (entry as ChatEditingModifiedFileEntry).modifiedModel;
 		this._register(modifiedModel.onDidChangeContent(async () => {
 			cancellationTokenStore.clear();
+
 			if (!modifiedModel.isDisposed() && !entry.originalModel.isDisposed() && modifiedModel.getValue() === entry.originalModel.getValue()) {
 				if (await this.revert()) {
 					this._onDidRevert.fire(true);
@@ -533,6 +604,7 @@ class NotebookModelSynchronizer extends Disposable {
 		}));
 		this._register(autorunWithStore((r, store) => {
 			const model = modelObs.read(r);
+
 			if (model) {
 				store.add(model.onDidChangeContent(() => {
 					// Track changes from the user.
@@ -550,6 +622,7 @@ class NotebookModelSynchronizer extends Disposable {
 
 	public async createSnapshot() {
 		const model = this.notebookEditor.textModel;
+
 		if (!model) {
 			return;
 		}
@@ -565,6 +638,7 @@ class NotebookModelSynchronizer extends Disposable {
 			};
 
 			let outputSize = 0;
+
 			for (const cell of model.cells) {
 				const cellData: ICellDto2 = {
 					cellKind: cell.cellKind,
@@ -576,12 +650,14 @@ class NotebookModelSynchronizer extends Disposable {
 				};
 
 				const outputSizeLimit = this.configurationService.getValue<number>(NotebookSetting.outputBackupSizeLimit) * 1024;
+
 				if (outputSizeLimit > 0) {
 					cell.outputs.forEach(output => {
 						output.outputs.forEach(item => {
 							outputSize += item.data.byteLength;
 						});
 					});
+
 					if (outputSize > outputSizeLimit) {
 						return;
 					}
@@ -605,6 +681,7 @@ class NotebookModelSynchronizer extends Disposable {
 			return false;
 		}
 		await this.updateNotebook(this.snapshot.bytes, !this.snapshot.dirty);
+
 		return true;
 	}
 
@@ -614,8 +691,10 @@ class NotebookModelSynchronizer extends Disposable {
 		}
 
 		const ref = await this.notebookModelResolverService.resolve(this.notebookEditor.textModel.uri);
+
 		try {
 			const serializer = await this.getNotebookSerializer();
+
 			const data = await serializer.dataToNotebook(bytes);
 			this.notebookEditor.textModel.reset(data.cells, data.metadata, serializer.options);
 
@@ -632,25 +711,33 @@ class NotebookModelSynchronizer extends Disposable {
 
 	private async accept() {
 		const modifiedModel = (this.entry as ChatEditingModifiedFileEntry).modifiedModel;
+
 		const content = modifiedModel.getValue();
 		await this.updateNotebook(VSBuffer.fromString(content), false);
 	}
 
 	async getNotebookSerializer() {
 		const info = await this.notebookService.withNotebookDataProvider(this.viewType);
+
 		return info.serializer;
 	}
 
 	private async updateNotebookModel(entry: IModifiedFileEntry, viewType: string, token: CancellationToken) {
 		const modifiedModelVersion = (entry as ChatEditingModifiedFileEntry).modifiedModel.getVersionId();
+
 		const original = this.notebookEditor.textModel;
+
 		const originalModelVersion = original?.versionId ?? 0;
+
 		const model = await this.getModifiedModelForDiff(entry, viewType, token);
+
 		if (!model || token.isCancellationRequested || !original) {
 			return;
 		}
 		const cellDiffInfo = (await this.computeDiff(original, model, token))?.cellDiffInfo;
+
 		const currentVersion = (entry as ChatEditingModifiedFileEntry).modifiedModel.getVersionId();
+
 		if (!cellDiffInfo || token.isCancellationRequested || currentVersion !== modifiedModelVersion || originalModelVersion !== original.versionId) {
 			return;
 		}
@@ -660,8 +747,10 @@ class NotebookModelSynchronizer extends Disposable {
 
 		// All edits from here on are from us.
 		this.isEditFromUs = true;
+
 		try {
 			const edits: ICellReplaceEdit[] = [];
+
 			const mappings = new Map<number, number>();
 
 			// First Delete.
@@ -677,6 +766,7 @@ class NotebookModelSynchronizer extends Disposable {
 					});
 				}
 			});
+
 			if (edits.length) {
 				original.applyEdits(edits, true, undefined, () => undefined, undefined, false);
 				edits.length = 0;
@@ -690,7 +780,9 @@ class NotebookModelSynchronizer extends Disposable {
 				if (diff.type === 'insert') {
 					const originalIndex = mappings.get(diff.modifiedCellIndex - 1) ?? 0;
 					mappings.set(diff.modifiedCellIndex, originalIndex);
+
 					const cell = model.cells[diff.modifiedCellIndex];
+
 					const newCell: ICellDto2 =
 					{
 						source: cell.getValue(),
@@ -710,6 +802,7 @@ class NotebookModelSynchronizer extends Disposable {
 					});
 				}
 			});
+
 			if (edits.length) {
 				original.applyEdits(edits, true, undefined, () => undefined, undefined, false);
 				edits.length = 0;
@@ -719,7 +812,9 @@ class NotebookModelSynchronizer extends Disposable {
 			cellDiffInfo.forEach(diff => {
 				if (diff.type === 'modified') {
 					const cell = original.cells[diff.originalCellIndex];
+
 					const textModel = cell.textModel;
+
 					if (textModel) {
 						const newText = model.cells[diff.modifiedCellIndex].getValue();
 						textModel.pushEditOperations(null, [
@@ -743,30 +838,40 @@ class NotebookModelSynchronizer extends Disposable {
 
 	private async getModifiedModelForDiff(entry: IModifiedFileEntry, viewType: string, token: CancellationToken): Promise<NotebookTextModel | undefined> {
 		const text = (entry as ChatEditingModifiedFileEntry).modifiedModel.getValue();
+
 		const bytes = VSBuffer.fromString(text);
+
 		const uri = entry.modifiedURI.with({ scheme: `NotebookChatEditorController.modifiedScheme${Date.now().toString()}` });
+
 		const stream = bufferToStream(bytes);
+
 		if (this.previousUriOfModelForDiff) {
 			this.notebookService.getNotebookTextModel(this.previousUriOfModelForDiff)?.dispose();
 		}
 		this.previousUriOfModelForDiff = uri;
+
 		try {
 			const model = await this.notebookService.createNotebookTextModel(viewType, uri, stream);
+
 			if (token.isCancellationRequested) {
 				model.dispose();
+
 				return;
 			}
 			this._register(model);
+
 			return model;
 		} catch (ex) {
 			this.logService.warn('NotebookChatEdit', `Failed to deserialize Notebook for ${uri.toString}, ${ex.message}`);
 			this.logService.debug('NotebookChatEdit', ex.toString());
+
 			return;
 		}
 	}
 
 	async computeDiff(original: NotebookTextModel, modified: NotebookTextModel, token: CancellationToken) {
 		const diffResult = await raceCancellation(this.notebookEditorWorkerService.computeDiff(original.uri, modified.uri), token);
+
 		if (!diffResult || token.isCancellationRequested) {
 			// after await the editor might be disposed.
 			return;
@@ -783,6 +888,7 @@ const ttPolicy = createTrustedTypesPolicy('notebookChatEditController', { create
 class NotebookDeletedCellDecorator extends Disposable {
 	private readonly zoneRemover = this._register(new DisposableStore());
 	private readonly createdViewZones = new Map<number, string>();
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@ILanguageService private readonly languageService: ILanguageService,
@@ -795,10 +901,12 @@ class NotebookDeletedCellDecorator extends Disposable {
 		this.clear();
 
 		let currentIndex = 0;
+
 		const deletedCellsToRender: { cells: NotebookCellTextModel[]; index: number } = { cells: [], index: 0 };
 		diffInfo.forEach(diff => {
 			if (diff.type === 'delete') {
 				const deletedCell = original.cells[diff.originalCellIndex];
+
 				if (deletedCell) {
 					deletedCellsToRender.cells.push(deletedCell);
 					deletedCellsToRender.index = currentIndex;
@@ -811,6 +919,7 @@ class NotebookDeletedCellDecorator extends Disposable {
 				currentIndex = diff.modifiedCellIndex;
 			}
 		});
+
 		if (deletedCellsToRender.cells.length) {
 			this._createWidget(deletedCellsToRender.index + 1, deletedCellsToRender.cells);
 		}
@@ -826,8 +935,11 @@ class NotebookDeletedCellDecorator extends Disposable {
 	}
 	private async _createWidgetImpl(index: number, cells: NotebookCellTextModel[]) {
 		const rootContainer = document.createElement('div');
+
 		const widgets = cells.map(cell => new NotebookDeletedCellWidget(this._notebookEditor, cell.getValue(), cell.language, rootContainer, this.languageService));
+
 		const heights = await Promise.all(widgets.map(w => w.render()));
+
 		const totalHeight = heights.reduce<number>((prev, curr) => prev + curr, 0);
 
 		this._notebookEditor.changeViewZones(accessor => {
@@ -859,18 +971,23 @@ class NotebookDeletedCellDecorator extends Disposable {
 
 export class OriginalNotebookModelReferenceCollection extends ReferenceCollection<Promise<NotebookTextModel>> {
 	private readonly modelsToDispose = new Set<string>();
+
 	constructor(@INotebookService private readonly notebookService: INotebookService) {
 		super();
 	}
 
 	protected override async createReferencedObject(key: string, fileEntry: IModifiedFileEntry, viewType: string): Promise<NotebookTextModel> {
 		this.modelsToDispose.delete(key);
+
 		const uri = fileEntry.originalURI;
+
 		const model = this.notebookService.getNotebookTextModel(uri);
+
 		if (model) {
 			return model;
 		}
 		const bytes = VSBuffer.fromString(fileEntry.originalModel.getValue());
+
 		const stream = bufferToStream(bytes);
 
 		return this.notebookService.createNotebookTextModel(viewType, uri, stream);
@@ -900,6 +1017,7 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 
 class NotebookDeletedCellWidget extends Disposable {
 	private readonly container: HTMLElement;
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		// private readonly _index: number,
@@ -917,16 +1035,23 @@ class NotebookDeletedCellWidget extends Disposable {
 
 	public async render() {
 		const code = this.code;
+
 		const languageId = this.language;
+
 		const codeHtml = await tokenizeToString(this.languageService, code, languageId);
 
 		// const colorMap = this.getDefaultColorMap();
+
 		const fontInfo = this._notebookEditor.getBaseCellEditorOptions(languageId).value;
+
 		const fontFamilyVar = '--notebook-editor-font-family';
+
 		const fontSizeVar = '--notebook-editor-font-size';
+
 		const fontWeightVar = '--notebook-editor-font-weight';
 		// If we have any editors, then use left layout of one of those.
 		const editor = this._notebookEditor.codeEditors.map(c => c[1]).find(c => c);
+
 		const layoutInfo = editor?.getOptions().get(EditorOption.layoutInfo);
 
 		const style = ``
@@ -941,13 +1066,19 @@ class NotebookDeletedCellWidget extends Disposable {
 
 		const rootContainer = this.container;
 		rootContainer.classList.add('code-cell-row');
+
 		const container = DOM.append(rootContainer, DOM.$('.cell-inner-container'));
+
 		const focusIndicatorLeft = DOM.append(container, DOM.$('.cell-focus-indicator.cell-focus-indicator-side.cell-focus-indicator-left'));
+
 		const cellContainer = DOM.append(container, DOM.$('.cell.code'));
 		DOM.append(focusIndicatorLeft, DOM.$('div.execution-count-label'));
+
 		const editorPart = DOM.append(cellContainer, DOM.$('.cell-editor-part'));
+
 		let editorContainer = DOM.append(editorPart, DOM.$('.cell-editor-container'));
 		editorContainer = DOM.append(editorContainer, DOM.$('.code', { style }));
+
 		if (fontInfo.fontFamily) {
 			editorContainer.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		}
@@ -960,7 +1091,9 @@ class NotebookDeletedCellWidget extends Disposable {
 		editorContainer.innerHTML = (ttPolicy?.createHTML(codeHtml) || codeHtml) as string;
 
 		const lineCount = splitLines(code).length;
+
 		const height = (lineCount * (fontInfo.lineHeight || DefaultLineHeight)) + 12 + 12; // We have 12px top and bottom in generated code HTML;
+
 		const totalHeight = height + 16 + 16;
 
 		return totalHeight;

@@ -36,18 +36,31 @@ import { Disposable } from '../../../../base/common/lifecycle.js';
 import { IWorkingCopyIdentifier } from '../../../services/workingCopy/common/workingCopy.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { getActiveElement } from '../../../../base/browser/dom.js';
+
 const OpenInEditorCommandId = 'search.action.openInEditor';
+
 const OpenNewEditorToSideCommandId = 'search.action.openNewEditorToSide';
+
 const FocusQueryEditorWidgetCommandId = 'search.action.focusQueryEditorWidget';
+
 const FocusQueryEditorFilesToIncludeCommandId = 'search.action.focusFilesToInclude';
+
 const FocusQueryEditorFilesToExcludeCommandId = 'search.action.focusFilesToExclude';
+
 const ToggleSearchEditorCaseSensitiveCommandId = 'toggleSearchEditorCaseSensitive';
+
 const ToggleSearchEditorWholeWordCommandId = 'toggleSearchEditorWholeWord';
+
 const ToggleSearchEditorRegexCommandId = 'toggleSearchEditorRegex';
+
 const IncreaseSearchEditorContextLinesCommandId = 'increaseSearchEditorContextLines';
+
 const DecreaseSearchEditorContextLinesCommandId = 'decreaseSearchEditorContextLines';
+
 const RerunSearchEditorSearchCommandId = 'rerunSearchEditorSearch';
+
 const CleanSearchEditorStateCommandId = 'cleanSearchEditorState';
+
 const SelectAllSearchEditorMatchesCommandId = 'selectAllSearchEditorMatches';
 //#region Editor Descriptior
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(EditorPaneDescriptor.create(SearchEditor, SearchEditor.ID, localize('searchEditor', "Search Editor")), [
@@ -57,6 +70,7 @@ Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane
 //#region Startup Contribution
 class SearchEditorContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.searchEditor';
+
     constructor(
     @IEditorResolverService
     editorResolverService: IEditorResolverService, 
@@ -100,22 +114,29 @@ class SearchEditorInputSerializer implements IEditorSerializer {
             return JSON.stringify({ modelUri: undefined, dirty: false, config: input.tryReadConfigSync(), name: input.getName(), matchRanges: [], backingUri: input.backingUri?.toString() } satisfies SerializedSearchEditor);
         }
         let modelUri = undefined;
+
         if (input.modelUri.path || input.modelUri.fragment && input.isDirty()) {
             modelUri = input.modelUri.toString();
         }
         const config = input.tryReadConfigSync();
+
         const dirty = input.isDirty();
+
         const matchRanges = dirty ? input.getMatchRanges() : [];
+
         const backingUri = input.backingUri;
+
         return JSON.stringify({ modelUri, dirty, config, name: input.getName(), matchRanges, backingUri: backingUri?.toString() } satisfies SerializedSearchEditor);
     }
     deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): SearchEditorInput | undefined {
         const { modelUri, dirty, config, matchRanges, backingUri } = JSON.parse(serializedEditorInput) as SerializedSearchEditor;
+
         if (config && (config.query !== undefined)) {
             if (modelUri) {
                 const input = instantiationService.invokeFunction(getOrMakeSearchEditorInput, { from: 'model', modelUri: URI.parse(modelUri), config, backupOf: backingUri ? URI.parse(backingUri) : undefined });
                 input.setDirty(dirty);
                 input.setMatchRanges(matchRanges);
+
                 return input;
             }
             else {
@@ -135,6 +156,7 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
 //#region Commands
 CommandsRegistry.registerCommand(CleanSearchEditorStateCommandId, (accessor: ServicesAccessor) => {
     const activeEditorPane = accessor.get(IEditorService).activeEditorPane;
+
     if (activeEditorPane instanceof SearchEditor) {
         activeEditorPane.cleanState();
     }
@@ -148,6 +170,7 @@ export type LegacySearchEditorArgs = Partial<{
     excludes: string;
     contextLines: number;
     wholeWord: boolean;
+
     caseSensitive: boolean;
     regexp: boolean;
     useIgnores: boolean;
@@ -156,8 +179,10 @@ export type LegacySearchEditorArgs = Partial<{
     focusResults: boolean;
     location: 'reuse' | 'new';
 }>;
+
 const translateLegacyConfig = (legacyConfig: LegacySearchEditorArgs & OpenSearchEditorArgs = {}): OpenSearchEditorArgs => {
     const config: OpenSearchEditorArgs = {};
+
     const overrides: {
         [K in keyof LegacySearchEditorArgs]: keyof OpenSearchEditorArgs;
     } = {
@@ -171,6 +196,7 @@ const translateLegacyConfig = (legacyConfig: LegacySearchEditorArgs & OpenSearch
     Object.entries(legacyConfig).forEach(([key, value]) => {
         (config as any)[(overrides as any)[key] ?? key] = value;
     });
+
     return config;
 };
 export type OpenSearchEditorArgs = Partial<SearchEditorConstants.SearchConfiguration & {
@@ -178,6 +204,7 @@ export type OpenSearchEditorArgs = Partial<SearchEditorConstants.SearchConfigura
     focusResults: boolean;
     location: 'reuse' | 'new';
 }>;
+
 const openArgMetadata = {
     description: 'Open a new search editor. Arguments passed can include variables like ${relativeFileDirname}.',
     args: [{
@@ -216,6 +243,7 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const contextService = accessor.get(IContextKeyService).getContext(getActiveElement());
+
         if (contextService.getValue(SearchEditorConstants.InSearchEditor.serialize())) {
             (accessor.get(IEditorService).activeEditorPane as SearchEditor).deleteResultBlock();
         }
@@ -282,8 +310,11 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const viewsService = accessor.get(IViewsService);
+
         const instantiationService = accessor.get(IInstantiationService);
+
         const searchView = getSearchView(viewsService);
+
         if (searchView) {
             await instantiationService.invokeFunction(createEditorFromSearchResult, searchView.searchResult, searchView.searchIncludePattern.getValue(), searchView.searchExcludePattern.getValue(), searchView.searchIncludePattern.onlySearchInOpenEditors());
         }
@@ -314,7 +345,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             (editorService.activeEditorPane as SearchEditor).triggerSearch({ resetCursor: false });
         }
@@ -336,7 +369,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             (editorService.activeEditorPane as SearchEditor).focusSearchInput();
         }
@@ -354,7 +389,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             (editorService.activeEditorPane as SearchEditor).focusFilesToIncludeInput();
         }
@@ -372,7 +409,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const input = editorService.activeEditor;
+
         if (input instanceof SearchEditorInput) {
             (editorService.activeEditorPane as SearchEditor).focusFilesToExcludeInput();
         }
@@ -524,6 +563,7 @@ registerAction2(class OpenSearchEditorAction extends Action2 {
 //#region Search Editor Working Copy Editor Handler
 class SearchEditorWorkingCopyEditorHandler extends Disposable implements IWorkbenchContribution, IWorkingCopyEditorHandler {
     static readonly ID = 'workbench.contrib.searchEditorWorkingCopyEditorHandler';
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -544,6 +584,7 @@ class SearchEditorWorkingCopyEditorHandler extends Disposable implements IWorkbe
     createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
         const input = this.instantiationService.invokeFunction(getOrMakeSearchEditorInput, { from: 'model', modelUri: workingCopy.resource });
         input.setDirty(true);
+
         return input;
     }
 }

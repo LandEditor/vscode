@@ -17,6 +17,7 @@ interface IExecutionItem {
 }
 export class CollapsedCodeCellExecutionIcon extends Disposable {
     private _visible = false;
+
     constructor(_notebookEditor: INotebookEditorDelegate, private readonly _cell: ICellViewModel, private readonly _element: HTMLElement, 
     @INotebookExecutionStateService
     private _executionStateService: INotebookExecutionStateService) {
@@ -38,7 +39,9 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
             return;
         }
         const runState = this._executionStateService.getCellExecution(this._cell.uri);
+
         const item = this._getItemForState(runState, this._cell.model.internalMetadata);
+
         if (item) {
             this._element.style.display = '';
             DOM.reset(this._element, ...renderLabelWithIcons(item.text));
@@ -51,7 +54,9 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
     }
     private _getItemForState(runState: INotebookCellExecution | undefined, internalMetadata: NotebookCellInternalMetadata): IExecutionItem | undefined {
         const state = runState?.state;
+
         const { lastRunSuccess } = internalMetadata;
+
         if (!state && lastRunSuccess) {
             return {
                 text: `$(${successStateIcon.id})`,
@@ -72,6 +77,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
         }
         else if (state === NotebookCellExecutionState.Executing) {
             const icon = ThemeIcon.modify(executingStateIcon, 'spin');
+
             return {
                 text: `$(${icon.id})`,
                 tooltip: localize('notebook.cell.status.executing', "Executing"),

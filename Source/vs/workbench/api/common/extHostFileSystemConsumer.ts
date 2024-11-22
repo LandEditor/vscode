@@ -25,18 +25,22 @@ export class ExtHostConsumerFileSystem {
         isReadonly: boolean;
     }>();
     private readonly _writeQueue = new ResourceQueue();
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
     @IExtHostFileSystemInfo
     fileSystemInfo: IExtHostFileSystemInfo) {
         this._proxy = extHostRpc.getProxy(MainContext.MainThreadFileSystem);
+
         const that = this;
         this.value = Object.freeze({
             async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
                 try {
                     let stat;
+
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
@@ -63,9 +67,11 @@ export class ExtHostConsumerFileSystem {
             ][]> {
                 try {
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
+
                         return (await provider.impl.readDirectory(uri)).slice(); // safe-copy
                     }
                     else {
@@ -79,9 +85,11 @@ export class ExtHostConsumerFileSystem {
             async createDirectory(uri: vscode.Uri): Promise<void> {
                 try {
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider && !provider.isReadonly) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
+
                         return await that.mkdirp(provider.impl, provider.extUri, uri);
                     }
                     else {
@@ -95,13 +103,16 @@ export class ExtHostConsumerFileSystem {
             async readFile(uri: vscode.Uri): Promise<Uint8Array> {
                 try {
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
+
                         return (await provider.impl.readFile(uri)).slice(); // safe-copy
                     }
                     else {
                         const buff = await that._proxy.$readFile(uri);
+
                         return buff.buffer;
                     }
                 }
@@ -112,10 +123,12 @@ export class ExtHostConsumerFileSystem {
             async writeFile(uri: vscode.Uri, content: Uint8Array): Promise<void> {
                 try {
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider && !provider.isReadonly) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
                         await that.mkdirp(provider.impl, provider.extUri, provider.extUri.dirname(uri));
+
                         return await that._writeQueue.queueFor(uri, () => Promise.resolve(provider.impl.writeFile(uri, content, { create: true, overwrite: true })));
                     }
                     else {
@@ -132,9 +145,11 @@ export class ExtHostConsumerFileSystem {
             }): Promise<void> {
                 try {
                     const provider = that._fileSystemProvider.get(uri.scheme);
+
                     if (provider && !provider.isReadonly && !options?.useTrash /* no shortcut: use trash */) {
                         // use shortcut
                         await that._proxy.$ensureActivation(uri.scheme);
+
                         return await provider.impl.delete(uri, { recursive: false, ...options });
                     }
                     else {
@@ -169,6 +184,7 @@ export class ExtHostConsumerFileSystem {
             },
             isWritableFileSystem(scheme: string): boolean | undefined {
                 const capabilities = fileSystemInfo.getCapabilities(scheme);
+
                 if (typeof capabilities === 'number') {
                     return !(capabilities & files.FileSystemProviderCapabilities.Readonly);
                 }
@@ -178,9 +194,11 @@ export class ExtHostConsumerFileSystem {
     }
     private async mkdirp(provider: vscode.FileSystemProvider, providerExtUri: IExtUri, directory: vscode.Uri): Promise<void> {
         const directoriesToCreate: string[] = [];
+
         while (!providerExtUri.isEqual(directory, providerExtUri.dirname(directory))) {
             try {
                 const stat = await provider.stat(directory);
+
                 if ((stat.type & files.FileType.Directory) === 0) {
                     throw FileSystemError.FileExists(`Unable to create folder '${directory.scheme === Schemas.file ? directory.fsPath : directory.toString(true)}' that already exists but is not a directory`);
                 }
@@ -197,6 +215,7 @@ export class ExtHostConsumerFileSystem {
         }
         for (let i = directoriesToCreate.length - 1; i >= 0; i--) {
             directory = providerExtUri.joinPath(directory, directoriesToCreate[i]);
+
             try {
                 await provider.createDirectory(directory);
             }
@@ -224,11 +243,17 @@ export class ExtHostConsumerFileSystem {
         if (err instanceof files.FileSystemProviderError) {
             switch (err.code) {
                 case files.FileSystemProviderErrorCode.FileExists: throw FileSystemError.FileExists(err.message);
+
                 case files.FileSystemProviderErrorCode.FileNotFound: throw FileSystemError.FileNotFound(err.message);
+
                 case files.FileSystemProviderErrorCode.FileNotADirectory: throw FileSystemError.FileNotADirectory(err.message);
+
                 case files.FileSystemProviderErrorCode.FileIsADirectory: throw FileSystemError.FileIsADirectory(err.message);
+
                 case files.FileSystemProviderErrorCode.NoPermissions: throw FileSystemError.NoPermissions(err.message);
+
                 case files.FileSystemProviderErrorCode.Unavailable: throw FileSystemError.Unavailable(err.message);
+
                 default: throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
             }
         }
@@ -243,11 +268,17 @@ export class ExtHostConsumerFileSystem {
         // file system error
         switch (err.name) {
             case files.FileSystemProviderErrorCode.FileExists: throw FileSystemError.FileExists(err.message);
+
             case files.FileSystemProviderErrorCode.FileNotFound: throw FileSystemError.FileNotFound(err.message);
+
             case files.FileSystemProviderErrorCode.FileNotADirectory: throw FileSystemError.FileNotADirectory(err.message);
+
             case files.FileSystemProviderErrorCode.FileIsADirectory: throw FileSystemError.FileIsADirectory(err.message);
+
             case files.FileSystemProviderErrorCode.NoPermissions: throw FileSystemError.NoPermissions(err.message);
+
             case files.FileSystemProviderErrorCode.Unavailable: throw FileSystemError.Unavailable(err.message);
+
             default: throw new FileSystemError(err.message, err.name as files.FileSystemProviderErrorCode);
         }
     }
@@ -257,6 +288,7 @@ export class ExtHostConsumerFileSystem {
         isReadonly?: boolean | IMarkdownString;
     }): IDisposable {
         this._fileSystemProvider.set(scheme, { impl: provider, extUri: options?.isCaseSensitive ? extUri : extUriIgnorePathCase, isReadonly: !!options?.isReadonly });
+
         return toDisposable(() => this._fileSystemProvider.delete(scheme));
     }
     getFileSystemProviderExtUri(scheme: string) {

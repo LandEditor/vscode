@@ -39,10 +39,12 @@ class SelectionRanges {
 
 	mov(fwd: boolean): SelectionRanges {
 		const index = this.index + (fwd ? 1 : -1);
+
 		if (index < 0 || index >= this.ranges.length) {
 			return this;
 		}
 		const res = new SelectionRanges(index, this.ranges);
+
 		if (res.ranges[index].equalsRange(this.ranges[this.index])) {
 			// next range equals this range, retry with next-next
 			return res.mov(fwd);
@@ -78,6 +80,7 @@ export class SmartSelectController implements IEditorContribution {
 		}
 
 		const selections = this._editor.getSelections();
+
 		const model = this._editor.getModel();
 
 		if (!this._state) {
@@ -120,8 +123,10 @@ export class SmartSelectController implements IEditorContribution {
 			return;
 		}
 		this._state = this._state.map(state => state.mov(forward));
+
 		const newSelections = this._state.map(state => Selection.fromPositions(state.ranges[state.index].getStartPosition(), state.ranges[state.index].getEndPosition()));
 		this._ignoreSelection = true;
+
 		try {
 			this._editor.setSelections(newSelections);
 		} finally {
@@ -141,6 +146,7 @@ abstract class AbstractSmartSelect extends EditorAction {
 
 	async run(_accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const controller = SmartSelectController.get(editor);
+
 		if (controller) {
 			await controller.run(this._forward);
 		}
@@ -220,6 +226,7 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 	}
 
 	const work: Promise<any>[] = [];
+
 	const allRawRanges: Range[][] = [];
 
 	for (const provider of providers) {
@@ -266,7 +273,9 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 		// remove ranges that don't contain the former range or that are equal to the
 		// former range
 		const oneRanges: Range[] = [];
+
 		let last: Range | undefined;
+
 		for (const range of oneRawRanges) {
 			if (!last || (Range.containsRange(range, last) && !Range.equalsRange(range, last))) {
 				oneRanges.push(range);
@@ -281,17 +290,22 @@ export async function provideSelectionRanges(registry: LanguageFeatureRegistry<l
 		// add ranges that expand trivia at line starts and ends whenever a range
 		// wraps onto the a new line
 		const oneRangesWithTrivia: Range[] = [oneRanges[0]];
+
 		for (let i = 1; i < oneRanges.length; i++) {
 			const prev = oneRanges[i - 1];
+
 			const cur = oneRanges[i];
+
 			if (cur.startLineNumber !== prev.startLineNumber || cur.endLineNumber !== prev.endLineNumber) {
 				// add line/block range without leading/failing whitespace
 				const rangeNoWhitespace = new Range(prev.startLineNumber, model.getLineFirstNonWhitespaceColumn(prev.startLineNumber), prev.endLineNumber, model.getLineLastNonWhitespaceColumn(prev.endLineNumber));
+
 				if (rangeNoWhitespace.containsRange(prev) && !rangeNoWhitespace.equalsRange(prev) && cur.containsRange(rangeNoWhitespace) && !cur.equalsRange(rangeNoWhitespace)) {
 					oneRangesWithTrivia.push(rangeNoWhitespace);
 				}
 				// add line/block range
 				const rangeFull = new Range(prev.startLineNumber, 1, prev.endLineNumber, model.getLineMaxColumn(prev.endLineNumber));
+
 				if (rangeFull.containsRange(prev) && !rangeFull.equalsRange(rangeNoWhitespace) && cur.containsRange(rangeFull) && !cur.equalsRange(rangeFull)) {
 					oneRangesWithTrivia.push(rangeFull);
 				}
@@ -309,6 +323,7 @@ CommandsRegistry.registerCommand('_executeSelectionRangeProvider', async functio
 	assertType(URI.isUri(resource));
 
 	const registry = accessor.get(ILanguageFeaturesService).selectionRangeProvider;
+
 	const reference = await accessor.get(ITextModelService).createModelReference(resource);
 
 	try {

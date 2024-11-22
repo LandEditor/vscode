@@ -36,6 +36,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     private _isDefaultColorDecoratorsEnabled: boolean;
     private readonly _ruleFactory = new DynamicCssRules(this._editor);
     private readonly _decoratorLimitReporter = new DecoratorLimitReporter();
+
     constructor(private readonly _editor: ICodeEditor, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -55,8 +56,11 @@ export class ColorDetector extends Disposable implements IEditorContribution {
             const prevIsEnabled = this._isColorDecoratorsEnabled;
             this._isColorDecoratorsEnabled = this.isEnabled();
             this._isDefaultColorDecoratorsEnabled = this._editor.getOption(EditorOption.defaultColorDecorators);
+
             const updatedColorDecoratorsSetting = prevIsEnabled !== this._isColorDecoratorsEnabled || e.hasChanged(EditorOption.colorDecoratorsLimit);
+
             const updatedDefaultColorDecoratorsSetting = e.hasChanged(EditorOption.defaultColorDecorators);
+
             if (updatedColorDecoratorsSetting || updatedDefaultColorDecoratorsSetting) {
                 if (this._isColorDecoratorsEnabled) {
                     this.updateColors();
@@ -74,14 +78,17 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     }
     isEnabled(): boolean {
         const model = this._editor.getModel();
+
         if (!model) {
             return false;
         }
         const languageId = model.getLanguageId();
         // handle deprecated settings. [languageId].colorDecorators.enable
         const deprecatedConfig = this._configurationService.getValue(languageId);
+
         if (deprecatedConfig && typeof deprecatedConfig === 'object') {
             const colorDecorators = (deprecatedConfig as any)['colorDecorators']; // deprecatedConfig.valueOf('.colorDecorators.enable');
+
             if (colorDecorators && colorDecorators['enable'] !== undefined && !colorDecorators['enable']) {
                 return colorDecorators['enable'];
             }
@@ -97,14 +104,17 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     override dispose(): void {
         this.stop();
         this.removeAllDecorations();
+
         super.dispose();
     }
     private updateColors(): void {
         this.stop();
+
         if (!this._isColorDecoratorsEnabled) {
             return;
         }
         const model = this._editor.getModel();
+
         if (!model || !this._languageFeaturesService.colorProvider.has(model)) {
             return;
         }
@@ -122,14 +132,18 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     private async beginCompute(): Promise<void> {
         this._computePromise = createCancelablePromise(async (token) => {
             const model = this._editor.getModel();
+
             if (!model) {
                 return [];
             }
             const sw = new StopWatch(false);
+
             const colors = await getColors(this._languageFeaturesService.colorProvider, model, token, this._isDefaultColorDecoratorsEnabled);
             this._debounceInformation.update(model, sw.elapsed());
+
             return colors;
         });
+
         try {
             const colors = await this._computePromise;
             this.updateDecorations(colors);
@@ -170,12 +184,18 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     private readonly _colorDecorationClassRefs = this._register(new DisposableStore());
     private updateColorDecorators(colorData: IColorData[]): void {
         this._colorDecorationClassRefs.clear();
+
         const decorations: IModelDeltaDecoration[] = [];
+
         const limit = this._editor.getOption(EditorOption.colorDecoratorsLimit);
+
         for (let i = 0; i < colorData.length && decorations.length < limit; i++) {
             const { red, green, blue, alpha } = colorData[i].colorInfo.color;
+
             const rgba = new RGBA(Math.round(red * 255), Math.round(green * 255), Math.round(blue * 255), alpha);
+
             const color = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
+
             const ref = this._colorDecorationClassRefs.add(this._ruleFactory.createClassNameRef({
                 backgroundColor: color
             }));
@@ -209,12 +229,14 @@ export class ColorDetector extends Disposable implements IEditorContribution {
     }
     getColorData(position: Position): IColorData | null {
         const model = this._editor.getModel();
+
         if (!model) {
             return null;
         }
         const decorations = model
             .getDecorationsInRange(Range.fromPositions(position, position))
             .filter(d => this._colorDatas.has(d.id));
+
         if (decorations.length === 0) {
             return null;
         }

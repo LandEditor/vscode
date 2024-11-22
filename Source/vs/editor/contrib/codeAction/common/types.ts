@@ -121,8 +121,11 @@ export class CodeActionCommandArgs {
     private static getApplyFromUser(arg: any, defaultAutoApply: CodeActionAutoApply) {
         switch (typeof arg.apply === 'string' ? arg.apply.toLowerCase() : '') {
             case 'first': return CodeActionAutoApply.First;
+
             case 'never': return CodeActionAutoApply.Never;
+
             case 'ifsingle': return CodeActionAutoApply.IfSingle;
+
             default: return defaultAutoApply;
         }
     }
@@ -143,6 +146,7 @@ export class CodeActionItem {
     async resolve(token: CancellationToken): Promise<this> {
         if (this.provider?.resolveCodeAction && !this.action.edit) {
             let action: languages.CodeAction | undefined | null;
+
             try {
                 action = await this.provider.resolveCodeAction(this.action, token);
             }

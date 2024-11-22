@@ -35,6 +35,7 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
     private requestedRegistry = false;
     private typesRegistryCache: Map<string, ts.MapLike<string>> = new Map();
     private readonly server: Promise<WebTypingsInstallerServer>;
+
     constructor(private readonly fs: ts.server.ServerHost, readonly globalTypingsCacheLocation: string) {
         this.server = WebTypingsInstallerServer.initialize((response: InstallerResponse) => this.handleResponse(response), this.fs, globalTypingsCacheLocation);
     }
@@ -50,13 +51,16 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
             case 'action::invalidate':
             case 'action::set':
                 this.projectService!.updateTypingsForProject(response);
+
                 break;
+
             case 'event::beginInstallTypes':
             case 'event::endInstallTypes':
             // TODO(@zkat): maybe do something with this?
             case 'action::watchTypingLocations':
                 // Don't care.
                 break;
+
             default:
                 throw new Error(`unexpected response: ${JSON.stringify(response)}`);
         }
@@ -70,7 +74,9 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
     // completions?
     isKnownTypesPackageName(packageName: string): boolean {
         console.log('isKnownTypesPackageName', packageName);
+
         const looksLikeValidName = validatePackageNameWorker(packageName, true);
+
         if (looksLikeValidName.result !== NameValidationResult.Ok) {
             return false;
         }
@@ -79,10 +85,12 @@ export class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
         }
         this.requestedRegistry = true;
         this.server.then(s => this.typesRegistryCache = s.typesRegistry);
+
         return false;
     }
     enqueueInstallTypingsRequest(p: ts.server.Project, typeAcquisition: ts.TypeAcquisition, unresolvedImports: ts.SortedReadonlyArray<string>): void {
         console.log('enqueueInstallTypingsRequest', typeAcquisition, unresolvedImports);
+
         const req = ts.server.createInstallTypingsRequest(p, typeAcquisition, unresolvedImports);
         this.server.then(s => s.install(req));
     }
@@ -113,7 +121,9 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
      */
     static async initialize(handleResponse: (response: InstallerResponse) => void, fs: ts.server.ServerHost, globalTypingsCachePath: string): Promise<WebTypingsInstallerServer> {
         const pm = new PackageManager(fs);
+
         const pkgJson = join(globalTypingsCachePath, 'package.json');
+
         if (!fs.fileExists(pkgJson)) {
             fs.writeFile(pkgJson, '{"private":true}');
         }
@@ -121,13 +131,18 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
             addPackages: [this.typesRegistryPackageName]
         });
         await resolved.restore();
+
         const registry = new Map<string, ts.MapLike<string>>();
+
         const indexPath = join(globalTypingsCachePath, 'node_modules/types-registry/index.json');
+
         const index = WebTypingsInstallerServer.readJson(fs, indexPath);
+
         for (const [packageName, entry] of Object.entries(index.entries)) {
             registry.set(packageName, entry as ts.MapLike<string>);
         }
         console.log('ATA registry loaded');
+
         return new WebTypingsInstallerServer(registry, handleResponse, fs, pm, globalTypingsCachePath);
     }
     /**
@@ -166,6 +181,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
      */
     private static readJson(fs: ts.server.ServerHost, path: string): any {
         const data = fs.readFile(path);
+
         if (!data) {
             throw new Error('Failed to read file: ' + path);
         }

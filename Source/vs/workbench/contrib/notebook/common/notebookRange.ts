@@ -24,7 +24,9 @@ export function isICellRange(candidate: any): candidate is ICellRange {
 }
 export function cellIndexesToRanges(indexes: number[]) {
     indexes.sort((a, b) => a - b);
+
     const first = indexes.shift();
+
     if (first === undefined) {
         return [];
     }
@@ -45,16 +47,20 @@ export function cellRangesToIndexes(ranges: ICellRange[]) {
         }
         return a;
     }, [] as number[]);
+
     return indexes;
 }
 export function reduceCellRanges(ranges: ICellRange[]): ICellRange[] {
     const sorted = ranges.sort((a, b) => a.start - b.start);
+
     const first = sorted[0];
+
     if (!first) {
         return [];
     }
     const reduced = sorted.reduce((prev: ICellRange[], curr) => {
         const last = prev[prev.length - 1];
+
         if (last.end >= curr.start) {
             last.end = Math.max(last.end, curr.end);
         }
@@ -63,6 +69,7 @@ export function reduceCellRanges(ranges: ICellRange[]): ICellRange[] {
         }
         return prev;
     }, [first] as ICellRange[]);
+
     if (reduced.length > 1) {
         // remove the (0, 0) range
         return reduced.filter(range => !(range.start === range.end && range.start === 0));
@@ -72,6 +79,7 @@ export function reduceCellRanges(ranges: ICellRange[]): ICellRange[] {
 export function cellRangesEqual(a: ICellRange[], b: ICellRange[]) {
     a = reduceCellRanges(a);
     b = reduceCellRanges(b);
+
     if (a.length !== b.length) {
         return false;
     }

@@ -11,6 +11,7 @@ export class CharacterPairSupport {
     private readonly _surroundingPairs: IAutoClosingPair[];
     private readonly _autoCloseBeforeForQuotes: string;
     private readonly _autoCloseBeforeForBrackets: string;
+
     constructor(config: LanguageConfiguration) {
         if (config.autoClosingPairs) {
             this._autoClosingPairs = config.autoClosingPairs.map(el => new StandardAutoClosingPairConditional(el));

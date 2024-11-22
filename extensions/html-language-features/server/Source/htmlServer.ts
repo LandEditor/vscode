@@ -57,6 +57,7 @@ export interface RuntimeEnvironment {
     configureHttpRequests?(proxy: string | undefined, strictSSL: boolean): void;
     readonly timer: {
         setImmediate(callback: (...args: any[]) => void, ...args: any[]): Disposable;
+
         setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable;
     };
 }
@@ -69,21 +70,33 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     // Make the text document manager listen on the connection
     // for open, change and close text document events
     documents.listen(connection);
+
     let workspaceFolders: WorkspaceFolder[] = [];
+
     let languageModes: LanguageModes;
+
     let diagnosticsSupport: DiagnosticsSupport | undefined;
+
     let clientSnippetSupport = false;
+
     let dynamicFormatterRegistration = false;
+
     let scopedSettingsSupport = false;
+
     let workspaceFoldersSupport = false;
+
     let foldingRangeLimit = Number.MAX_VALUE;
+
     let formatterMaxNumberOfEdits = Number.MAX_VALUE;
+
     const customDataRequestService: CustomDataRequestService = {
         getContent(uri: string) {
             return connection.sendRequest(CustomDataContent.type, uri);
         }
     };
+
     let globalSettings: Settings = {};
+
     let documentSettings: {
         [key: string]: Thenable<Settings>;
     } = {};
@@ -91,14 +104,19 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     documents.onDidClose(e => {
         delete documentSettings[e.document.uri];
     });
+
     function getDocumentSettings(textDocument: TextDocument, needsDocumentSettings: () => boolean): Thenable<Settings | undefined> {
         if (scopedSettingsSupport && needsDocumentSettings()) {
             let promise = documentSettings[textDocument.uri];
+
             if (!promise) {
                 const scopeUri = textDocument.uri;
+
                 const sections = ['css', 'html', 'javascript', 'js/ts'];
+
                 const configRequestParam: ConfigurationParams = { items: sections.map(section => ({ scopeUri, section })) };
                 promise = connection.sendRequest(ConfigurationRequest.type, configRequestParam).then(s => ({ css: s[0], html: s[1], javascript: s[2], 'js/ts': s[3] }));
+
                 documentSettings[textDocument.uri] = promise;
             }
             return promise;
@@ -110,32 +128,41 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onInitialize((params: InitializeParams): InitializeResult => {
         const initializationOptions = params.initializationOptions as any || {};
         workspaceFolders = (<any>params).workspaceFolders;
+
         if (!Array.isArray(workspaceFolders)) {
             workspaceFolders = [];
+
             if (params.rootPath) {
                 workspaceFolders.push({ name: '', uri: URI.file(params.rootPath).toString() });
             }
         }
         const handledSchemas = initializationOptions?.handledSchemas as string[] ?? ['file'];
+
         const fileSystemProvider = getFileSystemProvider(handledSchemas, connection, runtime);
+
         const workspace = {
             get settings() { return globalSettings; },
             get folders() { return workspaceFolders; }
         };
         languageModes = getLanguageModes(initializationOptions?.embeddedLanguages || { css: true, javascript: true }, workspace, params.capabilities, fileSystemProvider);
+
         const dataPaths: string[] = initializationOptions?.dataPaths || [];
         fetchHTMLDataProviders(dataPaths, customDataRequestService).then(dataProviders => {
             languageModes.updateDataProviders(dataProviders);
         });
+
         documents.onDidClose(e => {
             languageModes.onDocumentRemoved(e.document);
         });
         connection.onShutdown(() => {
             languageModes.dispose();
         });
+
         function getClientCapability<T>(name: string, def: T) {
             const keys = name.split('.');
+
             let c: any = params.capabilities;
+
             for (let i = 0; c && i < keys.length; i++) {
                 if (!c.hasOwnProperty(keys[i])) {
                     return def;
@@ -149,8 +176,11 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
         scopedSettingsSupport = getClientCapability('workspace.configuration', false);
         workspaceFoldersSupport = getClientCapability('workspace.workspaceFolders', false);
         foldingRangeLimit = getClientCapability('textDocument.foldingRange.rangeLimit', Number.MAX_VALUE);
+
         formatterMaxNumberOfEdits = initializationOptions?.customCapabilities?.rangeFormatting?.editLimit || Number.MAX_VALUE;
+
         const supportsDiagnosticPull = getClientCapability('textDocument.diagnostic', undefined);
+
         if (supportsDiagnosticPull === undefined) {
             diagnosticsSupport = registerDiagnosticsPushSupport(documents, connection, runtime, validateTextDocument);
         }
@@ -180,6 +210,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
                 workspaceDiagnostics: false
             }
         };
+
         return { capabilities };
     });
     connection.onInitialized(() => {
@@ -187,8 +218,11 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             connection.client.register(DidChangeWorkspaceFoldersNotification.type);
             connection.onNotification(DidChangeWorkspaceFoldersNotification.type, e => {
                 const toAdd = e.event.added;
+
                 const toRemove = e.event.removed;
+
                 const updatedFolders = [];
+
                 if (workspaceFolders) {
                     for (const folder of workspaceFolders) {
                         if (!toRemove.some(r => r.uri === folder.uri) && !toAdd.some(r => r.uri === folder.uri)) {
@@ -201,18 +235,22 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             });
         }
     });
+
     let formatterRegistrations: Thenable<Disposable>[] | null = null;
     // The settings have changed. Is send on server activation as well.
     connection.onDidChangeConfiguration((change) => {
         globalSettings = change.settings as Settings;
+
         documentSettings = {}; // reset all document settings
         diagnosticsSupport?.requestRefresh();
         // dynamically enable & disable the formatter
         if (dynamicFormatterRegistration) {
             const enableFormatter = globalSettings && globalSettings.html && globalSettings.html.format && globalSettings.html.format.enable;
+
             if (enableFormatter) {
                 if (!formatterRegistrations) {
                     const documentSelector = [{ language: 'html' }, { language: 'handlebars' }];
+
                     formatterRegistrations = [
                         connection.client.register(DocumentRangeFormattingRequest.type, { documentSelector }),
                         connection.client.register(DocumentFormattingRequest.type, { documentSelector })
@@ -221,12 +259,15 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             }
             else if (formatterRegistrations) {
                 formatterRegistrations.forEach(p => p.then(r => r.dispose()));
+
                 formatterRegistrations = null;
             }
         }
     });
+
     function isValidationEnabled(languageId: string, settings: Settings = globalSettings) {
         const validationSettings = settings && settings.html && settings.html.validate;
+
         if (validationSettings) {
             return languageId === 'css' && validationSettings.styles !== false || languageId === 'javascript' && validationSettings.scripts !== false;
         }
@@ -235,11 +276,16 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
         try {
             const version = textDocument.version;
+
             const diagnostics: Diagnostic[] = [];
+
             if (textDocument.languageId === 'html') {
                 const modes = languageModes.getAllModesInDocument(textDocument);
+
                 const settings = await getDocumentSettings(textDocument, () => modes.some(m => !!m.doValidation));
+
                 const latestTextDocument = documents.get(textDocument.uri);
+
                 if (latestTextDocument && latestTextDocument.version === version) { // check no new version has come in after in after the async op
                     for (const mode of modes) {
                         if (mode.doValidation && isValidationEnabled(mode.getId(), settings)) {
@@ -258,25 +304,33 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onCompletion(async (textDocumentPosition, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(textDocumentPosition.textDocument.uri);
+
             if (!document) {
                 return null;
             }
             const mode = languageModes.getModeAtPosition(document, textDocumentPosition.position);
+
             if (!mode || !mode.doComplete) {
                 return { isIncomplete: true, items: [] };
             }
             const doComplete = mode.doComplete;
+
             const settings = await getDocumentSettings(document, () => doComplete.length > 2);
+
             const documentContext = getDocumentContext(document.uri, workspaceFolders);
+
             return doComplete(document, textDocumentPosition.position, documentContext, settings);
         }, null, `Error while computing completions for ${textDocumentPosition.textDocument.uri}`, token);
     });
     connection.onCompletionResolve((item, token) => {
         return runSafe(runtime, async () => {
             const data = item.data;
+
             if (isCompletionItemData(data)) {
                 const mode = languageModes.getMode(data.languageId);
+
                 const document = documents.get(data.uri);
+
                 if (mode && mode.doResolve && document) {
                     return mode.doResolve(document, item);
                 }
@@ -287,11 +341,15 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onHover((textDocumentPosition, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(textDocumentPosition.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, textDocumentPosition.position);
+
                 const doHover = mode?.doHover;
+
                 if (doHover) {
                     const settings = await getDocumentSettings(document, () => doHover.length > 2);
+
                     return doHover(document, textDocumentPosition.position, settings);
                 }
             }
@@ -301,8 +359,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentHighlight((documentHighlightParams, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(documentHighlightParams.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, documentHighlightParams.position);
+
                 if (mode && mode.findDocumentHighlight) {
                     return mode.findDocumentHighlight(document, documentHighlightParams.position);
                 }
@@ -313,8 +373,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDefinition((definitionParams, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(definitionParams.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, definitionParams.position);
+
                 if (mode && mode.findDefinition) {
                     return mode.findDefinition(document, definitionParams.position);
                 }
@@ -325,8 +387,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onReferences((referenceParams, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(referenceParams.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, referenceParams.position);
+
                 if (mode && mode.findReferences) {
                     return mode.findReferences(document, referenceParams.position);
                 }
@@ -337,8 +401,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onSignatureHelp((signatureHelpParms, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(signatureHelpParms.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, signatureHelpParms.position);
+
                 if (mode && mode.doSignatureHelp) {
                     return mode.doSignatureHelp(document, signatureHelpParms.position);
                 }
@@ -346,18 +412,25 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             return null;
         }, null, `Error while computing signature help for ${signatureHelpParms.textDocument.uri}`, token);
     });
+
     async function onFormat(textDocument: TextDocumentIdentifier, range: Range | undefined, options: FormattingOptions): Promise<TextEdit[]> {
         const document = documents.get(textDocument.uri);
+
         if (document) {
             let settings = await getDocumentSettings(document, () => true);
+
             if (!settings) {
                 settings = globalSettings;
             }
             const unformattedTags: string = settings && settings.html && settings.html.format && settings.html.format.unformatted || '';
+
             const enabledModes = { css: !unformattedTags.match(/\bstyle\b/), javascript: !unformattedTags.match(/\bscript\b/) };
+
             const edits = await format(languageModes, document, range ?? getFullRange(document), options, settings, enabledModes);
+
             if (edits.length > formatterMaxNumberOfEdits) {
                 const newText = TextDocument.applyEdits(document, edits);
+
                 return [TextEdit.replace(getFullRange(document), newText)];
             }
             return edits;
@@ -373,9 +446,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentLinks((documentLinkParam, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(documentLinkParam.textDocument.uri);
+
             const links: DocumentLink[] = [];
+
             if (document) {
                 const documentContext = getDocumentContext(document.uri, workspaceFolders);
+
                 for (const m of languageModes.getAllModesInDocument(document)) {
                     if (m.findDocumentLinks) {
                         pushAll(links, await m.findDocumentLinks(document, documentContext));
@@ -388,7 +464,9 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentSymbol((documentSymbolParms, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(documentSymbolParms.textDocument.uri);
+
             const symbols: SymbolInformation[] = [];
+
             if (document) {
                 for (const m of languageModes.getAllModesInDocument(document)) {
                     if (m.findDocumentSymbols) {
@@ -402,7 +480,9 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRequest(DocumentColorRequest.type, (params, token) => {
         return runSafe(runtime, async () => {
             const infos: ColorInformation[] = [];
+
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 for (const m of languageModes.getAllModesInDocument(document)) {
                     if (m.findDocumentColors) {
@@ -416,8 +496,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRequest(ColorPresentationRequest.type, (params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, params.range.start);
+
                 if (mode && mode.getColorPresentations) {
                     return mode.getColorPresentations(document, params.color, params.range);
                 }
@@ -428,10 +510,13 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRequest(AutoInsertRequest.type, (params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 const pos = params.position;
+
                 if (pos.character > 0) {
                     const mode = languageModes.getModeAtPosition(document, Position.create(pos.line, pos.character - 1));
+
                     if (mode && mode.doAutoInsert) {
                         return mode.doAutoInsert(document, pos, params.kind);
                     }
@@ -443,6 +528,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onFoldingRanges((params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 return getFoldingRanges(languageModes, document, foldingRangeLimit, token);
             }
@@ -452,6 +538,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onSelectionRanges((params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 return getSelectionRanges(languageModes, document, params.positions);
             }
@@ -461,9 +548,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRenameRequest((params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             const position: Position = params.position;
+
             if (document) {
                 const mode = languageModes.getModeAtPosition(document, params.position);
+
                 if (mode && mode.doRename) {
                     return mode.doRename(document, position, params.newName);
                 }
@@ -474,12 +564,16 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.languages.onLinkedEditingRange((params, token) => {
         return <any>runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 const pos = params.position;
+
                 if (pos.character > 0) {
                     const mode = languageModes.getModeAtPosition(document, Position.create(pos.line, pos.character - 1));
+
                     if (mode && mode.doLinkedEditing) {
                         const ranges = await mode.doLinkedEditing(document, pos);
+
                         if (ranges) {
                             return { ranges };
                         }
@@ -489,7 +583,9 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             return null;
         }, null, `Error while computing synced regions for ${params.textDocument.uri}`, token);
     });
+
     let semanticTokensProvider: SemanticTokenProvider | undefined;
+
     function getSemanticTokenProvider() {
         if (!semanticTokensProvider) {
             semanticTokensProvider = newSemanticTokenProvider(languageModes);
@@ -499,6 +595,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRequest(SemanticTokenRequest.type, (params, token) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 return getSemanticTokenProvider().getSemanticTokens(document, params.ranges);
             }

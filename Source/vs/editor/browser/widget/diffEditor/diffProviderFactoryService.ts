@@ -24,6 +24,7 @@ export interface IDiffProviderFactoryService {
 }
 export class WorkerBasedDiffProviderFactoryService implements IDiffProviderFactoryService {
     readonly _serviceBrand: undefined;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) { }
@@ -41,6 +42,7 @@ export class WorkerBasedDocumentDiffProvider implements IDocumentDiffProvider, I
         result: IDocumentDiff;
         context: string;
     }>();
+
     constructor(options: IWorkerBasedDocumentDiffProviderOptions, 
     @IEditorWorkerService
     private readonly editorWorkerService: IEditorWorkerService, 
@@ -86,13 +88,18 @@ export class WorkerBasedDocumentDiffProvider implements IDocumentDiffProvider, I
             };
         }
         const uriKey = JSON.stringify([original.uri.toString(), modified.uri.toString()]);
+
         const context = JSON.stringify([original.id, modified.id, original.getAlternativeVersionId(), modified.getAlternativeVersionId(), JSON.stringify(options)]);
+
         const c = WorkerBasedDocumentDiffProvider.diffCache.get(uriKey);
+
         if (c && c.context === context) {
             return c.result;
         }
         const sw = StopWatch.create();
+
         const result = await this.editorWorkerService.computeDiff(original.uri, modified.uri, options, this.diffAlgorithm);
+
         const timeMs = sw.elapsed();
         this.telemetryService.publicLog2<{
             timeMs: number;
@@ -121,6 +128,7 @@ export class WorkerBasedDocumentDiffProvider implements IDocumentDiffProvider, I
             timedOut: result?.quitEarly ?? true,
             detectedMoves: options.computeMoves ? (result?.moves.length ?? 0) : -1,
         });
+
         if (cancellationToken.isCancellationRequested) {
             // Text models might be disposed!
             return {
@@ -138,15 +146,18 @@ export class WorkerBasedDocumentDiffProvider implements IDocumentDiffProvider, I
             WorkerBasedDocumentDiffProvider.diffCache.delete(WorkerBasedDocumentDiffProvider.diffCache.keys().next().value!);
         }
         WorkerBasedDocumentDiffProvider.diffCache.set(uriKey, { result, context });
+
         return result;
     }
     public setOptions(newOptions: IWorkerBasedDocumentDiffProviderOptions): void {
         let didChange = false;
+
         if (newOptions.diffAlgorithm) {
             if (this.diffAlgorithm !== newOptions.diffAlgorithm) {
                 this.diffAlgorithmOnDidChangeSubscription?.dispose();
                 this.diffAlgorithmOnDidChangeSubscription = undefined;
                 this.diffAlgorithm = newOptions.diffAlgorithm;
+
                 if (typeof newOptions.diffAlgorithm !== 'string') {
                     this.diffAlgorithmOnDidChangeSubscription = newOptions.diffAlgorithm.onDidChange(() => this.onDidChangeEventEmitter.fire());
                 }

@@ -11,6 +11,7 @@ export class LazyPromise implements Promise<any> {
     private _value: any;
     protected _hasErr: boolean;
     protected _err: any;
+
     constructor() {
         this._actual = null;
         this._actualOk = null;
@@ -28,6 +29,7 @@ export class LazyPromise implements Promise<any> {
             this._actual = new Promise<any>((c, e) => {
                 this._actualOk = c;
                 this._actualErr = e;
+
                 if (this._hasValue) {
                     this._actualOk(this._value);
                 }
@@ -44,6 +46,7 @@ export class LazyPromise implements Promise<any> {
         }
         this._hasValue = true;
         this._value = value;
+
         if (this._actual) {
             this._actualOk!(value);
         }
@@ -54,6 +57,7 @@ export class LazyPromise implements Promise<any> {
         }
         this._hasErr = true;
         this._err = err;
+
         if (this._actual) {
             this._actualErr!(err);
         }

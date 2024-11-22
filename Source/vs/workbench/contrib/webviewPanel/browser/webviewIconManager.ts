@@ -62,9 +62,11 @@ export class WebviewIconManager extends Disposable {
 		await this._lifecycleService.when(LifecyclePhase.Starting);
 
 		const cssRules: string[] = [];
+
 		if (this._configService.getValue('workbench.iconTheme') !== null) {
 			for (const [key, value] of this._icons) {
 				const webviewSelector = `.show-file-icons .webview-${key}-name-file-icon::before`;
+
 				try {
 					cssRules.push(
 						`.monaco-workbench.vs ${webviewSelector}, .monaco-workbench.hc-light ${webviewSelector} { content: ""; background-image: ${cssValue.asCSSUrl(value.light)}; }`,

@@ -55,7 +55,9 @@ export interface IExtensionFeatureDescriptor {
 }
 export interface IExtensionFeaturesRegistry {
     registerExtensionFeature(descriptor: IExtensionFeatureDescriptor): IDisposable;
+
     getExtensionFeature(id: string): IExtensionFeatureDescriptor | undefined;
+
     getExtensionFeatures(): ReadonlyArray<IExtensionFeatureDescriptor>;
 }
 export interface IExtensionFeatureAccessData {
@@ -78,18 +80,23 @@ export interface IExtensionFeaturesManagementService {
         readonly enabled: boolean;
     }>;
     isEnabled(extension: ExtensionIdentifier, featureId: string): boolean;
+
     setEnablement(extension: ExtensionIdentifier, featureId: string, enabled: boolean): void;
+
     getEnablementData(featureId: string): {
         readonly extension: ExtensionIdentifier;
         readonly enabled: boolean;
     }[];
+
     getAccess(extension: ExtensionIdentifier, featureId: string, justification?: string): Promise<boolean>;
     readonly onDidChangeAccessData: Event<{
         readonly extension: ExtensionIdentifier;
         readonly featureId: string;
         readonly accessData: IExtensionFeatureAccessData;
     }>;
+
     getAccessData(extension: ExtensionIdentifier, featureId: string): IExtensionFeatureAccessData | undefined;
+
     setStatus(extension: ExtensionIdentifier, featureId: string, status: {
         readonly severity: Severity;
         readonly message: string;
@@ -102,6 +109,7 @@ class ExtensionFeaturesRegistry implements IExtensionFeaturesRegistry {
             throw new Error(`Extension feature with id '${descriptor.id}' already exists`);
         }
         this.extensionFeatures.set(descriptor.id, descriptor);
+
         return {
             dispose: () => this.extensionFeatures.delete(descriptor.id)
         };

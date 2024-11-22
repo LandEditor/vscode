@@ -25,11 +25,13 @@ export class FoldingController extends Disposable implements INotebookEditorCont
     static id: string = 'workbench.notebook.foldingController';
     private _foldingModel: FoldingModel | null = null;
     private readonly _localStore = this._register(new DisposableStore());
+
     constructor(private readonly _notebookEditor: INotebookEditor) {
         super();
         this._register(this._notebookEditor.onMouseUp(e => { this.onMouseUp(e); }));
         this._register(this._notebookEditor.onDidChangeModel(() => {
             this._localStore.clear();
+
             if (!this._notebookEditor.hasModel()) {
                 return;
             }
@@ -56,8 +58,11 @@ export class FoldingController extends Disposable implements INotebookEditorCont
     }
     setFoldingStateDown(index: number, state: CellFoldingState, levels: number) {
         const doCollapse = state === CellFoldingState.Collapsed;
+
         const region = this._foldingModel!.getRegionAtLine(index + 1);
+
         const regions: FoldingRegion[] = [];
+
         if (region) {
             if (region.isCollapsed !== doCollapse) {
                 regions.push(region);
@@ -87,6 +92,7 @@ export class FoldingController extends Disposable implements INotebookEditorCont
         }
         const vm = this._notebookEditor.getViewModel() as NotebookViewModel;
         vm.updateFoldingRanges(this._foldingModel.regions);
+
         const hiddenRanges = vm.getHiddenRanges();
         this._notebookEditor.setHiddenAreas(hiddenRanges);
     }
@@ -98,16 +104,22 @@ export class FoldingController extends Disposable implements INotebookEditorCont
             return;
         }
         const viewModel = this._notebookEditor.getViewModel() as NotebookViewModel;
+
         const target = e.event.target as HTMLElement;
+
         if (target.classList.contains('codicon-notebook-collapsed') || target.classList.contains('codicon-notebook-expanded')) {
             const parent = target.parentElement as HTMLElement;
+
             if (!parent.classList.contains('notebook-folding-indicator')) {
                 return;
             }
             // folding icon
             const cellViewModel = e.target;
+
             const modelIndex = viewModel.getCellIndex(cellViewModel);
+
             const state = viewModel.getFoldingState(modelIndex);
+
             if (state === CellFoldingState.None) {
                 return;
             }
@@ -118,8 +130,11 @@ export class FoldingController extends Disposable implements INotebookEditorCont
     }
 }
 registerNotebookContribution(FoldingController.id, FoldingController);
+
 const NOTEBOOK_FOLD_COMMAND_LABEL = localize('fold.cell', "Fold Cell");
+
 const NOTEBOOK_UNFOLD_COMMAND_LABEL = localize2('unfold.cell', "Unfold Cell");
+
 const FOLDING_COMMAND_ARGS: Pick<ICommandMetadata, 'args'> = {
     args: [{
             isOptional: true,
@@ -175,7 +190,9 @@ registerAction2(class extends Action2 {
         direction: 'up' | 'down';
     }): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor) {
             return;
         }
@@ -183,21 +200,27 @@ registerAction2(class extends Action2 {
             return;
         }
         const levels = args && args.levels || 1;
+
         const direction = args && args.direction === 'up' ? 'up' : 'down';
+
         let index: number | undefined = undefined;
+
         if (args) {
             index = args.index;
         }
         else {
             const activeCell = editor.getActiveCell();
+
             if (!activeCell) {
                 return;
             }
             index = editor.getCellIndex(activeCell);
         }
         const controller = editor.getContribution<FoldingController>(FoldingController.id);
+
         if (index !== undefined) {
             const targetCell = (index < 0 || index >= editor.getLength()) ? undefined : editor.cellAt(index);
+
             if (targetCell?.cellKind === CellKind.Code && direction === 'down') {
                 return;
             }
@@ -242,24 +265,31 @@ registerAction2(class extends Action2 {
         direction: 'up' | 'down';
     }): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor) {
             return;
         }
         const levels = args && args.levels || 1;
+
         const direction = args && args.direction === 'up' ? 'up' : 'down';
+
         let index: number | undefined = undefined;
+
         if (args) {
             index = args.index;
         }
         else {
             const activeCell = editor.getActiveCell();
+
             if (!activeCell) {
                 return;
             }
             index = editor.getCellIndex(activeCell);
         }
         const controller = editor.getContribution<FoldingController>(FoldingController.id);
+
         if (index !== undefined) {
             if (direction === 'up') {
                 controller.setFoldingStateUp(index, CellFoldingState.Expanded, levels);

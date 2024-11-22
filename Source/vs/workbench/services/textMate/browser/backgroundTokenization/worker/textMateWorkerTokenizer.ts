@@ -21,6 +21,7 @@ import { StateDeltas } from './textMateTokenizationWorker.worker.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
 export interface TextMateModelTokenizerHost {
     getOrCreateGrammar(languageId: string, encodedLanguageId: LanguageId): Promise<ICreateGrammarResult | null>;
+
     setTokensAndStates(versionId: number, tokens: Uint8Array, stateDeltas: StateDeltas[]): void;
     reportTokenizationTime(timeMs: number, languageId: string, sourceExtensionId: string | undefined, lineLength: number, isRandomSample: boolean): void;
 }
@@ -30,6 +31,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
     private readonly _maxTokenizationLineLength = observableValue(this, -1);
     private _diffStateStacksRefEqFn?: typeof diffStateStacksRefEq;
     private readonly _tokenizeDebouncer = new RunOnceScheduler(() => this._tokenize(), 10);
+
     constructor(uri: URI, lines: string[], eol: string, versionId: number, private readonly _host: TextMateModelTokenizerHost, private _languageId: string, private _encodedLanguageId: LanguageId, maxTokenizationLineLength: number) {
         super(uri, lines, eol, versionId);
         this._maxTokenizationLineLength.set(maxTokenizationLineLength, undefined);
@@ -37,6 +39,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
     }
     public override dispose(): void {
         this._isDisposed = true;
+
         super.dispose();
     }
     public onLanguageId(languageId: string, encodedLanguageId: LanguageId): void {
@@ -60,9 +63,13 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
     }
     private async _resetTokenization() {
         this._tokenizerWithStateStore = null;
+
         const languageId = this._languageId;
+
         const encodedLanguageId = this._encodedLanguageId;
+
         const r = await this._host.getOrCreateGrammar(languageId, encodedLanguageId);
+
         if (this._isDisposed || languageId !== this._languageId || encodedLanguageId !== this._encodedLanguageId || !r) {
             return;
         }
@@ -86,18 +93,26 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
             this._diffStateStacksRefEqFn = diffStateStacksRefEq;
         }
         const startTime = new Date().getTime();
+
         while (true) {
             let tokenizedLines = 0;
+
             const tokenBuilder = new ContiguousMultilineTokensBuilder();
+
             const stateDeltaBuilder = new StateDeltaBuilder();
+
             while (true) {
                 const lineToTokenize = this._tokenizerWithStateStore.getFirstInvalidLine();
+
                 if (lineToTokenize === null || tokenizedLines > 200) {
                     break;
                 }
                 tokenizedLines++;
+
                 const text = this._lines[lineToTokenize.lineNumber - 1];
+
                 const r = this._tokenizerWithStateStore.tokenizationSupport.tokenizeEncoded(text, true, lineToTokenize.startState);
+
                 if (this._tokenizerWithStateStore.store.setEndState(lineToTokenize.lineNumber, r.endState as StateStack)) {
                     const delta = this._diffStateStacksRefEqFn(lineToTokenize.startState, r.endState as StateStack);
                     stateDeltaBuilder.setState(lineToTokenize.lineNumber, delta);
@@ -107,7 +122,9 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
                 }
                 LineTokens.convertToEndOffset(r.tokens, text.length);
                 tokenBuilder.add(lineToTokenize.lineNumber, r.tokens);
+
                 const deltaMs = new Date().getTime() - startTime;
+
                 if (deltaMs > 20) {
                     // yield to check for changes
                     break;
@@ -118,10 +135,13 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
             }
             const stateDeltas = stateDeltaBuilder.getStateDeltas();
             this._host.setTokensAndStates(this._versionId, tokenBuilder.serialize(), stateDeltas);
+
             const deltaMs = new Date().getTime() - startTime;
+
             if (deltaMs > 20) {
                 // yield to check for changes
                 setTimeout0(() => this._tokenize());
+
                 return;
             }
         }

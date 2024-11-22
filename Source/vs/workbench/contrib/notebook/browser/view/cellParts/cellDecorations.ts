@@ -20,6 +20,7 @@ export class CellDecorations extends CellContentPart {
             this.rootContainer.classList.remove(className);
         });
         this.decorationContainer.innerText = '';
+
         const generateCellTopDecorations = () => {
             this.decorationContainer.innerText = '';
             element.getCellDecorations().filter(options => options.topClassName !== undefined).forEach(options => {
@@ -28,6 +29,7 @@ export class CellDecorations extends CellContentPart {
         };
         this.cellDisposables.add(element.onCellDecorationsChanged((e) => {
             const modified = e.added.find(e => e.topClassName) || e.removed.find(e => e.topClassName);
+
             if (modified) {
                 generateCellTopDecorations();
             }

@@ -10,6 +10,7 @@ import { IDebugService, IDebugSession, VIEWLET_ID } from '../common/debug.js';
 import { IViewsService } from '../../../services/views/common/viewsService.js';
 export class DebugProgressContribution implements IWorkbenchContribution {
     private toDispose: IDisposable[] = [];
+
     constructor(
     @IDebugService
     debugService: IDebugService, 
@@ -18,6 +19,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
     @IViewsService
     viewsService: IViewsService) {
         let progressListener: IDisposable | undefined;
+
         const listenOnProgress = (session: IDebugSession | undefined) => {
             if (progressListener) {
                 progressListener.dispose();
@@ -32,6 +34,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
                             r();
                         });
                     });
+
                     if (viewsService.isViewContainerVisible(VIEWLET_ID)) {
                         progressService.withProgress({ location: VIEWLET_ID }, () => promise);
                     }
@@ -44,11 +47,13 @@ export class DebugProgressContribution implements IWorkbenchContribution {
                         delay: 500
                     }, progressStep => {
                         let total = 0;
+
                         const reportProgress = (progress: {
                             message?: string;
                             percentage?: number;
                         }) => {
                             let increment = undefined;
+
                             if (typeof progress.percentage === 'number') {
                                 increment = progress.percentage - total;
                                 total += increment;
@@ -59,6 +64,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
                                 total: typeof increment === 'number' ? 100 : undefined,
                             });
                         };
+
                         if (progressStartEvent.body.message) {
                             reportProgress(progressStartEvent.body);
                         }
@@ -67,6 +73,7 @@ export class DebugProgressContribution implements IWorkbenchContribution {
                                 reportProgress(e.body);
                             }
                         });
+
                         return promise.then(() => progressUpdateListener.dispose());
                     }, () => session.cancel(progressStartEvent.body.progressId));
                 });

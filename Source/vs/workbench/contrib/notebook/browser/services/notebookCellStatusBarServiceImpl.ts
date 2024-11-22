@@ -18,25 +18,31 @@ export class NotebookCellStatusBarService extends Disposable implements INoteboo
     private readonly _providers: INotebookCellStatusBarItemProvider[] = [];
     registerCellStatusBarItemProvider(provider: INotebookCellStatusBarItemProvider): IDisposable {
         this._providers.push(provider);
+
         let changeListener: IDisposable | undefined;
+
         if (provider.onDidChangeStatusBarItems) {
             changeListener = provider.onDidChangeStatusBarItems(() => this._onDidChangeItems.fire());
         }
         this._onDidChangeProviders.fire();
+
         return toDisposable(() => {
             changeListener?.dispose();
+
             const idx = this._providers.findIndex(p => p === provider);
             this._providers.splice(idx, 1);
         });
     }
     async getStatusBarItemsForCell(docUri: URI, cellIndex: number, viewType: string, token: CancellationToken): Promise<INotebookCellStatusBarItemList[]> {
         const providers = this._providers.filter(p => p.viewType === viewType || p.viewType === '*');
+
         return await Promise.all(providers.map(async (p) => {
             try {
                 return await p.provideCellStatusBarItems(docUri, cellIndex, token) ?? { items: [] };
             }
             catch (e) {
                 onUnexpectedExternalError(e);
+
                 return { items: [] };
             }
         }));

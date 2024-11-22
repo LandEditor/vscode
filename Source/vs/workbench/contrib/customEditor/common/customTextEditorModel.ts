@@ -20,7 +20,9 @@ export class CustomTextEditorModel extends Disposable implements ICustomEditorMo
     public static async create(instantiationService: IInstantiationService, viewType: string, resource: URI): Promise<CustomTextEditorModel> {
         return instantiationService.invokeFunction(async (accessor) => {
             const textModelResolverService = accessor.get(ITextModelService);
+
             const model = await textModelResolverService.createModelReference(resource);
+
             return instantiationService.createInstance(CustomTextEditorModel, viewType, resource, model);
         });
     }
@@ -29,6 +31,7 @@ export class CustomTextEditorModel extends Disposable implements ICustomEditorMo
     public readonly onDidChangeOrphaned = this._onDidChangeOrphaned.event;
     private readonly _onDidChangeReadonly = this._register(new Emitter<void>());
     public readonly onDidChangeReadonly = this._onDidChangeReadonly.event;
+
     constructor(public readonly viewType: string, private readonly _resource: URI, private readonly _model: IReference<IResolvedTextEditorModel>, 
     @ITextFileService
     private readonly textFileService: ITextFileService, 
@@ -39,6 +42,7 @@ export class CustomTextEditorModel extends Disposable implements ICustomEditorMo
         super();
         this._register(_model);
         this._textFileModel = this.textFileService.files.get(_resource);
+
         if (this._textFileModel) {
             this._register(this._textFileModel.onDidChangeOrphaned(() => this._onDidChangeOrphaned.fire()));
             this._register(this._textFileModel.onDidChangeReadonly(() => this._onDidChangeReadonly.fire()));

@@ -37,6 +37,7 @@ export const editorActiveIndentGuide3 = registerColor('editorIndentGuide.activeB
 export const editorActiveIndentGuide4 = registerColor('editorIndentGuide.activeBackground4', '#00000000', nls.localize('editorActiveIndentGuide4', 'Color of the active editor indentation guides (4).'));
 export const editorActiveIndentGuide5 = registerColor('editorIndentGuide.activeBackground5', '#00000000', nls.localize('editorActiveIndentGuide5', 'Color of the active editor indentation guides (5).'));
 export const editorActiveIndentGuide6 = registerColor('editorIndentGuide.activeBackground6', '#00000000', nls.localize('editorActiveIndentGuide6', 'Color of the active editor indentation guides (6).'));
+
 const deprecatedEditorActiveLineNumber = registerColor('editorActiveLineNumber.foreground', { dark: '#c6c6c6', light: '#0B216F', hcDark: activeContrastBorder, hcLight: activeContrastBorder }, nls.localize('editorActiveLineNumber', 'Color of editor active line number'), false, nls.localize('deprecatedEditorActiveLineNumber', 'Id is deprecated. Use \'editorLineNumber.activeForeground\' instead.'));
 export const editorActiveLineNumber = registerColor('editorLineNumber.activeForeground', deprecatedEditorActiveLineNumber, nls.localize('editorActiveLineNumber', 'Color of editor active line number'));
 export const editorDimmedLineNumber = registerColor('editorLineNumber.dimmedForeground', null, nls.localize('editorDimmedLineNumber', 'Color of the final editor line when editor.renderFinalNewline is set to dimmed.'));
@@ -52,6 +53,7 @@ export const editorUnnecessaryCodeOpacity = registerColor('editorUnnecessaryCode
 export const ghostTextBorder = registerColor('editorGhostText.border', { dark: null, light: null, hcDark: Color.fromHex('#fff').transparent(0.8), hcLight: Color.fromHex('#292929').transparent(0.8) }, nls.localize('editorGhostTextBorder', 'Border color of ghost text in the editor.'));
 export const ghostTextForeground = registerColor('editorGhostText.foreground', { dark: Color.fromHex('#ffffff56'), light: Color.fromHex('#0007'), hcDark: null, hcLight: null }, nls.localize('editorGhostTextForeground', 'Foreground color of the ghost text in the editor.'));
 export const ghostTextBackground = registerColor('editorGhostText.background', null, nls.localize('editorGhostTextBackground', 'Background color of the ghost text in the editor.'));
+
 const rulerRangeDefault = new Color(new RGBA(0, 122, 204, 0.6));
 export const overviewRulerRangeHighlight = registerColor('editorOverviewRuler.rangeHighlightForeground', rulerRangeDefault, nls.localize('overviewRulerRangeHighlight', 'Overview ruler marker color for range highlights. The color must not be opaque so as not to hide underlying decorations.'), true);
 export const overviewRulerError = registerColor('editorOverviewRuler.errorForeground', { dark: new Color(new RGBA(255, 18, 18, 0.7)), light: new Color(new RGBA(255, 18, 18, 0.7)), hcDark: new Color(new RGBA(255, 50, 50, 1)), hcLight: '#B5200D' }, nls.localize('overviewRuleError', 'Overview ruler marker color for errors.'));
@@ -81,8 +83,11 @@ export const editorUnicodeHighlightBackground = registerColor('editorUnicodeHigh
 // contains all color rules that used to defined in editor/browser/widget/editor.css
 registerThemingParticipant((theme, collector) => {
     const background = theme.getColor(editorBackground);
+
     const lineHighlight = theme.getColor(editorLineHighlight);
+
     const imeBackground = (lineHighlight && !lineHighlight.isTransparent() ? lineHighlight : background);
+
     if (imeBackground) {
         collector.addRule(`.monaco-editor .inputarea.ime-input { background-color: ${imeBackground}; }`);
     }

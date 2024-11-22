@@ -50,6 +50,7 @@ export interface ISettingsGroup {
 export interface ISettingsSection {
     titleRange?: IRange;
     title?: string;
+
     settings: ISetting[];
 }
 export interface ISetting {
@@ -140,6 +141,7 @@ export interface IRemoteSetting {
     score: number;
     key: string;
     id: string;
+
     defaultValue: string;
     description: string;
     packageId: string;
@@ -159,6 +161,7 @@ export interface IFilterMetadata {
 }
 export interface IPreferencesEditorModel<T> {
     uri?: URI;
+
     getPreference(key: string): T | undefined;
     dispose(): void;
 }
@@ -170,6 +173,7 @@ export type ISettingMatcher = (setting: ISetting, group: ISettingsGroup) => {
 } | null;
 export interface ISettingsEditorModel extends IPreferencesEditorModel<ISetting> {
     readonly onDidChangeGroups: Event<void>;
+
     settingsGroups: ISettingsGroup[];
     filterSettings(filter: string, groupFilter: IGroupFilter, settingMatcher: ISettingMatcher): ISettingMatch[];
     findValueMatches(filter: string, setting: ISetting): IRange[];
@@ -212,8 +216,10 @@ export interface IPreferencesService {
     readonly onDidDefaultSettingsContentChanged: Event<URI>;
     userSettingsResource: URI;
     workspaceSettingsResource: URI | null;
+
     getFolderSettingsResource(resource: URI): URI | null;
     createPreferencesEditorModel(uri: URI): Promise<IPreferencesEditorModel<ISetting> | null>;
+
     getDefaultSettingsContent(uri: URI): string | undefined;
     hasDefaultSettingsContent(uri: URI): boolean;
     createSettings2EditorModel(): Settings2EditorModel; // TODO
@@ -229,7 +235,9 @@ export interface IPreferencesService {
     openGlobalKeybindingSettings(textual: boolean, options?: IKeybindingsEditorOptions): Promise<void>;
     openDefaultKeybindingsFile(): Promise<IEditorPane | undefined>;
     openLanguageSpecificSettings(languageId: string, options?: IOpenSettingsOptions): Promise<IEditorPane | undefined>;
+
     getEditableSettingsURI(configurationTarget: ConfigurationTarget, resource?: URI): Promise<URI | null>;
+
     getSetting(settingId: string): ISetting | undefined;
     createSplitJsonEditorInput(configurationTarget: ConfigurationTarget, resource: URI): EditorInput;
 }

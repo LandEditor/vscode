@@ -24,15 +24,18 @@ export class TestCoverage {
     public readonly didAddCoverage = observableSignal<IPrefixTreeNode<AbstractFileCoverage>[]>(this);
     public readonly tree = new WellDefinedPrefixTree<AbstractFileCoverage>();
     public readonly associatedData = new Map<unknown, unknown>();
+
     constructor(public readonly result: LiveTestResult, public readonly fromTaskId: string, private readonly uriIdentityService: IUriIdentityService, private readonly accessor: ICoverageAccessor) { }
     /** Gets all test IDs that were included in this test run. */
     public *allPerTestIDs() {
         const seen = new Set<string>();
+
         for (const root of this.tree.nodes) {
             if (root.value && root.value.perTestData) {
                 for (const id of root.value.perTestData) {
                     if (!seen.has(id)) {
                         seen.add(id);
+
                         yield id;
                     }
                 }
@@ -41,7 +44,9 @@ export class TestCoverage {
     }
     public append(coverage: IFileCoverage, tx: ITransaction | undefined) {
         const previous = this.getComputedForUri(coverage.uri);
+
         const result = this.result;
+
         const applyDelta = (kind: 'statement' | 'branch' | 'declaration', node: ComputedFileCoverage) => {
             if (!node[kind]) {
                 if (coverage[kind]) {
@@ -57,9 +62,11 @@ export class TestCoverage {
         // between URIs, but when inserting an intermediate node always use 'a' canonical
         // version.
         const canonical = [...this.treePathForUri(coverage.uri, /* canonical = */ true)];
+
         const chain: IPrefixTreeNode<AbstractFileCoverage>[] = [];
         this.tree.mutatePath(this.treePathForUri(coverage.uri, /* canonical = */ false), node => {
             chain.push(node);
+
             if (chain.length === canonical.length) {
                 // we reached our destination node, apply the coverage as necessary:
                 if (node.value) {
@@ -95,11 +102,13 @@ export class TestCoverage {
             }
             if (coverage.testIds) {
                 node.value!.perTestData ??= new Set();
+
                 for (const id of coverage.testIds) {
                     node.value!.perTestData.add(id);
                 }
             }
         });
+
         if (chain) {
             this.didAddCoverage.trigger(tx, chain);
         }
@@ -109,12 +118,14 @@ export class TestCoverage {
      */
     public filterTreeForTest(testId: TestId) {
         const tree = new WellDefinedPrefixTree<AbstractFileCoverage>();
+
         for (const node of this.tree.values()) {
             if (node instanceof FileCoverage) {
                 if (!node.perTestData?.has(testId.toString())) {
                     continue;
                 }
                 const canonical = [...this.treePathForUri(node.uri, /* canonical = */ true)];
+
                 const chain: IPrefixTreeNode<AbstractFileCoverage>[] = [];
                 tree.mutatePath(this.treePathForUri(node.uri, /* canonical = */ false), n => {
                     chain.push(n);
@@ -145,8 +156,11 @@ export class TestCoverage {
     }
     private *treePathForUri(uri: URI, canconicalPath: boolean) {
         yield uri.scheme;
+
         yield uri.authority;
+
         const path = !canconicalPath && this.uriIdentityService.extUri.ignorePathCasing(uri) ? uri.path.toLowerCase() : uri.path;
+
         yield* path.split('/');
     }
     private treePathToUri(path: string[]) {
@@ -155,7 +169,9 @@ export class TestCoverage {
 }
 export const getTotalCoveragePercent = (statement: ICoverageCount, branch: ICoverageCount | undefined, function_: ICoverageCount | undefined) => {
     let numerator = statement.covered;
+
     let denominator = statement.total;
+
     if (branch) {
         numerator += branch.covered;
         denominator += branch.total;
@@ -184,6 +200,7 @@ export abstract class AbstractFileCoverage {
      * Per-test coverage data for this file, if available.
      */
     public perTestData?: Set<string>;
+
     constructor(coverage: IFileCoverage, public readonly fromResult: LiveTestResult) {
         this.id = coverage.id;
         this.uri = coverage.uri;
@@ -222,8 +239,11 @@ export class FileCoverage extends AbstractFileCoverage {
      */
     public async detailsForTest(_testId: TestId, token = CancellationToken.None) {
         this._detailsForTest ??= new Map();
+
         const testId = _testId.toString();
+
         const prev = this._detailsForTest.get(testId);
+
         if (prev) {
             return prev;
         }
@@ -233,10 +253,12 @@ export class FileCoverage extends AbstractFileCoverage {
             }
             catch (e) {
                 this._detailsForTest?.delete(testId);
+
                 throw e;
             }
         })();
         this._detailsForTest.set(testId, promise);
+
         return promise;
     }
     /**
@@ -244,13 +266,16 @@ export class FileCoverage extends AbstractFileCoverage {
      */
     public async details(token = CancellationToken.None) {
         this._details ??= this.accessor.getCoverageDetails(this.id, undefined, token);
+
         try {
             const d = await this._details;
             this.resolved = true;
+
             return d;
         }
         catch (e) {
             this._details = undefined;
+
             throw e;
         }
     }
@@ -261,10 +286,12 @@ export const totalFromCoverageDetails = (uri: URI, details: CoverageDetails[]): 
         uri,
         statement: ICoverageCount.empty(),
     };
+
     for (const detail of details) {
         if (detail.type === DetailType.Statement) {
             fc.statement.total++;
             fc.statement.total += detail.count ? 1 : 0;
+
             for (const branch of detail.branches || []) {
                 fc.branch ??= ICoverageCount.empty();
                 fc.branch.total++;

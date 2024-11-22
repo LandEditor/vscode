@@ -27,6 +27,7 @@ export class SuggestWidgetAdaptor extends Disposable {
     }
     private _onDidSelectedItemChange = this._register(new Emitter<void>());
     public readonly onDidSelectedItemChange: Event<void> = this._onDidSelectedItemChange.event;
+
     constructor(private readonly editor: ICodeEditor, private readonly suggestControllerPreselector: () => SingleTextEdit | undefined, private readonly onWillAccept: (item: SuggestItemInfo) => void) {
         super();
         // See the command acceptAlternativeSelectedSuggestion that is bound to shift+tab
@@ -42,35 +43,48 @@ export class SuggestWidgetAdaptor extends Disposable {
                 this.update(this._isActive);
             }
         }));
+
         const suggestController = SuggestController.get(this.editor);
+
         if (suggestController) {
             this._register(suggestController.registerSelector({
                 priority: 100,
                 select: (model, pos, suggestItems) => {
                     const textModel = this.editor.getModel();
+
                     if (!textModel) {
                         // Should not happen
                         return -1;
                     }
                     const i = this.suggestControllerPreselector();
+
                     const itemToPreselect = i ? singleTextRemoveCommonPrefix(i, textModel) : undefined;
+
                     if (!itemToPreselect) {
                         return -1;
                     }
                     const position = Position.lift(pos);
+
                     const candidates = suggestItems
                         .map((suggestItem, index) => {
                         const suggestItemInfo = SuggestItemInfo.fromSuggestion(suggestController, textModel, position, suggestItem, this.isShiftKeyPressed);
+
                         const suggestItemTextEdit = singleTextRemoveCommonPrefix(suggestItemInfo.toSingleTextEdit(), textModel);
+
                         const valid = singleTextEditAugments(itemToPreselect, suggestItemTextEdit);
+
                         return { index, valid, prefixLength: suggestItemTextEdit.text.length, suggestItem };
                     })
                         .filter(item => item && item.valid && item.prefixLength > 0);
+
                     const result = findFirstMax(candidates, compareBy(s => s!.prefixLength, numberComparator));
+
                     return result ? result.index : -1;
                 }
             }));
+
             let isBoundToSuggestWidget = false;
+
             const bindToSuggestWidget = () => {
                 if (isBoundToSuggestWidget) {
                     return;
@@ -94,7 +108,9 @@ export class SuggestWidgetAdaptor extends Disposable {
             }));
             this._register(suggestController.onWillInsertSuggestItem(e => {
                 const position = this.editor.getPosition();
+
                 const model = this.editor.getModel();
+
                 if (!position || !model) {
                     return undefined;
                 }
@@ -106,6 +122,7 @@ export class SuggestWidgetAdaptor extends Disposable {
     }
     private update(newActive: boolean): void {
         const newInlineCompletion = this.getSuggestItemInfo();
+
         if (this._isActive !== newActive || !suggestItemInfoEquals(this._currentSuggestItemInfo, newInlineCompletion)) {
             this._isActive = newActive;
             this._currentSuggestItemInfo = newInlineCompletion;
@@ -114,12 +131,16 @@ export class SuggestWidgetAdaptor extends Disposable {
     }
     private getSuggestItemInfo(): SuggestItemInfo | undefined {
         const suggestController = SuggestController.get(this.editor);
+
         if (!suggestController || !this.isSuggestWidgetVisible) {
             return undefined;
         }
         const focusedItem = suggestController.widget.value.getFocusedItem();
+
         const position = this.editor.getPosition();
+
         const model = this.editor.getModel();
+
         if (!focusedItem || !position || !model) {
             return undefined;
         }
@@ -137,9 +158,12 @@ export class SuggestWidgetAdaptor extends Disposable {
 export class SuggestItemInfo {
     public static fromSuggestion(suggestController: SuggestController, model: ITextModel, position: Position, item: CompletionItem, toggleMode: boolean): SuggestItemInfo {
         let { insertText } = item.completion;
+
         let isSnippetText = false;
+
         if (item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet) {
             const snippet = new SnippetParser().parse(insertText);
+
             if (snippet.children.length < 100) {
                 // Adjust whitespace is expensive.
                 SnippetSession.adjustWhitespace(model, position, true, snippet);
@@ -148,6 +172,7 @@ export class SuggestItemInfo {
             isSnippetText = true;
         }
         const info = suggestController.getOverwriteInfo(item, toggleMode);
+
         return new SuggestItemInfo(Range.fromPositions(position.delta(0, -info.overwriteBefore), position.delta(0, Math.max(info.overwriteAfter, 0))), insertText, item.completion.kind, isSnippetText);
     }
     private constructor(public readonly range: Range, public readonly insertText: string, public readonly completionItemKind: CompletionItemKind, public readonly isSnippetText: boolean) { }

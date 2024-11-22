@@ -22,12 +22,15 @@ export abstract class AbstractEditorCommandsQuickAccessProvider extends Abstract
     protected abstract activeTextEditorControl: IEditor | undefined;
     protected getCodeEditorCommandPicks(): ICommandQuickPick[] {
         const activeTextEditorControl = this.activeTextEditorControl;
+
         if (!activeTextEditorControl) {
             return [];
         }
         const editorCommandPicks: ICommandQuickPick[] = [];
+
         for (const editorAction of activeTextEditorControl.getSupportedActions()) {
             let commandDescription: undefined | ILocalizedString;
+
             if (editorAction.metadata?.description) {
                 if (isLocalizedString(editorAction.metadata.description)) {
                     commandDescription = editorAction.metadata.description;

@@ -28,6 +28,7 @@ import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { URI } from '../../../../base/common/uri.js';
 import { RemoteNameContext } from '../../../common/contextkeys.js';
 import { IsWebContext } from '../../../../platform/contextkey/common/contextkeys.js';
+
 const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>('ITroubleshootIssueService');
 interface ITroubleshootIssueService {
     _serviceBrand: undefined;
@@ -50,6 +51,7 @@ class TroubleShootState {
             interface Raw extends TroubleShootState {
             }
             const data: Raw = JSON.parse(raw);
+
             if ((data.stage === TroubleshootStage.EXTENSIONS || data.stage === TroubleshootStage.WORKBENCH)
                 && typeof data.profile === 'string') {
                 return new TroubleShootState(data.stage, data.profile);
@@ -64,6 +66,7 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
     readonly _serviceBrand: undefined;
     static readonly storageKey = 'issueTroubleshootState';
     private notificationHandle: INotificationHandle | undefined;
+
     constructor(
     @IUserDataProfileService
     private readonly userDataProfileService: IUserDataProfileService, 
@@ -108,6 +111,7 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
             primaryButton: localize({ key: 'msg', comment: ['&& denotes a mnemonic'] }, "&&Troubleshoot Issue"),
             custom: true
         });
+
         if (!res.confirmed) {
             return;
         }
@@ -146,9 +150,11 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
     private async reproduceIssueWithExtensionsDisabled(): Promise<void> {
         if (!(await this.extensionManagementService.getInstalled(ExtensionType.User)).length) {
             this.state = new TroubleShootState(TroubleshootStage.WORKBENCH, this.state!.profile);
+
             return;
         }
         const result = await this.askToReproduceIssue(localize('profile.extensions.disabled', "Issue troubleshooting is active and has temporarily disabled all installed extensions. Check if you can still reproduce the problem and proceed by selecting from these options."));
+
         if (result === 'good') {
             const profile = this.userDataProfilesService.profiles.find(p => p.id === this.state!.profile) ?? this.userDataProfilesService.defaultProfile;
             await this.reproduceIssueWithExtensionsBisect(profile);
@@ -163,7 +169,9 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
     private async reproduceIssueWithEmptyProfile(): Promise<void> {
         await this.userDataProfileManagementService.createAndEnterTransientProfile();
         this.updateState(this.state);
+
         const result = await this.askToReproduceIssue(localize('empty.profile', "Issue troubleshooting is active and has temporarily reset your configurations to defaults. Check if you can still reproduce the problem and proceed by selecting from these options."));
+
         if (result === 'stop') {
             await this.stop();
         }
@@ -176,6 +184,7 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
     }
     private async reproduceIssueWithExtensionsBisect(profile: IUserDataProfile): Promise<void> {
         await this.userDataProfileManagementService.switchProfile(profile);
+
         const extensions = (await this.extensionManagementService.getInstalled(ExtensionType.User)).filter(ext => this.extensionEnablementService.isEnabled(ext));
         await this.extensionBisectService.start(extensions);
         await this.hostService.reload();
@@ -186,10 +195,12 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
                 label: localize('I cannot reproduce', "I Can't Reproduce"),
                 run: () => c('good')
             };
+
             const badPrompt: IPromptChoice = {
                 label: localize('This is Bad', "I Can Reproduce"),
                 run: () => c('bad')
             };
+
             const stop: IPromptChoice = {
                 label: localize('Stop', "Stop"),
                 run: () => c('stop')
@@ -199,8 +210,10 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
     }
     private async askToReportIssue(message: string): Promise<void> {
         let isCheckedInInsiders = false;
+
         if (this.productService.quality === 'stable') {
             const res = await this.askToReproduceIssueWithInsiders();
+
             if (res === 'good') {
                 await this.dialogService.prompt({
                     type: Severity.Info,
@@ -208,10 +221,12 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
                     detail: localize('use insiders', "This likely means that the issue has been addressed already and will be available in an upcoming release. You can safely use {0} insiders until the new stable version is available.", this.productService.nameLong),
                     custom: true
                 });
+
                 return;
             }
             if (res === 'stop') {
                 await this.stop();
+
                 return;
             }
             if (res === 'bad') {
@@ -233,10 +248,12 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
                 disableCloseAction: true,
             }
         });
+
         if (!confirmRes.confirmed) {
             return undefined;
         }
         const opened = await this.openerService.open(URI.parse('https://aka.ms/vscode-insiders'));
+
         if (!opened) {
             return undefined;
         }
@@ -259,9 +276,11 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
                 disableCloseAction: true,
             }
         });
+
         return res.result;
     }
     private _state: TroubleShootState | undefined | null;
+
     get state(): TroubleShootState | undefined {
         if (this._state === undefined) {
             const raw = this.storageService.get(TroubleshootIssueService.storageKey, StorageScope.PROFILE);
@@ -284,6 +303,7 @@ class TroubleshootIssueService extends Disposable implements ITroubleshootIssueS
 }
 class IssueTroubleshootUi extends Disposable {
     static ctxIsTroubleshootActive = new RawContextKey<boolean>('isIssueTroubleshootActive', false);
+
     constructor(
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService, 
@@ -293,6 +313,7 @@ class IssueTroubleshootUi extends Disposable {
     storageService: IStorageService) {
         super();
         this.updateContext();
+
         if (troubleshootIssueService.isActive()) {
             troubleshootIssueService.resume();
         }

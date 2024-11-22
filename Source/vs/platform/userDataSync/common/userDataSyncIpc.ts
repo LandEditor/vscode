@@ -17,6 +17,7 @@ export class UserDataSyncAccountServiceChannel implements IServerChannel {
     listen(_: unknown, event: string): Event<any> {
         switch (event) {
             case 'onDidChangeAccount': return this.service.onDidChangeAccount;
+
             case 'onTokenFailed': return this.service.onTokenFailed;
         }
         throw new Error(`[UserDataSyncAccountServiceChannel] Event not found: ${event}`);
@@ -24,6 +25,7 @@ export class UserDataSyncAccountServiceChannel implements IServerChannel {
     call(context: any, command: string, args?: any): Promise<any> {
         switch (command) {
             case '_getInitialData': return Promise.resolve(this.service.account);
+
             case 'updateAccount': return this.service.updateAccount(args);
         }
         throw new Error('Invalid call');
@@ -32,10 +34,12 @@ export class UserDataSyncAccountServiceChannel implements IServerChannel {
 export class UserDataSyncAccountServiceChannelClient extends Disposable implements IUserDataSyncAccountService {
     declare readonly _serviceBrand: undefined;
     private _account: IUserDataSyncAccount | undefined;
+
     get account(): IUserDataSyncAccount | undefined { return this._account; }
     get onTokenFailed(): Event<boolean> { return this.channel.listen<boolean>('onTokenFailed'); }
     private _onDidChangeAccount = this._register(new Emitter<IUserDataSyncAccount | undefined>());
     readonly onDidChangeAccount = this._onDidChangeAccount.event;
+
     constructor(private readonly channel: IChannel) {
         super();
         this.channel.call<IUserDataSyncAccount | undefined>('_getInitialData').then(account => {
@@ -61,6 +65,7 @@ export class UserDataSyncStoreManagementServiceChannel implements IServerChannel
     call(context: any, command: string, args?: any): Promise<any> {
         switch (command) {
             case 'switch': return this.service.switch(args[0]);
+
             case 'getPreviousUserDataSyncStore': return this.service.getPreviousUserDataSyncStore();
         }
         throw new Error('Invalid call');
@@ -82,6 +87,7 @@ export class UserDataSyncStoreManagementServiceChannelClient extends AbstractUse
     }
     async getPreviousUserDataSyncStore(): Promise<IUserDataSyncStore> {
         const userDataSyncStore = await this.channel.call<IUserDataSyncStore>('getPreviousUserDataSyncStore');
+
         return this.revive(userDataSyncStore);
     }
     private revive(userDataSyncStore: IUserDataSyncStore): IUserDataSyncStore {

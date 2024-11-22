@@ -16,6 +16,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
     private readonly _proxy: ExtHostStorageShape;
     private readonly _storageListener = new DisposableStore();
     private readonly _sharedStorageKeysToWatch: Map<string, boolean> = new Map<string, boolean>();
+
     constructor(extHostContext: IExtHostContext, 
     @IExtensionStorageService
     private readonly _extensionStorageService: IExtensionStorageService, 
@@ -29,6 +30,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
         this._storageListener.add(this._storageService.onDidChangeValue(StorageScope.PROFILE, undefined, this._storageListener)(e => {
             if (this._sharedStorageKeysToWatch.has(e.key)) {
                 const rawState = this._extensionStorageService.getExtensionStateRaw(e.key, true);
+
                 if (typeof rawState === 'string') {
                     this._proxy.$acceptValue(true, e.key, rawState);
                 }
@@ -40,6 +42,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
     }
     async $initializeExtensionStorage(shared: boolean, extensionId: string): Promise<string | undefined> {
         await this.checkAndMigrateExtensionStorage(extensionId, shared);
+
         if (shared) {
             this._sharedStorageKeysToWatch.set(extensionId, true);
         }

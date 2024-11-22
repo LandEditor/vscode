@@ -41,16 +41,19 @@ export enum NotebookViewEventType {
 }
 export class NotebookLayoutChangedEvent {
     public readonly type = NotebookViewEventType.LayoutChanged;
+
     constructor(readonly source: NotebookLayoutChangeEvent, readonly value: NotebookLayoutInfo) {
     }
 }
 export class NotebookMetadataChangedEvent {
     public readonly type = NotebookViewEventType.MetadataChanged;
+
     constructor(readonly source: NotebookDocumentMetadata) {
     }
 }
 export class NotebookCellStateChangedEvent {
     public readonly type = NotebookViewEventType.CellStateChanged;
+
     constructor(readonly source: CellViewModelStateChangeEvent, readonly cell: NotebookCellTextModel) {
     }
 }

@@ -22,6 +22,7 @@ import { StoredValue } from '../common/storedValue.js';
 import { ITestExplorerFilterState, TestFilterTerm } from '../common/testExplorerFilterState.js';
 import { ITestService } from '../common/testService.js';
 import { denamespaceTestTag } from '../common/testTypes.js';
+
 const testFilterDescriptions: {
     [K in TestFilterTerm]: string;
 } = {
@@ -45,6 +46,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
         target: StorageTarget.MACHINE
     }));
     private readonly filtersAction = new Action('markersFiltersAction', localize('testing.filters.menu', "More Filters..."), 'testing-filter-button ' + ThemeIcon.asClassName(testingFilterIcon));
+
     constructor(action: IAction, options: IBaseActionViewItemOptions, 
     @ITestExplorerFilterState
     private readonly state: ITestExplorerFilterState, 
@@ -61,10 +63,14 @@ export class TestingExplorerFilter extends BaseActionViewItem {
      */
     public override render(container: HTMLElement) {
         container.classList.add('testing-filter-action-item');
+
         const updateDelayer = this._register(new Delayer<void>(400));
+
         const wrapper = this.wrapper = dom.$('.testing-filter-wrapper');
         container.appendChild(wrapper);
+
         let history = this.history.get({ lastValue: '', values: [] });
+
         if (history instanceof Array) {
             history = { lastValue: '', values: history };
         }
@@ -81,7 +87,9 @@ export class TestingExplorerFilter extends BaseActionViewItem {
                     ...Object.entries(testFilterDescriptions).map(([label, detail]) => ({ label, detail })),
                     ...Iterable.map(this.testService.collection.tags.values(), tag => {
                         const { ctrlId, tagId } = denamespaceTestTag(tag.id);
+
                         const insertText = `@${ctrlId}:${tagId}`;
+
                         return ({
                             label: `@${ctrlId}:${tagId}`,
                             detail: this.testService.collection.getNodeById(ctrlId)?.item.label,
@@ -112,6 +120,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
             input.addToHistory();
             this.state.setText(input.getValue());
         })));
+
         const actionbar = this._register(new ActionBar(container, {
             actionViewItemProvider: (action, options) => {
                 if (action.id === this.filtersAction.id) {
@@ -143,6 +152,7 @@ export class TestingExplorerFilter extends BaseActionViewItem {
      */
     public override dispose() {
         this.saveState();
+
         super.dispose();
     }
     /**

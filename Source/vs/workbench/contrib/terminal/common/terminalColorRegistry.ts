@@ -97,6 +97,7 @@ export const TERMINAL_INITIAL_HINT_FOREGROUND = registerColor('terminal.initialH
 export const ansiColorMap: {
     [key: string]: {
         index: number;
+
         defaults: ColorDefaults;
     };
 } = {
@@ -248,6 +249,7 @@ export const ansiColorMap: {
 export function registerColors(): void {
     for (const id in ansiColorMap) {
         const entry = ansiColorMap[id];
+
         const colorName = id.substring(13);
         ansiColorIdentifiers[entry.index] = registerColor(id, entry.defaults, nls.localize('terminal.ansiColor', '\'{0}\' ANSI color in the terminal.', colorName));
     }

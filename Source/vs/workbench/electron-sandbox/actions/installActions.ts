@@ -12,6 +12,7 @@ import { INativeHostService } from '../../../platform/native/common/native.js';
 import { toErrorMessage } from '../../../base/common/errorMessage.js';
 import { IProductService } from '../../../platform/product/common/productService.js';
 import { isCancellationError } from '../../../base/common/errors.js';
+
 const shellCommandCategory: ILocalizedString = localize2('shellCommand', 'Shell Command');
 export class InstallShellScriptAction extends Action2 {
     constructor() {
@@ -24,8 +25,11 @@ export class InstallShellScriptAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         const dialogService = accessor.get(IDialogService);
+
         const productService = accessor.get(IProductService);
+
         try {
             await nativeHostService.installShellCommand();
             dialogService.info(localize('successIn', "Shell command '{0}' successfully installed in PATH.", productService.applicationName));
@@ -49,8 +53,11 @@ export class UninstallShellScriptAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         const dialogService = accessor.get(IDialogService);
+
         const productService = accessor.get(IProductService);
+
         try {
             await nativeHostService.uninstallShellCommand();
             dialogService.info(localize('successFrom', "Shell command '{0}' successfully uninstalled from PATH.", productService.applicationName));

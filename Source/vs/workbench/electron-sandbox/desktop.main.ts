@@ -74,12 +74,15 @@ export class DesktopMain extends Disposable {
     private reviveUris() {
         // Workspace
         const workspace = reviveIdentifier(this.configuration.workspace);
+
         if (isWorkspaceIdentifier(workspace) || isSingleFolderWorkspaceIdentifier(workspace)) {
             this.configuration.workspace = workspace;
         }
         // Files
         const filesToWait = this.configuration.filesToWait;
+
         const filesToWaitPaths = filesToWait?.paths;
+
         for (const paths of [filesToWaitPaths, this.configuration.filesToOpenOrCreate, this.configuration.filesToDiff, this.configuration.filesToMerge]) {
             if (Array.isArray(paths)) {
                 for (const path of paths) {
@@ -115,6 +118,7 @@ export class DesktopMain extends Disposable {
     }
     private applyWindowZoomLevel(configurationService: IConfigurationService) {
         let zoomLevel: number | undefined = undefined;
+
         if (this.configuration.isCustomZoomLevel && typeof this.configuration.zoomLevel === 'number') {
             zoomLevel = this.configuration.zoomLevel;
         }
@@ -167,11 +171,13 @@ export class DesktopMain extends Disposable {
             ...this.configuration.loggers.global.map(loggerResource => ({ ...loggerResource, resource: URI.revive(loggerResource.resource) })),
             ...this.configuration.loggers.window.map(loggerResource => ({ ...loggerResource, resource: URI.revive(loggerResource.resource), hidden: true })),
         ];
+
         const loggerService = new LoggerChannelClient(this.configuration.windowId, this.configuration.logLevel, environmentService.windowLogsPath, loggers, mainProcessService.getChannel('logger'));
         serviceCollection.set(ILoggerService, loggerService);
         // Log
         const logService = this._register(new NativeLogService(loggerService, environmentService));
         serviceCollection.set(ILogService, logService);
+
         if (isCI) {
             logService.info('workbench#open()'); // marking workbench open helps to diagnose flaky integration/smoke tests
         }
@@ -210,6 +216,7 @@ export class DesktopMain extends Disposable {
         // User Data Profiles
         const userDataProfilesService = new UserDataProfilesService(this.configuration.profiles.all, URI.revive(this.configuration.profiles.home).with({ scheme: environmentService.userRoamingDataHome.scheme }), mainProcessService.getChannel('userDataProfiles'));
         serviceCollection.set(IUserDataProfilesService, userDataProfilesService);
+
         const userDataProfileService = new UserDataProfileService(reviveProfile(this.configuration.profiles.profile, userDataProfilesService.profilesHome.scheme));
         serviceCollection.set(IUserDataProfileService, userDataProfileService);
         // Use FileUserDataProvider for user data to
@@ -219,6 +226,7 @@ export class DesktopMain extends Disposable {
         const remoteSocketFactoryService = new RemoteSocketFactoryService();
         remoteSocketFactoryService.register(RemoteConnectionType.WebSocket, new BrowserSocketFactory(null));
         serviceCollection.set(IRemoteSocketFactoryService, remoteSocketFactoryService);
+
         const remoteAgentService = this._register(new RemoteAgentService(remoteSocketFactoryService, userDataProfileService, environmentService, productService, remoteAuthorityResolverService, signService, logService));
         serviceCollection.set(IRemoteAgentService, remoteAgentService);
         // Remote Files
@@ -233,28 +241,33 @@ export class DesktopMain extends Disposable {
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // Create services that require resolving in parallel
         const workspace = this.resolveWorkspaceIdentifier(environmentService);
+
         const [configurationService, storageService] = await Promise.all([
             this.createWorkspaceService(workspace, environmentService, userDataProfileService, userDataProfilesService, fileService, remoteAgentService, uriIdentityService, logService, policyService).then(service => {
                 // Workspace
                 serviceCollection.set(IWorkspaceContextService, service);
                 // Configuration
                 serviceCollection.set(IWorkbenchConfigurationService, service);
+
                 return service;
             }),
             this.createStorageService(workspace, environmentService, userDataProfileService, userDataProfilesService, mainProcessService).then(service => {
                 // Storage
                 serviceCollection.set(IStorageService, service);
+
                 return service;
             }),
             this.createKeyboardLayoutService(mainProcessService).then(service => {
                 // KeyboardLayout
                 serviceCollection.set(INativeKeyboardLayoutService, service);
+
                 return service;
             })
         ]);
         // Workspace Trust Service
         const workspaceTrustEnablementService = new WorkspaceTrustEnablementService(configurationService, environmentService);
         serviceCollection.set(IWorkspaceTrustEnablementService, workspaceTrustEnablementService);
+
         const workspaceTrustManagementService = new WorkspaceTrustManagementService(configurationService, remoteAuthorityResolverService, storageService, uriIdentityService, environmentService, configurationService, workspaceTrustEnablementService, fileService);
         serviceCollection.set(IWorkspaceTrustManagementService, workspaceTrustManagementService);
         // Update workspace trust so that configuration is updated accordingly
@@ -280,35 +293,45 @@ export class DesktopMain extends Disposable {
     }
     private async createWorkspaceService(workspace: IAnyWorkspaceIdentifier, environmentService: INativeWorkbenchEnvironmentService, userDataProfileService: IUserDataProfileService, userDataProfilesService: IUserDataProfilesService, fileService: FileService, remoteAgentService: IRemoteAgentService, uriIdentityService: IUriIdentityService, logService: ILogService, policyService: IPolicyService): Promise<WorkspaceService> {
         const configurationCache = new ConfigurationCache([Schemas.file, Schemas.vscodeUserData] /* Cache all non native resources */, environmentService, fileService);
+
         const workspaceService = new WorkspaceService({ remoteAuthority: environmentService.remoteAuthority, configurationCache }, environmentService, userDataProfileService, userDataProfilesService, fileService, remoteAgentService, uriIdentityService, logService, policyService);
+
         try {
             await workspaceService.initialize(workspace);
+
             return workspaceService;
         }
         catch (error) {
             onUnexpectedError(error);
+
             return workspaceService;
         }
     }
     private async createStorageService(workspace: IAnyWorkspaceIdentifier, environmentService: INativeWorkbenchEnvironmentService, userDataProfileService: IUserDataProfileService, userDataProfilesService: IUserDataProfilesService, mainProcessService: IMainProcessService): Promise<NativeWorkbenchStorageService> {
         const storageService = new NativeWorkbenchStorageService(workspace, userDataProfileService, userDataProfilesService, mainProcessService, environmentService);
+
         try {
             await storageService.initialize();
+
             return storageService;
         }
         catch (error) {
             onUnexpectedError(error);
+
             return storageService;
         }
     }
     private async createKeyboardLayoutService(mainProcessService: IMainProcessService): Promise<NativeKeyboardLayoutService> {
         const keyboardLayoutService = new NativeKeyboardLayoutService(mainProcessService);
+
         try {
             await keyboardLayoutService.initialize();
+
             return keyboardLayoutService;
         }
         catch (error) {
             onUnexpectedError(error);
+
             return keyboardLayoutService;
         }
     }
@@ -318,5 +341,6 @@ export interface IDesktopMain {
 }
 export function main(configuration: INativeWindowConfiguration): Promise<void> {
     const workbench = new DesktopMain(configuration);
+
     return workbench.open();
 }

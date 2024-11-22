@@ -13,6 +13,7 @@ export function getContextForVariable(parentContext: IContextKeyService, variabl
     unknown
 ][] = []) {
     const session = variable.getSession();
+
     const contextKeys: [
         string,
         unknown
@@ -24,5 +25,6 @@ export function getContextForVariable(parentContext: IContextKeyService, variabl
         [CONTEXT_DEBUG_TYPE.key, session?.configuration.type],
         ...additionalContext,
     ];
+
     return parentContext.createOverlay(contextKeys);
 }

@@ -18,13 +18,16 @@ export class ViewOverlays extends ViewPart {
     protected readonly domNode: FastDomNode<HTMLElement>;
     private _dynamicOverlays: DynamicViewOverlay[] = [];
     private _isFocused: boolean = false;
+
     constructor(context: ViewContext) {
         super(context);
         this._visibleLines = new VisibleLinesCollection({
             createLine: () => new ViewOverlayLine(this._dynamicOverlays)
         });
         this.domNode = this._visibleLines.domNode;
+
         const options = this._context.configuration.options;
+
         const fontInfo = options.get(EditorOption.fontInfo);
         applyFontInfo(this.domNode, fontInfo);
         this.domNode.setClassName('view-overlays');
@@ -35,6 +38,7 @@ export class ViewOverlays extends ViewPart {
         }
         for (let i = 0, len = this._dynamicOverlays.length; i < len; i++) {
             const dynamicOverlay = this._dynamicOverlays[i];
+
             if (dynamicOverlay.shouldRender()) {
                 return true;
             }
@@ -43,6 +47,7 @@ export class ViewOverlays extends ViewPart {
     }
     public override dispose(): void {
         super.dispose();
+
         for (let i = 0, len = this._dynamicOverlays.length; i < len; i++) {
             const dynamicOverlay = this._dynamicOverlays[i];
             dynamicOverlay.dispose();
@@ -58,9 +63,12 @@ export class ViewOverlays extends ViewPart {
     // ----- event handlers
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         this._visibleLines.onConfigurationChanged(e);
+
         const options = this._context.configuration.options;
+
         const fontInfo = options.get(EditorOption.fontInfo);
         applyFontInfo(this.domNode, fontInfo);
+
         return true;
     }
     public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
@@ -68,6 +76,7 @@ export class ViewOverlays extends ViewPart {
     }
     public override onFocusChanged(e: viewEvents.ViewFocusChangedEvent): boolean {
         this._isFocused = e.isFocused;
+
         return true;
     }
     public override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
@@ -91,6 +100,7 @@ export class ViewOverlays extends ViewPart {
     // ----- end event handlers
     public prepareRender(ctx: RenderingContext): void {
         const toRender = this._dynamicOverlays.filter(overlay => overlay.shouldRender());
+
         for (let i = 0, len = toRender.length; i < len; i++) {
             const dynamicOverlay = toRender[i];
             dynamicOverlay.prepareRender(ctx);
@@ -110,6 +120,7 @@ export class ViewOverlayLine implements IVisibleLine {
     private readonly _dynamicOverlays: DynamicViewOverlay[];
     private _domNode: FastDomNode<HTMLElement> | null;
     private _renderedContent: string | null;
+
     constructor(dynamicOverlays: DynamicViewOverlay[]) {
         this._dynamicOverlays = dynamicOverlays;
         this._domNode = null;
@@ -132,6 +143,7 @@ export class ViewOverlayLine implements IVisibleLine {
     }
     public renderLine(lineNumber: number, deltaTop: number, lineHeight: number, viewportData: ViewportData, sb: StringBuilder): boolean {
         let result = '';
+
         for (let i = 0, len = this._dynamicOverlays.length; i < len; i++) {
             const dynamicOverlay = this._dynamicOverlays[i];
             result += dynamicOverlay.render(viewportData.startLineNumber, lineNumber);
@@ -148,6 +160,7 @@ export class ViewOverlayLine implements IVisibleLine {
         sb.appendString('px;">');
         sb.appendString(result);
         sb.appendString('</div>');
+
         return true;
     }
     public layoutLine(lineNumber: number, deltaTop: number, lineHeight: number): void {
@@ -159,9 +172,12 @@ export class ViewOverlayLine implements IVisibleLine {
 }
 export class ContentViewOverlays extends ViewOverlays {
     private _contentWidth: number;
+
     constructor(context: ViewContext) {
         super(context);
+
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._contentWidth = layoutInfo.contentWidth;
         this.domNode.setHeight(0);
@@ -169,8 +185,10 @@ export class ContentViewOverlays extends ViewOverlays {
     // --- begin event handlers
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._contentWidth = layoutInfo.contentWidth;
+
         return super.onConfigurationChanged(e) || true;
     }
     public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -184,9 +202,12 @@ export class ContentViewOverlays extends ViewOverlays {
 }
 export class MarginViewOverlays extends ViewOverlays {
     private _contentLeft: number;
+
     constructor(context: ViewContext) {
         super(context);
+
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._contentLeft = layoutInfo.contentLeft;
         this.domNode.setClassName('margin-view-overlays');
@@ -196,8 +217,10 @@ export class MarginViewOverlays extends ViewOverlays {
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         const options = this._context.configuration.options;
         applyFontInfo(this.domNode, options.get(EditorOption.fontInfo));
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._contentLeft = layoutInfo.contentLeft;
+
         return super.onConfigurationChanged(e) || true;
     }
     public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -205,6 +228,7 @@ export class MarginViewOverlays extends ViewOverlays {
     }
     override _viewOverlaysRender(ctx: RestrictedRenderingContext): void {
         super._viewOverlaysRender(ctx);
+
         const height = Math.min(ctx.scrollHeight, 1000000);
         this.domNode.setHeight(height);
         this.domNode.setWidth(this._contentLeft);

@@ -26,8 +26,11 @@ export function parse(content: string): any {
 }
 function _parse(content: string, filename: string | null, locationKeyName: string | null): any {
     const len = content.length;
+
     let pos = 0;
+
     let line = 1;
+
     let char = 0;
     // Skip UTF8 BOM
     if (len > 0 && content.charCodeAt(0) === ChCode.BOM) {
@@ -40,6 +43,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
         else {
             while (by > 0) {
                 const chCode = content.charCodeAt(pos);
+
                 if (chCode === ChCode.LINE_FEED) {
                     pos++;
                     line++;
@@ -64,6 +68,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
     function skipWhitespace(): void {
         while (pos < len) {
             const chCode = content.charCodeAt(pos);
+
             if (chCode !== ChCode.SPACE && chCode !== ChCode.TAB && chCode !== ChCode.CARRIAGE_RETURN && chCode !== ChCode.LINE_FEED) {
                 break;
             }
@@ -73,12 +78,14 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
     function advanceIfStartsWith(str: string): boolean {
         if (content.substr(pos, str.length) === str) {
             advancePosBy(str.length);
+
             return true;
         }
         return false;
     }
     function advanceUntil(str: string): void {
         const nextOccurence = content.indexOf(str, pos);
+
         if (nextOccurence !== -1) {
             advancePosTo(nextOccurence + str.length);
         }
@@ -89,23 +96,31 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
     }
     function captureUntil(str: string): string {
         const nextOccurence = content.indexOf(str, pos);
+
         if (nextOccurence !== -1) {
             const r = content.substring(pos, nextOccurence);
             advancePosTo(nextOccurence + str.length);
+
             return r;
         }
         else {
             // EOF
             const r = content.substr(pos);
             advancePosTo(len);
+
             return r;
         }
     }
     let state = State.ROOT_STATE;
+
     let cur: any = null;
+
     const stateStack: State[] = [];
+
     const objStack: any[] = [];
+
     let curKey: string | null = null;
+
     function pushState(newState: State, newCur: any): void {
         stateStack.push(state);
         objStack.push(cur);
@@ -130,6 +145,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
             const newDict: {
                 [key: string]: any;
             } = {};
+
             if (locationKeyName !== null) {
                 newDict[locationKeyName] = {
                     filename: filename,
@@ -151,11 +167,13 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
             pushState(State.ARR_STATE, newArr);
         }
     };
+
     const arrState = {
         enterDict: function () {
             const newDict: {
                 [key: string]: any;
             } = {};
+
             if (locationKeyName !== null) {
                 newDict[locationKeyName] = {
                     filename: filename,
@@ -172,6 +190,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
             pushState(State.ARR_STATE, newArr);
         }
     };
+
     function enterDict() {
         if (state === State.DICT_STATE) {
             dictState.enterDict();
@@ -181,6 +200,7 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
         }
         else { // ROOT_STATE
             cur = {};
+
             if (locationKeyName !== null) {
                 cur[locationKeyName] = {
                     filename: filename,
@@ -343,9 +363,13 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
         }).replace(/&amp;|&lt;|&gt;|&quot;|&apos;/g, function (_: string) {
             switch (_) {
                 case '&amp;': return '&';
+
                 case '&lt;': return '<';
+
                 case '&gt;': return '>';
+
                 case '&quot;': return '"';
+
                 case '&apos;': return '\'';
             }
             return _;
@@ -357,7 +381,9 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
     }
     function parseOpenTag(): IParsedTag {
         let r = captureUntil('>');
+
         let isClosed = false;
+
         if (r.charCodeAt(r.length - 1) === ChCode.SLASH) {
             isClosed = true;
             r = r.substring(0, r.length - 1);
@@ -373,15 +399,18 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
         }
         const val = captureUntil('</');
         advanceUntil('>');
+
         return escapeVal(val);
     }
     while (pos < len) {
         skipWhitespace();
+
         if (pos >= len) {
             break;
         }
         const chCode = content.charCodeAt(pos);
         advancePosBy(1);
+
         if (chCode !== ChCode.LESS_THAN) {
             return fail('expected <');
         }
@@ -389,78 +418,107 @@ function _parse(content: string, filename: string | null, locationKeyName: strin
             return fail('unexpected end of input');
         }
         const peekChCode = content.charCodeAt(pos);
+
         if (peekChCode === ChCode.QUESTION_MARK) {
             advancePosBy(1);
             advanceUntil('?>');
+
             continue;
         }
         if (peekChCode === ChCode.EXCLAMATION_MARK) {
             advancePosBy(1);
+
             if (advanceIfStartsWith('--')) {
                 advanceUntil('-->');
+
                 continue;
             }
             advanceUntil('>');
+
             continue;
         }
         if (peekChCode === ChCode.SLASH) {
             advancePosBy(1);
             skipWhitespace();
+
             if (advanceIfStartsWith('plist')) {
                 advanceUntil('>');
+
                 continue;
             }
             if (advanceIfStartsWith('dict')) {
                 advanceUntil('>');
                 leaveDict();
+
                 continue;
             }
             if (advanceIfStartsWith('array')) {
                 advanceUntil('>');
                 leaveArray();
+
                 continue;
             }
             return fail('unexpected closed tag');
         }
         const tag = parseOpenTag();
+
         switch (tag.name) {
             case 'dict':
                 enterDict();
+
                 if (tag.isClosed) {
                     leaveDict();
                 }
                 continue;
+
             case 'array':
                 enterArray();
+
                 if (tag.isClosed) {
                     leaveArray();
                 }
                 continue;
+
             case 'key':
                 acceptKey(parseTagValue(tag));
+
                 continue;
+
             case 'string':
                 acceptString(parseTagValue(tag));
+
                 continue;
+
             case 'real':
                 acceptReal(parseFloat(parseTagValue(tag)));
+
                 continue;
+
             case 'integer':
                 acceptInteger(parseInt(parseTagValue(tag), 10));
+
                 continue;
+
             case 'date':
                 acceptDate(new Date(parseTagValue(tag)));
+
                 continue;
+
             case 'data':
                 acceptData(parseTagValue(tag));
+
                 continue;
+
             case 'true':
                 parseTagValue(tag);
                 acceptBool(true);
+
                 continue;
+
             case 'false':
                 parseTagValue(tag);
                 acceptBool(false);
+
                 continue;
         }
         if (/^plist/.test(tag.name)) {

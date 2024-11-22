@@ -33,11 +33,13 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
     private readonly limiter = this._register(new Limiter(MAX_PARALLEL_HISTORY_IO_OPS));
     private readonly resourceExcludeMatcher = this._register(new GlobalIdleValue(() => {
         const matcher = this._register(new ResourceGlobMatcher(root => this.configurationService.getValue(WorkingCopyHistoryTracker.SETTINGS.EXCLUDES, { resource: root }), event => event.affectsConfiguration(WorkingCopyHistoryTracker.SETTINGS.EXCLUDES), this.contextService, this.configurationService));
+
         return matcher;
     }));
     private readonly pendingAddHistoryEntryOperations = new ResourceMap<CancellationTokenSource>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
     private readonly workingCopyContentVersion = new ResourceMap<number>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
     private readonly historyEntryContentVersion = new ResourceMap<number>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
+
     constructor(
     @IWorkingCopyService
     private readonly workingCopyService: IWorkingCopyService, 
@@ -70,6 +72,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             return; // return early for working copies we are not interested in
         }
         const source = e.resource;
+
         const target = e.target.resource;
         // Move working copy history entries for this file move event
         const resources = await this.workingCopyHistoryService.moveEntries(source, target);
@@ -95,6 +98,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             return; // return early for working copies we are not interested in
         }
         const contentVersion = this.getContentVersion(e.workingCopy.resource);
+
         if (this.historyEntryContentVersion.get(e.workingCopy.resource) === contentVersion) {
             return; // return early when content version already has associated history entry
         }
@@ -111,6 +115,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             const contentVersion = this.getContentVersion(e.workingCopy.resource);
             // Figure out source of save operation if not provided already
             let source = e.source;
+
             if (!e.source) {
                 source = this.resolveSourceFromUndoRedo(e);
             }
@@ -118,6 +123,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             await this.workingCopyHistoryService.addEntry({ resource: e.workingCopy.resource, source, timestamp: e.stat.mtime }, cts.token);
             // Remember content version as being added to history
             this.historyEntryContentVersion.set(e.workingCopy.resource, contentVersion);
+
             if (cts.token.isCancellationRequested) {
                 return;
             }
@@ -127,6 +133,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
     }
     private resolveSourceFromUndoRedo(e: IWorkingCopySaveEvent): SaveSource | undefined {
         const lastStackElement = this.undoRedoService.getLastElement(e.workingCopy.resource);
+
         if (lastStackElement) {
             if (lastStackElement.code === 'undoredo.textBufferEdit') {
                 return undefined; // ignore any unspecific stack element that resulted just from typing
@@ -134,6 +141,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             return lastStackElement.label;
         }
         const allStackElements = this.undoRedoService.getElements(e.workingCopy.resource);
+
         if (allStackElements.future.length > 0 || allStackElements.past.length > 0) {
             return WorkingCopyHistoryTracker.UNDO_REDO_SAVE_SOURCE;
         }
@@ -159,6 +167,7 @@ export class WorkingCopyHistoryTracker extends Disposable implements IWorkbenchC
             return false; // do not support unknown resources
         }
         const configuredMaxFileSizeInBytes = 1024 * this.configurationService.getValue<number>(WorkingCopyHistoryTracker.SETTINGS.SIZE_LIMIT, { resource });
+
         if (stat.size > configuredMaxFileSizeInBytes) {
             return false; // only track files that are not too large
         }

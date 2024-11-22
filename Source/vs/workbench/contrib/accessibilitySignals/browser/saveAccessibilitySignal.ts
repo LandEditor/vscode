@@ -9,6 +9,7 @@ import { SaveReason } from '../../../common/editor.js';
 import { IWorkingCopyService } from '../../../services/workingCopy/common/workingCopyService.js';
 export class SaveAccessibilitySignalContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.saveAccessibilitySignal';
+
     constructor(
     @IAccessibilitySignalService
     private readonly _accessibilitySignalService: IAccessibilitySignalService, 

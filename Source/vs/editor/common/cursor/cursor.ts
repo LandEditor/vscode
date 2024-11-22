@@ -34,6 +34,7 @@ export class CursorsController extends Disposable {
     private _columnSelectData: IColumnSelectData | null;
     private _autoClosedActions: AutoClosedAction[];
     private _prevEditOperationType: EditOperationType;
+
     constructor(model: ITextModel, viewModel: ICursorSimpleModel, coordinatesConverter: ICoordinatesConverter, cursorConfig: CursorConfiguration) {
         super();
         this._model = model;
@@ -52,6 +53,7 @@ export class CursorsController extends Disposable {
     public override dispose(): void {
         this._cursors.dispose();
         this._autoClosedActions = dispose(this._autoClosedActions);
+
         super.dispose();
     }
     public updateConfiguration(cursorConfig: CursorConfiguration): void {
@@ -78,8 +80,10 @@ export class CursorsController extends Disposable {
     private _validateAutoClosedActions(): void {
         if (this._autoClosedActions.length > 0) {
             const selections: Range[] = this._cursors.getSelections();
+
             for (let i = 0; i < this._autoClosedActions.length; i++) {
                 const autoClosedAction = this._autoClosedActions[i];
+
                 if (!autoClosedAction.isValid(selections)) {
                     autoClosedAction.dispose();
                     this._autoClosedActions.splice(i, 1);
@@ -100,7 +104,9 @@ export class CursorsController extends Disposable {
     }
     public setStates(eventsCollector: ViewModelEventsCollector, source: string | null | undefined, reason: CursorChangeReason, states: PartialCursorState[] | null): boolean {
         let reachedMaxCursorCount = false;
+
         const multiCursorLimit = this.context.cursorConfig.multiCursorLimit;
+
         if (states !== null && states.length > multiCursorLimit) {
             states = states.slice(0, multiCursorLimit);
             reachedMaxCursorCount = true;
@@ -110,6 +116,7 @@ export class CursorsController extends Disposable {
         this._cursors.normalize();
         this._columnSelectData = null;
         this._validateAutoClosedActions();
+
         return this._emitStateChangedIfNecessary(eventsCollector, source, reason, oldState, reachedMaxCursorCount);
     }
     public setCursorColumnSelectData(columnSelectData: IColumnSelectData): void {
@@ -117,8 +124,11 @@ export class CursorsController extends Disposable {
     }
     public revealAll(eventsCollector: ViewModelEventsCollector, source: string | null | undefined, minimalReveal: boolean, verticalType: VerticalRevealType, revealHorizontal: boolean, scrollType: editorCommon.ScrollType): void {
         const viewPositions = this._cursors.getViewPositions();
+
         let revealViewRange: Range | null = null;
+
         let revealViewSelections: Selection[] | null = null;
+
         if (viewPositions.length > 1) {
             revealViewSelections = this._cursors.getViewSelections();
         }
@@ -129,12 +139,15 @@ export class CursorsController extends Disposable {
     }
     public revealPrimary(eventsCollector: ViewModelEventsCollector, source: string | null | undefined, minimalReveal: boolean, verticalType: VerticalRevealType, revealHorizontal: boolean, scrollType: editorCommon.ScrollType): void {
         const primaryCursor = this._cursors.getPrimaryCursor();
+
         const revealViewSelections = [primaryCursor.viewState.selection];
         eventsCollector.emitViewEvent(new ViewRevealRangeRequestEvent(source, minimalReveal, null, revealViewSelections, verticalType, revealHorizontal, scrollType));
     }
     public saveState(): editorCommon.ICursorState[] {
         const result: editorCommon.ICursorState[] = [];
+
         const selections = this._cursors.getSelections();
+
         for (let i = 0, len = selections.length; i < len; i++) {
             const selection = selections[i];
             result.push({
@@ -153,9 +166,12 @@ export class CursorsController extends Disposable {
     }
     public restoreState(eventsCollector: ViewModelEventsCollector, states: editorCommon.ICursorState[]): void {
         const desiredSelections: ISelection[] = [];
+
         for (let i = 0, len = states.length; i < len; i++) {
             const state = states[i];
+
             let positionLineNumber = 1;
+
             let positionColumn = 1;
             // Avoid missing properties on the literal
             if (state.position && state.position.lineNumber) {
@@ -165,6 +181,7 @@ export class CursorsController extends Disposable {
                 positionColumn = state.position.column;
             }
             let selectionStartLineNumber = positionLineNumber;
+
             let selectionStartColumn = positionColumn;
             // Avoid missing properties on the literal
             if (state.selectionStart && state.selectionStart.lineNumber) {
@@ -195,6 +212,7 @@ export class CursorsController extends Disposable {
             // and an endless recursion happens.
             // _isHandling prevents that.
             this._isHandling = true;
+
             try {
                 this.setStates(eventsCollector, 'modelChange', CursorChangeReason.NotSet, this.getCursorStates());
             }
@@ -205,11 +223,13 @@ export class CursorsController extends Disposable {
         else {
             const e = event.rawContentChangedEvent;
             this._knownModelVersionId = e.versionId;
+
             if (this._isHandling) {
                 return;
             }
             const hadFlushEvent = e.containsEvent(RawContentChangedType.Flush);
             this._prevEditOperationType = EditOperationType.Other;
+
             if (hadFlushEvent) {
                 // a model.setValue() was called
                 this._cursors.dispose();
@@ -220,6 +240,7 @@ export class CursorsController extends Disposable {
             else {
                 if (this._hasFocus && e.resultingSelection && e.resultingSelection.length > 0) {
                     const cursorState = CursorState.fromModelSelections(e.resultingSelection);
+
                     if (this.setStates(eventsCollector, 'modelChange', e.isUndoing ? CursorChangeReason.Undo : e.isRedoing ? CursorChangeReason.Redo : CursorChangeReason.RecoverFromMarkers, cursorState)) {
                         this.revealAll(eventsCollector, 'modelChange', false, VerticalRevealType.Simple, true, editorCommon.ScrollType.Smooth);
                     }
@@ -245,8 +266,11 @@ export class CursorsController extends Disposable {
             return this._columnSelectData;
         }
         const primaryCursor = this._cursors.getPrimaryCursor();
+
         const viewSelectionStart = primaryCursor.viewState.selectionStart.getStartPosition();
+
         const viewPosition = primaryCursor.viewState.position;
+
         return {
             isReal: false,
             fromViewLineNumber: viewSelectionStart.lineNumber,
@@ -273,7 +297,9 @@ export class CursorsController extends Disposable {
     // ------ auxiliary handling logic
     private _pushAutoClosedAction(autoClosedCharactersRanges: Range[], autoClosedEnclosingRanges: Range[]): void {
         const autoClosedCharactersDeltaDecorations: IModelDeltaDecoration[] = [];
+
         const autoClosedEnclosingDeltaDecorations: IModelDeltaDecoration[] = [];
+
         for (let i = 0, len = autoClosedCharactersRanges.length; i < len; i++) {
             autoClosedCharactersDeltaDecorations.push({
                 range: autoClosedCharactersRanges[i],
@@ -292,6 +318,7 @@ export class CursorsController extends Disposable {
             });
         }
         const autoClosedCharactersDecorations = this._model.deltaDecorations([], autoClosedCharactersDeltaDecorations);
+
         const autoClosedEnclosingDecorations = this._model.deltaDecorations([], autoClosedEnclosingDeltaDecorations);
         this._autoClosedActions.push(new AutoClosedAction(this._model, autoClosedCharactersDecorations, autoClosedEnclosingDecorations));
     }
@@ -304,14 +331,18 @@ export class CursorsController extends Disposable {
             this._model.pushStackElement();
         }
         const result = CommandExecutor.executeCommands(this._model, this._cursors.getSelections(), opResult.commands);
+
         if (result) {
             // The commands were applied correctly
             this._interpretCommandResult(result);
             // Check for auto-closing closed characters
             const autoClosedCharactersRanges: Range[] = [];
+
             const autoClosedEnclosingRanges: Range[] = [];
+
             for (let i = 0; i < opResult.commands.length; i++) {
                 const command = opResult.commands[i];
+
                 if (command instanceof BaseTypeWithAutoClosingCommand && command.enclosingRange && command.closeCharacterRange) {
                     autoClosedCharactersRanges.push(command.closeCharacterRange);
                     autoClosedEnclosingRanges.push(command.enclosingRange);
@@ -338,10 +369,12 @@ export class CursorsController extends Disposable {
     // ----- emitting events
     private _emitStateChangedIfNecessary(eventsCollector: ViewModelEventsCollector, source: string | null | undefined, reason: CursorChangeReason, oldState: CursorModelState | null, reachedMaxCursorCount: boolean): boolean {
         const newState = CursorModelState.from(this._model, this);
+
         if (newState.equals(oldState)) {
             return false;
         }
         const selections = this._cursors.getSelections();
+
         const viewSelections = this._cursors.getViewSelections();
         // Let the view get the event first.
         eventsCollector.emitViewEvent(new ViewCursorStateChangedEvent(viewSelections, selections, reason));
@@ -350,6 +383,7 @@ export class CursorsController extends Disposable {
             || oldState.cursorState.length !== newState.cursorState.length
             || newState.cursorState.some((newCursorState, i) => !newCursorState.modelState.equals(oldState.cursorState[i].modelState))) {
             const oldSelections = oldState ? oldState.cursorState.map(s => s.modelState.selection) : null;
+
             const oldModelVersionId = oldState ? oldState.modelVersionId : 0;
             eventsCollector.emitOutgoingEvent(new CursorStateChangedEvent(oldSelections, selections, oldModelVersionId, newState.modelVersionId, source || 'keyboard', reason, reachedMaxCursorCount));
         }
@@ -368,23 +402,31 @@ export class CursorsController extends Disposable {
             number,
             number
         ][] = [];
+
         for (let i = 0, len = edits.length; i < len; i++) {
             const edit = edits[i];
+
             if (!edit.text || edit.text.indexOf('\n') >= 0) {
                 return null;
             }
             const m = edit.text.match(/([)\]}>'"`])([^)\]}>'"`]*)$/);
+
             if (!m) {
                 return null;
             }
             const closeChar = m[1];
+
             const autoClosingPairsCandidates = this.context.cursorConfig.autoClosingPairs.autoClosingPairsCloseSingleChar.get(closeChar);
+
             if (!autoClosingPairsCandidates || autoClosingPairsCandidates.length !== 1) {
                 return null;
             }
             const openChar = autoClosingPairsCandidates[0].open;
+
             const closeCharIndex = edit.text.length - m[2].length - 1;
+
             const openCharIndex = edit.text.lastIndexOf(openChar, closeCharIndex - 1);
+
             if (openCharIndex === -1) {
                 return null;
             }
@@ -397,6 +439,7 @@ export class CursorsController extends Disposable {
             number,
             number
         ][] | null = null;
+
         if (source === 'snippet') {
             autoClosingIndices = this._findAutoClosingPairs(edits);
         }
@@ -404,20 +447,27 @@ export class CursorsController extends Disposable {
             edits[0]._isTracked = true;
         }
         const autoClosedCharactersRanges: Range[] = [];
+
         const autoClosedEnclosingRanges: Range[] = [];
+
         const selections = this._model.pushEditOperations(this.getSelections(), edits, (undoEdits) => {
             if (autoClosingIndices) {
                 for (let i = 0, len = autoClosingIndices.length; i < len; i++) {
                     const [openCharInnerIndex, closeCharInnerIndex] = autoClosingIndices[i];
+
                     const undoEdit = undoEdits[i];
+
                     const lineNumber = undoEdit.range.startLineNumber;
+
                     const openCharIndex = undoEdit.range.startColumn - 1 + openCharInnerIndex;
+
                     const closeCharIndex = undoEdit.range.startColumn - 1 + closeCharInnerIndex;
                     autoClosedCharactersRanges.push(new Range(lineNumber, closeCharIndex + 1, lineNumber, closeCharIndex + 2));
                     autoClosedEnclosingRanges.push(new Range(lineNumber, openCharIndex + 1, lineNumber, closeCharIndex + 2));
                 }
             }
             const selections = cursorStateComputer(undoEdits);
+
             if (selections) {
                 // Don't recover the selection from markers because
                 // we know what it should be.
@@ -425,6 +475,7 @@ export class CursorsController extends Disposable {
             }
             return selections;
         });
+
         if (selections) {
             this._isHandling = false;
             this.setSelections(eventsCollector, source, selections, CursorChangeReason.NotSet);
@@ -441,6 +492,7 @@ export class CursorsController extends Disposable {
         const oldState = CursorModelState.from(this._model, this);
         this._cursors.stopTrackingSelections();
         this._isHandling = true;
+
         try {
             this._cursors.ensureValidState();
             callback();
@@ -451,6 +503,7 @@ export class CursorsController extends Disposable {
         this._isHandling = false;
         this._cursors.startTrackingSelections();
         this._validateAutoClosedActions();
+
         if (this._emitStateChangedIfNecessary(eventsCollector, source, cursorChangeReason, oldState, false)) {
             this.revealAll(eventsCollector, source, false, VerticalRevealType.Simple, true, editorCommon.ScrollType.Smooth);
         }
@@ -476,9 +529,12 @@ export class CursorsController extends Disposable {
             if (source === 'keyboard') {
                 // If this event is coming straight from the keyboard, look for electric characters and enter
                 const len = text.length;
+
                 let offset = 0;
+
                 while (offset < len) {
                     const charLength = strings.nextCharLength(text, offset);
+
                     const chr = text.substr(offset, charLength);
                     // Here we must interpret each typed character individually
                     this._executeEditOperation(TypeOperations.typeWithInterceptors(!!this._compositionState, this._prevEditOperationType, this.context.cursorConfig, this._model, this.getSelections(), this.getAutoClosedCharacters(), chr));
@@ -497,6 +553,7 @@ export class CursorsController extends Disposable {
                 // but it still wants to move the cursor
                 const newSelections = this.getSelections().map(selection => {
                     const position = selection.getPosition();
+
                     return new Selection(position.lineNumber, position.column + positionDelta, position.lineNumber, position.column + positionDelta);
                 });
                 this.setSelections(eventsCollector, source, newSelections, CursorChangeReason.NotSet);
@@ -565,6 +622,7 @@ class CursorModelState {
 class AutoClosedAction {
     public static getAllAutoClosedCharacters(autoClosedActions: AutoClosedAction[]): Range[] {
         let autoClosedCharacters: Range[] = [];
+
         for (const autoClosedAction of autoClosedActions) {
             autoClosedCharacters = autoClosedCharacters.concat(autoClosedAction.getAutoClosedCharactersRanges());
         }
@@ -573,6 +631,7 @@ class AutoClosedAction {
     private readonly _model: ITextModel;
     private _autoClosedCharactersDecorations: string[];
     private _autoClosedEnclosingDecorations: string[];
+
     constructor(model: ITextModel, autoClosedCharactersDecorations: string[], autoClosedEnclosingDecorations: string[]) {
         this._model = model;
         this._autoClosedCharactersDecorations = autoClosedCharactersDecorations;
@@ -584,8 +643,10 @@ class AutoClosedAction {
     }
     public getAutoClosedCharactersRanges(): Range[] {
         const result: Range[] = [];
+
         for (let i = 0; i < this._autoClosedCharactersDecorations.length; i++) {
             const decorationRange = this._model.getDecorationRange(this._autoClosedCharactersDecorations[i]);
+
             if (decorationRange) {
                 result.push(decorationRange);
             }
@@ -594,10 +655,13 @@ class AutoClosedAction {
     }
     public isValid(selections: Range[]): boolean {
         const enclosingRanges: Range[] = [];
+
         for (let i = 0; i < this._autoClosedEnclosingDecorations.length; i++) {
             const decorationRange = this._model.getDecorationRange(this._autoClosedEnclosingDecorations[i]);
+
             if (decorationRange) {
                 enclosingRanges.push(decorationRange);
+
                 if (decorationRange.startLineNumber !== decorationRange.endLineNumber) {
                     // Stop tracking if the range becomes multiline...
                     return false;
@@ -606,6 +670,7 @@ class AutoClosedAction {
         }
         enclosingRanges.sort(Range.compareRangesUsingStarts);
         selections.sort(Range.compareRangesUsingStarts);
+
         for (let i = 0; i < selections.length; i++) {
             if (i >= enclosingRanges.length) {
                 return false;
@@ -639,7 +704,9 @@ export class CommandExecutor {
             trackedRanges: [],
             trackedRangesDirection: []
         };
+
         const result = this._innerExecuteCommands(ctx, commands);
+
         for (let i = 0, len = ctx.trackedRanges.length; i < len; i++) {
             ctx.model._setTrackedRange(ctx.trackedRanges[i], null, TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges);
         }
@@ -650,18 +717,23 @@ export class CommandExecutor {
             return null;
         }
         const commandsData = this._getEditOperations(ctx, commands);
+
         if (commandsData.operations.length === 0) {
             return null;
         }
         const rawOperations = commandsData.operations;
+
         const loserCursorsMap = this._getLoserCursorMap(rawOperations);
+
         if (loserCursorsMap.hasOwnProperty('0')) {
             // These commands are very messed up
             console.warn('Ignoring commands');
+
             return null;
         }
         // Remove operations belonging to losing cursors
         const filteredOperations: IIdentifiedSingleEditOperation[] = [];
+
         for (let i = 0, len = rawOperations.length; i < len; i++) {
             if (!loserCursorsMap.hasOwnProperty(rawOperations[i].identifier!.major.toString())) {
                 filteredOperations.push(rawOperations[i]);
@@ -674,6 +746,7 @@ export class CommandExecutor {
         }
         let selectionsAfter = ctx.model.pushEditOperations(ctx.selectionsBefore, filteredOperations, (inverseEditOperations: IValidEditOperation[]): Selection[] => {
             const groupedInverseEditOperations: IValidEditOperation[][] = [];
+
             for (let i = 0; i < ctx.selectionsBefore.length; i++) {
                 groupedInverseEditOperations[i] = [];
             }
@@ -687,7 +760,9 @@ export class CommandExecutor {
             const minorBasedSorter = (a: IValidEditOperation, b: IValidEditOperation) => {
                 return a.identifier!.minor - b.identifier!.minor;
             };
+
             const cursorSelections: Selection[] = [];
+
             for (let i = 0; i < ctx.selectionsBefore.length; i++) {
                 if (groupedInverseEditOperations[i].length > 0) {
                     groupedInverseEditOperations[i].sort(minorBasedSorter);
@@ -697,7 +772,9 @@ export class CommandExecutor {
                         },
                         getTrackedSelection: (id: string) => {
                             const idx = parseInt(id, 10);
+
                             const range = ctx.model._getTrackedRange(ctx.trackedRanges[idx])!;
+
                             if (ctx.trackedRangesDirection[idx] === SelectionDirection.LTR) {
                                 return new Selection(range.startLineNumber, range.startColumn, range.endLineNumber, range.endColumn);
                             }
@@ -711,11 +788,13 @@ export class CommandExecutor {
             }
             return cursorSelections;
         });
+
         if (!selectionsAfter) {
             selectionsAfter = ctx.selectionsBefore;
         }
         // Extract losing cursors
         const losingCursors: number[] = [];
+
         for (const losingCursorIndex in loserCursorsMap) {
             if (loserCursorsMap.hasOwnProperty(losingCursorIndex)) {
                 losingCursors.push(parseInt(losingCursorIndex, 10));
@@ -741,9 +820,12 @@ export class CommandExecutor {
     }
     private static _getEditOperations(ctx: IExecContext, commands: (editorCommon.ICommand | null)[]): ICommandsData {
         let operations: IIdentifiedSingleEditOperation[] = [];
+
         let hadTrackedEditOperation: boolean = false;
+
         for (let i = 0, len = commands.length; i < len; i++) {
             const command = commands[i];
+
             if (command) {
                 const r = this._getEditOperationsFromCommand(ctx, i, command);
                 operations = operations.concat(r.operations);
@@ -759,7 +841,9 @@ export class CommandExecutor {
         // This method acts as a transaction, if the command fails
         // everything it has done is ignored
         const operations: IIdentifiedSingleEditOperation[] = [];
+
         let operationMinor = 0;
+
         const addEditOperation = (range: IRange, text: string | null, forceMoveMarkers: boolean = false) => {
             if (Range.isEmpty(range) && text === '') {
                 // This command wants to add a no-op => no thank you
@@ -776,14 +860,19 @@ export class CommandExecutor {
                 isAutoWhitespaceEdit: command.insertsAutoWhitespace
             });
         };
+
         let hadTrackedEditOperation = false;
+
         const addTrackedEditOperation = (selection: IRange, text: string | null, forceMoveMarkers?: boolean) => {
             hadTrackedEditOperation = true;
             addEditOperation(selection, text, forceMoveMarkers);
         };
+
         const trackSelection = (_selection: ISelection, trackPreviousOnEmpty?: boolean) => {
             const selection = Selection.liftSelection(_selection);
+
             let stickiness: TrackedRangeStickiness;
+
             if (selection.isEmpty()) {
                 if (typeof trackPreviousOnEmpty === 'boolean') {
                     if (trackPreviousOnEmpty) {
@@ -796,6 +885,7 @@ export class CommandExecutor {
                 else {
                     // Try to lock it with surrounding text
                     const maxLineColumn = ctx.model.getLineMaxColumn(selection.startLineNumber);
+
                     if (selection.startColumn === maxLineColumn) {
                         stickiness = TrackedRangeStickiness.GrowsOnlyWhenTypingBefore;
                     }
@@ -808,16 +898,20 @@ export class CommandExecutor {
                 stickiness = TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
             }
             const l = ctx.trackedRanges.length;
+
             const id = ctx.model._setTrackedRange(null, selection, stickiness);
             ctx.trackedRanges[l] = id;
             ctx.trackedRangesDirection[l] = selection.getDirection();
+
             return l.toString();
         };
+
         const editOperationBuilder: editorCommon.IEditOperationBuilder = {
             addEditOperation: addEditOperation,
             addTrackedEditOperation: addTrackedEditOperation,
             trackSelection: trackSelection
         };
+
         try {
             command.getEditOperations(ctx.model, editOperationBuilder);
         }
@@ -825,6 +919,7 @@ export class CommandExecutor {
             // TODO@Alex use notification service if this should be user facing
             // e.friendlyMessage = nls.localize('corrupt.commands', "Unexpected exception while executing command.");
             onUnexpectedError(e);
+
             return {
                 operations: [],
                 hadTrackedEditOperation: false
@@ -849,11 +944,15 @@ export class CommandExecutor {
         const loserCursorsMap: {
             [index: string]: boolean;
         } = {};
+
         for (let i = 1; i < operations.length; i++) {
             const previousOp = operations[i - 1];
+
             const currentOp = operations[i];
+
             if (Range.getStartPosition(previousOp.range).isBefore(Range.getEndPosition(currentOp.range))) {
                 let loserMajor: number;
+
                 if (previousOp.identifier!.major > currentOp.identifier!.major) {
                     // previousOp loses the battle
                     loserMajor = previousOp.identifier!.major;
@@ -862,9 +961,11 @@ export class CommandExecutor {
                     loserMajor = currentOp.identifier!.major;
                 }
                 loserCursorsMap[loserMajor.toString()] = true;
+
                 for (let j = 0; j < operations.length; j++) {
                     if (operations[j].identifier!.major === loserMajor) {
                         operations.splice(j, 1);
+
                         if (j < i) {
                             i--;
                         }
@@ -886,6 +987,7 @@ class CompositionState {
     private readonly _original: CompositionLineState[] | null;
     private static _capture(textModel: ITextModel, selections: Selection[]): CompositionLineState[] | null {
         const result: CompositionLineState[] = [];
+
         for (const selection of selections) {
             if (selection.startLineNumber !== selection.endLineNumber) {
                 return null;
@@ -906,6 +1008,7 @@ class CompositionState {
             return null;
         }
         const current = CompositionState._capture(textModel, selections);
+
         if (!current) {
             return null;
         }
@@ -913,6 +1016,7 @@ class CompositionState {
             return null;
         }
         const result: CompositionOutcome[] = [];
+
         for (let i = 0, len = this._original.length; i < len; i++) {
             result.push(CompositionState._deduceOutcome(this._original[i], current[i]));
         }
@@ -920,9 +1024,13 @@ class CompositionState {
     }
     private static _deduceOutcome(original: CompositionLineState, current: CompositionLineState): CompositionOutcome {
         const commonPrefix = Math.min(original.startSelection, current.startSelection, strings.commonPrefixLength(original.text, current.text));
+
         const commonSuffix = Math.min(original.text.length - original.endSelection, current.text.length - current.endSelection, strings.commonSuffixLength(original.text, current.text));
+
         const deletedText = original.text.substring(commonPrefix, original.text.length - commonSuffix);
+
         const insertedText = current.text.substring(commonPrefix, current.text.length - commonSuffix);
+
         return new CompositionOutcome(deletedText, original.startSelection - commonPrefix, original.endSelection - commonPrefix, insertedText, current.startSelection - commonPrefix, current.endSelection - commonPrefix);
     }
 }

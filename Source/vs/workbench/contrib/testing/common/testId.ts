@@ -38,10 +38,12 @@ export class TestId {
             return new TestId([rootId]);
         }
         const path = [item.id];
+
         for (let i = parent; i && i.id !== rootId; i = i.parent) {
             path.push(i.id);
         }
         path.push(rootId);
+
         return new TestId(path.reverse());
     }
     /**
@@ -55,6 +57,7 @@ export class TestId {
      */
     public static root(idString: string) {
         const idx = idString.indexOf(TestIdPathParts.Delimiter);
+
         return idx === -1 ? idString : idString.slice(0, idx);
     }
     /**
@@ -80,6 +83,7 @@ export class TestId {
      */
     public static parentId(idString: string) {
         const idx = idString.lastIndexOf(TestIdPathParts.Delimiter);
+
         return idx === -1 ? undefined : idString.slice(0, idx);
     }
     /**
@@ -87,6 +91,7 @@ export class TestId {
      */
     public static localId(idString: string) {
         const idx = idString.lastIndexOf(TestIdPathParts.Delimiter);
+
         return idx === -1 ? idString : idString.slice(idx + TestIdPathParts.Delimiter.length);
     }
     /**
@@ -117,10 +122,13 @@ export class TestId {
             return 0;
         }
         let commonPrefix = 0;
+
         while (commonPrefix < length - 1) {
             for (let i = 1; i < length; i++) {
                 const a = getId(i - 1);
+
                 const b = getId(i);
+
                 if (a.path[commonPrefix] !== b.path[commonPrefix]) {
                     return commonPrefix;
                 }
@@ -214,6 +222,7 @@ export class TestId {
     public toString() {
         if (!this.stringifed) {
             this.stringifed = this.path[0];
+
             for (let i = 1; i < this.viewEnd; i++) {
                 this.stringifed += TestIdPathParts.Delimiter;
                 this.stringifed += this.path[i];

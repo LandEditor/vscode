@@ -37,6 +37,7 @@ export interface ITelemetryService {
      */
     publicLogError(errorEventName: string, data?: ITelemetryData): void;
     publicLogError2<E extends ClassifiedEvent<OmitMetadata<T>> = never, T extends IGDPRProperty = never>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+
     setExperimentProperty(name: string, value: string): void;
 }
 export interface ITelemetryEndpoint {

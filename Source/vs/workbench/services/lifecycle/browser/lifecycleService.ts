@@ -17,6 +17,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
     private unloadListener: IDisposable | undefined = undefined;
     private ignoreBeforeUnload = false;
     private didUnload = false;
+
     constructor(
     @ILogService
     logService: ILogService, 
@@ -67,6 +68,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
         // Before unload handling ignored for duration of callback
         else {
             this.ignoreBeforeUnload = true;
+
             try {
                 callback?.();
             }
@@ -94,7 +96,9 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
         // but if a dialog opens, we have a chance
         // to succeed.
         this.storageService.flush(WillSaveStateReason.SHUTDOWN);
+
         let veto = false;
+
         function handleVeto(vetoResult: boolean | Promise<boolean>, id: string) {
             if (typeof vetoShutdown !== 'function') {
                 return; // veto handling disabled
@@ -152,6 +156,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
         // page was restored from cache and not freshly
         // loaded.
         const wasRestoredFromCache = event.persisted;
+
         if (!wasRestoredFromCache) {
             return;
         }
@@ -165,8 +170,10 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
     }
     protected override doResolveStartupKind(): StartupKind | undefined {
         let startupKind = super.doResolveStartupKind();
+
         if (typeof startupKind !== 'number') {
             const timing = performance.getEntriesByType('navigation').at(0) as PerformanceNavigationTiming | undefined;
+
             if (timing?.type === 'reload') {
                 // MDN: https://developer.mozilla.org/en-US/docs/Web/API/PerformanceNavigationTiming/type#value
                 startupKind = StartupKind.ReloadedWindow;

@@ -25,6 +25,7 @@ export class TreeItemCheckbox extends Disposable {
     private readonly checkboxContainer: HTMLDivElement;
     private hover: IManagedHover | undefined;
     public static readonly checkboxClass = 'custom-view-tree-node-item-checkbox';
+
     constructor(container: HTMLElement, private readonly checkboxStateHandler: CheckboxStateHandler, private readonly hoverDelegate: IHoverDelegate, private readonly hoverService: IHoverService) {
         super();
         this.checkboxContainer = <HTMLDivElement>container;
@@ -91,6 +92,7 @@ export class TreeItemCheckbox extends Disposable {
     private setAccessibilityInformation(checkbox: ITreeItemCheckboxState) {
         if (this.toggle && checkbox.accessibilityInformation) {
             this.toggle.domNode.ariaLabel = checkbox.accessibilityInformation.label;
+
             if (checkbox.accessibilityInformation.role) {
                 this.toggle.domNode.role = checkbox.accessibilityInformation.role;
             }
@@ -98,6 +100,7 @@ export class TreeItemCheckbox extends Disposable {
     }
     private removeCheckbox() {
         const children = this.checkboxContainer.children;
+
         for (const child of children) {
             child.remove();
         }

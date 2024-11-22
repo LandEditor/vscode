@@ -80,6 +80,7 @@ export class CoordinatesRelativeToEditor {
 
 export function createEditorPagePosition(editorViewDomNode: HTMLElement): EditorPagePosition {
 	const editorPos = dom.getDomNodePagePosition(editorViewDomNode);
+
 	return new EditorPagePosition(editorPos.left, editorPos.top, editorPos.width, editorPos.height);
 }
 
@@ -94,11 +95,14 @@ export function createCoordinatesRelativeToEditor(editorViewDomNode: HTMLElement
 	// and computing the effective transformation matrix using getComputedStyle(element).transform.
 	//
 	const scaleX = editorPagePosition.width / editorViewDomNode.offsetWidth;
+
 	const scaleY = editorPagePosition.height / editorViewDomNode.offsetHeight;
 
 	// Adjust mouse offsets if editor appears to be scaled via transforms
 	const relativeX = (pos.x - editorPagePosition.x) / scaleX;
+
 	const relativeY = (pos.y - editorPagePosition.y) / scaleY;
+
 	return new CoordinatesRelativeToEditor(relativeX, relativeY);
 }
 
@@ -244,6 +248,7 @@ export class GlobalEditorPointerMoveMonitor extends Disposable {
 		// if something other than a modifier key is pressed
 		this._keydownListener = dom.addStandardDisposableListener(<any>initialElement.ownerDocument, 'keydown', (e) => {
 			const chord = e.toKeyCodeChord();
+
 			if (chord.isModifierKey()) {
 				// Allow modifier keys
 				return;
@@ -303,7 +308,9 @@ export class DynamicCssRules {
 
 	private getOrCreateRule(properties: CssProperties): RefCountedCssRule {
 		const key = this.computeUniqueKey(properties);
+
 		let existingRule = this._rules.get(key);
+
 		if (!existingRule) {
 			const counter = this._counter++;
 			existingRule = new RefCountedCssRule(key, `dyn-rule-${this._instanceId}-${counter}`,
@@ -375,9 +382,12 @@ class RefCountedCssRule {
 
 	private getCssText(className: string, properties: CssProperties): string {
 		let str = `.${className} {`;
+
 		for (const prop in properties) {
 			const value = (properties as any)[prop] as string | ThemeColor;
+
 			let cssValue;
+
 			if (typeof value === 'object') {
 				cssValue = asCssVariable(value.id);
 			} else {
@@ -388,6 +398,7 @@ class RefCountedCssRule {
 			str += `\n\t${cssPropName}: ${cssValue};`;
 		}
 		str += `\n}`;
+
 		return str;
 	}
 

@@ -182,10 +182,13 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     private readonly _onBeforeCloseWindow = this._register(new Emitter<ICodeWindow>());
     readonly onBeforeCloseWindow = this._onBeforeCloseWindow.event;
     private _quitRequested = false;
+
     get quitRequested(): boolean { return this._quitRequested; }
     private _wasRestarted: boolean = false;
+
     get wasRestarted(): boolean { return this._wasRestarted; }
     private _phase = LifecycleMainPhase.Starting;
+
     get phase(): LifecycleMainPhase { return this._phase; }
     private readonly windowToCloseRequest = new Set<number>();
     private oneTimeListenerTokenGenerator = 0;
@@ -198,6 +201,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     private readonly mapWindowIdToPendingUnload = new Map<number, Promise<boolean>>();
     private readonly phaseWhen = new Map<LifecycleMainPhase, Barrier>();
     private relaunchHandler: IRelaunchHandler | undefined = undefined;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -211,6 +215,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     }
     private resolveRestarted(): void {
         this._wasRestarted = !!this.stateService.getItem(LifecycleMainService.QUIT_AND_RESTART_KEY);
+
         if (this._wasRestarted) {
             // remove the marker right after if found
             this.stateService.removeItem(LifecycleMainService.QUIT_AND_RESTART_KEY);
@@ -277,6 +282,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         }
         const logService = this.logService;
         this.trace('Lifecycle#onWillShutdown.fire()');
+
         const joiners: Promise<void>[] = [];
         this._onWillShutdown.fire({
             reason,
@@ -304,6 +310,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
                 this.logService.error(error);
             }
         })();
+
         return this.pendingWillShutdownPromise;
     }
     set phase(value: LifecycleMainPhase) {
@@ -315,7 +322,9 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         }
         this.trace(`lifecycle (main): phase changed (value: ${value})`);
         this._phase = value;
+
         const barrier = this.phaseWhen.get(this._phase);
+
         if (barrier) {
             barrier.open();
             this.phaseWhen.delete(this._phase);
@@ -326,6 +335,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
             return;
         }
         let barrier = this.phaseWhen.get(phase);
+
         if (!barrier) {
             barrier = new Barrier();
             this.phaseWhen.set(phase, barrier);
@@ -343,8 +353,10 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         windowListeners.add(Event.fromNodeEventEmitter<electron.Event>(win, 'close')(e => {
             // The window already acknowledged to be closed
             const windowId = window.id;
+
             if (this.windowToCloseRequest.has(windowId)) {
                 this.windowToCloseRequest.delete(windowId);
+
                 return;
             }
             this.trace(`Lifecycle#window.on('close') - window ID ${window.id}`);
@@ -353,6 +365,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
             this.unload(window, UnloadReason.CLOSE).then(veto => {
                 if (veto) {
                     this.windowToCloseRequest.delete(windowId);
+
                     return;
                 }
                 this.windowToCloseRequest.add(windowId);
@@ -379,9 +392,11 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     }
     registerAuxWindow(auxWindow: IAuxiliaryWindow): void {
         const win = assertIsDefined(auxWindow.win);
+
         const windowListeners = new DisposableStore();
         windowListeners.add(Event.fromNodeEventEmitter<electron.Event>(win, 'close')(e => {
             this.trace(`Lifecycle#auxWindow.on('close') - window ID ${auxWindow.id}`);
+
             if (this._quitRequested) {
                 this.trace(`Lifecycle#auxWindow.on('close') - preventDefault() because quit requested`);
                 // When quit is requested, Electron will close all
@@ -404,6 +419,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     async reload(window: ICodeWindow, cli?: NativeParsedArgs): Promise<void> {
         // Only reload when the window has not vetoed this
         const veto = await this.unload(window, UnloadReason.RELOAD);
+
         if (!veto) {
             window.reload(cli);
         }
@@ -411,6 +427,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     unload(window: ICodeWindow, reason: UnloadReason): Promise<boolean /* veto */> {
         // Ensure there is only 1 unload running at the same time
         const pendingUnloadPromise = this.mapWindowIdToPendingUnload.get(window.id);
+
         if (pendingUnloadPromise) {
             return pendingUnloadPromise;
         }
@@ -419,6 +436,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
             this.mapWindowIdToPendingUnload.delete(window.id);
         });
         this.mapWindowIdToPendingUnload.set(window.id, unloadPromise);
+
         return unloadPromise;
     }
     private async doUnload(window: ICodeWindow, reason: UnloadReason): Promise<boolean /* veto */> {
@@ -429,13 +447,17 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         this.trace(`Lifecycle#unload() - window ID ${window.id}`);
         // first ask the window itself if it vetos the unload
         const windowUnloadReason = this._quitRequested ? UnloadReason.QUIT : reason;
+
         const veto = await this.onBeforeUnloadWindowInRenderer(window, windowUnloadReason);
+
         if (veto) {
             this.trace(`Lifecycle#unload() - veto in renderer (window ID ${window.id})`);
+
             return this.handleWindowUnloadVeto(veto);
         }
         // finally if there are no vetos, unload the renderer
         await this.onWillUnloadWindowInRenderer(window, windowUnloadReason);
+
         return false;
     }
     private handleWindowUnloadVeto(veto: boolean): boolean {
@@ -446,6 +468,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         this.resolvePendingQuitPromise(true /* veto */);
         // a veto resets the pending quit request flag
         this._quitRequested = false;
+
         return true; // veto
     }
     private resolvePendingQuitPromise(veto: boolean): void {
@@ -458,7 +481,9 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     private onBeforeUnloadWindowInRenderer(window: ICodeWindow, reason: UnloadReason): Promise<boolean /* veto */> {
         return new Promise<boolean>(resolve => {
             const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
+
             const okChannel = `vscode:ok${oneTimeEventToken}`;
+
             const cancelChannel = `vscode:cancel${oneTimeEventToken}`;
             validatedIpcMain.once(okChannel, () => {
                 resolve(false); // no veto
@@ -472,6 +497,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     private onWillUnloadWindowInRenderer(window: ICodeWindow, reason: UnloadReason): Promise<void> {
         return new Promise<void>(resolve => {
             const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
+
             const replyChannel = `vscode:reply${oneTimeEventToken}`;
             validatedIpcMain.once(replyChannel, () => resolve());
             window.send('vscode:onWillUnload', { replyChannel, reason });
@@ -487,6 +513,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
                 try {
                     if (isWindows) {
                         const currentWorkingDir = cwd();
+
                         if (currentWorkingDir !== process.cwd()) {
                             process.chdir(currentWorkingDir);
                         }
@@ -501,8 +528,10 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     }
     private doQuit(willRestart?: boolean): Promise<boolean /* veto */> {
         this.trace(`Lifecycle#quit() - begin (willRestart: ${willRestart})`);
+
         if (this.pendingQuitPromise) {
             this.trace('Lifecycle#quit() - returning pending quit promise');
+
             return this.pendingQuitPromise;
         }
         // Remember if we are about to restart
@@ -517,6 +546,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
             this.trace('Lifecycle#quit() - calling app.quit()');
             electron.app.quit();
         });
+
         return this.pendingQuitPromise;
     }
     private trace(msg: string): void {
@@ -532,13 +562,16 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
     }
     async relaunch(options?: IRelaunchOptions): Promise<void> {
         this.trace('Lifecycle#relaunch()');
+
         const args = process.argv.slice(1);
+
         if (options?.addArgs) {
             args.push(...options.addArgs);
         }
         if (options?.removeArgs) {
             for (const a of options.removeArgs) {
                 const idx = args.indexOf(a);
+
                 if (idx >= 0) {
                     args.splice(idx, 1);
                 }
@@ -554,6 +587,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
         // `app.relaunch()` does not quit automatically, so we quit first,
         // check for vetoes and then relaunch from the `app.on('quit')` event
         const veto = await this.quit(true /* will restart */);
+
         if (veto) {
             electron.app.removeListener('quit', quitListener);
         }
@@ -580,6 +614,7 @@ export class LifecycleMainService extends Disposable implements ILifecycleMainSe
                 for (const window of electron.BrowserWindow.getAllWindows()) {
                     if (window && !window.isDestroyed()) {
                         let whenWindowClosed: Promise<void>;
+
                         if (window.webContents && !window.webContents.isDestroyed()) {
                             whenWindowClosed = new Promise(resolve => window.once('closed', resolve));
                         }

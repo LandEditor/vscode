@@ -69,6 +69,7 @@ export namespace TerminalExtensionsRegistry {
 class TerminalContributionRegistry {
     public static readonly INSTANCE = new TerminalContributionRegistry();
     private readonly _terminalContributions: ITerminalContributionDescription[] = [];
+
     constructor() {
     }
     public registerTerminalContribution(description: ITerminalContributionDescription): void {

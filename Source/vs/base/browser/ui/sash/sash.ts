@@ -26,7 +26,9 @@ const DEBUG = false;
  */
 export interface IVerticalSashLayoutProvider {
 	getVerticalSashLeft(sash: Sash): number;
+
 	getVerticalSashTop?(sash: Sash): number;
+
 	getVerticalSashHeight?(sash: Sash): number;
 }
 
@@ -35,7 +37,9 @@ export interface IVerticalSashLayoutProvider {
  */
 export interface IHorizontalSashLayoutProvider {
 	getHorizontalSashTop(sash: Sash): number;
+
 	getHorizontalSashLeft?(sash: Sash): number;
+
 	getHorizontalSashWidth?(sash: Sash): number;
 }
 
@@ -145,6 +149,7 @@ export const enum SashState {
 }
 
 let globalSize = 4;
+
 const onDidChangeGlobalSize = new Emitter<number>();
 export function setGlobalSashSize(size: number): void {
 	globalSize = size;
@@ -152,6 +157,7 @@ export function setGlobalSashSize(size: number): void {
 }
 
 let globalHoverDelay = 300;
+
 const onDidChangeHoverDelay = new Emitter<number>();
 export function setGlobalHoverDelay(size: number): void {
 	globalHoverDelay = size;
@@ -414,6 +420,7 @@ export class Sash extends Disposable {
 	 * @param options The options.
 	 */
 	constructor(container: HTMLElement, horizontalLayoutProvider: IHorizontalSashLayoutProvider, options: IHorizontalSashOptions);
+
 	constructor(container: HTMLElement, layoutProvider: ISashLayoutProvider, options: ISashOptions) {
 		super();
 
@@ -429,10 +436,13 @@ export class Sash extends Disposable {
 
 		const onMouseDown = this._register(new DomEmitter(this.el, 'mousedown')).event;
 		this._register(onMouseDown(e => this.onPointerStart(e, new MouseEventFactory(container)), this));
+
 		const onMouseDoubleClick = this._register(new DomEmitter(this.el, 'dblclick')).event;
 		this._register(onMouseDoubleClick(this.onPointerDoublePress, this));
+
 		const onMouseEnter = this._register(new DomEmitter(this.el, 'mouseenter')).event;
 		this._register(onMouseEnter(() => Sash.onMouseEnter(this)));
+
 		const onMouseLeave = this._register(new DomEmitter(this.el, 'mouseleave')).event;
 		this._register(onMouseLeave(() => Sash.onMouseLeave(this)));
 
@@ -440,18 +450,22 @@ export class Sash extends Disposable {
 
 		const onTouchStart = this._register(new DomEmitter(this.el, EventType.Start)).event;
 		this._register(onTouchStart(e => this.onPointerStart(e, new GestureEventFactory(this.el)), this));
+
 		const onTap = this._register(new DomEmitter(this.el, EventType.Tap)).event;
 
 		let doubleTapTimeout: any = undefined;
 		this._register(onTap(event => {
 			if (doubleTapTimeout) {
 				clearTimeout(doubleTapTimeout);
+
 				doubleTapTimeout = undefined;
 				this.onPointerDoublePress(event);
+
 				return;
 			}
 
 			clearTimeout(doubleTapTimeout);
+
 			doubleTapTimeout = setTimeout(() => doubleTapTimeout = undefined, 250);
 		}, this));
 
@@ -518,13 +532,17 @@ export class Sash extends Disposable {
 		}
 
 		const iframes = this.el.ownerDocument.getElementsByTagName('iframe');
+
 		for (const iframe of iframes) {
 			iframe.classList.add(PointerEventsDisabledCssClass); // disable mouse events on iframes as long as we drag the sash
 		}
 
 		const startX = event.pageX;
+
 		const startY = event.pageY;
+
 		const altKey = event.altKey;
+
 		const startEvent: ISashEvent = { startX, currentX: startX, startY, currentY: startY, altKey };
 
 		this.el.classList.add('active');
@@ -532,6 +550,7 @@ export class Sash extends Disposable {
 
 		// fix https://github.com/microsoft/vscode/issues/21675
 		const style = createStyleSheet(this.el);
+
 		const updateStyle = () => {
 			let cursor = '';
 
@@ -568,6 +587,7 @@ export class Sash extends Disposable {
 
 		const onPointerMove = (e: PointerEvent) => {
 			EventHelper.stop(e, false);
+
 			const event: ISashEvent = { startX, currentX: e.pageX, startY, currentY: e.pageY, altKey };
 
 			this._onDidChange.fire(event);

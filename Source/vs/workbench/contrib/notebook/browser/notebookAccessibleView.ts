@@ -18,8 +18,10 @@ export class NotebookAccessibleView implements IAccessibleViewImplentation {
 	readonly name = 'notebook';
 	readonly type = AccessibleViewType.View;
 	readonly when = ContextKeyExpr.and(NOTEBOOK_CELL_LIST_FOCUSED, InputFocusedContext.toNegated());
+
 	getProvider(accessor: ServicesAccessor) {
 		const editorService = accessor.get(IEditorService);
+
 		return getAccessibleOutputProvider(editorService);
 	}
 }
@@ -27,9 +29,13 @@ export class NotebookAccessibleView implements IAccessibleViewImplentation {
 
 export function getAccessibleOutputProvider(editorService: IEditorService) {
 	const activePane = editorService.activeEditorPane;
+
 	const notebookEditor = getNotebookEditorFromEditorPane(activePane);
+
 	const notebookViewModel = notebookEditor?.getViewModel();
+
 	const selections = notebookViewModel?.getSelections();
+
 	const notebookDocument = notebookViewModel?.notebookDocument;
 
 	if (!selections || !notebookDocument || !notebookEditor?.textModel) {
@@ -37,6 +43,7 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 	}
 
 	const viewCell = notebookViewModel.viewCells[selections[0].start];
+
 	const outputContent = getAllOutputsText(notebookDocument, viewCell);
 
 	if (!outputContent) {

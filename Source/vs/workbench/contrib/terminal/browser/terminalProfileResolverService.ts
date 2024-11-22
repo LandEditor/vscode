@@ -24,6 +24,7 @@ import { ITerminalInstanceService } from './terminal.js';
 import { Disposable } from '../../../../base/common/lifecycle.js';
 export interface IProfileContextProvider {
     getDefaultSystemShell(remoteAuthority: string | undefined, os: OperatingSystem): Promise<string>;
+
     getEnvironment(remoteAuthority: string | undefined): Promise<IProcessEnvironment>;
 }
 const generatedProfileName = 'Generated';
@@ -36,9 +37,11 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
     private _primaryBackendOs: OperatingSystem | undefined;
     private readonly _iconRegistry: IIconRegistry = getIconRegistry();
     private _defaultProfileName: string | undefined;
+
     get defaultProfileName(): string | undefined { return this._defaultProfileName; }
     constructor(private readonly _context: IProfileContextProvider, private readonly _configurationService: IConfigurationService, private readonly _configurationResolverService: IConfigurationResolverService, private readonly _historyService: IHistoryService, private readonly _logService: ITerminalLogService, private readonly _terminalProfileService: ITerminalProfileService, private readonly _workspaceContextService: IWorkspaceContextService, private readonly _remoteAgentService: IRemoteAgentService) {
         super();
+
         if (this._remoteAgentService.getConnection()) {
             this._remoteAgentService.getEnvironment().then(env => this._primaryBackendOs = env?.os || OS);
         }
@@ -66,16 +69,19 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
     resolveIcon(shellLaunchConfig: IShellLaunchConfig, os: OperatingSystem): void {
         if (shellLaunchConfig.icon) {
             shellLaunchConfig.icon = this._getCustomIcon(shellLaunchConfig.icon) || this.getDefaultIcon();
+
             return;
         }
         if (shellLaunchConfig.customPtyImplementation) {
             shellLaunchConfig.icon = this.getDefaultIcon();
+
             return;
         }
         if (shellLaunchConfig.executable) {
             return;
         }
         const defaultProfile = this._getUnresolvedRealDefaultProfile(os);
+
         if (defaultProfile) {
             shellLaunchConfig.icon = defaultProfile.icon;
         }
@@ -89,6 +95,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
     async resolveShellLaunchConfig(shellLaunchConfig: IShellLaunchConfig, options: IShellLaunchConfigResolveOptions): Promise<void> {
         // Resolve the shell and shell args
         let resolvedProfile: ITerminalProfile;
+
         if (shellLaunchConfig.executable) {
             resolvedProfile = await this._resolveProfile({
                 path: shellLaunchConfig.executable,
@@ -102,6 +109,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         }
         shellLaunchConfig.executable = resolvedProfile.path;
         shellLaunchConfig.args = resolvedProfile.args;
+
         if (resolvedProfile.env) {
             if (shellLaunchConfig.env) {
                 shellLaunchConfig.env = { ...shellLaunchConfig.env, ...resolvedProfile.env };
@@ -159,6 +167,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
                 light: unknown;
                 dark: unknown;
             });
+
             if ((URI.isUri(castedIcon.light) || isUriComponents(castedIcon.light)) && (URI.isUri(castedIcon.dark) || isUriComponents(castedIcon.dark))) {
                 return { light: URI.revive(castedIcon.light), dark: URI.revive(castedIcon.dark) };
             }
@@ -169,6 +178,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         // If automation shell is allowed, prefer that
         if (options.allowAutomationShell) {
             const automationShellProfile = this._getUnresolvedAutomationShellProfile(options);
+
             if (automationShellProfile) {
                 return automationShellProfile;
             }
@@ -176,7 +186,9 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         // Return the real default profile if it exists and is valid, wait for profiles to be ready
         // if the window just opened
         await this._terminalProfileService.profilesReady;
+
         const defaultProfile = this._getUnresolvedRealDefaultProfile(options.os);
+
         if (defaultProfile) {
             return this._setIconForAutomation(options, defaultProfile);
         }
@@ -188,6 +200,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         if (options.allowAutomationShell) {
             const profileClone = deepClone(profile);
             profileClone.icon = Codicon.tools;
+
             return profileClone;
         }
         return profile;
@@ -202,6 +215,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         // differs (eg. Windows -> WSL, Mac -> Linux)
         if (options.os === OS) {
             let existingProfile = this._terminalProfileService.availableProfiles.find(e => path.parse(e.path).name === path.parse(executable).name);
+
             if (existingProfile) {
                 if (options.allowAutomationShell) {
                     existingProfile = deepClone(existingProfile);
@@ -212,6 +226,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         }
         // Finally fallback to a generated profile
         let args: string | string[] | undefined;
+
         if (options.os === OperatingSystem.Macintosh && path.parse(executable).name.match(/(zsh|bash)/)) {
             // macOS should launch a login shell by default
             args = ['--login'];
@@ -221,6 +236,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
             args = [];
         }
         const icon = this._guessProfileIcon(executable);
+
         return {
             profileName: generatedProfileName,
             path: executable,
@@ -231,22 +247,28 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
     }
     private _getUnresolvedAutomationShellProfile(options: IShellLaunchConfigResolveOptions): ITerminalProfile | undefined {
         const automationProfile = this._configurationService.getValue(`terminal.integrated.automationProfile.${this._getOsKey(options.os)}`);
+
         if (this._isValidAutomationProfile(automationProfile, options.os)) {
             automationProfile.icon = this._getCustomIcon(automationProfile.icon) || Codicon.tools;
+
             return automationProfile;
         }
         return undefined;
     }
     private async _resolveProfile(profile: ITerminalProfile, options: IShellLaunchConfigResolveOptions): Promise<ITerminalProfile> {
         const env = await this._context.getEnvironment(options.remoteAuthority);
+
         if (options.os === OperatingSystem.Windows) {
             // Change Sysnative to System32 if the OS is Windows but NOT WoW64. It's
             // safe to assume that this was used by accident as Sysnative does not
             // exist and will break the terminal in non-WoW64 environments.
             const isWoW64 = !!env.hasOwnProperty('PROCESSOR_ARCHITEW6432');
+
             const windir = env.windir;
+
             if (!isWoW64 && windir) {
                 const sysnativePath = path.join(windir, 'Sysnative').replace(/\//g, '\\').toLowerCase();
+
                 if (profile.path && profile.path.toLowerCase().indexOf(sysnativePath) === 0) {
                     profile.path = path.join(windir, 'System32', profile.path.substr(sysnativePath.length + 1));
                 }
@@ -258,6 +280,7 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
         }
         // Resolve path variables
         const activeWorkspaceRootUri = this._historyService.getLastActiveWorkspaceRoot(options.remoteAuthority ? Schemas.vscodeRemote : Schemas.file);
+
         const lastActiveWorkspace = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
         profile.path = await this._resolveVariables(profile.path, env, lastActiveWorkspace);
         // Resolve args variables
@@ -283,22 +306,29 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
     private _getOsKey(os: OperatingSystem): string {
         switch (os) {
             case OperatingSystem.Linux: return 'linux';
+
             case OperatingSystem.Macintosh: return 'osx';
+
             case OperatingSystem.Windows: return 'windows';
         }
     }
     private _guessProfileIcon(shell: string): ThemeIcon | undefined {
         const file = path.parse(shell).name;
+
         switch (file) {
             case 'bash':
                 return Codicon.terminalBash;
+
             case 'pwsh':
             case 'powershell':
                 return Codicon.terminalPowershell;
+
             case 'tmux':
                 return Codicon.terminalTmux;
+
             case 'cmd':
                 return Codicon.terminalCmd;
+
             default:
                 return undefined;
         }
@@ -336,6 +366,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
         super({
             getDefaultSystemShell: async (remoteAuthority, os) => {
                 const backend = await terminalInstanceService.getBackend(remoteAuthority);
+
                 if (!remoteAuthority || !backend) {
                     // Just return basic values, this is only for serverless web and wouldn't be used
                     return os === OperatingSystem.Windows ? 'pwsh' : 'bash';
@@ -344,6 +375,7 @@ export class BrowserTerminalProfileResolverService extends BaseTerminalProfileRe
             },
             getEnvironment: async (remoteAuthority) => {
                 const backend = await terminalInstanceService.getBackend(remoteAuthority);
+
                 if (!remoteAuthority || !backend) {
                     return env;
                 }

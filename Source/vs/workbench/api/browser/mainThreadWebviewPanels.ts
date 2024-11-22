@@ -42,6 +42,7 @@ class WebviewInputStore {
     public delete(handle: string): void {
         const input = this.getInputForHandle(handle);
         this._handlesToInputs.delete(handle);
+
         if (input) {
             this._inputsToHandles.delete(input);
         }
@@ -70,6 +71,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
     private readonly _webviewInputs = new WebviewInputStore();
     private readonly _revivers = this._register(new DisposableMap<string>());
     private readonly webviewOriginStore: ExtensionKeyedWebviewOriginStore;
+
     constructor(context: IExtHostContext, private readonly _mainThreadWebviews: MainThreadWebviews, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -99,6 +101,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
         this._register(_webviewWorkbenchService.registerResolver({
             canResolve: (webview: WebviewInput) => {
                 const viewType = this.webviewPanelViewType.toExternal(webview.viewType);
+
                 if (typeof viewType === 'string') {
                     extensionService.activateByEvent(`onWebviewPanel:${viewType}`);
                 }
@@ -121,12 +124,16 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
     }
     public $createWebviewPanel(extensionData: extHostProtocol.WebviewExtensionDescription, handle: extHostProtocol.WebviewHandle, viewType: string, initData: extHostProtocol.IWebviewInitData, showOptions: extHostProtocol.WebviewPanelShowOptions): void {
         const targetGroup = this.getTargetGroupFromShowOptions(showOptions);
+
         const mainThreadShowOptions: IWebViewShowOptions = showOptions ? {
             preserveFocus: !!showOptions.preserveFocus,
             group: targetGroup
         } : {};
+
         const extension = reviveWebviewExtension(extensionData);
+
         const origin = this.webviewOriginStore.getOrigin(viewType, extension.id);
+
         const webview = this._webviewWorkbenchService.openWebview({
             origin,
             providedViewType: viewType,
@@ -136,6 +143,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
             extension
         }, this.webviewPanelViewType.fromExternal(viewType), initData.title, mainThreadShowOptions);
         this.addWebviewInput(handle, webview, { serializeBuffersForPostMessage: initData.serializeBuffersForPostMessage });
+
         const payload = {
             extensionId: extension.id.value,
             viewType
@@ -158,6 +166,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
     }
     public $disposeWebview(handle: extHostProtocol.WebviewHandle): void {
         const webview = this.tryGetWebviewInput(handle);
+
         if (!webview) {
             return;
         }
@@ -168,12 +177,14 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
     }
     public $setIconPath(handle: extHostProtocol.WebviewHandle, value: extHostProtocol.IWebviewIconPath | undefined): void {
         const webview = this.tryGetWebviewInput(handle);
+
         if (webview) {
             webview.iconPath = reviveWebviewIcon(value);
         }
     }
     public $reveal(handle: extHostProtocol.WebviewHandle, showOptions: extHostProtocol.WebviewPanelShowOptions): void {
         const webview = this.tryGetWebviewInput(handle);
+
         if (!webview || webview.isDisposed()) {
             return;
         }
@@ -192,6 +203,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
         if (showOptions.viewColumn >= 0) {
             // First check to see if an existing group exists
             const groupInColumn = this._editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE)[showOptions.viewColumn];
+
             if (groupInColumn) {
                 return groupInColumn.id;
             }
@@ -201,8 +213,10 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
             // and there are two editor groups open, we simply create a third editor group instead
             // of creating all the groups up to 99.
             const newGroup = this._editorGroupService.findGroup({ location: GroupLocation.LAST });
+
             if (newGroup) {
                 const direction = preferredSideBySideGroupDirection(this._configurationService);
+
                 return this._editorGroupService.addGroup(newGroup, direction);
             }
         }
@@ -220,13 +234,17 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
             },
             resolveWebview: async (webviewInput): Promise<void> => {
                 const viewType = this.webviewPanelViewType.toExternal(webviewInput.viewType);
+
                 if (!viewType) {
                     webviewInput.webview.setHtml(this._mainThreadWebviews.getWebviewResolvedFailedContent(webviewInput.viewType));
+
                     return;
                 }
                 const handle = generateUuid();
                 this.addWebviewInput(handle, webviewInput, options);
+
                 let state = undefined;
+
                 if (webviewInput.webview.state) {
                     try {
                         state = JSON.parse(webviewInput.webview.state);
@@ -262,12 +280,15 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
             return;
         }
         const viewStates: extHostProtocol.WebviewPanelViewStateData = {};
+
         const updateViewStatesForInput = (group: IEditorGroup, topLevelInput: EditorInput, editorInput: EditorInput) => {
             if (!(editorInput instanceof WebviewInput)) {
                 return;
             }
             editorInput.updateGroup(group.id);
+
             const handle = this._webviewInputs.getHandleForInput(editorInput);
+
             if (handle) {
                 viewStates[handle] = {
                     visible: topLevelInput === group.activeEditor,
@@ -276,6 +297,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
                 };
             }
         };
+
         for (const group of this._editorGroupService.groups) {
             for (const input of group.editors) {
                 if (input instanceof DiffEditorInput) {

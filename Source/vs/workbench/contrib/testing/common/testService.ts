@@ -29,12 +29,14 @@ export interface IMainThreadTestController {
     refreshTests(token: CancellationToken): Promise<void>;
     configureRunProfile(profileId: number): void;
     expandTest(id: string, levels: number): Promise<void>;
+
     getRelatedCode(testId: string, token: CancellationToken): Promise<Location[]>;
     startContinuousRun(request: ICallProfileRunHandler[], token: CancellationToken): Promise<IStartControllerTestsResult[]>;
     runTests(request: IStartControllerTests[], token: CancellationToken): Promise<IStartControllerTestsResult[]>;
 }
 export interface IMainThreadTestHostProxy {
     provideTestFollowups(req: TestMessageFollowupRequest, token: CancellationToken): Promise<TestMessageFollowupResponse[]>;
+
     getTestsRelatedToCode(uri: URI, position: Position, token: CancellationToken): Promise<string[]>;
     executeTestFollowup(id: number): Promise<void>;
     disposeTestFollowups(ids: number[]): void;
@@ -87,9 +89,11 @@ export const getContextForTestItem = (collection: IMainThreadTestCollection, id:
         return { controller: id.toString() };
     }
     const context: ITestItemContext = { $mid: MarshalledId.TestItemContext, tests: [] };
+
     for (const i of id.idsFromRoot()) {
         if (!i.isRoot) {
             const test = collection.getNodeById(i.toString());
+
             if (test) {
                 context.tests.push(test);
             }
@@ -104,12 +108,17 @@ export const getContextForTestItem = (collection: IMainThreadTestCollection, id:
  */
 export const expandAndGetTestById = async (collection: IMainThreadTestCollection, id: string, ct = CancellationToken.None) => {
     const idPath = [...TestId.fromString(id).idsFromRoot()];
+
     let expandToLevel = 0;
+
     for (let i = idPath.length - 1; !ct.isCancellationRequested && i >= expandToLevel;) {
         const id = idPath[i].toString();
+
         const existing = collection.getNodeById(id);
+
         if (!existing) {
             i--;
+
             continue;
         }
         if (i === idPath.length - 1) {
@@ -168,6 +177,7 @@ export const testsInFile = async function* (testService: ITestService, ident: IU
  */
 export const testsUnderUri = async function* (testService: ITestService, ident: IUriIdentityService, uri: URI, waitForIdle = true): AsyncIterable<IncrementalTestCollectionItem> {
     const queue = [testService.collection.rootIds];
+
     while (queue.length) {
         for (const testId of queue.pop()!) {
             const test = testService.collection.getNodeById(testId);
@@ -201,6 +211,7 @@ export const simplifyTestsToExecute = (collection: IMainThreadTestCollection, te
         return tests;
     }
     const tree = new WellDefinedPrefixTree<IncrementalTestCollectionItem>();
+
     for (const test of tests) {
         tree.insert(TestId.fromString(test.item.extId).path, test);
     }
@@ -213,10 +224,14 @@ export const simplifyTestsToExecute = (collection: IMainThreadTestCollection, te
             return node.value;
         }
         assert(!!node.children, 'expect to have children');
+
         const thisChildren: IncrementalTestCollectionItem[] = [];
+
         for (const [part, child] of node.children) {
             currentId.push(part);
+
             const c = process(currentId, child);
+
             if (c) {
                 thisChildren.push(c);
             }
@@ -228,15 +243,20 @@ export const simplifyTestsToExecute = (collection: IMainThreadTestCollection, te
         // If there are multiple children and we have all of them, then tell the
         // parent this node should be included. Otherwise include children individually.
         const id = new TestId(currentId);
+
         const test = collection.getNodeById(id.toString());
+
         if (test?.children.size === thisChildren.length) {
             return test;
         }
         out.push(...thisChildren);
+
         return;
     };
+
     for (const [id, node] of tree.entries) {
         const n = process([id], node);
+
         if (n) {
             out.push(n);
         }

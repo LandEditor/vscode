@@ -24,6 +24,7 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
     private readonly _proxy: ExtHostTunnelServiceShape;
     private elevateionRetry: boolean = false;
     private portsAttributesProviders: Map<number, PortAttributesSelector> = new Map();
+
     constructor(extHostContext: IExtHostContext, 
     @IRemoteExplorerService
     private readonly remoteExplorerService: IRemoteExplorerService, 
@@ -50,6 +51,7 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
     }
     async $setRemoteTunnelService(processId: number): Promise<void> {
         this.remoteExplorerService.namedProcesses.set(processId, 'Code Extension Host');
+
         if (this.remoteExplorerService.portsFeaturesEnabled === PortsEnablement.AdditionalFeatures) {
             this._proxy.$registerCandidateFinder(this.processFindingEnabled());
         }
@@ -68,8 +70,10 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
         }));
     }
     private _alreadyRegistered: boolean = false;
+
     async $registerPortsAttributesProvider(selector: PortAttributesSelector, providerHandle: number): Promise<void> {
         this.portsAttributesProviders.set(providerHandle, selector);
+
         if (!this._alreadyRegistered) {
             this.remoteExplorerService.tunnelModel.addAttributesProvider(this);
             this._alreadyRegistered = true;
@@ -85,11 +89,16 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
         // Check all the selectors to make sure it's worth going to the extension host.
         const appropriateHandles = Array.from(this.portsAttributesProviders.entries()).filter(entry => {
             const selector = entry[1];
+
             const portRange = (typeof selector.portRange === 'number') ? [selector.portRange, selector.portRange + 1] : selector.portRange;
+
             const portInRange = portRange ? ports.some(port => portRange[0] <= port && port < portRange[1]) : true;
+
             const commandMatches = !selector.commandPattern || (commandLine && (commandLine.match(selector.commandPattern)));
+
             return portInRange && commandMatches;
         }).map(entry => entry[0]);
+
         if (appropriateHandles.length === 0) {
             return [];
         }
@@ -106,6 +115,7 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
             },
             elevateIfNeeded: false
         });
+
         if (!tunnel || (typeof tunnel === 'string')) {
             return undefined;
         }
@@ -162,6 +172,7 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
         const tunnelProvider: ITunnelProvider = {
             forwardPort: (tunnelOptions: TunnelOptions, tunnelCreationOptions: TunnelCreationOptions) => {
                 const forward = this._proxy.$forwardPort(tunnelOptions, tunnelCreationOptions);
+
                 return forward.then(tunnelOrError => {
                     if (!tunnelOrError) {
                         return undefined;
@@ -171,6 +182,7 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
                     }
                     const tunnel = tunnelOrError;
                     this.logService.trace(`ForwardedPorts: (MainThreadTunnelService) New tunnel established by tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`);
+
                     return {
                         tunnelRemotePort: tunnel.remoteAddress.port,
                         tunnelRemoteHost: tunnel.remoteAddress.host,
@@ -181,12 +193,14 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
                         protocol: tunnel.protocol ?? TunnelProtocol.Http,
                         dispose: async (silent?: boolean) => {
                             this.logService.trace(`ForwardedPorts: (MainThreadTunnelService) Closing tunnel from tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`);
+
                             return this._proxy.$closeTunnel({ host: tunnel.remoteAddress.host, port: tunnel.remoteAddress.port }, silent);
                         }
                     };
                 });
             }
         };
+
         if (features) {
             this.tunnelService.setTunnelFeatures(features);
         }
@@ -208,16 +222,19 @@ export class MainThreadTunnelService extends Disposable implements MainThreadTun
                 case CandidatePortSource.None: {
                     Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
                         .registerDefaultConfigurations([{ overrides: { 'remote.autoForwardPorts': false } }]);
+
                     break;
                 }
                 case CandidatePortSource.Output: {
                     Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
                         .registerDefaultConfigurations([{ overrides: { 'remote.autoForwardPortsSource': PORT_AUTO_SOURCE_SETTING_OUTPUT } }]);
+
                     break;
                 }
                 case CandidatePortSource.Hybrid: {
                     Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
                         .registerDefaultConfigurations([{ overrides: { 'remote.autoForwardPortsSource': PORT_AUTO_SOURCE_SETTING_HYBRID } }]);
+
                     break;
                 }
                 default: // Do nothing, the defaults for these settings should be used.

@@ -5,6 +5,7 @@
 import { IProcessEnvironment, isWindows } from '../../../base/common/platform.js';
 import { EnvironmentVariableMutatorType, EnvironmentVariableScope, IEnvironmentVariableCollection, IExtensionOwnedEnvironmentDescriptionMutator, IExtensionOwnedEnvironmentVariableMutator, IMergedEnvironmentVariableCollection, IMergedEnvironmentVariableCollectionDiff } from './environmentVariable.js';
 type VariableResolver = (str: string) => Promise<string>;
+
 const mutatorTypeToLabelMap: Map<EnvironmentVariableMutatorType, string> = new Map([
     [EnvironmentVariableMutatorType.Append, 'APPEND'],
     [EnvironmentVariableMutatorType.Prepend, 'PREPEND'],
@@ -13,15 +14,22 @@ const mutatorTypeToLabelMap: Map<EnvironmentVariableMutatorType, string> = new M
 export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVariableCollection {
     private readonly map: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
     private readonly descriptionMap: Map<string, IExtensionOwnedEnvironmentDescriptionMutator[]> = new Map();
+
     constructor(readonly collections: ReadonlyMap<string, IEnvironmentVariableCollection>) {
         collections.forEach((collection, extensionIdentifier) => {
             this.populateDescriptionMap(collection, extensionIdentifier);
+
             const it = collection.map.entries();
+
             let next = it.next();
+
             while (!next.done) {
                 const mutator = next.value[1];
+
                 const key = next.value[0];
+
                 let entry = this.map.get(key);
+
                 if (!entry) {
                     entry = [];
                     this.map.set(key, entry);
@@ -30,6 +38,7 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
                 // just get replaced by this one.
                 if (entry.length > 0 && entry[0].type === EnvironmentVariableMutatorType.Replace) {
                     next = it.next();
+
                     continue;
                 }
                 const extensionMutator = {
@@ -40,6 +49,7 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
                     variable: mutator.variable,
                     options: mutator.options
                 };
+
                 if (!extensionMutator.scope) {
                     delete extensionMutator.scope; // Convenient for tests
                 }
@@ -53,12 +63,14 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
         let lowerToActualVariableNames: {
             [lowerKey: string]: string | undefined;
         } | undefined;
+
         if (isWindows) {
             lowerToActualVariableNames = {};
             Object.keys(env).forEach(e => lowerToActualVariableNames![e.toLowerCase()] = e);
         }
         for (const [variable, mutators] of this.getVariableMap(scope)) {
             const actualVariable = isWindows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
+
             for (const mutator of mutators) {
                 const value = variableResolver ? await variableResolver(mutator.value) : mutator.value;
                 // Default: true
@@ -66,12 +78,17 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
                     switch (mutator.type) {
                         case EnvironmentVariableMutatorType.Append:
                             env[actualVariable] = (env[actualVariable] || '') + value;
+
                             break;
+
                         case EnvironmentVariableMutatorType.Prepend:
                             env[actualVariable] = value + (env[actualVariable] || '');
+
                             break;
+
                         case EnvironmentVariableMutatorType.Replace:
                             env[actualVariable] = value;
+
                             break;
                     }
                 }
@@ -88,12 +105,16 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
     }
     diff(other: IMergedEnvironmentVariableCollection, scope: EnvironmentVariableScope | undefined): IMergedEnvironmentVariableCollectionDiff | undefined {
         const added: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
+
         const changed: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
+
         const removed: Map<string, IExtensionOwnedEnvironmentVariableMutator[]> = new Map();
         // Find added
         other.getVariableMap(scope).forEach((otherMutators, variable) => {
             const currentMutators = this.getVariableMap(scope).get(variable);
+
             const result = getMissingMutatorsFromArray(otherMutators, currentMutators);
+
             if (result) {
                 added.set(variable, result);
             }
@@ -101,7 +122,9 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
         // Find removed
         this.getVariableMap(scope).forEach((currentMutators, variable) => {
             const otherMutators = other.getVariableMap(scope).get(variable);
+
             const result = getMissingMutatorsFromArray(currentMutators, otherMutators);
+
             if (result) {
                 removed.set(variable, result);
             }
@@ -109,11 +132,14 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
         // Find changed
         this.getVariableMap(scope).forEach((currentMutators, variable) => {
             const otherMutators = other.getVariableMap(scope).get(variable);
+
             const result = getChangedMutatorsFromArray(currentMutators, otherMutators);
+
             if (result) {
                 changed.set(variable, result);
             }
         });
+
         if (added.size === 0 && changed.size === 0 && removed.size === 0) {
             return undefined;
         }
@@ -121,8 +147,10 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
     }
     getVariableMap(scope: EnvironmentVariableScope | undefined): Map<string, IExtensionOwnedEnvironmentVariableMutator[]> {
         const result = new Map<string, IExtensionOwnedEnvironmentVariableMutator[]>();
+
         for (const mutators of this.map.values()) {
             const filteredMutators = mutators.filter(m => filterScope(m, scope));
+
             if (filteredMutators.length > 0) {
                 // All of these mutators are for the same variable because they are in the same scope, hence choose anyone to form a key.
                 result.set(filteredMutators[0].variable, filteredMutators);
@@ -132,8 +160,10 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
     }
     getDescriptionMap(scope: EnvironmentVariableScope | undefined): Map<string, string | undefined> {
         const result = new Map<string, string | undefined>();
+
         for (const mutators of this.descriptionMap.values()) {
             const filteredMutators = mutators.filter(m => filterScope(m, scope, true));
+
             for (const mutator of filteredMutators) {
                 result.set(mutator.extensionIdentifier, mutator.description);
             }
@@ -145,11 +175,16 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
             return;
         }
         const it = collection.descriptionMap.entries();
+
         let next = it.next();
+
         while (!next.done) {
             const mutator = next.value[1];
+
             const key = next.value[0];
+
             let entry = this.descriptionMap.get(key);
+
             if (!entry) {
                 entry = [];
                 this.descriptionMap.set(key, entry);
@@ -159,6 +194,7 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
                 scope: mutator.scope,
                 description: mutator.description
             };
+
             if (!extensionMutator.scope) {
                 delete extensionMutator.scope; // Convenient for tests
             }
@@ -203,6 +239,7 @@ function getMissingMutatorsFromArray(current: IExtensionOwnedEnvironmentVariable
             result.push(mutator);
         }
     });
+
     return result.length === 0 ? undefined : result;
 }
 function getChangedMutatorsFromArray(current: IExtensionOwnedEnvironmentVariableMutator[], other: IExtensionOwnedEnvironmentVariableMutator[] | undefined): IExtensionOwnedEnvironmentVariableMutator[] | undefined {
@@ -217,10 +254,12 @@ function getChangedMutatorsFromArray(current: IExtensionOwnedEnvironmentVariable
     const result: IExtensionOwnedEnvironmentVariableMutator[] = [];
     current.forEach(mutator => {
         const otherMutator = otherMutatorExtensions.get(mutator.extensionIdentifier);
+
         if (otherMutator && (mutator.type !== otherMutator.type || mutator.value !== otherMutator.value || mutator.scope?.workspaceFolder?.index !== otherMutator.scope?.workspaceFolder?.index)) {
             // Return the new result, not the old one
             result.push(otherMutator);
         }
     });
+
     return result.length === 0 ? undefined : result;
 }

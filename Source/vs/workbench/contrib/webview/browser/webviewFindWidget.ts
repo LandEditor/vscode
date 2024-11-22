@@ -26,6 +26,7 @@ export class WebviewFindWidget extends SimpleFindWidget {
         return undefined;
     }
     protected readonly _findWidgetFocused: IContextKey<boolean>;
+
     constructor(private readonly _delegate: WebviewFindDelegate, 
     @IContextViewService
     contextViewService: IContextViewService, 
@@ -51,6 +52,7 @@ export class WebviewFindWidget extends SimpleFindWidget {
     }
     public find(previous: boolean) {
         const val = this.inputValue;
+
         if (val) {
             this._delegate.find(val, previous);
         }
@@ -62,6 +64,7 @@ export class WebviewFindWidget extends SimpleFindWidget {
     }
     protected _onInputChanged(): boolean {
         const val = this.inputValue;
+
         if (val) {
             this._delegate.updateFind(val);
         }

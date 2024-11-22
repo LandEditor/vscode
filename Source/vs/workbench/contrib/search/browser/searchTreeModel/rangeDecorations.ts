@@ -16,6 +16,7 @@ export class RangeHighlightDecorations implements IDisposable {
     private _decorationId: string | null = null;
     private _model: ITextModel | null = null;
     private readonly _modelDisposables = new DisposableStore();
+
     constructor(
     @IModelService
     private readonly _modelService: IModelService) {
@@ -31,6 +32,7 @@ export class RangeHighlightDecorations implements IDisposable {
     }
     highlightRange(resource: URI | ITextModel, range: Range, ownerId: number = 0): void {
         let model: ITextModel | null;
+
         if (URI.isUri(resource)) {
             model = this._modelService.getModel(resource);
         }

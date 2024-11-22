@@ -35,6 +35,7 @@ import { Codicon } from '../../../../base/common/codicons.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 export const SEARCH_EDITOR_EXT = '.code-search';
+
 const SearchEditorIcon = registerIcon('search-editor-label-icon', Codicon.search, localize('searchEditorLabelIcon', 'Icon of the search editor label.'));
 export class SearchEditorInput extends EditorInput {
     static readonly ID: string = SearchEditorInputTypeId;
@@ -49,6 +50,7 @@ export class SearchEditorInput extends EditorInput {
     }
     override get capabilities(): EditorInputCapabilities {
         let capabilities = EditorInputCapabilities.Singleton;
+
         if (!this.backingUri) {
             capabilities |= EditorInputCapabilities.Untitled;
         }
@@ -62,6 +64,7 @@ export class SearchEditorInput extends EditorInput {
     private readonly _onDidSave = this._register(new Emitter<IWorkingCopySaveEvent>());
     readonly onDidSave: Event<IWorkingCopySaveEvent> = this._onDidSave.event;
     private oldDecorationsIDs: string[] = [];
+
     get resource() {
         return this.backingUri || this.modelUri;
     }
@@ -69,6 +72,7 @@ export class SearchEditorInput extends EditorInput {
     public model: SearchEditorModel;
     private _cachedResultsModel: ITextModel | undefined;
     private _cachedConfigurationModel: SearchConfigurationModel | undefined;
+
     constructor(public readonly modelUri: URI, public readonly backingUri: URI | undefined, 
     @IModelService
     private readonly modelService: IModelService, 
@@ -88,15 +92,19 @@ export class SearchEditorInput extends EditorInput {
     storageService: IStorageService) {
         super();
         this.model = instantiationService.createInstance(SearchEditorModel, modelUri);
+
         if (this.modelUri.scheme !== SearchEditorScheme) {
             throw Error('SearchEditorInput must be invoked with a SearchEditorScheme uri');
         }
         this.memento = new Memento(SearchEditorInput.ID, storageService);
         this._register(storageService.onWillSaveState(() => this.memento.saveMemento()));
+
         const input = this;
+
         const workingCopyAdapter = new class implements IWorkingCopy {
             readonly typeId = SearchEditorWorkingCopyTypeId;
             readonly resource = input.modelUri;
+
             get name() { return input.getName(); }
             readonly capabilities = input.hasCapability(EditorInputCapabilities.Untitled) ? WorkingCopyCapabilities.Untitled : WorkingCopyCapabilities.None;
             readonly onDidChangeDirty = input.onDidChangeDirty;
@@ -118,6 +126,7 @@ export class SearchEditorInput extends EditorInput {
             await this.textFileService.write(this.backingUri, await this.serializeForDisk(), options);
             this.setDirty(false);
             this._onDidSave.fire({ reason: options?.reason, source: options?.source });
+
             return this;
         }
         else {
@@ -129,11 +138,13 @@ export class SearchEditorInput extends EditorInput {
     }
     private async serializeForDisk() {
         const { configurationModel, resultsModel } = await this.resolveModels();
+
         return serializeSearchConfiguration(configurationModel.config) + '\n' + resultsModel.getValue();
     }
     private configChangeListenerDisposable: IDisposable | undefined;
     private registerConfigChangeListeners(model: SearchConfigurationModel) {
         this.configChangeListenerDisposable?.dispose();
+
         if (!this.isDisposed()) {
             this.configChangeListenerDisposable = model.onConfigDidUpdate(() => {
                 if (this.lastLabel !== this.getName()) {
@@ -149,27 +160,34 @@ export class SearchEditorInput extends EditorInput {
         return this.model.resolve().then(data => {
             this._cachedResultsModel = data.resultsModel;
             this._cachedConfigurationModel = data.configurationModel;
+
             if (this.lastLabel !== this.getName()) {
                 this._onDidChangeLabel.fire();
                 this.lastLabel = this.getName();
             }
             this.registerConfigChangeListeners(data.configurationModel);
+
             return data;
         });
     }
     override async saveAs(group: GroupIdentifier, options?: ITextFileSaveOptions): Promise<EditorInput | undefined> {
         const path = await this.fileDialogService.pickFileToSave(await this.suggestFileName(), options?.availableFileSystems);
+
         if (path) {
             this.telemetryService.publicLog2<{}, {
                 owner: 'roblourens';
                 comment: 'Fired when a search editor is saved';
             }>('searchEditor/saveSearchResults');
+
             const toWrite = await this.serializeForDisk();
+
             if (await this.textFileService.create([{ resource: path, value: toWrite, options: { overwrite: true } }])) {
                 this.setDirty(false);
+
                 if (!isEqual(path, this.modelUri)) {
                     const input = this.instantiationService.invokeFunction(getOrMakeSearchEditorInput, { fileUri: path, from: 'existingFile' });
                     input.setMatchRanges(this.getMatchRanges());
+
                     return input;
                 }
                 return this;
@@ -179,11 +197,14 @@ export class SearchEditorInput extends EditorInput {
     }
     override getName(maxLength = 12): string {
         const trimToMax = (label: string) => (label.length < maxLength ? label : `${label.slice(0, maxLength - 3)}...`);
+
         if (this.backingUri) {
             const originalURI = EditorResourceAccessor.getOriginalUri(this);
+
             return localize('searchTitle.withQuery', "Search: {0}", basename((originalURI ?? this.backingUri).path, SEARCH_EDITOR_EXT));
         }
         const query = this._cachedConfigurationModel?.config?.query?.trim();
+
         if (query) {
             return localize('searchTitle.withQuery', "Search: {0}", trimToMax(query));
         }
@@ -192,6 +213,7 @@ export class SearchEditorInput extends EditorInput {
     setDirty(dirty: boolean) {
         const wasDirty = this.dirty;
         this.dirty = dirty;
+
         if (wasDirty !== dirty) {
             this._onDidChangeDirty.fire();
         }
@@ -210,6 +232,7 @@ export class SearchEditorInput extends EditorInput {
     }
     override dispose() {
         this.modelService.destroyModel(this.modelUri);
+
         super.dispose();
     }
     override matches(other: EditorInput | IUntypedEditorInput): boolean {
@@ -233,10 +256,12 @@ export class SearchEditorInput extends EditorInput {
     override async revert(group: GroupIdentifier, options?: IRevertOptions) {
         if (options?.soft) {
             this.setDirty(false);
+
             return;
         }
         if (this.backingUri) {
             const { config, text } = await this.instantiationService.invokeFunction(parseSavedSearchEditor, this.backingUri);
+
             const { resultsModel, configurationModel } = await this.resolveModels();
             resultsModel.setValue(text);
             configurationModel.updateConfig(config);
@@ -249,6 +274,7 @@ export class SearchEditorInput extends EditorInput {
     }
     private async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
         const contents = await this.serializeForDisk();
+
         if (token.isCancellationRequested) {
             return {};
         }
@@ -258,7 +284,9 @@ export class SearchEditorInput extends EditorInput {
     }
     private async suggestFileName(): Promise<URI> {
         const query = (await this.resolveModels()).configurationModel.config.query;
+
         const searchFileName = (query.replace(/[^\w \-_]+/g, '_') || 'Search') + SEARCH_EDITOR_EXT;
+
         return joinPath(await this.fileDialogService.defaultFilePath(this.pathService.defaultUriScheme), searchFileName);
     }
     override toUntyped(): IResourceEditorInput | undefined {
@@ -287,20 +315,30 @@ export const getOrMakeSearchEditorInput = (accessor: ServicesAccessor, existingD
     fileUri: URI;
 })): SearchEditorInput => {
     const storageService = accessor.get(IStorageService);
+
     const configurationService = accessor.get(IConfigurationService);
+
     const instantiationService = accessor.get(IInstantiationService);
+
     const modelUri = existingData.from === 'model' ? existingData.modelUri : URI.from({ scheme: SearchEditorScheme, fragment: `${Math.random()}` });
+
     if (!searchEditorModelFactory.models.has(modelUri)) {
         if (existingData.from === 'existingFile') {
             instantiationService.invokeFunction(accessor => searchEditorModelFactory.initializeModelFromExistingFile(accessor, modelUri, existingData.fileUri));
         }
         else {
             const searchEditorSettings = configurationService.getValue<ISearchConfigurationProperties>('search').searchEditor;
+
             const reuseOldSettings = searchEditorSettings.reusePriorSearchConfiguration;
+
             const defaultNumberOfContextLines = searchEditorSettings.defaultNumberOfContextLines;
+
             const priorConfig: SearchConfiguration = reuseOldSettings ? new Memento(SearchEditorInput.ID, storageService).getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE).searchConfig : {};
+
             const defaultConfig = defaultSearchConfig();
+
             const config = { ...defaultConfig, ...priorConfig, ...existingData.config };
+
             if (defaultNumberOfContextLines !== null && defaultNumberOfContextLines !== undefined) {
                 config.contextLines = existingData?.config?.contextLines ?? defaultNumberOfContextLines;
             }

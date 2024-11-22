@@ -43,6 +43,7 @@ export interface ITestTreeProjection extends IDisposable {
     applyTo(tree: ObjectTree<TestExplorerTreeElement, FuzzyScore>): void;
 }
 let idCounter = 0;
+
 const getId = () => String(idCounter++);
 export abstract class TestItemTreeElement {
     protected readonly changeEmitter = new Emitter<void>();
@@ -79,6 +80,7 @@ export abstract class TestItemTreeElement {
      * Tree element description.
      */
     public abstract description: string | null;
+
     constructor(public readonly test: InternalTestItem, 
     /**
      * Parent tree item. May not actually be the test item who owns this one
@@ -93,6 +95,7 @@ export abstract class TestItemTreeElement {
             $mid: MarshalledId.TestItemContext,
             tests: [InternalTestItem.serialize(this.test)],
         };
+
         for (let p = this.parent; p && p.depth > 0; p = p.parent) {
             context.tests.unshift(InternalTestItem.serialize(p.test));
         }
@@ -117,13 +120,16 @@ export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> = 
             : element.test.expand === TestItemExpandState.NotExpandable
                 ? !!element.children.size
                 : element.test.expand;
+
         return element.treeId + '\0' + expandComponent;
     }
 };
 export const getChildrenForParent = (serialized: ISerializedTestTreeCollapseState, rootsWithChildren: Iterable<TestExplorerTreeElement>, node: TestExplorerTreeElement | null): Iterable<IObjectTreeElement<TestExplorerTreeElement>> => {
     let it: Iterable<TestExplorerTreeElement>;
+
     if (node === null) { // roots
         const rootsWithChildrenArr = [...rootsWithChildren];
+
         if (rootsWithChildrenArr.length === 1) {
             return getChildrenForParent(serialized, rootsWithChildrenArr, rootsWithChildrenArr[0]);
         }

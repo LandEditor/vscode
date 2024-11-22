@@ -7,24 +7,30 @@ import { ContiguousMultilineTokens } from './contiguousMultilineTokens.js';
 export class ContiguousMultilineTokensBuilder {
     public static deserialize(buff: Uint8Array): ContiguousMultilineTokens[] {
         let offset = 0;
+
         const count = readUInt32BE(buff, offset);
         offset += 4;
+
         const result: ContiguousMultilineTokens[] = [];
+
         for (let i = 0; i < count; i++) {
             offset = ContiguousMultilineTokens.deserialize(buff, offset, result);
         }
         return result;
     }
     private readonly _tokens: ContiguousMultilineTokens[];
+
     constructor() {
         this._tokens = [];
     }
     public add(lineNumber: number, lineTokens: Uint32Array): void {
         if (this._tokens.length > 0) {
             const last = this._tokens[this._tokens.length - 1];
+
             if (last.endLineNumber + 1 === lineNumber) {
                 // append
                 last.appendLineTokens(lineTokens);
+
                 return;
             }
         }
@@ -35,8 +41,10 @@ export class ContiguousMultilineTokensBuilder {
     }
     public serialize(): Uint8Array {
         const size = this._serializeSize();
+
         const result = new Uint8Array(size);
         this._serialize(result);
+
         return result;
     }
     private _serializeSize(): number {
@@ -51,6 +59,7 @@ export class ContiguousMultilineTokensBuilder {
         let offset = 0;
         writeUInt32BE(destination, this._tokens.length, offset);
         offset += 4;
+
         for (let i = 0; i < this._tokens.length; i++) {
             offset = this._tokens[i].serialize(destination, offset);
         }

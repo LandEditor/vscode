@@ -10,6 +10,7 @@ import { IWorkbenchEnvironmentService } from '../../services/environment/common/
 @extHostCustomer
 export class MainThreadRemoteConnectionData extends Disposable {
     private readonly _proxy: ExtHostExtensionServiceShape;
+
     constructor(extHostContext: IExtHostContext, 
     @IWorkbenchEnvironmentService
     protected readonly _environmentService: IWorkbenchEnvironmentService, 
@@ -17,10 +18,13 @@ export class MainThreadRemoteConnectionData extends Disposable {
     remoteAuthorityResolverService: IRemoteAuthorityResolverService) {
         super();
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostExtensionService);
+
         const remoteAuthority = this._environmentService.remoteAuthority;
+
         if (remoteAuthority) {
             this._register(remoteAuthorityResolverService.onDidChangeConnectionData(() => {
                 const connectionData = remoteAuthorityResolverService.getConnectionData(remoteAuthority);
+
                 if (connectionData) {
                     this._proxy.$updateRemoteConnectionData(connectionData);
                 }

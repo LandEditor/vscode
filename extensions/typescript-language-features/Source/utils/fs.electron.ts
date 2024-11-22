@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { getTempFile } from './temp.electron';
 export const onCaseInsensitiveFileSystem = (() => {
     let value: boolean | undefined;
+
     return (): boolean => {
         if (typeof value === 'undefined') {
             if (process.platform === 'win32') {

@@ -23,6 +23,7 @@ import { ILanguageService } from '../../../../editor/common/languages/language.j
 import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { SetLogLevelAction } from '../../logs/common/logsActions.js';
 import { IDefaultLogLevelsService } from '../../logs/common/defaultLogLevels.js';
+
 const OUTPUT_ACTIVE_CHANNEL_KEY = 'output.activechannel';
 class OutputChannel extends Disposable implements IOutputChannel {
     scrollLock: boolean = false;
@@ -30,6 +31,7 @@ class OutputChannel extends Disposable implements IOutputChannel {
     readonly id: string;
     readonly label: string;
     readonly uri: URI;
+
     constructor(readonly outputChannelDescriptor: IOutputChannelDescriptor, 
     @IOutputChannelModelService
     outputChannelModelService: IOutputChannelModelService, 
@@ -66,6 +68,7 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
     private readonly activeOutputChannelLevelSettableContext: IContextKey<boolean>;
     private readonly activeOutputChannelLevelContext: IContextKey<string>;
     private readonly activeOutputChannelLevelIsDefaultContext: IContextKey<boolean>;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService, 
@@ -99,6 +102,7 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
         this._register(instantiationService.createInstance(OutputLinkProvider));
         // Create output channels for already registered channels
         const registry = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels);
+
         for (const channelIdentifier of registry.getChannels()) {
             this.onDidRegisterChannel(channelIdentifier.id);
         }
@@ -124,6 +128,7 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
     }
     provideTextContent(resource: URI): Promise<ITextModel> | null {
         const channel = <OutputChannel>this.getChannel(resource.path);
+
         if (channel) {
             return channel.model.loadModel();
         }
@@ -131,11 +136,13 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
     }
     async showChannel(id: string, preserveFocus?: boolean): Promise<void> {
         const channel = this.getChannel(id);
+
         if (this.activeChannel?.id !== channel?.id) {
             this.setActiveChannel(channel);
             this._onActiveOutputChannel.fire(id);
         }
         const outputView = await this.viewsService.openView<OutputViewPane>(OUTPUT_VIEW_ID, !preserveFocus);
+
         if (outputView && channel) {
             outputView.showChannel(channel, !!preserveFocus);
         }
@@ -155,9 +162,11 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
     private async onDidRegisterChannel(channelId: string): Promise<void> {
         const channel = this.createChannel(channelId);
         this.channels.set(channelId, channel);
+
         if (!this.activeChannel || this.activeChannelIdInStorage === channelId) {
             this.setActiveChannel(channel);
             this._onActiveOutputChannel.fire(channelId);
+
             const outputView = this.viewsService.getActiveViewWithId<OutputViewPane>(OUTPUT_VIEW_ID);
             outputView?.showChannel(channel, true);
         }
@@ -167,7 +176,9 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
         this._register(Event.once(channel.model.onDispose)(() => {
             if (this.activeChannel === channel) {
                 const channels = this.getChannelDescriptors();
+
                 const channel = channels.length ? this.getChannel(channels[0].id) : undefined;
+
                 if (channel && this.viewsService.isViewVisible(OUTPUT_VIEW_ID)) {
                     this.showChannel(channel.id);
                 }
@@ -177,25 +188,31 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
             }
             Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).removeChannel(id);
         }));
+
         return channel;
     }
     private instantiateChannel(id: string): OutputChannel {
         const channelData = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannel(id);
+
         if (!channelData) {
             this.logService.error(`Channel '${id}' is not registered yet`);
+
             throw new Error(`Channel '${id}' is not registered yet`);
         }
         return this.instantiationService.createInstance(OutputChannel, channelData);
     }
     private setLevelContext(): void {
         const descriptor = this.activeChannel?.outputChannelDescriptor;
+
         const channelLogLevel = descriptor?.log ? this.loggerService.getLogLevel(descriptor.file) : undefined;
         this.activeOutputChannelLevelContext.set(channelLogLevel !== undefined ? LogLevelToString(channelLogLevel) : '');
     }
     private async setLevelIsDefaultContext(): Promise<void> {
         const descriptor = this.activeChannel?.outputChannelDescriptor;
+
         if (descriptor?.log) {
             const channelLogLevel = this.loggerService.getLogLevel(descriptor.file);
+
             const channelDefaultLogLevel = await this.defaultLogLevelsService.getDefaultLogLevel(descriptor.extensionId);
             this.activeOutputChannelLevelIsDefaultContext.set(channelDefaultLogLevel === channelLogLevel);
         }
@@ -205,11 +222,13 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
     }
     private setActiveChannel(channel: OutputChannel | undefined): void {
         this.activeChannel = channel;
+
         const descriptor = channel?.outputChannelDescriptor;
         this.activeFileOutputChannelContext.set(!!descriptor?.file);
         this.activeOutputChannelLevelSettableContext.set(descriptor !== undefined && SetLogLevelAction.isLevelSettable(descriptor));
         this.setLevelIsDefaultContext();
         this.setLevelContext();
+
         if (this.activeChannel) {
             this.storageService.store(OUTPUT_ACTIVE_CHANNEL_KEY, this.activeChannel.id, StorageScope.WORKSPACE, StorageTarget.MACHINE);
         }

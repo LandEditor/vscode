@@ -12,6 +12,7 @@ import { IChatRequestVariableEntry } from '../common/chatModel.js';
 
 export class ChatAttachmentModel extends Disposable {
 	private _attachments = new Map<string, IChatRequestVariableEntry>();
+
 	get attachments(): ReadonlyArray<IChatRequestVariableEntry> {
 		return Array.from(this._attachments.values());
 	}

@@ -45,6 +45,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
     private readonly _models = new Map</* controllerId */ number, TextMateWorkerTokenizer>();
     private readonly _grammarCache: Promise<ICreateGrammarResult>[] = [];
     private _grammarFactory: Promise<TMGrammarFactory | null> = Promise.resolve(null);
+
     constructor(workerServer: IWorkerServer) {
         this._host = TextMateWorkerHost.getChannel(workerServer);
     }
@@ -66,17 +67,21 @@ export class TextMateTokenizationWorker implements IRequestHandler {
     }
     private async _loadTMGrammarFactory(grammarDefinitions: IValidGrammarDefinition[], onigurumaWASMUri: string): Promise<TMGrammarFactory> {
         const vscodeTextmate = await importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js');
+
         const vscodeOniguruma = await importAMDNodeModule<typeof import('vscode-oniguruma')>('vscode-oniguruma', 'release/main.js');
+
         const response = await fetch(onigurumaWASMUri);
         // Using the response directly only works if the server sets the MIME type 'application/wasm'.
         // Otherwise, a TypeError is thrown when using the streaming compiler.
         // We therefore use the non-streaming compiler :(.
         const bytes = await response.arrayBuffer();
         await vscodeOniguruma.loadWASM(bytes);
+
         const onigLib: Promise<IOnigLib> = Promise.resolve({
             createOnigScanner: (sources) => vscodeOniguruma.createOnigScanner(sources),
             createOnigString: (str) => vscodeOniguruma.createOnigString(str)
         });
+
         return new TMGrammarFactory({
             logTrace: (msg: string) => { },
             logError: (msg: string, err: any) => console.error(msg, err),
@@ -86,10 +91,12 @@ export class TextMateTokenizationWorker implements IRequestHandler {
     // These methods are called by the renderer
     public $acceptNewModel(data: IRawModelData): void {
         const uri = URI.revive(data.uri);
+
         const that = this;
         this._models.set(data.controllerId, new TextMateWorkerTokenizer(uri, data.lines, data.EOL, data.versionId, {
             async getOrCreateGrammar(languageId: string, encodedLanguageId: LanguageId): Promise<ICreateGrammarResult | null> {
                 const grammarFactory = await that._grammarFactory;
+
                 if (!grammarFactory) {
                     return Promise.resolve(null);
                 }
@@ -117,6 +124,7 @@ export class TextMateTokenizationWorker implements IRequestHandler {
     }
     public $acceptRemovedModel(controllerId: number): void {
         const model = this._models.get(controllerId);
+
         if (model) {
             model.dispose();
             this._models.delete(controllerId);

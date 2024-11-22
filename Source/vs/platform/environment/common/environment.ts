@@ -9,6 +9,7 @@ export const IEnvironmentService = createDecorator<IEnvironmentService>('environ
 export const INativeEnvironmentService = refineServiceDecorator<IEnvironmentService, INativeEnvironmentService>(IEnvironmentService);
 export interface IDebugParams {
     port: number | null;
+
     break: boolean;
 }
 export interface IExtensionHostDebugParams extends IDebugParams {

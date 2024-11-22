@@ -55,12 +55,18 @@ registerAction2(class extends Action2 {
         step: string;
     } | undefined, toSide: boolean | undefined) {
         const editorGroupsService = accessor.get(IEditorGroupsService);
+
         const instantiationService = accessor.get(IInstantiationService);
+
         const editorService = accessor.get(IEditorService);
+
         const commandService = accessor.get(ICommandService);
+
         if (walkthroughID) {
             const selectedCategory = typeof walkthroughID === 'string' ? walkthroughID : walkthroughID.category;
+
             let selectedStep: string | undefined;
+
             if (typeof walkthroughID === 'object' && 'category' in walkthroughID && 'step' in walkthroughID) {
                 selectedStep = `${walkthroughID.category}#${walkthroughID.step}`;
             }
@@ -73,6 +79,7 @@ registerAction2(class extends Action2 {
                     resource: GettingStartedInput.RESOURCE,
                     options: { preserveFocus: toSide ?? false }
                 }, toSide ? SIDE_GROUP : undefined);
+
                 return;
             }
             // Try first to select the walkthrough on an active welcome page with no selected walkthrough
@@ -81,19 +88,23 @@ registerAction2(class extends Action2 {
                     const activeEditor = group.activeEditor as GettingStartedInput;
                     activeEditor.showWelcome = false;
                     (group.activeEditorPane as GettingStartedPage).makeCategoryVisibleWhenAvailable(selectedCategory, selectedStep);
+
                     return;
                 }
             }
             // Otherwise, try to find a welcome input somewhere with no selected walkthrough, and open it to this one.
             const result = editorService.findEditors({ typeId: GettingStartedInput.ID, editorId: undefined, resource: GettingStartedInput.RESOURCE });
+
             for (const { editor, groupId } of result) {
                 if (editor instanceof GettingStartedInput) {
                     const group = editorGroupsService.getGroup(groupId);
+
                     if (!editor.selectedCategory && group) {
                         editor.selectedCategory = selectedCategory;
                         editor.selectedStep = selectedStep;
                         editor.showWelcome = false;
                         group.openEditor(editor, { revealIfOpened: true });
+
                         return;
                     }
                 }
@@ -103,6 +114,7 @@ registerAction2(class extends Action2 {
             if (selectedStep && activeEditor instanceof GettingStartedInput && activeEditor.selectedCategory === selectedCategory) {
                 activeEditor.showWelcome = false;
                 commandService.executeCommand('walkthroughs.selectStep', selectedStep);
+
                 return;
             }
             // If it's the extension install page then lets replace it with the getting started page
@@ -136,6 +148,7 @@ Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEdit
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(EditorPaneDescriptor.create(GettingStartedPage, GettingStartedPage.ID, localize('welcome', "Welcome")), [
     new SyncDescriptor(GettingStartedInput)
 ]);
+
 const category = localize2('welcome', "Welcome");
 registerAction2(class extends Action2 {
     constructor() {
@@ -154,7 +167,9 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const editorPane = editorService.activeEditorPane;
+
         if (editorPane instanceof GettingStartedPage) {
             editorPane.escape();
         }
@@ -164,7 +179,9 @@ CommandsRegistry.registerCommand({
     id: 'walkthroughs.selectStep',
     handler: (accessor, stepID: string) => {
         const editorService = accessor.get(IEditorService);
+
         const editorPane = editorService.activeEditorPane;
+
         if (editorPane instanceof GettingStartedPage) {
             editorPane.selectStepLoose(stepID);
         }
@@ -186,6 +203,7 @@ registerAction2(class extends Action2 {
             return;
         }
         const gettingStartedService = accessor.get(IWalkthroughsService);
+
         gettingStartedService.progressStep(arg);
     }
 });
@@ -202,6 +220,7 @@ registerAction2(class extends Action2 {
             return;
         }
         const gettingStartedService = accessor.get(IWalkthroughsService);
+
         gettingStartedService.deprogressStep(arg);
     }
 });
@@ -216,6 +235,7 @@ registerAction2(class extends Action2 {
     }
     private async getQuickPickItems(contextService: IContextKeyService, gettingStartedService: IWalkthroughsService): Promise<IQuickPickItem[]> {
         const categories = await gettingStartedService.getWalkthroughs();
+
         return categories
             .filter(c => contextService.contextMatchesRules(c.when))
             .map(x => ({
@@ -227,11 +247,17 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const commandService = accessor.get(ICommandService);
+
         const contextService = accessor.get(IContextKeyService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const gettingStartedService = accessor.get(IWalkthroughsService);
+
         const extensionService = accessor.get(IExtensionService);
+
         const disposables = new DisposableStore();
+
         const quickPick = disposables.add(quickInputService.createQuickPick());
         quickPick.canSelectMany = false;
         quickPick.matchOnDescription = true;
@@ -241,6 +267,7 @@ registerAction2(class extends Action2 {
         quickPick.busy = true;
         disposables.add(quickPick.onDidAccept(() => {
             const selection = quickPick.selectedItems[0];
+
             if (selection) {
                 commandService.executeCommand('workbench.action.openWalkthrough', selection.id);
             }
@@ -248,6 +275,7 @@ registerAction2(class extends Action2 {
         }));
         disposables.add(quickPick.onDidHide(() => disposables.dispose()));
         await extensionService.whenInstalledExtensionsRegistered();
+
         gettingStartedService.onDidAddWalkthrough(async () => {
             quickPick.items = await this.getQuickPickItems(contextService, gettingStartedService);
         });
@@ -258,6 +286,7 @@ registerAction2(class extends Action2 {
 export const WorkspacePlatform = new RawContextKey<'mac' | 'linux' | 'windows' | 'webworker' | undefined>('workspacePlatform', undefined, localize('workspacePlatform', "The platform of the current workspace, which in remote or serverless contexts may be different from the platform of the UI"));
 class WorkspacePlatformContribution {
     static readonly ID = 'workbench.contrib.workspacePlatform';
+
     constructor(
     @IExtensionManagementServerService
     private readonly extensionManagementServerService: IExtensionManagementServerService, 
@@ -267,10 +296,12 @@ class WorkspacePlatformContribution {
     private readonly contextService: IContextKeyService) {
         this.remoteAgentService.getEnvironment().then(env => {
             const remoteOS = env?.os;
+
             const remotePlatform = remoteOS === OS.Macintosh ? 'mac'
                 : remoteOS === OS.Windows ? 'windows'
                     : remoteOS === OS.Linux ? 'linux'
                         : undefined;
+
             if (remotePlatform) {
                 WorkspacePlatform.bindTo(this.contextService).set(remotePlatform);
             }

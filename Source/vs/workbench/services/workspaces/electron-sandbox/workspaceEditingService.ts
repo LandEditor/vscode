@@ -93,19 +93,24 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
             return false; // only interested when window is closing or loading
         }
         const workspaceIdentifier = this.getCurrentWorkspaceIdentifier();
+
         if (!workspaceIdentifier || !isUntitledWorkspace(workspaceIdentifier.configPath, this.environmentService)) {
             return false; // only care about untitled workspaces to ask for saving
         }
         const windowCount = await this.nativeHostService.getWindowCount();
+
         if (reason === ShutdownReason.CLOSE && !isMacintosh && windowCount === 1) {
             return false; // Windows/Linux: quits when last window is closed, so do not ask then
         }
         const confirmSaveUntitledWorkspace = this.configurationService.getValue<boolean>('window.confirmSaveUntitledWorkspace') !== false;
+
         if (!confirmSaveUntitledWorkspace) {
             await this.workspacesService.deleteUntitledWorkspace(workspaceIdentifier);
+
             return false; // no confirmation configured
         }
         let canceled = false;
+
         const { result, checkboxChecked } = await this.dialogService.prompt<boolean>({
             type: Severity.Warning,
             message: localize('saveWorkspaceMessage', "Do you want to save your workspace configuration as a file?"),
@@ -115,6 +120,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
                     label: localize({ key: 'save', comment: ['&& denotes a mnemonic'] }, "&&Save"),
                     run: async () => {
                         const newWorkspacePath = await this.pickNewWorkspacePath();
+
                         if (!newWorkspacePath || !hasWorkspaceFileExtension(newWorkspacePath)) {
                             return true; // keep veto if no target was provided
                         }
@@ -140,6 +146,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
                     label: localize({ key: 'doNotSave', comment: ['&& denotes a mnemonic'] }, "Do&&n't Save"),
                     run: async () => {
                         await this.workspacesService.deleteUntitledWorkspace(workspaceIdentifier);
+
                         return false;
                     }
                 }
@@ -147,6 +154,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
             cancelButton: {
                 run: () => {
                     canceled = true;
+
                     return true; // veto
                 }
             },
@@ -154,6 +162,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
                 label: localize('doNotAskAgain', "Always discard untitled workspaces without asking")
             }
         });
+
         if (!canceled && checkboxChecked) {
             await this.configurationService.updateValue('window.confirmSaveUntitledWorkspace', false, ConfigurationTarget.USER);
         }
@@ -164,16 +173,19 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
         // Prevent overwriting a workspace that is currently opened in another window
         if (windows.some(window => isWorkspaceIdentifier(window.workspace) && this.uriIdentityService.extUri.isEqual(window.workspace.configPath, workspaceUri))) {
             await this.dialogService.info(localize('workspaceOpenedMessage', "Unable to save workspace '{0}'", basename(workspaceUri)), localize('workspaceOpenedDetail', "The workspace is already opened in another window. Please close that window first and then try again."));
+
             return false;
         }
         return true; // OK
     }
     async enterWorkspace(workspaceUri: URI): Promise<void> {
         const stopped = await this.extensionService.stopExtensionHosts(localize('restartExtensionHost.reason', "Opening a multi-root workspace."));
+
         if (!stopped) {
             return;
         }
         const result = await this.doEnterWorkspace(workspaceUri);
+
         if (result) {
             // Migrate storage to new workspace
             await this.storageService.switch(result.workspace, true /* preserve data */);

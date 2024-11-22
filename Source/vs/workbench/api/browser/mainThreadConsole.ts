@@ -12,6 +12,7 @@ import { ILogService } from '../../../platform/log/common/log.js';
 @extHostNamedCustomer(MainContext.MainThreadConsole)
 export class MainThreadConsole implements MainThreadConsoleShape {
     private readonly _isExtensionDevTestFromCli: boolean;
+
     constructor(_extHostContext: IExtHostContext, 
     @IEnvironmentService
     private readonly _environmentService: IEnvironmentService, 

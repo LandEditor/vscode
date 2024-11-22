@@ -25,13 +25,17 @@ export class ExtensionsCompletionItemsProvider extends Disposable implements IWo
             provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken): Promise<CompletionList> => {
                 const getWordRangeAtPosition = (model: ITextModel, position: Position): Range | null => {
                     const wordAtPosition = model.getWordAtPosition(position);
+
                     return wordAtPosition ? new Range(position.lineNumber, wordAtPosition.startColumn, position.lineNumber, wordAtPosition.endColumn) : null;
                 };
+
                 const location = getLocation(model.getValue(), model.getOffsetAt(position));
+
                 const range = getWordRangeAtPosition(model, position) ?? Range.fromPositions(position, position);
                 // extensions.supportUntrustedWorkspaces
                 if (location.path[0] === 'extensions.supportUntrustedWorkspaces' && location.path.length === 2 && location.isAtPropertyKey) {
                     let alreadyConfigured: string[] = [];
+
                     try {
                         alreadyConfigured = Object.keys(parse(model.getValue())['extensions.supportUntrustedWorkspaces']);
                     }
@@ -44,11 +48,15 @@ export class ExtensionsCompletionItemsProvider extends Disposable implements IWo
     }
     private async provideSupportUntrustedWorkspacesExtensionProposals(alreadyConfigured: string[], range: Range): Promise<CompletionItem[]> {
         const suggestions: CompletionItem[] = [];
+
         const installedExtensions = (await this.extensionManagementService.getInstalled()).filter(e => e.manifest.main);
+
         const proposedExtensions = installedExtensions.filter(e => alreadyConfigured.indexOf(e.identifier.id) === -1);
+
         if (proposedExtensions.length) {
             suggestions.push(...proposedExtensions.map(e => {
                 const text = `"${e.identifier.id}": {\n\t"supported": true,\n\t"version": "${e.manifest.version}"\n},`;
+
                 return { label: e.identifier.id, kind: CompletionItemKind.Value, insertText: text, filterText: text, range };
             }));
         }

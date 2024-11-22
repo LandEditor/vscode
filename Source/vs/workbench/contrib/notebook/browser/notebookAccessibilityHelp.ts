@@ -18,10 +18,12 @@ export class NotebookAccessibilityHelp implements IAccessibleViewImplentation {
     readonly name = 'notebook';
     readonly when = ContextKeyExpr.and(NOTEBOOK_EDITOR_FOCUSED, IS_COMPOSITE_NOTEBOOK.negate());
     readonly type: AccessibleViewType = AccessibleViewType.Help;
+
     getProvider(accessor: ServicesAccessor) {
         const activeEditor = accessor.get(ICodeEditorService).getActiveCodeEditor()
             || accessor.get(ICodeEditorService).getFocusedCodeEditor()
             || accessor.get(IEditorService).activeEditorPane;
+
         if (!activeEditor) {
             return;
         }
@@ -44,5 +46,6 @@ function getAccessibilityHelpText(): string {
 }
 function getAccessibilityHelpProvider(accessor: ServicesAccessor, editor: ICodeEditor | IVisibleEditorPane) {
     const helpText = getAccessibilityHelpText();
+
     return new AccessibleContentProvider(AccessibleViewProviderId.Notebook, { type: AccessibleViewType.Help }, () => helpText, () => editor.focus(), AccessibilityVerbositySettingId.Notebook);
 }

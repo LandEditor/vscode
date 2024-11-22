@@ -24,15 +24,18 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
     }
     public async resolveCodeLens(codeLens: ReferencesCodeLens, token: vscode.CancellationToken): Promise<vscode.CodeLens> {
         const args = typeConverters.Position.toFileLocationRequestArgs(codeLens.file, codeLens.range.start);
+
         const response = await this.client.execute('references', args, token, {
             lowPriority: true,
             executionTarget: ExecutionTarget.Semantic,
             cancelOnResourceChange: codeLens.document,
         });
+
         if (response.type !== 'response' || !response.body) {
             codeLens.command = response.type === 'cancelled'
                 ? TypeScriptBaseCodeLensProvider.cancelledCommand
                 : TypeScriptBaseCodeLensProvider.errorCommand;
+
             return codeLens;
         }
         const locations = response.body.refs
@@ -43,6 +46,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
             command: locations.length ? 'editor.action.showReferences' : '',
             arguments: [codeLens.document, codeLens.range.start, locations]
         };
+
         return codeLens;
     }
     private getCodeLensLabel(locations: ReadonlyArray<vscode.Location>): string {
@@ -57,6 +61,7 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
         switch (item.kind) {
             case PConst.Kind.function: {
                 const showOnAllFunctions = vscode.workspace.getConfiguration(this.language.id).get<boolean>('referencesCodeLens.showOnAllFunctions');
+
                 if (showOnAllFunctions && item.nameSpan) {
                     return getSymbolRange(document, item);
                 }
@@ -70,15 +75,18 @@ export class TypeScriptReferencesCodeLensProvider extends TypeScriptBaseCodeLens
                     return getSymbolRange(document, item);
                 }
                 break;
+
             case PConst.Kind.class:
                 if (item.text === '<class>') {
                     break;
                 }
                 return getSymbolRange(document, item);
+
             case PConst.Kind.interface:
             case PConst.Kind.type:
             case PConst.Kind.enum:
                 return getSymbolRange(document, item);
+
             case PConst.Kind.method:
             case PConst.Kind.memberGetAccessor:
             case PConst.Kind.memberSetAccessor:

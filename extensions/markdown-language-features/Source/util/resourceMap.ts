@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import * as vscode from 'vscode';
 type ResourceToKey = (uri: vscode.Uri) => string;
+
 const defaultResourceToKey = (resource: vscode.Uri): string => resource.toString();
 export class ResourceMap<T> {
     private readonly _map = new Map<string, {
@@ -11,11 +12,13 @@ export class ResourceMap<T> {
         readonly value: T;
     }>();
     private readonly _toKey: ResourceToKey;
+
     constructor(toKey: ResourceToKey = defaultResourceToKey) {
         this._toKey = toKey;
     }
     public set(uri: vscode.Uri, value: T): this {
         this._map.set(this._toKey(uri), { uri, value });
+
         return this;
     }
     public get(resource: vscode.Uri): T | undefined {

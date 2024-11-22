@@ -16,6 +16,7 @@ export class Memento {
     private static readonly workspaceMementos = new Map<string, ScopedMemento>();
     private static readonly COMMON_PREFIX = 'memento/';
     private readonly id: string;
+
     constructor(id: string, private storageService: IStorageService) {
         this.id = Memento.COMMON_PREFIX + id;
     }
@@ -23,6 +24,7 @@ export class Memento {
         switch (scope) {
             case StorageScope.WORKSPACE: {
                 let workspaceMemento = Memento.workspaceMementos.get(this.id);
+
                 if (!workspaceMemento) {
                     workspaceMemento = new ScopedMemento(this.id, scope, target, this.storageService);
                     Memento.workspaceMementos.set(this.id, workspaceMemento);
@@ -31,6 +33,7 @@ export class Memento {
             }
             case StorageScope.PROFILE: {
                 let profileMemento = Memento.profileMementos.get(this.id);
+
                 if (!profileMemento) {
                     profileMemento = new ScopedMemento(this.id, scope, target, this.storageService);
                     Memento.profileMementos.set(this.id, profileMemento);
@@ -39,6 +42,7 @@ export class Memento {
             }
             case StorageScope.APPLICATION: {
                 let applicationMemento = Memento.applicationMementos.get(this.id);
+
                 if (!applicationMemento) {
                     applicationMemento = new ScopedMemento(this.id, scope, target, this.storageService);
                     Memento.applicationMementos.set(this.id, applicationMemento);
@@ -57,15 +61,21 @@ export class Memento {
     }
     reloadMemento(scope: StorageScope): void {
         let memento: ScopedMemento | undefined;
+
         switch (scope) {
             case StorageScope.APPLICATION:
                 memento = Memento.applicationMementos.get(this.id);
+
                 break;
+
             case StorageScope.PROFILE:
                 memento = Memento.profileMementos.get(this.id);
+
                 break;
+
             case StorageScope.WORKSPACE:
                 memento = Memento.workspaceMementos.get(this.id);
+
                 break;
         }
         memento?.reload();
@@ -74,18 +84,24 @@ export class Memento {
         switch (scope) {
             case StorageScope.WORKSPACE:
                 Memento.workspaceMementos.clear();
+
                 break;
+
             case StorageScope.PROFILE:
                 Memento.profileMementos.clear();
+
                 break;
+
             case StorageScope.APPLICATION:
                 Memento.applicationMementos.clear();
+
                 break;
         }
     }
 }
 class ScopedMemento {
     private mementoObj: MementoObject;
+
     constructor(private id: string, private scope: StorageScope, private target: StorageTarget, private storageService: IStorageService) {
         this.mementoObj = this.doLoad();
     }

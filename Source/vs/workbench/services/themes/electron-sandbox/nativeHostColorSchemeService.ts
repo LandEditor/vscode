@@ -18,6 +18,7 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
     readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
     public dark: boolean;
     public highContrast: boolean;
+
     constructor(
     @INativeHostService
     private readonly nativeHostService: INativeHostService, 
@@ -28,6 +29,7 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
         super();
         // register listener with the OS
         this._register(this.nativeHostService.onDidChangeColorScheme(scheme => this.update(scheme)));
+
         const initial = this.getStoredValue() ?? environmentService.window.colorScheme;
         this.dark = initial.dark;
         this.highContrast = initial.highContrast;
@@ -36,9 +38,11 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
     }
     private getStoredValue(): IColorScheme | undefined {
         const stored = this.storageService.get(NativeHostColorSchemeService.STORAGE_KEY, StorageScope.APPLICATION);
+
         if (stored) {
             try {
                 const scheme = JSON.parse(stored);
+
                 if (isObject(scheme) && isBoolean(scheme.highContrast) && isBoolean(scheme.dark)) {
                     return scheme as IColorScheme;
                 }

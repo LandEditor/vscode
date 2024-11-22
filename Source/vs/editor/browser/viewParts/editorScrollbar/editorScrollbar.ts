@@ -21,13 +21,20 @@ import { IMouseWheelEvent } from '../../../../base/browser/mouseEvent.js';
 export class EditorScrollbar extends ViewPart {
     private readonly scrollbar: SmoothScrollableElement;
     private readonly scrollbarDomNode: FastDomNode<HTMLElement>;
+
     constructor(context: ViewContext, linesContent: FastDomNode<HTMLElement>, viewDomNode: FastDomNode<HTMLElement>, overflowGuardDomNode: FastDomNode<HTMLElement>) {
         super(context);
+
         const options = this._context.configuration.options;
+
         const scrollbar = options.get(EditorOption.scrollbar);
+
         const mouseWheelScrollSensitivity = options.get(EditorOption.mouseWheelScrollSensitivity);
+
         const fastScrollSensitivity = options.get(EditorOption.fastScrollSensitivity);
+
         const scrollPredominantAxis = options.get(EditorOption.scrollPredominantAxis);
+
         const scrollbarOptions: ScrollableElementCreationOptions = {
             listenOnDomNode: viewDomNode.domNode,
             className: 'editor-scrollable' + ' ' + getThemeTypeSelector(context.theme.type),
@@ -59,17 +66,22 @@ export class EditorScrollbar extends ViewPart {
         // changing the .scrollTop of this.linesContent
         const onBrowserDesperateReveal = (domNode: HTMLElement, lookAtScrollTop: boolean, lookAtScrollLeft: boolean) => {
             const newScrollPosition: INewScrollPosition = {};
+
             if (lookAtScrollTop) {
                 const deltaTop = domNode.scrollTop;
+
                 if (deltaTop) {
                     newScrollPosition.scrollTop = this._context.viewLayout.getCurrentScrollTop() + deltaTop;
+
                     domNode.scrollTop = 0;
                 }
             }
             if (lookAtScrollLeft) {
                 const deltaLeft = domNode.scrollLeft;
+
                 if (deltaLeft) {
                     newScrollPosition.scrollLeft = this._context.viewLayout.getCurrentScrollLeft() + deltaLeft;
+
                     domNode.scrollLeft = 0;
                 }
             }
@@ -86,10 +98,14 @@ export class EditorScrollbar extends ViewPart {
     }
     private _setLayout(): void {
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this.scrollbarDomNode.setLeft(layoutInfo.contentLeft);
+
         const minimap = options.get(EditorOption.minimap);
+
         const side = minimap.side;
+
         if (side === 'right') {
             this.scrollbarDomNode.setWidth(layoutInfo.contentWidth + layoutInfo.minimap.minimapWidth);
         }
@@ -116,10 +132,15 @@ export class EditorScrollbar extends ViewPart {
             || e.hasChanged(EditorOption.mouseWheelScrollSensitivity)
             || e.hasChanged(EditorOption.fastScrollSensitivity)) {
             const options = this._context.configuration.options;
+
             const scrollbar = options.get(EditorOption.scrollbar);
+
             const mouseWheelScrollSensitivity = options.get(EditorOption.mouseWheelScrollSensitivity);
+
             const fastScrollSensitivity = options.get(EditorOption.fastScrollSensitivity);
+
             const scrollPredominantAxis = options.get(EditorOption.scrollPredominantAxis);
+
             const newOpts: ScrollableElementChangeOptions = {
                 vertical: scrollbar.vertical,
                 horizontal: scrollbar.horizontal,
@@ -143,6 +164,7 @@ export class EditorScrollbar extends ViewPart {
     }
     public override onThemeChanged(e: viewEvents.ViewThemeChangedEvent): boolean {
         this.scrollbar.updateClassName('editor-scrollable' + ' ' + getThemeTypeSelector(this._context.theme.type));
+
         return true;
     }
     // --- end event handlers

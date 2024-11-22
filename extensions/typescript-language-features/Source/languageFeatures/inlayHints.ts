@@ -13,6 +13,7 @@ import { ClientCapability, ITypeScriptServiceClient } from '../typescriptService
 import { Disposable } from '../utils/dispose';
 import FileConfigurationManager, { InlayHintSettingNames, getInlayHintsPreferences } from './fileConfigurationManager';
 import { conditionalRegistration, requireMinVersion, requireSomeCapability } from './util/dependentRegistration';
+
 const inlayHintSettingNames = Object.freeze([
     InlayHintSettingNames.parameterNamesSuppressWhenArgumentMatchesName,
     InlayHintSettingNames.parameterNamesEnabled,
@@ -27,6 +28,7 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
     private readonly _onDidChangeInlayHints = this._register(new vscode.EventEmitter<void>());
     public readonly onDidChangeInlayHints = this._onDidChangeInlayHints.event;
     private hasReportedTelemetry = false;
+
     constructor(private readonly language: LanguageDescription, private readonly client: ITypeScriptServiceClient, private readonly fileConfigurationManager: FileConfigurationManager, private readonly telemetryReporter: TelemetryReporter) {
         super();
         this._register(vscode.workspace.onDidChangeConfiguration(e => {
@@ -44,6 +46,7 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
     }
     async provideInlayHints(model: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): Promise<vscode.InlayHint[] | undefined> {
         const filepath = this.client.toOpenTsFilePath(model);
+
         if (!filepath) {
             return;
         }
@@ -51,8 +54,10 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
             return;
         }
         const start = model.offsetAt(range.start);
+
         const length = model.offsetAt(range.end) - start;
         await this.fileConfigurationManager.ensureConfigurationForDocument(model, token);
+
         if (token.isCancellationRequested) {
             return;
         }
@@ -69,6 +74,7 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
             this.telemetryReporter.logTelemetry('inlayHints.provide', {});
         }
         const response = await this.client.execute('provideInlayHints', { file: filepath, start, length }, token);
+
         if (response.type !== 'response' || !response.success || !response.body) {
             return;
         }
@@ -76,6 +82,7 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
             const result = new vscode.InlayHint(Position.fromLocation(hint.position), this.convertInlayHintText(hint), fromProtocolInlayHintKind(hint.kind));
             result.paddingLeft = hint.whitespaceBefore;
             result.paddingRight = hint.whitespaceAfter;
+
             return result;
         });
     }
@@ -83,6 +90,7 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
         if (tsHint.displayParts) {
             return tsHint.displayParts.map((part): vscode.InlayHintLabelPart => {
                 const out = new vscode.InlayHintLabelPart(part.text);
+
                 if (part.span) {
                     out.location = Location.fromTextSpan(this.client.toResource(part.span.file), part.span);
                 }
@@ -95,14 +103,19 @@ class TypeScriptInlayHintsProvider extends Disposable implements vscode.InlayHin
 function fromProtocolInlayHintKind(kind: Proto.InlayHintKind): vscode.InlayHintKind | undefined {
     switch (kind) {
         case 'Parameter': return vscode.InlayHintKind.Parameter;
+
         case 'Type': return vscode.InlayHintKind.Type;
+
         case 'Enum': return undefined;
+
         default: return undefined;
     }
 }
 function areInlayHintsEnabledForFile(language: LanguageDescription, document: vscode.TextDocument) {
     const config = vscode.workspace.getConfiguration(language.id, document);
+
     const preferences = getInlayHintsPreferences(config);
+
     return preferences.includeInlayParameterNameHints === 'literals' ||
         preferences.includeInlayParameterNameHints === 'all' ||
         preferences.includeInlayEnumMemberValueHints ||
@@ -117,6 +130,7 @@ export function register(selector: DocumentSelector, language: LanguageDescripti
         requireSomeCapability(client, ClientCapability.Semantic),
     ], () => {
         const provider = new TypeScriptInlayHintsProvider(language, client, fileConfigurationManager, telemetryReporter);
+
         return vscode.languages.registerInlayHintsProvider(selector.semantic, provider);
     });
 }

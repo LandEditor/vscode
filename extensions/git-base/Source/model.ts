@@ -15,6 +15,7 @@ export class Model implements IRemoteSourceProviderRegistry {
     registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable {
         this.remoteSourceProviders.add(provider);
         this._onDidAddRemoteSourceProvider.fire(provider);
+
         return toDisposable(() => {
             this.remoteSourceProviders.delete(provider);
             this._onDidRemoveRemoteSourceProvider.fire(provider);

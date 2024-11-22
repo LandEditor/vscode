@@ -41,6 +41,7 @@ class CommandOpener implements IOpener {
         }
         // execute as command
         let args: any = [];
+
         try {
             args = parse(decodeURIComponent(target.query));
         }
@@ -57,6 +58,7 @@ class CommandOpener implements IOpener {
             args = [args];
         }
         await this._commandService.executeCommand(target.path, ...args);
+
         return true;
     }
 }
@@ -70,6 +72,7 @@ class EditorOpener implements IOpener {
         }
         const { selection, uri } = extractSelection(target);
         target = uri;
+
         if (target.scheme === Schemas.file) {
             target = normalizePath(target); // workaround for non-normalized paths (https://github.com/microsoft/vscode/issues/12954)
         }
@@ -81,6 +84,7 @@ class EditorOpener implements IOpener {
                 ...options?.editorOptions
             }
         }, this._editorService.getFocusedCodeEditor(), options?.openToSide);
+
         return true;
     }
 }
@@ -92,6 +96,7 @@ export class OpenerService implements IOpenerService {
     private readonly _resolvedUriTargets = new ResourceMap<URI>(uri => uri.with({ path: null, fragment: null, query: null }).toString());
     private _defaultExternalOpener: IExternalOpener;
     private readonly _externalOpeners = new LinkedList<IExternalOpener>();
+
     constructor(
     @ICodeEditorService
     editorService: ICodeEditorService, 
@@ -119,6 +124,7 @@ export class OpenerService implements IOpenerService {
                 if (options?.openExternal || matchesSomeScheme(target, Schemas.mailto, Schemas.http, Schemas.https, Schemas.vsls)) {
                     // open externally
                     await this._doOpenExternal(target, options);
+
                     return true;
                 }
                 return false;
@@ -129,14 +135,17 @@ export class OpenerService implements IOpenerService {
     }
     registerOpener(opener: IOpener): IDisposable {
         const remove = this._openers.unshift(opener);
+
         return { dispose: remove };
     }
     registerValidator(validator: IValidator): IDisposable {
         const remove = this._validators.push(validator);
+
         return { dispose: remove };
     }
     registerExternalUriResolver(resolver: IExternalUriResolver): IDisposable {
         const remove = this._resolvers.push(resolver);
+
         return { dispose: remove };
     }
     setDefaultExternalOpener(externalOpener: IExternalOpener): void {
@@ -144,6 +153,7 @@ export class OpenerService implements IOpenerService {
     }
     registerExternalOpener(opener: IExternalOpener): IDisposable {
         const remove = this._externalOpeners.push(opener);
+
         return { dispose: remove };
     }
     async open(target: URI | string, options?: OpenOptions): Promise<boolean> {
@@ -151,6 +161,7 @@ export class OpenerService implements IOpenerService {
         const targetURI = typeof target === 'string' ? URI.parse(target) : target;
         // validate against the original URI that this URI resolves to, if one exists
         const validationTarget = this._resolvedUriTargets.get(targetURI) ?? target;
+
         for (const validator of this._validators) {
             if (!(await validator.shouldOpen(validationTarget, options))) {
                 return false;
@@ -159,6 +170,7 @@ export class OpenerService implements IOpenerService {
         // check with contributed openers
         for (const opener of this._openers) {
             const handled = await opener.open(target, options);
+
             if (handled) {
                 return true;
             }
@@ -169,6 +181,7 @@ export class OpenerService implements IOpenerService {
         for (const resolver of this._resolvers) {
             try {
                 const result = await resolver.resolveExternalUri(resource, options);
+
                 if (result) {
                     if (!this._resolvedUriTargets.has(result.resolved)) {
                         this._resolvedUriTargets.set(result.resolved, resource);
@@ -185,7 +198,9 @@ export class OpenerService implements IOpenerService {
     private async _doOpenExternal(resource: URI | string, options: OpenOptions | undefined): Promise<boolean> {
         //todo@jrieken IExternalUriResolver should support `uri: URI | string`
         const uri = typeof resource === 'string' ? URI.parse(resource) : resource;
+
         let externalUri: URI;
+
         try {
             externalUri = (await this.resolveExternalUri(uri, options)).resolved;
         }
@@ -193,6 +208,7 @@ export class OpenerService implements IOpenerService {
             externalUri = uri;
         }
         let href: string;
+
         if (typeof resource === 'string' && uri.toString() === externalUri.toString()) {
             // open the url-string AS IS
             href = resource;
@@ -203,11 +219,13 @@ export class OpenerService implements IOpenerService {
         }
         if (options?.allowContributedOpeners) {
             const preferredOpenerId = typeof options?.allowContributedOpeners === 'string' ? options?.allowContributedOpeners : undefined;
+
             for (const opener of this._externalOpeners) {
                 const didOpen = await opener.openExternal(href, {
                     sourceUri: uri,
                     preferredOpenerId,
                 }, CancellationToken.None);
+
                 if (didOpen) {
                     return true;
                 }

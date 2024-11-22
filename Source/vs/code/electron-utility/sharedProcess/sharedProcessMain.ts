@@ -138,6 +138,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Shared process lifecycle
 		let didExit = false;
+
 		const onExit = () => {
 			if (!didExit) {
 				didExit = true;
@@ -160,7 +161,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		instantiationService.invokeFunction(accessor => {
 			const logService = accessor.get(ILogService);
+
 			const telemetryService = accessor.get(ITelemetryService);
+
 			const userDataProfilesService = accessor.get(IUserDataProfilesService);
 
 			// Log info
@@ -202,6 +205,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Main Process
 		const mainRouter = new StaticRouter(ctx => ctx === 'main');
+
 		const mainProcessService = new MainProcessService(this.server, mainRouter);
 		services.set(IMainProcessService, mainProcessService);
 
@@ -219,7 +223,9 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Log
 		const logger = this._register(loggerService.createLogger('sharedprocess', { name: localize('sharedLog', "Shared") }));
+
 		const consoleLogger = this._register(new ConsoleLogger(logger.getLevel()));
+
 		const logService = this._register(new LogService(logger, [consoleLogger]));
 		services.set(ILogService, logService);
 
@@ -290,16 +296,21 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 
 		// Extension recommendations
 		const activeWindowManager = this._register(new ActiveWindowManager(nativeHostService));
+
 		const activeWindowRouter = new StaticRouter(ctx => activeWindowManager.getActiveClientId().then(id => ctx === id));
 		services.set(IExtensionRecommendationNotificationService, new ExtensionRecommendationNotificationServiceChannelClient(this.server.getChannel('extensionRecommendationNotification', activeWindowRouter)));
 
 		// Telemetry
 		let telemetryService: ITelemetryService;
+
 		const appenders: ITelemetryAppender[] = [];
+
 		const internalTelemetry = isInternalTelemetry(productService, configurationService);
+
 		if (supportsTelemetry(productService, environmentService)) {
 			const logAppender = new TelemetryLogAppender(logService, loggerService, environmentService, productService);
 			appenders.push(logAppender);
+
 			if (!isLoggingOnly(productService, environmentService) && productService.aiConfig?.ariaKey) {
 				const collectorAppender = new OneDataSystemAppender(requestService, internalTelemetry, 'monacoworkbench', null, productService.aiConfig.ariaKey);
 				this._register(toDisposable(() => collectorAppender.flush())); // Ensure the 1DS appender is disposed so that it flushes remaining data
@@ -314,6 +325,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 			}, configurationService, productService);
 		} else {
 			telemetryService = NullTelemetryService;
+
 			const nullAppender = NullAppender;
 			appenders.push(nullAppender);
 		}
@@ -443,6 +455,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		// Install handler for unexpected errors
 		setUnexpectedErrorHandler(error => {
 			const message = toErrorMessage(error, true);
+
 			if (!message) {
 				return;
 			}
@@ -471,8 +484,11 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 				getOSReleaseInfo(logService.error.bind(logService)),
 				getDisplayProtocol(logService.error.bind(logService))
 			]);
+
 			const desktopEnvironment = getDesktopEnvironment();
+
 			const codeSessionType = getCodeDisplayProtocol(displayProtocol, this.configuration.args['ozone-platform']);
+
 			if (releaseInfo) {
 				type ClientPlatformInfoClassification = {
 					platformId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'A string identifying the operating system without any version information.' };
@@ -516,6 +532,7 @@ class SharedProcessMain extends Disposable implements IClientConnectionFilter {
 		}
 
 		const port = e.ports.at(0);
+
 		if (port) {
 			this.onDidWindowConnectRaw.fire(port);
 

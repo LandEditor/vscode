@@ -15,6 +15,7 @@ import { IHoverService } from '../../../../platform/hover/browser/hover.js';
 import { IOpenerService } from '../../../../platform/opener/common/opener.js';
 import { REVEAL_IN_EXPLORER_COMMAND_ID } from '../../files/browser/fileConstants.js';
 import { ITrustedDomainService } from '../../url/browser/trustedDomainService.js';
+
 const allowedHtmlTags = [
     'b',
     'blockquote',
@@ -78,6 +79,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
                 allowedTags: allowedHtmlTags,
             }
         };
+
         const mdWithBody: IMarkdownString | undefined = (markdown && markdown.supportHtml) ?
             {
                 ...markdown,
@@ -86,7 +88,9 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
                 value: `<body>\n\n${markdown.value}</body>`,
             }
             : markdown;
+
         const result = super.render(mdWithBody, options, markedOptions);
+
         return this.attachCustomHover(result);
     }
     private attachCustomHover(result: IMarkdownRenderResult): IMarkdownRenderResult {
@@ -98,6 +102,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
                 store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), element, title));
             }
         });
+
         return {
             element: result.element,
             dispose: () => {
@@ -109,6 +114,7 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
     protected override async openMarkdownLink(link: string, markdown: IMarkdownString) {
         try {
             const uri = URI.parse(link);
+
             if ((await this.fileService.stat(uri)).isDirectory) {
                 return this.commandService.executeCommand(REVEAL_IN_EXPLORER_COMMAND_ID, uri);
             }

@@ -46,6 +46,7 @@ export function equals<T>(one: ReadonlyArray<T> | undefined, other: ReadonlyArra
  */
 export function removeFastWithoutKeepingOrder<T>(array: T[], index: number) {
     const last = array.length - 1;
+
     if (index < last) {
         array[index] = array[last];
     }
@@ -82,9 +83,12 @@ export function binarySearch<T>(array: ReadonlyArray<T>, key: T, comparator: (op
  */
 export function binarySearch2(length: number, compareToKey: (index: number) => number): number {
     let low = 0, high = length - 1;
+
     while (low <= high) {
         const mid = ((low + high) / 2) | 0;
+
         const comp = compareToKey(mid);
+
         if (comp < 0) {
             low = mid + 1;
         }
@@ -100,15 +104,21 @@ export function binarySearch2(length: number, compareToKey: (index: number) => n
 type Compare<T> = (a: T, b: T) => number;
 export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
     nth = nth | 0;
+
     if (nth >= data.length) {
         throw new TypeError('invalid index');
     }
     const pivotValue = data[Math.floor(data.length * Math.random())];
+
     const lower: T[] = [];
+
     const higher: T[] = [];
+
     const pivots: T[] = [];
+
     for (const value of data) {
         const val = compare(value, pivotValue);
+
         if (val < 0) {
             lower.push(value);
         }
@@ -131,7 +141,9 @@ export function quickSelect<T>(nth: number, data: T[], compare: Compare<T>): T {
 }
 export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => number): T[][] {
     const result: T[][] = [];
+
     let currentGroup: T[] | undefined = undefined;
+
     for (const element of data.slice(0).sort(compare)) {
         if (!currentGroup || compare(currentGroup[0], element) !== 0) {
             currentGroup = [element];
@@ -150,7 +162,9 @@ export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => numb
  */
 export function* groupAdjacentBy<T>(items: Iterable<T>, shouldBeGrouped: (item1: T, item2: T) => boolean): Iterable<T[]> {
     let currentGroup: T[] | undefined;
+
     let last: T | undefined;
+
     for (const item of items) {
         if (last !== undefined && shouldBeGrouped(last, item)) {
             currentGroup!.push(item);
@@ -186,11 +200,13 @@ interface IMutableSplice<T> extends ISplice<T> {
  */
 export function sortedDiff<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>, compare: (a: T, b: T) => number): ISplice<T>[] {
     const result: IMutableSplice<T>[] = [];
+
     function pushSplice(start: number, deleteCount: number, toInsert: T[]): void {
         if (deleteCount === 0 && toInsert.length === 0) {
             return;
         }
         const latest = result[result.length - 1];
+
         if (latest && latest.start + latest.deleteCount === start) {
             latest.deleteCount += deleteCount;
             latest.toInsert.push(...toInsert);
@@ -200,19 +216,26 @@ export function sortedDiff<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>,
         }
     }
     let beforeIdx = 0;
+
     let afterIdx = 0;
+
     while (true) {
         if (beforeIdx === before.length) {
             pushSplice(beforeIdx, 0, after.slice(afterIdx));
+
             break;
         }
         if (afterIdx === after.length) {
             pushSplice(beforeIdx, before.length - beforeIdx, []);
+
             break;
         }
         const beforeElement = before[beforeIdx];
+
         const afterElement = after[afterIdx];
+
         const n = compare(beforeElement, afterElement);
+
         if (n === 0) {
             // equal
             beforeIdx += 1;
@@ -240,8 +263,11 @@ export function delta<T>(before: ReadonlyArray<T>, after: ReadonlyArray<T>, comp
     added: T[];
 } {
     const splices = sortedDiff(before, after, compare);
+
     const removed: T[] = [];
+
     const added: T[] = [];
+
     for (const splice of splices) {
         removed.push(...before.slice(splice.start, splice.start + splice.deleteCount));
         added.push(...splice.toInsert);
@@ -264,6 +290,7 @@ export function top<T>(array: ReadonlyArray<T>, compare: (a: T, b: T) => number,
     }
     const result = array.slice(0, n).sort(compare);
     topStep(array, compare, result, n, array.length);
+
     return result;
 }
 /**
@@ -286,7 +313,9 @@ export function topAsync<T>(array: T[], compare: (a: T, b: T) => number, n: numb
     return new Promise((resolve, reject) => {
         (async () => {
             const o = array.length;
+
             const result = array.slice(0, n).sort(compare);
+
             for (let i = n, m = Math.min(n + batch, o); i < o; i = m, m = Math.min(m + batch, o)) {
                 if (i > n) {
                     await new Promise(resolve => setTimeout(resolve)); // any other delay function would starve I/O
@@ -304,8 +333,10 @@ export function topAsync<T>(array: T[], compare: (a: T, b: T) => number, n: numb
 function topStep<T>(array: ReadonlyArray<T>, compare: (a: T, b: T) => number, result: T[], i: number, m: number): void {
     for (const n = result.length; i < m; i++) {
         const element = array[i];
+
         if (compare(element, result[n - 1]) < 0) {
             result.pop();
+
             const j = findFirstIdxMonotonousOrArrLen(result, e => compare(element, e) < 0);
             result.splice(j, 0, element);
         }
@@ -322,6 +353,7 @@ export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
  */
 export function coalesceInPlace<T>(array: Array<T | undefined | null>): asserts array is Array<T> {
     let to = 0;
+
     for (let i = 0; i < array.length; i++) {
         if (!!array[i]) {
             array[to] = array[i];
@@ -356,28 +388,35 @@ export function isNonEmptyArray<T>(obj: T[] | readonly T[] | undefined | null): 
  */
 export function distinct<T>(array: ReadonlyArray<T>, keyFn: (value: T) => unknown = value => value): T[] {
     const seen = new Set<any>();
+
     return array.filter(element => {
         const key = keyFn!(element);
+
         if (seen.has(key)) {
             return false;
         }
         seen.add(key);
+
         return true;
     });
 }
 export function uniqueFilter<T, R>(keyFn: (t: T) => R): (t: T) => boolean {
     const seen = new Set<R>();
+
     return element => {
         const key = keyFn(element);
+
         if (seen.has(key)) {
             return false;
         }
         seen.add(key);
+
         return true;
     };
 }
 export function commonPrefixLength<T>(one: ReadonlyArray<T>, other: ReadonlyArray<T>, equals: (a: T, b: T) => boolean = (a, b) => a === b): number {
     let result = 0;
+
     for (let i = 0, len = Math.min(one.length, other.length); i < len && equals(one[i], other[i]); i++) {
         result++;
     }
@@ -387,6 +426,7 @@ export function range(to: number): number[];
 export function range(from: number, to: number): number[];
 export function range(arg: number, to?: number): number[] {
     let from = typeof to === 'number' ? arg : 0;
+
     if (typeof to === 'number') {
         from = arg;
     }
@@ -395,6 +435,7 @@ export function range(arg: number, to?: number): number[] {
         to = arg;
     }
     const result: number[] = [];
+
     if (from <= to) {
         for (let i = from; i < to; i++) {
             result.push(i);
@@ -418,6 +459,7 @@ export function index<T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, 
 } {
     return array.reduce((r, t) => {
         r[indexer(t)] = mapper ? mapper(t) : t;
+
         return r;
     }, Object.create(null));
 }
@@ -429,6 +471,7 @@ export function index<T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, 
  */
 export function insert<T>(array: T[], element: T): () => void {
     array.push(element);
+
     return () => remove(array, element);
 }
 /**
@@ -438,8 +481,10 @@ export function insert<T>(array: T[], element: T): () => void {
  */
 export function remove<T>(array: T[], element: T): T | undefined {
     const index = array.indexOf(element);
+
     if (index > -1) {
         array.splice(index, 1);
+
         return element;
     }
     return undefined;
@@ -450,7 +495,9 @@ export function remove<T>(array: T[], element: T): T | undefined {
  */
 export function arrayInsert<T>(target: T[], insertIndex: number, insertArr: T[]): T[] {
     const before = target.slice(0, insertIndex);
+
     const after = target.slice(insertIndex);
+
     return before.concat(insertArr, after);
 }
 /**
@@ -458,6 +505,7 @@ export function arrayInsert<T>(target: T[], insertIndex: number, insertArr: T[])
  */
 export function shuffle<T>(array: T[], _seed?: number): void {
     let rand: () => number;
+
     if (typeof _seed === 'number') {
         let seed = _seed;
         // Seeded random number generator in JS. Modified from:
@@ -472,6 +520,7 @@ export function shuffle<T>(array: T[], _seed?: number): void {
     }
     for (let i = array.length - 1; i > 0; i -= 1) {
         const j = Math.floor(rand() * (i + 1));
+
         const temp = array[i];
         array[i] = array[j];
         array[j] = temp;
@@ -482,6 +531,7 @@ export function shuffle<T>(array: T[], _seed?: number): void {
  */
 export function pushToStart<T>(arr: T[], value: T): void {
     const index = arr.indexOf(value);
+
     if (index > -1) {
         arr.splice(index, 1);
         arr.unshift(value);
@@ -492,6 +542,7 @@ export function pushToStart<T>(arr: T[], value: T): void {
  */
 export function pushToEnd<T>(arr: T[], value: T): void {
     const index = arr.indexOf(value);
+
     if (index > -1) {
         arr.splice(index, 1);
         arr.push(value);
@@ -523,7 +574,9 @@ export function getRandomElement<T>(arr: T[]): T | undefined {
  */
 export function insertInto<T>(array: T[], start: number, newItems: T[]): void {
     const startIdx = getActualStartIndex(array, start);
+
     const originalLength = array.length;
+
     const newItemsLength = newItems.length;
     array.length = originalLength + newItemsLength;
     // Move the items after the start index, start from the end so that we don't overwrite any value.
@@ -544,12 +597,15 @@ export function insertInto<T>(array: T[], start: number, newItems: T[]): void {
  */
 export function splice<T>(array: T[], start: number, deleteCount: number, newItems: T[]): T[] {
     const index = getActualStartIndex(array, start);
+
     let result = array.splice(index, deleteCount);
+
     if (result === undefined) {
         // see https://bugs.webkit.org/show_bug.cgi?id=261140
         result = [];
     }
     insertInto(array, index, newItems);
+
     return result;
 }
 /**
@@ -583,7 +639,9 @@ export namespace CompareResult {
         return result === 0;
     }
     export const greaterThan = 1;
+
     export const lessThan = -1;
+
     export const neitherLessOrGreaterThan = 0;
 }
 /**
@@ -599,6 +657,7 @@ export function tieBreakComparators<TItem>(...comparators: Comparator<TItem>[]):
     return (item1, item2) => {
         for (const comparator of comparators) {
             const result = comparator(item1, item2);
+
             if (!CompareResult.isNeitherLessOrGreaterThan(result)) {
                 return result;
             }
@@ -632,11 +691,13 @@ export class ArrayQueue<T> {
         // P(k) := k <= this.lastIdx && predicate(this.items[k])
         // Find s := min { k | k >= this.firstIdx && !P(k) } and return this.data[this.firstIdx...s)
         let startIdx = this.firstIdx;
+
         while (startIdx < this.items.length && predicate(this.items[startIdx])) {
             startIdx++;
         }
         const result = startIdx === this.firstIdx ? null : this.items.slice(this.firstIdx, startIdx);
         this.firstIdx = startIdx;
+
         return result;
     }
     /**
@@ -648,11 +709,13 @@ export class ArrayQueue<T> {
         // P(k) := this.firstIdx >= k && predicate(this.items[k])
         // Find s := max { k | k <= this.lastIdx && !P(k) } and return this.data(s...this.lastIdx]
         let endIdx = this.lastIdx;
+
         while (endIdx >= 0 && predicate(this.items[endIdx])) {
             endIdx--;
         }
         const result = endIdx === this.lastIdx ? null : this.items.slice(endIdx + 1, this.lastIdx + 1);
         this.lastIdx = endIdx;
+
         return result;
     }
     peek(): T | undefined {
@@ -670,16 +733,19 @@ export class ArrayQueue<T> {
     dequeue(): T | undefined {
         const result = this.items[this.firstIdx];
         this.firstIdx++;
+
         return result;
     }
     removeLast(): T | undefined {
         const result = this.items[this.lastIdx];
         this.lastIdx--;
+
         return result;
     }
     takeCount(count: number): T[] {
         const result = this.items.slice(this.firstIdx, this.firstIdx + count);
         this.firstIdx += count;
+
         return result;
     }
 }
@@ -688,6 +754,7 @@ export class ArrayQueue<T> {
 */
 export class CallbackIterable<T> {
     public static readonly empty = new CallbackIterable<never>(_callback => { });
+
     constructor(
     /**
      * Calls the callback for every item.
@@ -701,6 +768,7 @@ export class CallbackIterable<T> {
     toArray(): T[] {
         const result: T[] = [];
         this.iterate(item => { result.push(item); return true; });
+
         return result;
     }
     filter(predicate: (item: T) => boolean): CallbackIterable<T> {
@@ -712,6 +780,7 @@ export class CallbackIterable<T> {
     some(predicate: (item: T) => boolean): boolean {
         let result = false;
         this.iterate(item => { result = predicate(item); return !result; });
+
         return result;
     }
     findFirst(predicate: (item: T) => boolean): T | undefined {
@@ -719,10 +788,12 @@ export class CallbackIterable<T> {
         this.iterate(item => {
             if (predicate(item)) {
                 result = item;
+
                 return false;
             }
             return true;
         });
+
         return result;
     }
     findLast(predicate: (item: T) => boolean): T | undefined {
@@ -733,10 +804,12 @@ export class CallbackIterable<T> {
             }
             return true;
         });
+
         return result;
     }
     findLastMaxBy(comparator: Comparator<T>): T | undefined {
         let result: T | undefined;
+
         let first = true;
         this.iterate(item => {
             if (first || CompareResult.isGreaterThan(comparator(item, result!))) {
@@ -745,6 +818,7 @@ export class CallbackIterable<T> {
             }
             return true;
         });
+
         return result;
     }
 }
@@ -758,6 +832,7 @@ export class Permutation {
      */
     public static createSortPermutation<T>(arr: readonly T[], compareFn: (a: T, b: T) => number): Permutation {
         const sortIndices = Array.from(arr.keys()).sort((index1, index2) => compareFn(arr[index1], arr[index2]));
+
         return new Permutation(sortIndices);
     }
     /**
@@ -771,6 +846,7 @@ export class Permutation {
     */
     inverse(): Permutation {
         const inverseIndexMap = this._indexMap.slice();
+
         for (let i = 0; i < this._indexMap.length; i++) {
             inverseIndexMap[this._indexMap[i]] = i;
         }
@@ -786,5 +862,6 @@ export class Permutation {
  */
 export async function findAsync<T>(array: readonly T[], predicate: (element: T, index: number) => Promise<boolean>): Promise<T | undefined> {
     const results = await Promise.all(array.map(async (element, index) => ({ element, ok: await predicate(element, index) })));
+
     return results.find(r => r.ok)?.element;
 }

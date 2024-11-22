@@ -13,6 +13,7 @@ import { IExtensionService } from '../../extensions/common/extensions.js';
 export class EditSessionIdentityService implements IEditSessionIdentityService {
     readonly _serviceBrand: undefined;
     private _editSessionIdentifierProviders = new Map<string, IEditSessionIdentityProvider>();
+
     constructor(
     @IExtensionService
     private readonly _extensionService: IExtensionService, 
@@ -23,20 +24,25 @@ export class EditSessionIdentityService implements IEditSessionIdentityService {
             throw new Error(`A provider has already been registered for scheme ${provider.scheme}`);
         }
         this._editSessionIdentifierProviders.set(provider.scheme, provider);
+
         return toDisposable(() => {
             this._editSessionIdentifierProviders.delete(provider.scheme);
         });
     }
     async getEditSessionIdentifier(workspaceFolder: IWorkspaceFolder, token: CancellationToken): Promise<string | undefined> {
         const { scheme } = workspaceFolder.uri;
+
         const provider = await this.activateProvider(scheme);
         this._logService.trace(`EditSessionIdentityProvider for scheme ${scheme} available: ${!!provider}`);
+
         return provider?.getEditSessionIdentifier(workspaceFolder, token);
     }
     async provideEditSessionIdentityMatch(workspaceFolder: IWorkspaceFolder, identity1: string, identity2: string, cancellationToken: CancellationToken): Promise<EditSessionIdentityMatch | undefined> {
         const { scheme } = workspaceFolder.uri;
+
         const provider = await this.activateProvider(scheme);
         this._logService.trace(`EditSessionIdentityProvider for scheme ${scheme} available: ${!!provider}`);
+
         return provider?.provideEditSessionIdentityMatch?.(workspaceFolder, identity1, identity2, cancellationToken);
     }
     async onWillCreateEditSessionIdentity(workspaceFolder: IWorkspaceFolder, cancellationToken: CancellationToken): Promise<void> {
@@ -50,15 +56,19 @@ export class EditSessionIdentityService implements IEditSessionIdentityService {
     private _participants: IEditSessionIdentityCreateParticipant[] = [];
     addEditSessionIdentityCreateParticipant(participant: IEditSessionIdentityCreateParticipant): IDisposable {
         const dispose = insert(this._participants, participant);
+
         return toDisposable(() => dispose());
     }
     private async activateProvider(scheme: string) {
         const transformedScheme = scheme === 'vscode-remote' ? 'file' : scheme;
+
         const provider = this._editSessionIdentifierProviders.get(scheme);
+
         if (provider) {
             return provider;
         }
         await this._extensionService.activateByEvent(`onEditSession:${transformedScheme}`);
+
         return this._editSessionIdentifierProviders.get(scheme);
     }
 }

@@ -27,6 +27,7 @@ export class ChatAgentHover extends Disposable {
     private readonly description: HTMLElement;
     private readonly _onDidChangeContents = this._register(new Emitter<void>());
     public readonly onDidChangeContents: Event<void> = this._onDidChangeContents.event;
+
     constructor(
     @IChatAgentService
     private readonly chatAgentService: IChatAgentService, 
@@ -35,6 +36,7 @@ export class ChatAgentHover extends Disposable {
     @IChatAgentNameService
     private readonly chatAgentNameService: IChatAgentNameService) {
         super();
+
         const hoverElement = dom.h('.chat-agent-hover@root', [
             dom.h('.chat-agent-hover-header', [
                 dom.h('.chat-agent-hover-icon@icon'),
@@ -56,14 +58,17 @@ export class ChatAgentHover extends Disposable {
         this.extensionName = hoverElement.extensionName;
         this.description = hoverElement.description;
         hoverElement.separator.textContent = '|';
+
         const verifiedBadge = dom.$('span.extension-verified-publisher', undefined, renderIcon(verifiedPublisherIcon));
         this.publisherName = dom.$('span.chat-agent-hover-publisher-name');
+
         dom.append(hoverElement.publisher, verifiedBadge, this.publisherName);
         hoverElement.warning.appendChild(renderIcon(Codicon.warning));
         hoverElement.warning.appendChild(dom.$('span', undefined, localize('reservedName', "This chat extension is using a reserved name.")));
     }
     setAgent(id: string): void {
         const agent = this.chatAgentService.getAgent(id)!;
+
         if (agent.metadata.icon instanceof URI) {
             const avatarIcon = dom.$<HTMLImageElement>('img.icon');
             avatarIcon.src = FileAccess.uriToBrowserUri(agent.metadata.icon).toString(true);
@@ -74,11 +79,14 @@ export class ChatAgentHover extends Disposable {
             this.icon.replaceChildren(dom.$('.avatar.codicon-avatar', undefined, avatarIcon));
         }
         this.domNode.classList.toggle('noExtensionName', !!agent.isDynamic);
+
         const isAllowed = this.chatAgentNameService.getAgentNameRestriction(agent);
         this.name.textContent = isAllowed ? `@${agent.name}` : getFullyQualifiedId(agent);
         this.extensionName.textContent = agent.extensionDisplayName;
         this.publisherName.textContent = agent.publisherDisplayName ?? agent.extensionPublisherId;
+
         let description = agent.description ?? '';
+
         if (description) {
             if (!description.match(/[\.\?\!] *$/)) {
                 description += '.';
@@ -87,11 +95,14 @@ export class ChatAgentHover extends Disposable {
         this.description.textContent = description;
         this.domNode.classList.toggle('allowedName', isAllowed);
         this.domNode.classList.toggle('verifiedPublisher', false);
+
         if (!agent.isDynamic) {
             const cancel = this._register(new CancellationTokenSource());
             this.extensionService.getExtensions([{ id: agent.extensionId.value }], cancel.token).then(extensions => {
                 cancel.dispose();
+
                 const extension = extensions[0];
+
                 if (extension?.publisherDomain?.verified) {
                     this.domNode.classList.toggle('verifiedPublisher', true);
                     this._onDidChangeContents.fire();
@@ -108,6 +119,7 @@ export function getChatAgentHoverOptions(getAgent: () => IChatAgentData | undefi
                 label: localize('viewExtensionLabel', "View Extension"),
                 run: () => {
                     const agent = getAgent();
+
                     if (agent) {
                         commandService.executeCommand(showExtensionsWithIdsCommandId, [agent.extensionId.value]);
                     }

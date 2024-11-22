@@ -27,6 +27,7 @@ export class CellEditorOptions extends CellContentPart implements ITextModelUpda
     private _tabSize?: number;
     private _indentSize?: number | 'tabSize';
     private _insertSpaces?: boolean;
+
     set tabSize(value: number | undefined) {
         if (this._tabSize !== value) {
             this._tabSize = value;
@@ -57,6 +58,7 @@ export class CellEditorOptions extends CellContentPart implements ITextModelUpda
     private readonly _onDidChange = this._register(new Emitter<void>());
     readonly onDidChange: Event<void> = this._onDidChange.event;
     private _value: IEditorOptions;
+
     constructor(private readonly base: IBaseCellEditorOptions, readonly notebookOptions: NotebookOptions, readonly configurationService: IConfigurationService) {
         super();
         this._register(base.onDidChange(() => {
@@ -77,19 +79,24 @@ export class CellEditorOptions extends CellContentPart implements ITextModelUpda
         const value = this.base.value; // base IEditorOptions
         // TODO @Yoyokrazy find a different way to get the editor overrides, this is not the right way
         const cellEditorOverridesRaw = this.notebookOptions.getDisplayOptions().editorOptionsCustomizations;
+
         const indentSize = cellEditorOverridesRaw?.['editor.indentSize'];
+
         if (indentSize !== undefined) {
             this.indentSize = indentSize;
         }
         const insertSpaces = cellEditorOverridesRaw?.['editor.insertSpaces'];
+
         if (insertSpaces !== undefined) {
             this.insertSpaces = insertSpaces;
         }
         const tabSize = cellEditorOverridesRaw?.['editor.tabSize'];
+
         if (tabSize !== undefined) {
             this.tabSize = tabSize;
         }
         let cellRenderLineNumber = value.lineNumbers;
+
         switch (this._lineNumbers) {
             case 'inherit':
                 // inherit from the notebook setting
@@ -102,14 +109,17 @@ export class CellEditorOptions extends CellContentPart implements ITextModelUpda
                     cellRenderLineNumber = 'off';
                 }
                 break;
+
             case 'on':
                 // should turn on, ignore the editor line numbers off options
                 if (value.lineNumbers === 'off') {
                     cellRenderLineNumber = 'on';
                 } // otherwise just use the editor setting
                 break;
+
             case 'off':
                 cellRenderLineNumber = 'off';
+
                 break;
         }
         if (value.lineNumbers !== cellRenderLineNumber) {
@@ -185,7 +195,9 @@ registerAction2(class ToggleLineNumberAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const renderLiNumbers = configurationService.getValue<'on' | 'off'>('notebook.lineNumbers') === 'on';
+
         if (renderLiNumbers) {
             configurationService.updateValue('notebook.lineNumbers', 'off');
         }
@@ -221,6 +233,7 @@ registerAction2(class ToggleActiveLineNumberAction extends NotebookMultiCellActi
     }
     private updateCell(configurationService: IConfigurationService, cell: ICellViewModel) {
         const renderLineNumbers = configurationService.getValue<'on' | 'off'>('notebook.lineNumbers') === 'on';
+
         const cellLineNumbers = cell.lineNumbers;
         // 'on', 'inherit' 	-> 'on'
         // 'on', 'off'		-> 'off'
@@ -229,6 +242,7 @@ registerAction2(class ToggleActiveLineNumberAction extends NotebookMultiCellActi
         // 'off', 'off'		-> 'off'
         // 'off', 'on'		-> 'on'
         const currentLineNumberIsOn = cellLineNumbers === 'on' || (cellLineNumbers === 'inherit' && renderLineNumbers);
+
         if (currentLineNumberIsOn) {
             cell.lineNumbers = 'off';
         }

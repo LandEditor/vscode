@@ -42,6 +42,7 @@ export interface ExtensionSignatureVerificationResult {
 export class ExtensionSignatureVerificationService implements IExtensionSignatureVerificationService {
     declare readonly _serviceBrand: undefined;
     private moduleLoadingPromise: Promise<typeof vsceSign> | undefined;
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -55,20 +56,25 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
     }
     private async resolveVsceSign(): Promise<typeof vsceSign> {
         const mod = '@vscode/vsce-sign';
+
         return import(mod);
     }
     public async verify(extensionId: string, version: string, vsixFilePath: string, signatureArchiveFilePath: string, clientTargetPlatform?: TargetPlatform): Promise<IExtensionSignatureVerificationResult | undefined> {
         let module: typeof vsceSign;
+
         try {
             module = await this.vsceSign();
         }
         catch (error) {
             this.logService.error('Could not load vsce-sign module', getErrorMessage(error));
             this.logService.info(`Extension signature verification is not done: ${extensionId}`);
+
             return undefined;
         }
         const startTime = new Date().getTime();
+
         let result: ExtensionSignatureVerificationResult;
+
         try {
             this.logService.trace(`Verifying extension signature for ${extensionId}...`);
             result = await module.verify(vsixFilePath, signatureArchiveFilePath, this.logService.getLevel() === LogLevel.Trace);
@@ -142,6 +148,7 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
             didExecute: result.didExecute,
             clientTargetPlatform,
         });
+
         return { code: result.code };
     }
 }

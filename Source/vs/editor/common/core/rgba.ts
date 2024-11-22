@@ -25,6 +25,7 @@ export class RGBA8 {
      * Alpha: integer in [0-255]
      */
     public readonly a: number;
+
     constructor(r: number, g: number, b: number, a: number) {
         this.r = RGBA8._clamp(r);
         this.g = RGBA8._clamp(g);

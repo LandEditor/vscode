@@ -12,6 +12,7 @@ export interface CopyFileConfiguration {
 }
 export function getCopyFileConfiguration(document: vscode.TextDocument): CopyFileConfiguration {
     const config = vscode.workspace.getConfiguration('markdown', document);
+
     return {
         destination: config.get<Record<string, string>>('copyFiles.destination') ?? {},
         overwriteBehavior: readOverwriteBehavior(config),
@@ -20,6 +21,7 @@ export function getCopyFileConfiguration(document: vscode.TextDocument): CopyFil
 function readOverwriteBehavior(config: vscode.WorkspaceConfiguration): OverwriteBehavior {
     switch (config.get('copyFiles.overwriteBehavior')) {
         case 'overwrite': return 'overwrite';
+
         default: return 'nameIncrementally';
     }
 }
@@ -37,16 +39,19 @@ export function parseGlob(rawGlob: string): Iterable<string> {
 type GetWorkspaceFolder = (documentUri: vscode.Uri) => vscode.Uri | undefined;
 export function resolveCopyDestination(documentUri: vscode.Uri, fileName: string, dest: string, getWorkspaceFolder: GetWorkspaceFolder): vscode.Uri {
     const resolvedDest = resolveCopyDestinationSetting(documentUri, fileName, dest, getWorkspaceFolder);
+
     if (resolvedDest.startsWith('/')) {
         // Absolute path
         return Utils.resolvePath(documentUri, resolvedDest);
     }
     // Relative to document
     const dirName = Utils.dirname(documentUri);
+
     return Utils.resolvePath(dirName, resolvedDest);
 }
 function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string, dest: string, getWorkspaceFolder: GetWorkspaceFolder): string {
     let outDest = dest.trim();
+
     if (!outDest) {
         outDest = '${fileName}';
     }
@@ -59,9 +64,13 @@ function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string
         outDest += '${fileName}';
     }
     const documentDirName = Utils.dirname(documentUri);
+
     const documentBaseName = Utils.basename(documentUri);
+
     const documentExtName = Utils.extname(documentUri);
+
     const workspaceFolder = getWorkspaceFolder(documentUri);
+
     const vars = new Map<string, string>([
         // Document
         ['documentDirName', documentDirName.path], // Absolute parent directory path of the Markdown document, e.g. `/Users/me/myProject/docs`.
@@ -77,11 +86,13 @@ function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string
         ['fileName', fileName], // The file name of the dropped file, e.g. `image.png`.
         ['fileExtName', path.extname(fileName).replace('.', '')], // The extension of the dropped file, e.g. `png`.
     ]);
+
     return outDest.replaceAll(/(?<escape>\\\$)|(?<!\\)\$\{(?<name>\w+)(?:\/(?<pattern>(?:\\\/|[^\}\/])+)\/(?<replacement>(?:\\\/|[^\}\/])*)\/)?\}/g, (match, _escape, name, pattern, replacement, _offset, _str, groups) => {
         if (groups?.['escape']) {
             return '$';
         }
         const entry = vars.get(name);
+
         if (typeof entry !== 'string') {
             return match;
         }

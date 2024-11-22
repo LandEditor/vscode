@@ -27,6 +27,7 @@ export class TerminalAccessibilityHelpProvider extends Disposable implements IAc
     private readonly _hasShellIntegration: boolean = false;
     onClose() {
         const expr = ContextKeyExpr.and(accessibleViewIsShown, ContextKeyExpr.equals(accessibleViewCurrentProviderId.key, AccessibleViewProviderId.TerminalHelp));
+
         if (expr?.evaluate(this._contextKeyService.getContext(null))) {
             this._commandService.executeCommand(TerminalAccessibilityCommandId.FocusAccessibleBuffer);
         }
@@ -40,6 +41,7 @@ export class TerminalAccessibilityHelpProvider extends Disposable implements IAc
         readMoreUrl: 'https://code.visualstudio.com/docs/editor/accessibility#_terminal-accessibility'
     };
     verbositySettingKey = AccessibilityVerbositySettingId.Terminal;
+
     constructor(private readonly _instance: Pick<ITerminalInstance, 'shellType' | 'capabilities' | 'onDidRequestFocus' | 'resource' | 'focus'>, _xterm: Pick<IXtermTerminal, 'getFont' | 'shellIntegration'> & {
         raw: Terminal;
     }, 
@@ -60,6 +62,7 @@ export class TerminalAccessibilityHelpProvider extends Disposable implements IAc
             localize('newWithProfile', 'The Create New Terminal (With Profile) command<keybinding:{0}> allows for easy terminal creation using a specific profile.', TerminalCommandId.NewWithProfile),
             localize('focusAfterRun', 'Configure what gets focused after running selected text in the terminal with `{0}`.', TerminalSettingId.FocusAfterRun)
         ];
+
         if (!this._configurationService.getValue(TerminalAccessibilitySettingId.AccessibleViewFocusOnCommandExecution)) {
             content.push(localize('focusViewOnExecution', 'Enable `terminal.integrated.accessibleViewFocusOnCommandExecution` to automatically focus the terminal accessible view when a command is executed in the terminal.'));
         }

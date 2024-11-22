@@ -19,11 +19,15 @@ import { Memento, MementoObject } from '../../../../common/memento.js';
 import { distinct } from '../../../../../base/common/arrays.js';
 function onExtensionChanged(accessor: ServicesAccessor): Event<IExtensionIdentifier[]> {
     const extensionService = accessor.get(IExtensionManagementService);
+
     const extensionEnablementService = accessor.get(IWorkbenchExtensionEnablementService);
+
     const onDidInstallExtensions = Event.chain(extensionService.onDidInstallExtensions, $ => $.filter(e => e.some(({ operation }) => operation === InstallOperation.Install))
         .map(e => e.map(({ identifier }) => identifier)));
+
     return Event.debounce<IExtensionIdentifier[], IExtensionIdentifier[]>(Event.any(Event.any(onDidInstallExtensions, Event.map(extensionService.onDidUninstallExtension, e => [e.identifier])), Event.map(extensionEnablementService.onEnablementChanged, extensions => extensions.map(e => e.identifier))), (result: IExtensionIdentifier[] | undefined, identifiers: IExtensionIdentifier[]) => {
         result = result || (identifiers.length ? [identifiers[0]] : []);
+
         for (const identifier of identifiers) {
             if (result.some(l => !areSameExtensions(l, identifier))) {
                 result.push(identifier);
@@ -37,6 +41,7 @@ export class NotebookKeymapService extends Disposable implements INotebookKeymap
     _serviceBrand: undefined;
     private notebookKeymapMemento: Memento;
     private notebookKeymap: MementoObject;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -60,12 +65,16 @@ export class NotebookKeymapService extends Disposable implements INotebookKeymap
     private checkForOtherKeymaps(extensionIdentifier: IExtensionIdentifier): Promise<void> {
         return this.instantiationService.invokeFunction(getInstalledExtensions).then(extensions => {
             const keymaps = extensions.filter(extension => isNotebookKeymapExtension(extension));
+
             const extension = keymaps.find(extension => areSameExtensions(extension.identifier, extensionIdentifier));
+
             if (extension && extension.globallyEnabled) {
                 // there is already a keymap extension
                 this.notebookKeymap[hasRecommendedKeymapKey] = true;
                 this.notebookKeymapMemento.saveMemento();
+
                 const otherKeymaps = keymaps.filter(extension => !areSameExtensions(extension.identifier, extensionIdentifier) && extension.globallyEnabled);
+
                 if (otherKeymaps.length) {
                     return this.promptForDisablingOtherKeymaps(extension, otherKeymaps);
                 }
@@ -93,6 +102,7 @@ export function isNotebookKeymapExtension(extension: IExtensionStatus): boolean 
         return false;
     }
     const keywords = extension.local.manifest.keywords;
+
     if (!keywords) {
         return false;
     }

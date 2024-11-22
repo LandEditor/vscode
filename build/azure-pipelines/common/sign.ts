@@ -18,6 +18,7 @@ export class Temp {
 			crypto.randomBytes(20).toString("hex"),
 		);
 		this._files.push(file);
+
 		return file;
 	}
 
@@ -84,6 +85,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case "sign-windows-appx":
 			return [
 				{
@@ -120,6 +122,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case "sign-pgp":
 			return [
 				{
@@ -130,6 +133,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case "sign-darwin":
 			return [
 				{
@@ -145,6 +149,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case "notarize-darwin":
 			return [
 				{
@@ -155,6 +160,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case "nuget":
 			return [
 				{
@@ -172,6 +178,7 @@ function getParams(type: string): Params[] {
 					toolVersion: "1.0",
 				},
 			];
+
 		case 'sign-pgp':
 			return [{
 				keyCode: 'CP-450779-Pgp',
@@ -180,6 +187,7 @@ function getParams(type: string): Params[] {
 				toolName: 'sign',
 				toolVersion: '1.0'
 			}];
+
 		case 'sign-darwin':
 			return [{
 				keyCode: 'CP-401337-Apple',
@@ -188,6 +196,7 @@ function getParams(type: string): Params[] {
 				toolName: 'sign',
 				toolVersion: '1.0'
 			}];
+
 		case 'notarize-darwin':
 			return [{
 				keyCode: 'CP-401337-Apple',
@@ -196,6 +205,7 @@ function getParams(type: string): Params[] {
 				toolName: 'sign',
 				toolVersion: '1.0'
 			}];
+
 		case 'nuget':
 			return [{
 				keyCode: 'CP-401405',
@@ -210,6 +220,7 @@ function getParams(type: string): Params[] {
 				toolName: 'sign',
 				toolVersion: '1.0'
 			}];
+
 		default:
 			throw new Error(`Sign type ${type} not found`);
 	}
@@ -228,6 +239,7 @@ export function main([esrpCliPath, type, folderPath, pattern]: string[]) {
 	const dotnetVersion = cp
 		.execSync("dotnet --version", { encoding: "utf8" })
 		.trim();
+
 	const adoTaskVersion = path.basename(
 		path.dirname(path.dirname(esrpCliPath)),
 	);

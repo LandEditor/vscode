@@ -42,6 +42,7 @@ export class Radio extends Widget {
         item: IRadioOptionItem;
         dispose(): void;
     }>());
+
     constructor(opts: IRadioOptions) {
         super();
         this.hoverDelegate = opts.hoverDelegate ?? this._register(createInstantHoverDelegate());
@@ -53,9 +54,12 @@ export class Radio extends Widget {
         this.buttons.clearAndDisposeAll();
         this.items = items;
         this.activeItem = this.items.find(item => item.isActive) ?? this.items[0];
+
         for (let index = 0; index < this.items.length; index++) {
             const item = this.items[index];
+
             const disposables = new DisposableStore();
+
             const button = disposables.add(new Button(this.domNode, {
                 hoverDelegate: this.hoverDelegate,
                 title: item.tooltip,
@@ -87,6 +91,7 @@ export class Radio extends Widget {
     }
     private updateButtons(): void {
         let isActive = false;
+
         for (const [button, { item }] of this.buttons) {
             const isPreviousActive = isActive;
             isActive = item === this.activeItem;

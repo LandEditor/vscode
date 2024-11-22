@@ -52,6 +52,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
     private _protocolPromise: Promise<IMessagePassingProtocol> | null;
     private _protocol: IMessagePassingProtocol | null;
     private readonly _extensionHostLogsLocation: URI;
+
     constructor(public readonly runningLocation: LocalWebWorkerRunningLocation, public readonly startup: ExtensionHostStartup, private readonly _initDataProvider: IWebWorkerExtensionHostDataProvider, 
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService, 
@@ -81,37 +82,50 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
     }
     private async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {
         const suffixSearchParams = new URLSearchParams();
+
         if (this._environmentService.debugExtensionHost && this._environmentService.debugRenderer) {
             suffixSearchParams.set('debugged', '1');
         }
         COI.addSearchParam(suffixSearchParams, true, true);
+
         const suffix = `?${suffixSearchParams.toString()}`;
+
         const iframeModulePath: AppResourcePath = `vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html`;
+
         if (platform.isWeb) {
             const webEndpointUrlTemplate = this._productService.webEndpointUrlTemplate;
+
             const commit = this._productService.commit;
+
             const quality = this._productService.quality;
+
             if (webEndpointUrlTemplate && commit && quality) {
                 // Try to keep the web worker extension host iframe origin stable by storing it in workspace storage
                 const key = 'webWorkerExtensionHostIframeStableOriginUUID';
+
                 let stableOriginUUID = this._storageService.get(key, StorageScope.WORKSPACE);
+
                 if (typeof stableOriginUUID === 'undefined') {
                     stableOriginUUID = generateUuid();
                     this._storageService.store(key, stableOriginUUID, StorageScope.WORKSPACE, StorageTarget.MACHINE);
                 }
                 const hash = await parentOriginHash(mainWindow.origin, stableOriginUUID);
+
                 const baseUrl = (webEndpointUrlTemplate
                     .replace('{{uuid}}', `v--${hash}`) // using `v--` as a marker to require `parentOrigin`/`salt` verification
                     .replace('{{commit}}', commit)
                     .replace('{{quality}}', quality));
+
                 const res = new URL(`${baseUrl}/out/${iframeModulePath}${suffix}`);
                 res.searchParams.set('parentOrigin', mainWindow.origin);
                 res.searchParams.set('salt', stableOriginUUID);
+
                 return res.toString();
             }
             console.warn(`The web worker extension host is started in a same-origin iframe!`);
         }
         const relativeExtensionHostIframeSrc = FileAccess.asBrowserUri(iframeModulePath);
+
         return `${relativeExtensionHostIframeSrc.toString(true)}${suffix}`;
     }
     public async start(): Promise<IMessagePassingProtocol> {
@@ -123,20 +137,35 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
     }
     private async _startInsideIframe(): Promise<IMessagePassingProtocol> {
         const webWorkerExtensionHostIframeSrc = await this._getWebWorkerExtensionHostIframeSrc();
+
         const emitter = this._register(new Emitter<VSBuffer>());
+
         const iframe = document.createElement('iframe');
+
         iframe.setAttribute('class', 'web-worker-ext-host-iframe');
+
         iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+
         iframe.setAttribute('allow', 'usb; serial; hid; cross-origin-isolated;');
+
         iframe.setAttribute('aria-hidden', 'true');
+
         iframe.style.display = 'none';
+
         const vscodeWebWorkerExtHostId = generateUuid();
+
         iframe.setAttribute('src', `${webWorkerExtensionHostIframeSrc}&vscodeWebWorkerExtHostId=${vscodeWebWorkerExtHostId}`);
+
         const barrier = new Barrier();
+
         let port!: MessagePort;
+
         let barrierError: Error | null = null;
+
         let barrierHasError = false;
+
         let startTimeout: any = null;
+
         const rejectBarrier = (exitCode: number, error: Error) => {
             barrierError = error;
             barrierHasError = true;
@@ -145,6 +174,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
             this._onDidExit.fire([ExtensionHostExitCode.UnexpectedError, barrierError.message]);
             barrier.open();
         };
+
         const resolveBarrier = (messagePort: MessagePort) => {
             port = messagePort;
             clearTimeout(startTimeout);
@@ -162,10 +192,12 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
             }
             if (event.data.error) {
                 const { name, message, stack } = event.data.error;
+
                 const err = new Error();
                 err.message = message;
                 err.name = name;
                 err.stack = stack;
+
                 return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
             }
             if (event.data.type === 'vscode.bootstrap.nls') {
@@ -180,12 +212,16 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
                         }
                     }
                 }, '*');
+
                 return;
             }
             const { data } = event.data;
+
             if (barrier.isOpen() || !(data instanceof MessagePort)) {
                 console.warn('UNEXPECTED message', event);
+
                 const err = new Error('UNEXPECTED message');
+
                 return rejectBarrier(ExtensionHostExitCode.UnexpectedError, err);
             }
             resolveBarrier(data);
@@ -195,21 +231,26 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
         // await MessagePort and use it to directly communicate
         // with the worker extension host
         await barrier.wait();
+
         if (barrierHasError) {
             throw barrierError;
         }
         // Send over message ports for extension API
         const messagePorts = this._environmentService.options?.messagePorts ?? new Map();
+
         iframe.contentWindow!.postMessage({ type: 'vscode.init', data: messagePorts }, '*', [...messagePorts.values()]);
         port.onmessage = (event) => {
             const { data } = event;
+
             if (!(data instanceof ArrayBuffer)) {
                 console.warn('UNKNOWN data received', data);
                 this._onDidExit.fire([77, 'UNKNOWN data received']);
+
                 return;
             }
             emitter.fire(VSBuffer.wrap(new Uint8Array(data, 0, data.byteLength)));
         };
+
         const protocol: IMessagePassingProtocol = {
             onMessage: emitter.event,
             send: vsbuf => {
@@ -217,6 +258,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
                 port.postMessage(data, [data]);
             }
         };
+
         return this._performHandshake(protocol);
     }
     private async _performHandshake(protocol: IMessagePassingProtocol): Promise<IMessagePassingProtocol> {
@@ -225,14 +267,17 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
         // (2) ==> send: init data
         // (3) <== wait for: Initialized
         await Event.toPromise(Event.filter(protocol.onMessage, msg => isMessageOfType(msg, MessageType.Ready)));
+
         if (this._isTerminating) {
             throw canceled();
         }
         protocol.send(VSBuffer.fromString(JSON.stringify(await this._createExtHostInitData())));
+
         if (this._isTerminating) {
             throw canceled();
         }
         await Event.toPromise(Event.filter(protocol.onMessage, msg => isMessageOfType(msg, MessageType.Initialized)));
+
         if (this._isTerminating) {
             throw canceled();
         }
@@ -244,6 +289,7 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
         }
         this._isTerminating = true;
         this._protocol?.send(createMessageOfType(MessageType.Terminate));
+
         super.dispose();
     }
     getInspectPort(): undefined {
@@ -255,8 +301,11 @@ export class WebWorkerExtensionHost extends Disposable implements IExtensionHost
     private async _createExtHostInitData(): Promise<IExtensionHostInitData> {
         const initData = await this._initDataProvider.getInitData();
         this.extensions = initData.extensions;
+
         const workspace = this._contextService.getWorkspace();
+
         const nlsBaseUrl = this._productService.extensionsGallery?.nlsBaseUrl;
+
         let nlsUrlWithDetails: URI | undefined = undefined;
         // Only use the nlsBaseUrl if we are using a language other than the default, English.
         if (nlsBaseUrl && this._productService.commit && !platform.Language.isDefaultVariant()) {

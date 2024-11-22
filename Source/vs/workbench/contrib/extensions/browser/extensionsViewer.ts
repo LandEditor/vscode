@@ -31,6 +31,7 @@ export class ExtensionsGridView extends Disposable {
     private readonly renderer: Renderer;
     private readonly delegate: Delegate;
     private readonly disposableStore: DisposableStore;
+
     constructor(parent: HTMLElement, delegate: Delegate, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {
@@ -48,11 +49,14 @@ export class ExtensionsGridView extends Disposable {
         const extensionContainer = dom.append(this.element, dom.$('.extension-container'));
         extensionContainer.style.height = `${this.delegate.getHeight()}px`;
         extensionContainer.setAttribute('tabindex', '0');
+
         const template = this.renderer.renderTemplate(extensionContainer);
         this.disposableStore.add(toDisposable(() => this.renderer.disposeTemplate(template)));
+
         const openExtensionAction = this.instantiationService.createInstance(OpenExtensionAction);
         openExtensionAction.extension = extension;
         template.name.setAttribute('tabindex', '0');
+
         const handleEvent = (e: StandardMouseEvent | StandardKeyboardEvent) => {
             if (e instanceof StandardKeyboardEvent && e.keyCode !== KeyCode.Enter) {
                 return;
@@ -81,6 +85,7 @@ interface IUnknownExtensionTemplateData {
 interface IExtensionData {
     extension: IExtension;
     hasChildren: boolean;
+
     getChildren: () => Promise<IExtensionData[] | null>;
     parent: IExtensionData | null;
 }
@@ -102,6 +107,7 @@ class VirualDelegate implements IListVirtualDelegate<IExtensionData> {
 }
 class ExtensionRenderer implements IListRenderer<ITreeNode<IExtensionData>, IExtensionTemplateData> {
     static readonly TEMPLATE_ID = 'extension-template';
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {
@@ -111,19 +117,29 @@ class ExtensionRenderer implements IListRenderer<ITreeNode<IExtensionData>, IExt
     }
     public renderTemplate(container: HTMLElement): IExtensionTemplateData {
         container.classList.add('extension');
+
         const icon = dom.append(container, dom.$<HTMLImageElement>('img.icon'));
+
         const details = dom.append(container, dom.$('.details'));
+
         const header = dom.append(details, dom.$('.header'));
+
         const name = dom.append(header, dom.$('span.name'));
+
         const openExtensionAction = this.instantiationService.createInstance(OpenExtensionAction);
+
         const extensionDisposables = [dom.addDisposableListener(name, 'click', (e: MouseEvent) => {
                 openExtensionAction.run(e.ctrlKey || e.metaKey);
                 e.stopPropagation();
                 e.preventDefault();
             })];
+
         const identifier = dom.append(header, dom.$('span.identifier'));
+
         const footer = dom.append(details, dom.$('.footer'));
+
         const author = dom.append(footer, dom.$('.author'));
+
         return {
             icon,
             name,
@@ -139,6 +155,7 @@ class ExtensionRenderer implements IListRenderer<ITreeNode<IExtensionData>, IExt
         const extension = node.element.extension;
         data.extensionDisposables.push(dom.addDisposableListener(data.icon, 'error', () => data.icon.src = extension.iconUrlFallback, { once: true }));
         data.icon.src = extension.iconUrl;
+
         if (!data.icon.complete) {
             data.icon.style.visibility = 'hidden';
             data.icon.onload = () => data.icon.style.visibility = 'inherit';
@@ -162,9 +179,13 @@ class UnknownExtensionRenderer implements IListRenderer<ITreeNode<IExtensionData
     }
     public renderTemplate(container: HTMLElement): IUnknownExtensionTemplateData {
         const messageContainer = dom.append(container, dom.$('div.unknown-extension'));
+
         dom.append(messageContainer, dom.$('span.error-marker')).textContent = localize('error', "Error");
+
         dom.append(messageContainer, dom.$('span.message')).textContent = localize('Unknown Extension', "Unknown Extension:");
+
         const identifier = dom.append(messageContainer, dom.$('span.message'));
+
         return { identifier };
     }
     public renderElement(node: ITreeNode<IExtensionData>, index: number, data: IUnknownExtensionTemplateData): void {
@@ -175,6 +196,7 @@ class UnknownExtensionRenderer implements IListRenderer<ITreeNode<IExtensionData
 }
 class OpenExtensionAction extends Action {
     private _extension: IExtension | undefined;
+
     constructor(
     @IExtensionsWorkbenchService
     private readonly extensionsWorkdbenchService: IExtensionsWorkbenchService) {
@@ -203,13 +225,17 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<IExtensionData, IExte
     @IExtensionsWorkbenchService
     extensionsWorkdbenchService: IExtensionsWorkbenchService) {
         const delegate = new VirualDelegate();
+
         const dataSource = new AsyncDataSource();
+
         const renderers = [instantiationService.createInstance(ExtensionRenderer), instantiationService.createInstance(UnknownExtensionRenderer)];
+
         const identityProvider = {
             getId({ extension, parent }: IExtensionData): string {
                 return parent ? this.getId(parent) + '/' + extension.identifier.id : extension.identifier.id;
             }
         };
+
         super('ExtensionsTree', container, delegate, renderers, dataSource, {
             indent: 40,
             identityProvider,
@@ -238,6 +264,7 @@ export class ExtensionData implements IExtensionData {
     private readonly getChildrenExtensionIds: (extension: IExtension) => string[];
     private readonly childrenExtensionIds: string[];
     private readonly extensionsWorkbenchService: IExtensionsWorkbenchService;
+
     constructor(extension: IExtension, parent: IExtensionData | null, getChildrenExtensionIds: (extension: IExtension) => string[], extensionsWorkbenchService: IExtensionsWorkbenchService) {
         this.extension = extension;
         this.parent = parent;
@@ -251,6 +278,7 @@ export class ExtensionData implements IExtensionData {
     async getChildren(): Promise<IExtensionData[] | null> {
         if (this.hasChildren) {
             const result: IExtension[] = await getExtensions(this.childrenExtensionIds, this.extensionsWorkbenchService);
+
             return result.map(extension => new ExtensionData(extension, this, this.getChildrenExtensionIds, this.extensionsWorkbenchService));
         }
         return null;
@@ -258,11 +286,16 @@ export class ExtensionData implements IExtensionData {
 }
 export async function getExtensions(extensions: string[], extensionsWorkbenchService: IExtensionsWorkbenchService): Promise<IExtension[]> {
     const localById = extensionsWorkbenchService.local.reduce((result, e) => { result.set(e.identifier.id.toLowerCase(), e); return result; }, new Map<string, IExtension>());
+
     const result: IExtension[] = [];
+
     const toQuery: string[] = [];
+
     for (const extensionId of extensions) {
         const id = extensionId.toLowerCase();
+
         const local = localById.get(id);
+
         if (local) {
             result.push(local);
         }
@@ -278,18 +311,23 @@ export async function getExtensions(extensions: string[], extensionsWorkbenchSer
 }
 registerThemingParticipant((theme: IColorTheme, collector: ICssStyleCollector) => {
     const focusBackground = theme.getColor(listFocusBackground);
+
     if (focusBackground) {
         collector.addRule(`.extensions-grid-view .extension-container:focus { background-color: ${focusBackground}; outline: none; }`);
     }
     const focusForeground = theme.getColor(listFocusForeground);
+
     if (focusForeground) {
         collector.addRule(`.extensions-grid-view .extension-container:focus { color: ${focusForeground}; }`);
     }
     const foregroundColor = theme.getColor(foreground);
+
     const editorBackgroundColor = theme.getColor(editorBackground);
+
     if (foregroundColor && editorBackgroundColor) {
         const authorForeground = foregroundColor.transparent(.9).makeOpaque(editorBackgroundColor);
         collector.addRule(`.extensions-grid-view .extension-container:not(.disabled) .author { color: ${authorForeground}; }`);
+
         const disabledExtensionForeground = foregroundColor.transparent(.5).makeOpaque(editorBackgroundColor);
         collector.addRule(`.extensions-grid-view .extension-container.disabled { color: ${disabledExtensionForeground}; }`);
     }

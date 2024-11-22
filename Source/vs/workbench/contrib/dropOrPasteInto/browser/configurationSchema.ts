@@ -95,6 +95,7 @@ export class DropOrPasteSchemaContribution extends Disposable implements IWorkbe
 	private updateProvidedKinds(): void {
 		// Drop
 		const dropKinds = new Map<string, HierarchicalKind>();
+
 		for (const provider of this.languageFeatures.documentDropEditProvider.allNoModel()) {
 			for (const kind of provider.providedDropEditKinds ?? []) {
 				dropKinds.set(kind.value, kind);
@@ -104,6 +105,7 @@ export class DropOrPasteSchemaContribution extends Disposable implements IWorkbe
 
 		// Paste
 		const pasteKinds = new Map<string, HierarchicalKind>();
+
 		for (const provider of this.languageFeatures.documentPasteEditProvider.allNoModel()) {
 			for (const kind of provider.providedPasteEditKinds ?? []) {
 				pasteKinds.set(kind.value, kind);
@@ -114,11 +116,13 @@ export class DropOrPasteSchemaContribution extends Disposable implements IWorkbe
 
 	private updateConfigurationSchema(): void {
 		pasteEnumValues.length = 0;
+
 		for (const codeActionKind of this._allProvidedPasteKinds) {
 			pasteEnumValues.push(codeActionKind.value);
 		}
 
 		dropEnumValues.length = 0;
+
 		for (const codeActionKind of this._allProvidedDropKinds) {
 			dropEnumValues.push(codeActionKind.value);
 		}

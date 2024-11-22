@@ -38,6 +38,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     declare readonly _serviceBrand: undefined;
     readonly mainPart = this._register(this.createMainEditorPart());
     private mostRecentActiveParts = [this.mainPart];
+
     constructor(
     @IInstantiationService
     protected readonly instantiationService: IInstantiationService, 
@@ -63,6 +64,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     //#region Scoped Instantiation Services
     private readonly mapPartToInstantiationService = new Map<number /* window ID */, IInstantiationService>();
+
     getScopedInstantiationService(part: IEditorPart): IInstantiationService {
         if (part === this.mainPart) {
             if (!this.mapPartToInstantiationService.has(part.windowId)) {
@@ -78,6 +80,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     //#region Auxiliary Editor Parts
     private readonly _onDidCreateAuxiliaryEditorPart = this._register(new Emitter<IAuxiliaryEditorPart>());
     readonly onDidCreateAuxiliaryEditorPart = this._onDidCreateAuxiliaryEditorPart.event;
+
     async createAuxiliaryEditorPart(options?: IAuxiliaryEditorPartOpenOptions): Promise<IAuxiliaryEditorPart> {
         const { part, instantiationService, disposables } = await this.instantiationService.createInstance(AuxiliaryEditorPart, this).create(this.getGroupsLabel(this._parts.size), options);
         // Keep instantiation service
@@ -86,6 +89,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         // Events
         this._onDidAddGroup.fire(part.activeGroup);
         this._onDidCreateAuxiliaryEditorPart.fire(part);
+
         return part;
     }
     //#endregion
@@ -94,6 +98,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         const disposables = this._register(new DisposableStore());
         disposables.add(super.registerPart(part));
         this.registerEditorPartListeners(part, disposables);
+
         return disposables;
     }
     protected override unregisterPart(part: EditorPart): void {
@@ -110,6 +115,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     private registerEditorPartListeners(part: EditorPart, disposables: DisposableStore): void {
         disposables.add(part.onDidFocus(() => {
             this.doUpdateMostRecentActive(part, true);
+
             if (this._parts.size > 1) {
                 this._onDidActiveGroupChange.fire(this.activeGroup); // this can only happen when we have more than 1 editor part
             }
@@ -146,11 +152,14 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         if (this._parts.size > 1) {
             if (isHTMLElement(groupOrElement)) {
                 const element = groupOrElement;
+
                 return this.getPartByDocument(element.ownerDocument);
             }
             else {
                 const group = groupOrElement;
+
                 let id: GroupIdentifier;
+
                 if (typeof group === 'number') {
                     id = group;
                 }
@@ -171,6 +180,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     private static readonly EDITOR_PARTS_UI_STATE_STORAGE_KEY = 'editorparts.state';
     private readonly workspaceMemento = this.getMemento(StorageScope.WORKSPACE, StorageTarget.USER);
     private _isReady = false;
+
     get isReady(): boolean { return this._isReady; }
     private readonly whenReadyPromise = new DeferredPromise<void>();
     readonly whenReady = this.whenReadyPromise.p;
@@ -188,6 +198,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         // editors were opened.
         if (this.mainPart.willRestoreState) {
             const state = this.loadState();
+
             if (state) {
                 await this.restoreState(state);
             }
@@ -205,6 +216,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     protected override saveState(): void {
         const state = this.createState();
+
         if (state.auxiliary.length === 0) {
             delete this.workspaceMemento[EditorParts.EDITOR_PARTS_UI_STATE_STORAGE_KEY];
         }
@@ -216,6 +228,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         return {
             auxiliary: this.parts.filter(part => part !== this.mainPart).map(part => {
                 const auxiliaryWindow = this.auxiliaryWindowService.getWindow(part.windowId);
+
                 return {
                     state: part.createState(),
                     ...auxiliaryWindow?.createState()
@@ -250,7 +263,9 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     private onDidChangeMementoState(e: IStorageValueChangeEvent): void {
         if (e.external && e.scope === StorageScope.WORKSPACE) {
             this.reloadMemento(e.scope);
+
             const state = this.loadState();
+
             if (state) {
                 this.applyState(state);
             }
@@ -284,6 +299,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     private static readonly EDITOR_WORKING_SETS_STORAGE_KEY = 'editor.workingSets';
     private editorWorkingSets: IEditorWorkingSetState[] = (() => {
         const workingSetsRaw = this.storageService.get(EditorParts.EDITOR_WORKING_SETS_STORAGE_KEY, StorageScope.WORKSPACE);
+
         if (workingSetsRaw) {
             return JSON.parse(workingSetsRaw);
         }
@@ -298,6 +314,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         };
         this.editorWorkingSets.push(workingSet);
         this.saveWorkingSets();
+
         return {
             id: workingSet.id,
             name: workingSet.name
@@ -308,6 +325,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     deleteWorkingSet(workingSet: IEditorWorkingSet): void {
         const index = this.indexOfWorkingSet(workingSet);
+
         if (typeof index === 'number') {
             this.editorWorkingSets.splice(index, 1);
             this.saveWorkingSets();
@@ -315,6 +333,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     async applyWorkingSet(workingSet: IEditorWorkingSet | 'empty', options?: IEditorWorkingSetOptions): Promise<boolean> {
         let workingSetState: IEditorWorkingSetState | 'empty' | undefined;
+
         if (workingSet === 'empty') {
             workingSetState = 'empty';
         }
@@ -329,6 +348,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         // Also, in rare cases, the auxiliary part may not be able to apply the state
         // for certain editors that cannot move to the main part.
         const applied = await this.applyState(workingSetState === 'empty' ? workingSetState : workingSetState.auxiliary);
+
         if (!applied) {
             return false;
         }
@@ -336,6 +356,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         // Restore Focus unless instructed otherwise
         if (!options?.preserveFocus) {
             const mostRecentActivePart = this.mostRecentActiveParts.at(0);
+
             if (mostRecentActivePart) {
                 await mostRecentActivePart.whenReady;
                 mostRecentActivePart.activeGroup.focus();
@@ -389,11 +410,14 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     getGroups(order = GroupsOrder.CREATION_TIME): IEditorGroupView[] {
         if (this._parts.size > 1) {
             let parts: EditorPart[];
+
             switch (order) {
                 case GroupsOrder.GRID_APPEARANCE: // we currently do not have a way to compute by appearance over multiple windows
                 case GroupsOrder.CREATION_TIME:
                     parts = this.parts;
+
                     break;
+
                 case GroupsOrder.MOST_RECENTLY_ACTIVE:
                     parts = distinct([...this.mostRecentActiveParts, ...this.parts]); // always ensure all parts are included
                     break;
@@ -406,6 +430,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         if (this._parts.size > 1) {
             for (const part of this._parts) {
                 const group = part.getGroup(identifier);
+
                 if (group) {
                     return group;
                 }
@@ -415,6 +440,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     private assertGroupView(group: IEditorGroupView | GroupIdentifier): IEditorGroupView {
         let groupView: IEditorGroupView | undefined;
+
         if (typeof group === 'number') {
             groupView = this.getGroup(group);
         }
@@ -467,6 +493,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     findGroup(scope: IFindGroupScope, source: IEditorGroupView | GroupIdentifier = this.activeGroup, wrap?: boolean): IEditorGroupView | undefined {
         const sourcePart = this.getPart(source);
+
         if (this._parts.size > 1) {
             const groups = this.getGroups(GroupsOrder.GRID_APPEARANCE);
             // Ensure that FIRST/LAST dispatches globally over all parts
@@ -475,15 +502,19 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
             }
             // Try to find in target part first without wrapping
             const group = sourcePart.findGroup(scope, source, false);
+
             if (group) {
                 return group;
             }
             // Ensure that NEXT/PREVIOUS dispatches globally over all parts
             if (scope.location === GroupLocation.NEXT || scope.location === GroupLocation.PREVIOUS) {
                 const sourceGroup = this.assertGroupView(source);
+
                 const index = groups.indexOf(sourceGroup);
+
                 if (scope.location === GroupLocation.NEXT) {
                     let nextGroup: IEditorGroupView | undefined = groups[index + 1];
+
                     if (!nextGroup && wrap) {
                         nextGroup = groups[0];
                     }
@@ -491,6 +522,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
                 }
                 else {
                     let previousGroup: IEditorGroupView | undefined = groups[index - 1];
+
                     if (!previousGroup && wrap) {
                         previousGroup = groups[groups.length - 1];
                     }
@@ -537,11 +569,13 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     }
     private updateGlobalContextKeys(): void {
         const activeGroupScopedContextKeys = this.scopedContextKeys.get(this.activeGroup.id);
+
         if (!activeGroupScopedContextKeys) {
             return;
         }
         for (const [key, globalContextKey] of this.globalContextKeys) {
             const scopedContextKey = activeGroupScopedContextKeys.get(key);
+
             if (scopedContextKey) {
                 globalContextKey.set(scopedContextKey.get());
             }
@@ -553,22 +587,26 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
     bind<T extends ContextKeyValue>(contextKey: RawContextKey<T>, group: IEditorGroupView): IContextKey<T> {
         // Ensure we only bind to the same context key once globaly
         let globalContextKey = this.globalContextKeys.get(contextKey.key);
+
         if (!globalContextKey) {
             globalContextKey = contextKey.bindTo(this.contextKeyService);
             this.globalContextKeys.set(contextKey.key, globalContextKey);
         }
         // Ensure we only bind to the same context key once per group
         let groupScopedContextKeys = this.scopedContextKeys.get(group.id);
+
         if (!groupScopedContextKeys) {
             groupScopedContextKeys = new Map<string, IContextKey<ContextKeyValue>>();
             this.scopedContextKeys.set(group.id, groupScopedContextKeys);
         }
         let scopedContextKey = groupScopedContextKeys.get(contextKey.key);
+
         if (!scopedContextKey) {
             scopedContextKey = contextKey.bindTo(group.scopedContextKeyService);
             groupScopedContextKeys.set(contextKey.key, scopedContextKey);
         }
         const that = this;
+
         return {
             get(): T | undefined {
                 return scopedContextKey.get() as T | undefined;
@@ -594,6 +632,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
             throw new Error(`A context key provider for key ${provider.contextKey.key} already exists.`);
         }
         this.contextKeyProviders.set(provider.contextKey.key, provider);
+
         const setContextKeyForGroups = () => {
             for (const group of this.groups) {
                 this.updateRegisteredContextKey(group, provider);
@@ -601,7 +640,9 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         };
         // Run initially and on change
         setContextKeyForGroups();
+
         const onDidChange = provider.onDidChange?.(() => setContextKeyForGroups());
+
         return toDisposable(() => {
             onDidChange?.dispose();
             this.globalContextKeys.delete(provider.contextKey.key);
@@ -625,11 +666,13 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
         // If the providers context key has not yet been bound
         // to the group, do so now.
         let groupRegisteredContextKeys = this.registeredContextKeys.get(group.id);
+
         if (!groupRegisteredContextKeys) {
             groupRegisteredContextKeys = new Map<string, IContextKey>();
             this.registeredContextKeys.set(group.id, groupRegisteredContextKeys);
         }
         let scopedRegisteredContextKey = groupRegisteredContextKeys.get(provider.contextKey.key);
+
         if (!scopedRegisteredContextKey) {
             scopedRegisteredContextKey = this.bind(provider.contextKey, group);
             groupRegisteredContextKeys.set(provider.contextKey.key, scopedRegisteredContextKey);

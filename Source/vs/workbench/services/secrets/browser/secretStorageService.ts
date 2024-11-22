@@ -12,6 +12,7 @@ import { IBrowserWorkbenchEnvironmentService } from '../../environment/browser/e
 export class BrowserSecretStorageService extends BaseSecretStorageService {
     private readonly _secretStorageProvider: ISecretStorageProvider | undefined;
     private readonly _embedderSequencer: SequencerByKey<string> | undefined;
+
     constructor(
     @IStorageService
     storageService: IStorageService, 
@@ -24,6 +25,7 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
         // We don't have encryption in the browser so instead we use the
         // in-memory base class implementation instead.
         super(true, storageService, encryptionService, logService);
+
         if (environmentService.options?.secretStorageProvider) {
             this._secretStorageProvider = environmentService.options.secretStorageProvider;
             this._embedderSequencer = new SequencerByKey<string>();

@@ -9,6 +9,7 @@ import { checkProposedApiEnabled } from '../../services/extensions/common/extens
 import { IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
 export class ExtHostDialogs {
     private readonly _proxy: MainThreadDiaglogsShape;
+
     constructor(mainContext: IMainContext) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadDialogs);
     }

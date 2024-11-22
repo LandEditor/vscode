@@ -78,6 +78,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 			}, token);
 
 			const widgetClosedMarker = {};
+
 			const widgetClosedPromise = quickPickWidget.then(() => widgetClosedMarker);
 
 			return Promise.race([widgetClosedPromise, itemsPromise]).then(result => {
@@ -90,8 +91,10 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 				return itemsPromise.then(items => {
 
 					const pickItems: TransferQuickPickItemOrSeparator[] = [];
+
 					for (let handle = 0; handle < items.length; handle++) {
 						const item = items[handle];
+
 						if (typeof item === 'string') {
 							pickItems.push({ label: item, handle });
 						} else if (item.kind === QuickPickItemKind.Separator) {
@@ -173,23 +176,32 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 			}
 
 			const result = await this._validateInput(input);
+
 			if (!result || typeof result === 'string') {
 				return result;
 			}
 
 			let severity: Severity;
+
 			switch (result.severity) {
 				case InputBoxValidationSeverity.Info:
 					severity = Severity.Info;
+
 					break;
+
 				case InputBoxValidationSeverity.Warning:
 					severity = Severity.Warning;
+
 					break;
+
 				case InputBoxValidationSeverity.Error:
 					severity = Severity.Error;
+
 					break;
+
 				default:
 					severity = result.message ? Severity.Error : Severity.Ignore;
+
 					break;
 			}
 
@@ -203,10 +215,12 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		async showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions, token = CancellationToken.None): Promise<WorkspaceFolder | undefined> {
 			const selectedFolder = await this._commands.executeCommand<WorkspaceFolder>('_workbench.pickWorkspaceFolder', [options]);
+
 			if (!selectedFolder) {
 				return undefined;
 			}
 			const workspaceFolders = await this._workspace.getWorkspaceFolders2();
+
 			if (!workspaceFolders) {
 				return undefined;
 			}
@@ -218,12 +232,14 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 		createQuickPick<T extends QuickPickItem>(extension: IExtensionDescription): QuickPick<T> {
 			const session: ExtHostQuickPick<T> = new ExtHostQuickPick(extension, () => this._sessions.delete(session._id));
 			this._sessions.set(session._id, session);
+
 			return session;
 		}
 
 		createInputBox(extension: IExtensionDescription): InputBox {
 			const session: ExtHostInputBox = new ExtHostInputBox(extension, () => this._sessions.delete(session._id));
 			this._sessions.set(session._id, session);
+
 			return session;
 		}
 
@@ -239,6 +255,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		$onDidChangeActive(sessionId: number, handles: number[]): void {
 			const session = this._sessions.get(sessionId);
+
 			if (session instanceof ExtHostQuickPick) {
 				session._fireDidChangeActive(handles);
 			}
@@ -246,6 +263,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		$onDidChangeSelection(sessionId: number, handles: number[]): void {
 			const session = this._sessions.get(sessionId);
+
 			if (session instanceof ExtHostQuickPick) {
 				session._fireDidChangeSelection(handles);
 			}
@@ -258,6 +276,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		$onDidTriggerItemButton(sessionId: number, itemHandle: number, buttonHandle: number): void {
 			const session = this._sessions.get(sessionId);
+
 			if (session instanceof ExtHostQuickPick) {
 				session._fireDidTriggerItemButton(itemHandle, buttonHandle);
 			}
@@ -396,6 +415,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		set buttons(buttons: QuickInputButton[]) {
 			const allowedButtonLocation = isProposedApiEnabled(this._extension, 'quickInputButtonLocation');
+
 			if (!allowedButtonLocation && buttons.some(button => button.location)) {
 				console.warn(`Extension '${this._extension.identifier.value}' uses a button location which is proposed API that is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.identifier.value}`);
 			}
@@ -443,6 +463,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		_fireDidTriggerButton(handle: number) {
 			const button = this._handlesToButtons.get(handle);
+
 			if (button) {
 				this._onDidTriggerButtonEmitter.fire(button);
 			}
@@ -470,6 +491,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 			this._disposed = true;
 			this._fireDidHide();
 			this._disposables = dispose(this._disposables);
+
 			if (this._updateTimeout) {
 				clearTimeout(this._updateTimeout);
 				this._updateTimeout = undefined;
@@ -513,6 +535,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 			return { id: iconPath.id };
 		}
 		const dark = getDarkIconUri(iconPath as URI | { light: URI; dark: URI });
+
 		const light = getLightIconUri(iconPath as URI | { light: URI; dark: URI });
 		// Tolerate strings: https://github.com/microsoft/vscode/issues/110432#issuecomment-726144556
 		return {
@@ -531,8 +554,11 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 	function getIconPathOrClass(icon: QuickInputButton['iconPath']) {
 		const iconPathOrIconClass = getIconUris(icon);
+
 		let iconPath: { dark: URI; light?: URI | undefined } | undefined;
+
 		let iconClass: string | undefined;
+
 		if ('id' in iconPathOrIconClass) {
 			iconClass = ThemeIconUtils.asClassName(iconPathOrIconClass);
 		} else {
@@ -587,8 +613,10 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 			const allowedTooltips = isProposedApiEnabled(this._extension, 'quickPickItemTooltip');
 
 			const pickItems: TransferQuickPickItemOrSeparator[] = [];
+
 			for (let handle = 0; handle < items.length; handle++) {
 				const item = items[handle];
+
 				if (item.kind === QuickPickItemKind.Separator) {
 					pickItems.push({ type: 'separator', label: item.label });
 				} else {
@@ -706,10 +734,12 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		_fireDidTriggerItemButton(itemHandle: number, buttonHandle: number) {
 			const item = this._handlesToItems.get(itemHandle)!;
+
 			if (!item || !item.buttons || !item.buttons.length) {
 				return;
 			}
 			const button = item.buttons[buttonHandle];
+
 			if (button) {
 				this._onDidTriggerItemButtonEmitter.fire({
 					button,
@@ -754,6 +784,7 @@ export function createExtHostQuickOpen(mainContext: IMainContext, workspace: IEx
 
 		set validationMessage(validationMessage: string | InputBoxValidationMessage | undefined) {
 			this._validationMessage = validationMessage;
+
 			if (!validationMessage) {
 				this.update({ validationMessage: undefined, severity: Severity.Ignore });
 			} else if (typeof validationMessage === 'string') {

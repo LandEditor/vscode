@@ -16,6 +16,7 @@ class LongLinesHelper extends Disposable implements IEditorContribution {
         super();
         this._register(this._editor.onMouseDown((e) => {
             const stopRenderingLineAfter = this._editor.getOption(EditorOption.stopRenderingLineAfter);
+
             if (stopRenderingLineAfter >= 0 && e.target.type === MouseTargetType.CONTENT_TEXT && e.target.position.column >= stopRenderingLineAfter) {
                 this._editor.updateOptions({
                     stopRenderingLineAfter: -1

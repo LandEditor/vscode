@@ -24,11 +24,13 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
     @IEditorService
     private readonly _editorService: IEditorService) {
         super();
+
         const listeners = new ResourceMap<IDisposable>();
         this._register(_notebookService.onWillAddNotebookDocument(model => {
             listeners.set(model.uri, model.onWillAddRemoveCells(e => {
                 // When deleting a cell, remove its breakpoints
                 const debugModel = this._debugService.getModel();
+
                 if (!debugModel.getBreakpoints().length) {
                     return;
                 }
@@ -37,8 +39,10 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
                 }
                 for (const change of e.rawEvent.changes) {
                     const [start, deleteCount] = change;
+
                     if (deleteCount > 0) {
                         const deleted = model.cells.slice(start, start + deleteCount);
+
                         for (const deletedCell of deleted) {
                             const cellBps = debugModel.getBreakpoints({ uri: deletedCell.uri });
                             cellBps.forEach(cellBp => this._debugService.removeBreakpoints(cellBp.getId()));
@@ -54,16 +58,20 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
         }));
         this._register(this._debugService.getModel().onDidChangeBreakpoints(e => {
             const newCellBp = e?.added?.find(bp => 'uri' in bp && bp.uri.scheme === Schemas.vscodeNotebookCell) as IBreakpoint | undefined;
+
             if (newCellBp) {
                 const parsed = CellUri.parse(newCellBp.uri);
+
                 if (!parsed) {
                     return;
                 }
                 const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
                 if (!editor || !editor.hasModel() || editor.textModel.uri.toString() !== parsed.notebook.toString()) {
                     return;
                 }
                 const cell = editor.getCellByHandle(parsed.handle);
+
                 if (!cell) {
                     return;
                 }
@@ -73,6 +81,7 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
     }
     private updateBreakpoints(model: NotebookTextModel): void {
         const bps = this._debugService.getModel().getBreakpoints();
+
         if (!bps.length || !model.cells.length) {
             return;
         }
@@ -82,14 +91,17 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
         });
         bps.forEach(bp => {
             const idx = idxMap.get(bp.uri);
+
             if (typeof idx !== 'number') {
                 return;
             }
             const notebook = CellUri.parse(bp.uri)?.notebook;
+
             if (!notebook) {
                 return;
             }
             const newUri = CellUri.generate(notebook, idx);
+
             if (isEqual(newUri, bp.uri)) {
                 return;
             }

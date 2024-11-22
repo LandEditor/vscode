@@ -29,19 +29,23 @@ function toJSON(uri: URI): UriComponents {
 }
 export class URITransformer implements IURITransformer {
     private readonly _uriTransformer: IRawURITransformer;
+
     constructor(uriTransformer: IRawURITransformer) {
         this._uriTransformer = uriTransformer;
     }
     public transformIncoming(uri: UriComponents): UriComponents {
         const result = this._uriTransformer.transformIncoming(uri);
+
         return (result === uri ? uri : toJSON(URI.from(result)));
     }
     public transformOutgoing(uri: UriComponents): UriComponents {
         const result = this._uriTransformer.transformOutgoing(uri);
+
         return (result === uri ? uri : toJSON(URI.from(result)));
     }
     public transformOutgoingURI(uri: URI): URI {
         const result = this._uriTransformer.transformOutgoing(uri);
+
         return (result === uri ? uri : URI.from(result));
     }
     public transformOutgoingScheme(scheme: string): string {
@@ -74,6 +78,7 @@ function _transformOutgoingURIs(obj: any, transformer: IURITransformer, depth: n
         for (const key in obj) {
             if (Object.hasOwnProperty.call(obj, key)) {
                 const r = _transformOutgoingURIs(obj[key], transformer, depth + 1);
+
                 if (r !== null) {
                     obj[key] = r;
                 }
@@ -84,6 +89,7 @@ function _transformOutgoingURIs(obj: any, transformer: IURITransformer, depth: n
 }
 export function transformOutgoingURIs<T>(obj: T, transformer: IURITransformer): T {
     const result = _transformOutgoingURIs(obj, transformer, 0);
+
     if (result === null) {
         // no change
         return obj;
@@ -105,6 +111,7 @@ function _transformIncomingURIs(obj: any, transformer: IURITransformer, revive: 
         for (const key in obj) {
             if (Object.hasOwnProperty.call(obj, key)) {
                 const r = _transformIncomingURIs(obj[key], transformer, revive, depth + 1);
+
                 if (r !== null) {
                     obj[key] = r;
                 }
@@ -115,6 +122,7 @@ function _transformIncomingURIs(obj: any, transformer: IURITransformer, revive: 
 }
 export function transformIncomingURIs<T>(obj: T, transformer: IURITransformer): T {
     const result = _transformIncomingURIs(obj, transformer, false, 0);
+
     if (result === null) {
         // no change
         return obj;
@@ -123,6 +131,7 @@ export function transformIncomingURIs<T>(obj: T, transformer: IURITransformer): 
 }
 export function transformAndReviveIncomingURIs<T>(obj: T, transformer: IURITransformer): T {
     const result = _transformIncomingURIs(obj, transformer, true, 0);
+
     if (result === null) {
         // no change
         return obj;

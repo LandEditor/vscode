@@ -38,6 +38,7 @@ export class ChatToolInvocationPart extends Disposable implements IChatContentPa
 		// If this turns out to be a typical pattern, we could come up with a more reusable pattern, like telling the list to rerender an element
 		// when the model changes, or trying to make the model immutable and swap out one content part for a new one based on user actions in the view.
 		const partStore = this._register(new DisposableStore());
+
 		const render = () => {
 			dom.clearNode(this.domNode);
 
@@ -76,7 +77,9 @@ class ChatToolInvocationSubPart extends Disposable {
 
 		if (toolInvocation.kind === 'toolInvocation' && toolInvocation.confirmationMessages) {
 			const title = toolInvocation.confirmationMessages.title;
+
 			const message = toolInvocation.confirmationMessages.message;
+
 			const confirmWidget = this._register(instantiationService.createInstance(
 				ChatConfirmationWidget,
 				title,
@@ -91,14 +94,17 @@ class ChatToolInvocationSubPart extends Disposable {
 			const content = typeof toolInvocation.invocationMessage === 'string' ?
 				new MarkdownString().appendText(toolInvocation.invocationMessage + '…') :
 				new MarkdownString(toolInvocation.invocationMessage.value + '…');
+
 			const progressMessage: IChatProgressMessage = {
 				kind: 'progressMessage',
 				content
 			};
+
 			const iconOverride = toolInvocation.isConfirmed === false ?
 				Codicon.error :
 				toolInvocation.isComplete ?
 					Codicon.check : undefined;
+
 			const progressPart = this._register(instantiationService.createInstance(ChatProgressContentPart, progressMessage, renderer, context, undefined, true, iconOverride));
 			this.domNode = progressPart.domNode;
 		}

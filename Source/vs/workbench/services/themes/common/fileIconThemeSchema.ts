@@ -10,6 +10,7 @@ import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
 import { fontWeightRegex, fontStyleRegex, fontSizeRegex, fontIdRegex, fontCharacterRegex, fontColorRegex } from './productIconThemeSchema.js';
 
 const schemaId = 'vscode://schemas/icon-theme';
+
 const schema: IJSONSchema = {
 	type: 'object',
 	allowComments: true,

@@ -177,8 +177,11 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
         // We will use the resolver service to resolve all the variables in the config / launch config
         // But then we will keep only some variables, since the rest need to be resolved on the remote side
         const resolvedVariables = Object.create(null);
+
         const lastActiveWorkspace = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+
         let allResolvedVariables: Map<string, string> | undefined = undefined;
+
         try {
             allResolvedVariables = (await this._resolverService.resolveAnyMap(lastActiveWorkspace, {
                 shellLaunchConfig,
@@ -196,18 +199,25 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
             }
         }
         const envVariableCollections: ITerminalEnvironmentVariableCollections = [];
+
         for (const [k, v] of this._environmentVariableService.collections.entries()) {
             envVariableCollections.push([k, serializeEnvironmentVariableCollection(v.map), serializeEnvironmentDescriptionMap(v.descriptionMap)]);
         }
         const resolverResult = await this._remoteAuthorityResolverService.resolveAuthority(this._remoteAuthority);
+
         const resolverEnv = resolverResult.options && resolverResult.options.extensionHostEnv;
+
         const workspace = this._workspaceContextService.getWorkspace();
+
         const workspaceFolders = workspace.folders;
+
         const activeWorkspaceFolder = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) : null;
+
         const activeFileResource = EditorResourceAccessor.getOriginalUri(this._editorService.activeEditor, {
             supportSideBySide: SideBySideEditor.PRIMARY,
             filterByScheme: [Schemas.file, Schemas.vscodeUserData, Schemas.vscodeRemote]
         });
+
         const args: ICreateTerminalProcessArguments = {
             configuration,
             resolvedVariables,
@@ -225,6 +235,7 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
             unicodeVersion,
             resolverEnv
         };
+
         return await this._channel.call<ICreateTerminalProcessResult>(RemoteTerminalChannelRequest.CreateProcess, args);
     }
     requestDetachInstance(workspaceId: string, instanceId: number): Promise<IProcessDetails | undefined> {
@@ -312,10 +323,12 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
     }
     setTerminalLayoutInfo(layout?: ITerminalsLayoutInfoById): Promise<void> {
         const workspace = this._workspaceContextService.getWorkspace();
+
         const args: ISetTerminalLayoutInfoArgs = {
             workspaceId: workspace.id,
             tabs: layout ? layout.tabs : []
         };
+
         return this._channel.call<void>(RemoteTerminalChannelRequest.SetTerminalLayoutInfo, args);
     }
     updateTitle(id: number, title: string, titleSource: TitleEventSource): Promise<string> {
@@ -332,9 +345,11 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
     }
     getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined> {
         const workspace = this._workspaceContextService.getWorkspace();
+
         const args: IGetTerminalLayoutInfoArgs = {
             workspaceId: workspace.id,
         };
+
         return this._channel.call<ITerminalsLayoutInfo>(RemoteTerminalChannelRequest.GetTerminalLayoutInfo, args);
     }
     reviveTerminalProcesses(workspaceId: string, state: ISerializedTerminalState[], dateTimeFormatLocate: string): Promise<void> {

@@ -10,12 +10,14 @@ export class BroadcastDataChannel<T> extends Disposable {
     private broadcastChannel: BroadcastChannel | undefined;
     private readonly _onDidReceiveData = this._register(new Emitter<T>());
     readonly onDidReceiveData = this._onDidReceiveData.event;
+
     constructor(private readonly channelName: string) {
         super();
         // Use BroadcastChannel
         if ('BroadcastChannel' in mainWindow) {
             try {
                 this.broadcastChannel = new BroadcastChannel(channelName);
+
                 const listener = (event: MessageEvent) => {
                     this._onDidReceiveData.fire(event.data);
                 };

@@ -38,6 +38,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 
 	async $countTokensForInvocation(callId: string, input: string, token: CancellationToken): Promise<number> {
 		const fn = this._tokenCountFuncs.get(callId);
+
 		if (!fn) {
 			throw new Error(`Tool invocation call ${callId} not found`);
 		}
@@ -47,6 +48,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 
 	async invokeTool(toolId: string, options: vscode.LanguageModelToolInvocationOptions<any>, token?: CancellationToken): Promise<vscode.LanguageModelToolResult> {
 		const callId = generateUuid();
+
 		if (options.tokenizationOptions) {
 			this._tokenCountFuncs.set(callId, options.tokenizationOptions.countTokens);
 		}
@@ -64,6 +66,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 				tokenBudget: options.tokenizationOptions?.tokenBudget,
 				context: options.toolInvocationToken as IToolInvocationContext | undefined,
 			}, token);
+
 			return typeConvert.LanguageModelToolResult.to(result);
 		} finally {
 			this._tokenCountFuncs.delete(callId);
@@ -72,6 +75,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 
 	$onDidChangeTools(tools: IToolDataDto[]): void {
 		this._allTools.clear();
+
 		for (const tool of tools) {
 			this._allTools.set(tool.id, tool);
 		}
@@ -84,11 +88,13 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 
 	async $invokeTool(dto: IToolInvocation, token: CancellationToken): Promise<IToolResult> {
 		const item = this._registeredTools.get(dto.toolId);
+
 		if (!item) {
 			throw new Error(`Unknown tool ${dto.toolId}`);
 		}
 
 		const options: vscode.LanguageModelToolInvocationOptions<Object> = { input: dto.parameters, toolInvocationToken: dto.context as vscode.ChatParticipantToolToken | undefined };
+
 		if (dto.tokenBudget !== undefined) {
 			options.tokenizationOptions = {
 				tokenBudget: dto.tokenBudget,
@@ -98,6 +104,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 		}
 
 		const extensionResult = await raceCancellation(Promise.resolve(item.tool.invoke(options, token)), token);
+
 		if (!extensionResult) {
 			throw new CancellationError();
 		}
@@ -107,6 +114,7 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 
 	async $prepareToolInvocation(toolId: string, input: any, token: CancellationToken): Promise<IPreparedToolInvocation | undefined> {
 		const item = this._registeredTools.get(toolId);
+
 		if (!item) {
 			throw new Error(`Unknown tool ${toolId}`);
 		}
@@ -116,7 +124,9 @@ export class ExtHostLanguageModelTools implements ExtHostLanguageModelToolsShape
 		}
 
 		const options: vscode.LanguageModelToolInvocationPrepareOptions<any> = { input };
+
 		const result = await item.tool.prepareInvocation(options, token);
+
 		if (!result) {
 			return undefined;
 		}

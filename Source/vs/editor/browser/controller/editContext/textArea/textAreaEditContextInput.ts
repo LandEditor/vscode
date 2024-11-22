@@ -37,6 +37,7 @@ export interface IPasteData {
 
 export interface ITextAreaInputHost {
 	getDataToCopy(): ClipboardDataToCopy;
+
 	getScreenReaderContent(): TextAreaState;
 	deduceModelPosition(viewAnchorPosition: Position, deltaOffset: number, lineFeedCnt: number): Position;
 }
@@ -64,6 +65,7 @@ export interface ICompleteTextAreaWrapper extends ITextAreaWrapper {
 	readonly ownerDocument: Document;
 
 	setIgnoreSelectionChangeTime(reason: string): void;
+
 	getIgnoreSelectionChangeTime(): number;
 	resetSelectionChangeTime(): void;
 
@@ -87,6 +89,7 @@ class CompositionContext {
 
 	public handleCompositionUpdate(text: string | null | undefined): ITypeData {
 		text = text || '';
+
 		const typeInput: ITypeData = {
 			text: text,
 			replacePrevCharCnt: this._lastTypeTextLength,
@@ -94,6 +97,7 @@ class CompositionContext {
 			positionDelta: 0
 		};
 		this._lastTypeTextLength = text.length;
+
 		return typeInput;
 	}
 }
@@ -170,6 +174,7 @@ export class TextAreaInput extends Disposable {
 		this._asyncTriggerCut = this._register(new RunOnceScheduler(() => this._onCut.fire(), 0));
 		this._textAreaState = TextAreaState.EMPTY;
 		this._selectionChangeListener = null;
+
 		if (this._accessibilityService.isScreenReaderOptimized()) {
 			this.writeNativeTextAreaContent('ctor');
 		}
@@ -187,6 +192,7 @@ export class TextAreaInput extends Disposable {
 
 		this._register(this._textArea.onKeyDown((_e) => {
 			const e = new StandardKeyboardEvent(_e);
+
 			if (e.keyCode === KeyCode.KEY_IN_COMPOSITION
 				|| (this._currentComposition && e.keyCode === KeyCode.Backspace)) {
 				// Stop propagation for keyDown events if the IME is processing key input
@@ -214,9 +220,11 @@ export class TextAreaInput extends Disposable {
 			}
 
 			const currentComposition = new CompositionContext();
+
 			if (this._currentComposition) {
 				// simply reset the composition context
 				this._currentComposition = currentComposition;
+
 				return;
 			}
 			this._currentComposition = currentComposition;
@@ -237,6 +245,7 @@ export class TextAreaInput extends Disposable {
 				// Pretend the previous character was composed (in order to get it removed by subsequent compositionupdate events)
 				currentComposition.handleCompositionUpdate('x');
 				this._onCompositionStart.fire({ data: e.data });
+
 				return;
 			}
 
@@ -244,6 +253,7 @@ export class TextAreaInput extends Disposable {
 				// when tapping on the editor, Android enters composition mode to edit the current word
 				// so we cannot clear the textarea on Android and we must pretend the current word was selected
 				this._onCompositionStart.fire({ data: e.data });
+
 				return;
 			}
 
@@ -255,6 +265,7 @@ export class TextAreaInput extends Disposable {
 				console.log(`[compositionupdate]`, e);
 			}
 			const currentComposition = this._currentComposition;
+
 			if (!currentComposition) {
 				// should not be possible to receive a 'compositionupdate' without a 'compositionstart'
 				return;
@@ -265,10 +276,12 @@ export class TextAreaInput extends Disposable {
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
 				const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
+
 				const typeInput = TextAreaState.deduceAndroidCompositionInput(this._textAreaState, newState);
 				this._textAreaState = newState;
 				this._onType.fire(typeInput);
 				this._onCompositionUpdate.fire(e);
+
 				return;
 			}
 			const typeInput = currentComposition.handleCompositionUpdate(e.data);
@@ -282,6 +295,7 @@ export class TextAreaInput extends Disposable {
 				console.log(`[compositionend]`, e);
 			}
 			const currentComposition = this._currentComposition;
+
 			if (!currentComposition) {
 				// https://github.com/microsoft/monaco-editor/issues/1663
 				// On iOS 13.2, Chinese system IME randomly trigger an additional compositionend event with empty data
@@ -295,10 +309,12 @@ export class TextAreaInput extends Disposable {
 				// and Microsoft is chosen from the keyboard's suggestions, the e.data will contain "Microsoft".
 				// This is not really usable because it doesn't tell us where the edit began and where it ended.
 				const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
+
 				const typeInput = TextAreaState.deduceAndroidCompositionInput(this._textAreaState, newState);
 				this._textAreaState = newState;
 				this._onType.fire(typeInput);
 				this._onCompositionEnd.fire();
+
 				return;
 			}
 
@@ -322,6 +338,7 @@ export class TextAreaInput extends Disposable {
 			}
 
 			const newState = TextAreaState.readFromTextArea(this._textArea, this._textAreaState);
+
 			const typeInput = TextAreaState.deduceInput(this._textAreaState, newState, /*couldBeEmojiInput*/this._OS === OperatingSystem.Macintosh);
 
 			if (typeInput.replacePrevCharCnt === 0 && typeInput.text.length === 1) {
@@ -336,6 +353,7 @@ export class TextAreaInput extends Disposable {
 			}
 
 			this._textAreaState = newState;
+
 			if (
 				typeInput.text !== ''
 				|| typeInput.replacePrevCharCnt !== 0
@@ -373,6 +391,7 @@ export class TextAreaInput extends Disposable {
 			}
 
 			let [text, metadata] = ClipboardEventUtils.getTextData(e.clipboardData);
+
 			if (!text) {
 				return;
 			}
@@ -459,6 +478,7 @@ export class TextAreaInput extends Disposable {
 		// `selectionchange` events often come multiple times for a single logical change
 		// so throttle multiple `selectionchange` events that burst in a short period of time.
 		let previousSelectionChangeEventTime = 0;
+
 		return dom.addDisposableListener(this._textArea.ownerDocument, 'selectionchange', (e) => {//todo
 			inputLatency.onSelectionChange();
 
@@ -477,6 +497,7 @@ export class TextAreaInput extends Disposable {
 
 			const delta1 = now - previousSelectionChangeEventTime;
 			previousSelectionChangeEventTime = now;
+
 			if (delta1 < 5) {
 				// received another `selectionchange` event within 5ms of the previous `selectionchange` event
 				// => ignore it
@@ -485,6 +506,7 @@ export class TextAreaInput extends Disposable {
 
 			const delta2 = now - this._textArea.getIgnoreSelectionChangeTime();
 			this._textArea.resetSelectionChangeTime();
+
 			if (delta2 < 100) {
 				// received a `selectionchange` event within 100ms since we touched the textarea
 				// => ignore it, since we caused it
@@ -497,22 +519,27 @@ export class TextAreaInput extends Disposable {
 			}
 
 			const newValue = this._textArea.getValue();
+
 			if (this._textAreaState.value !== newValue) {
 				// Cannot correlate a position in the textarea with a position in the editor...
 				return;
 			}
 
 			const newSelectionStart = this._textArea.getSelectionStart();
+
 			const newSelectionEnd = this._textArea.getSelectionEnd();
+
 			if (this._textAreaState.selectionStart === newSelectionStart && this._textAreaState.selectionEnd === newSelectionEnd) {
 				// Nothing to do...
 				return;
 			}
 
 			const _newSelectionStartPosition = this._textAreaState.deduceEditorPosition(newSelectionStart);
+
 			const newSelectionStartPosition = this._host.deduceModelPosition(_newSelectionStartPosition[0]!, _newSelectionStartPosition[1], _newSelectionStartPosition[2]);
 
 			const _newSelectionEndPosition = this._textAreaState.deduceEditorPosition(newSelectionEnd);
+
 			const newSelectionEndPosition = this._host.deduceModelPosition(_newSelectionEndPosition[0]!, _newSelectionEndPosition[1], _newSelectionEndPosition[2]);
 
 			const newSelection = new Selection(
@@ -526,6 +553,7 @@ export class TextAreaInput extends Disposable {
 
 	public override dispose(): void {
 		super.dispose();
+
 		if (this._selectionChangeListener) {
 			this._selectionChangeListener.dispose();
 			this._selectionChangeListener = null;
@@ -597,6 +625,7 @@ export class TextAreaInput extends Disposable {
 
 	private _ensureClipboardGetsEditorSelection(e: ClipboardEvent): void {
 		const dataToCopy = this._host.getDataToCopy();
+
 		const storedMetadata: ClipboardStoredMetadata = {
 			version: 1,
 			isFromEmptySelection: dataToCopy.isFromEmptySelection,
@@ -611,6 +640,7 @@ export class TextAreaInput extends Disposable {
 		);
 
 		e.preventDefault();
+
 		if (e.clipboardData) {
 			ClipboardEventUtils.setTextData(e.clipboardData, dataToCopy.text, dataToCopy.html, storedMetadata);
 		}
@@ -658,6 +688,7 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 
 	public hasFocus(): boolean {
 		const shadowRoot = dom.getShadowRoot(this._actual);
+
 		if (shadowRoot) {
 			return shadowRoot.activeElement === this._actual;
 		} else if (this._actual.isConnected) {
@@ -681,11 +712,13 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 
 	public getValue(): string {
 		// console.log('current value: ' + this._textArea.value);
+
 		return this._actual.value;
 	}
 
 	public setValue(reason: string, value: string): void {
 		const textArea = this._actual;
+
 		if (textArea.value === value) {
 			// No change
 			return;
@@ -707,7 +740,9 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 		const textArea = this._actual;
 
 		let activeElement: Element | null = null;
+
 		const shadowRoot = dom.getShadowRoot(textArea);
+
 		if (shadowRoot) {
 			activeElement = shadowRoot.activeElement;
 		} else {
@@ -716,7 +751,9 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 		const activeWindow = dom.getWindow(activeElement);
 
 		const currentIsFocused = (activeElement === textArea);
+
 		const currentSelectionStart = textArea.selectionStart;
+
 		const currentSelectionEnd = textArea.selectionEnd;
 
 		if (currentIsFocused && currentSelectionStart === selectionStart && currentSelectionEnd === selectionEnd) {
@@ -734,6 +771,7 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 			// No need to focus, only need to change the selection range
 			this.setIgnoreSelectionChangeTime('setSelectionRange');
 			textArea.setSelectionRange(selectionStart, selectionEnd);
+
 			if (browser.isFirefox && activeWindow.parent !== activeWindow) {
 				textArea.focus();
 			}
@@ -747,6 +785,7 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 			this.setIgnoreSelectionChangeTime('setSelectionRange');
 			textArea.focus();
 			textArea.setSelectionRange(selectionStart, selectionEnd);
+
 			dom.restoreParentsScrollTop(textArea, scrollState);
 		} catch (e) {
 			// Sometimes IE throws when setting selection (e.g. textarea is off-DOM)

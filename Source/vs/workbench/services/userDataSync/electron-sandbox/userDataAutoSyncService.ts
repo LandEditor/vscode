@@ -10,6 +10,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 class UserDataAutoSyncService implements IUserDataAutoSyncService {
     declare readonly _serviceBrand: undefined;
     private readonly channel: IChannel;
+
     get onError(): Event<UserDataSyncError> { return Event.map(this.channel.listen<Error>('onError'), e => UserDataSyncError.toUserDataSyncError(e)); }
     constructor(
     @ISharedProcessService

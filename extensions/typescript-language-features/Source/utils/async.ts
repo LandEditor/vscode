@@ -12,6 +12,7 @@ export class Delayer<T> {
     private completionPromise: Promise<T | undefined> | null;
     private onSuccess: ((value: T | PromiseLike<T> | undefined) => void) | null;
     private task: ITask<T> | null;
+
     constructor(defaultDelay: number) {
         this.defaultDelay = defaultDelay;
         this.timeout = null;
@@ -21,6 +22,7 @@ export class Delayer<T> {
     }
     public trigger(task: ITask<T>, delay: number = this.defaultDelay): Promise<T | undefined> {
         this.task = task;
+
         if (delay >= 0) {
             this.cancelTimeout();
         }
@@ -30,8 +32,10 @@ export class Delayer<T> {
             }).then(() => {
                 this.completionPromise = null;
                 this.onSuccess = null;
+
                 const result = this.task?.();
                 this.task = null;
+
                 return result;
             });
         }
@@ -53,10 +57,12 @@ export class Delayer<T> {
 export function setImmediate(callback: (...args: any[]) => void, ...args: any[]): Disposable {
     if (global.setImmediate) {
         const handle = global.setImmediate(callback, ...args);
+
         return { dispose: () => global.clearImmediate(handle) };
     }
     else {
         const handle = setTimeout(callback, 0, ...args);
+
         return { dispose: () => clearTimeout(handle) };
     }
 }
@@ -91,6 +97,7 @@ export class Throttler {
     private queuedPromise: Promise<any> | null;
     private queuedPromiseFactory: ITask<Promise<any>> | null;
     private isDisposed = false;
+
     constructor() {
         this.activePromise = null;
         this.queuedPromise = null;
@@ -102,14 +109,17 @@ export class Throttler {
         }
         if (this.activePromise) {
             this.queuedPromiseFactory = promiseFactory;
+
             if (!this.queuedPromise) {
                 const onComplete = () => {
                     this.queuedPromise = null;
+
                     if (this.isDisposed) {
                         return;
                     }
                     const result = this.queue(this.queuedPromiseFactory!);
                     this.queuedPromiseFactory = null;
+
                     return result;
                 };
                 this.queuedPromise = new Promise(resolve => {
@@ -121,6 +131,7 @@ export class Throttler {
             });
         }
         this.activePromise = promiseFactory();
+
         return new Promise((resolve, reject) => {
             this.activePromise!.then((result: T) => {
                 this.activePromise = null;

@@ -167,6 +167,7 @@ export type TokensList = Token[] & {
 declare class _Renderer {
 	options: MarkedOptions;
 	parser: _Parser;
+
 	constructor(options?: MarkedOptions);
 	space(token: Tokens.Space): string;
 	code({ text, lang, escaped }: Tokens.Code): string;
@@ -215,6 +216,7 @@ declare class _Parser {
 	options: MarkedOptions;
 	renderer: _Renderer;
 	textRenderer: _TextRenderer;
+
 	constructor(options?: MarkedOptions);
 	/**
 	 * Static Parse Method
@@ -316,6 +318,7 @@ export declare const inline: {
 		url: RegExp;
 	};
 	gfm: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
+
 	breaks: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
 	pedantic: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
 };
@@ -330,6 +333,7 @@ declare class _Tokenizer {
 	options: MarkedOptions;
 	rules: Rules;
 	lexer: _Lexer;
+
 	constructor(options?: MarkedOptions);
 	space(src: string): Tokens.Space | undefined;
 	code(src: string): Tokens.Code | undefined;
@@ -358,6 +362,7 @@ declare class _Tokenizer {
 }
 declare class _Hooks {
 	options: MarkedOptions;
+
 	constructor(options?: MarkedOptions);
 	static passThroughHooks: Set<string>;
 	/**
@@ -504,6 +509,7 @@ declare class _Lexer {
 	};
 	private tokenizer;
 	private inlineQueue;
+
 	constructor(options?: MarkedOptions);
 	/**
 	 * Expose Rules
@@ -551,6 +557,7 @@ declare class _Lexer {
 				url: RegExp;
 			};
 			gfm: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
+
 			breaks: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
 			pedantic: Record<"link" | "code" | "url" | "br" | "del" | "text" | "escape" | "tag" | "reflink" | "autolink" | "nolink" | "_backpedal" | "anyPunctuation" | "blockSkip" | "emStrongLDelim" | "emStrongRDelimAst" | "emStrongRDelimUnd" | "punctuation" | "reflinkSearch", RegExp>;
 		};
@@ -611,12 +618,14 @@ export declare class Marked {
 	Lexer: typeof _Lexer;
 	Tokenizer: typeof _Tokenizer;
 	Hooks: typeof _Hooks;
+
 	constructor(...args: MarkedExtension[]);
 	/**
 	 * Run callback for every token
 	 */
 	walkTokens(tokens: Token[] | TokensList, callback: (token: Token) => MaybePromise | MaybePromise[]): MaybePromise[];
 	use(...args: MarkedExtension[]): this;
+
 	setOptions(opt: MarkedOptions): this;
 	lexer(src: string, options?: MarkedOptions): TokensList;
 	parser(tokens: Token[], options?: MarkedOptions): string;
@@ -649,11 +658,17 @@ export declare function marked(src: string, options: MarkedOptions & {
 export declare function marked(src: string, options?: MarkedOptions | undefined | null): string | Promise<string>;
 export declare namespace marked {
 	var options: (options: MarkedOptions) => typeof marked;
+
 	var setOptions: (options: MarkedOptions) => typeof marked;
+
 	var getDefaults: typeof _getDefaults;
+
 	var defaults: MarkedOptions;
+
 	var use: (...args: MarkedExtension[]) => typeof marked;
+
 	var walkTokens: (tokens: Token[] | TokensList, callback: (token: Token) => MaybePromise | MaybePromise[]) => MaybePromise[];
+
 	var parseInline: {
 		(src: string, options: MarkedOptions & {
 			async: true;
@@ -663,14 +678,23 @@ export declare namespace marked {
 		}): string;
 		(src: string, options?: MarkedOptions | undefined | null): string | Promise<string>;
 	};
+
 	var Parser: typeof _Parser;
+
 	var parser: typeof _Parser.parse;
+
 	var Renderer: typeof _Renderer;
+
 	var TextRenderer: typeof _TextRenderer;
+
 	var Lexer: typeof _Lexer;
+
 	var lexer: typeof _Lexer.lex;
+
 	var Tokenizer: typeof _Tokenizer;
+
 	var Hooks: typeof _Hooks;
+
 	var parse: typeof marked;
 }
 export declare const options: (options: MarkedOptions) => typeof marked;

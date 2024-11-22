@@ -34,6 +34,7 @@ export class InteractiveDocumentService extends Disposable implements IInteracti
         inputUri: URI;
     }>());
     onWillRemoveInteractiveDocument = this._onWillRemoveInteractiveDocument.event;
+
     constructor() {
         super();
     }

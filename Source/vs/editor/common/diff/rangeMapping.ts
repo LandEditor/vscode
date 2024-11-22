@@ -15,10 +15,14 @@ import { AbstractText, SingleTextEdit, TextEdit } from '../core/textEdit.js';
 export class LineRangeMapping {
     public static inverse(mapping: readonly LineRangeMapping[], originalLineCount: number, modifiedLineCount: number): LineRangeMapping[] {
         const result: LineRangeMapping[] = [];
+
         let lastOriginalEndLineNumber = 1;
+
         let lastModifiedEndLineNumber = 1;
+
         for (const m of mapping) {
             const r = new LineRangeMapping(new LineRange(lastOriginalEndLineNumber, m.original.startLineNumber), new LineRange(lastModifiedEndLineNumber, m.modified.startLineNumber));
+
             if (!r.modified.isEmpty) {
                 result.push(r);
             }
@@ -26,6 +30,7 @@ export class LineRangeMapping {
             lastModifiedEndLineNumber = m.modified.endLineNumberExclusive;
         }
         const r = new LineRangeMapping(new LineRange(lastOriginalEndLineNumber, originalLineCount + 1), new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1));
+
         if (!r.modified.isEmpty) {
             result.push(r);
         }
@@ -33,9 +38,12 @@ export class LineRangeMapping {
     }
     public static clip(mapping: readonly LineRangeMapping[], originalRange: LineRange, modifiedRange: LineRange): LineRangeMapping[] {
         const result: LineRangeMapping[] = [];
+
         for (const m of mapping) {
             const original = m.original.intersect(originalRange);
+
             const modified = m.modified.intersect(modifiedRange);
+
             if (original && !original.isEmpty && modified && !modified.isEmpty) {
                 result.push(new LineRangeMapping(original, modified));
             }
@@ -50,6 +58,7 @@ export class LineRangeMapping {
      * The line range in the modified text model.
      */
     public readonly modified: LineRange;
+
     constructor(originalRange: LineRange, modifiedRange: LineRange) {
         this.original = originalRange;
         this.modified = modifiedRange;
@@ -73,7 +82,9 @@ export class LineRangeMapping {
     */
     public toRangeMapping(): RangeMapping {
         const origInclusiveRange = this.original.toInclusiveRange();
+
         const modInclusiveRange = this.modified.toInclusiveRange();
+
         if (origInclusiveRange && modInclusiveRange) {
             return new RangeMapping(origInclusiveRange, modInclusiveRange);
         }
@@ -120,6 +131,7 @@ function normalizePosition(position: Position, content: string[]): Position {
         return new Position(content.length, content[content.length - 1].length + 1);
     }
     const line = content[position.lineNumber - 1];
+
     if (position.column > line.length + 1) {
         return new Position(position.lineNumber, line.length + 1);
     }
@@ -135,7 +147,9 @@ function isValidLineNumber(lineNumber: number, lines: string[]): boolean {
 export class DetailedLineRangeMapping extends LineRangeMapping {
     public static fromRangeMappings(rangeMappings: RangeMapping[]): DetailedLineRangeMapping {
         const originalRange = LineRange.join(rangeMappings.map(r => LineRange.fromRangeInclusive(r.originalRange)));
+
         const modifiedRange = LineRange.join(rangeMappings.map(r => LineRange.fromRangeInclusive(r.modifiedRange)));
+
         return new DetailedLineRangeMapping(originalRange, modifiedRange, rangeMappings);
     }
     /**
@@ -145,6 +159,7 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
      * Must not be an empty array.
      */
     public readonly innerChanges: RangeMapping[] | undefined;
+
     constructor(originalRange: LineRange, modifiedRange: LineRange, innerChanges: RangeMapping[] | undefined) {
         super(originalRange, modifiedRange);
         this.innerChanges = innerChanges;
@@ -162,12 +177,16 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 export class RangeMapping {
     public static fromEdit(edit: TextEdit): RangeMapping[] {
         const newRanges = edit.getNewRanges();
+
         const result = edit.edits.map((e, idx) => new RangeMapping(e.range, newRanges[idx]));
+
         return result;
     }
     public static fromEditJoin(edit: TextEdit): RangeMapping {
         const newRanges = edit.getNewRanges();
+
         const result = edit.edits.map((e, idx) => new RangeMapping(e.range, newRanges[idx]));
+
         return RangeMapping.join(result);
     }
     public static join(rangeMappings: RangeMapping[]): RangeMapping {
@@ -175,6 +194,7 @@ export class RangeMapping {
             throw new BugIndicatingError('Cannot join an empty list of range mappings');
         }
         let result = rangeMappings[0];
+
         for (let i = 1; i < rangeMappings.length; i++) {
             result = result.join(rangeMappings[i]);
         }
@@ -183,7 +203,9 @@ export class RangeMapping {
     public static assertSorted(rangeMappings: RangeMapping[]): void {
         for (let i = 1; i < rangeMappings.length; i++) {
             const previous = rangeMappings[i - 1];
+
             const current = rangeMappings[i];
+
             if (!(previous.originalRange.getEndPosition().isBeforeOrEqual(current.originalRange.getStartPosition())
                 && previous.modifiedRange.getEndPosition().isBeforeOrEqual(current.modifiedRange.getStartPosition()))) {
                 throw new BugIndicatingError('Range mappings must be sorted');
@@ -198,6 +220,7 @@ export class RangeMapping {
      * The modified range.
      */
     readonly modifiedRange: Range;
+
     constructor(originalRange: Range, modifiedRange: Range) {
         this.originalRange = originalRange;
         this.modifiedRange = modifiedRange;
@@ -213,6 +236,7 @@ export class RangeMapping {
     */
     public toTextEdit(modified: AbstractText): SingleTextEdit {
         const newText = modified.getValueOfRange(this.modifiedRange);
+
         return new SingleTextEdit(this.originalRange, newText);
     }
     public join(other: RangeMapping): RangeMapping {
@@ -221,9 +245,11 @@ export class RangeMapping {
 }
 export function lineRangeMappingFromRangeMappings(alignments: readonly RangeMapping[], originalLines: AbstractText, modifiedLines: AbstractText, dontAssertStartLine: boolean = false): DetailedLineRangeMapping[] {
     const changes: DetailedLineRangeMapping[] = [];
+
     for (const g of groupAdjacentBy(alignments.map(a => getLineRangeMapping(a, originalLines, modifiedLines)), (a1, a2) => a1.original.overlapOrTouch(a2.original)
         || a1.modified.overlapOrTouch(a2.modified))) {
         const first = g[0];
+
         const last = g[g.length - 1];
         changes.push(new DetailedLineRangeMapping(first.original.join(last.original), first.modified.join(last.modified), g.map(a => a.innerChanges![0])));
     }
@@ -241,10 +267,12 @@ export function lineRangeMappingFromRangeMappings(alignments: readonly RangeMapp
             m1.original.endLineNumberExclusive < m2.original.startLineNumber &&
             m1.modified.endLineNumberExclusive < m2.modified.startLineNumber);
     });
+
     return changes;
 }
 export function getLineRangeMapping(rangeMapping: RangeMapping, originalLines: AbstractText, modifiedLines: AbstractText): DetailedLineRangeMapping {
     let lineStartDelta = 0;
+
     let lineEndDelta = 0;
     // rangeMapping describes the edit that replaces `rangeMapping.originalRange` with `newText := getText(modifiedLines, rangeMapping.modifiedRange)`.
     // original: ]xxx \n <- this line is not modified
@@ -265,6 +293,8 @@ export function getLineRangeMapping(rangeMapping: RangeMapping, originalLines: A
         lineStartDelta = 1;
     }
     const originalLineRange = new LineRange(rangeMapping.originalRange.startLineNumber + lineStartDelta, rangeMapping.originalRange.endLineNumber + 1 + lineEndDelta);
+
     const modifiedLineRange = new LineRange(rangeMapping.modifiedRange.startLineNumber + lineStartDelta, rangeMapping.modifiedRange.endLineNumber + 1 + lineEndDelta);
+
     return new DetailedLineRangeMapping(originalLineRange, modifiedLineRange, [rangeMapping]);
 }

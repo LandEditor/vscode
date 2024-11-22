@@ -34,6 +34,7 @@ class ZIndexRegistry {
 	private styleSheet: HTMLStyleElement;
 	private zIndexMap: Map<string, number>;
 	private scheduler: RunOnceScheduler;
+
 	constructor() {
 		this.styleSheet = createStyleSheet();
 		this.zIndexMap = new Map<string, number>();
@@ -46,12 +47,14 @@ class ZIndexRegistry {
 		}
 
 		const proposedZValue = relativeLayer + z;
+
 		if (findBase(proposedZValue) !== relativeLayer) {
 			throw new Error(`Relative layer: ${relativeLayer} + z-index: ${z} exceeds next layer ${proposedZValue}.`);
 		}
 
 		this.zIndexMap.set(name, proposedZValue);
 		this.scheduler.schedule();
+
 		return this.getVarName(name);
 	}
 
@@ -61,6 +64,7 @@ class ZIndexRegistry {
 
 	private updateStyleElement(): void {
 		clearNode(this.styleSheet);
+
 		let ruleBuilder = '';
 		this.zIndexMap.forEach((zIndex, name) => {
 			ruleBuilder += `${this.getVarName(name)}: ${zIndex};\n`;

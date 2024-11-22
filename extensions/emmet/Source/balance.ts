@@ -6,7 +6,9 @@ import * as vscode from 'vscode';
 import { getHtmlFlatNode, offsetRangeToSelection, validate } from './util';
 import { getRootNode } from './parseDocument';
 import { HtmlNode as HtmlFlatNode } from 'EmmetFlatNode';
+
 let balanceOutStack: Array<readonly vscode.Selection[]> = [];
+
 let lastBalancedSelections: readonly vscode.Selection[] = [];
 export function balanceOut() {
     balance(true);
@@ -19,12 +21,16 @@ function balance(out: boolean) {
         return;
     }
     const editor = vscode.window.activeTextEditor;
+
     const document = editor.document;
+
     const rootNode = <HtmlFlatNode>getRootNode(document, true);
+
     if (!rootNode) {
         return;
     }
     const rangeFn = out ? getRangeToBalanceOut : getRangeToBalanceIn;
+
     let newSelections: readonly vscode.Selection[] = editor.selections.map(selection => {
         return rangeFn(document, rootNode, selection);
     });
@@ -50,7 +56,9 @@ function balance(out: boolean) {
 }
 function getRangeToBalanceOut(document: vscode.TextDocument, rootNode: HtmlFlatNode, selection: vscode.Selection): vscode.Selection {
     const offset = document.offsetAt(selection.start);
+
     const nodeToBalance = getHtmlFlatNode(document.getText(), rootNode, offset, false);
+
     if (!nodeToBalance) {
         return selection;
     }
@@ -59,7 +67,9 @@ function getRangeToBalanceOut(document: vscode.TextDocument, rootNode: HtmlFlatN
     }
     // Set reverse direction if we were in the end tag
     let innerSelection: vscode.Selection;
+
     let outerSelection: vscode.Selection;
+
     if (nodeToBalance.close.start <= offset && nodeToBalance.close.end > offset) {
         innerSelection = offsetRangeToSelection(document, nodeToBalance.close.start, nodeToBalance.open.end);
         outerSelection = offsetRangeToSelection(document, nodeToBalance.close.end, nodeToBalance.open.start);
@@ -78,16 +88,23 @@ function getRangeToBalanceOut(document: vscode.TextDocument, rootNode: HtmlFlatN
 }
 function getRangeToBalanceIn(document: vscode.TextDocument, rootNode: HtmlFlatNode, selection: vscode.Selection): vscode.Selection {
     const offset = document.offsetAt(selection.start);
+
     const nodeToBalance = getHtmlFlatNode(document.getText(), rootNode, offset, true);
+
     if (!nodeToBalance) {
         return selection;
     }
     const selectionStart = document.offsetAt(selection.start);
+
     const selectionEnd = document.offsetAt(selection.end);
+
     if (nodeToBalance.open && nodeToBalance.close) {
         const entireNodeSelected = selectionStart === nodeToBalance.start && selectionEnd === nodeToBalance.end;
+
         const startInOpenTag = selectionStart > nodeToBalance.open.start && selectionStart < nodeToBalance.open.end;
+
         const startInCloseTag = selectionStart > nodeToBalance.close.start && selectionStart < nodeToBalance.close.end;
+
         if (entireNodeSelected || startInOpenTag || startInCloseTag) {
             return offsetRangeToSelection(document, nodeToBalance.open.end, nodeToBalance.close.start);
         }
@@ -96,6 +113,7 @@ function getRangeToBalanceIn(document: vscode.TextDocument, rootNode: HtmlFlatNo
         return selection;
     }
     const firstChild = nodeToBalance.firstChild;
+
     if (selectionStart === firstChild.start
         && selectionEnd === firstChild.end
         && firstChild.open

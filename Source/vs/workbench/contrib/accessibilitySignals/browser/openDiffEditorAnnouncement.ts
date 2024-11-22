@@ -14,6 +14,7 @@ import { AccessibilityVerbositySettingId } from '../../accessibility/browser/acc
 export class DiffEditorActiveAnnouncementContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.diffEditorActiveAnnouncement';
     private _onDidActiveEditorChangeListener?: IDisposable;
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -31,10 +32,13 @@ export class DiffEditorActiveAnnouncementContribution extends Disposable impleme
     }
     private _updateListener(): void {
         const announcementEnabled = this._configurationService.getValue(AccessibilityVerbositySettingId.DiffEditorActive);
+
         const screenReaderOptimized = this._accessibilityService.isScreenReaderOptimized();
+
         if (!announcementEnabled || !screenReaderOptimized) {
             this._onDidActiveEditorChangeListener?.dispose();
             this._onDidActiveEditorChangeListener = undefined;
+
             return;
         }
         if (this._onDidActiveEditorChangeListener) {

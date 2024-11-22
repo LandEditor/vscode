@@ -31,9 +31,12 @@ export class TSServerRequestCommand implements Command {
 		}
 		if (args && typeof args === 'object' && !Array.isArray(args)) {
 			const requestArgs = args as RequestArgs;
+
 			let newArgs: any = undefined;
+
 			if (requestArgs.file instanceof vscode.Uri) {
 				newArgs = { ...args };
+
 				const client = this.lazyClientHost.value.serviceClient;
 				newArgs.file = client.toOpenTsFilePath(requestArgs.file);
 				args = newArgs;

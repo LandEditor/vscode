@@ -36,6 +36,7 @@ export class MarkdownRenderer {
     });
     private readonly _onDidRenderAsync = new Emitter<void>();
     readonly onDidRenderAsync = this._onDidRenderAsync.event;
+
     constructor(private readonly _options: IMarkdownRendererOptions, 
     @ILanguageService
     private readonly _languageService: ILanguageService, 
@@ -47,11 +48,14 @@ export class MarkdownRenderer {
     render(markdown: IMarkdownString | undefined, options?: MarkdownRenderOptions, markedOptions?: MarkedOptions): IMarkdownRenderResult {
         if (!markdown) {
             const element = document.createElement('span');
+
             return { element, dispose: () => { } };
         }
         const disposables = new DisposableStore();
+
         const rendered = disposables.add(renderMarkdown(markdown, { ...this._getRenderOptions(markdown, disposables), ...options }, markedOptions));
         rendered.element.classList.add('rendered-markdown');
+
         return {
             element: rendered.element,
             dispose: () => disposables.dispose()
@@ -64,6 +68,7 @@ export class MarkdownRenderer {
                 // it is possible that we stumble upon language aliases (e.g.js instead of javascript)
                 // it is possible no alias is given in which case we fall back to the current editor lang
                 let languageId: string | undefined | null;
+
                 if (languageAlias) {
                     languageId = this._languageService.getLanguageIdByLanguageName(languageAlias);
                 }
@@ -74,6 +79,7 @@ export class MarkdownRenderer {
                     languageId = PLAINTEXT_LANGUAGE_ID;
                 }
                 const html = await tokenizeToString(this._languageService, value, languageId);
+
                 const element = document.createElement('span');
                 element.innerHTML = (MarkdownRenderer._ttpTokenizer?.createHTML(html) ?? html) as string;
                 // use "good" font
@@ -110,6 +116,7 @@ export async function openLinkFromMarkdown(openerService: IOpenerService, link: 
     }
     catch (e) {
         onUnexpectedError(e);
+
         return false;
     }
 }

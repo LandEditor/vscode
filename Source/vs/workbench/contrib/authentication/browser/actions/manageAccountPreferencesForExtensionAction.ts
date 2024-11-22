@@ -59,13 +59,16 @@ class ManageAccountPreferenceForExtensionActionImpl {
             return;
         }
         const extension = await this._extensionService.getExtension(extensionId);
+
         if (!extension) {
             throw new Error(`No extension with id ${extensionId}`);
         }
         const providerIds = new Array<string>();
+
         const providerIdToAccounts = new Map<string, ReadonlyArray<AuthenticationSessionAccount & {
             lastUsed?: number;
         }>>();
+
         if (providerId) {
             providerIds.push(providerId);
             providerIdToAccounts.set(providerId, await this._authenticationService.getAccounts(providerId));
@@ -77,17 +80,21 @@ class ManageAccountPreferenceForExtensionActionImpl {
                     continue;
                 }
                 const accounts = await this._authenticationService.getAccounts(providerId);
+
                 for (const account of accounts) {
                     const usage = this._authenticationUsageService.readAccountUsages(providerId, account.label).find(u => ExtensionIdentifier.equals(u.extensionId, extensionId));
+
                     if (usage) {
                         providerIds.push(providerId);
                         providerIdToAccounts.set(providerId, accounts);
+
                         break;
                     }
                 }
             }
         }
         let chosenProviderId: string | undefined = providerIds[0];
+
         if (providerIds.length > 1) {
             const result = await this._quickInputService.pick(providerIds.map(providerId => ({
                 label: this._authenticationService.getProvider(providerId).label,
@@ -100,13 +107,17 @@ class ManageAccountPreferenceForExtensionActionImpl {
         }
         if (!chosenProviderId) {
             await this._dialogService.info(localize('noAccountUsage', "This extension has not used any accounts yet."));
+
             return;
         }
         const currentAccountNamePreference = this._authenticationExtensionsService.getAccountPreference(extensionId, chosenProviderId);
+
         const accounts = providerIdToAccounts.get(chosenProviderId)!;
+
         const items: Array<QuickPickInput<AccountPreferenceQuickPickItem>> = this._getItems(accounts, chosenProviderId, currentAccountNamePreference);
         // If the provider supports multiple accounts, add an option to use a new account
         const provider = this._authenticationService.getProvider(chosenProviderId);
+
         if (provider.supportsMultipleAccounts) {
             // Get the last used scopes for the last used account. This will be used to pre-fill the scopes when adding a new account.
             // If there's no scopes, then don't add this option.
@@ -114,6 +125,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
                 .flatMap(account => this._authenticationUsageService.readAccountUsages(chosenProviderId!, account.label).find(u => ExtensionIdentifier.equals(u.extensionId, extensionId)))
                 .filter((usage): usage is IAccountUsage => !!usage)
                 .sort((a, b) => b.lastUsed - a.lastUsed)?.[0]?.scopes;
+
             if (lastUsedScopes) {
                 items.push({ type: 'separator' });
                 items.push({
@@ -124,10 +136,13 @@ class ManageAccountPreferenceForExtensionActionImpl {
             }
         }
         const disposables = new DisposableStore();
+
         const picker = this._createQuickPick(disposables, extensionId, extension.displayName ?? extension.name, provider.label);
+
         if (items.length === 0) {
             // We would only get here if we went through the Command Palette
             disposables.add(this._handleNoAccounts(picker));
+
             return;
         }
         picker.items = items;
@@ -145,6 +160,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
             picker.hide();
             await this._accept(extensionId, picker.selectedItems);
         }));
+
         return picker;
     }
     private _getItems(accounts: ReadonlyArray<AuthenticationSessionAccount>, providerId: string, currentAccountNamePreference: string | undefined): Array<QuickPickInput<AccountPreferenceQuickPickItem>> {
@@ -168,11 +184,13 @@ class ManageAccountPreferenceForExtensionActionImpl {
         picker.validationMessage = localize('noAccounts', "No accounts are currently used by this extension.");
         picker.buttons = [this._quickInputService.backButton];
         picker.show();
+
         return Event.filter(picker.onDidTriggerButton, (e) => e === this._quickInputService.backButton)(() => this.run());
     }
     private async _accept(extensionId: string, selectedItems: ReadonlyArray<AccountPreferenceQuickPickItem>) {
         for (const item of selectedItems) {
             let account: AuthenticationSessionAccount;
+
             if (!item.account) {
                 try {
                     const session = await this._authenticationService.createSession(item.providerId, item.scopes);
@@ -180,6 +198,7 @@ class ManageAccountPreferenceForExtensionActionImpl {
                 }
                 catch (e) {
                     this._logService.error(e);
+
                     continue;
                 }
             }
@@ -187,7 +206,9 @@ class ManageAccountPreferenceForExtensionActionImpl {
                 account = item.account;
             }
             const providerId = item.providerId;
+
             const currentAccountName = this._authenticationExtensionsService.getAccountPreference(extensionId, providerId);
+
             if (currentAccountName === account.label) {
                 // This account is already the preferred account
                 continue;

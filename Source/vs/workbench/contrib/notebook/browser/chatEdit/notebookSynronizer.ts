@@ -32,6 +32,7 @@ export const INotebookModelSynchronizerFactory = createDecorator<INotebookModelS
 
 export interface INotebookModelSynchronizerFactory {
 	readonly _serviceBrand: undefined;
+
 	getOrCreate(model: NotebookTextModel, entry: IModifiedFileEntry): IReference<NotebookModelSynchronizer>;
 }
 
@@ -50,6 +51,7 @@ class NotebookModelSynchronizerReferenceCollection extends ReferenceCollection<N
 export class NotebookModelSynchronizerFactory implements INotebookModelSynchronizerFactory {
 	readonly _serviceBrand: undefined;
 	private readonly _data: NotebookModelSynchronizerReferenceCollection;
+
 	constructor(@IInstantiationService instantiationService: IInstantiationService) {
 		this._data = instantiationService.createInstance(NotebookModelSynchronizerReferenceCollection);
 	}
@@ -68,6 +70,7 @@ export class NotebookModelSynchronizer extends Disposable {
 	}
 	private snapshot?: { bytes: VSBuffer; dirty: boolean };
 	private isEditFromUs: boolean = false;
+
 	constructor(
 		private readonly model: NotebookTextModel,
 		public readonly entry: IModifiedFileEntry,
@@ -97,13 +100,17 @@ export class NotebookModelSynchronizer extends Disposable {
 		}));
 
 		const cancellationTokenStore = this._register(new DisposableStore());
+
 		let cancellationToken = cancellationTokenStore.add(new CancellationTokenSource());
+
 		const updateNotebookModel = (entry: IModifiedFileEntry, token: CancellationToken) => {
 			this.throttledUpdateNotebookModel.trigger(() => this.updateNotebookModel(entry, token));
 		};
+
 		const modifiedModel = (entry as ChatEditingModifiedFileEntry).modifiedModel;
 		this._register(modifiedModel.onDidChangeContent(async () => {
 			cancellationTokenStore.clear();
+
 			if (!modifiedModel.isDisposed() && !entry.originalModel.isDisposed() && modifiedModel.getValue() === entry.originalModel.getValue()) {
 				if (await this.revert()) {
 					this._diffInfo.set(undefined, undefined);
@@ -138,6 +145,7 @@ export class NotebookModelSynchronizer extends Disposable {
 			};
 
 			let outputSize = 0;
+
 			for (const cell of this.model.cells) {
 				const cellData: ICellDto2 = {
 					cellKind: cell.cellKind,
@@ -149,12 +157,14 @@ export class NotebookModelSynchronizer extends Disposable {
 				};
 
 				const outputSizeLimit = this.configurationService.getValue<number>(NotebookSetting.outputBackupSizeLimit) * 1024;
+
 				if (outputSizeLimit > 0) {
 					cell.outputs.forEach(output => {
 						output.outputs.forEach(item => {
 							outputSize += item.data.byteLength;
 						});
 					});
+
 					if (outputSize > outputSizeLimit) {
 						return;
 					}
@@ -178,13 +188,16 @@ export class NotebookModelSynchronizer extends Disposable {
 			return false;
 		}
 		await this.updateNotebook(this.snapshot.bytes, !this.snapshot.dirty);
+
 		return true;
 	}
 
 	private async updateNotebook(bytes: VSBuffer, save: boolean) {
 		const ref = await this.notebookModelResolverService.resolve(this.model.uri);
+
 		try {
 			const serializer = await this.getNotebookSerializer();
+
 			const data = await serializer.dataToNotebook(bytes);
 			this.model.reset(data.cells, data.metadata, serializer.options);
 
@@ -201,12 +214,14 @@ export class NotebookModelSynchronizer extends Disposable {
 
 	private async accept() {
 		const modifiedModel = (this.entry as ChatEditingModifiedFileEntry).modifiedModel;
+
 		const content = modifiedModel.getValue();
 		await this.updateNotebook(VSBuffer.fromString(content), false);
 	}
 
 	async getNotebookSerializer() {
 		const info = await this.notebookService.withNotebookDataProvider(this.model.viewType);
+
 		return info.serializer;
 	}
 
@@ -219,9 +234,13 @@ export class NotebookModelSynchronizer extends Disposable {
 	}
 	private async updateNotebookModel(entry: IModifiedFileEntry, token: CancellationToken) {
 		const modifiedModelVersion = (entry as ChatEditingModifiedFileEntry).modifiedModel.getVersionId();
+
 		const currentModel = this.model;
+
 		const modelVersion = currentModel?.versionId ?? 0;
+
 		const modelWithChatEdits = await this.getModifiedModelForDiff(entry, token);
+
 		if (!modelWithChatEdits || token.isCancellationRequested || !currentModel) {
 			return;
 		}
@@ -230,7 +249,9 @@ export class NotebookModelSynchronizer extends Disposable {
 		const cellDiffInfo = (await this.computeDiff(originalModel, modelWithChatEdits, token))?.cellDiffInfo;
 		// This is the diff from the current model to the model with chat edits.
 		const cellDiffInfoToApplyEdits = (await this.computeDiff(currentModel, modelWithChatEdits, token))?.cellDiffInfo;
+
 		const currentVersion = (entry as ChatEditingModifiedFileEntry).modifiedModel.getVersionId();
+
 		if (!cellDiffInfo || !cellDiffInfoToApplyEdits || token.isCancellationRequested || currentVersion !== modifiedModelVersion || modelVersion !== currentModel.versionId) {
 			return;
 		}
@@ -240,8 +261,10 @@ export class NotebookModelSynchronizer extends Disposable {
 
 		// All edits from here on are from us.
 		this.isEditFromUs = true;
+
 		try {
 			const edits: ICellReplaceEdit[] = [];
+
 			const mappings = new Map<number, number>();
 
 			// First Delete.
@@ -257,6 +280,7 @@ export class NotebookModelSynchronizer extends Disposable {
 					});
 				}
 			});
+
 			if (edits.length) {
 				currentModel.applyEdits(edits, true, undefined, () => undefined, undefined, false);
 				edits.length = 0;
@@ -270,7 +294,9 @@ export class NotebookModelSynchronizer extends Disposable {
 				if (diff.type === 'insert') {
 					const originalIndex = mappings.get(diff.modifiedCellIndex - 1) ?? 0;
 					mappings.set(diff.modifiedCellIndex, originalIndex);
+
 					const cell = modelWithChatEdits.cells[diff.modifiedCellIndex];
+
 					const newCell: ICellDto2 =
 					{
 						source: cell.getValue(),
@@ -290,6 +316,7 @@ export class NotebookModelSynchronizer extends Disposable {
 					});
 				}
 			});
+
 			if (edits.length) {
 				currentModel.applyEdits(edits, true, undefined, () => undefined, undefined, false);
 				edits.length = 0;
@@ -299,7 +326,9 @@ export class NotebookModelSynchronizer extends Disposable {
 			cellDiffInfoToApplyEdits.forEach(diff => {
 				if (diff.type === 'modified') {
 					const cell = currentModel.cells[diff.originalCellIndex];
+
 					const textModel = cell.textModel;
+
 					if (textModel) {
 						const newText = modelWithChatEdits.cells[diff.modifiedCellIndex].getValue();
 						textModel.pushEditOperations(null, [
@@ -322,30 +351,40 @@ export class NotebookModelSynchronizer extends Disposable {
 
 	private async getModifiedModelForDiff(entry: IModifiedFileEntry, token: CancellationToken): Promise<NotebookTextModel | undefined> {
 		const text = (entry as ChatEditingModifiedFileEntry).modifiedModel.getValue();
+
 		const bytes = VSBuffer.fromString(text);
+
 		const uri = entry.modifiedURI.with({ scheme: `NotebookChatEditorController.modifiedScheme${Date.now().toString()}` });
+
 		const stream = bufferToStream(bytes);
+
 		if (this.previousUriOfModelForDiff) {
 			this.notebookService.getNotebookTextModel(this.previousUriOfModelForDiff)?.dispose();
 		}
 		this.previousUriOfModelForDiff = uri;
+
 		try {
 			const model = await this.notebookService.createNotebookTextModel(this.model.viewType, uri, stream);
+
 			if (token.isCancellationRequested) {
 				model.dispose();
+
 				return;
 			}
 			this._register(model);
+
 			return model;
 		} catch (ex) {
 			this.logService.warn('NotebookChatEdit', `Failed to deserialize Notebook for ${uri.toString}, ${ex.message}`);
 			this.logService.debug('NotebookChatEdit', ex.toString());
+
 			return;
 		}
 	}
 
 	async computeDiff(original: NotebookTextModel, modified: NotebookTextModel, token: CancellationToken) {
 		const diffResult = await raceCancellation(this.notebookEditorWorkerService.computeDiff(original.uri, modified.uri), token);
+
 		if (!diffResult || token.isCancellationRequested) {
 			// after await the editor might be disposed.
 			return;

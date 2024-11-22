@@ -26,6 +26,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
     _serviceBrand: any;
     private readonly initialized: ProfileResourceType[] = [];
     private readonly initializationFinished = new Barrier();
+
     constructor(
     @IBrowserWorkbenchEnvironmentService
     private readonly environmentService: IBrowserWorkbenchEnvironmentService, 
@@ -56,8 +57,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
     }
     async initializeRequiredResources(): Promise<void> {
         this.logService.trace(`UserDataProfileInitializer#initializeRequiredResources`);
+
         const promises = [];
+
         const profileTemplate = await this.getProfileTemplate();
+
         if (profileTemplate?.settings) {
             promises.push(this.initialize(new SettingsResourceInitializer(this.userDataProfileService, this.fileService, this.logService), profileTemplate.settings, ProfileResourceType.Settings));
         }
@@ -69,8 +73,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
     async initializeOtherResources(instantiationService: IInstantiationService): Promise<void> {
         try {
             this.logService.trace(`UserDataProfileInitializer#initializeOtherResources`);
+
             const promises = [];
+
             const profileTemplate = await this.getProfileTemplate();
+
             if (profileTemplate?.keybindings) {
                 promises.push(this.initialize(new KeybindingsResourceInitializer(this.userDataProfileService, this.fileService, this.logService), profileTemplate.keybindings, ProfileResourceType.Keybindings));
             }
@@ -88,9 +95,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
         }
     }
     private initializeInstalledExtensionsPromise: Promise<void> | undefined;
+
     async initializeInstalledExtensions(instantiationService: IInstantiationService): Promise<void> {
         if (!this.initializeInstalledExtensionsPromise) {
             const profileTemplate = await this.getProfileTemplate();
+
             if (profileTemplate?.extensions) {
                 this.initializeInstalledExtensionsPromise = this.initialize(instantiationService.createInstance(ExtensionsResourceInitializer), profileTemplate.extensions, ProfileResourceType.Extensions);
             }
@@ -117,12 +126,15 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
             }
             catch (error) {
                 this.logService.error(error);
+
                 return null;
             }
         }
         try {
             const url = URI.revive(this.environmentService.options.profile.contents).toString(true);
+
             const context = await this.requestService.request({ type: 'GET', url }, CancellationToken.None);
+
             if (context.res.statusCode === 200) {
                 return await asJson(context);
             }
@@ -139,6 +151,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
         try {
             if (this.initialized.includes(profileResource)) {
                 this.logService.info(`UserDataProfileInitializer: ${profileResource} initialized already.`);
+
                 return;
             }
             this.initialized.push(profileResource);

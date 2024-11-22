@@ -8,12 +8,15 @@ import { EditorExtensionsRegistry } from '../../../../editor/browser/editorExten
 import { MenuRegistry, MenuId, isIMenuItem } from '../../../../platform/actions/common/actions.js';
 export function getAllUnboundCommands(boundCommands: Map<string, boolean>): string[] {
     const unboundCommands: string[] = [];
+
     const seenMap: Map<string, boolean> = new Map<string, boolean>();
+
     const addCommand = (id: string, includeCommandWithArgs: boolean) => {
         if (seenMap.has(id)) {
             return;
         }
         seenMap.set(id, true);
+
         if (id[0] === '_' || id.indexOf('vscode.') === 0) { // private command
             return;
         }
@@ -22,6 +25,7 @@ export function getAllUnboundCommands(boundCommands: Map<string, boolean>): stri
         }
         if (!includeCommandWithArgs) {
             const command = CommandsRegistry.getCommand(id);
+
             if (command && typeof command.metadata === 'object'
                 && isNonEmptyArray((<ICommandMetadata>command.metadata).args)) { // command with args
                 return;

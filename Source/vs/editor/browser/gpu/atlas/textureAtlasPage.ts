@@ -17,6 +17,7 @@ export type AllocatorType = 'shelf' | 'slab' | ((canvas: OffscreenCanvas, textur
 export class TextureAtlasPage extends Disposable implements IReadableTextureAtlasPage {
 
 	private _version: number = 0;
+
 	get version(): number { return this._version; }
 
 	/**
@@ -29,10 +30,12 @@ export class TextureAtlasPage extends Disposable implements IReadableTextureAtla
 	public get usedArea(): Readonly<IBoundingBox> { return this._usedArea; }
 
 	private readonly _canvas: OffscreenCanvas;
+
 	get source(): OffscreenCanvas { return this._canvas; }
 
 	private readonly _glyphMap: GlyphMap<ITextureAtlasPageGlyph> = new ThreeKeyMap();
 	private readonly _glyphInOrderSet: Set<ITextureAtlasPageGlyph> = new Set();
+
 	get glyphs(): IterableIterator<ITextureAtlasPageGlyph> {
 		return this._glyphInOrderSet.values();
 	}
@@ -54,7 +57,9 @@ export class TextureAtlasPage extends Disposable implements IReadableTextureAtla
 
 		switch (allocatorType) {
 			case 'shelf': this._allocator = new TextureAtlasShelfAllocator(this._canvas, textureIndex); break;
+
 			case 'slab': this._allocator = new TextureAtlasSlabAllocator(this._canvas, textureIndex); break;
+
 			default: this._allocator = allocatorType(this._canvas, textureIndex); break;
 		}
 
@@ -79,6 +84,7 @@ export class TextureAtlasPage extends Disposable implements IReadableTextureAtla
 
 		// Rasterize and allocate the glyph
 		const rasterizedGlyph = rasterizer.rasterizeGlyph(chars, metadata, this._colorMap);
+
 		const glyph = this._allocator.allocate(rasterizedGlyph);
 
 		// Ensure the glyph was allocated

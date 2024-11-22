@@ -37,13 +37,16 @@ class ActionViewItemService implements IActionViewItemService {
     }
     register(menu: MenuId, commandOrSubmenuId: string | MenuId, provider: IActionViewItemProvider, event?: Event<unknown>): IDisposable {
         const id = this._makeKey(menu, commandOrSubmenuId);
+
         if (this._providers.has(id)) {
             throw new Error(`A provider for the command ${commandOrSubmenuId} and menu ${menu} is already registered.`);
         }
         this._providers.set(id, provider);
+
         const listener = event?.(() => {
             this._onDidChange.fire(menu);
         });
+
         return toDisposable(() => {
             listener?.dispose();
             this._providers.delete(id);

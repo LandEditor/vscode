@@ -22,8 +22,12 @@ export interface IAuxiliaryWindowsMainService {
     }>;
     createWindow(details: HandlerDetails): BrowserWindowConstructorOptions;
     registerWindow(webContents: WebContents): void;
+
     getWindowByWebContents(webContents: WebContents): IAuxiliaryWindow | undefined;
+
     getFocusedWindow(): IAuxiliaryWindow | undefined;
+
     getLastActiveWindow(): IAuxiliaryWindow | undefined;
+
     getWindows(): readonly IAuxiliaryWindow[];
 }

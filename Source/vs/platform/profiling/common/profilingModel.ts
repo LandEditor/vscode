@@ -70,22 +70,27 @@ export interface ICpuProfileRaw extends IV8Profile {
  */
 const computeAggregateTime = (index: number, nodes: IComputedNode[]): number => {
     const row = nodes[index];
+
     if (row.aggregateTime) {
         return row.aggregateTime;
     }
     let total = row.selfTime;
+
     for (const child of row.children) {
         total += computeAggregateTime(child, nodes);
     }
     return (row.aggregateTime = total);
 };
+
 const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotationLocation> => {
     let locationIdCounter = 0;
+
     const locationsByRef = new Map<string, {
         id: number;
         callFrame: CdpCallFrame;
         location: ISourceLocation;
     }>();
+
     const getLocationIdFor = (callFrame: CdpCallFrame) => {
         const ref = [
             callFrame.functionName,
@@ -94,7 +99,9 @@ const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotati
             callFrame.lineNumber,
             callFrame.columnNumber,
         ].join(':');
+
         const existing = locationsByRef.get(ref);
+
         if (existing) {
             return existing.id;
         }
@@ -112,8 +119,10 @@ const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotati
                 // },
             },
         });
+
         return id;
     };
+
     for (const node of profile.nodes) {
         node.locationId = getLocationIdFor(node.callFrame);
         node.positionTicks = node.positionTicks?.map(tick => ({
@@ -152,9 +161,12 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
         };
     }
     const { samples, timeDeltas } = profile;
+
     const sourceLocations = ensureSourceLocations(profile);
+
     const locations: ILocation[] = sourceLocations.map((l, id) => {
         const src = l.locations[0]; //getBestLocation(profile, l.locations);
+
         return {
             id,
             selfTime: 0,
@@ -165,9 +177,12 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
             src,
         };
     });
+
     const idMap = new Map<number /* id in profile */, number /* incrementing ID */>();
+
     const mapId = (nodeId: number) => {
         let id = idMap.get(nodeId);
+
         if (id === undefined) {
             id = idMap.size;
             idMap.set(nodeId, id);
@@ -177,6 +192,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
     // 1. Created a sorted list of nodes. It seems that the profile always has
     // incrementing IDs, although they are just not initially sorted.
     const nodes = new Array<IComputedNode>(profile.nodes.length);
+
     for (let i = 0; i < profile.nodes.length; i++) {
         const node = profile.nodes[i];
         // make them 0-based:
@@ -188,6 +204,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
             locationId: node.locationId as number,
             children: node.children?.map(mapId) || [],
         };
+
         for (const child of node.positionTicks || []) {
             if (child.startLocationId) {
                 locations[child.startLocationId].ticks += child.ticks;
@@ -202,7 +219,9 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
     // 2. The profile samples are the 'bottom-most' node, the currently running
     // code. Sum of these in the self time.
     const duration = profile.endTime - profile.startTime;
+
     let lastNodeTime = duration - timeDeltas[0];
+
     for (let i = 0; i < timeDeltas.length - 1; i++) {
         const d = timeDeltas[i + 1];
         nodes[mapId(samples[i])].selfTime += d;
@@ -219,6 +238,7 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
     // 3. Add the aggregate times for all node children and locations
     for (let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
+
         const location = locations[node.locationId];
         location.aggregateTime += computeAggregateTime(i, nodes);
         location.selfTime += node.selfTime;
@@ -272,12 +292,14 @@ export class BottomUpNode {
 }
 export const processNode = (aggregate: BottomUpNode, node: IComputedNode, model: IProfileModel, initialNode = node) => {
     let child = aggregate.children[node.locationId];
+
     if (!child) {
         child = new BottomUpNode(model.locations[node.locationId], aggregate);
         aggregate.childrenSize++;
         aggregate.children[node.locationId] = child;
     }
     child.addNode(initialNode);
+
     if (node.parent) {
         processNode(child, model.nodes[node.parent], model, initialNode);
     }

@@ -29,6 +29,7 @@ type AccessibilityMetricsClassification = {
 export class NativeAccessibilityService extends AccessibilityService implements IAccessibilityService {
     private didSendTelemetry = false;
     private shouldAlwaysUnderlineAccessKeys: boolean | undefined = undefined;
+
     constructor(
     @INativeWorkbenchEnvironmentService
     environmentService: INativeWorkbenchEnvironmentService, 
@@ -57,6 +58,7 @@ export class NativeAccessibilityService extends AccessibilityService implements 
     }
     override setAccessibilitySupport(accessibilitySupport: AccessibilitySupport): void {
         super.setAccessibilitySupport(accessibilitySupport);
+
         if (!this.didSendTelemetry && accessibilitySupport === AccessibilitySupport.Enabled) {
             this._telemetryService.publicLog2<AccessibilityMetrics, AccessibilityMetricsClassification>('accessibility', { enabled: true });
             this.didSendTelemetry = true;
@@ -67,6 +69,7 @@ registerSingleton(IAccessibilityService, NativeAccessibilityService, Instantiati
 // On linux we do not automatically detect that a screen reader is detected, thus we have to implicitly notify the renderer to enable accessibility when user configures it in settings
 class LinuxAccessibilityContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.linuxAccessibility';
+
     constructor(
     @IJSONEditingService
     jsonEditingService: IJSONEditingService, 
@@ -79,6 +82,7 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
                 jsonEditingService.write(environmentService.argvResource, [{ path: ['force-renderer-accessibility'], value: true }], true);
             }
         };
+
         forceRendererAccessibility();
         accessibilityService.onDidChangeScreenReaderOptimized(forceRendererAccessibility);
     }

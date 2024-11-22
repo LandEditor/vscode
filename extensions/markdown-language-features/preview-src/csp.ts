@@ -12,6 +12,7 @@ export class CspAlerter {
     private _didShow = false;
     private _didHaveCspWarning = false;
     private _messaging?: MessagePoster;
+
     constructor(private readonly _settingsManager: SettingsManager) {
         document.addEventListener('securitypolicyviolation', () => {
             this._onCspWarning();
@@ -24,6 +25,7 @@ export class CspAlerter {
     }
     public setPoster(poster: MessagePoster) {
         this._messaging = poster;
+
         if (this._didHaveCspWarning) {
             this._showCspWarning();
         }
@@ -34,11 +36,14 @@ export class CspAlerter {
     }
     private _showCspWarning() {
         const strings = getStrings();
+
         const settings = this._settingsManager.settings;
+
         if (this._didShow || settings.disableSecurityWarnings || !this._messaging) {
             return;
         }
         this._didShow = true;
+
         const notification = document.createElement('a');
         notification.innerText = strings.cspAlertMessageText;
         notification.setAttribute('id', 'code-csp-warning');
@@ -48,6 +53,7 @@ export class CspAlerter {
         notification.onclick = () => {
             this._messaging!.postMessage('showPreviewSecuritySelector', { source: settings.source });
         };
+
         document.body.appendChild(notification);
     }
 }

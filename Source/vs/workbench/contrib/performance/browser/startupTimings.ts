@@ -46,10 +46,12 @@ export abstract class StartupTimings {
             return 'Workspace not trusted';
         }
         const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+
         if (!activeViewlet || activeViewlet.getId() !== files.VIEWLET_ID) {
             return 'Explorer viewlet not visible';
         }
         const visibleEditorPanes = this._editorService.visibleEditorPanes;
+
         if (visibleEditorPanes.length !== 1) {
             return `Expected text editor count : 1, Actual : ${visibleEditorPanes.length}`;
         }
@@ -57,10 +59,12 @@ export abstract class StartupTimings {
             return 'Active editor is not a text editor';
         }
         const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
+
         if (activePanel) {
             return `Current active panel : ${this._paneCompositeService.getPaneComposite(activePanel.getId(), ViewContainerLocation.Panel)?.name}`;
         }
         const isLatestVersion = await this._updateService.isLatestVersion();
+
         if (isLatestVersion === false) {
             return 'Not on latest version, updates available';
         }
@@ -97,9 +101,13 @@ export class BrowserStartupTimings extends StartupTimings implements IWorkbenchC
             return;
         }
         await this.timerService.whenReady();
+
         const standardStartupError = await this._isStandardStartup();
+
         const perfBaseline = await this.timerService.perfBaseline;
+
         const [from, to] = this.environmentService.profDurationMarkers;
+
         const content = `${this.timerService.getDuration(from, to)}\t${this.productService.nameShort}\t${(this.productService.commit || '').slice(0, 10) || '0000000000'}\t${this.telemetryService.sessionId}\t${standardStartupError === undefined ? 'standard_start' : 'NO_standard_start : ' + standardStartupError}\t${String(perfBaseline).padStart(4, '0')}ms\n`;
         this.logService.info(`[prof-timers] ${content}`);
     }
@@ -132,9 +140,11 @@ export class BrowserResourcePerformanceMarks {
                 comment: 'Resource duration';
             };
         };
+
         for (const item of performance.getEntriesByType('resource')) {
             try {
                 const url = new URL(item.name);
+
                 const name = posix.basename(url.pathname);
                 telemetryService.publicLog2<Entry, EntryClassifify>('startup.resource.perf', {
                     hosthash: `H${hash(url.host).toString(16)}`,

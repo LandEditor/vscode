@@ -9,12 +9,14 @@ import { URI } from '../../../base/common/uri.js';
 import { ByteSize, FileOperationError, FileOperationResult, IFileService, whenProviderRegistered } from '../../files/common/files.js';
 import { BufferLogger } from './bufferLog.js';
 import { AbstractLoggerService, AbstractMessageLogger, ILogger, ILoggerOptions, ILoggerService, LogLevel } from './log.js';
+
 const MAX_FILE_SIZE = 5 * ByteSize.MB;
 class FileLogger extends AbstractMessageLogger implements ILogger {
     private readonly initializePromise: Promise<void>;
     private readonly flushDelayer: ThrottledDelayer<void>;
     private backupIndex: number = 1;
     private buffer: string = '';
+
     constructor(private readonly resource: URI, level: LogLevel, private readonly donotUseFormatters: boolean, 
     @IFileService
     private readonly fileService: IFileService) {
@@ -28,7 +30,9 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
             return;
         }
         await this.initializePromise;
+
         let content = await this.loadContent();
+
         if (content.length > MAX_FILE_SIZE) {
             await this.fileService.writeFile(this.getBackupResource(), VSBuffer.fromString(content));
             content = '';
@@ -60,17 +64,22 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
     }
     private getCurrentTimestamp(): string {
         const toTwoDigits = (v: number) => v < 10 ? `0${v}` : v;
+
         const toThreeDigits = (v: number) => v < 10 ? `00${v}` : v < 100 ? `0${v}` : v;
+
         const currentTime = new Date();
+
         return `${currentTime.getFullYear()}-${toTwoDigits(currentTime.getMonth() + 1)}-${toTwoDigits(currentTime.getDate())} ${toTwoDigits(currentTime.getHours())}:${toTwoDigits(currentTime.getMinutes())}:${toTwoDigits(currentTime.getSeconds())}.${toThreeDigits(currentTime.getMilliseconds())}`;
     }
     private getBackupResource(): URI {
         this.backupIndex = this.backupIndex > 5 ? 1 : this.backupIndex;
+
         return joinPath(dirname(this.resource), `${basename(this.resource)}_${this.backupIndex++}`);
     }
     private async loadContent(): Promise<string> {
         try {
             const content = await this.fileService.readFile(this.resource);
+
             return content.value.toString();
         }
         catch (e) {
@@ -80,9 +89,13 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
     private stringifyLogLevel(level: LogLevel): string {
         switch (level) {
             case LogLevel.Debug: return 'debug';
+
             case LogLevel.Error: return 'error';
+
             case LogLevel.Info: return 'info';
+
             case LogLevel.Trace: return 'trace';
+
             case LogLevel.Warning: return 'warning';
         }
         return '';
@@ -95,6 +108,7 @@ export class FileLoggerService extends AbstractLoggerService implements ILoggerS
     protected doCreateLogger(resource: URI, logLevel: LogLevel, options?: ILoggerOptions): ILogger {
         const logger = new BufferLogger(logLevel);
         whenProviderRegistered(resource, this.fileService).then(() => logger.logger = new FileLogger(resource, logger.getLevel(), !!options?.donotUseFormatters, this.fileService));
+
         return logger;
     }
 }

@@ -4,11 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 import { CONTEXT_MENU_CHANNEL, CONTEXT_MENU_CLOSE_CHANNEL, IContextMenuEvent, IContextMenuItem, IPopupOptions, ISerializableContextMenuItem } from '../common/contextmenu.js';
 import { ipcRenderer } from '../../sandbox/electron-sandbox/globals.js';
+
 let contextMenuIdPool = 0;
 export function popup(items: IContextMenuItem[], options?: IPopupOptions, onHide?: () => void): void {
     const processedItems: IContextMenuItem[] = [];
+
     const contextMenuId = contextMenuIdPool++;
+
     const onClickChannel = `vscode:onContextMenu${contextMenuId}`;
+
     const onClickChannelHandler = (event: unknown, itemId: number, context: IContextMenuEvent) => {
         const item = processedItems[itemId];
         item.click?.(context);

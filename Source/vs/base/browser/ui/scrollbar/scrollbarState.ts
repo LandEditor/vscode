@@ -50,6 +50,7 @@ export class ScrollbarState {
     private _computedSliderSize: number;
     private _computedSliderRatio: number;
     private _computedSliderPosition: number;
+
     constructor(arrowSize: number, scrollbarSize: number, oppositeScrollbarSize: number, visibleSize: number, scrollSize: number, scrollPosition: number) {
         this._scrollbarSize = Math.round(scrollbarSize);
         this._oppositeScrollbarSize = Math.round(oppositeScrollbarSize);
@@ -69,27 +70,33 @@ export class ScrollbarState {
     }
     public setVisibleSize(visibleSize: number): boolean {
         const iVisibleSize = Math.round(visibleSize);
+
         if (this._visibleSize !== iVisibleSize) {
             this._visibleSize = iVisibleSize;
             this._refreshComputedValues();
+
             return true;
         }
         return false;
     }
     public setScrollSize(scrollSize: number): boolean {
         const iScrollSize = Math.round(scrollSize);
+
         if (this._scrollSize !== iScrollSize) {
             this._scrollSize = iScrollSize;
             this._refreshComputedValues();
+
             return true;
         }
         return false;
     }
     public setScrollPosition(scrollPosition: number): boolean {
         const iScrollPosition = Math.round(scrollPosition);
+
         if (this._scrollPosition !== iScrollPosition) {
             this._scrollPosition = iScrollPosition;
             this._refreshComputedValues();
+
             return true;
         }
         return false;
@@ -102,8 +109,11 @@ export class ScrollbarState {
     }
     private static _computeValues(oppositeScrollbarSize: number, arrowSize: number, visibleSize: number, scrollSize: number, scrollPosition: number) {
         const computedAvailableSize = Math.max(0, visibleSize - oppositeScrollbarSize);
+
         const computedRepresentableSize = Math.max(0, computedAvailableSize - 2 * arrowSize);
+
         const computedIsNeeded = (scrollSize > 0 && scrollSize > visibleSize);
+
         if (!computedIsNeeded) {
             // There is no need for a slider
             return {
@@ -119,7 +129,9 @@ export class ScrollbarState {
         // The slider can move from 0 to `computedRepresentableSize` - `computedSliderSize`
         // in the same way `scrollPosition` can move from 0 to `scrollSize` - `visibleSize`.
         const computedSliderRatio = (computedRepresentableSize - computedSliderSize) / (scrollSize - visibleSize);
+
         const computedSliderPosition = (scrollPosition * computedSliderRatio);
+
         return {
             computedAvailableSize: Math.round(computedAvailableSize),
             computedIsNeeded: computedIsNeeded,
@@ -167,6 +179,7 @@ export class ScrollbarState {
             return 0;
         }
         const desiredSliderPosition = offset - this._arrowSize - this._computedSliderSize / 2;
+
         return Math.round(desiredSliderPosition / this._computedSliderRatio);
     }
     /**
@@ -182,6 +195,7 @@ export class ScrollbarState {
         }
         const correctedOffset = offset - this._arrowSize; // compensate if has arrows
         let desiredScrollPosition = this._scrollPosition;
+
         if (correctedOffset < this._computedSliderPosition) {
             desiredScrollPosition -= this._visibleSize; // page up/left
         }
@@ -199,6 +213,7 @@ export class ScrollbarState {
             return 0;
         }
         const desiredSliderPosition = this._computedSliderPosition + delta;
+
         return Math.round(desiredSliderPosition / this._computedSliderRatio);
     }
 }

@@ -17,8 +17,10 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
     private _onDidChangeRecommendations = this._register(new Emitter<void>());
     readonly onDidChangeRecommendations = this._onDidChangeRecommendations.event;
     private _otherRecommendations: ConfigBasedExtensionRecommendation[] = [];
+
     get otherRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> { return this._otherRecommendations; }
     private _importantRecommendations: ConfigBasedExtensionRecommendation[] = [];
+
     get importantRecommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> { return this._importantRecommendations; }
     get recommendations(): ReadonlyArray<ConfigBasedExtensionRecommendation> { return [...this.importantRecommendations, ...this.otherRecommendations]; }
     constructor(
@@ -34,10 +36,14 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
     }
     private async fetch(): Promise<void> {
         const workspace = this.workspaceContextService.getWorkspace();
+
         const importantTips: Map<string, IConfigBasedExtensionTip> = new Map<string, IConfigBasedExtensionTip>();
+
         const otherTips: Map<string, IConfigBasedExtensionTip> = new Map<string, IConfigBasedExtensionTip>();
+
         for (const folder of workspace.folders) {
             const configBasedTips = await this.extensionTipsService.getConfigBasedTips(folder.uri);
+
             for (const tip of configBasedTips) {
                 if (tip.important) {
                     importantTips.set(tip.extensionId, tip);

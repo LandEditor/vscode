@@ -41,8 +41,10 @@ export interface IconContribution {
 export namespace IconContribution {
 	export function getDefinition(contribution: IconContribution, registry: IIconRegistry): IconDefinition | undefined {
 		let definition = contribution.defaults;
+
 		while (ThemeIcon.isThemeIcon(definition)) {
 			const c = iconRegistry.getIcon(definition.id);
+
 			if (!c) {
 				return undefined;
 			}
@@ -73,6 +75,7 @@ export namespace IconFontDefinition {
 	}
 	export function fromJSONObject(json: any): IconFontDefinition | undefined {
 		const stringOrUndef = (s: any) => isString(s) ? s : undefined;
+
 		if (json && Array.isArray(json.src) && json.src.every((s: any) => isString(s.format) && isString(s.location))) {
 			return {
 				weight: stringOrUndef(json.weight),
@@ -177,11 +180,14 @@ class IconRegistry implements IIconRegistry {
 
 	public registerIcon(id: string, defaults: IconDefaults, description?: string, deprecationMessage?: string): ThemeIcon {
 		const existing = this.iconsById[id];
+
 		if (existing) {
 			if (description && !existing.description) {
 				existing.description = description;
 				this.iconSchema.properties[id].markdownDescription = `${description} $(${id})`;
+
 				const enumIndex = this.iconReferenceSchema.enum.indexOf(id);
+
 				if (enumIndex !== -1) {
 					this.iconReferenceSchema.enumDescriptions[enumIndex] = description;
 				}
@@ -191,7 +197,9 @@ class IconRegistry implements IIconRegistry {
 		}
 		const iconContribution: IconContribution = { id, description, defaults, deprecationMessage };
 		this.iconsById[id] = iconContribution;
+
 		const propertySchema: IJSONSchema = { $ref: '#/definitions/icons' };
+
 		if (deprecationMessage) {
 			propertySchema.deprecationMessage = deprecationMessage;
 		}
@@ -203,6 +211,7 @@ class IconRegistry implements IIconRegistry {
 		this.iconReferenceSchema.enumDescriptions.push(description || '');
 
 		this._onDidChange.fire();
+
 		return { id };
 	}
 
@@ -210,7 +219,9 @@ class IconRegistry implements IIconRegistry {
 	public deregisterIcon(id: string): void {
 		delete this.iconsById[id];
 		delete this.iconSchema.properties[id];
+
 		const index = this.iconReferenceSchema.enum.indexOf(id);
+
 		if (index !== -1) {
 			this.iconReferenceSchema.enum.splice(index, 1);
 			this.iconReferenceSchema.enumDescriptions.splice(index, 1);
@@ -236,11 +247,13 @@ class IconRegistry implements IIconRegistry {
 
 	public registerIconFont(id: string, definition: IconFontDefinition): IconFontDefinition {
 		const existing = this.iconFontsById[id];
+
 		if (existing) {
 			return existing;
 		}
 		this.iconFontsById[id] = definition;
 		this._onDidChange.fire();
+
 		return definition;
 	}
 
@@ -256,6 +269,7 @@ class IconRegistry implements IIconRegistry {
 		const sorter = (i1: IconContribution, i2: IconContribution) => {
 			return i1.id.localeCompare(i2.id);
 		};
+
 		const classNames = (i: IconContribution) => {
 			while (ThemeIcon.isThemeIcon(i.defaults)) {
 				i = this.iconsById[i.defaults.id];
@@ -267,6 +281,7 @@ class IconRegistry implements IIconRegistry {
 
 		reference.push(`| preview     | identifier                        | default codicon ID                | description`);
 		reference.push(`| ----------- | --------------------------------- | --------------------------------- | --------------------------------- |`);
+
 		const contributions = Object.keys(this.iconsById).map(key => this.iconsById[key]);
 
 		for (const i of contributions.filter(i => !!i.description).sort(sorter)) {
@@ -299,6 +314,7 @@ export function getIconRegistry(): IIconRegistry {
 
 function initialize() {
 	const codiconFontCharacters = getCodiconFontCharacters();
+
 	for (const icon in codiconFontCharacters) {
 		const fontCharacter = '\\' + codiconFontCharacters[icon].toString(16);
 		iconRegistry.registerIcon(icon, { fontCharacter });

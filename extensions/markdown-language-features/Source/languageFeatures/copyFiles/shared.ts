@@ -136,8 +136,11 @@ export function createInsertUriListEdit(
 	const edits: vscode.SnippetTextEdit[] = [];
 
 	let insertedLinkCount = 0;
+
 	let insertedImageCount = 0;
+
 	let insertedAudioCount = 0;
+
 	let insertedVideoCount = 0;
 
 	// Use 1 for all empty ranges but give non-empty range unique indices starting after 1
@@ -145,6 +148,7 @@ export function createInsertUriListEdit(
 
 	// Sort ranges by start position
 	const orderedRanges = [...ranges].sort((a, b) => a.start.compareTo(b.start));
+
 	const allRangesAreEmpty = orderedRanges.every(range => range.isEmpty);
 
 	for (const range of orderedRanges) {
@@ -153,6 +157,7 @@ export function createInsertUriListEdit(
 			placeholderStartIndex: allRangesAreEmpty ? 1 : placeHolderStartIndex,
 			...options,
 		});
+
 		if (!snippet) {
 			continue;
 		}
@@ -168,6 +173,7 @@ export function createInsertUriListEdit(
 	}
 
 	const { label, kind } = getSnippetLabelAndKind({ insertedAudioCount, insertedVideoCount, insertedImageCount, insertedLinkCount });
+
 	return { edits, label, kind };
 }
 
@@ -215,26 +221,35 @@ export function createUriListSnippet(
 	}
 
 	const documentDir = getDocumentDir(document);
+
 	const config = vscode.workspace.getConfiguration('markdown', document);
+
 	const title = options?.placeholderText || 'Title';
 
 	let insertedLinkCount = 0;
+
 	let insertedImageCount = 0;
+
 	let insertedAudioCount = 0;
+
 	let insertedVideoCount = 0;
 
 	const snippet = new vscode.SnippetString();
+
 	let placeholderIndex = options?.placeholderStartIndex ?? 1;
 
 	uris.forEach((uri, i) => {
 		const mdPath = (!options?.preserveAbsoluteUris ? getRelativeMdPath(documentDir, uri.uri) : undefined) ?? uri.str ?? uri.uri.toString();
 
 		const ext = URI.Utils.extname(uri.uri).toLowerCase().replace('.', '');
+
 		const insertAsMedia = options?.insertAsMedia || (typeof options?.insertAsMedia === 'undefined' && mediaFileExtensions.has(ext));
 
 		if (insertAsMedia) {
 			const insertAsVideo = mediaFileExtensions.get(ext) === MediaKind.Video;
+
 			const insertAsAudio = mediaFileExtensions.get(ext) === MediaKind.Audio;
+
 			if (insertAsVideo || insertAsAudio) {
 				if (insertAsVideo) {
 					insertedVideoCount++;
@@ -251,6 +266,7 @@ export function createUriListSnippet(
 			} else {
 				insertedImageCount++;
 				snippet.appendText('![');
+
 				const placeholderText = escapeBrackets(options?.placeholderText || 'alt text');
 				snippet.appendPlaceholder(placeholderText, placeholderIndex);
 				snippet.appendText(`](${escapeMarkdownLinkPath(mdPath)})`);
@@ -278,6 +294,7 @@ function getRelativeMdPath(dir: vscode.Uri | undefined, file: vscode.Uri): strin
 			// so that drive-letters are resolved cast insensitively. However we then want to
 			// convert back to a posix path to insert in to the document.
 			const relativePath = path.relative(dir.fsPath, file.fsPath);
+
 			return path.posix.normalize(relativePath.split(path.sep).join(path.posix.sep));
 		}
 
@@ -311,7 +328,9 @@ function needsBracketLink(mdPath: string): boolean {
 	}
 
 	let previousChar = '';
+
 	let nestingCount = 0;
+
 	for (const char of mdPath) {
 		if (char === '(' && previousChar !== '\\') {
 			nestingCount++;

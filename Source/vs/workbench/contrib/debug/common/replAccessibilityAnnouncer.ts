@@ -9,6 +9,7 @@ import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { IDebugService } from './debug.js';
 export class ReplAccessibilityAnnouncer extends Disposable implements IWorkbenchContribution {
     static ID = 'debug.replAccessibilityAnnouncer';
+
     constructor(
     @IDebugService
     debugService: IDebugService, 
@@ -17,6 +18,7 @@ export class ReplAccessibilityAnnouncer extends Disposable implements IWorkbench
     @ILogService
     logService: ILogService) {
         super();
+
         const viewModel = debugService.getViewModel();
         this._register(viewModel.onDidFocusSession((session) => {
             if (!session) {

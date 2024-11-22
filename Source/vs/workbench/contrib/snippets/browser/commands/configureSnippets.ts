@@ -32,12 +32,16 @@ interface ISnippetPick extends IQuickPickItem {
 }
 async function computePicks(snippetService: ISnippetsService, userDataProfileService: IUserDataProfileService, languageService: ILanguageService, labelService: ILabelService) {
     const existing: ISnippetPick[] = [];
+
     const future: ISnippetPick[] = [];
+
     const seen = new Set<string>();
+
     const added = new Map<string, {
         snippet: ISnippetPick;
         detail: string;
     }>();
+
     for (const file of await snippetService.getSnippetFiles()) {
         if (file.source === SnippetSource.Extension) {
             // skip extension snippets
@@ -47,6 +51,7 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
             await file.load();
             // list scopes for global snippets
             const names = new Set<string>();
+
             let source: string | undefined;
             outer: for (const snippet of file.data) {
                 if (!source) {
@@ -54,9 +59,11 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
                 }
                 for (const scope of snippet.scopes) {
                     const name = languageService.getLanguageName(scope);
+
                     if (name) {
                         if (names.size >= 4) {
                             names.add(`${name}...`);
+
                             break outer;
                         }
                         else {
@@ -73,11 +80,14 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
                     : nls.localize('global.1', "({0})", [...names].join(', '))
             };
             existing.push(snippet);
+
             if (!source) {
                 continue;
             }
             const detail = nls.localize('detail.label', "({0}) {1}", source, labelService.getUriLabel(file.location, { relative: true }));
+
             const lastItem = added.get(basename(file.location));
+
             if (lastItem) {
                 snippet.detail = detail;
                 lastItem.snippet.detail = lastItem.detail;
@@ -96,8 +106,10 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
         }
     }
     const dir = userDataProfileService.currentProfile.snippetsHome;
+
     for (const languageId of languageService.getRegisteredLanguageIds()) {
         const label = languageService.getLanguageName(languageId);
+
         if (label && !seen.has(languageId)) {
             future.push({
                 label: languageId,
@@ -110,7 +122,9 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
     }
     existing.sort((a, b) => {
         const a_ext = extname(a.filepath.path);
+
         const b_ext = extname(b.filepath.path);
+
         if (a_ext === b_ext) {
             return a.label.localeCompare(b.label);
         }
@@ -124,6 +138,7 @@ async function computePicks(snippetService: ISnippetsService, userDataProfileSer
     future.sort((a, b) => {
         return a.label.localeCompare(b.label);
     });
+
     return { existing, future };
 }
 async function createSnippetFile(scope: string, defaultPath: URI, quickInputService: IQuickInputService, fileService: IFileService, textFileService: ITextFileService, opener: IOpenerService) {
@@ -131,9 +146,11 @@ async function createSnippetFile(scope: string, defaultPath: URI, quickInputServ
         const filename = extname(input) !== '.code-snippets'
             ? `${input}.code-snippets`
             : input;
+
         return joinPath(defaultPath, filename);
     }
     await fileService.createFolder(defaultPath);
+
     const input = await quickInputService.input({
         placeHolder: nls.localize('name', "Type snippet file name"),
         async validateInput(input) {
@@ -149,6 +166,7 @@ async function createSnippetFile(scope: string, defaultPath: URI, quickInputServ
             return undefined;
         }
     });
+
     if (!input) {
         return undefined;
     }
@@ -174,6 +192,7 @@ async function createSnippetFile(scope: string, defaultPath: URI, quickInputServ
         '}'
     ].join('\n'));
     await opener.open(resource);
+
     return undefined;
 }
 async function createLanguageSnippetFile(pick: ISnippetPick, fileService: IFileService, textFileService: ITextFileService) {
@@ -217,27 +236,40 @@ export class ConfigureSnippetsAction extends SnippetsAction {
     }
     async run(accessor: ServicesAccessor): Promise<any> {
         const snippetService = accessor.get(ISnippetsService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const opener = accessor.get(IOpenerService);
+
         const languageService = accessor.get(ILanguageService);
+
         const userDataProfileService = accessor.get(IUserDataProfileService);
+
         const workspaceService = accessor.get(IWorkspaceContextService);
+
         const fileService = accessor.get(IFileService);
+
         const textFileService = accessor.get(ITextFileService);
+
         const labelService = accessor.get(ILabelService);
+
         const picks = await computePicks(snippetService, userDataProfileService, languageService, labelService);
+
         const existing: QuickPickInput[] = picks.existing;
         type SnippetPick = IQuickPickItem & {
             uri: URI;
         } & {
             scope: string;
         };
+
         const globalSnippetPicks: SnippetPick[] = [{
                 scope: nls.localize('new.global_scope', 'global'),
                 label: nls.localize('new.global', "New Global Snippets file..."),
                 uri: userDataProfileService.currentProfile.snippetsHome
             }];
+
         const workspaceSnippetPicks: SnippetPick[] = [];
+
         for (const folder of workspaceService.getWorkspace().folders) {
             workspaceSnippetPicks.push({
                 scope: nls.localize('new.workspace_scope', "{0} workspace", folder.name),
@@ -256,6 +288,7 @@ export class ConfigureSnippetsAction extends SnippetsAction {
             placeHolder: nls.localize('openSnippet.pickLanguage', "Select Snippets File or Create Snippets"),
             matchOnDescription: true
         });
+
         if (globalSnippetPicks.indexOf(pick as SnippetPick) >= 0) {
             return createSnippetFile((pick as SnippetPick).scope, (pick as SnippetPick).uri, quickInputService, fileService, textFileService, opener);
         }

@@ -17,6 +17,7 @@ export class TypeOperations {
             return [];
         }
         const commands: ICommand[] = [];
+
         for (let i = 0, len = selections.length; i < len; i++) {
             commands[i] = new ShiftCommand(selections[i], {
                 isUnshift: false,
@@ -31,6 +32,7 @@ export class TypeOperations {
     }
     public static outdent(config: CursorConfiguration, model: ICursorSimpleModel, selections: Selection[]): ICommand[] {
         const commands: ICommand[] = [];
+
         for (let i = 0, len = selections.length; i < len; i++) {
             commands[i] = new ShiftCommand(selections[i], {
                 isUnshift: true,
@@ -67,6 +69,7 @@ export class TypeOperations {
             return null;
         }
         let insertedText: string | null = null;
+
         for (const composition of compositions) {
             if (insertedText === null) {
                 insertedText = composition.insertedText;
@@ -81,10 +84,13 @@ export class TypeOperations {
             return null;
         }
         const ch = insertedText;
+
         let hasDeletion = false;
+
         for (const composition of compositions) {
             if (composition.deletedText.length !== 0) {
                 hasDeletion = true;
+
                 break;
             }
         }
@@ -94,6 +100,7 @@ export class TypeOperations {
                 return null;
             }
             const isTypingAQuoteCharacter = isQuote(ch);
+
             for (const composition of compositions) {
                 if (composition.deletedSelectionStart !== 0 || composition.deletedSelectionEnd !== composition.deletedText.length) {
                     // more text was deleted than was selected, so this could not have been a surround selection
@@ -109,6 +116,7 @@ export class TypeOperations {
                 }
             }
             const positions: Position[] = [];
+
             for (const selection of selections) {
                 if (!selection.isEmpty()) {
                     return null;
@@ -119,6 +127,7 @@ export class TypeOperations {
                 return null;
             }
             const commands: ICommand[] = [];
+
             for (let i = 0, len = positions.length; i < len; i++) {
                 commands.push(new CompositionSurroundSelectionCommand(positions[i], compositions[i].deletedText, config.surroundingPairs[ch]));
             }
@@ -128,10 +137,12 @@ export class TypeOperations {
             });
         }
         const autoClosingOvertypeEdits = AutoClosingOvertypeWithInterceptorsOperation.getEdits(config, model, selections, autoClosedCharacters, ch);
+
         if (autoClosingOvertypeEdits !== undefined) {
             return autoClosingOvertypeEdits;
         }
         const autoClosingOpenCharEdits = AutoClosingOpenCharTypeOperation.getEdits(config, model, selections, ch, true, false);
+
         if (autoClosingOpenCharEdits !== undefined) {
             return autoClosingOpenCharEdits;
         }
@@ -139,26 +150,32 @@ export class TypeOperations {
     }
     public static typeWithInterceptors(isDoingComposition: boolean, prevEditOperationType: EditOperationType, config: CursorConfiguration, model: ITextModel, selections: Selection[], autoClosedCharacters: Range[], ch: string): EditOperationResult {
         const enterEdits = EnterOperation.getEdits(config, model, selections, ch, isDoingComposition);
+
         if (enterEdits !== undefined) {
             return enterEdits;
         }
         const autoIndentEdits = AutoIndentOperation.getEdits(config, model, selections, ch, isDoingComposition);
+
         if (autoIndentEdits !== undefined) {
             return autoIndentEdits;
         }
         const autoClosingOverTypeEdits = AutoClosingOvertypeOperation.getEdits(prevEditOperationType, config, model, selections, autoClosedCharacters, ch);
+
         if (autoClosingOverTypeEdits !== undefined) {
             return autoClosingOverTypeEdits;
         }
         const autoClosingOpenCharEdits = AutoClosingOpenCharTypeOperation.getEdits(config, model, selections, ch, false, isDoingComposition);
+
         if (autoClosingOpenCharEdits !== undefined) {
             return autoClosingOpenCharEdits;
         }
         const surroundSelectionEdits = SurroundSelectionOperation.getEdits(config, model, selections, ch, isDoingComposition);
+
         if (surroundSelectionEdits !== undefined) {
             return surroundSelectionEdits;
         }
         const interceptorElectricCharOperation = InterceptorElectricCharOperation.getEdits(prevEditOperationType, config, model, selections, ch, isDoingComposition);
+
         if (interceptorElectricCharOperation !== undefined) {
             return interceptorElectricCharOperation;
         }

@@ -11,12 +11,15 @@ function parseAndValidate(cmdLineArgs: string[], reportWarnings: boolean): Nativ
     const onMultipleValues = (id: string, val: string) => {
         console.warn(localize('multipleValues', "Option '{0}' is defined more than once. Using value '{1}'.", id, val));
     };
+
     const onEmptyValue = (id: string) => {
         console.warn(localize('emptyValue', "Option '{0}' requires a non empty value. Ignoring the option.", id));
     };
+
     const onDeprecatedOption = (deprecatedOption: string, message: string) => {
         console.warn(localize('deprecatedArgument', "Option '{0}' is deprecated: {1}", deprecatedOption, message));
     };
+
     const getSubcommandReporter = (command: string) => ({
         onUnknownOption: (id: string) => {
             if (!(NATIVE_CLI_COMMANDS as readonly string[]).includes(command)) {
@@ -28,6 +31,7 @@ function parseAndValidate(cmdLineArgs: string[], reportWarnings: boolean): Nativ
         onDeprecatedOption,
         getSubcommandReporter: (NATIVE_CLI_COMMANDS as readonly string[]).includes(command) ? getSubcommandReporter : undefined
     });
+
     const errorReporter: ErrorReporter = {
         onUnknownOption: (id) => {
             console.warn(localize('unknownOption', "Warning: '{0}' is not in the list of known options, but still passed to Electron/Chromium.", id));
@@ -37,7 +41,9 @@ function parseAndValidate(cmdLineArgs: string[], reportWarnings: boolean): Nativ
         onDeprecatedOption,
         getSubcommandReporter
     };
+
     const args = parseArgs(cmdLineArgs, OPTIONS, reportWarnings ? errorReporter : undefined);
+
     if (args.goto) {
         args._.forEach(arg => assert(/^(\w:)?[^:]+(:\d*){0,2}:?$/.test(arg), localize('gotoValidation', "Arguments in `--goto` mode should be in the format of `FILE(:LINE(:CHARACTER))`.")));
     }
@@ -45,6 +51,7 @@ function parseAndValidate(cmdLineArgs: string[], reportWarnings: boolean): Nativ
 }
 function stripAppPath(argv: string[]): string[] | undefined {
     const index = argv.findIndex(a => !/^-/.test(a));
+
     if (index > -1) {
         return [...argv.slice(0, index), ...argv.slice(index + 1)];
     }
@@ -61,6 +68,7 @@ export function parseMainProcessArgv(processArgv: string[]): NativeParsedArgs {
     }
     // If called from CLI, don't report warnings as they are already reported.
     const reportWarnings = !isLaunchedFromCli(process.env);
+
     return parseAndValidate(args, reportWarnings);
 }
 /**
@@ -76,6 +84,7 @@ export function parseCLIProcessArgv(processArgv: string[]): NativeParsedArgs {
 }
 export function addArg(argv: string[], ...args: string[]): string[] {
     const endOfArgsMarkerIndex = argv.indexOf('--');
+
     if (endOfArgsMarkerIndex === -1) {
         argv.push(...args);
     }

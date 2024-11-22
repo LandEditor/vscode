@@ -68,6 +68,7 @@ export type IExtensionPointHandler<T> = (extensions: readonly IExtensionPointUse
 
 export interface IExtensionPoint<T> {
 	readonly name: string;
+
 	setHandler(handler: IExtensionPointHandler<T>): IDisposable;
 	readonly defaultExtensionKind: ExtensionKind[] | undefined;
 	readonly canHandleResolver?: boolean;
@@ -77,6 +78,7 @@ export class ExtensionPointUserDelta<T> {
 
 	private static _toSet<T>(arr: readonly IExtensionPointUser<T>[]): ExtensionIdentifierSet {
 		const result = new ExtensionIdentifierSet();
+
 		for (let i = 0, len = arr.length; i < len; i++) {
 			result.add(arr[i].description.identifier);
 		}
@@ -92,9 +94,11 @@ export class ExtensionPointUserDelta<T> {
 		}
 
 		const previousSet = this._toSet(previous);
+
 		const currentSet = this._toSet(current);
 
 		const added = current.filter(user => !previousSet.has(user.description.identifier));
+
 		const removed = previous.filter(user => !currentSet.has(user.description.identifier));
 
 		return new ExtensionPointUserDelta<T>(added, removed);
@@ -615,6 +619,7 @@ export interface IExtensionPointDescriptor<T> {
 	extensionPoint: string;
 	deps?: IExtensionPoint<any>[];
 	jsonSchema: IJSONSchema;
+
 	defaultExtensionKind?: ExtensionKind[];
 	canHandleResolver?: boolean;
 	/**
@@ -634,6 +639,7 @@ export class ExtensionsRegistryImpl {
 		}
 		const result = new ExtensionPoint<T>(desc.extensionPoint, desc.defaultExtensionKind, desc.canHandleResolver);
 		this._extensionPoints.set(desc.extensionPoint, result);
+
 		if (desc.activationEventsGenerator) {
 			ImplicitActivationEvents.register(desc.extensionPoint, desc.activationEventsGenerator);
 		}

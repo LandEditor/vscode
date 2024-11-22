@@ -56,7 +56,9 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
             return true;
         }
         const originalResource = resource;
+
         let resourceUri: URI;
+
         if (typeof resource === 'string') {
             resourceUri = URI.parse(resource);
         }
@@ -68,10 +70,15 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
         }
         else {
             const { scheme, authority, path, query, fragment } = resourceUri;
+
             let formattedLink = `${scheme}://${authority}${path}`;
+
             const linkTail = `${query ? '?' + query : ''}${fragment ? '#' + fragment : ''}`;
+
             const remainingLength = Math.max(0, 60 - formattedLink.length);
+
             const linkTailLengthToKeep = Math.min(Math.max(5, remainingLength), linkTail.length);
+
             if (linkTailLengthToKeep === linkTail.length) {
                 formattedLink += linkTail;
             }
@@ -93,6 +100,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
                         label: localize({ key: 'copy', comment: ['&& denotes a mnemonic'] }, '&&Copy'),
                         run: () => {
                             this._clipboardService.writeText(typeof originalResource === 'string' ? originalResource : resourceUri.toString(true));
+
                             return false;
                         }
                     },
@@ -100,7 +108,9 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
                         label: localize({ key: 'configureTrustedDomains', comment: ['&& denotes a mnemonic'] }, 'Configure &&Trusted Domains'),
                         run: async () => {
                             const { trustedDomains, } = this._instantiationService.invokeFunction(readStaticTrustedDomains);
+
                             const domainToOpen = `${scheme}://${authority}`;
+
                             const pickedDomains = await configureOpenerTrustedDomainsHandler(trustedDomains, domainToOpen, resourceUri, this._quickInputService, this._storageService, this._editorService, this._telemetryService);
                             // Trust all domains
                             if (pickedDomains.indexOf('*') !== -1) {
@@ -118,6 +128,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
                     run: () => false
                 }
             });
+
             return result;
         }
     }

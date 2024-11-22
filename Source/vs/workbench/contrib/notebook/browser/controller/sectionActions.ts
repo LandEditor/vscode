@@ -78,11 +78,14 @@ export class NotebookRunCellsInSection extends Action2 {
             return;
         }
         const cell = context.outlineEntry.cell;
+
         const idx = context.notebookEditor.getViewModel()?.getCellIndex(cell);
+
         if (idx === undefined) {
             return;
         }
         const length = context.notebookEditor.getViewModel()?.getFoldedLength(idx);
+
         if (length === undefined) {
             return;
         }
@@ -117,8 +120,11 @@ export class NotebookFoldSection extends Action2 {
     }
     private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
         const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+
         const index = entry.index;
+
         const headerLevel = entry.level;
+
         const newFoldingState = CellFoldingState.Collapsed;
         foldingController.setFoldingStateDown(index, newFoldingState, headerLevel);
     }
@@ -150,8 +156,11 @@ export class NotebookExpandSection extends Action2 {
     }
     private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
         const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+
         const index = entry.index;
+
         const headerLevel = entry.level;
+
         const newFoldingState = CellFoldingState.Expanded;
         foldingController.setFoldingStateDown(index, newFoldingState, headerLevel);
     }

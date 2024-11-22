@@ -105,7 +105,9 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private getOrCreateActiveViewContextKey(view: IView): IContextKey<boolean> {
 		const visibleContextKeyId = getVisbileViewContextKey(view.id);
+
 		let contextKey = this.visibleViewContextKeys.get(visibleContextKeyId);
+
 		if (!contextKey) {
 			contextKey = new RawContextKey(visibleContextKeyId, false).bindTo(this.contextKeyService);
 			this.visibleViewContextKeys.set(visibleContextKeyId, contextKey);
@@ -124,6 +126,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private onDidRegisterViewContainer(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
 		this.registerPaneComposite(viewContainer, viewContainerLocation);
+
 		const disposables = new DisposableStore();
 
 		const viewContainerModel = this.viewDescriptorService.getViewContainerModel(viewContainer);
@@ -159,6 +162,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private onViewDescriptorsAdded(views: ReadonlyArray<IViewDescriptor>, container: ViewContainer): void {
 		const location = this.viewDescriptorService.getViewContainerLocation(container);
+
 		if (location === null) {
 			return;
 		}
@@ -175,6 +179,7 @@ export class ViewsService extends Disposable implements IViewsService {
 	private onViewDescriptorsRemoved(views: ReadonlyArray<IViewDescriptor>): void {
 		for (const view of views) {
 			const disposable = this.viewDisposable.get(view);
+
 			if (disposable) {
 				disposable.dispose();
 				this.viewDisposable.delete(view);
@@ -184,6 +189,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private updateViewContainerEnablementContextKey(viewContainer: ViewContainer): void {
 		let contextKey = this.enabledViewContainersContextKeys.get(viewContainer.id);
+
 		if (!contextKey) {
 			contextKey = this.contextKeyService.createKey(getEnabledViewContainerContextKey(viewContainer.id), false);
 			this.enabledViewContainersContextKeys.set(viewContainer.id, contextKey);
@@ -202,11 +208,13 @@ export class ViewsService extends Disposable implements IViewsService {
 	// One view container can be visible at a time in a location
 	isViewContainerVisible(id: string): boolean {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(id);
+
 		if (!viewContainer) {
 			return false;
 		}
 
 		const viewContainerLocation = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 		if (viewContainerLocation === null) {
 			return false;
 		}
@@ -217,6 +225,7 @@ export class ViewsService extends Disposable implements IViewsService {
 	// Multiple view containers can be active/inactive at a time in a location
 	isViewContainerActive(id: string): boolean {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(id);
+
 		if (!viewContainer) {
 			return false;
 		}
@@ -230,20 +239,25 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	getVisibleViewContainer(location: ViewContainerLocation): ViewContainer | null {
 		const viewContainerId = this.paneCompositeService.getActivePaneComposite(location)?.getId();
+
 		return viewContainerId ? this.viewDescriptorService.getViewContainerById(viewContainerId) : null;
 	}
 
 	getActiveViewPaneContainerWithId(viewContainerId: string): IViewPaneContainer | null {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(viewContainerId);
+
 		return viewContainer ? this.getActiveViewPaneContainer(viewContainer) : null;
 	}
 
 	async openViewContainer(id: string, focus?: boolean): Promise<IPaneComposite | null> {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(id);
+
 		if (viewContainer) {
 			const viewContainerLocation = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 			if (viewContainerLocation !== null) {
 				const paneComposite = await this.paneCompositeService.openPaneComposite(id, viewContainerLocation, focus);
+
 				return paneComposite || null;
 			}
 		}
@@ -253,9 +267,12 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	async closeViewContainer(id: string): Promise<void> {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(id);
+
 		if (viewContainer) {
 			const viewContainerLocation = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 			const isActive = viewContainerLocation !== null && this.paneCompositeService.getActivePaneComposite(viewContainerLocation);
+
 			if (viewContainerLocation !== null) {
 				return isActive ? this.layoutService.setPartHidden(true, getPartByLocation(viewContainerLocation)) : undefined;
 			}
@@ -264,13 +281,16 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	isViewVisible(id: string): boolean {
 		const activeView = this.getActiveViewWithId(id);
+
 		return activeView?.isBodyVisible() || false;
 	}
 
 	getActiveViewWithId<T extends IView>(id: string): T | null {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(id);
+
 		if (viewContainer) {
 			const activeViewPaneContainer = this.getActiveViewPaneContainer(viewContainer);
+
 			if (activeViewPaneContainer) {
 				return activeViewPaneContainer.getView(id) as T;
 			}
@@ -280,8 +300,10 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	getViewWithId<T extends IView>(id: string): T | null {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(id);
+
 		if (viewContainer) {
 			const viewPaneContainer: IViewPaneContainer | undefined = this.viewPaneContainers.get(viewContainer.id);
+
 			if (viewPaneContainer) {
 				return viewPaneContainer.getView(id) as T;
 			}
@@ -291,12 +313,15 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	getFocusedViewName(): string {
 		const viewId: string = this.contextKeyService.getContextKeyValue(FocusedViewContext.key) ?? '';
+
 		const textEditorFocused = this.editorService.activeTextEditorControl?.hasTextFocus() ? localize('editor', "Text Editor") : undefined;
+
 		return this.viewDescriptorService.getViewDescriptorById(viewId.toString())?.name?.value ?? textEditorFocused ?? '';
 	}
 
 	async openView<T extends IView>(id: string, focus?: boolean): Promise<T | null> {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(id);
+
 		if (!viewContainer) {
 			return null;
 		}
@@ -306,9 +331,12 @@ export class ViewsService extends Disposable implements IViewsService {
 		}
 
 		const location = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 		const compositeDescriptor = this.getComposite(viewContainer.id, location!);
+
 		if (compositeDescriptor) {
 			const paneComposite = await this.openComposite(compositeDescriptor.id, location!) as IPaneComposite | undefined;
+
 			if (paneComposite && paneComposite.openView) {
 				return paneComposite.openView<T>(id, focus) || null;
 			} else if (focus) {
@@ -321,13 +349,17 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	closeView(id: string): void {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(id);
+
 		if (viewContainer) {
 			const activeViewPaneContainer = this.getActiveViewPaneContainer(viewContainer);
+
 			if (activeViewPaneContainer) {
 				const view = activeViewPaneContainer.getView(id);
+
 				if (view) {
 					if (activeViewPaneContainer.views.length === 1) {
 						const location = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 						if (location === ViewContainerLocation.Sidebar) {
 							this.layoutService.setPartHidden(true, Parts.SIDEBAR_PART);
 						} else if (location === ViewContainerLocation.Panel || location === ViewContainerLocation.AuxiliaryBar) {
@@ -350,11 +382,13 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private getActiveViewPaneContainer(viewContainer: ViewContainer): IViewPaneContainer | null {
 		const location = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 		if (location === null) {
 			return null;
 		}
 
 		const activePaneComposite = this.paneCompositeService.getActivePaneComposite(location);
+
 		if (activePaneComposite?.getId() === viewContainer.id) {
 			return activePaneComposite.getViewPaneContainer() || null;
 		}
@@ -364,16 +398,19 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	getViewProgressIndicator(viewId: string): IProgressIndicator | undefined {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(viewId);
+
 		if (!viewContainer) {
 			return undefined;
 		}
 
 		const viewPaneContainer = this.viewPaneContainers.get(viewContainer.id);
+
 		if (!viewPaneContainer) {
 			return undefined;
 		}
 
 		const view = viewPaneContainer.getView(viewId);
+
 		if (!view) {
 			return undefined;
 		}
@@ -387,6 +424,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private getViewContainerProgressIndicator(viewContainer: ViewContainer): IProgressIndicator | undefined {
 		const viewContainerLocation = this.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 		if (viewContainerLocation === null) {
 			return undefined;
 		}
@@ -396,9 +434,12 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private registerOpenViewContainerAction(viewContainer: ViewContainer): IDisposable {
 		const disposables = new DisposableStore();
+
 		if (viewContainer.openCommandActionDescriptor) {
 			const { id, mnemonicTitle, keybindings, order } = viewContainer.openCommandActionDescriptor ?? { id: viewContainer.id };
+
 			const title = viewContainer.openCommandActionDescriptor.title ?? viewContainer.title;
+
 			const that = this;
 			disposables.add(registerAction2(class OpenViewContainerAction extends Action2 {
 				constructor() {
@@ -406,8 +447,11 @@ export class ViewsService extends Disposable implements IViewsService {
 						id,
 						get title(): ICommandActionTitle {
 							const viewContainerLocation = that.viewDescriptorService.getViewContainerLocation(viewContainer);
+
 							const localizedTitle = typeof title === 'string' ? title : title.value;
+
 							const originalTitle = typeof title === 'string' ? title : title.original;
+
 							if (viewContainerLocation === ViewContainerLocation.Sidebar) {
 								return { value: localize('show view', "Show {0}", localizedTitle), original: `Show ${originalTitle}` };
 							} else {
@@ -422,14 +466,20 @@ export class ViewsService extends Disposable implements IViewsService {
 				}
 				public async run(serviceAccessor: ServicesAccessor): Promise<any> {
 					const editorGroupService = serviceAccessor.get(IEditorGroupsService);
+
 					const viewDescriptorService = serviceAccessor.get(IViewDescriptorService);
+
 					const layoutService = serviceAccessor.get(IWorkbenchLayoutService);
+
 					const viewsService = serviceAccessor.get(IViewsService);
+
 					const viewContainerLocation = viewDescriptorService.getViewContainerLocation(viewContainer);
+
 					switch (viewContainerLocation) {
 						case ViewContainerLocation.AuxiliaryBar:
 						case ViewContainerLocation.Sidebar: {
 							const part = viewContainerLocation === ViewContainerLocation.Sidebar ? Parts.SIDEBAR_PART : Parts.AUXILIARYBAR_PART;
+
 							if (!viewsService.isViewContainerVisible(viewContainer.id) || !layoutService.hasFocus(part)) {
 								await viewsService.openViewContainer(viewContainer.id, true);
 							} else {
@@ -467,9 +517,12 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private registerOpenViewAction(viewDescriptor: IViewDescriptor): IDisposable {
 		const disposables = new DisposableStore();
+
 		if (viewDescriptor.openCommandActionDescriptor) {
 			const title = viewDescriptor.openCommandActionDescriptor.title ?? viewDescriptor.name;
+
 			const commandId = viewDescriptor.openCommandActionDescriptor.id;
+
 			const that = this;
 			disposables.add(registerAction2(class OpenViewAction extends Action2 {
 				constructor() {
@@ -477,8 +530,11 @@ export class ViewsService extends Disposable implements IViewsService {
 						id: commandId,
 						get title(): ICommandActionTitle {
 							const viewContainerLocation = that.viewDescriptorService.getViewLocationById(viewDescriptor.id);
+
 							const localizedTitle = typeof title === 'string' ? title : title.value;
+
 							const originalTitle = typeof title === 'string' ? title : title.original;
+
 							if (viewContainerLocation === ViewContainerLocation.Sidebar) {
 								return { value: localize('show view', "Show {0}", localizedTitle), original: `Show ${originalTitle}` };
 							} else {
@@ -493,15 +549,21 @@ export class ViewsService extends Disposable implements IViewsService {
 				}
 				public async run(serviceAccessor: ServicesAccessor): Promise<any> {
 					const editorGroupService = serviceAccessor.get(IEditorGroupsService);
+
 					const viewDescriptorService = serviceAccessor.get(IViewDescriptorService);
+
 					const layoutService = serviceAccessor.get(IWorkbenchLayoutService);
+
 					const viewsService = serviceAccessor.get(IViewsService);
+
 					const contextKeyService = serviceAccessor.get(IContextKeyService);
 
 					const focusedViewId = FocusedViewContext.getValue(contextKeyService);
+
 					if (focusedViewId === viewDescriptor.id) {
 
 						const viewLocation = viewDescriptorService.getViewLocationById(viewDescriptor.id);
+
 						if (viewDescriptorService.getViewLocationById(viewDescriptor.id) === ViewContainerLocation.Sidebar) {
 							// focus the editor if the view is focused and in the side bar
 							editorGroupService.activeGroup.focus();
@@ -517,6 +579,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 			if (viewDescriptor.openCommandActionDescriptor.mnemonicTitle) {
 				const defaultViewContainer = this.viewDescriptorService.getDefaultContainerById(viewDescriptor.id);
+
 				if (defaultViewContainer) {
 					const defaultLocation = this.viewDescriptorService.getDefaultViewContainerLocation(defaultViewContainer);
 					disposables.add(MenuRegistry.appendMenuItem(MenuId.MenubarViewMenu, {
@@ -538,6 +601,7 @@ export class ViewsService extends Disposable implements IViewsService {
 		return registerAction2(class FocusViewAction extends Action2 {
 			constructor() {
 				const title = localize2({ key: 'focus view', comment: ['{0} indicates the name of the view to be focused.'] }, "Focus on {0} View", viewDescriptor.name.value);
+
 				super({
 					id: viewDescriptor.focusCommand ? viewDescriptor.focusCommand.id : `${viewDescriptor.id}.focus`,
 					title,
@@ -601,7 +665,9 @@ export class ViewsService extends Disposable implements IViewsService {
 			}
 			run(accessor: ServicesAccessor): void {
 				const viewDescriptorService = accessor.get(IViewDescriptorService);
+
 				const defaultContainer = viewDescriptorService.getDefaultContainerById(viewDescriptor.id)!;
+
 				const containerModel = viewDescriptorService.getViewContainerModel(defaultContainer)!;
 
 				// The default container is hidden so we should try to reset its location first
@@ -618,6 +684,7 @@ export class ViewsService extends Disposable implements IViewsService {
 
 	private registerPaneComposite(viewContainer: ViewContainer, viewContainerLocation: ViewContainerLocation): void {
 		const that = this;
+
 		class PaneContainer extends PaneComposite {
 			constructor(
 				@ITelemetryService telemetryService: ITelemetryService,
@@ -695,8 +762,10 @@ function getPaneCompositeExtension(viewContainerLocation: ViewContainerLocation)
 	switch (viewContainerLocation) {
 		case ViewContainerLocation.AuxiliaryBar:
 			return PaneCompositeExtensions.Auxiliary;
+
 		case ViewContainerLocation.Panel:
 			return PaneCompositeExtensions.Panels;
+
 		case ViewContainerLocation.Sidebar:
 		default:
 			return PaneCompositeExtensions.Viewlets;
@@ -707,8 +776,10 @@ export function getPartByLocation(viewContainerLocation: ViewContainerLocation):
 	switch (viewContainerLocation) {
 		case ViewContainerLocation.AuxiliaryBar:
 			return Parts.AUXILIARYBAR_PART;
+
 		case ViewContainerLocation.Panel:
 			return Parts.PANEL_PART;
+
 		case ViewContainerLocation.Sidebar:
 		default:
 			return Parts.SIDEBAR_PART;

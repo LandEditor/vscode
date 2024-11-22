@@ -29,12 +29,14 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
     function nextS0ToS1MapWithS1LengthOf(s1Length: Length | undefined): LengthMapping[] {
         if (s1Length === undefined) {
             const arr = s0ToS1Map.takeWhile(v => true) || [];
+
             if (curItem) {
                 arr.unshift(curItem);
             }
             return arr;
         }
         const result: LengthMapping[] = [];
+
         while (curItem && !lengthIsZero(s1Length)) {
             const [item, remainingItem] = curItem.splitAt(s1Length);
             result.push(item);
@@ -47,6 +49,7 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
         return result;
     }
     const result: TextEditInfo[] = [];
+
     function pushEdit(startOffset: Length, endOffset: Length, newLength: Length): void {
         if (result.length > 0 && lengthEquals(result[result.length - 1].endOffset, startOffset)) {
             const lastResult = result[result.length - 1];
@@ -57,10 +60,13 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
         }
     }
     let s0offset = lengthZero;
+
     for (const s1ToS2 of s1ToS2Map) {
         const s0ToS1Map = nextS0ToS1MapWithS1LengthOf(s1ToS2.lengthBefore);
+
         if (s1ToS2.modified) {
             const s0Length = sumLengths(s0ToS1Map, s => s.lengthBefore);
+
             const s0EndOffset = lengthAdd(s0offset, s0Length);
             pushEdit(s0offset, s0EndOffset, s1ToS2.lengthAfter);
             s0offset = s0EndOffset;
@@ -69,6 +75,7 @@ export function combineTextEditInfos(textEditInfoFirst: TextEditInfo[], textEdit
             for (const s1 of s0ToS1Map) {
                 const s0startOffset = s0offset;
                 s0offset = lengthAdd(s0offset, s1.lengthBefore);
+
                 if (s1.modified) {
                     pushEdit(s0startOffset, s0offset, s1.lengthAfter);
                 }
@@ -89,6 +96,7 @@ class LengthMapping {
         LengthMapping | undefined
     ] {
         const remainingLengthAfter = lengthDiffNonNegative(lengthAfter, this.lengthAfter);
+
         if (lengthEquals(remainingLengthAfter, lengthZero)) {
             return [this, undefined];
         }
@@ -111,9 +119,12 @@ class LengthMapping {
 }
 function toLengthMapping(textEditInfos: TextEditInfo[]): LengthMapping[] {
     const result: LengthMapping[] = [];
+
     let lastOffset = lengthZero;
+
     for (const textEditInfo of textEditInfos) {
         const spaceLength = lengthDiffNonNegative(lastOffset, textEditInfo.startOffset);
+
         if (!lengthIsZero(spaceLength)) {
             result.push(new LengthMapping(false, spaceLength, spaceLength));
         }

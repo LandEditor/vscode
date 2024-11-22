@@ -34,9 +34,11 @@ class EncryptionContribution implements IWorkbenchContribution {
         }
         try {
             const content = await this.fileService.readFile(this.environmentService.argvResource);
+
             const argv = parse<{
                 'password-store'?: string;
             }>(content.value.toString());
+
             if (argv['password-store'] === 'gnome' || argv['password-store'] === 'gnome-keyring') {
                 this.jsonEditingService.write(this.environmentService.argvResource, [{ path: ['password-store'], value: 'gnome-libsecret' }], true);
             }

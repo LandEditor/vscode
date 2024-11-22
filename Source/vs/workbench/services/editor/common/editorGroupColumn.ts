@@ -22,6 +22,7 @@ export function columnToEditorGroup(editorGroupService: IEditorGroupsService, co
     if (!groupInColumn && column < 9) {
         for (let i = 0; i <= column; i++) {
             const editorGroups = editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE);
+
             if (!editorGroups[i]) {
                 editorGroupService.addGroup(editorGroups[i - 1], preferredSideBySideGroupDirection(configurationService));
             }
@@ -32,5 +33,6 @@ export function columnToEditorGroup(editorGroupService: IEditorGroupsService, co
 }
 export function editorGroupToColumn(editorGroupService: IEditorGroupsService, editorGroup: IEditorGroup | GroupIdentifier): EditorGroupColumn {
     const group = (typeof editorGroup === 'number') ? editorGroupService.getGroup(editorGroup) : editorGroup;
+
     return editorGroupService.getGroups(GroupsOrder.GRID_APPEARANCE).indexOf(group ?? editorGroupService.activeGroup);
 }

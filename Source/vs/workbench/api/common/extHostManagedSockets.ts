@@ -19,6 +19,7 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
     private _remoteSocketIdCounter = 0;
     private _factory: ManagedSocketFactory | null = null;
     private readonly _managedRemoteSockets: Map<number, ManagedSocket> = new Map();
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService) {
@@ -42,7 +43,9 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
             throw new Error(`No socket factory with id ${socketFactoryId}`);
         }
         const id = (++this._remoteSocketIdCounter);
+
         const socket = await this._factory.makeConnection();
+
         const disposable = new DisposableStore();
         this._managedRemoteSockets.set(id, new ManagedSocket(id, socket, disposable));
         disposable.add(toDisposable(() => this._managedRemoteSockets.delete(id)));
@@ -55,6 +58,7 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
             disposable.dispose();
         }));
         disposable.add(socket.onDidReceiveMessage(e => this._proxy.$onDidManagedSocketHaveData(id, VSBuffer.wrap(e))));
+
         return id;
     }
     $remoteSocketWrite(socketId: number, buffer: VSBuffer): void {
@@ -62,6 +66,7 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
     }
     $remoteSocketEnd(socketId: number): void {
         const socket = this._managedRemoteSockets.get(socketId);
+
         if (socket) {
             socket.actual.end();
             socket.dispose();

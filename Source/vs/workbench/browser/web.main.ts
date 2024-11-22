@@ -98,6 +98,7 @@ import { INotificationService, Severity } from '../../platform/notification/comm
 export class BrowserMain extends Disposable {
     private readonly onWillShutdownDisposables = this._register(new DisposableStore());
     private readonly indexedDBFileSystemProviders: IndexedDBFileSystemProvider[] = [];
+
     constructor(private readonly domElement: HTMLElement, private readonly configuration: IWorkbenchConstructionOptions) {
         super();
         this.init();
@@ -121,6 +122,7 @@ export class BrowserMain extends Disposable {
         services.logService.trace('workbench#open with configuration', safeStringify(this.configuration));
         instantiationService.invokeFunction(accessor => {
             const telemetryService = accessor.get(ITelemetryService);
+
             for (const indexedDbFileSystemProvider of this.indexedDBFileSystemProviders) {
                 this._register(indexedDbFileSystemProvider.onReportError(e => telemetryService.publicLog2<IndexedDBFileSystemProviderErrorData, IndexedDBFileSystemProviderErrorDataClassification>('indexedDBFileSystemProviderError', e)));
             }
@@ -128,33 +130,51 @@ export class BrowserMain extends Disposable {
         // Return API Facade
         return instantiationService.invokeFunction(accessor => {
             const commandService = accessor.get(ICommandService);
+
             const lifecycleService = accessor.get(ILifecycleService);
+
             const timerService = accessor.get(ITimerService);
+
             const openerService = accessor.get(IOpenerService);
+
             const productService = accessor.get(IProductService);
+
             const progressService = accessor.get(IProgressService);
+
             const environmentService = accessor.get(IBrowserWorkbenchEnvironmentService);
+
             const instantiationService = accessor.get(IInstantiationService);
+
             const remoteExplorerService = accessor.get(IRemoteExplorerService);
+
             const labelService = accessor.get(ILabelService);
+
             const embedderTerminalService = accessor.get(IEmbedderTerminalService);
+
             const remoteAuthorityResolverService = accessor.get(IRemoteAuthorityResolverService);
+
             const notificationService = accessor.get(INotificationService);
+
             async function showMessage<T extends string>(severity: Severity, message: string, ...items: T[]): Promise<T | undefined> {
                 const choice = new DeferredPromise<T | undefined>();
+
                 const handle = notificationService.prompt(severity, message, items.map(item => ({
                     label: item,
                     run: () => choice.complete(item)
                 })));
+
                 const disposable = handle.onDidClose(() => {
                     choice.complete(undefined);
                     disposable.dispose();
                 });
+
                 const result = await choice.p;
                 handle.close();
+
                 return result;
             }
             let logger: DelayedLogChannel | undefined = undefined;
+
             return {
                 commands: {
                     executeCommand: (command, ...args) => commandService.executeCommand(command, ...args)
@@ -165,6 +185,7 @@ export class BrowserMain extends Disposable {
                     },
                     async retrievePerformanceMarks() {
                         await timerService.whenReady();
+
                         return timerService.getPerformanceMarks();
                     },
                     async openUri(uri: URI): Promise<boolean> {
@@ -209,6 +230,7 @@ export class BrowserMain extends Disposable {
                             requireLocalPort: undefined,
                             protocol: tunnelOptions.protocol === TunnelProtocol.Https ? tunnelOptions.protocol : TunnelProtocol.Http
                         }));
+
                         if (typeof tunnel === 'string') {
                             throw new Error(tunnel);
                         }
@@ -249,10 +271,12 @@ export class BrowserMain extends Disposable {
         serviceCollection.set(IProductService, productService);
         // Environment
         const logsPath = URI.file(toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')).with({ scheme: 'vscode-log' });
+
         const environmentService = new BrowserWorkbenchEnvironmentService(workspace.id, logsPath, this.configuration, productService);
         serviceCollection.set(IBrowserWorkbenchEnvironmentService, environmentService);
         // Files
         const fileLogger = new BufferLogger();
+
         const fileService = this._register(new FileService(fileLogger));
         serviceCollection.set(IFileService, fileService);
         // Logger
@@ -260,10 +284,12 @@ export class BrowserMain extends Disposable {
         serviceCollection.set(ILoggerService, loggerService);
         // Log Service
         const otherLoggers: ILogger[] = [new ConsoleLogger(loggerService.getLogLevel())];
+
         if (environmentService.isExtensionDevelopment && !!environmentService.extensionTestsLocationURI) {
             otherLoggers.push(new ConsoleLogInAutomationLogger(loggerService.getLogLevel()));
         }
         const logger = loggerService.createLogger(environmentService.logFile, { id: windowLogId, name: localize('rendererLog', "Window") });
+
         const logService = new LogService(logger, otherLoggers);
         serviceCollection.set(ILogService, logService);
         // Set the logger of the fileLogger after the log service is ready.
@@ -272,9 +298,13 @@ export class BrowserMain extends Disposable {
         // Register File System Providers depending on IndexedDB support
         // Register them early because they are needed for the profiles initialization
         await this.registerIndexedDBFileSystemProviders(environmentService, fileService, logService, loggerService, logsPath);
+
         const connectionToken = environmentService.options.connectionToken || getCookieValue(connectionTokenCookieName);
+
         const remoteResourceLoader = this.configuration.remoteResourceProvider ? new BrowserRemoteResourceLoader(fileService, this.configuration.remoteResourceProvider) : undefined;
+
         const resourceUriProvider = this.configuration.resourceUriProvider ?? remoteResourceLoader?.getResourceUriProvider();
+
         const remoteAuthorityResolverService = new RemoteAuthorityResolverService(!environmentService.expectsResolverExtension, connectionToken, resourceUriProvider, this.configuration.serverBasePath, productService, logService);
         serviceCollection.set(IRemoteAuthorityResolverService, remoteAuthorityResolverService);
         // Signing
@@ -294,14 +324,17 @@ export class BrowserMain extends Disposable {
         // User Data Profiles
         const userDataProfilesService = new BrowserUserDataProfilesService(environmentService, fileService, uriIdentityService, logService);
         serviceCollection.set(IUserDataProfilesService, userDataProfilesService);
+
         const currentProfile = await this.getCurrentProfile(workspace, userDataProfilesService, environmentService);
         await userDataProfilesService.setProfileForWorkspace(workspace, currentProfile);
+
         const userDataProfileService = new UserDataProfileService(currentProfile);
         serviceCollection.set(IUserDataProfileService, userDataProfileService);
         // Remote Agent
         const remoteSocketFactoryService = new RemoteSocketFactoryService();
         remoteSocketFactoryService.register(RemoteConnectionType.WebSocket, new BrowserSocketFactory(this.configuration.webSocketFactory));
         serviceCollection.set(IRemoteSocketFactoryService, remoteSocketFactoryService);
+
         const remoteAgentService = this._register(new RemoteAgentService(remoteSocketFactoryService, userDataProfileService, environmentService, productService, remoteAuthorityResolverService, signService, logService));
         serviceCollection.set(IRemoteAgentService, remoteAgentService);
         this._register(RemoteFileSystemProviderClient.register(remoteAgentService, fileService, logService));
@@ -312,11 +345,13 @@ export class BrowserMain extends Disposable {
                 serviceCollection.set(IWorkspaceContextService, service);
                 // Configuration
                 serviceCollection.set(IWorkbenchConfigurationService, service);
+
                 return service;
             }),
             this.createStorageService(workspace, logService, userDataProfileService).then(service => {
                 // Storage
                 serviceCollection.set(IStorageService, service);
+
                 return service;
             })
         ]);
@@ -331,6 +366,7 @@ export class BrowserMain extends Disposable {
         // Workspace Trust Service
         const workspaceTrustEnablementService = new WorkspaceTrustEnablementService(configurationService, environmentService);
         serviceCollection.set(IWorkspaceTrustEnablementService, workspaceTrustEnablementService);
+
         const workspaceTrustManagementService = new WorkspaceTrustManagementService(configurationService, remoteAuthorityResolverService, storageService, uriIdentityService, environmentService, configurationService, workspaceTrustEnablementService, fileService);
         serviceCollection.set(IWorkspaceTrustManagementService, workspaceTrustManagementService);
         // Update workspace trust so that configuration is updated accordingly
@@ -352,16 +388,19 @@ export class BrowserMain extends Disposable {
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         const encryptionService = new EncryptionService();
         serviceCollection.set(IEncryptionService, encryptionService);
+
         const secretStorageService = new BrowserSecretStorageService(storageService, encryptionService, environmentService, logService);
         serviceCollection.set(ISecretStorageService, secretStorageService);
         // Userdata Initialize Service
         const userDataInitializers: IUserDataInitializer[] = [];
         userDataInitializers.push(new UserDataSyncInitializer(environmentService, secretStorageService, userDataSyncStoreManagementService, fileService, userDataProfilesService, storageService, productService, requestService, logService, uriIdentityService));
+
         if (environmentService.options.profile) {
             userDataInitializers.push(new UserDataProfileInitializer(environmentService, fileService, userDataProfileService, storageService, logService, uriIdentityService, requestService));
         }
         const userDataInitializationService = new UserDataInitializationService(userDataInitializers);
         serviceCollection.set(IUserDataInitializationService, userDataInitializationService);
+
         try {
             await Promise.race([
                 // Do not block more than 5s
@@ -388,9 +427,13 @@ export class BrowserMain extends Disposable {
     private async registerIndexedDBFileSystemProviders(environmentService: IWorkbenchEnvironmentService, fileService: IFileService, logService: ILogService, loggerService: ILoggerService, logsPath: URI): Promise<void> {
         // IndexedDB is used for logging and user data
         let indexedDB: IndexedDB | undefined;
+
         const userDataStore = 'vscode-userdata-store';
+
         const logsStore = 'vscode-logs-store';
+
         const handlesStore = 'vscode-filehandles-store';
+
         try {
             indexedDB = await IndexedDB.create('vscode-web-db', 3, [userDataStore, logsStore, handlesStore]);
             // Close onWillShutdown
@@ -410,6 +453,7 @@ export class BrowserMain extends Disposable {
         }
         // User data
         let userDataProvider;
+
         if (indexedDB) {
             userDataProvider = new IndexedDBFileSystemProvider(Schemas.vscodeUserData, indexedDB, userDataStore, true);
             this.indexedDBFileSystemProviders.push(userDataProvider);
@@ -441,21 +485,28 @@ export class BrowserMain extends Disposable {
             }
             async run(accessor: ServicesAccessor): Promise<void> {
                 const dialogService = accessor.get(IDialogService);
+
                 const hostService = accessor.get(IHostService);
+
                 const storageService = accessor.get(IStorageService);
+
                 const logService = accessor.get(ILogService);
+
                 const result = await dialogService.confirm({
                     message: localize('reset user data message', "Would you like to reset your data (settings, keybindings, extensions, snippets and UI State) and reload?")
                 });
+
                 if (result.confirmed) {
                     try {
                         await provider?.reset();
+
                         if (storageService instanceof BrowserStorageService) {
                             await storageService.clear();
                         }
                     }
                     catch (error) {
                         logService.error(error);
+
                         throw error;
                     }
                 }
@@ -465,15 +516,18 @@ export class BrowserMain extends Disposable {
     }
     private async createStorageService(workspace: IAnyWorkspaceIdentifier, logService: ILogService, userDataProfileService: IUserDataProfileService): Promise<IStorageService> {
         const storageService = new BrowserStorageService(workspace, userDataProfileService, logService);
+
         try {
             await storageService.initialize();
             // Register to close on shutdown
             this.onWillShutdownDisposables.add(toDisposable(() => storageService.close()));
+
             return storageService;
         }
         catch (error) {
             onUnexpectedError(error);
             logService.error(error);
+
             return storageService;
         }
     }
@@ -491,21 +545,27 @@ export class BrowserMain extends Disposable {
             }
         }
         const configurationCache = new ConfigurationCache([Schemas.file, Schemas.vscodeUserData, Schemas.tmp] /* Cache all non native resources */, environmentService, fileService);
+
         const workspaceService = new WorkspaceService({ remoteAuthority: this.configuration.remoteAuthority, configurationCache }, environmentService, userDataProfileService, userDataProfilesService, fileService, remoteAgentService, uriIdentityService, logService, new NullPolicyService());
+
         try {
             await workspaceService.initialize(workspace);
+
             return workspaceService;
         }
         catch (error) {
             onUnexpectedError(error);
             logService.error(error);
+
             return workspaceService;
         }
     }
     private async getCurrentProfile(workspace: IAnyWorkspaceIdentifier, userDataProfilesService: BrowserUserDataProfilesService, environmentService: BrowserWorkbenchEnvironmentService): Promise<IUserDataProfile> {
         const profileName = environmentService.options?.profile?.name ?? environmentService.profile;
+
         if (profileName) {
             const profile = userDataProfilesService.profiles.find(p => p.name === profileName);
+
             if (profile) {
                 return profile;
             }
@@ -515,6 +575,7 @@ export class BrowserMain extends Disposable {
     }
     private resolveWorkspace(): IAnyWorkspaceIdentifier {
         let workspace: IWorkspace | undefined = undefined;
+
         if (this.configuration.workspaceProvider) {
             workspace = this.configuration.workspaceProvider.workspace;
         }

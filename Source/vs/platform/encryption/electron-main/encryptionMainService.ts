@@ -10,11 +10,13 @@ import { ILogService } from '../../log/common/log.js';
 // we need to guard against them not being available.
 interface ISafeStorageAdditionalAPIs {
     setUsePlainTextEncryption(usePlainText: boolean): void;
+
     getSelectedStorageBackend(): string;
 }
 const safeStorage: typeof import('electron').safeStorage & Partial<ISafeStorageAdditionalAPIs> = safeStorageElectron;
 export class EncryptionMainService implements IEncryptionMainService {
     _serviceBrand: undefined;
+
     constructor(
     @ILogService
     private readonly logService: ILogService) {
@@ -27,13 +29,16 @@ export class EncryptionMainService implements IEncryptionMainService {
     }
     async encrypt(value: string): Promise<string> {
         this.logService.trace('[EncryptionMainService] Encrypting value...');
+
         try {
             const result = JSON.stringify(safeStorage.encryptString(value));
             this.logService.trace('[EncryptionMainService] Encrypted value.');
+
             return result;
         }
         catch (e) {
             this.logService.error(e);
+
             throw e;
         }
     }
@@ -41,26 +46,33 @@ export class EncryptionMainService implements IEncryptionMainService {
         let parsedValue: {
             data: string;
         };
+
         try {
             parsedValue = JSON.parse(value);
+
             if (!parsedValue.data) {
                 throw new Error(`[EncryptionMainService] Invalid encrypted value: ${value}`);
             }
             const bufferToDecrypt = Buffer.from(parsedValue.data);
             this.logService.trace('[EncryptionMainService] Decrypting value...');
+
             const result = safeStorage.decryptString(bufferToDecrypt);
             this.logService.trace('[EncryptionMainService] Decrypted value.');
+
             return result;
         }
         catch (e) {
             this.logService.error(e);
+
             throw e;
         }
     }
     isEncryptionAvailable(): Promise<boolean> {
         this.logService.trace('[EncryptionMainService] Checking if encryption is available...');
+
         const result = safeStorage.isEncryptionAvailable();
         this.logService.trace('[EncryptionMainService] Encryption is available: ', result);
+
         return Promise.resolve(result);
     }
     getKeyStorageProvider(): Promise<KnownStorageProvider> {
@@ -73,8 +85,10 @@ export class EncryptionMainService implements IEncryptionMainService {
         if (safeStorage.getSelectedStorageBackend) {
             try {
                 this.logService.trace('[EncryptionMainService] Getting selected storage backend...');
+
                 const result = safeStorage.getSelectedStorageBackend() as KnownStorageProvider;
                 this.logService.trace('[EncryptionMainService] Selected storage backend: ', result);
+
                 return Promise.resolve(result);
             }
             catch (e) {

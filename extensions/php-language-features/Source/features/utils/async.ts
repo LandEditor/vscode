@@ -29,6 +29,7 @@ export class Throttler<T> {
     private activePromise: Promise<T> | null;
     private queuedPromise: Promise<T> | null;
     private queuedPromiseFactory: ITask<Promise<T>> | null;
+
     constructor() {
         this.activePromise = null;
         this.queuedPromise = null;
@@ -37,11 +38,14 @@ export class Throttler<T> {
     public queue(promiseFactory: ITask<Promise<T>>): Promise<T> {
         if (this.activePromise) {
             this.queuedPromiseFactory = promiseFactory;
+
             if (!this.queuedPromise) {
                 const onComplete = () => {
                     this.queuedPromise = null;
+
                     const result = this.queue(this.queuedPromiseFactory!);
                     this.queuedPromiseFactory = null;
+
                     return result;
                 };
                 this.queuedPromise = new Promise<T>((resolve) => {
@@ -53,6 +57,7 @@ export class Throttler<T> {
             });
         }
         this.activePromise = promiseFactory();
+
         return new Promise<T>((resolve, reject) => {
             this.activePromise!.then((result: T) => {
                 this.activePromise = null;
@@ -93,6 +98,7 @@ export class Delayer<T> {
     private completionPromise: Promise<T> | null;
     private onResolve: ((value: T | PromiseLike<T> | undefined) => void) | null;
     private task: ITask<T> | null;
+
     constructor(defaultDelay: number) {
         this.defaultDelay = defaultDelay;
         this.timeout = null;
@@ -103,14 +109,17 @@ export class Delayer<T> {
     public trigger(task: ITask<T>, delay: number = this.defaultDelay): Promise<T> {
         this.task = task;
         this.cancelTimeout();
+
         if (!this.completionPromise) {
             this.completionPromise = new Promise<T | undefined>((resolve) => {
                 this.onResolve = resolve;
             }).then(() => {
                 this.completionPromise = null;
                 this.onResolve = null;
+
                 const result = this.task!();
                 this.task = null;
+
                 return result;
             });
         }
@@ -118,6 +127,7 @@ export class Delayer<T> {
             this.timeout = null;
             this.onResolve!(undefined);
         }, delay);
+
         return this.completionPromise;
     }
     public isTriggered(): boolean {
@@ -125,6 +135,7 @@ export class Delayer<T> {
     }
     public cancel(): void {
         this.cancelTimeout();
+
         if (this.completionPromise) {
             this.completionPromise = null;
         }
@@ -145,6 +156,7 @@ export class Delayer<T> {
  */
 export class ThrottledDelayer<T> extends Delayer<Promise<T>> {
     private throttler: Throttler<T>;
+
     constructor(defaultDelay: number) {
         super(defaultDelay);
         this.throttler = new Throttler<T>();

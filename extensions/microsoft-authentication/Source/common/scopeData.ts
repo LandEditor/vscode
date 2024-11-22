@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 const DEFAULT_CLIENT_ID = 'aebc6443-996d-45c2-90f0-388ff96faa56';
+
 const DEFAULT_TENANT = 'organizations';
+
 const OIDC_SCOPES = ['openid', 'email', 'profile', 'offline_access'];
+
 const GRAPH_TACK_ON_SCOPE = 'User.Read';
 export class ScopeData {
     /**
@@ -30,6 +33,7 @@ export class ScopeData {
      * The tenant ID to use for the token request. This is the value of the `VSCODE_TENANT:...` scope if present, otherwise the default tenant ID.
      */
     readonly tenant: string;
+
     constructor(readonly originalScopes: readonly string[] = []) {
         const modifiedScopes = [...originalScopes];
         modifiedScopes.sort();
@@ -57,7 +61,9 @@ export class ScopeData {
     }
     private getScopesToSend(scopes: string[]) {
         const scopesToSend = scopes.filter(s => !s.startsWith('VSCODE_'));
+
         const set = new Set(scopesToSend);
+
         for (const scope of OIDC_SCOPES) {
             set.delete(scope);
         }

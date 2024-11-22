@@ -17,6 +17,7 @@ export class ListTopCellToolbar extends Disposable {
     private topCellToolbar: HTMLElement;
     private readonly viewZone: MutableDisposable<DisposableStore> = this._register(new MutableDisposable());
     private readonly _modelDisposables = this._register(new DisposableStore());
+
     constructor(protected readonly notebookEditor: INotebookEditorDelegate, private readonly notebookOptions: NotebookOptions, 
     @IInstantiationService
     protected readonly instantiationService: IInstantiationService, 
@@ -40,8 +41,10 @@ export class ListTopCellToolbar extends Disposable {
     private updateTopToolbar() {
         const layoutInfo = this.notebookOptions.getLayoutConfiguration();
         this.viewZone.value = new DisposableStore();
+
         if (layoutInfo.insertToolbarPosition === 'hidden' || layoutInfo.insertToolbarPosition === 'notebookToolbar') {
             const height = this.notebookOptions.computeTopInsertToolbarHeight(this.notebookEditor.textModel?.viewType);
+
             if (height !== 0) {
                 // reserve whitespace to avoid overlap with cell toolbar
                 this.notebookEditor.changeViewZones(accessor => {
@@ -66,6 +69,7 @@ export class ListTopCellToolbar extends Disposable {
         }
         this.notebookEditor.changeViewZones(accessor => {
             const height = this.notebookOptions.computeTopInsertToolbarHeight(this.notebookEditor.textModel?.viewType);
+
             const id = accessor.addZone({
                 afterModelPosition: 0,
                 heightInPx: height,
@@ -82,10 +86,12 @@ export class ListTopCellToolbar extends Disposable {
                 }
             });
             DOM.clearNode(this.topCellToolbar);
+
             const toolbar = this.instantiationService.createInstance(MenuWorkbenchToolBar, this.topCellToolbar, this.notebookEditor.creationOptions.menuIds.cellTopInsertToolbar, {
                 actionViewItemProvider: (action, options) => {
                     if (action instanceof MenuItemAction) {
                         const item = this.instantiationService.createInstance(CodiconActionViewItem, action, { hoverDelegate: options.hoverDelegate });
+
                         return item;
                     }
                     return undefined;
@@ -98,6 +104,7 @@ export class ListTopCellToolbar extends Disposable {
                 },
                 hiddenItemStrategy: HiddenItemStrategy.Ignore,
             });
+
             if (this.notebookEditor.hasModel()) {
                 toolbar.context = {
                     notebookEditor: this.notebookEditor
@@ -107,6 +114,7 @@ export class ListTopCellToolbar extends Disposable {
             // update toolbar container css based on cell list length
             this.viewZone.value?.add(this.notebookEditor.onDidChangeModel(() => {
                 this._modelDisposables.clear();
+
                 if (this.notebookEditor.hasModel()) {
                     this._modelDisposables.add(this.notebookEditor.onDidChangeViewCells(() => {
                         this.updateClass();

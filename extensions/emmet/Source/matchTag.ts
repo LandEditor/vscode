@@ -11,18 +11,23 @@ export function matchTag() {
         return;
     }
     const editor = vscode.window.activeTextEditor;
+
     const document = editor.document;
+
     const rootNode = <HtmlFlatNode>getRootNode(document, true);
+
     if (!rootNode) {
         return;
     }
     const updatedSelections: vscode.Selection[] = [];
     editor.selections.forEach(selection => {
         const updatedSelection = getUpdatedSelections(document, rootNode, selection.start);
+
         if (updatedSelection) {
             updatedSelections.push(updatedSelection);
         }
     });
+
     if (updatedSelections.length) {
         editor.selections = updatedSelections;
         editor.revealRange(editor.selections[updatedSelections.length - 1]);
@@ -30,7 +35,9 @@ export function matchTag() {
 }
 function getUpdatedSelections(document: vscode.TextDocument, rootNode: HtmlFlatNode, position: vscode.Position): vscode.Selection | undefined {
     const offset = document.offsetAt(position);
+
     const currentNode = getHtmlFlatNode(document.getText(), rootNode, offset, true);
+
     if (!currentNode) {
         return;
     }
@@ -42,5 +49,6 @@ function getUpdatedSelections(document: vscode.TextDocument, rootNode: HtmlFlatN
     }
     // Place cursor inside the close tag if cursor is inside the open tag, else place it inside the open tag
     const finalOffset = (offset <= currentNode.open.end) ? currentNode.close.start + 2 : currentNode.start + 1;
+
     return offsetRangeToSelection(document, finalOffset, finalOffset);
 }

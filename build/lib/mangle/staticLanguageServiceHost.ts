@@ -7,13 +7,17 @@ import * as path from 'path';
 export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
     private readonly _cmdLine: ts.ParsedCommandLine;
     private readonly _scriptSnapshots: Map<string, ts.IScriptSnapshot> = new Map();
+
     constructor(readonly projectPath: string) {
         const existingOptions: Partial<ts.CompilerOptions> = {};
+
         const parsed = ts.readConfigFile(projectPath, ts.sys.readFile);
+
         if (parsed.error) {
             throw parsed.error;
         }
         this._cmdLine = ts.parseJsonConfigFileContent(parsed.config, ts.sys, path.dirname(projectPath), existingOptions);
+
         if (this._cmdLine.errors.length > 0) {
             throw parsed.error;
         }
@@ -32,8 +36,10 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
     }
     getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
         let result: ts.IScriptSnapshot | undefined = this._scriptSnapshots.get(fileName);
+
         if (result === undefined) {
             const content = ts.sys.readFile(fileName);
+
             if (content === undefined) {
                 return undefined;
             }
@@ -49,6 +55,7 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
         return ts.getDefaultLibFilePath(options);
     }
     directoryExists = ts.sys.directoryExists;
+
     getDirectories = ts.sys.getDirectories;
     fileExists = ts.sys.fileExists;
     readFile = ts.sys.readFile;

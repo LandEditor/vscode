@@ -25,8 +25,10 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
             return null;
         }
         const start = i;
+
         const height = items[start].listHeight;
         i++;
+
         while (i < items.length && items[i].listHeight === height) {
             i++;
         }
@@ -41,6 +43,7 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
     // We merge all items by using a binary concat operator.
     let first = readNode()!; // There must be a first item
     let second = readNode();
+
     if (!second) {
         return first;
     }
@@ -55,6 +58,7 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
         }
     }
     const result = concat(first, second);
+
     return result;
 }
 export function concat23TreesOfSameHeight(items: AstNode[], createImmutableLists: boolean = false): AstNode | null {
@@ -68,6 +72,7 @@ export function concat23TreesOfSameHeight(items: AstNode[], createImmutableLists
     // All trees have same height, just create parent nodes.
     while (length > 3) {
         const newLength = length >> 1;
+
         for (let i = 0; i < newLength; i++) {
             const j = i << 1;
             items[i] = ListAstNode.create23(items[j], items[j + 1], j + 3 === length ? items[j + 2] : null, createImmutableLists);
@@ -97,13 +102,18 @@ function concat(node1: AstNode, node2: AstNode): AstNode {
 */
 function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
     list = list.toMutable() as ListAstNode;
+
     let curNode: AstNode = list;
+
     const parents: ListAstNode[] = [];
+
     let nodeToAppendOfCorrectHeight: AstNode | undefined;
+
     while (true) {
         // assert nodeToInsert.listHeight <= curNode.listHeight
         if (nodeToAppend.listHeight === curNode.listHeight) {
             nodeToAppendOfCorrectHeight = nodeToAppend;
+
             break;
         }
         // assert 0 <= nodeToInsert.listHeight < curNode.listHeight
@@ -117,6 +127,7 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
     // assert nodeToAppendOfCorrectHeight!.listHeight === curNode.listHeight
     for (let i = parents.length - 1; i >= 0; i--) {
         const parent = parents[i];
+
         if (nodeToAppendOfCorrectHeight) {
             // Can we take the element?
             if (parent.childrenLength >= 3) {
@@ -147,7 +158,9 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 */
 function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
     list = list.toMutable() as ListAstNode;
+
     let curNode: AstNode = list;
+
     const parents: ListAstNode[] = [];
     // assert nodeToInsert.listHeight <= curNode.listHeight
     while (nodeToAppend.listHeight !== curNode.listHeight) {
@@ -163,6 +176,7 @@ function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
     // assert nodeToAppendOfCorrectHeight!.listHeight === curNode.listHeight
     for (let i = parents.length - 1; i >= 0; i--) {
         const parent = parents[i];
+
         if (nodeToPrependOfCorrectHeight) {
             // Can we take the element?
             if (parent.childrenLength >= 3) {

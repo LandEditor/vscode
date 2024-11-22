@@ -15,6 +15,7 @@ import { TestResultItemChangeReason } from '../../common/testResult.js';
 import { ITestResultService } from '../../common/testResultService.js';
 import { ITestService } from '../../common/testService.js';
 import { ITestItemUpdate, InternalTestItem, TestDiffOpType, TestItemExpandState, TestResultState, TestsDiff, applyTestItemUpdate } from '../../common/testTypes.js';
+
 const computedStateAccessor: IComputedStateAndDurationAccessor<TreeTestItemElement> = {
     getOwnState: i => i instanceof TestItemTreeElement ? i.ownState : TestResultState.Unset,
     getCurrentComputedState: i => i.state,
@@ -47,6 +48,7 @@ class TreeTestItemElement extends TestItemTreeElement {
         return this.test.item.description;
     }
     private errorChild?: TestTreeErrorMessage;
+
     constructor(test: InternalTestItem, parent: null | TreeTestItemElement, protected readonly addedOrRemoved: (n: TestItemTreeElement) => void) {
         super({ ...test, item: { ...test.item } }, parent);
         this.updateErrorVisibility();
@@ -85,12 +87,14 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
      */
     private get rootsWithChildren(): Iterable<TreeTestItemElement> {
         const rootsIt = Iterable.map(this.testService.collection.rootItems, r => this.items.get(r.item.extId));
+
         return Iterable.filter(rootsIt, (r): r is TreeTestItemElement => !!r?.children.size);
     }
     /**
      * @inheritdoc
      */
     public readonly onUpdate = this.updateEmitter.event;
+
     constructor(public lastState: ISerializedTestTreeCollapseState, 
     @ITestService
     private readonly testService: ITestService, 
@@ -120,11 +124,13 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
             // emit a state change for a test run that's already long completed.
             if (result.ownComputedState === TestResultState.Unset || ev.result !== results.results[0]) {
                 const fallback = results.getStateById(result.item.extId);
+
                 if (fallback) {
                     result = fallback[1];
                 }
             }
             const item = this.items.get(result.item.extId);
+
             if (!item) {
                 return;
             }
@@ -140,6 +146,7 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
             item.fireChange();
             refreshComputedState(computedStateAccessor, item, explicitComputed, refreshDuration).forEach(i => i.fireChange());
         }));
+
         for (const test of testService.collection.all) {
             this.storeItem(this.createItem(test));
         }
@@ -159,11 +166,14 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
                 case TestDiffOpType.Add: {
                     const item = this.createItem(op.item);
                     this.storeItem(item);
+
                     break;
                 }
                 case TestDiffOpType.Update: {
                     const patch = op.item;
+
                     const existing = this.items.get(patch.extId);
+
                     if (!existing) {
                         break;
                     }
@@ -171,6 +181,7 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
                     // children are rewritten.
                     const needsParentUpdate = existing.test.expand === TestItemExpandState.NotExpandable && patch.expand;
                     existing.update(patch);
+
                     if (needsParentUpdate) {
                         this.changedParents.add(existing.parent);
                     }
@@ -181,6 +192,7 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
                 }
                 case TestDiffOpType.Remove: {
                     const toRemove = this.items.get(op.itemId);
+
                     if (!toRemove) {
                         break;
                     }
@@ -188,9 +200,12 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
                     // Changing first-level elements will need the root to re-render if
                     // there are no other controllers with items.
                     const parent = toRemove.parent;
+
                     const affectsRootElement = toRemove.depth === 1 && (parent?.children.size === 1 || !Iterable.some(this.rootsWithChildren, (_, i) => i === 1));
                     this.changedParents.add(affectsRootElement ? null : parent);
+
                     const queue: Iterable<TestExplorerTreeElement>[] = [[toRemove]];
+
                     while (queue.length) {
                         for (const item of queue.pop()!) {
                             if (item instanceof TreeTestItemElement) {
@@ -239,13 +254,16 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
     }
     private createItem(item: InternalTestItem): TreeTestItemElement {
         const parentId = TestId.parentId(item.item.extId);
+
         const parent = parentId ? this.items.get(parentId)! : null;
+
         return new TreeTestItemElement(item, parent, n => this.changedParents.add(n));
     }
     private unstoreItem(treeElement: TreeTestItemElement) {
         const parent = treeElement.parent;
         parent?.children.delete(treeElement);
         this.items.delete(treeElement.test.item.extId);
+
         return treeElement.children;
     }
     private storeItem(treeElement: TreeTestItemElement) {
@@ -254,8 +272,10 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
         // The first element will cause the root to be shown. The first element of
         // a parent may need to re-render it for #204805.
         const affectsParent = treeElement.parent?.children.size === 1;
+
         const affectedParent = affectsParent ? treeElement.parent.parent : treeElement.parent;
         this.changedParents.add(affectedParent);
+
         if (affectedParent?.depth === 0) {
             this.changedParents.add(null);
         }
@@ -263,6 +283,7 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
             this.expandElement(treeElement, 0);
         }
         const prevState = this.results.getStateById(treeElement.test.item.extId)?.[1];
+
         if (prevState) {
             treeElement.retired = !!prevState.retired;
             treeElement.ownState = prevState.computedState;

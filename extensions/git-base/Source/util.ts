@@ -13,6 +13,7 @@ export function done<T>(promise: Promise<T>): Promise<void> {
 }
 export namespace Versions {
     declare type VersionComparisonResult = -1 | 0 | 1;
+
     export interface Version {
         major: number;
         minor: number;
@@ -65,7 +66,9 @@ export namespace Versions {
     }
     export function fromString(version: string): Version {
         const [ver, pre] = version.split('-');
+
         const [major, minor, patch] = ver.split('.');
+
         return from(major, minor, patch, pre);
     }
 }

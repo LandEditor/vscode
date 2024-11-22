@@ -14,6 +14,7 @@ import { IUserActivityService } from '../../services/userActivity/common/userAct
 export class MainThreadWindow implements MainThreadWindowShape {
     private readonly proxy: ExtHostWindowShape;
     private readonly disposables = new DisposableStore();
+
     constructor(extHostContext: IExtHostContext, 
     @IHostService
     private readonly hostService: IHostService, 
@@ -36,7 +37,9 @@ export class MainThreadWindow implements MainThreadWindowShape {
     }
     async $openUri(uriComponents: UriComponents, uriString: string | undefined, options: IOpenUriOptions): Promise<boolean> {
         const uri = URI.from(uriComponents);
+
         let target: URI | string;
+
         if (uriString && URI.parse(uriString).toString() === uri.toString()) {
             // called with string and no transformation happened -> keep string
             target = uriString;
@@ -53,6 +56,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
     }
     async $asExternalUri(uriComponents: UriComponents, options: IOpenUriOptions): Promise<UriComponents> {
         const result = await this.openerService.resolveExternalUri(URI.revive(uriComponents), options);
+
         return result.resolved;
     }
 }

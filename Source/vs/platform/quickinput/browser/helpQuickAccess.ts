@@ -14,6 +14,7 @@ interface IHelpQuickAccessPickItem extends IQuickPickItem {
 export class HelpQuickAccessProvider implements IQuickAccessProvider {
     static PREFIX = '?';
     private readonly registry = Registry.as<IQuickAccessRegistry>(Extensions.Quickaccess);
+
     constructor(
     @IQuickInputService
     private readonly quickInputService: IQuickInputService, 
@@ -26,6 +27,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
         // Open a picker with the selected value if picked
         disposables.add(picker.onDidAccept(() => {
             const [item] = picker.selectedItems;
+
             if (item) {
                 this.quickInputService.quickAccess.show(item.prefix, { preserveValue: true });
             }
@@ -34,12 +36,14 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
         // name of a provider (e.g. `?term` for terminals)
         disposables.add(picker.onDidChangeValue(value => {
             const providerDescriptor = this.registry.getQuickAccessProvider(value.substr(HelpQuickAccessProvider.PREFIX.length));
+
             if (providerDescriptor && providerDescriptor.prefix && providerDescriptor.prefix !== HelpQuickAccessProvider.PREFIX) {
                 this.quickInputService.quickAccess.show(providerDescriptor.prefix, { preserveValue: true });
             }
         }));
         // Fill in all providers
         picker.items = this.getQuickAccessProviders().filter(p => p.prefix !== HelpQuickAccessProvider.PREFIX);
+
         return disposables;
     }
     getQuickAccessProviders(): IHelpQuickAccessPickItem[] {
@@ -47,12 +51,15 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
             .getQuickAccessProviders()
             .sort((providerA, providerB) => providerA.prefix.localeCompare(providerB.prefix))
             .flatMap(provider => this.createPicks(provider));
+
         return providers;
     }
     private createPicks(provider: IQuickAccessProviderDescriptor): IHelpQuickAccessPickItem[] {
         return provider.helpEntries.map(helpEntry => {
             const prefix = helpEntry.prefix || provider.prefix;
+
             const label = prefix || '\u2026' /* ... */;
+
             return {
                 prefix,
                 label,

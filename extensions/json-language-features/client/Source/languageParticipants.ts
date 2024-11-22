@@ -26,8 +26,11 @@ export interface LanguageParticipants {
 }
 export function getLanguageParticipants(): LanguageParticipants {
     const onDidChangeEmmiter = new EventEmitter<void>();
+
     let languages = new Set<string>();
+
     let comments = new Set<string>();
+
     function update() {
         const oldLanguages = languages, oldComments = comments;
         languages = new Set();
@@ -37,13 +40,17 @@ export function getLanguageParticipants(): LanguageParticipants {
         comments = new Set();
         comments.add('jsonc');
         comments.add('snippets');
+
         for (const extension of extensions.allAcrossExtensionHosts) {
             const jsonLanguageParticipants = extension.packageJSON?.contributes?.jsonLanguageParticipants as LanguageParticipantContribution[];
+
             if (Array.isArray(jsonLanguageParticipants)) {
                 for (const jsonLanguageParticipant of jsonLanguageParticipants) {
                     const languageId = jsonLanguageParticipant.languageId;
+
                     if (typeof languageId === 'string') {
                         languages.add(languageId);
+
                         if (jsonLanguageParticipant.comments === true) {
                             comments.add(languageId);
                         }
@@ -54,11 +61,13 @@ export function getLanguageParticipants(): LanguageParticipants {
         return !isEqualSet(languages, oldLanguages) || !isEqualSet(comments, oldComments);
     }
     update();
+
     const changeListener = extensions.onDidChange(_ => {
         if (update()) {
             onDidChangeEmmiter.fire();
         }
     });
+
     return {
         onDidChange: onDidChangeEmmiter.event,
         get documentSelector() { return Array.from(languages); },

@@ -4,9 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 import type * as markdownIt from 'markdown-it';
 import type { RendererContext } from 'vscode-notebook-renderer';
+
 const styleHref = import.meta.url.replace(/katex.js$/, 'katex.min.css');
 export async function activate(ctx: RendererContext<void>) {
     const markdownItRenderer = (await ctx.getRenderer('vscode.markdown-it-renderer')) as undefined | any;
+
     if (!markdownItRenderer) {
         throw new Error(`Could not load 'vscode.markdown-it-renderer'`);
     }
@@ -22,7 +24,9 @@ export async function activate(ctx: RendererContext<void>) {
     const linkHead = document.createElement('link');
     linkHead.rel = 'stylesheet';
     linkHead.href = styleHref;
+
     document.head.appendChild(linkHead);
+
     const style = document.createElement('style');
     style.textContent = `
 		.katex-error {
@@ -37,8 +41,11 @@ export async function activate(ctx: RendererContext<void>) {
     styleTemplate.classList.add('markdown-style');
     styleTemplate.content.appendChild(style);
     styleTemplate.content.appendChild(link);
+
     document.head.appendChild(styleTemplate);
+
     const katex = require('@vscode/markdown-it-katex').default;
+
     const macros = {};
     markdownItRenderer.extendMarkdownIt((md: markdownIt.MarkdownIt) => {
         return md.use(katex, {

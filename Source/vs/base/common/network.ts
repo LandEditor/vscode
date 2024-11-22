@@ -29,27 +29,49 @@ export namespace Schemas {
      * An embedded code snippet.
      */
     export const walkThroughSnippet = 'walkThroughSnippet';
+
     export const http = 'http';
+
     export const https = 'https';
+
     export const file = 'file';
+
     export const mailto = 'mailto';
+
     export const untitled = 'untitled';
+
     export const data = 'data';
+
     export const command = 'command';
+
     export const vscodeRemote = 'vscode-remote';
+
     export const vscodeRemoteResource = 'vscode-remote-resource';
+
     export const vscodeManagedRemoteResource = 'vscode-managed-remote-resource';
+
     export const vscodeUserData = 'vscode-userdata';
+
     export const vscodeCustomEditor = 'vscode-custom-editor';
+
     export const vscodeNotebookCell = 'vscode-notebook-cell';
+
     export const vscodeNotebookCellMetadata = 'vscode-notebook-cell-metadata';
+
     export const vscodeNotebookCellMetadataDiff = 'vscode-notebook-cell-metadata-diff';
+
     export const vscodeNotebookCellOutput = 'vscode-notebook-cell-output';
+
     export const vscodeNotebookCellOutputDiff = 'vscode-notebook-cell-output-diff';
+
     export const vscodeNotebookMetadata = 'vscode-notebook-metadata';
+
     export const vscodeInteractiveInput = 'vscode-interactive-input';
+
     export const vscodeSettings = 'vscode-settings';
+
     export const vscodeWorkspaceTrust = 'vscode-workspace-trust';
+
     export const vscodeTerminal = 'vscode-terminal';
     /** Scheme used for code blocks in chat. */
     export const vscodeChatCodeBlock = 'vscode-chat-code-block';
@@ -129,6 +151,7 @@ class RemoteAuthoritiesImpl {
     private _preferredWebSchema: 'http' | 'https' = 'http';
     private _delegate: ((uri: URI) => URI) | null = null;
     private _serverRootPath: string = '/';
+
     setPreferredWebSchema(schema: 'http' | 'https') {
         this._preferredWebSchema = schema;
     }
@@ -164,17 +187,23 @@ class RemoteAuthoritiesImpl {
             }
             catch (err) {
                 errors.onUnexpectedError(err);
+
                 return uri;
             }
         }
         const authority = uri.authority;
+
         let host = this._hosts[authority];
+
         if (host && host.indexOf(':') !== -1 && host.indexOf('[') === -1) {
             host = `[${host}]`;
         }
         const port = this._ports[authority];
+
         const connectionToken = this._connectionTokens[authority];
+
         let query = `path=${encodeURIComponent(uri.path)}`;
+
         if (typeof connectionToken === 'string') {
             query += `&${connectionTokenQueryName}=${encodeURIComponent(connectionToken)}`;
         }
@@ -212,6 +241,7 @@ class FileAccessImpl {
      */
     asBrowserUri(resourcePath: AppResourcePath | ''): URI {
         const uri = this.toUri(resourcePath);
+
         return this.uriToBrowserUri(uri);
     }
     /**
@@ -253,6 +283,7 @@ class FileAccessImpl {
      */
     asFileUri(resourcePath: AppResourcePath | ''): URI {
         const uri = this.toUri(resourcePath);
+
         return this.uriToFileUri(uri);
     }
     /**
@@ -288,6 +319,7 @@ class FileAccessImpl {
             }
             // File Path (no scheme)
             const modulePath = paths.join(rootUriOrPath, uriOrModule);
+
             return URI.file(modulePath);
         }
         return URI.parse(moduleIdToUrl!.toUrl(uriOrModule));
@@ -300,13 +332,16 @@ export namespace COI {
         ['2', { 'Cross-Origin-Embedder-Policy': 'require-corp' }],
         ['3', { 'Cross-Origin-Opener-Policy': 'same-origin', 'Cross-Origin-Embedder-Policy': 'require-corp' }],
     ]);
+
     export const CoopAndCoep = Object.freeze(coiHeaders.get('3'));
+
     const coiSearchParamName = 'vscode-coi';
     /**
      * Extract desired headers from `vscode-coi` invocation
      */
     export function getHeadersFromQuery(url: string | URI | URL): Record<string, string> | undefined {
         let params: URLSearchParams | undefined;
+
         if (typeof url === 'string') {
             params = new URL(url).searchParams;
         }
@@ -317,6 +352,7 @@ export namespace COI {
             params = new URL(url.toString(true)).searchParams;
         }
         const value = params?.get(coiSearchParamName);
+
         if (!value) {
             return undefined;
         }
@@ -332,6 +368,7 @@ export namespace COI {
             return;
         }
         const value = coop && coep ? '3' : coep ? '2' : '1';
+
         if (urlOrSearch instanceof URLSearchParams) {
             urlOrSearch.set(coiSearchParamName, value);
         }

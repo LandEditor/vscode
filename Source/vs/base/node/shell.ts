@@ -29,11 +29,13 @@ function getSystemShellUnixLike(os: platform.OperatingSystem, env: platform.IPro
     }
     if (!_TERMINAL_DEFAULT_SHELL_UNIX_LIKE) {
         let unixLikeTerminal: string | undefined | null;
+
         if (platform.isWindows) {
             unixLikeTerminal = '/bin/bash'; // for WSL
         }
         else {
             unixLikeTerminal = env['SHELL'];
+
             if (!unixLikeTerminal) {
                 try {
                     // It's possible for $SHELL to be unset, this API reads /etc/passwd. See https://github.com/github/codespaces/issues/1639

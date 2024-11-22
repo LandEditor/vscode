@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 class Node<K, V> {
     readonly forward: Node<K, V>[];
+
     constructor(readonly level: number, readonly key: K, public value: V) {
         this.forward = [];
     }
@@ -47,6 +48,7 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     delete(key: K): boolean {
         const didDelete = SkipList._delete(this, key, this.comparator);
+
         if (didDelete) {
             this._size -= 1;
         }
@@ -55,6 +57,7 @@ export class SkipList<K, V> implements Map<K, V> {
     // --- iteration
     forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void {
         let node = this._header.forward[0];
+
         while (node) {
             callbackfn.call(thisArg, node.value, node.key, this);
             node = node.forward[0];
@@ -71,6 +74,7 @@ export class SkipList<K, V> implements Map<K, V> {
         V
     ]> {
         let node = this._header.forward[0];
+
         while (node) {
             yield [node.key, node.value];
             node = node.forward[0];
@@ -78,6 +82,7 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     *keys(): IterableIterator<K> {
         let node = this._header.forward[0];
+
         while (node) {
             yield node.key;
             node = node.forward[0];
@@ -85,6 +90,7 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     *values(): IterableIterator<V> {
         let node = this._header.forward[0];
+
         while (node) {
             yield node.value;
             node = node.forward[0];
@@ -93,7 +99,9 @@ export class SkipList<K, V> implements Map<K, V> {
     toString(): string {
         // debug string...
         let result = '[SkipList]:';
+
         let node = this._header.forward[0];
+
         while (node) {
             result += `node(${node.key}, ${node.value}, lvl:${node.level})`;
             node = node.forward[0];
@@ -103,12 +111,14 @@ export class SkipList<K, V> implements Map<K, V> {
     // from https://www.epaperpress.com/sortsearch/download/skiplist.pdf
     private static _search<K, V>(list: SkipList<K, V>, searchKey: K, comparator: Comparator<K>) {
         let x = list._header;
+
         for (let i = list._level - 1; i >= 0; i--) {
             while (x.forward[i] && comparator(x.forward[i].key, searchKey) < 0) {
                 x = x.forward[i];
             }
         }
         x = x.forward[0];
+
         if (x && comparator(x.key, searchKey) === 0) {
             return x;
         }
@@ -116,7 +126,9 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     private static _insert<K, V>(list: SkipList<K, V>, searchKey: K, value: V, comparator: Comparator<K>) {
         const update: Node<K, V>[] = [];
+
         let x = list._header;
+
         for (let i = list._level - 1; i >= 0; i--) {
             while (x.forward[i] && comparator(x.forward[i].key, searchKey) < 0) {
                 x = x.forward[i];
@@ -124,14 +136,17 @@ export class SkipList<K, V> implements Map<K, V> {
             update[i] = x;
         }
         x = x.forward[0];
+
         if (x && comparator(x.key, searchKey) === 0) {
             // update
             x.value = value;
+
             return false;
         }
         else {
             // insert
             const lvl = SkipList._randomLevel(list);
+
             if (lvl > list._level) {
                 for (let i = list._level; i < lvl; i++) {
                     update[i] = list._header;
@@ -139,6 +154,7 @@ export class SkipList<K, V> implements Map<K, V> {
                 list._level = lvl;
             }
             x = new Node<K, V>(lvl, searchKey, value);
+
             for (let i = 0; i < lvl; i++) {
                 x.forward[i] = update[i].forward[i];
                 update[i].forward[i] = x;
@@ -148,6 +164,7 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     private static _randomLevel(list: SkipList<any, any>, p: number = 0.5): number {
         let lvl = 1;
+
         while (Math.random() < p && lvl < list._maxLevel) {
             lvl += 1;
         }
@@ -155,7 +172,9 @@ export class SkipList<K, V> implements Map<K, V> {
     }
     private static _delete<K, V>(list: SkipList<K, V>, searchKey: K, comparator: Comparator<K>) {
         const update: Node<K, V>[] = [];
+
         let x = list._header;
+
         for (let i = list._level - 1; i >= 0; i--) {
             while (x.forward[i] && comparator(x.forward[i].key, searchKey) < 0) {
                 x = x.forward[i];
@@ -163,6 +182,7 @@ export class SkipList<K, V> implements Map<K, V> {
             update[i] = x;
         }
         x = x.forward[0];
+
         if (!x || comparator(x.key, searchKey) !== 0) {
             // not found
             return false;

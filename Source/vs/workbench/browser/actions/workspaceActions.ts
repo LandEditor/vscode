@@ -22,9 +22,11 @@ import { KeybindingWeight } from '../../../platform/keybinding/common/keybinding
 import { IsMacNativeContext } from '../../../platform/contextkey/common/contextkeys.js';
 import { ILocalizedString } from '../../../platform/action/common/action.js';
 import { Categories } from '../../../platform/action/common/actionCommonCategories.js';
+
 const workspacesCategory: ILocalizedString = localize2('workspaces', 'Workspaces');
 export class OpenFileAction extends Action2 {
     static readonly ID = 'workbench.action.files.openFile';
+
     constructor() {
         super({
             id: OpenFileAction.ID,
@@ -40,11 +42,13 @@ export class OpenFileAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, data?: ITelemetryData): Promise<void> {
         const fileDialogService = accessor.get(IFileDialogService);
+
         return fileDialogService.pickFileAndOpen({ forceNewWindow: false, telemetryExtraData: data });
     }
 }
 export class OpenFolderAction extends Action2 {
     static readonly ID = 'workbench.action.files.openFolder';
+
     constructor() {
         super({
             id: OpenFolderAction.ID,
@@ -66,6 +70,7 @@ export class OpenFolderAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, data?: ITelemetryData): Promise<void> {
         const fileDialogService = accessor.get(IFileDialogService);
+
         return fileDialogService.pickFolderAndOpen({ forceNewWindow: false, telemetryExtraData: data });
     }
 }
@@ -75,6 +80,7 @@ export class OpenFolderViaWorkspaceAction extends Action2 {
     // "Open Folder..." in environments that do not support
     // this without having a workspace open (e.g. web serverless)
     static readonly ID = 'workbench.action.files.openFolderViaWorkspace';
+
     constructor() {
         super({
             id: OpenFolderViaWorkspaceAction.ID,
@@ -90,12 +96,14 @@ export class OpenFolderViaWorkspaceAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const commandService = accessor.get(ICommandService);
+
         return commandService.executeCommand(SET_ROOT_FOLDER_COMMAND_ID);
     }
 }
 export class OpenFileFolderAction extends Action2 {
     static readonly ID = 'workbench.action.files.openFileFolder';
     static readonly LABEL: ILocalizedString = localize2('openFileFolder', 'Open...');
+
     constructor() {
         super({
             id: OpenFileFolderAction.ID,
@@ -111,11 +119,13 @@ export class OpenFileFolderAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, data?: ITelemetryData): Promise<void> {
         const fileDialogService = accessor.get(IFileDialogService);
+
         return fileDialogService.pickFileFolderAndOpen({ forceNewWindow: false, telemetryExtraData: data });
     }
 }
 class OpenWorkspaceAction extends Action2 {
     static readonly ID = 'workbench.action.openWorkspace';
+
     constructor() {
         super({
             id: OpenWorkspaceAction.ID,
@@ -127,11 +137,13 @@ class OpenWorkspaceAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, data?: ITelemetryData): Promise<void> {
         const fileDialogService = accessor.get(IFileDialogService);
+
         return fileDialogService.pickWorkspaceAndOpen({ telemetryExtraData: data });
     }
 }
 class CloseWorkspaceAction extends Action2 {
     static readonly ID = 'workbench.action.closeFolder';
+
     constructor() {
         super({
             id: CloseWorkspaceAction.ID,
@@ -147,12 +159,15 @@ class CloseWorkspaceAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const hostService = accessor.get(IHostService);
+
         const environmentService = accessor.get(IWorkbenchEnvironmentService);
+
         return hostService.openWindow({ forceReuseWindow: true, remoteAuthority: environmentService.remoteAuthority });
     }
 }
 class OpenWorkspaceConfigFileAction extends Action2 {
     static readonly ID = 'workbench.action.openWorkspaceConfigFile';
+
     constructor() {
         super({
             id: OpenWorkspaceConfigFileAction.ID,
@@ -164,8 +179,11 @@ class OpenWorkspaceConfigFileAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const contextService = accessor.get(IWorkspaceContextService);
+
         const editorService = accessor.get(IEditorService);
+
         const configuration = contextService.getWorkspace().configuration;
+
         if (configuration) {
             await editorService.openEditor({ resource: configuration, options: { pinned: true } });
         }
@@ -173,6 +191,7 @@ class OpenWorkspaceConfigFileAction extends Action2 {
 }
 export class AddRootFolderAction extends Action2 {
     static readonly ID = 'workbench.action.addRootFolder';
+
     constructor() {
         super({
             id: AddRootFolderAction.ID,
@@ -184,11 +203,13 @@ export class AddRootFolderAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const commandService = accessor.get(ICommandService);
+
         return commandService.executeCommand(ADD_ROOT_FOLDER_COMMAND_ID);
     }
 }
 export class RemoveRootFolderAction extends Action2 {
     static readonly ID = 'workbench.action.removeRootFolder';
+
     constructor() {
         super({
             id: RemoveRootFolderAction.ID,
@@ -200,8 +221,11 @@ export class RemoveRootFolderAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const commandService = accessor.get(ICommandService);
+
         const workspaceEditingService = accessor.get(IWorkspaceEditingService);
+
         const folder = await commandService.executeCommand<IWorkspaceFolder>(PICK_WORKSPACE_FOLDER_COMMAND_ID);
+
         if (folder) {
             await workspaceEditingService.removeFolders([folder.uri]);
         }
@@ -209,6 +233,7 @@ export class RemoveRootFolderAction extends Action2 {
 }
 class SaveWorkspaceAsAction extends Action2 {
     static readonly ID = 'workbench.action.saveWorkspaceAs';
+
     constructor() {
         super({
             id: SaveWorkspaceAsAction.ID,
@@ -220,13 +245,17 @@ class SaveWorkspaceAsAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const workspaceEditingService = accessor.get(IWorkspaceEditingService);
+
         const contextService = accessor.get(IWorkspaceContextService);
+
         const configPathUri = await workspaceEditingService.pickNewWorkspacePath();
+
         if (configPathUri && hasWorkspaceFileExtension(configPathUri)) {
             switch (contextService.getWorkbenchState()) {
                 case WorkbenchState.EMPTY:
                 case WorkbenchState.FOLDER: {
                     const folders = contextService.getWorkspace().folders.map(folder => ({ uri: folder.uri }));
+
                     return workspaceEditingService.createAndEnterWorkspace(folders, configPathUri);
                 }
                 case WorkbenchState.WORKSPACE:
@@ -237,6 +266,7 @@ class SaveWorkspaceAsAction extends Action2 {
 }
 class DuplicateWorkspaceInNewWindowAction extends Action2 {
     static readonly ID = 'workbench.action.duplicateWorkspaceInNewWindow';
+
     constructor() {
         super({
             id: DuplicateWorkspaceInNewWindowAction.ID,
@@ -248,14 +278,22 @@ class DuplicateWorkspaceInNewWindowAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const workspaceContextService = accessor.get(IWorkspaceContextService);
+
         const workspaceEditingService = accessor.get(IWorkspaceEditingService);
+
         const hostService = accessor.get(IHostService);
+
         const workspacesService = accessor.get(IWorkspacesService);
+
         const environmentService = accessor.get(IWorkbenchEnvironmentService);
+
         const folders = workspaceContextService.getWorkspace().folders;
+
         const remoteAuthority = environmentService.remoteAuthority;
+
         const newWorkspace = await workspacesService.createUntitledWorkspace(folders, remoteAuthority);
         await workspaceEditingService.copyWorkspaceSettings(newWorkspace);
+
         return hostService.openWindow([{ workspaceUri: newWorkspace.configPath }], { forceNewWindow: true, remoteAuthority });
     }
 }

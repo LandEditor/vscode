@@ -21,6 +21,7 @@ import { UntitledTextEditorModel } from '../../untitled/common/untitledTextEdito
 class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextEditorModel>> {
     private readonly providers = new Map<string, ITextModelContentProvider[]>();
     private readonly modelsToDispose = new Set<string>();
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -40,12 +41,15 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         this.modelsToDispose.delete(key);
         // inMemory Schema: go through model service cache
         const resource = URI.parse(key);
+
         if (resource.scheme === Schemas.inMemory) {
             const cachedModel = this.modelService.getModel(resource);
+
             if (!cachedModel) {
                 throw new Error(`Unable to resolve inMemory resource ${key}`);
             }
             const model = this.instantiationService.createInstance(TextResourceEditorModel, resource);
+
             if (this.ensureResolvedModel(model, key)) {
                 return model;
             }
@@ -53,6 +57,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         // Untitled Schema: go through untitled text service
         if (resource.scheme === Schemas.untitled) {
             const model = await this.textFileService.untitled.resolve({ untitledResource: resource });
+
             if (this.ensureResolvedModel(model, key)) {
                 return model;
             }
@@ -60,6 +65,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         // File or remote file: go through text file service
         if (this.fileService.hasProvider(resource)) {
             const model = await this.textFileService.files.resolve(resource, { reason: TextFileResolveReason.REFERENCE });
+
             if (this.ensureResolvedModel(model, key)) {
                 return model;
             }
@@ -67,7 +73,9 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         // Virtual documents
         if (this.providers.has(resource.scheme)) {
             await this.resolveTextModelContent(key);
+
             const model = this.instantiationService.createInstance(TextResourceEditorModel, resource);
+
             if (this.ensureResolvedModel(model, key)) {
                 return model;
             }
@@ -75,6 +83,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         // Either unknown schema, or not yet registered, try to activate
         if (!skipActivateProvider) {
             await this.fileService.activateProvider(resource.scheme);
+
             return this.doCreateReferencedObject(key, true);
         }
         throw new Error(`Unable to resolve resource ${key}`);
@@ -88,6 +97,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
     protected destroyReferencedObject(key: string, modelPromise: Promise<ITextEditorModel>): void {
         // inMemory is bound to a different lifecycle
         const resource = URI.parse(key);
+
         if (resource.scheme === Schemas.inMemory) {
             return;
         }
@@ -97,6 +107,7 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
         (async () => {
             try {
                 const model = await modelPromise;
+
                 if (!this.modelsToDispose.has(key)) {
                     // return if model has been acquired again meanwhile
                     return;
@@ -128,21 +139,26 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
     }
     registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable {
         let providers = this.providers.get(scheme);
+
         if (!providers) {
             providers = [];
             this.providers.set(scheme, providers);
         }
         providers.unshift(provider);
+
         return toDisposable(() => {
             const providersForScheme = this.providers.get(scheme);
+
             if (!providersForScheme) {
                 return;
             }
             const index = providersForScheme.indexOf(provider);
+
             if (index === -1) {
                 return;
             }
             providersForScheme.splice(index, 1);
+
             if (providersForScheme.length === 0) {
                 this.providers.delete(scheme);
             }
@@ -153,9 +169,12 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
     }
     private async resolveTextModelContent(key: string): Promise<ITextModel> {
         const resource = URI.parse(key);
+
         const providersForScheme = this.providers.get(resource.scheme) || [];
+
         for (const provider of providersForScheme) {
             const value = await provider.provideTextContent(resource);
+
             if (value) {
                 return value;
             }
@@ -198,6 +217,7 @@ export class TextModelResolverService extends Disposable implements ITextModelSe
         // to ensure we reduce the chance of resolving the same resource
         // with different resource forms (e.g. path casing on Windows)
         resource = this.uriIdentityService.asCanonicalUri(resource);
+
         return await this.asyncModelCollection.acquire(resource.toString());
     }
     registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable {

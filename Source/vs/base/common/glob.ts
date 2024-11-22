@@ -35,6 +35,7 @@ interface SiblingClause {
 }
 export const GLOBSTAR = '**';
 export const GLOB_SPLIT = '/';
+
 const PATH_REGEX = '[/\\\\]'; // any slash or backslash
 const NO_PATH_REGEX = '[^/\\\\]'; // any non-slash and non-backslash
 const ALL_FORWARD_SLASHES = /\//g;
@@ -42,6 +43,7 @@ function starsToRegExp(starCount: number, isLastPattern?: boolean): string {
     switch (starCount) {
         case 0:
             return '';
+
         case 1:
             return `${NO_PATH_REGEX}*?`; // 1 star matches any number of characters except path separator (/ and \) - non greedy (?)
         default:
@@ -57,29 +59,42 @@ export function splitGlobAware(pattern: string, splitChar: string): string[] {
         return [];
     }
     const segments: string[] = [];
+
     let inBraces = false;
+
     let inBrackets = false;
+
     let curVal = '';
+
     for (const char of pattern) {
         switch (char) {
             case splitChar:
                 if (!inBraces && !inBrackets) {
                     segments.push(curVal);
                     curVal = '';
+
                     continue;
                 }
                 break;
+
             case '{':
                 inBraces = true;
+
                 break;
+
             case '}':
                 inBraces = false;
+
                 break;
+
             case '[':
                 inBrackets = true;
+
                 break;
+
             case ']':
                 inBrackets = false;
+
                 break;
         }
         curVal += char;
@@ -117,13 +132,18 @@ function parseRegExp(pattern: string): string {
             else {
                 // States
                 let inBraces = false;
+
                 let braceVal = '';
+
                 let inBrackets = false;
+
                 let bracketVal = '';
+
                 for (const char of segment) {
                     // Support brace expansion
                     if (char !== '}' && inBraces) {
                         braceVal += char;
+
                         continue;
                     }
                     // Support brackets
@@ -147,15 +167,20 @@ function parseRegExp(pattern: string): string {
                             res = escapeRegExpCharacters(char);
                         }
                         bracketVal += res;
+
                         continue;
                     }
                     switch (char) {
                         case '{':
                             inBraces = true;
+
                             continue;
+
                         case '[':
                             inBrackets = true;
+
                             continue;
+
                         case '}': {
                             const choices = splitGlobAware(braceVal, ',');
                             // Converts {foo,bar} => [foo|bar]
@@ -163,20 +188,25 @@ function parseRegExp(pattern: string): string {
                             regEx += braceRegExp;
                             inBraces = false;
                             braceVal = '';
+
                             break;
                         }
                         case ']': {
                             regEx += ('[' + bracketVal + ']');
                             inBrackets = false;
                             bracketVal = '';
+
                             break;
                         }
                         case '?':
                             regEx += NO_PATH_REGEX; // 1 ? matches any single character except path separator (/ and \)
                             continue;
+
                         case '*':
                             regEx += starsToRegExp(1);
+
                             continue;
+
                         default:
                             regEx += escapeRegExpCharacters(char);
                     }
@@ -235,6 +265,7 @@ const CACHE = new LRUCache<string, ParsedStringPattern>(10000); // bounded to 10
 const FALSE = function () {
     return false;
 };
+
 const NULL = function (): string | null {
     return null;
 };
@@ -244,6 +275,7 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     }
     // Handle relative patterns
     let pattern: string;
+
     if (typeof arg1 !== 'string') {
         pattern = arg1.pattern;
     }
@@ -254,12 +286,15 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     pattern = pattern.trim();
     // Check cache
     const patternKey = `${pattern}_${!!options.trimForExclusions}`;
+
     let parsedPattern = CACHE.get(patternKey);
+
     if (parsedPattern) {
         return wrapRelativePattern(parsedPattern, arg1);
     }
     // Check for Trivials
     let match: RegExpExecArray | null;
+
     if (T1.test(pattern)) {
         parsedPattern = trivia1(pattern.substr(4), pattern); // common pattern: **/*.txt just need endsWith check
     }
@@ -281,6 +316,7 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     }
     // Cache
     CACHE.set(patternKey, parsedPattern);
+
     return wrapRelativePattern(parsedPattern, arg1);
 }
 function wrapRelativePattern(parsedPattern: ParsedStringPattern, arg2: string | IRelativePattern): ParsedStringPattern {
@@ -306,6 +342,7 @@ function wrapRelativePattern(parsedPattern: ParsedStringPattern, arg2: string | 
     wrappedPattern.allPaths = parsedPattern.allPaths;
     wrappedPattern.basenames = parsedPattern.basenames;
     wrappedPattern.patterns = parsedPattern.patterns;
+
     return wrappedPattern;
 }
 function trimForExclusions(pattern: string, options: IGlobOptions): string {
@@ -320,7 +357,9 @@ function trivia1(base: string, pattern: string): ParsedStringPattern {
 // common pattern: **/some.txt just need basename check
 function trivia2(base: string, pattern: string): ParsedStringPattern {
     const slashBase = `/${base}`;
+
     const backslashBase = `\\${base}`;
+
     const parsedPattern: ParsedStringPattern = function (path: string, basename?: string) {
         if (typeof path !== 'string') {
             return null;
@@ -330,10 +369,12 @@ function trivia2(base: string, pattern: string): ParsedStringPattern {
         }
         return path === base || path.endsWith(slashBase) || path.endsWith(backslashBase) ? pattern : null;
     };
+
     const basenames = [base];
     parsedPattern.basenames = basenames;
     parsedPattern.patterns = [pattern];
     parsedPattern.allBasenames = basenames;
+
     return parsedPattern;
 }
 // repetition of common patterns (see above) {**/*.txt,**/*.png}
@@ -342,7 +383,9 @@ function trivia3(pattern: string, options: IGlobOptions): ParsedStringPattern {
         .split(',')
         .map(pattern => parsePattern(pattern, options))
         .filter(pattern => pattern !== NULL), pattern);
+
     const patternsLength = parsedPatterns.length;
+
     if (!patternsLength) {
         return NULL;
     }
@@ -357,11 +400,14 @@ function trivia3(pattern: string, options: IGlobOptions): ParsedStringPattern {
         }
         return null;
     };
+
     const withBasenames = parsedPatterns.find(pattern => !!pattern.allBasenames);
+
     if (withBasenames) {
         parsedPattern.allBasenames = withBasenames.allBasenames;
     }
     const allPaths = parsedPatterns.reduce((all, current) => current.allPaths ? all.concat(current.allPaths) : all, [] as string[]);
+
     if (allPaths.length) {
         parsedPattern.allPaths = allPaths;
     }
@@ -370,10 +416,15 @@ function trivia3(pattern: string, options: IGlobOptions): ParsedStringPattern {
 // common patterns: **/something/else just need endsWith check, something/else just needs and equals check
 function trivia4and5(targetPath: string, pattern: string, matchPathEnds: boolean): ParsedStringPattern {
     const usingPosixSep = sep === posix.sep;
+
     const nativePath = usingPosixSep ? targetPath : targetPath.replace(ALL_FORWARD_SLASHES, sep);
+
     const nativePathEnd = sep + nativePath;
+
     const targetPathEnd = posix.sep + targetPath;
+
     let parsedPattern: ParsedStringPattern;
+
     if (matchPathEnds) {
         parsedPattern = function (path: string, basename?: string) {
             return typeof path === 'string' && ((path === nativePath || path.endsWith(nativePathEnd)) || !usingPosixSep && (path === targetPath || path.endsWith(targetPathEnd))) ? pattern : null;
@@ -385,11 +436,13 @@ function trivia4and5(targetPath: string, pattern: string, matchPathEnds: boolean
         };
     }
     parsedPattern.allPaths = [(matchPathEnds ? '*/' : './') + targetPath];
+
     return parsedPattern;
 }
 function toRegExp(pattern: string): ParsedStringPattern {
     try {
         const regExp = new RegExp(`^${parseRegExp(pattern)}$`);
+
         return function (path: string) {
             regExp.lastIndex = 0; // reset RegExp to its initial state to reuse it!
             return typeof path === 'string' && regExp.test(path) ? pattern : null;
@@ -435,6 +488,7 @@ export function parse(arg1: string | IExpression | IRelativePattern, options: IG
     // Glob with String
     if (typeof arg1 === 'string' || isRelativePattern(arg1)) {
         const parsedPattern = parsePattern(arg1, options);
+
         if (parsedPattern === NULL) {
             return FALSE;
         }
@@ -444,6 +498,7 @@ export function parse(arg1: string | IExpression | IRelativePattern, options: IG
         } = function (path: string, basename?: string) {
             return !!parsedPattern(path, basename);
         };
+
         if (parsedPattern.allBasenames) {
             resultPattern.allBasenames = parsedPattern.allBasenames;
         }
@@ -457,6 +512,7 @@ export function parse(arg1: string | IExpression | IRelativePattern, options: IG
 }
 export function isRelativePattern(obj: unknown): obj is IRelativePattern {
     const rp = obj as IRelativePattern | undefined | null;
+
     if (!rp) {
         return false;
     }
@@ -472,7 +528,9 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
     const parsedPatterns = aggregateBasenameMatches(Object.getOwnPropertyNames(expression)
         .map(pattern => parseExpressionPattern(pattern, expression[pattern], options))
         .filter(pattern => pattern !== NULL));
+
     const patternsLength = parsedPatterns.length;
+
     if (!patternsLength) {
         return NULL;
     }
@@ -482,8 +540,10 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
         }
         const resultExpression: ParsedStringPattern = function (path: string, basename?: string) {
             let resultPromises: Promise<string | null>[] | undefined = undefined;
+
             for (let i = 0, n = parsedPatterns.length; i < n; i++) {
                 const result = parsedPatterns[i](path, basename);
+
                 if (typeof result === 'string') {
                     return result; // immediately return as soon as the first expression matches
                 }
@@ -502,6 +562,7 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
                 return (async () => {
                     for (const resultPromise of resultPromises) {
                         const result = await resultPromise;
+
                         if (typeof result === 'string') {
                             return result;
                         }
@@ -511,11 +572,14 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
             }
             return null;
         };
+
         const withBasenames = parsedPatterns.find(pattern => !!pattern.allBasenames);
+
         if (withBasenames) {
             resultExpression.allBasenames = withBasenames.allBasenames;
         }
         const allPaths = parsedPatterns.reduce((all, current) => current.allPaths ? all.concat(current.allPaths) : all, [] as string[]);
+
         if (allPaths.length) {
             resultExpression.allPaths = allPaths;
         }
@@ -523,10 +587,13 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
     }
     const resultExpression: ParsedStringPattern = function (path: string, base?: string, hasSibling?: (name: string) => boolean | Promise<boolean>) {
         let name: string | undefined = undefined;
+
         let resultPromises: Promise<string | null>[] | undefined = undefined;
+
         for (let i = 0, n = parsedPatterns.length; i < n; i++) {
             // Pattern matches path
             const parsedPattern = (<ParsedExpressionPattern>parsedPatterns[i]);
+
             if (parsedPattern.requiresSiblings && hasSibling) {
                 if (!base) {
                     base = basename(path);
@@ -536,6 +603,7 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
                 }
             }
             const result = parsedPattern(path, base, name, hasSibling);
+
             if (typeof result === 'string') {
                 return result; // immediately return as soon as the first expression matches
             }
@@ -554,6 +622,7 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
             return (async () => {
                 for (const resultPromise of resultPromises) {
                     const result = await resultPromise;
+
                     if (typeof result === 'string') {
                         return result;
                     }
@@ -563,11 +632,14 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
         }
         return null;
     };
+
     const withBasenames = parsedPatterns.find(pattern => !!pattern.allBasenames);
+
     if (withBasenames) {
         resultExpression.allBasenames = withBasenames.allBasenames;
     }
     const allPaths = parsedPatterns.reduce((all, current) => current.allPaths ? all.concat(current.allPaths) : all, [] as string[]);
+
     if (allPaths.length) {
         resultExpression.allPaths = allPaths;
     }
@@ -578,6 +650,7 @@ function parseExpressionPattern(pattern: string, value: boolean | SiblingClause,
         return NULL; // pattern is disabled
     }
     const parsedPattern = parsePattern(pattern, options);
+
     if (parsedPattern === NULL) {
         return NULL;
     }
@@ -588,18 +661,22 @@ function parseExpressionPattern(pattern: string, value: boolean | SiblingClause,
     // Expression Pattern is <SiblingClause>
     if (value) {
         const when = value.when;
+
         if (typeof when === 'string') {
             const result: ParsedExpressionPattern = (path: string, basename?: string, name?: string, hasSibling?: (name: string) => boolean | Promise<boolean>) => {
                 if (!hasSibling || !parsedPattern(path, basename)) {
                     return null;
                 }
                 const clausePattern = when.replace('$(basename)', () => name!);
+
                 const matched = hasSibling(clausePattern);
+
                 return isThenable(matched) ?
                     matched.then(match => match ? pattern : null) :
                     matched ? pattern : null;
             };
             result.requiresSiblings = true;
+
             return result;
         }
     }
@@ -608,16 +685,21 @@ function parseExpressionPattern(pattern: string, value: boolean | SiblingClause,
 }
 function aggregateBasenameMatches(parsedPatterns: Array<ParsedStringPattern | ParsedExpressionPattern>, result?: string): Array<ParsedStringPattern | ParsedExpressionPattern> {
     const basenamePatterns = parsedPatterns.filter(parsedPattern => !!(<ParsedStringPattern>parsedPattern).basenames);
+
     if (basenamePatterns.length < 2) {
         return parsedPatterns;
     }
     const basenames = basenamePatterns.reduce<string[]>((all, current) => {
         const basenames = (<ParsedStringPattern>current).basenames;
+
         return basenames ? all.concat(basenames) : all;
     }, [] as string[]);
+
     let patterns: string[];
+
     if (result) {
         patterns = [];
+
         for (let i = 0, n = basenames.length; i < n; i++) {
             patterns.push(result);
         }
@@ -625,6 +707,7 @@ function aggregateBasenameMatches(parsedPatterns: Array<ParsedStringPattern | Pa
     else {
         patterns = basenamePatterns.reduce((all, current) => {
             const patterns = (<ParsedStringPattern>current).patterns;
+
             return patterns ? all.concat(patterns) : all;
         }, [] as string[]);
     }
@@ -634,8 +717,10 @@ function aggregateBasenameMatches(parsedPatterns: Array<ParsedStringPattern | Pa
         }
         if (!basename) {
             let i: number;
+
             for (i = path.length; i > 0; i--) {
                 const ch = path.charCodeAt(i - 1);
+
                 if (ch === CharCode.Slash || ch === CharCode.Backslash) {
                     break;
                 }
@@ -643,13 +728,16 @@ function aggregateBasenameMatches(parsedPatterns: Array<ParsedStringPattern | Pa
             basename = path.substr(i);
         }
         const index = basenames.indexOf(basename);
+
         return index !== -1 ? patterns[index] : null;
     };
     aggregate.basenames = basenames;
     aggregate.patterns = patterns;
     aggregate.allBasenames = basenames;
+
     const aggregatedPatterns = parsedPatterns.filter(parsedPattern => !(<ParsedStringPattern>parsedPattern).basenames);
     aggregatedPatterns.push(aggregate);
+
     return aggregatedPatterns;
 }
 export function patternsEquals(patternsA: Array<string | IRelativePattern> | undefined, patternsB: Array<string | IRelativePattern> | undefined): boolean {

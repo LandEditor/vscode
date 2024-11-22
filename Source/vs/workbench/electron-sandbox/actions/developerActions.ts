@@ -38,6 +38,7 @@ export class ToggleDevToolsAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         return nativeHostService.toggleDevTools({ targetWindowId: getActiveWindow().vscodeWindowId });
     }
 }
@@ -52,6 +53,7 @@ export class ConfigureRuntimeArgumentsAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const environmentService = accessor.get(IWorkbenchEnvironmentService);
         await editorService.openEditor({
             resource: environmentService.argvResource,
@@ -83,11 +85,17 @@ export class OpenUserDataFolderAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         const fileService = accessor.get(IFileService);
+
         const environmentService = accessor.get(INativeWorkbenchEnvironmentService);
+
         const userDataHome = URI.file(environmentService.userDataPath);
+
         const file = await fileService.resolve(userDataHome);
+
         let itemToShow: URI;
+
         if (file.children && file.children.length > 0) {
             itemToShow = file.children[0].resource;
         }

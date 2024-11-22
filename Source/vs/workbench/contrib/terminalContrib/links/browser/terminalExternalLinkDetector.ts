@@ -8,15 +8,18 @@ import { ITerminalExternalLinkProvider } from '../../../terminal/browser/termina
 import type { IBufferLine, Terminal } from '@xterm/xterm';
 export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
     readonly maxLinkLength = 2000;
+
     constructor(readonly id: string, readonly xterm: Terminal, private readonly _provideLinks: OmitFirstArg<ITerminalExternalLinkProvider['provideLinks']>) {
     }
     async detect(lines: IBufferLine[], startLine: number, endLine: number): Promise<ITerminalSimpleLink[]> {
         // Get the text representation of the wrapped line
         const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+
         if (text === '' || text.length > this.maxLinkLength) {
             return [];
         }
         const externalLinks = await this._provideLinks(text);
+
         if (!externalLinks) {
             return [];
         }
@@ -27,7 +30,9 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
                 endColumn: link.startIndex + link.length + 1,
                 endLineNumber: 1
             }, startLine);
+
             const matchingText = text.substring(link.startIndex, link.startIndex + link.length) || '';
+
             const l: ITerminalSimpleLink = {
                 text: matchingText,
                 label: link.label,
@@ -35,8 +40,10 @@ export class TerminalExternalLinkDetector implements ITerminalLinkDetector {
                 type: { id: this.id },
                 activate: link.activate
             };
+
             return l;
         });
+
         return result;
     }
 }

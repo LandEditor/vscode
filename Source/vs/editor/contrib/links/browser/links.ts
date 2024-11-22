@@ -133,10 +133,12 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 		}
 
 		this.computePromise = createCancelablePromise(token => getLinks(this.providers, model, token));
+
 		try {
 			const sw = new StopWatch(false);
 			this.activeLinksList = await this.computePromise;
 			this.debounceInformation.update(model, sw.elapsed());
+
 			if (model.isDisposed()) {
 				return;
 			}
@@ -150,14 +152,18 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private updateDecorations(links: Link[]): void {
 		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
+
 		const oldDecorations: string[] = [];
+
 		const keys = Object.keys(this.currentOccurrences);
+
 		for (const decorationId of keys) {
 			const occurence = this.currentOccurrences[decorationId];
 			oldDecorations.push(occurence.decorationId);
 		}
 
 		const newDecorations: IModelDeltaDecoration[] = [];
+
 		if (links) {
 			// Not sure why this is sometimes null
 			for (const link of links) {
@@ -170,6 +176,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 			this.currentOccurrences = {};
 			this.activeLinkDecorationId = null;
+
 			for (let i = 0, len = decorations.length; i < len; i++) {
 				const occurence = new LinkOccurrence(links[i], decorations[i]);
 				this.currentOccurrences[occurence.decorationId] = occurence;
@@ -179,9 +186,11 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private _onEditorMouseMove(mouseEvent: ClickLinkMouseEvent, withKey: ClickLinkKeyboardEvent | null): void {
 		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
+
 		if (this.isEnabled(mouseEvent, withKey)) {
 			this.cleanUpActiveLinkDecoration(); // always remove previous link decoration as their can only be one
 			const occurrence = this.getLinkOccurrence(mouseEvent.target.position);
+
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
 					occurrence.activate(changeAccessor, useMetaKey);
@@ -195,8 +204,10 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private cleanUpActiveLinkDecoration(): void {
 		const useMetaKey = (this.editor.getOption(EditorOption.multiCursorModifier) === 'altKey');
+
 		if (this.activeLinkDecorationId) {
 			const occurrence = this.currentOccurrences[this.activeLinkDecorationId];
+
 			if (occurrence) {
 				this.editor.changeDecorations((changeAccessor) => {
 					occurrence.deactivate(changeAccessor, useMetaKey);
@@ -212,6 +223,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			return;
 		}
 		const occurrence = this.getLinkOccurrence(mouseEvent.target.position);
+
 		if (!occurrence) {
 			return;
 		}
@@ -231,12 +243,15 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 			// Support for relative file URIs of the shape file://./relativeFile.txt or file:///./relativeFile.txt
 			if (typeof uri === 'string' && this.editor.hasModel()) {
 				const modelUri = this.editor.getModel().uri;
+
 				if (modelUri.scheme === Schemas.file && uri.startsWith(`${Schemas.file}:`)) {
 					const parsedUri = URI.parse(uri);
+
 					if (parsedUri.scheme === Schemas.file) {
 						const fsPath = resources.originalFSPath(parsedUri);
 
 						let relativePath: string | null = null;
+
 						if (fsPath.startsWith('/./') || fsPath.startsWith('\\.\\')) {
 							relativePath = `.${fsPath.substr(1)}`;
 						} else if (fsPath.startsWith('//./') || fsPath.startsWith('\\\\.\\')) {
@@ -279,6 +294,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		for (const decoration of decorations) {
 			const currentOccurrence = this.currentOccurrences[decoration.id];
+
 			if (currentOccurrence) {
 				return currentOccurrence;
 			}
@@ -296,6 +312,7 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 	private stop(): void {
 		this.computeLinks.cancel();
+
 		if (this.activeLinksList) {
 			this.activeLinksList?.dispose();
 			this.activeLinksList = null;
@@ -339,6 +356,7 @@ class LinkOccurrence {
 	private static _getOptions(link: Link, useMetaKey: boolean, isActive: boolean): ModelDecorationOptions {
 		const options = { ... (isActive ? decoration.active : decoration.general) };
 		options.hoverMessage = getHoverMessage(link, useMetaKey);
+
 		return options;
 	}
 
@@ -378,9 +396,11 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 
 	if (link.url) {
 		let nativeLabel = '';
+
 		if (/^command:/i.test(link.url.toString())) {
 			// Don't show complete command arguments in the native tooltip
 			const match = link.url.toString().match(/^command:([^?#]+)/);
+
 			if (match) {
 				const commandId = match[1];
 				nativeLabel = nls.localize('tooltip.explanation', "Execute command {0}", commandId);
@@ -389,6 +409,7 @@ function getHoverMessage(link: Link, useMetaKey: boolean): MarkdownString {
 		const hoverMessage = new MarkdownString('', true)
 			.appendLink(link.url.toString(true).replace(/ /g, '%20'), label, nativeLabel)
 			.appendMarkdown(` (${kb})`);
+
 		return hoverMessage;
 	} else {
 		return new MarkdownString().appendText(`${label} (${kb})`);
@@ -407,6 +428,7 @@ class OpenLinkAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const linkDetector = LinkDetector.get(editor);
+
 		if (!linkDetector) {
 			return;
 		}
@@ -415,8 +437,10 @@ class OpenLinkAction extends EditorAction {
 		}
 
 		const selections = editor.getSelections();
+
 		for (const sel of selections) {
 			const link = linkDetector.getLinkOccurrence(sel.getEndPosition());
+
 			if (link) {
 				linkDetector.openLinkOccurrence(link, false);
 			}

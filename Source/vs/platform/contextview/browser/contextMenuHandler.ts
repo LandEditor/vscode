@@ -23,17 +23,21 @@ export class ContextMenuHandler {
     private block: HTMLElement | null = null;
     private blockDisposable: IDisposable | null = null;
     private options: IContextMenuHandlerOptions = { blockMouse: true };
+
     constructor(private contextViewService: IContextViewService, private telemetryService: ITelemetryService, private notificationService: INotificationService, private keybindingService: IKeybindingService) { }
     configure(options: IContextMenuHandlerOptions): void {
         this.options = options;
     }
     showContextMenu(delegate: IContextMenuDelegate): void {
         const actions = delegate.getActions();
+
         if (!actions.length) {
             return; // Don't render an empty context menu
         }
         this.focusToReturn = getActiveElement() as HTMLElement;
+
         let menu: Menu | undefined;
+
         const shadowRootElement = isHTMLElement(delegate.domForShadowRoot) ? delegate.domForShadowRoot : undefined;
         this.contextViewService.showContextView({
             getAnchor: () => delegate.getAnchor(),
@@ -42,7 +46,9 @@ export class ContextMenuHandler {
             anchorAxisAlignment: delegate.anchorAxisAlignment,
             render: (container) => {
                 this.lastContainer = container;
+
                 const className = delegate.getMenuClassName ? delegate.getMenuClassName() : '';
+
                 if (className) {
                     container.className += ' ' + className;
                 }
@@ -60,6 +66,7 @@ export class ContextMenuHandler {
                     this.blockDisposable = addDisposableListener(this.block, EventType.MOUSE_DOWN, e => e.stopPropagation());
                 }
                 const menuDisposables = new DisposableStore();
+
                 const actionRunner = delegate.actionRunner || new ActionRunner();
                 actionRunner.onWillRun(evt => this.onActionRun(evt, !delegate.skipTelemetry), this, menuDisposables);
                 actionRunner.onDidRun(this.onDidActionRun, this, menuDisposables);
@@ -71,6 +78,7 @@ export class ContextMenuHandler {
                 }, defaultMenuStyles);
                 menu.onDidCancel(() => this.contextViewService.hideContextView(true), null, menuDisposables);
                 menu.onDidBlur(() => this.contextViewService.hideContextView(true), null, menuDisposables);
+
                 const targetWindow = getWindow(container);
                 menuDisposables.add(addDisposableListener(targetWindow, EventType.BLUR, () => this.contextViewService.hideContextView(true)));
                 menuDisposables.add(addDisposableListener(targetWindow, EventType.MOUSE_DOWN, (e: MouseEvent) => {
@@ -78,6 +86,7 @@ export class ContextMenuHandler {
                         return;
                     }
                     const event = new StandardMouseEvent(targetWindow, e);
+
                     let element: HTMLElement | null = event.target;
                     // Don't do anything as we are likely creating a context menu
                     if (event.rightButton) {
@@ -91,6 +100,7 @@ export class ContextMenuHandler {
                     }
                     this.contextViewService.hideContextView(true);
                 }));
+
                 return combinedDisposable(menuDisposables, menu);
             },
             focus: () => {
@@ -98,12 +108,14 @@ export class ContextMenuHandler {
             },
             onHide: (didCancel?: boolean) => {
                 delegate.onHide?.(!!didCancel);
+
                 if (this.block) {
                     this.block.remove();
                     this.block = null;
                 }
                 this.blockDisposable?.dispose();
                 this.blockDisposable = null;
+
                 if (!!this.lastContainer && (getActiveElement() === this.lastContainer || isAncestor(getActiveElement(), this.lastContainer))) {
                     this.focusToReturn?.focus();
                 }

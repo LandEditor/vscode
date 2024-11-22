@@ -17,8 +17,11 @@ import { StoredValue } from './storedValue.js';
 import { HydratedTestResult, ITestResult } from './testResult.js';
 import { ISerializedTestResults } from './testTypes.js';
 export const RETAIN_MAX_RESULTS = 128;
+
 const RETAIN_MIN_RESULTS = 16;
+
 const RETAIN_MAX_BYTES = 1024 * 128;
+
 const CLEANUP_PROBABILITY = 0.2;
 export interface ITestResultStorage {
     _serviceBrand: undefined;
@@ -49,6 +52,7 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
         scope: StorageScope.WORKSPACE,
         target: StorageTarget.MACHINE
     }, this.storageService));
+
     constructor(
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService, 
@@ -68,6 +72,7 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
             }
             try {
                 const contents = await this.readForResultId(rec.id);
+
                 if (!contents) {
                     return undefined;
                 }
@@ -75,10 +80,13 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
             }
             catch (e) {
                 this.logService.warn(`Error deserializing stored test result ${rec.id}`, e);
+
                 return undefined;
             }
         }));
+
         const defined = results.filter(isDefined);
+
         if (defined.length !== results.length) {
             this.stored.store(defined.map(({ rec }) => rec));
         }
@@ -90,6 +98,7 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
     public getResultOutputWriter(resultId: string) {
         const stream = newWriteableBufferStream();
         this.storeOutputForResultId(resultId, stream);
+
         return stream;
     }
     /**
@@ -97,12 +106,15 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
      */
     public async persist(results: ReadonlyArray<ITestResult>): Promise<void> {
         const toDelete = new Map(this.stored.get([]).map(({ id, bytes }) => [id, bytes]));
+
         const toStore: {
             rev: number;
             id: string;
             bytes: number;
         }[] = [];
+
         const todo: Promise<unknown>[] = [];
+
         let budget = RETAIN_MAX_BYTES;
         // Run until either:
         // 1. We store all results
@@ -110,14 +122,18 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
         // 3. We store the min results, and have no more byte budget
         for (let i = 0; i < results.length && i < RETAIN_MAX_RESULTS && (budget > 0 || toStore.length < RETAIN_MIN_RESULTS); i++) {
             const result = results[i];
+
             const existingBytes = toDelete.get(result.id);
+
             if (existingBytes !== undefined) {
                 toDelete.delete(result.id);
                 toStore.push({ id: result.id, rev: currentRevision, bytes: existingBytes });
                 budget -= existingBytes;
+
                 continue;
             }
             const obj = result.toJSON();
+
             if (!obj) {
                 continue;
             }
@@ -164,10 +180,12 @@ export class InMemoryResultStorage extends BaseTestResultStorage {
     }
     protected storeForResultId(id: string, contents: ISerializedTestResults) {
         this.cache.set(id, contents);
+
         return Promise.resolve();
     }
     protected deleteForResultId(id: string) {
         this.cache.delete(id);
+
         return Promise.resolve();
     }
     protected readOutputForResultId(id: string): Promise<VSBufferReadableStream> {
@@ -182,6 +200,7 @@ export class InMemoryResultStorage extends BaseTestResultStorage {
 }
 export class TestResultStorage extends BaseTestResultStorage {
     private readonly directory: URI;
+
     constructor(
     @IUriIdentityService
     uriIdentityService: IUriIdentityService, 
@@ -200,6 +219,7 @@ export class TestResultStorage extends BaseTestResultStorage {
     }
     protected async readForResultId(id: string) {
         const contents = await this.fileService.readFile(this.getResultJsonPath(id));
+
         return JSON.parse(contents.value.toString());
     }
     protected storeForResultId(id: string, contents: ISerializedTestResults) {
@@ -211,6 +231,7 @@ export class TestResultStorage extends BaseTestResultStorage {
     protected async readOutputRangeForResultId(id: string, offset: number, length: number): Promise<VSBuffer> {
         try {
             const { value } = await this.fileService.readFile(this.getResultOutputPath(id), { position: offset, length });
+
             return value;
         }
         catch {
@@ -220,6 +241,7 @@ export class TestResultStorage extends BaseTestResultStorage {
     protected async readOutputForResultId(id: string): Promise<VSBufferReadableStream> {
         try {
             const { value } = await this.fileService.readFileStream(this.getResultOutputPath(id));
+
             return value;
         }
         catch {
@@ -234,6 +256,7 @@ export class TestResultStorage extends BaseTestResultStorage {
      */
     public override async persist(results: ReadonlyArray<ITestResult>) {
         await super.persist(results);
+
         if (Math.random() < CLEANUP_PROBABILITY) {
             await this.cleanupDereferenced();
         }
@@ -244,6 +267,7 @@ export class TestResultStorage extends BaseTestResultStorage {
      */
     private async cleanupDereferenced() {
         const { children } = await this.fileService.resolve(this.directory);
+
         if (!children) {
             return;
         }

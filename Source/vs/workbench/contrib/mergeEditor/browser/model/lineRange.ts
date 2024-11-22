@@ -14,7 +14,9 @@ export class LineRange {
             return undefined;
         }
         let startLineNumber = Number.MAX_SAFE_INTEGER;
+
         let endLineNumber = 0;
+
         for (const range of ranges) {
             startLineNumber = Math.min(startLineNumber, range.startLineNumber);
             endLineNumber = Math.max(endLineNumber, range.startLineNumber + range.lineCount);
@@ -71,6 +73,7 @@ export class LineRange {
     }
     public getLines(model: ITextModel): string[] {
         const result = new Array(this.lineCount);
+
         for (let i = 0; i < this.lineCount; i++) {
             result[i] = model.getLineContent(this.startLineNumber + i);
         }

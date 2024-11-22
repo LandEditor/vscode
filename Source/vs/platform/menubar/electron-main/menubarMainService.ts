@@ -15,6 +15,7 @@ export interface IMenubarMainService extends ICommonMenubarService {
 export class MenubarMainService extends Disposable implements IMenubarMainService {
     declare readonly _serviceBrand: undefined;
     private readonly menubar = this.installMenuBarAfterWindowOpen();
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -26,10 +27,12 @@ export class MenubarMainService extends Disposable implements IMenubarMainServic
     }
     private async installMenuBarAfterWindowOpen(): Promise<Menubar> {
         await this.lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen);
+
         return this._register(this.instantiationService.createInstance(Menubar));
     }
     async updateMenubar(windowId: number, menus: IMenubarData): Promise<void> {
         this.logService.trace('menubarService#updateMenubar', windowId);
+
         const menubar = await this.menubar;
         menubar.updateMenu(menus, windowId);
     }

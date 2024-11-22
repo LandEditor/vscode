@@ -21,11 +21,16 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
     [key: string]: any;
 }): ICommonProperties {
     const result: ICommonProperties = Object.create(null);
+
     const firstSessionDate = storageService.get(firstSessionDateStorageKey, StorageScope.APPLICATION)!;
+
     const lastSessionDate = storageService.get(lastSessionDateStorageKey, StorageScope.APPLICATION)!;
+
     let machineId: string | undefined;
+
     if (!removeMachineId) {
         machineId = storageService.get(machineIdKey, StorageScope.APPLICATION);
+
         if (!machineId) {
             machineId = uuid.generateUuid();
             storageService.store(machineIdKey, machineId, StorageScope.APPLICATION, StorageTarget.MACHINE);
@@ -62,12 +67,14 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
     result['common.userAgent'] = Platform.userAgent ? cleanUserAgent(Platform.userAgent) : undefined;
     // __GDPR__COMMON__ "common.isTouchDevice" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
     result['common.isTouchDevice'] = String(Gesture.isTouchDevice());
+
     if (isInternalTelemetry) {
         // __GDPR__COMMON__ "common.msftInternal" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
         result['common.msftInternal'] = isInternalTelemetry;
     }
     // dynamic properties which value differs on each call
     let seq = 0;
+
     const startTime = Date.now();
     Object.defineProperties(result, {
         // __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
@@ -86,6 +93,7 @@ export function resolveWorkbenchCommonProperties(storageService: IStorageService
             enumerable: true
         }
     });
+
     if (resolveAdditionalProperties) {
         mixin(result, resolveAdditionalProperties());
     }

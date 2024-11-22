@@ -23,17 +23,25 @@ export function renderLines(source: LineSource, options: RenderOptions, decorati
 	const hasCharChanges = (decorations.length > 0);
 
 	const sb = new StringBuilder(10000);
+
 	let maxCharsPerLine = 0;
+
 	let renderedLineCount = 0;
+
 	const viewLineCounts: number[] = [];
+
 	for (let lineIndex = 0; lineIndex < source.lineTokens.length; lineIndex++) {
 		const lineNumber = lineIndex + 1;
+
 		const lineTokens = source.lineTokens[lineIndex];
+
 		const lineBreakData = source.lineBreakData[lineIndex];
+
 		const actualDecorations = LineDecoration.filter(decorations, lineNumber, 1, Number.MAX_SAFE_INTEGER);
 
 		if (lineBreakData) {
 			let lastBreakOffset = 0;
+
 			for (const breakOffset of lineBreakData.breakOffsets) {
 				const viewLineTokens = lineTokens.sliceAndInflate(lastBreakOffset, breakOffset, 0);
 				maxCharsPerLine = Math.max(maxCharsPerLine, renderOriginalLine(
@@ -68,8 +76,11 @@ export function renderLines(source: LineSource, options: RenderOptions, decorati
 	maxCharsPerLine += options.scrollBeyondLastColumn;
 
 	const html = sb.build();
+
 	const trustedhtml = ttPolicy ? ttPolicy.createHTML(html) : html;
+
 	domNode.innerHTML = trustedhtml as string;
+
 	const minWidthInPx = (maxCharsPerLine * options.typicalHalfwidthCharacterWidth);
 
 	return {
@@ -93,7 +104,9 @@ export class RenderOptions {
 	public static fromEditor(editor: ICodeEditor): RenderOptions {
 
 		const modifiedEditorOptions = editor.getOptions();
+
 		const fontInfo = modifiedEditorOptions.get(EditorOption.fontInfo);
+
 		const layoutInfo = modifiedEditorOptions.get(EditorOption.layoutInfo);
 
 		return new RenderOptions(
@@ -146,6 +159,7 @@ function renderOriginalLine(
 ): number {
 
 	sb.appendString('<div class="view-line');
+
 	if (!hasCharChanges) {
 		// No char changes
 		sb.appendString(' char-delete');
@@ -155,8 +169,11 @@ function renderOriginalLine(
 	sb.appendString('px;width:1000000px;">');
 
 	const lineContent = lineTokens.getLineContent();
+
 	const isBasicASCII = ViewLineRenderingData.isBasicASCII(lineContent, mightContainNonBasicASCII);
+
 	const containsRTL = ViewLineRenderingData.containsRTL(lineContent, isBasicASCII, mightContainRTL);
+
 	const output = renderViewLine(new RenderLineInput(
 		(options.fontInfo.isMonospace && !options.disableMonospaceOptimizations),
 		options.fontInfo.canUseHalfwidthRightwardsArrow,

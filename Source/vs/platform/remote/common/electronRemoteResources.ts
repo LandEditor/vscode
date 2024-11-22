@@ -17,8 +17,10 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
             throw new Error(`Call not found: ${command}`);
         }
         const uri = arg[0] as (UriComponents | undefined);
+
         if (uri?.authority) {
             const connection = hub.connections.find(c => c.ctx === uri.authority);
+
             if (connection) {
                 return connection;
             }

@@ -15,7 +15,9 @@ export class LineSequence implements ISequence {
     }
     getBoundaryScore(length: number): number {
         const indentationBefore = length === 0 ? 0 : getIndentation(this.lines[length - 1]);
+
         const indentationAfter = length === this.lines.length ? 0 : getIndentation(this.lines[length]);
+
         return 1000 - (indentationBefore + indentationAfter);
     }
     getText(range: OffsetRange): string {
@@ -27,6 +29,7 @@ export class LineSequence implements ISequence {
 }
 function getIndentation(str: string): number {
     let i = 0;
+
     while (i < str.length && (str.charCodeAt(i) === CharCode.Space || str.charCodeAt(i) === CharCode.Tab)) {
         i++;
     }

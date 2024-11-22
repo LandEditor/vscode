@@ -10,14 +10,20 @@ import * as nls from '../../../nls.js';
 import { Extensions as JSONExtensions, IJSONContributionRegistry } from '../../jsonschemas/common/jsonContributionRegistry.js';
 import * as platform from '../../registry/common/platform.js';
 import { IColorTheme } from './themeService.js';
+
 const TOKEN_TYPE_WILDCARD = '*';
+
 const TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR = ':';
+
 const CLASSIFIER_MODIFIER_SEPARATOR = '.';
 // qualified string [type|*](.modifier)*(/language)!
 type TokenClassificationString = string;
+
 const idPattern = '\\w+[-_\\w+]*';
 export const typeAndModifierIdPattern = `^${idPattern}$`;
+
 const selectorPattern = `^(${idPattern}|\\*)(\\${CLASSIFIER_MODIFIER_SEPARATOR}${idPattern})*(${TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR}${idPattern})?$`;
+
 const fontStylePattern = '^(\\s*(italic|bold|underline|strikethrough))*\\s*$';
 export interface TokenSelector {
     match(type: string, modifiers: string[], language: string): number;
@@ -54,7 +60,9 @@ export namespace TokenStyle {
     export function fromJSONObject(obj: any): TokenStyle | undefined {
         if (obj) {
             const boolOrUndef = (b: any) => (typeof b === 'boolean') ? b : undefined;
+
             const colorOrUndef = (s: any) => (typeof s === 'string') ? Color.fromHex(s) : undefined;
+
             return new TokenStyle(colorOrUndef(obj._foreground), boolOrUndef(obj._bold), boolOrUndef(obj._underline), boolOrUndef(obj._strikethrough), boolOrUndef(obj._italic));
         }
         return undefined;
@@ -83,29 +91,42 @@ export namespace TokenStyle {
         return new TokenStyle(data.foreground, data.bold, data.underline, data.strikethrough, data.italic);
     }
     export function fromSettings(foreground: string | undefined, fontStyle: string | undefined): TokenStyle;
+
     export function fromSettings(foreground: string | undefined, fontStyle: string | undefined, bold: boolean | undefined, underline: boolean | undefined, strikethrough: boolean | undefined, italic: boolean | undefined): TokenStyle;
+
     export function fromSettings(foreground: string | undefined, fontStyle: string | undefined, bold?: boolean, underline?: boolean, strikethrough?: boolean, italic?: boolean): TokenStyle {
         let foregroundColor = undefined;
+
         if (foreground !== undefined) {
             foregroundColor = Color.fromHex(foreground);
         }
         if (fontStyle !== undefined) {
             bold = italic = underline = strikethrough = false;
+
             const expression = /italic|bold|underline|strikethrough/g;
+
             let match;
+
             while ((match = expression.exec(fontStyle))) {
                 switch (match[0]) {
                     case 'bold':
                         bold = true;
+
                         break;
+
                     case 'italic':
                         italic = true;
+
                         break;
+
                     case 'underline':
                         underline = true;
+
                         break;
+
                     case 'strikethrough':
                         strikethrough = true;
+
                         break;
                 }
             }
@@ -126,6 +147,7 @@ export interface TokenStyleDefaults {
 }
 export interface SemanticTokenDefaultRule {
     selector: TokenSelector;
+
     defaults: TokenStyleDefaults;
 }
 export interface SemanticTokenRule {
@@ -136,6 +158,7 @@ export namespace SemanticTokenRule {
     export function fromJSONObject(registry: ITokenClassificationRegistry, o: any): SemanticTokenRule | undefined {
         if (o && typeof o._selector === 'string' && o._style) {
             const style = TokenStyle.fromJSONObject(o._style);
+
             if (style) {
                 try {
                     return { selector: registry.parseTokenSelector(o._selector), style };
@@ -316,6 +339,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
             }
         }
     };
+
     constructor() {
         this.tokenTypeById = Object.create(null);
         this.tokenModifierById = Object.create(null);
@@ -329,8 +353,10 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
             throw new Error('Invalid token super type id.');
         }
         const num = this.currentTypeNumber++;
+
         const tokenStyleContribution: TokenTypeOrModifierContribution = { num, id, superType, description, deprecationMessage };
         this.tokenTypeById[id] = tokenStyleContribution;
+
         const stylingSchemeEntry = getStylingSchemeEntry(description, deprecationMessage);
         this.tokenStylingSchema.properties[id] = stylingSchemeEntry;
         this.typeHierarchy = Object.create(null);
@@ -341,12 +367,14 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
         }
         const num = this.currentModifierBit;
         this.currentModifierBit = this.currentModifierBit * 2;
+
         const tokenStyleContribution: TokenTypeOrModifierContribution = { num, id, description, deprecationMessage };
         this.tokenModifierById[id] = tokenStyleContribution;
         this.tokenStylingSchema.properties[`*.${id}`] = getStylingSchemeEntry(description, deprecationMessage);
     }
     public parseTokenSelector(selectorString: string, language?: string): TokenSelector {
         const selector = parseClassifierString(selectorString, language);
+
         if (!selector.type) {
             return {
                 match: () => -1,
@@ -356,6 +384,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
         return {
             match: (type: string, modifiers: string[], language: string) => {
                 let score = 0;
+
                 if (selector.language !== undefined) {
                     if (selector.language !== language) {
                         return -1;
@@ -364,7 +393,9 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
                 }
                 if (selector.type !== TOKEN_TYPE_WILDCARD) {
                     const hierarchy = this.getTypeHierarchy(type);
+
                     const level = hierarchy.indexOf(selector.type);
+
                     if (level === -1) {
                         return -1;
                     }
@@ -411,9 +442,12 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
     }
     private getTypeHierarchy(typeId: string): string[] {
         let hierarchy = this.typeHierarchy[typeId];
+
         if (!hierarchy) {
             this.typeHierarchy[typeId] = hierarchy = [typeId];
+
             let type = this.tokenTypeById[typeId];
+
             while (type && type.superType) {
                 hierarchy.push(type.superType);
                 type = this.tokenTypeById[type.superType];
@@ -424,16 +458,20 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
     public toString() {
         const sorter = (a: string, b: string) => {
             const cat1 = a.indexOf('.') === -1 ? 0 : 1;
+
             const cat2 = b.indexOf('.') === -1 ? 0 : 1;
+
             if (cat1 !== cat2) {
                 return cat1 - cat2;
             }
             return a.localeCompare(b);
         };
+
         return Object.keys(this.tokenTypeById).sort(sorter).map(k => `- \`${k}\`: ${this.tokenTypeById[k].description}`).join('\n');
     }
 }
 const CHAR_LANGUAGE = TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR.charCodeAt(0);
+
 const CHAR_MODIFIER = CLASSIFIER_MODIFIER_SEPARATOR.charCodeAt(0);
 export function parseClassifierString(s: string, defaultLanguage: string): {
     type: string;
@@ -451,13 +489,18 @@ export function parseClassifierString(s: string, defaultLanguage: string | undef
     language: string | undefined;
 } {
     let k = s.length;
+
     let language: string | undefined = defaultLanguage;
+
     const modifiers = [];
+
     for (let i = k - 1; i >= 0; i--) {
         const ch = s.charCodeAt(i);
+
         if (ch === CHAR_LANGUAGE || ch === CHAR_MODIFIER) {
             const segment = s.substring(i + 1, k);
             k = i;
+
             if (ch === CHAR_LANGUAGE) {
                 language = segment;
             }
@@ -467,14 +510,17 @@ export function parseClassifierString(s: string, defaultLanguage: string | undef
         }
     }
     const type = s.substring(0, k);
+
     return { type, modifiers, language };
 }
 const tokenClassificationRegistry = createDefaultTokenClassificationRegistry();
 platform.Registry.add(Extensions.TokenClassificationContribution, tokenClassificationRegistry);
 function createDefaultTokenClassificationRegistry(): TokenClassificationRegistry {
     const registry = new TokenClassificationRegistry();
+
     function registerTokenType(id: string, description: string, scopesToProbe: ProbeScope[] = [], superType?: string, deprecationMessage?: string): string {
         registry.registerTokenType(id, description, superType, deprecationMessage);
+
         if (scopesToProbe) {
             registerTokenStyleDefault(id, scopesToProbe);
         }
@@ -534,6 +580,7 @@ function createDefaultTokenClassificationRegistry(): TokenClassificationRegistry
     registerTokenStyleDefault('property.defaultLibrary.readonly', [['support.constant.property']]);
     registerTokenStyleDefault('function.defaultLibrary', [['support.function']]);
     registerTokenStyleDefault('member.defaultLibrary', [['support.function']]);
+
     return registry;
 }
 export function getTokenClassificationRegistry(): ITokenClassificationRegistry {
@@ -556,8 +603,10 @@ function getStylingSchemeEntry(description?: string, deprecationMessage?: string
     };
 }
 export const tokenStylingSchemaId = 'vscode://schemas/token-styling';
+
 const schemaRegistry = platform.Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
 schemaRegistry.registerSchema(tokenStylingSchemaId, tokenClassificationRegistry.getTokenStylingSchema());
+
 const delayer = new RunOnceScheduler(() => schemaRegistry.notifySchemaChanged(tokenStylingSchemaId), 200);
 tokenClassificationRegistry.onDidChangeSchema(() => {
     if (!delayer.isScheduled()) {

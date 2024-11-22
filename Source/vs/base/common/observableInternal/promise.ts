@@ -19,6 +19,7 @@ export class ObservableLazy<T> {
      */
     public getValue() {
         let v = this._value.get();
+
         if (!v) {
             v = this._computeValue();
             this._value.set(v, undefined);
@@ -43,18 +44,21 @@ export class ObservablePromise<T> {
      * Is `undefined` if the promise didn't resolve yet.
      */
     public readonly promiseResult: IObservable<PromiseResult<T> | undefined> = this._value;
+
     constructor(promise: Promise<T>) {
         this.promise = promise.then(value => {
             transaction(tx => {
                 /** @description onPromiseResolved */
                 this._value.set(new PromiseResult(value, undefined), tx);
             });
+
             return value;
         }, error => {
             transaction(tx => {
                 /** @description onPromiseRejected */
                 this._value.set(new PromiseResult<T>(undefined, error), tx);
             });
+
             throw error;
         });
     }
@@ -92,6 +96,7 @@ export class ObservableLazyPromise<T> {
      * Is undefined if the promise has not been computed yet.
      */
     public readonly cachedPromiseResult = derived(this, reader => this._lazyValue.cachedValue.read(reader)?.promiseResult.read(reader));
+
     constructor(private readonly _computePromise: () => Promise<T>) {
     }
     public getPromise(): Promise<T> {

@@ -16,14 +16,20 @@ export interface INpmScriptInfo {
 }
 export const readScripts = (document: TextDocument, buffer = document.getText()): INpmScriptInfo | undefined => {
     let start: Position | undefined;
+
     let end: Position | undefined;
+
     let inScripts = false;
+
     let buildingScript: {
         name: string;
         nameRange: Range;
     } | void;
+
     let level = 0;
+
     const scripts: INpmScriptReference[] = [];
+
     const visitor: JSONVisitor = {
         onError() {
             // no-op
@@ -62,6 +68,7 @@ export const readScripts = (document: TextDocument, buffer = document.getText())
         },
     };
     visit(buffer, visitor);
+
     if (start === undefined) {
         return undefined;
     }

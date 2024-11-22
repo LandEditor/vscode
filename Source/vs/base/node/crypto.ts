@@ -8,11 +8,14 @@ import { createSingleCallFunction } from '../common/functional.js';
 export async function checksum(path: string, sha256hash: string | undefined): Promise<void> {
     const checksumPromise = new Promise<string | undefined>((resolve, reject) => {
         const input = fs.createReadStream(path);
+
         const hash = crypto.createHash('sha256');
         input.pipe(hash);
+
         const done = createSingleCallFunction((err?: Error, result?: string) => {
             input.removeAllListeners();
             hash.removeAllListeners();
+
             if (err) {
                 reject(err);
             }
@@ -25,7 +28,9 @@ export async function checksum(path: string, sha256hash: string | undefined): Pr
         hash.once('error', done);
         hash.once('data', (data: Buffer) => done(undefined, data.toString('hex')));
     });
+
     const hash = await checksumPromise;
+
     if (hash !== sha256hash) {
         throw new Error('Hash mismatch');
     }

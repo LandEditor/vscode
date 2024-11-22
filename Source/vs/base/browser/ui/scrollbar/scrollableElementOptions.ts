@@ -136,6 +136,7 @@ export interface ScrollableElementChangeOptions {
 }
 export interface ScrollableElementResolvedOptions {
     lazyRender: boolean;
+
     className: string;
     useShadows: boolean;
     handleMouseWheel: boolean;

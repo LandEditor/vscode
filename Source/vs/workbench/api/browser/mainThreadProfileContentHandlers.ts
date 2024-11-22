@@ -13,6 +13,7 @@ import { ISaveProfileResult, IUserDataProfileImportExportService } from '../../s
 export class MainThreadProfileContentHandlers extends Disposable implements MainThreadProfileContentHandlersShape {
     private readonly proxy: ExtHostProfileContentHandlersShape;
     private readonly registeredHandlers = this._register(new DisposableMap<string, IDisposable>());
+
     constructor(context: IExtHostContext, 
     @IUserDataProfileImportExportService
     private readonly userDataProfileImportExportService: IUserDataProfileImportExportService) {
@@ -26,6 +27,7 @@ export class MainThreadProfileContentHandlers extends Disposable implements Main
             extensionId,
             saveProfile: async (name: string, content: string, token: CancellationToken) => {
                 const result = await this.proxy.$saveProfile(id, name, content, token);
+
                 return result ? revive<ISaveProfileResult>(result) : null;
             },
             readProfile: async (uri: URI, token: CancellationToken) => {

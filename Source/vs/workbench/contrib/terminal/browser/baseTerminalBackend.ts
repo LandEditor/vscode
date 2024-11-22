@@ -14,6 +14,7 @@ import { IStatusbarEntry, IStatusbarEntryAccessor, IStatusbarService, StatusbarA
 import { TerminalContribCommandId } from '../terminalContribExports.js';
 export abstract class BaseTerminalBackend extends Disposable {
     private _isPtyHostUnresponsive: boolean = false;
+
     get isResponsive(): boolean { return !this._isPtyHostUnresponsive; }
     protected readonly _onPtyHostConnected = this._register(new Emitter<void>());
     readonly onPtyHostConnected = this._onPtyHostConnected.event;
@@ -23,10 +24,14 @@ export abstract class BaseTerminalBackend extends Disposable {
     readonly onPtyHostUnresponsive = this._onPtyHostUnresponsive.event;
     protected readonly _onPtyHostResponsive = this._register(new Emitter<void>());
     readonly onPtyHostResponsive = this._onPtyHostResponsive.event;
+
     constructor(private readonly _ptyHostController: IPtyHostController, protected readonly _logService: ITerminalLogService, historyService: IHistoryService, configurationResolverService: IConfigurationResolverService, statusBarService: IStatusbarService, protected readonly _workspaceContextService: IWorkspaceContextService) {
         super();
+
         let unresponsiveStatusBarEntry: IStatusbarEntry;
+
         let statusBarAccessor: IStatusbarEntryAccessor;
+
         let hasStarted = false;
         // Attach pty host listeners
         this._register(this._ptyHostController.onPtyHostExit(() => {
@@ -45,6 +50,7 @@ export abstract class BaseTerminalBackend extends Disposable {
         }));
         this._register(this._ptyHostController.onPtyHostUnresponsive(() => {
             statusBarAccessor?.dispose();
+
             if (!unresponsiveStatusBarEntry) {
                 unresponsiveStatusBarEntry = {
                     name: localize('ptyHostStatus', 'Pty Host Status'),
@@ -74,10 +80,13 @@ export abstract class BaseTerminalBackend extends Disposable {
                 return;
             }
             const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot(Schemas.file);
+
             const lastActiveWorkspaceRoot = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+
             const resolveCalls: Promise<string>[] = e.originalText.map(t => {
                 return configurationResolverService.resolveAsync(lastActiveWorkspaceRoot, t);
             });
+
             const result = await Promise.all(resolveCalls);
             this._ptyHostController.acceptPtyHostResolvedVariables(e.requestId, result);
         }));
@@ -90,13 +99,17 @@ export abstract class BaseTerminalBackend extends Disposable {
             return undefined;
         }
         const parsedUnknown = JSON.parse(serializedState);
+
         if (!('version' in parsedUnknown) || !('state' in parsedUnknown) || !Array.isArray(parsedUnknown.state)) {
             this._logService.warn('Could not revive serialized processes, wrong format', parsedUnknown);
+
             return undefined;
         }
         const parsedCrossVersion = parsedUnknown as ICrossVersionSerializedTerminalState;
+
         if (parsedCrossVersion.version !== 1) {
             this._logService.warn(`Could not revive serialized processes, wrong version "${parsedCrossVersion.version}"`, parsedCrossVersion);
+
             return undefined;
         }
         return parsedCrossVersion.state as ISerializedTerminalState[];

@@ -25,8 +25,10 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
     if (Array.isArray(selector)) {
         // array -> take max individual value
         let ret = 0;
+
         for (const filter of selector) {
             const value = score(filter, candidateUri, candidateLanguage, candidateIsSynchronized, candidateNotebookUri, candidateNotebookType);
+
             if (value === 10) {
                 return value; // already at the highest
             }
@@ -65,6 +67,7 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
             candidateUri = candidateNotebookUri;
         }
         let ret = 0;
+
         if (scheme) {
             if (scheme === candidateUri.scheme) {
                 ret = 10;
@@ -100,6 +103,7 @@ export function score(selector: LanguageSelector | undefined, candidateUri: URI,
         }
         if (pattern) {
             let normalizedPattern: string | IRelativePattern;
+
             if (typeof pattern === 'string') {
                 normalizedPattern = pattern;
             }

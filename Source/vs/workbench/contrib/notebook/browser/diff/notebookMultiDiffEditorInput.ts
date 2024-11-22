@@ -17,13 +17,16 @@ export class NotebookMultiDiffEditorInput extends NotebookDiffEditorInput {
     static override readonly ID: string = 'workbench.input.multiDiffNotebookInput';
     static override create(instantiationService: IInstantiationService, resource: URI, name: string | undefined, description: string | undefined, originalResource: URI, viewType: string) {
         const original = NotebookEditorInput.getOrCreate(instantiationService, originalResource, undefined, viewType);
+
         const modified = NotebookEditorInput.getOrCreate(instantiationService, resource, undefined, viewType);
+
         return instantiationService.createInstance(NotebookMultiDiffEditorInput, name, description, original, modified, viewType);
     }
 }
 export class NotebookMultiDiffEditorWidgetInput extends MultiDiffEditorInput implements IMultiDiffSourceResolver {
     public static createInput(notebookDiffViewModel: NotebookDiffViewModel, instantiationService: IInstantiationService): NotebookMultiDiffEditorWidgetInput {
         const multiDiffSource = URI.parse(`${NotebookMultiDiffEditorScheme}:${new Date().getMilliseconds().toString() + Math.random().toString()}`);
+
         return instantiationService.createInstance(NotebookMultiDiffEditorWidgetInput, multiDiffSource, notebookDiffViewModel);
     }
     constructor(multiDiffSource: URI, private readonly notebookDiffViewModel: NotebookDiffViewModel, 

@@ -17,7 +17,9 @@ import { ChatContextKeys } from '../../common/chatContextKeys.js';
 import { isExportableSessionData } from '../../common/chatModel.js';
 import { IChatService } from '../../common/chatService.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
+
 const defaultFileName = 'chat.json';
+
 const filters = [{ name: localize('chat.file.label', "Chat Session"), extensions: ['json'] }];
 export function registerChatExportActions() {
     registerAction2(class ExportChatAction extends Action2 {
@@ -32,22 +34,30 @@ export function registerChatExportActions() {
         }
         async run(accessor: ServicesAccessor, ...args: any[]) {
             const widgetService = accessor.get(IChatWidgetService);
+
             const fileDialogService = accessor.get(IFileDialogService);
+
             const fileService = accessor.get(IFileService);
+
             const chatService = accessor.get(IChatService);
+
             const widget = widgetService.lastFocusedWidget;
+
             if (!widget || !widget.viewModel) {
                 return;
             }
             const defaultUri = joinPath(await fileDialogService.defaultFilePath(), defaultFileName);
+
             const result = await fileDialogService.showSaveDialog({
                 defaultUri,
                 filters
             });
+
             if (!result) {
                 return;
             }
             const model = chatService.getSession(widget.viewModel.sessionId);
+
             if (!model) {
                 return;
             }
@@ -68,20 +78,27 @@ export function registerChatExportActions() {
         }
         async run(accessor: ServicesAccessor, ...args: any[]) {
             const fileDialogService = accessor.get(IFileDialogService);
+
             const fileService = accessor.get(IFileService);
+
             const editorService = accessor.get(IEditorService);
+
             const defaultUri = joinPath(await fileDialogService.defaultFilePath(), defaultFileName);
+
             const result = await fileDialogService.showOpenDialog({
                 defaultUri,
                 canSelectFiles: true,
                 filters
             });
+
             if (!result) {
                 return;
             }
             const content = await fileService.readFile(result[0]);
+
             try {
                 const data = JSON.parse(content.value.toString());
+
                 if (!isExportableSessionData(data)) {
                     throw new Error('Invalid chat session data');
                 }

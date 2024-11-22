@@ -14,24 +14,30 @@ import { MyersDiffAlgorithm } from './algorithms/myersDiffAlgorithm.js';
 import { Range } from '../../core/range.js';
 export function computeMovedLines(changes: DetailedLineRangeMapping[], originalLines: string[], modifiedLines: string[], hashedOriginalLines: number[], hashedModifiedLines: number[], timeout: ITimeout): LineRangeMapping[] {
     let { moves, excludedChanges } = computeMovesFromSimpleDeletionsToSimpleInsertions(changes, originalLines, modifiedLines, timeout);
+
     if (!timeout.isValid()) {
         return [];
     }
     const filteredChanges = changes.filter(c => !excludedChanges.has(c));
+
     const unchangedMoves = computeUnchangedMoves(filteredChanges, hashedOriginalLines, hashedModifiedLines, originalLines, modifiedLines, timeout);
     pushMany(moves, unchangedMoves);
     moves = joinCloseConsecutiveMoves(moves);
     // Ignore too short moves
     moves = moves.filter(current => {
         const lines = current.original.toOffsetRange().slice(originalLines).map(l => l.trim());
+
         const originalText = lines.join('\n');
+
         return originalText.length >= 15 && countWhere(lines, l => l.length >= 2) >= 2;
     });
     moves = removeMovesInSameDiff(changes, moves);
+
     return moves;
 }
 function countWhere<T>(arr: T[], predicate: (t: T) => boolean): number {
     let count = 0;
+
     for (const t of arr) {
         if (predicate(t)) {
             count++;
@@ -41,18 +47,25 @@ function countWhere<T>(arr: T[], predicate: (t: T) => boolean): number {
 }
 function computeMovesFromSimpleDeletionsToSimpleInsertions(changes: DetailedLineRangeMapping[], originalLines: string[], modifiedLines: string[], timeout: ITimeout) {
     const moves: LineRangeMapping[] = [];
+
     const deletions = changes
         .filter(c => c.modified.isEmpty && c.original.length >= 3)
         .map(d => new LineRangeFragment(d.original, originalLines, d));
+
     const insertions = new Set(changes
         .filter(c => c.original.isEmpty && c.modified.length >= 3)
         .map(d => new LineRangeFragment(d.modified, modifiedLines, d)));
+
     const excludedChanges = new Set<DetailedLineRangeMapping>();
+
     for (const deletion of deletions) {
         let highestSimilarity = -1;
+
         let best: LineRangeFragment | undefined;
+
         for (const insertion of insertions) {
             const similarity = deletion.computeSimilarity(insertion);
+
             if (similarity > highestSimilarity) {
                 highestSimilarity = similarity;
                 best = insertion;
@@ -72,9 +85,11 @@ function computeMovesFromSimpleDeletionsToSimpleInsertions(changes: DetailedLine
 }
 function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOriginalLines: number[], hashedModifiedLines: number[], originalLines: string[], modifiedLines: string[], timeout: ITimeout) {
     const moves: LineRangeMapping[] = [];
+
     const original3LineHashes = new SetMap<string, {
         range: LineRange;
     }>();
+
     for (const change of changes) {
         for (let i = change.original.startLineNumber; i < change.original.endLineNumberExclusive - 2; i++) {
             const key = `${hashedOriginalLines[i - 1]}:${hashedOriginalLines[i + 1 - 1]}:${hashedOriginalLines[i + 2 - 1]}`;
@@ -87,11 +102,15 @@ function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOrigin
     }
     const possibleMappings: PossibleMapping[] = [];
     changes.sort(compareBy(c => c.modified.startLineNumber, numberComparator));
+
     for (const change of changes) {
         let lastMappings: PossibleMapping[] = [];
+
         for (let i = change.modified.startLineNumber; i < change.modified.endLineNumberExclusive - 2; i++) {
             const key = `${hashedModifiedLines[i - 1]}:${hashedModifiedLines[i + 1 - 1]}:${hashedModifiedLines[i + 2 - 1]}`;
+
             const currentModifiedRange = new LineRange(i, i + 3);
+
             const nextMappings: PossibleMapping[] = [];
             original3LineHashes.forEach(key, ({ range }) => {
                 for (const lastMapping of lastMappings) {
@@ -101,6 +120,7 @@ function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOrigin
                         lastMapping.originalLineRange = new LineRange(lastMapping.originalLineRange.startLineNumber, range.endLineNumberExclusive);
                         lastMapping.modifiedLineRange = new LineRange(lastMapping.modifiedLineRange.startLineNumber, currentModifiedRange.endLineNumberExclusive);
                         nextMappings.push(lastMapping);
+
                         return;
                     }
                 }
@@ -118,18 +138,26 @@ function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOrigin
         }
     }
     possibleMappings.sort(reverseOrder(compareBy(m => m.modifiedLineRange.length, numberComparator)));
+
     const modifiedSet = new LineRangeSet();
+
     const originalSet = new LineRangeSet();
+
     for (const mapping of possibleMappings) {
         const diffOrigToMod = mapping.modifiedLineRange.startLineNumber - mapping.originalLineRange.startLineNumber;
+
         const modifiedSections = modifiedSet.subtractFrom(mapping.modifiedLineRange);
+
         const originalTranslatedSections = originalSet.subtractFrom(mapping.originalLineRange).getWithDelta(diffOrigToMod);
+
         const modifiedIntersectedSections = modifiedSections.getIntersection(originalTranslatedSections);
+
         for (const s of modifiedIntersectedSections.ranges) {
             if (s.length < 3) {
                 continue;
             }
             const modifiedLineRange = s;
+
             const originalLineRange = s.delta(-diffOrigToMod);
             moves.push(new LineRangeMapping(originalLineRange, modifiedLineRange));
             modifiedSet.addRange(modifiedLineRange);
@@ -137,19 +165,31 @@ function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOrigin
         }
     }
     moves.sort(compareBy(m => m.original.startLineNumber, numberComparator));
+
     const monotonousChanges = new MonotonousArray(changes);
+
     for (let i = 0; i < moves.length; i++) {
         const move = moves[i];
+
         const firstTouchingChangeOrig = monotonousChanges.findLastMonotonous(c => c.original.startLineNumber <= move.original.startLineNumber)!;
+
         const firstTouchingChangeMod = findLastMonotonous(changes, c => c.modified.startLineNumber <= move.modified.startLineNumber)!;
+
         const linesAbove = Math.max(move.original.startLineNumber - firstTouchingChangeOrig.original.startLineNumber, move.modified.startLineNumber - firstTouchingChangeMod.modified.startLineNumber);
+
         const lastTouchingChangeOrig = monotonousChanges.findLastMonotonous(c => c.original.startLineNumber < move.original.endLineNumberExclusive)!;
+
         const lastTouchingChangeMod = findLastMonotonous(changes, c => c.modified.startLineNumber < move.modified.endLineNumberExclusive)!;
+
         const linesBelow = Math.max(lastTouchingChangeOrig.original.endLineNumberExclusive - move.original.endLineNumberExclusive, lastTouchingChangeMod.modified.endLineNumberExclusive - move.modified.endLineNumberExclusive);
+
         let extendToTop: number;
+
         for (extendToTop = 0; extendToTop < linesAbove; extendToTop++) {
             const origLine = move.original.startLineNumber - extendToTop - 1;
+
             const modLine = move.modified.startLineNumber - extendToTop - 1;
+
             if (origLine > originalLines.length || modLine > modifiedLines.length) {
                 break;
             }
@@ -165,9 +205,12 @@ function computeUnchangedMoves(changes: DetailedLineRangeMapping[], hashedOrigin
             modifiedSet.addRange(new LineRange(move.modified.startLineNumber - extendToTop, move.modified.startLineNumber));
         }
         let extendToBottom: number;
+
         for (extendToBottom = 0; extendToBottom < linesBelow; extendToBottom++) {
             const origLine = move.original.endLineNumberExclusive + extendToBottom;
+
             const modLine = move.modified.endLineNumberExclusive + extendToBottom;
+
             if (origLine > originalLines.length || modLine > modifiedLines.length) {
                 break;
             }
@@ -196,9 +239,13 @@ function areLinesSimilar(line1: string, line2: string, timeout: ITimeout): boole
         return false;
     }
     const myersDiffingAlgorithm = new MyersDiffAlgorithm();
+
     const result = myersDiffingAlgorithm.compute(new LinesSliceCharSequence([line1], new Range(1, 1, 1, line1.length), false), new LinesSliceCharSequence([line2], new Range(1, 1, 1, line2.length), false), timeout);
+
     let commonNonSpaceCharCount = 0;
+
     const inverted = SequenceDiff.invert(result.diffs, line1.length);
+
     for (const seq of inverted) {
         seq.seq1Range.forEach(idx => {
             if (!isSpace(line1.charCodeAt(idx))) {
@@ -208,6 +255,7 @@ function areLinesSimilar(line1: string, line2: string, timeout: ITimeout): boole
     }
     function countNonWsChars(str: string): number {
         let count = 0;
+
         for (let i = 0; i < line1.length; i++) {
             if (!isSpace(str.charCodeAt(i))) {
                 count++;
@@ -216,7 +264,9 @@ function areLinesSimilar(line1: string, line2: string, timeout: ITimeout): boole
         return count;
     }
     const longerLineLength = countNonWsChars(line1.length > line2.length ? line1 : line2);
+
     const r = commonNonSpaceCharCount / longerLineLength > 0.6 && longerLineLength > 10;
+
     return r;
 }
 function joinCloseConsecutiveMoves(moves: LineRangeMapping[]): LineRangeMapping[] {
@@ -224,15 +274,23 @@ function joinCloseConsecutiveMoves(moves: LineRangeMapping[]): LineRangeMapping[
         return moves;
     }
     moves.sort(compareBy(m => m.original.startLineNumber, numberComparator));
+
     const result = [moves[0]];
+
     for (let i = 1; i < moves.length; i++) {
         const last = result[result.length - 1];
+
         const current = moves[i];
+
         const originalDist = current.original.startLineNumber - last.original.endLineNumberExclusive;
+
         const modifiedDist = current.modified.startLineNumber - last.modified.endLineNumberExclusive;
+
         const currentMoveAfterLast = originalDist >= 0 && modifiedDist >= 0;
+
         if (currentMoveAfterLast && originalDist + modifiedDist <= 2) {
             result[result.length - 1] = last.join(current);
+
             continue;
         }
         result.push(current);
@@ -244,9 +302,13 @@ function removeMovesInSameDiff(changes: DetailedLineRangeMapping[], moves: LineR
     moves = moves.filter(m => {
         const diffBeforeEndOfMoveOriginal = changesMonotonous.findLastMonotonous(c => c.original.startLineNumber < m.original.endLineNumberExclusive)
             || new LineRangeMapping(new LineRange(1, 1), new LineRange(1, 1));
+
         const diffBeforeEndOfMoveModified = findLastMonotonous(changes, c => c.modified.startLineNumber < m.modified.endLineNumberExclusive);
+
         const differentDiffs = diffBeforeEndOfMoveOriginal !== diffBeforeEndOfMoveModified;
+
         return differentDiffs;
     });
+
     return moves;
 }

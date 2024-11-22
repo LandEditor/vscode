@@ -19,6 +19,7 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 class SharedProcessTunnel extends Disposable implements RemoteTunnel {
     public readonly privacy = TunnelPrivacyId.Private;
     public readonly protocol: string | undefined = undefined;
+
     constructor(private readonly _id: string, private readonly _addressProvider: IAddressProvider, public readonly tunnelRemoteHost: string, public readonly tunnelRemotePort: number, public readonly tunnelLocalPort: number | undefined, public readonly localAddress: string, private readonly _onBeforeDispose: () => void, 
     @ISharedProcessTunnelService
     private readonly _sharedProcessTunnelService: ISharedProcessTunnelService, 
@@ -35,6 +36,7 @@ class SharedProcessTunnel extends Disposable implements RemoteTunnel {
     }
     public override async dispose(): Promise<void> {
         this._onBeforeDispose();
+
         super.dispose();
         await this._sharedProcessTunnelService.destroyTunnel(this._id);
     }
@@ -69,8 +71,10 @@ export class TunnelService extends AbstractTunnelService {
     }
     protected retainOrCreateTunnel(addressOrTunnelProvider: IAddressProvider | ITunnelProvider, remoteHost: string, remotePort: number, localHost: string, localPort: number | undefined, elevateIfNeeded: boolean, privacy?: string, protocol?: string): Promise<RemoteTunnel | string | undefined> | undefined {
         const existing = this.getTunnelFromMap(remoteHost, remotePort);
+
         if (existing) {
             ++existing.refcount;
+
             return existing.value;
         }
         if (isTunnelProvider(addressOrTunnelProvider)) {
@@ -78,20 +82,26 @@ export class TunnelService extends AbstractTunnelService {
         }
         else {
             this.logService.trace(`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`);
+
             const tunnel = this._createSharedProcessTunnel(addressOrTunnelProvider, remoteHost, remotePort, localHost, localPort, elevateIfNeeded);
             this.logService.trace('ForwardedPorts: (TunnelService) Tunnel created without provider.');
             this.addTunnelToMap(remoteHost, remotePort, tunnel);
+
             return tunnel;
         }
     }
     private async _createSharedProcessTunnel(addressProvider: IAddressProvider, tunnelRemoteHost: string, tunnelRemotePort: number, tunnelLocalHost: string, tunnelLocalPort: number | undefined, elevateIfNeeded: boolean | undefined): Promise<RemoteTunnel> {
         const { id } = await this._sharedProcessTunnelService.createTunnel();
         this._activeSharedProcessTunnels.add(id);
+
         const authority = this._environmentService.remoteAuthority!;
+
         const result = await this._sharedProcessTunnelService.startTunnel(authority, id, tunnelRemoteHost, tunnelRemotePort, tunnelLocalHost, tunnelLocalPort, elevateIfNeeded);
+
         const tunnel = this._instantiationService.createInstance(SharedProcessTunnel, id, addressProvider, tunnelRemoteHost, tunnelRemotePort, result.tunnelLocalPort, result.localAddress, () => {
             this._activeSharedProcessTunnels.delete(id);
         });
+
         return tunnel;
     }
     override canTunnel(uri: URI): boolean {

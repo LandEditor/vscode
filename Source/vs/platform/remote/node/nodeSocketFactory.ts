@@ -17,8 +17,10 @@ export const nodeSocketFactory = new class implements ISocketFactory<RemoteConne
             const socket = net.createConnection({ host: host, port: port }, () => {
                 socket.removeListener('error', reject);
                 socket.write(makeRawSocketHeaders(path, query, debugLabel));
+
                 const onData = (data: Buffer) => {
                     const strData = data.toString();
+
                     if (strData.indexOf('\r\n\r\n') >= 0) {
                         // headers received OK
                         socket.off('data', onData);

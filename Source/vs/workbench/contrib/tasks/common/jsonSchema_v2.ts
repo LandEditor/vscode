@@ -21,6 +21,7 @@ function fixReferences(literal: any) {
         }
         Object.getOwnPropertyNames(literal).forEach(property => {
             const value = literal[property];
+
             if (Array.isArray(value) || typeof value === 'object') {
                 fixReferences(value);
             }
@@ -40,11 +41,13 @@ const shellCommand: IJSONSchema = {
     ],
     deprecationMessage: nls.localize('JsonSchema.tasks.isShellCommand.deprecated', 'The property isShellCommand is deprecated. Use the type property of the task and the shell property in the options instead. See also the 1.14 release notes.')
 };
+
 const hide: IJSONSchema = {
     type: 'boolean',
     description: nls.localize('JsonSchema.hide', 'Hide this task from the run task quick pick'),
     default: true
 };
+
 const taskIdentifier: IJSONSchema = {
     type: 'object',
     additionalProperties: true,
@@ -55,6 +58,7 @@ const taskIdentifier: IJSONSchema = {
         }
     }
 };
+
 const dependsOn: IJSONSchema = {
     anyOf: [
         {
@@ -77,6 +81,7 @@ const dependsOn: IJSONSchema = {
     ],
     description: nls.localize('JsonSchema.tasks.dependsOn', 'Either a string representing another task or an array of other tasks that this task depends on.')
 };
+
 const dependsOrder: IJSONSchema = {
     type: 'string',
     enum: ['parallel', 'sequence'],
@@ -87,10 +92,12 @@ const dependsOrder: IJSONSchema = {
     default: 'parallel',
     description: nls.localize('JsonSchema.tasks.dependsOrder', 'Determines the order of the dependsOn tasks for this task. Note that this property is not recursive.')
 };
+
 const detail: IJSONSchema = {
     type: 'string',
     description: nls.localize('JsonSchema.tasks.detail', 'An optional description of a task that shows in the Run Task quick pick as a detail.')
 };
+
 const icon: IJSONSchema = {
     type: 'object',
     description: nls.localize('JsonSchema.tasks.icon', 'An optional icon for the task'),
@@ -117,6 +124,7 @@ const icon: IJSONSchema = {
         },
     }
 };
+
 const presentation: IJSONSchema = {
     type: 'object',
     default: {
@@ -188,8 +196,10 @@ const presentation: IJSONSchema = {
         }
     }
 };
+
 const terminal: IJSONSchema = Objects.deepClone(presentation);
 terminal.deprecationMessage = nls.localize('JsonSchema.tasks.terminal', 'The terminal property is deprecated. Use presentation instead');
+
 const groupStrings: IJSONSchema = {
     type: 'string',
     enum: [
@@ -204,6 +214,7 @@ const groupStrings: IJSONSchema = {
     ],
     description: nls.localize('JsonSchema.tasks.group.kind', 'The task\'s execution group.')
 };
+
 const group: IJSONSchema = {
     oneOf: [
         groupStrings,
@@ -231,12 +242,14 @@ const group: IJSONSchema = {
     ],
     description: nls.localize('JsonSchema.tasks.group', 'Defines to which execution group this task belongs to. It supports "build" to add it to the build group and "test" to add it to the test group.')
 };
+
 const taskType: IJSONSchema = {
     type: 'string',
     enum: ['shell'],
     default: 'process',
     description: nls.localize('JsonSchema.tasks.type', 'Defines whether the task is run as a process or as a command inside a shell.')
 };
+
 const command: IJSONSchema = {
     oneOf: [
         {
@@ -288,6 +301,7 @@ const command: IJSONSchema = {
     ],
     description: nls.localize('JsonSchema.command', 'The command to be executed. Can be an external program or a shell command.')
 };
+
 const args: IJSONSchema = {
     type: 'array',
     items: {
@@ -320,20 +334,24 @@ const args: IJSONSchema = {
     },
     description: nls.localize('JsonSchema.tasks.args', 'Arguments passed to the command when this task is invoked.')
 };
+
 const label: IJSONSchema = {
     type: 'string',
     description: nls.localize('JsonSchema.tasks.label', "The task's user interface label")
 };
+
 const version: IJSONSchema = {
     type: 'string',
     enum: ['2.0.0'],
     description: nls.localize('JsonSchema.version', 'The config\'s version number.')
 };
+
 const identifier: IJSONSchema = {
     type: 'string',
     description: nls.localize('JsonSchema.tasks.identifier', 'A user defined identifier to reference the task in launch.json or a dependsOn clause.'),
     deprecationMessage: nls.localize('JsonSchema.tasks.identifier.deprecated', 'User defined identifiers are deprecated. For custom task use the name as a reference and for tasks provided by extensions use their defined task identifier.')
 };
+
 const runOptions: IJSONSchema = {
     type: 'object',
     additionalProperties: false,
@@ -357,10 +375,14 @@ const runOptions: IJSONSchema = {
     },
     description: nls.localize('JsonSchema.tasks.runOptions', 'The task\'s run related options')
 };
+
 const commonSchemaDefinitions = commonSchema.definitions!;
+
 const options: IJSONSchema = Objects.deepClone(commonSchemaDefinitions.options);
+
 const optionsProperties = options.properties!;
 optionsProperties.shell = Objects.deepClone(commonSchemaDefinitions.shellConfiguration);
+
 const taskConfiguration: IJSONSchema = {
     type: 'object',
     additionalProperties: false,
@@ -400,6 +422,7 @@ const taskConfiguration: IJSONSchema = {
         detail: Objects.deepClone(detail),
     }
 };
+
 const taskDefinitions: IJSONSchema[] = [];
 TaskDefinitionRegistry.onReady().then(() => {
     updateTaskDefinitions();
@@ -413,6 +436,7 @@ export function updateTaskDefinitions() {
             continue;
         }
         const schema: IJSONSchema = Objects.deepClone(taskConfiguration);
+
         const schemaProperties = schema.properties!;
         // Since we do this after the schema is assigned we need to patch the refs.
         schemaProperties.type = {
@@ -420,6 +444,7 @@ export function updateTaskDefinitions() {
             description: nls.localize('JsonSchema.customizations.customizes.type', 'The task type to customize'),
             enum: [taskType.taskType]
         };
+
         if (taskType.required) {
             schema.required = taskType.required.slice();
         }
@@ -428,6 +453,7 @@ export function updateTaskDefinitions() {
         }
         // Customized tasks require that the task type be set.
         schema.required.push('type');
+
         if (taskType.properties) {
             for (const key of Object.keys(taskType.properties)) {
                 const property = taskType.properties[key];
@@ -448,9 +474,12 @@ if (!customize.required) {
 }
 customize.required.push('customize');
 taskDefinitions.push(customize);
+
 const definitions = Objects.deepClone(commonSchemaDefinitions);
+
 const taskDescription: IJSONSchema = definitions.taskDescription;
 taskDescription.required = ['label'];
+
 const taskDescriptionProperties = taskDescription.properties!;
 taskDescriptionProperties.label = Objects.deepClone(label);
 taskDescriptionProperties.command = Objects.deepClone(command);
@@ -494,7 +523,9 @@ taskDefinitions.push(processTask);
 taskDefinitions.push({
     $ref: '#/definitions/taskDescription'
 });
+
 const definitionsTaskRunnerConfigurationProperties = definitions.taskRunnerConfiguration.properties!;
+
 const tasks = definitionsTaskRunnerConfigurationProperties.tasks;
 tasks.items = {
     oneOf: taskDefinitions
@@ -511,11 +542,13 @@ definitionsTaskRunnerConfigurationProperties.group = Objects.deepClone(group);
 definitionsTaskRunnerConfigurationProperties.presentation = Objects.deepClone(presentation);
 definitionsTaskRunnerConfigurationProperties.suppressTaskName.deprecationMessage = nls.localize('JsonSchema.tasks.suppressTaskName.deprecated', 'The property suppressTaskName is deprecated. Inline the command with its arguments into the task instead. See also the 1.14 release notes.');
 definitionsTaskRunnerConfigurationProperties.taskSelector.deprecationMessage = nls.localize('JsonSchema.tasks.taskSelector.deprecated', 'The property taskSelector is deprecated. Inline the command with its arguments into the task instead. See also the 1.14 release notes.');
+
 const osSpecificTaskRunnerConfiguration = Objects.deepClone(definitions.taskRunnerConfiguration);
 delete osSpecificTaskRunnerConfiguration.properties!.tasks;
 osSpecificTaskRunnerConfiguration.additionalProperties = false;
 definitions.osSpecificTaskRunnerConfiguration = osSpecificTaskRunnerConfiguration;
 definitionsTaskRunnerConfigurationProperties.version = Objects.deepClone(version);
+
 const schema: IJSONSchema = {
     oneOf: [
         {
@@ -549,6 +582,7 @@ const schema: IJSONSchema = {
 schema.definitions = definitions;
 function deprecatedVariableMessage(schemaMap: IJSONSchemaMap, property: string) {
     const mapAtProperty = schemaMap[property].properties!;
+
     if (mapAtProperty) {
         Object.keys(mapAtProperty).forEach(name => {
             deprecatedVariableMessage(mapAtProperty, name);

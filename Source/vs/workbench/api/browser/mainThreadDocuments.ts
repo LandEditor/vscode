@@ -28,6 +28,7 @@ export class BoundModelReferenceCollection {
         dispose(): void;
     }>();
     private _length = 0;
+
     constructor(private readonly _extUri: IExtUri, private readonly _maxAge: number = 1000 * 60 * 3, // auto-dispse by age
     private readonly _maxLength: number = 1024 * 1024 * 80, // auto-dispose by total length
     private readonly _maxSize: number = 50 // auto-dispose by number of references
@@ -46,8 +47,10 @@ export class BoundModelReferenceCollection {
     }
     add(uri: URI, ref: IReference<any>, length: number = 0): void {
         // const length = ref.object.textEditorModel.getValueLength();
+
         const dispose = () => {
             const idx = this._data.indexOf(entry);
+
             if (idx >= 0) {
                 this._length -= length;
                 ref.dispose();
@@ -55,7 +58,9 @@ export class BoundModelReferenceCollection {
                 this._data.splice(idx, 1);
             }
         };
+
         const handle = setTimeout(dispose, this._maxAge);
+
         const entry = { uri, length, dispose };
         this._data.push(entry);
         this._length += length;
@@ -68,6 +73,7 @@ export class BoundModelReferenceCollection {
         }
         // clean-up wrt number of documents
         const extraSize = Math.ceil(this._maxSize * 1.2);
+
         if (this._data.length >= extraSize) {
             dispose(this._data.slice(0, extraSize - this._maxSize));
         }
@@ -75,12 +81,14 @@ export class BoundModelReferenceCollection {
 }
 class ModelTracker extends Disposable {
     private _knownVersionId: number;
+
     constructor(private readonly _model: ITextModel, private readonly _onIsCaughtUpWithContentChanges: Emitter<URI>, private readonly _proxy: ExtHostDocumentsShape, private readonly _textFileService: ITextFileService) {
         super();
         this._knownVersionId = this._model.getVersionId();
         this._store.add(this._model.onDidChangeContent((e) => {
             this._knownVersionId = e.versionId;
             this._proxy.$acceptModelChanged(this._model.uri, e, this._textFileService.isDirty(this._model.uri));
+
             if (this.isCaughtUpWithContentChanges()) {
                 this._onIsCaughtUpWithContentChanges.fire(this._model.uri);
             }
@@ -96,6 +104,7 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
     private readonly _proxy: ExtHostDocumentsShape;
     private readonly _modelTrackers = new ResourceMap<ModelTracker>();
     private readonly _modelReferenceCollection: BoundModelReferenceCollection;
+
     constructor(extHostContext: IExtHostContext, 
     @IModelService
     private readonly _modelService: IModelService, 
@@ -129,9 +138,11 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
         }));
         this._store.add(workingCopyFileService.onDidRunWorkingCopyFileOperation(e => {
             const isMove = e.operation === FileOperation.MOVE;
+
             if (isMove || e.operation === FileOperation.DELETE) {
                 for (const pair of e.files) {
                     const removed = isMove ? pair.source : pair.target;
+
                     if (removed) {
                         this._modelReferenceCollection.remove(removed);
                     }
@@ -142,10 +153,12 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
     override dispose(): void {
         dispose(this._modelTrackers.values());
         this._modelTrackers.clear();
+
         super.dispose();
     }
     isCaughtUpWithContentChanges(resource: URI): boolean {
         const tracker = this._modelTrackers.get(resource);
+
         if (tracker) {
             return tracker.isCaughtUpWithContentChanges();
         }
@@ -153,6 +166,7 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
     }
     private _shouldHandleFileEvent(resource: URI): boolean {
         const model = this._modelService.getModel(resource);
+
         return !!model && shouldSynchronizeModel(model);
     }
     handleModelAdded(model: ITextModel): void {
@@ -168,6 +182,7 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
         oldLanguageId: string;
     }): void {
         const { model } = event;
+
         if (!this._modelTrackers.has(model.uri)) {
             return;
         }
@@ -183,25 +198,33 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
     // --- from extension host process
     async $trySaveDocument(uri: UriComponents): Promise<boolean> {
         const target = await this._textFileService.save(URI.revive(uri));
+
         return Boolean(target);
     }
     async $tryOpenDocument(uriData: UriComponents): Promise<URI> {
         const inputUri = URI.revive(uriData);
+
         if (!inputUri.scheme || !(inputUri.fsPath || inputUri.authority)) {
             throw new ErrorNoTelemetry(`Invalid uri. Scheme and authority or path must be set.`);
         }
         const canonicalUri = this._uriIdentityService.asCanonicalUri(inputUri);
+
         let promise: Promise<URI>;
+
         switch (canonicalUri.scheme) {
             case Schemas.untitled:
                 promise = this._handleUntitledScheme(canonicalUri);
+
                 break;
+
             case Schemas.file:
             default:
                 promise = this._handleAsResourceInput(canonicalUri);
+
                 break;
         }
         let documentUri: URI | undefined;
+
         try {
             documentUri = await promise;
         }
@@ -230,11 +253,14 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
     private async _handleAsResourceInput(uri: URI): Promise<URI> {
         const ref = await this._textModelResolverService.createModelReference(uri);
         this._modelReferenceCollection.add(uri, ref, ref.object.textEditorModel.getValueLength());
+
         return ref.object.textEditorModel.uri;
     }
     private async _handleUntitledScheme(uri: URI): Promise<URI> {
         const asLocalUri = toLocalResource(uri, this._environmentService.remoteAuthority, this._pathService.defaultUriScheme);
+
         const exists = await this._fileService.exists(asLocalUri);
+
         if (exists) {
             // don't create a new file ontop of an existing file
             return Promise.reject(new Error('file already exists'));
@@ -247,10 +273,14 @@ export class MainThreadDocuments extends Disposable implements MainThreadDocumen
             languageId,
             initialValue
         });
+
         const resource = model.resource;
+
         const ref = await this._textModelResolverService.createModelReference(resource);
+
         if (!this._modelTrackers.has(resource)) {
             ref.dispose();
+
             throw new Error(`expected URI ${resource.toString()} to have come to LIFE`);
         }
         this._modelReferenceCollection.add(resource, ref, ref.object.textEditorModel.getValueLength());

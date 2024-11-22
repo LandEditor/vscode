@@ -11,13 +11,17 @@ export function removeTag() {
         return;
     }
     const editor = vscode.window.activeTextEditor;
+
     const document = editor.document;
+
     const rootNode = <HtmlFlatNode>getRootNode(document, true);
+
     if (!rootNode) {
         return;
     }
     const finalRangesToRemove = Array.from(editor.selections).reverse()
         .reduce<vscode.Range[]>((prev, selection) => prev.concat(getRangesToRemove(editor.document, rootNode, selection)), []);
+
     return editor.edit(editBuilder => {
         finalRangesToRemove.forEach(range => {
             editBuilder.delete(range);
@@ -31,20 +35,25 @@ export function removeTag() {
  */
 function getRangesToRemove(document: vscode.TextDocument, rootNode: HtmlFlatNode, selection: vscode.Selection): vscode.Range[] {
     const offset = document.offsetAt(selection.start);
+
     const nodeToUpdate = getHtmlFlatNode(document.getText(), rootNode, offset, true);
+
     if (!nodeToUpdate) {
         return [];
     }
     let openTagRange: vscode.Range | undefined;
+
     if (nodeToUpdate.open) {
         openTagRange = offsetRangeToVsRange(document, nodeToUpdate.open.start, nodeToUpdate.open.end);
     }
     let closeTagRange: vscode.Range | undefined;
+
     if (nodeToUpdate.close) {
         closeTagRange = offsetRangeToVsRange(document, nodeToUpdate.close.start, nodeToUpdate.close.end);
     }
     if (openTagRange && closeTagRange) {
         const innerCombinedRange = new vscode.Range(openTagRange.end.line, openTagRange.end.character, closeTagRange.start.line, closeTagRange.start.character);
+
         const outerCombinedRange = new vscode.Range(openTagRange.start.line, openTagRange.start.character, closeTagRange.end.line, closeTagRange.end.character);
         // Special case: there is only whitespace in between.
         if (document.getText(innerCombinedRange).trim() === '' && nodeToUpdate.name !== 'pre') {
@@ -52,15 +61,21 @@ function getRangesToRemove(document: vscode.TextDocument, rootNode: HtmlFlatNode
         }
     }
     const rangesToRemove = [];
+
     if (openTagRange) {
         rangesToRemove.push(openTagRange);
+
         if (closeTagRange) {
             const indentAmountToRemove = calculateIndentAmountToRemove(document, openTagRange, closeTagRange);
+
             let firstInnerNonEmptyLine: number | undefined;
+
             let lastInnerNonEmptyLine: number | undefined;
+
             for (let i = openTagRange.start.line + 1; i < closeTagRange.start.line; i++) {
                 if (!document.lineAt(i).isEmptyOrWhitespace) {
                     rangesToRemove.push(new vscode.Range(i, 0, i, indentAmountToRemove));
+
                     if (firstInnerNonEmptyLine === undefined) {
                         // We found the first non-empty inner line.
                         firstInnerNonEmptyLine = i;
@@ -89,7 +104,9 @@ function getRangesToRemove(document: vscode.TextDocument, rootNode: HtmlFlatNode
 function entireLineIsTag(document: vscode.TextDocument, range: vscode.Range): boolean {
     if (range.start.line === range.end.line) {
         const lineText = document.lineAt(range.start).text;
+
         const tagText = document.getText(range);
+
         if (lineText.trim() === tagText) {
             return true;
         }
@@ -101,18 +118,25 @@ function entireLineIsTag(document: vscode.TextDocument, range: vscode.Range): bo
  */
 function calculateIndentAmountToRemove(document: vscode.TextDocument, openRange: vscode.Range, closeRange: vscode.Range): number {
     const startLine = openRange.start.line;
+
     const endLine = closeRange.start.line;
+
     const startLineIndent = document.lineAt(startLine).firstNonWhitespaceCharacterIndex;
+
     const endLineIndent = document.lineAt(endLine).firstNonWhitespaceCharacterIndex;
+
     let contentIndent: number | undefined;
+
     for (let i = startLine + 1; i < endLine; i++) {
         const line = document.lineAt(i);
+
         if (!line.isEmptyOrWhitespace) {
             const lineIndent = line.firstNonWhitespaceCharacterIndex;
             contentIndent = !contentIndent ? lineIndent : Math.min(contentIndent, lineIndent);
         }
     }
     let indentAmount = 0;
+
     if (contentIndent) {
         if (contentIndent < startLineIndent || contentIndent < endLineIndent) {
             indentAmount = 0;

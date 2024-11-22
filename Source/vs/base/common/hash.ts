@@ -24,14 +24,19 @@ export function doHash(obj: any, hashVal: number): number {
                 return arrayHash(obj, hashVal);
             }
             return objectHash(obj, hashVal);
+
         case 'string':
             return stringHash(obj, hashVal);
+
         case 'boolean':
             return booleanHash(obj, hashVal);
+
         case 'number':
             return numberHash(obj, hashVal);
+
         case 'undefined':
             return numberHash(937, hashVal);
+
         default:
             return numberHash(617, hashVal);
     }
@@ -44,6 +49,7 @@ function booleanHash(b: boolean, initialHashVal: number): number {
 }
 export function stringHash(s: string, hashVal: number) {
     hashVal = numberHash(149417, hashVal);
+
     for (let i = 0, length = s.length; i < length; i++) {
         hashVal = numberHash(s.charCodeAt(i), hashVal);
     }
@@ -51,12 +57,15 @@ export function stringHash(s: string, hashVal: number) {
 }
 function arrayHash(arr: any[], initialHashVal: number): number {
     initialHashVal = numberHash(104579, initialHashVal);
+
     return arr.reduce((hashVal, item) => doHash(item, hashVal), initialHashVal);
 }
 function objectHash(obj: any, initialHashVal: number): number {
     initialHashVal = numberHash(181387, initialHashVal);
+
     return Object.keys(obj).sort().reduce((hashVal, key) => {
         hashVal = stringHash(key, hashVal);
+
         return doHash(obj[key], hashVal);
     }, initialHashVal);
 }
@@ -69,9 +78,11 @@ export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
     if (typeof input === 'string' && input.length < 250) {
         const sha = new StringSHA1();
         sha.update(input);
+
         return Promise.resolve(sha.digest());
     }
     let buff: ArrayBufferView;
+
     if (typeof input === 'string') {
         buff = new TextEncoder().encode(input);
     }
@@ -83,6 +94,7 @@ export const hashAsync = (input: string | ArrayBufferView | VSBuffer) => {
     }
     return crypto.subtle.digest('sha-1', buff).then(toHexString);
 };
+
 const enum SHA1Constant {
     BLOCK_SIZE = 64,// 512 / 8
     UNICODE_REPLACEMENT = 0xFFFD
@@ -121,6 +133,7 @@ export class StringSHA1 {
     private _totalLen: number;
     private _leftoverHighSurrogate: number;
     private _finished: boolean;
+
     constructor() {
         this._buff = new Uint8Array(SHA1Constant.BLOCK_SIZE + 3 /* to fit any utf-8 */);
         this._buffDV = new DataView(this._buff.buffer);
@@ -131,14 +144,20 @@ export class StringSHA1 {
     }
     public update(str: string): void {
         const strLen = str.length;
+
         if (strLen === 0) {
             return;
         }
         const buff = this._buff;
+
         let buffLen = this._buffLen;
+
         let leftoverHighSurrogate = this._leftoverHighSurrogate;
+
         let charCode: number;
+
         let offset: number;
+
         if (leftoverHighSurrogate !== 0) {
             charCode = leftoverHighSurrogate;
             offset = -1;
@@ -150,9 +169,11 @@ export class StringSHA1 {
         }
         while (true) {
             let codePoint = charCode;
+
             if (strings.isHighSurrogate(charCode)) {
                 if (offset + 1 < strLen) {
                     const nextCharCode = str.charCodeAt(offset + 1);
+
                     if (strings.isLowSurrogate(nextCharCode)) {
                         offset++;
                         codePoint = strings.computeCodePoint(charCode, nextCharCode);
@@ -165,6 +186,7 @@ export class StringSHA1 {
                 else {
                     // last character is a surrogate pair
                     leftoverHighSurrogate = charCode;
+
                     break;
                 }
             }
@@ -174,6 +196,7 @@ export class StringSHA1 {
             }
             buffLen = this._push(buff, buffLen, codePoint);
             offset++;
+
             if (offset < strLen) {
                 charCode = str.charCodeAt(offset);
             }
@@ -217,6 +240,7 @@ export class StringSHA1 {
     public digest(): string {
         if (!this._finished) {
             this._finished = true;
+
             if (this._leftoverHighSurrogate) {
                 // illegal => unicode replacement character
                 this._leftoverHighSurrogate = 0;
@@ -230,6 +254,7 @@ export class StringSHA1 {
     private _wrapUp(): void {
         this._buff[this._buffLen++] = 0x80;
         this._buff.subarray(this._buffLen).fill(0);
+
         if (this._buffLen > 56) {
             this._step();
             this._buff.fill(0);
@@ -242,7 +267,9 @@ export class StringSHA1 {
     }
     private _step(): void {
         const bigBlock32 = StringSHA1._bigBlock32;
+
         const data = this._buffDV;
+
         for (let j = 0; j < 64 /* 16*4 */; j += 4) {
             bigBlock32.setUint32(j, data.getUint32(j, false), false);
         }
@@ -250,12 +277,19 @@ export class StringSHA1 {
             bigBlock32.setUint32(j, leftRotate((bigBlock32.getUint32(j - 12, false) ^ bigBlock32.getUint32(j - 32, false) ^ bigBlock32.getUint32(j - 56, false) ^ bigBlock32.getUint32(j - 64, false)), 1), false);
         }
         let a = this._h0;
+
         let b = this._h1;
+
         let c = this._h2;
+
         let d = this._h3;
+
         let e = this._h4;
+
         let f: number, k: number;
+
         let temp: number;
+
         for (let j = 0; j < 80; j++) {
             if (j < 20) {
                 f = (b & c) | ((~b) & d);

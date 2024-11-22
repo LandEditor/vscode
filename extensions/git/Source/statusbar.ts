@@ -15,6 +15,7 @@ interface CheckoutStatusBarState {
 }
 class CheckoutStatusBar {
     private _onDidChange = new EventEmitter<void>();
+
     get onDidChange(): Event<void> { return this._onDidChange.event; }
     private disposables: Disposable[] = [];
     private _state: CheckoutStatusBarState;
@@ -38,9 +39,13 @@ class CheckoutStatusBar {
             ...this.repository.operations.getOperations(OperationKind.Checkout) as CheckoutOperation[],
             ...this.repository.operations.getOperations(OperationKind.CheckoutTracking) as CheckoutTrackingOperation[]
         ];
+
         const rebasing = !!this.repository.rebaseCommit;
+
         const label = operationData[0]?.refLabel ?? `${this.repository.headLabel}${rebasing ? ` (${l10n.t('Rebasing')})` : ''}`;
+
         const command = (this.state.isCheckoutRunning || this.state.isCommitRunning || this.state.isSyncRunning) ? '' : 'git.checkout';
+
         return {
             command,
             tooltip: `${label}, ${this.getTooltip()}`,
@@ -81,8 +86,10 @@ class CheckoutStatusBar {
     }
     private onDidChangeOperations(): void {
         const isCommitRunning = this.repository.operations.isRunning(OperationKind.Commit);
+
         const isCheckoutRunning = this.repository.operations.isRunning(OperationKind.Checkout) ||
             this.repository.operations.isRunning(OperationKind.CheckoutTracking);
+
         const isSyncRunning = this.repository.operations.isRunning(OperationKind.Sync) ||
             this.repository.operations.isRunning(OperationKind.Push) ||
             this.repository.operations.isRunning(OperationKind.Pull);
@@ -103,6 +110,7 @@ interface SyncStatusBarState {
 }
 class SyncStatusBar {
     private _onDidChange = new EventEmitter<void>();
+
     get onDidChange(): Event<void> { return this._onDidChange.event; }
     private disposables: Disposable[] = [];
     private _state: SyncStatusBarState;
@@ -124,19 +132,23 @@ class SyncStatusBar {
         repository.onDidRunGitStatus(this.onDidRunGitStatus, this, this.disposables);
         repository.onDidChangeOperations(this.onDidChangeOperations, this, this.disposables);
         anyEvent(remoteSourcePublisherRegistry.onDidAddRemoteSourcePublisher, remoteSourcePublisherRegistry.onDidRemoveRemoteSourcePublisher)(this.onDidChangeRemoteSourcePublishers, this, this.disposables);
+
         const onEnablementChange = filterEvent(workspace.onDidChangeConfiguration, e => e.affectsConfiguration('git.enableStatusBarSync'));
         onEnablementChange(this.updateEnablement, this, this.disposables);
         this.updateEnablement();
     }
     private updateEnablement(): void {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const enabled = config.get<boolean>('enableStatusBarSync', true);
         this.state = { ...this.state, enabled };
     }
     private onDidChangeOperations(): void {
         const isCommitRunning = this.repository.operations.isRunning(OperationKind.Commit);
+
         const isCheckoutRunning = this.repository.operations.isRunning(OperationKind.Checkout) ||
             this.repository.operations.isRunning(OperationKind.CheckoutTracking);
+
         const isSyncRunning = this.repository.operations.isRunning(OperationKind.Sync) ||
             this.repository.operations.isRunning(OperationKind.Push) ||
             this.repository.operations.isRunning(OperationKind.Pull);
@@ -164,11 +176,13 @@ class SyncStatusBar {
                 return;
             }
             const command = (this.state.isCheckoutRunning || this.state.isCommitRunning) ? '' : 'git.publish';
+
             const tooltip = this.state.isCheckoutRunning ? l10n.t('Checking Out Changes...') :
                 this.state.isCommitRunning ? l10n.t('Committing Changes...') :
                     this.state.remoteSourcePublishers.length === 1
                         ? l10n.t('Publish to {0}', this.state.remoteSourcePublishers[0].name)
                         : l10n.t('Publish to...');
+
             return {
                 command,
                 title: `$(cloud-upload)`,
@@ -177,10 +191,15 @@ class SyncStatusBar {
             };
         }
         const HEAD = this.state.HEAD;
+
         let icon = '$(sync)';
+
         let text = '';
+
         let command = '';
+
         let tooltip = '';
+
         if (HEAD && HEAD.name && HEAD.commit) {
             if (HEAD.upstream) {
                 if (HEAD.ahead || HEAD.behind) {
@@ -228,6 +247,7 @@ export class StatusBarCommands {
     private syncStatusBar: SyncStatusBar;
     private checkoutStatusBar: CheckoutStatusBar;
     private disposables: Disposable[] = [];
+
     constructor(repository: Repository, remoteSourcePublisherRegistry: IRemoteSourcePublisherRegistry) {
         this.syncStatusBar = new SyncStatusBar(repository, remoteSourcePublisherRegistry);
         this.checkoutStatusBar = new CheckoutStatusBar(repository);

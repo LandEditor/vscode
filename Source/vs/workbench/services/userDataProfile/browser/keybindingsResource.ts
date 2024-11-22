@@ -28,8 +28,10 @@ export class KeybindingsResourceInitializer implements IProfileResourceInitializ
     }
     async initialize(content: string): Promise<void> {
         const keybindingsContent: IKeybindingsResourceContent = JSON.parse(content);
+
         if (keybindingsContent.keybindings === null) {
             this.logService.info(`Initializing Profile: No keybindings to apply...`);
+
             return;
         }
         await this.fileService.writeFile(this.userDataProfileService.currentProfile.keybindingsResource, VSBuffer.fromString(keybindingsContent.keybindings));
@@ -44,16 +46,20 @@ export class KeybindingsResource implements IProfileResource {
     }
     async getContent(profile: IUserDataProfile): Promise<string> {
         const keybindingsContent = await this.getKeybindingsResourceContent(profile);
+
         return JSON.stringify(keybindingsContent);
     }
     async getKeybindingsResourceContent(profile: IUserDataProfile): Promise<IKeybindingsResourceContent> {
         const keybindings = await this.getKeybindingsContent(profile);
+
         return { keybindings, platform };
     }
     async apply(content: string, profile: IUserDataProfile): Promise<void> {
         const keybindingsContent: IKeybindingsResourceContent = JSON.parse(content);
+
         if (keybindingsContent.keybindings === null) {
             this.logService.info(`Importing Profile (${profile.name}): No keybindings to apply...`);
+
             return;
         }
         await this.fileService.writeFile(profile.keybindingsResource, VSBuffer.fromString(keybindingsContent.keybindings));
@@ -61,6 +67,7 @@ export class KeybindingsResource implements IProfileResource {
     private async getKeybindingsContent(profile: IUserDataProfile): Promise<string | null> {
         try {
             const content = await this.fileService.readFile(profile.keybindingsResource);
+
             return content.value.toString();
         }
         catch (error) {
@@ -80,6 +87,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
     readonly label = { label: localize('keybindings', "Keyboard Shortcuts") };
     readonly collapsibleState = TreeItemCollapsibleState.Expanded;
     checkbox: ITreeItemCheckboxState | undefined;
+
     constructor(private readonly profile: IUserDataProfile, 
     @IUriIdentityService
     private readonly uriIdentityService: IUriIdentityService, 
@@ -106,6 +114,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
     }
     async hasContent(): Promise<boolean> {
         const keybindingsContent = await this.instantiationService.createInstance(KeybindingsResource).getKeybindingsResourceContent(this.profile);
+
         return keybindingsContent.keybindings !== null;
     }
     async getContent(): Promise<string> {

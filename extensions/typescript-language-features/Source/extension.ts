@@ -25,18 +25,27 @@ import * as temp from './utils/temp.electron';
 export function activate(context: vscode.ExtensionContext): Api {
     const pluginManager = new PluginManager();
     context.subscriptions.push(pluginManager);
+
     const commandManager = new CommandManager();
     context.subscriptions.push(commandManager);
+
     const onCompletionAccepted = new vscode.EventEmitter<vscode.CompletionItem>();
     context.subscriptions.push(onCompletionAccepted);
+
     const logDirectoryProvider = new NodeLogDirectoryProvider(context);
+
     const versionProvider = new DiskTypeScriptVersionProvider();
+
     const activeJsTsEditorTracker = new ActiveJsTsEditorTracker();
     context.subscriptions.push(activeJsTsEditorTracker);
+
     let experimentTelemetryReporter: IExperimentationTelemetryReporter | undefined;
+
     const packageInfo = getPackageInfo(context);
+
     if (packageInfo) {
         const { name: id, version, aiKey } = packageInfo;
+
         const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
         experimentTelemetryReporter = new ExperimentationTelemetryReporter(vscTelemetryReporter);
         context.subscriptions.push(experimentTelemetryReporter);
@@ -45,6 +54,7 @@ export function activate(context: vscode.ExtensionContext): Api {
         new ExperimentationService(experimentTelemetryReporter, id, version, context.globalState);
     }
     const logger = new Logger();
+
     const lazyClientHost = createLazyClientHost(context, onCaseInsensitiveFileSystem(), {
         pluginManager,
         commandManager,
@@ -60,13 +70,16 @@ export function activate(context: vscode.ExtensionContext): Api {
         onCompletionAccepted.fire(item);
     });
     registerBaseCommands(commandManager, lazyClientHost, pluginManager, activeJsTsEditorTracker);
+
     import('./task/taskProvider').then(module => {
         context.subscriptions.push(module.register(lazyClientHost.map(x => x.serviceClient)));
     });
+
     import('./languageFeatures/tsconfig').then(module => {
         context.subscriptions.push(module.register());
     });
     context.subscriptions.push(lazilyActivateClient(lazyClientHost, pluginManager, activeJsTsEditorTracker));
+
     return getExtensionApi(onCompletionAccepted.event, pluginManager);
 }
 export function deactivate() {

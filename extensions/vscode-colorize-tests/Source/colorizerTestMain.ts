@@ -6,16 +6,24 @@ import * as jsoncParser from 'jsonc-parser';
 import * as vscode from 'vscode';
 export function activate(context: vscode.ExtensionContext): any {
     const tokenTypes = ['type', 'struct', 'class', 'interface', 'enum', 'parameterType', 'function', 'variable', 'testToken'];
+
     const tokenModifiers = ['static', 'abstract', 'deprecated', 'declaration', 'documentation', 'member', 'async', 'testModifier'];
+
     const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
+
     const outputChannel = vscode.window.createOutputChannel('Semantic Tokens Test');
+
     const documentSemanticHighlightProvider: vscode.DocumentSemanticTokensProvider = {
         provideDocumentSemanticTokens(document: vscode.TextDocument): vscode.ProviderResult<vscode.SemanticTokens> {
             const builder = new vscode.SemanticTokensBuilder();
+
             function addToken(value: string, startLine: number, startCharacter: number, length: number) {
                 const [type, ...modifiers] = value.split('.');
+
                 const selectedModifiers = [];
+
                 let tokenType = legend.tokenTypes.indexOf(type);
+
                 if (tokenType === -1) {
                     if (type === 'notInLegend') {
                         tokenType = tokenTypes.length + 2;
@@ -25,8 +33,10 @@ export function activate(context: vscode.ExtensionContext): any {
                     }
                 }
                 let tokenModifiers = 0;
+
                 for (const modifier of modifiers) {
                     const index = legend.tokenModifiers.indexOf(modifier);
+
                     if (index !== -1) {
                         tokenModifiers = tokenModifiers | 1 << index;
                         selectedModifiers.push(modifier);
@@ -40,6 +50,7 @@ export function activate(context: vscode.ExtensionContext): any {
                 outputChannel.appendLine(`line: ${startLine}, character: ${startCharacter}, length ${length}, ${type} (${tokenType}), ${selectedModifiers} ${tokenModifiers.toString(2)}`);
             }
             outputChannel.appendLine('---');
+
             const visitor: jsoncParser.JSONVisitor = {
                 onObjectProperty: (property: string, _offset: number, _length: number, startLine: number, startCharacter: number) => {
                     addToken(property, startLine, startCharacter, property.length + 2);
@@ -51,6 +62,7 @@ export function activate(context: vscode.ExtensionContext): any {
                 }
             };
             jsoncParser.visit(document.getText(), visitor);
+
             return builder.build();
         }
     };

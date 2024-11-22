@@ -21,7 +21,9 @@ function isDocumentSuffix(str?: string): str is DarwinDocumentSuffix {
     return str === 'document' || str === 'script' || str === 'file' || str === 'source code';
 }
 const root = path.dirname(path.dirname(__dirname));
+
 const product = JSON.parse(fs.readFileSync(path.join(root, 'product.json'), 'utf8'));
+
 const commit = getVersion(root);
 function createTemplate(input: string): (params: Record<string, string>) => string {
     return (params: Record<string, string>) => {
@@ -80,6 +82,7 @@ function darwinBundleDocumentTypes(types: {
 }, icon: string): DarwinDocumentType[] {
     return Object.keys(types).map((name: string): DarwinDocumentType => {
         const extensions = types[name];
+
         return {
             name,
             role: 'Editor',
@@ -196,7 +199,9 @@ export const config = {
 function getElectron(arch: string): () => NodeJS.ReadWriteStream {
     return () => {
         const electron = require('@vscode/gulp-electron');
+
         const json = require('gulp-json-editor') as typeof import('gulp-json-editor');
+
         const electronOpts = {
             ...config,
             platform: process.platform,
@@ -204,6 +209,7 @@ function getElectron(arch: string): () => NodeJS.ReadWriteStream {
             ffmpegChromium: false,
             keepDefaultApp: true
         };
+
         return vfs.src('package.json')
             .pipe(json({ name: product.nameShort }))
             .pipe(electron(electronOpts))
@@ -213,9 +219,13 @@ function getElectron(arch: string): () => NodeJS.ReadWriteStream {
 }
 async function main(arch: string = process.arch): Promise<void> {
     const version = electronVersion;
+
     const electronPath = path.join(root, '.build', 'electron');
+
     const versionFile = path.join(electronPath, 'version');
+
     const isUpToDate = fs.existsSync(versionFile) && fs.readFileSync(versionFile, 'utf8') === `${version}`;
+
     if (!isUpToDate) {
         await util.rimraf(electronPath)();
         await util.streamToPromise(getElectron(arch)());

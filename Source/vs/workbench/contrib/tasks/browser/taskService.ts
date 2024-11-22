@@ -26,6 +26,7 @@ export class TaskService extends AbstractTaskService {
                     this._onDidStateChange.fire(event);
                 }),
             ];
+
         return this._taskSystem;
     }
     protected _computeLegacyConfiguration(workspaceFolder: IWorkspaceFolder): Promise<IWorkspaceFolderConfigurationResult> {

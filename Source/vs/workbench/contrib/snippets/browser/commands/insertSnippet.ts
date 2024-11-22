@@ -20,6 +20,7 @@ class Args {
             return Args._empty;
         }
         let { snippet, name, langId } = arg;
+
         if (typeof snippet !== 'string') {
             snippet = undefined;
         }
@@ -65,19 +66,26 @@ export class InsertSnippetAction extends SnippetEditorAction {
     }
     async runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, arg: any) {
         const languageService = accessor.get(ILanguageService);
+
         const snippetService = accessor.get(ISnippetsService);
+
         if (!editor.hasModel()) {
             return;
         }
         const clipboardService = accessor.get(IClipboardService);
+
         const instaService = accessor.get(IInstantiationService);
+
         const snippet = await new Promise<Snippet | undefined>((resolve, reject) => {
             const { lineNumber, column } = editor.getPosition();
+
             const { snippet, name, langId } = Args.fromUser(arg);
+
             if (snippet) {
                 return resolve(new Snippet(false, [], '', '', '', snippet, '', SnippetSource.User, `random/${Math.random()}`));
             }
             let languageId: string;
+
             if (langId) {
                 if (!languageService.isRegisteredLanguageId(langId)) {
                     return resolve(undefined);
@@ -105,10 +113,12 @@ export class InsertSnippetAction extends SnippetEditorAction {
                 resolve(instaService.invokeFunction(pickSnippet, languageId));
             }
         });
+
         if (!snippet) {
             return;
         }
         let clipboardText: string | undefined;
+
         if (snippet.needsClipboard) {
             clipboardText = await clipboardService.readText();
         }

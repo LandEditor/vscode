@@ -110,6 +110,7 @@ export interface ICellOutputViewModel extends IDisposable {
 	hasMultiMimeType(): boolean;
 	readonly onDidResetRenderer: Event<void>;
 	readonly visible: IObservable<boolean>;
+
 	setVisible(visible: boolean, force?: boolean): void;
 	resetRenderer(): void;
 	toRawJSON(): any;
@@ -133,6 +134,7 @@ export interface IGenericCellViewModel {
 	outputIsFocused: boolean;
 	inputInOutputIsFocused: boolean;
 	outputsViewModels: ICellOutputViewModel[];
+
 	getOutputOffset(index: number): number;
 	updateOutputHeight(index: number, height: number, source?: string): void;
 }
@@ -142,6 +144,7 @@ export interface IDisplayOutputLayoutUpdateRequest {
 	output: IDisplayOutputViewModel;
 	cellTop: number;
 	outputOffset: number;
+
 	forceDisplay: boolean;
 }
 
@@ -262,23 +265,34 @@ export interface ICellViewModel extends IGenericCellViewModel {
 	focusMode: CellFocusMode;
 	focusedOutputId?: string | undefined;
 	outputIsHovered: boolean;
+
 	getText(): string;
+
 	getAlternativeId(): number;
+
 	getTextLength(): number;
+
 	getHeight(lineHeight: number): number;
 	metadata: NotebookCellMetadata;
 	internalMetadata: NotebookCellInternalMetadata;
 	textModel: ITextModel | undefined;
 	hasModel(): this is IEditableCellViewModel;
 	resolveTextModel(): Promise<ITextModel>;
+
 	getSelections(): Selection[];
+
 	setSelections(selections: Selection[]): void;
+
 	getSelectionsStartPosition(): IPosition[] | undefined;
+
 	getCellDecorations(): INotebookCellDecorationOptions[];
+
 	getCellStatusBarItems(): INotebookCellStatusBarItem[];
+
 	getEditState(): CellEditState;
 	updateEditState(state: CellEditState, source: string): void;
 	deltaModelDecorations(oldDecorations: readonly string[], newDecorations: readonly IModelDeltaDecoration[]): string[];
+
 	getCellDecorationRange(id: string): Range | null;
 	enableAutoLanguageDetection(): void;
 }
@@ -429,6 +443,7 @@ export interface INotebookViewZone {
 	 * Use 0 to place a view zone before the first cell
 	 */
 	afterModelPosition: number;
+
 	domNode: HTMLElement;
 
 	heightInPx: number;
@@ -459,13 +474,20 @@ export interface INotebookViewModel {
 	onDidChangeViewCells: Event<INotebookViewCellsUpdateEvent>;
 	onDidChangeSelection: Event<string>;
 	onDidFoldingStateChanged: Event<void>;
+
 	getNearestVisibleCellIndexUpwards(index: number): number;
+
 	getTrackedRange(id: string): ICellRange | null;
+
 	setTrackedRange(id: string | null, newRange: ICellRange | null, newStickiness: TrackedRangeStickiness): string | null;
+
 	getSelections(): ICellRange[];
+
 	getCellIndex(cell: ICellViewModel): number;
+
 	getMostRecentlyExecutedCell(): ICellViewModel | undefined;
 	deltaCellStatusBarItems(oldItems: string[], newItems: INotebookDeltaCellStatusBarItems[]): string[];
+
 	getFoldedLength(index: number): number;
 	replaceOne(cell: ICellViewModel, range: Range, text: string): Promise<void>;
 	replaceAll(matches: CellFindMatchWithIndex[], texts: string[]): Promise<void>;
@@ -516,18 +538,27 @@ export interface INotebookEditor {
 	//#endregion
 
 	getLength(): number;
+
 	getSelections(): ICellRange[];
+
 	setSelections(selections: ICellRange[]): void;
+
 	getFocus(): ICellRange;
+
 	setFocus(focus: ICellRange): void;
+
 	getId(): string;
 
 	getViewModel(): INotebookViewModel | undefined;
 	hasModel(): this is IActiveNotebookEditor;
 	dispose(): void;
+
 	getDomNode(): HTMLElement;
+
 	getInnerWebview(): IWebviewElement | undefined;
+
 	getSelectionViewModels(): ICellViewModel[];
+
 	getEditorViewState(): INotebookEditorViewState;
 	restoreListViewState(viewState: INotebookEditorViewState | undefined): void;
 
@@ -547,6 +578,7 @@ export interface INotebookEditor {
 	hasWebviewFocus(): boolean;
 
 	hasOutputTextSelection(): boolean;
+
 	setOptions(options: INotebookEditorOptions | undefined): Promise<void>;
 
 	/**
@@ -746,11 +778,16 @@ export interface INotebookEditor {
 	 * Get the view index of a cell at model `index`
 	 */
 	getViewIndexByModelIndex(index: number): number;
+
 	getCellsInRange(range?: ICellRange): ReadonlyArray<ICellViewModel>;
 	cellAt(index: number): ICellViewModel | undefined;
+
 	getCellByHandle(handle: number): ICellViewModel | undefined;
+
 	getCellIndex(cell: ICellViewModel): number | undefined;
+
 	getNextVisibleCellIndex(index: number): number | undefined;
+
 	getPreviousVisibleCellIndex(index: number): number | undefined;
 	find(query: string, options: INotebookFindOptions, token: CancellationToken, skipWarmup?: boolean, shouldGetSearchPreviewInfo?: boolean, ownerID?: string): Promise<CellFindMatchWithIndex[]>;
 	findHighlightCurrent(matchIndex: number, ownerID?: string): Promise<number>;
@@ -760,15 +797,19 @@ export interface INotebookEditor {
 	hideProgress(): void;
 
 	getAbsoluteTopOfElement(cell: ICellViewModel): number;
+
 	getHeightOfElement(cell: ICellViewModel): number;
 }
 
 export interface IActiveNotebookEditor extends INotebookEditor {
 	getViewModel(): INotebookViewModel;
 	textModel: NotebookTextModel;
+
 	getFocus(): ICellRange;
 	cellAt(index: number): ICellViewModel;
+
 	getCellIndex(cell: ICellViewModel): number;
+
 	getNextVisibleCellIndex(index: number): number;
 }
 
@@ -811,9 +852,12 @@ export interface INotebookEditorDelegate extends INotebookEditor {
 export interface IActiveNotebookEditorDelegate extends INotebookEditorDelegate {
 	getViewModel(): INotebookViewModel;
 	textModel: NotebookTextModel;
+
 	getFocus(): ICellRange;
 	cellAt(index: number): ICellViewModel;
+
 	getCellIndex(cell: ICellViewModel): number;
+
 	getNextVisibleCellIndex(index: number): number;
 }
 
@@ -841,6 +885,7 @@ export interface CellFindMatchWithIndex {
 	cell: ICellViewModel;
 	index: number;
 	length: number;
+
 	getMatch(index: number): FindMatch | CellWebviewFindMatch;
 	contentMatches: FindMatch[];
 	webviewMatches: CellWebviewFindMatch[];
@@ -908,6 +953,7 @@ export function getNotebookEditorFromEditorPane(editorPane?: IEditorPane): INote
 export function expandCellRangesWithHiddenCells(editor: INotebookEditor, ranges: ICellRange[]) {
 	// assuming ranges are sorted and no overlap
 	const indexes = cellRangesToIndexes(ranges);
+
 	const modelRanges: ICellRange[] = [];
 	indexes.forEach(index => {
 		const viewCell = editor.cellAt(index);
@@ -917,11 +963,13 @@ export function expandCellRangesWithHiddenCells(editor: INotebookEditor, ranges:
 		}
 
 		const viewIndex = editor.getViewIndexByModelIndex(index);
+
 		if (viewIndex < 0) {
 			return;
 		}
 
 		const nextViewIndex = viewIndex + 1;
+
 		const range = editor.getCellRangeFromViewRange(viewIndex, nextViewIndex);
 
 		if (range) {
@@ -950,6 +998,7 @@ export const enum CellFoldingState {
 
 export interface EditorFoldingStateDelegate {
 	getCellIndex(cell: ICellViewModel): number;
+
 	getFoldingState(index: number): CellFoldingState;
 }
 //#endregion

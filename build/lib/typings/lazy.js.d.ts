@@ -11,12 +11,19 @@ declare function Lazy(value: Object): Lazy.ObjectLikeSequence<any>;
 
 declare module Lazy {
 	function strict(): StrictLazy;
+
 	function generate<T>(generatorFn: GeneratorCallback<T>, length?: number): GeneratedSequence<T>;
+
 	function range(to: number): GeneratedSequence<number>;
+
 	function range(from: number, to: number, step?: number): GeneratedSequence<number>;
+
 	function repeat<T>(value: T, count?: number): GeneratedSequence<T>;
+
 	function on<T>(eventType: string): Sequence<T>;
+
 	function readFile(path: string): StringLikeSequence;
+
 	function makeHttpRequest(path: string): StringLikeSequence;
 
 	interface StrictLazy {
@@ -201,6 +208,7 @@ declare module Lazy {
 		concat(var_args: T[]): ArrayLikeSequence<T>;
 		concat(sequence: Sequence<T>): Sequence<T>;
 		first(count?: number): ArrayLikeSequence<T>;
+
 		get(index: number): T;
 		length(): number;
 		map<U>(mapFn: MapCallback<T, U[]>): ArraySequence<U>;
@@ -222,8 +230,11 @@ declare module Lazy {
 		assign(other: Object): ObjectLikeSequence<T>;
 		// throws error
 		//async(): X;
+
 		defaults(defaults: Object): ObjectLikeSequence<T>;
+
 		functions(): Sequence<T>;
+
 		get(property: string): ObjectLikeSequence<T>;
 		invert(): ObjectLikeSequence<T>;
 		keys(): Sequence<string>;

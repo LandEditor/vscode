@@ -10,7 +10,9 @@ import './media/testMessageColorizer.css';
 import { CodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
 import { Position } from '../../../../editor/common/core/position.js';
 import { Range } from '../../../../editor/common/core/range.js';
+
 const colorAttrRe = /^\x1b\[([0-9]+)m$/;
+
 const enum Classes {
     Prefix = 'tstm-ansidec-',
     ForegroundPrefix = Classes.Prefix + 'fg',
@@ -36,14 +38,18 @@ export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorW
     const decos: string[] = [];
     editor.changeDecorations(changeAccessor => {
         let start = new Position(1, 1);
+
         let cls: string[] = [];
+
         for (const part of forAnsiStringParts(message)) {
             if (part.isCode) {
                 const colorAttr = colorAttrRe.exec(part.str)?.[1];
+
                 if (!colorAttr) {
                     continue;
                 }
                 const n = Number(colorAttr);
+
                 if (n === 0) {
                     cls.length = 0;
                 }
@@ -70,8 +76,11 @@ export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorW
             }
             else {
                 let line = start.lineNumber;
+
                 let col = start.column;
+
                 const graphemes = new GraphemeIterator(part.str);
+
                 for (let i = 0; !graphemes.eol(); i += graphemes.nextGraphemeLength()) {
                     if (part.str[i] === '\n') {
                         line++;
@@ -82,6 +91,7 @@ export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorW
                     }
                 }
                 const end = new Position(line, col);
+
                 if (cls.length) {
                     decos.push(changeAccessor.addDecoration(Range.fromPositions(start, end), {
                         inlineClassName: cls.join(' '),
@@ -92,5 +102,6 @@ export const colorizeTestMessageInEditor = (message: string, editor: CodeEditorW
             }
         }
     });
+
     return toDisposable(() => editor.removeDecorations(decos));
 };

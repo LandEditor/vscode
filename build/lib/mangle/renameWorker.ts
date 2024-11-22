@@ -5,6 +5,7 @@
 import * as ts from 'typescript';
 import * as workerpool from 'workerpool';
 import { StaticLanguageServiceHost } from './staticLanguageServiceHost';
+
 let service: ts.LanguageService | undefined;
 function findRenameLocations(projectPath: string, fileName: string, position: number): readonly ts.RenameLocation[] {
     if (!service) {

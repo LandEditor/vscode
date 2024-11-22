@@ -14,8 +14,11 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
         if (!this._octokit) {
             this._octokit = (async () => {
                 const session = await vscode.authentication.getSession('github', ['gist', 'user:email'], { createIfNone: true });
+
                 const token = session.accessToken;
+
                 const { Octokit } = await import('@octokit/rest');
+
                 return new Octokit({
                     request: { agent },
                     userAgent: 'GitHub VSCode',
@@ -30,6 +33,7 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
         readonly link: vscode.Uri;
     } | null> {
         const octokit = await this.getOctokit();
+
         const result = await octokit.gists.create({
             public: false,
             files: {
@@ -38,8 +42,10 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
                 }
             }
         });
+
         if (result.data.id && result.data.html_url) {
             const link = vscode.Uri.parse(result.data.html_url);
+
             return { id: result.data.id, link };
         }
         return null;
@@ -49,18 +55,24 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
         if (!this._public_octokit) {
             this._public_octokit = (async () => {
                 const { Octokit } = await import('@octokit/rest');
+
                 return new Octokit({ request: { agent }, userAgent: 'GitHub VSCode' });
             })();
         }
         return this._public_octokit;
     }
     async readProfile(id: string): Promise<string | null>;
+
     async readProfile(uri: vscode.Uri): Promise<string | null>;
+
     async readProfile(arg: string | vscode.Uri): Promise<string | null> {
         const gist_id = typeof arg === 'string' ? arg : basename(arg.path);
+
         const octokit = await this.getPublicOctokit();
+
         try {
             const gist = await octokit.gists.get({ gist_id });
+
             if (gist.data.files) {
                 return gist.data.files[Object.keys(gist.data.files)[0]]?.content ?? null;
             }

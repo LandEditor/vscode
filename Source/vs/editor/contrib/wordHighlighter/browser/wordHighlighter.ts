@@ -56,6 +56,7 @@ export function getOccurrencesAtPosition(registry: LanguageFeatureRegistry<Docum
 		if (result) {
 			const map = new ResourceMap<DocumentHighlight[]>();
 			map.set(model.uri, result);
+
 			return map;
 		}
 		return new ResourceMap<DocumentHighlight[]>();
@@ -75,6 +76,7 @@ export function getOccurrencesAcrossMultipleModels(registry: LanguageFeatureRegi
 		}).filter(otherModel => {
 			return score(provider.selector, otherModel.uri, otherModel.getLanguageId(), true, undefined, undefined) > 0;
 		});
+
 		return Promise.resolve(provider.provideMultiDocumentHighlights(model, position, filteredModels, token))
 			.then(undefined, onUnexpectedExternalError);
 	}), (result): result is ResourceMap<DocumentHighlight[]> => result !== undefined && result !== null);
@@ -114,6 +116,7 @@ abstract class OccurenceAtPositionRequest implements IOccurenceAtPositionRequest
 
 	private _getCurrentWordRange(model: ITextModel, selection: Selection): Range | null {
 		const word = model.getWordAtPosition(selection.getPosition());
+
 		if (word) {
 			return new Range(selection.startLineNumber, word.startColumn, selection.startLineNumber, word.endColumn);
 		}
@@ -123,8 +126,11 @@ abstract class OccurenceAtPositionRequest implements IOccurenceAtPositionRequest
 	public isValid(model: ITextModel, selection: Selection, decorations: IEditorDecorationsCollection): boolean {
 
 		const lineNumber = selection.startLineNumber;
+
 		const startColumn = selection.startColumn;
+
 		const endColumn = selection.endColumn;
+
 		const currentWordRange = this._getCurrentWordRange(model, selection);
 
 		let requestIsValid = Boolean(this._wordRange && this._wordRange.equalsRange(currentWordRange));
@@ -133,6 +139,7 @@ abstract class OccurenceAtPositionRequest implements IOccurenceAtPositionRequest
 		// (Same symbol)
 		for (let i = 0, len = decorations.length; !requestIsValid && i < len; i++) {
 			const range = decorations.getRange(i);
+
 			if (range && range.startLineNumber === lineNumber) {
 				if (range.startColumn <= startColumn && range.endColumn >= endColumn) {
 					requestIsValid = true;
@@ -198,7 +205,9 @@ function computeOccurencesMultiModel(registry: LanguageFeatureRegistry<MultiDocu
 
 registerModelAndPositionCommand('_executeDocumentHighlights', async (accessor, model, position) => {
 	const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
 	const map = await getOccurrencesAtPosition(languageFeaturesService.documentHighlightProvider, model, position, CancellationToken.None);
+
 	return map?.get(model.uri);
 });
 
@@ -298,22 +307,30 @@ class WordHighlighter {
 		}));
 		this.toUnhook.add(editor.onDidChangeConfiguration((e) => {
 			const newEnablement = this.editor.getOption(EditorOption.occurrencesHighlight);
+
 			if (this.occurrencesHighlightEnablement !== newEnablement) {
 				this.occurrencesHighlightEnablement = newEnablement;
+
 				switch (newEnablement) {
 					case 'off':
 						this._stopAll();
+
 						break;
+
 					case 'singleFile':
 						this._stopAll(WordHighlighter.query?.modelInfo?.modelURI);
+
 						break;
+
 					case 'multiFile':
 						if (WordHighlighter.query) {
 							this._run(true);
 						}
 						break;
+
 					default:
 						console.warn('Unknown occurrencesHighlight setting value:', newEnablement);
+
 						break;
 				}
 			}
@@ -321,6 +338,7 @@ class WordHighlighter {
 		this.toUnhook.add(this.configurationService.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration('editor.occurrencesHighlightDelay')) {
 				const newDelay = configurationService.getValue<number>('editor.occurrencesHighlightDelay');
+
 				if (this.occurrencesHighlightDelay !== newDelay) {
 					this.occurrencesHighlightDelay = newDelay;
 				}
@@ -333,6 +351,7 @@ class WordHighlighter {
 			//              active nb   => if this.editor is NOT nb,   stopAll
 
 			const activeEditor = this.codeEditorService.getFocusedCodeEditor();
+
 			if (!activeEditor) { // clicked into nb cell list, outline, terminal, etc
 				this._stopAll();
 			} else if (activeEditor.getModel()?.uri.scheme === Schemas.vscodeNotebookCell && this.editor.getModel()?.uri.scheme !== Schemas.vscodeNotebookCell) { // switched tabs from non-nb to nb
@@ -389,14 +408,20 @@ class WordHighlighter {
 
 	public moveNext() {
 		const highlights = this._getSortedHighlights();
+
 		const index = highlights.findIndex((range) => range.containsPosition(this.editor.getPosition()));
+
 		const newIndex = ((index + 1) % highlights.length);
+
 		const dest = highlights[newIndex];
+
 		try {
 			this._ignorePositionChangeEvent = true;
 			this.editor.setPosition(dest.getStartPosition());
 			this.editor.revealRangeInCenterIfOutsideViewport(dest);
+
 			const word = this._getWord();
+
 			if (word) {
 				const lineContent = this.editor.getModel().getLineContent(dest.startLineNumber);
 				alert(`${lineContent}, ${newIndex + 1} of ${highlights.length} for '${word.word}'`);
@@ -408,14 +433,20 @@ class WordHighlighter {
 
 	public moveBack() {
 		const highlights = this._getSortedHighlights();
+
 		const index = highlights.findIndex((range) => range.containsPosition(this.editor.getPosition()));
+
 		const newIndex = ((index - 1 + highlights.length) % highlights.length);
+
 		const dest = highlights[newIndex];
+
 		try {
 			this._ignorePositionChangeEvent = true;
 			this.editor.setPosition(dest.getStartPosition());
 			this.editor.revealRangeInCenterIfOutsideViewport(dest);
+
 			const word = this._getWord();
+
 			if (word) {
 				const lineContent = this.editor.getModel().getLineContent(dest.startLineNumber);
 				alert(`${lineContent}, ${newIndex + 1} of ${highlights.length} for '${word.word}'`);
@@ -432,6 +463,7 @@ class WordHighlighter {
 		}
 
 		const currentDecorationIDs = WordHighlighter.storedDecorationIDs.get(this.editor.getModel().uri);
+
 		if (!currentDecorationIDs) {
 			return;
 		}
@@ -447,6 +479,7 @@ class WordHighlighter {
 
 	private _removeAllDecorations(preservedModel?: URI): void {
 		const currentEditors = this.codeEditorService.listCodeEditors();
+
 		const deleteURI = [];
 		// iterate over editors and store models in currentModels
 		for (const editor of currentEditors) {
@@ -455,6 +488,7 @@ class WordHighlighter {
 			}
 
 			const currentDecorationIDs = WordHighlighter.storedDecorationIDs.get(editor.getModel().uri);
+
 			if (!currentDecorationIDs) {
 				continue;
 			}
@@ -463,6 +497,7 @@ class WordHighlighter {
 			deleteURI.push(editor.getModel().uri);
 
 			const editorHighlighterContrib = WordHighlighterContribution.get(editor);
+
 			if (!editorHighlighterContrib?.wordHighlighter) {
 				continue;
 			}
@@ -543,6 +578,7 @@ class WordHighlighter {
 		// disabled
 		if (this.occurrencesHighlightEnablement === 'off') {
 			this._stopAll();
+
 			return;
 		}
 
@@ -550,6 +586,7 @@ class WordHighlighter {
 		// need to check if the model is a notebook cell, should not stop if nb
 		if (e.reason !== CursorChangeReason.Explicit && this.editor.getModel()?.uri.scheme !== Schemas.vscodeNotebookCell) {
 			this._stopAll();
+
 			return;
 		}
 
@@ -558,7 +595,9 @@ class WordHighlighter {
 
 	private _getWord(): IWordAtPosition | null {
 		const editorSelection = this.editor.getSelection();
+
 		const lineNumber = editorSelection.startLineNumber;
+
 		const startColumn = editorSelection.startColumn;
 
 		if (this.model.isDisposed()) {
@@ -578,11 +617,15 @@ class WordHighlighter {
 
 		// notebook case
 		const isNotebookEditor = model.uri.scheme === Schemas.vscodeNotebookCell;
+
 		if (isNotebookEditor) {
 			const currentModels: ITextModel[] = [];
+
 			const currentEditors = this.codeEditorService.listCodeEditors();
+
 			for (const editor of currentEditors) {
 				const tempModel = editor.getModel();
+
 				if (tempModel && tempModel !== model && tempModel.uri.scheme === Schemas.vscodeNotebookCell) {
 					currentModels.push(tempModel);
 				}
@@ -595,12 +638,15 @@ class WordHighlighter {
 		// ? broken when highlighting within a diff editor. highlighting the main editor does not work
 		// ? editor group service could be useful here
 		const currentModels: ITextModel[] = [];
+
 		const currentEditors = this.codeEditorService.listCodeEditors();
+
 		for (const editor of currentEditors) {
 			if (!isDiffEditor(editor)) {
 				continue;
 			}
 			const diffModel = (editor as IDiffEditor).getModel();
+
 			if (!diffModel) {
 				continue;
 			}
@@ -634,9 +680,11 @@ class WordHighlighter {
 	private async _run(multiFileConfigChange?: boolean, noDelay?: boolean): Promise<void> {
 
 		const hasTextFocus = this.editor.hasTextFocus();
+
 		if (!hasTextFocus) { // new nb cell scrolled in, didChangeModel fires
 			if (!WordHighlighter.query) { // no previous query, nothing to highlight off of
 				this._stopAll();
+
 				return;
 			}
 		} else { // has text focus
@@ -646,10 +694,12 @@ class WordHighlighter {
 			if (!editorSelection || editorSelection.startLineNumber !== editorSelection.endLineNumber) {
 				WordHighlighter.query = null;
 				this._stopAll();
+
 				return;
 			}
 
 			const startColumn = editorSelection.startColumn;
+
 			const endColumn = editorSelection.endColumn;
 
 			const word = this._getWord();
@@ -659,6 +709,7 @@ class WordHighlighter {
 				// no previous query, nothing to highlight
 				WordHighlighter.query = null;
 				this._stopAll();
+
 				return;
 			}
 
@@ -679,6 +730,7 @@ class WordHighlighter {
 			// check if the new queried word is contained in the range of a stored decoration for this model
 			if (!multiFileConfigChange) {
 				const currentModelDecorationRanges = this.decorations.getRanges();
+
 				for (const storedRange of currentModelDecorationRanges) {
 					if (storedRange.containsPosition(this.editor.getPosition())) {
 						return;
@@ -704,6 +756,7 @@ class WordHighlighter {
 			}
 
 			const queryModelRef = await this.textModelService.createModelReference(WordHighlighter.query.modelInfo.modelURI);
+
 			try {
 				this.workerRequest = this.computeWithModel(queryModelRef.object.textEditorModel, WordHighlighter.query.modelInfo.selection, otherModelsToHighlight);
 				this.workerRequest?.result.then(data => {
@@ -732,6 +785,7 @@ class WordHighlighter {
 			}
 
 			const queryModelRef = await this.textModelService.createModelReference(WordHighlighter.query.modelInfo.modelURI);
+
 			try {
 				this.workerRequest = this.computeWithModel(queryModelRef.object.textEditorModel, WordHighlighter.query.modelInfo.selection, [this.model]);
 				this.workerRequest?.result.then(data => {
@@ -759,6 +813,7 @@ class WordHighlighter {
 
 	private _beginRenderDecorations(noDelay?: boolean): void {
 		const currentTime = (new Date()).getTime();
+
 		const minimumRenderTime = this.lastCursorPositionChangeTime + (noDelay ? 0 : this.occurrencesHighlightDelay);
 
 		if (currentTime >= minimumRenderTime) {
@@ -779,17 +834,23 @@ class WordHighlighter {
 		// if the URI of that codeEditor is in the map, then add the decorations to the decorations array
 		// then set the decorations for the editor
 		const currentEditors = this.codeEditorService.listCodeEditors();
+
 		for (const editor of currentEditors) {
 			const editorHighlighterContrib = WordHighlighterContribution.get(editor);
+
 			if (!editorHighlighterContrib) {
 				continue;
 			}
 
 			const newDecorations: IModelDeltaDecoration[] = [];
+
 			const uri = editor.getModel()?.uri;
+
 			if (uri && this.workerRequestValue.has(uri)) {
 				const oldDecorationIDs: string[] | undefined = WordHighlighter.storedDecorationIDs.get(uri);
+
 				const newDocumentHighlights = this.workerRequestValue.get(uri);
+
 				if (newDocumentHighlights) {
 					for (const highlight of newDocumentHighlights) {
 						if (!highlight.range) {
@@ -846,6 +907,7 @@ export class WordHighlighterContribution extends Disposable implements IEditorCo
 	) {
 		super();
 		this._wordHighlighter = null;
+
 		const createWordHighlighterIfPossible = () => {
 			if (editor.hasModel() && !editor.getModel().isTooLargeForTokenization() && editor.getModel().uri.scheme !== Schemas.accessibleView) {
 				this._wordHighlighter = new WordHighlighter(editor, languageFeaturesService.documentHighlightProvider, languageFeaturesService.multiDocumentHighlightProvider, contextKeyService, textModelService, codeEditorService, configurationService, logService);
@@ -915,6 +977,7 @@ class WordHighlightNavigationAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const controller = WordHighlighterContribution.get(editor);
+
 		if (!controller) {
 			return;
 		}
@@ -973,6 +1036,7 @@ class TriggerWordHighlightAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
 		const controller = WordHighlighterContribution.get(editor);
+
 		if (!controller) {
 			return;
 		}

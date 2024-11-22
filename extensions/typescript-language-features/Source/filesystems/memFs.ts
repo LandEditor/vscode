@@ -7,10 +7,13 @@ import * as vscode from 'vscode';
 import { Logger } from '../logging/logger';
 export class MemFs implements vscode.FileSystemProvider {
     private readonly root = new FsDirectoryEntry(new Map(), 0, 0);
+
     constructor(private readonly id: string, private readonly logger: Logger) { }
     stat(uri: vscode.Uri): vscode.FileStat {
         this.logger.trace(`MemFs.stat ${this.id}. uri: ${uri}`);
+
         const entry = this.getEntry(uri);
+
         if (!entry) {
             throw vscode.FileSystemError.FileNotFound();
         }
@@ -21,7 +24,9 @@ export class MemFs implements vscode.FileSystemProvider {
         vscode.FileType
     ][] {
         this.logger.trace(`MemFs.readDirectory ${this.id}. uri: ${uri}`);
+
         const entry = this.getEntry(uri);
+
         if (!entry) {
             throw vscode.FileSystemError.FileNotFound();
         }
@@ -32,7 +37,9 @@ export class MemFs implements vscode.FileSystemProvider {
     }
     readFile(uri: vscode.Uri): Uint8Array {
         this.logger.trace(`MemFs.readFile ${this.id}. uri: ${uri}`);
+
         const entry = this.getEntry(uri);
+
         if (!entry) {
             throw vscode.FileSystemError.FileNotFound();
         }
@@ -46,11 +53,17 @@ export class MemFs implements vscode.FileSystemProvider {
         overwrite: boolean;
     }): void {
         this.logger.trace(`MemFs.writeFile ${this.id}. uri: ${uri}`);
+
         const dir = this.getParent(uri);
+
         const fileName = basename(uri.path);
+
         const dirContents = dir.contents;
+
         const time = Date.now() / 1000;
+
         const entry = dirContents.get(basename(uri.path));
+
         if (!entry) {
             if (create) {
                 dirContents.set(fileName, new FsFileEntry(content, time, time));
@@ -89,7 +102,9 @@ export class MemFs implements vscode.FileSystemProvider {
     }
     createDirectory(uri: vscode.Uri): void {
         this.logger.trace(`MemFs.createDirectory ${this.id}. uri: ${uri}`);
+
         const dir = this.getParent(uri);
+
         const now = Date.now() / 1000;
         dir.contents.set(basename(uri.path), new FsDirectoryEntry(new Map(), now, now));
     }
@@ -97,6 +112,7 @@ export class MemFs implements vscode.FileSystemProvider {
         // TODO: have this throw FileNotFound itself?
         // TODO: support configuring case sensitivity
         let node: FsEntry = this.root;
+
         for (const component of uri.path.split('/')) {
             if (!component) {
                 // Skip empty components (root, stuff between double slashes,
@@ -108,6 +124,7 @@ export class MemFs implements vscode.FileSystemProvider {
                 return;
             }
             const next = node.contents.get(component);
+
             if (!next) {
                 // not found!
                 return;
@@ -118,6 +135,7 @@ export class MemFs implements vscode.FileSystemProvider {
     }
     private getParent(uri: vscode.Uri): FsDirectoryEntry {
         const dir = this.getEntry(uri.with({ path: dirname(uri.path) }));
+
         if (!dir) {
             throw vscode.FileSystemError.FileNotFound();
         }
@@ -135,10 +153,13 @@ export class MemFs implements vscode.FileSystemProvider {
             this.watchers.set(resource.path, new Set());
         }
         const sy = Symbol(resource.path);
+
         return new vscode.Disposable(() => {
             const watcher = this.watchers.get(resource.path);
+
             if (watcher) {
                 watcher.delete(sy);
+
                 if (!watcher.size) {
                     this.watchers.delete(resource.path);
                 }
@@ -148,6 +169,7 @@ export class MemFs implements vscode.FileSystemProvider {
 }
 class FsFileEntry {
     readonly type = vscode.FileType.File;
+
     get size(): number {
         return this.data.length;
     }
@@ -155,6 +177,7 @@ class FsFileEntry {
 }
 class FsDirectoryEntry {
     readonly type = vscode.FileType.Directory;
+
     get size(): number {
         return [...this.contents.values()].reduce((acc: number, entry: FsEntry) => acc + entry.size, 0);
     }

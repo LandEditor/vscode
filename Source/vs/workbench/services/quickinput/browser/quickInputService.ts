@@ -15,6 +15,7 @@ import { IQuickInputService } from '../../../../platform/quickinput/common/quick
 import { InQuickPickContextKey } from '../../../browser/quickaccess.js';
 export class QuickInputService extends BaseQuickInputService {
     private readonly inQuickInputContext = InQuickPickContextKey.bindTo(this.contextKeyService);
+
     constructor(
     @IConfigurationService
     configurationService: IConfigurationService, 

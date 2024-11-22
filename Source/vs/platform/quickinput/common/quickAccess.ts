@@ -198,8 +198,10 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
         // sort the providers by decreasing prefix length, such that longer
         // prefixes take priority: 'ext' vs 'ext install' - the latter should win
         this.providers.sort((providerA, providerB) => providerB.prefix.length - providerA.prefix.length);
+
         return toDisposable(() => {
             this.providers.splice(this.providers.indexOf(provider), 1);
+
             if (this.defaultProvider === provider) {
                 this.defaultProvider = undefined;
             }
@@ -210,13 +212,16 @@ export class QuickAccessRegistry implements IQuickAccessRegistry {
     }
     getQuickAccessProvider(prefix: string): IQuickAccessProviderDescriptor | undefined {
         const result = prefix ? (this.providers.find(provider => prefix.startsWith(provider.prefix)) || undefined) : undefined;
+
         return result || this.defaultProvider;
     }
     clear(): Function {
         const providers = [...this.providers];
+
         const defaultProvider = this.defaultProvider;
         this.providers = [];
         this.defaultProvider = undefined;
+
         return () => {
             this.providers = providers;
             this.defaultProvider = defaultProvider;

@@ -42,6 +42,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 	get terminalChatWidget(): TerminalChatWidget | undefined { return this._terminalChatWidget?.value; }
 
 	private _lastResponseContent: string | undefined;
+
 	get lastResponseContent(): string | undefined {
 		return this._lastResponseContent;
 	}
@@ -79,6 +80,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 			const chatWidget = this._register(this._instantiationService.createInstance(TerminalChatWidget, this._ctx.instance.domElement!, this._ctx.instance, xterm));
 			this._register(chatWidget.focusTracker.onDidFocus(() => {
 				TerminalChatController.activeChatController = this;
+
 				if (!isDetachedTerminalInstance(this._ctx.instance)) {
 					this._terminalService.setActiveInstance(this._ctx.instance);
 				}
@@ -87,6 +89,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 				TerminalChatController.activeChatController = undefined;
 				this._ctx.instance.resetScrollbarVisibility();
 			}));
+
 			if (!this._ctx.instance.domElement) {
 				throw new Error('FindWidget expected terminal DOM to be initialized');
 			}
@@ -99,6 +102,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 
 	private _updatePlaceholder(): void {
 		const inlineChatWidget = this._terminalChatWidget?.value.inlineChatWidget;
+
 		if (inlineChatWidget) {
 			inlineChatWidget.placeholder = this._getPlaceholderText();
 		}
@@ -120,8 +124,10 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 
 	updateInput(text: string, selectAll = true): void {
 		const widget = this._terminalChatWidget?.value.inlineChatWidget;
+
 		if (widget) {
 			widget.value = text;
+
 			if (selectAll) {
 				widget.selectAll();
 			}
@@ -138,6 +144,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 
 	async viewInChat(): Promise<void> {
 		const chatModel = this.terminalChatWidget?.inlineChatWidget.chatWidget.viewModel?.model;
+
 		if (chatModel) {
 			await this._instantiationService.invokeFunction(moveToPanelChat, chatModel);
 		}
@@ -148,6 +155,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 async function moveToPanelChat(accessor: ServicesAccessor, model: IChatModel | undefined) {
 
 	const viewsService = accessor.get(IViewsService);
+
 	const chatService = accessor.get(IChatService);
 
 	const widget = await showChatView(viewsService);

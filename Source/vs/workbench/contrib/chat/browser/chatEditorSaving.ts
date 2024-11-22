@@ -57,10 +57,12 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 		// --- report that save happened
 		this._store.add(autorunWithStore((r, store) => {
 			const session = chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!session) {
 				return;
 			}
 			const chatSession = this._chatService.getSession(session.chatSessionId);
+
 			if (!chatSession) {
 				return;
 			}
@@ -68,6 +70,7 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 
 			store.add(textFileService.files.onDidSave(e => {
 				const entry = entries.find(entry => isEqual(entry.modifiedURI, e.model.resource));
+
 				if (entry && entry.state.get() === WorkingSetEntryState.Modified) {
 					this._reportSavedWhenReady(chatSession, entry);
 				}
@@ -81,6 +84,7 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 			store.clear();
 
 			const alwaysSave = configService.getValue<boolean>(ChatEditorSaving._config);
+
 			if (alwaysSave) {
 				return;
 			}
@@ -99,6 +103,7 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 					this._uris.add(uri);
 					this._soon.schedule();
 					this._deferred ??= new DeferredPromise();
+
 					return this._deferred.p;
 				}
 
@@ -106,17 +111,20 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 
 					// this might have changed in the meantime and there is checked again and acted upon
 					const alwaysSave = configService.getValue<boolean>(ChatEditorSaving._config);
+
 					if (alwaysSave) {
 						return;
 					}
 
 					const uri = Iterable.first(this._uris);
+
 					if (!uri) {
 						// bogous?
 						return;
 					}
 
 					const agentName = chatAgentService.getDefaultAgent(ChatAgentLocation.EditingSession)?.fullName ?? localize('chat', "chat");
+
 					const filelabel = labelService.getUriBasenameLabel(uri);
 
 					const message = this._uris.size === 1
@@ -162,6 +170,7 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 					}
 
 					const session = chatEditingService.getEditingSession(workingCopy.resource);
+
 					if (!session) {
 						return;
 					}
@@ -199,6 +208,7 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 	private _reportSavedWhenReady(session: IChatModel, entry: IModifiedFileEntry) {
 		if (!session.requestInProgress) {
 			this._reportSaved(entry);
+
 			return;
 		}
 		// wait until no more request is pending
@@ -219,9 +229,12 @@ export class ChatEditorSaving extends Disposable implements IWorkbenchContributi
 
 		// disable auto save for those files involved in editing
 		const saveConfig = store.add(new MutableDisposable());
+
 		const update = () => {
 			const store = new DisposableStore();
+
 			const entries = session.entries.get();
+
 			for (const entry of entries) {
 				if (entry.state.get() === WorkingSetEntryState.Modified) {
 					store.add(this._fileConfigService.disableAutoSave(entry.modifiedURI));
@@ -286,26 +299,36 @@ export class ChatEditingSaveAllAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
 		const chatEditingService = accessor.get(IChatEditingService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const configService = accessor.get(IConfigurationService);
+
 		const chatAgentService = accessor.get(IChatAgentService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const labelService = accessor.get(ILabelService);
 
 		const currentEditingSession = chatEditingService.currentEditingSession;
+
 		if (!currentEditingSession) {
 			return;
 		}
 
 		const editors: IEditorIdentifier[] = [];
+
 		for (const modifiedFileEntry of currentEditingSession.entries.get()) {
 			if (modifiedFileEntry.state.get() === WorkingSetEntryState.Modified) {
 				const modifiedFile = modifiedFileEntry.modifiedURI;
+
 				const matchingEditors = editorService.findEditors(modifiedFile);
+
 				if (matchingEditors.length === 0) {
 					continue;
 				}
 				const matchingEditor = matchingEditors[0];
+
 				if (matchingEditor.editor.isDirty()) {
 					editors.push(matchingEditor);
 				}
@@ -317,12 +340,15 @@ export class ChatEditingSaveAllAction extends Action2 {
 		}
 
 		const alwaysSave = configService.getValue<boolean>(ChatEditorSaving._config);
+
 		if (!alwaysSave) {
 			const agentName = chatAgentService.getDefaultAgent(ChatAgentLocation.EditingSession)?.fullName;
 
 			let message: string;
+
 			if (editors.length === 1) {
 				const resource = editors[0].editor.resource;
+
 				if (resource) {
 					const filelabel = labelService.getUriBasenameLabel(resource);
 					message = agentName

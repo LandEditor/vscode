@@ -11,6 +11,7 @@ import { ILogService } from '../../log/common/log.js';
 export class NativePolicyService extends AbstractPolicyService implements IPolicyService {
     private throttler = new Throttler();
     private readonly watcher = this._register(new MutableDisposable<Watcher>());
+
     constructor(
     @ILogService
     private readonly logService: ILogService, private readonly productName: string) {
@@ -18,6 +19,7 @@ export class NativePolicyService extends AbstractPolicyService implements IPolic
     }
     protected async _updatePolicyDefinitions(policyDefinitions: IStringDictionary<PolicyDefinition>): Promise<void> {
         this.logService.trace(`NativePolicyService#_updatePolicyDefinitions - Found ${Object.keys(policyDefinitions).length} policy definitions`);
+
         const { createWatcher } = await import('@vscode/policy-watcher');
         await this.throttler.queue(() => new Promise<void>((c, e) => {
             try {
@@ -34,8 +36,10 @@ export class NativePolicyService extends AbstractPolicyService implements IPolic
     }
     private _onDidPolicyChange(update: PolicyUpdate<IStringDictionary<PolicyDefinition>>): void {
         this.logService.trace(`NativePolicyService#_onDidPolicyChange - Updated policy values: ${JSON.stringify(update)}`);
+
         for (const key in update) {
             const value = update[key] as any;
+
             if (value === undefined) {
                 this.policies.delete(key);
             }

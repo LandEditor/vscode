@@ -77,6 +77,7 @@ export class UndoRedoGroup {
     private static _ID = 0;
     public readonly id: number;
     private order: number;
+
     constructor() {
         this.id = UndoRedoGroup._ID++;
         this.order = 1;
@@ -93,6 +94,7 @@ export class UndoRedoSource {
     private static _ID = 0;
     public readonly id: number;
     private order: number;
+
     constructor() {
         this.id = UndoRedoSource._ID++;
         this.order = 1;

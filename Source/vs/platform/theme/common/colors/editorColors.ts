@@ -103,10 +103,15 @@ export const breadcrumbsActiveSelectionForeground = registerColor('breadcrumb.ac
 export const breadcrumbsPickerBackground = registerColor('breadcrumbPicker.background', editorWidgetBackground, nls.localize('breadcrumbsSelectedBackground', "Background color of breadcrumb item picker."));
 // ----- merge
 const headerTransparency = 0.5;
+
 const currentBaseColor = Color.fromHex('#40C8AE').transparent(headerTransparency);
+
 const incomingBaseColor = Color.fromHex('#40A6FF').transparent(headerTransparency);
+
 const commonBaseColor = Color.fromHex('#606060').transparent(0.4);
+
 const contentTransparency = 0.4;
+
 const rulerTransparency = 1;
 export const mergeCurrentHeaderBackground = registerColor('merge.currentHeaderBackground', { dark: currentBaseColor, light: currentBaseColor, hcDark: null, hcLight: null }, nls.localize('mergeCurrentHeaderBackground', 'Current header background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.'), true);
 export const mergeCurrentContentBackground = registerColor('merge.currentContentBackground', transparent(mergeCurrentHeaderBackground, contentTransparency), nls.localize('mergeCurrentContentBackground', 'Current content background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.'), true);

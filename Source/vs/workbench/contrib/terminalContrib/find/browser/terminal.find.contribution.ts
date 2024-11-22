@@ -32,6 +32,7 @@ class TerminalFindContribution extends Disposable implements ITerminalContributi
     }
     private _findWidget: Lazy<TerminalFindWidget>;
     private _lastLayoutDimensions: IDimension | undefined;
+
     get findWidget(): TerminalFindWidget { return this._findWidget.value; }
     constructor(ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IInstantiationService
@@ -45,6 +46,7 @@ class TerminalFindContribution extends Disposable implements ITerminalContributi
             findWidget.focusTracker.onDidFocus(() => {
                 TerminalFindContribution.activeFindWidget = this;
                 ctx.instance.forceScrollbarVisibility();
+
                 if (!isDetachedTerminalInstance(ctx.instance)) {
                     terminalService.setActiveInstance(ctx.instance);
                 }
@@ -53,10 +55,12 @@ class TerminalFindContribution extends Disposable implements ITerminalContributi
                 TerminalFindContribution.activeFindWidget = undefined;
                 ctx.instance.resetScrollbarVisibility();
             });
+
             if (!ctx.instance.domElement) {
                 throw new Error('FindWidget expected terminal DOM to be initialized');
             }
             ctx.instance.domElement?.appendChild(findWidget.getDomNode());
+
             if (this._lastLayoutDimensions) {
                 findWidget.layout(this._lastLayoutDimensions.width);
             }
@@ -126,6 +130,7 @@ registerActiveXtermAction({
     precondition: ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
     run: (_xterm, _accessor, activeInstance) => {
         const contr = TerminalFindContribution.activeFindWidget || TerminalFindContribution.get(activeInstance);
+
         const state = contr?.findWidget.state;
         state?.change({ isRegex: !state.isRegex }, false);
     }
@@ -142,6 +147,7 @@ registerActiveXtermAction({
     precondition: ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
     run: (_xterm, _accessor, activeInstance) => {
         const contr = TerminalFindContribution.activeFindWidget || TerminalFindContribution.get(activeInstance);
+
         const state = contr?.findWidget.state;
         state?.change({ wholeWord: !state.wholeWord }, false);
     }
@@ -158,6 +164,7 @@ registerActiveXtermAction({
     precondition: ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
     run: (_xterm, _accessor, activeInstance) => {
         const contr = TerminalFindContribution.activeFindWidget || TerminalFindContribution.get(activeInstance);
+
         const state = contr?.findWidget.state;
         state?.change({ matchCase: !state.matchCase }, false);
     }
@@ -181,7 +188,9 @@ registerActiveXtermAction({
     precondition: ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
     run: (_xterm, _accessor, activeInstance) => {
         const contr = TerminalFindContribution.activeFindWidget || TerminalFindContribution.get(activeInstance);
+
         const widget = contr?.findWidget;
+
         if (widget) {
             widget.show();
             widget.find(false);
@@ -207,7 +216,9 @@ registerActiveXtermAction({
     precondition: ContextKeyExpr.or(TerminalContextKeys.processSupported, TerminalContextKeys.terminalHasBeenCreated),
     run: (_xterm, _accessor, activeInstance) => {
         const contr = TerminalFindContribution.activeFindWidget || TerminalFindContribution.get(activeInstance);
+
         const widget = contr?.findWidget;
+
         if (widget) {
             widget.show();
             widget.find(true);

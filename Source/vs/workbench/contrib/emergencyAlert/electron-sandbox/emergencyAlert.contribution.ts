@@ -27,6 +27,7 @@ interface IEmergencyAlerts {
 }
 export class EmergencyAlert implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.emergencyAlert';
+
     constructor(
     @IBannerService
     private readonly bannerService: IBannerService, 
@@ -40,6 +41,7 @@ export class EmergencyAlert implements IWorkbenchContribution {
             return; // only enabled in insiders for now
         }
         const emergencyAlertUrl = productService.emergencyAlertUrl;
+
         if (!emergencyAlertUrl) {
             return; // no emergency alert configured
         }
@@ -55,10 +57,12 @@ export class EmergencyAlert implements IWorkbenchContribution {
     }
     private async doFetchAlerts(url: string): Promise<void> {
         const requestResult = await this.requestService.request({ type: 'GET', url }, CancellationToken.None);
+
         if (requestResult.res.statusCode !== 200) {
             throw new Error(`Failed to fetch emergency alerts: HTTP ${requestResult.res.statusCode}`);
         }
         const emergencyAlerts = await asJson<IEmergencyAlerts>(requestResult);
+
         if (!emergencyAlerts) {
             return;
         }
@@ -75,6 +79,7 @@ export class EmergencyAlert implements IWorkbenchContribution {
                 message: emergencyAlert.message,
                 actions: emergencyAlert.actions
             });
+
             break;
         }
     }

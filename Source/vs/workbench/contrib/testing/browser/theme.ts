@@ -156,6 +156,7 @@ export const testStatesToRetiredIconColors: {
 };
 registerThemingParticipant((theme, collector) => {
     const editorBg = theme.getColor(editorBackground);
+
     const missBadgeBackground = editorBg && theme.getColor(testingUncoveredBackground)?.transparent(2).makeOpaque(editorBg);
     collector.addRule(`
 	.coverage-deco-inline.coverage-deco-hit.coverage-deco-hovered {

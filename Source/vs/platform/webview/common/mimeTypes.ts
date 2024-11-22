@@ -5,6 +5,7 @@
 import { getMediaMime, Mimes } from '../../../base/common/mime.js';
 import { extname } from '../../../base/common/path.js';
 import { URI } from '../../../base/common/uri.js';
+
 const webviewMimeTypes = new Map([
     ['.svg', 'image/svg+xml'],
     ['.txt', Mimes.text],
@@ -22,5 +23,6 @@ const webviewMimeTypes = new Map([
 ]);
 export function getWebviewContentMimeType(resource: URI): string {
     const ext = extname(resource.fsPath).toLowerCase();
+
     return webviewMimeTypes.get(ext) || getMediaMime(resource.fsPath) || Mimes.unknown;
 }

@@ -51,6 +51,7 @@ export class NotificationsAlerts extends Disposable {
     }
     private doTriggerAriaAlert(notification: INotificationViewItem): void {
         let alertText: string;
+
         if (notification.severity === Severity.Error) {
             alertText = localize('alertErrorMessage', "Error: {0}", notification.message.linkedText.toString());
         }

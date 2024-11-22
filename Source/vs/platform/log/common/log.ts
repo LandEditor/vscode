@@ -42,7 +42,9 @@ export const DEFAULT_LOG_LEVEL: LogLevel = LogLevel.Info;
 
 export interface ILogger extends IDisposable {
 	onDidChangeLogLevel: Event<LogLevel>;
+
 	getLevel(): LogLevel;
+
 	setLevel(level: LogLevel): void;
 
 	trace(message: string, ...args: any[]): void;
@@ -60,11 +62,17 @@ export interface ILogger extends IDisposable {
 export function log(logger: ILogger, level: LogLevel, message: string): void {
 	switch (level) {
 		case LogLevel.Trace: logger.trace(message); break;
+
 		case LogLevel.Debug: logger.debug(message); break;
+
 		case LogLevel.Info: logger.info(message); break;
+
 		case LogLevel.Warning: logger.warn(message); break;
+
 		case LogLevel.Error: logger.error(message); break;
+
 		case LogLevel.Off: /* do nothing */ break;
+
 		default: throw new Error(`Invalid log level ${level}`);
 	}
 }
@@ -509,6 +517,7 @@ export class MultiplexLogger extends AbstractLogger implements ILogger {
 
 	constructor(private readonly loggers: ReadonlyArray<ILogger>) {
 		super();
+
 		if (loggers.length) {
 			this.setLevel(loggers[0].getLevel());
 		}
@@ -588,6 +597,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 		loggerResources?: Iterable<ILoggerResource>,
 	) {
 		super();
+
 		if (loggerResources) {
 			for (const loggerResource of loggerResources) {
 				this._loggers.set(loggerResource.resource, { logger: undefined, info: loggerResource });
@@ -608,9 +618,13 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	createLogger(idOrResource: URI | string, options?: ILoggerOptions): ILogger {
 		const resource = this.toResource(idOrResource);
+
 		const id = isString(idOrResource) ? idOrResource : (options?.id ?? hash(resource.toString()).toString(16));
+
 		let logger = this._loggers.get(resource)?.logger;
+
 		const logLevel = options?.logLevel === 'always' ? LogLevel.Trace : options?.logLevel;
+
 		if (!logger) {
 			logger = this.doCreateLogger(resource, logLevel ?? this.getLogLevel(resource) ?? this.logLevel, { ...options, id });
 		}
@@ -621,6 +635,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 		this.registerLogger(loggerEntry.info);
 		// TODO: @sandy081 Remove this once registerLogger can take ILogger
 		this._loggers.set(resource, loggerEntry);
+
 		return logger;
 	}
 
@@ -629,12 +644,17 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 	}
 
 	setLogLevel(logLevel: LogLevel): void;
+
 	setLogLevel(resource: URI, logLevel: LogLevel): void;
+
 	setLogLevel(arg1: any, arg2?: any): void {
 		if (URI.isUri(arg1)) {
 			const resource = arg1;
+
 			const logLevel = arg2;
+
 			const logger = this._loggers.get(resource);
+
 			if (logger && logLevel !== logger.info.logLevel) {
 				logger.info.logLevel = logLevel === this.logLevel ? undefined : logLevel;
 				logger.logger?.setLevel(logLevel);
@@ -643,6 +663,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 			}
 		} else {
 			this.logLevel = arg1;
+
 			for (const [resource, logger] of this._loggers.entries()) {
 				if (this._loggers.get(resource)?.info.logLevel === undefined) {
 					logger.logger?.setLevel(this.logLevel);
@@ -654,6 +675,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	setVisibility(resourceOrId: URI | string, visibility: boolean): void {
 		const logger = this.getLoggerEntry(resourceOrId);
+
 		if (logger && visibility !== !logger.info.hidden) {
 			logger.info.hidden = !visibility;
 			this._loggers.set(logger.info.resource, logger);
@@ -663,6 +685,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	getLogLevel(resource?: URI): LogLevel {
 		let logLevel;
+
 		if (resource) {
 			logLevel = this._loggers.get(resource)?.info.logLevel;
 		}
@@ -671,6 +694,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	registerLogger(resource: ILoggerResource): void {
 		const existing = this._loggers.get(resource.resource);
+
 		if (existing) {
 			if (existing.info.hidden !== resource.hidden) {
 				this.setVisibility(resource.resource, !resource.hidden);
@@ -683,6 +707,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 	deregisterLogger(resource: URI): void {
 		const existing = this._loggers.get(resource);
+
 		if (existing) {
 			if (existing.logger) {
 				existing.logger.dispose();
@@ -705,6 +730,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 	override dispose(): void {
 		this._loggers.forEach(logger => logger.logger?.dispose());
 		this._loggers.clear();
+
 		super.dispose();
 	}
 
@@ -713,6 +739,7 @@ export abstract class AbstractLoggerService extends Disposable implements ILogge
 
 export class NullLogger implements ILogger {
 	readonly onDidChangeLogLevel: Event<LogLevel> = new Emitter<LogLevel>().event;
+
 	setLevel(level: LogLevel): void { }
 	getLevel(): LogLevel { return LogLevel.Info; }
 	trace(message: string, ...args: any[]): void { }
@@ -735,6 +762,7 @@ export function getLogLevel(environmentService: IEnvironmentService): LogLevel {
 	}
 	if (typeof environmentService.logLevel === 'string') {
 		const logLevel = parseLogLevel(environmentService.logLevel.toLowerCase());
+
 		if (logLevel !== undefined) {
 			return logLevel;
 		}
@@ -745,10 +773,15 @@ export function getLogLevel(environmentService: IEnvironmentService): LogLevel {
 export function LogLevelToString(logLevel: LogLevel): string {
 	switch (logLevel) {
 		case LogLevel.Trace: return 'trace';
+
 		case LogLevel.Debug: return 'debug';
+
 		case LogLevel.Info: return 'info';
+
 		case LogLevel.Warning: return 'warn';
+
 		case LogLevel.Error: return 'error';
+
 		case LogLevel.Off: return 'off';
 	}
 }
@@ -756,10 +789,15 @@ export function LogLevelToString(logLevel: LogLevel): string {
 export function LogLevelToLocalizedString(logLevel: LogLevel): ILocalizedString {
 	switch (logLevel) {
 		case LogLevel.Trace: return { original: 'Trace', value: nls.localize('trace', "Trace") };
+
 		case LogLevel.Debug: return { original: 'Debug', value: nls.localize('debug', "Debug") };
+
 		case LogLevel.Info: return { original: 'Info', value: nls.localize('info', "Info") };
+
 		case LogLevel.Warning: return { original: 'Warning', value: nls.localize('warn', "Warning") };
+
 		case LogLevel.Error: return { original: 'Error', value: nls.localize('error', "Error") };
+
 		case LogLevel.Off: return { original: 'Off', value: nls.localize('off', "Off") };
 	}
 }
@@ -768,16 +806,22 @@ export function parseLogLevel(logLevel: string): LogLevel | undefined {
 	switch (logLevel) {
 		case 'trace':
 			return LogLevel.Trace;
+
 		case 'debug':
 			return LogLevel.Debug;
+
 		case 'info':
 			return LogLevel.Info;
+
 		case 'warn':
 			return LogLevel.Warning;
+
 		case 'error':
 			return LogLevel.Error;
+
 		case 'critical':
 			return LogLevel.Error;
+
 		case 'off':
 			return LogLevel.Off;
 	}

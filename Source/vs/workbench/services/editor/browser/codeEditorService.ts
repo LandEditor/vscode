@@ -28,6 +28,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
     }
     getActiveCodeEditor(): ICodeEditor | null {
         const activeTextEditorControl = this.editorService.activeTextEditorControl;
+
         if (isCodeEditor(activeTextEditorControl)) {
             return activeTextEditorControl;
         }
@@ -35,6 +36,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
             return activeTextEditorControl.getModifiedEditor();
         }
         const activeControl = this.editorService.activeEditorPane?.getControl();
+
         if (isCompositeEditor(activeControl) && isCodeEditor(activeControl.activeCodeEditor)) {
             return activeControl.activeCodeEditor;
         }
@@ -45,6 +47,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
         // targets the modified side of it, we just apply the request there to prevent opening the modified
         // side as separate editor.
         const activeTextEditorControl = this.editorService.activeTextEditorControl;
+
         if (!sideBySide && // we need the current active group to be the target
             isDiffEditor(activeTextEditorControl) && // we only support this for active text diff editors
             input.options && // we need options to apply
@@ -55,6 +58,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
         ) {
             const targetEditor = activeTextEditorControl.getModifiedEditor();
             applyTextEditorOptions(input.options, targetEditor, ScrollType.Smooth);
+
             return targetEditor;
         }
         return null;
@@ -67,6 +71,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
         // is not being replaced by the target. An example is "Goto definition"
         // that otherwise would replace the editor everytime the user navigates.
         const enablePreviewFromCodeNavigation = this.configurationService.getValue<IWorkbenchEditorConfiguration>().workbench?.editor?.enablePreviewFromCodeNavigation;
+
         if (!enablePreviewFromCodeNavigation && // we only need to do this if the configuration requires it
             source && // we need to know the origin of the navigation
             !input.options?.pinned && // we only need to look at preview editors that open
@@ -76,14 +81,17 @@ export class CodeEditorService extends AbstractCodeEditorService {
             for (const visiblePane of this.editorService.visibleEditorPanes) {
                 if (getCodeEditor(visiblePane.getControl()) === source) {
                     visiblePane.group.pinEditor();
+
                     break;
                 }
             }
         }
         // Open as editor
         const control = await this.editorService.openEditor(input, sideBySide ? SIDE_GROUP : ACTIVE_GROUP);
+
         if (control) {
             const widget = control.getControl();
+
             if (isCodeEditor(widget)) {
                 return widget;
             }

@@ -99,9 +99,12 @@ export class DragAndDropController extends Disposable implements IEditorContribu
     }
     private _onEditorMouseDrag(mouseEvent: IEditorMouseEvent): void {
         const target = mouseEvent.target;
+
         if (this._dragSelection === null) {
             const selections = this._editor.getSelections() || [];
+
             const possibleSelections = selections.filter(selection => target.position && selection.containsPosition(target.position));
+
             if (possibleSelections.length === 1) {
                 this._dragSelection = possibleSelections[0];
             }
@@ -139,10 +142,13 @@ export class DragAndDropController extends Disposable implements IEditorContribu
     private _onEditorMouseDrop(mouseEvent: IPartialEditorMouseEvent): void {
         if (mouseEvent.target && (this._hitContent(mouseEvent.target) || this._hitMargin(mouseEvent.target)) && mouseEvent.target.position) {
             const newCursorPosition = new Position(mouseEvent.target.position.lineNumber, mouseEvent.target.position.column);
+
             if (this._dragSelection === null) {
                 let newSelections: Selection[] | null = null;
+
                 if (mouseEvent.event.shiftKey) {
                     const primarySelection = this._editor.getSelection();
+
                     if (primarySelection) {
                         const { selectionStartLineNumber, selectionStartColumn } = primarySelection;
                         newSelections = [new Selection(selectionStartLineNumber, selectionStartColumn, newCursorPosition.lineNumber, newCursorPosition.column)];
@@ -205,6 +211,7 @@ export class DragAndDropController extends Disposable implements IEditorContribu
         this._dragSelection = null;
         this._mouseDown = false;
         this._modifierPressed = false;
+
         super.dispose();
     }
 }

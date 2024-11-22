@@ -60,6 +60,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
             return;
         }
         let value = await this.nativeHostService.windowsGetStringRegKey('HKEY_LOCAL_MACHINE', 'SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion', 'EditionID');
+
         if (value === undefined) {
             value = 'Unknown';
         }
@@ -77,8 +78,11 @@ export class WorkspaceTags implements IWorkbenchContribution {
     }
     private async getWorkspaceInformation(): Promise<IWorkspaceInformation> {
         const workspace = this.contextService.getWorkspace();
+
         const state = this.contextService.getWorkbenchState();
+
         const telemetryId = await this.workspaceTagsService.getTelemetryWorkspaceId(workspace, state);
+
         return {
             id: workspace.id,
             telemetryId,
@@ -102,7 +106,9 @@ export class WorkspaceTags implements IWorkbenchContribution {
     private reportRemoteDomains(workspaceUris: URI[]): void {
         Promise.all<string[]>(workspaceUris.map(workspaceUri => {
             const path = workspaceUri.path;
+
             const uri = workspaceUri.with({ path: `${path !== '/' ? path : ''}/.git/config` });
+
             return this.fileService.exists(uri).then(exists => {
                 if (!exists) {
                     return [];
@@ -112,7 +118,9 @@ export class WorkspaceTags implements IWorkbenchContribution {
             });
         })).then(domains => {
             const set = domains.reduce((set, list) => list.reduce((set, item) => set.add(item), set), new Set<string>());
+
             const list: string[] = [];
+
             set.forEach(item => list.push(item));
             /* __GDPR__
                 "workspace.remotes" : {
@@ -137,11 +145,15 @@ export class WorkspaceTags implements IWorkbenchContribution {
         // TODO: should also work for `node_modules` folders several levels down
         const uris = workspaceUris.map(workspaceUri => {
             const path = workspaceUri.path;
+
             return workspaceUri.with({ path: `${path !== '/' ? path : ''}/node_modules` });
         });
+
         return this.fileService.resolveAll(uris.map(resource => ({ resource }))).then(results => {
             const names = (<IFileStat[]>[]).concat(...results.map(result => result.success ? (result.stat!.children || []) : [])).map(c => c.name);
+
             const referencesAzure = WorkspaceTags.searchArray(names, /azure/i);
+
             if (referencesAzure) {
                 tags['node'] = true;
             }
@@ -161,7 +173,9 @@ export class WorkspaceTags implements IWorkbenchContribution {
     private reportAzureJava(workspaceUris: URI[], tags: Tags): Promise<Tags> {
         return Promise.all(workspaceUris.map(workspaceUri => {
             const path = workspaceUri.path;
+
             const uri = workspaceUri.with({ path: `${path !== '/' ? path : ''}/pom.xml` });
+
             return this.fileService.exists(uri).then(exists => {
                 if (!exists) {
                     return false;
@@ -195,6 +209,7 @@ export class WorkspaceTags implements IWorkbenchContribution {
     }
     private reportCloudStats(): void {
         const uris = this.contextService.getWorkspace().folders.map(folder => folder.uri);
+
         if (uris.length && this.fileService) {
             this.reportRemoteDomains(uris);
             this.reportRemotes(uris);
@@ -203,12 +218,14 @@ export class WorkspaceTags implements IWorkbenchContribution {
     }
     private reportProxyStats() {
         const downloadUrl = this.productService.downloadUrl;
+
         if (!downloadUrl) {
             return;
         }
         this.requestService.resolveProxy(downloadUrl)
             .then(proxy => {
             let type = proxy ? String(proxy).trim().split(/\s+/, 1)[0] : 'EMPTY';
+
             if (['DIRECT', 'PROXY', 'HTTPS', 'SOCKS', 'EMPTY'].indexOf(type) === -1) {
                 type = 'UNKNOWN';
             }

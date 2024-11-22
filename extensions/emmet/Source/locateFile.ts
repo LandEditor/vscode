@@ -6,8 +6,11 @@
 // TODO: Move to https://github.com/emmetio/file-utils
 import * as path from 'path';
 import * as fs from 'fs';
+
 const reAbsolutePosix = /^\/+/;
+
 const reAbsoluteWin32 = /^\\+/;
+
 const reAbsolute = path.sep === '/' ? reAbsolutePosix : reAbsoluteWin32;
 /**
  * Locates given `filePath` on user's file system and returns absolute path to it.
@@ -21,6 +24,7 @@ export function locateFile(base: string, filePath: string): Promise<string> {
         return Promise.resolve(filePath);
     }
     filePath = path.normalize(filePath);
+
     return reAbsolute.test(filePath)
         ? resolveAbsolute(base, filePath)
         : resolveRelative(base, filePath);
@@ -38,10 +42,12 @@ function resolveRelative(basePath: string, filePath: string): Promise<string> {
 function resolveAbsolute(basePath: string, filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
         filePath = filePath.replace(reAbsolute, '');
+
         const next = (ctx: string) => {
             tryFile(path.resolve(ctx, filePath))
                 .then(resolve, () => {
                 const dir = path.dirname(ctx);
+
                 if (!dir || dir === ctx) {
                     return reject(`Unable to locate absolute file ${filePath}`);
                 }

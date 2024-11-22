@@ -145,9 +145,12 @@ export function removeCSSRulesContainingSelector(ruleName: string, style = getSh
 	}
 
 	const rules = getDynamicStyleSheetRules(style);
+
 	const toDelete: number[] = [];
+
 	for (let i = 0; i < rules.length; i++) {
 		const rule = rules[i];
+
 		if (isCSSStyleRule(rule) && rule.selectorText.indexOf(ruleName) !== -1) {
 			toDelete.push(i);
 		}

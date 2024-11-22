@@ -26,7 +26,9 @@ function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, co
     // we have to come up with a synthetic location derived from the
     // environment.
     const workspace = contextService.getWorkspace();
+
     const firstFolder = workspace.folders.at(0);
+
     if (firstFolder) {
         return firstFolder.uri;
     }

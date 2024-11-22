@@ -28,6 +28,7 @@ export interface IKeyboardEvent {
 }
 export interface KeybindingsSchemaContribution {
     readonly onDidChange?: Event<void>;
+
     getSchemaAdditions(): IJSONSchema[];
 }
 export const IKeybindingService = createDecorator<IKeybindingService>('keybindingService');
@@ -67,8 +68,11 @@ export interface IKeybindingService {
      * @returns The preferred keybinding or null if the command is not bound.
      */
     lookupKeybinding(commandId: string, context?: IContextKeyService): ResolvedKeybinding | undefined;
+
     getDefaultKeybindingsContent(): string;
+
     getDefaultKeybindings(): readonly ResolvedKeybindingItem[];
+
     getKeybindings(): readonly ResolvedKeybindingItem[];
     customKeybindingsCount(): number;
     /**

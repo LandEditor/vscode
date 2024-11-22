@@ -39,8 +39,10 @@ registerActiveXtermAction({
 
 		if (opts) {
 			opts = typeof opts === 'string' ? { query: opts } : opts;
+
 			if (typeof opts === 'object' && opts !== null && 'query' in opts && typeof opts.query === 'string') {
 				contr?.updateInput(opts.query, false);
+
 				if (!('isPartialQuery' in opts && opts.isPartialQuery)) {
 					contr?.terminalChatWidget?.acceptInput();
 				}

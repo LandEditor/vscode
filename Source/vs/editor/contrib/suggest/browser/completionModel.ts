@@ -37,6 +37,7 @@ export class CompletionModel {
     private _filteredItems?: StrictCompletionItem[];
     private _itemsByProvider?: Map<CompletionItemProvider, CompletionItem[]>;
     private _stats?: ICompletionStats;
+
     constructor(items: CompletionItem[], column: number, lineContext: LineContext, wordDistance: WordDistance, options: InternalSuggestOptions, snippetSuggestions: 'top' | 'bottom' | 'inline' | 'none', fuzzyScoreOptions: FuzzyScoreOptions | undefined = FuzzyScoreOptions.default, readonly clipboardText: string | undefined = undefined) {
         this._items = items;
         this._column = column;
@@ -45,6 +46,7 @@ export class CompletionModel {
         this._refilterKind = Refilter.All;
         this._lineContext = lineContext;
         this._fuzzyScoreOptions = fuzzyScoreOptions;
+
         if (snippetSuggestions === 'top') {
             this._snippetCompareFn = CompletionModel._compareCompletionItemsSnippetsUp;
         }
@@ -64,15 +66,19 @@ export class CompletionModel {
     }
     get items(): CompletionItem[] {
         this._ensureCachedState();
+
         return this._filteredItems!;
     }
     getItemsByProvider(): ReadonlyMap<CompletionItemProvider, CompletionItem[]> {
         this._ensureCachedState();
+
         return this._itemsByProvider!;
     }
     getIncompleteProvider(): Set<CompletionItemProvider> {
         this._ensureCachedState();
+
         const result = new Set<CompletionItemProvider>();
+
         for (const [provider, items] of this.getItemsByProvider()) {
             if (items.length > 0 && items[0].container.incomplete) {
                 result.add(provider);
@@ -82,6 +88,7 @@ export class CompletionModel {
     }
     get stats(): ICompletionStats {
         this._ensureCachedState();
+
         return this._stats!;
     }
     private _ensureCachedState(): void {
@@ -91,24 +98,32 @@ export class CompletionModel {
     }
     private _createCachedState(): void {
         this._itemsByProvider = new Map();
+
         const labelLengths: number[] = [];
+
         const { leadingLineContent, characterCountDelta } = this._lineContext;
+
         let word = '';
+
         let wordLow = '';
         // incrementally filter less
         const source = this._refilterKind === Refilter.All ? this._items : this._filteredItems!;
+
         const target: StrictCompletionItem[] = [];
         // picks a score function based on the number of
         // items that we have to score/filter and based on the
         // user-configuration
         const scoreFn: FuzzyScorer = (!this._options.filterGraceful || source.length > 2000) ? fuzzyScore : fuzzyScoreGracefulAggressive;
+
         for (let i = 0; i < source.length; i++) {
             const item = source[i];
+
             if (item.isInvalid) {
                 continue; // SKIP invalid items
             }
             // keep all items by their provider
             const arr = this._itemsByProvider.get(item.provider);
+
             if (arr) {
                 arr.push(item);
             }
@@ -119,7 +134,9 @@ export class CompletionModel {
             // filter and score against. In theory each suggestion uses a
             // different word, but in practice not - that's why we cache
             const overwriteBefore = item.position.column - item.editStart.column;
+
             const wordLen = overwriteBefore + characterCountDelta - (item.position.column - this._column);
+
             if (word.length !== wordLen) {
                 word = wordLen === 0 ? '' : leadingLineContent.slice(-wordLen);
                 wordLow = word.toLowerCase();
@@ -127,6 +144,7 @@ export class CompletionModel {
             // remember the word against which this item was
             // scored
             item.word = word;
+
             if (wordLen === 0) {
                 // when there is nothing to score against, don't
                 // event try to do. Use a const rank and rely on
@@ -139,8 +157,10 @@ export class CompletionModel {
                 // skip word characters that are whitespace until
                 // we have hit the replace range (overwriteBefore)
                 let wordPos = 0;
+
                 while (wordPos < overwriteBefore) {
                     const ch = word.charCodeAt(wordPos);
+
                     if (ch === CharCode.Space || ch === CharCode.Tab) {
                         wordPos += 1;
                     }
@@ -159,6 +179,7 @@ export class CompletionModel {
                     // and if that doesn't yield a result we have no highlights,
                     // despite having the match
                     const match = scoreFn(word, wordLow, wordPos, item.completion.filterText, item.filterTextLow!, 0, this._fuzzyScoreOptions);
+
                     if (!match) {
                         continue; // NO match
                     }
@@ -176,6 +197,7 @@ export class CompletionModel {
                 else {
                     // by default match `word` against the `label`
                     const match = scoreFn(word, wordLow, wordPos, item.textLabel, item.labelLow, 0, this._fuzzyScoreOptions);
+
                     if (!match) {
                         continue; // NO match
                     }

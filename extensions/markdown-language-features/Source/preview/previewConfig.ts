@@ -23,10 +23,13 @@ export class MarkdownPreviewConfiguration {
     public readonly styles: readonly string[];
     private constructor(resource: vscode.Uri | null) {
         const editorConfig = vscode.workspace.getConfiguration('editor', resource);
+
         const markdownConfig = vscode.workspace.getConfiguration('markdown', resource);
+
         const markdownEditorConfig = vscode.workspace.getConfiguration('[markdown]', resource);
         this.scrollBeyondLastLine = editorConfig.get<boolean>('scrollBeyondLastLine', false);
         this.wordWrap = editorConfig.get<string>('wordWrap', 'off') !== 'off';
+
         if (markdownEditorConfig && markdownEditorConfig['editor.wordWrap']) {
             this.wordWrap = markdownEditorConfig['editor.wordWrap'] !== 'off';
         }
@@ -59,16 +62,21 @@ export class MarkdownPreviewConfigurationManager {
     public loadAndCacheConfiguration(resource: vscode.Uri): MarkdownPreviewConfiguration {
         const config = MarkdownPreviewConfiguration.getForResource(resource);
         this._previewConfigurationsForWorkspaces.set(this._getKey(resource), config);
+
         return config;
     }
     public hasConfigurationChanged(resource: vscode.Uri): boolean {
         const key = this._getKey(resource);
+
         const currentConfig = this._previewConfigurationsForWorkspaces.get(key);
+
         const newConfig = MarkdownPreviewConfiguration.getForResource(resource);
+
         return (!currentConfig || !currentConfig.isEqualTo(newConfig));
     }
     private _getKey(resource: vscode.Uri): string {
         const folder = vscode.workspace.getWorkspaceFolder(resource);
+
         return folder ? folder.uri.toString() : '';
     }
 }

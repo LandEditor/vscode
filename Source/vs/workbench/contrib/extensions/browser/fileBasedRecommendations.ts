@@ -27,8 +27,11 @@ import { IWorkspaceContextService } from '../../../../platform/workspace/common/
 import { areSameExtensions } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
 import { isEmptyObject } from '../../../../base/common/types.js';
 import { PLAINTEXT_LANGUAGE_ID } from '../../../../editor/common/languages/modesRegistry.js';
+
 const promptedRecommendationsStorageKey = 'fileBasedRecommendations/promptedRecommendations';
+
 const recommendationsStorageKey = 'extensionsAssistant/recommendations';
+
 const milliSecondsInADay = 1000 * 60 * 60 * 24;
 export class FileBasedRecommendations extends ExtensionRecommendations {
     private readonly fileOpenRecommendations: IStringDictionary<IFileOpenCondition[]>;
@@ -37,6 +40,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
         recommendedTime: number;
     }>();
     private readonly fileBasedImportantRecommendations = new Set<string>();
+
     get recommendations(): ReadonlyArray<GalleryExtensionRecommendation> {
         const recommendations: GalleryExtensionRecommendation[] = [];
         [...this.fileBasedRecommendations.keys()]
@@ -60,6 +64,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
                 }
             });
         });
+
         return recommendations;
     }
     get importantRecommendations(): ReadonlyArray<GalleryExtensionRecommendation> {
@@ -87,6 +92,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
     private readonly workspaceContextService: IWorkspaceContextService) {
         super();
         this.fileOpenRecommendations = {};
+
         if (productService.extensionRecommendations) {
             for (const [extensionId, recommendation] of Object.entries(productService.extensionRecommendations)) {
                 if (recommendation.onFileOpen) {
@@ -100,11 +106,14 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
             return;
         }
         await this.extensionsWorkbenchService.whenInitialized;
+
         const cachedRecommendations = this.getCachedRecommendations();
+
         const now = Date.now();
         // Retire existing recommendations if they are older than a week or are not part of this.productService.extensionTips anymore
         Object.entries(cachedRecommendations).forEach(([key, value]) => {
             const diff = (now - value) / milliSecondsInADay;
+
             if (diff <= 7 && this.fileOpenRecommendations[key]) {
                 this.fileBasedRecommendations.set(key.toLowerCase(), { recommendedTime: value });
             }
@@ -114,10 +123,12 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
     }
     private onModelAdded(model: ITextModel): void {
         const uri = model.uri.scheme === Schemas.vscodeNotebookCell ? CellUri.parse(model.uri)?.notebook : model.uri;
+
         if (!uri) {
             return;
         }
         const supportedSchemes = distinct([Schemas.untitled, Schemas.file, Schemas.vscodeRemote, ...this.workspaceContextService.getWorkspace().folders.map(folder => folder.uri.scheme)]);
+
         if (!uri || !supportedSchemes.includes(uri.scheme)) {
             return;
         }
@@ -134,26 +145,42 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
         }
         const pattern = extname(uri).toLowerCase();
         extensionRecommendations = extensionRecommendations ?? this.recommendationsByPattern.get(pattern) ?? this.fileOpenRecommendations;
+
         const extensionRecommendationEntries = Object.entries(extensionRecommendations);
+
         if (extensionRecommendationEntries.length === 0) {
             return;
         }
         const processedPathGlobs = new Map<string, boolean>();
+
         const installed = this.extensionsWorkbenchService.local;
+
         const recommendationsByPattern: IStringDictionary<IFileOpenCondition[]> = {};
+
         const matchedRecommendations: IStringDictionary<IFileOpenCondition[]> = {};
+
         const unmatchedRecommendations: IStringDictionary<IFileOpenCondition[]> = {};
+
         let listenOnLanguageChange = false;
+
         const languageId = model.getLanguageId();
+
         for (const [extensionId, conditions] of extensionRecommendationEntries) {
             const conditionsByPattern: IFileOpenCondition[] = [];
+
             const matchedConditions: IFileOpenCondition[] = [];
+
             const unmatchedConditions: IFileOpenCondition[] = [];
+
             for (const condition of conditions) {
                 let languageMatched = false;
+
                 let pathGlobMatched = false;
+
                 const isLanguageCondition = !!(<IFileLanguageCondition>condition).languages;
+
                 const isFileContentCondition = !!(<IFileContentCondition>condition).contentPattern;
+
                 if (isLanguageCondition || isFileContentCondition) {
                     conditionsByPattern.push(condition);
                 }
@@ -164,6 +191,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
                 }
                 if ((<IFilePathCondition>condition).pathGlob) {
                     const pathGlob = (<IFilePathCondition>condition).pathGlob;
+
                     if (processedPathGlobs.get(pathGlob) ?? match((<IFilePathCondition>condition).pathGlob, uri.with({ fragment: '' }).toString())) {
                         pathGlobMatched = true;
                     }
@@ -196,6 +224,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
                 else {
                     if (isLanguageCondition || isFileContentCondition) {
                         unmatchedConditions.push(condition);
+
                         if (isLanguageCondition) {
                             listenOnLanguageChange = true;
                         }
@@ -236,11 +265,15 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
     }
     private promptFromRecommendations(uri: URI, model: ITextModel, extensionRecommendations: IStringDictionary<IFileOpenCondition[]>): void {
         let isImportantRecommendationForLanguage = false;
+
         const importantRecommendations = new Set<string>();
+
         const fileBasedRecommendations = new Set<string>();
+
         for (const [extensionId, conditions] of Object.entries(extensionRecommendations)) {
             for (const condition of conditions) {
                 fileBasedRecommendations.add(extensionId);
+
                 if (condition.important) {
                     importantRecommendations.add(extensionId);
                     this.fileBasedImportantRecommendations.add(extensionId);
@@ -257,11 +290,14 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
             this.fileBasedRecommendations.set(recommendation, filedBasedRecommendation);
         }
         this.storeCachedRecommendations();
+
         if (this.extensionRecommendationNotificationService.hasToIgnoreRecommendationNotifications()) {
             return;
         }
         const language = model.getLanguageId();
+
         const languageName = this.languageService.getLanguageName(language);
+
         if (importantRecommendations.size &&
             this.promptRecommendedExtensionForFileType(languageName && isImportantRecommendationForLanguage && language !== PLAINTEXT_LANGUAGE_ID ? localize('languageName', "the {0} language", languageName) : basename(uri), language, [...importantRecommendations])) {
             return;
@@ -269,12 +305,15 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
     }
     private promptRecommendedExtensionForFileType(name: string, language: string, recommendations: string[]): boolean {
         recommendations = this.filterIgnoredOrNotAllowed(recommendations);
+
         if (recommendations.length === 0) {
             return false;
         }
         recommendations = this.filterInstalled(recommendations, this.extensionsWorkbenchService.local)
             .filter(extensionId => this.fileBasedImportantRecommendations.has(extensionId));
+
         const promptedRecommendations = language !== PLAINTEXT_LANGUAGE_ID ? this.getPromptedRecommendations()[language] : undefined;
+
         if (promptedRecommendations) {
             recommendations = recommendations.filter(extensionId => promptedRecommendations.includes(extensionId));
         }
@@ -282,11 +321,13 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
             return false;
         }
         this.promptImportantExtensionsInstallNotification(recommendations, name, language);
+
         return true;
     }
     private async promptImportantExtensionsInstallNotification(extensions: string[], name: string, language: string): Promise<void> {
         try {
             const result = await this.extensionRecommendationNotificationService.promptImportantExtensionsInstallNotification({ extensions, name, source: RecommendationSource.FILE });
+
             if (result === RecommendationsNotificationResult.Accepted) {
                 this.addToPromptedRecommendations(language, extensions);
             }
@@ -303,6 +344,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
     }
     private filterIgnoredOrNotAllowed(recommendationsToSuggest: string[]): string[] {
         const ignoredRecommendations = [...this.extensionIgnoredRecommendationsService.ignoredRecommendations, ...this.extensionRecommendationNotificationService.ignoredRecommendations];
+
         return recommendationsToSuggest.filter(id => !ignoredRecommendations.includes(id));
     }
     private filterInstalled(recommendationsToSuggest: string[], installed: IExtension[]): string[] {
@@ -312,10 +354,12 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
             }
             return result;
         }, new Set<string>());
+
         return recommendationsToSuggest.filter(id => !installedExtensionsIds.has(id.toLowerCase()));
     }
     private getCachedRecommendations(): IStringDictionary<number> {
         let storedRecommendations = JSON.parse(this.storageService.get(recommendationsStorageKey, StorageScope.PROFILE, '[]'));
+
         if (Array.isArray(storedRecommendations)) {
             storedRecommendations = storedRecommendations.reduce<IStringDictionary<number>>((result, id) => { result[id] = Date.now(); return result; }, {});
         }
@@ -325,6 +369,7 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
                 result[key.toLowerCase()] = value;
             }
         });
+
         return result;
     }
     private storeCachedRecommendations(): void {

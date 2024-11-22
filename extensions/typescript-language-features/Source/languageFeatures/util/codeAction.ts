@@ -13,6 +13,7 @@ export function getEditForCodeAction(client: ITypeScriptServiceClient, action: P
 }
 export async function applyCodeAction(client: ITypeScriptServiceClient, action: Proto.CodeAction, token: vscode.CancellationToken): Promise<boolean> {
     const workspaceEdit = getEditForCodeAction(client, action);
+
     if (workspaceEdit) {
         if (!(await vscode.workspace.applyEdit(workspaceEdit))) {
             return false;

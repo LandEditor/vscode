@@ -19,12 +19,14 @@ import { IDisposable } from '../../../../../base/common/lifecycle.js';
 import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
 import { TerminalFindCommandId } from '../common/terminal.find.js';
 import { TerminalClipboardContribution } from '../../clipboard/browser/terminal.clipboard.contribution.js';
+
 const TERMINAL_FIND_WIDGET_INITIAL_WIDTH = 419;
 export class TerminalFindWidget extends SimpleFindWidget {
     private _findInputFocused: IContextKey<boolean>;
     private _findWidgetFocused: IContextKey<boolean>;
     private _findWidgetVisible: IContextKey<boolean>;
     private _overrideCopyOnSelectionDisposable: IDisposable | undefined;
+
     constructor(private _instance: ITerminalInstance | IDetachedTerminalInstance, 
     @IClipboardService
     clipboardService: IClipboardService, 
@@ -63,7 +65,9 @@ export class TerminalFindWidget extends SimpleFindWidget {
         this._findInputFocused = TerminalContextKeys.findInputFocus.bindTo(contextKeyService);
         this._findWidgetFocused = TerminalContextKeys.findFocus.bindTo(contextKeyService);
         this._findWidgetVisible = TerminalContextKeys.findVisible.bindTo(contextKeyService);
+
         const innerDom = this.getDomNode().firstChild;
+
         if (innerDom) {
             this._register(dom.addDisposableListener(innerDom, 'mousedown', (event) => {
                 event.stopPropagation();
@@ -91,6 +95,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
     }
     find(previous: boolean, update?: boolean) {
         const xterm = this._instance.xterm;
+
         if (!xterm) {
             return;
         }
@@ -103,8 +108,11 @@ export class TerminalFindWidget extends SimpleFindWidget {
     }
     override reveal(): void {
         const initialInput = this._instance.hasSelection() && !this._instance.selection!.includes('\n') ? this._instance.selection : undefined;
+
         const inputValue = initialInput ?? this.inputValue;
+
         const xterm = this._instance.xterm;
+
         if (xterm && inputValue && inputValue !== '') {
             // trigger highlight all matches
             this._findPreviousWithEvent(xterm, inputValue, { incremental: true, regex: this._getRegexValue(), wholeWord: this._getWholeWordValue(), caseSensitive: this._getCaseSensitiveValue() }).then(foundMatch => {
@@ -113,11 +121,13 @@ export class TerminalFindWidget extends SimpleFindWidget {
             });
         }
         this.updateButtons(false);
+
         super.reveal(inputValue);
         this._findWidgetVisible.set(true);
     }
     override show() {
         const initialInput = this._instance.hasSelection() && !this._instance.selection!.includes('\n') ? this._instance.selection : undefined;
+
         super.show(initialInput);
         this._findWidgetVisible.set(true);
     }
@@ -136,6 +146,7 @@ export class TerminalFindWidget extends SimpleFindWidget {
     protected _onInputChanged() {
         // Ignore input changes for now
         const xterm = this._instance.xterm;
+
         if (xterm) {
             this._findPreviousWithEvent(xterm, this.inputValue, { regex: this._getRegexValue(), wholeWord: this._getWholeWordValue(), caseSensitive: this._getCaseSensitiveValue(), incremental: true }).then(foundMatch => {
                 this.updateButtons(foundMatch);
@@ -162,10 +173,12 @@ export class TerminalFindWidget extends SimpleFindWidget {
     }
     findFirst() {
         const instance = this._instance;
+
         if (instance.hasSelection()) {
             instance.clearSelection();
         }
         const xterm = instance.xterm;
+
         if (xterm) {
             this._findPreviousWithEvent(xterm, this.inputValue, { regex: this._getRegexValue(), wholeWord: this._getWholeWordValue(), caseSensitive: this._getCaseSensitiveValue() });
         }
@@ -173,12 +186,14 @@ export class TerminalFindWidget extends SimpleFindWidget {
     private async _findNextWithEvent(xterm: IXtermTerminal, term: string, options: ISearchOptions): Promise<boolean> {
         return xterm.findNext(term, options).then(foundMatch => {
             this._register(Event.once(xterm.onDidChangeSelection)(() => xterm.clearActiveSearchDecoration()));
+
             return foundMatch;
         });
     }
     private async _findPreviousWithEvent(xterm: IXtermTerminal, term: string, options: ISearchOptions): Promise<boolean> {
         return xterm.findPrevious(term, options).then(foundMatch => {
             this._register(Event.once(xterm.onDidChangeSelection)(() => xterm.clearActiveSearchDecoration()));
+
             return foundMatch;
         });
     }

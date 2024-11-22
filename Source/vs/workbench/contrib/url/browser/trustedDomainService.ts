@@ -18,15 +18,18 @@ export interface ITrustedDomainService {
 export class TrustedDomainService extends Disposable implements ITrustedDomainService {
     _serviceBrand: undefined;
     private _staticTrustedDomainsResult!: WindowIdleValue<string[]>;
+
     constructor(
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
     @IStorageService
     private readonly _storageService: IStorageService) {
         super();
+
         const initStaticDomainsResult = () => {
             return new WindowIdleValue(mainWindow, () => {
                 const { defaultTrustedDomains, trustedDomains, } = this._instantiationService.invokeFunction(readStaticTrustedDomains);
+
                 return [
                     ...defaultTrustedDomains,
                     ...trustedDomains
@@ -41,11 +44,14 @@ export class TrustedDomainService extends Disposable implements ITrustedDomainSe
     }
     isValid(resource: URI): boolean {
         const { defaultTrustedDomains, trustedDomains, } = this._instantiationService.invokeFunction(readStaticTrustedDomains);
+
         const allTrustedDomains = [...defaultTrustedDomains, ...trustedDomains];
+
         return isURLDomainTrusted(resource, allTrustedDomains);
     }
 }
 const rLocalhost = /^localhost(:\d+)?$/i;
+
 const r127 = /^127.0.0.1(:\d+)?$/;
 function isLocalhostAuthority(authority: string) {
     return rLocalhost.test(authority) || r127.test(authority);
@@ -55,8 +61,10 @@ function isLocalhostAuthority(authority: string) {
  */
 function normalizeURL(url: string | URI): string {
     const caseInsensitiveAuthorities = ['github.com'];
+
     try {
         const parsed = typeof url === 'string' ? URI.parse(url, true) : url;
+
         if (caseInsensitiveAuthorities.includes(parsed.authority)) {
             return parsed.with({ path: parsed.path.toLowerCase() }).toString(true);
         }
@@ -79,6 +87,7 @@ function normalizeURL(url: string | URI): string {
 export function isURLDomainTrusted(url: URI, trustedDomains: string[]): boolean {
     url = URI.parse(normalizeURL(url));
     trustedDomains = trustedDomains.map(normalizeURL);
+
     if (isLocalhostAuthority(url.authority)) {
         return true;
     }

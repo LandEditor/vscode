@@ -46,6 +46,7 @@ export async function main(argv: string[]): Promise<any> {
 		args = parseCLIProcessArgv(argv);
 	} catch (err) {
 		console.error(err.message);
+
 		return;
 	}
 
@@ -53,6 +54,7 @@ export async function main(argv: string[]): Promise<any> {
 		if (args[subcommand]) {
 			if (!product.tunnelApplicationName) {
 				console.error(`'${subcommand}' command not supported in ${product.applicationName}`);
+
 				return;
 			}
 			const env: IProcessEnvironment = {
@@ -67,7 +69,9 @@ export async function main(argv: string[]): Promise<any> {
 			const tunnelArgs = argv.slice(argv.indexOf(subcommand) + 1); // all arguments behind `tunnel`
 			return new Promise((resolve, reject) => {
 				let tunnelProcess: ChildProcess;
+
 				const stdio: StdioOptions = ['ignore', 'pipe', 'pipe'];
+
 				if (process.env['VSCODE_DEV']) {
 					tunnelProcess = spawn('cargo', ['run', '--', subcommand, ...tunnelArgs], { cwd: join(getAppRoot(), 'cli'), stdio, env });
 				} else {
@@ -75,6 +79,7 @@ export async function main(argv: string[]): Promise<any> {
 						// ./Contents/MacOS/Electron => ./Contents/Resources/app/bin/code-tunnel-insiders
 						? join(dirname(dirname(process.execPath)), 'Resources', 'app')
 						: dirname(process.execPath);
+
 					const tunnelCommand = join(appPath, 'bin', `${product.tunnelApplicationName}${isWindows ? '.exe' : ''}`);
 					tunnelProcess = spawn(tunnelCommand, [subcommand, ...tunnelArgs], { cwd: cwd(), stdio, env });
 				}
@@ -101,6 +106,7 @@ export async function main(argv: string[]): Promise<any> {
 	// Shell integration
 	else if (args['locate-shell-integration-path']) {
 		let file: string;
+
 		switch (args['locate-shell-integration-path']) {
 			// Usage: `[[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path bash)"`
 			case 'bash': file = 'shellIntegration-bash.sh'; break;
@@ -110,6 +116,7 @@ export async function main(argv: string[]): Promise<any> {
 			case 'zsh': file = 'shellIntegration-rc.zsh'; break;
 			// Usage: `string match -q "$TERM_PROGRAM" "vscode"; and . (code --locate-shell-integration-path fish)`
 			case 'fish': file = 'shellIntegration.fish'; break;
+
 			default: throw new Error('Error using --locate-shell-integration-path: Invalid shell type');
 		}
 		console.log(join(getAppRoot(), 'out', 'vs', 'workbench', 'contrib', 'terminal', 'common', 'scripts', file));
@@ -124,6 +131,7 @@ export async function main(argv: string[]): Promise<any> {
 		// built, because our location on disk is different if built.
 
 		let cliProcessMain: string;
+
 		if (process.env['VSCODE_DEV']) {
 			cliProcessMain = './cliProcessMain.js';
 		} else {
@@ -139,12 +147,15 @@ export async function main(argv: string[]): Promise<any> {
 	// Write File
 	else if (args['file-write']) {
 		const argsFile = args._[0];
+
 		if (!argsFile || !isAbsolute(argsFile) || !existsSync(argsFile) || !statSync(argsFile).isFile()) {
 			throw new Error('Using --file-write with invalid arguments.');
 		}
 
 		let source: string | undefined;
+
 		let target: string | undefined;
+
 		try {
 			const argsContents: { source: string; target: string } = JSON.parse(readFileSync(argsFile, 'utf8'));
 			source = argsContents.source;
@@ -177,9 +188,12 @@ export async function main(argv: string[]): Promise<any> {
 
 			// Check for readonly status and chmod if so if we are told so
 			let targetMode: number = 0;
+
 			let restoreMode = false;
+
 			if (!!args['file-chmod']) {
 				targetMode = statSync(target).mode;
+
 				if (!(targetMode & 0o200 /* File mode indicating writable by owner */)) {
 					chmodSync(target, targetMode | 0o200);
 					restoreMode = true;
@@ -188,6 +202,7 @@ export async function main(argv: string[]): Promise<any> {
 
 			// Write source to target
 			const data = readFileSync(source);
+
 			if (isWindows) {
 				// On Windows we use a different strategy of saving the file
 				// by first truncating the file and then writing with r+ mode.
@@ -207,6 +222,7 @@ export async function main(argv: string[]): Promise<any> {
 			}
 		} catch (error) {
 			error.message = `Error using --file-write: ${error.message}`;
+
 			throw error;
 		}
 	}
@@ -236,6 +252,7 @@ export async function main(argv: string[]): Promise<any> {
 		}
 
 		const hasReadStdinArg = args._.some(arg => arg === '-');
+
 		if (hasReadStdinArg) {
 			// remove the "-" argument when we read from stdin
 			args._ = args._.filter(a => a !== '-');
@@ -243,6 +260,7 @@ export async function main(argv: string[]): Promise<any> {
 		}
 
 		let stdinFilePath: string | undefined;
+
 		if (hasStdinWithoutTty()) {
 
 			// Read from stdin: we require a single "-" argument to be passed in order to start reading from
@@ -255,6 +273,7 @@ export async function main(argv: string[]): Promise<any> {
 				try {
 					const readFromStdinDone = new DeferredPromise<void>();
 					await readFromStdin(stdinFilePath, !!args.verbose, () => readFromStdinDone.complete());
+
 					if (!args.wait) {
 
 						// if `--wait` is not provided, we keep this process alive
@@ -306,8 +325,10 @@ export async function main(argv: string[]): Promise<any> {
 		// to wait for it to be deleted to monitor that the edited file
 		// is closed and then exit the waiting process.
 		let waitMarkerFilePath: string | undefined;
+
 		if (args.wait) {
 			waitMarkerFilePath = createWaitMarkerFileSync(args.verbose);
+
 			if (waitMarkerFilePath) {
 				addArg(argv, '--waitMarkerFilePath', waitMarkerFilePath);
 			}
@@ -318,6 +339,7 @@ export async function main(argv: string[]): Promise<any> {
 			// - the launched process terminates (e.g. due to a crash)
 			processCallbacks.push(async child => {
 				let childExitPromise;
+
 				if (isMacOSBigSurOrNewer) {
 					// On Big Sur, we resolve the following promise only when the child,
 					// i.e. the open command, exited with a signal or error. Otherwise, we
@@ -355,8 +377,11 @@ export async function main(argv: string[]): Promise<any> {
 		// stop profiling.
 		if (args['prof-startup']) {
 			const profileHost = '127.0.0.1';
+
 			const portMain = await findFreePort(randomPort(), 10, 3000);
+
 			const portRenderer = await findFreePort(portMain + 1, 10, 3000);
+
 			const portExthost = await findFreePort(portRenderer + 1, 10, 3000);
 
 			// fail the operation when one of the ports couldn't be acquired.
@@ -381,6 +406,7 @@ export async function main(argv: string[]): Promise<any> {
 						const profiler = await import('v8-inspect-profiler');
 
 						let session: ProfilingSession;
+
 						try {
 							session = await profiler.startProfiling({ ...opts, host: profileHost });
 						} catch (err) {
@@ -393,7 +419,9 @@ export async function main(argv: string[]): Promise<any> {
 									return;
 								}
 								let suffix = '';
+
 								const result = await session.stop();
+
 								if (!process.env['VSCODE_DEV']) {
 									// when running from a not-development-build we remove
 									// absolute filenames because we don't want to reveal anything
@@ -412,7 +440,9 @@ export async function main(argv: string[]): Promise<any> {
 				try {
 					// load and start profiler
 					const mainProfileRequest = Profiler.start('main', filenamePrefix, { port: portMain });
+
 					const extHostProfileRequest = Profiler.start('extHost', filenamePrefix, { port: portExthost, tries: 300 });
+
 					const rendererProfileRequest = Profiler.start('renderer', filenamePrefix, {
 						port: portRenderer,
 						tries: 200,
@@ -431,7 +461,9 @@ export async function main(argv: string[]): Promise<any> {
 					});
 
 					const main = await mainProfileRequest;
+
 					const extHost = await extHostProfileRequest;
+
 					const renderer = await rendererProfileRequest;
 
 					// wait for the renderer to delete the marker file
@@ -461,6 +493,7 @@ export async function main(argv: string[]): Promise<any> {
 		}
 
 		let child: ChildProcess;
+
 		if (!isMacOSBigSurOrNewer) {
 			if (!args.verbose && args.status) {
 				options['stdio'] = ['ignore', 'pipe', 'ignore']; // restore ability to see output when --status is used
@@ -534,7 +567,9 @@ export async function main(argv: string[]): Promise<any> {
 				// vscode source arg. Because the OSS app isn't bundled,
 				// it needs the full vscode source arg to launch properly.
 				const curdir = '.';
+
 				const launchDirIndex = spawnArgs.indexOf(curdir);
+
 				if (launchDirIndex !== -1) {
 					spawnArgs[launchDirIndex] = resolve(curdir);
 				}

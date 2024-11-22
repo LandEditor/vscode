@@ -48,10 +48,13 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
     private readonly _statuses: Map<string, ITerminalStatus> = new Map();
     private readonly _statusTimeouts: Map<string, number> = new Map();
     private readonly _onDidAddStatus = this._register(new Emitter<ITerminalStatus>());
+
     get onDidAddStatus(): Event<ITerminalStatus> { return this._onDidAddStatus.event; }
     private readonly _onDidRemoveStatus = this._register(new Emitter<ITerminalStatus>());
+
     get onDidRemoveStatus(): Event<ITerminalStatus> { return this._onDidRemoveStatus.event; }
     private readonly _onDidChangePrimaryStatus = this._register(new Emitter<ITerminalStatus | undefined>());
+
     get onDidChangePrimaryStatus(): Event<ITerminalStatus | undefined> { return this._onDidChangePrimaryStatus.event; }
     constructor(
     @IConfigurationService
@@ -60,6 +63,7 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
     }
     get primary(): ITerminalStatus | undefined {
         let result: ITerminalStatus | undefined;
+
         for (const s of this._statuses.values()) {
             if (!result || s.severity >= result.severity) {
                 if (s.icon || !result?.icon) {
@@ -72,7 +76,9 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
     get statuses(): ITerminalStatus[] { return Array.from(this._statuses.values()); }
     add(status: ITerminalStatus, duration?: number) {
         status = this._applyAnimationSetting(status);
+
         const outTimeout = this._statusTimeouts.get(status.id);
+
         if (outTimeout) {
             mainWindow.clearTimeout(outTimeout);
             this._statusTimeouts.delete(status.id);
@@ -82,6 +88,7 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
             this._statusTimeouts.set(status.id, timeout);
         }
         const existingStatus = this._statuses.get(status.id);
+
         if (existingStatus && existingStatus !== status) {
             this._onDidRemoveStatus.fire(existingStatus);
             this._statuses.delete(existingStatus.id);
@@ -90,7 +97,9 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
             const oldPrimary = this.primary;
             this._statuses.set(status.id, status);
             this._onDidAddStatus.fire(status);
+
             const newPrimary = this.primary;
+
             if (oldPrimary !== newPrimary) {
                 this._onDidChangePrimaryStatus.fire(newPrimary);
             }
@@ -105,6 +114,7 @@ export class TerminalStatusList extends Disposable implements ITerminalStatusLis
             const wasPrimary = this.primary?.id === status.id;
             this._statuses.delete(status.id);
             this._onDidRemoveStatus.fire(status);
+
             if (wasPrimary) {
                 this._onDidChangePrimaryStatus.fire(this.primary);
             }
@@ -142,8 +152,10 @@ export function getColorForSeverity(severity: Severity): string {
     switch (severity) {
         case Severity.Error:
             return listErrorForeground;
+
         case Severity.Warning:
             return listWarningForeground;
+
         default:
             return '';
     }

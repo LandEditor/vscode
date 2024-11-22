@@ -18,7 +18,9 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
          * lcsLengths.get(i, j): Length of the longest common subsequence of sequence1.substring(0, i + 1) and sequence2.substring(0, j + 1).
          */
         const lcsLengths = new Array2D<number>(sequence1.length, sequence2.length);
+
         const directions = new Array2D<number>(sequence1.length, sequence2.length);
+
         const lengths = new Array2D<number>(sequence1.length, sequence2.length);
         // ==== Initializing lcsLengths ====
         for (let s1 = 0; s1 < sequence1.length; s1++) {
@@ -27,8 +29,11 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
                     return DiffAlgorithmResult.trivialTimedOut(sequence1, sequence2);
                 }
                 const horizontalLen = s1 === 0 ? 0 : lcsLengths.get(s1 - 1, s2);
+
                 const verticalLen = s2 === 0 ? 0 : lcsLengths.get(s1, s2 - 1);
+
                 let extendedSeqScore: number;
+
                 if (sequence1.getElement(s1) === sequence2.getElement(s2)) {
                     if (s1 === 0 || s2 === 0) {
                         extendedSeqScore = 0;
@@ -46,6 +51,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
                     extendedSeqScore = -1;
                 }
                 const newValue = Math.max(horizontalLen, verticalLen, extendedSeqScore);
+
                 if (newValue === extendedSeqScore) {
                     // Prefer diagonals
                     const prevLen = s1 > 0 && s2 > 0 ? lengths.get(s1 - 1, s2 - 1) : 0;
@@ -65,8 +71,11 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
         }
         // ==== Backtracking ====
         const result: SequenceDiff[] = [];
+
         let lastAligningPosS1: number = sequence1.length;
+
         let lastAligningPosS2: number = sequence2.length;
+
         function reportDecreasingAligningPositions(s1: number, s2: number): void {
             if (s1 + 1 !== lastAligningPosS1 || s2 + 1 !== lastAligningPosS2) {
                 result.push(new SequenceDiff(new OffsetRange(s1 + 1, lastAligningPosS1), new OffsetRange(s2 + 1, lastAligningPosS2)));
@@ -75,7 +84,9 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
             lastAligningPosS2 = s2;
         }
         let s1 = sequence1.length - 1;
+
         let s2 = sequence2.length - 1;
+
         while (s1 >= 0 && s2 >= 0) {
             if (directions.get(s1, s2) === 3) {
                 reportDecreasingAligningPositions(s1, s2);
@@ -93,6 +104,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
         }
         reportDecreasingAligningPositions(-1, -1);
         result.reverse();
+
         return new DiffAlgorithmResult(result, false);
     }
 }

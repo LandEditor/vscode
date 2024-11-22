@@ -13,13 +13,16 @@ import { VSBuffer } from '../../../../base/common/buffer.js';
 import { readTrustedDomains, TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, TRUSTED_DOMAINS_STORAGE_KEY } from './trustedDomains.js';
 import { assertIsDefined } from '../../../../base/common/types.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+
 const TRUSTED_DOMAINS_SCHEMA = 'trustedDomains';
+
 const TRUSTED_DOMAINS_STAT: IStat = {
     type: FileType.File,
     ctime: Date.now(),
     mtime: Date.now(),
     size: 0
 };
+
 const CONFIG_HELP_TEXT_PRE = `// Links matching one or more entries in the list below can be opened without link protection.
 // The following examples show what entries can look like:
 // - "https://microsoft.com": Matches this specific domain using https
@@ -35,17 +38,21 @@ const CONFIG_HELP_TEXT_PRE = `// Links matching one or more entries in the list 
 // - "*": Match all domains using either http or https
 //
 `;
+
 const CONFIG_HELP_TEXT_AFTER = `//
 // You can use the "Manage Trusted Domains" command to open this file.
 // Save this file to apply the trusted domains rules.
 `;
+
 const CONFIG_PLACEHOLDER_TEXT = `[
 	// "https://microsoft.com"
 ]`;
 function computeTrustedDomainContent(defaultTrustedDomains: string[], trustedDomains: string[], configuring?: string) {
     let content = CONFIG_HELP_TEXT_PRE;
+
     if (defaultTrustedDomains.length > 0) {
         content += `// By default, VS Code trusts "localhost" as well as the following domains:\n`;
+
         defaultTrustedDomains.forEach(d => {
             content += `// - "${d}"\n`;
         });
@@ -55,6 +62,7 @@ function computeTrustedDomainContent(defaultTrustedDomains: string[], trustedDom
     }
     content += CONFIG_HELP_TEXT_AFTER;
     content += configuring ? `\n// Currently configuring trust for ${configuring}\n` : '';
+
     if (trustedDomains.length === 0) {
         content += CONFIG_PLACEHOLDER_TEXT;
     }
@@ -68,6 +76,7 @@ export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWith
     readonly capabilities = FileSystemProviderCapabilities.FileReadWrite;
     readonly onDidChangeCapabilities = Event.None;
     readonly onDidChangeFile = Event.None;
+
     constructor(
     @IFileService
     private readonly fileService: IFileService, 
@@ -82,8 +91,11 @@ export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWith
     }
     async readFile(resource: URI): Promise<Uint8Array> {
         let trustedDomainsContent = this.storageService.get(TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, StorageScope.APPLICATION);
+
         const configuring: string | undefined = resource.fragment;
+
         const { defaultTrustedDomains, trustedDomains } = await this.instantiationService.invokeFunction(readTrustedDomains);
+
         if (!trustedDomainsContent ||
             trustedDomainsContent.indexOf(CONFIG_HELP_TEXT_PRE) === -1 ||
             trustedDomainsContent.indexOf(CONFIG_HELP_TEXT_AFTER) === -1 ||
@@ -92,11 +104,13 @@ export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWith
             trustedDomainsContent = computeTrustedDomainContent(defaultTrustedDomains, trustedDomains, configuring);
         }
         const buffer = VSBuffer.fromString(trustedDomainsContent).buffer;
+
         return buffer;
     }
     writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
         try {
             const trustedDomainsContent = VSBuffer.wrap(content).toString();
+
             const trustedDomains = parse(trustedDomainsContent);
             this.storageService.store(TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, trustedDomainsContent, StorageScope.APPLICATION, StorageTarget.USER);
             this.storageService.store(TRUSTED_DOMAINS_STORAGE_KEY, JSON.stringify(trustedDomains) || '', StorageScope.APPLICATION, StorageTarget.USER);

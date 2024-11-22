@@ -15,6 +15,7 @@ export class TerminalLogService extends Disposable implements ITerminalLogServic
     declare _logBrand: undefined;
     private readonly _logger: ILogger;
     private _workspaceId!: string;
+
     get onDidChangeLogLevel(): Event<LogLevel> { return this._logger.onDidChangeLogLevel; }
     constructor(
     @ILoggerService
@@ -39,6 +40,7 @@ export class TerminalLogService extends Disposable implements ITerminalLogServic
     error(message: string | Error, ...args: any[]): void {
         if (message instanceof Error) {
             this._logger.error(this._formatMessage(''), message, args);
+
             return;
         }
         this._logger.error(this._formatMessage(message), args);

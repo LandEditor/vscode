@@ -20,6 +20,7 @@ class DefaultFoldingRangeProvider extends Disposable implements IWorkbenchContri
     static extensionIds: (string | null)[] = [];
     static extensionItemLabels: string[] = [];
     static extensionDescriptions: string[] = [];
+
     constructor(
     @IExtensionService
     private readonly _extensionService: IExtensionService, 
@@ -38,8 +39,11 @@ class DefaultFoldingRangeProvider extends Disposable implements IWorkbenchContri
         DefaultFoldingRangeProvider.extensionIds.push(null);
         DefaultFoldingRangeProvider.extensionItemLabels.push(nls.localize('null', 'All'));
         DefaultFoldingRangeProvider.extensionDescriptions.push(nls.localize('nullFormatterDescription', "All active folding range providers"));
+
         const languageExtensions: IExtensionDescription[] = [];
+
         const otherExtensions: IExtensionDescription[] = [];
+
         for (const extension of this._extensionService.extensions) {
             if (extension.main || extension.browser) {
                 if (extension.categories?.find(cat => cat === 'Programming Languages')) {
@@ -51,6 +55,7 @@ class DefaultFoldingRangeProvider extends Disposable implements IWorkbenchContri
             }
         }
         const sorter = (a: IExtensionDescription, b: IExtensionDescription) => a.name.localeCompare(b.name);
+
         for (const extension of languageExtensions.sort(sorter)) {
             DefaultFoldingRangeProvider.extensionIds.push(extension.identifier.value);
             DefaultFoldingRangeProvider.extensionItemLabels.push(extension.displayName ?? '');
@@ -64,6 +69,7 @@ class DefaultFoldingRangeProvider extends Disposable implements IWorkbenchContri
     }
     private _selectFoldingRangeProvider(providers: FoldingRangeProvider[], document: ITextModel): FoldingRangeProvider[] | undefined {
         const value = this._configurationService.getValue<string>(DefaultFoldingRangeProvider.configName, { overrideIdentifier: document.getLanguageId() });
+
         if (value) {
             return providers.filter(p => p.id === value);
         }

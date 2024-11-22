@@ -15,13 +15,16 @@ export const IRemoteTunnelService = createDecorator<IRemoteTunnelService>('IRemo
 export interface IRemoteTunnelService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeTunnelStatus: Event<TunnelStatus>;
+
     getTunnelStatus(): Promise<TunnelStatus>;
+
     getMode(): Promise<TunnelMode>;
     readonly onDidChangeMode: Event<TunnelMode>;
     readonly onDidTokenFailed: Event<IRemoteTunnelSession | undefined>;
     initialize(mode: TunnelMode): Promise<TunnelStatus>;
     startTunnel(mode: ActiveTunnelMode): Promise<TunnelStatus>;
     stopTunnel(): Promise<void>;
+
     getTunnelName(): Promise<string | undefined>;
 }
 export interface ActiveTunnelMode {
@@ -54,12 +57,16 @@ export namespace TunnelStates {
         readonly onTokenFailed?: IRemoteTunnelSession;
     }
     export const disconnected = (onTokenFailed?: IRemoteTunnelSession): Disconnected => ({ type: 'disconnected', onTokenFailed });
+
     export const connected = (info: ConnectionInfo, serviceInstallFailed: boolean): Connected => ({ type: 'connected', info, serviceInstallFailed });
+
     export const connecting = (progress?: string): Connecting => ({ type: 'connecting', progress });
+
     export const uninitialized: Uninitialized = { type: 'uninitialized' };
 }
 export interface ConnectionInfo {
     link: string;
+
     domain: string;
     tunnelName: string;
     isAttached: boolean;

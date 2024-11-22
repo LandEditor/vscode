@@ -12,7 +12,9 @@ export function urlToUri(url: string, base: vscode.Uri): vscode.Uri | undefined 
         // `vscode.Uri.joinPath` cannot be used, since it understands
         // `src` as path, not as relative url. This is problematic for query args.
         const parsedUrl = new URL(url, base.toString());
+
         const uri = vscode.Uri.parse(parsedUrl.toString());
+
         return uri;
     }
     catch (e) {

@@ -7,6 +7,7 @@ import { BranchProtection, BranchProtectionProvider } from './api/git';
 import { dispose, filterEvent } from './util';
 export interface IBranchProtectionProviderRegistry {
     readonly onDidChangeBranchProtectionProviders: Event<Uri>;
+
     getBranchProtectionProviders(root: Uri): BranchProtectionProvider[];
     registerBranchProtectionProvider(root: Uri, provider: BranchProtectionProvider): Disposable;
 }
@@ -15,6 +16,7 @@ export class GitBranchProtectionProvider implements BranchProtectionProvider {
     onDidChangeBranchProtection = this._onDidChangeBranchProtection.event;
     private branchProtection!: BranchProtection;
     private disposables: Disposable[] = [];
+
     constructor(private readonly repositoryRoot: Uri) {
         const onDidChangeBranchProtectionEvent = filterEvent(workspace.onDidChangeConfiguration, e => e.affectsConfiguration('git.branchProtection', repositoryRoot));
         onDidChangeBranchProtectionEvent(this.updateBranchProtection, this, this.disposables);
@@ -25,8 +27,11 @@ export class GitBranchProtectionProvider implements BranchProtectionProvider {
     }
     private updateBranchProtection(): void {
         const scopedConfig = workspace.getConfiguration('git', this.repositoryRoot);
+
         const branchProtectionConfig = scopedConfig.get<unknown>('branchProtection') ?? [];
+
         const branchProtectionValues = Array.isArray(branchProtectionConfig) ? branchProtectionConfig : [branchProtectionConfig];
+
         const branches = branchProtectionValues
             .map(bp => typeof bp === 'string' ? bp.trim() : '')
             .filter(bp => bp !== '');

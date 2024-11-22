@@ -83,12 +83,14 @@ import { ISearchViewModelWorkbenchService } from './searchTreeModel/searchViewMo
 import { ISearchTreeMatch, isSearchTreeMatch, RenderableMatch, SearchModelLocation, IChangeEvent, FileMatchOrMatch, ISearchTreeFileMatch, ISearchTreeFolderMatch, ISearchModel, ISearchResult, isSearchTreeFileMatch, isSearchTreeFolderMatch, isSearchTreeFolderMatchNoRoot, isSearchTreeFolderMatchWithResource, isSearchTreeFolderMatchWorkspaceRoot, isSearchResult, isTextSearchHeading, ITextSearchHeading } from './searchTreeModel/searchTreeCommon.js';
 import { INotebookFileInstanceMatch, isIMatchInNotebook } from './notebookSearch/notebookSearchModelBase.js';
 import { searchMatchComparer } from './searchCompare.js';
+
 const $ = dom.$;
 export enum SearchViewPosition {
     SideBar,
     Panel
 }
 const SEARCH_CANCELLED_MESSAGE = nls.localize('searchCanceled', "Search was canceled before any results could be found - ");
+
 const DEBOUNCE_DELAY = 75;
 export class SearchView extends ViewPane {
     private static readonly ACTIONS_RIGHT_CLASS_NAME = 'actions-right';
@@ -146,6 +148,7 @@ export class SearchView extends ViewPane {
     private _onSearchResultChangedDisposable: IDisposable | undefined;
     private searchDataSource: SearchViewDataSource | undefined;
     private refreshTreeController: RefreshTreeController;
+
     constructor(options: IViewPaneOptions, 
     @IFileService
     private readonly fileService: IFileService, 
@@ -227,6 +230,7 @@ export class SearchView extends ViewPane {
         this.refreshTreeController = this._register(this.instantiationService.createInstance(RefreshTreeController, this, () => this.searchConfig));
         this._register(this.contextKeyService.onDidChangeContext(e => {
             const keys = Constants.SearchContext.hasAIResultProvider.keys();
+
             if (e.affectsSome(new Set(keys))) {
                 this.refreshHasAISetting();
             }
@@ -271,6 +275,7 @@ export class SearchView extends ViewPane {
         }));
         this._register(this.storageService.onDidChangeValue(StorageScope.WORKSPACE, SearchHistoryService.SEARCH_HISTORY_KEY, this._store)(() => {
             const restoredHistory = this.searchHistoryService.load();
+
             if (restoredHistory.include) {
                 this.inputPatternIncludes.prependHistory(restoredHistory.include);
             }
@@ -301,6 +306,7 @@ export class SearchView extends ViewPane {
         }
         this.isTreeLayoutViewVisible = visible;
         this.updateIndentStyles(this.themeService.getFileIconTheme());
+
         return this.refreshTreeController.queue();
     }
     private get state(): SearchUIState {
@@ -320,6 +326,7 @@ export class SearchView extends ViewPane {
     }
     private async refreshHasAISetting(): Promise<void> {
         const shouldShowAI = this.shouldShowAIResults();
+
         if (!this.tree.hasNode(this.searchResult)) {
             return;
         }
@@ -353,6 +360,7 @@ export class SearchView extends ViewPane {
         this.progressService.withProgress({ location: this.getProgressLocation(), delay: 0 }, _progress => {
             return new Promise<void>(resolve => progressComplete = resolve);
         });
+
         const slowTimer = setTimeout(() => {
             this.state = SearchUIState.SlowSearch;
         }, 2000);
@@ -369,11 +377,14 @@ export class SearchView extends ViewPane {
         this.tree.setInput(this.viewModel.searchResult);
         await this.onSearchResultsChanged();
         this.refreshInputs();
+
         asyncResults.then((complete) => {
             clearTimeout(slowTimer);
+
             return this.onSearchComplete(progressComplete, undefined, undefined, complete);
         }, (e) => {
             clearTimeout(slowTimer);
+
             return this.onSearchError(e, progressComplete, undefined, undefined);
         });
         await this.expandIfSingularResult();
@@ -383,14 +394,23 @@ export class SearchView extends ViewPane {
         this.container = dom.append(parent, dom.$('.search-view'));
         this.searchWidgetsContainerElement = dom.append(this.container, $('.search-widgets-container'));
         this.createSearchWidget(this.searchWidgetsContainerElement);
+
         const history = this.searchHistoryService.load();
+
         const filePatterns = this.viewletState['query.filePatterns'] || '';
+
         const patternExclusions = this.viewletState['query.folderExclusions'] || '';
+
         const patternExclusionsHistory: string[] = history.exclude || [];
+
         const patternIncludes = this.viewletState['query.folderIncludes'] || '';
+
         const patternIncludesHistory: string[] = history.include || [];
+
         const onlyOpenEditors = this.viewletState['query.onlyOpenEditors'] || false;
+
         const queryDetailsExpanded = this.viewletState['query.queryDetailsExpanded'] || '';
+
         const useExcludesAndIgnoreFiles = typeof this.viewletState['query.useExcludesAndIgnoreFiles'] === 'boolean' ?
             this.viewletState['query.useExcludesAndIgnoreFiles'] : true;
         this.queryDetails = dom.append(this.searchWidgetsContainerElement, $('.query-details'));
@@ -404,6 +424,7 @@ export class SearchView extends ViewPane {
         }));
         this._register(dom.addDisposableListener(this.toggleQueryDetailsButton, dom.EventType.KEY_UP, (e: KeyboardEvent) => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
                 dom.EventHelper.stop(e);
                 this.toggleQueryDetails(false);
@@ -411,6 +432,7 @@ export class SearchView extends ViewPane {
         }));
         this._register(dom.addDisposableListener(this.toggleQueryDetailsButton, dom.EventType.KEY_DOWN, (e: KeyboardEvent) => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.equals(KeyMod.Shift | KeyCode.Tab)) {
                 if (this.searchWidget.isReplaceActive()) {
                     this.searchWidget.focusReplaceAllAction();
@@ -423,7 +445,9 @@ export class SearchView extends ViewPane {
         }));
         // folder includes list
         const folderIncludesList = dom.append(this.queryDetails, $('.file-types.includes'));
+
         const filesToIncludeTitle = nls.localize('searchScope.includes', "files to include");
+
         dom.append(folderIncludesList, $('h4', undefined, filesToIncludeTitle));
         this.inputPatternIncludes = this._register(this.instantiationService.createInstance(IncludePatternInputWidget, folderIncludesList, this.contextViewService, {
             ariaLabel: filesToIncludeTitle,
@@ -439,7 +463,9 @@ export class SearchView extends ViewPane {
         this.trackInputBox(this.inputPatternIncludes.inputFocusTracker, this.inputPatternIncludesFocused);
         // excludes list
         const excludesList = dom.append(this.queryDetails, $('.file-types.excludes'));
+
         const excludesTitle = nls.localize('searchScope.excludes', "files to exclude");
+
         dom.append(excludesList, $('h4', undefined, excludesTitle));
         this.inputPatternExcludes = this._register(this.instantiationService.createInstance(ExcludePatternInputWidget, excludesList, this.contextViewService, {
             ariaLabel: excludesTitle,
@@ -453,10 +479,13 @@ export class SearchView extends ViewPane {
         this._register(this.inputPatternExcludes.onCancel(() => this.cancelSearch(false)));
         this._register(this.inputPatternExcludes.onChangeIgnoreBox(() => this.triggerQueryChange()));
         this.trackInputBox(this.inputPatternExcludes.inputFocusTracker, this.inputPatternExclusionsFocused);
+
         const updateHasFilePatternKey = () => this.hasFilePatternKey.set(this.inputPatternIncludes.getValue().length > 0 || this.inputPatternExcludes.getValue().length > 0);
         updateHasFilePatternKey();
+
         const onFilePatternSubmit = (triggeredOnType: boolean) => {
             this.triggerQueryChange({ triggeredOnType, delay: this.searchConfig.searchOnTypeDebouncePeriod });
+
             if (triggeredOnType) {
                 updateHasFilePatternKey();
             }
@@ -464,10 +493,12 @@ export class SearchView extends ViewPane {
         this._register(this.inputPatternIncludes.onSubmit(onFilePatternSubmit));
         this._register(this.inputPatternExcludes.onSubmit(onFilePatternSubmit));
         this.messagesElement = dom.append(this.container, $('.messages.text-search-provider-messages'));
+
         if (this.contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
             this.showSearchWithoutFolderMessage();
         }
         this.createSearchResultsView(this.container);
+
         if (filePatterns !== '' || patternExclusions !== '' || patternIncludes !== '' || queryDetailsExpanded !== '' || !useExcludesAndIgnoreFiles) {
             this.toggleQueryDetails(true, true, true);
         }
@@ -481,6 +512,7 @@ export class SearchView extends ViewPane {
     }
     private async onVisibilityChanged(visible: boolean): Promise<void> {
         this.viewletVisible.set(visible);
+
         if (visible) {
             if (this.changedWhileHidden) {
                 // Render if results changed while viewlet was hidden - #37818
@@ -506,18 +538,31 @@ export class SearchView extends ViewPane {
     }
     private createSearchWidget(container: HTMLElement): void {
         const contentPattern = this.viewletState['query.contentPattern'] || '';
+
         const replaceText = this.viewletState['query.replaceText'] || '';
+
         const isRegex = this.viewletState['query.regex'] === true;
+
         const isWholeWords = this.viewletState['query.wholeWords'] === true;
+
         const isCaseSensitive = this.viewletState['query.caseSensitive'] === true;
+
         const history = this.searchHistoryService.load();
+
         const searchHistory = history.search || this.viewletState['query.searchHistory'] || [];
+
         const replaceHistory = history.replace || this.viewletState['query.replaceHistory'] || [];
+
         const showReplace = typeof this.viewletState['view.showReplace'] === 'boolean' ? this.viewletState['view.showReplace'] : true;
+
         const preserveCase = this.viewletState['query.preserveCase'] === true;
+
         const isInNotebookMarkdownInput = this.viewletState['query.isInNotebookMarkdownInput'] ?? true;
+
         const isInNotebookMarkdownPreview = this.viewletState['query.isInNotebookMarkdownPreview'] ?? true;
+
         const isInNotebookCellInput = this.viewletState['query.isInNotebookCellInput'] ?? true;
+
         const isInNotebookCellOutput = this.viewletState['query.isInNotebookCellOutput'] ?? true;
         this.searchWidget = this._register(this.instantiationService.createInstance(SearchWidget, container, {
             value: contentPattern,
@@ -537,8 +582,10 @@ export class SearchView extends ViewPane {
                 isInNotebookCellOutput,
             }
         }));
+
         if (!this.searchWidget.searchInput || !this.searchWidget.replaceInput) {
             this.logService.warn(`Cannot fully create search widget. Search or replace input undefined. SearchInput: ${this.searchWidget.searchInput}, ReplaceInput: ${this.searchWidget.replaceInput}`);
+
             return;
         }
         if (showReplace) {
@@ -550,9 +597,11 @@ export class SearchView extends ViewPane {
             this.triggerQueryChange({ shouldKeepAIResults: true });
         }));
         this._register(this.searchWidget.getNotebookFilters().onDidChange(() => this.triggerQueryChange({ shouldKeepAIResults: true })));
+
         const updateHasPatternKey = () => this.hasSearchPatternKey.set(this.searchWidget.searchInput ? (this.searchWidget.searchInput.getValue().length > 0) : false);
         updateHasPatternKey();
         this._register(this.searchWidget.searchInput.onDidChange(() => updateHasPatternKey()));
+
         const updateHasReplacePatternKey = () => this.hasReplacePatternKey.set(this.searchWidget.getReplaceValue().length > 0);
         updateHasReplacePatternKey();
         this._register(this.searchWidget.replaceInput.inputBox.onDidChange(() => updateHasReplacePatternKey()));
@@ -579,6 +628,7 @@ export class SearchView extends ViewPane {
     }
     public shouldShowAIResults(): boolean {
         const hasProvider = Constants.SearchContext.hasAIResultProvider.getValue(this.contextKeyService);
+
         return !!hasProvider;
     }
     private async onConfigurationUpdated(event?: IConfigurationChangeEvent): Promise<void> {
@@ -614,16 +664,19 @@ export class SearchView extends ViewPane {
     private async refreshAndUpdateCount(event?: IChangeEvent): Promise<void> {
         this.searchWidget.setReplaceAllActionState(!this.viewModel.searchResult.isEmpty());
         this.updateSearchResultCount(this.viewModel.searchResult.query!.userDisabledExcludesAndIgnoreFiles, this.viewModel.searchResult.query?.onlyOpenEditors, event?.clearingAll);
+
         return this.refreshTreeController.queue(event);
     }
     private originalShouldCollapse(match: RenderableMatch) {
         const collapseResults = this.searchConfig.collapseResults;
+
         return (collapseResults === 'alwaysCollapse' ||
             (!(isSearchTreeMatch(match)) && match.count() > 10 && collapseResults !== 'alwaysExpand')) ?
             ObjectTreeElementCollapseState.PreserveOrCollapsed : ObjectTreeElementCollapseState.PreserveOrExpanded;
     }
     private shouldCollapseAccordingToConfig(match: RenderableMatch): boolean {
         const collapseResults = this.originalShouldCollapse(match);
+
         if (collapseResults === ObjectTreeElementCollapseState.PreserveOrCollapsed) {
             return true;
         }
@@ -634,15 +687,22 @@ export class SearchView extends ViewPane {
             return;
         }
         const occurrences = this.viewModel.searchResult.count();
+
         const fileCount = this.viewModel.searchResult.fileCount();
+
         const replaceValue = this.searchWidget.getReplaceValue() || '';
+
         const afterReplaceAllMessage = this.buildAfterReplaceAllMessage(occurrences, fileCount, replaceValue);
+
         let progressComplete: () => void;
+
         let progressReporter: IProgress<IProgressStep>;
         this.progressService.withProgress({ location: this.getProgressLocation(), delay: 100, total: occurrences }, p => {
             progressReporter = p;
+
             return new Promise<void>(resolve => progressComplete = resolve);
         });
+
         const confirmation: IConfirmation = {
             title: nls.localize('replaceAll.confirmation.title', "Replace All"),
             message: this.buildReplaceAllConfirmationMessage(occurrences, fileCount, replaceValue),
@@ -653,7 +713,9 @@ export class SearchView extends ViewPane {
                 this.searchWidget.setReplaceAllActionState(false);
                 this.viewModel.searchResult.replaceAll(progressReporter).then(() => {
                     progressComplete();
+
                     const messageEl = this.clearMessage();
+
                     dom.append(messageEl, afterReplaceAllMessage);
                     this.reLayout();
                 }, (error) => {
@@ -717,11 +779,16 @@ export class SearchView extends ViewPane {
     }
     private clearMessage(): HTMLElement {
         this.searchWithoutFolderMessageElement = undefined;
+
         const wasHidden = this.messagesElement.style.display === 'none';
+
         dom.clearNode(this.messagesElement);
+
         dom.show(this.messagesElement);
         this.messageDisposables.clear();
+
         const newMessage = dom.append(this.messagesElement, $('.message'));
+
         if (wasHidden) {
             this.reLayout();
         }
@@ -729,7 +796,9 @@ export class SearchView extends ViewPane {
     }
     private createSearchResultsView(container: HTMLElement): void {
         this.resultsElement = dom.append(container, $('.results.show-file-icons.file-icon-themable-tree'));
+
         const delegate = this.instantiationService.createInstance(SearchDelegate);
+
         const identityProvider: IIdentityProvider<RenderableMatch> = {
             getId(element: RenderableMatch) {
                 return element.id();
@@ -779,6 +848,7 @@ export class SearchView extends ViewPane {
         }));
         this.tree.setInput(this.viewModel.searchResult);
         this._register(this.tree.onContextMenu(e => this.onContextMenu(e)));
+
         const updateHasSomeCollapsible = () => this.toggleCollapseStateDelayer.trigger(() => this.hasSomeCollapsibleResultKey.set(this.hasSomeCollapsible()));
         updateHasSomeCollapsible();
         this._register(this.tree.onDidChangeCollapseState(() => updateHasSomeCollapsible()));
@@ -794,13 +864,16 @@ export class SearchView extends ViewPane {
         }));
         this._register(Event.debounce(this.tree.onDidChangeFocus, (last, event) => event, DEBOUNCE_DELAY, true)(() => {
             const selection = this.tree.getSelection();
+
             const focus = this.tree.getFocus()[0];
+
             if (selection.length > 1 && isSearchTreeMatch(focus)) {
                 this.onFocus(focus, true);
             }
         }));
         this._register(Event.any<any>(this.tree.onDidFocus, this.tree.onDidChangeFocus)(() => {
             const focus = this.tree.getFocus()[0];
+
             if (this.tree.isDOMFocused()) {
                 const firstElem = this.tree.getFirstElementChild(this.tree.getInput());
                 this.firstMatchFocused.set(firstElem === focus);
@@ -814,6 +887,7 @@ export class SearchView extends ViewPane {
                 this.lastFocusState = 'tree';
             }
             let editable = false;
+
             if (isSearchTreeMatch(focus)) {
                 editable = !focus.isReadonly;
             }
@@ -850,15 +924,20 @@ export class SearchView extends ViewPane {
     }
     private hasSomeCollapsible(): boolean {
         const viewer = this.getControl();
+
         const navigator = viewer.navigate();
+
         let node = navigator.first();
+
         const shouldShowAI = this.shouldShowAIResults();
+
         do {
             if (node && !viewer.isCollapsed(node) && (!shouldShowAI || !(isTextSearchHeading(node)))) {
                 // ignore the ai text search result id
                 return true;
             }
         } while (node = navigator.next());
+
         return false;
     }
     async selectNextMatch(): Promise<void> {
@@ -873,7 +952,9 @@ export class SearchView extends ViewPane {
             }
         }
         const navigator = this.tree.navigate(selected);
+
         let next = navigator.next();
+
         if (!next) {
             next = navigator.first();
         }
@@ -894,7 +975,9 @@ export class SearchView extends ViewPane {
             this.tree.setFocus([next], event);
             this.tree.setSelection([next], event);
             this.tree.reveal(next);
+
             const ariaLabel = this.treeAccessibilityProvider.getAriaLabel(next);
+
             if (ariaLabel) {
                 aria.status(ariaLabel);
             }
@@ -905,11 +988,14 @@ export class SearchView extends ViewPane {
             return;
         }
         const [selected] = this.tree.getSelection();
+
         let navigator = this.tree.navigate(selected);
+
         let prev = navigator.previous();
         // Select previous until find a Match or a collapsed item
         while (!prev || (!(isSearchTreeMatch(prev)) && !this.tree.isCollapsed(prev))) {
             const nextPrev = prev ? navigator.previous() : navigator.last();
+
             if (!prev && !nextPrev) {
                 return;
             }
@@ -918,6 +1004,7 @@ export class SearchView extends ViewPane {
         // Expand until last child is a Match
         while (prev && !(isSearchTreeMatch(prev))) {
             const nextItem = navigator.next();
+
             if (!nextItem) {
                 break;
             }
@@ -934,7 +1021,9 @@ export class SearchView extends ViewPane {
             this.tree.setFocus([prev], event);
             this.tree.setSelection([prev], event);
             this.tree.reveal(prev);
+
             const ariaLabel = this.treeAccessibilityProvider.getAriaLabel(prev);
+
             if (ariaLabel) {
                 aria.status(ariaLabel);
             }
@@ -945,6 +1034,7 @@ export class SearchView extends ViewPane {
     }
     override focus(): void {
         super.focus();
+
         if (this.lastFocusState === 'input' || !this.hasSearchResults()) {
             const updatedText = this.searchConfig.seedOnFocus ? this.updateTextFromSelection({ allowSearchOnType: false }) : false;
             this.searchWidget.focus(undefined, undefined, updatedText);
@@ -955,8 +1045,10 @@ export class SearchView extends ViewPane {
     }
     updateTextFromFindWidgetOrSelection({ allowUnselectedWord = true, allowSearchOnType = true }): boolean {
         let activeEditor = this.editorService.activeTextEditorControl;
+
         if (isCodeEditor(activeEditor) && !activeEditor?.hasTextFocus()) {
             const controller = CommonFindController.get(activeEditor);
+
             if (controller && controller.isFindInputFocused()) {
                 return this.updateTextFromFindWidget(controller, { allowSearchOnType });
             }
@@ -971,6 +1063,7 @@ export class SearchView extends ViewPane {
             return false;
         }
         const searchString = controller.getState().searchString;
+
         if (searchString === '') {
             return false;
         }
@@ -978,14 +1071,17 @@ export class SearchView extends ViewPane {
         this.searchWidget.searchInput?.setWholeWords(controller.getState().wholeWord);
         this.searchWidget.searchInput?.setRegex(controller.getState().isRegex);
         this.updateText(searchString, allowSearchOnType);
+
         return true;
     }
     private updateTextFromSelection({ allowUnselectedWord = true, allowSearchOnType = true }, editor?: IEditor): boolean {
         const seedSearchStringFromSelection = this.configurationService.getValue<IEditorOptions>('editor').find!.seedSearchStringFromSelection;
+
         if (!seedSearchStringFromSelection || seedSearchStringFromSelection === 'never') {
             return false;
         }
         let selectedText = this.getSearchTextFromEditor(allowUnselectedWord, editor);
+
         if (selectedText === null) {
             return false;
         }
@@ -993,6 +1089,7 @@ export class SearchView extends ViewPane {
             selectedText = strings.escapeRegExpCharacters(selectedText);
         }
         this.updateText(selectedText, allowSearchOnType);
+
         return true;
     }
     private updateText(text: string, allowSearchOnType: boolean = true) {
@@ -1017,15 +1114,18 @@ export class SearchView extends ViewPane {
         }
         if (this.searchWidget.replaceInputHasFocus()) {
             this.moveFocusFromSearchOrReplace();
+
             return;
         }
         if (this.inputPatternIncludes.inputHasFocus()) {
             this.inputPatternExcludes.focus();
             this.inputPatternExcludes.select();
+
             return;
         }
         if (this.inputPatternExcludes.inputHasFocus()) {
             this.selectTreeIfNotSelected();
+
             return;
         }
     }
@@ -1043,19 +1143,23 @@ export class SearchView extends ViewPane {
         }
         if (this.searchWidget.replaceInputHasFocus()) {
             this.searchWidget.focus(true);
+
             return;
         }
         if (this.inputPatternIncludes.inputHasFocus()) {
             this.searchWidget.focus(true, true);
+
             return;
         }
         if (this.inputPatternExcludes.inputHasFocus()) {
             this.inputPatternIncludes.focus();
             this.inputPatternIncludes.select();
+
             return;
         }
         if (this.tree.isDOMFocused()) {
             this.moveFocusFromResults();
+
             return;
         }
     }
@@ -1076,7 +1180,9 @@ export class SearchView extends ViewPane {
         this.searchWidget.setWidth(this.size.width - 28 /* container margin */);
         this.inputPatternExcludes.setWidth(this.size.width - 28 /* container margin */);
         this.inputPatternIncludes.setWidth(this.size.width - 28 /* container margin */);
+
         const widgetHeight = dom.getTotalHeight(this.searchWidgetsContainerElement);
+
         const messagesHeight = dom.getTotalHeight(this.messagesElement);
         this.tree.layout(this.size.height - widgetHeight - messagesHeight, this.size.width - 28);
     }
@@ -1102,6 +1208,7 @@ export class SearchView extends ViewPane {
     clearSearchResults(clearInput = true): void {
         this.viewModel.searchResult.clear();
         this.showEmptyStage(true);
+
         if (this.contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
             this.showSearchWithoutFolderMessage();
         }
@@ -1132,7 +1239,9 @@ export class SearchView extends ViewPane {
     private selectTreeIfNotSelected(): void {
         if (this.tree.getNode(undefined)) {
             this.tree.domFocus();
+
             const selection = this.tree.getSelection();
+
             if (selection.length === 0) {
                 const event = getSelectionKeyboardEvent();
                 this.tree.focusNext(undefined, undefined, event);
@@ -1145,10 +1254,12 @@ export class SearchView extends ViewPane {
             return null;
         }
         editor = editor ?? this.editorService.activeTextEditorControl;
+
         if (!editor) {
             return null;
         }
         const allowUnselected = this.searchConfig.seedWithNearestWord && allowUnselectedWord;
+
         return getSelectionTextFromEditor(allowUnselected, editor);
     }
     private showsFileTypes(): boolean {
@@ -1215,9 +1326,11 @@ export class SearchView extends ViewPane {
         show = typeof show === 'undefined' ? !this.queryDetails.classList.contains(cls) : Boolean(show);
         this.viewletState['query.queryDetailsExpanded'] = show;
         skipLayout = Boolean(skipLayout);
+
         if (show) {
             this.toggleQueryDetailsButton.setAttribute('aria-expanded', 'true');
             this.queryDetails.classList.add(cls);
+
             if (moveFocus) {
                 if (reverse) {
                     this.inputPatternExcludes.focus();
@@ -1232,6 +1345,7 @@ export class SearchView extends ViewPane {
         else {
             this.toggleQueryDetailsButton.setAttribute('aria-expanded', 'false');
             this.queryDetails.classList.remove(cls);
+
             if (moveFocus) {
                 this.searchWidget.focus();
             }
@@ -1250,6 +1364,7 @@ export class SearchView extends ViewPane {
         if (!folderPaths.length || folderPaths.some(folderPath => folderPath === '.')) {
             this.inputPatternIncludes.setValue('');
             this.searchWidget.focus();
+
             return;
         }
         // Show 'files to include' box
@@ -1266,6 +1381,7 @@ export class SearchView extends ViewPane {
         shouldKeepAIResults?: boolean;
     }): void {
         const options = { preserveFocus: true, triggeredOnType: false, delay: 0, ..._options };
+
         if (options.triggeredOnType && !this.searchConfig.searchOnType) {
             return;
         }
@@ -1287,20 +1403,33 @@ export class SearchView extends ViewPane {
             return;
         }
         const isRegex = this.searchWidget.searchInput.getRegex();
+
         const isInNotebookMarkdownInput = this.searchWidget.getNotebookFilters().markupInput;
+
         const isInNotebookMarkdownPreview = this.searchWidget.getNotebookFilters().markupPreview;
+
         const isInNotebookCellInput = this.searchWidget.getNotebookFilters().codeInput;
+
         const isInNotebookCellOutput = this.searchWidget.getNotebookFilters().codeOutput;
+
         const isWholeWords = this.searchWidget.searchInput.getWholeWords();
+
         const isCaseSensitive = this.searchWidget.searchInput.getCaseSensitive();
+
         const contentPattern = this.searchWidget.searchInput.getValue();
+
         const excludePatternText = this._getExcludePattern();
+
         const includePatternText = this._getIncludePattern();
+
         const useExcludesAndIgnoreFiles = this.inputPatternExcludes.useExcludesAndIgnoreFiles();
+
         const onlySearchInOpenEditors = this.inputPatternIncludes.onlySearchInOpenEditors();
+
         if (contentPattern.length === 0) {
             this.clearSearchResults(false);
             this.clearMessage();
+
             return;
         }
         const content: IPatternInfo = {
@@ -1315,12 +1444,15 @@ export class SearchView extends ViewPane {
                 isInNotebookCellOutput
             }
         };
+
         const excludePattern = [{ pattern: this.inputPatternExcludes.getValue() }];
+
         const includePattern = this.inputPatternIncludes.getValue();
         // Need the full match line to correctly calculate replace text, if this is a search/replace with regex group references ($1, $2, ...).
         // 10000 chars is enough to avoid sending huge amounts of text around, if you do a replace with a longer match, it may or may not resolve the group refs correctly.
         // https://github.com/microsoft/vscode/issues/58374
         const charsPerLine = content.isRegExp ? 10000 : 1000;
+
         const options: ITextQueryBuilderOptions = {
             _reason: 'searchView',
             extraFileResources: this.instantiationService.invokeFunction(getOutOfWorkspaceEditorResources),
@@ -1337,17 +1469,22 @@ export class SearchView extends ViewPane {
             isSmartCase: this.searchConfig.smartCase,
             expandPatterns: true
         };
+
         const folderResources = this.contextService.getWorkspace().folders;
+
         const onQueryValidationError = (err: Error) => {
             this.searchWidget.searchInput?.showMessage({ content: err.message, type: MessageType.ERROR });
             this.viewModel.searchResult.clear();
         };
+
         let query: ITextQuery;
+
         try {
             query = this.queryBuilder.text(content, folderResources.map(folder => folder.uri), options);
         }
         catch (err) {
             onQueryValidationError(err);
+
             return;
         }
         this.validateQuery(query).then(() => {
@@ -1356,6 +1493,7 @@ export class SearchView extends ViewPane {
                 this.tree.collapse(this.searchResult.aiTextSearchResult);
             }
             this.onQueryTriggered(query, options, excludePatternText, includePatternText, triggeredOnType, shouldKeepAIResults);
+
             if (!preserveFocus) {
                 this.searchWidget.focus(false, undefined, true); // focus back to input field
             }
@@ -1366,15 +1504,19 @@ export class SearchView extends ViewPane {
         const folderQueriesExistP = query.folderQueries.map(fq => {
             return this.fileService.exists(fq.folder).catch(() => false);
         });
+
         return Promise.all(folderQueriesExistP).then(existResults => {
             // If no folders exist, show an error message about the first one
             const existingFolderQueries = query.folderQueries.filter((folderQuery, i) => existResults[i]);
+
             if (!query.folderQueries.length || existingFolderQueries.length) {
                 query.folderQueries = existingFolderQueries;
             }
             else {
                 const nonExistantPath = query.folderQueries[0].folder.fsPath;
+
                 const searchPathNotFoundError = nls.localize('searchPathNotFoundError', "Search path not found: {0}", nonExistantPath);
+
                 return Promise.reject(new Error(searchPathNotFoundError));
             }
             return undefined;
@@ -1399,6 +1541,7 @@ export class SearchView extends ViewPane {
         try {
             // Search result tree update
             const fileCount = this.viewModel.searchResult.fileCount();
+
             if (this._visibleMatches !== fileCount) {
                 this._visibleMatches = fileCount;
                 await this.refreshAndUpdateCount();
@@ -1412,9 +1555,11 @@ export class SearchView extends ViewPane {
     private async expandIfSingularResult() {
         // expand if just 1 file with less than 50 matches
         const collapseResults = this.searchConfig.collapseResults;
+
         if (collapseResults !== 'alwaysCollapse' && this.viewModel.searchResult.matches().length === 1) {
             const onlyMatch = this.viewModel.searchResult.matches()[0];
             await this.tree.expandTo(onlyMatch);
+
             if (onlyMatch.count() < 50) {
                 await this.tree.expand(onlyMatch);
             }
@@ -1424,18 +1569,23 @@ export class SearchView extends ViewPane {
         this.state = SearchUIState.Idle;
         // Complete up to 100% as needed
         progressComplete();
+
         if (shouldDoFinalRefresh) {
             // anything that gets called from `getChildren` should not do this, since the tree will refresh anyways.
             await this.refreshAndUpdateCount();
         }
         const hasResults = !this.viewModel.searchResult.isEmpty();
+
         if (completed?.exit === SearchCompletionExitCode.NewSearchStarted) {
             return;
         }
         if (!hasResults) {
             const hasExcludes = !!excludePatternText;
+
             const hasIncludes = !!includePatternText;
+
             let message: string;
+
             if (!completed) {
                 message = SEARCH_CANCELLED_MESSAGE;
             }
@@ -1469,23 +1619,31 @@ export class SearchView extends ViewPane {
             }
             // Indicate as status to ARIA
             aria.status(message);
+
             const messageEl = this.clearMessage();
+
             dom.append(messageEl, message);
+
             if (!completed) {
                 const searchAgainButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('rerunSearch.message', "Search again"), () => this.triggerQueryChange({ preserveFocus: false }), this.hoverService));
+
                 dom.append(messageEl, searchAgainButton.element);
             }
             else if (hasIncludes || hasExcludes) {
                 const searchAgainButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('rerunSearchInAll.message', "Search again in all files"), this.onSearchAgain.bind(this), this.hoverService));
+
                 dom.append(messageEl, searchAgainButton.element);
             }
             else {
                 const openSettingsButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('openSettings.message', "Open Settings"), this.onOpenSettings.bind(this), this.hoverService));
+
                 dom.append(messageEl, openSettingsButton.element);
             }
             if (completed) {
                 dom.append(messageEl, $('span', undefined, ' - '));
+
                 const learnMoreButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('openSettings.learnMore', "Learn More"), this.onLearnMore.bind(this), this.hoverService));
+
                 dom.append(messageEl, learnMoreButton.element);
             }
             if (this.contextService.getWorkbenchState() === WorkbenchState.EMPTY) {
@@ -1510,6 +1668,7 @@ export class SearchView extends ViewPane {
     }
     private async onSearchError(e: any, progressComplete: () => void, excludePatternText?: string, includePatternText?: string, completed?: ISearchComplete, shouldDoFinalRefresh = true) {
         this.state = SearchUIState.Idle;
+
         if (errors.isCancellationError(e)) {
             return this.onSearchComplete(progressComplete, excludePatternText, includePatternText, completed, shouldDoFinalRefresh);
         }
@@ -1517,12 +1676,15 @@ export class SearchView extends ViewPane {
             progressComplete();
             this.searchWidget.searchInput?.showMessage({ content: e.message, type: MessageType.ERROR });
             this.viewModel.searchResult.clear();
+
             return Promise.resolve();
         }
     }
     public async addAIResults() {
         const excludePatternText = this._getExcludePattern();
+
         const includePatternText = this._getIncludePattern();
+
         let progressComplete: () => void;
         this.progressService.withProgress({ location: this.getProgressLocation(), delay: 0 }, _progress => {
             return new Promise<void>(resolve => progressComplete = resolve);
@@ -1530,6 +1692,7 @@ export class SearchView extends ViewPane {
         this.searchWidget.searchInput?.clearMessage();
         this.state = SearchUIState.Searching;
         this.showEmptyStage();
+
         const slowTimer = setTimeout(() => {
             this.state = SearchUIState.SlowSearch;
         }, 2000);
@@ -1538,12 +1701,16 @@ export class SearchView extends ViewPane {
         this.tree.setFocus([]);
         this.viewModel.replaceString = this.searchWidget.getReplaceValue();
         this.viewModel.searchResult.setAIQueryUsingTextQuery();
+
         const result = this.viewModel.addAIResults();
+
         return result.then((complete) => {
             clearTimeout(slowTimer);
+
             return this.onSearchComplete(progressComplete, excludePatternText, includePatternText, complete, false);
         }, (e) => {
             clearTimeout(slowTimer);
+
             return this.onSearchError(e, progressComplete, excludePatternText, includePatternText, undefined, false);
         });
     }
@@ -1555,6 +1722,7 @@ export class SearchView extends ViewPane {
         this.searchWidget.searchInput?.clearMessage();
         this.state = SearchUIState.Searching;
         this.showEmptyStage();
+
         const slowTimer = setTimeout(() => {
             this.state = SearchUIState.SlowSearch;
         }, 2000);
@@ -1564,15 +1732,19 @@ export class SearchView extends ViewPane {
         this.tree.setSelection([]);
         this.tree.setFocus([]);
         this.viewModel.replaceString = this.searchWidget.getReplaceValue();
+
         const result = this.viewModel.search(query);
+
         if (!shouldKeepAIResults) {
             this.viewModel.searchResult.setAIQueryUsingTextQuery(query);
         }
         return result.asyncResults.then((complete) => {
             clearTimeout(slowTimer);
+
             return this.onSearchComplete(progressComplete, excludePatternText, includePatternText, complete);
         }, (e) => {
             clearTimeout(slowTimer);
+
             return this.onSearchError(e, progressComplete, excludePatternText, includePatternText);
         });
     }
@@ -1582,6 +1754,7 @@ export class SearchView extends ViewPane {
     }
     private openSettings(query: string): Promise<IEditorPane | undefined> {
         const options: ISettingsEditorOptions = { query };
+
         return this.contextService.getWorkbenchState() !== WorkbenchState.EMPTY ?
             this.preferencesService.openWorkspaceSettings(options) :
             this.preferencesService.openUserSettings(options);
@@ -1605,27 +1778,40 @@ export class SearchView extends ViewPane {
     }
     private updateSearchResultCount(disregardExcludesAndIgnores?: boolean, onlyOpenEditors?: boolean, clear: boolean = false): void {
         const fileCount = this.viewModel.searchResult.fileCount();
+
         const resultCount = this.viewModel.searchResult.count();
         this.hasSearchResultsKey.set(fileCount > 0);
+
         const msgWasHidden = this.messagesElement.style.display === 'none';
+
         const messageEl = this.clearMessage();
+
         const resultMsg = clear ? '' : this.buildResultCountMessage(resultCount, fileCount);
         this.tree.ariaLabel = resultMsg + nls.localize('forTerm', " - Search: {0}", this.searchResult.query?.contentPattern.pattern ?? '');
+
         dom.append(messageEl, resultMsg);
+
         if (fileCount > 0) {
             if (disregardExcludesAndIgnores) {
                 const excludesDisabledMessage = ' - ' + nls.localize('useIgnoresAndExcludesDisabled', "exclude settings and ignore files are disabled") + ' ';
+
                 const enableExcludesButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('excludes.enable', "enable"), this.onEnableExcludes.bind(this), this.hoverService, nls.localize('useExcludesAndIgnoreFilesDescription', "Use Exclude Settings and Ignore Files")));
+
                 dom.append(messageEl, $('span', undefined, excludesDisabledMessage, '(', enableExcludesButton.element, ')'));
             }
             if (onlyOpenEditors) {
                 const searchingInOpenMessage = ' - ' + nls.localize('onlyOpenEditors', "searching only in open files") + ' ';
+
                 const disableOpenEditorsButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('openEditors.disable', "disable"), this.onDisableSearchInOpenEditors.bind(this), this.hoverService, nls.localize('disableOpenEditors', "Search in entire workspace")));
+
                 dom.append(messageEl, $('span', undefined, searchingInOpenMessage, '(', disableOpenEditorsButton.element, ')'));
             }
             dom.append(messageEl, ' - ');
+
             const openInEditorTooltip = appendKeyBindingLabel(nls.localize('openInEditor.tooltip', "Copy current search results to an editor"), this.keybindingService.lookupKeybinding(Constants.SearchCommandIds.OpenInEditorCommandId));
+
             const openInEditorButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('openInEditor.message', "Open in editor"), () => this.instantiationService.invokeFunction(createEditorFromSearchResult, this.searchResult, this.searchIncludePattern.getValue(), this.searchExcludePattern.getValue(), this.searchIncludePattern.onlySearchInOpenEditors()), this.hoverService, openInEditorTooltip));
+
             dom.append(messageEl, openInEditorButton.element);
             this.reLayout();
         }
@@ -1635,6 +1821,7 @@ export class SearchView extends ViewPane {
     }
     private addMessage(message: TextSearchCompleteMessage) {
         const messageBox = this.messagesElement.firstChild as HTMLDivElement;
+
         if (!messageBox) {
             return;
         }
@@ -1656,16 +1843,20 @@ export class SearchView extends ViewPane {
     }
     private showSearchWithoutFolderMessage(): void {
         this.searchWithoutFolderMessageElement = this.clearMessage();
+
         const textEl = dom.append(this.searchWithoutFolderMessageElement, $('p', undefined, nls.localize('searchWithoutFolder', "You have not opened or specified a folder. Only open files are currently searched - ")));
+
         const openFolderButton = this.messageDisposables.add(new SearchLinkButton(nls.localize('openFolder', "Open Folder"), () => {
             this.commandService.executeCommand(env.isMacintosh && env.isNative ? OpenFileFolderAction.ID : OpenFolderAction.ID).catch(err => errors.onUnexpectedError(err));
         }, this.hoverService));
+
         dom.append(textEl, openFolderButton.element);
     }
     private showEmptyStage(forceHideMessages = false): void {
         const showingCancelled = (this.messagesElement.firstChild?.textContent?.indexOf(SEARCH_CANCELLED_MESSAGE) ?? -1) > -1;
         // clean up ui
         // this.replaceService.disposeAllReplacePreviews();
+
         if (showingCancelled || forceHideMessages || !this.configurationService.getValue<ISearchConfiguration>().search.searchOnType) {
             // when in search to type, don't preemptively hide, as it causes flickering and shifting of the live results
             dom.hide(this.messagesElement);
@@ -1680,28 +1871,37 @@ export class SearchView extends ViewPane {
     }
     private onFocus(lineMatch: ISearchTreeMatch, preserveFocus?: boolean, sideBySide?: boolean, pinned?: boolean): Promise<any> {
         const useReplacePreview = this.configurationService.getValue<ISearchConfiguration>().search.useReplacePreview;
+
         const resource = isSearchTreeMatch(lineMatch) ? lineMatch.parent().resource : (<ISearchTreeFileMatch>lineMatch).resource;
+
         return (useReplacePreview && this.viewModel.isReplaceActive() && !!this.viewModel.replaceString && !(this.shouldOpenInNotebookEditor(lineMatch, resource))) ?
             this.replaceService.openReplacePreview(lineMatch, preserveFocus, sideBySide, pinned) :
             this.open(lineMatch, preserveFocus, sideBySide, pinned, resource);
     }
     async open(element: FileMatchOrMatch, preserveFocus?: boolean, sideBySide?: boolean, pinned?: boolean, resourceInput?: URI): Promise<void> {
         const selection = getEditorSelectionFromMatch(element, this.viewModel);
+
         const oldParentMatches = isSearchTreeMatch(element) ? element.parent().matches() : [];
+
         const resource = resourceInput ?? (isSearchTreeMatch(element) ? element.parent().resource : (<ISearchTreeFileMatch>element).resource);
+
         let editor: IEditorPane | undefined;
+
         const options = {
             preserveFocus,
             pinned,
             selection,
             revealIfVisible: true,
         };
+
         try {
             editor = await this.editorService.openEditor({
                 resource: resource,
                 options,
             }, sideBySide ? SIDE_GROUP : ACTIVE_GROUP);
+
             const editorControl = editor?.getControl();
+
             if (isSearchTreeMatch(element) && preserveFocus && isCodeEditor(editorControl)) {
                 this.viewModel.searchResult.getRangeHighlightDecorations().highlightRange(editorControl.getModel()!, element.range());
             }
@@ -1711,26 +1911,34 @@ export class SearchView extends ViewPane {
         }
         catch (err) {
             errors.onUnexpectedError(err);
+
             return;
         }
         if (editor instanceof NotebookEditor) {
             const elemParent = element.parent() as INotebookFileInstanceMatch;
+
             if (isSearchTreeMatch(element)) {
                 if (isIMatchInNotebook(element)) {
                     element.parent().showMatch(element);
                 }
                 else {
                     const editorWidget = editor.getControl();
+
                     if (editorWidget) {
                         // Ensure that the editor widget is binded. If if is, then this should return immediately.
                         // Otherwise, it will bind the widget.
                         elemParent.bindNotebookEditorWidget(editorWidget);
                         await elemParent.updateMatchesForEditorWidget();
+
                         const matchIndex = oldParentMatches.findIndex(e => e.id() === element.id());
+
                         const matches = elemParent.matches();
+
                         const match = matchIndex >= matches.length ? matches[matches.length - 1] : matches[matchIndex];
+
                         if (isIMatchInNotebook(match)) {
                             elemParent.showMatch(match);
+
                             if (!this.tree.getFocus().includes(match) || !this.tree.getSelection().includes(match)) {
                                 this.tree.setSelection([match], getSelectionKeyboardEvent());
                                 this.tree.setFocus([match]);
@@ -1743,6 +1951,7 @@ export class SearchView extends ViewPane {
     }
     openEditorWithMultiCursor(element: FileMatchOrMatch): Promise<void> {
         const resource = isSearchTreeMatch(element) ? element.parent().resource : (<ISearchTreeFileMatch>element).resource;
+
         return this.editorService.openEditor({
             resource: resource,
             options: {
@@ -1753,6 +1962,7 @@ export class SearchView extends ViewPane {
         }).then(editor => {
             if (editor) {
                 let fileMatch = null;
+
                 if (isSearchTreeFileMatch(element)) {
                     fileMatch = element;
                 }
@@ -1761,7 +1971,9 @@ export class SearchView extends ViewPane {
                 }
                 if (fileMatch) {
                     const selections = fileMatch.matches().map(m => new Selection(m.range().startLineNumber, m.range().startColumn, m.range().endLineNumber, m.range().endColumn));
+
                     const codeEditor = getCodeEditor(editor.getControl());
+
                     if (codeEditor) {
                         const multiCursorController = MultiCursorSelectionController.get(codeEditor);
                         multiCursorController?.selectAllUsingSelections(selections);
@@ -1777,12 +1989,14 @@ export class SearchView extends ViewPane {
         }
         // remove search results from this resource as it got disposed
         let matches = this.viewModel.searchResult.matches();
+
         for (let i = 0, len = matches.length; i < len; i++) {
             if (resource.toString() === matches[i].resource.toString()) {
                 this.viewModel.searchResult.remove(matches[i]);
             }
         }
         matches = this.viewModel.searchResult.matches(true);
+
         for (let i = 0, len = matches.length; i < len; i++) {
             if (resource.toString() === matches[i].resource.toString()) {
                 this.viewModel.searchResult.remove(matches[i]);
@@ -1794,6 +2008,7 @@ export class SearchView extends ViewPane {
             return;
         }
         const matches = this.viewModel.searchResult.matches();
+
         if (e.gotDeleted()) {
             const deletedMatches = matches.filter(m => e.contains(m.resource, FileChangeType.DELETED));
             this.viewModel.searchResult.remove(deletedMatches);
@@ -1801,6 +2016,7 @@ export class SearchView extends ViewPane {
         else {
             // Check if the changed file contained matches
             const changedMatches = matches.filter(m => e.contains(m.resource));
+
             if (changedMatches.length && this.searchConfig.sortOrder === SearchSortOrder.Modified) {
                 // No matches need to be removed, but modified files need to have their file stat updated.
                 this.updateFileStats(changedMatches).then(async () => this.refreshTreeController.queue());
@@ -1822,18 +2038,30 @@ export class SearchView extends ViewPane {
             return;
         }
         const patternExcludes = this.inputPatternExcludes?.getValue().trim() ?? '';
+
         const patternIncludes = this.inputPatternIncludes?.getValue().trim() ?? '';
+
         const onlyOpenEditors = this.inputPatternIncludes?.onlySearchInOpenEditors() ?? false;
+
         const useExcludesAndIgnoreFiles = this.inputPatternExcludes?.useExcludesAndIgnoreFiles() ?? true;
+
         const preserveCase = this.viewModel.preserveCase;
+
         if (this.searchWidget.searchInput) {
             const isRegex = this.searchWidget.searchInput.getRegex();
+
             const isWholeWords = this.searchWidget.searchInput.getWholeWords();
+
             const isCaseSensitive = this.searchWidget.searchInput.getCaseSensitive();
+
             const contentPattern = this.searchWidget.searchInput.getValue();
+
             const isInNotebookCellInput = this.searchWidget.getNotebookFilters().codeInput;
+
             const isInNotebookCellOutput = this.searchWidget.getNotebookFilters().codeOutput;
+
             const isInNotebookMarkdownInput = this.searchWidget.getNotebookFilters().markupInput;
+
             const isInNotebookMarkdownPreview = this.searchWidget.getNotebookFilters().markupPreview;
             this.viewletState['query.contentPattern'] = contentPattern;
             this.viewletState['query.regex'] = isRegex;
@@ -1849,12 +2077,14 @@ export class SearchView extends ViewPane {
         this.viewletState['query.useExcludesAndIgnoreFiles'] = useExcludesAndIgnoreFiles;
         this.viewletState['query.preserveCase'] = preserveCase;
         this.viewletState['query.onlyOpenEditors'] = onlyOpenEditors;
+
         const isReplaceShown = this.searchAndReplaceWidget.isReplaceShown();
         this.viewletState['view.showReplace'] = isReplaceShown;
         this.viewletState['view.treeLayout'] = this.isTreeLayoutViewVisible;
         this.viewletState['query.replaceText'] = isReplaceShown && this.searchWidget.getReplaceValue();
         this._saveSearchHistoryService();
         this.memento.saveMemento();
+
         super.saveState();
     }
     private _saveSearchHistoryService() {
@@ -1862,19 +2092,24 @@ export class SearchView extends ViewPane {
             return;
         }
         const history: ISearchHistoryValues = Object.create(null);
+
         const searchHistory = this.searchWidget.getSearchHistory();
+
         if (searchHistory && searchHistory.length) {
             history.search = searchHistory;
         }
         const replaceHistory = this.searchWidget.getReplaceHistory();
+
         if (replaceHistory && replaceHistory.length) {
             history.replace = replaceHistory;
         }
         const patternExcludesHistory = this.inputPatternExcludes.getHistory();
+
         if (patternExcludesHistory && patternExcludesHistory.length) {
             history.exclude = patternExcludesHistory;
         }
         const patternIncludesHistory = this.inputPatternIncludes.getHistory();
+
         if (patternIncludesHistory && patternIncludesHistory.length) {
             history.include = patternIncludesHistory;
         }
@@ -1895,11 +2130,13 @@ export class SearchView extends ViewPane {
     override dispose(): void {
         this.isDisposed = true;
         this.saveState();
+
         super.dispose();
     }
 }
 class SearchLinkButton extends Disposable {
     public readonly element: HTMLElement;
+
     constructor(label: string, handler: (e: dom.EventLike) => unknown, hoverService: IHoverService, tooltip?: string) {
         super();
         this.element = $('a.pointer', { tabindex: 0 }, label);
@@ -1914,6 +2151,7 @@ class SearchLinkButton extends Disposable {
         this._register(dom.addDisposableListener(this.element, dom.EventType.CLICK, wrappedHandler));
         this._register(dom.addDisposableListener(this.element, dom.EventType.KEY_DOWN, e => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.equals(KeyCode.Space) || event.equals(KeyCode.Enter)) {
                 wrappedHandler(e);
                 event.preventDefault();
@@ -1924,6 +2162,7 @@ class SearchLinkButton extends Disposable {
 }
 export function getEditorSelectionFromMatch(element: FileMatchOrMatch, viewModel: ISearchModel) {
     let match: ISearchTreeMatch | null = null;
+
     if (isSearchTreeMatch(element)) {
         match = element;
     }
@@ -1932,8 +2171,10 @@ export function getEditorSelectionFromMatch(element: FileMatchOrMatch, viewModel
     }
     if (match) {
         const range = match.range();
+
         if (viewModel.isReplaceActive() && !!viewModel.replaceString) {
             const replaceString = match.replaceString;
+
             return {
                 startLineNumber: range.startLineNumber,
                 startColumn: range.startColumn,
@@ -1947,6 +2188,7 @@ export function getEditorSelectionFromMatch(element: FileMatchOrMatch, viewModel
 }
 export function getSelectionTextFromEditor(allowUnselectedWord: boolean, activeEditor: IEditor): string | null {
     let editor = activeEditor;
+
     if (isDiffEditor(editor)) {
         if (editor.getOriginalEditor().hasTextFocus()) {
             editor = editor.getOriginalEditor();
@@ -1959,12 +2201,14 @@ export function getSelectionTextFromEditor(allowUnselectedWord: boolean, activeE
         return null;
     }
     const range = editor.getSelection();
+
     if (!range) {
         return null;
     }
     if (range.isEmpty()) {
         if (allowUnselectedWord) {
             const wordAtPosition = editor.getModel().getWordAtPosition(range.getStartPosition());
+
             return wordAtPosition?.word ?? null;
         }
         else {
@@ -1972,8 +2216,10 @@ export function getSelectionTextFromEditor(allowUnselectedWord: boolean, activeE
         }
     }
     let searchText = '';
+
     for (let i = range.startLineNumber; i <= range.endLineNumber; i++) {
         let lineText = editor.getModel().getLineContent(i);
+
         if (i === range.endLineNumber) {
             lineText = lineText.substring(0, range.endColumn - 1);
         }
@@ -1996,6 +2242,7 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
     }
     private createSearchResultIterator(searchResult: ISearchResult): Iterable<RenderableMatch> {
         const ret: ITextSearchHeading[] = [];
+
         if (!searchResult.plainTextSearchResult.isEmpty()) {
             if (!this.searchView.shouldShowAIResults()) {
                 // only one root, so just return the children
@@ -2013,6 +2260,7 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
         const folderMatches = textSearchResult.folderMatches()
             .filter(fm => !fm.isEmpty())
             .sort(searchMatchComparer);
+
         if (folderMatches.length === 1) {
             return this.createFolderIterator(folderMatches[0]);
         }
@@ -2020,11 +2268,14 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
     }
     private createFolderIterator(folderMatch: ISearchTreeFolderMatch): Iterable<ISearchTreeFolderMatch | ISearchTreeFileMatch> {
         const matchArray = this.searchView.isTreeLayoutViewVisible ? folderMatch.matches() : folderMatch.allDownstreamFileMatches();
+
         const matches = matchArray.sort((a, b) => searchMatchComparer(a, b, this.searchConfig.sortOrder));
+
         return matches;
     }
     private createFileIterator(fileMatch: ISearchTreeFileMatch): Iterable<ISearchTreeMatch> {
         const matches = fileMatch.matches().sort(searchMatchComparer);
+
         return matches;
     }
     hasChildren(element: RenderableMatch): boolean {
@@ -2035,6 +2286,7 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
             return true;
         }
         const hasChildren = element.hasChildren;
+
         return hasChildren;
     }
     getChildren(element: RenderableMatch | ISearchResult): Iterable<RenderableMatch> | Promise<Iterable<RenderableMatch>> {
@@ -2057,6 +2309,7 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
     }
     getParent(element: RenderableMatch): RenderableMatch {
         const parent = element.parent();
+
         if (isSearchResult(parent)) {
             throw new Error('Invalid element passed to getParent');
         }
@@ -2065,6 +2318,7 @@ class SearchViewDataSource implements IAsyncDataSource<ISearchResult, Renderable
 }
 class RefreshTreeController extends Disposable {
     private refreshTreeThrottler: Throttler;
+
     constructor(private readonly searchView: SearchView, private readonly geSearchConfig: () => ISearchConfigurationProperties, 
     @IFileService
     private readonly fileService: IFileService) {
@@ -2086,6 +2340,7 @@ class RefreshTreeController extends Disposable {
             clearingAll: this.queuedIChangeEvents.some(e => e.clearingAll),
         };
         this.queuedIChangeEvents = [];
+
         return this.refreshTree(aggregateChangeEvent);
     }
     private async retrieveFileStats(): Promise<void> {
@@ -2094,6 +2349,7 @@ class RefreshTreeController extends Disposable {
     }
     private async refreshTree(event?: IChangeEvent): Promise<void> {
         const searchConfig = this.geSearchConfig();
+
         if (!event || event.added || event.removed) {
             // Refresh whole tree
             if (searchConfig.sortOrder === SearchSortOrder.Modified) {
@@ -2113,6 +2369,7 @@ class RefreshTreeController extends Disposable {
             }
             else {
                 const treeHasAllElements = event.elements.every(elem => this.searchView.getControl().hasNode(elem));
+
                 if (treeHasAllElements) {
                     // IFileMatchInstance modified, refresh those elements
                     await Promise.all(event.elements.map(async (element) => {

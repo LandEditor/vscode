@@ -18,11 +18,16 @@ export class ViewLineOptions {
     public readonly stopRenderingLineAfter: number;
     public readonly fontLigatures: string;
     public readonly useGpu: boolean;
+
     constructor(config: IEditorConfiguration, themeType: ColorScheme) {
         this.themeType = themeType;
+
         const options = config.options;
+
         const fontInfo = options.get(EditorOption.fontInfo);
+
         const experimentalWhitespaceRendering = options.get(EditorOption.experimentalWhitespaceRendering);
+
         if (experimentalWhitespaceRendering === 'off') {
             this.renderWhitespace = options.get(EditorOption.renderWhitespace);
         }

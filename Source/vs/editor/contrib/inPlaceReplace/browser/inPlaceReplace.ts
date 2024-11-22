@@ -58,18 +58,23 @@ class InPlaceReplaceController implements IEditorContribution {
 		this.currentRequest?.cancel();
 
 		const editorSelection = this.editor.getSelection();
+
 		const model = this.editor.getModel();
+
 		if (!model || !editorSelection) {
 			return undefined;
 		}
 		let selection = editorSelection;
+
 		if (selection.startLineNumber !== selection.endLineNumber) {
 			// Can't accept multiline selection
 			return undefined;
 		}
 
 		const state = new EditorState(this.editor, CodeEditorStateFlag.Value | CodeEditorStateFlag.Position);
+
 		const modelURI = model.uri;
+
 		if (!this.editorWorkerService.canNavigateValueSet(modelURI)) {
 			return Promise.resolve(undefined);
 		}
@@ -90,7 +95,9 @@ class InPlaceReplaceController implements IEditorContribution {
 
 			// Selection
 			const editRange = Range.lift(result.range);
+
 			let highlightRange = result.range;
+
 			const diff = result.value.length - (selection.endColumn - selection.startColumn);
 
 			// highlight
@@ -100,6 +107,7 @@ class InPlaceReplaceController implements IEditorContribution {
 				endLineNumber: highlightRange.endLineNumber,
 				endColumn: highlightRange.startColumn + result.value.length
 			};
+
 			if (diff > 1) {
 				selection = new Selection(selection.startLineNumber, selection.startColumn, selection.endLineNumber, selection.endColumn + diff - 1);
 			}
@@ -143,6 +151,7 @@ class InPlaceReplaceUp extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> | undefined {
 		const controller = InPlaceReplaceController.get(editor);
+
 		if (!controller) {
 			return Promise.resolve(undefined);
 		}
@@ -167,6 +176,7 @@ class InPlaceReplaceDown extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> | undefined {
 		const controller = InPlaceReplaceController.get(editor);
+
 		if (!controller) {
 			return Promise.resolve(undefined);
 		}

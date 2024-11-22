@@ -20,6 +20,7 @@ export class DefaultConfiguration extends Disposable {
     }>());
     readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
     private _configurationModel = ConfigurationModel.createEmptyModel(this.logService);
+
     get configurationModel(): ConfigurationModel {
         return this._configurationModel;
     }
@@ -29,10 +30,12 @@ export class DefaultConfiguration extends Disposable {
     async initialize(): Promise<ConfigurationModel> {
         this.resetConfigurationModel();
         this._register(Registry.as<IConfigurationRegistry>(Extensions.Configuration).onDidUpdateConfiguration(({ properties, defaultsOverrides }) => this.onDidUpdateConfiguration(Array.from(properties), defaultsOverrides)));
+
         return this.configurationModel;
     }
     reload(): ConfigurationModel {
         this.resetConfigurationModel();
+
         return this.configurationModel;
     }
     protected onDidUpdateConfiguration(properties: string[], defaultsOverrides?: boolean): void {
@@ -44,14 +47,18 @@ export class DefaultConfiguration extends Disposable {
     }
     private resetConfigurationModel(): void {
         this._configurationModel = ConfigurationModel.createEmptyModel(this.logService);
+
         const properties = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties();
         this.updateConfigurationModel(Object.keys(properties), properties);
     }
     private updateConfigurationModel(properties: string[], configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>): void {
         const configurationDefaultsOverrides = this.getConfigurationDefaultOverrides();
+
         for (const key of properties) {
             const defaultOverrideValue = configurationDefaultsOverrides[key];
+
             const propertySchema = configurationProperties[key];
+
             if (defaultOverrideValue !== undefined) {
                 this._configurationModel.setValue(key, defaultOverrideValue);
             }
@@ -72,12 +79,14 @@ export interface IPolicyConfiguration {
 export class NullPolicyConfiguration implements IPolicyConfiguration {
     readonly onDidChangeConfiguration = Event.None;
     readonly configurationModel = ConfigurationModel.createEmptyModel(new NullLogService());
+
     async initialize() { return this.configurationModel; }
 }
 export class PolicyConfiguration extends Disposable implements IPolicyConfiguration {
     private readonly _onDidChangeConfiguration = this._register(new Emitter<ConfigurationModel>());
     readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
     private _configurationModel = ConfigurationModel.createEmptyModel(this.logService);
+
     get configurationModel() { return this._configurationModel; }
     constructor(private readonly defaultConfiguration: DefaultConfiguration, 
     @IPolicyService
@@ -91,23 +100,31 @@ export class PolicyConfiguration extends Disposable implements IPolicyConfigurat
         this.update(await this.updatePolicyDefinitions(this.defaultConfiguration.configurationModel.keys), false);
         this._register(this.policyService.onDidChange(policyNames => this.onDidChangePolicies(policyNames)));
         this._register(this.defaultConfiguration.onDidChangeConfiguration(async ({ properties }) => this.update(await this.updatePolicyDefinitions(properties), true)));
+
         return this._configurationModel;
     }
     private async updatePolicyDefinitions(properties: string[]): Promise<string[]> {
         this.logService.trace('PolicyConfiguration#updatePolicyDefinitions', properties);
+
         const policyDefinitions: IStringDictionary<PolicyDefinition> = {};
+
         const keys: string[] = [];
+
         const configurationProperties = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties();
+
         for (const key of properties) {
             const config = configurationProperties[key];
+
             if (!config) {
                 // Config is removed. So add it to the list if in case it was registered as policy before
                 keys.push(key);
+
                 continue;
             }
             if (config.policy) {
                 if (config.type !== 'string' && config.type !== 'number') {
                     this.logService.warn(`Policy ${config.policy.name} has unsupported type ${config.type}`);
+
                     continue;
                 }
                 keys.push(key);
@@ -121,22 +138,30 @@ export class PolicyConfiguration extends Disposable implements IPolicyConfigurat
     }
     private onDidChangePolicies(policyNames: readonly PolicyName[]): void {
         this.logService.trace('PolicyConfiguration#onDidChangePolicies', policyNames);
+
         const policyConfigurations = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getPolicyConfigurations();
+
         const keys = coalesce(policyNames.map(policyName => policyConfigurations.get(policyName)));
         this.update(keys, true);
     }
     private update(keys: string[], trigger: boolean): void {
         this.logService.trace('PolicyConfiguration#update', keys);
+
         const configurationProperties = Registry.as<IConfigurationRegistry>(Extensions.Configuration).getConfigurationProperties();
+
         const changed: [
             string,
             PolicyValue | undefined
         ][] = [];
+
         const wasEmpty = this._configurationModel.isEmpty();
+
         for (const key of keys) {
             const policyName = configurationProperties[key]?.policy?.name;
+
             if (policyName) {
                 const policyValue = this.policyService.getPolicyValue(policyName);
+
                 if (wasEmpty ? policyValue !== undefined : !equals(this._configurationModel.getValue(key), policyValue)) {
                     changed.push([key, policyValue]);
                 }
@@ -149,8 +174,10 @@ export class PolicyConfiguration extends Disposable implements IPolicyConfigurat
         }
         if (changed.length) {
             this.logService.trace('PolicyConfiguration#changed', changed);
+
             const old = this._configurationModel;
             this._configurationModel = ConfigurationModel.createEmptyModel(this.logService);
+
             for (const key of old.keys) {
                 this._configurationModel.setValue(key, old.getValue(key));
             }

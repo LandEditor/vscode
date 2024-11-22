@@ -123,6 +123,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private registerMouseNavigationListener(): void {
 		const mouseBackForwardSupportListener = this._register(new DisposableStore());
+
 		const handleMouseBackForwardSupport = () => {
 			mouseBackForwardSupportListener.clear();
 
@@ -156,12 +157,15 @@ export class HistoryService extends Disposable implements IHistoryService {
 		switch (event.button) {
 			case 3:
 				EventHelper.stop(event);
+
 				if (isMouseDown) {
 					this.goBack();
 				}
 				break;
+
 			case 4:
 				EventHelper.stop(event);
+
 				if (isMouseDown) {
 					this.goForward();
 				}
@@ -176,6 +180,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private onDidActiveEditorChange(): void {
 		const activeEditorGroup = this.editorGroupService.activeGroup;
+
 		const activeEditorPane = activeEditorGroup.activeEditorPane;
 
 		if (this.lastActiveEditor && this.editorHelper.matchesEditorIdentifier(this.lastActiveEditor, activeEditorPane)) {
@@ -272,6 +277,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private removeFromRecentlyOpened(arg1: EditorInput | FileChangesEvent | FileOperationEvent): void {
 		let resource: URI | undefined = undefined;
+
 		if (isEditorInput(arg1)) {
 			resource = EditorResourceAccessor.getOriginalUri(arg1);
 		} else if (arg1 instanceof FileChangesEvent) {
@@ -355,6 +361,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 			// Update scope
 			const configuredScope = this.configurationService.getValue(HistoryService.NAVIGATION_SCOPE_SETTING);
+
 			if (configuredScope === 'editorGroup') {
 				this.editorNavigationScope = GoScope.EDITOR_GROUP;
 			} else if (configuredScope === 'editor') {
@@ -383,12 +390,14 @@ export class HistoryService extends Disposable implements IHistoryService {
 				}
 
 				let stacksForGroup = this.editorScopedNavigationStacks.get(group.id);
+
 				if (!stacksForGroup) {
 					stacksForGroup = new Map<EditorInput, { stack: IEditorNavigationStacks; disposable: IDisposable }>();
 					this.editorScopedNavigationStacks.set(group.id, stacksForGroup);
 				}
 
 				let stack = stacksForGroup.get(editor)?.stack;
+
 				if (!stack) {
 					const disposable = new DisposableStore();
 
@@ -404,6 +413,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			// Per Editor Group
 			case GoScope.EDITOR_GROUP: {
 				let stack = this.editorGroupScopedNavigationStacks.get(group.id)?.stack;
+
 				if (!stack) {
 					const disposable = new DisposableStore();
 
@@ -455,8 +465,10 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private handleEditorCloseEventInHistory(e: IEditorCloseEvent): void {
 		const editors = this.editorScopedNavigationStacks.get(e.groupId);
+
 		if (editors) {
 			const editorStack = editors.get(e.editor);
+
 			if (editorStack) {
 				editorStack.disposable.dispose();
 				editors.delete(e.editor);
@@ -475,6 +487,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Editor groups
 		const editorGroupStack = this.editorGroupScopedNavigationStacks.get(group.id);
+
 		if (editorGroupStack) {
 			editorGroupStack.disposable.dispose();
 			this.editorGroupScopedNavigationStacks.delete(group.id);
@@ -570,6 +583,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			}
 
 			const group = this.editorGroupService.getGroup(editorIdentifier.groupId) ?? this.editorGroupService.activeGroup;
+
 			try {
 				await group.openEditor(editorIdentifier.editor);
 			} finally {
@@ -584,6 +598,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	private ensureRecentlyUsedStack(indexModifier: (index: number) => number, groupId?: GroupIdentifier): [readonly IEditorIdentifier[], number] {
 		let editors: readonly IEditorIdentifier[];
+
 		let index: number;
 
 		const group = typeof groupId === 'number' ? this.editorGroupService.getGroup(groupId) : undefined;
@@ -602,6 +617,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Adjust index
 		let newIndex = indexModifier(index);
+
 		if (newIndex < 0) {
 			newIndex = 0;
 		} else if (newIndex > editors.length - 1) {
@@ -650,17 +666,21 @@ export class HistoryService extends Disposable implements IHistoryService {
 		}
 
 		const { editor, context } = event;
+
 		if (context === EditorCloseContext.REPLACE || context === EditorCloseContext.MOVE) {
 			return; // ignore if editor was replaced or moved
 		}
 
 		const untypedEditor = editor.toUntyped();
+
 		if (!untypedEditor) {
 			return; // we need a untyped editor to restore from going forward
 		}
 
 		const associatedResources: URI[] = [];
+
 		const editorResource = EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.BOTH });
+
 		if (URI.isUri(editorResource)) {
 			associatedResources.push(editorResource);
 		} else if (editorResource) {
@@ -693,7 +713,9 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Open editor if we have one
 		const lastClosedEditor = this.recentlyClosedEditors.pop();
+
 		let reopenClosedEditorPromise: Promise<void> | undefined = undefined;
+
 		if (lastClosedEditor) {
 			reopenClosedEditorPromise = this.doReopenLastClosedEditor(lastClosedEditor);
 		}
@@ -719,6 +741,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Re-open editor unless already opened
 		let editorPane: IEditorPane | undefined = undefined;
+
 		if (!this.editorGroupService.activeGroup.contains(lastClosedEditor.editor)) {
 
 			// Fix for https://github.com/microsoft/vscode/issues/107850
@@ -728,6 +751,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			//  to prevent endless loops.
 
 			this.ignoreEditorCloseEvent = true;
+
 			try {
 				editorPane = await this.editorService.openEditor({
 					...lastClosedEditor.editor,
@@ -803,6 +827,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// Ensure we have not configured to exclude input and don't track invalid inputs
 		const editor = editorPane?.input;
+
 		if (!editor || editor.isDisposed() || !this.includeInHistory(editor)) {
 			return;
 		}
@@ -816,6 +841,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		this.ensureHistoryLoaded(this.history);
 
 		const historyInput = this.editorHelper.preferResourceEditorInput(editor);
+
 		if (!historyInput) {
 			return;
 		}
@@ -852,9 +878,12 @@ export class HistoryService extends Disposable implements IHistoryService {
 			// they are excluded.
 			else {
 				const resourceInputs: IResourceEditorInput[] = [];
+
 				const sideInputs = editor.primary.matches(editor.secondary) ? [editor.primary] : [editor.primary, editor.secondary];
+
 				for (const sideInput of sideInputs) {
 					const candidateResourceInput = this.editorHelper.preferResourceEditorInput(sideInput);
+
 					if (isResourceEditorInput(candidateResourceInput) && this.includeInHistory(candidateResourceInput)) {
 						resourceInputs.push(candidateResourceInput);
 					}
@@ -899,6 +928,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 	private moveInHistory(event: FileOperationEvent): void {
 		if (event.isOperation(FileOperation.MOVE)) {
 			const removed = this.removeFromHistory(event);
+
 			if (removed) {
 				this.addToHistory({ resource: event.target.resource });
 			}
@@ -931,6 +961,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		let replaced = false;
 
 		const newHistory: Array<EditorInput | IResourceEditorInput> = [];
+
 		for (const entry of this.history) {
 
 			// Entry matches and is going to be disposed + replaced
@@ -1031,6 +1062,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			// Make sure to skip duplicates from the editors LRU
 			if (editor.resource) {
 				const historyEntryId = `${editor.resource.toString()}/${editor.editorId}`;
+
 				if (handledEditors.has(historyEntryId)) {
 					continue; // already added
 				}
@@ -1047,6 +1079,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// to figure out if the editor has been already added.
 		for (const editor of storedEditorHistory) {
 			const historyEntryId = `${editor.resource.toString()}/${editor.options?.override}`;
+
 			if (
 				!handledEditors.has(historyEntryId) &&
 				this.includeInHistory(editor)
@@ -1061,9 +1094,11 @@ export class HistoryService extends Disposable implements IHistoryService {
 		const entries: IResourceEditorInput[] = [];
 
 		const entriesRaw = this.storageService.get(HistoryService.HISTORY_STORAGE_KEY, StorageScope.WORKSPACE);
+
 		if (entriesRaw) {
 			try {
 				const entriesParsed: ISerializedEditorHistoryEntry[] = JSON.parse(entriesRaw);
+
 				for (const entryParsed of entriesParsed) {
 					if (!entryParsed.editor || !entryParsed.editor.resource) {
 						continue; // unexpected data format
@@ -1094,6 +1129,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		}
 
 		const entries: ISerializedEditorHistoryEntry[] = [];
+
 		for (const editor of this.history) {
 			if (isEditorInput(editor) || !isResourceEditorInput(editor)) {
 				continue; // only save resource editor inputs
@@ -1118,6 +1154,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 		// No Folder: return early
 		const folders = this.contextService.getWorkspace().folders;
+
 		if (folders.length === 0) {
 			return undefined;
 		}
@@ -1125,6 +1162,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// Single Folder: return early
 		if (folders.length === 1) {
 			const resource = folders[0].uri;
+
 			if ((!schemeFilter || resource.scheme === schemeFilter) && (!authorityFilter || resource.authority === authorityFilter)) {
 				return resource;
 			}
@@ -1147,6 +1185,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 			}
 
 			const resourceWorkspace = this.contextService.getWorkspaceFolder(input.resource);
+
 			if (resourceWorkspace) {
 				return resourceWorkspace.uri;
 			}
@@ -1155,6 +1194,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 		// Fallback to first workspace matching scheme filter if any
 		for (const folder of folders) {
 			const resource = folder.uri;
+
 			if ((!schemeFilter || resource.scheme === schemeFilter) && (!authorityFilter || resource.authority === authorityFilter)) {
 				return resource;
 			}
@@ -1166,6 +1206,7 @@ export class HistoryService extends Disposable implements IHistoryService {
 	getLastActiveFile(filterByScheme: string, filterByAuthority?: string): URI | undefined {
 		for (const input of this.getHistory()) {
 			let resource: URI | undefined;
+
 			if (isEditorInput(input)) {
 				resource = EditorResourceAccessor.getOriginalUri(input, { filterByScheme });
 			} else {
@@ -1311,7 +1352,9 @@ class EditorNavigationStacks extends Disposable implements IEditorNavigationStac
 	private getStack(filter = GoFilter.NONE): EditorNavigationStack {
 		switch (filter) {
 			case GoFilter.NONE: return this.selectionsStack;
+
 			case GoFilter.EDITS: return this.editsStack;
+
 			case GoFilter.NAVIGATION: return this.navigationsStack;
 		}
 	}
@@ -1459,6 +1502,7 @@ export class EditorNavigationStack extends Disposable {
 		}
 
 		const entryLabels: string[] = [];
+
 		for (const entry of this.stack) {
 			if (typeof entry.selection?.log === 'function') {
 				entryLabels.push(`- group: ${entry.groupId}, editor: ${entry.editor.resource?.toString()}, selection: ${entry.selection.log()}`);
@@ -1482,22 +1526,34 @@ ${entryLabels.join('\n')}
 		}
 
 		let filterLabel: string;
+
 		switch (this.filter) {
 			case GoFilter.NONE: filterLabel = 'global';
+
 				break;
+
 			case GoFilter.EDITS: filterLabel = 'edits';
+
 				break;
+
 			case GoFilter.NAVIGATION: filterLabel = 'navigation';
+
 				break;
 		}
 
 		let scopeLabel: string;
+
 		switch (this.scope) {
 			case GoScope.DEFAULT: scopeLabel = 'default';
+
 				break;
+
 			case GoScope.EDITOR_GROUP: scopeLabel = 'editorGroup';
+
 				break;
+
 			case GoScope.EDITOR: scopeLabel = 'editor';
+
 				break;
 		}
 
@@ -1515,9 +1571,13 @@ ${entryLabels.join('\n')}
 
 		switch (event.reason) {
 			case EditorPaneSelectionChangeReason.EDIT: return 'edit';
+
 			case EditorPaneSelectionChangeReason.NAVIGATION: return 'navigation';
+
 			case EditorPaneSelectionChangeReason.JUMP: return 'jump';
+
 			case EditorPaneSelectionChangeReason.PROGRAMMATIC: return 'programmatic';
+
 			case EditorPaneSelectionChangeReason.USER: return 'user';
 		}
 	}
@@ -1525,6 +1585,7 @@ ${entryLabels.join('\n')}
 	private registerGroupListeners(groupId: GroupIdentifier): void {
 		if (!this.mapGroupToDisposable.has(groupId)) {
 			const group = this.editorGroupService.getGroup(groupId);
+
 			if (group) {
 				this.mapGroupToDisposable.set(groupId, group.onWillMoveEditor(e => this.onWillMoveEditor(e)));
 			}
@@ -1558,6 +1619,7 @@ ${entryLabels.join('\n')}
 		this.trace('notifyNavigation()', editorPane?.input, event);
 
 		const isSelectionAwareEditorPane = isEditorPaneWithSelection(editorPane);
+
 		const hasValidEditor = editorPane?.input && !editorPane.input.isDisposed();
 
 		// Treat editor changes that happen as part of stack navigation specially
@@ -1650,6 +1712,7 @@ ${entryLabels.join('\n')}
 
 		// Check whether to replace an existing entry or not
 		let replace = false;
+
 		if (this.current) {
 			if (forceReplace) {
 				replace = true; // replace if we are forced to
@@ -1659,6 +1722,7 @@ ${entryLabels.join('\n')}
 		}
 
 		const editor = this.editorHelper.preferResourceEditorInput(editorCandidate);
+
 		if (!editor) {
 			return;
 		}
@@ -1673,6 +1737,7 @@ ${entryLabels.join('\n')}
 
 		// Replace at current position
 		const removedEntries: IEditorNavigationStackEntry[] = [];
+
 		if (replace) {
 			if (this.current) {
 				removedEntries.push(this.current);
@@ -1794,6 +1859,7 @@ ${entryLabels.join('\n')}
 		const flattenedStack: IEditorNavigationStackEntry[] = [];
 
 		let previousEntry: IEditorNavigationStackEntry | undefined = undefined;
+
 		for (const entry of this.stack) {
 			if (previousEntry && this.shouldReplaceStackEntry(entry, previousEntry)) {
 				continue; // skip over entry when it is considered the same
@@ -1838,6 +1904,7 @@ ${entryLabels.join('\n')}
 
 	async goForward(): Promise<void> {
 		const navigated = await this.maybeGoCurrent();
+
 		if (navigated) {
 			return;
 		}
@@ -1847,6 +1914,7 @@ ${entryLabels.join('\n')}
 		}
 
 		this.setIndex(this.index + 1);
+
 		return this.navigate();
 	}
 
@@ -1856,6 +1924,7 @@ ${entryLabels.join('\n')}
 
 	async goBack(): Promise<void> {
 		const navigated = await this.maybeGoCurrent();
+
 		if (navigated) {
 			return;
 		}
@@ -1865,11 +1934,13 @@ ${entryLabels.join('\n')}
 		}
 
 		this.setIndex(this.index - 1);
+
 		return this.navigate();
 	}
 
 	async goPrevious(): Promise<void> {
 		const navigated = await this.maybeGoCurrent();
+
 		if (navigated) {
 			return;
 		}
@@ -1881,6 +1952,7 @@ ${entryLabels.join('\n')}
 
 		// Otherwise jump to previous stack entry
 		this.setIndex(this.previousIndex);
+
 		return this.navigate();
 	}
 
@@ -1894,6 +1966,7 @@ ${entryLabels.join('\n')}
 		}
 
 		this.setIndex(this.stack.length - 1);
+
 		return this.navigate();
 	}
 
@@ -1925,6 +1998,7 @@ ${entryLabels.join('\n')}
 		}
 
 		const pane = this.editorService.activeEditorPane;
+
 		if (!isEditorPaneWithSelection(pane)) {
 			return false; // we need an active editor pane with selection support
 		}
@@ -1938,6 +2012,7 @@ ${entryLabels.join('\n')}
 		}
 
 		const paneSelection = pane.getSelection();
+
 		if (!paneSelection) {
 			return false; // we need a selection to compare with
 		}
@@ -2027,6 +2102,7 @@ class EditorHelper {
 		if (hasValidResourceEditorInputScheme) {
 			if (isEditorInput(editor)) {
 				const untypedInput = editor.toUntyped();
+
 				if (isResourceEditorInput(untypedInput)) {
 					return untypedInput;
 				}
@@ -2081,6 +2157,7 @@ class EditorHelper {
 
 		if (isEditorInput(arg2)) {
 			const inputResource = arg2.resource;
+
 			if (!inputResource) {
 				return false;
 			}
@@ -2111,6 +2188,7 @@ class EditorHelper {
 		const toDispose = Event.once(editor.onWillDispose)(() => listener());
 
 		let disposables = mapEditorToDispose.get(editor);
+
 		if (!disposables) {
 			disposables = new DisposableStore();
 			mapEditorToDispose.set(editor, disposables);
@@ -2125,6 +2203,7 @@ class EditorHelper {
 		}
 
 		const disposables = mapEditorToDispose.get(editor);
+
 		if (disposables) {
 			dispose(disposables);
 			mapEditorToDispose.delete(editor);

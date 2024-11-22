@@ -11,13 +11,19 @@ import { ServicesAccessor } from '../../../../platform/instantiation/common/inst
 import * as languages from '../../../../editor/common/languages.js';
 CommandsRegistry.registerCommand('_executeMappedEditsProvider', async (accessor: ServicesAccessor, documentUri: URI, codeBlocks: string[], context: languages.MappedEditsContext): Promise<languages.WorkspaceEdit | null> => {
     const modelService = accessor.get(ITextModelService);
+
     const langFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const document = await modelService.createModelReference(documentUri);
+
     let result: languages.WorkspaceEdit | null = null;
+
     try {
         const providers = langFeaturesService.mappedEditsProvider.ordered(document.object.textEditorModel);
+
         if (providers.length > 0) {
             const mostRelevantProvider = providers[0];
+
             const cancellationTokenSource = new CancellationTokenSource();
             result = await mostRelevantProvider.provideMappedEdits(document.object.textEditorModel, codeBlocks, context, cancellationTokenSource.token);
         }

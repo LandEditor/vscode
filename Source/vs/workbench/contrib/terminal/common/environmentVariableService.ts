@@ -25,6 +25,7 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
     collections: Map<string, IEnvironmentVariableCollectionWithPersistence> = new Map();
     mergedCollection: IMergedEnvironmentVariableCollection;
     private readonly _onDidChangeCollections = this._register(new Emitter<IMergedEnvironmentVariableCollection>());
+
     get onDidChangeCollections(): Event<IMergedEnvironmentVariableCollection> { return this._onDidChangeCollections.event; }
     constructor(
     @IExtensionService
@@ -33,7 +34,9 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
     private readonly _storageService: IStorageService) {
         super();
         this._storageService.remove(TerminalStorageKeys.DeprecatedEnvironmentVariableCollections, StorageScope.WORKSPACE);
+
         const serializedPersistedCollections = this._storageService.get(TerminalStorageKeys.EnvironmentVariableCollections, StorageScope.WORKSPACE);
+
         if (serializedPersistedCollections) {
             const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] = JSON.parse(serializedPersistedCollections);
             collectionsJson.forEach(c => this.collections.set(c.extensionIdentifier, {
@@ -78,6 +81,7 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
                 });
             }
         });
+
         const stringifiedJson = JSON.stringify(collectionsJson);
         this._storageService.store(TerminalStorageKeys.EnvironmentVariableCollections, stringifiedJson, StorageScope.WORKSPACE, StorageTarget.MACHINE);
     }
@@ -93,15 +97,19 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
     }
     private async _invalidateExtensionCollections(): Promise<void> {
         await this._extensionService.whenInstalledExtensionsRegistered();
+
         const registeredExtensions = this._extensionService.extensions;
+
         let changes = false;
         this.collections.forEach((_, extensionIdentifier) => {
             const isExtensionRegistered = registeredExtensions.some(r => r.identifier.value === extensionIdentifier);
+
             if (!isExtensionRegistered) {
                 this.collections.delete(extensionIdentifier);
                 changes = true;
             }
         });
+
         if (changes) {
             this._updateCollections();
         }

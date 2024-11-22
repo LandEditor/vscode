@@ -81,10 +81,12 @@ export class RenderingContext extends RestrictedRenderingContext {
 
 	public linesVisibleRangesForRange(range: Range, includeNewLines: boolean): LineVisibleRanges[] | null {
 		const domRanges = this._viewLines.linesVisibleRangesForRange(range, includeNewLines);
+
 		if (!this._viewLinesGpu) {
 			return domRanges ?? null;
 		}
 		const gpuRanges = this._viewLinesGpu.linesVisibleRangesForRange(range, includeNewLines);
+
 		if (!domRanges) {
 			return gpuRanges;
 		}
@@ -108,6 +110,7 @@ export class LineVisibleRanges {
 			return null;
 		}
 		let result: LineVisibleRanges | null = null;
+
 		for (const range of ranges) {
 			if (!result || range.lineNumber < result.lineNumber) {
 				result = range;
@@ -124,6 +127,7 @@ export class LineVisibleRanges {
 			return null;
 		}
 		let result: LineVisibleRanges | null = null;
+
 		for (const range of ranges) {
 			if (!result || range.lineNumber > result.lineNumber) {
 				result = range;
@@ -151,6 +155,7 @@ export class HorizontalRange {
 
 	public static from(ranges: FloatHorizontalRange[]): HorizontalRange[] {
 		const result = new Array(ranges.length);
+
 		for (let i = 0, len = ranges.length; i < len; i++) {
 			const range = ranges[i];
 			result[i] = new HorizontalRange(range.left, range.width);

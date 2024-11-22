@@ -11,6 +11,7 @@ export const enum ValidationState {
 }
 export class ValidationStatus {
     private _state: ValidationState;
+
     constructor() {
         this._state = ValidationState.OK;
     }
@@ -38,6 +39,7 @@ export interface IProblemReporter {
 }
 export abstract class Parser {
     private _problemReporter: IProblemReporter;
+
     constructor(problemReporter: IProblemReporter) {
         this._problemReporter = problemReporter;
     }

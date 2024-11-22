@@ -15,6 +15,7 @@ import { IUserDataProfilesService } from '../../userDataProfile/common/userDataP
 import { ALL_SYNC_RESOURCES, IResourceRefHandle, IUserDataSyncLocalStoreService, IUserDataSyncLogService, SyncResource } from './userDataSync.js';
 export class UserDataSyncLocalStoreService extends Disposable implements IUserDataSyncLocalStoreService {
     _serviceBrand: any;
+
     constructor(
     @IEnvironmentService
     private readonly environmentService: IEnvironmentService, 
@@ -41,6 +42,7 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
             }
         }
         let stat: IFileStat;
+
         try {
             stat = await this.fileService.resolve(this.environmentService.userDataSyncHome);
         }
@@ -66,10 +68,13 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
     }
     async getAllResourceRefs(resource: SyncResource, collection?: string, root?: URI): Promise<IResourceRefHandle[]> {
         const folder = this.getResourceBackupHome(resource, collection, root);
+
         try {
             const stat = await this.fileService.resolve(folder);
+
             if (stat.children) {
                 const all = stat.children.filter(stat => stat.isFile && !stat.name.startsWith('lastSync')).sort().reverse();
+
                 return all.map(stat => ({
                     ref: stat.name,
                     created: this.getCreationTime(stat)
@@ -85,19 +90,25 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
     }
     async resolveResourceContent(resourceKey: SyncResource, ref: string, collection?: string, root?: URI): Promise<string | null> {
         const folder = this.getResourceBackupHome(resourceKey, collection, root);
+
         const file = joinPath(folder, ref);
+
         try {
             const content = await this.fileService.readFile(file);
+
             return content.value.toString();
         }
         catch (error) {
             this.logService.error(error);
+
             return null;
         }
     }
     async writeResource(resourceKey: SyncResource, content: string, cTime: Date, collection?: string, root?: URI): Promise<void> {
         const folder = this.getResourceBackupHome(resourceKey, collection, root);
+
         const resource = joinPath(folder, `${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, '')}.json`);
+
         try {
             await this.fileService.writeFile(resource, VSBuffer.fromString(content));
         }
@@ -119,11 +130,16 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
                 return;
             }
             const stat = await this.fileService.resolve(folder);
+
             if (stat.children) {
                 const all = stat.children.filter(stat => stat.isFile && /^\d{8}T\d{6}(\.json)?$/.test(stat.name)).sort();
+
                 const backUpMaxAge = 1000 * 60 * 60 * 24 * (this.configurationService.getValue<number>('sync.localBackupDuration') || 30 /* Default 30 days */);
+
                 let toDelete = all.filter(stat => Date.now() - this.getCreationTime(stat) > backUpMaxAge);
+
                 const remaining = all.length - toDelete.length;
+
                 if (remaining < 10) {
                     toDelete = toDelete.slice(10 - remaining);
                 }

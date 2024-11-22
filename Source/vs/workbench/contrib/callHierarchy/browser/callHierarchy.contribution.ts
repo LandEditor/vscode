@@ -25,8 +25,11 @@ import { MenuId, registerAction2 } from '../../../../platform/actions/common/act
 import { Codicon } from '../../../../base/common/codicons.js';
 import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 import { isCancellationError } from '../../../../base/common/errors.js';
+
 const _ctxHasCallHierarchyProvider = new RawContextKey<boolean>('editorHasCallHierarchyProvider', false, localize('editorHasCallHierarchyProvider', 'Whether a call hierarchy provider is available'));
+
 const _ctxCallHierarchyVisible = new RawContextKey<boolean>('callHierarchyVisible', false, localize('callHierarchyVisible', 'Whether call hierarchy peek is currently showing'));
+
 const _ctxCallHierarchyDirection = new RawContextKey<string>('callHierarchyDirection', undefined, { type: 'string', description: localize('callHierarchyDirection', 'Whether call hierarchy shows incoming or outgoing calls') });
 function sanitizedDirection(candidate: string): CallHierarchyDirection {
     return candidate === CallHierarchyDirection.CallsFrom || candidate === CallHierarchyDirection.CallsTo
@@ -45,6 +48,7 @@ class CallHierarchyController implements IEditorContribution {
     private readonly _dispoables = new DisposableStore();
     private readonly _sessionDisposables = new DisposableStore();
     private _widget?: CallHierarchyTreePeekWidget;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IContextKeyService
     private readonly _contextKeyService: IContextKeyService, 
@@ -69,16 +73,21 @@ class CallHierarchyController implements IEditorContribution {
     }
     async startCallHierarchyFromEditor(): Promise<void> {
         this._sessionDisposables.clear();
+
         if (!this._editor.hasModel()) {
             return;
         }
         const document = this._editor.getModel();
+
         const position = this._editor.getPosition();
+
         if (!CallHierarchyProviderRegistry.has(document)) {
             return;
         }
         const cts = new CancellationTokenSource();
+
         const model = CallHierarchyModel.create(document, position, cts.token);
+
         const direction = sanitizedDirection(this._storageService.get(CallHierarchyController._StorageDirection, StorageScope.PROFILE, CallHierarchyDirection.CallsTo));
         this._showCallHierarchyWidget(position, direction, model, cts);
     }
@@ -87,11 +96,14 @@ class CallHierarchyController implements IEditorContribution {
             return;
         }
         const model = this._widget.getModel();
+
         const call = this._widget.getFocused();
+
         if (!call || !model) {
             return;
         }
         const newEditor = await this._editorService.openCodeEditor({ resource: call.item.uri }, this._editor);
+
         if (!newEditor) {
             return;
         }
@@ -125,6 +137,7 @@ class CallHierarchyController implements IEditorContribution {
         }).catch(err => {
             if (isCancellationError(err)) {
                 this.endCallHierarchy();
+
                 return;
             }
             this._widget!.showMessage(localize('error', "Failed to show call hierarchy"));

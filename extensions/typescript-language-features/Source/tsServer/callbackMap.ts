@@ -15,10 +15,12 @@ export class CallbackMap<R extends Proto.Response> {
     private readonly _asyncCallbacks = new Map<number, CallbackItem<ServerResponse.Response<R> | undefined>>();
     public destroy(cause: string): void {
         const cancellation = new ServerResponse.Cancelled(cause);
+
         for (const callback of this._callbacks.values()) {
             callback.onSuccess(cancellation);
         }
         this._callbacks.clear();
+
         for (const callback of this._asyncCallbacks.values()) {
             callback.onSuccess(cancellation);
         }
@@ -35,6 +37,7 @@ export class CallbackMap<R extends Proto.Response> {
     public fetch(seq: number): CallbackItem<ServerResponse.Response<R> | undefined> | undefined {
         const callback = this._callbacks.get(seq) || this._asyncCallbacks.get(seq);
         this.delete(seq);
+
         return callback;
     }
     private delete(seq: number) {

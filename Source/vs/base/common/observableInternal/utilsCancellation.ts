@@ -20,7 +20,9 @@ export function waitForState<T>(observable: IObservable<T>, predicate?: (state: 
     }
     return new Promise((resolve, reject) => {
         let isImmediateRun = true;
+
         let shouldDispose = false;
+
         const stateObs = observable.map(state => {
             /** @description waitForState.state */
             return {
@@ -29,9 +31,11 @@ export function waitForState<T>(observable: IObservable<T>, predicate?: (state: 
                 state
             };
         });
+
         const d = autorun(reader => {
             /** @description waitForState */
             const { isFinished, error, state } = stateObs.read(reader);
+
             if (isFinished || error) {
                 if (isImmediateRun) {
                     // The variable `d` is not initialized yet
@@ -48,20 +52,24 @@ export function waitForState<T>(observable: IObservable<T>, predicate?: (state: 
                 }
             }
         });
+
         if (cancellationToken) {
             const dc = cancellationToken.onCancellationRequested(() => {
                 d.dispose();
                 dc.dispose();
                 reject(new CancellationError());
             });
+
             if (cancellationToken.isCancellationRequested) {
                 d.dispose();
                 dc.dispose();
                 reject(new CancellationError());
+
                 return;
             }
         }
         isImmediateRun = false;
+
         if (shouldDispose) {
             d.dispose();
         }
@@ -71,7 +79,9 @@ export function derivedWithCancellationToken<T>(computeFn: (reader: IReader, can
 export function derivedWithCancellationToken<T>(owner: object, computeFn: (reader: IReader, cancellationToken: CancellationToken) => T): IObservable<T>;
 export function derivedWithCancellationToken<T>(computeFnOrOwner: ((reader: IReader, cancellationToken: CancellationToken) => T) | object, computeFnOrUndefined?: ((reader: IReader, cancellationToken: CancellationToken) => T)): IObservable<T> {
     let computeFn: (reader: IReader, store: CancellationToken) => T;
+
     let owner: DebugOwner;
+
     if (computeFnOrUndefined === undefined) {
         computeFn = computeFnOrOwner as any;
         owner = undefined;
@@ -81,11 +91,13 @@ export function derivedWithCancellationToken<T>(computeFnOrOwner: ((reader: IRea
         computeFn = computeFnOrUndefined as any;
     }
     let cancellationTokenSource: CancellationTokenSource | undefined = undefined;
+
     return new Derived(new DebugNameData(owner, undefined, computeFn), r => {
         if (cancellationTokenSource) {
             cancellationTokenSource.dispose(true);
         }
         cancellationTokenSource = new CancellationTokenSource();
+
         return computeFn(r, cancellationTokenSource.token);
     }, undefined, undefined, () => cancellationTokenSource?.dispose(), strictEquals);
 }

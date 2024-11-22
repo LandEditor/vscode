@@ -39,6 +39,7 @@ MenuRegistry.appendMenuItem(viewFilterMenu, {
 class MoreFiltersActionViewItem extends SubmenuEntryActionViewItem {
 
 	private _checked: boolean = false;
+
 	set checked(checked: boolean) {
 		if (this._checked !== checked) {
 			this._checked = checked;
@@ -159,6 +160,7 @@ export class FilterWidget extends Widget {
 
 	checkMoreFilters(checked: boolean): void {
 		this.isMoreFiltersChecked = checked;
+
 		if (this.moreFiltersActionViewItem) {
 			this.moreFiltersActionViewItem.checked = checked;
 		}
@@ -166,6 +168,7 @@ export class FilterWidget extends Widget {
 
 	private createInput(container: HTMLElement): [ContextScopedHistoryInputBox, DOM.IFocusTracker] {
 		const history = this.options.history || [];
+
 		const inputBox = this._register(this.instantiationService.createInstance(ContextScopedHistoryInputBox, container, this.contextViewService, {
 			placeholder: this.options.placeholder,
 			ariaLabel: this.options.ariaLabel,
@@ -173,6 +176,7 @@ export class FilterWidget extends Widget {
 			showHistoryHint: () => showHistoryKeybindingHint(this.keybindingService),
 			inputBoxStyles: defaultInputBoxStyles
 		}));
+
 		if (this.options.text) {
 			inputBox.value = this.options.text;
 		}
@@ -186,6 +190,7 @@ export class FilterWidget extends Widget {
 		}));
 
 		const focusTracker = this._register(DOM.trackFocus(inputBox.inputElement));
+
 		if (this.focusContextKey) {
 			this._register(focusTracker.onDidFocus(() => this.focusContextKey!.set(true)));
 			this._register(focusTracker.onDidBlur(() => this.focusContextKey!.set(false)));
@@ -199,6 +204,7 @@ export class FilterWidget extends Widget {
 		filterBadge.style.backgroundColor = asCssVariable(badgeBackground);
 		filterBadge.style.color = asCssVariable(badgeForeground);
 		filterBadge.style.border = `1px solid ${asCssVariable(contrastBorder)}`;
+
 		return filterBadge;
 	}
 
@@ -210,6 +216,7 @@ export class FilterWidget extends Widget {
 					if (action instanceof SubmenuItemAction && action.item.submenu.id === viewFilterSubmenu.id) {
 						this.moreFiltersActionViewItem = this.instantiationService.createInstance(MoreFiltersActionViewItem, action, options);
 						this.moreFiltersActionViewItem.checked = this.isMoreFiltersChecked;
+
 						return this.moreFiltersActionViewItem;
 					}
 					return undefined;
@@ -240,6 +247,7 @@ export class FilterWidget extends Widget {
 
 	private onInputKeyDown(event: StandardKeyboardEvent, filterInputBox: HistoryInputBox) {
 		let handled = false;
+
 		if (event.equals(KeyCode.Tab) && !this.toolbar.isEmpty()) {
 			this.toolbar.focus();
 			handled = true;

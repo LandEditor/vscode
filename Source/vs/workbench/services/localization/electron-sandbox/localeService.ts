@@ -31,6 +31,7 @@ interface IExtensionsViewPaneContainer extends IViewPaneContainer {
 const EXTENSIONS_VIEWLET_ID = 'workbench.view.extensions';
 class NativeLocaleService implements ILocaleService {
     _serviceBrand: undefined;
+
     constructor(
     @IJSONEditingService
     private readonly jsonEditingService: IJSONEditingService, 
@@ -77,6 +78,7 @@ class NativeLocaleService implements ILocaleService {
                     ]
                 }
             });
+
             return false;
         }
         return true;
@@ -86,14 +88,17 @@ class NativeLocaleService implements ILocaleService {
             return false;
         }
         await this.jsonEditingService.write(this.environmentService.argvResource, [{ path: ['locale'], value: locale }], true);
+
         return true;
     }
     async setLocale(languagePackItem: ILanguagePackItem, skipDialog = false): Promise<void> {
         const locale = languagePackItem.id;
+
         if (locale === Language.value() || (!locale && Language.isDefaultVariant())) {
             return;
         }
         const installedLanguages = await this.languagePackService.getInstalledLanguages();
+
         try {
             // Only Desktop has the concept of installing language packs so we only do this for Desktop
             // and only if the language pack is not installed
@@ -104,6 +109,7 @@ class NativeLocaleService implements ILocaleService {
                     // as of now, there are no 3rd party language packs available on the Marketplace.
                     const viewlet = await this.paneCompositePartService.openPaneComposite(EXTENSIONS_VIEWLET_ID, ViewContainerLocation.Sidebar);
                     (viewlet?.getViewPaneContainer() as IExtensionsViewPaneContainer).search(`@id:${languagePackItem.extensionId}`);
+
                     return;
                 }
                 await this.progressService.withProgress({
@@ -127,6 +133,7 @@ class NativeLocaleService implements ILocaleService {
     async clearLocalePreference(): Promise<void> {
         try {
             await this.writeLocaleValue(undefined);
+
             if (!Language.isDefaultVariant()) {
                 await this.showRestartDialog('English');
             }
@@ -141,6 +148,7 @@ class NativeLocaleService implements ILocaleService {
             detail: localize('restartDisplayLanguageDetail1', "To change the display language to {0}, {1} needs to restart.", languageName, this.productService.nameLong),
             primaryButton: localize({ key: 'restart', comment: ['&& denotes a mnemonic character'] }, "&&Restart"),
         });
+
         return confirmed;
     }
 }
@@ -148,16 +156,20 @@ class NativeLocaleService implements ILocaleService {
 // Once that's ironed out, we can fold this into the localeService.
 class NativeActiveLanguagePackService implements IActiveLanguagePackService {
     _serviceBrand: undefined;
+
     constructor(
     @ILanguagePackService
     private readonly languagePackService: ILanguagePackService) { }
     async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
         const language = Language.value();
+
         if (language === LANGUAGE_DEFAULT) {
             return undefined;
         }
         const languages = await this.languagePackService.getInstalledLanguages();
+
         const languagePack = languages.find(l => l.id === language);
+
         return languagePack?.extensionId;
     }
 }

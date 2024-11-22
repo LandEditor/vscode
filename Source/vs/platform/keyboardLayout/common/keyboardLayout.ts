@@ -52,6 +52,7 @@ export interface ILinuxKeyboardLayoutInfo {
     model: string;
     group: number;
     layout: string;
+
     variant: string;
     options: string;
     rules: string;
@@ -68,9 +69,13 @@ export type IKeyboardLayoutInfo = (IWindowsKeyboardLayoutInfo | ILinuxKeyboardLa
 export interface IKeyboardLayoutService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeKeyboardLayout: Event<void>;
+
     getRawKeyboardMapping(): IKeyboardMapping | null;
+
     getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null;
+
     getAllKeyboardLayouts(): IKeyboardLayoutInfo[];
+
     getKeyboardMapper(): IKeyboardMapper;
     validateCurrentKeyboardMapping(keyboardEvent: IKeyboardEvent): void;
 }
@@ -102,6 +107,7 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
     if ((<IWindowsKeyboardLayoutInfo>layout).name) {
         // windows
         const windowsLayout = <IWindowsKeyboardLayoutInfo>layout;
+
         return {
             label: windowsLayout.text,
             description: ''
@@ -109,6 +115,7 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
     }
     if ((<IMacKeyboardLayoutInfo>layout).id) {
         const macLayout = <IMacKeyboardLayoutInfo>layout;
+
         if (macLayout.localizedName) {
             return {
                 label: macLayout.localizedName,
@@ -133,6 +140,7 @@ export function parseKeyboardLayoutDescription(layout: IKeyboardLayoutInfo | nul
         };
     }
     const linuxLayout = <ILinuxKeyboardLayoutInfo>layout;
+
     return {
         label: linuxLayout.layout,
         description: ''
@@ -169,8 +177,11 @@ export function windowsKeyboardMappingEquals(a: IWindowsKeyboardMapping | null, 
     }
     for (let scanCode = 0; scanCode < ScanCode.MAX_VALUE; scanCode++) {
         const strScanCode = ScanCodeUtils.toString(scanCode);
+
         const aEntry = a[strScanCode];
+
         const bEntry = b[strScanCode];
+
         if (!windowsKeyMappingEquals(aEntry, bEntry)) {
             return false;
         }
@@ -198,8 +209,11 @@ export function macLinuxKeyboardMappingEquals(a: IMacLinuxKeyboardMapping | null
     }
     for (let scanCode = 0; scanCode < ScanCode.MAX_VALUE; scanCode++) {
         const strScanCode = ScanCodeUtils.toString(scanCode);
+
         const aEntry = a[strScanCode];
+
         const bEntry = b[strScanCode];
+
         if (!macLinuxKeyMappingEquals(aEntry, bEntry)) {
             return false;
         }

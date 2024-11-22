@@ -13,6 +13,7 @@ export class TextMateTokenizationSupport extends Disposable implements ITokeniza
     private readonly _seenLanguages: boolean[] = [];
     private readonly _onDidEncounterLanguage: Emitter<LanguageId> = this._register(new Emitter<LanguageId>());
     public readonly onDidEncounterLanguage: Event<LanguageId> = this._onDidEncounterLanguage.event;
+
     constructor(private readonly _grammar: IGrammar, private readonly _initialState: StateStack, private readonly _containsEmbeddedLanguages: boolean, private readonly _createBackgroundTokenizer: ((textModel: ITextModel, tokenStore: IBackgroundTokenizationStore) => IBackgroundTokenizer | undefined) | undefined, private readonly _backgroundTokenizerShouldOnlyVerifyTokens: () => boolean, private readonly _reportTokenizationTime: (timeMs: number, lineLength: number, isRandomSample: boolean) => void, private readonly _reportSlowTokenization: boolean) {
         super();
     }
@@ -33,11 +34,16 @@ export class TextMateTokenizationSupport extends Disposable implements ITokeniza
     }
     public tokenizeEncoded(line: string, hasEOL: boolean, state: StateStack): EncodedTokenizationResult {
         const isRandomSample = Math.random() * 10000 < 1;
+
         const shouldMeasure = this._reportSlowTokenization || isRandomSample;
+
         const sw = shouldMeasure ? new StopWatch(true) : undefined;
+
         const textMateResult = this._grammar.tokenizeLine2(line, state, 500);
+
         if (shouldMeasure) {
             const timeMS = sw!.elapsed();
+
             if (isRandomSample || timeMS > 32) {
                 this._reportTokenizationTime(timeMS, line.length, isRandomSample);
             }
@@ -49,11 +55,14 @@ export class TextMateTokenizationSupport extends Disposable implements ITokeniza
         }
         if (this._containsEmbeddedLanguages) {
             const seenLanguages = this._seenLanguages;
+
             const tokens = textMateResult.tokens;
             // Must check if any of the embedded languages was hit
             for (let i = 0, len = (tokens.length >>> 1); i < len; i++) {
                 const metadata = tokens[(i << 1) + 1];
+
                 const languageId = TokenMetadata.getLanguageId(metadata);
+
                 if (!seenLanguages[languageId]) {
                     seenLanguages[languageId] = true;
                     this._onDidEncounterLanguage.fire(languageId);

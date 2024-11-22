@@ -13,11 +13,13 @@ export const ICSSDevelopmentService = createDecorator<ICSSDevelopmentService>('I
 export interface ICSSDevelopmentService {
     _serviceBrand: undefined;
     isEnabled: boolean;
+
     getCssModules(): Promise<string[]>;
 }
 export class CSSDevelopmentService implements ICSSDevelopmentService {
     declare _serviceBrand: undefined;
     private _cssModules?: Promise<string[]>;
+
     constructor(
     @IEnvironmentService
     private readonly envService: IEnvironmentService, 
@@ -28,6 +30,7 @@ export class CSSDevelopmentService implements ICSSDevelopmentService {
     }
     getCssModules(): Promise<string[]> {
         this._cssModules ??= this.computeCssModules();
+
         return this._cssModules;
     }
     private async computeCssModules(): Promise<string[]> {
@@ -35,11 +38,16 @@ export class CSSDevelopmentService implements ICSSDevelopmentService {
             return [];
         }
         const rg = await import('@vscode/ripgrep');
+
         return await new Promise<string[]>((resolve) => {
             const sw = StopWatch.create();
+
             const chunks: string[][] = [];
+
             const decoder = new TextDecoder();
+
             const basePath = FileAccess.asFileUri('').fsPath;
+
             const process = spawn(rg.rgPath, ['-g', '**/*.css', '--files', '--no-ignore', basePath], {});
             process.stdout.on('data', data => {
                 const chunk = decoder.decode(data, { stream: true });

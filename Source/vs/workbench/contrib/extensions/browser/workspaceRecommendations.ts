@@ -16,16 +16,20 @@ import { FileChangeType, IFileService } from '../../../../platform/files/common/
 import { URI } from '../../../../base/common/uri.js';
 import { RunOnceScheduler } from '../../../../base/common/async.js';
 import { IWorkbenchExtensionManagementService } from '../../../services/extensionManagement/common/extensionManagement.js';
+
 const WORKSPACE_EXTENSIONS_FOLDER = '.vscode/extensions';
 export class WorkspaceRecommendations extends ExtensionRecommendations {
     private _recommendations: ExtensionRecommendation[] = [];
+
     get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
     private _onDidChangeRecommendations = this._register(new Emitter<void>());
     readonly onDidChangeRecommendations = this._onDidChangeRecommendations.event;
     private _ignoredRecommendations: string[] = [];
+
     get ignoredRecommendations(): ReadonlyArray<string> { return this._ignoredRecommendations; }
     private workspaceExtensions: URI[] = [];
     private readonly onDidChangeWorkspaceExtensionsScheduler: RunOnceScheduler;
+
     constructor(
     @IWorkspaceExtensionsConfigService
     private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService, 
@@ -46,6 +50,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
         this.workspaceExtensions = await this.fetchWorkspaceExtensions();
         await this.fetch();
         this._register(this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(() => this.onDidChangeExtensionsConfigs()));
+
         for (const folder of this.contextService.getWorkspace().folders) {
             this._register(this.fileService.watch(this.uriIdentityService.extUri.joinPath(folder.uri, WORKSPACE_EXTENSIONS_FOLDER)));
         }
@@ -59,16 +64,20 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
     private async onDidChangeWorkspaceExtensionsFolders(): Promise<void> {
         const existing = this.workspaceExtensions;
         this.workspaceExtensions = await this.fetchWorkspaceExtensions();
+
         if (!equals(existing, this.workspaceExtensions, (a, b) => this.uriIdentityService.extUri.isEqual(a, b))) {
             this.onDidChangeExtensionsConfigs();
         }
     }
     private async fetchWorkspaceExtensions(): Promise<URI[]> {
         const workspaceExtensions: URI[] = [];
+
         for (const workspaceFolder of this.contextService.getWorkspace().folders) {
             const extensionsLocaiton = this.uriIdentityService.extUri.joinPath(workspaceFolder.uri, WORKSPACE_EXTENSIONS_FOLDER);
+
             try {
                 const stat = await this.fileService.resolve(extensionsLocaiton);
+
                 for (const extension of stat.children ?? []) {
                     if (!extension.isDirectory) {
                         continue;
@@ -82,6 +91,7 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
         }
         if (workspaceExtensions.length) {
             const resourceExtensions = await this.workbenchExtensionManagementService.getExtensions(workspaceExtensions);
+
             return resourceExtensions.map(extension => extension.location);
         }
         return [];
@@ -91,12 +101,15 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
      */
     private async fetch(): Promise<void> {
         const extensionsConfigs = await this.workspaceExtensionsConfigService.getExtensionsConfigs();
+
         const { invalidRecommendations, message } = await this.validateExtensions(extensionsConfigs);
+
         if (invalidRecommendations.length) {
             this.notificationService.warn(`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`);
         }
         this._recommendations = [];
         this._ignoredRecommendations = [];
+
         for (const extensionsConfig of extensionsConfigs) {
             if (extensionsConfig.unwantedRecommendations) {
                 for (const unwantedRecommendation of extensionsConfig.unwantedRecommendations) {
@@ -135,10 +148,15 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
         message: string;
     }> {
         const validExtensions: string[] = [];
+
         const invalidExtensions: string[] = [];
+
         let message = '';
+
         const allRecommendations = distinct(contents.flatMap(({ recommendations }) => recommendations || []));
+
         const regEx = new RegExp(EXTENSION_IDENTIFIER_PATTERN);
+
         for (const extensionId of allRecommendations) {
             if (regEx.test(extensionId)) {
                 validExtensions.push(extensionId);

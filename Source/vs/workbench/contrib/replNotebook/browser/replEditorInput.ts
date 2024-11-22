@@ -70,12 +70,14 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 
 		if (resource.scheme === 'untitled') {
 			const match = new RegExp('Untitled-(\\d+)\.').exec(resource.path);
+
 			if (match?.length === 2) {
 				return `REPL - ${match[1]}`;
 			}
 		}
 
 		const filename = resource.path.split('/').pop();
+
 		return filename ? `REPL - ${filename}` : 'REPL';
 	}
 
@@ -97,6 +99,7 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 
 	override get capabilities() {
 		const capabilities = super.capabilities;
+
 		const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
 
 		return capabilities
@@ -106,6 +109,7 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 
 	override async resolve() {
 		const model = await super.resolve();
+
 		if (model) {
 			this.ensureInputBoxCell(model.notebook);
 		}
@@ -141,11 +145,13 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 			return this.inputModelRef.object.textEditorModel;
 		}
 		const lastCell = notebook.cells[notebook.cells.length - 1];
+
 		if (!lastCell) {
 			throw new Error('The REPL editor requires at least one cell for the input box.');
 		}
 
 		this.inputModelRef = await this._textModelService.createModelReference(lastCell.uri);
+
 		return this.inputModelRef.object.textEditorModel;
 	}
 
@@ -154,6 +160,7 @@ export class ReplEditorInput extends NotebookEditorInput implements ICompositeNo
 			this.isDisposing = true;
 			this.editorModelReference?.object.revert({ soft: true });
 			this.inputModelRef?.dispose();
+
 			super.dispose();
 		}
 	}

@@ -20,6 +20,7 @@ export class MainThreadDocumentContentProviders implements MainThreadDocumentCon
     private readonly _resourceContentProvider = new DisposableMap<number>();
     private readonly _pendingUpdate = new Map<string, CancellationTokenSource>();
     private readonly _proxy: ExtHostDocumentContentProvidersShape;
+
     constructor(extHostContext: IExtHostContext, 
     @ITextModelService
     private readonly _textModelResolverService: ITextModelService, 
@@ -41,7 +42,9 @@ export class MainThreadDocumentContentProviders implements MainThreadDocumentCon
                 return this._proxy.$provideTextDocumentContent(handle, uri).then(value => {
                     if (typeof value === 'string') {
                         const firstLineText = value.substr(0, 1 + value.search(/\r?\n/));
+
                         const languageSelection = this._languageService.createByFilepathOrFirstLine(uri, firstLineText);
+
                         return this._modelService.createModel(value, languageSelection, uri);
                     }
                     return null;
@@ -55,6 +58,7 @@ export class MainThreadDocumentContentProviders implements MainThreadDocumentCon
     }
     async $onVirtualDocumentChange(uri: UriComponents, value: string): Promise<void> {
         const model = this._modelService.getModel(URI.revive(uri));
+
         if (!model) {
             return;
         }
@@ -64,10 +68,12 @@ export class MainThreadDocumentContentProviders implements MainThreadDocumentCon
         // create and keep update token
         const myToken = new CancellationTokenSource();
         this._pendingUpdate.set(model.id, myToken);
+
         try {
             const edits = await this._editorWorkerService.computeMoreMinimalEdits(model.uri, [{ text: value, range: model.getFullModelRange() }]);
             // remove token
             this._pendingUpdate.delete(model.id);
+
             if (myToken.token.isCancellationRequested) {
                 // ignore this
                 return;

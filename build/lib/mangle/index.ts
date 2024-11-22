@@ -11,6 +11,7 @@ import * as ts from 'typescript';
 import { pathToFileURL } from 'url';
 import * as workerpool from 'workerpool';
 import { StaticLanguageServiceHost } from './staticLanguageServiceHost';
+
 const buildfile = require('../../buildfile');
 class ShortIdent {
     private static _keywords = new Set(['await', 'break', 'case', 'catch', 'class', 'const', 'continue', 'debugger',
@@ -19,10 +20,12 @@ class ShortIdent {
         'true', 'try', 'typeof', 'var', 'void', 'while', 'with', 'yield']);
     private static _alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890$_'.split('');
     private _value = 0;
+
     constructor(private readonly prefix: string) { }
     next(isNameTaken?: (name: string) => boolean): string {
         const candidate = this.prefix + ShortIdent.convert(this._value);
         this._value++;
+
         if (ShortIdent._keywords.has(candidate) || /^[_0-9]/.test(candidate) || isNameTaken?.(candidate)) {
             // try again
             return this.next(isNameTaken);
@@ -31,12 +34,15 @@ class ShortIdent {
     }
     private static convert(n: number): string {
         const base = this._alphabet.length;
+
         let result = '';
+
         do {
             const rest = n % base;
             result += this._alphabet[rest];
             n = (n / base) | 0;
         } while (n > 0);
+
         return result;
     }
 }
@@ -53,10 +59,12 @@ class ClassData {
     private replacements: Map<string, string> | undefined;
     parent: ClassData | undefined;
     children: ClassData[] | undefined;
+
     constructor(readonly fileName: string, readonly node: ts.ClassDeclaration | ts.ClassExpression) {
         // analyse all fields (properties and methods). Find usages of all protected and
         // private ones and keep track of all public ones (to prevent naming collisions)
         const candidates: (ts.NamedDeclaration)[] = [];
+
         for (const member of node.members) {
             if (ts.isMethodDeclaration(member)) {
                 // method `foo() {}`
@@ -88,6 +96,7 @@ class ClassData {
         }
         for (const member of candidates) {
             const ident = ClassData._getMemberName(member);
+
             if (!ident) {
                 continue;
             }
@@ -100,7 +109,9 @@ class ClassData {
             return undefined;
         }
         const { name } = node;
+
         let ident = name.getText();
+
         if (name.kind === ts.SyntaxKind.ComputedPropertyName) {
             if (name.expression.kind !== ts.SyntaxKind.StringLiteral) {
                 // unsupported: [Symbol.foo] or [abc + 'field']
@@ -135,9 +146,11 @@ class ClassData {
                 continue;
             }
             let parent: ClassData | undefined = data.parent;
+
             while (parent) {
                 if (parent.fields.get(name)?.type === FieldType.Protected) {
                     const parentPos = parent.node.getSourceFile().getLineAndCharacterOfPosition(parent.fields.get(name)!.pos);
+
                     const infoPos = data.node.getSourceFile().getLineAndCharacterOfPosition(info.pos);
                     reportViolation(name, `'${name}' from ${parent.fileName}:${parentPos.line + 1}`, `${data.fileName}:${infoPos.line + 1}`);
                     parent.fields.get(name)!.type = FieldType.Public;
@@ -156,6 +169,7 @@ class ClassData {
             ClassData.fillInReplacement(data.parent);
         }
         data.replacements = new Map();
+
         const isNameTaken = (name: string) => {
             // locally taken
             if (data._isNameTaken(name)) {
@@ -163,6 +177,7 @@ class ClassData {
             }
             // parents
             let parent: ClassData | undefined = data.parent;
+
             while (parent) {
                 if (parent._isNameTaken(name)) {
                     return true;
@@ -172,8 +187,10 @@ class ClassData {
             // children
             if (data.children) {
                 const stack = [...data.children];
+
                 while (stack.length) {
                     const node = stack.pop()!;
+
                     if (node._isNameTaken(name)) {
                         return true;
                     }
@@ -184,7 +201,9 @@ class ClassData {
             }
             return false;
         };
+
         const identPool = new ShortIdent('');
+
         for (const [name, info] of data.fields) {
             if (ClassData._shouldMangle(info.type)) {
                 const shortName = identPool.next(isNameTaken);
@@ -214,7 +233,9 @@ class ClassData {
     }
     lookupShortName(name: string): string {
         let value = this.replacements!.get(name)!;
+
         let parent = this.parent;
+
         while (parent) {
             if (parent.replacements!.has(name) && parent.fields.get(name)?.type === FieldType.Protected) {
                 value = parent.replacements!.get(name)! ?? value;
@@ -232,6 +253,7 @@ class ClassData {
 }
 function isNameTakenInFile(node: ts.Node, name: string): boolean {
     const identifiers = (<any>node.getSourceFile()).identifiers;
+
     if (identifiers instanceof Map) {
         if (identifiers.has(name)) {
             return true;
@@ -269,6 +291,7 @@ const skippedExportMangledFiles = [
         buildfile.codeWeb
     ].flat().map(x => x.name),
 ];
+
 const skippedExportMangledProjects = [
     // Test projects
     'vscode-api-tests',
@@ -278,6 +301,7 @@ const skippedExportMangledProjects = [
     'github-authentication',
     'html-language-features/server',
 ];
+
 const skippedExportMangledSymbols = [
     // Don't mangle extension entry points
     'activate',
@@ -285,6 +309,7 @@ const skippedExportMangledSymbols = [
 ];
 class DeclarationData {
     readonly replacementName: string;
+
     constructor(readonly fileName: string, readonly node: ts.FunctionDeclaration | ts.ClassDeclaration | ts.EnumDeclaration | ts.VariableDeclaration, fileIdents: ShortIdent) {
         // Todo: generate replacement names based on usage count, with more used names getting shorter identifiers
         this.replacementName = fileIdents.next();
@@ -296,6 +321,7 @@ class DeclarationData {
         if (ts.isVariableDeclaration(this.node)) {
             // If the const aliases any types, we need to rename those too
             const definitionResult = service.getDefinitionAndBoundSpan(this.fileName, this.node.name.getStart());
+
             if (definitionResult?.definitions && definitionResult.definitions.length > 1) {
                 return definitionResult.definitions.map(x => ({ fileName: x.fileName, offset: x.textSpan.start }));
             }
@@ -307,6 +333,7 @@ class DeclarationData {
     }
     shouldMangle(newName: string): boolean {
         const currentName = this.node.name!.getText();
+
         if (currentName.startsWith('$') || skippedExportMangledSymbols.includes(currentName)) {
             return false;
         }
@@ -338,6 +365,7 @@ export class Mangler {
     private readonly allClassDataByKey = new Map<string, ClassData>();
     private readonly allExportedSymbols = new Set<DeclarationData>();
     private readonly renameWorkerPool: workerpool.WorkerPool;
+
     constructor(private readonly projectPath: string, private readonly log: typeof console.log = () => { }, private readonly config: {
         readonly manglePrivateFields: boolean;
         readonly mangleExports: boolean;
@@ -353,11 +381,14 @@ export class Mangler {
         // - Find all classes and their field info.
         // - Find exported symbols.
         const fileIdents = new ShortIdent('$');
+
         const visit = (node: ts.Node): void => {
             if (this.config.manglePrivateFields) {
                 if (ts.isClassDeclaration(node) || ts.isClassExpression(node)) {
                     const anchor = node.name ?? node;
+
                     const key = `${node.getSourceFile().fileName}|${anchor.getStart()}`;
+
                     if (this.allClassDataByKey.has(key)) {
                         throw new Error('DUPE?');
                     }
@@ -400,6 +431,7 @@ export class Mangler {
             }
             ts.forEachChild(node, visit);
         };
+
         for (const file of service.getProgram()!.getSourceFiles()) {
             if (!file.isDeclarationFile) {
                 ts.forEachChild(file, visit);
@@ -409,13 +441,16 @@ export class Mangler {
         //  STEP: connect sub and super-types
         const setupParents = (data: ClassData) => {
             const extendsClause = data.node.heritageClauses?.find(h => h.token === ts.SyntaxKind.ExtendsKeyword);
+
             if (!extendsClause) {
                 // no EXTENDS-clause
                 return;
             }
             const info = service.getDefinitionAtPosition(data.fileName, extendsClause.types[0].expression.getEnd());
+
             if (!info || info.length === 0) {
                 // throw new Error('SUPER type not found');
+
                 return;
             }
             if (info.length !== 1) {
@@ -423,23 +458,31 @@ export class Mangler {
                 return;
             }
             const [definition] = info;
+
             const key = `${definition.fileName}|${definition.textSpan.start}`;
+
             const parent = this.allClassDataByKey.get(key);
+
             if (!parent) {
                 // throw new Error(`SUPER type not found: ${key}`);
+
                 return;
             }
             parent.addChild(data);
         };
+
         for (const data of this.allClassDataByKey.values()) {
             setupParents(data);
         }
         //  STEP: make implicit public (actually protected) field really public
         const violations = new Map<string, string[]>();
+
         let violationsCauseFailure = false;
+
         for (const data of this.allClassDataByKey.values()) {
             ClassData.makeImplicitPublicActuallyPublic(data, (name: string, what, why) => {
                 const arr = violations.get(what);
+
                 if (arr) {
                     arr.push(why);
                 }
@@ -457,6 +500,7 @@ export class Mangler {
         if (violationsCauseFailure) {
             const message = 'Protected fields have been made PUBLIC. This hurts minification and is therefore not allowed. Review the WARN messages further above';
             this.log(`ERROR: ${message}`);
+
             throw new Error(message);
         }
         // STEP: compute replacement names for each class
@@ -471,9 +515,12 @@ export class Mangler {
             offset: number;
             length: number;
         };
+
         const editsByFile = new Map<string, Edit[]>();
+
         const appendEdit = (fileName: string, edit: Edit) => {
             const edits = editsByFile.get(fileName);
+
             if (!edits) {
                 editsByFile.set(fileName, [edit]);
             }
@@ -481,6 +528,7 @@ export class Mangler {
                 edits.push(edit);
             }
         };
+
         const appendRename = (newText: string, loc: ts.RenameLocation) => {
             appendEdit(loc.fileName, {
                 newText: (loc.prefixText || '') + newText + (loc.suffixText || ''),
@@ -489,14 +537,17 @@ export class Mangler {
             });
         };
         type RenameFn = (projectName: string, fileName: string, pos: number) => ts.RenameLocation[];
+
         const renameResults: Array<Promise<{
             readonly newName: string;
             readonly locations: readonly ts.RenameLocation[];
         }>> = [];
+
         const queueRename = (fileName: string, pos: number, newName: string) => {
             renameResults.push(Promise.resolve(this.renameWorkerPool.exec<RenameFn>('findRenameLocations', [this.projectPath, fileName, pos]))
                 .then((locations) => ({ newName, locations })));
         };
+
         for (const data of this.allClassDataByKey.values()) {
             if (hasModifier(data.node, ts.SyntaxKind.DeclareKeyword)) {
                 continue;
@@ -508,6 +559,7 @@ export class Mangler {
                 // TS-HACK: protected became public via 'some' child
                 // and because of that we might need to ignore this now
                 let parent = data.parent;
+
                 while (parent) {
                     if (parent.fields.get(name)?.type === FieldType.Public) {
                         continue fields;
@@ -528,6 +580,7 @@ export class Mangler {
                 continue;
             }
             const newText = data.replacementName;
+
             for (const { fileName, offset } of data.getLocations(service)) {
                 queueRename(fileName, offset, newText);
             }
@@ -543,15 +596,22 @@ export class Mangler {
         this.log(`Done preparing edits: ${editsByFile.size} files`);
         // STEP: apply all rename edits (per file)
         const result = new Map<string, MangleOutput>();
+
         let savedBytes = 0;
+
         for (const item of service.getProgram()!.getSourceFiles()) {
             const { mapRoot, sourceRoot } = service.getProgram()!.getCompilerOptions();
+
             const projectDir = path.dirname(this.projectPath);
+
             const sourceMapRoot = mapRoot ?? pathToFileURL(sourceRoot ?? projectDir).toString();
             // source maps
             let generator: SourceMapGenerator | undefined;
+
             let newFullText: string;
+
             const edits = editsByFile.get(item.fileName);
+
             if (!edits) {
                 // just copy
                 newFullText = item.getFullText();
@@ -559,16 +619,21 @@ export class Mangler {
             else {
                 // source map generator
                 const relativeFileName = normalize(path.relative(projectDir, item.fileName));
+
                 const mappingsByLine = new Map<number, Mapping[]>();
                 // apply renames
                 edits.sort((a, b) => b.offset - a.offset);
+
                 const characters = item.getFullText().split('');
+
                 let lastEdit: Edit | undefined;
+
                 for (const edit of edits) {
                     if (lastEdit && lastEdit.offset === edit.offset) {
                         //
                         if (lastEdit.length !== edit.length || lastEdit.newText !== edit.newText) {
                             this.log('ERROR: Overlapping edit', item.fileName, edit.offset, edits);
+
                             throw new Error('OVERLAPPING edit');
                         }
                         else {
@@ -576,11 +641,14 @@ export class Mangler {
                         }
                     }
                     lastEdit = edit;
+
                     const mangledName = characters.splice(edit.offset, edit.length, edit.newText).join('');
                     savedBytes += mangledName.length - edit.newText.length;
                     // source maps
                     const pos = item.getLineAndCharacterOfPosition(edit.offset);
+
                     let mappings = mappingsByLine.get(pos.line);
+
                     if (!mappings) {
                         mappings = [];
                         mappingsByLine.set(pos.line, mappings);
@@ -599,8 +667,10 @@ export class Mangler {
                 // source map generation, make sure to get mappings per line correct
                 generator = new SourceMapGenerator({ file: path.basename(item.fileName), sourceRoot: sourceMapRoot });
                 generator.setSourceContent(relativeFileName, item.getFullText());
+
                 for (const [, mappings] of mappingsByLine) {
                     let lineDelta = 0;
+
                     for (const mapping of mappings) {
                         generator.addMapping({
                             ...mapping,
@@ -616,12 +686,14 @@ export class Mangler {
         service.dispose();
         this.renameWorkerPool.terminate();
         this.log(`Done: ${savedBytes / 1000}kb saved, memory-usage: ${JSON.stringify(v8.getHeapStatistics())}`);
+
         return result;
     }
 }
 // --- ast utils
 function hasModifier(node: ts.Node, kind: ts.SyntaxKind) {
     const modifiers = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+
     return Boolean(modifiers?.find(mode => mode.kind === kind));
 }
 function isInAmbientContext(node: ts.Node): boolean {
@@ -637,18 +709,24 @@ function normalize(path: string): string {
 }
 async function _run() {
     const root = path.join(__dirname, '..', '..', '..');
+
     const projectBase = path.join(root, 'src');
+
     const projectPath = path.join(projectBase, 'tsconfig.json');
+
     const newProjectBase = path.join(path.dirname(projectBase), path.basename(projectBase) + '2');
     fs.cpSync(projectBase, newProjectBase, { recursive: true });
+
     const mangler = new Mangler(projectPath, console.log, {
         mangleExports: true,
         manglePrivateFields: true,
     });
+
     for (const [fileName, contents] of await mangler.computeNewFileContents(new Set(['saveState']))) {
         const newFilePath = path.join(newProjectBase, path.relative(projectBase, fileName));
         await fs.promises.mkdir(path.dirname(newFilePath), { recursive: true });
         await fs.promises.writeFile(newFilePath, contents.out);
+
         if (contents.sourceMap) {
             await fs.promises.writeFile(newFilePath + '.map', contents.sourceMap);
         }

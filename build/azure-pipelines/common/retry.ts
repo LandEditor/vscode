@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export async function retry<T>(fn: (attempt: number) => Promise<T>): Promise<T> {
     let lastError: Error | undefined;
+
     for (let run = 1; run <= 10; run++) {
         try {
             return await fn(run);
@@ -19,5 +20,6 @@ export async function retry<T>(fn: (attempt: number) => Promise<T>): Promise<T> 
         }
     }
     console.error(`Too many retries, aborting.`);
+
     throw lastError;
 }

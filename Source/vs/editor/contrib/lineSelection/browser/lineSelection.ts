@@ -26,6 +26,7 @@ export class ExpandLineSelectionAction extends EditorAction {
 
 	public run(_accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
 		args = args || {};
+
 		if (!editor.hasModel()) {
 			return;
 		}

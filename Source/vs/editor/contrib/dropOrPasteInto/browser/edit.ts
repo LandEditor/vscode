@@ -39,6 +39,7 @@ export function sortEditsByYieldTo<T extends {
     }
     // Build list of nodes each node yields to
     const yieldsToMap = new Map<T, T[]>();
+
     for (const edit of edits) {
         for (const yTo of edit.yieldTo ?? []) {
             for (const other of edits) {
@@ -47,8 +48,10 @@ export function sortEditsByYieldTo<T extends {
                 }
                 if (yieldsTo(yTo, other)) {
                     let arr = yieldsToMap.get(edit);
+
                     if (!arr) {
                         arr = [];
+
                         yieldsToMap.set(edit, arr);
                     }
                     arr.push(other);
@@ -61,27 +64,34 @@ export function sortEditsByYieldTo<T extends {
     }
     // Topological sort
     const visited = new Set<T>();
+
     const tempStack: T[] = [];
+
     function visit(nodes: T[]): T[] {
         if (!nodes.length) {
             return [];
         }
         const node = nodes[0];
+
         if (tempStack.includes(node)) {
             console.warn('Yield to cycle detected', node);
+
             return nodes;
         }
         if (visited.has(node)) {
             return visit(nodes.slice(1));
         }
         let pre: T[] = [];
+
         const yTo = yieldsToMap.get(node);
+
         if (yTo) {
             tempStack.push(node);
             pre = visit(yTo);
             tempStack.pop();
         }
         visited.add(node);
+
         return [...pre, node, ...visit(nodes.slice(1))];
     }
     return visit(Array.from(edits));

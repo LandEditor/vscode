@@ -33,6 +33,7 @@ export interface IMarkersFiltersOptions {
 export class MarkersFilters extends Disposable {
     private readonly _onDidChange: Emitter<IMarkersFiltersChangeEvent> = this._register(new Emitter<IMarkersFiltersChangeEvent>());
     readonly onDidChange: Event<IMarkersFiltersChangeEvent> = this._onDidChange.event;
+
     constructor(options: IMarkersFiltersOptions, private readonly contextKeyService: IContextKeyService) {
         super();
         this._showErrors.set(options.showErrors);
@@ -44,6 +45,7 @@ export class MarkersFilters extends Disposable {
     }
     filterHistory: string[];
     private readonly _excludedFiles = MarkersContextKeys.ShowExcludedFilesFilterContextKey.bindTo(this.contextKeyService);
+
     get excludedFiles(): boolean {
         return !!this._excludedFiles.get();
     }
@@ -54,6 +56,7 @@ export class MarkersFilters extends Disposable {
         }
     }
     private readonly _activeFile = MarkersContextKeys.ShowActiveFileFilterContextKey.bindTo(this.contextKeyService);
+
     get activeFile(): boolean {
         return !!this._activeFile.get();
     }
@@ -64,6 +67,7 @@ export class MarkersFilters extends Disposable {
         }
     }
     private readonly _showWarnings = MarkersContextKeys.ShowWarningsFilterContextKey.bindTo(this.contextKeyService);
+
     get showWarnings(): boolean {
         return !!this._showWarnings.get();
     }
@@ -74,6 +78,7 @@ export class MarkersFilters extends Disposable {
         }
     }
     private readonly _showErrors = MarkersContextKeys.ShowErrorsFilterContextKey.bindTo(this.contextKeyService);
+
     get showErrors(): boolean {
         return !!this._showErrors.get();
     }
@@ -84,6 +89,7 @@ export class MarkersFilters extends Disposable {
         }
     }
     private readonly _showInfos = MarkersContextKeys.ShowInfoFilterContextKey.bindTo(this.contextKeyService);
+
     get showInfos(): boolean {
         return !!this._showInfos.get();
     }
@@ -101,6 +107,7 @@ export class QuickFixAction extends Action {
     private readonly _onShowQuickFixes = this._register(new Emitter<void>());
     readonly onShowQuickFixes: Event<void> = this._onShowQuickFixes.event;
     private _quickFixes: IAction[] = [];
+
     get quickFixes(): IAction[] {
         return this._quickFixes;
     }
@@ -116,6 +123,7 @@ export class QuickFixAction extends Action {
     }
     override run(): Promise<void> {
         this._onShowQuickFixes.fire();
+
         return Promise.resolve();
     }
 }
@@ -137,7 +145,9 @@ export class QuickFixActionViewItem extends ActionViewItem {
             return;
         }
         const elementPosition = DOM.getDomNodePagePosition(this.element);
+
         const quickFixes = (<QuickFixAction>this.action).quickFixes;
+
         if (quickFixes.length) {
             this.contextMenuService.showContextMenu({
                 getAnchor: () => ({ x: elementPosition.left + 10, y: elementPosition.top + elementPosition.height + 4 }),

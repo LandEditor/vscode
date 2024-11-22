@@ -61,11 +61,13 @@ export class EventBufferer {
                 if (!reduceData) {
                     // TODO: Is there a way to cache this reduce call for all listeners?
                     listener.call(thisArgs, reduce(initial, i));
+
                     return;
                 }
                 // Buffering case
                 reduceData.items ??= [];
                 reduceData.items.push(i);
+
                 if (reduceData.buffers.length === 0) {
                     // Include a single buffered function that will reduce all events when we're done buffering events
                     data.buffers.push(() => {
@@ -82,16 +84,20 @@ export class EventBufferer {
     bufferEvents<R = void>(fn: () => R): R {
         const data = { buffers: new Array<Function>() };
         this.data.push(data);
+
         const r = fn();
         this.data.pop();
         data.buffers.forEach(flush => flush());
+
         return r;
     }
     async bufferEventsAsync<R = void>(fn: () => Promise<R>): Promise<R> {
         const data = { buffers: new Array<Function>() };
         this.data.push(data);
+
         try {
             const r = await fn();
+
             return r;
         }
         finally {

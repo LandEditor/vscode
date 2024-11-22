@@ -58,12 +58,14 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
      */
     private get rootsWithChildren(): Iterable<ListTestItemElement> {
         const rootsIt = Iterable.map(this.testService.collection.rootItems, r => this.items.get(r.item.extId));
+
         return Iterable.filter(rootsIt, (r): r is ListTestItemElement => !!r?.children.size);
     }
     /**
      * @inheritdoc
      */
     public readonly onUpdate = this.updateEmitter.event;
+
     constructor(public lastState: ISerializedTestTreeCollapseState, 
     @ITestService
     private readonly testService: ITestService, 
@@ -96,11 +98,13 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
             // emit a state change for a test run that's already long completed.
             if (result.ownComputedState === TestResultState.Unset || ev.result !== results.results[0]) {
                 const fallback = results.getStateById(result.item.extId);
+
                 if (fallback) {
                     result = fallback[1];
                 }
             }
             const item = this.items.get(result.item.extId);
+
             if (!item) {
                 return;
             }
@@ -109,6 +113,7 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
             item.duration = result.ownDuration;
             item.fireChange();
         }));
+
         for (const test of testService.collection.all) {
             this.storeItem(test);
         }
@@ -127,10 +132,12 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
             switch (op.op) {
                 case TestDiffOpType.Add: {
                     this.storeItem(op.item);
+
                     break;
                 }
                 case TestDiffOpType.Update: {
                     this.items.get(op.item.extId)?.update(op.item);
+
                     break;
                 }
                 case TestDiffOpType.Remove: {
@@ -174,13 +181,16 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
     private unstoreItem(treeElement: ListTestItemElement) {
         this.items.delete(treeElement.test.item.extId);
         treeElement.parent?.children.delete(treeElement);
+
         const parentId = TestId.fromString(treeElement.test.item.extId).parentId;
+
         if (!parentId) {
             return;
         }
         // create the parent if it's now its own leaf
         for (const id of parentId.idsToRoot()) {
             const parentTest = this.testService.collection.getNodeById(id.toString());
+
             if (parentTest) {
                 if (parentTest.children.size === 0 && !this.items.has(id.toString())) {
                     this._storeItem(parentId, parentTest);
@@ -191,14 +201,18 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
     }
     private _storeItem(testId: TestId, item: InternalTestItem) {
         const displayedParent = testId.isRoot ? null : this.items.get(item.controllerId)!;
+
         const chain = [...testId.idsFromRoot()].slice(1, -1).map(id => this.testService.collection.getNodeById(id.toString())!);
+
         const treeElement = new ListTestItemElement(item, displayedParent, chain);
         displayedParent?.children.add(treeElement);
         this.items.set(treeElement.test.item.extId, treeElement);
+
         if (treeElement.depth === 0 || isCollapsedInSerializedTestTree(this.lastState, treeElement.test.item.extId) === false) {
             this.expandElement(treeElement, Infinity);
         }
         const prevState = this.results.getStateById(treeElement.test.item.extId)?.[1];
+
         if (prevState) {
             treeElement.retired = !!prevState.retired;
             treeElement.state = prevState.computedState;
@@ -211,8 +225,10 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
         for (const parentId of testId.idsToRoot()) {
             if (!parentId.isRoot) {
                 const prevParent = this.items.get(parentId.toString());
+
                 if (prevParent) {
                     this.unstoreItem(prevParent);
+
                     break;
                 }
             }

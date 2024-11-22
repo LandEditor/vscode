@@ -3,13 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as l10n from '@vscode/l10n';
+
 let initialized = false;
+
 const pendingMessages: any[] = [];
+
 const messageHandler = async (e: any) => {
     if (!initialized) {
         const l10nLog: string[] = [];
         initialized = true;
+
         const i10lLocation = e.data.i10lLocation;
+
         if (i10lLocation) {
             try {
                 await l10n.config({ uri: i10lLocation });
@@ -23,6 +28,7 @@ const messageHandler = async (e: any) => {
             l10nLog.push(`l10n: No bundle configured.`);
         }
         await import('./cssServerMain.js');
+
         if (self.onmessage !== messageHandler) {
             pendingMessages.forEach(msg => self.onmessage?.(msg));
             pendingMessages.length = 0;

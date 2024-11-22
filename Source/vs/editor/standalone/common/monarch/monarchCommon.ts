@@ -23,6 +23,7 @@ export interface ILexerMin {
     ignoreCase: boolean;
     unicode: boolean;
     usesEmbedded: boolean;
+
     defaultToken: string;
     stateNames: {
         [stateName: string]: any;
@@ -76,6 +77,7 @@ export interface IAction {
     nextEmbedded?: string;
     bracket?: MonarchBracket;
     log?: string;
+
     switchTo?: string;
     goBack?: number;
     transform?: (states: string[]) => string[];
@@ -127,7 +129,9 @@ export function createError(lexer: ILexerMin, msg: string): Error {
  */
 export function substituteMatches(lexer: ILexerMin, str: string, id: string, matches: string[], state: string): string {
     const re = /\$((\$)|(#)|(\d\d?)|[sS](\d\d?)|@(\w+))/g;
+
     let stateMatches: string[] | null = null;
+
     return str.replace(re, function (full, sub?, dollar?, hash?, n?, s?, attr?, ofs?, total?) {
         if (!empty(dollar)) {
             return '$'; // $$
@@ -158,7 +162,9 @@ export function substituteMatches(lexer: ILexerMin, str: string, id: string, mat
  */
 export function substituteMatchesRe(lexer: ILexerMin, str: string, state: string): string {
     const re = /\$[sS](\d\d?)/g;
+
     let stateMatches: string[] | null = null;
+
     return str.replace(re, function (full, s) {
         if (stateMatches === null) { // split state on demand
             stateMatches = state.split('.');
@@ -175,12 +181,15 @@ export function substituteMatchesRe(lexer: ILexerMin, str: string, state: string
  */
 export function findRules(lexer: ILexer, inState: string): IRule[] | null {
     let state: string | null = inState;
+
     while (state && state.length > 0) {
         const rules = lexer.tokenizer[state];
+
         if (rules) {
             return rules;
         }
         const idx = state.lastIndexOf('.');
+
         if (idx < 0) {
             state = null; // no further parent
         }
@@ -197,12 +206,15 @@ export function findRules(lexer: ILexer, inState: string): IRule[] | null {
  */
 export function stateExists(lexer: ILexerMin, inState: string): boolean {
     let state: string | null = inState;
+
     while (state && state.length > 0) {
         const exist = lexer.stateNames[state];
+
         if (exist) {
             return true;
         }
         const idx = state.lastIndexOf('.');
+
         if (idx < 0) {
             state = null; // no further parent
         }

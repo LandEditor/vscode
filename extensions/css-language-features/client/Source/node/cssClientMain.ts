@@ -8,11 +8,14 @@ import { BaseLanguageClient, LanguageClient, LanguageClientOptions, ServerOption
 import { LanguageClientConstructor, startClient } from '../cssClient';
 import { getNodeFSRequestService } from './nodeFs';
 import { registerDropOrPasteResourceSupport } from '../dropOrPaste/dropOrPasteResource';
+
 let client: BaseLanguageClient | undefined;
 // this method is called when vs code is activated
 export async function activate(context: ExtensionContext) {
     const clientMain = extensions.getExtension('vscode.css-language-features')?.packageJSON?.main || '';
+
     const serverMain = `./server/${clientMain.indexOf('/dist/') !== -1 ? 'dist' : 'out'}/node/cssServerMain`;
+
     const serverModule = context.asAbsolutePath(serverMain);
     // The debug options for the server
     const debugOptions = { execArgv: ['--nolazy', '--inspect=' + (7000 + Math.round(Math.random() * 999))] };
@@ -22,6 +25,7 @@ export async function activate(context: ExtensionContext) {
         run: { module: serverModule, transport: TransportKind.ipc },
         debug: { module: serverModule, transport: TransportKind.ipc, options: debugOptions }
     };
+
     const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
         return new LanguageClient(id, name, serverOptions, clientOptions);
     };

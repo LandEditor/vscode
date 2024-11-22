@@ -22,6 +22,7 @@ export interface INodeJSWatcherInstance {
 export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
     readonly onDidError = Event.None;
     readonly watchers = new Set<INodeJSWatcherInstance>();
+
     constructor(protected readonly recursiveWatcher: IRecursiveWatcherWithSubscribe | undefined) {
         super();
     }
@@ -30,9 +31,12 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
         requests = this.removeDuplicateRequests(requests);
         // Figure out which watchers to start and which to stop
         const requestsToStart: INonRecursiveWatchRequest[] = [];
+
         const watchersToStop = new Set(Array.from(this.watchers));
+
         for (const request of requests) {
             const watcher = this.findWatcher(request);
+
             if (watcher && patternsEquals(watcher.request.excludes, request.excludes) && patternsEquals(watcher.request.includes, request.includes)) {
                 watchersToStop.delete(watcher); // keep watcher
             }
@@ -82,6 +86,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
     }
     override async stop(): Promise<void> {
         await super.stop();
+
         for (const watcher of this.watchers) {
             this.stopWatching(watcher);
         }
@@ -97,6 +102,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
         for (const request of requests) {
             const path = isLinux ? request.path : request.path.toLowerCase(); // adjust for case sensitivity
             let requestsForCorrelation = mapCorrelationtoRequests.get(request.correlationId);
+
             if (!requestsForCorrelation) {
                 requestsForCorrelation = new Map<string, INonRecursiveWatchRequest>();
                 mapCorrelationtoRequests.set(request.correlationId, requestsForCorrelation);
@@ -110,6 +116,7 @@ export class NodeJSWatcher extends BaseWatcher implements INonRecursiveWatcher {
     }
     override async setVerboseLogging(enabled: boolean): Promise<void> {
         super.setVerboseLogging(enabled);
+
         for (const watcher of this.watchers) {
             watcher.instance.setVerboseLogging(enabled);
         }

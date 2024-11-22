@@ -26,6 +26,7 @@ class EditorWebviewZone implements IViewZone {
     // marginDomNode?: HTMLElement | null | undefined;
     // onDomNodeTop?: ((top: number) => void) | undefined;
     // onComputedHeight?: ((height: number) => void) | undefined;
+
     constructor(readonly editor: IActiveCodeEditor, readonly line: number, readonly height: number, readonly webview: IWebviewElement) {
         this.domNode = document.createElement('div');
         this.domNode.style.zIndex = '10'; // without this, the webview is not interactive
@@ -44,6 +45,7 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
     private readonly _proxy: ExtHostEditorInsetsShape;
     private readonly _disposables = new DisposableStore();
     private readonly _insets = new Map<number, EditorWebviewZone>();
+
     constructor(context: IExtHostContext, 
     @ICodeEditorService
     private readonly _editorService: ICodeEditorService, 
@@ -60,14 +62,17 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
         for (const candidate of this._editorService.listCodeEditors()) {
             if (candidate.getId() === id && candidate.hasModel() && isEqual(candidate.getModel().uri, URI.revive(uri))) {
                 editor = candidate;
+
                 break;
             }
         }
         if (!editor) {
             setTimeout(() => this._proxy.$onDidDispose(handle));
+
             return;
         }
         const disposables = new DisposableStore();
+
         const webview = this._webviewService.createWebviewElement({
             title: undefined,
             options: {
@@ -76,7 +81,9 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
             contentOptions: reviveWebviewContentOptions(options),
             extension: { id: extensionId, location: URI.revive(extensionLocation) }
         });
+
         const webviewZone = new EditorWebviewZone(editor, line, height, webview);
+
         const remove = () => {
             disposables.dispose();
             this._proxy.$onDidDispose(handle);
@@ -105,10 +112,12 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
     async $postMessage(handle: number, value: any): Promise<boolean> {
         const inset = this.getInset(handle);
         inset.webview.postMessage(value);
+
         return true;
     }
     private getInset(handle: number): EditorWebviewZone {
         const inset = this._insets.get(handle);
+
         if (!inset) {
             throw new Error('Unknown inset');
         }

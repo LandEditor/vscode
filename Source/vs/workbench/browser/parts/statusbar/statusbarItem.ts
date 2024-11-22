@@ -117,6 +117,7 @@ export class StatusbarEntryItem extends Disposable {
 		// Update: Hover
 		if (!this.entry || !this.isEqualTooltip(this.entry, entry)) {
 			const hoverContents = isMarkdownString(entry.tooltip) ? { markdown: entry.tooltip, markdownNotSupportedFallback: undefined } : entry.tooltip;
+
 			if (this.hover) {
 				this.hover.update(hoverContents);
 			} else {
@@ -131,11 +132,13 @@ export class StatusbarEntryItem extends Disposable {
 			this.commandKeyboardListener.clear();
 
 			const command = entry.command;
+
 			if (command && (command !== ShowTooltipCommand || this.hover) /* "Show Hover" is only valid when we have a hover */) {
 				this.commandMouseListener.value = addDisposableListener(this.labelContainer, EventType.CLICK, () => this.executeCommand(command));
 				this.commandTouchListener.value = addDisposableListener(this.labelContainer, TouchEventType.Tap, () => this.executeCommand(command));
 				this.commandKeyboardListener.value = addDisposableListener(this.labelContainer, EventType.KEY_DOWN, e => {
 					const event = new StandardKeyboardEvent(e);
+
 					if (event.equals(KeyCode.Space) || event.equals(KeyCode.Enter)) {
 						EventHelper.stop(e);
 
@@ -214,9 +217,11 @@ export class StatusbarEntryItem extends Disposable {
 		// Any other command is going through command service
 		else {
 			const id = typeof command === 'string' ? command : command.id;
+
 			const args = typeof command === 'string' ? [] : command.arguments ?? [];
 
 			this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id, from: 'status bar' });
+
 			try {
 				await this.commandService.executeCommand(id, ...args);
 			} catch (error) {
@@ -307,6 +312,7 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 
 			// If we have text to show, add a space to separate from progress
 			let textContent = text ?? '';
+
 			if (textContent) {
 				textContent = `\u00A0${textContent}`; // prepend non-breaking space
 			}

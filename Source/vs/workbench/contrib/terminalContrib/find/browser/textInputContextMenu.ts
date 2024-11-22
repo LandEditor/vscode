@@ -25,9 +25,11 @@ export function openContextMenu(targetWindow: Window, event: MouseEvent, clipboa
         // Web: paste is not supported due to security reasons
         else {
             const clipboardText = await clipboardService.readText();
+
             if (isHTMLTextAreaElement(element) ||
                 isHTMLInputElement(element)) {
                 const selectionStart = element.selectionStart || 0;
+
                 const selectionEnd = element.selectionEnd || 0;
                 element.value = `${element.value.substring(0, selectionStart)}${clipboardText}${element.value.substring(selectionEnd, element.value.length)}`;
                 element.selectionStart = selectionStart + clipboardText.length;

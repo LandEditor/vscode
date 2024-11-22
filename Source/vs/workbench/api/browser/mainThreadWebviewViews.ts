@@ -16,6 +16,7 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
     private readonly _proxy: extHostProtocol.ExtHostWebviewViewsShape;
     private readonly _webviewViews = this._register(new DisposableMap<string, WebviewView>());
     private readonly _webviewViewProviders = this._register(new DisposableMap<string>());
+
     constructor(context: IExtHostContext, private readonly mainThreadWebviews: MainThreadWebviews, 
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService, 
@@ -48,12 +49,15 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
             throw new Error(`View provider for ${viewType} already registered`);
         }
         const extension = reviveWebviewExtension(extensionData);
+
         const registration = this._webviewViewService.register(viewType, {
             resolve: async (webviewView: WebviewView, cancellation: CancellationToken) => {
                 const handle = generateUuid();
                 this._webviewViews.set(handle, webviewView);
                 this.mainThreadWebviews.addWebview(handle, webviewView.webview, { serializeBuffersForPostMessage: options.serializeBuffersForPostMessage });
+
                 let state = undefined;
+
                 if (webviewView.webview.state) {
                     try {
                         state = JSON.parse(webviewView.webview.state);
@@ -63,6 +67,7 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
                     }
                 }
                 webviewView.webview.extension = extension;
+
                 if (options) {
                     webviewView.webview.options = options;
                 }
@@ -95,6 +100,7 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
                     extensionId: extension.id.value,
                     id: viewType,
                 });
+
                 try {
                     await this._proxy.$resolveWebviewView(handle, viewType, webviewView.title, state, cancellation);
                 }
@@ -114,6 +120,7 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
     }
     private getWebviewView(handle: string): WebviewView {
         const webviewView = this._webviewViews.get(handle);
+
         if (!webviewView) {
             throw new Error('unknown webview view');
         }

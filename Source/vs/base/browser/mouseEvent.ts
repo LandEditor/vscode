@@ -38,6 +38,7 @@ export class StandardMouseEvent implements IMouseEvent {
     public readonly altKey: boolean;
     public readonly metaKey: boolean;
     public readonly timestamp: number;
+
     constructor(targetWindow: Window, e: MouseEvent) {
         this.timestamp = Date.now();
         this.browserEvent = e;
@@ -47,6 +48,7 @@ export class StandardMouseEvent implements IMouseEvent {
         this.buttons = e.buttons;
         this.target = <HTMLElement>e.target;
         this.detail = e.detail || 1;
+
         if (e.type === 'dblclick') {
             this.detail = 2;
         }
@@ -54,6 +56,7 @@ export class StandardMouseEvent implements IMouseEvent {
         this.shiftKey = e.shiftKey;
         this.altKey = e.altKey;
         this.metaKey = e.metaKey;
+
         if (typeof e.pageX === 'number') {
             this.posx = e.pageX;
             this.posy = e.pageY;
@@ -77,6 +80,7 @@ export class StandardMouseEvent implements IMouseEvent {
 }
 export class DragMouseEvent extends StandardMouseEvent {
     public readonly dataTransfer: DataTransfer;
+
     constructor(targetWindow: Window, e: MouseEvent) {
         super(targetWindow, e);
         this.dataTransfer = (<any>e).dataTransfer;
@@ -106,23 +110,29 @@ export class StandardWheelEvent {
     public readonly deltaY: number;
     public readonly deltaX: number;
     public readonly target: Node;
+
     constructor(e: IMouseWheelEvent | null, deltaX: number = 0, deltaY: number = 0) {
         this.browserEvent = e || null;
         this.target = e ? (e.target || (<any>e).targetNode || e.srcElement) : null;
         this.deltaY = deltaY;
         this.deltaX = deltaX;
+
         let shouldFactorDPR: boolean = false;
+
         if (browser.isChrome) {
             // Chrome version >= 123 contains the fix to factor devicePixelRatio into the wheel event.
             // See https://chromium.googlesource.com/chromium/src.git/+/be51b448441ff0c9d1f17e0f25c4bf1ab3f11f61
             const chromeVersionMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
+
             const chromeMajorVersion = chromeVersionMatch ? parseInt(chromeVersionMatch[1]) : 123;
             shouldFactorDPR = chromeMajorVersion <= 122;
         }
         if (e) {
             // Old (deprecated) wheel events
             const e1 = <IWebKitMouseWheelEvent><any>e;
+
             const e2 = <IGeckoMouseWheelEvent><any>e;
+
             const devicePixelRatio = e.view?.devicePixelRatio || 1;
             // vertical delta scroll
             if (typeof e1.wheelDeltaY !== 'undefined') {
@@ -141,6 +151,7 @@ export class StandardWheelEvent {
                 // Modern wheel event
                 // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
                 const ev = <WheelEvent><unknown>e;
+
                 if (ev.deltaMode === ev.DOM_DELTA_LINE) {
                     // the deltas are expressed in lines
                     if (browser.isFirefox && !platform.isMacintosh) {
@@ -174,6 +185,7 @@ export class StandardWheelEvent {
                 // Modern wheel event
                 // https://developer.mozilla.org/en-US/docs/Web/API/WheelEvent
                 const ev = <WheelEvent><unknown>e;
+
                 if (ev.deltaMode === ev.DOM_DELTA_LINE) {
                     // the deltas are expressed in lines
                     if (browser.isFirefox && !platform.isMacintosh) {

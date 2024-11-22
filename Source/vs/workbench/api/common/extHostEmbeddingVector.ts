@@ -10,6 +10,7 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
     private _AiEmbeddingVectorProviders: Map<number, EmbeddingVectorProvider> = new Map();
     private _nextHandle = 0;
     private readonly _proxy: MainThreadAiEmbeddingVectorShape;
+
     constructor(mainContext: IMainContext) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadAiEmbeddingVector);
     }
@@ -18,10 +19,12 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
             throw new Error('No embedding vector providers registered');
         }
         const provider = this._AiEmbeddingVectorProviders.get(handle);
+
         if (!provider) {
             throw new Error('Embedding vector provider not found');
         }
         const result = await provider.provideEmbeddingVector(strings, token);
+
         if (!result) {
             throw new Error('Embedding vector provider returned undefined');
         }
@@ -32,6 +35,7 @@ export class ExtHostAiEmbeddingVector implements ExtHostAiEmbeddingVectorShape {
         this._nextHandle++;
         this._AiEmbeddingVectorProviders.set(handle, provider);
         this._proxy.$registerAiEmbeddingVectorProvider(model, handle);
+
         return new Disposable(() => {
             this._proxy.$unregisterAiEmbeddingVectorProvider(handle);
             this._AiEmbeddingVectorProviders.delete(handle);

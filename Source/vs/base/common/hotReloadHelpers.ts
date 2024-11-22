@@ -6,6 +6,7 @@ import { isHotReloadEnabled, registerHotReloadHandler } from './hotReload.js';
 import { constObservable, IObservable, IReader, ISettableObservable, observableSignalFromEvent, observableValue } from './observable.js';
 export function readHotReloadableExport<T>(value: T, reader: IReader | undefined): T {
     observeHotReloadableExports([value], reader);
+
     return value;
 }
 export function observeHotReloadableExports(values: any[], reader: IReader | undefined): void {
@@ -16,6 +17,7 @@ export function observeHotReloadableExports(values: any[], reader: IReader | und
             }
             return (_newExports) => {
                 event(undefined);
+
                 return true;
             };
         }));
@@ -28,9 +30,12 @@ export function createHotClass<T>(clazz: T): IObservable<T> {
         return constObservable(clazz);
     }
     const id = (clazz as any).name;
+
     let existing = classes.get(id);
+
     if (!existing) {
         existing = observableValue(id, clazz);
+
         classes.set(id, existing);
     }
     else {

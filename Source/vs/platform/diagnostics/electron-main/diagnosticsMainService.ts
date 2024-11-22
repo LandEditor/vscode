@@ -23,11 +23,14 @@ export interface IRemoteDiagnosticOptions {
 }
 export interface IDiagnosticsMainService {
     readonly _serviceBrand: undefined;
+
     getRemoteDiagnostics(options: IRemoteDiagnosticOptions): Promise<(IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]>;
+
     getMainDiagnostics(): Promise<IMainProcessDiagnostics>;
 }
 export class DiagnosticsMainService implements IDiagnosticsMainService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IWindowsMainService
     private readonly windowsMainService: IWindowsMainService, 
@@ -37,16 +40,20 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
     private readonly logService: ILogService) { }
     async getRemoteDiagnostics(options: IRemoteDiagnosticOptions): Promise<(IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]> {
         const windows = this.windowsMainService.getWindows();
+
         const diagnostics: Array<IDiagnosticInfo | IRemoteDiagnosticError | undefined> = await Promise.all(windows.map(async (window) => {
             const remoteAuthority = window.remoteAuthority;
+
             if (!remoteAuthority) {
                 return undefined;
             }
             const replyChannel = `vscode:getDiagnosticInfoResponse${window.id}`;
+
             const args: IDiagnosticInfoOptions = {
                 includeProcesses: options.includeProcesses,
                 folders: options.includeWorkspaceMetadata ? await this.getFolderURIs(window) : undefined
             };
+
             return new Promise<IDiagnosticInfo | IRemoteDiagnosticError>(resolve => {
                 window.sendWhenReady('vscode:getDiagnosticInfo', CancellationToken.None, { replyChannel, args });
                 validatedIpcMain.once(replyChannel, (_: IpcEvent, data: IRemoteDiagnosticInfo) => {
@@ -56,18 +63,23 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
                     }
                     resolve(data);
                 });
+
                 setTimeout(() => {
                     resolve({ hostName: remoteAuthority, errorMessage: `Connection to '${remoteAuthority}' could not be established` });
                 }, 5000);
             });
         }));
+
         return diagnostics.filter((x): x is IRemoteDiagnosticInfo | IRemoteDiagnosticError => !!x);
     }
     async getMainDiagnostics(): Promise<IMainProcessDiagnostics> {
         this.logService.trace('Received request for main process info from other instance.');
+
         const windows: IWindowDiagnostics[] = [];
+
         for (const window of BrowserWindow.getAllWindows()) {
             const codeWindow = this.windowsMainService.getWindowById(window.id);
+
             if (codeWindow) {
                 windows.push(await this.codeWindowToInfo(codeWindow));
             }
@@ -76,6 +88,7 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
             }
         }
         const pidToNames: IProcessDiagnostics[] = [];
+
         for (const { pid, name } of UtilityProcess.getAll()) {
             pidToNames.push({ pid, name });
         }
@@ -90,7 +103,9 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
     }
     private async codeWindowToInfo(window: ICodeWindow): Promise<IWindowDiagnostics> {
         const folderURIs = await this.getFolderURIs(window);
+
         const win = assertIsDefined(window.win);
+
         return this.browserWindowToInfo(win, folderURIs, window.remoteAuthority);
     }
     private browserWindowToInfo(window: BrowserWindow, folderURIs: URI[] = [], remoteAuthority?: string): IWindowDiagnostics {
@@ -104,7 +119,9 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
     }
     private async getFolderURIs(window: ICodeWindow): Promise<URI[]> {
         const folderURIs: URI[] = [];
+
         const workspace = window.openedWorkspace;
+
         if (isSingleFolderWorkspaceIdentifier(workspace)) {
             folderURIs.push(workspace.uri);
         }

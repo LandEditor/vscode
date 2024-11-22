@@ -17,6 +17,7 @@ export function registerHotReloadHandler(handler: HotReloadHandler): IDisposable
     else {
         const handlers = registerGlobalHotReloadHandler();
         handlers.add(handler);
+
         return {
             dispose() { handlers.delete(handler); }
         };
@@ -40,12 +41,16 @@ function registerGlobalHotReloadHandler() {
         hotReloadHandlers = new Set();
     }
     const g = globalThis as unknown as GlobalThisAddition;
+
     if (!g.$hotReload_applyNewExports) {
         g.$hotReload_applyNewExports = args => {
             const args2 = { config: { mode: undefined }, ...args };
+
             const results: AcceptNewExportsHandler[] = [];
+
             for (const h of hotReloadHandlers!) {
                 const result = h(args2);
+
                 if (result) {
                     results.push(result);
                 }
@@ -53,6 +58,7 @@ function registerGlobalHotReloadHandler() {
             if (results.length > 0) {
                 return newExports => {
                     let result = false;
+
                     for (const r of results) {
                         if (r(newExports)) {
                             result = true;
@@ -92,12 +98,16 @@ if (isHotReloadEnabled()) {
             for (const key in newExports) {
                 const exportedItem = newExports[key];
                 console.log(`[hot-reload] Patching prototype methods of '${key}'`, { exportedItem });
+
                 if (typeof exportedItem === 'function' && exportedItem.prototype) {
                     const oldExportedItem = oldExports[key];
+
                     if (oldExportedItem) {
                         for (const prop of Object.getOwnPropertyNames(exportedItem.prototype)) {
                             const descriptor = Object.getOwnPropertyDescriptor(exportedItem.prototype, prop)!;
+
                             const oldDescriptor = Object.getOwnPropertyDescriptor((oldExportedItem as any).prototype, prop);
+
                             if (descriptor?.value?.toString() !== oldDescriptor?.value?.toString()) {
                                 console.log(`[hot-reload] Patching prototype method '${key}.${prop}'`);
                             }

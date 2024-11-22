@@ -15,13 +15,16 @@ export const REMOTE_FILE_SYSTEM_CHANNEL_NAME = 'remoteFilesystem';
 export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient {
     static register(remoteAgentService: IRemoteAgentService, fileService: IFileService, logService: ILogService): IDisposable {
         const connection = remoteAgentService.getConnection();
+
         if (!connection) {
             return Disposable.None;
         }
         const disposables = new DisposableStore();
+
         const environmentPromise = (async () => {
             try {
                 const environment = await remoteAgentService.getRawEnvironment();
+
                 if (environment) {
                     // Register remote fsp even before it is asked to activate
                     // because, some features (configuration) wait for its
@@ -41,6 +44,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
                 e.join(environmentPromise);
             }
         }));
+
         return disposables;
     }
     private constructor(remoteAgentEnvironment: IRemoteAgentEnvironment, connection: IRemoteAgentConnection) {

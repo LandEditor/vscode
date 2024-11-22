@@ -259,6 +259,7 @@ export interface IConfigBasedExtensionTip {
 	recommendations: IStringDictionary<{
 		name: string;
 		contentPattern?: string;
+
 		important?: boolean;
 		isExtensionPack?: boolean;
 		whenNotInstalled?: string[];
@@ -268,6 +269,7 @@ export interface IConfigBasedExtensionTip {
 export interface IExeBasedExtensionTip {
 	friendlyName: string;
 	windowsPath?: string;
+
 	important?: boolean;
 	recommendations: IStringDictionary<{ name: string; important?: boolean; isExtensionPack?: boolean; whenNotInstalled?: string[] }>;
 }

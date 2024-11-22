@@ -154,9 +154,11 @@ pre code {
 	}
 }
 `;
+
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
 function sanitize(documentContent: string, allowUnknownProtocols: boolean): string {
     const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
+
     try {
         return dompurify.sanitize(documentContent, {
             ...{
@@ -198,14 +200,18 @@ export async function renderMarkdownDocument(text: string, extensionService: IEx
                 return escape(code);
             }
             await extensionService.whenInstalledExtensionsRegistered();
+
             if (options?.token?.isCancellationRequested) {
                 return '';
             }
             const languageId = languageService.getLanguageIdByLanguageName(lang) ?? languageService.getLanguageIdByLanguageName(lang.split(/\s+|:|,|(?!^)\{|\?]/, 1)[0]);
+
             return tokenizeToString(languageService, code, languageId);
         }
     }), markedGfmHeadingIdPlugin(), ...(options?.markedExtensions ?? []));
+
     const raw = await m.parse(text, { async: true });
+
     if (options?.shouldSanitize ?? true) {
         return sanitize(raw, options?.allowUnknownProtocols ?? false);
     }
@@ -233,10 +239,12 @@ namespace MarkedHighlight {
                     return;
                 }
                 const lang = getLang(token.lang);
+
                 if (options.async) {
                     return Promise.resolve(options.highlight(token.text, lang, token.lang || '')).then(updateToken(token));
                 }
                 const code = options.highlight(token.text, lang, token.lang || '');
+
                 if (code instanceof Promise) {
                     throw new Error('markedHighlight is not set to async but the highlight function is async. Set the async option to true on markedHighlight to await the async highlight function.');
                 }
@@ -248,6 +256,7 @@ namespace MarkedHighlight {
                         ? ` class="language-${escape(lang)}"`
                         : '';
                     text = text.replace(/\n$/, '');
+
                     return `<pre><code${classAttr}>${escaped ? text : escape(text, true)}\n</code></pre>`;
                 },
             },
@@ -266,9 +275,13 @@ namespace MarkedHighlight {
     }
     // copied from marked helpers
     const escapeTest = /[&<>"']/;
+
     const escapeReplace = new RegExp(escapeTest.source, 'g');
+
     const escapeTestNoEncode = /[<>"']|&(?!(#\d{1,7}|#[Xx][a-fA-F0-9]{1,6}|\w+);)/;
+
     const escapeReplaceNoEncode = new RegExp(escapeTestNoEncode.source, 'g');
+
     const escapeReplacement: Record<string, string> = {
         '&': '&amp;',
         '<': '&lt;',
@@ -276,7 +289,9 @@ namespace MarkedHighlight {
         '"': '&quot;',
         [`'`]: '&#39;',
     };
+
     const getEscapeReplacement = (ch: string) => escapeReplacement[ch];
+
     function escape(html: string, encode?: boolean) {
         if (encode) {
             if (escapeTest.test(html)) {

@@ -8,11 +8,15 @@ import * as debug from 'debug';
 import * as extract from 'extract-zip';
 import * as path from 'path';
 import { downloadArtifact } from '@electron/get';
+
 const root = path.dirname(path.dirname(__dirname));
+
 const d = debug('explorer-appx-fetcher');
 export async function downloadExplorerAppx(outDir: string, quality: string = 'stable', targetArch: string = 'x64'): Promise<void> {
     const fileNamePrefix = quality === 'insider' ? 'code_insiders' : 'code';
+
     const fileName = `${fileNamePrefix}_explorer_${targetArch}.zip`;
+
     if (await fs.existsSync(path.resolve(outDir, 'resources.pri'))) {
         return;
     }
@@ -20,6 +24,7 @@ export async function downloadExplorerAppx(outDir: string, quality: string = 'st
         await fs.mkdirSync(outDir, { recursive: true });
     }
     d(`downloading ${fileName}`);
+
     const artifact = await downloadArtifact({
         isGeneric: true,
         version: '3.0.4',
@@ -36,6 +41,7 @@ export async function downloadExplorerAppx(outDir: string, quality: string = 'st
 }
 async function main(outputDir?: string): Promise<void> {
     const arch = process.env['VSCODE_ARCH'];
+
     if (!outputDir) {
         throw new Error('Required build env not set');
     }

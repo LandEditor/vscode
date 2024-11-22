@@ -32,7 +32,9 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
             return super.delete(uriTransformer, _resource, opts);
         }
         const resource = this.transformIncoming(uriTransformer, _resource);
+
         const filePath = normalize(resource.fsPath);
+
         try {
             await shell.trashItem(filePath);
         }

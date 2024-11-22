@@ -59,6 +59,7 @@ export class ChatEditor extends EditorPane {
 
 	protected override createEditor(parent: HTMLElement): void {
 		this._scopedContextKeyService = this._register(this.contextKeyService.createScoped(parent));
+
 		const scopedInstantiationService = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])));
 
 		this.widget = this._register(
@@ -96,6 +97,7 @@ export class ChatEditor extends EditorPane {
 
 	override clearInput(): void {
 		this.saveState();
+
 		super.clearInput();
 	}
 
@@ -103,6 +105,7 @@ export class ChatEditor extends EditorPane {
 		super.setInput(input, options, context, token);
 
 		const editorModel = await input.resolve();
+
 		if (!editorModel) {
 			throw new Error(`Failed to get model for chat editor. id: ${input.sessionId}`);
 		}

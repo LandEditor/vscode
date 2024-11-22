@@ -26,6 +26,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	id: string;
 	label: string;
+
 	settingsId: string;
 	description?: string;
 	isLoaded: boolean;
@@ -57,12 +58,14 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	private async load(fileService: IExtensionResourceLoaderService, logService: ILogService): Promise<string | undefined> {
 		const location = this.location;
+
 		if (!location) {
 			return Promise.resolve(this.styleSheetContent);
 		}
 		const warnings: string[] = [];
 		this.iconThemeDocument = await _loadProductIconThemeDocument(fileService, location, warnings);
 		this.isLoaded = true;
+
 		if (warnings.length) {
 			logService.error(nls.localize('error.parseicondefs', "Problems processing product icons definitions in {0}:\n{1}", location.toString(), warnings.join('\n')));
 		}
@@ -71,7 +74,9 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	static fromExtensionTheme(iconTheme: IThemeExtensionPoint, iconThemeLocation: URI, extensionData: ExtensionData): ProductIconThemeData {
 		const id = extensionData.extensionId + '-' + iconTheme.id;
+
 		const label = iconTheme.label || Paths.basename(iconTheme.path);
+
 		const settingsId = iconTheme.id;
 
 		const themeData = new ProductIconThemeData(id, label, settingsId);
@@ -81,6 +86,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		themeData.extensionData = extensionData;
 		themeData.watch = iconTheme._watch;
 		themeData.isLoaded = false;
+
 		return themeData;
 	}
 
@@ -89,6 +95,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 		themeData.isLoaded = false;
 		themeData.extensionData = undefined;
 		themeData.watch = false;
+
 		return themeData;
 	}
 
@@ -96,6 +103,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	static get defaultTheme(): ProductIconThemeData {
 		let themeData = ProductIconThemeData._defaultProductIconTheme;
+
 		if (!themeData) {
 			themeData = ProductIconThemeData._defaultProductIconTheme = new ProductIconThemeData(DEFAULT_PRODUCT_ICON_THEME_ID, nls.localize('defaultTheme', 'Default'), ThemeSettingDefaults.PRODUCT_ICON_THEME);
 			themeData.isLoaded = true;
@@ -107,12 +115,15 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	static fromStorageData(storageService: IStorageService): ProductIconThemeData | undefined {
 		const input = storageService.get(ProductIconThemeData.STORAGE_KEY, StorageScope.PROFILE);
+
 		if (!input) {
 			return undefined;
 		}
 		try {
 			const data = JSON.parse(input);
+
 			const theme = new ProductIconThemeData('', '', '');
+
 			for (const key in data) {
 				switch (key) {
 					case 'id':
@@ -122,23 +133,31 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 					case 'styleSheetContent':
 					case 'watch':
 						(theme as any)[key] = data[key];
+
 						break;
+
 					case 'location':
 						// ignore, no longer restore
 						break;
+
 					case 'extensionData':
 						theme.extensionData = ExtensionData.fromJSONObject(data.extensionData);
+
 						break;
 				}
 			}
 			const { iconDefinitions, iconFontDefinitions } = data;
+
 			if (Array.isArray(iconDefinitions) && isObject(iconFontDefinitions)) {
 				const restoredIconDefinitions = new Map<string, IconDefinition>();
+
 				for (const entry of iconDefinitions) {
 					const { id, fontCharacter, fontId } = entry;
+
 					if (isString(id) && isString(fontCharacter)) {
 						if (isString(fontId)) {
 							const iconFontDefinition = IconFontDefinition.fromJSONObject(iconFontDefinitions[fontId]);
+
 							if (iconFontDefinition) {
 								restoredIconDefinitions.set(id, { fontCharacter, font: { id: fontId, definition: iconFontDefinition } });
 							}
@@ -157,10 +176,13 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 
 	toStorage(storageService: IStorageService) {
 		const iconDefinitions = [];
+
 		const iconFontDefinitions: { [id: string]: IconFontDefinition } = {};
+
 		for (const entry of this.iconThemeDocument.iconDefinitions.entries()) {
 			const font = entry[1].font;
 			iconDefinitions.push({ id: entry[0], fontCharacter: entry[1].fontCharacter, fontId: font?.id });
+
 			if (font && iconFontDefinitions[font.id] === undefined) {
 				iconFontDefinitions[font.id] = IconFontDefinition.toJSONObject(font.definition);
 			}
@@ -187,7 +209,9 @@ interface ProductIconThemeDocument {
 function _loadProductIconThemeDocument(fileService: IExtensionResourceLoaderService, location: URI, warnings: string[]): Promise<ProductIconThemeDocument> {
 	return fileService.readExtensionResource(location).then((content) => {
 		const parseErrors: Json.ParseError[] = [];
+
 		const contentValue = Json.parse(content, parseErrors);
+
 		if (parseErrors.length > 0) {
 			return Promise.reject(new Error(nls.localize('error.cannotparseicontheme', "Problems parsing product icons file: {0}", parseErrors.map(e => getParseErrorMessage(e.error)).join(', '))));
 		} else if (Json.getNodeType(contentValue) !== 'object') {
@@ -199,11 +223,14 @@ function _loadProductIconThemeDocument(fileService: IExtensionResourceLoaderServ
 		const iconThemeDocumentLocationDirname = resources.dirname(location);
 
 		const sanitizedFonts: Map<string, IconFontDefinition> = new Map();
+
 		for (const font of contentValue.fonts) {
 			const fontId = font.id;
+
 			if (isString(fontId) && fontId.match(fontIdRegex)) {
 
 				let fontWeight = undefined;
+
 				if (isString(font.weight) && font.weight.match(fontWeightRegex)) {
 					fontWeight = font.weight;
 				} else {
@@ -211,6 +238,7 @@ function _loadProductIconThemeDocument(fileService: IExtensionResourceLoaderServ
 				}
 
 				let fontStyle = undefined;
+
 				if (isString(font.style) && font.style.match(fontStyleRegex)) {
 					fontStyle = font.style;
 				} else {
@@ -218,6 +246,7 @@ function _loadProductIconThemeDocument(fileService: IExtensionResourceLoaderServ
 				}
 
 				const sanitizedSrc: IconFontSource[] = [];
+
 				if (Array.isArray(font.src)) {
 					for (const s of font.src) {
 						if (isString(s.path) && isString(s.format) && s.format.match(fontFormatRegex)) {
@@ -245,9 +274,12 @@ function _loadProductIconThemeDocument(fileService: IExtensionResourceLoaderServ
 
 		for (const iconId in contentValue.iconDefinitions) {
 			const definition = contentValue.iconDefinitions[iconId];
+
 			if (isString(definition.fontCharacter) && definition.fontCharacter.match(fontCharacterRegex)) {
 				const fontId = definition.fontId ?? primaryFontId;
+
 				const fontDefinition = sanitizedFonts.get(fontId);
+
 				if (fontDefinition) {
 
 					const font = { id: `pi-${fontId}`, definition: fontDefinition };
@@ -267,13 +299,18 @@ const iconRegistry = getIconRegistry();
 
 function _resolveIconDefinition(iconContribution: IconContribution, iconThemeDocument: ProductIconThemeDocument): IconDefinition | undefined {
 	const iconDefinitions = iconThemeDocument.iconDefinitions;
+
 	let definition: IconDefinition | undefined = iconDefinitions.get(iconContribution.id);
+
 	let defaults = iconContribution.defaults;
+
 	while (!definition && ThemeIcon.isThemeIcon(defaults)) {
 		// look if an inherited icon has a definition
 		const ic = iconRegistry.getIcon(defaults.id);
+
 		if (ic) {
 			definition = iconDefinitions.get(ic.id);
+
 			defaults = ic.defaults;
 		} else {
 			return undefined;

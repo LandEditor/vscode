@@ -19,6 +19,7 @@ import { IEditorService } from '../../../services/editor/common/editorService.js
  */
 export class BinaryResourceDiffEditor extends SideBySideEditor {
     static override readonly ID = BINARY_DIFF_EDITOR_ID;
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -40,7 +41,9 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
     }
     getMetadata(): string | undefined {
         const primary = this.getPrimaryEditorPane();
+
         const secondary = this.getSecondaryEditorPane();
+
         if (primary instanceof BaseBinaryResourceEditor && secondary instanceof BaseBinaryResourceEditor) {
             return localize('metadataDiff', "{0} ↔ {1}", secondary.getMetadata(), primary.getMetadata());
         }

@@ -15,9 +15,11 @@ import { IWebview } from './webview.js';
 export class WebviewWindowDragMonitor extends Disposable {
     constructor(targetWindow: CodeWindow, getWebview: () => IWebview | undefined) {
         super();
+
         const onDragStart = () => {
             getWebview()?.windowDidDragStart();
         };
+
         const onDragEnd = () => {
             getWebview()?.windowDidDragEnd();
         };

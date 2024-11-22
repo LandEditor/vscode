@@ -8,8 +8,11 @@ import { ServiceCollection } from './serviceCollection.js';
 // ------ internal util
 export namespace _util {
     export const serviceIds = new Map<string, ServiceIdentifier<any>>();
+
     export const DI_TARGET = '$di$target';
+
     export const DI_DEPENDENCIES = '$di$dependencies';
+
     export function getServiceDependencies(ctor: any): {
         id: ServiceIdentifier<any>;
         index: number;
@@ -103,6 +106,7 @@ export function createDecorator<T>(serviceId: string): ServiceIdentifier<T> {
     };
     id.toString = () => serviceId;
     _util.serviceIds.set(serviceId, id);
+
     return id;
 }
 export function refineServiceDecorator<T1, T extends T1>(serviceIdentifier: ServiceIdentifier<T1>): ServiceIdentifier<T> {

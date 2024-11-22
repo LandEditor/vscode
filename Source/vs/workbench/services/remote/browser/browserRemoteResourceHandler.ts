@@ -15,6 +15,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
         super();
         this._register(provider.onDidReceiveRequest(async (request) => {
             let uri: UriComponents;
+
             try {
                 uri = JSON.parse(decodeURIComponent(request.uri.query));
             }
@@ -22,11 +23,13 @@ export class BrowserRemoteResourceLoader extends Disposable {
                 return request.respondWith(404, new Uint8Array(), {});
             }
             let content: IFileContent;
+
             try {
                 content = await fileService.readFile(URI.from(uri, true));
             }
             catch (e) {
                 const str = VSBuffer.fromString(e.message).buffer;
+
                 if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
                     return request.respondWith(404, str, {});
                 }
@@ -40,6 +43,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
     }
     public getResourceUriProvider(): IResourceUriProvider {
         const baseUri = URI.parse(document.location.href);
+
         return uri => baseUri.with({
             path: this.provider.path,
             query: JSON.stringify(uri),

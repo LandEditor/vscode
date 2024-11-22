@@ -29,10 +29,13 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
     private _cursorLineNumbers: number[];
     private _selections: Selection[];
     private _renderData: string[] | null;
+
     constructor(context: ViewContext) {
         super();
         this._context = context;
+
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._renderLineHighlight = options.get(EditorOption.renderLineHighlight);
         this._renderLineHighlightOnlyWhenFocus = options.get(EditorOption.renderLineHighlightOnlyWhenFocus);
@@ -48,21 +51,26 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
     }
     public override dispose(): void {
         this._context.removeEventHandler(this);
+
         super.dispose();
     }
     private _readFromSelections(): boolean {
         let hasChanged = false;
+
         const lineNumbers = new Set<number>();
+
         for (const selection of this._selections) {
             lineNumbers.add(selection.positionLineNumber);
         }
         const cursorsLineNumbers = Array.from(lineNumbers);
         cursorsLineNumbers.sort((a, b) => a - b);
+
         if (!arrays.equals(this._cursorLineNumbers, cursorsLineNumbers)) {
             this._cursorLineNumbers = cursorsLineNumbers;
             hasChanged = true;
         }
         const selectionIsEmpty = this._selections.every(s => s.isEmpty());
+
         if (this._selectionIsEmpty !== selectionIsEmpty) {
             this._selectionIsEmpty = selectionIsEmpty;
             hasChanged = true;
@@ -75,16 +83,19 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
     }
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         const options = this._context.configuration.options;
+
         const layoutInfo = options.get(EditorOption.layoutInfo);
         this._renderLineHighlight = options.get(EditorOption.renderLineHighlight);
         this._renderLineHighlightOnlyWhenFocus = options.get(EditorOption.renderLineHighlightOnlyWhenFocus);
         this._wordWrap = layoutInfo.isViewportWrapping;
         this._contentLeft = layoutInfo.contentLeft;
         this._contentWidth = layoutInfo.contentWidth;
+
         return true;
     }
     public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
         this._selections = e.selections;
+
         return this._readFromSelections();
     }
     public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
@@ -107,18 +118,22 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
             return false;
         }
         this._focused = e.isFocused;
+
         return true;
     }
     // --- end event handlers
     public prepareRender(ctx: RenderingContext): void {
         if (!this._shouldRenderThis()) {
             this._renderData = null;
+
             return;
         }
         const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
+
         const visibleEndLineNumber = ctx.visibleRange.endLineNumber;
         // initialize renderData
         const renderData: string[] = [];
+
         for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
             const lineIndex = lineNumber - visibleStartLineNumber;
             renderData[lineIndex] = '';
@@ -126,13 +141,20 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
         if (this._wordWrap) {
             // do a first pass to render wrapped lines
             const renderedLineWrapped = this._renderOne(ctx, false);
+
             for (const cursorLineNumber of this._cursorLineNumbers) {
                 const coordinatesConverter = this._context.viewModel.coordinatesConverter;
+
                 const modelLineNumber = coordinatesConverter.convertViewPositionToModelPosition(new Position(cursorLineNumber, 1)).lineNumber;
+
                 const firstViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(new Position(modelLineNumber, 1)).lineNumber;
+
                 const lastViewLineNumber = coordinatesConverter.convertModelPositionToViewPosition(new Position(modelLineNumber, this._context.viewModel.model.getLineMaxColumn(modelLineNumber))).lineNumber;
+
                 const firstLine = Math.max(firstViewLineNumber, visibleStartLineNumber);
+
                 const lastLine = Math.min(lastViewLineNumber, visibleEndLineNumber);
+
                 for (let lineNumber = firstLine; lineNumber <= lastLine; lineNumber++) {
                     const lineIndex = lineNumber - visibleStartLineNumber;
                     renderData[lineIndex] = renderedLineWrapped;
@@ -141,6 +163,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
         }
         // do a second pass to render exact lines
         const renderedLineExact = this._renderOne(ctx, true);
+
         for (const cursorLineNumber of this._cursorLineNumbers) {
             if (cursorLineNumber < visibleStartLineNumber || cursorLineNumber > visibleEndLineNumber) {
                 continue;
@@ -155,6 +178,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
             return '';
         }
         const lineIndex = lineNumber - startLineNumber;
+
         if (lineIndex >= this._renderData.length) {
             return '';
         }
@@ -179,6 +203,7 @@ export abstract class AbstractLineHighlightOverlay extends DynamicViewOverlay {
 export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
     protected _renderOne(ctx: RenderingContext, exact: boolean): string {
         const className = 'current-line' + (this._shouldRenderInMargin() ? ' current-line-both' : '') + (exact ? ' current-line-exact' : '');
+
         return `<div class="${className}" style="width:${Math.max(ctx.scrollWidth, this._contentWidth)}px;"></div>`;
     }
     protected _shouldRenderThis(): boolean {
@@ -194,6 +219,7 @@ export class CurrentLineHighlightOverlay extends AbstractLineHighlightOverlay {
 export class CurrentLineMarginHighlightOverlay extends AbstractLineHighlightOverlay {
     protected _renderOne(ctx: RenderingContext, exact: boolean): string {
         const className = 'current-line' + (this._shouldRenderInMargin() ? ' current-line-margin' : '') + (this._shouldRenderOther() ? ' current-line-margin-both' : '') + (this._shouldRenderInMargin() && exact ? ' current-line-exact-margin' : '');
+
         return `<div class="${className}" style="width:${this._contentLeft}px"></div>`;
     }
     protected _shouldRenderThis(): boolean {
@@ -205,15 +231,18 @@ export class CurrentLineMarginHighlightOverlay extends AbstractLineHighlightOver
 }
 registerThemingParticipant((theme, collector) => {
     const lineHighlight = theme.getColor(editorLineHighlight);
+
     if (lineHighlight) {
         collector.addRule(`.monaco-editor .view-overlays .current-line { background-color: ${lineHighlight}; }`);
         collector.addRule(`.monaco-editor .margin-view-overlays .current-line-margin { background-color: ${lineHighlight}; border: none; }`);
     }
     if (!lineHighlight || lineHighlight.isTransparent() || theme.defines(editorLineHighlightBorder)) {
         const lineHighlightBorder = theme.getColor(editorLineHighlightBorder);
+
         if (lineHighlightBorder) {
             collector.addRule(`.monaco-editor .view-overlays .current-line-exact { border: 2px solid ${lineHighlightBorder}; }`);
             collector.addRule(`.monaco-editor .margin-view-overlays .current-line-exact-margin { border: 2px solid ${lineHighlightBorder}; }`);
+
             if (isHighContrast(theme.type)) {
                 collector.addRule(`.monaco-editor .view-overlays .current-line-exact { border-width: 1px; }`);
                 collector.addRule(`.monaco-editor .margin-view-overlays .current-line-exact-margin { border-width: 1px; }`);

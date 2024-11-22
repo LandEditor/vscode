@@ -56,6 +56,7 @@ registerSingleton(ITestResultService, TestResultService, InstantiationType.Delay
 registerSingleton(ITestExplorerFilterState, TestExplorerFilterState, InstantiationType.Delayed);
 registerSingleton(ITestingPeekOpener, TestingPeekOpener, InstantiationType.Delayed);
 registerSingleton(ITestingDecorationsService, TestingDecorationService, InstantiationType.Delayed);
+
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
     id: Testing.ViewletId,
     title: localize2('test', 'Testing'),
@@ -72,6 +73,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensio
     },
     hideIfEmpty: true,
 }, ViewContainerLocation.Sidebar);
+
 const testResultsViewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
     id: Testing.ResultsPanelId,
     title: localize2('testResultsPanelName', "Test Results"),
@@ -80,6 +82,7 @@ const testResultsViewContainer = Registry.as<IViewContainersRegistry>(ViewContai
     hideIfEmpty: true,
     order: 3,
 }, ViewContainerLocation.Panel, { doNotRegisterOpenCommand: true });
+
 const viewsRegistry = Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry);
 viewsRegistry.registerViews([{
         id: Testing.ResultsViewId,
@@ -142,11 +145,14 @@ CommandsRegistry.registerCommand({
     id: 'vscode.peekTestError',
     handler: async (accessor: ServicesAccessor, extId: string) => {
         const lookup = accessor.get(ITestResultService).getStateById(extId);
+
         if (!lookup) {
             return false;
         }
         const [result, ownState] = lookup;
+
         const opener = accessor.get(ITestingPeekOpener);
+
         if (opener.tryPeekFirstError(result, ownState)) { // fast path
             return true;
         }
@@ -162,14 +168,18 @@ CommandsRegistry.registerCommand({
 	id: 'vscode.revealTest',
 	handler: async (accessor: ServicesAccessor, extId: string, opts?: { preserveFocus?: boolean; openToSide?: boolean }) => {
 		const test = accessor.get(ITestService).collection.getNodeById(extId);
+
 		if (!test) {
 			return;
 		}
 		const commandService = accessor.get(ICommandService);
+
 		const fileService = accessor.get(IFileService);
+
 		const openerService = accessor.get(IOpenerService);
 
 		const { range, uri } = test.item;
+
 		if (!uri) {
 			return;
 		}
@@ -182,6 +192,7 @@ CommandsRegistry.registerCommand({
 		accessor.get(ITestingPeekOpener).closeAllPeeks();
 
 		let isFile = true;
+
 		try {
 			if (!(await fileService.stat(uri)).isFile) {
 				isFile = false;
@@ -192,6 +203,7 @@ CommandsRegistry.registerCommand({
 
 		if (!isFile) {
 			await commandService.executeCommand(REVEAL_IN_EXPLORER_COMMAND_ID, uri);
+
 			return;
 		}
 
@@ -218,6 +230,7 @@ CommandsRegistry.registerCommand({
     id: 'vscode.testing.getControllersWithTests',
     handler: async (accessor: ServicesAccessor) => {
         const testService = accessor.get(ITestService);
+
         return [...testService.collection.rootItems]
             .filter(r => r.children.size > 0)
             .map(r => r.controllerId);

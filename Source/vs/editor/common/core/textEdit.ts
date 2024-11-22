@@ -17,6 +17,7 @@ import { TextLength } from './textLength.js';
 export class TextEdit {
     public static fromOffsetEdit(edit: OffsetEdit, initialState: AbstractText): TextEdit {
         const edits = edit.edits.map(e => new SingleTextEdit(initialState.getTransformer().getRange(e.replaceRange), e.newText));
+
         return new TextEdit(edits);
     }
     public static single(originalRange: Range, newText: string): TextEdit {
@@ -33,6 +34,7 @@ export class TextEdit {
      */
     normalize(): TextEdit {
         const edits: SingleTextEdit[] = [];
+
         for (const edit of this.edits) {
             if (edits.length > 0 && edits[edits.length - 1].range.getEndPosition().equals(edit.range.getStartPosition())) {
                 const last = edits[edits.length - 1];
@@ -46,24 +48,33 @@ export class TextEdit {
     }
     mapPosition(position: Position): Position | Range {
         let lineDelta = 0;
+
         let curLine = 0;
+
         let columnDeltaInCurLine = 0;
+
         for (const edit of this.edits) {
             const start = edit.range.getStartPosition();
+
             if (position.isBeforeOrEqual(start)) {
                 break;
             }
             const end = edit.range.getEndPosition();
+
             const len = TextLength.ofText(edit.text);
+
             if (position.isBefore(end)) {
                 const startPos = new Position(start.lineNumber + lineDelta, start.column + (start.lineNumber + lineDelta === curLine ? columnDeltaInCurLine : 0));
+
                 const endPos = len.addToPosition(startPos);
+
                 return rangeFromPositions(startPos, endPos);
             }
             if (start.lineNumber + lineDelta !== curLine) {
                 columnDeltaInCurLine = 0;
             }
             lineDelta += len.lineCount - (edit.range.endLineNumber - edit.range.startLineNumber);
+
             if (len.lineCount === 0) {
                 if (end.lineNumber !== start.lineNumber) {
                     columnDeltaInCurLine += len.columnCount - (end.column - 1);
@@ -87,26 +98,36 @@ export class TextEdit {
             return p instanceof Position ? p : p.getEndPosition();
         }
         const start = getStart(this.mapPosition(range.getStartPosition()));
+
         const end = getEnd(this.mapPosition(range.getEndPosition()));
+
         return rangeFromPositions(start, end);
     }
     // TODO: `doc` is not needed for this!
     inverseMapPosition(positionAfterEdit: Position, doc: AbstractText): Position | Range {
         const reversed = this.inverse(doc);
+
         return reversed.mapPosition(positionAfterEdit);
     }
     inverseMapRange(range: Range, doc: AbstractText): Range {
         const reversed = this.inverse(doc);
+
         return reversed.mapRange(range);
     }
     apply(text: AbstractText): string {
         let result = '';
+
         let lastEditEnd = new Position(1, 1);
+
         for (const edit of this.edits) {
             const editRange = edit.range;
+
             const editStart = editRange.getStartPosition();
+
             const editEnd = editRange.getEndPosition();
+
             const r = rangeFromPositions(lastEditEnd, editStart);
+
             if (!r.isEmpty()) {
                 result += text.getValueOfRange(r);
             }
@@ -114,6 +135,7 @@ export class TextEdit {
             lastEditEnd = editEnd;
         }
         const r = rangeFromPositions(lastEditEnd, text.endPositionExclusive);
+
         if (!r.isEmpty()) {
             result += text.getValueOfRange(r);
         }
@@ -121,23 +143,31 @@ export class TextEdit {
     }
     applyToString(str: string): string {
         const strText = new StringText(str);
+
         return this.apply(strText);
     }
     inverse(doc: AbstractText): TextEdit {
         const ranges = this.getNewRanges();
+
         return new TextEdit(this.edits.map((e, idx) => new SingleTextEdit(ranges[idx], doc.getValueOfRange(e.range))));
     }
     getNewRanges(): Range[] {
         const newRanges: Range[] = [];
+
         let previousEditEndLineNumber = 0;
+
         let lineOffset = 0;
+
         let columnOffset = 0;
+
         for (const edit of this.edits) {
             const textLength = TextLength.ofText(edit.text);
+
             const newRangeStart = Position.lift({
                 lineNumber: edit.range.startLineNumber + lineOffset,
                 column: edit.range.startColumn + (edit.range.startLineNumber === previousEditEndLineNumber ? columnOffset : 0)
             });
+
             const newRange = textLength.createRange(newRangeStart);
             newRanges.push(newRange);
             lineOffset = newRange.endLineNumber - edit.range.endLineNumber;
@@ -154,14 +184,20 @@ export class TextEdit {
             return this.edits[0];
         }
         const startPos = this.edits[0].range.getStartPosition();
+
         const endPos = this.edits[this.edits.length - 1].range.getEndPosition();
+
         let newText = '';
+
         for (let i = 0; i < this.edits.length; i++) {
             const curEdit = this.edits[i];
             newText += curEdit.text;
+
             if (i < this.edits.length - 1) {
                 const nextEdit = this.edits[i + 1];
+
                 const gapRange = Range.fromPositions(curEdit.range.getEndPosition(), nextEdit.range.getStartPosition());
+
                 const gapText = text.getValueOfRange(gapRange);
                 newText += gapText;
             }
@@ -181,14 +217,20 @@ export class SingleTextEdit {
             return edits[0];
         }
         const startPos = edits[0].range.getStartPosition();
+
         const endPos = edits[edits.length - 1].range.getEndPosition();
+
         let newText = '';
+
         for (let i = 0; i < edits.length; i++) {
             const curEdit = edits[i];
             newText += curEdit.text;
+
             if (i < edits.length - 1) {
                 const nextEdit = edits[i + 1];
+
                 const gapRange = Range.fromPositions(curEdit.range.getEndPosition(), nextEdit.range.getStartPosition());
+
                 const gapText = initialValue.getValueOfRange(gapRange);
                 newText += gapText;
             }
@@ -220,34 +262,49 @@ export class SingleTextEdit {
             return this;
         }
         const newRange = this.range.plusRange(range);
+
         const textBefore = initialValue.getValueOfRange(Range.fromPositions(newRange.getStartPosition(), this.range.getStartPosition()));
+
         const textAfter = initialValue.getValueOfRange(Range.fromPositions(this.range.getEndPosition(), newRange.getEndPosition()));
+
         const newText = textBefore + this.text + textAfter;
+
         return new SingleTextEdit(newRange, newText);
     }
     public extendToFullLine(initialValue: AbstractText): SingleTextEdit {
         const newRange = new Range(this.range.startLineNumber, 1, this.range.endLineNumber, initialValue.getTransformer().getLineLength(this.range.endLineNumber) + 1);
+
         return this.extendToCoverRange(newRange, initialValue);
     }
     public removeCommonPrefix(text: AbstractText): SingleTextEdit {
         const normalizedOriginalText = text.getValueOfRange(this.range).replaceAll('\r\n', '\n');
+
         const normalizedModifiedText = this.text.replaceAll('\r\n', '\n');
+
         const commonPrefixLen = commonPrefixLength(normalizedOriginalText, normalizedModifiedText);
+
         const start = TextLength.ofText(normalizedOriginalText.substring(0, commonPrefixLen))
             .addToPosition(this.range.getStartPosition());
+
         const newText = normalizedModifiedText.substring(commonPrefixLen);
+
         const range = Range.fromPositions(start, this.range.getEndPosition());
+
         return new SingleTextEdit(range, newText);
     }
     public isEffectiveDeletion(text: AbstractText): boolean {
         let newText = this.text.replaceAll('\r\n', '\n');
+
         let existingText = text.getValueOfRange(this.range).replaceAll('\r\n', '\n');
+
         const l = commonPrefixLength(newText, existingText);
         newText = newText.substring(l);
         existingText = existingText.substring(l);
+
         const r = commonSuffixLength(newText, existingText);
         newText = newText.substring(0, newText.length - r);
         existingText = existingText.substring(0, existingText.length - r);
+
         return newText === '';
     }
 }
@@ -263,6 +320,7 @@ function rangeFromPositions(start: Position, end: Position): Range {
 export abstract class AbstractText {
     abstract getValueOfRange(range: Range): string;
     abstract readonly length: TextLength;
+
     get endPositionExclusive(): Position {
         return this.length.addToPosition(new Position(1, 1));
     }
@@ -276,6 +334,7 @@ export abstract class AbstractText {
         return this.getValueOfRange(new Range(lineNumber, 1, lineNumber, Number.MAX_SAFE_INTEGER)).length;
     }
     private _transformer: PositionOffsetTransformer | undefined = undefined;
+
     getTransformer(): PositionOffsetTransformer {
         if (!this._transformer) {
             this._transformer = new PositionOffsetTransformer(this.getValue());
@@ -287,12 +346,14 @@ export abstract class AbstractText {
     }
     getLines(): string[] {
         const value = this.getValue();
+
         return splitLines(value);
     }
 }
 export class LineBasedText extends AbstractText {
     constructor(private readonly _getLineContent: (lineNumber: number) => string, private readonly _lineCount: number) {
         assert(_lineCount >= 1);
+
         super();
     }
     override getValueOfRange(range: Range): string {
@@ -300,10 +361,12 @@ export class LineBasedText extends AbstractText {
             return this._getLineContent(range.startLineNumber).substring(range.startColumn - 1, range.endColumn - 1);
         }
         let result = this._getLineContent(range.startLineNumber).substring(range.startColumn - 1);
+
         for (let i = range.startLineNumber + 1; i < range.endLineNumber; i++) {
             result += '\n' + this._getLineContent(i);
         }
         result += '\n' + this._getLineContent(range.endLineNumber).substring(0, range.endColumn - 1);
+
         return result;
     }
     override getLineLength(lineNumber: number): number {
@@ -311,6 +374,7 @@ export class LineBasedText extends AbstractText {
     }
     get length(): TextLength {
         const lastLine = this._getLineContent(this._lineCount);
+
         return new TextLength(this._lineCount - 1, lastLine.length);
     }
 }
@@ -321,6 +385,7 @@ export class ArrayText extends LineBasedText {
 }
 export class StringText extends AbstractText {
     private readonly _t = new PositionOffsetTransformer(this.value);
+
     constructor(public readonly value: string) {
         super();
     }
@@ -336,6 +401,7 @@ export class BasedTextEdit {
     }
     toString() {
         const lineEdit = LineEdit.fromTextEdit(this.edit, this.base);
+
         return lineEdit.humanReadablePatch(this.base.getLines());
     }
 }

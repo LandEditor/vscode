@@ -8,10 +8,15 @@ import { RunOnceScheduler } from '../../../common/async.js';
 import { Disposable, IDisposable, MutableDisposable } from '../../../common/lifecycle.js';
 import { isNumber } from '../../../common/types.js';
 import './progressbar.css';
+
 const CSS_DONE = 'done';
+
 const CSS_ACTIVE = 'active';
+
 const CSS_INFINITE = 'infinite';
+
 const CSS_INFINITE_LONG_RUNNING = 'infinite-long-running';
+
 const CSS_DISCRETE = 'discrete';
 export interface IProgressBarOptions extends IProgressBarStyles {
 }
@@ -42,6 +47,7 @@ export class ProgressBar extends Disposable {
     private showDelayedScheduler: RunOnceScheduler;
     private longRunningScheduler: RunOnceScheduler;
     private readonly progressSignal = this._register(new MutableDisposable<IDisposable>());
+
     constructor(container: HTMLElement, options?: IProgressBarOptions) {
         super();
         this.workedVal = 0;
@@ -86,6 +92,7 @@ export class ProgressBar extends Disposable {
         // discrete: let it grow to 100% width and hide afterwards
         if (!this.element.classList.contains(CSS_INFINITE)) {
             this.bit.style.width = 'inherit';
+
             if (delayed) {
                 setTimeout(() => this.off(), 200);
             }
@@ -96,6 +103,7 @@ export class ProgressBar extends Disposable {
         // infinite: let it fade out and hide afterwards
         else {
             this.bit.style.opacity = '0';
+
             if (delayed) {
                 setTimeout(() => this.off(), 200);
             }
@@ -114,6 +122,7 @@ export class ProgressBar extends Disposable {
         this.element.classList.remove(CSS_DISCRETE, CSS_DONE, CSS_INFINITE_LONG_RUNNING);
         this.element.classList.add(CSS_ACTIVE, CSS_INFINITE);
         this.longRunningScheduler.schedule();
+
         return this;
     }
     private infiniteLongRunning(): void {
@@ -127,6 +136,7 @@ export class ProgressBar extends Disposable {
         this.workedVal = 0;
         this.totalWork = value;
         this.element.setAttribute('aria-valuemax', value.toString());
+
         return this;
     }
     /**
@@ -140,6 +150,7 @@ export class ProgressBar extends Disposable {
      */
     worked(value: number): ProgressBar {
         value = Math.max(1, Number(value));
+
         return this.doSetWorked(this.workedVal + value);
     }
     /**
@@ -147,6 +158,7 @@ export class ProgressBar extends Disposable {
      */
     setWorked(value: number): ProgressBar {
         value = Math.max(1, Number(value));
+
         return this.doSetWorked(value);
     }
     private doSetWorked(value: number): ProgressBar {
@@ -157,6 +169,7 @@ export class ProgressBar extends Disposable {
         this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
         this.element.setAttribute('aria-valuenow', value.toString());
         this.bit.style.width = 100 * (this.workedVal / (totalWork)) + '%';
+
         return this;
     }
     getContainer(): HTMLElement {
@@ -165,6 +178,7 @@ export class ProgressBar extends Disposable {
     show(delay?: number): void {
         this.showDelayedScheduler.cancel();
         this.progressSignal.value = getProgressAcccessibilitySignalScheduler(ProgressBar.PROGRESS_SIGNAL_DEFAULT_DELAY);
+
         if (typeof delay === 'number') {
             this.showDelayedScheduler.schedule(delay);
         }

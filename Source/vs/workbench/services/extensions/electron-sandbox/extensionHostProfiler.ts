@@ -18,25 +18,32 @@ export class ExtensionHostProfiler {
     }
     public async start(): Promise<ProfileSession> {
         const id = await this._profilingService.startProfiling({ host: this._host, port: this._port });
+
         return {
             stop: createSingleCallFunction(async () => {
                 const profile = await this._profilingService.stopProfiling(id);
                 await this._extensionService.whenInstalledExtensionsRegistered();
+
                 const extensions = this._extensionService.extensions;
+
                 return this._distill(profile, extensions);
             })
         };
     }
     private _distill(profile: IV8Profile, extensions: readonly IExtensionDescription[]): IExtensionHostProfile {
         const searchTree = TernarySearchTree.forUris<IExtensionDescription>();
+
         for (const extension of extensions) {
             if (extension.extensionLocation.scheme === Schemas.file) {
                 searchTree.set(URI.file(extension.extensionLocation.fsPath), extension);
             }
         }
         const nodes = profile.nodes;
+
         const idsToNodes = new Map<number, IV8ProfileNode>();
+
         const idsToSegmentId = new Map<number, ProfileSegmentId | null>();
+
         for (const node of nodes) {
             idsToNodes.set(node.id, node);
         }
@@ -45,19 +52,26 @@ export class ExtensionHostProfiler {
                 switch (node.callFrame.functionName) {
                     case '(root)':
                         break;
+
                     case '(program)':
                         segmentId = 'program';
+
                         break;
+
                     case '(garbage collector)':
                         segmentId = 'gc';
+
                         break;
+
                     default:
                         segmentId = 'self';
+
                         break;
                 }
             }
             else if (segmentId === 'self' && node.callFrame.url) {
                 let extension: IExtensionDescription | undefined;
+
                 try {
                     extension = searchTree.findSubstr(URI.parse(node.callFrame.url));
                 }
@@ -69,9 +83,11 @@ export class ExtensionHostProfiler {
                 }
             }
             idsToSegmentId.set(node.id, segmentId);
+
             if (node.children) {
                 for (const child of node.children) {
                     const childNode = idsToNodes.get(child);
+
                     if (childNode) {
                         visit(childNode, segmentId);
                     }
@@ -79,15 +95,24 @@ export class ExtensionHostProfiler {
             }
         }
         visit(nodes[0], null);
+
         const samples = profile.samples || [];
+
         const timeDeltas = profile.timeDeltas || [];
+
         const distilledDeltas: number[] = [];
+
         const distilledIds: ProfileSegmentId[] = [];
+
         let currSegmentTime = 0;
+
         let currSegmentId: string | undefined;
+
         for (let i = 0; i < samples.length; i++) {
             const id = samples[i];
+
             const segmentId = idsToSegmentId.get(id);
+
             if (segmentId !== currSegmentId) {
                 if (currSegmentId) {
                     distilledIds.push(currSegmentId);
@@ -110,6 +135,7 @@ export class ExtensionHostProfiler {
             data: profile,
             getAggregatedTimes: () => {
                 const segmentsToTime = new Map<ProfileSegmentId, number>();
+
                 for (let i = 0; i < distilledIds.length; i++) {
                     const id = distilledIds[i];
                     segmentsToTime.set(id, (segmentsToTime.get(id) || 0) + distilledDeltas[i]);

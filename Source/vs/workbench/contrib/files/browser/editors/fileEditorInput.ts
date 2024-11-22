@@ -25,6 +25,7 @@ import { IPathService } from '../../../../services/path/common/pathService.js';
 import { ITextResourceConfigurationService } from '../../../../../editor/common/services/textResourceConfiguration.js';
 import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
 import { ICustomEditorLabelService } from '../../../../services/editor/common/customEditorLabelService.js';
+
 const enum ForceOpenAs {
     None,
     Text,
@@ -42,6 +43,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     }
     override get capabilities(): EditorInputCapabilities {
         let capabilities = EditorInputCapabilities.CanSplitInGroup;
+
         if (this.model) {
             if (this.model.isReadonly()) {
                 capabilities |= EditorInputCapabilities.Readonly;
@@ -71,6 +73,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     private model: ITextFileEditorModel | undefined = undefined;
     private cachedTextFileModelReference: IReference<ITextFileEditorModel> | undefined = undefined;
     private readonly modelListeners = this._register(new DisposableStore());
+
     constructor(resource: URI, preferredResource: URI | undefined, preferredName: string | undefined, preferredDescription: string | undefined, preferredEncoding: string | undefined, preferredLanguageId: string | undefined, preferredContents: string | undefined, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -94,6 +97,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     customEditorLabelService: ICustomEditorLabelService) {
         super(resource, preferredResource, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
         this.model = this.textFileService.files.get(resource);
+
         if (preferredName) {
             this.setPreferredName(preferredName);
         }
@@ -181,7 +185,9 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     }
     override getTitle(verbosity?: Verbosity): string {
         let title = super.getTitle(verbosity);
+
         const preferredTitle = this.getPreferredTitle();
+
         if (preferredTitle) {
             title = `${preferredTitle} (${title})`;
         }
@@ -207,6 +213,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     }
     async setEncoding(encoding: string, mode: EncodingMode): Promise<void> {
         this.setPreferredEncoding(encoding);
+
         return this.model?.setEncoding(encoding, mode);
     }
     setPreferredEncoding(encoding: string): void {
@@ -319,6 +326,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
     private async doResolveAsBinary(): Promise<BinaryEditorModel> {
         const model = this.instantiationService.createInstance(BinaryEditorModel, this.preferredResource, this.getName());
         await model.resolve();
+
         return model;
     }
     isResolved(): boolean {
@@ -343,11 +351,13 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
                 override: this.editorId
             }
         };
+
         if (typeof options?.preserveViewState === 'number') {
             untypedInput.encoding = this.getEncoding();
             untypedInput.languageId = this.getLanguageId();
             untypedInput.contents = (() => {
                 const model = this.textFileService.files.get(this.resource);
+
                 if (model?.isDirty() && !model.textEditorModel.isTooLargeForHeapOperation()) {
                     return model.textEditorModel.getValue(); // only if dirty and not too large
                 }
@@ -377,6 +387,7 @@ export class FileEditorInput extends AbstractTextResourceEditorInput implements 
         this.model = undefined;
         // Model reference
         this.disposeModelReference();
+
         super.dispose();
     }
     private disposeModelReference(): void {

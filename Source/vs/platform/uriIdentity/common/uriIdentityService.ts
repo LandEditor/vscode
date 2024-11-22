@@ -13,9 +13,11 @@ import { DisposableStore } from '../../../base/common/lifecycle.js';
 class Entry {
     static _clock = 0;
     time: number = Entry._clock++;
+
     constructor(readonly uri: URI) { }
     touch() {
         this.time = Entry._clock++;
+
         return this;
     }
 }
@@ -25,6 +27,7 @@ export class UriIdentityService implements IUriIdentityService {
     private readonly _dispooables = new DisposableStore();
     private readonly _canonicalUris: SkipList<URI, Entry>;
     private readonly _limit = 2 ** 16;
+
     constructor(
     @IFileService
     private readonly _fileService: IFileService) {
@@ -36,6 +39,7 @@ export class UriIdentityService implements IUriIdentityService {
         // * all kind of "private" schemes
         const ignorePathCasing = (uri: URI): boolean => {
             let ignorePathCasing = schemeIgnoresPathCasingCache.get(uri.scheme);
+
             if (ignorePathCasing === undefined) {
                 // retrieve once and then case per scheme until a change happens
                 ignorePathCasing = _fileService.hasProvider(uri) && !this._fileService.hasCapability(uri, FileSystemProviderCapabilities.PathCaseSensitive);
@@ -61,12 +65,14 @@ export class UriIdentityService implements IUriIdentityService {
         }
         // (2) find the uri in its canonical form or use this uri to define it
         const item = this._canonicalUris.get(uri);
+
         if (item) {
             return item.touch().uri.with({ fragment: uri.fragment });
         }
         // this uri is first and defines the canonical form
         this._canonicalUris.set(uri, new Entry(uri));
         this._checkTrim();
+
         return uri;
     }
     private _checkTrim(): void {
@@ -89,7 +95,9 @@ export class UriIdentityService implements IUriIdentityService {
         });
         Entry._clock = 0;
         this._canonicalUris.clear();
+
         const newSize = this._limit * 0.5;
+
         for (let i = 0; i < newSize; i++) {
             this._canonicalUris.set(entries[i][0], entries[i][1].touch());
         }

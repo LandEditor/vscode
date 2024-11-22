@@ -13,6 +13,7 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { Schemas } from '../../../../base/common/network.js';
 class NativeExtensionTipsService extends ExtensionTipsService implements IExtensionTipsService {
     private readonly channel: IChannel;
+
     constructor(
     @IFileService
     fileService: IFileService, 

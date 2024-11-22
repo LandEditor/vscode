@@ -53,19 +53,27 @@ export function registerChatFileTreeActions() {
 }
 function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
     const chatWidgetService = accessor.get(IChatWidgetService);
+
     const widget = chatWidgetService.lastFocusedWidget;
+
     if (!widget) {
         return;
     }
     const focused = !widget.inputEditor.hasWidgetFocus() && widget.getFocus();
+
     const focusedResponse = isResponseVM(focused) ? focused : undefined;
+
     const currentResponse = focusedResponse ?? widget.viewModel?.getItems().reverse().find((item): item is IChatResponseViewModel => isResponseVM(item));
+
     if (!currentResponse) {
         return;
     }
     widget.reveal(currentResponse);
+
     const responseFileTrees = widget.getFileTreeInfosForResponse(currentResponse);
+
     const lastFocusedFileTree = widget.getLastFocusedFileTreeForResponse(currentResponse);
+
     const focusIdx = lastFocusedFileTree ?
         (lastFocusedFileTree.treeIndex + (reverse ? -1 : 1) + responseFileTrees.length) % responseFileTrees.length :
         reverse ? responseFileTrees.length - 1 : 0;

@@ -18,15 +18,18 @@ export async function getOSReleaseInfo(errorLogger: (error: any) => void): Promi
     // using the identifiers specified in
     // https://www.freedesktop.org/software/systemd/man/os-release.html
     let handle: FSPromises.FileHandle | undefined;
+
     for (const filePath of ['/etc/os-release', '/usr/lib/os-release', '/etc/lsb-release']) {
         try {
             handle = await FSPromises.open(filePath, FSConstants.R_OK);
+
             break;
         }
         catch (err) { }
     }
     if (!handle) {
         errorLogger('Unable to retrieve release information from known identifier paths.');
+
         return;
     }
     try {
@@ -37,16 +40,20 @@ export async function getOSReleaseInfo(errorLogger: (error: any) => void): Promi
             'VERSION_ID',
             'DISTRIB_RELEASE',
         ]);
+
         const releaseInfo: ReleaseInfo = {
             id: 'unknown'
         };
+
         for await (const line of readLines({ input: handle.createReadStream(), crlfDelay: Infinity })) {
             if (!line.includes('=')) {
                 continue;
             }
             const key = line.split('=')[0].toUpperCase().trim();
+
             if (osReleaseKeys.has(key)) {
                 const value = line.split('=')[1].replace(/"/g, '').toLowerCase().trim();
+
                 if (key === 'ID' || key === 'DISTRIB_ID') {
                     releaseInfo.id = value;
                 }

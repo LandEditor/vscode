@@ -60,6 +60,7 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
     }
     async enterWorkspace(workspaceUri: URI): Promise<void> {
         const result = await this.doEnterWorkspace(workspaceUri);
+
         if (result) {
             // Open workspace in same window
             await this.hostService.openWindow([{ workspaceUri }], { forceReuseWindow: true });

@@ -51,6 +51,7 @@ class BrowserURLOpener implements IOpener {
 }
 export class BrowserURLService extends AbstractURLService {
     private provider: IURLCallbackProvider | undefined;
+
     constructor(
     @IBrowserWorkbenchEnvironmentService
     environmentService: IBrowserWorkbenchEnvironmentService, 
@@ -60,6 +61,7 @@ export class BrowserURLService extends AbstractURLService {
     productService: IProductService) {
         super();
         this.provider = environmentService.options?.urlCallbackProvider;
+
         if (this.provider) {
             this._register(this.provider.onCallback(uri => this.open(uri, { trusted: true })));
         }

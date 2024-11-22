@@ -12,6 +12,7 @@ import * as Tasks from './tasks.js';
 import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
 import { Emitter, Event } from '../../../../base/common/event.js';
+
 const taskDefinitionSchema: IJSONSchema = {
     type: 'object',
     additionalProperties: false,
@@ -52,11 +53,14 @@ namespace Configuration {
             return undefined;
         }
         const taskType = Types.isString(value.type) ? value.type : undefined;
+
         if (!taskType || taskType.length === 0) {
             messageCollector.error(nls.localize('TaskTypeConfiguration.noType', 'The task type configuration is missing the required \'taskType\' property'));
+
             return undefined;
         }
         const required: string[] = [];
+
         if (Array.isArray(value.required)) {
             for (const element of value.required) {
                 if (Types.isString(element)) {
@@ -91,8 +95,10 @@ const taskDefinitionsExtPoint = ExtensionsRegistry.registerExtensionPoint<Config
 });
 export interface ITaskDefinitionRegistry {
     onReady(): Promise<void>;
+
     get(key: string): Tasks.ITaskDefinition;
     all(): Tasks.ITaskDefinition[];
+
     getJsonSchema(): IJSONSchema;
     onDefinitionsChanged: Event<void>;
 }
@@ -102,14 +108,17 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
     private _schema: IJSONSchema | undefined;
     private _onDefinitionsChanged: Emitter<void> = new Emitter();
     public onDefinitionsChanged: Event<void> = this._onDefinitionsChanged.event;
+
     constructor() {
         this.taskTypes = Object.create(null);
         this.readyPromise = new Promise<void>((resolve, reject) => {
             taskDefinitionsExtPoint.setHandler((extensions, delta) => {
                 this._schema = undefined;
+
                 try {
                     for (const extension of delta.removed) {
                         const taskTypes = extension.value;
+
                         for (const taskType of taskTypes) {
                             if (this.taskTypes && taskType.type && this.taskTypes[taskType.type]) {
                                 delete this.taskTypes[taskType.type];
@@ -118,8 +127,10 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
                     }
                     for (const extension of delta.added) {
                         const taskTypes = extension.value;
+
                         for (const taskType of taskTypes) {
                             const type = Configuration.from(taskType, extension.description.identifier, extension.collector);
+
                             if (type) {
                                 this.taskTypes[type.taskType] = type;
                             }
@@ -147,11 +158,13 @@ class TaskDefinitionRegistryImpl implements ITaskDefinitionRegistry {
     public getJsonSchema(): IJSONSchema {
         if (this._schema === undefined) {
             const schemas: IJSONSchema[] = [];
+
             for (const definition of this.all()) {
                 const schema: IJSONSchema = {
                     type: 'object',
                     additionalProperties: false
                 };
+
                 if (definition.required.length > 0) {
                     schema.required = definition.required.slice(0);
                 }

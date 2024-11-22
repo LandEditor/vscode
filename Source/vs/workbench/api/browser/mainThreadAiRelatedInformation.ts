@@ -12,6 +12,7 @@ import { IExtHostContext, extHostNamedCustomer } from '../../services/extensions
 export class MainThreadAiRelatedInformation extends Disposable implements MainThreadAiRelatedInformationShape {
     private readonly _proxy: ExtHostAiRelatedInformationShape;
     private readonly _registrations = this._register(new DisposableMap<number>());
+
     constructor(context: IExtHostContext, 
     @IAiRelatedInformationService
     private readonly _aiRelatedInformationService: IAiRelatedInformationService) {

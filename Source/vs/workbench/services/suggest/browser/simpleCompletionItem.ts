@@ -62,11 +62,13 @@ export class SimpleCompletionItem {
 		// ensure lower-variants (perf)
 		this.labelLow = this.completion.label.toLowerCase();
 		this.labelLowExcludeFileExt = this.labelLow;
+
 		if (completion.isFile) {
 			if (isWindows) {
 				this.labelLow = this.labelLow.replaceAll('/', '\\');
 			}
 			const extIndex = this.labelLow.lastIndexOf('.');
+
 			if (extIndex !== -1) {
 				this.labelLowExcludeFileExt = this.labelLow.substring(0, extIndex);
 				this.fileExtLow = this.labelLow.substring(extIndex + 1);

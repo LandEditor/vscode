@@ -13,6 +13,7 @@ export interface INotebookFileInstanceMatch extends ISearchTreeFileMatch {
     updateMatchesForEditorWidget(): Promise<void>;
     unbindNotebookEditorWidget(editor: NotebookEditorWidget): void;
     updateNotebookHighlights(): void;
+
     getCellMatch(cellID: string): ICellMatch | undefined;
     addCellMatch(rawCell: INotebookCellMatchNoModel | INotebookCellMatchWithModel): void;
     showMatch(match: IMatchInNotebook): Promise<void>;
@@ -56,6 +57,7 @@ export interface ICellMatch {
     addContentMatches(textSearchMatches: ITextSearchMatch[]): void;
     addContext(textSearchMatches: ITextSearchMatch[]): void;
     addWebviewMatches(textSearchMatches: ITextSearchMatch[]): void;
+
     setCellModel(cell: ICellViewModel): void;
     parent: INotebookFileInstanceMatch;
     id: string;

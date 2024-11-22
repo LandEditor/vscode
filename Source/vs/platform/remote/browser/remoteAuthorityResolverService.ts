@@ -24,6 +24,7 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
     private readonly _connectionToken: Promise<string> | string | undefined;
     private readonly _connectionTokens: Map<string, string>;
     private readonly _isWorkbenchOptionsBasedResolution: boolean;
+
     constructor(isWorkbenchOptionsBasedResolution: boolean, connectionToken: Promise<string> | string | undefined, resourceUriProvider: ((uri: URI) => URI) | undefined, serverBasePath: string | undefined, 
     @IProductService
     productService: IProductService, 
@@ -33,6 +34,7 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
         this._connectionToken = connectionToken;
         this._connectionTokens = new Map<string, string>();
         this._isWorkbenchOptionsBasedResolution = isWorkbenchOptionsBasedResolution;
+
         if (resourceUriProvider) {
             RemoteAuthorities.setDelegate(resourceUriProvider);
         }
@@ -40,9 +42,11 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
     }
     async resolveAuthority(authority: string): Promise<ResolverResult> {
         let result = this._resolveAuthorityRequests.get(authority);
+
         if (!result) {
             result = new DeferredPromise<ResolverResult>();
             this._resolveAuthorityRequests.set(authority, result);
+
             if (this._isWorkbenchOptionsBasedResolution) {
                 this._doResolveAuthority(authority).then(v => result!.complete(v), (err) => result!.error(err));
             }
@@ -58,7 +62,9 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
             return null;
         }
         const resolverResult = this._cache.get(authority)!;
+
         const connectionToken = this._connectionTokens.get(authority) || resolverResult.authority.connectionToken;
+
         return {
             connectTo: resolverResult.authority.connectTo,
             connectionToken: connectionToken
@@ -66,18 +72,24 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
     }
     private async _doResolveAuthority(authority: string): Promise<ResolverResult> {
         const authorityPrefix = getRemoteAuthorityPrefix(authority);
+
         const sw = StopWatch.create(false);
         this._logService.info(`Resolving connection token (${authorityPrefix})...`);
         performance.mark(`code/willResolveConnectionToken/${authorityPrefix}`);
+
         const connectionToken = await Promise.resolve(this._connectionTokens.get(authority) || this._connectionToken);
         performance.mark(`code/didResolveConnectionToken/${authorityPrefix}`);
         this._logService.info(`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`);
+
         const defaultPort = (/^https:/.test(mainWindow.location.href) ? 443 : 80);
+
         const { host, port } = parseAuthorityWithOptionalPort(authority, defaultPort);
+
         const result: ResolverResult = { authority: { authority, connectTo: new WebSocketRemoteConnection(host, port), connectionToken } };
         RemoteAuthorities.set(authority, host, port);
         this._cache.set(authority, result);
         this._onDidChangeConnectionData.fire();
+
         return result;
     }
     _clearResolvedAuthority(authority: string): void {

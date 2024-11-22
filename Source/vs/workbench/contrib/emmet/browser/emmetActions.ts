@@ -71,6 +71,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const extensionService = accessor.get(IExtensionService);
+
 		const commandService = accessor.get(ICommandService);
 
 		return this._withGrammarContributions(extensionService).then((grammarContributions) => {
@@ -86,6 +87,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 	public static getLanguage(editor: ICodeEditor, grammars: IGrammarContributions) {
 		const model = editor.getModel();
+
 		const selection = editor.getSelection();
 
 		if (!model || !selection) {
@@ -94,7 +96,9 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 		const position = selection.getStartPosition();
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
+
 		const languageId = model.getLanguageIdAtPosition(position.lineNumber, position.column);
+
 		const syntax = languageId.split('.').pop();
 
 		if (!syntax) {
@@ -103,15 +107,18 @@ export abstract class EmmetEditorAction extends EditorAction {
 
 		const checkParentMode = (): string => {
 			const languageGrammar = grammars.getGrammar(syntax);
+
 			if (!languageGrammar) {
 				return syntax;
 			}
 			const languages = languageGrammar.split('.');
+
 			if (languages.length < 2) {
 				return syntax;
 			}
 			for (let i = 1; i < languages.length; i++) {
 				const language = languages[languages.length - i];
+
 				if (this.emmetSupportedModes.indexOf(language) !== -1) {
 					return language;
 				}

@@ -15,6 +15,7 @@ export class SharedProcessService extends Disposable implements ISharedProcessSe
     declare readonly _serviceBrand: undefined;
     private readonly withSharedProcessConnection: Promise<MessagePortClient>;
     private readonly restoredBarrier = new Barrier();
+
     constructor(readonly windowId: number, 
     @ILogService
     private readonly logService: ILogService) {
@@ -33,9 +34,11 @@ export class SharedProcessService extends Disposable implements ISharedProcessSe
         // Acquire a message port connected to the shared process
         mark('code/willConnectSharedProcess');
         this.logService.trace('Renderer->SharedProcess#connect: before acquirePort');
+
         const port = await acquirePort(SharedProcessChannelConnection.request, SharedProcessChannelConnection.response);
         mark('code/didConnectSharedProcess');
         this.logService.trace('Renderer->SharedProcess#connect: connection established');
+
         return this._register(new MessagePortClient(port, `window:${this.windowId}`));
     }
     notifyRestored(): void {
@@ -54,8 +57,10 @@ export class SharedProcessService extends Disposable implements ISharedProcessSe
         await this.withSharedProcessConnection;
         // Create a new port to the shared process
         this.logService.trace('Renderer->SharedProcess#createRawConnection: before acquirePort');
+
         const port = await acquirePort(SharedProcessRawConnection.request, SharedProcessRawConnection.response);
         this.logService.trace('Renderer->SharedProcess#createRawConnection: connection established');
+
         return port;
     }
 }

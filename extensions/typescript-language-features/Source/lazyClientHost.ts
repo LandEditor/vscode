@@ -33,16 +33,20 @@ export function createLazyClientHost(context: vscode.ExtensionContext, onCaseIns
     return lazy(() => {
         const clientHost = new TypeScriptServiceClientHost(standardLanguageDescriptions, context, onCaseInsensitiveFileSystem, services, onCompletionAccepted);
         context.subscriptions.push(clientHost);
+
         return clientHost;
     });
 }
 export function lazilyActivateClient(lazyClientHost: Lazy<TypeScriptServiceClientHost>, pluginManager: PluginManager, activeJsTsEditorTracker: ActiveJsTsEditorTracker, onActivate: () => Promise<void> = () => Promise.resolve()): vscode.Disposable {
     const disposables: vscode.Disposable[] = [];
+
     const supportedLanguage = [
         ...standardLanguageDescriptions.map(x => x.languageIds),
         ...pluginManager.plugins.map(x => x.languages)
     ].flat();
+
     let hasActivated = false;
+
     const maybeActivate = (textDocument: vscode.TextDocument): boolean => {
         if (!hasActivated && isSupportedDocument(supportedLanguage, textDocument)) {
             hasActivated = true;
@@ -51,11 +55,14 @@ export function lazilyActivateClient(lazyClientHost: Lazy<TypeScriptServiceClien
                 void lazyClientHost.value;
                 disposables.push(new ManagedFileContextManager(activeJsTsEditorTracker));
             });
+
             return true;
         }
         return false;
     };
+
     const didActivate = vscode.workspace.textDocuments.some(maybeActivate);
+
     if (!didActivate) {
         const openListener = vscode.workspace.onDidOpenTextDocument(doc => {
             if (maybeActivate(doc)) {

@@ -16,6 +16,7 @@ import { CancellationTokenSource } from '../../../../base/common/cancellation.js
 export class NativeLifecycleService extends AbstractLifecycleService {
     private static readonly BEFORE_SHUTDOWN_WARNING_DELAY = 5000;
     private static readonly WILL_SHUTDOWN_WARNING_DELAY = 800;
+
     constructor(
     @INativeHostService
     private readonly nativeHostService: INativeHostService, 
@@ -67,9 +68,13 @@ export class NativeLifecycleService extends AbstractLifecycleService {
     }
     protected async handleBeforeShutdown(reason: ShutdownReason): Promise<boolean> {
         const logService = this.logService;
+
         const vetos: (boolean | Promise<boolean>)[] = [];
+
         const pendingVetos = new Set<string>();
+
         let finalVeto: (() => boolean | Promise<boolean>) | undefined = undefined;
+
         let finalVetoId: string | undefined = undefined;
         // before-shutdown event with veto support
         this._onBeforeShutdown.fire({
@@ -100,12 +105,15 @@ export class NativeLifecycleService extends AbstractLifecycleService {
                 }
             }
         });
+
         const longRunningBeforeShutdownWarning = disposableTimeout(() => {
             logService.warn(`[lifecycle] onBeforeShutdown is taking a long time, pending operations: ${Array.from(pendingVetos).join(', ')}`);
         }, NativeLifecycleService.BEFORE_SHUTDOWN_WARNING_DELAY);
+
         try {
             // First: run list of vetos in parallel
             let veto = await handleVetos(vetos, error => this.handleBeforeShutdownError(error, reason));
+
             if (veto) {
                 return veto;
             }
@@ -114,6 +122,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
                 try {
                     pendingVetos.add(finalVetoId as unknown as string);
                     veto = await (finalVeto as () => Promise<boolean>)();
+
                     if (veto) {
                         logService.info(`[lifecycle]: Shutdown was prevented by final veto (id: ${finalVetoId})`);
                     }
@@ -135,8 +144,11 @@ export class NativeLifecycleService extends AbstractLifecycleService {
     }
     protected async handleWillShutdown(reason: ShutdownReason): Promise<void> {
         const joiners: Promise<void>[] = [];
+
         const lastJoiners: (() => Promise<void>)[] = [];
+
         const pendingJoiners = new Set<IWillShutdownEventJoiner>();
+
         const cts = new CancellationTokenSource();
         this._onWillShutdown.fire({
             reason,
@@ -144,6 +156,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
             joiners: () => Array.from(pendingJoiners.values()),
             join(promiseOrPromiseFn, joiner) {
                 pendingJoiners.add(joiner);
+
                 if (joiner.order === WillShutdownJoinerOrder.Last) {
                     const promiseFn = typeof promiseOrPromiseFn === 'function' ? promiseOrPromiseFn : () => promiseOrPromiseFn;
                     lastJoiners.push(() => promiseFn().finally(() => pendingJoiners.delete(joiner)));
@@ -158,9 +171,11 @@ export class NativeLifecycleService extends AbstractLifecycleService {
                 cts.dispose(true);
             }
         });
+
         const longRunningWillShutdownWarning = disposableTimeout(() => {
             this.logService.warn(`[lifecycle] onWillShutdown is taking a long time, pending operations: ${Array.from(pendingJoiners).map(joiner => joiner.id).join(', ')}`);
         }, NativeLifecycleService.WILL_SHUTDOWN_WARNING_DELAY);
+
         try {
             await raceCancellation(Promises.settled(joiners), cts.token);
         }

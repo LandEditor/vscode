@@ -36,6 +36,7 @@ export class ViewportData {
     public readonly whitespaceViewportData: IViewWhitespaceViewportData[];
     private readonly _model: IViewModel;
     public readonly lineHeight: number;
+
     constructor(selections: Selection[], partialData: IPartialViewLinesViewportData, whitespaceViewportData: IViewWhitespaceViewportData[], model: IViewModel) {
         this.selections = selections;
         this.startLineNumber = partialData.startLineNumber | 0;

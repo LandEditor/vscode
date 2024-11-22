@@ -46,6 +46,7 @@ class BisectState {
             interface Raw extends BisectState {
             }
             const data: Raw = JSON.parse(raw);
+
             return new BisectState(data.extensions, data.low, data.high, data.mid);
         }
         catch {
@@ -59,6 +60,7 @@ class ExtensionBisectService implements IExtensionBisectService {
     private static readonly _storageKey = 'extensionBisectState';
     private readonly _state: BisectState | undefined;
     private readonly _disabled = new Map<string, boolean>();
+
     constructor(
     @ILogService
     logService: ILogService, 
@@ -68,8 +70,10 @@ class ExtensionBisectService implements IExtensionBisectService {
     private readonly _envService: IWorkbenchEnvironmentService) {
         const raw = _storageService.get(ExtensionBisectService._storageKey, StorageScope.APPLICATION);
         this._state = BisectState.fromJSON(raw);
+
         if (this._state) {
             const { mid, high } = this._state;
+
             for (let i = 0; i < this._state.extensions.length; i++) {
                 const isDisabled = i >= mid && i < high;
                 this._disabled.set(this._state.extensions[i], isDisabled);
@@ -97,6 +101,7 @@ class ExtensionBisectService implements IExtensionBisectService {
             return false;
         }
         const disabled = this._disabled.get(extension.identifier.id);
+
         return disabled ?? false;
     }
     private _isEnabledInEnv(extension: IExtension): boolean {
@@ -107,6 +112,7 @@ class ExtensionBisectService implements IExtensionBisectService {
             throw new Error('invalid state');
         }
         const extensionIds = extensions.map(ext => ext.identifier.id);
+
         const newState = new BisectState(extensionIds, 0, extensionIds.length, 0);
         this._storageService.store(ExtensionBisectService._storageKey, JSON.stringify(newState), StorageScope.APPLICATION, StorageTarget.MACHINE);
         await this._storageService.flush();
@@ -125,6 +131,7 @@ class ExtensionBisectService implements IExtensionBisectService {
         // check if there is only one left
         if (this._state.low === this._state.high - 1) {
             await this.reset();
+
             return { id: this._state.extensions[this._state.low], bad: seeingBad };
         }
         // the second half is disabled so if there is still bad it must be
@@ -132,6 +139,7 @@ class ExtensionBisectService implements IExtensionBisectService {
         const nextState = new BisectState(this._state.extensions, seeingBad ? this._state.low : this._state.mid, seeingBad ? this._state.mid : this._state.high);
         this._storageService.store(ExtensionBisectService._storageKey, JSON.stringify(nextState), StorageScope.APPLICATION, StorageTarget.MACHINE);
         await this._storageService.flush();
+
         return undefined;
     }
     async reset(): Promise<void> {
@@ -143,6 +151,7 @@ registerSingleton(IExtensionBisectService, ExtensionBisectService, Instantiation
 // --- bisect UI
 class ExtensionBisectUi {
     static ctxIsBisectActive = new RawContextKey<boolean>('isExtensionBisectActive', false);
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -162,14 +171,17 @@ class ExtensionBisectUi {
             label: localize('I cannot reproduce', "I can't reproduce"),
             run: () => this._commandService.executeCommand('extension.bisect.next', false)
         };
+
         const badPrompt: IPromptChoice = {
             label: localize('This is Bad', "I can reproduce"),
             run: () => this._commandService.executeCommand('extension.bisect.next', true)
         };
+
         const stop: IPromptChoice = {
             label: 'Stop Bisect',
             run: () => this._commandService.executeCommand('extension.bisect.stop')
         };
+
         const message = this._extensionBisectService.disabledCount === 1
             ? localize('bisect.singular', "Extension Bisect is active and has disabled 1 extension. Check if you can still reproduce the problem and proceed by selecting from these options.")
             : localize('bisect.plural', "Extension Bisect is active and has disabled {0} extensions. Check if you can still reproduce the problem and proceed by selecting from these options.", this._extensionBisectService.disabledCount);
@@ -195,16 +207,23 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const dialogService = accessor.get(IDialogService);
+
         const hostService = accessor.get(IHostService);
+
         const extensionManagement = accessor.get(IExtensionManagementService);
+
         const extensionEnablementService = accessor.get(IWorkbenchExtensionEnablementService);
+
         const extensionsBisect = accessor.get(IExtensionBisectService);
+
         const extensions = (await extensionManagement.getInstalled(ExtensionType.User)).filter(ext => extensionEnablementService.isEnabled(ext));
+
         const res = await dialogService.confirm({
             message: localize('msg.start', "Extension Bisect"),
             detail: localize('detail.start', "Extension Bisect will use binary search to find an extension that causes a problem. During the process the window reloads repeatedly (~{0} times). Each time you must confirm if you are still seeing problems.", 2 + Math.log2(extensions.length) | 0),
             primaryButton: localize({ key: 'msg2', comment: ['&& denotes a mnemonic'] }, "&&Start Extension Bisect")
         });
+
         if (res.confirmed) {
             await extensionsBisect.start(extensions);
             hostService.reload();
@@ -223,16 +242,23 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor, seeingBad: boolean | undefined): Promise<void> {
         const dialogService = accessor.get(IDialogService);
+
         const hostService = accessor.get(IHostService);
+
         const bisectService = accessor.get(IExtensionBisectService);
+
         const productService = accessor.get(IProductService);
+
         const extensionEnablementService = accessor.get(IGlobalExtensionEnablementService);
+
         const commandService = accessor.get(ICommandService);
+
         if (!bisectService.isActive) {
             return;
         }
         if (seeingBad === undefined) {
             const goodBadStopCancel = await this._checkForBad(dialogService, bisectService);
+
             if (goodBadStopCancel === null) {
                 return;
             }
@@ -241,11 +267,14 @@ registerAction2(class extends Action2 {
         if (seeingBad === undefined) {
             await bisectService.reset();
             hostService.reload();
+
             return;
         }
         const done = await bisectService.next(seeingBad);
+
         if (!done) {
             hostService.reload();
+
             return;
         }
         if (done.bad) {
@@ -262,6 +291,7 @@ registerAction2(class extends Action2 {
                 detail: localize('done.detail', "Extension Bisect is done and has identified {0} as the extension causing the problem.", done.id),
                 checkbox: { label: localize('done.disbale', "Keep this extension disabled"), checked: true }
             });
+
             if (res.checkboxChecked) {
                 await extensionEnablementService.disableExtension({ id: done.id }, undefined);
             }
@@ -296,6 +326,7 @@ registerAction2(class extends Action2 {
                 run: () => null // cancel
             }
         });
+
         return result;
     }
 });
@@ -311,6 +342,7 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const extensionsBisect = accessor.get(IExtensionBisectService);
+
         const hostService = accessor.get(IHostService);
         await extensionsBisect.reset();
         hostService.reload();

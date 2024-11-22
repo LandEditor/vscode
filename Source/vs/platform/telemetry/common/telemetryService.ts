@@ -41,6 +41,7 @@ export class TelemetryService implements ITelemetryService {
     private _sendErrorTelemetry: boolean;
     private readonly _disposables = new DisposableStore();
     private _cleanupPatterns: RegExp[] = [];
+
     constructor(config: ITelemetryServiceConfig, 
     @IConfigurationService
     private _configurationService: IConfigurationService, 
@@ -59,8 +60,10 @@ export class TelemetryService implements ITelemetryService {
         this._sendErrorTelemetry = !!config.sendErrorTelemetry;
         // static cleanup pattern for: `vscode-file:///DANGEROUS/PATH/resources/app/Useful/Information`
         this._cleanupPatterns = [/(vscode-)?file:\/\/\/.*?\/resources\/app\//gi];
+
         for (const piiPath of this._piiPaths) {
             this._cleanupPatterns.push(new RegExp(escapeRegExpCharacters(piiPath), 'gi'));
+
             if (piiPath.indexOf('\\') >= 0) {
                 this._cleanupPatterns.push(new RegExp(escapeRegExpCharacters(piiPath.replace(/\\/g, '/')), 'gi'));
             }
@@ -71,6 +74,7 @@ export class TelemetryService implements ITelemetryService {
             const affectsTelemetryConfig = e.affectsConfiguration(TELEMETRY_SETTING_ID)
                 || e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID)
                 || e.affectsConfiguration(TELEMETRY_CRASH_REPORTER_SETTING_ID);
+
             if (affectsTelemetryConfig) {
                 this._updateTelemetryLevel();
             }
@@ -81,6 +85,7 @@ export class TelemetryService implements ITelemetryService {
     }
     private _updateTelemetryLevel(): void {
         let level = getTelemetryLevel(this._configurationService);
+
         const collectableTelemetry = this._productService.enabledTelemetryLevels;
         // Also ensure that error telemetry is respecting the product configuration for collectable telemetry
         if (collectableTelemetry) {
@@ -133,14 +138,21 @@ export class TelemetryService implements ITelemetryService {
 }
 function getTelemetryLevelSettingDescription(): string {
     const telemetryText = localize('telemetry.telemetryLevelMd', "Controls {0} telemetry, first-party extension telemetry, and participating third-party extension telemetry. Some third party extensions might not respect this setting. Consult the specific extension's documentation to be sure. Telemetry helps us better understand how {0} is performing, where improvements need to be made, and how features are being used.", product.nameLong);
+
     const externalLinksStatement = !product.privacyStatementUrl ?
         localize("telemetry.docsStatement", "Read more about the [data we collect]({0}).", 'https://aka.ms/vscode-telemetry') :
         localize("telemetry.docsAndPrivacyStatement", "Read more about the [data we collect]({0}) and our [privacy statement]({1}).", 'https://aka.ms/vscode-telemetry', product.privacyStatementUrl);
+
     const restartString = !isWeb ? localize('telemetry.restart', 'A full restart of the application is necessary for crash reporting changes to take effect.') : '';
+
     const crashReportsHeader = localize('telemetry.crashReports', "Crash Reports");
+
     const errorsHeader = localize('telemetry.errors', "Error Telemetry");
+
     const usageHeader = localize('telemetry.usage', "Usage Data");
+
     const telemetryTableDescription = localize('telemetry.telemetryLevel.tableDescription', "The following table outlines the data sent with each setting:");
+
     const telemetryTable = `
 |       | ${crashReportsHeader} | ${errorsHeader} | ${usageHeader} |
 |:------|:---------------------:|:---------------:|:--------------:|
@@ -149,7 +161,9 @@ function getTelemetryLevelSettingDescription(): string {
 | crash |            ✓          |        -        |        -       |
 | off   |            -          |        -        |        -       |
 `;
+
     const deprecatedSettingNote = localize('telemetry.telemetryLevel.deprecated', "****Note:*** If this setting is 'off', no telemetry will be sent regardless of other telemetry settings. If this setting is set to anything except 'off' and telemetry is disabled with deprecated settings, no telemetry will be sent.*");
+
     const telemetryDescription = `
 ${telemetryText} ${externalLinksStatement} ${restartString}
 
@@ -162,6 +176,7 @@ ${telemetryTable}
 
 ${deprecatedSettingNote}
 `;
+
     return telemetryDescription;
 }
 Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration({

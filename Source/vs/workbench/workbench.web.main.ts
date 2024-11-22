@@ -38,23 +38,28 @@
     }
     interface IPluginWriteCallback {
         (contents: string): void;
+
         getEntryPoint(): string;
         asModule(moduleId: string, contents: string): void;
     }
     interface IPluginWriteFileCallback {
         (filename: string, contents: string): void;
+
         getEntryPoint(): string;
         asModule(moduleId: string, contents: string): void;
     }
     //#endregion
     const define: IGlobalDefine = (globalThis as any).define;
+
     const require: {
         getConfig?(): any;
     } | undefined = (globalThis as any).require;
+
     if (!define || !require || typeof require.getConfig !== 'function') {
         throw new Error('Expected global define() and require() functions. Please only load this module in an AMD context!');
     }
     let baseUrl = require?.getConfig().baseUrl;
+
     if (!baseUrl) {
         throw new Error('Failed to determine baseUrl for loading AMD modules (tried require.getConfig().baseUrl)');
     }
@@ -62,9 +67,11 @@
         baseUrl = baseUrl + '/';
     }
     globalThis._VSCODE_FILE_ROOT = baseUrl;
+
     const trustedTypesPolicy: Pick<TrustedTypePolicy<{
         createScriptURL(value: string): string;
     }>, 'name' | 'createScriptURL'> | undefined = require.getConfig().trustedTypesPolicy;
+
     if (trustedTypesPolicy) {
         globalThis._VSCODE_WEB_PACKAGE_TTP = trustedTypesPolicy;
     }
@@ -77,7 +84,9 @@
                 const script: any = document.createElement('script');
                 script.type = 'module';
                 script.src = trustedTypesPolicy ? trustedTypesPolicy.createScriptURL(`${baseUrl}vs/workbench/workbench.web.main.internal.js`) as any as string : `${baseUrl}vs/workbench/workbench.web.main.internal.js`;
+
                 document.head.appendChild(script);
+
                 return promise.then(mod => _load(mod));
             }
         };

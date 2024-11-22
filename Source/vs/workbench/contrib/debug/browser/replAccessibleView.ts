@@ -18,14 +18,19 @@ export class ReplAccessibleView implements IAccessibleViewImplentation {
     name = 'debugConsole';
     when = ContextKeyExpr.equals('focusedView', 'workbench.panel.repl.view');
     type: AccessibleViewType = AccessibleViewType.View;
+
     getProvider(accessor: ServicesAccessor) {
         const viewsService = accessor.get(IViewsService);
+
         const accessibleViewService = accessor.get(IAccessibleViewService);
+
         const replView = getReplView(viewsService);
+
         if (!replView) {
             return undefined;
         }
         const focusedElement = replView.getFocusedElement();
+
         return new ReplOutputAccessibleViewProvider(replView, focusedElement, accessibleViewService);
     }
 }
@@ -42,6 +47,7 @@ class ReplOutputAccessibleViewProvider extends Disposable implements IAccessible
     };
     private _elementPositionMap: Map<string, Position> = new Map<string, Position>();
     private _treeHadFocus = false;
+
     constructor(private readonly _replView: Repl, private readonly _focusedElement: IReplElement | undefined, 
     @IAccessibleViewService
     private readonly _accessibleViewService: IAccessibleViewService) {
@@ -50,10 +56,12 @@ class ReplOutputAccessibleViewProvider extends Disposable implements IAccessible
     }
     public provideContent(): string {
         const debugSession = this._replView.getDebugSession();
+
         if (!debugSession) {
             return 'No debug session available.';
         }
         const elements = debugSession.getReplElements();
+
         if (!elements.length) {
             return 'No output in the debug console.';
         }
@@ -66,6 +74,7 @@ class ReplOutputAccessibleViewProvider extends Disposable implements IAccessible
     public onClose(): void {
         this._content = undefined;
         this._elementPositionMap.clear();
+
         if (this._treeHadFocus) {
             return this._replView.focusTree();
         }
@@ -78,6 +87,7 @@ class ReplOutputAccessibleViewProvider extends Disposable implements IAccessible
             queueMicrotask(() => {
                 if (this._focusedElement) {
                     const position = this._elementPositionMap.get(this._focusedElement.getId());
+
                     if (position) {
                         this._accessibleViewService.setPosition(position, true);
                     }
@@ -87,20 +97,27 @@ class ReplOutputAccessibleViewProvider extends Disposable implements IAccessible
     }
     private async _updateContent(elements: IReplElement[]) {
         const dataSource = this._replView.getReplDataSource();
+
         if (!dataSource) {
             return;
         }
         let line = 1;
+
         const content: string[] = [];
+
         for (const e of elements) {
             content.push(e.toString().replace(/\n/g, ''));
             this._elementPositionMap.set(e.getId(), new Position(line, 1));
             line++;
+
             if (dataSource.hasChildren(e)) {
                 const childContent: string[] = [];
+
                 const children = await dataSource.getChildren(e);
+
                 for (const child of children) {
                     const id = child.getId();
+
                     if (!this._elementPositionMap.has(id)) {
                         // don't overwrite parent position
                         this._elementPositionMap.set(id, new Position(line, 1));

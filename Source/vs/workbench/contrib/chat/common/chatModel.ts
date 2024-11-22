@@ -75,6 +75,7 @@ export function isImplicitVariableEntry(obj: IChatRequestVariableEntry): obj is 
 
 export function isChatRequestVariableEntry(obj: unknown): obj is IChatRequestVariableEntry {
 	const entry = obj as IChatRequestVariableEntry;
+
 	return typeof entry === 'object' &&
 		entry !== null &&
 		typeof entry.id === 'string' &&
@@ -113,6 +114,7 @@ export interface IChatTextEditGroup {
 	edits: TextEdit[][];
 	state?: IChatTextEditGroupState;
 	kind: 'textEditGroup';
+
 	done: boolean | undefined;
 }
 
@@ -154,6 +156,7 @@ export type IChatProgressRenderableResponseContent = Exclude<IChatProgressRespon
 
 export interface IResponse {
 	readonly value: ReadonlyArray<IChatProgressResponseContent>;
+
 	getMarkdown(): string;
 	toString(): string;
 }
@@ -183,8 +186,11 @@ export interface IChatResponseModel {
 	readonly voteDownReason: ChatAgentVoteDownReason | undefined;
 	readonly followups?: IChatFollowup[] | undefined;
 	readonly result?: IChatAgentResult;
+
 	setVote(vote: ChatAgentVoteDirection): void;
+
 	setVoteDownReason(reason: ChatAgentVoteDownReason | undefined): void;
+
 	setEditApplied(edit: IChatTextEditGroup, editCount: number): boolean;
 }
 
@@ -326,8 +332,10 @@ export class Response extends Disposable implements IResponse {
 		} else if (progress.kind === 'textEdit') {
 			// merge text edits for the same file no matter when they come in
 			let found = false;
+
 			for (let i = 0; !found && i < this._responseParts.length; i++) {
 				const candidate = this._responseParts[i];
+
 				if (candidate.kind === 'textEditGroup' && isEqual(candidate.uri, progress.uri)) {
 					candidate.edits.push(progress.edits);
 					candidate.done = progress.done;
@@ -622,6 +630,7 @@ export class ChatResponseModel extends Disposable implements IChatResponseModel 
 		}
 		edit.state.applied = editCount; // must not be edit.edits.length
 		this._onDidChange.fire();
+
 		return true;
 	}
 
@@ -643,6 +652,7 @@ export interface IChatModel {
 	readonly requestInProgress: boolean;
 	readonly inputPlaceholder?: string;
 	disableRequests(requestIds: ReadonlyArray<string>): void;
+
 	getRequests(): IChatRequestModel[];
 	toExport(): IExportableChatData;
 	toJSON(): ISerializableChatData;
@@ -767,17 +777,20 @@ function normalizeOldFields(raw: ISerializableChatDataIn): void {
 function getLastYearDate(): number {
 	const lastYearDate = new Date();
 	lastYearDate.setFullYear(lastYearDate.getFullYear() - 1);
+
 	return lastYearDate.getTime();
 }
 
 export function isExportableSessionData(obj: unknown): obj is IExportableChatData {
 	const data = obj as IExportableChatData;
+
 	return typeof data === 'object' &&
 		typeof data.requesterUsername === 'string';
 }
 
 export function isSerializableSessionData(obj: unknown): obj is ISerializableChatData {
 	const data = obj as ISerializableChatData;
+
 	return isExportableSessionData(obj) &&
 		typeof data.creationDate === 'number' &&
 		typeof data.sessionId === 'string' &&
@@ -864,9 +877,11 @@ export enum ChatModelInitState {
 export class ChatModel extends Disposable implements IChatModel {
 	static getDefaultTitle(requests: (ISerializableChatRequestData | IChatRequestModel)[]): string {
 		const firstRequestMessage = requests.at(0)?.message ?? '';
+
 		const message = typeof firstRequestMessage === 'string' ?
 			firstRequestMessage :
 			firstRequestMessage.text;
+
 		return message.split('\n')[0].substring(0, 50);
 	}
 
@@ -881,11 +896,13 @@ export class ChatModel extends Disposable implements IChatModel {
 	private _isInitializedDeferred = new DeferredPromise<void>();
 
 	private _welcomeMessage: IChatWelcomeMessageContent | undefined;
+
 	get welcomeMessage(): IChatWelcomeMessageContent | undefined {
 		return this._welcomeMessage;
 	}
 
 	private _sampleQuestions: IChatFollowup[] | undefined;
+
 	get sampleQuestions(): IChatFollowup[] | undefined {
 		return this._sampleQuestions;
 	}
@@ -893,12 +910,14 @@ export class ChatModel extends Disposable implements IChatModel {
 	// TODO to be clear, this is not the same as the id from the session object, which belongs to the provider.
 	// It's easier to be able to identify this model before its async initialization is complete
 	private _sessionId: string;
+
 	get sessionId(): string {
 		return this._sessionId;
 	}
 
 	get requestInProgress(): boolean {
 		const lastRequest = this.lastRequest;
+
 		return !!lastRequest?.response && !lastRequest.response.isComplete;
 	}
 
@@ -911,11 +930,13 @@ export class ChatModel extends Disposable implements IChatModel {
 	}
 
 	private _creationDate: number;
+
 	get creationDate(): number {
 		return this._creationDate;
 	}
 
 	private _lastMessageDate: number;
+
 	get lastMessageDate(): number {
 		return this._lastMessageDate;
 	}
@@ -935,12 +956,14 @@ export class ChatModel extends Disposable implements IChatModel {
 	}
 
 	private readonly _initialRequesterAvatarIconUri: URI | undefined;
+
 	get requesterAvatarIconUri(): URI | undefined {
 		return this._defaultAgent?.metadata.requester?.icon ??
 			this._initialRequesterAvatarIconUri;
 	}
 
 	private readonly _initialResponderAvatarIconUri: ThemeIcon | URI | undefined;
+
 	get responderAvatarIcon(): ThemeIcon | URI | undefined {
 		return this._defaultAgent?.metadata.themeIcon ??
 			this._initialResponderAvatarIconUri;
@@ -951,11 +974,13 @@ export class ChatModel extends Disposable implements IChatModel {
 	}
 
 	private _isImported = false;
+
 	get isImported(): boolean {
 		return this._isImported;
 	}
 
 	private _customTitle: string | undefined;
+
 	get customTitle(): string | undefined {
 		return this._customTitle;
 	}
@@ -989,8 +1014,10 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	private _deserialize(obj: IExportableChatData): ChatRequestModel[] {
 		const requests = obj.requests;
+
 		if (!Array.isArray(requests)) {
 			this.logService.error(`Ignoring malformed session data: ${JSON.stringify(obj)}`);
+
 			return [];
 		}
 
@@ -1003,7 +1030,9 @@ export class ChatModel extends Disposable implements IChatModel {
 
 				// Old messages don't have variableData, or have it in the wrong (non-array) shape
 				const variableData: IChatRequestVariableData = this.reviveVariableData(raw.variableData);
+
 				const request = new ChatRequestModel(this, parsedRequest, variableData, raw.timestamp ?? -1, undefined, undefined, undefined, undefined, undefined, undefined, raw.requestId);
+
 				if (raw.response || raw.result || (raw as any).responseErrorDetails) {
 					const agent = (raw.agent && 'metadata' in raw.agent) ? // Check for the new format, ignore entries in the old format
 						reviveSerializedAgent(raw.agent) : undefined;
@@ -1013,6 +1042,7 @@ export class ChatModel extends Disposable implements IChatModel {
 						// eslint-disable-next-line local/code-no-dangerous-type-assertions
 						{ errorDetails: raw.responseErrorDetails } as IChatAgentResult : raw.result;
 					request.response = new ChatResponseModel(raw.response ?? [new MarkdownString(raw.response)], this, agent, raw.slashCommand, request.id, true, raw.isCanceled, raw.vote, raw.voteDownReason, result, raw.followups, undefined, undefined, raw.responseId);
+
 					if (raw.usedContext) { // @ulugbekna: if this's a new vscode sessions, doc versions are incorrect anyway?
 						request.response.applyReference(revive(raw.usedContext));
 					}
@@ -1024,6 +1054,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			});
 		} catch (error) {
 			this.logService.error('Failed to parse chat data', error);
+
 			return [];
 		}
 	}
@@ -1055,6 +1086,7 @@ export class ChatModel extends Disposable implements IChatModel {
 	private getParsedRequestFromString(message: string): IParsedChatRequest {
 		// TODO These offsets won't be used, but chat replies need to go through the parser as well
 		const parts = [new ChatRequestTextPart(new OffsetRange(0, message.length), { startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 }, message)];
+
 		return {
 			text: message,
 			parts
@@ -1114,6 +1146,7 @@ export class ChatModel extends Disposable implements IChatModel {
 		this._requests.forEach((request) => {
 			const isHidden = requestIds.includes(request.id);
 			request.isHidden = isHidden;
+
 			if (request.response) {
 				request.response.isHidden = isHidden;
 			}
@@ -1132,6 +1165,7 @@ export class ChatModel extends Disposable implements IChatModel {
 		this._requests.push(request);
 		this._lastMessageDate = Date.now();
 		this._onDidChange.fire({ kind: 'addRequest', request });
+
 		return request;
 	}
 
@@ -1147,6 +1181,7 @@ export class ChatModel extends Disposable implements IChatModel {
 	adoptRequest(request: ChatRequestModel): void {
 		// this doesn't use `removeRequest` because it must not dispose the request object
 		const oldOwner = request.session;
+
 		const index = oldOwner._requests.findIndex(candidate => candidate.id === request.id);
 
 		if (index === -1) {
@@ -1190,6 +1225,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			request.response.applyReference(progress);
 		} else if (progress.kind === 'agentDetection') {
 			const agent = this.chatAgentService.getAgent(progress.agentId);
+
 			if (agent) {
 				request.response.setAgent(agent, progress.command);
 				this._onDidChange.fire({ kind: 'setAgent', agent, command: progress.command });
@@ -1205,6 +1241,7 @@ export class ChatModel extends Disposable implements IChatModel {
 
 	removeRequest(id: string, reason: ChatRequestRemovalReason = ChatRequestRemovalReason.Removal): void {
 		const index = this._requests.findIndex(request => request.id === id);
+
 		const request = this._requests[index];
 
 		if (index !== -1) {
@@ -1262,9 +1299,12 @@ export class ChatModel extends Disposable implements IChatModel {
 					...r.message,
 					parts: r.message.parts.map(p => p && 'toJSON' in p ? (p.toJSON as Function)() : p)
 				};
+
 				const agent = r.response?.agent;
+
 				const agentJson = agent && 'toJSON' in agent ? (agent.toJSON as Function)() :
 					agent ? { ...agent } : undefined;
+
 				return {
 					requestId: r.id,
 					message,
@@ -1337,6 +1377,7 @@ export function canMergeMarkdownStrings(md1: IMarkdownString, md2: IMarkdownStri
 			&& md1.baseUri.path === md2.baseUri.path
 			&& md1.baseUri.query === md2.baseUri.query
 			&& md1.baseUri.fragment === md2.baseUri.fragment;
+
 		if (!baseUriEquals) {
 			return false;
 		}
@@ -1351,6 +1392,7 @@ export function canMergeMarkdownStrings(md1: IMarkdownString, md2: IMarkdownStri
 
 export function appendMarkdownString(md1: IMarkdownString, md2: IMarkdownString | string): IMarkdownString {
 	const appendedValue = typeof md2 === 'string' ? md2 : md2.value;
+
 	return {
 		value: md1.value + appendedValue,
 		isTrusted: md1.isTrusted,
@@ -1366,8 +1408,10 @@ export function getCodeCitationsMessage(citations: ReadonlyArray<IChatCodeCitati
 	}
 
 	const licenseTypes = citations.reduce((set, c) => set.add(c.license), new Set<string>());
+
 	const label = licenseTypes.size === 1 ?
 		localize('codeCitation', "Similar code found with 1 license type", licenseTypes.size) :
 		localize('codeCitations', "Similar code found with {0} license types", licenseTypes.size);
+
 	return label;
 }

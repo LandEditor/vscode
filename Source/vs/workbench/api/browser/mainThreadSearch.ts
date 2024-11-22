@@ -17,6 +17,7 @@ import { IContextKeyService } from '../../../platform/contextkey/common/contextk
 export class MainThreadSearch implements MainThreadSearchShape {
     private readonly _proxy: ExtHostSearchShape;
     private readonly _searchProvider = new Map<number, RemoteSearchProvider>();
+
     constructor(extHostContext: IExtHostContext, 
     @ISearchService
     private readonly _searchService: ISearchService, 
@@ -49,6 +50,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
     }
     $handleFileMatch(handle: number, session: number, data: UriComponents[]): void {
         const provider = this._searchProvider.get(handle);
+
         if (!provider) {
             throw new Error('Got result for unknown provider');
         }
@@ -56,6 +58,7 @@ export class MainThreadSearch implements MainThreadSearchShape {
     }
     $handleTextMatch(handle: number, session: number, data: IRawFileMatch2[]): void {
         const provider = this._searchProvider.get(handle);
+
         if (!provider) {
             throw new Error('Got result for unknown provider');
         }
@@ -67,11 +70,13 @@ export class MainThreadSearch implements MainThreadSearchShape {
 }
 class SearchOperation {
     private static _idPool = 0;
+
     constructor(readonly progress?: (match: IFileMatch) => any, readonly id: number = ++SearchOperation._idPool, readonly matches = new Map<string, IFileMatch>()) {
         //
     }
     addMatch(match: IFileMatch): void {
         const existingMatch = this.matches.get(match.resource.toString());
+
         if (existingMatch) {
             // TODO@rob clean up text/file result types
             // If a file search returns the same file twice, we would enter this branch.
@@ -90,6 +95,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
     private readonly _registrations = new DisposableStore();
     private readonly _searches = new Map<number, SearchOperation>();
     private cachedAIName: string | undefined;
+
     constructor(searchService: ISearchService, type: SearchProviderType, private readonly _scheme: string, private readonly _handle: number, private readonly _proxy: ExtHostSearchShape) {
         this._registrations.add(searchService.registerSearchResultProvider(this._scheme, type, this));
     }
@@ -114,12 +120,16 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
         }
         const search = new SearchOperation(onProgress);
         this._searches.set(search.id, search);
+
         const searchP = this._provideSearchResults(query, search.id, token);
+
         return Promise.resolve(searchP).then((result: ISearchCompleteStats) => {
             this._searches.delete(search.id);
+
             return { results: Array.from(search.matches.values()), stats: result.stats, limitHit: result.limitHit, messages: result.messages };
         }, err => {
             this._searches.delete(search.id);
+
             return Promise.reject(err);
         });
     }
@@ -128,6 +138,7 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
     }
     handleFindMatch(session: number, dataOrUri: Array<UriComponents | IRawFileMatch2>): void {
         const searchOp = this._searches.get(session);
+
         if (!searchOp) {
             // ignore...
             return;
@@ -147,8 +158,10 @@ class RemoteSearchProvider implements ISearchResultProvider, IDisposable {
         switch (query.type) {
             case QueryType.File:
                 return this._proxy.$provideFileSearchResults(this._handle, session, query, token);
+
             case QueryType.Text:
                 return this._proxy.$provideTextSearchResults(this._handle, session, query, token);
+
             default:
                 return this._proxy.$provideAITextSearchResults(this._handle, session, query, token);
         }

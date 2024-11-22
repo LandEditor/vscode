@@ -125,6 +125,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
     private readonly mapWorkingCopyToListeners = this._register(new DisposableMap<IWorkingCopy>());
     registerWorkingCopy(workingCopy: IWorkingCopy): IDisposable {
         let workingCopiesForResource = this.mapResourceToWorkingCopies.get(workingCopy.resource);
+
         if (workingCopiesForResource?.has(workingCopy.typeId)) {
             throw new Error(`Cannot register more than one working copy with the same resource ${workingCopy.resource.toString()} and type ${workingCopy.typeId}.`);
         }
@@ -144,6 +145,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
         this.mapWorkingCopyToListeners.set(workingCopy, disposables);
         // Send some initial events
         this._onDidRegister.fire(workingCopy);
+
         if (workingCopy.isDirty()) {
             this._onDidChangeDirty.fire(workingCopy);
         }
@@ -159,6 +161,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
         this._workingCopies.delete(workingCopy);
         // Registry (type based)
         const workingCopiesForResource = this.mapResourceToWorkingCopies.get(workingCopy.resource);
+
         if (workingCopiesForResource?.delete(workingCopy.typeId) && workingCopiesForResource.size === 0) {
             this.mapResourceToWorkingCopies.delete(workingCopy.resource);
         }
@@ -183,6 +186,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
     }
     getAll(resource: URI): readonly IWorkingCopy[] | undefined {
         const workingCopies = this.mapResourceToWorkingCopies.get(resource);
+
         if (!workingCopies) {
             return undefined;
         }
@@ -200,6 +204,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
     }
     get dirtyCount(): number {
         let totalDirtyCount = 0;
+
         for (const workingCopy of this._workingCopies) {
             if (workingCopy.isDirty()) {
                 totalDirtyCount++;
@@ -212,6 +217,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
     }
     get modifiedCount(): number {
         let totalModifiedCount = 0;
+
         for (const workingCopy of this._workingCopies) {
             if (workingCopy.isModified()) {
                 totalModifiedCount++;
@@ -224,6 +230,7 @@ export class WorkingCopyService extends Disposable implements IWorkingCopyServic
     }
     isDirty(resource: URI, typeId?: string): boolean {
         const workingCopies = this.mapResourceToWorkingCopies.get(resource);
+
         if (workingCopies) {
             // For a specific type
             if (typeof typeId === 'string') {

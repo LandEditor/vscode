@@ -37,6 +37,7 @@ const newCommands: ApiCommand[] = [
                 res.range = res.location.range;
                 res.selectionRange = typeConverters.Range.to(symbol.selectionRange);
                 res.children = symbol.children ? symbol.children.map(MergedInfo.to) : [];
+
                 return res;
             }
             detail!: string;
@@ -69,6 +70,7 @@ const newCommands: ApiCommand[] = [
     new ApiCommand('vscode.executeSelectionRangeProvider', '_executeSelectionRangeProvider', 'Execute selection range provider.', [ApiCommandArgument.Uri, new ApiCommandArgument<types.Position[], IPosition[]>('position', 'A position in a text document', v => Array.isArray(v) && v.every(v => types.Position.isPosition(v)), v => v.map(typeConverters.Position.from))], new ApiCommandResult<IRange[][], types.SelectionRange[]>('A promise that resolves to an array of ranges.', result => {
         return result.map(ranges => {
             let node: types.SelectionRange | undefined;
+
             for (const range of ranges.reverse()) {
                 node = new types.SelectionRange(typeConverters.Range.to(range), node);
             }
@@ -121,6 +123,7 @@ const newCommands: ApiCommand[] = [
             return undefined;
         }
         const semanticTokensDto = decodeSemanticTokensDto(value);
+
         if (semanticTokensDto.type !== 'full') {
             // only accepting full semantic tokens from provideDocumentSemanticTokens
             return undefined;
@@ -138,6 +141,7 @@ const newCommands: ApiCommand[] = [
             return undefined;
         }
         const semanticTokensDto = decodeSemanticTokensDto(value);
+
         if (semanticTokensDto.type !== 'full') {
             // only accepting full semantic tokens from provideDocumentRangeSemanticTokens
             return undefined;
@@ -155,6 +159,7 @@ const newCommands: ApiCommand[] = [
             return new types.CompletionList([]);
         }
         const items = value.suggestions.map(suggestion => typeConverters.CompletionItem.to(suggestion, converter));
+
         return new types.CompletionList(items, value.incomplete);
     })),
     // --- signature help
@@ -186,6 +191,7 @@ const newCommands: ApiCommand[] = [
             }
             else {
                 const ret = new types.CodeAction(codeAction.title, codeAction.kind ? new types.CodeActionKind(codeAction.kind) : undefined);
+
                 if (codeAction.edit) {
                     ret.edit = typeConverters.WorkspaceEdit.to(codeAction.edit);
                 }
@@ -193,6 +199,7 @@ const newCommands: ApiCommand[] = [
                     ret.command = converter.fromInternal(codeAction.command);
                 }
                 ret.isPreferred = codeAction.isPreferred;
+
                 return ret;
             }
         })(value);
@@ -318,6 +325,7 @@ const newCommands: ApiCommand[] = [
                     return false;
                 }
                 const [label, left, right] = resource;
+
                 if (!URI.isUri(label) ||
                     (!URI.isUri(left) && left !== undefined && left !== null) ||
                     (!URI.isUri(right) && right !== undefined && right !== null)) {
@@ -400,6 +408,7 @@ function mapLocationOrLocationLink(values: (languages.Location | languages.Locat
         return undefined;
     }
     const result: (types.Location | vscode.LocationLink)[] = [];
+
     for (const item of values) {
         if (languages.isLocationLink(item)) {
             result.push(typeConverters.DefinitionLink.to(item));

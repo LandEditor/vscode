@@ -114,26 +114,40 @@ export interface IWorkbenchFileIconTheme extends IWorkbenchTheme, IFileIconTheme
 }
 export interface IWorkbenchProductIconTheme extends IWorkbenchTheme, IProductIconTheme {
     readonly settingsId: string;
+
     getIcon(icon: IconContribution): IconDefinition | undefined;
 }
 export type ThemeSettingTarget = ConfigurationTarget | undefined | 'auto' | 'preview';
 export interface IWorkbenchThemeService extends IThemeService {
     readonly _serviceBrand: undefined;
+
     setColorTheme(themeId: string | undefined | IWorkbenchColorTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchColorTheme | null>;
+
     getColorTheme(): IWorkbenchColorTheme;
+
     getColorThemes(): Promise<IWorkbenchColorTheme[]>;
+
     getMarketplaceColorThemes(publisher: string, name: string, version: string): Promise<IWorkbenchColorTheme[]>;
     onDidColorThemeChange: Event<IWorkbenchColorTheme>;
     hasUpdatedDefaultThemes(): boolean;
+
     getPreferredColorScheme(): ColorScheme | undefined;
+
     setFileIconTheme(iconThemeId: string | undefined | IWorkbenchFileIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchFileIconTheme>;
+
     getFileIconTheme(): IWorkbenchFileIconTheme;
+
     getFileIconThemes(): Promise<IWorkbenchFileIconTheme[]>;
+
     getMarketplaceFileIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchFileIconTheme[]>;
     onDidFileIconThemeChange: Event<IWorkbenchFileIconTheme>;
+
     setProductIconTheme(iconThemeId: string | undefined | IWorkbenchProductIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchProductIconTheme>;
+
     getProductIconTheme(): IWorkbenchProductIconTheme;
+
     getProductIconThemes(): Promise<IWorkbenchProductIconTheme[]>;
+
     getMarketplaceProductIconThemes(publisher: string, name: string, version: string): Promise<IWorkbenchProductIconTheme[]>;
     onDidProductIconThemeChange: Event<IWorkbenchProductIconTheme>;
 }
@@ -150,7 +164,9 @@ export interface IThemeScopedTokenColorCustomizations {
     numbers?: string | ITokenColorizationSetting;
     keywords?: string | ITokenColorizationSetting;
     types?: string | ITokenColorizationSetting;
+
     functions?: string | ITokenColorizationSetting;
+
     variables?: string | ITokenColorizationSetting;
     textMateRules?: ITextMateThemingRule[];
     semanticHighlighting?: boolean; // deprecated, use ISemanticTokenColorCustomizations.enabled instead
@@ -162,7 +178,9 @@ export interface ITokenColorCustomizations {
     numbers?: string | ITokenColorizationSetting;
     keywords?: string | ITokenColorizationSetting;
     types?: string | ITokenColorizationSetting;
+
     functions?: string | ITokenColorizationSetting;
+
     variables?: string | ITokenColorizationSetting;
     textMateRules?: ITextMateThemingRule[];
     semanticHighlighting?: boolean; // deprecated, use ISemanticTokenColorCustomizations.enabled instead
@@ -191,6 +209,7 @@ export interface ISemanticTokenRules {
 export interface ITextMateThemingRule {
     name?: string;
     scope?: string | string[];
+
     settings: ITokenColorizationSetting;
 }
 export interface ITokenColorizationSetting {

@@ -26,6 +26,7 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
     private configListener: IDisposable;
     private initialized = false;
     private viewEnabled: IContextKey<boolean>;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -57,6 +58,7 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
             this.configurationService.getValue(NotebookSetting.notebookVariablesView) ||
             // old setting key
             this.configurationService.getValue('notebook.experimental.variablesView');
+
         if (enabled && (!!notebook || this.editorService.activeEditorPane?.getId() === 'workbench.editor.notebook')) {
             if (this.hasVariableProvider(notebook) && !this.initialized && this.initializeView()) {
                 this.viewEnabled.set(true);
@@ -69,18 +71,22 @@ export class NotebookVariables extends Disposable implements IWorkbenchContribut
         const notebook = notebookUri ?
             this.notebookDocumentService.getNotebookTextModel(notebookUri) :
             getNotebookEditorFromEditorPane(this.editorService.activeEditorPane)?.getViewModel()?.notebookDocument;
+
         return notebook && this.notebookKernelService.getMatchingKernel(notebook).selected?.hasVariableProvider;
     }
     private initializeView() {
         const debugViewContainer = this.viewDescriptorService.getViewContainerById(debugContainerId);
+
         if (debugViewContainer) {
             const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
+
             const viewDescriptor = {
                 id: 'workbench.notebook.variables', name: nls.localize2('notebookVariables', "Notebook Variables"),
                 containerIcon: variablesViewIcon, ctorDescriptor: new SyncDescriptor(NotebookVariablesView),
                 order: 50, weight: 5, canToggleVisibility: true, canMoveView: true, collapsed: false, when: NOTEBOOK_VARIABLE_VIEW_ENABLED
             };
             viewsRegistry.registerViews([viewDescriptor], debugViewContainer);
+
             return true;
         }
         return false;

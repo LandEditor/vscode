@@ -31,6 +31,7 @@ import { IHoverService } from '../../../../../../platform/hover/browser/hover.js
 import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
 import { HoverPosition } from '../../../../../../base/browser/ui/hover/hoverWidget.js';
 import type { IManagedHoverTooltipMarkdownString } from '../../../../../../base/browser/ui/hover/hover.js';
+
 const $ = DOM.$;
 export class CellEditorStatusBar extends CellContentPart {
     readonly statusBarContainer: HTMLElement;
@@ -44,6 +45,7 @@ export class CellEditorStatusBar extends CellContentPart {
     protected readonly _onDidClick: Emitter<IClickTarget> = this._register(new Emitter<IClickTarget>());
     readonly onDidClick: Event<IClickTarget> = this._onDidClick.event;
     private readonly hoverDelegate: IHoverDelegate;
+
     constructor(private readonly _notebookEditor: INotebookEditorDelegate, private readonly _cellContainer: HTMLElement, editorPart: HTMLElement, private readonly _editor: ICodeEditor | undefined, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -56,7 +58,9 @@ export class CellEditorStatusBar extends CellContentPart {
         super();
         this.statusBarContainer = DOM.append(editorPart, $('.cell-statusbar-container'));
         this.statusBarContainer.tabIndex = -1;
+
         const leftItemsContainer = DOM.append(this.statusBarContainer, $('.cell-status-left'));
+
         const rightItemsContainer = DOM.append(this.statusBarContainer, $('.cell-status-right'));
         this.leftItemsContainer = DOM.append(leftItemsContainer, $('.cell-contributed-items.cell-contributed-items-left'));
         this.rightItemsContainer = DOM.append(rightItemsContainer, $('.cell-contributed-items.cell-contributed-items-right'));
@@ -66,9 +70,11 @@ export class CellEditorStatusBar extends CellContentPart {
             readonly showHover = (options: IHoverDelegateOptions) => {
                 options.position = options.position ?? {};
                 options.position.hoverPosition = HoverPosition.ABOVE;
+
                 return hoverService.showHover(options);
             };
             readonly placement = 'element';
+
             get delay(): number {
                 return Date.now() - this._lastHoverHideTime < 200
                     ? 0 // show instantly when a hover was recently shown
@@ -89,9 +95,12 @@ export class CellEditorStatusBar extends CellContentPart {
             }
             else {
                 const target = e.target;
+
                 let itemHasCommand = false;
+
                 if (target && DOM.isHTMLElement(target)) {
                     const targetElement = <HTMLElement>target;
+
                     if (targetElement.classList.contains('cell-status-item-has-command')) {
                         itemHasCommand = true;
                     }
@@ -135,6 +144,7 @@ export class CellEditorStatusBar extends CellContentPart {
                 }
                 else {
                     const currentMode = element.focusMode;
+
                     if (currentMode === CellFocusMode.ChatInput) {
                         element.focusMode = CellFocusMode.ChatInput;
                     }
@@ -162,6 +172,7 @@ export class CellEditorStatusBar extends CellContentPart {
             this.cellDisposables.add(this.onDidClick(e => {
                 if (this.currentCell instanceof CodeCellViewModel && e.type !== ClickTargetType.ContributedCommandItem && this._editor) {
                     const target = this._editor.getTargetAtClientPoint(e.event.clientX, e.event.clientY - this._notebookEditor.notebookOptions.computeEditorStatusbarHeight(this.currentCell.internalMetadata, this.currentCell.uri));
+
                     if (target?.position) {
                         this._editor.setPosition(target.position);
                         this._editor.focus();
@@ -173,13 +184,17 @@ export class CellEditorStatusBar extends CellContentPart {
     override updateInternalLayoutNow(element: ICellViewModel): void {
         // todo@rebornix layer breaker
         this._cellContainer.classList.toggle('cell-statusbar-hidden', this._notebookEditor.notebookOptions.computeEditorStatusbarHeight(element.internalMetadata, element.uri) === 0);
+
         const layoutInfo = element.layoutInfo;
+
         const width = layoutInfo.editorWidth;
+
         if (!width) {
             return;
         }
         this.width = width;
         this.statusBarContainer.style.width = `${width}px`;
+
         const maxItemWidth = this.getMaxItemWidth();
         this.leftItems.forEach(item => item.maxWidth = maxItemWidth);
         this.rightItems.forEach(item => item.maxWidth = maxItemWidth);
@@ -190,6 +205,7 @@ export class CellEditorStatusBar extends CellContentPart {
     updateContext(context: INotebookCellActionContext) {
         this.currentContext = context;
         this.itemsDisposable.clear();
+
         if (!this.currentContext) {
             return;
         }
@@ -213,12 +229,17 @@ export class CellEditorStatusBar extends CellContentPart {
         items.sort((itemA, itemB) => {
             return (itemB.priority ?? 0) - (itemA.priority ?? 0);
         });
+
         const maxItemWidth = this.getMaxItemWidth();
+
         const newLeftItems = items.filter(item => item.alignment === CellStatusbarAlignment.Left);
+
         const newRightItems = items.filter(item => item.alignment === CellStatusbarAlignment.Right).reverse();
+
         const updateItems = (renderedItems: CellStatusBarItem[], newItems: INotebookCellStatusBarItem[], container: HTMLElement) => {
             if (renderedItems.length > newItems.length) {
                 const deleted = renderedItems.splice(newItems.length, renderedItems.length - newItems.length);
+
                 for (const deletedItem of deleted) {
                     deletedItem.container.remove();
                     deletedItem.dispose();
@@ -226,6 +247,7 @@ export class CellEditorStatusBar extends CellContentPart {
             }
             newItems.forEach((newLeftItem, i) => {
                 const existingItem = renderedItems[i];
+
                 if (existingItem) {
                     existingItem.updateItem(newLeftItem, maxItemWidth);
                 }
@@ -247,11 +269,13 @@ export class CellEditorStatusBar extends CellContentPart {
 }
 class CellStatusBarItem extends Disposable {
     readonly container = $('.cell-status-item');
+
     set maxWidth(v: number) {
         this.container.style.maxWidth = v + 'px';
     }
     private _currentItem!: INotebookCellStatusBarItem;
     private readonly _itemDisposables = this._register(new DisposableStore());
+
     constructor(private readonly _context: INotebookCellActionContext, private readonly _hoverDelegate: IHoverDelegate, private readonly _editor: ICodeEditor | undefined, itemModel: INotebookCellStatusBarItem, maxWidth: number | undefined, 
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService, 
@@ -268,6 +292,7 @@ class CellStatusBarItem extends Disposable {
     }
     updateItem(item: INotebookCellStatusBarItem, maxWidth: number | undefined) {
         this._itemDisposables.clear();
+
         if (!this._currentItem || this._currentItem.text !== item.text) {
             this._itemDisposables.add(new SimpleIconLabel(this.container)).text = item.text.replace(/\n/g, ' ');
         }
@@ -280,11 +305,14 @@ class CellStatusBarItem extends Disposable {
         this.container.style.backgroundColor = item.backgroundColor ? resolveColor(item.backgroundColor) : '';
         this.container.style.opacity = item.opacity ? item.opacity : '';
         this.container.classList.toggle('cell-status-item-show-when-active', !!item.onlyShowWhenActive);
+
         if (typeof maxWidth === 'number') {
             this.maxWidth = maxWidth;
         }
         let ariaLabel: string;
+
         let role: string | undefined;
+
         if (item.accessibilityInformation) {
             ariaLabel = item.accessibilityInformation.label;
             role = item.accessibilityInformation.role;
@@ -294,11 +322,13 @@ class CellStatusBarItem extends Disposable {
         }
         this.container.setAttribute('aria-label', ariaLabel);
         this.container.setAttribute('role', role || '');
+
         if (item.tooltip) {
             const hoverContent = typeof item.tooltip === 'string' ? item.tooltip : { markdown: item.tooltip, markdownNotSupportedFallback: undefined } satisfies IManagedHoverTooltipMarkdownString;
             this._itemDisposables.add(this._hoverService.setupManagedHover(this._hoverDelegate, this.container, hoverContent));
         }
         this.container.classList.toggle('cell-status-item-has-command', !!item.command);
+
         if (item.command) {
             this.container.tabIndex = 0;
             this._itemDisposables.add(DOM.addDisposableListener(this.container, DOM.EventType.CLICK, _e => {
@@ -306,6 +336,7 @@ class CellStatusBarItem extends Disposable {
             }));
             this._itemDisposables.add(DOM.addDisposableListener(this.container, DOM.EventType.KEY_DOWN, e => {
                 const event = new StandardKeyboardEvent(e);
+
                 if (event.equals(KeyCode.Space) || event.equals(KeyCode.Enter)) {
                     this.executeCommand();
                 }
@@ -318,15 +349,19 @@ class CellStatusBarItem extends Disposable {
     }
     private async executeCommand(): Promise<void> {
         const command = this._currentItem.command;
+
         if (!command) {
             return;
         }
         const id = typeof command === 'string' ? command : command.id;
+
         const args = typeof command === 'string' ? [] : command.arguments ?? [];
+
         if (typeof command === 'string' || !command.arguments || !Array.isArray(command.arguments) || command.arguments.length === 0) {
             args.unshift(this._context);
         }
         this._telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id, from: 'cell status bar' });
+
         try {
             this._editor?.focus();
             await this._commandService.executeCommand(id, ...args);

@@ -15,6 +15,7 @@ export class SparseTokensStore {
     private _pieces: SparseMultilineTokens[];
     private _isComplete: boolean;
     private readonly _languageIdCodec: ILanguageIdCodec;
+
     constructor(languageIdCodec: ILanguageIdCodec) {
         this._pieces = [];
         this._isComplete = false;
@@ -33,10 +34,14 @@ export class SparseTokensStore {
     }
     public setPartial(_range: Range, pieces: SparseMultilineTokens[]): Range {
         // console.log(`setPartial ${_range} ${pieces.map(p => p.toString()).join(', ')}`);
+
         let range = _range;
+
         if (pieces.length > 0) {
             const _firstRange = pieces[0].getRange();
+
             const _lastRange = pieces[pieces.length - 1].getRange();
+
             if (!_firstRange || !_lastRange) {
                 return _range;
             }
@@ -45,8 +50,10 @@ export class SparseTokensStore {
         let insertPosition: {
             index: number;
         } | null = null;
+
         for (let i = 0, len = this._pieces.length; i < len; i++) {
             const piece = this._pieces[i];
+
             if (piece.endLineNumber < range.startLineNumber) {
                 // this piece is before the range
                 continue;
@@ -55,15 +62,18 @@ export class SparseTokensStore {
                 // this piece is after the range, so mark the spot before this piece
                 // as a good insertion position and stop looping
                 insertPosition = insertPosition || { index: i };
+
                 break;
             }
             // this piece might intersect with the range
             piece.removeTokens(range);
+
             if (piece.isEmpty()) {
                 // remove the piece if it became empty
                 this._pieces.splice(i, 1);
                 i--;
                 len--;
+
                 continue;
             }
             if (piece.endLineNumber < range.startLineNumber) {
@@ -73,13 +83,16 @@ export class SparseTokensStore {
             if (piece.startLineNumber > range.endLineNumber) {
                 // after removal, this piece is after the range
                 insertPosition = insertPosition || { index: i };
+
                 continue;
             }
             // after removal, this piece contains the range
             const [a, b] = piece.split(range);
+
             if (a.isEmpty()) {
                 // this piece is actually after the range
                 insertPosition = insertPosition || { index: i };
+
                 continue;
             }
             if (b.isEmpty()) {
@@ -92,11 +105,13 @@ export class SparseTokensStore {
             insertPosition = insertPosition || { index: i };
         }
         insertPosition = insertPosition || { index: this._pieces.length };
+
         if (pieces.length > 0) {
             this._pieces = arrays.arrayInsert(this._pieces, insertPosition.index, pieces);
         }
         // console.log(`I HAVE ${this._pieces.length} pieces`);
         // console.log(`${this._pieces.map(p => p.toString()).join('\n')}`);
+
         return range;
     }
     public isComplete(): boolean {
@@ -108,20 +123,29 @@ export class SparseTokensStore {
             return aTokens;
         }
         const pieces = this._pieces;
+
         if (pieces.length === 0) {
             return aTokens;
         }
         const pieceIndex = SparseTokensStore._findFirstPieceWithLine(pieces, lineNumber);
+
         const bTokens = pieces[pieceIndex].getLineTokens(lineNumber);
+
         if (!bTokens) {
             return aTokens;
         }
         const aLen = aTokens.getCount();
+
         const bLen = bTokens.getCount();
+
         let aIndex = 0;
+
         const result: number[] = [];
+
         let resultLen = 0;
+
         let lastEndOffset = 0;
+
         const emitToken = (endOffset: number, metadata: number) => {
             if (endOffset === lastEndOffset) {
                 return;
@@ -130,16 +154,21 @@ export class SparseTokensStore {
             result[resultLen++] = endOffset;
             result[resultLen++] = metadata;
         };
+
         for (let bIndex = 0; bIndex < bLen; bIndex++) {
             const bStartCharacter = bTokens.getStartCharacter(bIndex);
+
             const bEndCharacter = bTokens.getEndCharacter(bIndex);
+
             const bMetadata = bTokens.getMetadata(bIndex);
+
             const bMask = (((bMetadata & MetadataConsts.SEMANTIC_USE_ITALIC) ? MetadataConsts.ITALIC_MASK : 0)
                 | ((bMetadata & MetadataConsts.SEMANTIC_USE_BOLD) ? MetadataConsts.BOLD_MASK : 0)
                 | ((bMetadata & MetadataConsts.SEMANTIC_USE_UNDERLINE) ? MetadataConsts.UNDERLINE_MASK : 0)
                 | ((bMetadata & MetadataConsts.SEMANTIC_USE_STRIKETHROUGH) ? MetadataConsts.STRIKETHROUGH_MASK : 0)
                 | ((bMetadata & MetadataConsts.SEMANTIC_USE_FOREGROUND) ? MetadataConsts.FOREGROUND_MASK : 0)
                 | ((bMetadata & MetadataConsts.SEMANTIC_USE_BACKGROUND) ? MetadataConsts.BACKGROUND_MASK : 0)) >>> 0;
+
             const aMask = (~bMask) >>> 0;
             // push any token from `a` that is before `b`
             while (aIndex < aLen && aTokens.getEndOffset(aIndex) <= bStartCharacter) {
@@ -157,6 +186,7 @@ export class SparseTokensStore {
             }
             if (aIndex < aLen) {
                 emitToken(bEndCharacter, (aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask));
+
                 if (aTokens.getEndOffset(aIndex) === bEndCharacter) {
                     // `a` ends exactly at the same spot as `b`!
                     aIndex++;
@@ -177,9 +207,12 @@ export class SparseTokensStore {
     }
     private static _findFirstPieceWithLine(pieces: SparseMultilineTokens[], lineNumber: number): number {
         let low = 0;
+
         let high = pieces.length - 1;
+
         while (low < high) {
             let mid = low + Math.floor((high - low) / 2);
+
             if (pieces[mid].endLineNumber < lineNumber) {
                 low = mid + 1;
             }

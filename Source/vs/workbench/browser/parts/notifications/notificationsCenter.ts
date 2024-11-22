@@ -42,6 +42,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
     private readonly notificationsCenterVisibleContextKey = NotificationsCenterVisibleContext.bindTo(this.contextKeyService);
     private clearAllAction: ClearAllNotificationsAction | undefined;
     private configureDoNotDisturbAction: ConfigureDoNotDisturbAction | undefined;
+
     constructor(private readonly container: HTMLElement, private readonly model: INotificationsModel, 
     @IThemeService
     themeService: IThemeService, 
@@ -85,6 +86,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
             notificationsList.show();
             // Focus first
             notificationsList.focusFirst();
+
             return; // already visible
         }
         // Lazily create if showing for the first time
@@ -115,6 +117,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
     }
     private updateTitle(): void {
         const [notificationsCenterTitle, clearAllAction] = assertAllDefined(this.notificationsCenterTitle, this.clearAllAction);
+
         if (this.model.notifications.length === 0) {
             notificationsCenterTitle.textContent = localize('notificationsEmpty', "No new notifications");
             clearAllAction.enabled = false;
@@ -140,8 +143,11 @@ export class NotificationsCenter extends Themable implements INotificationsCente
         const toolbarContainer = document.createElement('div');
         toolbarContainer.classList.add('notifications-center-header-toolbar');
         this.notificationsCenterHeader.appendChild(toolbarContainer);
+
         const actionRunner = this._register(this.instantiationService.createInstance(NotificationActionRunner));
+
         const that = this;
+
         const notificationsToolBar = this._register(new ActionBar(toolbarContainer, {
             ariaLabel: localize('notificationsToolbar', "Notification Center Actions"),
             actionRunner,
@@ -154,7 +160,9 @@ export class NotificationsCenter extends Themable implements INotificationsCente
                                     label: that.notificationService.getFilter() === NotificationsFilter.OFF ? localize('turnOnNotifications', "Enable Do Not Disturb Mode") : localize('turnOffNotifications', "Disable Do Not Disturb Mode"),
                                     run: () => that.notificationService.setFilter(that.notificationService.getFilter() === NotificationsFilter.OFF ? NotificationsFilter.ERROR : NotificationsFilter.OFF)
                                 })];
+
                             const sortedFilters = that.notificationService.getFilters().sort((a, b) => a.label.localeCompare(b.label));
+
                             for (const source of sortedFilters.slice(0, NotificationsCenter.MAX_NOTIFICATION_SOURCES)) {
                                 if (actions.length === 1) {
                                     actions.push(new Separator());
@@ -189,6 +197,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
         notificationsToolBar.push(this.clearAllAction, { icon: true, label: false, keybinding: this.getKeybindingLabel(this.clearAllAction) });
         this.configureDoNotDisturbAction = this._register(this.instantiationService.createInstance(ConfigureDoNotDisturbAction, ConfigureDoNotDisturbAction.ID, ConfigureDoNotDisturbAction.LABEL));
         notificationsToolBar.push(this.configureDoNotDisturbAction, { icon: true, label: false });
+
         const hideAllAction = this._register(this.instantiationService.createInstance(HideNotificationsCenterAction, HideNotificationsCenterAction.ID, HideNotificationsCenterAction.LABEL));
         notificationsToolBar.push(hideAllAction, { icon: true, label: false, keybinding: this.getKeybindingLabel(hideAllAction) });
         // Notifications List
@@ -199,6 +208,7 @@ export class NotificationsCenter extends Themable implements INotificationsCente
     }
     private getKeybindingLabel(action: IAction): string | null {
         const keybinding = this.keybindingService.lookupKeybinding(action.id);
+
         return keybinding ? keybinding.getLabel() : null;
     }
     private onDidChangeNotification(e: INotificationChangeEvent): void {
@@ -208,11 +218,14 @@ export class NotificationsCenter extends Themable implements INotificationsCente
         let focusEditor = false;
         // Update notifications list based on event kind
         const [notificationsList, notificationsCenterContainer] = assertAllDefined(this.notificationsList, this.notificationsCenterContainer);
+
         switch (e.kind) {
             case NotificationChangeType.ADD:
                 notificationsList.updateNotificationsList(e.index, 0, [e.item]);
                 e.item.updateVisibility(true);
+
                 break;
+
             case NotificationChangeType.CHANGE:
                 // Handle content changes
                 // - actions: re-draw to properly show them
@@ -220,7 +233,9 @@ export class NotificationsCenter extends Themable implements INotificationsCente
                 switch (e.detail) {
                     case NotificationViewItemContentChangeKind.ACTIONS:
                         notificationsList.updateNotificationsList(e.index, 1, [e.item]);
+
                         break;
+
                     case NotificationViewItemContentChangeKind.MESSAGE:
                         if (e.item.expanded) {
                             notificationsList.updateNotificationHeight(e.item);
@@ -228,14 +243,18 @@ export class NotificationsCenter extends Themable implements INotificationsCente
                         break;
                 }
                 break;
+
             case NotificationChangeType.EXPAND_COLLAPSE:
                 // Re-draw entire item when expansion changes to reveal or hide details
                 notificationsList.updateNotificationsList(e.index, 1, [e.item]);
+
                 break;
+
             case NotificationChangeType.REMOVE:
                 focusEditor = isAncestorOfActiveElement(notificationsCenterContainer);
                 notificationsList.updateNotificationsList(e.index, 1);
                 e.item.updateVisibility(false);
+
                 break;
         }
         // Update title
@@ -273,27 +292,36 @@ export class NotificationsCenter extends Themable implements INotificationsCente
         if (this.notificationsCenterContainer && this.notificationsCenterHeader) {
             const widgetShadowColor = this.getColor(widgetShadow);
             this.notificationsCenterContainer.style.boxShadow = widgetShadowColor ? `0 0 8px 2px ${widgetShadowColor}` : '';
+
             const borderColor = this.getColor(NOTIFICATIONS_CENTER_BORDER);
             this.notificationsCenterContainer.style.border = borderColor ? `1px solid ${borderColor}` : '';
+
             const headerForeground = this.getColor(NOTIFICATIONS_CENTER_HEADER_FOREGROUND);
             this.notificationsCenterHeader.style.color = headerForeground ?? '';
+
             const headerBackground = this.getColor(NOTIFICATIONS_CENTER_HEADER_BACKGROUND);
             this.notificationsCenterHeader.style.background = headerBackground ?? '';
         }
     }
     layout(dimension: Dimension | undefined): void {
         this.workbenchDimensions = dimension;
+
         if (this._isVisible && this.notificationsCenterContainer) {
             const maxWidth = NotificationsCenter.MAX_DIMENSIONS.width;
+
             const maxHeight = NotificationsCenter.MAX_DIMENSIONS.height;
+
             let availableWidth = maxWidth;
+
             let availableHeight = maxHeight;
+
             if (this.workbenchDimensions) {
                 // Make sure notifications are not exceding available width
                 availableWidth = this.workbenchDimensions.width;
                 availableWidth -= (2 * 8); // adjust for paddings left and right
                 // Make sure notifications are not exceeding available height
                 availableHeight = this.workbenchDimensions.height - 35 /* header */;
+
                 if (this.layoutService.isVisible(Parts.STATUSBAR_PART, mainWindow)) {
                     availableHeight -= 22; // adjust for status bar
                 }

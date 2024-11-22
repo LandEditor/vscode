@@ -140,6 +140,7 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 
 	private getAllProvidedCodeActionKinds(): Array<HierarchicalKind> {
 		const out = new Map<string, HierarchicalKind>();
+
 		for (const provider of this.languageFeatures.codeActionProvider.allNoModel()) {
 			for (const kind of provider.providedCodeActionKinds ?? []) {
 				out.set(kind, new HierarchicalKind(kind));
@@ -150,7 +151,9 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 
 	private updateConfigurationSchema(allProvidedKinds: Iterable<HierarchicalKind>): void {
 		const properties: IJSONSchemaMap = { ...codeActionsOnSaveSchema.properties };
+
 		const notebookProperties: IJSONSchemaMap = { ...notebookCodeActionsOnSaveSchema.properties };
+
 		for (const codeActionKind of allProvidedKinds) {
 			if (CodeActionKind.Source.contains(codeActionKind) && !properties[codeActionKind.value]) {
 				properties[codeActionKind.value] = createCodeActionsAutoSave(nls.localize('codeActionsOnSave.generic', "Controls whether '{0}' actions should be run on file save.", codeActionKind.value));
@@ -193,6 +196,7 @@ export class CodeActionsContribution extends Disposable implements IWorkbenchCon
 
 		const filterProvidedKinds = (ofKind: HierarchicalKind): string[] => {
 			const out = new Set<string>();
+
 			for (const providedKind of this._allProvidedCodeActionKinds) {
 				if (ofKind.contains(providedKind)) {
 					out.add(providedKind.value);

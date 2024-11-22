@@ -39,7 +39,9 @@ export class ToggleStickyScroll extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue('editor.stickyScroll.enabled');
+
         return configurationService.updateValue('editor.stickyScroll.enabled', newValue);
     }
 }

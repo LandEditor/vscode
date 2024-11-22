@@ -15,6 +15,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
     private readonly _commandRegistrations = new DisposableMap<string>();
     private readonly _generateCommandsDocumentationRegistration: IDisposable;
     private readonly _proxy: ExtHostCommandsShape;
+
     constructor(extHostContext: IExtHostContext, 
     @ICommandService
     private readonly _commandService: ICommandService, 
@@ -31,6 +32,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
         const result = await this._proxy.$getContributedCommandMetadata();
         // add local commands
         const commands = CommandsRegistry.getCommands();
+
         for (const [id, command] of commands) {
             if (command.metadata) {
                 result[id] = command.metadata;
@@ -38,6 +40,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
         }
         // print all as markdown
         const all: string[] = [];
+
         for (const id in result) {
             all.push('`' + id + '` - ' + _generateMarkdown(result[id]));
         }
@@ -55,6 +58,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
     }
     $fireCommandActivationEvent(id: string): void {
         const activationEvent = `onCommand:${id}`;
+
         if (!this._extensionService.activationEventIsDone(activationEvent)) {
             // this is NOT awaited because we only use it as drive-by-activation
             // for commands that are already known inside the extension host
@@ -70,6 +74,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
         }
         if (retry && args.length > 0 && !CommandsRegistry.getCommand(id)) {
             await this._extensionService.activateByEvent(`onCommand:${id}`);
+
             throw new Error('$executeCommand:retry');
         }
         return this._commandService.executeCommand<T>(id, ...args);
@@ -88,8 +93,10 @@ function _generateMarkdown(description: string | Dto<ICommandMetadata> | IComman
             ? description.description
             // Our docs website is in English, so keep the original here.
             : description.description.original;
+
         const parts = [descriptionString];
         parts.push('\n\n');
+
         if (description.args) {
             for (const arg of description.args) {
                 parts.push(`* _${arg.name}_ - ${arg.description || ''}\n`);
@@ -99,6 +106,7 @@ function _generateMarkdown(description: string | Dto<ICommandMetadata> | IComman
             parts.push(`* _(returns)_ - ${description.returns}`);
         }
         parts.push('\n\n');
+
         return parts.join('');
     }
 }

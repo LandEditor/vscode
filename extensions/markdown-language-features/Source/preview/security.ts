@@ -12,19 +12,23 @@ export const enum MarkdownPreviewSecurityLevel {
 }
 export interface ContentSecurityPolicyArbiter {
     getSecurityLevelForResource(resource: vscode.Uri): MarkdownPreviewSecurityLevel;
+
     setSecurityLevelForResource(resource: vscode.Uri, level: MarkdownPreviewSecurityLevel): Thenable<void>;
     shouldAllowSvgsForResource(resource: vscode.Uri): void;
     shouldDisableSecurityWarnings(): boolean;
+
     setShouldDisableSecurityWarning(shouldShow: boolean): Thenable<void>;
 }
 export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPolicyArbiter {
     private readonly _old_trusted_workspace_key = 'trusted_preview_workspace:';
     private readonly _security_level_key = 'preview_security_level:';
     private readonly _should_disable_security_warning_key = 'preview_should_show_security_warning:';
+
     constructor(private readonly _globalState: vscode.Memento, private readonly _workspaceState: vscode.Memento) { }
     public getSecurityLevelForResource(resource: vscode.Uri): MarkdownPreviewSecurityLevel {
         // Use new security level setting first
         const level = this._globalState.get<MarkdownPreviewSecurityLevel | undefined>(this._security_level_key + this._getRoot(resource), undefined);
+
         if (typeof level !== 'undefined') {
             return level;
         }
@@ -39,6 +43,7 @@ export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPol
     }
     public shouldAllowSvgsForResource(resource: vscode.Uri) {
         const securityLevel = this.getSecurityLevelForResource(resource);
+
         return securityLevel === MarkdownPreviewSecurityLevel.AllowInsecureContent || securityLevel === MarkdownPreviewSecurityLevel.AllowScriptsAndAllContent;
     }
     public shouldDisableSecurityWarnings(): boolean {
@@ -50,6 +55,7 @@ export class ExtensionContentSecurityPolicyArbiter implements ContentSecurityPol
     private _getRoot(resource: vscode.Uri): vscode.Uri {
         if (vscode.workspace.workspaceFolders) {
             const folderForResource = vscode.workspace.getWorkspaceFolder(resource);
+
             if (folderForResource) {
                 return folderForResource.uri;
             }
@@ -70,6 +76,7 @@ export class PreviewSecuritySelector {
             return when ? '• ' : '';
         }
         const currentSecurityLevel = this._cspArbiter.getSecurityLevelForResource(resource);
+
         const selection = await vscode.window.showQuickPick<PreviewSecurityPickItem>([
             {
                 type: MarkdownPreviewSecurityLevel.Strict,
@@ -101,16 +108,19 @@ export class PreviewSecuritySelector {
         ], {
             placeHolder: vscode.l10n.t("Select security settings for Markdown previews in this workspace"),
         });
+
         if (!selection) {
             return;
         }
         if (selection.type === 'moreinfo') {
             vscode.commands.executeCommand('vscode.open', vscode.Uri.parse('https://go.microsoft.com/fwlink/?linkid=854414'));
+
             return;
         }
         if (selection.type === 'toggle') {
             this._cspArbiter.setShouldDisableSecurityWarning(!this._cspArbiter.shouldDisableSecurityWarnings());
             this._webviewManager.refresh();
+
             return;
         }
         else {

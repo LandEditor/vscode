@@ -11,11 +11,13 @@ import type { IShellLaunchConfig } from './terminal.js';
  */
 export function escapeNonWindowsPath(path: string): string {
     let newPath = path;
+
     if (newPath.includes('\\')) {
         newPath = newPath.replace(/\\/g, '\\\\');
     }
     const bannedChars = /[\`\$\|\&\>\~\#\!\^\*\;\<\"\']/g;
     newPath = newPath.replace(bannedChars, '');
+
     return `'${newPath}'`;
 }
 /**
@@ -34,7 +36,9 @@ export function collapseTildePath(path: string | undefined, userHome: string | u
         userHome = userHome.slice(0, userHome.length - 1);
     }
     const normalizedPath = path.replace(/\\/g, '/').toLowerCase();
+
     const normalizedUserHome = userHome.replace(/\\/g, '/').toLowerCase();
+
     if (!normalizedPath.includes(normalizedUserHome)) {
         return path;
     }

@@ -24,6 +24,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 	constructor(wordSeparators: string, intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[]) {
 		super(WordCharacterClass.Regular);
 		this.intlSegmenterLocales = intlSegmenterLocales;
+
 		if (this.intlSegmenterLocales.length > 0) {
 			this._segmenter = safeIntl.Segmenter(this.intlSegmenterLocales, { granularity: 'word' });
 		} else {
@@ -40,6 +41,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 
 	public findPrevIntlWordBeforeOrAtOffset(line: string, offset: number): IntlWordSegmentData | null {
 		let candidate: IntlWordSegmentData | null = null;
+
 		for (const segment of this._getIntlSegmenterWordsOnLine(line)) {
 			if (segment.index > offset) {
 				break;
@@ -78,6 +80,7 @@ export class WordCharacterClassifier extends CharacterClassifier<WordCharacterCl
 
 	private _filterWordSegments(segments: Intl.Segments): IntlWordSegmentData[] {
 		const result: IntlWordSegmentData[] = [];
+
 		for (const segment of segments) {
 			if (this._isWordLike(segment)) {
 				result.push(segment);
@@ -102,7 +105,9 @@ const wordClassifierCache = new LRUCache<string, WordCharacterClassifier>(10);
 
 export function getMapForWordSeparators(wordSeparators: string, intlSegmenterLocales: Intl.UnicodeBCP47LocaleIdentifier[]): WordCharacterClassifier {
 	const key = `${wordSeparators}/${intlSegmenterLocales.join(',')}`;
+
 	let result = wordClassifierCache.get(key)!;
+
 	if (!result) {
 		result = new WordCharacterClassifier(wordSeparators, intlSegmenterLocales);
 		wordClassifierCache.set(key, result);

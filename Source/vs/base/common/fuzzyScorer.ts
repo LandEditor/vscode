@@ -17,7 +17,9 @@ export type FuzzyScore = [
 export type FuzzyScorerCache = {
     [key: string]: IItemScore;
 };
+
 const NO_MATCH = 0;
+
 const NO_SCORE: FuzzyScore = [NO_MATCH, []];
 // const DEBUG = true;
 // const DEBUG_MATRIX = false;
@@ -26,7 +28,9 @@ export function scoreFuzzy(target: string, query: string, queryLower: string, al
         return NO_SCORE; // return early if target or query are undefined
     }
     const targetLength = target.length;
+
     const queryLength = query.length;
+
     if (targetLength < queryLength) {
         return NO_SCORE; // impossible for query to be contained in target
     }
@@ -34,6 +38,7 @@ export function scoreFuzzy(target: string, query: string, queryLower: string, al
     // 	console.group(`Target: ${target}, Query: ${query}`);
     // }
     const targetLower = target.toLowerCase();
+
     const res = doScoreFuzzy(query, queryLower, queryLength, target, targetLower, targetLength, allowNonContiguousMatches);
     // if (DEBUG) {
     // 	console.log(`%cFinal Score: ${res[0]}`, 'font-weight: bold');
@@ -43,6 +48,7 @@ export function scoreFuzzy(target: string, query: string, queryLower: string, al
 }
 function doScoreFuzzy(query: string, queryLower: string, queryLength: number, target: string, targetLower: string, targetLength: number, allowNonContiguousMatches: boolean): FuzzyScore {
     const scores: number[] = [];
+
     const matches: number[] = [];
     //
     // Build Scorer Matrix:
@@ -61,17 +67,28 @@ function doScoreFuzzy(query: string, queryLower: string, queryLength: number, ta
     //
     for (let queryIndex = 0; queryIndex < queryLength; queryIndex++) {
         const queryIndexOffset = queryIndex * targetLength;
+
         const queryIndexPreviousOffset = queryIndexOffset - targetLength;
+
         const queryIndexGtNull = queryIndex > 0;
+
         const queryCharAtIndex = query[queryIndex];
+
         const queryLowerCharAtIndex = queryLower[queryIndex];
+
         for (let targetIndex = 0; targetIndex < targetLength; targetIndex++) {
             const targetIndexGtNull = targetIndex > 0;
+
             const currentIndex = queryIndexOffset + targetIndex;
+
             const leftIndex = currentIndex - 1;
+
             const diagIndex = queryIndexPreviousOffset + targetIndex - 1;
+
             const leftScore = targetIndexGtNull ? scores[leftIndex] : 0;
+
             const diagScore = queryIndexGtNull && targetIndexGtNull ? scores[diagIndex] : 0;
+
             const matchesSequenceLength = queryIndexGtNull && targetIndexGtNull ? matches[diagIndex] : 0;
             // If we are not matching on the first query character any more, we only produce a
             // score if we had a score previously for the last query index (by looking at the diagScore).
@@ -79,6 +96,7 @@ function doScoreFuzzy(query: string, queryLower: string, queryLength: number, ta
             // given a target of "ede" and a query of "de", we would otherwise produce a wrong high score
             // for query[1] ("e") matching on target[0] ("e") because of the "beginning of word" boost.
             let score: number;
+
             if (!diagScore && queryIndexGtNull) {
                 score = 0;
             }
@@ -89,6 +107,7 @@ function doScoreFuzzy(query: string, queryLower: string, queryLength: number, ta
             // Match: sequence continues growing from previous diag value
             // Score: increases by diag score value
             const isValidScore = score && diagScore + score >= leftScore;
+
             if (isValidScore && (
             // We don't need to check if it's contiguous if we allow non-contiguous matches
             allowNonContiguousMatches ||
@@ -112,11 +131,16 @@ function doScoreFuzzy(query: string, queryLower: string, queryLength: number, ta
     }
     // Restore Positions (starting from bottom right of matrix)
     const positions: number[] = [];
+
     let queryIndex = queryLength - 1;
+
     let targetIndex = targetLength - 1;
+
     while (queryIndex >= 0 && targetIndex >= 0) {
         const currentIndex = queryIndex * targetLength + targetIndex;
+
         const match = matches[currentIndex];
+
         if (match === NO_MATCH) {
             targetIndex--; // go left
         }
@@ -135,6 +159,7 @@ function doScoreFuzzy(query: string, queryLower: string, queryLength: number, ta
 }
 function computeCharScore(queryCharAtIndex: string, queryLowerCharAtIndex: string, target: string, targetLower: string, targetIndex: number, matchesSequenceLength: number): number {
     let score = 0;
+
     if (!considerAsEqual(queryLowerCharAtIndex, targetLower[targetIndex])) {
         return score; // no match of characters
     }
@@ -170,6 +195,7 @@ function computeCharScore(queryCharAtIndex: string, queryLowerCharAtIndex: strin
     else {
         // After separator bonus
         const separatorBonus = scoreSeparatorAtPos(target.charCodeAt(targetIndex - 1));
+
         if (separatorBonus) {
             score += separatorBonus;
             // if (DEBUG) {
@@ -237,10 +263,12 @@ export type FuzzyScore2 = [
     number | undefined /* score */,
     IMatch[]
 ];
+
 const NO_SCORE2: FuzzyScore2 = [undefined, []];
 export function scoreFuzzy2(target: string, query: IPreparedQuery | IPreparedQueryPiece, patternStart = 0, wordStart = 0): FuzzyScore2 {
     // Score: multiple inputs
     const preparedQuery = query as IPreparedQuery;
+
     if (preparedQuery.values && preparedQuery.values.length > 1) {
         return doScoreFuzzy2Multiple(target, preparedQuery.values, patternStart, wordStart);
     }
@@ -249,9 +277,12 @@ export function scoreFuzzy2(target: string, query: IPreparedQuery | IPreparedQue
 }
 function doScoreFuzzy2Multiple(target: string, query: IPreparedQueryPiece[], patternStart: number, wordStart: number): FuzzyScore2 {
     let totalScore = 0;
+
     const totalMatches: IMatch[] = [];
+
     for (const queryPiece of query) {
         const [score, matches] = doScoreFuzzy2Single(target, queryPiece, patternStart, wordStart);
+
         if (typeof score !== 'number') {
             // if a single query value does not match, return with
             // no score entirely, we require all queries to match
@@ -266,6 +297,7 @@ function doScoreFuzzy2Multiple(target: string, query: IPreparedQueryPiece[], pat
 }
 function doScoreFuzzy2Single(target: string, query: IPreparedQueryPiece, patternStart: number, wordStart: number): FuzzyScore2 {
     const score = fuzzyScore(query.original, query.originalLowercase, patternStart, target, target.toLowerCase(), wordStart, { firstMatchCanBeWeak: true, boostFullMatch: true });
+
     if (!score) {
         return NO_SCORE2;
     }
@@ -306,10 +338,13 @@ export interface IItemAccessor<T> {
     getItemPath(file: T): string | undefined;
 }
 const PATH_IDENTITY_SCORE = 1 << 18;
+
 const LABEL_PREFIX_SCORE_THRESHOLD = 1 << 17;
+
 const LABEL_SCORE_THRESHOLD = 1 << 16;
 function getCacheHash(label: string, description: string | undefined, allowNonContiguousMatches: boolean, query: IPreparedQuery) {
     const values = query.values ? query.values : [query];
+
     const cacheHash = hash({
         [query.normalized]: {
             values: values.map(v => ({ value: v.normalized, expectContiguousMatch: v.expectContiguousMatch })),
@@ -318,6 +353,7 @@ function getCacheHash(label: string, description: string | undefined, allowNonCo
             allowNonContiguousMatches
         }
     });
+
     return cacheHash;
 }
 export function scoreItemFuzzy<T>(item: T, query: IPreparedQuery, allowNonContiguousMatches: boolean, accessor: IItemAccessor<T>, cache: FuzzyScorerCache): IItemScore {
@@ -325,6 +361,7 @@ export function scoreItemFuzzy<T>(item: T, query: IPreparedQuery, allowNonContig
         return NO_ITEM_SCORE; // we need an item and query to score on at least
     }
     const label = accessor.getItemLabel(item);
+
     if (!label) {
         return NO_ITEM_SCORE; // we need a label at least
     }
@@ -335,12 +372,15 @@ export function scoreItemFuzzy<T>(item: T, query: IPreparedQuery, allowNonContig
     // - whether non-contiguous matching is enabled or not
     // - hash of the query (normalized) values
     const cacheHash = getCacheHash(label, description, allowNonContiguousMatches, query);
+
     const cached = cache[cacheHash];
+
     if (cached) {
         return cached;
     }
     const itemScore = doScoreItemFuzzy(label, description, accessor.getItemPath(item), query, allowNonContiguousMatches);
     cache[cacheHash] = itemScore;
+
     return itemScore;
 }
 function doScoreItemFuzzy(label: string, description: string | undefined, path: string | undefined, query: IPreparedQuery, allowNonContiguousMatches: boolean): IItemScore {
@@ -358,16 +398,21 @@ function doScoreItemFuzzy(label: string, description: string | undefined, path: 
 }
 function doScoreItemFuzzyMultiple(label: string, description: string | undefined, path: string | undefined, query: IPreparedQueryPiece[], preferLabelMatches: boolean, allowNonContiguousMatches: boolean): IItemScore {
     let totalScore = 0;
+
     const totalLabelMatches: IMatch[] = [];
+
     const totalDescriptionMatches: IMatch[] = [];
+
     for (const queryPiece of query) {
         const { score, labelMatch, descriptionMatch } = doScoreItemFuzzySingle(label, description, path, queryPiece, preferLabelMatches, allowNonContiguousMatches);
+
         if (score === NO_MATCH) {
             // if a single query value does not match, return with
             // no score entirely, we require all queries to match
             return NO_ITEM_SCORE;
         }
         totalScore += score;
+
         if (labelMatch) {
             totalLabelMatches.push(...labelMatch);
         }
@@ -387,6 +432,7 @@ function doScoreItemFuzzySingle(label: string, description: string | undefined, 
     // Prefer label matches if told so or we have no description
     if (preferLabelMatches || !description) {
         const [labelScore, labelPositions] = scoreFuzzy(label, query.normalized, query.normalizedLowercase, allowNonContiguousMatches && !query.expectContiguousMatch);
+
         if (labelScore) {
             // If we have a prefix match on the label, we give a much
             // higher baseScore to elevate these matches over others
@@ -394,7 +440,9 @@ function doScoreItemFuzzySingle(label: string, description: string | undefined, 
             // that are present somewhere in the label, but not the
             // beginning.
             const labelPrefixMatch = matchesPrefix(query.normalized, label);
+
             let baseScore: number;
+
             if (labelPrefixMatch) {
                 baseScore = LABEL_PREFIX_SCORE_THRESHOLD;
                 // We give another boost to labels that are short, e.g. given
@@ -414,15 +462,21 @@ function doScoreItemFuzzySingle(label: string, description: string | undefined, 
     // Finally compute description + label scores if we have a description
     if (description) {
         let descriptionPrefix = description;
+
         if (!!path) {
             descriptionPrefix = `${description}${sep}`; // assume this is a file path
         }
         const descriptionPrefixLength = descriptionPrefix.length;
+
         const descriptionAndLabel = `${descriptionPrefix}${label}`;
+
         const [labelDescriptionScore, labelDescriptionPositions] = scoreFuzzy(descriptionAndLabel, query.normalized, query.normalizedLowercase, allowNonContiguousMatches && !query.expectContiguousMatch);
+
         if (labelDescriptionScore) {
             const labelDescriptionMatches = createMatches(labelDescriptionPositions);
+
             const labelMatch: IMatch[] = [];
+
             const descriptionMatch: IMatch[] = [];
             // We have to split the matches back onto the label and description portions
             labelDescriptionMatches.forEach(h => {
@@ -440,6 +494,7 @@ function doScoreItemFuzzySingle(label: string, description: string | undefined, 
                     descriptionMatch.push(h);
                 }
             });
+
             return { score: labelDescriptionScore, labelMatch, descriptionMatch };
         }
     }
@@ -447,10 +502,12 @@ function doScoreItemFuzzySingle(label: string, description: string | undefined, 
 }
 function createMatches(offsets: number[] | undefined): IMatch[] {
     const ret: IMatch[] = [];
+
     if (!offsets) {
         return ret;
     }
     let last: IMatch | undefined;
+
     for (const pos of offsets) {
         if (last && last.end === pos) {
             last.end += 1;
@@ -469,7 +526,9 @@ function normalizeMatches(matches: IMatch[]): IMatch[] {
     });
     // merge matches that overlap
     const normalizedMatches: IMatch[] = [];
+
     let currentMatch: IMatch | undefined = undefined;
+
     for (const match of sortedMatches) {
         // if we have no current match or the matches
         // do not overlap, we take it as is and remember
@@ -499,8 +558,11 @@ function matchOverlaps(matchA: IMatch, matchB: IMatch): boolean {
 //#region Comparers
 export function compareItemsByFuzzyScore<T>(itemA: T, itemB: T, query: IPreparedQuery, allowNonContiguousMatches: boolean, accessor: IItemAccessor<T>, cache: FuzzyScorerCache): number {
     const itemScoreA = scoreItemFuzzy(itemA, query, allowNonContiguousMatches, accessor, cache);
+
     const itemScoreB = scoreItemFuzzy(itemB, query, allowNonContiguousMatches, accessor, cache);
+
     const scoreA = itemScoreA.score;
+
     const scoreB = itemScoreB.score;
     // 1.) identity matches have highest score
     if (scoreA === PATH_IDENTITY_SCORE || scoreB === PATH_IDENTITY_SCORE) {
@@ -517,13 +579,16 @@ export function compareItemsByFuzzyScore<T>(itemA: T, itemB: T, query: IPrepared
         // longer prefix matches are actually preferred)
         if (scoreA < LABEL_PREFIX_SCORE_THRESHOLD && scoreB < LABEL_PREFIX_SCORE_THRESHOLD) {
             const comparedByMatchLength = compareByMatchLength(itemScoreA.labelMatch, itemScoreB.labelMatch);
+
             if (comparedByMatchLength !== 0) {
                 return comparedByMatchLength;
             }
         }
         // prefer shorter labels over longer labels
         const labelA = accessor.getItemLabel(itemA) || '';
+
         const labelB = accessor.getItemLabel(itemB) || '';
+
         if (labelA.length !== labelB.length) {
             return labelA.length - labelB.length;
         }
@@ -534,7 +599,9 @@ export function compareItemsByFuzzyScore<T>(itemA: T, itemB: T, query: IPrepared
     }
     // 4.) scores are identical: prefer matches in label over non-label matches
     const itemAHasLabelMatches = Array.isArray(itemScoreA.labelMatch) && itemScoreA.labelMatch.length > 0;
+
     const itemBHasLabelMatches = Array.isArray(itemScoreB.labelMatch) && itemScoreB.labelMatch.length > 0;
+
     if (itemAHasLabelMatches && !itemBHasLabelMatches) {
         return -1;
     }
@@ -543,7 +610,9 @@ export function compareItemsByFuzzyScore<T>(itemA: T, itemB: T, query: IPrepared
     }
     // 5.) scores are identical: prefer more compact matches (label and description)
     const itemAMatchDistance = computeLabelAndDescriptionMatchDistance(itemA, itemScoreA, accessor);
+
     const itemBMatchDistance = computeLabelAndDescriptionMatchDistance(itemB, itemScoreB, accessor);
+
     if (itemAMatchDistance && itemBMatchDistance && itemAMatchDistance !== itemBMatchDistance) {
         return itemBMatchDistance > itemAMatchDistance ? -1 : 1;
     }
@@ -552,6 +621,7 @@ export function compareItemsByFuzzyScore<T>(itemA: T, itemB: T, query: IPrepared
 }
 function computeLabelAndDescriptionMatchDistance<T>(item: T, score: IItemScore, accessor: IItemAccessor<T>): number {
     let matchStart: number = -1;
+
     let matchEnd: number = -1;
     // If we have description matches, the start is first of description match
     if (score.descriptionMatch && score.descriptionMatch.length) {
@@ -566,8 +636,10 @@ function computeLabelAndDescriptionMatchDistance<T>(item: T, score: IItemScore, 
     // as offset to the end to indicate this.
     if (score.labelMatch && score.labelMatch.length) {
         matchEnd = score.labelMatch[score.labelMatch.length - 1].end;
+
         if (score.descriptionMatch && score.descriptionMatch.length) {
             const itemDescription = accessor.getItemDescription(item);
+
             if (itemDescription) {
                 matchEnd += itemDescription.length;
             }
@@ -591,11 +663,15 @@ function compareByMatchLength(matchesA?: IMatch[], matchesB?: IMatch[]): number 
     }
     // Compute match length of A (first to last match)
     const matchStartA = matchesA[0].start;
+
     const matchEndA = matchesA[matchesA.length - 1].end;
+
     const matchLengthA = matchEndA - matchStartA;
     // Compute match length of B (first to last match)
     const matchStartB = matchesB[0].start;
+
     const matchEndB = matchesB[matchesB.length - 1].end;
+
     const matchLengthB = matchEndB - matchStartB;
     // Prefer shorter match length
     return matchLengthA === matchLengthB ? 0 : matchLengthB < matchLengthA ? 1 : -1;
@@ -603,17 +679,25 @@ function compareByMatchLength(matchesA?: IMatch[], matchesB?: IMatch[]): number 
 function fallbackCompare<T>(itemA: T, itemB: T, query: IPreparedQuery, accessor: IItemAccessor<T>): number {
     // check for label + description length and prefer shorter
     const labelA = accessor.getItemLabel(itemA) || '';
+
     const labelB = accessor.getItemLabel(itemB) || '';
+
     const descriptionA = accessor.getItemDescription(itemA);
+
     const descriptionB = accessor.getItemDescription(itemB);
+
     const labelDescriptionALength = labelA.length + (descriptionA ? descriptionA.length : 0);
+
     const labelDescriptionBLength = labelB.length + (descriptionB ? descriptionB.length : 0);
+
     if (labelDescriptionALength !== labelDescriptionBLength) {
         return labelDescriptionALength - labelDescriptionBLength;
     }
     // check for path length and prefer shorter
     const pathA = accessor.getItemPath(itemA);
+
     const pathB = accessor.getItemPath(itemB);
+
     if (pathA && pathB && pathA.length !== pathB.length) {
         return pathA.length - pathB.length;
     }
@@ -687,15 +771,23 @@ export function prepareQuery(original: string): IPreparedQuery {
         original = '';
     }
     const originalLowercase = original.toLowerCase();
+
     const { pathNormalized, normalized, normalizedLowercase } = normalizeQuery(original);
+
     const containsPathSeparator = pathNormalized.indexOf(sep) >= 0;
+
     const expectExactMatch = queryExpectsExactMatch(original);
+
     let values: IPreparedQueryPiece[] | undefined = undefined;
+
     const originalSplit = original.split(MULTIPLE_QUERY_VALUES_SEPARATOR);
+
     if (originalSplit.length > 1) {
         for (const originalPiece of originalSplit) {
             const expectExactMatchPiece = queryExpectsExactMatch(originalPiece);
+
             const { pathNormalized: pathNormalizedPiece, normalized: normalizedPiece, normalizedLowercase: normalizedLowercasePiece } = normalizeQuery(originalPiece);
+
             if (normalizedPiece) {
                 if (!values) {
                     values = [];
@@ -719,6 +811,7 @@ function normalizeQuery(original: string): {
     normalizedLowercase: string;
 } {
     let pathNormalized: string;
+
     if (isWindows) {
         pathNormalized = original.replace(/\//g, sep); // Help Windows users to search for paths when using slash
     }
@@ -727,6 +820,7 @@ function normalizeQuery(original: string): {
     }
     // we remove quotes here because quotes are used for exact match search
     const normalized = stripWildcards(pathNormalized).replace(/\s|"/g, '');
+
     return {
         pathNormalized,
         normalized,

@@ -104,6 +104,7 @@ export interface ILanguageModelsChangeEvent {
 export interface ILanguageModelsService {
     readonly _serviceBrand: undefined;
     onDidChangeLanguageModels: Event<ILanguageModelsChangeEvent>;
+
     getLanguageModelIds(): string[];
     lookupLanguageModel(identifier: string): ILanguageModelChatMetadata | undefined;
     selectLanguageModels(selector: ILanguageModelChatSelector): Promise<string[]>;
@@ -153,6 +154,7 @@ export class LanguageModelsService implements ILanguageModelsService {
     private readonly _onDidChangeProviders = this._store.add(new Emitter<ILanguageModelsChangeEvent>());
     readonly onDidChangeLanguageModels: Event<ILanguageModelsChangeEvent> = this._onDidChangeProviders.event;
     private readonly _hasUserSelectableModels: IContextKey<boolean>;
+
     constructor(
     @IExtensionService
     private readonly _extensionService: IExtensionService, 
@@ -163,28 +165,34 @@ export class LanguageModelsService implements ILanguageModelsService {
         this._hasUserSelectableModels = ChatContextKeys.languageModelsAreUserSelectable.bindTo(this._contextKeyService);
         this._store.add(languageModelExtensionPoint.setHandler((extensions) => {
             this._vendors.clear();
+
             for (const extension of extensions) {
                 if (!isProposedApiEnabled(extension.description, 'chatProvider')) {
                     extension.collector.error(localize('vscode.extension.contributes.languageModels.chatProviderRequired', "This contribution point requires the 'chatProvider' proposal."));
+
                     continue;
                 }
                 for (const item of Iterable.wrap(extension.value)) {
                     if (this._vendors.has(item.vendor)) {
                         extension.collector.error(localize('vscode.extension.contributes.languageModels.vendorAlreadyRegistered', "The vendor '{0}' is already registered and cannot be registered twice", item.vendor));
+
                         continue;
                     }
                     if (isFalsyOrWhitespace(item.vendor)) {
                         extension.collector.error(localize('vscode.extension.contributes.languageModels.emptyVendor', "The vendor field cannot be empty."));
+
                         continue;
                     }
                     if (item.vendor.trim() !== item.vendor) {
                         extension.collector.error(localize('vscode.extension.contributes.languageModels.whitespaceVendor', "The vendor field cannot start or end with whitespace."));
+
                         continue;
                     }
                     this._vendors.add(item.vendor);
                 }
             }
             const removed: string[] = [];
+
             for (const [identifier, value] of this._providers) {
                 if (!this._vendors.has(value.metadata.vendor)) {
                     this._providers.delete(identifier);
@@ -217,6 +225,7 @@ export class LanguageModelsService implements ILanguageModelsService {
             await Promise.all(all);
         }
         const result: string[] = [];
+
         for (const [identifier, model] of this._providers) {
             if ((selector.vendor === undefined || model.metadata.vendor === selector.vendor)
                 && (selector.family === undefined || model.metadata.family === selector.family)
@@ -227,10 +236,12 @@ export class LanguageModelsService implements ILanguageModelsService {
             }
         }
         this._logService.trace('[LM] selected language models', selector, result);
+
         return result;
     }
     registerLanguageModelChat(identifier: string, provider: ILanguageModelChat): IDisposable {
         this._logService.trace('[LM] registering language model chat', identifier, provider.metadata);
+
         if (!this._vendors.has(provider.metadata.vendor)) {
             throw new Error(`Chat response provider uses UNKNOWN vendor ${provider.metadata.vendor}.`);
         }
@@ -240,8 +251,10 @@ export class LanguageModelsService implements ILanguageModelsService {
         this._providers.set(identifier, provider);
         this._onDidChangeProviders.fire({ added: [{ identifier, metadata: provider.metadata }] });
         this.updateUserSelectableModelsContext();
+
         return toDisposable(() => {
             this.updateUserSelectableModelsContext();
+
             if (this._providers.delete(identifier)) {
                 this._onDidChangeProviders.fire({ removed: [identifier] });
                 this._logService.trace('[LM] UNregistered language model chat', identifier, provider.metadata);
@@ -251,6 +264,7 @@ export class LanguageModelsService implements ILanguageModelsService {
     private updateUserSelectableModelsContext() {
         // This context key to enable the picker is set when there is a default model, and there is at least one other model that is user selectable
         const hasUserSelectableModels = Array.from(this._providers.values()).some(p => p.metadata.isUserSelectable && !p.metadata.isDefault);
+
         const hasDefaultModel = Array.from(this._providers.values()).some(p => p.metadata.isDefault);
         this._hasUserSelectableModels.set(hasUserSelectableModels && hasDefaultModel);
     }
@@ -258,6 +272,7 @@ export class LanguageModelsService implements ILanguageModelsService {
         [name: string]: any;
     }, token: CancellationToken): Promise<ILanguageModelChatResponse> {
         const provider = this._providers.get(identifier);
+
         if (!provider) {
             throw new Error(`Chat response provider with identifier ${identifier} is not registered.`);
         }
@@ -265,6 +280,7 @@ export class LanguageModelsService implements ILanguageModelsService {
     }
     computeTokenLength(identifier: string, message: string | IChatMessage, token: CancellationToken): Promise<number> {
         const provider = this._providers.get(identifier);
+
         if (!provider) {
             throw new Error(`Chat response provider with identifier ${identifier} is not registered.`);
         }

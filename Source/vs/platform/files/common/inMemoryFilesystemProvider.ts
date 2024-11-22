@@ -16,6 +16,7 @@ class File implements IStat {
     size: number;
     name: string;
     data?: Uint8Array;
+
     constructor(name: string) {
         this.type = FileType.File;
         this.ctime = Date.now();
@@ -31,6 +32,7 @@ class Directory implements IStat {
     size: number;
     name: string;
     readonly entries: Map<string, File | Directory>;
+
     constructor(name: string) {
         this.type = FileType.Directory;
         this.ctime = Date.now();
@@ -47,9 +49,11 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     private _onDidChangeCapabilities = this._register(new Emitter<void>());
     readonly onDidChangeCapabilities = this._onDidChangeCapabilities.event;
     private _capabilities = FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive;
+
     get capabilities(): FileSystemProviderCapabilities { return this._capabilities; }
     setReadOnly(readonly: boolean) {
         const isReadonly = !!(this._capabilities & FileSystemProviderCapabilities.Readonly);
+
         if (readonly !== isReadonly) {
             this._capabilities = readonly ? FileSystemProviderCapabilities.Readonly | FileSystemProviderCapabilities.PathCaseSensitive | FileSystemProviderCapabilities.FileReadWrite
                 : FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.PathCaseSensitive;
@@ -66,16 +70,19 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
         FileType
     ][]> {
         const entry = this._lookupAsDirectory(resource, false);
+
         const result: [
             string,
             FileType
         ][] = [];
         entry.entries.forEach((child, name) => result.push([name, child.type]));
+
         return result;
     }
     // --- manage file contents
     async readFile(resource: URI): Promise<Uint8Array> {
         const data = this._lookupAsFile(resource, false).data;
+
         if (data) {
             return data;
         }
@@ -83,14 +90,19 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     readFileStream(resource: URI): ReadableStreamEvents<Uint8Array> {
         const data = this._lookupAsFile(resource, false).data;
+
         const stream = newWriteableStream<Uint8Array>(data => VSBuffer.concat(data.map(data => VSBuffer.wrap(data))).buffer);
         stream.end(data);
+
         return stream;
     }
     async writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
         const basename = resources.basename(resource);
+
         const parent = this._lookupParentDirectory(resource);
+
         let entry = parent.entries.get(basename);
+
         if (entry instanceof Directory) {
             throw createFileSystemProviderError('file is directory', FileSystemProviderErrorCode.FileIsADirectory);
         }
@@ -113,33 +125,40 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     // file open/read/write/close
     open(resource: URI, opts: IFileOpenOptions): Promise<number> {
         const data = this._lookupAsFile(resource, false).data;
+
         if (data) {
             const fd = this.memoryFdCounter++;
             this.fdMemory.set(fd, data);
+
             return Promise.resolve(fd);
         }
         throw createFileSystemProviderError('file not found', FileSystemProviderErrorCode.FileNotFound);
     }
     close(fd: number): Promise<void> {
         this.fdMemory.delete(fd);
+
         return Promise.resolve();
     }
     read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
         const memory = this.fdMemory.get(fd);
+
         if (!memory) {
             throw createFileSystemProviderError(`No file with that descriptor open`, FileSystemProviderErrorCode.Unavailable);
         }
         const toWrite = VSBuffer.wrap(memory).slice(pos, pos + length);
         data.set(toWrite.buffer, offset);
+
         return Promise.resolve(toWrite.byteLength);
     }
     write(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
         const memory = this.fdMemory.get(fd);
+
         if (!memory) {
             throw createFileSystemProviderError(`No file with that descriptor open`, FileSystemProviderErrorCode.Unavailable);
         }
         const toWrite = VSBuffer.wrap(data).slice(offset, offset + length);
         memory.set(toWrite.buffer, pos);
+
         return Promise.resolve(toWrite.byteLength);
     }
     // --- manage files/folders
@@ -148,8 +167,11 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
             throw createFileSystemProviderError('file exists already', FileSystemProviderErrorCode.FileExists);
         }
         const entry = this._lookup(from, false);
+
         const oldParent = this._lookupParentDirectory(from);
+
         const newParent = this._lookupParentDirectory(to);
+
         const newName = resources.basename(to);
         oldParent.entries.delete(entry.name);
         entry.name = newName;
@@ -158,8 +180,11 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {
         const dirname = resources.dirname(resource);
+
         const basename = resources.basename(resource);
+
         const parent = this._lookupAsDirectory(dirname, false);
+
         if (parent.entries.has(basename)) {
             parent.entries.delete(basename);
             parent.mtime = Date.now();
@@ -172,8 +197,11 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
             throw createFileSystemProviderError('file exists already', FileSystemProviderErrorCode.FileExists);
         }
         const basename = resources.basename(resource);
+
         const dirname = resources.dirname(resource);
+
         const parent = this._lookupAsDirectory(dirname, false);
+
         const entry = new Directory(basename);
         parent.entries.set(entry.name, entry);
         parent.mtime = Date.now();
@@ -185,12 +213,15 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     private _lookup(uri: URI, silent: boolean): Entry | undefined;
     private _lookup(uri: URI, silent: boolean): Entry | undefined {
         const parts = uri.path.split('/');
+
         let entry: Entry = this.root;
+
         for (const part of parts) {
             if (!part) {
                 continue;
             }
             let child: Entry | undefined;
+
             if (entry instanceof Directory) {
                 child = entry.entries.get(part);
             }
@@ -208,6 +239,7 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     private _lookupAsDirectory(uri: URI, silent: boolean): Directory {
         const entry = this._lookup(uri, silent);
+
         if (entry instanceof Directory) {
             return entry;
         }
@@ -215,6 +247,7 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     private _lookupAsFile(uri: URI, silent: boolean): File {
         const entry = this._lookup(uri, silent);
+
         if (entry instanceof File) {
             return entry;
         }
@@ -222,6 +255,7 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     private _lookupParentDirectory(uri: URI): Directory {
         const dirname = resources.dirname(uri);
+
         return this._lookupAsDirectory(dirname, false);
     }
     // --- manage file events
@@ -235,6 +269,7 @@ export class InMemoryFileSystemProvider extends Disposable implements IFileSyste
     }
     private _fireSoon(...changes: IFileChange[]): void {
         this._bufferedChanges.push(...changes);
+
         if (this._fireSoonHandle) {
             clearTimeout(this._fireSoonHandle);
         }

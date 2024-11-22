@@ -18,8 +18,11 @@ import { localize2 } from '../../../../../nls.js';
 export async function getSurroundableSnippets(snippetsService: ISnippetsService, model: ITextModel, position: Position, includeDisabledSnippets: boolean): Promise<Snippet[]> {
     const { lineNumber, column } = position;
     model.tokenization.tokenizeIfCheap(lineNumber);
+
     const languageId = model.getLanguageIdAtPosition(lineNumber, column);
+
     const allSnippets = await snippetsService.getSnippets(languageId, { includeNoPrefixSnippets: true, includeDisabledSnippets });
+
     return allSnippets.filter(snippet => snippet.usesSelection);
 }
 export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
@@ -27,6 +30,7 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
         id: 'editor.action.surroundWithSnippet',
         title: localize2('label', "Surround with Snippet...")
     };
+
     constructor() {
         super({
             ...SurroundWithSnippetEditorAction.options,
@@ -39,17 +43,23 @@ export class SurroundWithSnippetEditorAction extends SnippetEditorAction {
             return;
         }
         const instaService = accessor.get(IInstantiationService);
+
         const snippetsService = accessor.get(ISnippetsService);
+
         const clipboardService = accessor.get(IClipboardService);
+
         const snippets = await getSurroundableSnippets(snippetsService, editor.getModel(), editor.getPosition(), true);
+
         if (!snippets.length) {
             return;
         }
         const snippet = await instaService.invokeFunction(pickSnippet, snippets);
+
         if (!snippet) {
             return;
         }
         let clipboardText: string | undefined;
+
         if (snippet.needsClipboard) {
             clipboardText = await clipboardService.readText();
         }

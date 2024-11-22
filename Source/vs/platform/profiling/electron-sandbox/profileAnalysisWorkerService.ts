@@ -35,6 +35,7 @@ export interface IProfileAnalysisWorkerService {
 // ---- impl
 class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
     declare _serviceBrand: undefined;
+
     constructor(
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService, 
@@ -42,8 +43,10 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
     private readonly _logService: ILogService) { }
     private async _withWorker<R>(callback: (worker: Proxied<IProfileAnalysisWorker>) => Promise<R>): Promise<R> {
         const worker = createWebWorker<IProfileAnalysisWorker>('vs/platform/profiling/electron-sandbox/profileAnalysisWorker', 'CpuProfileAnalysisWorker');
+
         try {
             const r = await callback(worker.proxy);
+
             return r;
         }
         finally {
@@ -53,6 +56,7 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
     async analyseBottomUp(profile: IV8Profile, callFrameClassifier: IScriptUrlClassifier, perfBaseline: number, sendAsErrorTelemtry: boolean): Promise<ProfilingOutput> {
         return this._withWorker(async (worker) => {
             const result = await worker.$analyseBottomUp(profile);
+
             if (result.kind === ProfilingOutput.Interesting) {
                 for (const sample of result.samples) {
                     reportSample({
@@ -74,6 +78,7 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
     ][]> {
         return this._withWorker(async (worker) => {
             const result = await worker.$analyseByUrlCategory(profile, locations);
+
             return result;
         });
     }

@@ -133,8 +133,11 @@ class Trait<T> implements ISpliceable<boolean>, IDisposable {
 
 	splice(start: number, deleteCount: number, elements: boolean[]): void {
 		const diff = elements.length - deleteCount;
+
 		const end = start + deleteCount;
+
 		const sortedIndexes: number[] = [];
+
 		let i = 0;
 
 		while (i < this.sortedIndexes.length && this.sortedIndexes[i] < start) {
@@ -175,6 +178,7 @@ class Trait<T> implements ISpliceable<boolean>, IDisposable {
 
 	private _set(indexes: number[], sortedIndexes: number[], browserEvent?: UIEvent): number[] {
 		const result = this.indexes;
+
 		const sortedResult = this.sortedIndexes;
 
 		this.indexes = indexes;
@@ -184,6 +188,7 @@ class Trait<T> implements ISpliceable<boolean>, IDisposable {
 		this.renderer.renderIndexes(toRender);
 
 		this._onChange.fire({ indexes, browserEvent });
+
 		return result;
 	}
 
@@ -238,11 +243,13 @@ class TraitSpliceable<T> implements ISpliceable<T> {
 		}
 
 		const pastElementsWithTrait = this.trait.get().map(i => this.identityProvider!.getId(this.view.element(i)).toString());
+
 		if (pastElementsWithTrait.length === 0) {
 			return this.trait.splice(start, deleteCount, new Array(elements.length).fill(false));
 		}
 
 		const pastElementsWithTraitSet = new Set(pastElementsWithTrait);
+
 		const elementsWithTrait = elements.map(e => pastElementsWithTraitSet.has(this.identityProvider!.getId(e).toString()));
 		this.trait.splice(start, deleteCount, elementsWithTrait);
 	}
@@ -330,16 +337,22 @@ class KeyboardController<T> implements IDisposable {
 			switch (e.keyCode) {
 				case KeyCode.Enter:
 					return this.onEnter(e);
+
 				case KeyCode.UpArrow:
 					return this.onUpArrow(e);
+
 				case KeyCode.DownArrow:
 					return this.onDownArrow(e);
+
 				case KeyCode.PageUp:
 					return this.onPageUpArrow(e);
+
 				case KeyCode.PageDown:
 					return this.onPageDownArrow(e);
+
 				case KeyCode.Escape:
 					return this.onEscape(e);
+
 				case KeyCode.KeyA:
 					if (this.multipleSelectionSupport && (platform.isMacintosh ? e.metaKey : e.ctrlKey)) {
 						this.onCtrlA(e);
@@ -364,6 +377,7 @@ class KeyboardController<T> implements IDisposable {
 		e.preventDefault();
 		e.stopPropagation();
 		this.list.focusPrevious(1, false, e.browserEvent);
+
 		const el = this.list.getFocus()[0];
 		this.list.setAnchor(el);
 		this.list.reveal(el);
@@ -374,6 +388,7 @@ class KeyboardController<T> implements IDisposable {
 		e.preventDefault();
 		e.stopPropagation();
 		this.list.focusNext(1, false, e.browserEvent);
+
 		const el = this.list.getFocus()[0];
 		this.list.setAnchor(el);
 		this.list.reveal(el);
@@ -384,6 +399,7 @@ class KeyboardController<T> implements IDisposable {
 		e.preventDefault();
 		e.stopPropagation();
 		this.list.focusPreviousPage(e.browserEvent);
+
 		const el = this.list.getFocus()[0];
 		this.list.setAnchor(el);
 		this.list.reveal(el);
@@ -394,6 +410,7 @@ class KeyboardController<T> implements IDisposable {
 		e.preventDefault();
 		e.stopPropagation();
 		this.list.focusNextPage(e.browserEvent);
+
 		const el = this.list.getFocus()[0];
 		this.list.setAnchor(el);
 		this.list.reveal(el);
@@ -501,6 +518,7 @@ class TypeNavigationController<T> implements IDisposable {
 		);
 
 		const onClear = Event.debounce<string, null>(onChar, () => null, 800, undefined, undefined, undefined, this.enabledDisposables);
+
 		const onInput = Event.reduce<string | null, string | null>(Event.any(onChar, onClear), (r, i) => i === null ? null : ((r || '') + i), undefined, this.enabledDisposables);
 
 		onInput(this.onInput, this, this.enabledDisposables);
@@ -525,6 +543,7 @@ class TypeNavigationController<T> implements IDisposable {
 
 	private onClear(): void {
 		const focus = this.list.getFocus();
+
 		if (focus.length > 0 && focus[0] === this.previouslyFocused) {
 			// List: re-announce element on typing end since typed keys will interrupt aria label of focused element
 			// Do not announce if there was a focus change at the end to prevent duplication https://github.com/microsoft/vscode/issues/95961
@@ -543,17 +562,22 @@ class TypeNavigationController<T> implements IDisposable {
 		if (!word) {
 			this.state = TypeNavigationControllerState.Idle;
 			this.triggered = false;
+
 			return;
 		}
 
 		const focus = this.list.getFocus();
+
 		const start = focus.length > 0 ? focus[0] : 0;
+
 		const delta = this.state === TypeNavigationControllerState.Idle ? 1 : 0;
 		this.state = TypeNavigationControllerState.Typing;
 
 		for (let i = 0; i < this.list.length; i++) {
 			const index = (start + i + delta) % this.list.length;
+
 			const label = this.keyboardNavigationLabelProvider.getKeyboardNavigationLabel(this.view.element(index));
+
 			const labelStr = label && label.toString();
 
 			if (this.list.options.typeNavigationEnabled) {
@@ -564,6 +588,7 @@ class TypeNavigationController<T> implements IDisposable {
 						this.previouslyFocused = start;
 						this.list.setFocus([index]);
 						this.list.reveal(index);
+
 						return;
 					}
 
@@ -576,6 +601,7 @@ class TypeNavigationController<T> implements IDisposable {
 							this.previouslyFocused = start;
 							this.list.setFocus([index]);
 							this.list.reveal(index);
+
 							return;
 						}
 					}
@@ -584,6 +610,7 @@ class TypeNavigationController<T> implements IDisposable {
 				this.previouslyFocused = start;
 				this.list.setFocus([index]);
 				this.list.reveal(index);
+
 				return;
 			}
 		}
@@ -638,6 +665,7 @@ class DOMFocusController<T> implements IDisposable {
 		}
 
 		const style = getWindow(tabIndexElement).getComputedStyle(tabIndexElement);
+
 		if (style.visibility === 'hidden' || style.display === 'none') {
 			return;
 		}
@@ -759,12 +787,14 @@ export class MouseController<T> implements IDisposable {
 		}
 
 		e.browserEvent.isHandledByList = true;
+
 		const focus = e.index;
 
 		if (typeof focus === 'undefined') {
 			this.list.setFocus([], e.browserEvent);
 			this.list.setSelection([], e.browserEvent);
 			this.list.setAnchor(undefined);
+
 			return;
 		}
 
@@ -796,12 +826,14 @@ export class MouseController<T> implements IDisposable {
 		}
 
 		e.browserEvent.isHandledByList = true;
+
 		const focus = this.list.getFocus();
 		this.list.setSelection(focus, e.browserEvent);
 	}
 
 	private changeSelection(e: IListMouseEvent<T> | IListTouchEvent<T>): void {
 		const focus = e.index!;
+
 		let anchor = this.list.getAnchor();
 
 		if (this.isSelectionRangeChangeEvent(e)) {
@@ -812,9 +844,13 @@ export class MouseController<T> implements IDisposable {
 			}
 
 			const min = Math.min(anchor, focus);
+
 			const max = Math.max(anchor, focus);
+
 			const rangeSelection = range(min, max + 1);
+
 			const selection = this.list.getSelection();
+
 			const contiguousRange = getContiguousRangeContaining(disjunction(selection, [anchor]), anchor);
 
 			if (contiguousRange.length === 0) {
@@ -827,6 +863,7 @@ export class MouseController<T> implements IDisposable {
 
 		} else if (this.isSelectionSingleChangeEvent(e)) {
 			const selection = this.list.getSelection();
+
 			const newSelection = selection.filter(i => i !== focus);
 
 			this.list.setFocus([focus]);
@@ -856,10 +893,14 @@ export interface IStyleController {
 
 export interface IListAccessibilityProvider<T> extends IListViewAccessibilityProvider<T> {
 	getAriaLabel(element: T): string | IObservable<string> | null;
+
 	getWidgetAriaLabel(): string;
+
 	getWidgetRole?(): AriaRole;
+
 	getAriaLevel?(element: T): number | undefined;
 	onDidChangeActiveDescendant?: Event<void>;
+
 	getActiveDescendantId?(element: T): string | undefined;
 }
 
@@ -869,6 +910,7 @@ export class DefaultStyleController implements IStyleController {
 
 	style(styles: IListStyles): void {
 		const suffix = this.selectorSuffix && `.${this.selectorSuffix}`;
+
 		const content: string[] = [];
 
 		if (styles.listBackground) {
@@ -946,6 +988,7 @@ export class DefaultStyleController implements IStyleController {
 		 * Outlines
 		 */
 		const focusAndSelectionOutline = asCssValueWithDefault(styles.listFocusAndSelectionOutline, asCssValueWithDefault(styles.listSelectionOutline, styles.listFocusOutline ?? ''));
+
 		if (focusAndSelectionOutline) { // default: listFocusOutline
 			content.push(`.monaco-list${suffix}:focus .monaco-list-row.focused.selected { outline: 1px solid ${focusAndSelectionOutline}; outline-offset: -1px;}`);
 		}
@@ -959,6 +1002,7 @@ export class DefaultStyleController implements IStyleController {
 		}
 
 		const inactiveFocusAndSelectionOutline = asCssValueWithDefault(styles.listSelectionOutline, styles.listInactiveFocusOutline ?? '');
+
 		if (inactiveFocusAndSelectionOutline) {
 			content.push(`.monaco-list${suffix} .monaco-list-row.focused.selected { outline: 1px dotted ${inactiveFocusAndSelectionOutline}; outline-offset: -1px; }`);
 		}
@@ -1154,13 +1198,16 @@ function getContiguousRangeContaining(range: number[], value: number): number[] 
 	}
 
 	const result: number[] = [];
+
 	let i = index - 1;
+
 	while (i >= 0 && range[i] === value - (index - i)) {
 		result.push(range[i--]);
 	}
 
 	result.reverse();
 	i = index;
+
 	while (i < range.length && range[i] === value + (i - index)) {
 		result.push(range[i++]);
 	}
@@ -1174,6 +1221,7 @@ function getContiguousRangeContaining(range: number[], value: number): number[] 
  */
 function disjunction(one: number[], other: number[]): number[] {
 	const result: number[] = [];
+
 	let i = 0, j = 0;
 
 	while (i < one.length || j < other.length) {
@@ -1185,6 +1233,7 @@ function disjunction(one: number[], other: number[]): number[] {
 			result.push(one[i]);
 			i++;
 			j++;
+
 			continue;
 		} else if (one[i] < other[j]) {
 			result.push(one[i++]);
@@ -1202,6 +1251,7 @@ function disjunction(one: number[], other: number[]): number[] {
  */
 function relativeComplement(one: number[], other: number[]): number[] {
 	const result: number[] = [];
+
 	let i = 0, j = 0;
 
 	while (i < one.length || j < other.length) {
@@ -1212,6 +1262,7 @@ function relativeComplement(one: number[], other: number[]): number[] {
 		} else if (one[i] === other[j]) {
 			i++;
 			j++;
+
 			continue;
 		} else if (one[i] < other[j]) {
 			result.push(one[i++]);
@@ -1279,6 +1330,7 @@ class AccessibiltyRenderer<T> implements IListRenderer<T, IAccessibilityTemplate
 
 	renderElement(element: T, index: number, data: IAccessibilityTemplateData): void {
 		const ariaLabel = this.accessibilityProvider.getAriaLabel(element);
+
 		const observable = (ariaLabel && typeof ariaLabel !== 'string') ? ariaLabel : constObservable(ariaLabel);
 
 		data.disposables.add(autorun(reader => {
@@ -1317,7 +1369,9 @@ class ListViewDragAndDrop<T> implements IListViewDragAndDrop<T> {
 
 	getDragElements(element: T): T[] {
 		const selection = this.list.getSelectedElements();
+
 		const elements = selection.indexOf(element) > -1 ? selection : [element];
+
 		return elements;
 	}
 
@@ -1435,9 +1489,13 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 				.map(e => EventHelper.stop(e, true))
 				.map(({ browserEvent }) => {
 					const focus = this.getFocus();
+
 					const index = focus.length ? focus[0] : undefined;
+
 					const element = typeof index !== 'undefined' ? this.view.element(index) : undefined;
+
 					const anchor = typeof index !== 'undefined' ? this.view.domElement(index) as HTMLElement : this.view.domNode;
+
 					return { index, element, anchor, browserEvent };
 				}));
 
@@ -1705,6 +1763,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 	setAnchor(index: number | undefined): void {
 		if (typeof index === 'undefined') {
 			this.anchor.set([]);
+
 			return;
 		}
 
@@ -1721,6 +1780,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 
 	getAnchorElement(): T | undefined {
 		const anchor = this.getAnchor();
+
 		return typeof anchor === 'undefined' ? undefined : this.element(anchor);
 	}
 
@@ -1738,6 +1798,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 		if (this.length === 0) { return; }
 
 		const focus = this.focus.get();
+
 		const index = this.findNextIndex(focus.length > 0 ? focus[0] + n : 0, loop, filter);
 
 		if (index > -1) {
@@ -1749,6 +1810,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 		if (this.length === 0) { return; }
 
 		const focus = this.focus.get();
+
 		const index = this.findPreviousIndex(focus.length > 0 ? focus[0] - n : 0, loop, filter);
 
 		if (index > -1) {
@@ -1759,6 +1821,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 	async focusNextPage(browserEvent?: UIEvent, filter?: (element: T) => boolean): Promise<void> {
 		let lastPageIndex = this.view.indexAt(this.view.getScrollTop() + this.view.renderHeight);
 		lastPageIndex = lastPageIndex === 0 ? 0 : lastPageIndex - 1;
+
 		const currentlyFocusedElementIndex = this.getFocus()[0];
 
 		if (currentlyFocusedElementIndex !== lastPageIndex && (currentlyFocusedElementIndex === undefined || lastPageIndex > currentlyFocusedElementIndex)) {
@@ -1771,7 +1834,9 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 			}
 		} else {
 			const previousScrollTop = this.view.getScrollTop();
+
 			let nextpageScrollTop = previousScrollTop + this.view.renderHeight;
+
 			if (lastPageIndex > currentlyFocusedElementIndex) {
 				// scroll last page element to the top only if the last page element is below the focused element
 				nextpageScrollTop -= this.view.elementHeight(lastPageIndex);
@@ -1791,7 +1856,9 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 
 	async focusPreviousPage(browserEvent?: UIEvent, filter?: (element: T) => boolean, getPaddingTop: () => number = () => 0): Promise<void> {
 		let firstPageIndex: number;
+
 		const paddingTop = getPaddingTop();
+
 		const scrollTop = this.view.getScrollTop() + paddingTop;
 
 		if (scrollTop === 0) {
@@ -1898,7 +1965,9 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 		}
 
 		const scrollTop = this.view.getScrollTop();
+
 		const elementTop = this.view.elementTop(index);
+
 		const elementHeight = this.view.elementHeight(index);
 
 		if (isNumber(relativeTop)) {
@@ -1907,6 +1976,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 			this.view.setScrollTop(m * clamp(relativeTop, 0, 1) + elementTop - paddingTop);
 		} else {
 			const viewItemBottom = elementTop + elementHeight;
+
 			const scrollBottom = scrollTop + this.view.renderHeight;
 
 			if (elementTop < scrollTop + paddingTop && viewItemBottom >= scrollBottom) {
@@ -1929,7 +1999,9 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 		}
 
 		const scrollTop = this.view.getScrollTop();
+
 		const elementTop = this.view.elementTop(index);
+
 		const elementHeight = this.view.elementHeight(index);
 
 		if (elementTop < scrollTop + paddingTop || elementTop + elementHeight > scrollTop + this.view.renderHeight) {
@@ -1938,6 +2010,7 @@ export class List<T> implements ISpliceable<T>, IDisposable {
 
 		// y = mx + b
 		const m = elementHeight - this.view.renderHeight + paddingTop;
+
 		return Math.abs((scrollTop + paddingTop - elementTop) / m);
 	}
 

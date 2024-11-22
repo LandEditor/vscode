@@ -25,8 +25,10 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
     dispose(): void { }
     $tryApplyWorkspaceEdit(dto: SerializableObjectWithBuffers<IWorkspaceEditDto>, undoRedoGroupId?: number, isRefactoring?: boolean): Promise<boolean> {
         const edits = reviveWorkspaceEditDto(dto.value, this._uriIdentService);
+
         return this._bulkEditService.apply(edits, { undoRedoGroupId, respectAutoSaveConfig: isRefactoring }).then((res) => res.isApplied, err => {
             this._logService.warn(`IGNORING workspace edit: ${err}`);
+
             return false;
         });
     }
@@ -38,6 +40,7 @@ export function reviveWorkspaceEditDto(data: IWorkspaceEditDto | undefined, uriI
         return <WorkspaceEdit>data;
     }
     const result = revive<WorkspaceEdit>(data);
+
     for (const edit of result.edits) {
         if (ResourceTextEdit.is(edit)) {
             edit.resource = uriIdentityService.asCanonicalUri(edit.resource);
@@ -45,6 +48,7 @@ export function reviveWorkspaceEditDto(data: IWorkspaceEditDto | undefined, uriI
         if (ResourceFileEdit.is(edit)) {
             if (edit.options) {
                 const inContents = (edit as IWorkspaceFileEditDto).options?.contents;
+
                 if (inContents) {
                     if (inContents.type === 'base64') {
                         edit.options.contents = Promise.resolve(decodeBase64(inContents.value));
@@ -64,7 +68,9 @@ export function reviveWorkspaceEditDto(data: IWorkspaceEditDto | undefined, uriI
         }
         if (ResourceNotebookCellEdit.is(edit)) {
             edit.resource = uriIdentityService.asCanonicalUri(edit.resource);
+
             const cellEdit = (edit as IWorkspaceCellEditDto).cellEdit;
+
             if (cellEdit.editType === CellEditType.Replace) {
                 edit.cellEdit = {
                     ...cellEdit,

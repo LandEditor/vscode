@@ -53,6 +53,7 @@ export class AuthenticationUsageService extends Disposable implements IAuthentic
     _serviceBrand: undefined;
     private _queue = new Queue();
     private _extensionsUsingAuth = new Set<string>();
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService, 
@@ -65,6 +66,7 @@ export class AuthenticationUsageService extends Disposable implements IAuthentic
         super();
         // If an extension is listed in `trustedExtensionAuthAccess` we should consider it as using auth
         const trustedExtensionAuthAccess = productService.trustedExtensionAuthAccess;
+
         if (Array.isArray(trustedExtensionAuthAccess)) {
             for (const extensionId of trustedExtensionAuthAccess) {
                 this._extensionsUsingAuth.add(extensionId);
@@ -84,12 +86,16 @@ export class AuthenticationUsageService extends Disposable implements IAuthentic
     }
     async extensionUsesAuth(extensionId: string): Promise<boolean> {
         await this._queue.whenIdle();
+
         return this._extensionsUsingAuth.has(extensionId);
     }
     readAccountUsages(providerId: string, accountName: string): IAccountUsage[] {
         const accountKey = `${providerId}-${accountName}-usages`;
+
         const storedUsages = this._storageService.get(accountKey, StorageScope.APPLICATION);
+
         let usages: IAccountUsage[] = [];
+
         if (storedUsages) {
             try {
                 usages = JSON.parse(storedUsages);
@@ -106,8 +112,11 @@ export class AuthenticationUsageService extends Disposable implements IAuthentic
     }
     addAccountUsage(providerId: string, accountName: string, scopes: string[], extensionId: string, extensionName: string): void {
         const accountKey = `${providerId}-${accountName}-usages`;
+
         const usages = this.readAccountUsages(providerId, accountName);
+
         const existingUsageIndex = usages.findIndex(usage => usage.extensionId === extensionId);
+
         if (existingUsageIndex > -1) {
             usages.splice(existingUsageIndex, 1, {
                 extensionId,
@@ -130,8 +139,10 @@ export class AuthenticationUsageService extends Disposable implements IAuthentic
     private async _addExtensionsToCache(providerId: string) {
         try {
             const accounts = await this._authenticationService.getAccounts(providerId);
+
             for (const account of accounts) {
                 const usage = this.readAccountUsages(providerId, account.label);
+
                 for (const u of usage) {
                     this._extensionsUsingAuth.add(u.extensionId);
                 }

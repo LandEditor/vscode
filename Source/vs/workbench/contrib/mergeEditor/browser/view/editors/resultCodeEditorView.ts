@@ -34,6 +34,7 @@ export class ResultCodeEditorView extends CodeEditorView {
         super(instantiationService, viewModel, configurationService);
         this.editor.invokeWithinContext(accessor => {
             const contextKeyService = accessor.get(IContextKeyService);
+
             const isMergeResultEditor = ctxIsMergeResultEditor.bindTo(contextKeyService);
             isMergeResultEditor.set(true);
             this._register(toDisposable(() => isMergeResultEditor.reset()));
@@ -52,6 +53,7 @@ export class ResultCodeEditorView extends CodeEditorView {
         this._register(autorun(reader => {
             /** @description update labels & text model */
             const vm = this.viewModel.read(reader);
+
             if (!vm) {
                 return;
             }
@@ -59,18 +61,22 @@ export class ResultCodeEditorView extends CodeEditorView {
             reset(this.htmlElements.title, ...renderLabelWithIcons(localize('result', 'Result')));
             reset(this.htmlElements.description, ...renderLabelWithIcons(this._labelService.getUriLabel(vm.model.resultTextModel.uri, { relative: true })));
         }));
+
         const remainingConflictsActionBar = this._register(new ActionBar(this.htmlElements.detail));
         this._register(autorun(reader => {
             /** @description update remainingConflicts label */
             const vm = this.viewModel.read(reader);
+
             if (!vm) {
                 return;
             }
             const model = vm.model;
+
             if (!model) {
                 return;
             }
             const count = model.unhandledConflictsCount.read(reader);
+
             const text = count === 1
                 ? localize('mergeEditor.remainingConflicts', '{0} Conflict Remaining', count)
                 : localize('mergeEditor.remainingConflict', '{0} Conflicts Remaining ', count);
@@ -95,28 +101,39 @@ export class ResultCodeEditorView extends CodeEditorView {
     }
     private readonly decorations = derived(this, reader => {
         const viewModel = this.viewModel.read(reader);
+
         if (!viewModel) {
             return [];
         }
         const model = viewModel.model;
+
         const textModel = model.resultTextModel;
+
         const result = new Array<IModelDeltaDecoration>();
+
         const baseRangeWithStoreAndTouchingDiffs = join(model.modifiedBaseRanges.read(reader), model.baseResultDiffs.read(reader), (baseRange, diff) => baseRange.baseRange.touches(diff.inputRange)
             ? CompareResult.neitherLessOrGreaterThan
             : LineRange.compareByStart(baseRange.baseRange, diff.inputRange));
+
         const activeModifiedBaseRange = viewModel.activeModifiedBaseRange.read(reader);
+
         const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
+
         for (const m of baseRangeWithStoreAndTouchingDiffs) {
             const modifiedBaseRange = m.left;
+
             if (modifiedBaseRange) {
                 const blockClassNames = ['merge-editor-block'];
+
                 let blockPadding: [
                     top: number,
                     right: number,
                     bottom: number,
                     left: number
                 ] = [0, 0, 0, 0];
+
                 const isHandled = model.isHandled(modifiedBaseRange).read(reader);
+
                 if (isHandled) {
                     blockClassNames.push('handled');
                 }
@@ -128,6 +145,7 @@ export class ResultCodeEditorView extends CodeEditorView {
                     blockClassNames.push('conflicting');
                 }
                 blockClassNames.push('result');
+
                 if (!modifiedBaseRange.isConflicting && !showNonConflictingChanges && isHandled) {
                     continue;
                 }
@@ -154,6 +172,7 @@ export class ResultCodeEditorView extends CodeEditorView {
             if (!modifiedBaseRange || modifiedBaseRange.isConflicting) {
                 for (const diff of m.rights) {
                     const range = diff.outputRange.toInclusiveRange();
+
                     if (range) {
                         result.push({
                             range,

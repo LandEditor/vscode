@@ -82,6 +82,7 @@ export class StringRepresentationProvider implements IKeyboardNavigationLabelPro
 	getKeyboardNavigationLabel(element: TreeElement): { toString(): string } {
 		if (element instanceof OneReference) {
 			const parts = element.parent.getPreview(element)?.preview(element.range);
+
 			if (parts) {
 				return parts.value;
 			}
@@ -114,6 +115,7 @@ class FileReferencesTemplate extends Disposable {
 		@ILabelService private readonly _labelService: ILabelService
 	) {
 		super();
+
 		const parent = document.createElement('div');
 		parent.classList.add('reference-file');
 		this.file = this._register(new IconLabel(parent, { supportHighlights: true }));
@@ -130,8 +132,10 @@ class FileReferencesTemplate extends Disposable {
 			this._labelService.getUriLabel(parent, { relative: true }),
 			{ title: this._labelService.getUriLabel(element.uri), matches }
 		);
+
 		const len = element.children.length;
 		this.badge.setCount(len);
+
 		if (len > 1) {
 			this.badge.setTitleFormat(localize('referencesCount', "{0} references", len));
 		} else {
@@ -174,6 +178,7 @@ class OneReferenceTemplate extends Disposable {
 
 	set(element: OneReference, score?: FuzzyScore): void {
 		const preview = element.parent.getPreview(element)?.preview(element.range);
+
 		if (!preview || !preview.value) {
 			// this means we FAILED to resolve the document or the value is the empty string
 			this.label.set(`${basename(element.uri)}:${element.range.startLineNumber + 1}:${element.range.startColumn + 1}`);
@@ -181,6 +186,7 @@ class OneReferenceTemplate extends Disposable {
 			// render search match as highlight unless
 			// we have score, then render the score
 			const { value, highlight } = preview;
+
 			if (score && !FuzzyScore.isDefault(score)) {
 				this.label.element.classList.toggle('referenceMatch', false);
 				this.label.set(value, createMatches(score));

@@ -20,6 +20,7 @@ import { MergeEditor } from '../browser/view/mergeEditor.js';
 import { MergeEditorViewModel } from '../browser/view/viewModel.js';
 import { MergeEditorContents } from '../common/mergeEditor.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
+
 const MERGE_EDITOR_CATEGORY: ILocalizedString = localize2('mergeEditor', 'Merge Editor (Dev)');
 export class MergeEditorOpenContentsFromJSON extends Action2 {
     constructor() {
@@ -36,20 +37,28 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
         resultState?: 'initial' | 'current';
     }): Promise<void> {
         const quickInputService = accessor.get(IQuickInputService);
+
         const clipboardService = accessor.get(IClipboardService);
+
         const editorService = accessor.get(IEditorService);
+
         const languageService = accessor.get(ILanguageService);
+
         const env = accessor.get(INativeEnvironmentService);
+
         const fileService = accessor.get(IFileService);
+
         if (!args) {
             args = {};
         }
         let content: MergeEditorContents;
+
         if (!args.data) {
             const result = await quickInputService.input({
                 prompt: localize('mergeEditor.enterJSON', 'Enter JSON'),
                 value: await clipboardService.readText(),
             });
+
             if (result === undefined) {
                 return;
             }
@@ -62,12 +71,19 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
             content = args.data;
         }
         const targetDir = URI.joinPath(env.tmpDir, randomPath());
+
         const extension = languageService.getExtensions(content.languageId)[0] || '';
+
         const baseUri = URI.joinPath(targetDir, `/base${extension}`);
+
         const input1Uri = URI.joinPath(targetDir, `/input1${extension}`);
+
         const input2Uri = URI.joinPath(targetDir, `/input2${extension}`);
+
         const resultUri = URI.joinPath(targetDir, `/result${extension}`);
+
         const initialResultUri = URI.joinPath(targetDir, `/initialResult${extension}`);
+
         async function writeFile(uri: URI, content: string): Promise<void> {
             await fileService.writeFile(uri, VSBuffer.fromString(content));
         }
@@ -79,6 +95,7 @@ export class MergeEditorOpenContentsFromJSON extends Action2 {
             writeFile(resultUri, shouldOpenInitial ? (content.initialResult || '') : content.result),
             writeFile(initialResultUri, content.initialResult || ''),
         ]);
+
         const input: IResourceMergeEditorInput = {
             base: { resource: baseUri },
             input1: { resource: input1Uri, label: 'Input 1', description: 'Input 1', detail: '(from JSON)' },
@@ -93,6 +110,7 @@ async function promptOpenInitial(quickInputService: IQuickInputService, resultSt
         return resultStateOverride === 'initial';
     }
     const result = await quickInputService.pick([{ label: 'result', result: false }, { label: 'initial result', result: true }], { canPickMany: false });
+
     return result?.result;
 }
 abstract class MergeEditorAction extends Action2 {
@@ -101,8 +119,10 @@ abstract class MergeEditorAction extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const { activeEditorPane } = accessor.get(IEditorService);
+
         if (activeEditorPane instanceof MergeEditor) {
             const vm = activeEditorPane.viewModel.get();
+
             if (!vm) {
                 return;
             }
@@ -123,18 +143,22 @@ export class OpenSelectionInTemporaryMergeEditor extends MergeEditorAction {
     }
     override async runWithViewModel(viewModel: MergeEditorViewModel, accessor: ServicesAccessor) {
         const rangesInBase = viewModel.selectionInBase.get()?.rangesInBase;
+
         if (!rangesInBase || rangesInBase.length === 0) {
             return;
         }
         const base = rangesInBase
             .map((r) => viewModel.model.base.getValueInRange(r))
             .join('\n');
+
         const input1 = rangesInBase
             .map((r) => viewModel.inputCodeEditorView1.editor.getModel()!.getValueInRange(viewModel.model.translateBaseRangeToInput(1, r)))
             .join('\n');
+
         const input2 = rangesInBase
             .map((r) => viewModel.inputCodeEditorView2.editor.getModel()!.getValueInRange(viewModel.model.translateBaseRangeToInput(2, r)))
             .join('\n');
+
         const result = rangesInBase
             .map((r) => viewModel.resultCodeEditorView.editor.getModel()!.getValueInRange(viewModel.model.translateBaseRangeToResult(r)))
             .join('\n');

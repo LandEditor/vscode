@@ -26,7 +26,9 @@ export class NativeDialogHandler extends AbstractDialogHandler {
     }
     async prompt<T>(prompt: IPrompt<T>): Promise<IAsyncPromptResult<T>> {
         this.logService.trace('DialogService#prompt', prompt.message);
+
         const buttons = this.getPromptButtons(prompt);
+
         const { response, checkboxChecked } = await this.nativeHostService.showMessageBox({
             type: this.getDialogType(prompt.type),
             title: prompt.title,
@@ -38,11 +40,14 @@ export class NativeDialogHandler extends AbstractDialogHandler {
             checkboxChecked: prompt.checkbox?.checked,
             targetWindowId: getActiveWindow().vscodeWindowId
         });
+
         return this.getPromptResult(prompt, response, checkboxChecked);
     }
     async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
         this.logService.trace('DialogService#confirm', confirmation.message);
+
         const buttons = this.getConfirmationButtons(confirmation);
+
         const { response, checkboxChecked } = await this.nativeHostService.showMessageBox({
             type: this.getDialogType(confirmation.type) ?? 'question',
             title: confirmation.title,
@@ -54,6 +59,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
             checkboxChecked: confirmation.checkbox?.checked,
             targetWindowId: getActiveWindow().vscodeWindowId
         });
+
         return { confirmed: response === 0, checkboxChecked };
     }
     input(): never {
@@ -61,6 +67,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
     }
     async about(): Promise<void> {
         let version = this.productService.version;
+
         if (this.productService.target) {
             version = `${version} (${this.productService.target} setup)`;
         }
@@ -68,11 +75,15 @@ export class NativeDialogHandler extends AbstractDialogHandler {
             version = `${version} (Universal)`;
         }
         const osProps = await this.nativeHostService.getOSProperties();
+
         const detailString = (useAgo: boolean): string => {
             return localize({ key: 'aboutDetail', comment: ['Electron, Chromium, Node.js and V8 are product names that need no translation'] }, "Version: {0}\nCommit: {1}\nDate: {2}\nElectron: {3}\nElectronBuildId: {4}\nChromium: {5}\nNode.js: {6}\nV8: {7}\nOS: {8}", version, this.productService.commit || 'Unknown', this.productService.date ? `${this.productService.date}${useAgo ? ' (' + fromNow(new Date(this.productService.date), true) + ')' : ''}` : 'Unknown', process.versions['electron'], process.versions['microsoft-build'], process.versions['chrome'], process.versions['node'], process.versions['v8'], `${osProps.type} ${osProps.arch} ${osProps.release}${isLinuxSnap ? ' snap' : ''}`);
         };
+
         const detail = detailString(true);
+
         const detailToCopy = detailString(false);
+
         const { response } = await this.nativeHostService.showMessageBox({
             type: 'info',
             message: this.productService.nameLong,
@@ -83,6 +94,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
             ],
             targetWindowId: getActiveWindow().vscodeWindowId
         });
+
         if (response === 0) {
             this.clipboardService.writeText(detailToCopy);
         }

@@ -76,6 +76,7 @@ export abstract class AbstractPathService implements IPathService {
     private resolveOS: Promise<OperatingSystem>;
     private resolveUserHome: Promise<URI>;
     private maybeUnresolvedUserHome: URI | undefined;
+
     constructor(private localUserHome: URI, 
     @IRemoteAgentService
     private readonly remoteAgentService: IRemoteAgentService, 
@@ -86,12 +87,15 @@ export abstract class AbstractPathService implements IPathService {
         // OS
         this.resolveOS = (async () => {
             const env = await this.remoteAgentService.getEnvironment();
+
             return env?.os || OS;
         })();
         // User Home
         this.resolveUserHome = (async () => {
             const env = await this.remoteAgentService.getEnvironment();
+
             const userHome = this.maybeUnresolvedUserHome = env?.userHome ?? localUserHome;
+
             return userHome;
         })();
     }
@@ -122,14 +126,17 @@ export abstract class AbstractPathService implements IPathService {
             return Schemas.vscodeRemote;
         }
         const virtualWorkspace = getVirtualWorkspaceScheme(contextService.getWorkspace());
+
         if (virtualWorkspace) {
             return virtualWorkspace;
         }
         const firstFolder = contextService.getWorkspace().folders[0];
+
         if (firstFolder) {
             return firstFolder.uri.scheme;
         }
         const configuration = contextService.getWorkspace().configuration;
+
         if (configuration) {
             return configuration.scheme;
         }
@@ -162,6 +169,7 @@ export abstract class AbstractPathService implements IPathService {
         // on other systems bwd-slashes are valid
         // filename character, eg /f\oo/ba\r.txt
         const os = await this.resolveOS;
+
         if (os === OperatingSystem.Windows) {
             _path = _path.replace(/\\/g, '/');
         }
@@ -169,6 +177,7 @@ export abstract class AbstractPathService implements IPathService {
         // or use the path as given
         if (_path[0] === '/' && _path[1] === '/') {
             const idx = _path.indexOf('/', 2);
+
             if (idx === -1) {
                 authority = _path.substring(2);
                 _path = '/';

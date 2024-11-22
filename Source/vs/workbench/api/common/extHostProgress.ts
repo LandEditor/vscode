@@ -14,18 +14,23 @@ export class ExtHostProgress implements ExtHostProgressShape {
     private _proxy: MainThreadProgressShape;
     private _handles: number = 0;
     private _mapHandleToCancellationSource: Map<number, CancellationTokenSource> = new Map();
+
     constructor(proxy: MainThreadProgressShape) {
         this._proxy = proxy;
     }
     async withProgress<R>(extension: IExtensionDescription, options: ProgressOptions, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>): Promise<R> {
         const handle = this._handles++;
+
         const { title, location, cancellable } = options;
+
         const source = { label: extension.displayName || extension.name, id: extension.identifier.value };
         this._proxy.$startProgress(handle, { location: ProgressLocation.from(location), title, source, cancellable }, !extension.isUnderDevelopment ? extension.identifier.value : undefined).catch(onUnexpectedExternalError);
+
         return this._withProgress(handle, task, !!cancellable);
     }
     private _withProgress<R>(handle: number, task: (progress: Progress<IProgressStep>, token: CancellationToken) => Thenable<R>, cancellable: boolean): Thenable<R> {
         let source: CancellationTokenSource | undefined;
+
         if (cancellable) {
             source = new CancellationTokenSource();
             this._mapHandleToCancellationSource.set(handle, source);
@@ -35,19 +40,24 @@ export class ExtHostProgress implements ExtHostProgressShape {
             this._mapHandleToCancellationSource.delete(handle);
             source?.dispose();
         };
+
         let p: Thenable<R>;
+
         try {
             p = task(new ProgressCallback(this._proxy, handle), cancellable && source ? source.token : CancellationToken.None);
         }
         catch (err) {
             progressEnd(handle);
+
             throw err;
         }
         p.then(result => progressEnd(handle), err => progressEnd(handle));
+
         return p;
     }
     public $acceptProgressCanceled(handle: number): void {
         const source = this._mapHandleToCancellationSource.get(handle);
+
         if (source) {
             source.cancel();
             this._mapHandleToCancellationSource.delete(handle);
@@ -56,6 +66,7 @@ export class ExtHostProgress implements ExtHostProgressShape {
 }
 function mergeProgress(result: IProgressStep, currentValue: IProgressStep): IProgressStep {
     result.message = currentValue.message;
+
     if (typeof currentValue.increment === 'number') {
         if (typeof result.increment === 'number') {
             result.increment += currentValue.increment;

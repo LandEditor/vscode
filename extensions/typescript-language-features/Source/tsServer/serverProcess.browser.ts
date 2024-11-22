@@ -32,6 +32,7 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
     constructor(private readonly _extensionUri: vscode.Uri, private readonly _logger: Logger) { }
     public fork(version: TypeScriptVersion, args: readonly string[], kind: TsServerProcessKind, configuration: TypeScriptServiceConfiguration, _versionManager: TypeScriptVersionManager, _nodeVersionManager: NodeVersionManager, tsServerLog: TsServerLog | undefined) {
         const tsServerPath = version.tsServerPath;
+
         const launchArgs = [
             ...args,
             // Explicitly give TS Server its path so it can load local resources
@@ -39,6 +40,7 @@ export class WorkerServerProcessFactory implements TsServerProcessFactory {
             // Enable/disable web type acquisition
             (configuration.webTypeAcquisitionEnabled && supportsReadableByteStreams() ? '--experimentalTypeAcquisition' : '--disableAutomaticTypingAcquisition'),
         ];
+
         return new WorkerServerProcess(kind, tsServerPath, this._extensionUri, launchArgs, tsServerLog, this._logger);
     }
 }
@@ -59,8 +61,11 @@ class WorkerServerProcess implements TsServerProcess {
     public constructor(private readonly kind: TsServerProcessKind, tsServerPath: string, extensionUri: vscode.Uri, args: readonly string[], private readonly tsServerLog: TsServerLog | undefined, logger: Logger) {
         this._worker = new Worker(tsServerPath, { name: `TS ${kind} server #${this.id}` });
         this._watches = new FileWatcherManager(logger);
+
         const tsserverChannel = new MessageChannel();
+
         const watcherChannel = new MessageChannel();
+
         const syncChannel = new MessageChannel();
         this._tsserver = tsserverChannel.port2;
         this._watcher = watcherChannel.port2;
@@ -68,6 +73,7 @@ class WorkerServerProcess implements TsServerProcess {
         this._tsserver.onmessage = (event) => {
             if (event.data.type === 'log') {
                 console.error(`unexpected log message on tsserver channel: ${JSON.stringify(event)}`);
+
                 return;
             }
             for (const handler of this._onDataHandlers) {
@@ -78,6 +84,7 @@ class WorkerServerProcess implements TsServerProcess {
             switch (event.data.type) {
                 case 'dispose': {
                     this._watches.delete(event.data.id);
+
                     break;
                 }
                 case 'watchDirectory':
@@ -87,6 +94,7 @@ class WorkerServerProcess implements TsServerProcess {
                         create: uri => this._watcher.postMessage({ type: 'watch', event: 'create', uri }),
                         delete: uri => this._watcher.postMessage({ type: 'watch', event: 'delete', uri }),
                     });
+
                     break;
                 }
                 default:
@@ -97,18 +105,21 @@ class WorkerServerProcess implements TsServerProcess {
             // for logging only
             if (msg.data.type === 'log') {
                 this.appendLog(msg.data.body);
+
                 return;
             }
             console.error(`unexpected message on main channel: ${JSON.stringify(msg)}`);
         };
         this._worker.onerror = (err: ErrorEvent) => {
             console.error('error! ' + JSON.stringify(err));
+
             for (const handler of this._onErrorHandlers) {
                 // TODO: The ErrorEvent type might be wrong; previously this was typed as Error and didn't have the property access.
                 handler(err.error);
             }
         };
         this._worker.postMessage({ args, extensionUri }, [syncChannel.port1, tsserverChannel.port1, watcherChannel.port1]);
+
         const connection = new ServiceConnection<Requests>(syncChannel.port2);
         new ApiService('vscode-wasm-typescript', connection);
         connection.signalReady();

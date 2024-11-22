@@ -9,6 +9,7 @@ import { InstantiationType, registerSingleton } from '../../../../platform/insta
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { IExtensionIgnoredRecommendationsService, IgnoredRecommendationChangeNotification } from './extensionRecommendations.js';
 import { IWorkspaceExtensionsConfigService } from './workspaceExtensionsConfig.js';
+
 const ignoredRecommendationsStorageKey = 'extensionsAssistant/ignored_recommendations';
 export class ExtensionIgnoredRecommendationsService extends Disposable implements IExtensionIgnoredRecommendationsService {
     declare readonly _serviceBrand: undefined;
@@ -16,11 +17,13 @@ export class ExtensionIgnoredRecommendationsService extends Disposable implement
     readonly onDidChangeIgnoredRecommendations = this._onDidChangeIgnoredRecommendations.event;
     // Global Ignored Recommendations
     private _globalIgnoredRecommendations: string[] = [];
+
     get globalIgnoredRecommendations(): string[] { return [...this._globalIgnoredRecommendations]; }
     private _onDidChangeGlobalIgnoredRecommendation = this._register(new Emitter<IgnoredRecommendationChangeNotification>());
     readonly onDidChangeGlobalIgnoredRecommendation = this._onDidChangeGlobalIgnoredRecommendation.event;
     // Ignored Workspace Recommendations
     private ignoredWorkspaceRecommendations: string[] = [];
+
     get ignoredRecommendations(): string[] { return distinct([...this.globalIgnoredRecommendations, ...this.ignoredWorkspaceRecommendations]); }
     constructor(
     @IWorkspaceExtensionsConfigService
@@ -42,7 +45,9 @@ export class ExtensionIgnoredRecommendationsService extends Disposable implement
     }
     toggleGlobalIgnoredRecommendation(extensionId: string, shouldIgnore: boolean): void {
         extensionId = extensionId.toLowerCase();
+
         const ignored = this._globalIgnoredRecommendations.indexOf(extensionId) !== -1;
+
         if (ignored === shouldIgnore) {
             return;
         }
@@ -53,6 +58,7 @@ export class ExtensionIgnoredRecommendationsService extends Disposable implement
     }
     private getCachedIgnoredRecommendations(): string[] {
         const ignoredRecommendations: string[] = JSON.parse(this.ignoredRecommendationsValue);
+
         return ignoredRecommendations.map(e => e.toLowerCase());
     }
     private onDidStorageChange(): void {

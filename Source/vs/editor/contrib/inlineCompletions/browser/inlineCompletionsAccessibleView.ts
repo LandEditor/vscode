@@ -18,13 +18,17 @@ export class InlineCompletionsAccessibleView implements IAccessibleViewImplentat
     readonly priority = 95;
     readonly name = 'inline-completions';
     readonly when = ContextKeyExpr.and(InlineCompletionContextKeys.inlineSuggestionVisible);
+
     getProvider(accessor: ServicesAccessor) {
         const codeEditorService = accessor.get(ICodeEditorService);
+
         const editor = codeEditorService.getActiveCodeEditor() || codeEditorService.getFocusedCodeEditor();
+
         if (!editor) {
             return;
         }
         const model = InlineCompletionsController.get(editor)?.model.get();
+
         if (!model?.inlineCompletionState.get()) {
             return;
         }
@@ -34,6 +38,7 @@ export class InlineCompletionsAccessibleView implements IAccessibleViewImplentat
 class InlineCompletionsAccessibleViewContentProvider extends Disposable implements IAccessibleViewContentProvider {
     private readonly _onDidChangeContent: Emitter<void> = this._register(new Emitter<void>());
     public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
+
     constructor(private readonly _editor: ICodeEditor, private readonly _model: InlineCompletionsModel) {
         super();
     }
@@ -42,11 +47,14 @@ class InlineCompletionsAccessibleViewContentProvider extends Disposable implemen
     public readonly options = { language: this._editor.getModel()?.getLanguageId() ?? undefined, type: AccessibleViewType.View };
     public provideContent(): string {
         const state = this._model.inlineCompletionState.get();
+
         if (!state) {
             throw new Error('Inline completion is visible but state is not available');
         }
         const lineText = this._model.textModel.getLineContent(state.primaryGhostText.lineNumber);
+
         const ghostText = state.primaryGhostText.renderForScreenReader(lineText);
+
         if (!ghostText) {
             throw new Error('Inline completion is visible but ghost text is not available');
         }
@@ -55,11 +63,13 @@ class InlineCompletionsAccessibleViewContentProvider extends Disposable implemen
     public provideNextContent(): string | undefined {
         // asynchronously update the model and fire the event
         this._model.next().then((() => this._onDidChangeContent.fire()));
+
         return;
     }
     public providePreviousContent(): string | undefined {
         // asynchronously update the model and fire the event
         this._model.previous().then((() => this._onDidChangeContent.fire()));
+
         return;
     }
     public onClose(): void {

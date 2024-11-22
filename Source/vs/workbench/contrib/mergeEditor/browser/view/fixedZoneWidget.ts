@@ -16,6 +16,7 @@ export abstract class FixedZoneWidget extends Disposable {
         getDomNode: () => this.widgetDomNode,
         getPosition: () => null
     };
+
     constructor(private readonly editor: ICodeEditor, viewZoneAccessor: IViewZoneChangeAccessor, afterLineNumber: number, height: number, viewZoneIdsToCleanUp: string[]) {
         super();
         this.viewZoneId = viewZoneAccessor.addZone({

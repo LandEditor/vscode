@@ -13,6 +13,7 @@ export class MainThreadShare implements MainThreadShareShape {
     private readonly proxy: ExtHostShareShape;
     private providers = new Map<number, IShareProvider>();
     private providerDisposables = new Map<number, IDisposable>();
+
     constructor(extHostContext: IExtHostContext, 
     @IShareService
     private readonly shareService: IShareService) {
@@ -26,10 +27,12 @@ export class MainThreadShare implements MainThreadShareShape {
             priority,
             provideShare: async (item: IShareableItem) => {
                 const result = await this.proxy.$provideShare(handle, item, CancellationToken.None);
+
                 return typeof result === 'string' ? result : URI.revive(result);
             }
         };
         this.providers.set(handle, provider);
+
         const disposable = this.shareService.registerShareProvider(provider);
         this.providerDisposables.set(handle, disposable);
     }

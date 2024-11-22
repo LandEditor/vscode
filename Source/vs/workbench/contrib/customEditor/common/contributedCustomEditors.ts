@@ -18,10 +18,13 @@ export class ContributedCustomEditors extends Disposable {
     private static readonly CUSTOM_EDITORS_ENTRY_ID = 'editors';
     private readonly _editors = new Map<string, CustomEditorInfo>();
     private readonly _memento: Memento;
+
     constructor(storageService: IStorageService) {
         super();
         this._memento = new Memento(ContributedCustomEditors.CUSTOM_EDITORS_STORAGE_ID, storageService);
+
         const mementoObject = this._memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+
         for (const info of (mementoObject[ContributedCustomEditors.CUSTOM_EDITORS_ENTRY_ID] || []) as CustomEditorDescriptor[]) {
             this.add(new CustomEditorInfo(info));
         }
@@ -33,6 +36,7 @@ export class ContributedCustomEditors extends Disposable {
     public readonly onChange = this._onChange.event;
     private update(extensions: readonly IExtensionPointUser<ICustomEditorsExtensionPoint[]>[]) {
         this._editors.clear();
+
         for (const extension of extensions) {
             for (const webviewEditorContribution of extension.value) {
                 this.add(new CustomEditorInfo({
@@ -62,6 +66,7 @@ export class ContributedCustomEditors extends Disposable {
     private add(info: CustomEditorInfo): void {
         if (this._editors.has(info.id)) {
             console.error(`Custom editor with id '${info.id}' already registered`);
+
             return;
         }
         this._editors.set(info.id, info);
@@ -72,9 +77,11 @@ function getPriorityFromContribution(contribution: ICustomEditorsExtensionPoint,
         case RegisteredEditorPriority.default:
         case RegisteredEditorPriority.option:
             return contribution.priority;
+
         case RegisteredEditorPriority.builtin:
             // Builtin is only valid for builtin extensions
             return extension.isBuiltin ? RegisteredEditorPriority.builtin : RegisteredEditorPriority.default;
+
         default:
             return RegisteredEditorPriority.default;
     }

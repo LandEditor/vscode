@@ -20,6 +20,7 @@ import { IContextMenuService } from '../../../../../../platform/contextview/brow
 export class InlineDiffDeletedCodeMargin extends Disposable {
     private readonly _diffActions: HTMLElement;
     private _visibility: boolean = false;
+
     get visibility(): boolean {
         return this._visibility;
     }
@@ -36,13 +37,16 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
         this._diffActions = document.createElement('div');
         this._diffActions.className = ThemeIcon.asClassName(Codicon.lightBulb) + ' lightbulb-glyph';
         this._diffActions.style.position = 'absolute';
+
         const lineHeight = this._modifiedEditor.getOption(EditorOption.lineHeight);
         this._diffActions.style.right = '0px';
         this._diffActions.style.visibility = 'hidden';
         this._diffActions.style.height = `${lineHeight}px`;
         this._diffActions.style.lineHeight = `${lineHeight}px`;
         this._marginDomNode.appendChild(this._diffActions);
+
         let currentLineNumberOffset = 0;
+
         const useShadowDOM = _modifiedEditor.getOption(EditorOption.useShadowDOM) && !isIOS; // Do not use shadow dom on IOS #122035
         const showContextMenu = (x: number, y: number) => {
             this._contextMenuService.showContextMenu({
@@ -50,6 +54,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
                 getAnchor: () => ({ x, y }),
                 getActions: () => {
                     const actions: Action[] = [];
+
                     const isDeletion = _diff.modified.isEmpty;
                     // default action
                     actions.push(new Action('diff.clipboard.copyDeletedContent', isDeletion
@@ -62,11 +67,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
                         const originalText = this._originalTextModel.getValueInRange(_diff.original.toExclusiveRange());
                         await this._clipboardService.writeText(originalText);
                     }));
+
                     if (_diff.original.length > 1) {
                         actions.push(new Action('diff.clipboard.copyDeletedLineContent', isDeletion
                             ? localize('diff.clipboard.copyDeletedLineContent.label', "Copy deleted line ({0})", _diff.original.startLineNumber + currentLineNumberOffset)
                             : localize('diff.clipboard.copyChangedLineContent.label', "Copy changed line ({0})", _diff.original.startLineNumber + currentLineNumberOffset), undefined, true, async () => {
                             let lineContent = this._originalTextModel.getLineContent(_diff.original.startLineNumber + currentLineNumberOffset);
+
                             if (lineContent === '') {
                                 // empty line -> new line
                                 const eof = this._originalTextModel.getEndOfLineSequence();
@@ -76,6 +83,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
                         }));
                     }
                     const readOnly = _modifiedEditor.getOption(EditorOption.readOnly);
+
                     if (!readOnly) {
                         actions.push(new Action('diff.inline.revertChange', localize('diff.inline.revertChange.label', "Revert this change"), undefined, true, async () => {
                             this._editor.revert(this._diff);
@@ -91,6 +99,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
                 return;
             }
             const { top, height } = getDomNodePagePosition(this._diffActions);
+
             const pad = Math.floor(lineHeight / 3);
             e.preventDefault();
             showContextMenu(e.posx, top + height + pad);
@@ -110,6 +119,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
             }
             if (e.target.type === MouseTargetType.CONTENT_VIEW_ZONE || e.target.type === MouseTargetType.GUTTER_VIEW_ZONE) {
                 const viewZoneId = e.target.detail.viewZoneId;
+
                 if (viewZoneId === this._getViewZoneId()) {
                     e.event.preventDefault();
                     currentLineNumberOffset = this._updateLightBulbPosition(this._marginDomNode, e.event.browserEvent.y, lineHeight);
@@ -120,14 +130,20 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
     }
     private _updateLightBulbPosition(marginDomNode: HTMLElement, y: number, lineHeight: number): number {
         const { top } = getDomNodePagePosition(marginDomNode);
+
         const offset = y - top;
+
         const lineNumberOffset = Math.floor(offset / lineHeight);
+
         const newTop = lineNumberOffset * lineHeight;
         this._diffActions.style.top = `${newTop}px`;
+
         if (this._viewLineCounts) {
             let acc = 0;
+
             for (let i = 0; i < this._viewLineCounts.length; i++) {
                 acc += this._viewLineCounts[i];
+
                 if (lineNumberOffset < acc) {
                     return i;
                 }

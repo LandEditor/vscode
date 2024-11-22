@@ -7,24 +7,36 @@ import * as path from 'path';
 import * as url from 'url';
 import ansiColors = require('ansi-colors');
 import { IExtensionDefinition } from './builtInExtensions';
+
 const root = path.dirname(path.dirname(__dirname));
+
 const rootCG = path.join(root, 'extensionsCG');
+
 const productjson = JSON.parse(fs.readFileSync(path.join(__dirname, '../../product.json'), 'utf8'));
+
 const builtInExtensions = <IExtensionDefinition[]>productjson.builtInExtensions || [];
+
 const webBuiltInExtensions = <IExtensionDefinition[]>productjson.webBuiltInExtensions || [];
+
 const token = process.env['GITHUB_TOKEN'];
+
 const contentBasePath = 'raw.githubusercontent.com';
+
 const contentFileNames = ['package.json', 'package-lock.json'];
 async function downloadExtensionDetails(extension: IExtensionDefinition): Promise<void> {
     const extensionLabel = `${extension.name}@${extension.version}`;
+
     const repository = url.parse(extension.repo).path!.substr(1);
+
     const repositoryContentBaseUrl = `https://${token ? `${token}@` : ''}${contentBasePath}/${repository}/v${extension.version}`;
+
     async function getContent(fileName: string): Promise<{
         fileName: string;
         body: Buffer | undefined | null;
     }> {
         try {
             const response = await fetch(`${repositoryContentBaseUrl}/${fileName}`);
+
             if (response.ok) {
                 return { fileName, body: Buffer.from(await response.arrayBuffer()) };
             }
@@ -41,7 +53,9 @@ async function downloadExtensionDetails(extension: IExtensionDefinition): Promis
     }
     const promises = contentFileNames.map(getContent);
     console.log(extensionLabel);
+
     const results = await Promise.all(promises);
+
     for (const result of results) {
         if (result.body) {
             const extensionFolder = path.join(rootCG, extension.name);

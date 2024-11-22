@@ -28,6 +28,7 @@ export const HC_BLACK_THEME_NAME = 'hc-black';
 export const HC_LIGHT_THEME_NAME = 'hc-light';
 
 const colorRegistry = Registry.as<IColorRegistry>(Extensions.ColorContribution);
+
 const themingRegistry = Registry.as<IThemingRegistry>(ThemingExtensions.ThemingContribution);
 
 class StandaloneTheme implements IStandaloneTheme {
@@ -42,7 +43,9 @@ class StandaloneTheme implements IStandaloneTheme {
 
 	constructor(name: string, standaloneThemeData: IStandaloneThemeData) {
 		this.themeData = standaloneThemeData;
+
 		const base = standaloneThemeData.base;
+
 		if (name.length > 0) {
 			if (isBuiltinTheme(name)) {
 				this.id = name;
@@ -77,11 +80,13 @@ class StandaloneTheme implements IStandaloneTheme {
 	private getColors(): Map<string, Color> {
 		if (!this.colors) {
 			const colors = new Map<string, Color>();
+
 			for (const id in this.themeData.colors) {
 				colors.set(id, Color.fromHex(this.themeData.colors[id]));
 			}
 			if (this.themeData.inherit) {
 				const baseData = getBuiltinRules(this.themeData.base);
+
 				for (const id in baseData.colors) {
 					if (!colors.has(id)) {
 						colors.set(id, Color.fromHex(baseData.colors[id]));
@@ -95,6 +100,7 @@ class StandaloneTheme implements IStandaloneTheme {
 
 	public getColor(colorId: ColorIdentifier, useDefault?: boolean): Color | undefined {
 		const color = this.getColors().get(colorId);
+
 		if (color) {
 			return color;
 		}
@@ -106,11 +112,13 @@ class StandaloneTheme implements IStandaloneTheme {
 
 	private getDefault(colorId: ColorIdentifier): Color | undefined {
 		let color = this.defaultColors[colorId];
+
 		if (color) {
 			return color;
 		}
 		color = colorRegistry.resolveDefaultColor(colorId, this);
 		this.defaultColors[colorId] = color;
+
 		return color;
 	}
 
@@ -121,8 +129,11 @@ class StandaloneTheme implements IStandaloneTheme {
 	public get type(): ColorScheme {
 		switch (this.base) {
 			case VS_LIGHT_THEME_NAME: return ColorScheme.LIGHT;
+
 			case HC_BLACK_THEME_NAME: return ColorScheme.HIGH_CONTRAST_DARK;
+
 			case HC_LIGHT_THEME_NAME: return ColorScheme.HIGH_CONTRAST_LIGHT;
+
 			default: return ColorScheme.DARK;
 		}
 	}
@@ -130,19 +141,25 @@ class StandaloneTheme implements IStandaloneTheme {
 	public get tokenTheme(): TokenTheme {
 		if (!this._tokenTheme) {
 			let rules: ITokenThemeRule[] = [];
+
 			let encodedTokensColors: string[] = [];
+
 			if (this.themeData.inherit) {
 				const baseData = getBuiltinRules(this.themeData.base);
 				rules = baseData.rules;
+
 				if (baseData.encodedTokensColors) {
 					encodedTokensColors = baseData.encodedTokensColors;
 				}
 			}
 			// Pick up default colors from `editor.foreground` and `editor.background` if available
 			const editorForeground = this.themeData.colors['editor.foreground'];
+
 			const editorBackground = this.themeData.colors['editor.background'];
+
 			if (editorForeground || editorBackground) {
 				const rule: ITokenThemeRule = { token: '' };
+
 				if (editorForeground) {
 					rule.foreground = editorForeground;
 				}
@@ -152,6 +169,7 @@ class StandaloneTheme implements IStandaloneTheme {
 				rules.push(rule);
 			}
 			rules = rules.concat(this.themeData.rules);
+
 			if (this.themeData.encodedTokensColors) {
 				encodedTokensColors = this.themeData.encodedTokensColors;
 			}
@@ -163,9 +181,13 @@ class StandaloneTheme implements IStandaloneTheme {
 	public getTokenStyleMetadata(type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined {
 		// use theme rules match
 		const style = this.tokenTheme._match([type].concat(modifiers).join('.'));
+
 		const metadata = style.metadata;
+
 		const foreground = TokenMetadata.getForeground(metadata);
+
 		const fontStyle = TokenMetadata.getFontStyle(metadata);
+
 		return {
 			foreground: foreground,
 			italic: Boolean(fontStyle & FontStyle.Italic),
@@ -195,10 +217,13 @@ function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
 	switch (builtinTheme) {
 		case VS_LIGHT_THEME_NAME:
 			return vs;
+
 		case VS_DARK_THEME_NAME:
 			return vs_dark;
+
 		case HC_BLACK_THEME_NAME:
 			return hc_black;
+
 		case HC_LIGHT_THEME_NAME:
 			return hc_light;
 	}
@@ -206,6 +231,7 @@ function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
 
 function newBuiltInTheme(builtinTheme: BuiltinTheme): StandaloneTheme {
 	const themeData = getBuiltinRules(builtinTheme);
+
 	return new StandaloneTheme(builtinTheme, themeData);
 }
 
@@ -291,11 +317,13 @@ export class StandaloneThemeService extends Disposable implements IStandaloneThe
 			style.textContent = this._allCSS;
 		});
 		this._styleElements.push(styleElement);
+
 		return {
 			dispose: () => {
 				for (let i = 0; i < this._styleElements.length; i++) {
 					if (this._styleElements[i] === styleElement) {
 						this._styleElements.splice(i, 1);
+
 						return;
 					}
 				}
@@ -336,6 +364,7 @@ export class StandaloneThemeService extends Disposable implements IStandaloneThe
 
 	public setTheme(themeName: string): void {
 		let theme: StandaloneTheme | undefined;
+
 		if (this._knownThemes.has(themeName)) {
 			theme = this._knownThemes.get(themeName);
 		} else {
@@ -356,9 +385,11 @@ export class StandaloneThemeService extends Disposable implements IStandaloneThe
 	private _onOSSchemeChanged() {
 		if (this._autoDetectHighContrast) {
 			const wantsHighContrast = mainWindow.matchMedia(`(forced-colors: active)`).matches;
+
 			if (wantsHighContrast !== isHighContrast(this._theme.type)) {
 				// switch to high contrast or non-high contrast but stick to dark or light
 				let newThemeName;
+
 				if (isDark(this._theme.type)) {
 					newThemeName = wantsHighContrast ? HC_BLACK_THEME_NAME : VS_DARK_THEME_NAME;
 				} else {
@@ -376,7 +407,9 @@ export class StandaloneThemeService extends Disposable implements IStandaloneThe
 
 	private _updateThemeOrColorMap(): void {
 		const cssRules: string[] = [];
+
 		const hasRule: { [rule: string]: boolean } = {};
+
 		const ruleCollector: ICssStyleCollector = {
 			addRule: (rule: string) => {
 				if (!hasRule[rule]) {
@@ -388,8 +421,10 @@ export class StandaloneThemeService extends Disposable implements IStandaloneThe
 		themingRegistry.getThemingParticipants().forEach(p => p(this._theme, ruleCollector, this._environment));
 
 		const colorVariables: string[] = [];
+
 		for (const item of colorRegistry.getColors()) {
 			const color = this._theme.getColor(item.id, true);
+
 			if (color) {
 				colorVariables.push(`${asCssVariableName(item.id)}: ${color.toString()};`);
 			}

@@ -18,10 +18,15 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
     }
     // for ts.LanguageServiceHost
     getCompilationSettings = () => ts.getDefaultCompilerOptions();
+
     getScriptFileNames = () => Object.keys(this.files);
+
     getScriptVersion = (_fileName: string) => '0';
+
     getScriptSnapshot = (fileName: string) => this.files[fileName];
+
     getCurrentDirectory = () => process.cwd();
+
     getDefaultLibFileName = (options: ts.CompilerOptions) => ts.getDefaultLibFilePath(options);
 }
 const defaults: ts.FormatCodeSettings = {
@@ -48,25 +53,32 @@ const defaults: ts.FormatCodeSettings = {
     placeOpenBraceOnNewLineForControlBlocks: false,
     insertSpaceBeforeTypeAnnotation: false,
 };
+
 const getOverrides = (() => {
     let value: ts.FormatCodeSettings | undefined;
+
     return () => {
         value ??= JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'tsfmt.json'), 'utf8'));
+
         return value;
     };
 })();
 export function format(fileName: string, text: string) {
     const host = new LanguageServiceHost();
     host.addFile(fileName, text);
+
     const languageService = ts.createLanguageService(host);
+
     const edits = languageService.getFormattingEditsForDocument(fileName, { ...defaults, ...getOverrides() });
     edits
         .sort((a, b) => a.span.start - b.span.start)
         .reverse()
         .forEach(edit => {
         const head = text.slice(0, edit.span.start);
+
         const tail = text.slice(edit.span.start + edit.span.length);
         text = `${head}${edit.newText}${tail}`;
     });
+
     return text;
 }

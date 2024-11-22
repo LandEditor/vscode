@@ -16,10 +16,13 @@ export class ExtensionHostDebugBroadcastChannel<TContext> implements IServerChan
         switch (command) {
             case 'close':
                 return Promise.resolve(this._onCloseEmitter.fire({ sessionId: arg[0] }));
+
             case 'reload':
                 return Promise.resolve(this._onReloadEmitter.fire({ sessionId: arg[0] }));
+
             case 'terminate':
                 return Promise.resolve(this._onTerminateEmitter.fire({ sessionId: arg[0] }));
+
             case 'attach':
                 return Promise.resolve(this._onAttachEmitter.fire({ sessionId: arg[0], port: arg[1], subId: arg[2] }));
         }
@@ -29,10 +32,13 @@ export class ExtensionHostDebugBroadcastChannel<TContext> implements IServerChan
         switch (event) {
             case 'close':
                 return this._onCloseEmitter.event;
+
             case 'reload':
                 return this._onReloadEmitter.event;
+
             case 'terminate':
                 return this._onTerminateEmitter.event;
+
             case 'attach':
                 return this._onAttachEmitter.event;
         }
@@ -41,6 +47,7 @@ export class ExtensionHostDebugBroadcastChannel<TContext> implements IServerChan
 }
 export class ExtensionHostDebugChannelClient extends Disposable implements IExtensionHostDebugService {
     declare readonly _serviceBrand: undefined;
+
     constructor(private channel: IChannel) {
         super();
     }

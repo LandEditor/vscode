@@ -16,11 +16,15 @@ const _specifierToUrl: Record<string, string> = {};
 export async function initialize(injectPath: string): Promise<void> {
     // populate mappings
     const injectPackageJSONPath = fileURLToPath(new URL('../package.json', pathToFileURL(injectPath)));
+
     const packageJSON = JSON.parse(String(await promises.readFile(injectPackageJSONPath)));
+
     for (const [name] of Object.entries(packageJSON.dependencies)) {
         try {
             const path = join(injectPackageJSONPath, `../node_modules/${name}/package.json`);
+
             let { main } = JSON.parse(String(await promises.readFile(path)));
+
             if (!main) {
                 main = 'index.js';
             }
@@ -39,6 +43,7 @@ export async function initialize(injectPath: string): Promise<void> {
 }
 export async function resolve(specifier: string | number, context: any, nextResolve: (arg0: any, arg1: any) => any) {
     const newSpecifier = _specifierToUrl[specifier];
+
     if (newSpecifier !== undefined) {
         return {
             format: 'commonjs',

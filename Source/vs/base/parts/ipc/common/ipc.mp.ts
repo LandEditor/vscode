@@ -37,6 +37,7 @@ export class Protocol implements IMessagePassingProtocol {
         }
         return VSBuffer.alloc(0);
     });
+
     constructor(private port: MessagePort) {
         // we must call start() to ensure messages are flowing
         port.start();
@@ -53,13 +54,16 @@ export class Protocol implements IMessagePassingProtocol {
  */
 export class Client extends IPCClient implements IDisposable {
     private protocol: Protocol;
+
     constructor(port: MessagePort, clientId: string) {
         const protocol = new Protocol(port);
+
         super(protocol, clientId);
         this.protocol = protocol;
     }
     override dispose(): void {
         this.protocol.disconnect();
+
         super.dispose();
     }
 }

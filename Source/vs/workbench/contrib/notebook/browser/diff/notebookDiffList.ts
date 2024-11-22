@@ -60,11 +60,14 @@ export class NotebookCellTextDiffListDelegate implements IListVirtualDelegate<ID
 			case 'delete':
 			case 'insert':
 				return CellDiffSingleSideRenderer.TEMPLATE_ID;
+
 			case 'modified':
 			case 'unchanged':
 				return CellDiffSideBySideRenderer.TEMPLATE_ID;
+
 			case 'placeholder':
 				return CellDiffPlaceholderRenderer.TEMPLATE_ID;
+
 			case 'modifiedMetadata':
 			case 'unchangedMetadata':
 				return NotebookDocumentMetadataDiffRenderer.TEMPLATE_ID;
@@ -89,8 +92,11 @@ export class CellDiffPlaceholderRenderer implements IListRenderer<DiffElementPla
 		DOM.append(container, body);
 
 		const elementDisposables = new DisposableStore();
+
 		const marginOverlay = new CollapsedCellOverlayWidget(body);
+
 		const contents = DOM.append(body, DOM.$('.contents'));
+
 		const placeholder = DOM.append(contents, DOM.$('span.text', { title: localize('notebook.diff.hiddenCells.expandAll', 'Double click to show') }));
 
 		return {
@@ -138,19 +144,25 @@ export class NotebookDocumentMetadataDiffRenderer implements IListRenderer<Noteb
 	renderTemplate(container: HTMLElement): NotebookDocumentDiffElementRenderTemplate {
 		const body = DOM.$('.cell-body');
 		DOM.append(container, body);
+
 		const diffEditorContainer = DOM.$('.cell-diff-editor-container');
 		DOM.append(body, diffEditorContainer);
 
 		const cellHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.input-header-container'));
+
 		const sourceContainer = DOM.append(diffEditorContainer, DOM.$('.source-container'));
+
 		const { editor, editorContainer } = this._buildSourceEditor(sourceContainer);
 
 		const inputToolbarContainer = DOM.append(sourceContainer, DOM.$('.editor-input-toolbar-container'));
+
 		const cellToolbarContainer = DOM.append(inputToolbarContainer, DOM.$('div.property-toolbar'));
+
 		const toolbar = this.instantiationService.createInstance(WorkbenchToolBar, cellToolbarContainer, {
 			actionViewItemProvider: (action, options) => {
 				if (action instanceof MenuItemAction) {
 					const item = new CodiconActionViewItem(action, { hoverDelegate: options.hoverDelegate }, this.keybindingService, this.notificationService, this.contextKeyService, this.themeService, this.contextMenuService, this.accessibilityService);
+
 					return item;
 				}
 
@@ -160,11 +172,17 @@ export class NotebookDocumentMetadataDiffRenderer implements IListRenderer<Noteb
 		});
 
 		const borderContainer = DOM.append(body, DOM.$('.border-container'));
+
 		const leftBorder = DOM.append(borderContainer, DOM.$('.left-border'));
+
 		const rightBorder = DOM.append(borderContainer, DOM.$('.right-border'));
+
 		const topBorder = DOM.append(borderContainer, DOM.$('.top-border'));
+
 		const bottomBorder = DOM.append(borderContainer, DOM.$('.bottom-border'));
+
 		const marginOverlay = new UnchangedCellOverlayWidget(body);
+
 		const elementDisposables = new DisposableStore();
 
 		return {
@@ -225,25 +243,34 @@ export class CellDiffSingleSideRenderer implements IListRenderer<SingleSideDiffE
 	renderTemplate(container: HTMLElement): CellDiffSingleSideRenderTemplate {
 		const body = DOM.$('.cell-body');
 		DOM.append(container, body);
+
 		const diffEditorContainer = DOM.$('.cell-diff-editor-container');
 		DOM.append(body, diffEditorContainer);
 
 		const diagonalFill = DOM.append(body, DOM.$('.diagonal-fill'));
 
 		const cellHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.input-header-container'));
+
 		const sourceContainer = DOM.append(diffEditorContainer, DOM.$('.source-container'));
+
 		const { editor, editorContainer } = this._buildSourceEditor(sourceContainer);
 
 		const metadataHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.metadata-header-container'));
+
 		const metadataInfoContainer = DOM.append(diffEditorContainer, DOM.$('.metadata-info-container'));
 
 		const outputHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.output-header-container'));
+
 		const outputInfoContainer = DOM.append(diffEditorContainer, DOM.$('.output-info-container'));
 
 		const borderContainer = DOM.append(body, DOM.$('.border-container'));
+
 		const leftBorder = DOM.append(borderContainer, DOM.$('.left-border'));
+
 		const rightBorder = DOM.append(borderContainer, DOM.$('.right-border'));
+
 		const topBorder = DOM.append(borderContainer, DOM.$('.top-border'));
+
 		const bottomBorder = DOM.append(borderContainer, DOM.$('.bottom-border'));
 
 		return {
@@ -276,10 +303,14 @@ export class CellDiffSingleSideRenderer implements IListRenderer<SingleSideDiffE
 		switch (element.type) {
 			case 'delete':
 				templateData.elementDisposables.add(this.instantiationService.createInstance(DeletedElement, this.notebookEditor, element, templateData));
+
 				return;
+
 			case 'insert':
 				templateData.elementDisposables.add(this.instantiationService.createInstance(InsertElement, this.notebookEditor, element, templateData));
+
 				return;
+
 			default:
 				break;
 		}
@@ -319,19 +350,25 @@ export class CellDiffSideBySideRenderer implements IListRenderer<SideBySideDiffE
 	renderTemplate(container: HTMLElement): CellDiffSideBySideRenderTemplate {
 		const body = DOM.$('.cell-body');
 		DOM.append(container, body);
+
 		const diffEditorContainer = DOM.$('.cell-diff-editor-container');
 		DOM.append(body, diffEditorContainer);
 
 		const cellHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.input-header-container'));
+
 		const sourceContainer = DOM.append(diffEditorContainer, DOM.$('.source-container'));
+
 		const { editor, editorContainer } = this._buildSourceEditor(sourceContainer);
 
 		const inputToolbarContainer = DOM.append(sourceContainer, DOM.$('.editor-input-toolbar-container'));
+
 		const cellToolbarContainer = DOM.append(inputToolbarContainer, DOM.$('div.property-toolbar'));
+
 		const toolbar = this.instantiationService.createInstance(WorkbenchToolBar, cellToolbarContainer, {
 			actionViewItemProvider: (action, options) => {
 				if (action instanceof MenuItemAction) {
 					const item = new CodiconActionViewItem(action, { hoverDelegate: options.hoverDelegate }, this.keybindingService, this.notificationService, this.contextKeyService, this.themeService, this.contextMenuService, this.accessibilityService);
+
 					return item;
 				}
 
@@ -341,17 +378,25 @@ export class CellDiffSideBySideRenderer implements IListRenderer<SideBySideDiffE
 		});
 
 		const metadataHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.metadata-header-container'));
+
 		const metadataInfoContainer = DOM.append(diffEditorContainer, DOM.$('.metadata-info-container'));
 
 		const outputHeaderContainer = DOM.append(diffEditorContainer, DOM.$('.output-header-container'));
+
 		const outputInfoContainer = DOM.append(diffEditorContainer, DOM.$('.output-info-container'));
 
 		const borderContainer = DOM.append(body, DOM.$('.border-container'));
+
 		const leftBorder = DOM.append(borderContainer, DOM.$('.left-border'));
+
 		const rightBorder = DOM.append(borderContainer, DOM.$('.right-border'));
+
 		const topBorder = DOM.append(borderContainer, DOM.$('.top-border'));
+
 		const bottomBorder = DOM.append(borderContainer, DOM.$('.bottom-border'));
+
 		const marginOverlay = new UnchangedCellOverlayWidget(body);
+
 		const elementDisposables = new DisposableStore();
 
 		return {
@@ -386,10 +431,14 @@ export class CellDiffSideBySideRenderer implements IListRenderer<SideBySideDiffE
 		switch (element.type) {
 			case 'unchanged':
 				templateData.elementDisposables.add(this.instantiationService.createInstance(ModifiedElement, this.notebookEditor, element, templateData));
+
 				return;
+
 			case 'modified':
 				templateData.elementDisposables.add(this.instantiationService.createInstance(ModifiedElement, this.notebookEditor, element, templateData));
+
 				return;
+
 			default:
 				break;
 		}
@@ -474,6 +523,7 @@ export class NotebookTextDiffList extends WorkbenchList<IDiffElementViewModelBas
 
 	updateElementHeight2(element: IDiffElementViewModelBase, size: number) {
 		const viewIndex = this.indexOf(element);
+
 		const focused = this.getFocus();
 
 		this.view.updateElementHeight(viewIndex, size, focused.length ? focused[0] : null);
@@ -481,10 +531,12 @@ export class NotebookTextDiffList extends WorkbenchList<IDiffElementViewModelBas
 
 	override style(styles: IListStyles) {
 		const selectorSuffix = this.view.domId;
+
 		if (!this.styleElement) {
 			this.styleElement = domStylesheets.createStyleSheet(this.view.domNode);
 		}
 		const suffix = selectorSuffix && `.${selectorSuffix}`;
+
 		const content: string[] = [];
 
 		if (styles.listBackground) {
@@ -573,6 +625,7 @@ export class NotebookTextDiffList extends WorkbenchList<IDiffElementViewModelBas
 		}
 
 		const newStyles = content.join('\n');
+
 		if (newStyles !== this.styleElement.textContent) {
 			this.styleElement.textContent = newStyles;
 		}
@@ -609,9 +662,11 @@ function buildDiffEditorWidget(instantiationService: IInstantiationService, note
 
 function buildSourceEditor(instantiationService: IInstantiationService, notebookEditor: INotebookTextDiffEditor, sourceContainer: HTMLElement, options: IEditorConstructionOptions = {}) {
 	const editorContainer = DOM.append(sourceContainer, DOM.$('.editor-container'));
+
 	const skipContributions = [
 		'editor.contrib.emptyTextEditorHint'
 	];
+
 	const editor = instantiationService.createInstance(CodeEditorWidget, editorContainer, {
 		...fixedEditorOptions,
 		glyphMargin: false,

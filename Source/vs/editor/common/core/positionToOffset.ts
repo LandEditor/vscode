@@ -10,13 +10,16 @@ import { TextLength } from './textLength.js';
 export class PositionOffsetTransformer {
     private readonly lineStartOffsetByLineIdx: number[];
     private readonly lineEndOffsetByLineIdx: number[];
+
     constructor(public readonly text: string) {
         this.lineStartOffsetByLineIdx = [];
         this.lineEndOffsetByLineIdx = [];
         this.lineStartOffsetByLineIdx.push(0);
+
         for (let i = 0; i < text.length; i++) {
             if (text.charAt(i) === '\n') {
                 this.lineStartOffsetByLineIdx.push(i + 1);
+
                 if (i > 0 && text.charAt(i - 1) === '\r') {
                     this.lineEndOffsetByLineIdx.push(i - 1);
                 }
@@ -35,8 +38,11 @@ export class PositionOffsetTransformer {
     }
     getPosition(offset: number): Position {
         const idx = findLastIdxMonotonous(this.lineStartOffsetByLineIdx, i => i <= offset);
+
         const lineNumber = idx + 1;
+
         const column = offset - this.lineStartOffsetByLineIdx[idx] + 1;
+
         return new Position(lineNumber, column);
     }
     getRange(offsetRange: OffsetRange): Range {
@@ -47,6 +53,7 @@ export class PositionOffsetTransformer {
     }
     get textLength(): TextLength {
         const lineIdx = this.lineStartOffsetByLineIdx.length - 1;
+
         return new TextLength(lineIdx, this.text.length - this.lineStartOffsetByLineIdx[lineIdx]);
     }
     getLineLength(lineNumber: number): number {

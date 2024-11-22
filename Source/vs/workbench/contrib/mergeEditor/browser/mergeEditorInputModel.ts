@@ -63,6 +63,7 @@ export class TempFileMergeEditorModeFactory implements IMergeEditorInputModelFac
     }
     async createInputModel(args: MergeEditorArgs): Promise<IMergeEditorInputModel> {
         const store = new DisposableStore();
+
         const [base, result, input1Data, input2Data,] = await Promise.all([
             this._textModelService.createModelReference(args.base),
             this._textModelService.createModelReference(args.result),
@@ -71,18 +72,23 @@ export class TempFileMergeEditorModeFactory implements IMergeEditorInputModelFac
         ]);
         store.add(base);
         store.add(result);
+
         const tempResultUri = result.object.textEditorModel.uri.with({ scheme: 'merge-result' });
+
         const temporaryResultModel = this._modelService.createModel('', {
             languageId: result.object.textEditorModel.getLanguageId(),
             onDidChange: Event.None,
         }, tempResultUri);
         store.add(temporaryResultModel);
+
         const mergeDiffComputer = this._instantiationService.createInstance(MergeDiffComputer);
+
         const model = this._instantiationService.createInstance(MergeEditorModel, base.object.textEditorModel, input1Data, input2Data, temporaryResultModel, mergeDiffComputer, {
             resetResult: true,
         }, this._mergeEditorTelemetry);
         store.add(model);
         await model.onInitialized;
+
         return this._instantiationService.createInstance(TempFileMergeEditorInputModel, model, store, result.object, args.result);
     }
 }
@@ -92,6 +98,7 @@ class TempFileMergeEditorInputModel extends EditorModel implements IMergeEditorI
     /** @description getAlternativeVersionId */ this.model.resultTextModel.getAlternativeVersionId());
     public readonly isDirty = derived(this, (reader) => this.altVersionId.read(reader) !== this.savedAltVersionId.read(reader));
     private finished = false;
+
     constructor(public readonly model: MergeEditorModel, private readonly disposable: IDisposable, private readonly result: IResolvedTextEditorModel, public readonly resultUri: URI, 
     @ITextFileService
     private readonly textFileService: ITextFileService, 
@@ -103,6 +110,7 @@ class TempFileMergeEditorInputModel extends EditorModel implements IMergeEditorI
     }
     override dispose(): void {
         this.disposable.dispose();
+
         super.dispose();
     }
     async accept(): Promise<void> {
@@ -122,14 +130,20 @@ class TempFileMergeEditorInputModel extends EditorModel implements IMergeEditorI
     }
     public async confirmClose(inputModels: TempFileMergeEditorInputModel[]): Promise<ConfirmResult> {
         assertFn(() => inputModels.some((m) => m === this));
+
         const someDirty = inputModels.some((m) => m.isDirty.get());
+
         let choice: ConfirmResult;
+
         if (someDirty) {
             const isMany = inputModels.length > 1;
+
             const message = isMany
                 ? localize('messageN', 'Do you want keep the merge result of {0} files?', inputModels.length)
                 : localize('message1', 'Do you want keep the merge result of {0}?', basename(inputModels[0].model.resultTextModel.uri));
+
             const hasUnhandledConflicts = inputModels.some((m) => m.model.hasUnhandledConflicts.get());
+
             const buttons: IPromptButton<ConfirmResult>[] = [
                 {
                     label: hasUnhandledConflicts ?
@@ -186,8 +200,10 @@ class TempFileMergeEditorInputModel extends EditorModel implements IMergeEditorI
                 detail: localize('saveTempFile.detail', "This will write the merge result to the original file and close the merge editor."),
                 primaryButton: localize({ key: 'acceptMerge', comment: ['&& denotes a mnemonic'] }, '&&Accept Merge')
             });
+
             if (confirmed) {
                 await this.accept();
+
                 const editors = this.editorService.findEditors(this.resultUri).filter(e => e.editor.typeId === 'mergeEditor.Input');
                 await this.editorService.closeEditors(editors);
             }
@@ -210,8 +226,11 @@ export class WorkspaceMergeEditorModeFactory implements IMergeEditorInputModelFa
     private static readonly FILE_SAVED_SOURCE = SaveSourceRegistry.registerSource('merge-editor.source', localize('merge-editor.source', "Before Resolving Conflicts In Merge Editor"));
     public async createInputModel(args: MergeEditorArgs): Promise<IMergeEditorInputModel> {
         const store = new DisposableStore();
+
         let resultTextFileModel = undefined as ITextFileEditorModel | undefined;
+
         const modelListener = store.add(new DisposableStore());
+
         const handleDidCreate = (model: ITextFileEditorModel) => {
             if (isEqual(args.result, model.resource)) {
                 modelListener.clear();
@@ -220,6 +239,7 @@ export class WorkspaceMergeEditorModeFactory implements IMergeEditorInputModelFa
         };
         modelListener.add(this.textFileService.files.onDidCreate(handleDidCreate));
         this.textFileService.files.models.forEach(handleDidCreate);
+
         const [base, result, input1Data, input2Data,] = await Promise.all([
             this._textModelService.createModelReference(args.base),
             this._textModelService.createModelReference(args.result),
@@ -228,20 +248,27 @@ export class WorkspaceMergeEditorModeFactory implements IMergeEditorInputModelFa
         ]);
         store.add(base);
         store.add(result);
+
         if (!resultTextFileModel) {
             throw new BugIndicatingError();
         }
         // So that "Don't save" does revert the file
         await resultTextFileModel.save({ source: WorkspaceMergeEditorModeFactory.FILE_SAVED_SOURCE });
+
         const lines = resultTextFileModel.textEditorModel!.getLinesContent();
+
         const hasConflictMarkers = lines.some(l => l.startsWith(conflictMarkers.start));
+
         const resetResult = hasConflictMarkers;
+
         const mergeDiffComputer = this._instantiationService.createInstance(MergeDiffComputer);
+
         const model = this._instantiationService.createInstance(MergeEditorModel, base.object.textEditorModel, input1Data, input2Data, result.object.textEditorModel, mergeDiffComputer, {
             resetResult
         }, this._mergeEditorTelemetry);
         store.add(model);
         await model.onInitialized;
+
         return this._instantiationService.createInstance(WorkspaceMergeEditorInputModel, model, store, resultTextFileModel, this._mergeEditorTelemetry);
     }
 }
@@ -249,6 +276,7 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
     public readonly isDirty = observableFromEvent(this, Event.any(this.resultTextFileModel.onDidChangeDirty, this.resultTextFileModel.onDidSaveError), () => /** @description isDirty */ this.resultTextFileModel.isDirty());
     private reported = false;
     private readonly dateTimeOpened = new Date();
+
     constructor(public readonly model: MergeEditorModel, private readonly disposableStore: DisposableStore, private readonly resultTextFileModel: ITextFileEditorModel, private readonly telemetry: MergeEditorTelemetry, 
     @IDialogService
     private readonly _dialogService: IDialogService, 
@@ -258,12 +286,14 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
     }
     public override dispose(): void {
         this.disposableStore.dispose();
+
         super.dispose();
         this.reportClose(false);
     }
     private reportClose(accepted: boolean): void {
         if (!this.reported) {
             const remainingConflictCount = this.model.unhandledConflictsCount.get();
+
             const durationOpenedMs = new Date().getTime() - this.dateTimeOpened.getTime();
             this.telemetry.reportMergeEditorClosed({
                 durationOpenedSecs: durationOpenedMs / 1000,
@@ -310,12 +340,16 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
     }
     async confirmClose(inputModels: IMergeEditorInputModel[]): Promise<ConfirmResult> {
         const isMany = inputModels.length > 1;
+
         const someDirty = inputModels.some(m => m.isDirty.get());
+
         const someUnhandledConflicts = inputModels.some(m => m.model.hasUnhandledConflicts.get());
+
         if (someDirty) {
             const message = isMany
                 ? localize('workspace.messageN', 'Do you want to save the changes you made to {0} files?', inputModels.length)
                 : localize('workspace.message1', 'Do you want to save the changes you made to {0}?', basename(inputModels[0].resultUri));
+
             const { result } = await this._dialogService.prompt<ConfirmResult>({
                 type: Severity.Info,
                 message,
@@ -342,6 +376,7 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
                     run: () => ConfirmResult.CANCEL
                 }
             });
+
             return result;
         }
         else if (someUnhandledConflicts && !this._storageService.getBoolean(StorageCloseWithConflicts, StorageScope.PROFILE, false)) {
@@ -359,6 +394,7 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
                     : localize({ key: 'workspace.close', comment: ['&& denotes a mnemonic'] }, '&&Close'),
                 checkbox: { label: localize('noMoreWarn', "Do not ask me again") }
             });
+
             if (checkboxChecked) {
                 this._storageService.store(StorageCloseWithConflicts, true, StorageScope.PROFILE, StorageTarget.USER);
             }
@@ -374,6 +410,7 @@ class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditor
 async function toInputData(data: MergeEditorInputData, textModelService: ITextModelService, store: DisposableStore): Promise<InputData> {
     const ref = await textModelService.createModelReference(data.uri);
     store.add(ref);
+
     return {
         textModel: ref.object.textEditorModel,
         title: data.title,

@@ -46,8 +46,10 @@ export class RunToolbar extends CellContentPart {
 		this.primaryMenu = this._register(menuService.createMenu(primaryMenuId, contextKeyService));
 		this.secondaryMenu = this._register(menuService.createMenu(secondaryMenuId, contextKeyService));
 		this.createRunCellToolbar(runButtonContainer, cellContainer, contextKeyService);
+
 		const updateActions = () => {
 			const actions = this.getCellToolbarActions(this.primaryMenu);
+
 			const primary = actions.primary[0]; // Only allow one primary action
 			this.toolbar.setActions(primary ? [primary] : []);
 		};
@@ -77,9 +79,11 @@ export class RunToolbar extends CellContentPart {
 
 	private createRunCellToolbar(container: HTMLElement, cellContainer: HTMLElement, contextKeyService: IContextKeyService) {
 		const actionViewItemDisposables = this._register(new DisposableStore());
+
 		const dropdownAction = this._register(new Action('notebook.moreRunActions', localize('notebook.moreRunActionsLabel', "More..."), 'codicon-chevron-down', true));
 
 		const keybindingProvider = (action: IAction) => this.keybindingService.lookupKeybinding(action.id, executionContextKeyService);
+
 		const executionContextKeyService = this._register(getCodeCellExecutionContextKeyService(contextKeyService));
 		this.toolbar = this._register(new ToolBar(container, this.contextMenuService, {
 			getKeyBinding: keybindingProvider,
@@ -87,11 +91,13 @@ export class RunToolbar extends CellContentPart {
 				actionViewItemDisposables.clear();
 
 				const primary = this.getCellToolbarActions(this.primaryMenu).primary[0];
+
 				if (!(primary instanceof MenuItemAction)) {
 					return undefined;
 				}
 
 				const secondary = this.getCellToolbarActions(this.secondaryMenu).secondary;
+
 				if (!secondary.length) {
 					return undefined;
 				}

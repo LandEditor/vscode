@@ -21,6 +21,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
     private readonly paneDisposables = new DisposableStore();
     private readonly statusBarEntry = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
     private isActive: boolean = false;
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService, 
@@ -51,6 +52,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
     private trackVisiblePanes(): void {
         this.paneDisposables.clear();
         this.paneInitialScrollTop.clear();
+
         for (const pane of this.getAllVisiblePanes()) {
             if (!isEditorPaneWithScrolling(pane)) {
                 continue;
@@ -63,6 +65,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
     }
     private onDidEditorPaneScroll(scrolledPane: IEditorPane) {
         const scrolledPaneInitialOffset = this.paneInitialScrollTop.get(scrolledPane);
+
         if (scrolledPaneInitialOffset === undefined) {
             throw new Error('Scrolled pane not tracked');
         }
@@ -70,10 +73,12 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
             throw new Error('Scrolled pane does not support scrolling');
         }
         const scrolledPaneCurrentPosition = scrolledPane.getScrollPosition();
+
         const scrolledFromInitial = {
             scrollTop: scrolledPaneCurrentPosition.scrollTop - scrolledPaneInitialOffset.scrollTop,
             scrollLeft: scrolledPaneCurrentPosition.scrollLeft !== undefined && scrolledPaneInitialOffset.scrollLeft !== undefined ? scrolledPaneCurrentPosition.scrollLeft - scrolledPaneInitialOffset.scrollLeft : undefined,
         };
+
         for (const pane of this.getAllVisiblePanes()) {
             if (pane === scrolledPane) {
                 continue;
@@ -82,14 +87,17 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
                 continue;
             }
             const initialOffset = this.paneInitialScrollTop.get(pane);
+
             if (initialOffset === undefined) {
                 throw new Error('Could not find initial offset for pane');
             }
             const currentPanePosition = pane.getScrollPosition();
+
             const newPaneScrollPosition = {
                 scrollTop: initialOffset.scrollTop + scrolledFromInitial.scrollTop,
                 scrollLeft: initialOffset.scrollLeft !== undefined && scrolledFromInitial.scrollLeft !== undefined ? initialOffset.scrollLeft + scrolledFromInitial.scrollLeft : undefined,
             };
+
             if (currentPanePosition.scrollTop === newPaneScrollPosition.scrollTop && currentPanePosition.scrollLeft === newPaneScrollPosition.scrollLeft) {
                 continue;
             }
@@ -98,10 +106,13 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
     }
     private getAllVisiblePanes(): IEditorPane[] {
         const panes: IEditorPane[] = [];
+
         for (const pane of this.editorService.visibleEditorPanes) {
             if (pane instanceof SideBySideEditor) {
                 const primaryPane = pane.getPrimaryEditorPane();
+
                 const secondaryPane = pane.getSecondaryEditorPane();
+
                 if (primaryPane) {
                     panes.push(primaryPane);
                 }
@@ -124,6 +135,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
         if (active) {
             if (!this.statusBarEntry.value) {
                 const text = localize('mouseScrolllingLocked', 'Scrolling Locked');
+
                 const tooltip = localize('mouseLockScrollingEnabled', 'Lock Scrolling Enabled');
                 this.statusBarEntry.value = this.statusbarService.addEntry({
                     name: text,
@@ -179,7 +191,9 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
                 const keybindingService = accessor.get(IKeybindingService);
                 // Enable Sync Scrolling while pressed
                 $this.toggle();
+
                 const holdMode = keybindingService.enableKeybindingHoldMode('workbench.action.holdLockedScrolling');
+
                 if (!holdMode) {
                     return;
                 }
@@ -191,6 +205,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
     }
     override dispose(): void {
         this.deactivate();
+
         super.dispose();
     }
 }

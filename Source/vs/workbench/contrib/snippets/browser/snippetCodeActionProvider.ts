@@ -27,6 +27,7 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
             title: SurroundWithSnippetEditorAction.options.title.value,
         },
     };
+
     constructor(
     @ISnippetsService
     private readonly _snippetService: ISnippetsService) { }
@@ -35,14 +36,18 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
             return undefined;
         }
         const position = Selection.isISelection(range) ? range.getPosition() : range.getStartPosition();
+
         const snippets = await getSurroundableSnippets(this._snippetService, model, position, false);
+
         if (!snippets.length) {
             return undefined;
         }
         const actions: CodeAction[] = [];
+
         for (const snippet of snippets) {
             if (actions.length >= SurroundWithSnippetCodeActionProvider._MAX_CODE_ACTIONS) {
                 actions.push(SurroundWithSnippetCodeActionProvider._overflowCommandCodeAction);
+
                 break;
             }
             actions.push({
@@ -68,6 +73,7 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
         }
     };
     readonly providedCodeActionKinds?: readonly string[] = [CodeActionKind.SurroundWith.value];
+
     constructor(
     @ISnippetsService
     private readonly _snippetService: ISnippetsService) { }
@@ -76,10 +82,13 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
             return undefined;
         }
         const snippets = await this._snippetService.getSnippets(model.getLanguageId(), { fileTemplateSnippets: true, includeNoPrefixSnippets: true });
+
         const actions: CodeAction[] = [];
+
         for (const snippet of snippets) {
             if (actions.length >= FileTemplateCodeActionProvider._MAX_CODE_ACTIONS) {
                 actions.push(FileTemplateCodeActionProvider._overflowCommandCodeAction);
+
                 break;
             }
             actions.push({
@@ -109,6 +118,7 @@ function asWorkspaceEdit(model: ITextModel, range: IRange, snippet: Snippet): Wo
 }
 export class SnippetCodeActions implements IWorkbenchContribution {
     private readonly _store = new DisposableStore();
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -117,9 +127,12 @@ export class SnippetCodeActions implements IWorkbenchContribution {
     @IConfigurationService
     configService: IConfigurationService) {
         const setting = 'editor.snippets.codeActions.enabled';
+
         const sessionStore = new DisposableStore();
+
         const update = () => {
             sessionStore.clear();
+
             if (configService.getValue(setting)) {
                 sessionStore.add(languageFeaturesService.codeActionProvider.register('*', instantiationService.createInstance(SurroundWithSnippetCodeActionProvider)));
                 sessionStore.add(languageFeaturesService.codeActionProvider.register('*', instantiationService.createInstance(FileTemplateCodeActionProvider)));

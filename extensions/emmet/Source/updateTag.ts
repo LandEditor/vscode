@@ -15,18 +15,24 @@ export async function updateTag(tagName: string | undefined): Promise<boolean | 
         return;
     }
     const editor = vscode.window.activeTextEditor;
+
     const document = editor.document;
+
     const rootNode = <HtmlFlatNode>getRootNode(document, true);
+
     if (!rootNode) {
         return;
     }
     const rangesToUpdate = editor.selections
         .reduceRight<TagRange[]>((prev, selection) => prev.concat(getRangesToUpdate(document, selection, rootNode)), []);
+
     if (!rangesToUpdate.length) {
         return;
     }
     const firstTagName = rangesToUpdate[0].name;
+
     const tagNamesAreEqual = rangesToUpdate.every(range => range.name === firstTagName);
+
     if (tagName === undefined) {
         tagName = await vscode.window.showInputBox({
             prompt: 'Enter Tag',
@@ -45,6 +51,7 @@ export async function updateTag(tagName: string | undefined): Promise<boolean | 
 }
 function getRangesFromNode(node: HtmlFlatNode, document: vscode.TextDocument): TagRange[] {
     const ranges: TagRange[] = [];
+
     if (node.open) {
         const start = document.positionAt(node.open.start);
         ranges.push({
@@ -54,6 +61,7 @@ function getRangesFromNode(node: HtmlFlatNode, document: vscode.TextDocument): T
     }
     if (node.close) {
         const endTagStart = document.positionAt(node.close.start);
+
         const end = document.positionAt(node.close.end);
         ranges.push({
             name: node.name,
@@ -64,8 +72,11 @@ function getRangesFromNode(node: HtmlFlatNode, document: vscode.TextDocument): T
 }
 function getRangesToUpdate(document: vscode.TextDocument, selection: vscode.Selection, rootNode: HtmlFlatNode): TagRange[] {
     const documentText = document.getText();
+
     const offset = document.offsetAt(selection.start);
+
     const nodeToUpdate = getHtmlFlatNode(documentText, rootNode, offset, true);
+
     if (!nodeToUpdate) {
         return [];
     }

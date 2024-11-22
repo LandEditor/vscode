@@ -94,11 +94,13 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 			instance.processReady.then(() => this._onTerminalProcessIdReady(instance));
 		}
 		const activeInstance = this._terminalService.activeInstance;
+
 		if (activeInstance) {
 			this._proxy.$acceptActiveTerminalChanged(activeInstance.instanceId);
 		}
 		if (this._environmentVariableService.collections.size > 0) {
 			const collectionAsArray = [...this._environmentVariableService.collections.entries()];
+
 			const serializedCollections: [string, ISerializableEnvironmentVariableCollection][] = collectionAsArray.map(e => {
 				return [e[0], serializeEnvironmentVariableCollection(e[1].map)];
 			});
@@ -114,6 +116,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 	public dispose(): void {
 		this._store.dispose();
+
 		for (const provider of this._profileProviders.values()) {
 			provider.dispose();
 		}
@@ -124,7 +127,9 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 	private async _updateDefaultProfile() {
 		const remoteAuthority = this._extHostContext.remoteAuthority ?? undefined;
+
 		const defaultProfile = this._terminalProfileResolverService.getDefaultProfile({ remoteAuthority, os: this._os });
+
 		const defaultAutomationProfile = this._terminalProfileResolverService.getDefaultProfile({ remoteAuthority, os: this._os, allowAutomationShell: true });
 		this._proxy.$acceptDefaultProfile(...await Promise.all([defaultProfile, defaultAutomationProfile]));
 	}
@@ -160,6 +165,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 			useShellEnvironment: launchConfig.useShellEnvironment,
 			isTransient: launchConfig.isTransient
 		};
+
 		const terminal = Promises.withAsyncBody<ITerminalInstance>(async r => {
 			const terminal = await this._terminalService.createTerminal({
 				config: shellLaunchConfig,
@@ -168,6 +174,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 			r(terminal);
 		});
 		this._extHostTerminals.set(extHostTerminalId, terminal);
+
 		const terminalInstance = await terminal;
 		this._store.add(terminalInstance.onDisposed(() => {
 			this._extHostTerminals.delete(extHostTerminalId);
@@ -177,6 +184,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 	private async _deserializeParentTerminal(location?: TerminalLocation | TerminalEditorLocationOptions | { parentTerminal: ExtHostTerminalIdentifier } | { splitActiveTerminal: boolean; location?: TerminalLocation }): Promise<TerminalLocation | TerminalEditorLocationOptions | { parentTerminal: ITerminalInstance } | { splitActiveTerminal: boolean } | undefined> {
 		if (typeof location === 'object' && 'parentTerminal' in location) {
 			const parentTerminal = await this._extHostTerminals.get(location.parentTerminal.toString());
+
 			return parentTerminal ? { parentTerminal } : undefined;
 		}
 		return location;
@@ -184,8 +192,10 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 	public async $show(id: ExtHostTerminalIdentifier, preserveFocus: boolean): Promise<void> {
 		const terminalInstance = await this._getTerminalInstance(id);
+
 		if (terminalInstance) {
 			this._terminalService.setActiveInstance(terminalInstance);
+
 			if (terminalInstance.target === TerminalLocation.Editor) {
 				await this._terminalEditorService.revealActiveEditor(preserveFocus);
 			} else {
@@ -196,7 +206,9 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 	public async $hide(id: ExtHostTerminalIdentifier): Promise<void> {
 		const instanceToHide = await this._getTerminalInstance(id);
+
 		const activeInstance = this._terminalService.activeInstance;
+
 		if (activeInstance && activeInstance.instanceId === instanceToHide?.instanceId && activeInstance.target !== TerminalLocation.Editor) {
 			this._terminalGroupService.hidePanel();
 		}
@@ -239,6 +251,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 		}
 
 		const multiplexer = this._terminalService.createOnInstanceCapabilityEvent(TerminalCapability.CommandDetection, capability => capability.onCommandFinished);
+
 		const sub = multiplexer.event(e => {
 			this._onDidExecuteCommand(e.instance.instanceId, {
 				commandLine: e.data.command,
@@ -306,11 +319,14 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 					this._logService.warn('Cannot exceed output matcher length of 40');
 				}
 				const commandLineMatch = terminalCommand.command.match(options.commandLineMatcher);
+
 				if (!commandLineMatch || !lines) {
 					return;
 				}
 				const outputMatcher = options.outputMatcher;
+
 				let outputMatch;
+
 				if (outputMatcher) {
 					outputMatch = getOutputMatchForLines(lines, outputMatcher);
 				}
@@ -321,6 +337,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 				if (matchResult) {
 					const result = await this._proxy.$provideTerminalQuickFixes(id, matchResult, token);
+
 					if (result && Array.isArray(result)) {
 						return result.map(r => parseQuickFix(id, extensionId, r));
 					} else if (result) {
@@ -359,6 +376,7 @@ export class MainThreadTerminalService implements MainThreadTerminalServiceShape
 
 	private _onTerminalOpened(terminalInstance: ITerminalInstance): void {
 		const extHostTerminalId = terminalInstance.shellLaunchConfig.extHostTerminalId;
+
 		const shellLaunchConfigDto: IShellLaunchConfigDto = {
 			name: terminalInstance.shellLaunchConfig.name,
 			executable: terminalInstance.shellLaunchConfig.executable,
@@ -473,7 +491,9 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
 
 	async provideLinks(instance: ITerminalInstance, line: string): Promise<ITerminalLink[] | undefined> {
 		const proxy = this._proxy;
+
 		const extHostLinks = await proxy.$provideLinks(instance.instanceId, line);
+
 		return extHostLinks.map(dto => ({
 			id: dto.id,
 			startIndex: dto.startIndex,
@@ -486,11 +506,13 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
 
 export function getOutputMatchForLines(lines: string[], outputMatcher: ITerminalOutputMatcher): ITerminalOutputMatch | undefined {
 	const match: RegExpMatchArray | null | undefined = lines.join('\n').match(outputMatcher.lineMatcher);
+
 	return match ? { regexMatch: match, outputLines: lines } : undefined;
 }
 
 function parseQuickFix(id: string, source: string, fix: TerminalQuickFix): ITerminalQuickFix {
 	let type = TerminalQuickFixType.TerminalCommand;
+
 	if ('uri' in fix) {
 		fix.uri = URI.revive(fix.uri);
 		type = TerminalQuickFixType.Opener;

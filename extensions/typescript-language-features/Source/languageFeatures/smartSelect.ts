@@ -11,6 +11,7 @@ class SmartSelection implements vscode.SelectionRangeProvider {
     public constructor(private readonly client: ITypeScriptServiceClient) { }
     public async provideSelectionRanges(document: vscode.TextDocument, positions: vscode.Position[], token: vscode.CancellationToken): Promise<vscode.SelectionRange[] | undefined> {
         const file = this.client.toOpenTsFilePath(document);
+
         if (!file) {
             return undefined;
         }
@@ -18,7 +19,9 @@ class SmartSelection implements vscode.SelectionRangeProvider {
             file,
             locations: positions.map(typeConverters.Position.toLocation)
         };
+
         const response = await this.client.execute('selectionRange', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }

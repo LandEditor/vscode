@@ -38,9 +38,11 @@ export async function deactivate(): Promise<any> {
 
 async function createModel(context: ExtensionContext, logger: LogOutputChannel, telemetryReporter: TelemetryReporter, disposables: Disposable[]): Promise<Model> {
 	const pathValue = workspace.getConfiguration('git').get<string | string[]>('path');
+
 	let pathHints = Array.isArray(pathValue) ? pathValue : pathValue ? [pathValue] : [];
 
 	const { isTrusted, workspaceFolders = [] } = workspace;
+
 	const excludes = isTrusted ? [] : workspaceFolders.map(f => path.normalize(f.uri.fsPath).replace(/[\r\n]+$/, ''));
 
 	if (!isTrusted && pathHints.length !== 0) {
@@ -50,12 +52,15 @@ async function createModel(context: ExtensionContext, logger: LogOutputChannel, 
 
 	const info = await findGit(pathHints, gitPath => {
 		logger.info(l10n.t('[main] Validating found git in: "{0}"', gitPath));
+
 		if (excludes.length === 0) {
 			return true;
 		}
 
 		const normalized = path.normalize(gitPath).replace(/[\r\n]+$/, '');
+
 		const skip = excludes.some(e => normalized.startsWith(e));
+
 		if (skip) {
 			logger.info(l10n.t('[main] Skipped found git in: "{0}"', gitPath));
 		}
@@ -77,6 +82,7 @@ async function createModel(context: ExtensionContext, logger: LogOutputChannel, 
 	disposables.push(gitEditor);
 
 	const environment = { ...askpass.getEnv(), ...gitEditor.getEnv(), ...ipcServer?.getEnv() };
+
 	const terminalEnvironmentManager = new TerminalEnvironmentManager(context, [askpass, gitEditor, ipcServer]);
 	disposables.push(terminalEnvironmentManager);
 
@@ -88,6 +94,7 @@ async function createModel(context: ExtensionContext, logger: LogOutputChannel, 
 		version: info.version,
 		env: environment,
 	});
+
 	const model = new Model(git, askpass, context.globalState, context.workspaceState, logger, telemetryReporter);
 	disposables.push(model);
 
@@ -146,6 +153,7 @@ async function isGitRepository(folder: WorkspaceFolder): Promise<boolean> {
 
 	try {
 		const dotGitStat = await new Promise<fs.Stats>((c, e) => fs.stat(dotGit, (err, stat) => err ? e(err) : c(stat)));
+
 		return dotGitStat.isDirectory();
 	} catch (err) {
 		return false;
@@ -154,6 +162,7 @@ async function isGitRepository(folder: WorkspaceFolder): Promise<boolean> {
 
 async function warnAboutMissingGit(): Promise<void> {
 	const config = workspace.getConfiguration('git');
+
 	const shouldIgnore = config.get<boolean>('ignoreMissingGitWarning') === true;
 
 	if (shouldIgnore) {
@@ -171,7 +180,9 @@ async function warnAboutMissingGit(): Promise<void> {
 	}
 
 	const download = l10n.t('Download Git');
+
 	const neverShowAgain = l10n.t('Don\'t Show Again');
+
 	const choice = await window.showWarningMessage(
 		l10n.t('Git not found. Install it or configure it using the "git.path" setting.'),
 		download,
@@ -199,23 +210,29 @@ export async function _activate(context: ExtensionContext): Promise<GitExtension
 	onDidChangeLogLevel(logger.logLevel);
 
 	const { aiKey } = require('../package.json') as { aiKey: string };
+
 	const telemetryReporter = new TelemetryReporter(aiKey);
 	deactivateTasks.push(() => telemetryReporter.dispose());
 
 	const config = workspace.getConfiguration('git', null);
+
 	const enabled = config.get<boolean>('enabled');
 
 	if (!enabled) {
 		const onConfigChange = filterEvent(workspace.onDidChangeConfiguration, e => e.affectsConfiguration('git'));
+
 		const onEnabled = filterEvent(onConfigChange, () => workspace.getConfiguration('git', null).get<boolean>('enabled') === true);
+
 		const result = new GitExtensionImpl();
 
 		eventToPromise(onEnabled).then(async () => result.model = await createModel(context, logger, telemetryReporter, disposables));
+
 		return result;
 	}
 
 	try {
 		const model = await createModel(context, logger, telemetryReporter, disposables);
+
 		return new GitExtensionImpl(model);
 	} catch (err) {
 		console.warn(err.message);
@@ -251,11 +268,13 @@ export async function activate(context: ExtensionContext): Promise<GitExtension>
 
 	const result = await _activate(context);
 	context.subscriptions.push(registerAPICommands(result));
+
 	return result;
 }
 
 async function checkGitv1(info: IGit): Promise<void> {
 	const config = workspace.getConfiguration('git');
+
 	const shouldIgnore = config.get<boolean>('ignoreLegacyWarning') === true;
 
 	if (shouldIgnore) {
@@ -267,6 +286,7 @@ async function checkGitv1(info: IGit): Promise<void> {
 	}
 
 	const update = l10n.t('Update Git');
+
 	const neverShowAgain = l10n.t('Don\'t Show Again');
 
 	const choice = await window.showWarningMessage(
@@ -288,6 +308,7 @@ async function checkGitWindows(info: IGit): Promise<void> {
 	}
 
 	const config = workspace.getConfiguration('git');
+
 	const shouldIgnore = config.get<boolean>('ignoreWindowsGit27Warning') === true;
 
 	if (shouldIgnore) {
@@ -295,7 +316,9 @@ async function checkGitWindows(info: IGit): Promise<void> {
 	}
 
 	const update = l10n.t('Update Git');
+
 	const neverShowAgain = l10n.t('Don\'t Show Again');
+
 	const choice = await window.showWarningMessage(
 		l10n.t('There are known issues with the installed Git "{0}". Please update to Git >= 2.27 for the git features to work correctly.', info.version),
 		update,

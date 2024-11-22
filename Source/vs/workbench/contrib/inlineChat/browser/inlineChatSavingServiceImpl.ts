@@ -38,6 +38,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
     private readonly _store = new DisposableStore();
     private readonly _saveParticipant = this._store.add(new MutableDisposable());
     private readonly _sessionData = new Map<Session, SessionData>();
+
     constructor(
     @IFilesConfigurationService
     private readonly _fileConfigService: IFilesConfigurationService, 
@@ -81,6 +82,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
             // notebooks: use the notebook-uri because saving happens on the notebook-level
             if (uri.scheme === Schemas.vscodeNotebookCell) {
                 const data = CellUri.parse(uri);
+
                 if (!data) {
                     return;
                 }
@@ -97,6 +99,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
                 dispose: () => {
                     saveConfigOverride.dispose();
                     this._sessionData.delete(session);
+
                     if (this._sessionData.size === 0) {
                         this._saveParticipant.clear();
                     }
@@ -106,11 +109,13 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
     }
     private _installSaveParticpant(): void {
         const queue = new Queue<void>();
+
         const d1 = this._textFileService.files.addSaveParticipant({
             participate: (model, ctx, progress, token) => {
                 return queue.queue(() => this._participate(ctx.savedFrom ?? model.textEditorModel?.uri, ctx.reason, progress, token));
             }
         });
+
         const d2 = this._workingCopyFileService.addSaveParticipant({
             participate: (workingCopy, ctx, progress, token) => {
                 return queue.queue(() => this._participate(ctx.savedFrom ?? workingCopy.resource, ctx.reason, progress, token));
@@ -129,6 +134,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
             return;
         }
         const sessions = new Map<Session, SessionData>();
+
         for (const [session, data] of this._sessionData) {
             if (uri?.toString() === data.resourceUri.toString()) {
                 sessions.set(session, data);
@@ -138,9 +144,12 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
             return;
         }
         let message: string;
+
         if (sessions.size === 1) {
             const session = Iterable.first(sessions.values())!.session;
+
             const agentName = session.agent.fullName;
+
             const filelabel = this._labelService.getUriBasenameLabel(session.textModelN.uri);
             message = localize('message.1', "Do you want to save the changes {0} made in {1}?", agentName, filelabel);
         }
@@ -158,6 +167,7 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
                 checked: false
             }
         });
+
         if (!result.confirmed) {
             // cancel the save
             throw new CancellationError();

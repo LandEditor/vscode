@@ -13,10 +13,15 @@ export class DeltaExtensionsResult {
 export interface IReadOnlyExtensionDescriptionRegistry {
     containsActivationEvent(activationEvent: string): boolean;
     containsExtension(extensionId: ExtensionIdentifier): boolean;
+
     getExtensionDescriptionsForActivationEvent(activationEvent: string): IExtensionDescription[];
+
     getAllExtensionDescriptions(): IExtensionDescription[];
+
     getExtensionDescription(extensionId: ExtensionIdentifier | string): IExtensionDescription | undefined;
+
     getExtensionDescriptionByUUID(uuid: string): IExtensionDescription | undefined;
+
     getExtensionDescriptionByIdOrUUID(extensionId: ExtensionIdentifier | string, uuid: string | undefined): IExtensionDescription | undefined;
 }
 export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescriptionRegistry {
@@ -26,6 +31,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
             return false;
         }
         const extensionDescription = globalRegistry.getExtensionDescription(extensionId);
+
         if (!extensionDescription) {
             // unknown extension
             return false;
@@ -42,6 +48,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
     private _extensionsMap!: ExtensionIdentifierMap<IExtensionDescription>;
     private _extensionsArr!: IExtensionDescription[];
     private _activationMap!: Map<string, IExtensionDescription[]>;
+
     constructor(private readonly _activationEventsReader: IActivationEventsReader, extensionDescriptions: IExtensionDescription[]) {
         this._extensionDescriptions = extensionDescriptions;
         this._initialize();
@@ -52,15 +59,19 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
         this._extensionsMap = new ExtensionIdentifierMap<IExtensionDescription>();
         this._extensionsArr = [];
         this._activationMap = new Map<string, IExtensionDescription[]>();
+
         for (const extensionDescription of this._extensionDescriptions) {
             if (this._extensionsMap.has(extensionDescription.identifier)) {
                 // No overwriting allowed!
                 console.error('Extension `' + extensionDescription.identifier.value + '` is already registered');
+
                 continue;
             }
             this._extensionsMap.set(extensionDescription.identifier, extensionDescription);
             this._extensionsArr.push(extensionDescription);
+
             const activationEvents = this._activationEventsReader.readActivationEvents(extensionDescription);
+
             for (const activationEvent of activationEvents) {
                 if (!this._activationMap.has(activationEvent)) {
                     this._activationMap.set(activationEvent, []);
@@ -76,6 +87,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
         this._initialize();
         this._versionId++;
         this._onDidChange.fire(undefined);
+
         return {
             versionId: this._versionId
         };
@@ -92,6 +104,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
         this._initialize();
         this._versionId++;
         this._onDidChange.fire(undefined);
+
         return new DeltaExtensionsResult(this._versionId, looping);
     }
     private static _findLoopingExtensions(extensionDescriptions: IExtensionDescription[]): IExtensionDescription[] {
@@ -108,6 +121,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
             addArc(from: string, to: string): void {
                 this.addNode(from);
                 this.addNode(to);
+
                 if (this._arcs.has(from)) {
                     this._arcs.get(from)!.push(to);
                 }
@@ -123,6 +137,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
             }
             hasOnlyGoodArcs(id: string, good: Set<string>): boolean {
                 const dependencies = G.getArcs(id);
+
                 for (let i = 0; i < dependencies.length; i++) {
                     if (!good.has(dependencies[i])) {
                         return false;
@@ -134,9 +149,12 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
                 return this._nodesArr;
             }
         };
+
         const descs = new ExtensionIdentifierMap<IExtensionDescription>();
+
         for (const extensionDescription of extensionDescriptions) {
             descs.set(extensionDescription.identifier, extensionDescription);
+
             if (extensionDescription.extensionDependencies) {
                 for (const depId of extensionDescription.extensionDependencies) {
                     G.addArc(ExtensionIdentifier.toKey(extensionDescription.identifier), ExtensionIdentifier.toKey(depId));
@@ -148,12 +166,15 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
         G.getNodes().filter(id => G.getArcs(id).length === 0).forEach(id => good.add(id));
         // all other extensions will be processed below.
         const nodes = G.getNodes().filter(id => !good.has(id));
+
         let madeProgress: boolean;
+
         do {
             madeProgress = false;
             // find one extension which has only good deps
             for (let i = 0; i < nodes.length; i++) {
                 const id = nodes[i];
+
                 if (G.hasOnlyGoodArcs(id, good)) {
                     nodes.splice(i, 1);
                     i--;
@@ -173,6 +194,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
     }
     public getExtensionDescriptionsForActivationEvent(activationEvent: string): IExtensionDescription[] {
         const extensions = this._activationMap.get(activationEvent);
+
         return extensions ? extensions.slice(0) : [];
     }
     public getAllExtensionDescriptions(): IExtensionDescription[] {
@@ -183,6 +205,7 @@ export class ExtensionDescriptionRegistry implements IReadOnlyExtensionDescripti
     }
     public getExtensionDescription(extensionId: ExtensionIdentifier | string): IExtensionDescription | undefined {
         const extension = this._extensionsMap.get(extensionId);
+
         return extension ? extension : undefined;
     }
     public getExtensionDescriptionByUUID(uuid: string): IExtensionDescription | undefined {
@@ -207,11 +230,13 @@ export interface IActivationEventsReader {
 export class LockableExtensionDescriptionRegistry implements IReadOnlyExtensionDescriptionRegistry {
     private readonly _actual: ExtensionDescriptionRegistry;
     private readonly _lock = new Lock();
+
     constructor(activationEventsReader: IActivationEventsReader) {
         this._actual = new ExtensionDescriptionRegistry(activationEventsReader, []);
     }
     public async acquireLock(customerName: string): Promise<ExtensionDescriptionRegistryLock> {
         const lock = await this._lock.acquire(customerName);
+
         return new ExtensionDescriptionRegistryLock(this, lock);
     }
     public deltaExtensions(acquiredLock: ExtensionDescriptionRegistryLock, toAdd: IExtensionDescription[], toRemove: ExtensionIdentifier[]): DeltaExtensionsResult {
@@ -247,6 +272,7 @@ export class LockableExtensionDescriptionRegistry implements IReadOnlyExtensionD
 }
 export class ExtensionDescriptionRegistryLock extends Disposable {
     private _isDisposed = false;
+
     constructor(private readonly _registry: LockableExtensionDescriptionRegistry, lock: IDisposable) {
         super();
         this._register(lock);
@@ -258,6 +284,7 @@ export class ExtensionDescriptionRegistryLock extends Disposable {
 class LockCustomer {
     public readonly promise: Promise<IDisposable>;
     private readonly _resolve: (value: IDisposable) => void;
+
     constructor(public readonly name: string) {
         const withResolvers = promiseWithResolvers<IDisposable>();
         this.promise = withResolvers.promise;
@@ -274,6 +301,7 @@ class Lock {
         const customer = new LockCustomer(customerName);
         this._pendingCustomers.push(customer);
         this._advance();
+
         return customer.promise;
     }
     private _advance(): void {
@@ -287,12 +315,15 @@ class Lock {
         }
         const customer = this._pendingCustomers.shift()!;
         this._isLocked = true;
+
         let customerHoldsLock = true;
+
         const logLongRunningCustomerTimeout = setTimeout(() => {
             if (customerHoldsLock) {
                 console.warn(`The customer named ${customer.name} has been holding on to the lock for 30s. This might be a problem.`);
             }
         }, 30 * 1000 /* 30 seconds */);
+
         const releaseLock = () => {
             if (!customerHoldsLock) {
                 return;
@@ -320,12 +351,16 @@ const enum SortBucket {
  */
 function extensionCmp(a: IExtensionDescription, b: IExtensionDescription): number {
     const aSortBucket = (a.isBuiltin ? SortBucket.Builtin : a.isUnderDevelopment ? SortBucket.Dev : SortBucket.User);
+
     const bSortBucket = (b.isBuiltin ? SortBucket.Builtin : b.isUnderDevelopment ? SortBucket.Dev : SortBucket.User);
+
     if (aSortBucket !== bSortBucket) {
         return aSortBucket - bSortBucket;
     }
     const aLastSegment = path.posix.basename(a.extensionLocation.path);
+
     const bLastSegment = path.posix.basename(b.extensionLocation.path);
+
     if (aLastSegment < bLastSegment) {
         return -1;
     }
@@ -336,5 +371,6 @@ function extensionCmp(a: IExtensionDescription, b: IExtensionDescription): numbe
 }
 function removeExtensions(arr: IExtensionDescription[], toRemove: ExtensionIdentifier[]): IExtensionDescription[] {
     const toRemoveSet = new ExtensionIdentifierSet(toRemove);
+
     return arr.filter(extension => !toRemoveSet.has(extension.identifier));
 }

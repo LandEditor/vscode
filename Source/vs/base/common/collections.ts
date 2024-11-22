@@ -18,9 +18,12 @@ export type INumberDictionary<V> = Record<number, V>;
  */
 export function groupBy<K extends string | number | symbol, V>(data: V[], groupFn: (element: V) => K): Record<K, V[]> {
     const result: Record<K, V[]> = Object.create(null);
+
     for (const element of data) {
         const key = groupFn(element);
+
         let target = result[key];
+
         if (!target) {
             target = result[key] = [];
         }
@@ -33,7 +36,9 @@ export function diffSets<T>(before: ReadonlySet<T>, after: ReadonlySet<T>): {
     added: T[];
 } {
     const removed: T[] = [];
+
     const added: T[] = [];
+
     for (const element of before) {
         if (!after.has(element)) {
             removed.push(element);
@@ -51,7 +56,9 @@ export function diffMaps<K, V>(before: Map<K, V>, after: Map<K, V>): {
     added: V[];
 } {
     const removed: V[] = [];
+
     const added: V[] = [];
+
     for (const [index, value] of before) {
         if (!after.has(index)) {
             removed.push(value);
@@ -73,6 +80,7 @@ export function diffMaps<K, V>(before: Map<K, V>, after: Map<K, V>): {
  */
 export function intersection<T>(setA: Set<T>, setB: Iterable<T>): Set<T> {
     const result = new Set<T>();
+
     for (const elem of setB) {
         if (setA.has(elem)) {
             result.add(elem);
@@ -82,6 +90,7 @@ export function intersection<T>(setA: Set<T>, setB: Iterable<T>): Set<T> {
 }
 export class SetWithKey<T> implements Set<T> {
     private _map = new Map<any, T>();
+
     constructor(values: T[], private toKey: (t: T) => unknown) {
         for (const value of values) {
             this.add(value);
@@ -93,6 +102,7 @@ export class SetWithKey<T> implements Set<T> {
     add(value: T): this {
         const key = this.toKey(value);
         this._map.set(key, value);
+
         return this;
     }
     delete(value: T): boolean {

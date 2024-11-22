@@ -23,9 +23,13 @@ import { KeybindingWeight } from '../../../../platform/keybinding/common/keybind
 import { SwitchCompositeViewAction } from '../compositeBarActions.js';
 
 const maximizeIcon = registerIcon('panel-maximize', Codicon.chevronUp, localize('maximizeIcon', 'Icon to maximize a panel.'));
+
 const restoreIcon = registerIcon('panel-restore', Codicon.chevronDown, localize('restoreIcon', 'Icon to restore a panel.'));
+
 const closeIcon = registerIcon('panel-close', Codicon.close, localize('closeIcon', 'Icon to close a panel.'));
+
 const panelIcon = registerIcon('panel-layout-icon', Codicon.layoutPanel, localize('togglePanelOffIcon', 'Icon to toggle the panel off when it is on.'));
+
 const panelOffIcon = registerIcon('panel-layout-icon-off', Codicon.layoutPanelOff, localize('togglePanelOnIcon', 'Icon to toggle the panel on when it is off.'));
 
 export class TogglePanelAction extends Action2 {
@@ -83,6 +87,7 @@ registerAction2(class extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const paneCompositeService = accessor.get(IPaneCompositePartService);
 
 		// Show panel
@@ -269,9 +274,12 @@ registerAction2(class extends Action2 {
 	}
 	run(accessor: ServicesAccessor) {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const notificationService = accessor.get(INotificationService);
+
 		if (layoutService.getPanelAlignment() !== 'center' && isHorizontal(layoutService.getPanelPosition())) {
 			notificationService.warn(localize('panelMaxNotSupported', "Maximizing the panel is only supported when it is center aligned."));
+
 			return;
 		}
 
@@ -368,10 +376,13 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]): void {
 		const viewDescriptorService = accessor.get(IViewDescriptorService);
+
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const viewsService = accessor.get(IViewsService);
 
 		const srcContainers = viewDescriptorService.getViewContainersByLocation(this.source);
+
 		const destContainers = viewDescriptorService.getViewContainersByLocation(this.destination);
 
 		if (srcContainers.length) {
@@ -391,6 +402,7 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 
 class MovePanelToSidePanelAction extends MoveViewsBetweenPanelsAction {
 	static readonly ID = 'workbench.action.movePanelToSidePanel';
+
 	constructor() {
 		super(ViewContainerLocation.Panel, ViewContainerLocation.AuxiliaryBar, {
 			id: MovePanelToSidePanelAction.ID,
@@ -403,6 +415,7 @@ class MovePanelToSidePanelAction extends MoveViewsBetweenPanelsAction {
 
 export class MovePanelToSecondarySideBarAction extends MoveViewsBetweenPanelsAction {
 	static readonly ID = 'workbench.action.movePanelToSecondarySideBar';
+
 	constructor() {
 		super(ViewContainerLocation.Panel, ViewContainerLocation.AuxiliaryBar, {
 			id: MovePanelToSecondarySideBarAction.ID,

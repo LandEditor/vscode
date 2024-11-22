@@ -13,6 +13,7 @@ export class ElementSizeObserver extends Disposable {
     private _width: number;
     private _height: number;
     private _resizeObserver: ResizeObserver | null;
+
     constructor(referenceDomElement: HTMLElement | null, dimension: IDimension | undefined) {
         super();
         this._referenceDomElement = referenceDomElement;
@@ -23,6 +24,7 @@ export class ElementSizeObserver extends Disposable {
     }
     public override dispose(): void {
         this.stopObserving();
+
         super.dispose();
     }
     public getWidth(): number {
@@ -38,6 +40,7 @@ export class ElementSizeObserver extends Disposable {
             // Otherwise we will postpone to the next animation frame.
             // We'll use `observeContentRect` to store the content rect we received.
             let observedDimenstion: IDimension | null = null;
+
             const observeNow = () => {
                 if (observedDimenstion) {
                     this.observe({ width: observedDimenstion.width, height: observedDimenstion.height });
@@ -46,8 +49,11 @@ export class ElementSizeObserver extends Disposable {
                     this.observe();
                 }
             };
+
             let shouldObserve = false;
+
             let alreadyObservedThisAnimationFrame = false;
+
             const update = () => {
                 if (shouldObserve && !alreadyObservedThisAnimationFrame) {
                     try {
@@ -87,7 +93,9 @@ export class ElementSizeObserver extends Disposable {
     }
     private measureReferenceDomElement(emitEvent: boolean, dimension?: IDimension): void {
         let observedWidth = 0;
+
         let observedHeight = 0;
+
         if (dimension) {
             observedWidth = dimension.width;
             observedHeight = dimension.height;
@@ -98,9 +106,11 @@ export class ElementSizeObserver extends Disposable {
         }
         observedWidth = Math.max(5, observedWidth);
         observedHeight = Math.max(5, observedHeight);
+
         if (this._width !== observedWidth || this._height !== observedHeight) {
             this._width = observedWidth;
             this._height = observedHeight;
+
             if (emitEvent) {
                 this._onDidChange.fire();
             }

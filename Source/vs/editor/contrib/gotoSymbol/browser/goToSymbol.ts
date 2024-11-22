@@ -30,10 +30,13 @@ async function getLocationLinks<T>(model: ITextModel, position: Position, regist
     const promises = provider.map((provider): Promise<LocationLink | LocationLink[] | undefined> => {
         return Promise.resolve(provide(provider, model, position)).then(undefined, err => {
             onUnexpectedExternalError(err);
+
             return undefined;
         });
     });
+
     const values = await Promise.all(promises);
+
     return coalesce(values.flat()).filter(loc => shouldIncludeLocationLink(model, loc));
 }
 export function getDefinitionsAtPosition(registry: LanguageFeatureRegistry<DefinitionProvider>, model: ITextModel, position: Position, recursive: boolean, token: CancellationToken): Promise<LocationLink[]> {
@@ -59,10 +62,12 @@ export function getTypeDefinitionsAtPosition(registry: LanguageFeatureRegistry<T
 export function getReferencesAtPosition(registry: LanguageFeatureRegistry<ReferenceProvider>, model: ITextModel, position: Position, compact: boolean, recursive: boolean, token: CancellationToken): Promise<LocationLink[]> {
     return getLocationLinks(model, position, registry, recursive, async (provider, model, position) => {
         const result = (await provider.provideReferences(model, position, { includeDeclaration: true }, token))?.filter(ref => shouldIncludeLocationLink(model, ref));
+
         if (!compact || !result || result.length !== 2) {
             return result;
         }
         const resultWithoutDeclaration = (await provider.provideReferences(model, position, { includeDeclaration: false }, token))?.filter(ref => shouldIncludeLocationLink(model, ref));
+
         if (resultWithoutDeclaration && resultWithoutDeclaration.length === 1) {
             return resultWithoutDeclaration;
         }
@@ -72,58 +77,81 @@ export function getReferencesAtPosition(registry: LanguageFeatureRegistry<Refere
 // -- API commands ----
 async function _sortedAndDeduped(callback: () => Promise<LocationLink[]>): Promise<LocationLink[]> {
     const rawLinks = await callback();
+
     const model = new ReferencesModel(rawLinks, '');
+
     const modelLinks = model.references.map(ref => ref.link);
     model.dispose();
+
     return modelLinks;
 }
 registerModelAndPositionCommand('_executeDefinitionProvider', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getDefinitionsAtPosition(languageFeaturesService.definitionProvider, model, position, false, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeDefinitionProvider_recursive', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getDefinitionsAtPosition(languageFeaturesService.definitionProvider, model, position, true, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeTypeDefinitionProvider', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getTypeDefinitionsAtPosition(languageFeaturesService.typeDefinitionProvider, model, position, false, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeTypeDefinitionProvider_recursive', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getTypeDefinitionsAtPosition(languageFeaturesService.typeDefinitionProvider, model, position, true, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeDeclarationProvider', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getDeclarationsAtPosition(languageFeaturesService.declarationProvider, model, position, false, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeDeclarationProvider_recursive', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getDeclarationsAtPosition(languageFeaturesService.declarationProvider, model, position, true, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeReferenceProvider', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getReferencesAtPosition(languageFeaturesService.referenceProvider, model, position, false, false, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeReferenceProvider_recursive', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getReferencesAtPosition(languageFeaturesService.referenceProvider, model, position, false, true, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeImplementationProvider', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getImplementationsAtPosition(languageFeaturesService.implementationProvider, model, position, false, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });
 registerModelAndPositionCommand('_executeImplementationProvider_recursive', (accessor, model, position) => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     const promise = getImplementationsAtPosition(languageFeaturesService.implementationProvider, model, position, true, CancellationToken.None);
+
     return _sortedAndDeduped(() => promise);
 });

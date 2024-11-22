@@ -23,6 +23,7 @@ export interface IBracketPairsTextModelPart {
      * The result is sorted by the start position.
      */
     getBracketPairsInRangeWithMinIndentation(range: IRange): CallbackIterable<BracketPairWithMinIndentationInfo>;
+
     getBracketsInRange(range: IRange, onlyColorizedBrackets?: boolean): CallbackIterable<BracketInfo>;
     /**
      * Find the matching bracket of `request` up, counting brackets.

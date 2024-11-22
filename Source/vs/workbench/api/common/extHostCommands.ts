@@ -49,6 +49,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
     readonly #extHostTelemetry: IExtHostTelemetry;
     private readonly _argumentProcessors: ArgumentProcessor[];
     readonly converter: CommandsConverter;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -65,6 +66,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             // converted to their internal command and don't need
             // any indirection commands
             const candidate = this._apiCommands.get(id);
+
             return candidate?.result === ApiCommandResult.Void
                 ? candidate : undefined;
         }, logService);
@@ -110,7 +112,9 @@ export class ExtHostCommands implements ExtHostCommandsShape {
                 }
                 return arg.convert(apiArgs[i]);
             });
+
             const internalResult = await this.executeCommand(apiCommand.internalId, ...internalArgs);
+
             return apiCommand.result.convert(internalResult, apiArgs, this.converter);
         }, undefined, {
             description: apiCommand.description,
@@ -118,6 +122,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             returns: apiCommand.result.description
         });
         this._apiCommands.set(apiCommand.id, apiCommand);
+
         return new extHostTypes.Disposable(() => {
             registration.dispose();
             this._apiCommands.delete(apiCommand.id);
@@ -125,6 +130,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
     }
     registerCommand(global: boolean, id: string, callback: <T>(...args: any[]) => T | Thenable<T>, thisArg?: any, metadata?: ICommandMetadata, extension?: IExtensionDescription): extHostTypes.Disposable {
         this._logService.trace('ExtHostCommands#registerCommand', id);
+
         if (!id.trim().length) {
             throw new Error('invalid id');
         }
@@ -132,6 +138,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             throw new Error(`command '${id}' already exists`);
         }
         this._commands.set(id, { callback, thisArg, metadata, extension });
+
         if (global) {
             this.#proxy.$registerCommand(id);
         }
@@ -145,6 +152,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
     }
     executeCommand<T>(id: string, ...args: any[]): Promise<T> {
         this._logService.trace('ExtHostCommands#executeCommand', id);
+
         return this._doExecuteCommand(id, args, true);
     }
     private async _doExecuteCommand<T>(id: string, args: any[], retry: boolean): Promise<T> {
@@ -154,11 +162,13 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             // - We still emit the corresponding activation event
             //   BUT we don't await that event
             this.#proxy.$fireCommandActivationEvent(id);
+
             return this._executeContributedCommand<T>(id, args, false);
         }
         else {
             // automagically convert some argument types
             let hasBuffers = false;
+
             const toArgs = cloneAndChange(args, function (value) {
                 if (value instanceof extHostTypes.Position) {
                     return extHostTypeConverter.Position.from(value);
@@ -174,22 +184,27 @@ export class ExtHostCommands implements ExtHostCommandsShape {
                 }
                 else if (value instanceof ArrayBuffer) {
                     hasBuffers = true;
+
                     return VSBuffer.wrap(new Uint8Array(value));
                 }
                 else if (value instanceof Uint8Array) {
                     hasBuffers = true;
+
                     return VSBuffer.wrap(value);
                 }
                 else if (value instanceof VSBuffer) {
                     hasBuffers = true;
+
                     return value;
                 }
                 if (!Array.isArray(value)) {
                     return value;
                 }
             });
+
             try {
                 const result = await this.#proxy.$executeCommand(id, hasBuffers ? new SerializableObjectWithBuffers(toArgs) : toArgs, retry);
+
                 return revive<any>(result);
             }
             catch (e) {
@@ -207,10 +222,12 @@ export class ExtHostCommands implements ExtHostCommandsShape {
     }
     private async _executeContributedCommand<T = unknown>(id: string, args: any[], annotateError: boolean): Promise<T> {
         const command = this._commands.get(id);
+
         if (!command) {
             throw new Error('Unknown command');
         }
         const { callback, thisArg, metadata } = command;
+
         if (metadata?.args) {
             for (let i = 0; i < metadata.args.length; i++) {
                 try {
@@ -222,6 +239,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             }
         }
         const stopWatch = StopWatch.create();
+
         try {
             return await callback.apply(thisArg, args);
         }
@@ -230,11 +248,13 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             // command and in that case it is better to blame the correct command
             if (id === this.converter.delegatingCommandId) {
                 const actual = this.converter.getActualCommand(...args);
+
                 if (actual) {
                     id = actual.command;
                 }
             }
             this._logService.error(err, id, command.extension?.identifier);
+
             if (!annotateError) {
                 throw err;
             }
@@ -245,6 +265,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
             throw new class CommandError extends Error {
                 readonly id = id;
                 readonly source = command!.extension?.displayName ?? command!.extension?.name;
+
                 constructor() {
                     super(toErrorMessage(err));
                 }
@@ -290,17 +311,21 @@ export class ExtHostCommands implements ExtHostCommandsShape {
     }
     $executeContributedCommand(id: string, ...args: any[]): Promise<unknown> {
         this._logService.trace('ExtHostCommands#$executeContributedCommand', id);
+
         const cmdHandler = this._commands.get(id);
+
         if (!cmdHandler) {
             return Promise.reject(new Error(`Contributed command '${id}' does not exist.`));
         }
         else {
             args = args.map(arg => this._argumentProcessors.reduce((r, p) => p.processArgument(r, cmdHandler.extension?.identifier), arg));
+
             return this._executeContributedCommand(id, args, true);
         }
     }
     getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
         this._logService.trace('ExtHostCommands#getCommands', filterUnderscoreCommands);
+
         return this.#proxy.$getCommands().then(result => {
             if (filterUnderscoreCommands) {
                 result = result.filter(command => command[0] !== '_');
@@ -314,8 +339,10 @@ export class ExtHostCommands implements ExtHostCommandsShape {
         const result: {
             [id: string]: string | ICommandMetadata;
         } = Object.create(null);
+
         for (const [id, command] of this._commands) {
             const { metadata } = command;
+
             if (metadata) {
                 result[id] = metadata;
             }
@@ -346,12 +373,14 @@ export class CommandsConverter implements extHostTypeConverter.Command.ICommands
             title: command.title,
             tooltip: command.tooltip
         };
+
         if (!command.command) {
             // falsy command id -> return converted command but don't attempt any
             // argument or API-command dance since this command won't run anyways
             return result;
         }
         const apiCommand = this._lookupApiCommand(command.command);
+
         if (apiCommand) {
             // API command with return-value can be converted inplace
             result.id = apiCommand.internalId;
@@ -391,6 +420,7 @@ export class CommandsConverter implements extHostTypeConverter.Command.ICommands
     private _executeConvertedCommand<R>(...args: any[]): Promise<R> {
         const actualCmd = this.getActualCommand(...args);
         this._logService.trace('CommandsConverter#EXECUTE', args[0], actualCmd ? actualCmd.command : 'MISSING');
+
         if (!actualCmd) {
             return Promise.reject(`Actual command not found, wanted to execute ${args[0]}`);
         }
@@ -411,6 +441,7 @@ export class ApiCommandArgument<V, O = V> {
     static readonly CallHierarchyItem = new ApiCommandArgument('item', 'A call hierarchy item', v => v instanceof extHostTypes.CallHierarchyItem, extHostTypeConverter.CallHierarchyItem.from);
     static readonly TypeHierarchyItem = new ApiCommandArgument('item', 'A type hierarchy item', v => v instanceof extHostTypes.TypeHierarchyItem, extHostTypeConverter.TypeHierarchyItem.from);
     static readonly TestItem = new ApiCommandArgument('testItem', 'A VS Code TestItem', v => v instanceof TestItemImpl, extHostTypeConverter.TestItem.from);
+
     constructor(readonly name: string, readonly description: string, readonly validate: (v: V) => boolean, readonly convert: (v: V) => O) { }
     optional(): ApiCommandArgument<V | undefined | null, O | undefined | null> {
         return new ApiCommandArgument(this.name, `(optional) ${this.description}`, value => value === undefined || value === null || this.validate(value), value => value === undefined ? undefined : value === null ? null : this.convert(value));
@@ -421,6 +452,7 @@ export class ApiCommandArgument<V, O = V> {
 }
 export class ApiCommandResult<V, O = V> {
     static readonly Void = new ApiCommandResult<void, void>('no result', v => v);
+
     constructor(readonly description: string, readonly convert: (v: V, apiArgs: any[], cmdConverter: CommandsConverter) => O) { }
 }
 export class ApiCommand {

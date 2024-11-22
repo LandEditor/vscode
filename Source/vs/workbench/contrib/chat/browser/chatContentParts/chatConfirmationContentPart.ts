@@ -16,6 +16,7 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
     public readonly domNode: HTMLElement;
     private readonly _onDidChangeHeight = this._register(new Emitter<void>());
     public readonly onDidChangeHeight = this._onDidChangeHeight.event;
+
     constructor(confirmation: IChatConfirmation, context: IChatContentPartRenderContext, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -24,7 +25,9 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
     @IChatWidgetService
     chatWidgetService: IChatWidgetService) {
         super();
+
         const element = context.element;
+
         const buttons = confirmation.buttons
             ? confirmation.buttons.map(button => ({
                 label: button,
@@ -34,11 +37,13 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
                 { label: localize('accept', "Accept"), data: confirmation.data },
                 { label: localize('dismiss', "Dismiss"), data: confirmation.data, isSecondary: true },
             ];
+
         const confirmationWidget = this._register(this.instantiationService.createInstance(ChatConfirmationWidget, confirmation.title, confirmation.message, buttons));
         confirmationWidget.setShowButtons(!confirmation.isUsed);
         this._register(confirmationWidget.onDidClick(async (e) => {
             if (isResponseVM(element)) {
                 const prompt = `${e.label}: "${confirmation.title}"`;
+
                 const options: IChatSendRequestOptions = e.isSecondary ?
                     { rejectedConfirmationData: [e.data] } :
                     { acceptedConfirmationData: [e.data] };
@@ -46,6 +51,7 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
                 options.slashCommand = element.slashCommand?.name;
                 options.confirmation = e.label;
                 options.userSelectedModelId = chatWidgetService.getWidgetBySessionId(element.sessionId)?.input.currentLanguageModel;
+
                 if (await this.chatService.sendRequest(element.sessionId, prompt, options)) {
                     confirmation.isUsed = true;
                     confirmationWidget.setShowButtons(false);

@@ -17,6 +17,7 @@ export class AccessibilityStatus extends Disposable implements IWorkbenchContrib
     private screenReaderNotification: INotificationHandle | null = null;
     private promptedScreenReader: boolean = false;
     private readonly screenReaderModeElement = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -77,11 +78,14 @@ export class AccessibilityStatus extends Disposable implements IWorkbenchContrib
     private onScreenReaderModeChange(): void {
         // We only support text based editors
         const screenReaderDetected = this.accessibilityService.isScreenReaderOptimized();
+
         if (screenReaderDetected) {
             const screenReaderConfiguration = this.configurationService.getValue('editor.accessibilitySupport');
+
             if (screenReaderConfiguration === 'auto') {
                 if (!this.promptedScreenReader) {
                     this.promptedScreenReader = true;
+
                     setTimeout(() => this.showScreenReaderNotification(), 100);
                 }
             }

@@ -125,8 +125,11 @@ export class SimpleSuggestWidget extends Disposable {
 				// only store width or height value that have changed and also
 				// only store changes that are above a certain threshold
 				const { itemHeight, defaultSize } = this._getLayoutInfo();
+
 				const threshold = Math.round(itemHeight / 2);
+
 				let { width, height } = this.element.size;
+
 				if (!state.persistHeight || Math.abs(state.currentSize.height - height) <= threshold) {
 					height = state.persistedSize?.height ?? defaultSize.height;
 				}
@@ -158,8 +161,10 @@ export class SimpleSuggestWidget extends Disposable {
 				getWidgetRole: () => 'listbox',
 				getAriaLabel: (item: SimpleCompletionItem) => {
 					let label = item.completion.label;
+
 					if (typeof item.completion.label !== 'string') {
 						const { detail, description } = item.completion.label;
+
 						if (detail && description) {
 							label = localize('label.full', '{0}{1}, {2}', label, detail, description);
 						} else if (detail) {
@@ -219,16 +224,19 @@ export class SimpleSuggestWidget extends Disposable {
 
 		if (isFrozen && this._state !== State.Empty && this._state !== State.Hidden) {
 			this._setState(State.Frozen);
+
 			return;
 		}
 
 		const visibleCount = this._completionModel?.items.length ?? 0;
+
 		const isEmpty = visibleCount === 0;
 		// this._ctxSuggestWidgetMultipleSuggestions.set(visibleCount > 1);
 
 		if (isEmpty) {
 			this._setState(isAuto ? State.Hidden : State.Empty);
 			this._completionModel = undefined;
+
 			return;
 		}
 
@@ -240,6 +248,7 @@ export class SimpleSuggestWidget extends Disposable {
 		// they get run.
 		// this._onDidFocus.pause();
 		// this._onDidSelect.pause();
+
 		try {
 			this._list.splice(0, this._list.length, this._completionModel?.items ?? []);
 			this._setState(isFrozen ? State.Frozen : State.Open);
@@ -278,7 +287,9 @@ export class SimpleSuggestWidget extends Disposable {
 		switch (state) {
 			case State.Hidden:
 				// dom.hide(this._messageElement, this._listElement, this._status.element);
+
 				dom.hide(this._listElement);
+
 				if (this._status) {
 					dom.hide(this._status?.element);
 				}
@@ -294,11 +305,15 @@ export class SimpleSuggestWidget extends Disposable {
 				// this._focusedItem = undefined;
 				this._cappedHeight = undefined;
 				// this._explainMode = false;
+
 				break;
+
 			case State.Loading:
 				this.element.domNode.classList.add('message');
 				// this._messageElement.textContent = SuggestWidget.LOADING_MESSAGE;
+
 				dom.hide(this._listElement);
+
 				if (this._status) {
 					dom.hide(this._status?.element);
 				}
@@ -306,11 +321,15 @@ export class SimpleSuggestWidget extends Disposable {
 				// this._details.hide();
 				this._show();
 				// this._focusedItem = undefined;
+
 				break;
+
 			case State.Empty:
 				this.element.domNode.classList.add('message');
 				// this._messageElement.textContent = SuggestWidget.NO_SUGGESTIONS_MESSAGE;
+
 				dom.hide(this._listElement);
+
 				if (this._status) {
 					dom.hide(this._status?.element);
 				}
@@ -318,31 +337,44 @@ export class SimpleSuggestWidget extends Disposable {
 				// this._details.hide();
 				this._show();
 				// this._focusedItem = undefined;
+
 				break;
+
 			case State.Open:
 				// dom.hide(this._messageElement);
+
 				dom.show(this._listElement);
+
 				if (this._status) {
 					dom.show(this._status?.element);
 				}
 				this._show();
+
 				break;
+
 			case State.Frozen:
 				// dom.hide(this._messageElement);
+
 				dom.show(this._listElement);
+
 				if (this._status) {
 					dom.show(this._status?.element);
 				}
 				this._show();
+
 				break;
+
 			case State.Details:
 				// dom.hide(this._messageElement);
+
 				dom.show(this._listElement);
+
 				if (this._status) {
 					dom.show(this._status?.element);
 				}
 				// this._details.show();
 				this._show();
+
 				break;
 		}
 	}
@@ -355,6 +387,7 @@ export class SimpleSuggestWidget extends Disposable {
 
 		this._status?.show();
 		// this._contentWidget.show();
+
 		dom.show(this.element.domNode);
 		this._layout(this._persistedSize.restore());
 		// this._ctxSuggestWidgetVisible.set(true);
@@ -372,12 +405,15 @@ export class SimpleSuggestWidget extends Disposable {
 
 		this._setState(State.Hidden);
 		this._onDidHide.fire(this);
+
 		dom.hide(this.element.domNode);
 		this.element.clearSashHoverState();
 		// ensure that a reasonable widget height is persisted so that
 		// accidential "resize-to-single-items" cases aren't happening
 		const dim = this._persistedSize.restore();
+
 		const minPersistedHeight = Math.ceil(this._getLayoutInfo().itemHeight * 4.3);
+
 		if (dim && dim.height < minPersistedHeight) {
 			this._persistedSize.store(dim.with(undefined, minPersistedHeight));
 		}
@@ -396,6 +432,7 @@ export class SimpleSuggestWidget extends Disposable {
 		// }
 
 		const bodyBox = dom.getClientArea(this._container.ownerDocument.body);
+
 		const info = this._getLayoutInfo();
 
 		if (!size) {
@@ -403,6 +440,7 @@ export class SimpleSuggestWidget extends Disposable {
 		}
 
 		let height = size.height;
+
 		let width = size.width;
 
 		// status bar
@@ -423,6 +461,7 @@ export class SimpleSuggestWidget extends Disposable {
 
 		// width math
 		const maxWidth = bodyBox.width - info.borderHeight - 2 * info.horizontalPadding;
+
 		if (width > maxWidth) {
 			width = maxWidth;
 		}
@@ -430,15 +469,23 @@ export class SimpleSuggestWidget extends Disposable {
 
 		// height math
 		const fullHeight = info.statusBarHeight + this._list.contentHeight + info.borderHeight;
+
 		const minHeight = info.itemHeight + info.statusBarHeight;
 		// const editorBox = dom.getDomNodePagePosition(this.editor.getDomNode());
 		// const cursorBox = this.editor.getScrolledVisiblePosition(this.editor.getPosition());
+
 		const editorBox = dom.getDomNodePagePosition(this._container);
+
 		const cursorBox = this._cursorPosition; //this.editor.getScrolledVisiblePosition(this.editor.getPosition());
+
 		const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
+
 		const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
+
 		const availableSpaceAbove = editorBox.top + cursorBox.top - info.verticalPadding;
+
 		const maxHeightAbove = Math.min(availableSpaceAbove, fullHeight);
+
 		let maxHeight = Math.min(Math.max(maxHeightAbove, maxHeightBelow) + info.borderHeight, fullHeight);
 
 		if (height === this._cappedHeight?.capped) {
@@ -455,6 +502,7 @@ export class SimpleSuggestWidget extends Disposable {
 		}
 
 		const forceRenderingAboveRequiredSpace = 150;
+
 		if (height > maxHeightBelow || (this._forceRenderingAbove && availableSpaceAbove > forceRenderingAboveRequiredSpace)) {
 			this._preference = WidgetPositionPreference.Above;
 			this.element.enableSashes(true, true, false, false);
@@ -476,6 +524,7 @@ export class SimpleSuggestWidget extends Disposable {
 			: undefined;
 		// }
 		this.element.domNode.style.left = `${this._cursorPosition.left}px`;
+
 		if (this._preference === WidgetPositionPreference.Above) {
 			this.element.domNode.style.top = `${this._cursorPosition.top - height - info.borderHeight}px`;
 		} else {
@@ -487,6 +536,7 @@ export class SimpleSuggestWidget extends Disposable {
 	private _resize(width: number, height: number): void {
 		const { width: maxWidth, height: maxHeight } = this.element.maxSize;
 		width = Math.min(maxWidth, width);
+
 		if (maxHeight) {
 			height = Math.min(maxHeight, height);
 		}
@@ -505,9 +555,13 @@ export class SimpleSuggestWidget extends Disposable {
 
 	private _getLayoutInfo() {
 		const fontInfo = this._getFontInfo();
+
 		const itemHeight = clamp(Math.ceil(fontInfo.lineHeight), 8, 1000);
+
 		const statusBarHeight = 0; //!this.editor.getOption(EditorOption.suggest).showStatusBar || this._state === State.Empty || this._state === State.Loading ? 0 : itemHeight;
+
 		const borderWidth = 1; //this._details.widget.borderWidth;
+
 		const borderHeight = 2 * borderWidth;
 
 		return {
@@ -542,6 +596,7 @@ export class SimpleSuggestWidget extends Disposable {
 
 	private _select(item: SimpleCompletionItem, index: number): void {
 		const completionModel = this._completionModel;
+
 		if (completionModel) {
 			this._onDidSelect.fire({ item, index, model: completionModel });
 		}
@@ -549,7 +604,9 @@ export class SimpleSuggestWidget extends Disposable {
 
 	selectNext(): boolean {
 		this._list.focusNext(1, true);
+
 		const focus = this._list.getFocus();
+
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
@@ -558,7 +615,9 @@ export class SimpleSuggestWidget extends Disposable {
 
 	selectNextPage(): boolean {
 		this._list.focusNextPage();
+
 		const focus = this._list.getFocus();
+
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
@@ -567,7 +626,9 @@ export class SimpleSuggestWidget extends Disposable {
 
 	selectPrevious(): boolean {
 		this._list.focusPrevious(1, true);
+
 		const focus = this._list.getFocus();
+
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}
@@ -576,7 +637,9 @@ export class SimpleSuggestWidget extends Disposable {
 
 	selectPreviousPage(): boolean {
 		this._list.focusPreviousPage();
+
 		const focus = this._list.getFocus();
+
 		if (focus.length > 0) {
 			this._list.reveal(focus[0]);
 		}

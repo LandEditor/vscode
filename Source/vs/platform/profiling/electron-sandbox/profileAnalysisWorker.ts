@@ -23,8 +23,10 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
             return { kind: ProfilingOutput.Irrelevant, samples: [] };
         }
         const model = buildModel(profile);
+
         const samples = bottomUp(model, 5)
             .filter(s => !s.isSpecial);
+
         if (samples.length === 0 || samples[0].percentage < 10) {
             // ignore this profile because 90% of the time is spent inside "special" frames
             // like idle, GC, or program
@@ -44,10 +46,14 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
         searchTree.fill(categories);
         // cost by categories
         const model = buildModel(profile);
+
         const aggegrateByCategory = new Map<string, number>();
+
         for (const node of model.nodes) {
             const loc = model.locations[node.locationId];
+
             let category: string | undefined;
+
             try {
                 category = searchTree.findSubstr(URI.parse(loc.callFrame.url));
             }
@@ -58,6 +64,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
                 category = printCallFrameShort(loc.callFrame);
             }
             const value = aggegrateByCategory.get(category) ?? 0;
+
             const newValue = value + node.selfTime;
             aggegrateByCategory.set(category, newValue);
         }
@@ -65,6 +72,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
             string,
             number
         ][] = [];
+
         for (const [key, value] of aggegrateByCategory) {
             result.push([key, value]);
         }
@@ -76,9 +84,11 @@ function isSpecial(call: CdpCallFrame): boolean {
 }
 function printCallFrameShort(frame: CdpCallFrame): string {
     let result = frame.functionName || '(anonymous)';
+
     if (frame.url) {
         result += '#';
         result += basename(frame.url);
+
         if (frame.lineNumber >= 0) {
             result += ':';
             result += frame.lineNumber + 1;
@@ -92,9 +102,11 @@ function printCallFrameShort(frame: CdpCallFrame): string {
 }
 function printCallFrameStackLike(frame: CdpCallFrame): string {
     let result = frame.functionName || '(anonymous)';
+
     if (frame.url) {
         result += ' (';
         result += frame.url;
+
         if (frame.lineNumber >= 0) {
             result += ':';
             result += frame.lineNumber + 1;
@@ -111,6 +123,7 @@ function getHeaviestLocationIds(model: IProfileModel, topN: number) {
     const stackSelfTime: {
         [locationId: number]: number;
     } = {};
+
     for (const node of model.nodes) {
         stackSelfTime[node.locationId] = (stackSelfTime[node.locationId] || 0) + node.selfTime;
     }
@@ -118,11 +131,14 @@ function getHeaviestLocationIds(model: IProfileModel, topN: number) {
         .sort(([, a], [, b]) => b - a)
         .slice(0, topN)
         .map(([locationId]) => Number(locationId));
+
     return new Set(locationIds);
 }
 function bottomUp(model: IProfileModel, topN: number) {
     const root = BottomUpNode.root();
+
     const locationIds = getHeaviestLocationIds(model, topN);
+
     for (const node of model.nodes) {
         if (locationIds.has(node.locationId)) {
             processNode(root, node, model);
@@ -132,7 +148,9 @@ function bottomUp(model: IProfileModel, topN: number) {
     const result = Object.values(root.children)
         .sort((a, b) => b.selfTime - a.selfTime)
         .slice(0, topN);
+
     const samples: BottomUpSample[] = [];
+
     for (const node of result) {
         const sample: BottomUpSample = {
             selfTime: Math.round(node.selfTime / 1000),
@@ -146,9 +164,12 @@ function bottomUp(model: IProfileModel, topN: number) {
         };
         // follow the heaviest caller paths
         const stack = [node];
+
         while (stack.length) {
             const node = stack.pop()!;
+
             let top: BottomUpNode | undefined;
+
             for (const candidate of Object.values(node.children)) {
                 if (!top || top.selfTime < candidate.selfTime) {
                     top = candidate;

@@ -36,12 +36,14 @@ export function resolveCommonProperties(release: string, hostname: string, arch:
     result['common.nodeArch'] = arch;
     // __GDPR__COMMON__ "common.product" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }
     result['common.product'] = product || 'desktop';
+
     if (isInternalTelemetry) {
         // __GDPR__COMMON__ "common.msftInternal" : { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
         result['common.msftInternal'] = isInternalTelemetry;
     }
     // dynamic properties which value differs on each call
     let seq = 0;
+
     const startTime = Date.now();
     Object.defineProperties(result, {
         // __GDPR__COMMON__ "timestamp" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
@@ -60,11 +62,13 @@ export function resolveCommonProperties(release: string, hostname: string, arch:
             enumerable: true
         }
     });
+
     if (isLinuxSnap) {
         // __GDPR__COMMON__ "common.snap" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
         result['common.snap'] = 'true';
     }
     const platformDetail = getPlatformDetail(hostname);
+
     if (platformDetail) {
         // __GDPR__COMMON__ "common.platformDetail" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
         result['common.platformDetail'] = platformDetail;
@@ -73,9 +77,11 @@ export function resolveCommonProperties(release: string, hostname: string, arch:
 }
 export function verifyMicrosoftInternalDomain(domainList: readonly string[]): boolean {
     const userDnsDomain = env['USERDNSDOMAIN'];
+
     if (!userDnsDomain) {
         return false;
     }
     const domain = userDnsDomain.toLowerCase();
+
     return domainList.some(msftDomain => domain === msftDomain);
 }

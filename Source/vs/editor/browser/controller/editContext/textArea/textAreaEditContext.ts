@@ -74,6 +74,7 @@ class VisibleTextAreaData {
 
 	prepareRender(visibleRangeProvider: IVisibleRangeProvider): void {
 		const startModelPosition = new Position(this.modelLineNumber, this.distanceToModelLineStart + 1);
+
 		const endModelPosition = new Position(this.modelLineNumber, this._context.viewModel.model.getLineMaxColumn(this.modelLineNumber) - this.distanceToModelLineEnd);
 
 		this.startPosition = this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(startModelPosition);
@@ -162,6 +163,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		this._scrollTop = 0;
 
 		const options = this._context.configuration.options;
+
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._setAccessibilityOptions(options);
@@ -183,6 +185,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		PartFingerprints.write(this.textArea, PartFingerprint.TextArea);
 		this.textArea.setClassName(`inputarea ${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`);
 		this.textArea.setAttribute('wrap', this._textAreaWrapping && !this._visibleTextArea ? 'on' : 'off');
+
 		const { tabSize } = this._context.viewModel.model.getOptions();
 		this.textArea.domNode.style.tabSize = `${tabSize * this._fontInfo.spaceWidth}px`;
 		this.textArea.setAttribute('autocorrect', 'off');
@@ -233,10 +236,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// On OSX, we write the character before the cursor to allow for "long-press" composition
 					// Also on OSX, we write the word before the cursor to allow for the Accessibility Keyboard to give good hints
 					const selection = this._selections[0];
+
 					if (platform.isMacintosh && selection.isEmpty()) {
 						const position = selection.getStartPosition();
 
 						let textBefore = this._getWordBeforePosition(position);
+
 						if (textBefore.length === 0) {
 							textBefore = this._getCharacterBeforePosition(position);
 						}
@@ -250,8 +255,10 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// thousand chars
 					// (https://github.com/microsoft/vscode/issues/27799)
 					const LIMIT_CHARS = 500;
+
 					if (platform.isMacintosh && !selection.isEmpty() && simpleModel.getValueLengthInRange(selection, EndOfLinePreference.TextDefined) < LIMIT_CHARS) {
 						const text = simpleModel.getValueInRange(selection, EndOfLinePreference.TextDefined);
+
 						return new TextAreaState(text, 0, text.length, selection, 0);
 					}
 
@@ -260,6 +267,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// is selected in the textarea.
 					if (browser.isSafari && !selection.isEmpty()) {
 						const placeholderText = 'vscode-placeholder';
+
 						return new TextAreaState(placeholderText, 0, placeholderText.length, null, undefined);
 					}
 
@@ -272,9 +280,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// it then forgets to ever send a `compositionend`.
 					// we therefore only write the current word in the textarea
 					const selection = this._selections[0];
+
 					if (selection.isEmpty()) {
 						const position = selection.getStartPosition();
+
 						const [wordAtPosition, positionOffsetInWord] = this._getAndroidWordAtPosition(position);
+
 						if (wordAtPosition.length > 0) {
 							return new TextAreaState(wordAtPosition, positionOffsetInWord, positionOffsetInWord, Range.fromPositions(position), 0);
 						}
@@ -283,6 +294,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				}
 
 				const screenReaderContentState = PagedScreenReaderStrategy.fromEditorSelection(simpleModel, this._selections[0], this._accessibilityPageSize, this._accessibilitySupport === AccessibilitySupport.Unknown);
+
 				return TextAreaState.fromScreenReaderContentState(screenReaderContentState);
 			},
 
@@ -309,8 +321,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 		this._register(this._textAreaInput.onPaste((e: IPasteData) => {
 			let pasteOnNewLine = false;
+
 			let multicursorText: string[] | null = null;
+
 			let mode: string | null = null;
+
 			if (e.metadata) {
 				pasteOnNewLine = (this._emptySelectionClipboard && !!e.metadata.isFromEmptySelection);
 				multicursorText = (typeof e.metadata.multicursorText !== 'undefined' ? e.metadata.multicursorText : null);
@@ -364,22 +379,32 @@ export class TextAreaEditContext extends AbstractEditContext {
 			// will hide (if necessary) some of the leading text on the current line.
 
 			const ta = this.textArea.domNode;
+
 			const modelSelection = this._modelSelections[0];
 
 			const { distanceToModelLineStart, widthOfHiddenTextBefore } = (() => {
 				// Find the text that is on the current line before the selection
 				const textBeforeSelection = ta.value.substring(0, Math.min(ta.selectionStart, ta.selectionEnd));
+
 				const lineFeedOffset1 = textBeforeSelection.lastIndexOf('\n');
+
 				const lineTextBeforeSelection = textBeforeSelection.substring(lineFeedOffset1 + 1);
 
 				// We now search to see if we should hide some part of it (if it contains \t)
 				const tabOffset1 = lineTextBeforeSelection.lastIndexOf('\t');
+
 				const desiredVisibleBeforeCharCount = lineTextBeforeSelection.length - tabOffset1 - 1;
+
 				const startModelPosition = modelSelection.getStartPosition();
+
 				const visibleBeforeCharCount = Math.min(startModelPosition.column - 1, desiredVisibleBeforeCharCount);
+
 				const distanceToModelLineStart = startModelPosition.column - 1 - visibleBeforeCharCount;
+
 				const hiddenLineTextBefore = lineTextBeforeSelection.substring(0, lineTextBeforeSelection.length - visibleBeforeCharCount);
+
 				const { tabSize } = this._context.viewModel.model.getOptions();
+
 				const widthOfHiddenTextBefore = measureText(this.textArea.domNode.ownerDocument, hiddenLineTextBefore, this._fontInfo, tabSize);
 
 				return { distanceToModelLineStart, widthOfHiddenTextBefore };
@@ -388,13 +413,19 @@ export class TextAreaEditContext extends AbstractEditContext {
 			const { distanceToModelLineEnd } = (() => {
 				// Find the text that is on the current line after the selection
 				const textAfterSelection = ta.value.substring(Math.max(ta.selectionStart, ta.selectionEnd));
+
 				const lineFeedOffset2 = textAfterSelection.indexOf('\n');
+
 				const lineTextAfterSelection = lineFeedOffset2 === -1 ? textAfterSelection : textAfterSelection.substring(0, lineFeedOffset2);
 
 				const tabOffset2 = lineTextAfterSelection.indexOf('\t');
+
 				const desiredVisibleAfterCharCount = (tabOffset2 === -1 ? lineTextAfterSelection.length : lineTextAfterSelection.length - tabOffset2 - 1);
+
 				const endModelPosition = modelSelection.getEndPosition();
+
 				const visibleAfterCharCount = Math.min(this._context.viewModel.model.getLineMaxColumn(endModelPosition.lineNumber) - endModelPosition.column, desiredVisibleAfterCharCount);
+
 				const distanceToModelLineEnd = this._context.viewModel.model.getLineMaxColumn(endModelPosition.lineNumber) - endModelPosition.column - visibleAfterCharCount;
 
 				return { distanceToModelLineEnd };
@@ -486,21 +517,30 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	private _getAndroidWordAtPosition(position: Position): [string, number] {
 		const ANDROID_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:",.<>/?';
+
 		const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
+
 		const wordSeparators = getMapForWordSeparators(ANDROID_WORD_SEPARATORS, []);
 
 		let goingLeft = true;
+
 		let startColumn = position.column;
+
 		let goingRight = true;
+
 		let endColumn = position.column;
+
 		let distance = 0;
+
 		while (distance < 50 && (goingLeft || goingRight)) {
 			if (goingLeft && startColumn <= 1) {
 				goingLeft = false;
 			}
 			if (goingLeft) {
 				const charCode = lineContent.charCodeAt(startColumn - 2);
+
 				const charClass = wordSeparators.get(charCode);
+
 				if (charClass !== WordCharacterClass.Regular) {
 					goingLeft = false;
 				} else {
@@ -512,7 +552,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 			}
 			if (goingRight) {
 				const charCode = lineContent.charCodeAt(endColumn - 1);
+
 				const charClass = wordSeparators.get(charCode);
+
 				if (charClass !== WordCharacterClass.Regular) {
 					goingRight = false;
 				} else {
@@ -527,13 +569,18 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	private _getWordBeforePosition(position: Position): string {
 		const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
+
 		const wordSeparators = getMapForWordSeparators(this._context.configuration.options.get(EditorOption.wordSeparators), []);
 
 		let column = position.column;
+
 		let distance = 0;
+
 		while (column > 1) {
 			const charCode = lineContent.charCodeAt(column - 2);
+
 			const charClass = wordSeparators.get(charCode);
+
 			if (charClass !== WordCharacterClass.Regular || distance > 50) {
 				return lineContent.substring(column - 1, position.column - 1);
 			}
@@ -546,7 +593,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 	private _getCharacterBeforePosition(position: Position): string {
 		if (position.column > 1) {
 			const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
+
 			const charBefore = lineContent.charAt(position.column - 2);
+
 			if (!strings.isHighSurrogate(charBefore.charCodeAt(0))) {
 				return charBefore;
 			}
@@ -556,7 +605,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	private _setAccessibilityOptions(options: IComputedEditorOptions): void {
 		this._accessibilitySupport = options.get(EditorOption.accessibilitySupport);
+
 		const accessibilityPageSize = options.get(EditorOption.accessibilityPageSize);
+
 		if (this._accessibilitySupport === AccessibilitySupport.Enabled && accessibilityPageSize === EditorOptions.accessibilityPageSize.defaultValue) {
 			// If a screen reader is attached and the default value is not set we should automatically increase the page size to 500 for a better experience
 			this._accessibilityPageSize = 500;
@@ -569,7 +620,9 @@ export class TextAreaEditContext extends AbstractEditContext {
 		// This is because screen readers will read the text in the textarea and we'd like that the
 		// wrapping points in the textarea match the wrapping points in the editor.
 		const layoutInfo = options.get(EditorOption.layoutInfo);
+
 		const wrappingColumn = layoutInfo.wrappingColumn;
+
 		if (wrappingColumn !== -1 && this._accessibilitySupport !== AccessibilitySupport.Disabled) {
 			const fontInfo = options.get(EditorOption.fontInfo);
 			this._textAreaWrapping = true;
@@ -584,6 +637,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		const options = this._context.configuration.options;
+
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._setAccessibilityOptions(options);
@@ -595,6 +649,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		this._emptySelectionClipboard = options.get(EditorOption.emptySelectionClipboard);
 		this._copyWithSyntaxHighlighting = options.get(EditorOption.copyWithSyntaxHighlighting);
 		this.textArea.setAttribute('wrap', this._textAreaWrapping && !this._visibleTextArea ? 'on' : 'off');
+
 		const { tabSize } = this._context.viewModel.model.getOptions();
 		this.textArea.domNode.style.tabSize = `${tabSize * this._fontInfo.spaceWidth}px`;
 		this.textArea.setAttribute('aria-label', ariaLabelForScreenReaderContent(options, this._keybindingService));
@@ -617,6 +672,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		// We must update the <textarea> synchronously, otherwise long press IME on macos breaks.
 		// See https://github.com/microsoft/vscode/issues/165821
 		this._textAreaInput.writeNativeTextAreaContent('selection changed');
+
 		return true;
 	}
 	public override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
@@ -638,6 +694,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
 		this._scrollLeft = e.scrollLeft;
 		this._scrollTop = e.scrollTop;
+
 		return true;
 	}
 	public override onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean {
@@ -686,6 +743,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		// When someone requests to disable IME, we set the "readonly" attribute on the <textarea>.
 		// This will prevent composition.
 		const useReadOnly = !IME.enabled || (options.get(EditorOption.domReadOnly) && options.get(EditorOption.readOnly));
+
 		if (useReadOnly) {
 			this.textArea.setAttribute('readonly', 'true');
 		} else {
@@ -712,14 +770,20 @@ export class TextAreaEditContext extends AbstractEditContext {
 			// The text area is visible for composition reasons
 
 			const visibleStart = this._visibleTextArea.visibleTextareaStart;
+
 			const visibleEnd = this._visibleTextArea.visibleTextareaEnd;
+
 			const startPosition = this._visibleTextArea.startPosition;
+
 			const endPosition = this._visibleTextArea.endPosition;
+
 			if (startPosition && endPosition && visibleStart && visibleEnd && visibleEnd.left >= this._scrollLeft && visibleStart.left <= this._scrollLeft + this._contentWidth) {
 				const top = (this._context.viewLayout.getVerticalOffsetForLineNumber(this._primaryCursorPosition.lineNumber) - this._scrollTop);
+
 				const lineCount = newlinecount(this.textArea.domNode.value.substr(0, this.textArea.domNode.selectionStart));
 
 				let scrollLeft = this._visibleTextArea.widthOfHiddenLineTextBefore;
+
 				let left = (this._contentLeft + visibleStart.left - this._scrollLeft);
 				// See https://github.com/microsoft/vscode/issues/141725#issuecomment-1050670841
 				// Here we are adding +1 to avoid flickering that might be caused by having a width that is too small.
@@ -729,6 +793,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 				// vs
 				//      `Math.round(end - start)`
 				let width = visibleEnd.left - visibleStart.left + 1;
+
 				if (left < this._contentLeft) {
 					// the textarea would be rendered on top of the margin,
 					// so reduce its width. We use the same technique as
@@ -746,9 +811,13 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 				// Try to render the textarea with the color/font style to match the text under it
 				const viewLineData = this._context.viewModel.getViewLineData(startPosition.lineNumber);
+
 				const startTokenIndex = viewLineData.tokens.findTokenIndexAtOffset(startPosition.column - 1);
+
 				const endTokenIndex = viewLineData.tokens.findTokenIndexAtOffset(endPosition.column - 1);
+
 				const textareaSpansSingleToken = (startTokenIndex === endTokenIndex);
+
 				const presentation = this._visibleTextArea.definePresentation(
 					(textareaSpansSingleToken ? viewLineData.tokens.getPresentation(startTokenIndex) : null)
 				);
@@ -776,20 +845,25 @@ export class TextAreaEditContext extends AbstractEditContext {
 		if (!this._primaryCursorVisibleRange) {
 			// The primary cursor is outside the viewport => place textarea to the top left
 			this._renderAtTopLeft();
+
 			return;
 		}
 
 		const left = this._contentLeft + this._primaryCursorVisibleRange.left - this._scrollLeft;
+
 		if (left < this._contentLeft || left > this._contentLeft + this._contentWidth) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
+
 			return;
 		}
 
 		const top = this._context.viewLayout.getVerticalOffsetForLineNumber(this._selections[0].positionLineNumber) - this._scrollTop;
+
 		if (top < 0 || top > this._contentHeight) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
+
 			return;
 		}
 
@@ -809,8 +883,10 @@ export class TextAreaEditContext extends AbstractEditContext {
 			// In case the textarea contains a word, we're going to try to align the textarea's cursor
 			// with our cursor by scrolling the textarea as much as possible
 			this.textArea.domNode.scrollLeft = this._primaryCursorVisibleRange.left;
+
 			const lineCount = this._textAreaInput.textAreaState.newlineCountBeforeSelection ?? newlinecount(this.textArea.domNode.value.substring(0, this.textArea.domNode.selectionStart));
 			this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
+
 			return;
 		}
 
@@ -841,6 +917,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 		this._lastRenderPosition = renderData.lastRenderPosition;
 
 		const ta = this.textArea;
+
 		const tac = this.textAreaCover;
 
 		applyFontInfo(ta, this._fontInfo);
@@ -851,6 +928,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 		ta.setColor(renderData.color ? Color.Format.CSS.formatHex(renderData.color) : '');
 		ta.setFontStyle(renderData.italic ? 'italic' : '');
+
 		if (renderData.bold) {
 			// fontWeight is also set by `applyFontInfo`, so only overwrite it if necessary
 			ta.setFontWeight('bold');

@@ -9,11 +9,14 @@ export default class TypeScriptDefinitionProviderBase {
     constructor(protected readonly client: ITypeScriptServiceClient) { }
     protected async getSymbolLocations(definitionType: 'definition' | 'implementation' | 'typeDefinition', document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Location[] | undefined> {
         const file = this.client.toOpenTsFilePath(document);
+
         if (!file) {
             return undefined;
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(file, position);
+
         const response = await this.client.execute(definitionType, args, token);
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }

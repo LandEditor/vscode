@@ -78,7 +78,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyMod.CtrlCmd | KeyCode.Period,
     handler: (accessor, args: any) => {
         const markersView = accessor.get(IViewsService).getActiveViewWithId<MarkersView>(Markers.MARKERS_VIEW_ID)!;
+
         const focusedElement = markersView.getFocusElement();
+
         if (focusedElement instanceof Marker) {
             markersView.showQuickFixes(focusedElement);
         }
@@ -116,6 +118,7 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfigurat
         },
     }
 });
+
 const markersViewIcon = registerIcon('markers-view-icon', Codicon.warning, localize('markersViewIcon', 'View icon of the markers view.'));
 // markers view container
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
@@ -319,6 +322,7 @@ registerAction2(class extends Action2 {
 registerAction2(class extends ViewAction<IMarkersView> {
     constructor() {
         const when = ContextKeyExpr.and(FocusedViewContext.isEqualTo(Markers.MARKERS_VIEW_ID), MarkersContextKeys.MarkersTreeVisibilityContextKey, MarkersContextKeys.RelatedInformationFocusContextKey.toNegated());
+
         super({
             id: Markers.MARKER_COPY_ACTION_ID,
             title: localize2('copyMarker', 'Copy'),
@@ -337,13 +341,17 @@ registerAction2(class extends ViewAction<IMarkersView> {
     }
     async runInView(serviceAccessor: ServicesAccessor, markersView: IMarkersView): Promise<void> {
         const clipboardService = serviceAccessor.get(IClipboardService);
+
         const selection = markersView.getFocusedSelectedElements() || markersView.getAllResourceMarkers();
+
         const markers: Marker[] = [];
+
         const addMarker = (marker: Marker) => {
             if (!markers.includes(marker)) {
                 markers.push(marker);
             }
         };
+
         for (const selected of selection) {
             if (selected instanceof ResourceMarkers) {
                 selected.markers.forEach(addMarker);
@@ -372,7 +380,9 @@ registerAction2(class extends ViewAction<IMarkersView> {
     }
     async runInView(serviceAccessor: ServicesAccessor, markersView: IMarkersView): Promise<void> {
         const clipboardService = serviceAccessor.get(IClipboardService);
+
         const element = markersView.getFocusElement();
+
         if (element instanceof Marker) {
             await clipboardService.writeText(element.marker.message);
         }
@@ -393,7 +403,9 @@ registerAction2(class extends ViewAction<IMarkersView> {
     }
     async runInView(serviceAccessor: ServicesAccessor, markersView: IMarkersView): Promise<void> {
         const clipboardService = serviceAccessor.get(IClipboardService);
+
         const element = markersView.getFocusElement();
+
         if (element instanceof RelatedInformation) {
             await clipboardService.writeText(element.raw.message);
         }
@@ -513,6 +525,7 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         if (viewsService.isViewVisible(Markers.MARKERS_VIEW_ID)) {
             viewsService.closeView(Markers.MARKERS_VIEW_ID);
         }
@@ -524,6 +537,7 @@ registerAction2(class extends Action2 {
 class MarkersStatusBarContributions extends Disposable implements IWorkbenchContribution {
     private markersStatusItem: IStatusbarEntryAccessor;
     private markersStatusItemOff: IStatusbarEntryAccessor | undefined;
+
     constructor(
     @IMarkerService
     private readonly markerService: IMarkerService, 
@@ -533,11 +547,13 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
     private readonly configurationService: IConfigurationService) {
         super();
         this.markersStatusItem = this._register(this.statusbarService.addEntry(this.getMarkersItem(), 'status.problems', StatusbarAlignment.LEFT, 50 /* Medium Priority */));
+
         const addStatusBarEntry = () => {
             this.markersStatusItemOff = this.statusbarService.addEntry(this.getMarkersItemTurnedOff(), 'status.problemsVisibility', StatusbarAlignment.LEFT, 49);
         };
         // Add the status bar entry if the problems is not visible
         let config = this.configurationService.getValue('problems.visibility');
+
         if (!config) {
             addStatusBarEntry();
         }
@@ -549,6 +565,7 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
                 this.markersStatusItem.update(this.getMarkersItem());
                 // Update based on what setting was changed to.
                 config = this.configurationService.getValue('problems.visibility');
+
                 if (!config && !this.markersStatusItemOff) {
                     addStatusBarEntry();
                 }
@@ -561,7 +578,9 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
     }
     private getMarkersItem(): IStatusbarEntry {
         const markersStatistics = this.markerService.getStatistics();
+
         const tooltip = this.getMarkersTooltip(markersStatistics);
+
         return {
             name: localize('status.problems', "Problems"),
             text: this.getMarkersText(markersStatistics),
@@ -573,9 +592,13 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
     private getMarkersItemTurnedOff(): IStatusbarEntry {
         // Update to true, config checked before `getMarkersItemTurnedOff` is called.
         this.statusbarService.updateEntryVisibility('status.problemsVisibility', true);
+
         const openSettingsCommand = 'workbench.action.openSettings';
+
         const configureSettingsLabel = '@id:problems.visibility';
+
         const tooltip = localize('status.problemsVisibilityOff', "Problems are turned off. Click to open settings.");
+
         return {
             name: localize('status.problemsVisibility', "Problems Visibility"),
             text: '$(whole-word)',
@@ -587,9 +610,13 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
     }
     private getMarkersTooltip(stats: MarkerStatistics): string {
         const errorTitle = (n: number) => localize('totalErrors', "Errors: {0}", n);
+
         const warningTitle = (n: number) => localize('totalWarnings', "Warnings: {0}", n);
+
         const infoTitle = (n: number) => localize('totalInfos', "Infos: {0}", n);
+
         const titles: string[] = [];
+
         if (stats.errors > 0) {
             titles.push(errorTitle(stats.errors));
         }
@@ -618,12 +645,14 @@ class MarkersStatusBarContributions extends Disposable implements IWorkbenchCont
     }
     private packNumber(n: number): string {
         const manyProblems = localize('manyProblems', "10K+");
+
         return n > 9999 ? manyProblems : n > 999 ? n.toString().charAt(0) + 'K' : n.toString();
     }
 }
 workbenchRegistry.registerWorkbenchContribution(MarkersStatusBarContributions, LifecyclePhase.Restored);
 class ActivityUpdater extends Disposable implements IWorkbenchContribution {
     private readonly activity = this._register(new MutableDisposable<IDisposable>());
+
     constructor(
     @IActivityService
     private readonly activityService: IActivityService, 
@@ -635,7 +664,9 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
     }
     private updateBadge(): void {
         const { errors, warnings, infos } = this.markerService.getStatistics();
+
         const total = errors + warnings + infos;
+
         if (total > 0) {
             const message = localize('totalProblems', 'Total {0} Problems', total);
             this.activity.value = this.activityService.showViewActivity(Markers.MARKERS_VIEW_ID, { badge: new NumberBadge(total, () => message) });

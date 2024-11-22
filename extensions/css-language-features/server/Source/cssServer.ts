@@ -24,6 +24,7 @@ export interface RuntimeEnvironment {
     readonly http?: RequestService;
     readonly timer: {
         setImmediate(callback: (...args: any[]) => void, ...args: any[]): Disposable;
+
         setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable;
     };
 }
@@ -33,39 +34,55 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     // Make the text document manager listen on the connection
     // for open, change and close text document events
     documents.listen(connection);
+
     const stylesheets = getLanguageModelCache<Stylesheet>(10, 60, document => getLanguageService(document).parseStylesheet(document));
+
     documents.onDidClose(e => {
         stylesheets.onDocumentRemoved(e.document);
     });
     connection.onShutdown(() => {
         stylesheets.dispose();
     });
+
     let scopedSettingsSupport = false;
+
     let foldingRangeLimit = Number.MAX_VALUE;
+
     let workspaceFolders: WorkspaceFolder[];
+
     let formatterMaxNumberOfEdits = Number.MAX_VALUE;
+
     let dataProvidersReady: Promise<any> = Promise.resolve();
+
     let diagnosticsSupport: DiagnosticsSupport | undefined;
+
     const languageServices: {
         [id: string]: LanguageService;
     } = {};
+
     const notReady = () => Promise.reject('Not Ready');
+
     let requestService: RequestService = { getContent: notReady, stat: notReady, readDirectory: notReady };
     // After the server has started the client sends an initialize request. The server receives
     // in the passed params the rootPath of the workspace plus the client capabilities.
     connection.onInitialize((params: InitializeParams): InitializeResult => {
         const initializationOptions = params.initializationOptions as any || {};
         workspaceFolders = (<any>params).workspaceFolders;
+
         if (!Array.isArray(workspaceFolders)) {
             workspaceFolders = [];
+
             if (params.rootPath) {
                 workspaceFolders.push({ name: '', uri: URI.file(params.rootPath).toString(true) });
             }
         }
         requestService = getRequestService(initializationOptions?.handledSchemas || ['file'], connection, runtime);
+
         function getClientCapability<T>(name: string, def: T) {
             const keys = name.split('.');
+
             let c: any = params.capabilities;
+
             for (let i = 0; c && i < keys.length; i++) {
                 if (!c.hasOwnProperty(keys[i])) {
                     return def;
@@ -77,11 +94,14 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
         const snippetSupport = !!getClientCapability('textDocument.completion.completionItem.snippetSupport', false);
         scopedSettingsSupport = !!getClientCapability('workspace.configuration', false);
         foldingRangeLimit = getClientCapability('textDocument.foldingRange.rangeLimit', Number.MAX_VALUE);
+
         formatterMaxNumberOfEdits = initializationOptions?.customCapabilities?.rangeFormatting?.editLimit || Number.MAX_VALUE;
         languageServices.css = getCSSLanguageService({ fileSystemProvider: requestService, clientCapabilities: params.capabilities });
         languageServices.scss = getSCSSLanguageService({ fileSystemProvider: requestService, clientCapabilities: params.capabilities });
         languageServices.less = getLESSLanguageService({ fileSystemProvider: requestService, clientCapabilities: params.capabilities });
+
         const supportsDiagnosticPull = getClientCapability('textDocument.diagnostic', undefined);
+
         if (supportsDiagnosticPull === undefined) {
             diagnosticsSupport = registerDiagnosticsPushSupport(documents, connection, runtime, validateTextDocument);
         }
@@ -112,10 +132,13 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
             documentRangeFormattingProvider: initializationOptions?.provideFormatter === true,
             documentFormattingProvider: initializationOptions?.provideFormatter === true,
         };
+
         return { capabilities };
     });
+
     function getLanguageService(document: TextDocument) {
         let service = languageServices[document.languageId];
+
         if (!service) {
             connection.console.log('Document type is ' + document.languageId + ', using css instead.');
             service = languageServices['css'];
@@ -129,12 +152,15 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     documents.onDidClose(e => {
         delete documentSettings[e.document.uri];
     });
+
     function getDocumentSettings(textDocument: TextDocument): Thenable<LanguageSettings | undefined> {
         if (scopedSettingsSupport) {
             let promise = documentSettings[textDocument.uri];
+
             if (!promise) {
                 const configRequestParam = { items: [{ scopeUri: textDocument.uri, section: textDocument.languageId }] };
                 promise = connection.sendRequest(ConfigurationRequest.type, configRequestParam).then(s => s[0] as LanguageSettings | undefined);
+
                 documentSettings[textDocument.uri] = promise;
             }
             return promise;
@@ -145,6 +171,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDidChangeConfiguration(change => {
         updateConfiguration(change.settings as any);
     });
+
     function updateConfiguration(settings: any) {
         for (const languageId in languageServices) {
             languageServices[languageId].configure(settings[languageId]);
@@ -155,8 +182,11 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     }
     async function validateTextDocument(textDocument: TextDocument): Promise<Diagnostic[]> {
         const settingsPromise = getDocumentSettings(textDocument);
+
         const [settings] = await Promise.all([settingsPromise, dataProvidersReady]);
+
         const stylesheet = stylesheets.get(textDocument);
+
         return getLanguageService(textDocument).doValidation(textDocument, stylesheet, settings);
     }
     function updateDataProviders(dataPaths: string[]) {
@@ -169,10 +199,14 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onCompletion((textDocumentPosition, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(textDocumentPosition.textDocument.uri);
+
             if (document) {
                 const [settings,] = await Promise.all([getDocumentSettings(document), dataProvidersReady]);
+
                 const styleSheet = stylesheets.get(document);
+
                 const documentContext = getDocumentContext(document.uri, workspaceFolders);
+
                 return getLanguageService(document).doComplete2(document, textDocumentPosition.position, styleSheet, documentContext, settings?.completion);
             }
             return null;
@@ -181,9 +215,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onHover((textDocumentPosition, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(textDocumentPosition.textDocument.uri);
+
             if (document) {
                 const [settings,] = await Promise.all([getDocumentSettings(document), dataProvidersReady]);
+
                 const styleSheet = stylesheets.get(document);
+
                 return getLanguageService(document).doHover(document, textDocumentPosition.position, styleSheet, settings?.hover);
             }
             return null;
@@ -192,9 +229,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentSymbol((documentSymbolParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(documentSymbolParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findDocumentSymbols2(document, stylesheet);
             }
             return [];
@@ -203,9 +243,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDefinition((documentDefinitionParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(documentDefinitionParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findDefinition(document, documentDefinitionParams.position, stylesheet);
             }
             return null;
@@ -214,9 +257,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentHighlight((documentHighlightParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(documentHighlightParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findDocumentHighlights(document, documentHighlightParams.position, stylesheet);
             }
             return [];
@@ -225,10 +271,14 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentLinks(async (documentLinkParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(documentLinkParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const documentContext = getDocumentContext(document.uri, workspaceFolders);
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findDocumentLinks2(document, stylesheet, documentContext);
             }
             return [];
@@ -237,9 +287,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onReferences((referenceParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(referenceParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findReferences(document, referenceParams.position, stylesheet);
             }
             return [];
@@ -248,9 +301,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onCodeAction((codeActionParams, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(codeActionParams.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).doCodeActions(document, codeActionParams.range, codeActionParams.context, stylesheet);
             }
             return [];
@@ -259,9 +315,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onDocumentColor((params, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).findDocumentColors(document, stylesheet);
             }
             return [];
@@ -270,9 +329,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onColorPresentation((params, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).getColorPresentations(document, stylesheet, params.color, params.range);
             }
             return [];
@@ -281,9 +343,12 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onRenameRequest((renameParameters, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(renameParameters.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).doRename(document, renameParameters.position, renameParameters.newName, stylesheet);
             }
             return null;
@@ -292,8 +357,10 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onFoldingRanges((params, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 await dataProvidersReady;
+
                 return getLanguageService(document).getFoldingRanges(document, { rangeLimit: foldingRangeLimit });
             }
             return null;
@@ -302,21 +369,29 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
     connection.onSelectionRanges((params, token) => {
         return runSafeAsync(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             const positions: Position[] = params.positions;
+
             if (document) {
                 await dataProvidersReady;
+
                 const stylesheet = stylesheets.get(document);
+
                 return getLanguageService(document).getSelectionRanges(document, positions, stylesheet);
             }
             return [];
         }, [], `Error while computing selection ranges for ${params.textDocument.uri}`, token);
     });
+
     async function onFormat(textDocument: TextDocumentIdentifier, range: Range | undefined, options: FormattingOptions): Promise<TextEdit[]> {
         const document = documents.get(textDocument.uri);
+
         if (document) {
             const edits = getLanguageService(document).format(document, range ?? getFullRange(document), options);
+
             if (edits.length > formatterMaxNumberOfEdits) {
                 const newText = TextDocument.applyEdits(document, edits);
+
                 return [TextEdit.replace(getFullRange(document), newText)];
             }
             return edits;

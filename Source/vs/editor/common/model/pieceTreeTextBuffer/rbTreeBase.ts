@@ -26,6 +26,7 @@ export class TreeNode {
             return leftest(this.right);
         }
         let node: TreeNode = this;
+
         while (node.parent !== SENTINEL) {
             if (node.parent.left === node) {
                 break;
@@ -44,6 +45,7 @@ export class TreeNode {
             return righttest(this.left);
         }
         let node: TreeNode = this;
+
         while (node.parent !== SENTINEL) {
             if (node.parent.right === node) {
                 break;
@@ -105,10 +107,12 @@ export function leftRotate(tree: PieceTreeBase, x: TreeNode) {
     y.size_left += x.size_left + (x.piece ? x.piece.length : 0);
     y.lf_left += x.lf_left + (x.piece ? x.piece.lineFeedCnt : 0);
     x.right = y.left;
+
     if (y.left !== SENTINEL) {
         y.left.parent = x;
     }
     y.parent = x.parent;
+
     if (x.parent === SENTINEL) {
         tree.root = y;
     }
@@ -124,6 +128,7 @@ export function leftRotate(tree: PieceTreeBase, x: TreeNode) {
 export function rightRotate(tree: PieceTreeBase, y: TreeNode) {
     const x = y.left;
     y.left = x.right;
+
     if (x.right !== SENTINEL) {
         x.right.parent = y;
     }
@@ -131,6 +136,7 @@ export function rightRotate(tree: PieceTreeBase, y: TreeNode) {
     // fix size_left
     y.size_left -= x.size_left + (x.piece ? x.piece.length : 0);
     y.lf_left -= x.lf_left + (x.piece ? x.piece.lineFeedCnt : 0);
+
     if (y.parent === SENTINEL) {
         tree.root = x;
     }
@@ -145,7 +151,9 @@ export function rightRotate(tree: PieceTreeBase, y: TreeNode) {
 }
 export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
     let x: TreeNode;
+
     let y: TreeNode;
+
     if (z.left === SENTINEL) {
         y = z;
         x = y.right;
@@ -165,9 +173,11 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
         z.detach();
         resetSentinel();
         tree.root.parent = SENTINEL;
+
         return;
     }
     const yWasRed = (y.color === NodeColor.Red);
+
     if (y === y.parent.left) {
         y.parent.left = x;
     }
@@ -191,6 +201,7 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
         y.right = z.right;
         y.parent = z.parent;
         y.color = z.color;
+
         if (z === tree.root) {
             tree.root = y;
         }
@@ -215,11 +226,15 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
         recomputeTreeMetadata(tree, y);
     }
     z.detach();
+
     if (x.parent.left === x) {
         const newSizeLeft = calculateSize(x);
+
         const newLFLeft = calculateLF(x);
+
         if (newSizeLeft !== x.parent.size_left || newLFLeft !== x.parent.lf_left) {
             const delta = newSizeLeft - x.parent.size_left;
+
             const lf_delta = newLFLeft - x.parent.lf_left;
             x.parent.size_left = newSizeLeft;
             x.parent.lf_left = newLFLeft;
@@ -227,15 +242,19 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
         }
     }
     recomputeTreeMetadata(tree, x.parent);
+
     if (yWasRed) {
         resetSentinel();
+
         return;
     }
     // RB-DELETE-FIXUP
     let w: TreeNode;
+
     while (x !== tree.root && x.color === NodeColor.Black) {
         if (x === x.parent.left) {
             w = x.parent.right;
+
             if (w.color === NodeColor.Red) {
                 w.color = NodeColor.Black;
                 x.parent.color = NodeColor.Red;
@@ -262,6 +281,7 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
         }
         else {
             w = x.parent.left;
+
             if (w.color === NodeColor.Red) {
                 w.color = NodeColor.Black;
                 x.parent.color = NodeColor.Red;
@@ -292,9 +312,11 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 }
 export function fixInsert(tree: PieceTreeBase, x: TreeNode) {
     recomputeTreeMetadata(tree, x);
+
     while (x !== tree.root && x.parent.color === NodeColor.Red) {
         if (x.parent === x.parent.parent.left) {
             const y = x.parent.parent.right;
+
             if (y.color === NodeColor.Red) {
                 x.parent.color = NodeColor.Black;
                 y.color = NodeColor.Black;
@@ -313,6 +335,7 @@ export function fixInsert(tree: PieceTreeBase, x: TreeNode) {
         }
         else {
             const y = x.parent.parent.left;
+
             if (y.color === NodeColor.Red) {
                 x.parent.color = NodeColor.Black;
                 y.color = NodeColor.Black;
@@ -344,7 +367,9 @@ export function updateTreeMetadata(tree: PieceTreeBase, x: TreeNode, delta: numb
 }
 export function recomputeTreeMetadata(tree: PieceTreeBase, x: TreeNode) {
     let delta = 0;
+
     let lf_delta = 0;
+
     if (x === tree.root) {
         return;
     }

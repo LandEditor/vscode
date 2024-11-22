@@ -22,6 +22,7 @@ import { IEditorService } from '../../../services/editor/common/editorService.js
 (Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane)).registerEditorPane(EditorPaneDescriptor.create(WebviewEditor, WebviewEditor.ID, localize('webview.editor.label', "webview editor")), [new SyncDescriptor(WebviewInput)]);
 class WebviewPanelContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.webviewPanel';
+
     constructor(
     @IEditorService
     editorService: IEditorService, 
@@ -30,6 +31,7 @@ class WebviewPanelContribution extends Disposable implements IWorkbenchContribut
         super();
         this._register(editorService.onWillOpenEditor(e => {
             const group = editorGroupService.getGroup(e.groupId);
+
             if (group) {
                 this.onEditorOpening(e.editor, group);
             }
@@ -43,10 +45,13 @@ class WebviewPanelContribution extends Disposable implements IWorkbenchContribut
             return;
         }
         let previousGroup: IEditorGroup | undefined;
+
         const groups = this.editorGroupService.groups;
+
         for (const group of groups) {
             if (group.contains(editor)) {
                 previousGroup = group;
+
                 break;
             }
         }

@@ -13,18 +13,22 @@ export class OvertypingCapturer implements IDisposable {
         multiline: boolean;
     }[] = [];
     private _locked: boolean = false;
+
     constructor(editor: ICodeEditor, suggestModel: SuggestModel) {
         this._disposables.add(editor.onWillType(() => {
             if (this._locked || !editor.hasModel()) {
                 return;
             }
             const selections = editor.getSelections();
+
             const selectionsLength = selections.length;
             // Check if it will overtype any selections
             let willOvertype = false;
+
             for (let i = 0; i < selectionsLength; i++) {
                 if (!selections[i].isEmpty()) {
                     willOvertype = true;
+
                     break;
                 }
             }
@@ -35,7 +39,9 @@ export class OvertypingCapturer implements IDisposable {
                 return;
             }
             this._lastOvertyped = [];
+
             const model = editor.getModel();
+
             for (let i = 0; i < selectionsLength; i++) {
                 const selection = selections[i];
                 // Check for overtyping capturer restrictions

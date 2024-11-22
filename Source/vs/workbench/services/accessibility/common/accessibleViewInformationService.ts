@@ -13,6 +13,7 @@ export interface IAccessibleViewInformationService {
 export const IAccessibleViewInformationService = createDecorator<IAccessibleViewInformationService>('accessibleViewInformationService');
 export class AccessibleViewInformationService extends Disposable implements IAccessibleViewInformationService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService) {

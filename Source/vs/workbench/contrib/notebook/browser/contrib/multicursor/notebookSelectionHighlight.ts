@@ -45,11 +45,13 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 			}
 
 			this.anchorCell = this.notebookEditor.activeCellAndCodeEditor;
+
 			if (!this.anchorCell) {
 				return;
 			}
 
 			const activeCell = this.notebookEditor.getActiveCell();
+
 			if (!activeCell) {
 				return;
 			}
@@ -92,16 +94,19 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 
 		// get the word
 		const textModel = this.anchorCell[0].textModel;
+
 		if (!textModel || textModel.isTooLargeForTokenization()) {
 			return;
 		}
 		const s = this.anchorCell[0].getSelections()[0];
+
 		if (s.startLineNumber !== s.endLineNumber || s.isEmpty()) {
 			// empty selections do nothing
 			// multiline forbidden for perf reasons
 			return;
 		}
 		const searchText = this.getSearchText(s, textModel);
+
 		if (!searchText) {
 			return;
 		}
@@ -115,6 +120,7 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 
 		for (const res of results) {
 			const cell = editor.getCellByHandle(res.cell.handle);
+
 			if (!cell) {
 				continue;
 			}
@@ -153,6 +159,7 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 	private clearNotebookSelectionDecorations() {
 		this.cellDecorationIds.forEach((_, cell) => {
 			const cellDecorations = this.cellDecorationIds.get(cell) ?? [];
+
 			if (cellDecorations) {
 				cell.deltaModelDecorations(cellDecorations, []);
 				this.cellDecorationIds.delete(cell);

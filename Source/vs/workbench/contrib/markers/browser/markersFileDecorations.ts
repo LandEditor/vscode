@@ -17,6 +17,7 @@ import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js'
 class MarkersDecorationsProvider implements IDecorationsProvider {
     readonly label: string = localize('label', "Problems");
     readonly onDidChange: Event<readonly URI[]>;
+
     constructor(private readonly _markerService: IMarkerService) {
         this.onDidChange = _markerService.onMarkerChanged;
     }
@@ -25,7 +26,9 @@ class MarkersDecorationsProvider implements IDecorationsProvider {
             resource,
             severities: MarkerSeverity.Error | MarkerSeverity.Warning
         });
+
         let first: IMarker | undefined;
+
         for (const marker of markers) {
             if (!first || marker.severity > first.severity) {
                 first = marker;
@@ -47,6 +50,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
     private readonly _disposables: IDisposable[];
     private _provider?: IDisposable;
     private _enabled?: boolean;
+
     constructor(
     @IMarkerService
     private readonly _markerService: IMarkerService, 
@@ -69,6 +73,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
     }
     private _updateEnablement(): void {
         const problem = this._configurationService.getValue('problems.visibility');
+
         if (problem === undefined) {
             return;
         }
@@ -77,7 +82,9 @@ class MarkersFileDecorations implements IWorkbenchContribution {
                 enabled: boolean;
             };
         }>('problems');
+
         const shouldEnable = (problem && value.decorations.enabled);
+
         if (shouldEnable === this._enabled) {
             if (!problem || !value.decorations.enabled) {
                 this._provider?.dispose();
@@ -86,6 +93,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
             return;
         }
         this._enabled = shouldEnable as boolean;
+
         if (this._enabled) {
             const provider = new MarkersDecorationsProvider(this._markerService);
             this._provider = this._decorationsService.registerDecorationsProvider(provider);

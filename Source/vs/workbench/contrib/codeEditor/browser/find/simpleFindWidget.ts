@@ -25,10 +25,15 @@ import { defaultInputBoxStyles, defaultToggleStyles } from '../../../../../platf
 import { ISashEvent, IVerticalSashLayoutProvider, Orientation, Sash } from '../../../../../base/browser/ui/sash/sash.js';
 import { registerColor } from '../../../../../platform/theme/common/colorRegistry.js';
 import type { IHoverService } from '../../../../../platform/hover/browser/hover.js';
+
 const NLS_FIND_INPUT_LABEL = nls.localize('label.find', "Find");
+
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', "Find");
+
 const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize('label.previousMatchButton', "Previous Match");
+
 const NLS_NEXT_MATCH_BTN_LABEL = nls.localize('label.nextMatchButton', "Next Match");
+
 const NLS_CLOSE_BTN_LABEL = nls.localize('label.closeButton', "Close");
 interface IFindOptions {
     showCommonFindToggles?: boolean;
@@ -46,6 +51,7 @@ interface IFindOptions {
     enableSash?: boolean;
 }
 const SIMPLE_FIND_WIDGET_INITIAL_WIDTH = 310;
+
 const MATCHES_COUNT_WIDTH = 73;
 export abstract class SimpleFindWidget extends Widget implements IVerticalSashLayoutProvider {
     private readonly _findInput: FindInput;
@@ -62,6 +68,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
     private _foundMatch: boolean = false;
     private _width: number = 0;
     readonly state: FindReplaceState = new FindReplaceState();
+
     constructor(options: IFindOptions, contextViewService: IContextViewService, contextKeyService: IContextKeyService, hoverService: IHoverService, private readonly _keybindingService: IKeybindingService) {
         super();
         this._matchesLimit = options.matchesLimit ?? Number.MAX_SAFE_INTEGER;
@@ -74,11 +81,13 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
                 }
                 try {
                     new RegExp(value);
+
                     return null;
                 }
                 catch (e) {
                     this._foundMatch = false;
                     this.updateButtons(this._foundMatch);
+
                     return { content: e.message };
                 }
             },
@@ -95,6 +104,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
         this._register(this._findInput.onInput(async (e) => {
             if (!options.checkImeCompletionState || !this._findInput.isImeSessionInProgress) {
                 this._foundMatch = this._onInputChanged();
+
                 if (options.showResultCount) {
                     await this.updateResultCount();
                 }
@@ -133,6 +143,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
                 this.find(false);
             }
         }, hoverService));
+
         const closeBtn = this._register(new SimpleButton({
             label: NLS_CLOSE_BTN_LABEL + (options.closeWidgetActionId ? this._getKeybinding(options.closeWidgetActionId) : ''),
             icon: widgetClose,
@@ -154,6 +165,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
             if (e.equals(KeyCode.Escape)) {
                 this.hide();
                 e.preventDefault();
+
                 return;
             }
         });
@@ -166,6 +178,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
         this._register(dom.addDisposableListener(this._innerDomNode, 'click', (event) => {
             event.stopPropagation();
         }));
+
         if (options?.showResultCount) {
             this._domNode.classList.add('result-count');
             this._matchesCount = document.createElement('div');
@@ -182,12 +195,14 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
             }));
         }
         let initialMinWidth = options?.initialWidth;
+
         if (initialMinWidth) {
             initialMinWidth = initialMinWidth < SIMPLE_FIND_WIDGET_INITIAL_WIDTH ? SIMPLE_FIND_WIDGET_INITIAL_WIDTH : initialMinWidth;
             this._domNode.style.width = `${initialMinWidth}px`;
         }
         if (options?.enableSash) {
             const _initialMinWidth = initialMinWidth ?? SIMPLE_FIND_WIDGET_INITIAL_WIDTH;
+
             let originalWidth = _initialMinWidth;
             // sash
             const resizeSash = this._register(new Sash(this._innerDomNode, this, { orientation: Orientation.VERTICAL, size: 1 }));
@@ -196,6 +211,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
             }));
             this._register(resizeSash.onDidChange((e: ISashEvent) => {
                 const width = originalWidth + e.startX - e.currentX;
+
                 if (width < _initialMinWidth) {
                     return;
                 }
@@ -203,6 +219,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
             }));
             this._register(resizeSash.onDidReset(e => {
                 const currentWidth = parseFloat(dom.getComputedStyle(this._domNode).width);
+
                 if (currentWidth === _initialMinWidth) {
                     this._domNode.style.width = '100%';
                 }
@@ -234,6 +251,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
     }
     private _getKeybinding(actionId: string): string {
         const kb = this._keybindingService?.lookupKeybinding(actionId);
+
         if (!kb) {
             return '';
         }
@@ -258,16 +276,19 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
         }
         if (this._isVisible) {
             this._findInput.select();
+
             return;
         }
         this._isVisible = true;
         this.updateResultCount();
         this.layout();
+
         setTimeout(() => {
             this._innerDomNode.classList.toggle('suppress-transition', !animated);
             this._innerDomNode.classList.add('visible', 'visible-transition');
             this._innerDomNode.setAttribute('aria-hidden', 'false');
             this._findInput.select();
+
             if (!animated) {
                 setTimeout(() => {
                     this._innerDomNode.classList.remove('suppress-transition');
@@ -281,6 +302,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
         }
         this._isVisible = true;
         this.layout();
+
         setTimeout(() => {
             this._innerDomNode.classList.add('visible', 'visible-transition');
             this._innerDomNode.setAttribute('aria-hidden', 'false');
@@ -301,11 +323,13 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
     }
     public layout(width: number = this._width): void {
         this._width = width;
+
         if (!this._isVisible) {
             return;
         }
         if (this._matchesCount) {
             let reducedFindWidget = false;
+
             if (SIMPLE_FIND_WIDGET_INITIAL_WIDTH + MATCHES_COUNT_WIDTH + 28 >= width) {
                 reducedFindWidget = true;
             }
@@ -341,19 +365,25 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
     async updateResultCount(): Promise<void> {
         if (!this._matchesCount) {
             this.updateButtons(this._foundMatch);
+
             return;
         }
         const count = await this._getResultCount();
         this._matchesCount.innerText = '';
+
         const showRedOutline = (this.inputValue.length > 0 && count?.resultCount === 0);
         this._matchesCount.classList.toggle('no-results', showRedOutline);
+
         let label = '';
+
         if (count?.resultCount) {
             let matchesCount: string = String(count.resultCount);
+
             if (count.resultCount >= this._matchesLimit) {
                 matchesCount += '+';
             }
             let matchesPosition: string = String(count.resultIndex + 1);
+
             if (matchesPosition === '0') {
                 matchesPosition = '?';
             }

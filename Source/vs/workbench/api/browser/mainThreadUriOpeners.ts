@@ -28,6 +28,7 @@ export class MainThreadUriOpeners extends Disposable implements MainThreadUriOpe
     private readonly proxy: ExtHostUriOpenersShape;
     private readonly _registeredOpeners = new Map<string, RegisteredOpenerMetadata>();
     private readonly _contributedExternalUriOpenersStore: ContributedExternalUriOpenersStore;
+
     constructor(context: IExtHostContext, 
     @IStorageService
     storageService: IStorageService, 
@@ -50,6 +51,7 @@ export class MainThreadUriOpeners extends Disposable implements MainThreadUriOpe
             return;
         }
         await this.extensionService.activateByEvent(`onOpenExternalUri:${targetUri.scheme}`);
+
         for (const [id, openerMetadata] of this._registeredOpeners) {
             if (openerMetadata.schemes.has(targetUri.scheme)) {
                 yield this.createOpener(id, openerMetadata);

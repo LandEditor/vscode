@@ -61,6 +61,7 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 
 	registerTerminalCompletionProvider(extensionIdentifier: string, id: string, provider: ITerminalCompletionProvider, ...triggerCharacters: string[]): IDisposable {
 		let extMap = this._providers.get(extensionIdentifier);
+
 		if (!extMap) {
 			extMap = new Map();
 			this._providers.set(extensionIdentifier, extMap);
@@ -68,10 +69,13 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 		provider.triggerCharacters = triggerCharacters;
 		provider.id = id;
 		extMap.set(id, provider);
+
 		return toDisposable(() => {
 			const extMap = this._providers.get(extensionIdentifier);
+
 			if (extMap) {
 				extMap.delete(id);
+
 				if (extMap.size === 0) {
 					this._providers.delete(extensionIdentifier);
 				}
@@ -87,9 +91,12 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 		}
 
 		const extensionCompletionsEnabled = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection).enableExtensionCompletions;
+
 		let providers;
+
 		if (triggerCharacter) {
 			const providersToRequest: ITerminalCompletionProvider[] = [];
+
 			for (const provider of this.providers) {
 				if (!provider.triggerCharacters) {
 					continue;
@@ -97,6 +104,7 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 				for (const char of provider.triggerCharacters) {
 					if (promptValue.substring(0, cursorPosition)?.endsWith(char)) {
 						providersToRequest.push(provider);
+
 						break;
 					}
 				}
@@ -111,6 +119,7 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 		}
 
 		await this._collectCompletions(providers, shellType, promptValue, cursorPosition, completionItems, token);
+
 		return completionItems.length > 0 ? completionItems : undefined;
 	}
 
@@ -120,7 +129,9 @@ export class TerminalCompletionService extends Disposable implements ITerminalCo
 				return [];
 			}
 			const completions = await provider.provideCompletions(promptValue, cursorPosition, token);
+
 			const devModeEnabled = this._configurationService.getValue(TerminalSettingId.DevMode);
+
 			if (completions) {
 				return completions.map(completion => {
 					if (devModeEnabled && !completion.detail?.includes(provider.id)) {

@@ -19,12 +19,14 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
     private queue: DebugProtocol.ProtocolMessage[] = [];
     protected readonly _onError = new Emitter<Error>();
     protected readonly _onExit = new Emitter<number | null>();
+
     constructor() {
         this.sequence = 1;
     }
     abstract startSession(): Promise<void>;
     abstract stopSession(): Promise<void>;
     abstract sendMessage(message: DebugProtocol.ProtocolMessage): void;
+
     get onError(): Event<Error> {
         return this._onError.event;
     }
@@ -61,16 +63,21 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
         const request: any = {
             command: command
         };
+
         if (args && Object.keys(args).length > 0) {
             request.arguments = args;
         }
         this.internalSend('request', request);
+
         if (typeof timeout === 'number') {
             const timer = setTimeout(() => {
                 clearTimeout(timer);
+
                 const clb = this.pendingRequests.get(request.seq);
+
                 if (clb) {
                     this.pendingRequests.delete(request.seq);
+
                     const err: DebugProtocol.Response = {
                         type: 'response',
                         seq: 0,
@@ -95,6 +102,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
         }
         else {
             this.queue.push(message);
+
             if (this.queue.length === 1) {
                 // first item = need to start processing loop
                 this.processQueue();
@@ -128,24 +136,32 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
      */
     private async processQueue() {
         let message: DebugProtocol.ProtocolMessage | undefined;
+
         while (this.queue.length) {
             if (!message || this.needsTaskBoundaryBetween(this.queue[0], message)) {
                 await timeout(0);
             }
             message = this.queue.shift();
+
             if (!message) {
                 return; // may have been disposed of
             }
             switch (message.type) {
                 case 'event':
                     this.eventCallback?.(<DebugProtocol.Event>message);
+
                     break;
+
                 case 'request':
                     this.requestCallback?.(<DebugProtocol.Request>message);
+
                     break;
+
                 case 'response': {
                     const response = <DebugProtocol.Response>message;
+
                     const clb = this.pendingRequests.get(response.request_seq);
+
                     if (clb) {
                         this.pendingRequests.delete(response.request_seq);
                         clb(response);

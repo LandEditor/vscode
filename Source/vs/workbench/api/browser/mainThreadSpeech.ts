@@ -25,6 +25,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
     private readonly speechToTextSessions = new Map<number, SpeechToTextSession>();
     private readonly textToSpeechSessions = new Map<number, TextToSpeechSession>();
     private readonly keywordRecognitionSessions = new Map<number, KeywordRecognitionSession>();
+
     constructor(extHostContext: IExtHostContext, 
     @ISpeechService
     private readonly speechService: ISpeechService, 
@@ -34,6 +35,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
     }
     $registerProvider(handle: number, identifier: string, metadata: ISpeechProviderMetadata): void {
         this.logService.trace('[Speech] extension registered provider', metadata.extension.value);
+
         const registration = this.speechService.registerSpeechProvider(identifier, {
             metadata,
             createSpeechToTextSession: (token, options) => {
@@ -43,8 +45,10 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     };
                 }
                 const disposables = new DisposableStore();
+
                 const session = Math.random();
                 this.proxy.$createSpeechToTextSession(handle, session, options?.language);
+
                 const onDidChange = disposables.add(new Emitter<ISpeechToTextEvent>());
                 this.speechToTextSessions.set(session, { onDidChange });
                 disposables.add(token.onCancellationRequested(() => {
@@ -52,6 +56,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     this.speechToTextSessions.delete(session);
                     disposables.dispose();
                 }));
+
                 return {
                     onDidChange: onDidChange.event
                 };
@@ -64,8 +69,10 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     };
                 }
                 const disposables = new DisposableStore();
+
                 const session = Math.random();
                 this.proxy.$createTextToSpeechSession(handle, session, options?.language);
+
                 const onDidChange = disposables.add(new Emitter<ITextToSpeechEvent>());
                 this.textToSpeechSessions.set(session, { onDidChange });
                 disposables.add(token.onCancellationRequested(() => {
@@ -73,6 +80,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     this.textToSpeechSessions.delete(session);
                     disposables.dispose();
                 }));
+
                 return {
                     onDidChange: onDidChange.event,
                     synthesize: async (text) => {
@@ -88,8 +96,10 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     };
                 }
                 const disposables = new DisposableStore();
+
                 const session = Math.random();
                 this.proxy.$createKeywordRecognitionSession(handle, session);
+
                 const onDidChange = disposables.add(new Emitter<IKeywordRecognitionEvent>());
                 this.keywordRecognitionSessions.set(session, { onDidChange });
                 disposables.add(token.onCancellationRequested(() => {
@@ -97,6 +107,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
                     this.keywordRecognitionSessions.delete(session);
                     disposables.dispose();
                 }));
+
                 return {
                     onDidChange: onDidChange.event
                 };
@@ -110,6 +121,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
     }
     $unregisterProvider(handle: number): void {
         const registration = this.providerRegistrations.get(handle);
+
         if (registration) {
             registration.dispose();
             this.providerRegistrations.delete(handle);

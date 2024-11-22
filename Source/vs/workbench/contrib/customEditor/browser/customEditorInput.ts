@@ -43,7 +43,9 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
         return instantiationService.invokeFunction(accessor => {
             // If it's an untitled file we must populate the untitledDocumentData
             const untitledString = accessor.get(IUntitledTextEditorService).getValue(resource);
+
             const untitledDocumentData = untitledString ? VSBuffer.fromString(untitledString) : undefined;
+
             const webview = accessor.get(IWebviewService).createWebviewOverlay({
                 providedViewType: viewType,
                 title: undefined,
@@ -51,7 +53,9 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
                 contentOptions: {},
                 extension: undefined,
             });
+
             const input = instantiationService.createInstance(CustomEditorInput, { resource, viewType }, webview, { untitledDocumentData: untitledDocumentData, oldResource: options?.oldResource });
+
             if (typeof group !== 'undefined') {
                 input.updateGroup(group);
             }
@@ -66,6 +70,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     private readonly _untitledDocumentData: VSBuffer | undefined;
     override get resource() { return this._editorResource; }
     private _modelRef?: IReference<ICustomEditorModel>;
+
     constructor(init: CustomEditorInputInitInfo, webview: IOverlayWebview, options: {
         startsDirty?: boolean;
         backupId?: string;
@@ -135,6 +140,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     public override get capabilities(): EditorInputCapabilities {
         let capabilities = EditorInputCapabilities.None;
         capabilities |= EditorInputCapabilities.CanDropIntoEditor;
+
         if (!this.customEditorService.getCustomEditorCapabilities(this.viewType)?.supportsMultipleEditorsPerDocument) {
             capabilities |= EditorInputCapabilities.Singleton;
         }
@@ -164,8 +170,10 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.shortDescription;
+
             case Verbosity.LONG:
                 return this.longDescription;
+
             case Verbosity.MEDIUM:
             default:
                 return this.mediumDescription;
@@ -217,8 +225,10 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
         switch (verbosity) {
             case Verbosity.SHORT:
                 return this.shortTitle;
+
             case Verbosity.LONG:
                 return this.longTitle;
+
             default:
             case Verbosity.MEDIUM:
                 return this.mediumTitle;
@@ -252,6 +262,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
             return undefined;
         }
         const target = await this._modelRef.object.saveCustomEditor(options);
+
         if (!target) {
             return undefined; // save cancelled
         }
@@ -266,7 +277,9 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
             return undefined;
         }
         const dialogPath = this._editorResource;
+
         const target = await this.fileDialogService.pickFileToSave(dialogPath, options?.availableFileSystems);
+
         if (!target) {
             return undefined; // save cancelled
         }
@@ -284,6 +297,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     }
     public override async resolve(): Promise<null> {
         await super.resolve();
+
         if (this.isDisposed()) {
             return null;
         }
@@ -311,10 +325,12 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     }
     public undo(): void | Promise<void> {
         assertIsDefined(this._modelRef);
+
         return this.undoRedoService.undo(this.resource);
     }
     public redo(): void | Promise<void> {
         assertIsDefined(this._modelRef);
+
         return this.undoRedoService.redo(this.resource);
     }
     private _moveHandler?: (newResource: URI) => void;
@@ -328,6 +344,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
         }
         other._moveHandler = this._moveHandler;
         this._moveHandler = undefined;
+
         return other;
     }
     public get backupId(): string | undefined {
@@ -355,6 +372,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
                     label: localize('reopenInOriginalWindow', "Open in Original Window"),
                     run: async () => {
                         const originalPart = this.editorGroupsService.getPart(this.layoutService.getContainer(getWindow(this.webview.container).window));
+
                         const currentPart = this.editorGroupsService.getPart(this.layoutService.getContainer(targetWindow.window));
                         currentPart.activeGroup.moveEditor(this, originalPart.activeGroup);
                     }
@@ -365,8 +383,10 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     }
     public override canMove(sourceGroup: GroupIdentifier, targetGroup: GroupIdentifier): true | string {
         const resolvedTargetGroup = this.editorGroupsService.getGroup(targetGroup);
+
         if (resolvedTargetGroup) {
             const canMove = this.doCanMove(resolvedTargetGroup.windowId);
+
             if (typeof canMove === 'string') {
                 return canMove;
             }
@@ -376,6 +396,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
     private doCanMove(targetWindowId: number): true | string {
         if (this.isModified() && this._modelRef?.object.canHotExit === false) {
             const sourceWindowId = getWindow(this.webview.container).vscodeWindowId;
+
             if (sourceWindowId !== targetWindowId) {
                 // The custom editor is modified, not backed by a file and without a backup.
                 // We have to assume that the modified state is enclosed into the webview

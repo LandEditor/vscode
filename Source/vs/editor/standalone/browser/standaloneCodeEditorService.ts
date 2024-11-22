@@ -18,6 +18,7 @@ import { IThemeService } from '../../../platform/theme/common/themeService.js';
 export class StandaloneCodeEditorService extends AbstractCodeEditorService {
     private readonly _editorIsOpen: IContextKey<boolean>;
     private _activeCodeEditor: ICodeEditor | null;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -37,9 +38,11 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
     }
     private _checkContextKey(): void {
         let hasCodeEditor = false;
+
         for (const editor of this.listCodeEditors()) {
             if (!editor.isSimpleWidget) {
                 hasCodeEditor = true;
+
                 break;
             }
         }
@@ -53,18 +56,22 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
     }
     private doOpenEditor(editor: ICodeEditor, input: ITextResourceEditorInput): ICodeEditor | null {
         const model = this.findModel(editor, input.resource);
+
         if (!model) {
             if (input.resource) {
                 const schema = input.resource.scheme;
+
                 if (schema === Schemas.http || schema === Schemas.https) {
                     // This is a fully qualified http or https URL
                     windowOpenNoOpener(input.resource.toString());
+
                     return editor;
                 }
             }
             return null;
         }
         const selection = <IRange>(input.options ? input.options.selection : null);
+
         if (selection) {
             if (typeof selection.endLineNumber === 'number' && typeof selection.endColumn === 'number') {
                 editor.setSelection(selection);
@@ -83,6 +90,7 @@ export class StandaloneCodeEditorService extends AbstractCodeEditorService {
     }
     private findModel(editor: ICodeEditor, resource: URI): ITextModel | null {
         const model = editor.getModel();
+
         if (model && model.uri.toString() !== resource.toString()) {
             return null;
         }

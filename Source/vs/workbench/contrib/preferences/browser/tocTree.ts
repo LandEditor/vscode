@@ -92,6 +92,7 @@ export class TOCTreeModel {
 
 			// Check everything that the SettingsFilter checks except whether it's filtered by a category
 			const isRemote = !!this.environmentService.remoteAuthority;
+
 			return child.matchesScope(this._viewState.settingsTarget, isRemote) &&
 				child.matchesAllTags(this._viewState.tagFilters) &&
 				child.matchesAnyFeature(this._viewState.featureFilters) &&
@@ -128,7 +129,9 @@ export class TOCRenderer implements ITreeRenderer<SettingsTreeGroupElement, neve
 		template.elementDisposables.clear();
 
 		const element = node.element;
+
 		const count = element.count;
+
 		const label = element.label;
 
 		template.labelElement.textContent = label;
@@ -196,6 +199,7 @@ class SettingsAccessibilityProvider implements IListAccessibilityProvider<Settin
 
 	getAriaLevel(element: SettingsTreeGroupElement): number {
 		let i = 1;
+
 		while (element instanceof SettingsTreeGroupElement && element.parent) {
 			i++;
 			element = element.parent;
@@ -218,6 +222,7 @@ export class TOCTree extends WorkbenchObjectTree<SettingsTreeGroupElement> {
 		// test open mode
 
 		const filter = instantiationService.createInstance(SettingsTreeFilter, viewState);
+
 		const options: IWorkbenchObjectTreeOptions<SettingsTreeGroupElement, void> = {
 			filter,
 			multipleSelectionSupport: false,

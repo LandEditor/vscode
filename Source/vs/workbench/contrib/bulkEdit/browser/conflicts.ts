@@ -17,6 +17,7 @@ export class ConflictDetector {
     private readonly _disposables = new DisposableStore();
     private readonly _onDidConflict = new Emitter<this>();
     readonly onDidConflict: Event<this> = this._onDidConflict.event;
+
     constructor(edits: ResourceEdit[], 
     @IFileService
     fileService: IFileService, 
@@ -25,11 +26,14 @@ export class ConflictDetector {
     @ILogService
     logService: ILogService) {
         const _workspaceEditResources = new ResourceMap<boolean>();
+
         for (const edit of edits) {
             if (edit instanceof ResourceTextEdit) {
                 _workspaceEditResources.set(edit.resource, true);
+
                 if (typeof edit.versionId === 'number') {
                     const model = modelService.getModel(edit.resource);
+
                     if (model && model.getVersionId() !== edit.versionId) {
                         this._conflicts.set(edit.resource, true);
                         this._onDidConflict.fire(this);
@@ -60,6 +64,7 @@ export class ConflictDetector {
                 if (!modelService.getModel(uri) && e.contains(uri)) {
                     this._conflicts.set(uri, true);
                     this._onDidConflict.fire(this);
+
                     break;
                 }
             }
@@ -72,6 +77,7 @@ export class ConflictDetector {
                 this._onDidConflict.fire(this);
             }
         };
+
         for (const model of modelService.getModels()) {
             this._disposables.add(model.onDidChangeContent(() => onDidChangeModel(model)));
         }

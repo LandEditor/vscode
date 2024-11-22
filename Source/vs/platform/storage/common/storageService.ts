@@ -22,6 +22,7 @@ export class RemoteStorageService extends AbstractStorageService {
     private workspaceStorageId = this.initialWorkspace?.id;
     private readonly workspaceStorageDisposables = this._register(new DisposableStore());
     private workspaceStorage = this.createWorkspaceStorage(this.initialWorkspace);
+
     constructor(private readonly initialWorkspace: IAnyWorkspaceIdentifier | undefined, private readonly initialProfiles: {
         defaultProfile: IUserDataProfile;
         currentProfile: IUserDataProfile;
@@ -30,8 +31,10 @@ export class RemoteStorageService extends AbstractStorageService {
     }
     private createApplicationStorage(): IStorage {
         const storageDataBaseClient = this._register(new ApplicationStorageDatabaseClient(this.remoteService.getChannel('storage')));
+
         const applicationStorage = this._register(new Storage(storageDataBaseClient));
         this._register(applicationStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.APPLICATION, e)));
+
         return applicationStorage;
     }
     private createProfileStorage(profile: IUserDataProfile): IStorage {
@@ -39,7 +42,9 @@ export class RemoteStorageService extends AbstractStorageService {
         this.profileStorageDisposables.clear();
         // Remember profile associated to profile storage
         this.profileStorageProfile = profile;
+
         let profileStorage: IStorage;
+
         if (isProfileUsingDefaultStorage(profile)) {
             // If we are using default profile storage, the profile storage is
             // actually the same as application storage. As such we
@@ -52,6 +57,7 @@ export class RemoteStorageService extends AbstractStorageService {
             profileStorage = this.profileStorageDisposables.add(new Storage(storageDataBaseClient));
         }
         this.profileStorageDisposables.add(profileStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.PROFILE, e)));
+
         return profileStorage;
     }
     private createWorkspaceStorage(workspace: IAnyWorkspaceIdentifier): IStorage;
@@ -61,7 +67,9 @@ export class RemoteStorageService extends AbstractStorageService {
         this.workspaceStorageDisposables.clear();
         // Remember workspace ID for logging later
         this.workspaceStorageId = workspace?.id;
+
         let workspaceStorage: IStorage | undefined = undefined;
+
         if (workspace) {
             const storageDataBaseClient = this.workspaceStorageDisposables.add(new WorkspaceStorageDatabaseClient(this.remoteService.getChannel('storage'), workspace));
             workspaceStorage = this.workspaceStorageDisposables.add(new Storage(storageDataBaseClient));
@@ -81,8 +89,10 @@ export class RemoteStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationStorage;
+
             case StorageScope.PROFILE:
                 return this.profileStorage;
+
             default:
                 return this.workspaceStorage;
         }
@@ -91,8 +101,10 @@ export class RemoteStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationStorageProfile.globalStorageHome.with({ scheme: Schemas.file }).fsPath;
+
             case StorageScope.PROFILE:
                 return this.profileStorageProfile?.globalStorageHome.with({ scheme: Schemas.file }).fsPath;
+
             default:
                 return this.workspaceStorageId ? `${joinPath(this.environmentService.workspaceStorageHome, this.workspaceStorageId, 'state.vscdb').with({ scheme: Schemas.file }).fsPath}` : undefined;
         }
@@ -114,6 +126,7 @@ export class RemoteStorageService extends AbstractStorageService {
             return;
         }
         const oldProfileStorage = this.profileStorage;
+
         const oldItems = oldProfileStorage.items;
         // Close old profile storage but only if this is
         // different from application storage!
@@ -128,6 +141,7 @@ export class RemoteStorageService extends AbstractStorageService {
     }
     protected async switchToWorkspace(toWorkspace: IAnyWorkspaceIdentifier, preserveData: boolean): Promise<void> {
         const oldWorkspaceStorage = this.workspaceStorage;
+
         const oldItems = oldWorkspaceStorage?.items ?? new Map();
         // Close old workspace storage
         await oldWorkspaceStorage?.close();

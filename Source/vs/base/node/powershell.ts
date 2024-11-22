@@ -7,8 +7,11 @@ import * as path from '../common/path.js';
 import * as pfs from './pfs.js';
 // This is required, since parseInt("7-preview") will return 7.
 const IntRegex: RegExp = /^\d+$/;
+
 const PwshMsixRegex: RegExp = /^Microsoft.PowerShell_.*/;
+
 const PwshPreviewMsixRegex: RegExp = /^Microsoft.PowerShellPreview_.*/;
+
 const enum Arch {
     x64,
     x86,
@@ -18,13 +21,18 @@ let processArch: Arch;
 switch (process.arch) {
     case 'ia32':
         processArch = Arch.x86;
+
         break;
+
     case 'arm':
     case 'arm64':
         processArch = Arch.ARM;
+
         break;
+
     default:
         processArch = Arch.x64;
+
         break;
 }
 /*
@@ -108,6 +116,7 @@ async function findPSCoreWindowsInstallation({ useAlternateBitness = false, find
     findPreview?: boolean;
 } = {}): Promise<IPossiblePowerShellExe | null> {
     const programFilesPath = getProgramFilesPath({ useAlternateBitness });
+
     if (!programFilesPath) {
         return null;
     }
@@ -117,19 +126,24 @@ async function findPSCoreWindowsInstallation({ useAlternateBitness = false, find
         return null;
     }
     let highestSeenVersion: number = -1;
+
     let pwshExePath: string | null = null;
+
     for (const item of await pfs.Promises.readdir(powerShellInstallBaseDir)) {
         let currentVersion: number = -1;
+
         if (findPreview) {
             // We are looking for something like "7-preview"
             // Preview dirs all have dashes in them
             const dashIndex = item.indexOf('-');
+
             if (dashIndex < 0) {
                 continue;
             }
             // Verify that the part before the dash is an integer
             // and that the part after the dash is "preview"
             const intPart: string = item.substring(0, dashIndex);
+
             if (!IntRegex.test(intPart) || item.substring(dashIndex + 1) !== 'preview') {
                 continue;
             }
@@ -148,6 +162,7 @@ async function findPSCoreWindowsInstallation({ useAlternateBitness = false, find
         }
         // Now look for the file
         const exePath = path.join(powerShellInstallBaseDir, item, 'pwsh.exe');
+
         if (!await pfs.SymlinkSupport.existsFile(exePath)) {
             continue;
         }
@@ -158,7 +173,9 @@ async function findPSCoreWindowsInstallation({ useAlternateBitness = false, find
         return null;
     }
     const bitness: string = programFilesPath.includes('x86') ? ' (x86)' : '';
+
     const preview: string = findPreview ? ' Preview' : '';
+
     return new PossiblePowerShellExe(pwshExePath, `PowerShell${preview}${bitness}`, true);
 }
 async function findPSCoreMsix({ findPreview }: {
@@ -170,6 +187,7 @@ async function findPSCoreMsix({ findPreview }: {
     }
     // Find the base directory for MSIX application exe shortcuts
     const msixAppDir = path.join(process.env.LOCALAPPDATA, 'Microsoft', 'WindowsApps');
+
     if (!await pfs.SymlinkSupport.existsDirectory(msixAppDir)) {
         return null;
     }
@@ -181,6 +199,7 @@ async function findPSCoreMsix({ findPreview }: {
     for (const subdir of await pfs.Promises.readdir(msixAppDir)) {
         if (pwshMsixDirRegex.test(subdir)) {
             const pwshMsixPath = path.join(msixAppDir, subdir, 'pwsh.exe');
+
             return new PossiblePowerShellExe(pwshMsixPath, pwshMsixName);
         }
     }
@@ -189,10 +208,12 @@ async function findPSCoreMsix({ findPreview }: {
 }
 function findPSCoreDotnetGlobalTool(): IPossiblePowerShellExe {
     const dotnetGlobalToolExePath: string = path.join(os.homedir(), '.dotnet', 'tools', 'pwsh.exe');
+
     return new PossiblePowerShellExe(dotnetGlobalToolExePath, '.NET Core PowerShell Global Tool');
 }
 function findWinPS(): IPossiblePowerShellExe | null {
     const winPSPath = path.join(process.env.windir!, processArch === Arch.x86 && osArch !== Arch.x86 ? 'SysNative' : 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+
     return new PossiblePowerShellExe(winPSPath, 'Windows PowerShell', true);
 }
 /**
@@ -203,16 +224,19 @@ function findWinPS(): IPossiblePowerShellExe | null {
 async function* enumerateDefaultPowerShellInstallations(): AsyncIterable<IPossiblePowerShellExe> {
     // Find PSCore stable first
     let pwshExe = await findPSCoreWindowsInstallation();
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Windows may have a 32-bit pwsh.exe
     pwshExe = await findPSCoreWindowsInstallation({ useAlternateBitness: true });
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Also look for the MSIX/UWP installation
     pwshExe = await findPSCoreMsix();
+
     if (pwshExe) {
         yield pwshExe;
     }
@@ -220,26 +244,31 @@ async function* enumerateDefaultPowerShellInstallations(): AsyncIterable<IPossib
     // Some older versions of PowerShell have a bug in this where startup will fail,
     // but this is fixed in newer versions
     pwshExe = findPSCoreDotnetGlobalTool();
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Look for PSCore preview
     pwshExe = await findPSCoreWindowsInstallation({ findPreview: true });
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Find a preview MSIX
     pwshExe = await findPSCoreMsix({ findPreview: true });
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Look for pwsh-preview with the opposite bitness
     pwshExe = await findPSCoreWindowsInstallation({ useAlternateBitness: true, findPreview: true });
+
     if (pwshExe) {
         yield pwshExe;
     }
     // Finally, get Windows PowerShell
     pwshExe = findWinPS();
+
     if (pwshExe) {
         yield pwshExe;
     }

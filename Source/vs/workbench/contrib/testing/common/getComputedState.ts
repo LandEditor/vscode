@@ -10,14 +10,20 @@ import { makeEmptyCounts, maxPriority, statePriority } from './testingStates.js'
  */
 export interface IComputedStateAccessor<T> {
     getOwnState(item: T): TestResultState | undefined;
+
     getCurrentComputedState(item: T): TestResultState;
+
     setComputedState(item: T, state: TestResultState): void;
+
     getChildren(item: T): Iterable<T>;
+
     getParents(item: T): Iterable<T>;
 }
 export interface IComputedStateAndDurationAccessor<T> extends IComputedStateAccessor<T> {
     getOwnDuration(item: T): number | undefined;
+
     getCurrentComputedDuration(item: T): number | undefined;
+
     setComputedDuration(item: T, duration: number | undefined): void;
 }
 const isDurationAccessor = <T>(accessor: IComputedStateAccessor<T>): accessor is IComputedStateAndDurationAccessor<T> => 'getOwnDuration' in accessor;
@@ -28,10 +34,14 @@ const isDurationAccessor = <T>(accessor: IComputedStateAccessor<T>): accessor is
  */
 const getComputedState = <T extends object>(accessor: IComputedStateAccessor<T>, node: T, force = false) => {
     let computed = accessor.getCurrentComputedState(node);
+
     if (computed === undefined || force) {
         computed = accessor.getOwnState(node) ?? TestResultState.Unset;
+
         let childrenCount = 0;
+
         const stateMap = makeEmptyCounts();
+
         for (const child of accessor.getChildren(node)) {
             const childComputed = getComputedState(accessor, child);
             childrenCount++;
@@ -47,17 +57,22 @@ const getComputedState = <T extends object>(accessor: IComputedStateAccessor<T>,
     }
     return computed;
 };
+
 const getComputedDuration = <T>(accessor: IComputedStateAndDurationAccessor<T>, node: T, force = false): number | undefined => {
     let computed = accessor.getCurrentComputedDuration(node);
+
     if (computed === undefined || force) {
         const own = accessor.getOwnDuration(node);
+
         if (own !== undefined) {
             computed = own;
         }
         else {
             computed = undefined;
+
             for (const child of accessor.getChildren(node)) {
                 const d = getComputedDuration(accessor, child);
+
                 if (d !== undefined) {
                     computed = (computed || 0) + d;
                 }
@@ -67,6 +82,7 @@ const getComputedDuration = <T>(accessor: IComputedStateAndDurationAccessor<T>, 
     }
     return computed;
 };
+
 const LARGE_NODE_THRESHOLD = 64;
 /**
  * Map of how many nodes have in each state. This is used to optimize state
@@ -81,22 +97,32 @@ const largeNodeChildrenStates = new WeakMap<object, {
  */
 export const refreshComputedState = <T extends object>(accessor: IComputedStateAccessor<T>, node: T, explicitNewComputedState?: TestResultState, refreshDuration = true) => {
     const oldState = accessor.getCurrentComputedState(node);
+
     const oldPriority = statePriority[oldState];
+
     const newState = explicitNewComputedState ?? getComputedState(accessor, node, true);
+
     const newPriority = statePriority[newState];
+
     const toUpdate = new Set<T>();
+
     if (newPriority !== oldPriority) {
         accessor.setComputedState(node, newState);
         toUpdate.add(node);
+
         let moveFromState = oldState;
+
         let moveToState = newState;
+
         for (const parent of accessor.getParents(node)) {
             const lnm = largeNodeChildrenStates.get(parent);
+
             if (lnm) {
                 lnm[moveFromState]--;
                 lnm[moveToState]++;
             }
             const prev = accessor.getCurrentComputedState(parent);
+
             if (newPriority > oldPriority) {
                 // Update all parents to ensure they're at least this priority.
                 if (prev !== undefined && statePriority[prev] >= newPriority) {
@@ -127,7 +153,9 @@ export const refreshComputedState = <T extends object>(accessor: IComputedStateA
     if (isDurationAccessor(accessor) && refreshDuration) {
         for (const parent of Iterable.concat(Iterable.single(node), accessor.getParents(node))) {
             const oldDuration = accessor.getCurrentComputedDuration(parent);
+
             const newDuration = getComputedDuration(accessor, parent, true);
+
             if (oldDuration === newDuration) {
                 break;
             }

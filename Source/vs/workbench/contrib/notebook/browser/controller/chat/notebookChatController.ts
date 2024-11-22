@@ -144,6 +144,7 @@ class NotebookChatWidget extends Disposable implements INotebookViewZone {
 	async getOrCreateEditingCell(): Promise<{ cell: ICellViewModel; editor: IActiveCodeEditor } | undefined> {
 		if (this._editingCell) {
 			const codeEditor = this._notebookEditor.codeEditors.find(ce => ce[0] === this._editingCell)?.[1];
+
 			if (codeEditor?.hasModel()) {
 				return {
 					cell: this._editingCell,
@@ -183,6 +184,7 @@ class NotebookChatWidget extends Disposable implements INotebookViewZone {
 		}
 
 		const codeEditor = this._notebookEditor.codeEditors.find(ce => ce[0] === this._editingCell)?.[1];
+
 		if (codeEditor?.hasModel()) {
 			return {
 				cell: this._editingCell,
@@ -202,9 +204,13 @@ class NotebookChatWidget extends Disposable implements INotebookViewZone {
 
 	private _layoutWidget(inlineChatWidget: InlineChatWidget, widgetContainer: HTMLElement) {
 		const layoutConfiguration = this._notebookEditor.notebookOptions.getLayoutConfiguration();
+
 		const rightMargin = layoutConfiguration.cellRightMargin;
+
 		const leftMargin = this._notebookEditor.notebookOptions.getCellEditorContainerLeftMargin();
+
 		const maxWidth = 640;
+
 		const width = Math.min(maxWidth, this._notebookEditor.getLayoutInfo().width - leftMargin - rightMargin);
 
 		inlineChatWidget.layout(new Dimension(width, this.heightInPx));
@@ -217,6 +223,7 @@ class NotebookChatWidget extends Disposable implements INotebookViewZone {
 			accessor.removeZone(this.id);
 		});
 		this.domNode.remove();
+
 		super.dispose();
 	}
 }
@@ -228,6 +235,7 @@ class NotebookCellTextModelLikeId {
 	}
 	static obj(s: string): INotebookCellTextModelLike {
 		const idx = s.indexOf('/');
+
 		return {
 			viewType: s.substring(0, idx),
 			uri: URI.parse(s.substring(idx + 1))
@@ -266,6 +274,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 	private _widget: NotebookChatWidget | undefined;
 
 	private readonly _model: MutableDisposable<ChatModel> = this._register(new MutableDisposable());
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
@@ -288,6 +297,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		NotebookChatController._promptHistory = JSON.parse(this._storageService.get(NotebookChatController._storageKey, StorageScope.PROFILE, '[]'));
 		this._historyUpdate = (prompt: string) => {
 			const idx = NotebookChatController._promptHistory.indexOf(prompt);
+
 			if (idx >= 0) {
 				NotebookChatController._promptHistory.splice(idx, 1);
 			}
@@ -302,10 +312,12 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		this._register(this._notebookEditor.onDidChangeFocus(() => {
 			if (!this._widget) {
 				this._ctxOuterFocusPosition.set('');
+
 				return;
 			}
 
 			const widgetIndex = this._widget.afterModelPosition;
+
 			const focus = this._notebookEditor.getFocus().start;
 
 			if (focus + 1 === widgetIndex) {
@@ -350,6 +362,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		if (this._widget) {
 			if (this._widget.afterModelPosition !== index) {
 				this._disposeWidget();
+
 				const window = getWindow(this._widget.domNode);
 
 				scheduleAtNextAnimationFrame(window, () => {
@@ -383,6 +396,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 
 		const viewZoneContainer = document.createElement('div');
 		viewZoneContainer.classList.add('monaco-editor');
+
 		const widgetContainer = document.createElement('div');
 		widgetContainer.style.position = 'absolute';
 		viewZoneContainer.appendChild(widgetContainer);
@@ -403,8 +417,11 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		));
 
 		const inputBoxFragment = `notebook-chat-input-${NotebookChatController.counter++}`;
+
 		const notebookUri = this._notebookEditor.textModel.uri;
+
 		const inputUri = notebookUri.with({ scheme: Schemas.untitled, fragment: inputBoxFragment });
+
 		const result: ITextModel = this._modelService.createModel('', null, inputUri, false);
 		fakeParentEditor.setModel(result);
 
@@ -414,6 +431,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 				location: ChatAgentLocation.Notebook,
 				resolveData: () => {
 					const sessionInputUri = this.getSessionInputUri();
+
 					if (!sessionInputUri) {
 						return undefined;
 					}
@@ -478,6 +496,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 			this._sessionCtor = createCancelablePromise<void>(async token => {
 				await this._startSession(token);
 				assertType(this._model.value);
+
 				const model = this._model.value;
 				this._widget?.inlineChatWidget.setChatModel(model);
 
@@ -518,8 +537,10 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		} else {
 			// the cell is at the end of the notebook
 			const previousCell = this._notebookEditor.cellAt(Math.min(index - 1, this._notebookEditor.getLength() - 1));
+
 			if (previousCell) {
 				const cellTop = this._notebookEditor.getAbsoluteTopOfElement(previousCell);
+
 				const cellHeight = this._notebookEditor.getHeightOfElement(previousCell);
 
 				this._notebookEditor.revealOffsetInCenterIfOutsideViewport(cellTop + cellHeight + 48 /** center of the dialog */);
@@ -562,6 +583,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		this._historyUpdate(lastInput);
 
 		const editor = this._widget.parentEditor;
+
 		const textModel = editor.getModel();
 
 		if (!editor.hasModel() || !textModel) {
@@ -575,6 +597,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const editingCellIndex = this._widget.editingCell ? this._notebookEditor.getCellIndex(this._widget.editingCell) : undefined;
+
 		if (editingCellIndex !== undefined) {
 			this._notebookEditor.setSelections([{
 				start: editingCellIndex,
@@ -599,12 +622,17 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 			this._ctxHasActiveRequest.set(true);
 
 			const progressiveEditsQueue = new Queue();
+
 			const progressiveEditsClock = StopWatch.create();
+
 			const progressiveEditsAvgDuration = new MovingAverage();
+
 			const progressiveEditsCts = new CancellationTokenSource(this._activeRequestCts.token);
 
 			const responsePromise = new DeferredPromise<void>();
+
 			const response = await this._widget.inlineChatWidget.chatWidget.acceptInput();
+
 			if (response) {
 				let lastLength = 0;
 
@@ -612,11 +640,13 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 					if (response.isCanceled) {
 						progressiveEditsCts.cancel();
 						responsePromise.complete();
+
 						return;
 					}
 
 					if (response.isComplete) {
 						responsePromise.complete();
+
 						return;
 					}
 
@@ -632,6 +662,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 
 					const newEdits = edits.slice(lastLength);
 					// console.log('NEW edits', newEdits, edits);
+
 					if (newEdits.length === 0) {
 						return; // NO change
 					}
@@ -656,6 +687,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 			this._userEditingDisposables.clear();
 			// monitor user edits
 			const editingCell = this._widget.getEditingCell();
+
 			if (editingCell) {
 				this._userEditingDisposables.add(editingCell.model.onDidChangeContent(() => this._updateUserEditingState()));
 				this._userEditingDisposables.add(editingCell.model.onDidChangeLanguage(() => this._updateUserEditingState()));
@@ -699,6 +731,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const actualEdits = !opts && moreMinimalEdits ? moreMinimalEdits : edits;
+
 		const editOperations = actualEdits.map(TextEdit.asEditOperation);
 
 		try {
@@ -720,6 +753,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		assertType(this._strategy);
 
 		const editor = this._widget?.parentEditor;
+
 		if (!editor?.hasModel()) {
 			return;
 		}
@@ -728,6 +762,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 
 		if (editingCell && this._notebookEditor.hasModel()) {
 			const cellId = NotebookCellTextModelLikeId.str({ uri: editingCell.uri, viewType: this._notebookEditor.textModel.viewType });
+
 			if (this._widget?.inlineChatWidget.value) {
 				this._promptCache.set(cellId, this._widget.inlineChatWidget.value);
 			}
@@ -747,12 +782,15 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const index = this._widget.afterModelPosition;
+
 		const prev = index - 1;
+
 		if (prev < 0) {
 			return;
 		}
 
 		const cell = this._notebookEditor.cellAt(prev);
+
 		if (!cell) {
 			return;
 		}
@@ -766,7 +804,9 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const index = this._widget.afterModelPosition;
+
 		const cell = this._notebookEditor.cellAt(index);
+
 		if (!cell) {
 			return;
 		}
@@ -789,11 +829,13 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 					this._focusWidget();
 				}
 				break;
+
 			case 'below':
 				if (this._widget?.afterModelPosition === index + 1) {
 					this._focusWidget();
 				}
 				break;
+
 			default:
 				break;
 		}
@@ -805,6 +847,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const len = NotebookChatController._promptHistory.length;
+
 		if (len === 0) {
 			return;
 		}
@@ -815,12 +858,14 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const newIdx = this._historyOffset + (up ? 1 : -1);
+
 		if (newIdx >= len) {
 			// reached the end
 			return;
 		}
 
 		let entry: string;
+
 		if (newIdx < 0) {
 			entry = this._historyCandidate;
 			this._historyOffset = -1;
@@ -849,15 +894,21 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 
 	dismiss(discard: boolean) {
 		const widget = this._widget;
+
 		const widgetIndex = widget?.afterModelPosition;
+
 		const currentFocus = this._notebookEditor.getFocus();
+
 		const isWidgetFocused = currentFocus.start === widgetIndex && currentFocus.end === widgetIndex;
 
 		if (widget && isWidgetFocused) {
 			// change focus only when the widget is focused
 			const editingCell = widget.getEditingCell();
+
 			const shouldFocusEditingCell = editingCell && !discard;
+
 			const shouldFocusTopCell = widgetIndex === 0 && this._notebookEditor.getLength() > 0;
+
 			const shouldFocusAboveCell = widgetIndex !== 0 && this._notebookEditor.cellAt(widgetIndex - 1);
 
 			if (shouldFocusEditingCell) {
@@ -887,6 +938,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const cellId = NotebookCellTextModelLikeId.str({ uri: cell.uri, viewType: this._notebookEditor.textModel.viewType });
+
 		return this._promptCache.has(cellId);
 	}
 
@@ -898,10 +950,12 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 		}
 
 		const cellId = NotebookCellTextModelLikeId.str({ uri: cell.uri, viewType: this._notebookEditor.textModel.viewType });
+
 		return this._promptCache.get(cellId);
 	}
 	public override dispose(): void {
 		this.dismiss(false);
+
 		super.dispose();
 	}
 }
@@ -919,8 +973,10 @@ export class EditStrategy {
 		}
 
 		const durationInSec = opts.duration / 1000;
+
 		for (const edit of edits) {
 			const wordCount = countWords(edit.text ?? '');
+
 			const speed = wordCount / durationInSec;
 			// console.log({ durationInSec, wordCount, speed: wordCount / durationInSec });
 			await performAsyncTextEdit(editor.getModel(), asProgressiveEdit(new WindowIntervalTimer(), edit, speed, opts.token));
@@ -930,6 +986,7 @@ export class EditStrategy {
 	async makeChanges(editor: IActiveCodeEditor, edits: ISingleEditOperation[]): Promise<void> {
 		const cursorStateComputerAndInlineDiffCollection: ICursorStateComputer = (undoEdits) => {
 			let last: Position | null = null;
+
 			for (const edit of undoEdits) {
 				last = !last || last.isBefore(edit.range.getEndPosition()) ? edit.range.getEndPosition() : last;
 				// this._inlineDiffDecorations.collectEditOperation(edit);

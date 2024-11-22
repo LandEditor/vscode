@@ -5,7 +5,9 @@
 import { Emitter, Event } from '../../../base/common/event.js';
 export interface IEditorZoom {
     onDidChangeZoomLevel: Event<number>;
+
     getZoomLevel(): number;
+
     setZoomLevel(zoomLevel: number): void;
 }
 export const EditorZoom: IEditorZoom = new class implements IEditorZoom {
@@ -17,6 +19,7 @@ export const EditorZoom: IEditorZoom = new class implements IEditorZoom {
     }
     public setZoomLevel(zoomLevel: number): void {
         zoomLevel = Math.min(Math.max(-5, zoomLevel), 20);
+
         if (this._zoomLevel === zoomLevel) {
             return;
         }

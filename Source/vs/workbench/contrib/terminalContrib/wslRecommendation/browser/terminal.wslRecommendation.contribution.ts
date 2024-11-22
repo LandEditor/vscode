@@ -15,6 +15,7 @@ import { InstallRecommendedExtensionAction } from '../../../extensions/browser/e
 import { ITerminalService } from '../../../terminal/browser/terminal.js';
 export class TerminalWslRecommendationContribution extends Disposable implements IWorkbenchContribution {
     static ID = 'terminalWslRecommendation';
+
     constructor(
     @IExtensionManagementService
     extensionManagementService: IExtensionManagementService, 
@@ -27,16 +28,19 @@ export class TerminalWslRecommendationContribution extends Disposable implements
     @ITerminalService
     terminalService: ITerminalService) {
         super();
+
         if (!isWindows) {
             return;
         }
         const exeBasedExtensionTips = productService.exeBasedExtensionTips;
+
         if (!exeBasedExtensionTips || !exeBasedExtensionTips.wsl) {
             return;
         }
         let listener: IDisposable | undefined = terminalService.onDidCreateInstance(async (instance) => {
             async function isExtensionInstalled(id: string): Promise<boolean> {
                 const extensions = await extensionManagementService.getInstalled();
+
                 return extensions.some(e => e.identifier.id === id);
             }
             if (!instance.shellLaunchConfig.executable || basename(instance.shellLaunchConfig.executable).toLowerCase() !== 'wsl.exe') {
@@ -44,7 +48,9 @@ export class TerminalWslRecommendationContribution extends Disposable implements
             }
             listener?.dispose();
             listener = undefined;
+
             const extId = Object.keys(exeBasedExtensionTips.wsl.recommendations).find(extId => exeBasedExtensionTips.wsl.recommendations[extId].important);
+
             if (!extId || await isExtensionInstalled(extId)) {
                 return;
             }

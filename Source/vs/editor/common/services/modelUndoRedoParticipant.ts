@@ -19,6 +19,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
         this._register(this._modelService.onModelRemoved((model) => {
             // a model will get disposed, so let's check if the undo redo stack is maintained
             const elements = this._undoRedoService.getElements(model.uri);
+
             if (elements.past.length === 0 && elements.future.length === 0) {
                 return;
             }
@@ -37,6 +38,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
     public prepareUndoRedo(element: MultiModelEditStackElement): IDisposable | Promise<IDisposable> {
         // Load all the needed text models
         const missingModels = element.getMissingModels();
+
         if (missingModels.length === 0) {
             // All models are available!
             return Disposable.None;
@@ -44,6 +46,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
         const disposablesPromises = missingModels.map(async (uri) => {
             try {
                 const reference = await this._textModelService.createModelReference(uri);
+
                 return <IDisposable>reference;
             }
             catch (err) {
@@ -51,6 +54,7 @@ export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDel
                 return Disposable.None;
             }
         });
+
         return Promise.all(disposablesPromises).then(disposables => {
             return {
                 dispose: () => dispose(disposables)

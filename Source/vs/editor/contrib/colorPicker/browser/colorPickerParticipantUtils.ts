@@ -26,11 +26,15 @@ export interface BaseColor {
 
 export async function createColorHover(editorModel: ITextModel, colorInfo: IColorInformation, provider: DocumentColorProvider): Promise<BaseColor> {
 	const originalText = editorModel.getValueInRange(colorInfo.range);
+
 	const { red, green, blue, alpha } = colorInfo.color;
+
 	const rgba = new RGBA(Math.round(red * 255), Math.round(green * 255), Math.round(blue * 255), alpha);
+
 	const color = new Color(rgba);
 
 	const colorPresentations = await getColorPresentations(editorModel, colorInfo, provider, CancellationToken.None);
+
 	const model = new ColorPickerModel(color, [], 0);
 	model.colorPresentations = colorPresentations || [];
 	model.guessColorPresentation(color, originalText);
@@ -44,6 +48,7 @@ export async function createColorHover(editorModel: ITextModel, colorInfo: IColo
 
 export function updateEditorModel(editor: IActiveCodeEditor, range: Range, model: ColorPickerModel): Range {
 	const textEdits: ISingleEditOperation[] = [];
+
 	const edit = model.presentation.textEdit ?? { range, text: model.presentation.label, forceMoveMarkers: false };
 	textEdits.push(edit);
 
@@ -51,9 +56,11 @@ export function updateEditorModel(editor: IActiveCodeEditor, range: Range, model
 		textEdits.push(...model.presentation.additionalTextEdits);
 	}
 	const replaceRange = Range.lift(edit.range);
+
 	const trackedRange = editor.getModel()._setTrackedRange(null, replaceRange, TrackedRangeStickiness.GrowsOnlyWhenTypingAfter);
 	editor.executeEdits('colorpicker', textEdits);
 	editor.pushUndoStop();
+
 	return editor.getModel()._getTrackedRange(trackedRange) ?? replaceRange;
 }
 

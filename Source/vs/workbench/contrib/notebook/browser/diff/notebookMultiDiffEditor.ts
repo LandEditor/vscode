@@ -48,16 +48,19 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
     private _model?: INotebookDiffEditorModel;
     private viewModel?: NotebookDiffViewModel;
     private widgetViewModel?: MultiDiffEditorViewModel;
+
     get textModel() {
         return this._model?.modified.notebook;
     }
     private _notebookOptions: NotebookOptions;
+
     get notebookOptions() {
         return this._notebookOptions;
     }
     private readonly ctxAllCollapsed = this._parentContextKeyService.createKey<boolean>(NOTEBOOK_DIFF_CELLS_COLLAPSED.key, false);
     private readonly ctxHasUnchangedCells = this._parentContextKeyService.createKey<boolean>(NOTEBOOK_DIFF_HAS_UNCHANGED_CELLS.key, false);
     private readonly ctxHiddenUnchangedCells = this._parentContextKeyService.createKey<boolean>(NOTEBOOK_DIFF_UNCHANGED_CELLS_HIDDEN.key, true);
+
     constructor(group: IEditorGroup, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -90,6 +93,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
     }
     private createFontInfo() {
         const editorOptions = this.configurationService.getValue<ICodeEditorOptions>('editor');
+
         return FontMeasurements.readFontInfo(this.window, BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.getInstance(this.window).value));
     }
     protected createEditor(parent: HTMLElement): void {
@@ -100,19 +104,24 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
     }
     override async setInput(input: NotebookMultiDiffEditorInput, options: IMultiDiffEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
         super.setInput(input, options, context, token);
+
         const model = await input.resolve();
+
         if (this._model !== model) {
             this._detachModel();
             this._model = model;
         }
         const eventDispatcher = this.modelSpecificResources.add(new NotebookDiffEditorEventDispatcher());
+
         const diffEditorHeightCalculator = this.instantiationService.createInstance(DiffEditorHeightCalculatorService, this.fontInfo.lineHeight);
         this.viewModel = this.modelSpecificResources.add(new NotebookDiffViewModel(model, this.notebookEditorWorkerService, this.configurationService, eventDispatcher, this.notebookService, diffEditorHeightCalculator, undefined, true));
         await this.viewModel.computeDiff(this.modelSpecificResources.add(new CancellationTokenSource()).token);
         this.ctxHasUnchangedCells.set(this.viewModel.hasUnchangedCells);
         this.ctxHasUnchangedCells.set(this.viewModel.hasUnchangedCells);
+
         const widgetInput = this.modelSpecificResources.add(NotebookMultiDiffEditorWidgetInput.createInput(this.viewModel, this.instantiationService));
         this.widgetViewModel = this.modelSpecificResources.add(await widgetInput.getViewModel());
+
         const itemsWeHaveSeen = new WeakSet<DocumentDiffItemViewModel>();
         this.modelSpecificResources.add(autorun(reader => {
             /** @description NotebookDiffEditor => Collapse unmodified items */
@@ -120,7 +129,9 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
                 return;
             }
             const items = this.widgetViewModel.items.read(reader);
+
             const diffItems = this.viewModel.value;
+
             if (items.length !== diffItems.length) {
                 return;
             }
@@ -133,7 +144,9 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
                         return;
                     }
                     itemsWeHaveSeen.add(item);
+
                     const diffItem = diffItems.find(d => d.modifiedUri?.toString() === item.modifiedUri?.toString() && d.originalUri?.toString() === item.originalUri?.toString());
+
                     if (diffItem && diffItem.type === 'unchanged') {
                         item.collapsed.set(true, tx);
                     }
@@ -197,6 +210,7 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
         if (uri.scheme === Schemas.vscodeNotebookCellOutput || uri.scheme === Schemas.vscodeNotebookCellOutputDiff ||
             uri.scheme === Schemas.vscodeNotebookCellMetadata || uri.scheme === Schemas.vscodeNotebookCellMetadataDiff) {
             const data = CellUri.parseCellPropertyUri(uri, uri.scheme);
+
             if (data) {
                 uri = CellUri.generate(data.notebook, data.handle);
             }
@@ -209,11 +223,14 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
             switch (c.type) {
                 case 'delete':
                     return c.original?.uri.toString() === uri.toString();
+
                 case 'insert':
                     return c.modified?.uri.toString() === uri.toString();
+
                 case 'modified':
                 case 'unchanged':
                     return c.modified?.uri.toString() === uri.toString() || c.original?.uri.toString() === uri.toString();
+
                 default:
                     return;
             }
@@ -230,7 +247,9 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
     private readonly notebookService: INotebookService) { }
     createResourceLabel(element: HTMLElement): IResourceLabel {
         const label = this._instantiationService.createInstance(ResourceLabel, element, {});
+
         const that = this;
+
         return {
             setUri(uri, options = {}) {
                 if (!uri) {
@@ -238,14 +257,21 @@ class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
                 }
                 else {
                     let name = '';
+
                     let description = '';
+
                     let extraClasses: string[] | undefined = undefined;
+
                     if (uri.scheme === Schemas.vscodeNotebookCell) {
                         const notebookDocument = uri.scheme === Schemas.vscodeNotebookCell ? that.notebookDocumentService.getNotebook(uri) : undefined;
+
                         const cellIndex = Schemas.vscodeNotebookCell ? that.notebookDocumentService.getNotebook(uri)?.getCellIndex(uri) : undefined;
+
                         if (notebookDocument && cellIndex !== undefined) {
                             name = localize('notebookCellLabel', "Cell {0}", `${cellIndex + 1}`);
+
                             const nb = notebookDocument ? that.notebookService.getNotebookTextModel(notebookDocument?.uri) : undefined;
+
                             const cellLanguage = nb && cellIndex !== undefined ? nb.cells[cellIndex].language : undefined;
                             extraClasses = cellLanguage ? getIconClassesForLanguageId(cellLanguage) : undefined;
                         }

@@ -32,10 +32,12 @@ export async function moduleToContent(instantiationService: IInstantiationServic
         throw new Error('Walkthrough: invalid resource');
     }
     const query = JSON.parse(resource.query);
+
     if (!query.moduleId) {
         throw new Error('Walkthrough: invalid resource');
     }
     const provider = walkThroughContentRegistry.getProvider(query.moduleId);
+
     if (!provider) {
         throw new Error(`Walkthrough: no provider registered for ${query.moduleId}`);
     }
@@ -44,6 +46,7 @@ export async function moduleToContent(instantiationService: IInstantiationServic
 export class WalkThroughSnippetContentProvider implements ITextModelContentProvider, IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.walkThroughSnippetContentProvider';
     private loads = new Map<string, Promise<ITextBufferFactory>>();
+
     constructor(
     @ITextModelService
     private readonly textModelResolverService: ITextModelService, 
@@ -57,6 +60,7 @@ export class WalkThroughSnippetContentProvider implements ITextModelContentProvi
     }
     private async textBufferFactoryFromResource(resource: URI): Promise<ITextBufferFactory> {
         let ongoing = this.loads.get(resource.toString());
+
         if (!ongoing) {
             ongoing = moduleToContent(this.instantiationService, resource)
                 .then(content => createTextBufferFactory(content))
@@ -67,25 +71,36 @@ export class WalkThroughSnippetContentProvider implements ITextModelContentProvi
     }
     public async provideTextContent(resource: URI): Promise<ITextModel> {
         const factory = await this.textBufferFactoryFromResource(resource.with({ fragment: '' }));
+
         let codeEditorModel = this.modelService.getModel(resource);
+
         if (!codeEditorModel) {
             const j = parseInt(resource.fragment);
+
             let i = 0;
+
             const renderer = new marked.marked.Renderer();
             renderer.code = ({ text, lang }: marked.Tokens.Code) => {
                 i++;
+
                 const languageId = typeof lang === 'string' ? this.languageService.getLanguageIdByLanguageName(lang) || '' : '';
+
                 const languageSelection = this.languageService.createById(languageId);
                 // Create all models for this resource in one go... we'll need them all and we don't want to re-parse markdown each time
                 const model = this.modelService.createModel(text, languageSelection, resource.with({ fragment: `${i}.${lang}` }));
+
                 if (i === j) {
                     codeEditorModel = model;
                 }
                 return '';
             };
+
             const textBuffer = factory.create(DefaultEndOfLine.LF).textBuffer;
+
             const lineCount = textBuffer.getLineCount();
+
             const range = new Range(1, 1, lineCount, textBuffer.getLineLength(lineCount) + 1);
+
             const markdown = textBuffer.getValueInRange(range, EndOfLinePreference.TextDefined);
             marked.marked(markdown, { renderer });
         }

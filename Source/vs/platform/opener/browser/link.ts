@@ -31,6 +31,7 @@ export class Link extends Disposable {
     private hover?: IManagedHover;
     private hoverDelegate: IHoverDelegate;
     private _enabled: boolean = true;
+
     get enabled(): boolean {
         return this._enabled;
     }
@@ -62,6 +63,7 @@ export class Link extends Disposable {
             this.el.appendChild(link.label);
         }
         this.el.href = link.href;
+
         if (typeof link.tabIndex !== 'undefined') {
             this.el.tabIndex = link.tabIndex;
         }
@@ -81,18 +83,24 @@ export class Link extends Disposable {
         this.hoverDelegate = options.hoverDelegate ?? getDefaultHoverDelegate('mouse');
         this.setTooltip(_link.title);
         this.el.setAttribute('role', 'button');
+
         const onClickEmitter = this._register(new DomEmitter(this.el, 'click'));
+
         const onKeyPress = this._register(new DomEmitter(this.el, 'keypress'));
+
         const onEnterPress = Event.chain(onKeyPress.event, $ => $.map(e => new StandardKeyboardEvent(e))
             .filter(e => e.keyCode === KeyCode.Enter));
+
         const onTap = this._register(new DomEmitter(this.el, TouchEventType.Tap)).event;
         this._register(Gesture.addTarget(this.el));
+
         const onOpen = Event.any<EventLike>(onClickEmitter.event, onEnterPress, onTap);
         this._register(onOpen(e => {
             if (!this.enabled) {
                 return;
             }
             EventHelper.stop(e, true);
+
             if (options?.opener) {
                 options.opener(this._link.href);
             }

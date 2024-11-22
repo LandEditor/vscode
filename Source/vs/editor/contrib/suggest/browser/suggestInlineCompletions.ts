@@ -46,10 +46,15 @@ class InlineCompletionResults extends RefCountedDisposable implements InlineComp
         // Split items by preselected index. This ensures the memory-selected item shows first and that better/worst
         // ranked items are before/after
         const { items } = this.completionModel;
+
         const selectedIndex = this._suggestMemoryService.select(this.model, { lineNumber: this.line, column: this.word.endColumn + this.completionModel.lineContext.characterCountDelta }, items);
+
         const first = Iterable.slice(items, selectedIndex);
+
         const second = Iterable.slice(items, 0, selectedIndex);
+
         let resolveCount = 5;
+
         for (const item of Iterable.concat(first, second)) {
             if (item.score === FuzzyScore.Default) {
                 // skip items that have no overlap
@@ -57,6 +62,7 @@ class InlineCompletionResults extends RefCountedDisposable implements InlineComp
             }
             const range = new Range(item.editStart.lineNumber, item.editStart.column, item.editInsertEnd.lineNumber, item.editInsertEnd.column + this.completionModel.lineContext.characterCountDelta // end PLUS character delta
             );
+
             const insertText = item.completion.insertTextRules && (item.completion.insertTextRules & CompletionItemInsertTextRule.InsertAsSnippet)
                 ? { snippet: item.completion.insertText }
                 : item.completion.insertText;
@@ -71,6 +77,7 @@ class InlineCompletionResults extends RefCountedDisposable implements InlineComp
 }
 export class SuggestInlineCompletions extends Disposable implements InlineCompletionsProvider<InlineCompletionResults> {
     private _lastResult?: InlineCompletionResults;
+
     constructor(
     @ILanguageFeaturesService
     private readonly _languageFeatureService: ILanguageFeaturesService, 
@@ -88,9 +95,11 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
             return;
         }
         let editor: ICodeEditor | undefined;
+
         for (const candidate of this._editorService.listCodeEditors()) {
             if (candidate.getModel() === model) {
                 editor = candidate;
+
                 break;
             }
         }
@@ -98,13 +107,17 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
             return;
         }
         const config = editor.getOption(EditorOption.quickSuggestions);
+
         if (QuickSuggestionsOptions.isAllOff(config)) {
             // quick suggest is off (for this model/language)
             return;
         }
         model.tokenization.tokenizeIfCheap(position.lineNumber);
+
         const lineTokens = model.tokenization.getLineTokens(position.lineNumber);
+
         const tokenType = lineTokens.getStandardTokenType(lineTokens.findTokenIndexAtOffset(Math.max(position.column - 1 - 1, 0)));
+
         if (QuickSuggestionsOptions.valueFor(config, tokenType) !== 'inline') {
             // quick suggest is off (for this token)
             return undefined;
@@ -112,10 +125,12 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
         // We consider non-empty leading words and trigger characters. The latter only
         // when no word is being typed (word characters superseed trigger characters)
         let wordInfo = model.getWordAtPosition(position);
+
         let triggerCharacterInfo: {
             ch: string;
             providers: Set<CompletionItemProvider>;
         } | undefined;
+
         if (!wordInfo?.word) {
             triggerCharacterInfo = this._getTriggerCharacterInfo(model, position);
         }
@@ -132,11 +147,14 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
             return;
         }
         let result: InlineCompletionResults;
+
         const leadingLineContents = model.getValueInRange(new Range(position.lineNumber, 1, position.lineNumber, position.column));
+
         if (!triggerCharacterInfo && this._lastResult?.canBeReused(model, position.lineNumber, wordInfo)) {
             // reuse a previous result iff possible, only a refilter is needed
             // TODO@jrieken this can be improved further and only incomplete results can be updated
             // console.log(`REUSE with ${wordInfo.word}`);
+
             const newLineContext = new LineContext(leadingLineContents, position.column - this._lastResult.word.endColumn);
             this._lastResult.completionModel.lineContext = newLineContext;
             this._lastResult.acquire();
@@ -145,7 +163,9 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
         else {
             // refesh model is required
             const completions = await provideSuggestionItems(this._languageFeatureService.completionProvider, model, position, new CompletionOptions(undefined, SuggestModel.createSuggestFilter(editor).itemKind, triggerCharacterInfo?.providers), triggerCharacterInfo && { triggerKind: CompletionTriggerKind.TriggerCharacter, triggerCharacter: triggerCharacterInfo.ch }, token);
+
             let clipboardText: string | undefined;
+
             if (completions.needsClipboard) {
                 clipboardText = await this._clipboardService.readText();
             }
@@ -153,6 +173,7 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
             result = new InlineCompletionResults(model, position.lineNumber, wordInfo, completionModel, completions, this._suggestMemoryService);
         }
         this._lastResult = result;
+
         return result;
     }
     handleItemDidShow(_completions: InlineCompletionResults, item: SuggestInlineCompletion): void {
@@ -163,7 +184,9 @@ export class SuggestInlineCompletions extends Disposable implements InlineComple
     }
     private _getTriggerCharacterInfo(model: ITextModel, position: IPosition) {
         const ch = model.getValueInRange(Range.fromPositions({ lineNumber: position.lineNumber, column: position.column - 1 }, position));
+
         const providers = new Set<CompletionItemProvider>();
+
         for (const provider of this._languageFeatureService.completionProvider.all(model)) {
             if (provider.triggerCharacters?.includes(ch)) {
                 providers.add(provider);

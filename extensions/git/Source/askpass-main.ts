@@ -23,10 +23,13 @@ function main(argv: string[]): void {
         return fatal('Skip silent fetch commands');
     }
     const output = process.env['VSCODE_GIT_ASKPASS_PIPE'] as string;
+
     const askpassType = process.env['VSCODE_GIT_ASKPASS_TYPE'] as 'https' | 'ssh';
     // HTTPS (username | password), SSH (passphrase | authenticity)
     const request = askpassType === 'https' ? argv[2] : argv[3];
+
     let host: string | undefined, file: string | undefined, fingerprint: string | undefined;
+
     if (askpassType === 'https') {
         host = argv[4].replace(/^["']+|["':]+$/g, '');
     }
@@ -46,6 +49,7 @@ function main(argv: string[]): void {
     const ipcClient = new IPCClient('askpass');
     ipcClient.call({ askpassType, request, host, file, fingerprint }).then(res => {
         fs.writeFileSync(output, res + '\n');
+
         setTimeout(() => process.exit(0), 0);
     }).catch(err => fatal(err));
 }

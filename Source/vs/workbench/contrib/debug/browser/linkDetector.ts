@@ -22,15 +22,25 @@ import { IDebugSession } from '../common/debug.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 import { IWorkbenchEnvironmentService } from '../../../services/environment/common/environmentService.js';
 import { IPathService } from '../../../services/path/common/pathService.js';
+
 const CONTROL_CODES = '\\u0000-\\u0020\\u007f-\\u009f';
+
 const WEB_LINK_REGEX = new RegExp('(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\\/\\/|data:|www\\.)[^\\s' + CONTROL_CODES + '"]{2,}[^\\s' + CONTROL_CODES + '"\')}\\],:;.!?]', 'ug');
+
 const WIN_ABSOLUTE_PATH = /(?:[a-zA-Z]:(?:(?:\\|\/)[\w\.-]*)+)/;
+
 const WIN_RELATIVE_PATH = /(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
+
 const WIN_PATH = new RegExp(`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`);
+
 const POSIX_PATH = /((?:\~|\.)?(?:\/[\w\.-]*)+)/;
+
 const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
+
 const PATH_LINK_REGEX = new RegExp(`${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`, 'g');
+
 const LINE_COLUMN_REGEX = /:([\d]+)(?::([\d]+))?$/;
+
 const MAX_LENGTH = 2000;
 type LinkKind = 'web' | 'path' | 'text';
 type LinkPart = {
@@ -98,6 +108,7 @@ export class LinkDetector implements ILinkDetector {
     }): HTMLElement {
         if (splitLines) {
             const lines = text.split('\n');
+
             for (let i = 0; i < lines.length - 1; i++) {
                 lines[i] = lines[i] + '\n';
             }
@@ -106,29 +117,39 @@ export class LinkDetector implements ILinkDetector {
                 lines.pop();
             }
             const elements = lines.map(line => this._linkify(line, false, workspaceFolder, includeFulltext, hoverBehavior, defaultRef));
+
             if (elements.length === 1) {
                 // Do not wrap single line with extra span.
                 return elements[0];
             }
             const container = document.createElement('span');
             elements.forEach(e => container.appendChild(e));
+
             return container;
         }
         const container = document.createElement('span');
+
         for (const part of this.detectLinks(text)) {
             try {
                 switch (part.kind) {
                     case 'text':
                         container.appendChild(defaultRef ? this.linkifyLocation(part.value, defaultRef.locationReference, defaultRef.session, hoverBehavior) : document.createTextNode(part.value));
+
                         break;
+
                     case 'web':
                         container.appendChild(this.createWebLink(includeFulltext ? text : undefined, part.value, hoverBehavior));
+
                         break;
+
                     case 'path': {
                         const path = part.captures[0];
+
                         const lineNumber = part.captures[1] ? Number(part.captures[1]) : 0;
+
                         const columnNumber = part.captures[2] ? Number(part.captures[2]) : 0;
                         container.appendChild(this.createPathLink(includeFulltext ? text : undefined, part.value, path, lineNumber, columnNumber, workspaceFolder, hoverBehavior));
+
                         break;
                     }
                 }
@@ -153,6 +174,7 @@ export class LinkDetector implements ILinkDetector {
                 endColumn: location.endColumn ?? location.column,
             }, preserveFocus);
         });
+
         return link;
     }
     /**
@@ -167,10 +189,12 @@ export class LinkDetector implements ILinkDetector {
     }
     private createWebLink(fulltext: string | undefined, url: string, hoverBehavior?: DebugLinkHoverBehaviorTypeData): Node {
         const link = this.createLink(url);
+
         let uri = URI.parse(url);
         // if the URI ends with something like `foo.js:12:3`, parse
         // that into a fragment to reveal that location (#150702)
         const lineCol = LINE_COLUMN_REGEX.exec(uri.path);
+
         if (lineCol) {
             uri = uri.with({
                 path: uri.path.slice(0, lineCol.index),
@@ -181,10 +205,15 @@ export class LinkDetector implements ILinkDetector {
             if (uri.scheme === Schemas.file) {
                 // Just using fsPath here is unsafe: https://github.com/microsoft/vscode/issues/109076
                 const fsPath = uri.fsPath;
+
                 const path = await this.pathService.path;
+
                 const fileUrl = osPath.normalize(((path.sep === osPath.posix.sep) && platform.isWindows) ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath);
+
                 const fileUri = URI.parse(fileUrl);
+
                 const exists = await this.fileService.exists(fileUri);
+
                 if (!exists) {
                     return;
                 }
@@ -195,10 +224,12 @@ export class LinkDetector implements ILinkDetector {
                         selection: lineCol ? { startLineNumber: +lineCol[1], startColumn: +lineCol[2] } : undefined,
                     },
                 });
+
                 return;
             }
             this.openerService.open(url, { allowTunneling: (!!this.environmentService.remoteAuthority && this.configurationService.getValue('remote.forwardOnOpen')) });
         });
+
         return link;
     }
     private createPathLink(fulltext: string | undefined, text: string, path: string, lineNumber: number, columnNumber: number, workspaceFolder: IWorkspaceFolder | undefined, hoverBehavior?: DebugLinkHoverBehaviorTypeData): Node {
@@ -207,23 +238,28 @@ export class LinkDetector implements ILinkDetector {
             return document.createTextNode(text);
         }
         const options = { selection: { startLineNumber: lineNumber, startColumn: columnNumber } };
+
         if (path[0] === '.') {
             if (!workspaceFolder) {
                 return document.createTextNode(text);
             }
             const uri = workspaceFolder.toResource(path);
+
             const link = this.createLink(text);
             this.decorateLink(link, uri, fulltext, hoverBehavior, (preserveFocus: boolean) => this.editorService.openEditor({ resource: uri, options: { ...options, preserveFocus } }));
+
             return link;
         }
         if (path[0] === '~') {
             const userHome = this.pathService.resolvedUserHome;
+
             if (userHome) {
                 path = osPath.join(userHome.fsPath, path.substring(1));
             }
         }
         const link = this.createLink(text);
         link.tabIndex = 0;
+
         const uri = URI.file(osPath.normalize(path));
         this.fileService.stat(uri).then(stat => {
             if (stat.isDirectory) {
@@ -233,19 +269,24 @@ export class LinkDetector implements ILinkDetector {
         }).catch(() => {
             // If the uri can not be resolved we should not spam the console with error, remain quite #86587
         });
+
         return link;
     }
     private createLink(text: string): HTMLElement {
         const link = document.createElement('a');
         link.textContent = text;
+
         return link;
     }
     private decorateLink(link: HTMLElement, uri: URI | undefined, fulltext: string | undefined, hoverBehavior: DebugLinkHoverBehaviorTypeData | undefined, onClick: (preserveFocus: boolean) => void) {
         link.classList.add('link');
+
         const followLink = uri && this.tunnelService.canTunnel(uri) ? localize('followForwardedLink', "follow link using forwarded port") : localize('followLink', "follow link");
+
         const title = link.ariaLabel = fulltext
             ? (platform.isMacintosh ? localize('fileLinkWithPathMac', "Cmd + click to {0}\n{1}", followLink, fulltext) : localize('fileLinkWithPath', "Ctrl + click to {0}\n{1}", followLink, fulltext))
             : (platform.isMacintosh ? localize('fileLinkMac', "Cmd + click to {0}", followLink) : localize('fileLink', "Ctrl + click to {0}", followLink));
+
         if (hoverBehavior?.type === DebugLinkHoverBehavior.Rich) {
             hoverBehavior.store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), link, title));
         }
@@ -256,6 +297,7 @@ export class LinkDetector implements ILinkDetector {
         link.onmouseleave = () => link.classList.remove('pointer');
         link.onclick = (event) => {
             const selection = getWindow(link).getSelection();
+
             if (!selection || selection.type === 'Range') {
                 return; // do not navigate when user is selecting
             }
@@ -268,6 +310,7 @@ export class LinkDetector implements ILinkDetector {
         };
         link.onkeydown = e => {
             const event = new StandardKeyboardEvent(e);
+
             if (event.keyCode === KeyCode.Enter || event.keyCode === KeyCode.Space) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -280,19 +323,27 @@ export class LinkDetector implements ILinkDetector {
             return [{ kind: 'text', value: text, captures: [] }];
         }
         const regexes: RegExp[] = [WEB_LINK_REGEX, PATH_LINK_REGEX];
+
         const kinds: LinkKind[] = ['web', 'path'];
+
         const result: LinkPart[] = [];
+
         const splitOne = (text: string, regexIndex: number) => {
             if (regexIndex >= regexes.length) {
                 result.push({ value: text, kind: 'text', captures: [] });
+
                 return;
             }
             const regex = regexes[regexIndex];
+
             let currentIndex = 0;
+
             let match;
             regex.lastIndex = 0;
+
             while ((match = regex.exec(text)) !== null) {
                 const stringBeforeMatch = text.substring(currentIndex, match.index);
+
                 if (stringBeforeMatch) {
                     splitOne(stringBeforeMatch, regexIndex + 1);
                 }
@@ -305,11 +356,13 @@ export class LinkDetector implements ILinkDetector {
                 currentIndex = match.index + value.length;
             }
             const stringAfterMatches = text.substring(currentIndex);
+
             if (stringAfterMatches) {
                 splitOne(stringAfterMatches, regexIndex + 1);
             }
         };
         splitOne(text, 0);
+
         return result;
     }
 }

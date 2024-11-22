@@ -23,13 +23,16 @@ class BracketPairColorizer2TelemetryContribution {
     private async init(): Promise<void> {
         const bracketPairColorizerId = 'coenraads.bracket-pair-colorizer-2';
         await this.extensionsWorkbenchService.queryLocal();
+
         const extension = this.extensionsWorkbenchService.installed.find(e => e.identifier.id === bracketPairColorizerId);
+
         if (!extension ||
             ((extension.enablementState !== EnablementState.EnabledGlobally) &&
                 (extension.enablementState !== EnablementState.EnabledWorkspace))) {
             return;
         }
         const nativeBracketPairColorizationEnabledKey = 'editor.bracketPairColorization.enabled';
+
         const nativeColorizationEnabled = !!this.configurationService.getValue(nativeBracketPairColorizationEnabledKey);
         type BracketPairColorizer2InstalledClassification = {
             owner: 'hediet';

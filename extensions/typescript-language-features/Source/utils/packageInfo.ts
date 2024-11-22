@@ -10,6 +10,7 @@ export interface PackageInfo {
 }
 export function getPackageInfo(context: vscode.ExtensionContext) {
     const packageJSON = context.extension.packageJSON;
+
     if (packageJSON && typeof packageJSON === 'object') {
         return {
             name: packageJSON.name ?? '',

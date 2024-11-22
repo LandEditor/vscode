@@ -59,6 +59,7 @@ class UserDataSyncAccount implements IUserDataSyncAccount {
 type MergeEditorInput = { base: URI; input1: { uri: URI }; input2: { uri: URI }; result: URI };
 export function isMergeEditorInput(editor: unknown): editor is MergeEditorInput {
 	const candidate = editor as MergeEditorInput;
+
 	return URI.isUri(candidate?.base) && URI.isUri(candidate?.input1?.uri) && URI.isUri(candidate?.input2?.uri) && URI.isUri(candidate?.result);
 }
 
@@ -73,9 +74,11 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	get enabled() { return !!this.userDataSyncStoreManagementService.userDataSyncStore; }
 
 	private _authenticationProviders: IAuthenticationProvider[] = [];
+
 	get authenticationProviders() { return this._authenticationProviders; }
 
 	private _accountStatus: AccountStatus = AccountStatus.Uninitialized;
+
 	get accountStatus(): AccountStatus { return this._accountStatus; }
 	private readonly _onDidChangeAccountStatus = this._register(new Emitter<AccountStatus>());
 	readonly onDidChangeAccountStatus = this._onDidChangeAccountStatus.event;
@@ -84,6 +87,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	readonly onDidTurnOnSync = this._onDidTurnOnSync.event;
 
 	private _current: UserDataSyncAccount | undefined;
+
 	get current(): UserDataSyncAccount | undefined { return this._current; }
 
 	private readonly syncEnablementContext: IContextKey<boolean>;
@@ -147,6 +151,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		const oldValue = this._authenticationProviders;
 		this._authenticationProviders = (this.userDataSyncStoreManagementService.userDataSyncStore?.authenticationProviders || []).filter(({ id }) => this.authenticationService.declaredProviders.some(provider => provider.id === id));
 		this.logService.trace('Settings Sync: Authentication providers updated', this._authenticationProviders.map(({ id }) => id));
+
 		return equals(oldValue, this._authenticationProviders, (a, b) => a.id === b.id);
 	}
 
@@ -172,6 +177,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	private async initialize(): Promise<void> {
 		if (isWeb) {
 			const authenticationSession = await getCurrentAuthenticationSessionInfo(this.secretStorageService, this.productService);
+
 			if (this.currentSessionId === undefined && authenticationSession?.id) {
 				if (this.environmentService.options?.settingsSyncOptions?.authenticationProvider && this.environmentService.options.settingsSyncOptions.enabled) {
 					this.currentSessionId = authenticationSession.id;
@@ -208,12 +214,14 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		this.hasConflicts.set(this.userDataSyncService.conflicts.length > 0);
 		this._register(this.userDataSyncService.onDidChangeConflicts(conflicts => {
 			this.hasConflicts.set(conflicts.length > 0);
+
 			if (!conflicts.length) {
 				this.enableConflictsViewContext.reset();
 			}
 			// Close merge editors with no conflicts
 			this.editorService.editors.filter(input => {
 				const remoteResource = isDiffEditorInput(input) ? input.original.resource : isMergeEditorInput(input) ? input.input1.uri : undefined;
+
 				if (remoteResource?.scheme !== USER_DATA_SYNC_SCHEME) {
 					return false;
 				}
@@ -238,16 +246,22 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async updateCurrentAccount(): Promise<void> {
 		this.logService.trace('Settings Sync: Updating the current account');
+
 		const currentSessionId = this.currentSessionId;
+
 		const currentAuthenticationProviderId = this.currentAuthenticationProviderId;
+
 		if (currentSessionId) {
 			const authenticationProviders = currentAuthenticationProviderId ? this.authenticationProviders.filter(({ id }) => id === currentAuthenticationProviderId) : this.authenticationProviders;
+
 			for (const { id, scopes } of authenticationProviders) {
 				const sessions = (await this.authenticationService.getSessions(id, scopes)) || [];
+
 				for (const session of sessions) {
 					if (session.id === currentSessionId) {
 						this._current = new UserDataSyncAccount(id, session);
 						this.logService.trace('Settings Sync: Updated the current account', this._current.accountName);
+
 						return;
 					}
 				}
@@ -258,9 +272,11 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async updateToken(current: UserDataSyncAccount | undefined): Promise<void> {
 		let value: { token: string; authenticationProviderId: string } | undefined = undefined;
+
 		if (current) {
 			try {
 				this.logService.trace('Settings Sync: Updating the token for the account', current.accountName);
+
 				const token = current.token;
 				this.logService.info('Settings Sync: Token updated for the account', current.accountName);
 				value = { token, authenticationProviderId: current.authenticationProviderId };
@@ -273,6 +289,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private updateAccountStatus(accountStatus: AccountStatus): void {
 		this.logService.trace(`Settings Sync: Updating the account status to ${accountStatus}`);
+
 		if (this._accountStatus !== accountStatus) {
 			const previous = this._accountStatus;
 			this.logService.info(`Settings Sync: Account status changed from ${previous} to ${accountStatus}`);
@@ -295,6 +312,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		const picked = await this.pick();
+
 		if (!picked) {
 			throw new CancellationError();
 		}
@@ -305,6 +323,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		const turnOnSyncCancellationToken = this.turnOnSyncCancellationToken = new CancellationTokenSource();
+
 		const disposable = isWeb ? Disposable.None : this.lifecycleService.onBeforeShutdown(e => e.veto((async () => {
 			const { confirmed } = await this.dialogService.confirm({
 				type: 'warning',
@@ -313,11 +332,13 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 				primaryButton: localize({ key: 'yes', comment: ['&& denotes a mnemonic'] }, "&&Yes"),
 				cancelButton: localize('no', "No")
 			});
+
 			if (confirmed) {
 				turnOnSyncCancellationToken.cancel();
 			}
 			return !confirmed;
 		})(), 'veto.settingsSync'));
+
 		try {
 			await this.doTurnOnSync(turnOnSyncCancellationToken.token);
 		} finally {
@@ -331,6 +352,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		this.currentAuthenticationProviderId = this.current?.authenticationProviderId;
+
 		if (this.environmentService.options?.settingsSyncOptions?.enablementHandler && this.currentAuthenticationProviderId) {
 			this.environmentService.options.settingsSyncOptions.enablementHandler(true, this.currentAuthenticationProviderId);
 		}
@@ -342,6 +364,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	async turnoff(everywhere: boolean): Promise<void> {
 		if (this.userDataSyncEnablementService.isEnabled()) {
 			await this.userDataAutoSyncService.turnOff(everywhere);
+
 			if (this.environmentService.options?.settingsSyncOptions?.enablementHandler && this.currentAuthenticationProviderId) {
 				this.environmentService.options.settingsSyncOptions.enablementHandler(false, this.currentAuthenticationProviderId);
 			}
@@ -361,6 +384,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		const userDataSyncStoreUrl = this.userDataSyncStoreManagementService.userDataSyncStore.type === 'insiders' ? this.userDataSyncStoreManagementService.userDataSyncStore.stableUrl : this.userDataSyncStoreManagementService.userDataSyncStore.insidersUrl;
+
 		const userDataSyncStoreClient = this.instantiationService.createInstance(UserDataSyncStoreClient, userDataSyncStoreUrl);
 		userDataSyncStoreClient.setAuthToken(this.userDataSyncAccountService.account.token, this.userDataSyncAccountService.account.authenticationProviderId);
 		await this.instantiationService.createInstance(UserDataSyncStoreTypeSynchronizer, userDataSyncStoreClient).sync(this.userDataSyncStoreManagementService.userDataSyncStore.type);
@@ -372,7 +396,9 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async doTurnOnSync(token: CancellationToken): Promise<void> {
 		const disposables = new DisposableStore();
+
 		const manualSyncTask = await this.userDataSyncService.createManualSyncTask();
+
 		try {
 			await this.progressService.withProgress({
 				location: ProgressLocation.Window,
@@ -389,6 +415,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 					}
 				}));
 				await manualSyncTask.merge();
+
 				if (this.userDataSyncService.status === SyncStatus.HasConflicts) {
 					await this.handleConflictsWhileTurningOn(token);
 				}
@@ -396,6 +423,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 			});
 		} catch (error) {
 			await manualSyncTask.stop();
+
 			throw error;
 		} finally {
 			disposables.dispose();
@@ -450,7 +478,9 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 			return;
 		}
 		this.enableConflictsViewContext.set(true);
+
 		const view = await this.viewsService.openView<IUserDataSyncConflictsView>(SYNC_CONFLICTS_VIEW_ID);
+
 		if (view && conflictToOpen) {
 			await view.open(conflictToOpen);
 		}
@@ -463,6 +493,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 			title: localize('reset title', "Clear"),
 			primaryButton: localize({ key: 'resetButton', comment: ['&& denotes a mnemonic'] }, "&&Reset"),
 		});
+
 		if (confirmed) {
 			await this.userDataSyncService.resetRemote();
 		}
@@ -470,7 +501,9 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	async getAllLogResources(): Promise<URI[]> {
 		const logsFolders: URI[] = [];
+
 		const stat = await this.fileService.resolve(this.uriIdentityService.extUri.dirname(this.environmentService.logsHome));
+
 		if (stat.children) {
 			logsFolders.push(...stat.children
 				.filter(stat => stat.isDirectory && /^\d{8}T\d{6}$/.test(stat.name))
@@ -479,9 +512,12 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 				.map(d => d.resource));
 		}
 		const result: URI[] = [];
+
 		for (const logFolder of logsFolders) {
 			const folderStat = await this.fileService.resolve(logFolder);
+
 			const childStat = folderStat.children?.find(stat => this.uriIdentityService.extUri.basename(stat.resource).startsWith(`${USER_DATA_SYNC_LOG_ID}.`));
+
 			if (childStat) {
 				result.push(childStat.resource);
 			}
@@ -510,17 +546,23 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 		return this.progressService.withProgress({ location: ProgressLocation.Window }, async () => {
 			const machines = await this.userDataSyncMachinesService.getMachines();
+
 			const currentMachine = machines.find(m => m.isCurrent);
+
 			const name = (currentMachine ? currentMachine.name + ' - ' : '') + 'Settings Sync Activity';
+
 			const stat = await this.fileService.resolve(result[0]);
 
 			const nameRegEx = new RegExp(`${escapeRegExpCharacters(name)}\\s(\\d+)`);
+
 			const indexes: number[] = [];
+
 			for (const child of stat.children ?? []) {
 				if (child.name === name) {
 					indexes.push(0);
 				} else {
 					const matches = nameRegEx.exec(child.name);
+
 					if (matches) {
 						indexes.push(parseInt(matches[1]));
 					}
@@ -537,14 +579,17 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 				})(),
 				this.fileService.copy(this.environmentService.userDataSyncHome, this.uriIdentityService.extUri.joinPath(folder, 'localActivity')),
 			]);
+
 			return folder;
 		});
 	}
 
 	private async waitForActiveSyncViews(): Promise<void> {
 		const viewContainer = this.viewDescriptorService.getViewContainerById(SYNC_VIEW_CONTAINER_ID);
+
 		if (viewContainer) {
 			const model = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 			if (!model.activeViewDescriptors.length) {
 				await Event.toPromise(Event.filter(model.onDidChangeActiveViewDescriptors, e => model.activeViewDescriptors.length > 0));
 			}
@@ -553,7 +598,9 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	async signIn(): Promise<void> {
 		const currentAuthenticationProviderId = this.currentAuthenticationProviderId;
+
 		const authenticationProvider = currentAuthenticationProviderId ? this.authenticationProviders.find(p => p.id === currentAuthenticationProviderId) : undefined;
+
 		if (authenticationProvider) {
 			await this.doSignIn(authenticationProvider);
 		} else {
@@ -566,10 +613,12 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async pick(): Promise<boolean> {
 		const result = await this.doPick();
+
 		if (!result) {
 			return false;
 		}
 		await this.doSignIn(result);
+
 		return true;
 	}
 
@@ -579,10 +628,12 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		const authenticationProviders = [...this.authenticationProviders].sort(({ id }) => id === this.currentAuthenticationProviderId ? -1 : 1);
+
 		const allAccounts = new Map<string, UserDataSyncAccount[]>();
 
 		if (authenticationProviders.length === 1) {
 			const accounts = await this.getAccounts(authenticationProviders[0].id, authenticationProviders[0].scopes);
+
 			if (accounts.length) {
 				allAccounts.set(authenticationProviders[0].id, accounts);
 			} else {
@@ -592,7 +643,9 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		}
 
 		let result: UserDataSyncAccount | IAuthenticationProvider | undefined;
+
 		const disposables: DisposableStore = new DisposableStore();
+
 		const quickPick = disposables.add(this.quickInputService.createQuickPick<AccountQuickPickItem>({ useSeparators: true }));
 
 		const promise = new Promise<UserDataSyncAccount | IAuthenticationProvider | undefined>(c => {
@@ -610,8 +663,10 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 		if (authenticationProviders.length > 1) {
 			quickPick.busy = true;
+
 			for (const { id, scopes } of authenticationProviders) {
 				const accounts = await this.getAccounts(id, scopes);
+
 				if (accounts.length) {
 					allAccounts.set(id, accounts);
 				}
@@ -630,12 +685,15 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async getAccounts(authenticationProviderId: string, scopes: string[]): Promise<UserDataSyncAccount[]> {
 		const accounts: Map<string, UserDataSyncAccount> = new Map<string, UserDataSyncAccount>();
+
 		let currentAccount: UserDataSyncAccount | null = null;
 
 		const sessions = await this.authenticationService.getSessions(authenticationProviderId, scopes) || [];
+
 		for (const session of sessions) {
 			const account: UserDataSyncAccount = new UserDataSyncAccount(authenticationProviderId, session);
 			accounts.set(account.accountId, account);
+
 			if (account.sessionId === this.currentSessionId) {
 				currentAccount = account;
 			}
@@ -655,9 +713,12 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		// Signed in Accounts
 		if (allAccounts.size) {
 			quickPickItems.push({ type: 'separator', label: localize('signed in', "Signed in") });
+
 			for (const authenticationProvider of authenticationProviders) {
 				const accounts = (allAccounts.get(authenticationProvider.id) || []).sort(({ sessionId }) => sessionId === this.currentSessionId ? -1 : 1);
+
 				const providerName = this.authenticationService.getProvider(authenticationProvider.id).label;
+
 				for (const account of accounts) {
 					quickPickItems.push({
 						label: `${account.accountName} (${providerName})`,
@@ -673,6 +734,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 		// Account Providers
 		for (const authenticationProvider of authenticationProviders) {
 			const provider = this.authenticationService.getProvider(authenticationProvider.id);
+
 			if (!allAccounts.has(authenticationProvider.id) || provider.supportsMultipleAccounts) {
 				const providerName = provider.label;
 				quickPickItems.push({ label: localize('sign in using account', "Sign in with {0}", providerName), authenticationProvider });
@@ -684,6 +746,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 
 	private async doSignIn(accountOrAuthProvider: UserDataSyncAccount | IAuthenticationProvider): Promise<void> {
 		let sessionId: string;
+
 		if (isAuthenticationProvider(accountOrAuthProvider)) {
 			if (this.environmentService.options?.settingsSyncOptions?.authenticationProvider?.id === accountOrAuthProvider.id) {
 				sessionId = await this.environmentService.options?.settingsSyncOptions?.authenticationProvider?.signIn();
@@ -734,6 +797,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	private set currentAuthenticationProviderId(currentAuthenticationProviderId: string | undefined) {
 		if (this._cachedCurrentAuthenticationProviderId !== currentAuthenticationProviderId) {
 			this._cachedCurrentAuthenticationProviderId = currentAuthenticationProviderId;
+
 			if (currentAuthenticationProviderId === undefined) {
 				this.storageService.remove(UserDataSyncWorkbenchService.CACHED_AUTHENTICATION_PROVIDER_KEY, StorageScope.APPLICATION);
 			} else {
@@ -753,6 +817,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 	private set currentSessionId(cachedSessionId: string | undefined) {
 		if (this._cachedCurrentSessionId !== cachedSessionId) {
 			this._cachedCurrentSessionId = cachedSessionId;
+
 			if (cachedSessionId === undefined) {
 				this.logService.info('Settings Sync: Reset current session');
 				this.storageService.remove(UserDataSyncWorkbenchService.CACHED_SESSION_STORAGE_KEY, StorageScope.APPLICATION);

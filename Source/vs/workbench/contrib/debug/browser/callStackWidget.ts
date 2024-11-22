@@ -67,6 +67,7 @@ class WrappedCallStackFrame extends CallStackFrame implements IFrameLikeItem {
     public readonly height = derived(reader => {
         return this.collapsed.read(reader) ? CALL_STACK_WIDGET_HEADER_HEIGHT : CALL_STACK_WIDGET_HEADER_HEIGHT + this.editorHeight.read(reader);
     });
+
     constructor(original: CallStackFrame) {
         super(original.name, original.source, original.line, original.column);
     }
@@ -75,12 +76,15 @@ class WrappedCustomStackFrame implements IFrameLikeItem {
     public readonly collapsed = observableValue('WrappedCallStackFrame.collapsed', false);
     public readonly height = derived(reader => {
         const headerHeight = this.original.showHeader.read(reader) ? CALL_STACK_WIDGET_HEADER_HEIGHT : 0;
+
         return this.collapsed.read(reader) ? headerHeight : headerHeight + this.original.height.read(reader);
     });
+
     constructor(public readonly original: CustomStackFrame) { }
 }
 const isFrameLike = (item: unknown): item is IFrameLikeItem => item instanceof WrappedCallStackFrame || item instanceof WrappedCustomStackFrame;
 type ListItem = WrappedCallStackFrame | SkippedCallFrames | WrappedCustomStackFrame;
+
 const WIDGET_CLASS_NAME = 'multiCallStackWidget';
 /**
  * A reusable widget that displays a call stack as a series of editors. Note
@@ -131,6 +135,7 @@ export class CallStackWidget extends Disposable {
         transaction(tx => {
             for (let i = 0; i < this.list.length; i++) {
                 const frame = this.list.element(i);
+
                 if (isFrameLike(frame)) {
                     frame.collapsed.set(true, tx);
                 }
@@ -142,6 +147,7 @@ export class CallStackWidget extends Disposable {
             return;
         }
         const frames = await replacing.load(this.cts.token);
+
         if (this.cts.token.isCancellationRequested) {
             return;
         }
@@ -150,9 +156,11 @@ export class CallStackWidget extends Disposable {
     }
     private mapFrames(frames: AnyStackFrame[]): ListItem[] {
         const result: ListItem[] = [];
+
         for (const frame of frames) {
             if (frame instanceof SkippedCallFrames) {
                 result.push(frame);
+
                 continue;
             }
             const wrapped = frame instanceof CustomStackFrame
@@ -160,7 +168,9 @@ export class CallStackWidget extends Disposable {
             result.push(wrapped);
             this.currentFramesDs.add(autorun(reader => {
                 const height = wrapped.height.read(reader);
+
                 const idx = this.list.indexOf(wrapped);
+
                 if (idx !== -1) {
                     this.list.updateElementHeight(idx, height);
                 }
@@ -238,6 +248,7 @@ const editorOptions: IEditorOptions = {
     readOnly: true,
     automaticLayout: false,
 };
+
 const makeFrameElements = () => dom.h('div.multiCallStackFrame', [
     dom.h('div.header@header', [
         dom.h('div.collapse-button@collapseButton'),
@@ -260,24 +271,30 @@ interface IAbstractFrameRendererTemplateData {
 }
 abstract class AbstractFrameRenderer<T extends IAbstractFrameRendererTemplateData> implements IListRenderer<ListItem, T> {
     public abstract templateId: string;
+
     constructor(
     @IInstantiationService
     protected readonly instantiationService: IInstantiationService) { }
     renderTemplate(container: HTMLElement): T {
         const elements = makeFrameElements();
         container.appendChild(elements.root);
+
         const templateStore = new DisposableStore();
         container.classList.add('multiCallStackFrameContainer');
         templateStore.add(toDisposable(() => {
             container.classList.remove('multiCallStackFrameContainer');
             elements.root.remove();
         }));
+
         const label = templateStore.add(this.instantiationService.createInstance(ResourceLabel, elements.title, {}));
+
         const collapse = templateStore.add(new Button(elements.collapseButton, {}));
+
         const contentId = generateUuid();
         elements.editor.id = contentId;
         elements.editor.role = 'region';
         elements.collapseButton.setAttribute('aria-controls', contentId);
+
         return this.finishRenderTemplate({
             container,
             decorations: [],
@@ -292,17 +309,20 @@ abstract class AbstractFrameRenderer<T extends IAbstractFrameRendererTemplateDat
     renderElement(element: ListItem, index: number, template: T, height: number | undefined): void {
         const { elementStore } = template;
         elementStore.clear();
+
         const item = element as IFrameLikeItem;
         this.setupCollapseButton(item, template);
     }
     private setupCollapseButton(item: IFrameLikeItem, { elementStore, elements, collapse }: T) {
         elementStore.add(autorun(reader => {
             collapse.element.className = '';
+
             const collapsed = item.collapsed.read(reader);
             collapse.icon = collapsed ? Codicon.chevronRight : Codicon.chevronDown;
             collapse.element.ariaExpanded = String(!collapsed);
             elements.root.classList.toggle('collapsed', collapsed);
         }));
+
         const toggleCollapse = () => item.collapsed.set(!item.collapsed.get(), undefined);
         elementStore.add(collapse.onDidClick(toggleCollapse));
         elementStore.add(dom.addDisposableListener(elements.title, 'click', toggleCollapse));
@@ -319,6 +339,7 @@ const CONTEXT_LINES = 2;
 class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
     public static readonly templateId = 'f';
     public readonly templateId = FrameCodeRenderer.templateId;
+
     constructor(private readonly containingEditor: ICodeEditor | undefined, private readonly onLayout: Event<void>, 
     @ITextModelService
     private readonly modelService: ITextModelService, 
@@ -334,22 +355,29 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
                 instantiation: EditorContributionInstantiation.BeforeFirstInteraction,
                 ctor: ClickToLocationContribution as EditorContributionCtor,
             }];
+
         const editor = this.containingEditor
             ? this.instantiationService.createInstance(EmbeddedCodeEditorWidget, data.elements.editor, editorOptions, { isSimpleWidget: true, contributions }, this.containingEditor)
             : this.instantiationService.createInstance(CodeEditorWidget, data.elements.editor, editorOptions, { isSimpleWidget: true, contributions });
         data.templateStore.add(editor);
+
         const toolbar = data.templateStore.add(this.instantiationService.createInstance(MenuWorkbenchToolBar, data.elements.actions, MenuId.DebugCallStackToolbar, {
             menuOptions: { shouldForwardArgs: true },
             actionViewItemProvider: (action, options) => createActionViewItem(this.instantiationService, action, options),
         }));
+
         return { ...data, editor, toolbar };
     }
     override renderElement(element: ListItem, index: number, template: IStackTemplateData, height: number | undefined): void {
         super.renderElement(element, index, template, height);
+
         const { elementStore, editor } = template;
+
         const item = element as WrappedCallStackFrame;
+
         const uri = item.source!;
         template.label.element.setFile(uri);
+
         const cts = new CancellationTokenSource();
         elementStore.add(toDisposable(() => cts.dispose(true)));
         this.modelService.createModelReference(uri).then(reference => {
@@ -366,7 +394,9 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
         const layout = () => {
             const prev = editor.getContentHeight();
             editor.layout({ width: container.clientWidth, height: prev });
+
             const next = editor.getContentHeight();
+
             if (next !== prev) {
                 editor.layout({ width: container.clientWidth, height: next });
             }
@@ -393,8 +423,11 @@ class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {
                 accessor.removeDecoration(d);
             }
             template.decorations.length = 0;
+
             const beforeRange = range.setStartPosition(range.startLineNumber, 1);
+
             const hasCharactersBefore = !!template.editor.getModel()?.getValueInRange(beforeRange).trim();
+
             const decoRange = range.setEndPosition(range.startLineNumber, Constants.MAX_SAFE_SMALL_INTEGER);
             template.decorations.push(accessor.addDecoration(decoRange, makeStackFrameColumnDecoration(!hasCharactersBefore)));
             template.decorations.push(accessor.addDecoration(decoRange, TOP_STACK_FRAME_DECORATION));
@@ -410,6 +443,7 @@ interface IMissingTemplateData {
 class MissingCodeRenderer implements IListRenderer<ListItem, IMissingTemplateData> {
     public static readonly templateId = 'm';
     public readonly templateId = MissingCodeRenderer.templateId;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) { }
@@ -417,7 +451,9 @@ class MissingCodeRenderer implements IListRenderer<ListItem, IMissingTemplateDat
         const elements = makeFrameElements();
         elements.root.classList.add('missing');
         container.appendChild(elements.root);
+
         const label = this.instantiationService.createInstance(ResourceLabel, elements.title, {});
+
         return { elements, label };
     }
     renderElement(element: ListItem, _index: number, templateData: IMissingTemplateData): void {
@@ -444,7 +480,9 @@ class CustomRenderer extends AbstractFrameRenderer<IAbstractFrameRendererTemplat
     }
     override renderElement(element: ListItem, index: number, template: IAbstractFrameRendererTemplateData, height: number | undefined): void {
         super.renderElement(element, index, template, height);
+
         const item = element as WrappedCustomStackFrame;
+
         const { elementStore, container, label } = template;
         label.element.setResource({ name: item.original.label }, { icon: item.original.icon });
         elementStore.add(autorun(reader => {
@@ -455,7 +493,9 @@ class CustomRenderer extends AbstractFrameRenderer<IAbstractFrameRendererTemplat
                 store.add(item.original.render(container));
             }
         }));
+
         const actions = item.original.renderActions?.(template.elements.actions);
+
         if (actions) {
             elementStore.add(actions);
         }
@@ -470,12 +510,15 @@ interface ISkippedTemplateData {
 class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
     public static readonly templateId = 's';
     public readonly templateId = SkippedRenderer.templateId;
+
     constructor(private readonly loadFrames: (fromItem: SkippedCallFrames) => Promise<void>, 
     @INotificationService
     private readonly notificationService: INotificationService) { }
     renderTemplate(container: HTMLElement): ISkippedTemplateData {
         const store = new DisposableStore();
+
         const button = new Button(container, { title: '', ...defaultButtonStyles });
+
         const data: ISkippedTemplateData = { button, store };
         store.add(button);
         store.add(button.onDidClick(() => {
@@ -487,6 +530,7 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
                 this.notificationService.error(localize('failedToLoadFrames', 'Failed to load stack frames: {0}', e.message));
             });
         }));
+
         return data;
     }
     renderElement(element: ListItem, index: number, templateData: ISkippedTemplateData, height: number | undefined): void {
@@ -507,18 +551,21 @@ class ClickToLocationContribution extends Disposable implements IEditorContribut
         line: number;
         word: IWordAtPosition;
     } | undefined;
+
     constructor(private readonly editor: ICodeEditor, 
     @IEditorService
     editorService: IEditorService) {
         super();
         this.linkDecorations = editor.createDecorationsCollection();
         this._register(toDisposable(() => this.linkDecorations.clear()));
+
         const clickLinkGesture = this._register(new ClickLinkGesture(editor));
         this._register(clickLinkGesture.onMouseMoveOrRelevantKeyDown(([mouseEvent, keyboardEvent]) => {
             this.onMove(mouseEvent);
         }));
         this._register(clickLinkGesture.onExecute((e) => {
             const model = this.editor.getModel();
+
             if (!this.current || !model) {
                 return;
             }
@@ -536,11 +583,14 @@ class ClickToLocationContribution extends Disposable implements IEditorContribut
             return this.clear();
         }
         const position = mouseEvent.target.position;
+
         const word = position && this.editor.getModel()?.getWordAtPosition(position);
+
         if (!word) {
             return this.clear();
         }
         const prev = this.current?.word;
+
         if (prev && prev.startColumn === word.startColumn && prev.endColumn === word.endColumn && prev.word === word.word) {
             return;
         }

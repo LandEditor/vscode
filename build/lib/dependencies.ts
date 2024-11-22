@@ -5,15 +5,19 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as cp from 'child_process';
+
 const root = fs.realpathSync(path.dirname(path.dirname(__dirname)));
 function getNpmProductionDependencies(folder: string): string[] {
     let raw: string;
+
     try {
         raw = cp.execSync('npm ls --all --omit=dev --parseable', { cwd: folder, encoding: 'utf8', env: { ...process.env, NODE_ENV: 'production' }, stdio: [null, null, null] });
     }
     catch (err) {
         const regex = /^npm ERR! .*$/gm;
+
         let match: RegExpExecArray | null;
+
         while (match = regex.exec(err.message)) {
             if (/ELSPROBLEMS/.test(match[0])) {
                 continue;
@@ -38,8 +42,11 @@ export function getProductionDependencies(folderPath: string): string[] {
     const result = getNpmProductionDependencies(folderPath);
     // Account for distro npm dependencies
     const realFolderPath = fs.realpathSync(folderPath);
+
     const relativeFolderPath = path.relative(root, realFolderPath);
+
     const distroFolderPath = `${root}/.build/distro/npm/${relativeFolderPath}`;
+
     if (fs.existsSync(distroFolderPath)) {
         result.push(...getNpmProductionDependencies(distroFolderPath));
     }

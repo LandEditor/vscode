@@ -16,6 +16,7 @@ export class NotebookCellAnchor implements IDisposable {
     private stopAnchoring = false;
     private executionWatcher: IDisposable | undefined;
     private scrollWatcher: IDisposable | undefined;
+
     constructor(private readonly notebookExecutionStateService: INotebookExecutionStateService, private readonly configurationService: IConfigurationService, private readonly scrollEvent: Event<ScrollEvent>) {
     }
     public shouldAnchor(cellListView: IListView<CellViewModel>, focusedIndex: number, heightDelta: number, executingCellUri: ICellViewModel) {
@@ -26,13 +27,20 @@ export class NotebookCellAnchor implements IDisposable {
             return false;
         }
         const newFocusBottom = cellListView.elementTop(focusedIndex) + cellListView.elementHeight(focusedIndex) + heightDelta;
+
         const viewBottom = cellListView.renderHeight + cellListView.getScrollTop();
+
         const focusStillVisible = viewBottom > newFocusBottom;
+
         const allowScrolling = this.configurationService.getValue(NotebookSetting.scrollToRevealCell) !== 'none';
+
         const growing = heightDelta > 0;
+
         const autoAnchor = allowScrolling && growing && !focusStillVisible;
+
         if (autoAnchor) {
             this.watchAchorDuringExecution(executingCellUri);
+
             return true;
         }
         return false;
@@ -41,6 +49,7 @@ export class NotebookCellAnchor implements IDisposable {
         // anchor while the cell is executing unless the user scrolls up.
         if (!this.executionWatcher && executingCell.cellKind === CellKind.Code) {
             const executionState = this.notebookExecutionStateService.getCellExecution(executingCell.uri);
+
             if (executionState && executionState.state === NotebookCellExecutionState.Executing) {
                 this.executionWatcher = (executingCell as CodeCellViewModel).onDidStopExecution(() => {
                     this.executionWatcher?.dispose();

@@ -88,12 +88,16 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 		const elementDisposables = new DisposableStore();
 
 		container.classList.add('notebook-outline-element', 'show-file-icons');
+
 		const iconClass = document.createElement('div');
 		container.append(iconClass);
+
 		const iconLabel = new IconLabel(container, { supportHighlights: true });
+
 		const decoration = document.createElement('div');
 		decoration.className = 'element-decoration';
 		container.append(decoration);
+
 		const actionMenu = document.createElement('div');
 		actionMenu.className = 'action-menu';
 		container.append(actionMenu);
@@ -103,6 +107,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 
 	renderElement(node: ITreeNode<OutlineEntry, FuzzyScore>, _index: number, template: NotebookOutlineTemplate, _height: number | undefined): void {
 		const extraClasses: string[] = [];
+
 		const options: IIconLabelValueOptions = {
 			matches: createMatches(node.filterData),
 			labelEscapeNewLines: true,
@@ -110,6 +115,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 		};
 
 		const isCodeCell = node.element.cell.cellKind === CellKind.Code;
+
 		if (node.element.level >= 8) { // symbol
 			template.iconClass.className = 'element-icon ' + ThemeIcon.asClassNameArray(node.element.icon).join(' ');
 		} else if (isCodeCell && this._themeService.getFileIconTheme().hasFileIcons && !node.element.isExecuting) {
@@ -125,8 +131,10 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 
 		template.container.style.removeProperty('--outline-element-color');
 		template.decoration.innerText = '';
+
 		if (markerInfo) {
 			const problem = this._configurationService.getValue('problems.visibility');
+
 			const useBadges = this._configurationService.getValue(OutlineConfigKeys.problemsBadges);
 
 			if (!useBadges || !problem) {
@@ -140,10 +148,12 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 				template.decoration.innerText = markerInfo.count > 9 ? '9+' : String(markerInfo.count);
 			}
 			const color = this._themeService.getColorTheme().getColor(markerInfo.topSev === MarkerSeverity.Error ? listErrorForeground : listWarningForeground);
+
 			if (problem === undefined) {
 				return;
 			}
 			const useColors = this._configurationService.getValue(OutlineConfigKeys.problemsColors);
+
 			if (!useColors || !problem) {
 				template.container.style.removeProperty('--outline-element-color');
 				template.decoration.style.setProperty('--outline-element-color', color?.toString() ?? 'inherit');
@@ -154,11 +164,14 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 
 		if (this._target === OutlineTarget.OutlinePane) {
 			const nbCell = node.element.cell;
+
 			const nbViewModel = this._editor?.getViewModel();
+
 			if (!nbViewModel) {
 				return;
 			}
 			const idx = nbViewModel.getCellIndex(nbCell);
+
 			const length = isCodeCell ? 0 : nbViewModel.getFoldedLength(idx);
 
 			const scopedContextKeyService = template.elementDisposables.add(this._contextKeyService.createScoped(template.container));
@@ -178,6 +191,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 			}));
 
 			const menu = template.elementDisposables.add(this._menuService.createMenu(MenuId.NotebookOutlineActionMenu, scopedContextKeyService));
+
 			const actions = getOutlineToolbarActions(menu, { notebookEditor: this._editor, outlineEntry: node.element });
 			outlineEntryToolbar.setActions(actions.primary, actions.secondary);
 
@@ -198,6 +212,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 
 	private setupFolding(isCodeCell: boolean, nbViewModel: INotebookViewModel, scopedContextKeyService: IContextKeyService, template: NotebookOutlineTemplate, nbCell: ICellViewModel) {
 		const foldingState = isCodeCell ? CellFoldingState.None : ((nbCell as MarkupCellViewModel).foldingState);
+
 		const foldingStateCtx = NotebookOutlineContext.CellFoldingState.bindTo(scopedContextKeyService);
 		foldingStateCtx.set(foldingState);
 
@@ -213,6 +228,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 	private setupToolbarListeners(toolbar: ToolBar, menu: IMenu, initActions: { primary: IAction[]; secondary: IAction[] }, entry: OutlineEntry, templateData: NotebookOutlineTemplate): void {
 		// same fix as in cellToolbars setupListeners re #103926
 		let dropdownIsVisible = false;
+
 		let deferredUpdate: (() => void) | undefined;
 
 		toolbar.setActions(initActions.primary, initActions.secondary);
@@ -231,6 +247,7 @@ class NotebookOutlineRenderer implements ITreeRenderer<OutlineEntry, FuzzyScore,
 		templateData.container.classList.remove('notebook-outline-toolbar-dropdown-active');
 		templateData.elementDisposables.add(toolbar.onDidChangeDropdownVisibility(visible => {
 			dropdownIsVisible = visible;
+
 			if (visible) {
 				templateData.container.classList.add('notebook-outline-toolbar-dropdown-active');
 			} else {
@@ -302,16 +319,20 @@ export class NotebookQuickPickProvider implements IQuickPickDataSource<OutlineEn
 
 	getQuickPickElements(): IQuickPickOutlineElement<OutlineEntry>[] {
 		const bucket: OutlineEntry[] = [];
+
 		for (const entry of this.notebookCellOutlineDataSourceRef?.object?.entries ?? []) {
 			entry.asFlatList(bucket);
 		}
 		const result: IQuickPickOutlineElement<OutlineEntry>[] = [];
+
 		const { hasFileIcons } = this._themeService.getFileIconTheme();
 
 		const isSymbol = (element: OutlineEntry) => !!element.symbolKind;
+
 		const isCodeCell = (element: OutlineEntry) => (element.cell.cellKind === CellKind.Code && element.level === NotebookOutlineConstants.NonHeaderOutlineLevel); // code cell entries are exactly level 7 by this constant
 		for (let i = 0; i < bucket.length; i++) {
 			const element = bucket[i];
+
 			const nextElement = bucket[i + 1]; // can be undefined
 
 			if (!this.gotoShowCodeCellSymbols
@@ -374,6 +395,7 @@ export class NotebookOutlinePaneProvider implements IDataSource<NotebookCellOutl
 
 	public getActiveEntry(): OutlineEntry | undefined {
 		const newActive = this.outlineDataSourceRef?.object?.activeElement;
+
 		if (!newActive) {
 			return undefined;
 		}
@@ -384,6 +406,7 @@ export class NotebookOutlinePaneProvider implements IDataSource<NotebookCellOutl
 
 		// find a valid parent
 		let parent = newActive.parent;
+
 		while (parent) {
 			if (this.filterEntry(parent)) {
 				parent = parent.parent;
@@ -417,6 +440,7 @@ export class NotebookOutlinePaneProvider implements IDataSource<NotebookCellOutl
 
 	*getChildren(element: NotebookCellOutline | OutlineEntry): Iterable<OutlineEntry> {
 		const isOutline = element instanceof NotebookCellOutline;
+
 		const entries = isOutline ? this.outlineDataSourceRef?.object?.entries ?? [] : element.children;
 
 		for (const entry of entries) {
@@ -462,7 +486,9 @@ export class NotebookBreadcrumbsProvider implements IBreadcrumbsDataSource<Outli
 
 	getBreadcrumbElements(): readonly OutlineEntry[] {
 		const result: OutlineEntry[] = [];
+
 		let candidate = this.outlineDataSourceRef?.object?.activeElement;
+
 		while (candidate) {
 			if (this.showCodeCells || candidate.cell.cellKind !== CellKind.Code) {
 				result.unshift(candidate);
@@ -520,15 +546,18 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	// getters
 	get activeElement(): OutlineEntry | undefined {
 		this.checkDelayer();
+
 		if (this._target === OutlineTarget.OutlinePane) {
 			return (this.config.treeDataSource as NotebookOutlinePaneProvider).getActiveEntry();
 		} else {
 			console.error('activeElement should not be called outside of the OutlinePane');
+
 			return undefined;
 		}
 	}
 	get entries(): OutlineEntry[] {
 		this.checkDelayer();
+
 		return this._outlineDataSourceReference?.object?.entries ?? [];
 	}
 	get uri(): URI | undefined {
@@ -560,7 +589,9 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		this.initializeOutline();
 
 		const delegate = new NotebookOutlineVirtualDelegate();
+
 		const renderers = [this._instantiationService.createInstance(NotebookOutlineRenderer, this._editor.getControl(), this._target)];
+
 		const comparator = new NotebookComparator();
 
 		const options: IWorkbenchDataTreeOptions<OutlineEntry, FuzzyScore> = {
@@ -669,6 +700,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	 */
 	private setModelListeners(): void {
 		this._modelDisposables.clear();
+
 		if (!this._editor.textModel) {
 			return;
 		}
@@ -732,6 +764,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 	preview(entry: OutlineEntry): IDisposable {
 		const widget = this._editor.getControl();
+
 		if (!widget) {
 			return Disposable.None;
 		}
@@ -761,6 +794,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						}
 					}
 				];
+
 				const deltaDecoration: ICellModelDeltaDecorations = {
 					ownerId: entry.cell.handle,
 					decorations: decorations
@@ -772,6 +806,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 		return toDisposable(() => {
 			widget.deltaCellDecorations(ids, []);
+
 			if (editorDecorations?.length) {
 				widget.changeModelDecorations(accessor => {
 					accessor.deltaDecorations(editorDecorations, []);
@@ -783,7 +818,9 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 	captureViewState(): IDisposable {
 		const widget = this._editor.getControl();
+
 		const viewState = widget?.getEditorViewState();
+
 		return toDisposable(() => {
 			if (viewState) {
 				widget?.restoreListViewState(viewState);
@@ -818,6 +855,7 @@ export class NotebookOutlineCreator implements IOutlineCreator<NotebookEditor, O
 
 	async createOutline(editor: INotebookEditorPane, target: OutlineTarget, cancelToken: CancellationToken): Promise<IOutline<OutlineEntry> | undefined> {
 		const outline = this._instantiationService.createInstance(NotebookCellOutline, editor, target);
+
 		if (target === OutlineTarget.QuickPick) {
 			// The quickpick creates the outline on demand
 			// so we need to ensure the symbols are pre-cached before the entries are syncronously requested
@@ -897,6 +935,7 @@ registerAction2(class ToggleShowMarkdownHeadersOnly extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const configurationService = accessor.get(IConfigurationService);
+
 		const showMarkdownHeadersOnly = configurationService.getValue<boolean>(NotebookSetting.outlineShowMarkdownHeadersOnly);
 		configurationService.updateValue(NotebookSetting.outlineShowMarkdownHeadersOnly, !showMarkdownHeadersOnly);
 	}
@@ -921,6 +960,7 @@ registerAction2(class ToggleCodeCellEntries extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const configurationService = accessor.get(IConfigurationService);
+
 		const showCodeCells = configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCells);
 		configurationService.updateValue(NotebookSetting.outlineShowCodeCells, !showCodeCells);
 	}
@@ -945,6 +985,7 @@ registerAction2(class ToggleCodeCellSymbolEntries extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]) {
 		const configurationService = accessor.get(IConfigurationService);
+
 		const showCodeCellSymbols = configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCellSymbols);
 		configurationService.updateValue(NotebookSetting.outlineShowCodeCellSymbols, !showCodeCellSymbols);
 	}

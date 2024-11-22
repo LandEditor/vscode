@@ -21,8 +21,10 @@ export class ReplEditorAccessibleView implements IAccessibleViewImplentation {
 	readonly name = 'replEditorInput';
 	readonly type = AccessibleViewType.View;
 	readonly when = ContextKeyExpr.and(IS_COMPOSITE_NOTEBOOK, NOTEBOOK_CELL_LIST_FOCUSED.negate());
+
 	getProvider(accessor: ServicesAccessor) {
 		const editorService = accessor.get(IEditorService);
+
 		return getAccessibleOutputProvider(editorService);
 	}
 }
@@ -32,12 +34,16 @@ export function getAccessibleOutputProvider(editorService: IEditorService) {
 
 	if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
 		const notebookEditor = editorControl.notebookEditor;
+
 		const viewModel = notebookEditor?.getViewModel();
+
 		if (notebookEditor && viewModel) {
 			// last cell of the viewmodel is the last cell history
 			const lastCellIndex = viewModel.length - 1;
+
 			if (lastCellIndex >= 0) {
 				const cell = viewModel.viewCells[lastCellIndex];
+
 				const outputContent = getAllOutputsText(viewModel.notebookDocument, cell);
 
 				if (outputContent) {

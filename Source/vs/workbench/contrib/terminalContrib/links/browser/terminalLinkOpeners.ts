@@ -33,7 +33,9 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
             throw new Error('Tried to open file link without a resolved URI');
         }
         const linkSuffix = link.parsedLink ? link.parsedLink.suffix : getLinkSuffix(link.text);
+
         let selection: ITextEditorSelection | undefined = link.selection;
+
         if (!selection) {
             selection = linkSuffix?.row === undefined ? undefined : {
                 startLineNumber: linkSuffix.row ?? 1,
@@ -74,6 +76,7 @@ export class TerminalLocalFolderOutsideWorkspaceLinkOpener implements ITerminalL
 }
 export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
     protected _fileQueryBuilder: QueryBuilder;
+
     constructor(private readonly _capabilities: ITerminalCapabilityStore, private readonly _initialCwd: string, private readonly _localFileOpener: TerminalLocalFileLinkOpener, private readonly _localFolderInWorkspaceOpener: TerminalLocalFolderInWorkspaceLinkOpener, private readonly _getOS: () => OperatingSystem, 
     @IFileService
     private readonly _fileService: IFileService, 
@@ -93,6 +96,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
     }
     async open(link: ITerminalSimpleLink): Promise<void> {
         const osPath = osPathModule(this._getOS());
+
         const pathSeparator = osPath.sep;
         // Remove file:/// and any leading ./ or ../ since quick access doesn't understand that format
         let text = link.text.replace(/^file:\/\/\/?/, '');
@@ -107,11 +111,13 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
             // Optimistically check that the link _starts with_ the parsed link text. If so,
             // continue to use the parsed link
             const matchingParsedLink = parsedLinks.find(parsedLink => parsedLink.suffix && link.text.startsWith(parsedLink.path.text));
+
             if (matchingParsedLink) {
                 if (matchingParsedLink.suffix?.row !== undefined) {
                     // Normalize the path based on the parsed link
                     text = matchingParsedLink.path.text;
                     text += `:${matchingParsedLink.suffix.row}`;
+
                     if (matchingParsedLink.suffix?.col !== undefined) {
                         text += `:${matchingParsedLink.suffix.col}`;
                     }
@@ -135,10 +141,13 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
         this._workspaceContextService.getWorkspace().folders.forEach((folder) => {
             if (text.substring(0, folder.name.length + 1) === folder.name + pathSeparator) {
                 text = text.substring(folder.name.length + 1);
+
                 return;
             }
         });
+
         let cwdResolvedText = text;
+
         if (this._capabilities.has(TerminalCapability.CommandDetection)) {
             cwdResolvedText = updateLinkWithRelativeCwd(this._capabilities, link.bufferRange.start.y, text, osPath, this._logService)?.[0] || text;
         }
@@ -159,23 +168,31 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
     private async _getExactMatch(sanitizedLink: string): Promise<IResourceMatch | undefined> {
         // Make the link relative to the cwd if it isn't absolute
         const os = this._getOS();
+
         const pathModule = osPathModule(os);
+
         const isAbsolute = pathModule.isAbsolute(sanitizedLink);
+
         let absolutePath: string | undefined = isAbsolute ? sanitizedLink : undefined;
+
         if (!isAbsolute && this._initialCwd.length > 0) {
             absolutePath = pathModule.join(this._initialCwd, sanitizedLink);
         }
         // Try open as an absolute link
         let resourceMatch: IResourceMatch | undefined;
+
         if (absolutePath) {
             let normalizedAbsolutePath: string = absolutePath;
+
             if (os === OperatingSystem.Windows) {
                 normalizedAbsolutePath = absolutePath.replace(/\\/g, '/');
+
                 if (normalizedAbsolutePath.match(/[a-z]:/i)) {
                     normalizedAbsolutePath = `/${normalizedAbsolutePath}`;
                 }
             }
             let uri: URI;
+
             if (this._workbenchEnvironmentService.remoteAuthority) {
                 uri = URI.from({
                     scheme: Schemas.vscodeRemote,
@@ -200,6 +217,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
                 filePattern: sanitizedLink,
                 maxResults: 2
             }));
+
             if (results.results.length > 0) {
                 if (results.results.length === 1) {
                     // If there's exactly 1 search result, return it regardless of whether it's
@@ -217,6 +235,7 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
                     }));
                     // Find an exact match if it exists
                     const exactMatches = results.results.filter(e => e.resource.toString().endsWith(sanitizedLink));
+
                     if (exactMatches.length === 1) {
                         resourceMatch = { uri: exactMatches[0].resource };
                     }
@@ -227,10 +246,13 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
     }
     private async _tryOpenExactLink(text: string, link: ITerminalSimpleLink): Promise<boolean> {
         const sanitizedLink = text.replace(/:\d+(:\d+)?$/, '');
+
         try {
             const result = await this._getExactMatch(sanitizedLink);
+
             if (result) {
                 const { uri, isDirectory } = result;
+
                 const linkToOpen = {
                     // Use the absolute URI's path here so the optional line/col get detected
                     text: result.uri.path + (text.match(/:\d+(:\d+)?$/)?.[0] || ''),
@@ -238,8 +260,10 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
                     bufferRange: link.bufferRange,
                     type: link.type
                 };
+
                 if (uri) {
                     await (isDirectory ? this._localFolderInWorkspaceOpener.open(linkToOpen) : this._localFileOpener.open(linkToOpen));
+
                     return true;
                 }
             }

@@ -24,6 +24,7 @@ export class CollapsedCellInput extends CellContentPart {
                 return;
             }
             const element = e.target as HTMLElement;
+
             if (element && element.classList && element.classList.contains('expandInputIcon')) {
                 // clicked on the expand icon
                 this.currentCell.isInputCollapsed = false;

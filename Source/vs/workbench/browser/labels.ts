@@ -102,6 +102,7 @@ export class ResourceLabels extends Disposable {
     readonly onDidChangeDecorations = this._onDidChangeDecorations.event;
     private widgets: ResourceLabelWidget[] = [];
     private labels: IResourceLabel[] = [];
+
     constructor(container: IResourceLabelsContainer, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -157,6 +158,7 @@ export class ResourceLabels extends Disposable {
                     notifyDidChangeDecorations = true;
                 }
             });
+
             if (notifyDidChangeDecorations) {
                 this._onDidChangeDecorations.fire();
             }
@@ -196,10 +198,12 @@ export class ResourceLabels extends Disposable {
         // Store
         this.labels.push(label);
         this.widgets.push(widget);
+
         return label;
     }
     private disposeWidget(widget: ResourceLabelWidget): void {
         const index = this.widgets.indexOf(widget);
+
         if (index > -1) {
             this.widgets.splice(index, 1);
             this.labels.splice(index, 1);
@@ -221,6 +225,7 @@ export class ResourceLabels extends Disposable {
  */
 export class ResourceLabel extends ResourceLabels {
     private label: IResourceLabel;
+
     get element(): IResourceLabel { return this.label; }
     constructor(container: HTMLElement, options: IIconLabelCreationOptions | undefined, 
     @IInstantiationService
@@ -261,6 +266,7 @@ class ResourceLabelWidget extends IconLabel {
     private computedWorkspaceFolderLabel: string | undefined = undefined;
     private needsRedraw: Redraw | undefined = undefined;
     private isHidden: boolean = false;
+
     constructor(container: HTMLElement, options: IIconLabelCreationOptions | undefined, 
     @ILanguageService
     private readonly languageService: ILanguageService, 
@@ -281,6 +287,7 @@ class ResourceLabelWidget extends IconLabel {
     notifyVisibilityChanged(visible: boolean): void {
         if (visible === this.isHidden) {
             this.isHidden = !visible;
+
             if (visible && this.needsRedraw) {
                 this.render({
                     updateIcon: this.needsRedraw === Redraw.Full,
@@ -298,6 +305,7 @@ class ResourceLabelWidget extends IconLabel {
     }
     private handleModelEvent(model: ITextModel): void {
         const resource = toResource(this.label);
+
         if (!resource) {
             return; // only update if resource exists
         }
@@ -313,6 +321,7 @@ class ResourceLabelWidget extends IconLabel {
             return false;
         }
         const resource = toResource(this.label);
+
         if (!resource) {
             return false;
         }
@@ -343,6 +352,7 @@ class ResourceLabelWidget extends IconLabel {
     notifyWorkspaceFoldersChange(): void {
         if (typeof this.computedWorkspaceFolderLabel === 'string') {
             const resource = toResource(this.label);
+
             if (URI.isUri(resource) && this.label?.name === this.computedWorkspaceFolderLabel) {
                 this.setFile(resource, this.options);
             }
@@ -350,10 +360,13 @@ class ResourceLabelWidget extends IconLabel {
     }
     setFile(resource: URI, options?: IFileLabelOptions): void {
         const hideLabel = options?.hideLabel;
+
         let name: string | undefined;
+
         if (!hideLabel) {
             if (options?.fileKind === FileKind.ROOT_FOLDER) {
                 const workspaceFolder = this.contextService.getWorkspaceFolder(resource);
+
                 if (workspaceFolder) {
                     name = workspaceFolder.name;
                     this.computedWorkspaceFolderLabel = name;
@@ -364,8 +377,10 @@ class ResourceLabelWidget extends IconLabel {
             }
         }
         let description: string | undefined;
+
         if (!options?.hidePath) {
             const descriptionCandidate = this.labelService.getUriLabel(dirname(resource), { relative: true });
+
             if (descriptionCandidate && descriptionCandidate !== '.') {
                 // omit description if its not significant: a relative path
                 // of '.' just indicates that there is no parent to the path
@@ -377,7 +392,9 @@ class ResourceLabelWidget extends IconLabel {
     }
     setResource(label: IResourceLabelProps, options: IResourceLabelOptions = Object.create(null)): void {
         const resource = toResource(label);
+
         const isSideBySideEditor = label?.resource && !URI.isUri(label.resource);
+
         if (!options.forceLabel && !isSideBySideEditor && resource?.scheme === Schemas.untitled) {
             // Untitled labels are very dynamic because they may change
             // whenever the content changes (unless a path is associated).
@@ -391,12 +408,14 @@ class ResourceLabelWidget extends IconLabel {
             // because in that case we expect it to carry a proper label
             // and description.
             const untitledModel = this.textFileService.untitled.get(resource);
+
             if (untitledModel && !untitledModel.hasAssociatedFilePath) {
                 if (typeof label.name === 'string') {
                     label.name = untitledModel.name;
                 }
                 if (typeof label.description === 'string') {
                     const untitledDescription = untitledModel.resource.path;
+
                     if (label.name !== untitledDescription) {
                         label.description = untitledDescription;
                     }
@@ -405,6 +424,7 @@ class ResourceLabelWidget extends IconLabel {
                     }
                 }
                 const untitledTitle = untitledModel.resource.path;
+
                 if (untitledModel.name !== untitledTitle) {
                     options.title = `${untitledModel.name} • ${untitledTitle}`;
                 }
@@ -418,7 +438,9 @@ class ResourceLabelWidget extends IconLabel {
             // As such we always ask the actual notebook document
             // for its position in the document.
             const notebookDocument = this.notebookDocumentService.getNotebook(resource);
+
             const cellIndex = notebookDocument?.getCellIndex(resource);
+
             if (notebookDocument && cellIndex !== undefined && typeof label.name === 'string') {
                 options.title = localize('notebookCellLabel', "{0} • Cell {1}", label.name, `${cellIndex + 1}`);
             }
@@ -427,11 +449,15 @@ class ResourceLabelWidget extends IconLabel {
             }
         }
         const hasResourceChanged = this.hasResourceChanged(label);
+
         const hasPathLabelChanged = hasResourceChanged || this.hasPathLabelChanged(label);
+
         const hasFileKindChanged = this.hasFileKindChanged(options);
+
         const hasIconChanged = this.hasIconChanged(options);
         this.label = label;
         this.options = options;
+
         if (hasResourceChanged) {
             this.computedLanguageId = undefined; // reset computed language since resource changed
         }
@@ -445,12 +471,16 @@ class ResourceLabelWidget extends IconLabel {
     }
     private hasFileKindChanged(newOptions?: IResourceLabelOptions): boolean {
         const newFileKind = newOptions?.fileKind;
+
         const oldFileKind = this.options?.fileKind;
+
         return newFileKind !== oldFileKind; // same resource but different kind (file, folder)
     }
     private hasResourceChanged(newLabel: IResourceLabelProps): boolean {
         const newResource = toResource(newLabel);
+
         const oldResource = toResource(this.label);
+
         if (newResource && oldResource) {
             return newResource.toString() !== oldResource.toString();
         }
@@ -461,6 +491,7 @@ class ResourceLabelWidget extends IconLabel {
     }
     private hasPathLabelChanged(newLabel: IResourceLabelProps): boolean {
         const newResource = toResource(newLabel);
+
         return !!newResource && this.computedPathLabel !== this.labelService.getUriLabel(newResource);
     }
     private hasIconChanged(newOptions?: IResourceLabelOptions): boolean {
@@ -505,7 +536,9 @@ class ResourceLabelWidget extends IconLabel {
             labelEscapeNewLines: this.options?.labelEscapeNewLines,
             descriptionTitle: this.options?.descriptionTitle,
         };
+
         const resource = toResource(this.label);
+
         if (this.options?.title !== undefined) {
             iconLabelOptions.title = this.options.title;
         }
@@ -539,6 +572,7 @@ class ResourceLabelWidget extends IconLabel {
                 this.decoration.value = this.decorationsService.getDecoration(resource, this.options.fileKind !== FileKind.FILE);
             }
             const decoration = this.decoration.value;
+
             if (decoration) {
                 if (decoration.tooltip) {
                     if (typeof iconLabelOptions.title === 'string') {
@@ -568,6 +602,7 @@ class ResourceLabelWidget extends IconLabel {
         }
         this.setLabel(this.label.name ?? '', this.label.description, iconLabelOptions);
         this._onDidRender.fire();
+
         return true;
     }
     override dispose(): void {

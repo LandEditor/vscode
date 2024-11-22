@@ -23,6 +23,7 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
         result: DeferredPromise<URI>;
     }>;
     private _canonicalURIProvider: ((uri: URI) => Promise<URI>) | null;
+
     constructor(
     @IProductService
     productService: IProductService, private readonly remoteResourceLoader: ElectronRemoteResourceLoader) {
@@ -41,13 +42,16 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
     }
     async getCanonicalURI(uri: URI): Promise<URI> {
         const key = uri.toString();
+
         const existing = this._canonicalURIRequests.get(key);
+
         if (existing) {
             return existing.result.p;
         }
         const result = new DeferredPromise<URI>();
         this._canonicalURIProvider?.(uri).then((uri) => result.complete(uri), (err) => result.error(err));
         this._canonicalURIRequests.set(key, { input: uri, result });
+
         return result.p;
     }
     getConnectionData(authority: string): IRemoteConnectionData | null {
@@ -55,10 +59,12 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
             return null;
         }
         const request = this._resolveAuthorityRequests.get(authority)!;
+
         if (!request.isResolved) {
             return null;
         }
         const connectionToken = this._connectionTokens.get(authority);
+
         return {
             connectTo: request.value!.authority.connectTo,
             connectionToken: connectionToken
@@ -73,6 +79,7 @@ export class RemoteAuthorityResolverService extends Disposable implements IRemot
     _setResolvedAuthority(resolvedAuthority: ResolvedAuthority, options?: ResolvedOptions): void {
         if (this._resolveAuthorityRequests.has(resolvedAuthority.authority)) {
             const request = this._resolveAuthorityRequests.get(resolvedAuthority.authority)!;
+
             if (resolvedAuthority.connectTo.type === RemoteConnectionType.WebSocket) {
                 RemoteAuthorities.set(resolvedAuthority.authority, resolvedAuthority.connectTo.host, resolvedAuthority.connectTo.port);
             }

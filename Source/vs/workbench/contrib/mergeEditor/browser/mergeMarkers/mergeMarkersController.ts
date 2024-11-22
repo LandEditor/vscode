@@ -29,18 +29,24 @@ export class MergeMarkersController extends Disposable {
     }
     private updateDecorations() {
         const model = this.editor.getModel();
+
         const blocks = model ? getBlocks(model, { blockToRemoveStartLinePrefix: conflictMarkers.start, blockToRemoveEndLinePrefix: conflictMarkers.end }) : { blocks: [] };
         this.editor.setHiddenAreas(blocks.blocks.map(b => b.lineRange.deltaEnd(-1).toRange()), this);
         this.editor.changeViewZones(c => {
             this.disposableStore.clear();
+
             for (const id of this.viewZoneIds) {
                 c.removeZone(id);
             }
             this.viewZoneIds.length = 0;
+
             for (const b of blocks.blocks) {
                 const startLine = model!.getLineContent(b.lineRange.startLineNumber).substring(0, 20);
+
                 const endLine = model!.getLineContent(b.lineRange.endLineNumberExclusive - 1).substring(0, 20);
+
                 const conflictingLinesCount = b.lineRange.lineCount - 2;
+
                 const domNode = h('div', [
                     h('div.conflict-zone-root', [
                         h('pre', [startLine]),
@@ -58,8 +64,10 @@ export class MergeMarkersController extends Disposable {
                     domNode,
                     heightInLines: 1.5,
                 }));
+
                 const updateWidth = () => {
                     const layoutInfo = this.editor.getLayoutInfo();
+
                     domNode.style.width = `${layoutInfo.contentWidth - layoutInfo.verticalScrollbarWidth}px`;
                 };
                 this.disposableStore.add(this.editor.onDidLayoutChange(() => {
@@ -69,14 +77,19 @@ export class MergeMarkersController extends Disposable {
                 this.disposableStore.add(autorun(reader => {
                     /** @description update classname */
                     const vm = this.mergeEditorViewModel.read(reader);
+
                     if (!vm) {
                         return;
                     }
                     const activeRange = vm.activeModifiedBaseRange.read(reader);
+
                     const classNames: string[] = [];
+
                     classNames.push('conflict-zone');
+
                     if (activeRange) {
                         const activeRangeInResult = vm.model.getLineRangeInResult(activeRange.baseRange, reader);
+
                         if (activeRangeInResult.intersects(b.lineRange)) {
                             classNames.push('focused');
                         }
@@ -92,12 +105,18 @@ function getBlocks(document: ITextModel, configuration: ProjectionConfiguration)
     transformedContent: string;
 } {
     const blocks: Block[] = [];
+
     const transformedContent: string[] = [];
+
     let inBlock = false;
+
     let startLineNumber = -1;
+
     let curLine = 0;
+
     for (const line of document.getLinesContent()) {
         curLine++;
+
         if (!inBlock) {
             if (line.startsWith(configuration.blockToRemoveStartLinePrefix)) {
                 inBlock = true;

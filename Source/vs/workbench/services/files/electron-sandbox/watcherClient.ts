@@ -37,8 +37,10 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
                     this.onError(`terminated by itself unexpectedly with code ${reason?.code}, signal: ${reason?.signal} (ETERM)`);
                 }
             });
+
             return client.getChannel('watcher');
         })()));
+
         return watcher;
     }
 }

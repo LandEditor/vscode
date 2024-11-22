@@ -17,14 +17,18 @@ namespace IntellisenseState {
         SyntaxOnly
     }
     export const None = Object.freeze({ type: Type.None } as const);
+
     export const SyntaxOnly = Object.freeze({ type: Type.SyntaxOnly } as const);
+
     export class Pending {
         public readonly type = Type.Pending;
         public readonly cancellation = new vscode.CancellationTokenSource();
+
         constructor(public readonly resource: vscode.Uri, public readonly projectType: ProjectType) { }
     }
     export class Resolved {
         public readonly type = Type.Resolved;
+
         constructor(public readonly resource: vscode.Uri, public readonly projectType: ProjectType, public readonly configFile: string) { }
     }
     export type State = typeof None | Pending | Resolved | typeof SyntaxOnly;
@@ -39,6 +43,7 @@ export class IntellisenseStatus extends Disposable {
     private _statusItem?: vscode.LanguageStatusItem;
     private _ready = false;
     private _state: IntellisenseState.State = IntellisenseState.None;
+
     constructor(private readonly _client: ITypeScriptServiceClient, commandManager: CommandManager, private readonly _activeTextEditorManager: ActiveJsTsEditorTracker) {
         super();
         commandManager.register({
@@ -70,26 +75,34 @@ export class IntellisenseStatus extends Disposable {
     }
     private async updateStatus() {
         const doc = this._activeTextEditorManager.activeJsTsEditor?.document;
+
         if (!doc || !isSupportedLanguageMode(doc)) {
             this.updateState(IntellisenseState.None);
+
             return;
         }
         if (!this._client.hasCapabilityForResource(doc.uri, ClientCapability.Semantic)) {
             this.updateState(IntellisenseState.SyntaxOnly);
+
             return;
         }
         const file = this._client.toOpenTsFilePath(doc, { suppressAlertOnFailure: true });
+
         if (!file) {
             this.updateState(IntellisenseState.None);
+
             return;
         }
         if (!this._ready) {
             return;
         }
         const projectType = isTypeScriptDocument(doc) ? ProjectType.TypeScript : ProjectType.JavaScript;
+
         const pendingState = new IntellisenseState.Pending(doc.uri, projectType);
         this.updateState(pendingState);
+
         const response = await this._client.execute('projectInfo', { file, needFileNameList: false }, pendingState.cancellation.token);
+
         if (response.type === 'response' && response.body) {
             if (this._state === pendingState) {
                 this.updateState(new IntellisenseState.Resolved(doc.uri, projectType, response.body.configFileName));
@@ -105,10 +118,12 @@ export class IntellisenseStatus extends Disposable {
             this._state.cancellation.dispose();
         }
         this._state = newState;
+
         switch (this._state.type) {
             case IntellisenseState.Type.None: {
                 this._statusItem?.dispose();
                 this._statusItem = undefined;
+
                 break;
             }
             case IntellisenseState.Type.Pending: {
@@ -118,13 +133,16 @@ export class IntellisenseStatus extends Disposable {
                 statusItem.detail = undefined;
                 statusItem.command = undefined;
                 statusItem.busy = true;
+
                 break;
             }
             case IntellisenseState.Type.Resolved: {
                 const noConfigFileText = this._state.projectType === ProjectType.TypeScript
                     ? vscode.l10n.t("No tsconfig")
                     : vscode.l10n.t("No jsconfig");
+
                 const rootPath = this._client.getWorkspaceRootForResource(this._state.resource);
+
                 if (!rootPath) {
                     if (this._statusItem) {
                         this._statusItem.text = noConfigFileText;
@@ -139,6 +157,7 @@ export class IntellisenseStatus extends Disposable {
                 statusItem.busy = false;
                 statusItem.detail = undefined;
                 statusItem.severity = vscode.LanguageStatusSeverity.Information;
+
                 if (isImplicitProjectConfigFile(this._state.configFile)) {
                     statusItem.text = noConfigFileText;
                     statusItem.detail = undefined;
@@ -174,6 +193,7 @@ export class IntellisenseStatus extends Disposable {
                         vscode.Uri.parse('https://aka.ms/vscode/jsts/partial-mode'),
                     ]
                 };
+
                 break;
             }
         }

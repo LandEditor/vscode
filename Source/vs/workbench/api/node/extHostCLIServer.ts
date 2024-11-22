@@ -14,11 +14,13 @@ export interface OpenCommandPipeArgs {
     type: 'open';
     fileURIs?: string[];
     folderURIs?: string[];
+
     forceNewWindow?: boolean;
     diffMode?: boolean;
     mergeMode?: boolean;
     addMode?: boolean;
     gotoLineMode?: boolean;
+
     forceReuseWindow?: boolean;
     waitMarkerFilePath?: string;
     remoteAuthority?: string | null;
@@ -38,6 +40,7 @@ export interface ExtensionManagementPipeArgs {
     };
     install?: string[];
     uninstall?: string[];
+
     force?: boolean;
 }
 export type PipeCommand = OpenCommandPipeArgs | StatusPipeArgs | OpenExternalCommandPipeArgs | ExtensionManagementPipeArgs;
@@ -46,10 +49,12 @@ export interface ICommandsExecuter {
 }
 export class CLIServerBase {
     private readonly _server: http.Server;
+
     constructor(private readonly _commands: ICommandsExecuter, private readonly logService: ILogService, private readonly _ipcHandlePath: string) {
         this._server = http.createServer((req, res) => this.onRequest(req, res));
         this.setup().catch(err => {
             logService.error(err);
+
             return '';
         });
     }
@@ -71,28 +76,40 @@ export class CLIServerBase {
             res.writeHead(statusCode, { 'content-type': 'application/json' });
             res.end(JSON.stringify(returnObj || null), (err?: any) => err && this.logService.error(err)); // CodeQL [SM01524] Only the message portion of errors are passed in.
         };
+
         const chunks: string[] = [];
         req.setEncoding('utf8');
         req.on('data', (d: string) => chunks.push(d));
         req.on('end', async () => {
             try {
                 const data: PipeCommand | any = JSON.parse(chunks.join(''));
+
                 let returnObj: string | undefined;
+
                 switch (data.type) {
                     case 'open':
                         returnObj = await this.open(data);
+
                         break;
+
                     case 'openExternal':
                         returnObj = await this.openExternal(data);
+
                         break;
+
                     case 'status':
                         returnObj = await this.getStatus(data);
+
                         break;
+
                     case 'extensionManagement':
                         returnObj = await this.manageExtensions(data);
+
                         break;
+
                     default:
                         sendResponse(404, `Unknown message type: ${data.type}`);
+
                         break;
                 }
                 sendResponse(200, returnObj);
@@ -106,7 +123,9 @@ export class CLIServerBase {
     }
     private async open(data: OpenCommandPipeArgs): Promise<undefined> {
         const { fileURIs, folderURIs, forceNewWindow, diffMode, mergeMode, addMode, forceReuseWindow, gotoLineMode, waitMarkerFilePath, remoteAuthority } = data;
+
         const urisToOpen: IWindowOpenable[] = [];
+
         if (Array.isArray(folderURIs)) {
             for (const s of folderURIs) {
                 try {
@@ -133,25 +152,30 @@ export class CLIServerBase {
             }
         }
         const waitMarkerFileURI = waitMarkerFilePath ? URI.file(waitMarkerFilePath) : undefined;
+
         const preferNewWindow = !forceReuseWindow && !waitMarkerFileURI && !addMode;
+
         const windowOpenArgs: IOpenWindowOptions = { forceNewWindow, diffMode, mergeMode, addMode, gotoLineMode, forceReuseWindow, preferNewWindow, waitMarkerFileURI, remoteAuthority };
         this._commands.executeCommand('_remoteCLI.windowOpen', urisToOpen, windowOpenArgs);
     }
     private async openExternal(data: OpenExternalCommandPipeArgs): Promise<undefined> {
         for (const uriString of data.uris) {
             const uri = URI.parse(uriString);
+
             const urioOpen = uri.scheme === 'file' ? uri : uriString; // workaround for #112577
             await this._commands.executeCommand('_remoteCLI.openExternal', urioOpen);
         }
     }
     private async manageExtensions(data: ExtensionManagementPipeArgs): Promise<string | undefined> {
         const toExtOrVSIX = (inputs: string[] | undefined) => inputs?.map(input => /\.vsix$/i.test(input) ? URI.parse(input) : input);
+
         const commandArgs = {
             list: data.list,
             install: toExtOrVSIX(data.install),
             uninstall: toExtOrVSIX(data.uninstall),
             force: data.force
         };
+
         return await this._commands.executeCommand<string | undefined>('_remoteCLI.manageExtensions', commandArgs);
     }
     private async getStatus(data: StatusPipeArgs): Promise<string | undefined> {
@@ -159,6 +183,7 @@ export class CLIServerBase {
     }
     dispose(): void {
         this._server.close();
+
         if (this._ipcHandlePath && process.platform !== 'win32' && fs.existsSync(this._ipcHandlePath)) {
             fs.unlinkSync(this._ipcHandlePath);
         }

@@ -28,10 +28,12 @@ export function toGitUri(uri: Uri, ref: string, options: GitUriOptions = {}): Ur
         path: uri.fsPath,
         ref
     };
+
     if (options.submoduleOf) {
         params.submoduleOf = options.submoduleOf;
     }
     let path = uri.path;
+
     if (options.replaceFileExtension) {
         path = `${path}.git`;
     }
@@ -61,10 +63,13 @@ export function toMultiFileDiffEditorUris(change: Change, originalRef: string, m
     switch (change.status) {
         case Status.INDEX_ADDED:
             return { originalUri: undefined, modifiedUri: toGitUri(change.uri, modifiedRef) };
+
         case Status.DELETED:
             return { originalUri: toGitUri(change.uri, originalRef), modifiedUri: undefined };
+
         case Status.INDEX_RENAMED:
             return { originalUri: toGitUri(change.originalUri, originalRef), modifiedUri: toGitUri(change.uri, modifiedRef) };
+
         default:
             return { originalUri: toGitUri(change.uri, originalRef), modifiedUri: toGitUri(change.uri, modifiedRef) };
     }

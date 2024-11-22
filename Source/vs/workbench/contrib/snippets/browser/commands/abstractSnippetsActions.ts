@@ -5,6 +5,7 @@
 import { EditorAction2 } from '../../../../../editor/browser/editorExtensions.js';
 import { localize2 } from '../../../../../nls.js';
 import { Action2, IAction2Options } from '../../../../../platform/actions/common/actions.js';
+
 const defaultOptions = {
     category: localize2('snippets', "Snippets"),
 } as const;

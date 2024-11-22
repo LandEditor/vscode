@@ -28,6 +28,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
     private readonly _proxy: ExtHostFileSystemEventServiceShape;
     private readonly _listener = new DisposableStore();
     private readonly _watches = new DisposableMap<number>();
+
     constructor(extHostContext: IExtHostContext, 
     @IFileService
     private readonly _fileService: IFileService, 
@@ -57,14 +58,18 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                 deleted: event.rawDeleted
             });
         }));
+
         const that = this;
+
         const fileOperationParticipant = new class implements IWorkingCopyFileOperationParticipant {
             async participate(files: SourceTargetPair[], operation: FileOperation, undoInfo: IFileOperationUndoRedoInfo | undefined, timeout: number, token: CancellationToken) {
                 if (undoInfo?.isUndoing) {
                     return;
                 }
                 const cts = new CancellationTokenSource(token);
+
                 const timer = setTimeout(() => cts.cancel(), timeout);
+
                 const data = await progressService.withProgress({
                     location: ProgressLocation.Notification,
                     title: this._progressLabel(operation),
@@ -73,6 +78,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                 }, () => {
                     // race extension host event delivery against timeout AND user-cancel
                     const onWillEvent = that._proxy.$onWillRunFileOperation(operation, files, timeout, cts.token);
+
                     return raceCancellation(onWillEvent, cts.token);
                 }, () => {
                     // user-cancel
@@ -81,12 +87,15 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                     cts.dispose();
                     clearTimeout(timer);
                 });
+
                 if (!data || data.edit.edits.length === 0) {
                     // cancelled, no reply, or no edits
                     return;
                 }
                 const needsConfirmation = data.edit.edits.some(edit => edit.metadata?.needsConfirmation);
+
                 let showPreview = storageService.getBoolean(MainThreadFileSystemEventService.MementoKeyAdditionalEdits, StorageScope.PROFILE);
+
                 if (envService.extensionTestsLocationURI) {
                     // don't show dialog in tests
                     showPreview = false;
@@ -94,6 +103,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                 if (showPreview === undefined) {
                     // show a user facing message
                     let message: string;
+
                     if (data.extensionNames.length === 1) {
                         if (operation === FileOperation.CREATE) {
                             message = localize('ask.1.create', "Extension '{0}' wants to make refactoring changes with this file creation", data.extensionNames[0]);
@@ -131,6 +141,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                             cancelButton: localize('cancel', "Skip Changes")
                         });
                         showPreview = true;
+
                         if (!confirmed) {
                             // no changes wanted
                             return;
@@ -162,11 +173,13 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                             },
                             checkbox: { label: localize('again', "Do not ask me again") }
                         });
+
                         if (result === Choice.Cancel) {
                             // no changes wanted, don't persist cancel option
                             return;
                         }
                         showPreview = result === Choice.Preview;
+
                         if (checkboxChecked) {
                             storageService.store(MainThreadFileSystemEventService.MementoKeyAdditionalEdits, showPreview, StorageScope.PROFILE, StorageTarget.USER);
                         }
@@ -179,12 +192,16 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
                 switch (operation) {
                     case FileOperation.CREATE:
                         return localize('msg-create', "Running 'File Create' participants...");
+
                     case FileOperation.MOVE:
                         return localize('msg-rename', "Running 'File Rename' participants...");
+
                     case FileOperation.COPY:
                         return localize('msg-copy', "Running 'File Copy' participants...");
+
                     case FileOperation.DELETE:
                         return localize('msg-delete', "Running 'File Delete' participants...");
+
                     case FileOperation.WRITE:
                         return localize('msg-write', "Running 'File Write' participants...");
                 }
@@ -197,6 +214,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
     }
     async $watch(extensionId: string, session: number, resource: UriComponents, unvalidatedOpts: IWatchOptions, correlate: boolean): Promise<void> {
         const uri = URI.revive(resource);
+
         const opts: IWatchOptions = {
             ...unvalidatedOpts
         };
@@ -207,6 +225,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
         if (opts.recursive) {
             try {
                 const stat = await this._fileService.stat(uri);
+
                 if (!stat.isDirectory) {
                     opts.recursive = false;
                 }
@@ -218,7 +237,9 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
         // Correlated file watching: use an exclusive `createWatcher()`
         if (correlate) {
             this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching correlated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session}, excludes: ${JSON.stringify(opts.excludes)}, includes: ${JSON.stringify(opts.includes)})`);
+
             const watcherDisposables = new DisposableStore();
+
             const subscription = watcherDisposables.add(this._fileService.createWatcher(uri, opts));
             watcherDisposables.add(subscription.onDidChange(event => {
                 this._proxy.$onFileEvent({
@@ -233,6 +254,7 @@ export class MainThreadFileSystemEventService implements MainThreadFileSystemEve
         // Uncorrelated file watching: via shared `watch()`
         else {
             this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching uncorrelated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session}, excludes: ${JSON.stringify(opts.excludes)}, includes: ${JSON.stringify(opts.includes)})`);
+
             const subscription = this._fileService.watch(uri, opts);
             this._watches.set(session, subscription);
         }

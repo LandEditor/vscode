@@ -33,6 +33,7 @@ export class GutterActionsRegistryImpl {
      */
     public registerGutterActionsGenerator(gutterActionsGenerator: IGutterActionsGenerator): IDisposable {
         this._registeredGutterActionsGenerators.add(gutterActionsGenerator);
+
         return {
             dispose: () => {
                 this._registeredGutterActionsGenerators.delete(gutterActionsGenerator);
@@ -47,6 +48,7 @@ Registry.add('gutterActionsRegistry', new GutterActionsRegistryImpl());
 export const GutterActionsRegistry: GutterActionsRegistryImpl = Registry.as('gutterActionsRegistry');
 export class EditorLineNumberContextMenu extends Disposable implements IEditorContribution {
     static readonly ID = 'workbench.contrib.editorLineNumberContextMenu';
+
     constructor(private readonly editor: ICodeEditor, 
     @IContextMenuService
     private readonly contextMenuService: IContextMenuService, 
@@ -71,8 +73,11 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
             return;
         }
         const lineNumber = e.target.position.lineNumber;
+
         const contextKeyService = this.contextKeyService.createOverlay([['editorLineNumber', lineNumber]]);
+
         const menu = this.menuService.createMenu(MenuId.EditorLineNumberContext, contextKeyService);
+
         const allActions: [
             string,
             (IAction | MenuItemAction | SubmenuItemAction)[]
@@ -87,24 +92,29 @@ export class EditorLineNumberContextMenu extends Disposable implements IEditorCo
                         collectedActions.set(group, actions);
                     }
                 });
+
                 for (const [group, actions] of collectedActions.entries()) {
                     allActions.push([group, actions]);
                 }
             }
             allActions.sort((a, b) => a[0].localeCompare(b[0]));
+
             const menuActions = menu.getActions({ arg: { lineNumber, uri: model.uri }, shouldForwardArgs: true });
             allActions.push(...menuActions);
             // if the current editor selections do not contain the target line number,
             // set the selection to the clicked line number
             if (e.target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
                 const currentSelections = this.editor.getSelections();
+
                 const lineRange = {
                     startLineNumber: lineNumber,
                     endLineNumber: lineNumber,
                     startColumn: 1,
                     endColumn: model.getLineLength(lineNumber) + 1
                 };
+
                 const containsSelection = currentSelections?.some(selection => !selection.isEmpty() && selection.intersectRanges(lineRange) !== null);
+
                 if (!containsSelection) {
                     this.editor.setSelection(lineRange, TextEditorSelectionSource.PROGRAMMATIC);
                 }

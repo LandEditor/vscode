@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { SyncDescriptor } from './descriptors.js';
 import { BrandedService, ServiceIdentifier } from './instantiation.js';
+
 const _registry: [
     ServiceIdentifier<any>,
     SyncDescriptor<any>

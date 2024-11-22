@@ -33,6 +33,7 @@ export function isObject(obj: unknown): obj is Object {
  */
 export function isTypedArray(obj: unknown): obj is Object {
     const TypedArray = Object.getPrototypeOf(Uint8Array);
+
     return typeof obj === 'object'
         && obj instanceof TypedArray;
 }
@@ -107,8 +108,10 @@ export function assertAllDefined<T1, T2, T3, T4>(t1: T1 | null | undefined, t2: 
 ];
 export function assertAllDefined(...args: (unknown | null | undefined)[]): unknown[] {
     const result = [];
+
     for (let i = 0; i < args.length; i++) {
         const arg = args[i];
+
         if (isUndefinedOrNull(arg)) {
             throw new Error(`Assertion Failed: argument at index ${i} is undefined or null`);
         }
@@ -146,6 +149,7 @@ export function areFunctions(...objects: unknown[]): boolean {
 export type TypeConstraint = string | Function;
 export function validateConstraints(args: unknown[], constraints: Array<TypeConstraint | undefined>): void {
     const len = Math.min(args.length, constraints.length);
+
     for (let i = 0; i < len; i++) {
         validateConstraint(args[i], constraints[i]);
     }

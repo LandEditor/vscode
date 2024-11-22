@@ -38,14 +38,17 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 		}
 
 		const currentEditingSession = this.chatEditingService.currentEditingSessionObs.get();
+
 		if (currentEditingSession) {
 			const workingSetEntries = currentEditingSession.entries.get();
+
 			if (workingSetEntries.length > 0) {
 				// Do this only for the initial working set state
 				return;
 			}
 
 			const widget = this.chatWidgetService.getWidgetBySessionId(currentEditingSession.chatSessionId);
+
 			if (!widget) {
 				return;
 			}
@@ -57,13 +60,16 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 					}
 
 					const currentEditingSession = this.chatEditingService.currentEditingSessionObs.get();
+
 					if (!currentEditingSession || currentEditingSession.chatSessionId !== widget.viewModel?.sessionId || currentEditingSession.entries.get().length) {
 						return; // Might have disposed while we were calculating
 					}
 
 					// Pick up to 2 related files, or however many we can still fit in the working set
 					const maximumRelatedFiles = Math.min(2, this.chatEditingService.editingSessionFileLimit - widget.input.chatEditWorkingSetFiles.length);
+
 					const newSuggestions = new ResourceSet();
+
 					for (const group of files) {
 						for (const file of group.files) {
 							if (newSuggestions.size >= maximumRelatedFiles) {
@@ -75,6 +81,7 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 
 					// Remove the existing related file suggestions from the working set
 					const existingSuggestedEntriesToRemove: URI[] = [];
+
 					for (const entry of currentEditingSession.workingSet) {
 						if (entry[1].state === WorkingSetEntryState.Suggested && !newSuggestions.has(entry[0])) {
 							existingSuggestedEntriesToRemove.push(entry[0]);
@@ -95,10 +102,12 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 
 	private _handleNewEditingSession() {
 		const currentEditingSession = this.chatEditingService.currentEditingSessionObs.get();
+
 		if (!currentEditingSession) {
 			return;
 		}
 		const widget = this.chatWidgetService.getWidgetBySessionId(currentEditingSession.chatSessionId);
+
 		if (!widget || widget.viewModel?.sessionId !== currentEditingSession.chatSessionId) {
 			return;
 		}
@@ -106,6 +115,7 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 			this.chatEditingSessionDisposables.clear();
 		}));
 		this._updateRelatedFileSuggestions();
+
 		const onDebouncedType = Event.debounce(widget.inputEditor.onDidChangeModelContent, () => null, 3000);
 		this.chatEditingSessionDisposables.add(onDebouncedType(() => {
 			this._updateRelatedFileSuggestions();
@@ -119,6 +129,7 @@ export class ChatRelatedFilesContribution extends Disposable implements IWorkben
 
 	override dispose() {
 		this.chatEditingSessionDisposables.dispose();
+
 		super.dispose();
 	}
 }

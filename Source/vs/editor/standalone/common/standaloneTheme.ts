@@ -24,9 +24,13 @@ export interface IStandaloneTheme extends IColorTheme {
 }
 export interface IStandaloneThemeService extends IThemeService {
     readonly _serviceBrand: undefined;
+
     setTheme(themeName: string): void;
+
     setAutoDetectHighContrast(autoDetectHighContrast: boolean): void;
     defineTheme(themeName: string, themeData: IStandaloneThemeData): void;
+
     getColorTheme(): IStandaloneTheme;
+
     setColorMapOverride(colorMapOverride: Color[] | null): void;
 }

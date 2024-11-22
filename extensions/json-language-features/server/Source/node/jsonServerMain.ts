@@ -19,6 +19,7 @@ function getHTTPRequestService(): RequestService {
     return {
         getContent(uri: string, _encoding?: string) {
             const headers = { 'Accept-Encoding': 'gzip, deflate' };
+
             return xhr({ url: uri, followRedirects: 5, headers }).then(response => {
                 return response.responseText;
             }, (error: XHRResponse) => {
@@ -46,10 +47,12 @@ const runtime: RuntimeEnvironment = {
     timer: {
         setImmediate(callback: (...args: any[]) => void, ...args: any[]): Disposable {
             const handle = setImmediate(callback, ...args);
+
             return { dispose: () => clearImmediate(handle) };
         },
         setTimeout(callback: (...args: any[]) => void, ms: number, ...args: any[]): Disposable {
             const handle = setTimeout(callback, ms, ...args);
+
             return { dispose: () => clearTimeout(handle) };
         }
     },

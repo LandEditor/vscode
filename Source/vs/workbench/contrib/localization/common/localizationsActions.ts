@@ -13,6 +13,7 @@ import { ILocaleService } from '../../../services/localization/common/locale.js'
 import { IExtensionsWorkbenchService } from '../../extensions/common/extensions.js';
 export class ConfigureDisplayLanguageAction extends Action2 {
     public static readonly ID = 'workbench.action.configureLocale';
+
     constructor() {
         super({
             id: ConfigureDisplayLanguageAction.ID,
@@ -27,14 +28,21 @@ export class ConfigureDisplayLanguageAction extends Action2 {
     }
     public async run(accessor: ServicesAccessor): Promise<void> {
         const languagePackService: ILanguagePackService = accessor.get(ILanguagePackService);
+
         const quickInputService: IQuickInputService = accessor.get(IQuickInputService);
+
         const localeService: ILocaleService = accessor.get(ILocaleService);
+
         const extensionWorkbenchService: IExtensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
         const installedLanguages = await languagePackService.getInstalledLanguages();
+
         const disposables = new DisposableStore();
+
         const qp = disposables.add(quickInputService.createQuickPick<ILanguagePackItem>({ useSeparators: true }));
         qp.matchOnDescription = true;
         qp.placeholder = localize('chooseLocale', "Select Display Language");
+
         if (installedLanguages?.length) {
             const items: Array<ILanguagePackItem | IQuickPickSeparator> = [{ type: 'separator', label: localize('installed', "Installed") }];
             qp.items = items.concat(this.withMoreInfoButton(installedLanguages));
@@ -44,9 +52,11 @@ export class ConfigureDisplayLanguageAction extends Action2 {
             source.cancel();
             disposables.dispose();
         }));
+
         const installedSet = new Set<string>(installedLanguages?.map(language => language.id!) ?? []);
         languagePackService.getAvailableLanguages().then(availableLanguages => {
             const newLanguages = availableLanguages.filter(l => l.id && !installedSet.has(l.id));
+
             if (newLanguages.length) {
                 qp.items = [
                     ...qp.items,
@@ -58,6 +68,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
         });
         disposables.add(qp.onDidAccept(async () => {
             const selectedLanguage = qp.activeItems[0] as ILanguagePackItem | undefined;
+
             if (selectedLanguage) {
                 qp.hide();
                 await localeService.setLocale(selectedLanguage);
@@ -65,6 +76,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
         }));
         disposables.add(qp.onDidTriggerItemButton(async (e) => {
             qp.hide();
+
             if (e.item.extensionId) {
                 await extensionWorkbenchService.open(e.item.extensionId);
             }
@@ -87,6 +99,7 @@ export class ConfigureDisplayLanguageAction extends Action2 {
 export class ClearDisplayLanguageAction extends Action2 {
     public static readonly ID = 'workbench.action.clearLocalePreference';
     public static readonly LABEL = localize2('clearDisplayLanguage', "Clear Display Language Preference");
+
     constructor() {
         super({
             id: ClearDisplayLanguageAction.ID,

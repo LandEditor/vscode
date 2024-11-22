@@ -36,6 +36,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
     private _session: CancellationTokenSource | undefined;
     private _unresponsiveListener: IDisposable | undefined;
     private _perfBaseline: number = -1;
+
     constructor(
     @IExtensionService
     private readonly _extensionService: IExtensionService, 
@@ -78,6 +79,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
             return;
         }
         const listener = await event.getInspectListener(true);
+
         if (!listener) {
             return;
         }
@@ -90,7 +92,9 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
             // start profiling if not yet profiling
             const cts = new CancellationTokenSource();
             this._session = cts;
+
             let session: ProfileSession;
+
             try {
                 session = await this._instantiationService.createInstance(ExtensionHostProfiler, listener.host, listener.port).start();
             }
@@ -139,13 +143,18 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
         ][] = this._extensionService.extensions
             .filter(e => e.extensionLocation.scheme === Schemas.file)
             .map(e => [e.extensionLocation, ExtensionIdentifier.toKey(e.identifier)]);
+
         const data = await this._profileAnalysisService.analyseByLocation(profile.data, categories);
         //
         let overall: number = 0;
+
         let top: string = '';
+
         let topAggregated: number = -1;
+
         for (const [category, aggregated] of data) {
             overall += aggregated;
+
             if (aggregated > topAggregated) {
                 topAggregated = aggregated;
                 top = category;
@@ -154,6 +163,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
         const topPercentage = topAggregated / (overall / 100);
         // associate extensions to profile node
         const extension = await this._extensionService.getExtension(top);
+
         if (!extension) {
             // not an extension => idle, gc, self?
             return;
@@ -206,6 +216,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
             return;
         }
         const action = await this._instantiationService.invokeFunction(createSlowExtensionAction, extension, profile);
+
         if (!action) {
             // cannot report issues against this extension...
             return;

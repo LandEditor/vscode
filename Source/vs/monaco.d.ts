@@ -88,6 +88,7 @@ declare namespace monaco {
 
 	export class CancellationTokenSource {
 		constructor(parent?: CancellationToken);
+
 		get token(): CancellationToken;
 		cancel(): void;
 		dispose(cancel?: boolean): void;
@@ -200,6 +201,7 @@ declare namespace monaco {
 		good.scheme === 'file';
 		good.path === '/coding/c#/project1';
 		good.fragment === '';
+
 		const bad = Uri.parse('file://' + '/coding/c#/project1');
 		bad.scheme === 'file';
 		bad.path === '/coding/c'; // path is now broken
@@ -558,6 +560,7 @@ declare namespace monaco {
 		 * column (the first character in a line is between column 1 and column 2)
 		 */
 		readonly column: number;
+
 		constructor(lineNumber: number, column: number);
 		/**
 		 * Create a new position from this position.
@@ -666,6 +669,7 @@ declare namespace monaco {
 		 * Column on which the range ends in line `endLineNumber`.
 		 */
 		readonly endColumn: number;
+
 		constructor(startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number);
 		/**
 		 * Test if this range is empty.
@@ -853,6 +857,7 @@ declare namespace monaco {
 		 * The column on `positionLineNumber` where the selection has ended.
 		 */
 		readonly positionColumn: number;
+
 		constructor(selectionStartLineNumber: number, selectionStartColumn: number, positionLineNumber: number, positionColumn: number);
 		/**
 		 * Transform to a human-readable representation.
@@ -931,6 +936,7 @@ declare namespace monaco {
 		readonly type: string;
 		readonly language: string;
 		_tokenBrand: void;
+
 		constructor(offset: number, type: string, language: string);
 		toString(): string;
 	}
@@ -1189,6 +1195,7 @@ declare namespace monaco.editor {
 
 	export interface ITokenThemeRule {
 		token: string;
+
 		foreground?: string;
 		background?: string;
 		fontStyle?: string;
@@ -1431,7 +1438,9 @@ declare namespace monaco.editor {
 		addCommand(keybinding: number, handler: ICommandHandler, context?: string): string | null;
 		createContextKey<T extends ContextKeyValue = ContextKeyValue>(key: string, defaultValue: T): IContextKey<T>;
 		addAction(descriptor: IActionDescriptor): IDisposable;
+
 		getOriginalEditor(): IStandaloneCodeEditor;
+
 		getModifiedEditor(): IStandaloneCodeEditor;
 	}
 	export interface ICommandHandler {
@@ -1448,6 +1457,7 @@ declare namespace monaco.editor {
 	export interface IContextKey<T extends ContextKeyValue = ContextKeyValue> {
 		set(value: T): void;
 		reset(): void;
+
 		get(): T | undefined;
 	}
 
@@ -1942,6 +1952,7 @@ declare namespace monaco.editor {
 		readonly defaultEOL: DefaultEndOfLine;
 		readonly trimAutoWhitespace: boolean;
 		readonly bracketPairColorizationOptions: BracketPairColorizationOptions;
+
 		get originalIndentSize(): number | 'tabSize';
 	}
 
@@ -3951,6 +3962,7 @@ declare namespace monaco.editor {
 	export interface IEditorOption<K extends EditorOption, V> {
 		readonly id: K;
 		readonly name: string;
+
 		defaultValue: V;
 		/**
 		 * Might modify `value`.
@@ -3961,6 +3973,7 @@ declare namespace monaco.editor {
 	export class ApplyUpdateResult<T> {
 		readonly newValue: T;
 		readonly didChange: boolean;
+
 		constructor(newValue: T, didChange: boolean);
 	}
 
@@ -5071,6 +5084,7 @@ declare namespace monaco.editor {
 		cursorWidth: IEditorOption<EditorOption.cursorWidth, number>;
 		disableLayerHinting: IEditorOption<EditorOption.disableLayerHinting, boolean>;
 		disableMonospaceOptimizations: IEditorOption<EditorOption.disableMonospaceOptimizations, boolean>;
+
 		domReadOnly: IEditorOption<EditorOption.domReadOnly, boolean>;
 		dragAndDrop: IEditorOption<EditorOption.dragAndDrop, boolean>;
 		emptySelectionClipboard: IEditorOption<EditorOption.emptySelectionClipboard, boolean>;
@@ -5095,13 +5109,16 @@ declare namespace monaco.editor {
 		fontSize: IEditorOption<EditorOption.fontSize, number>;
 		fontWeight: IEditorOption<EditorOption.fontWeight, string>;
 		fontVariations: IEditorOption<EditorOption.fontVariations, string>;
+
 		formatOnPaste: IEditorOption<EditorOption.formatOnPaste, boolean>;
+
 		formatOnType: IEditorOption<EditorOption.formatOnType, boolean>;
 		glyphMargin: IEditorOption<EditorOption.glyphMargin, boolean>;
 		gotoLocation: IEditorOption<EditorOption.gotoLocation, Readonly<Required<IGotoLocationOptions>>>;
 		hideCursorInOverviewRuler: IEditorOption<EditorOption.hideCursorInOverviewRuler, boolean>;
 		hover: IEditorOption<EditorOption.hover, Readonly<Required<IEditorHoverOptions>>>;
 		inDiffEditor: IEditorOption<EditorOption.inDiffEditor, boolean>;
+
 		letterSpacing: IEditorOption<EditorOption.letterSpacing, number>;
 		lightbulb: IEditorOption<EditorOption.lightbulb, Readonly<Required<IEditorLightbulbOptions>>>;
 		lineDecorationsWidth: IEditorOption<EditorOption.lineDecorationsWidth, number>;
@@ -5181,6 +5198,7 @@ declare namespace monaco.editor {
 		wordWrapOverride1: IEditorOption<EditorOption.wordWrapOverride1, 'on' | 'off' | 'inherit'>;
 		wordWrapOverride2: IEditorOption<EditorOption.wordWrapOverride2, 'on' | 'off' | 'inherit'>;
 		editorClassName: IEditorOption<EditorOption.editorClassName, string>;
+
 		defaultColorDecorators: IEditorOption<EditorOption.defaultColorDecorators, boolean>;
 		pixelRatio: IEditorOption<EditorOption.pixelRatio, number>;
 		tabFocusMode: IEditorOption<EditorOption.tabFocusMode, boolean>;
@@ -6161,6 +6179,7 @@ declare namespace monaco.editor {
 		 * Apply the same font settings as the editor to `target`.
 		 */
 		applyFontInfo(target: HTMLElement): void;
+
 		setBanner(bannerDomNode: HTMLElement | null, height: number): void;
 		/**
 		 * Is called when the model has been set, view state was restored and options are updated.
@@ -6269,12 +6288,15 @@ declare namespace monaco.editor {
 
 	export interface IEditorZoom {
 		onDidChangeZoomLevel: IEvent<number>;
+
 		getZoomLevel(): number;
+
 		setZoomLevel(zoomLevel: number): void;
 	}
 
 	//compatibility:
 	export type IReadOnlyModel = ITextModel;
+
 	export type IModel = ITextModel;
 }
 
@@ -7217,6 +7239,7 @@ declare namespace monaco.languages {
 		readonly text: string;
 		readonly completionKind: CompletionItemKind;
 		readonly isSnippetText: boolean;
+
 		constructor(range: IRange, text: string, completionKind: CompletionItemKind, isSnippetText: boolean);
 		equals(other: SelectedSuggestionInfo): boolean;
 	}
@@ -8102,6 +8125,7 @@ declare namespace monaco.languages {
 
 	export interface DocumentSemanticTokensProvider {
 		onDidChange?: IEvent<void>;
+
 		getLegend(): SemanticTokensLegend;
 		provideDocumentSemanticTokens(model: editor.ITextModel, lastResultId: string | null, token: CancellationToken): ProviderResult<SemanticTokens | SemanticTokensEdits>;
 		releaseDocumentSemanticTokens(resultId: string | undefined): void;
@@ -8319,6 +8343,7 @@ declare namespace monaco.worker {
 	export interface IMirrorModel extends IMirrorTextModel {
 		readonly uri: Uri;
 		readonly version: number;
+
 		getValue(): string;
 	}
 

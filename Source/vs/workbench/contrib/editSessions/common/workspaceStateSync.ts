@@ -20,6 +20,7 @@ import { EditSession, IEditSessionsStorageService } from './editSessions.js';
 import { IWorkspaceIdentityService } from '../../../services/workspaces/common/workspaceIdentityService.js';
 class NullBackupStoreService implements IUserDataSyncLocalStoreService {
     _serviceBrand: undefined;
+
     async writeResource(): Promise<void> {
         return;
     }
@@ -51,6 +52,7 @@ class NullEnablementService implements IUserDataSyncEnablementService {
 }
 export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements IUserDataSynchroniser {
     protected override version: number = 1;
+
     constructor(profile: IUserDataProfile, collection: string | undefined, userDataSyncStoreService: IUserDataSyncStoreService, logService: IUserDataSyncLogService, 
     @IFileService
     fileService: IFileService, 
@@ -69,57 +71,75 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
     @IEditSessionsStorageService
     private readonly editSessionsStorageService: IEditSessionsStorageService) {
         const userDataSyncLocalStoreService = new NullBackupStoreService();
+
         const userDataSyncEnablementService = new NullEnablementService();
+
         super({ syncResource: SyncResource.WorkspaceState, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
     }
     override async sync(): Promise<void> {
         const cancellationTokenSource = new CancellationTokenSource();
+
         const folders = await this.workspaceIdentityService.getWorkspaceStateFolders(cancellationTokenSource.token);
+
         if (!folders.length) {
             return;
         }
         // Ensure we have latest state by sending out onWillSaveState event
         await this.storageService.flush();
+
         const keys = this.storageService.keys(StorageScope.WORKSPACE, StorageTarget.USER);
+
         if (!keys.length) {
             return;
         }
         const contributedData: IStringDictionary<string> = {};
         keys.forEach((key) => {
             const data = this.storageService.get(key, StorageScope.WORKSPACE);
+
             if (data) {
                 contributedData[key] = data;
             }
         });
+
         const content: IWorkspaceState = { folders, storage: contributedData, version: this.version };
         await this.editSessionsStorageService.write('workspaceState', stringify(content));
     }
     override async apply(): Promise<ISyncResourcePreview | null> {
         const payload = this.editSessionsStorageService.lastReadResources.get('editSessions')?.content;
+
         const workspaceStateId = payload ? (JSON.parse(payload) as EditSession).workspaceStateId : undefined;
+
         const resource = await this.editSessionsStorageService.read('workspaceState', workspaceStateId);
+
         if (!resource) {
             return null;
         }
         const remoteWorkspaceState: IWorkspaceState = parse(resource.content);
+
         if (!remoteWorkspaceState) {
             this.logService.info('Skipping initializing workspace state because remote workspace state does not exist.');
+
             return null;
         }
         // Evaluate whether storage is applicable for current workspace
         const cancellationTokenSource = new CancellationTokenSource();
+
         const replaceUris = await this.workspaceIdentityService.matches(remoteWorkspaceState.folders, cancellationTokenSource.token);
+
         if (!replaceUris) {
             this.logService.info('Skipping initializing workspace state because remote workspace state does not match current workspace.');
+
             return null;
         }
         const storage: IStringDictionary<any> = {};
+
         for (const key of Object.keys(remoteWorkspaceState.storage)) {
             storage[key] = remoteWorkspaceState.storage[key];
         }
         if (Object.keys(storage).length) {
             // Initialize storage with remote storage
             const storageEntries: Array<IStorageEntry> = [];
+
             for (const key of Object.keys(storage)) {
                 // Deserialize the stored state
                 try {
@@ -135,6 +155,7 @@ export class WorkspaceStateSynchroniser extends AbstractSynchroniser implements 
             this.storageService.storeAll(storageEntries, true);
         }
         this.editSessionsStorageService.delete('workspaceState', resource.ref);
+
         return null;
     }
     // TODO@joyceerhl implement AbstractSynchronizer in full

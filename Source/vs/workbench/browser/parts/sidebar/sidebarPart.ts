@@ -55,6 +55,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		}
 
 		const width = viewlet.getOptimalWidth();
+
 		if (typeof width !== 'number') {
 			return;
 		}
@@ -120,6 +121,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		this.updateCompositeBar();
 
 		const id = this.getActiveComposite()?.getId();
+
 		if (id) {
 			this.onTitleAreaUpdate(id);
 		}
@@ -140,6 +142,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		container.style.color = this.getColor(SIDE_BAR_FOREGROUND) || '';
 
 		const borderColor = this.getColor(SIDE_BAR_BORDER) || this.getColor(contrastBorder);
+
 		const isPositionLeft = this.layoutService.getSideBarPosition() === SideBarPosition.LEFT;
 		container.style.borderRightWidth = borderColor && isPositionLeft ? '1px' : '';
 		container.style.borderRightStyle = borderColor && isPositionLeft ? 'solid' : '';
@@ -181,6 +184,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			fillExtraContextMenuActions: actions => {
 				if (this.getCompositeBarPosition() === CompositeBarPosition.TITLE) {
 					const viewsSubmenuAction = this.getViewsSubmenuAction();
+
 					if (viewsSubmenuAction) {
 						actions.push(new Separator());
 						actions.push(viewsSubmenuAction);
@@ -206,6 +210,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 	protected shouldShowCompositeBar(): boolean {
 		const activityBarPosition = this.configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 		return activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM;
 	}
 
@@ -219,9 +224,12 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 	protected getCompositeBarPosition(): CompositeBarPosition {
 		const activityBarPosition = this.configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 		switch (activityBarPosition) {
 			case ActivityBarPosition.TOP: return CompositeBarPosition.TOP;
+
 			case ActivityBarPosition.BOTTOM: return CompositeBarPosition.BOTTOM;
+
 			case ActivityBarPosition.HIDDEN:
 			case ActivityBarPosition.DEFAULT: // noop
 			default: return CompositeBarPosition.TITLE;
@@ -230,6 +238,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 	private rememberActivityBarVisiblePosition(): void {
 		const activityBarPosition = this.configurationService.getValue<string>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 		if (activityBarPosition !== ActivityBarPosition.HIDDEN) {
 			this.storageService.store(LayoutSettings.ACTIVITY_BAR_LOCATION, activityBarPosition, StorageScope.PROFILE, StorageTarget.USER);
 		}
@@ -237,9 +246,12 @@ export class SidebarPart extends AbstractPaneCompositePart {
 
 	private getRememberedActivityBarVisiblePosition(): ActivityBarPosition {
 		const activityBarPosition = this.storageService.get(LayoutSettings.ACTIVITY_BAR_LOCATION, StorageScope.PROFILE);
+
 		switch (activityBarPosition) {
 			case ActivityBarPosition.TOP: return ActivityBarPosition.TOP;
+
 			case ActivityBarPosition.BOTTOM: return ActivityBarPosition.BOTTOM;
+
 			default: return ActivityBarPosition.DEFAULT;
 		}
 	}
@@ -285,6 +297,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			}
 			run(): Promise<void> {
 				const value = that.configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) === ActivityBarPosition.HIDDEN ? that.getRememberedActivityBarVisiblePosition() : ActivityBarPosition.HIDDEN;
+
 				return that.configurationService.updateValue(LayoutSettings.ACTIVITY_BAR_LOCATION, value);
 			}
 		}));

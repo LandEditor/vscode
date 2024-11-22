@@ -21,6 +21,7 @@ export const githubSlugifier: Slugifier = new class implements Slugifier {
             .replace(/^\-+/, '') // Remove leading -
             .replace(/\-+$/, '') // Remove trailing -
         );
+
         return new Slug(slugifiedHeading);
     }
 };

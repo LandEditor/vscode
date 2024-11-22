@@ -62,6 +62,7 @@ import { ReplAccessibilityHelp } from './replAccessibilityHelp.js';
 import { ReplAccessibilityAnnouncer } from '../common/replAccessibilityAnnouncer.js';
 import { RunAndDebugAccessibilityHelp } from './runAndDebugAccessibilityHelp.js';
 import { DebugWatchAccessibilityAnnouncer } from '../common/debugAccessibilityAnnouncer.js';
+
 const debugCategory = nls.localize('debugCategory', "Debug");
 registerColors();
 registerSingleton(IDebugService, DebugService, InstantiationType.Delayed);
@@ -100,6 +101,7 @@ Registry.as<IQuickAccessRegistry>(QuickAccessExtensions.Quickaccess).registerQui
 registerEditorContribution('editor.contrib.callStack', CallStackEditorContribution, EditorContributionInstantiation.AfterFirstRender);
 registerEditorContribution(BREAKPOINT_EDITOR_CONTRIBUTION_ID, BreakpointEditorContribution, EditorContributionInstantiation.AfterFirstRender);
 registerEditorContribution(EDITOR_CONTRIBUTION_ID, DebugEditorContribution, EditorContributionInstantiation.BeforeFirstInteraction);
+
 const registerDebugCommandPaletteItem = (id: string, title: ICommandActionTitle, when?: ContextKeyExpression, precondition?: ContextKeyExpression) => {
     MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
         when: ContextKeyExpr.and(CONTEXT_DEBUGGERS_AVAILABLE, when),
@@ -368,6 +370,7 @@ Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews([{
             order: 2
         }
     }], VIEW_CONTAINER);
+
 const viewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
     id: VIEWLET_ID,
     title: nls.localize2('run and debug', "Run and Debug"),

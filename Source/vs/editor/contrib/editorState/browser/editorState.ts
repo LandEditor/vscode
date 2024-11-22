@@ -23,8 +23,10 @@ export class EditorState {
     private readonly modelVersionId: string | null;
     private readonly scrollLeft: number;
     private readonly scrollTop: number;
+
     constructor(editor: ICodeEditor, flags: number) {
         this.flags = flags;
+
         if ((this.flags & CodeEditorStateFlag.Value) !== 0) {
             const model = editor.getModel();
             this.modelVersionId = model ? strings.format('{0}#{1}', model.uri.toString(), model.getVersionId()) : null;
@@ -58,6 +60,7 @@ export class EditorState {
             return false;
         }
         const state = <EditorState>other;
+
         if (this.modelVersionId !== state.modelVersionId) {
             return false;
         }
@@ -83,8 +86,10 @@ export class EditorState {
  */
 export class EditorStateCancellationTokenSource extends EditorKeybindingCancellationTokenSource implements IDisposable {
     private readonly _listener = new DisposableStore();
+
     constructor(editor: IActiveCodeEditor, flags: CodeEditorStateFlag, range?: IRange, parent?: CancellationToken) {
         super(editor, parent);
+
         if (flags & CodeEditorStateFlag.Position) {
             this._listener.add(editor.onDidChangeCursorPosition(e => {
                 if (!range || !Range.containsPosition(range, e.position)) {
@@ -109,6 +114,7 @@ export class EditorStateCancellationTokenSource extends EditorKeybindingCancella
     }
     override dispose() {
         this._listener.dispose();
+
         super.dispose();
     }
 }
@@ -117,12 +123,14 @@ export class EditorStateCancellationTokenSource extends EditorKeybindingCancella
  */
 export class TextModelCancellationTokenSource extends CancellationTokenSource implements IDisposable {
     private _listener: IDisposable;
+
     constructor(model: ITextModel, parent?: CancellationToken) {
         super(parent);
         this._listener = model.onDidChangeContent(() => this.cancel());
     }
     override dispose() {
         this._listener.dispose();
+
         super.dispose();
     }
 }

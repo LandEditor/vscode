@@ -30,13 +30,17 @@ function _renderTime(time: number): string {
 }
 async function _execute(task: Task): Promise<void> {
     const name = task.taskName || task.displayName || `<anonymous>`;
+
     if (!task._tasks) {
         fancyLog('Starting', ansiColors.cyan(name), '...');
     }
     const startTime = process.hrtime();
     await _doExecute(task);
+
     const elapsedArr = process.hrtime(startTime);
+
     const elapsedNanoseconds = (elapsedArr[0] * 1e9 + elapsedArr[1]);
+
     if (!task._tasks) {
         fancyLog(`Finished`, ansiColors.cyan(name), 'after', ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6)));
     }
@@ -52,17 +56,21 @@ async function _doExecute(task: Task): Promise<void> {
                 }
                 resolve();
             });
+
             return;
         }
         const taskResult = task();
+
         if (typeof taskResult === 'undefined') {
             // this is a sync task
             resolve();
+
             return;
         }
         if (_isPromise(taskResult)) {
             // this is a promise returning task
             taskResult.then(resolve, reject);
+
             return;
         }
         // this is a stream returning task
@@ -77,6 +85,7 @@ export function series(...tasks: Task[]): PromiseTask {
         }
     };
     result._tasks = tasks;
+
     return result;
 }
 export function parallel(...tasks: Task[]): PromiseTask {
@@ -84,12 +93,14 @@ export function parallel(...tasks: Task[]): PromiseTask {
         await Promise.all(tasks.map(t => _execute(t)));
     };
     result._tasks = tasks;
+
     return result;
 }
 export function define(name: string, task: Task): Task {
     if (task._tasks) {
         // This is a composite task
         const lastTask = task._tasks[task._tasks.length - 1];
+
         if (lastTask._tasks || lastTask.taskName) {
             // This is a composite task without a real task function
             // => generate a fake task function
@@ -97,10 +108,12 @@ export function define(name: string, task: Task): Task {
         }
         lastTask.taskName = name;
         task.displayName = name;
+
         return task;
     }
     // This is a simple task
     task.taskName = name;
     task.displayName = name;
+
     return task;
 }

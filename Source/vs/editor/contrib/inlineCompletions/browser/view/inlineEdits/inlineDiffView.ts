@@ -45,6 +45,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 		const modifiedCodeEditor = this._state.map(s => s?.modifiedCodeEditor);
 		this._register(autorunWithStore((reader, store) => {
 			const e = modifiedCodeEditor.read(reader);
+
 			if (e) {
 				store.add(observableCodeEditor(e).setDecorations(this._decorations.map(d => d?.modifiedDecorations ?? [])));
 			}
@@ -56,13 +57,17 @@ export class OriginalEditorInlineDiffView extends Disposable {
 
 		const originalViewZones = derived(this, (reader) => {
 			const originalModel = editor.model.read(reader);
+
 			if (!originalModel) { return []; }
 
 			const origViewZones: IObservableViewZone[] = [];
+
 			const renderOptions = RenderOptions.fromEditor(this._originalEditor);
+
 			const modLineHeight = editor.getOption(EditorOption.lineHeight).read(reader);
 
 			const s = this._state.read(reader);
+
 			if (!s) { return origViewZones; }
 
 			for (const diff of s.diff) {
@@ -75,6 +80,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 				const source = new LineSource(diff.modified.mapToLineArray(l => this._modifiedTextModel.tokenization.getLineTokens(l)));
 
 				const decorations: InlineDecoration[] = [];
+
 				for (const i of diff.innerChanges || []) {
 					decorations.push(new InlineDecoration(
 						i.modifiedRange.delta(-(diff.original.startLineNumber - 1)),
@@ -108,19 +114,24 @@ export class OriginalEditorInlineDiffView extends Disposable {
 
 	private readonly _decorations = derived(this, reader => {
 		const diff = this._state.read(reader);
+
 		if (!diff) { return undefined; }
 
 		const modified = diff.modifiedText;
+
 		const showInline = diff.mode === 'mixedLines';
 
 		const renderIndicators = false;
+
 		const showEmptyDecorations = true;
 
 		const originalDecorations: IModelDeltaDecoration[] = [];
+
 		const modifiedDecorations: IModelDeltaDecoration[] = [];
 
 		for (const m of diff.diff) {
 			const showFullLineDecorations = true;
+
 			if (showFullLineDecorations) {
 				if (!m.original.isEmpty) {
 					originalDecorations.push({ range: m.original.toInclusiveRange()!, options: renderIndicators ? diffLineDeleteDecorationBackgroundWithIndicator : diffLineDeleteDecorationBackground });
@@ -145,6 +156,7 @@ export class OriginalEditorInlineDiffView extends Disposable {
 				}
 			} else {
 				const useInlineDiff = showInline && allowsTrueInlineDiffRendering(m);
+
 				for (const i of m.innerChanges || []) {
 					// Don't show empty markers outside the line range
 					if (m.original.contains(i.originalRange.startLineNumber)) {

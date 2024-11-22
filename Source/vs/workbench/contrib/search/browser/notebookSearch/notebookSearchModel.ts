@@ -27,6 +27,7 @@ import { ICellMatch, IMatchInNotebook, INotebookFileInstanceMatch, isIMatchInNot
 import { MatchImpl, textSearchResultToMatches } from '../searchTreeModel/match.js';
 export class MatchInNotebook extends MatchImpl implements IMatchInNotebook {
     private _webviewIndex: number | undefined;
+
     constructor(private readonly _cellParent: ICellMatch, _fullPreviewLines: string[], _fullPreviewRange: ISearchRange, _documentRange: ISearchRange, webviewIndex?: number) {
         super(_cellParent.parent, _fullPreviewLines, _fullPreviewRange, _documentRange, false);
         this._id = MATCH_PREFIX + this._parent.resource.toString() + '>' + this._cellParent.cellIndex + (webviewIndex ? '_' + webviewIndex : '') + '_' + this.notebookMatchTypeString() + this._range + this.getMatchString();
@@ -61,6 +62,7 @@ export class CellMatch implements ICellMatch {
     private _contentMatches: Map<string, MatchInNotebook>;
     private _webviewMatches: Map<string, MatchInNotebook>;
     private _context: Map<number, string>;
+
     constructor(private readonly _parent: INotebookFileInstanceMatch, private _cell: ICellViewModel | undefined, private readonly _cellIndex: number) {
         this._contentMatches = new Map<string, MatchInNotebook>();
         this._webviewMatches = new Map<string, MatchInNotebook>();
@@ -108,6 +110,7 @@ export class CellMatch implements ICellMatch {
         }
         this.cell.resolveTextModel().then((textModel) => {
             const textResultsWithContext = getTextSearchMatchWithModelContext(textSearchMatches, textModel, this.parent.parent().query!);
+
             const contexts = textResultsWithContext.filter((result => !resultIsMatch(result)) as ((a: any) => a is ITextSearchContext));
             contexts.map(context => ({ ...context, lineNumber: context.lineNumber + 1 }))
                 .forEach((context) => { this._context.set(context.lineNumber, context.text); });
@@ -141,6 +144,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
     private _editorWidgetListener: IDisposable | null = null;
     private _notebookUpdateScheduler: RunOnceScheduler;
     private _lastEditorWidgetIdForUpdate: string | undefined;
+
     constructor(_query: IPatternInfo, _previewOptions: ITextSearchPreviewOptions | undefined, _maxResults: number | undefined, _parent: ISearchTreeFolderMatch, rawMatch: IFileMatch, _closestRoot: ISearchTreeFolderMatchWorkspaceRoot | null, private readonly searchInstanceID: string, 
     @IModelService
     modelService: IModelService, 
@@ -160,6 +164,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
         this._cellMatches.forEach(cellMatch => {
             cellContext.set(cellMatch.id, cellMatch.context);
         });
+
         return cellContext;
     }
     getCellMatch(cellID: string): ICellMatch | undefined {
@@ -173,12 +178,14 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
     }
     addWebviewMatchesToCell(cellID: string, webviewMatches: ITextSearchMatch[]) {
         const cellMatch = this.getCellMatch(cellID);
+
         if (cellMatch !== undefined) {
             cellMatch.addWebviewMatches(webviewMatches);
         }
     }
     addContentMatchesToCell(cellID: string, contentMatches: ITextSearchMatch[]) {
         const cellMatch = this.getCellMatch(cellID);
+
         if (cellMatch !== undefined) {
             cellMatch.addContentMatches(contentMatches);
         }
@@ -190,6 +197,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
         }
         if (match.webviewIndex !== undefined) {
             const index = this._notebookEditorWidget.getCellIndex(match.cell);
+
             if (index !== undefined) {
                 this._notebookEditorWidget.revealCellOffsetInCenter(match.cell, outputOffset ?? 0);
             }
@@ -240,6 +248,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
         this._findMatchDecorationModel?.stopWebviewFind();
         this._findMatchDecorationModel?.dispose();
         this._findMatchDecorationModel = new FindMatchDecorationModel(this._notebookEditorWidget, this.searchInstanceID);
+
         if (this._selectedMatch instanceof MatchInNotebook) {
             this.highlightCurrentFindMatchDecoration(this._selectedMatch);
         }
@@ -256,15 +265,19 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
             return;
         }
         const oldCellMatches = new Map<string, ICellMatch>(this._cellMatches);
+
         if (this._notebookEditorWidget.getId() !== this._lastEditorWidgetIdForUpdate) {
             this._cellMatches.clear();
             this._lastEditorWidgetIdForUpdate = this._notebookEditorWidget.getId();
         }
         matches.forEach(match => {
             let existingCell = this._cellMatches.get(match.cell.id);
+
             if (this._notebookEditorWidget && !existingCell) {
                 const index = this._notebookEditorWidget.getCellIndex(match.cell);
+
                 const existingRawCell = oldCellMatches.get(`${rawCellPrefix}${index}`);
+
                 if (existingRawCell) {
                     existingRawCell.setCellModel(match.cell);
                     existingRawCell.clearAllMatches();
@@ -272,12 +285,14 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
                 }
             }
             existingCell?.clearAllMatches();
+
             const cell = existingCell ?? new CellMatch(this, match.cell, match.index);
             cell.addContentMatches(contentMatchesToTextSearchMatches(match.contentMatches, match.cell));
             cell.addWebviewMatches(webviewMatchesToTextSearchMatches(match.webviewMatches));
             this._cellMatches.set(cell.id, cell);
         });
         this._findMatchDecorationModel?.setAllFindMatchesDecorations(matches);
+
         if (this._selectedMatch instanceof MatchInNotebook) {
             this.highlightCurrentFindMatchDecoration(this._selectedMatch);
         }
@@ -296,14 +311,17 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
                     index: match.webviewIndex,
                 };
             }));
+
             if (!cell.cell) {
                 return undefined;
             }
             const findMatches: FindMatch[] = cell.contentMatches.map(match => {
                 return new FindMatch(match.range(), [match.text()]);
             });
+
             return new CellFindMatchModel(cell.cell, cell.cellIndex, findMatches, webviewMatches);
         }));
+
         try {
             this._findMatchDecorationModel.setAllFindMatchesDecorations(cellFindMatch);
         }
@@ -316,7 +334,9 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
             return;
         }
         this._textMatches = new Map<string, ISearchTreeMatch>();
+
         const wordSeparators = this._query.isWordMatch && this._query.wordSeparators ? this._query.wordSeparators : null;
+
         const allMatches = await this._notebookEditorWidget
             .find(this._query.pattern, {
             regex: this._query.isRegExp,
@@ -349,11 +369,13 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
     }
     override matches(): ISearchTreeMatch[] {
         const matches = Array.from(this._cellMatches.values()).flatMap((e) => e.matches());
+
         return [...super.matches(), ...matches];
     }
     protected override removeMatch(match: ISearchTreeMatch) {
         if (match instanceof MatchInNotebook) {
             match.cellParent.remove(match);
+
             if (match.cellParent.matches().length === 0) {
                 this._cellMatches.delete(match.cellParent.id);
             }
@@ -375,6 +397,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
     }
     override createMatches(): void {
         const model = this.modelService.getModel(this._resource);
+
         if (model) {
             // todo: handle better when ai contributed results has model, currently, createMatches does not work for this
             this.bindModel(model);
@@ -382,6 +405,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
         }
         else {
             const notebookEditorWidgetBorrow = this.notebookEditorService.retrieveExistingWidgetFromURI(this.resource);
+
             if (notebookEditorWidgetBorrow?.value) {
                 this.bindNotebookEditorWidget(notebookEditorWidgetBorrow.value);
             }
@@ -408,6 +432,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
         if (match) {
             if (!this.isMatchSelected(match) && isIMatchInNotebook(match)) {
                 this._selectedMatch = match;
+
                 return;
             }
             if (!this._textMatches.has(match.id())) {
@@ -422,6 +447,7 @@ export class NotebookCompatibleFileMatch extends FileMatchImpl implements INoteb
     }
     override dispose(): void {
         this.unbindNotebookEditorWidget();
+
         super.dispose();
     }
 }
@@ -432,9 +458,11 @@ export function textSearchMatchesToNotebookMatches(textSearchMatches: ITextSearc
         const previewLines = textSearchMatch.previewText.split('\n');
         textSearchMatch.rangeLocations.map((rangeLocation) => {
             const previewRange: ISearchRange = rangeLocation.preview;
+
             const match = new MatchInNotebook(cell, previewLines, previewRange, rangeLocation.source, textSearchMatch.webviewIndex);
             notebookMatches.push(match);
         });
     });
+
     return notebookMatches;
 }

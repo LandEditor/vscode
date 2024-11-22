@@ -9,16 +9,19 @@ import { ISocket, SocketCloseEvent, SocketDiagnostics, SocketDiagnosticsEventTyp
 export const makeRawSocketHeaders = (path: string, query: string, deubgLabel: string) => {
     // https://tools.ietf.org/html/rfc6455#section-4
     const buffer = new Uint8Array(16);
+
     for (let i = 0; i < 16; i++) {
         buffer[i] = Math.round(Math.random() * 256);
     }
     const nonce = encodeBase64(VSBuffer.wrap(buffer));
+
     const headers = [
         `GET ws://localhost${path}?${query}&skipWebSocketFrames=true HTTP/1.1`,
         `Connection: Upgrade`,
         `Upgrade: websocket`,
         `Sec-WebSocket-Key: ${nonce}`
     ];
+
     return headers.join('\r\n') + '\r\n\r\n';
 };
 export const socketRawEndHeaderSequence = VSBuffer.fromString('\r\n\r\n');
@@ -30,7 +33,9 @@ export interface RemoteSocketHalf {
 /** Should be called immediately after making a ManagedSocket to make it ready for data flow. */
 export async function connectManagedSocket<T extends ManagedSocket>(socket: T, path: string, query: string, debugLabel: string, half: RemoteSocketHalf): Promise<T> {
     socket.write(VSBuffer.fromString(makeRawSocketHeaders(path, query, debugLabel)));
+
     const d = new DisposableStore();
+
     try {
         return await new Promise<T>((resolve, reject) => {
             let dataSoFar: VSBuffer | undefined;
@@ -42,6 +47,7 @@ export async function connectManagedSocket<T extends ManagedSocket>(socket: T, p
                     dataSoFar = VSBuffer.concat([dataSoFar, d_1], dataSoFar.byteLength + d_1.byteLength);
                 }
                 const index = dataSoFar.indexOf(socketRawEndHeaderSequence);
+
                 if (index === -1) {
                     return;
                 }
@@ -50,7 +56,9 @@ export async function connectManagedSocket<T extends ManagedSocket>(socket: T, p
                 // immediately emit remaining data, but if not there may still be
                 // microtasks queued which would fire data into the abyss.
                 socket.pauseData();
+
                 const rest = dataSoFar.slice(index + socketRawEndHeaderSequence.byteLength);
+
                 if (rest.byteLength) {
                     half.onData.fire(rest);
                 }
@@ -61,6 +69,7 @@ export async function connectManagedSocket<T extends ManagedSocket>(socket: T, p
     }
     catch (e) {
         socket.dispose();
+
         throw e;
     }
     finally {
@@ -110,6 +119,7 @@ export abstract class ManagedSocket extends Disposable implements ISocket {
             this.closeRemote();
         }
         this.didDisposeEmitter.fire();
+
         super.dispose();
     }
 }

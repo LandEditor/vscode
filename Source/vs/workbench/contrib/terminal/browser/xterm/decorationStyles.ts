@@ -28,6 +28,7 @@ export const enum DecorationSelector {
 export function getTerminalDecorationHoverContent(command: ITerminalCommand | undefined, hoverMessage?: string): string {
 	let hoverContent = `${localize('terminalPromptContextMenu', "Show Command Actions")}`;
 	hoverContent += '\n\n---\n\n';
+
 	if (!command) {
 		if (hoverMessage) {
 			hoverContent = hoverMessage;
@@ -43,6 +44,7 @@ export function getTerminalDecorationHoverContent(command: ITerminalCommand | un
 	} else {
 		if (command.duration) {
 			const durationText = getDurationString(command.duration);
+
 			if (command.exitCode) {
 				if (command.exitCode === -1) {
 					hoverContent += localize('terminalPromptCommandFailed.duration', 'Command executed {0}, took {1} and failed', fromNow(command.timestamp, true), durationText);
@@ -72,8 +74,11 @@ export function updateLayout(configurationService: IConfigurationService, elemen
 		return;
 	}
 	const fontSize = configurationService.inspect(TerminalSettingId.FontSize).value;
+
 	const defaultFontSize = configurationService.inspect(TerminalSettingId.FontSize).defaultValue;
+
 	const lineHeight = configurationService.inspect(TerminalSettingId.LineHeight).value;
+
 	if (typeof fontSize === 'number' && typeof defaultFontSize === 'number' && typeof lineHeight === 'number') {
 		const scalar = (fontSize / defaultFontSize) <= 1 ? (fontSize / defaultFontSize) : 1;
 		// must be inlined to override the inlined styles from xterm

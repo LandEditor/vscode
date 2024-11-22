@@ -18,6 +18,7 @@ export const fontCharacterRegex = '^([^\\\\]|\\\\[a-fA-F0-9]+)$';
 export const fontColorRegex = '^#[0-9a-fA-F]{0,6}$';
 
 const schemaId = 'vscode://schemas/product-icon-theme';
+
 const schema: IJSONSchema = {
 	type: 'object',
 	allowComments: true,

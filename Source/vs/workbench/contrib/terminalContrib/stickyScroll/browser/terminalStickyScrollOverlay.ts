@@ -156,11 +156,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 			case OverlayState.Off: {
 				this._setVisible(false);
 				this._uninstallRefreshListeners();
+
 				break;
 			}
 			case OverlayState.On: {
 				this._refresh();
 				this._installRefreshListeners();
+
 				break;
 			}
 		}
@@ -213,26 +215,32 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// No command
 		if (!command) {
 			this._setVisible(false);
+
 			return;
 		}
 
 		// Partial command
 		if (!('marker' in command)) {
 			const partialCommand = this._commandDetection.currentCommand;
+
 			if (partialCommand?.commandStartMarker && partialCommand.commandExecutedMarker) {
 				this._updateContent(partialCommand, partialCommand.commandStartMarker);
+
 				return;
 			}
 			this._setVisible(false);
+
 			return;
 		}
 
 		// If the marker doesn't exist or it was trimmed from scrollback
 		const marker = command.marker;
+
 		if (!marker || marker.line === -1) {
 			// TODO: It would be nice if we kept the cached command around even if it was trimmed
 			// from scrollback
 			this._setVisible(false);
+
 			return;
 		}
 
@@ -241,6 +249,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 	private _updateContent(command: ITerminalCommand | ICurrentPartialCommand, startMarker: IMarker) {
 		const xterm = this._xterm.raw;
+
 		if (!xterm.element?.parentElement || !this._stickyScrollOverlay || !this._serializeAddon) {
 			return;
 		}
@@ -248,13 +257,17 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// Hide sticky scroll if the prompt has been trimmed from the buffer
 		if (command.promptStartMarker?.line === -1) {
 			this._setVisible(false);
+
 			return;
 		}
 
 		// Determine sticky scroll line count
 		const buffer = xterm.buffer.active;
+
 		const promptRowCount = command.getPromptRowCount();
+
 		const commandRowCount = command.getCommandRowCount();
+
 		const stickyScrollLineStart = startMarker.line - (promptRowCount - 1);
 
 		// Calculate the row offset, this is the number of rows that will be clipped from the top
@@ -262,13 +275,17 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// original terminal. This is done because it seems like scrolling flickers more when a
 		// partial line can be drawn on the top.
 		const isPartialCommand = !('getOutput' in command);
+
 		const rowOffset = !isPartialCommand && command.endMarker ? Math.max(buffer.viewportY - command.endMarker.line + 1, 0) : 0;
+
 		const maxLineCount = Math.min(this._rawMaxLineCount, Math.floor(xterm.rows * Constants.StickyScrollPercentageCap));
+
 		const stickyScrollLineCount = Math.min(promptRowCount + commandRowCount - 1, maxLineCount) - rowOffset;
 
 		// Hide sticky scroll if it's currently on a line that contains it
 		if (buffer.viewportY <= stickyScrollLineStart) {
 			this._setVisible(false);
+
 			return;
 		}
 
@@ -278,11 +295,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// common case where the top of the text being viewport would otherwise be obscured.
 		if (isPartialCommand && buffer.viewportY === buffer.baseY && buffer.cursorY === xterm.rows - 1) {
 			const line = buffer.getLine(buffer.baseY + xterm.rows - 1);
+
 			if (
 				(buffer.cursorX === 1 && lineStartsWith(line, ':')) ||
 				(buffer.cursorX === 5 && lineStartsWith(line, '(END)'))
 			) {
 				this._setVisible(false);
+
 				return;
 			}
 		}
@@ -299,6 +318,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		// edge case when using a pager or interactive editor.
 		if (isPartialCommand && removeAnsiEscapeCodes(content).length === 0) {
 			this._setVisible(false);
+
 			return;
 		}
 
@@ -330,11 +350,13 @@ export class TerminalStickyScrollOverlay extends Disposable {
 				// it becomes visible
 				if (termBox.height > 0) {
 					const rowHeight = termBox.height / xterm.rows;
+
 					const overlayHeight = stickyScrollLineCount * rowHeight;
 
 					// Adjust sticky scroll content if it would below the end of the command, obscuring the
 					// following command.
 					let endMarkerOffset = 0;
+
 					if (!isPartialCommand && command.endMarker && command.endMarker.line !== -1) {
 						if (buffer.viewportY + stickyScrollLineCount > command.endMarker.line) {
 							const diff = buffer.viewportY + stickyScrollLineCount - command.endMarker.line;
@@ -371,16 +393,21 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 		// Fill tooltip
 		let hoverTitle = localize('stickyScrollHoverTitle', 'Navigate to Command');
+
 		const scrollToPreviousCommandKeybinding = this._keybindingService.lookupKeybinding(TerminalCommandId.ScrollToPreviousCommand);
+
 		if (scrollToPreviousCommandKeybinding) {
 			const label = scrollToPreviousCommandKeybinding.getLabel();
+
 			if (label) {
 				hoverTitle += '\n' + localize('labelWithKeybinding', "{0} ({1})", terminalStrings.scrollToPreviousCommand.value, label);
 			}
 		}
 		const scrollToNextCommandKeybinding = this._keybindingService.lookupKeybinding(TerminalCommandId.ScrollToNextCommand);
+
 		if (scrollToNextCommandKeybinding) {
 			const label = scrollToNextCommandKeybinding.getLabel();
+
 			if (label) {
 				hoverTitle += '\n' + localize('labelWithKeybinding', "{0} ({1})", terminalStrings.scrollToNextCommand.value, label);
 			}
@@ -388,6 +415,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		hoverOverlay.title = hoverTitle;
 
 		const scrollBarWidth = (this._xterm.raw as any as { _core: IXtermCore })._core.viewport?.scrollBarWidth;
+
 		if (scrollBarWidth !== undefined) {
 			this._element.style.right = `${scrollBarWidth}px`;
 		}
@@ -444,6 +472,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 	private _getOptions(): ITerminalOptions {
 		const o = this._xterm.raw.options;
+
 		return {
 			cursorInactiveStyle: 'none',
 			scrollback: 0,
@@ -468,6 +497,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 	private async _refreshGpuAcceleration() {
 		if (this._shouldLoadWebgl() && !this._webglAddon) {
 			const WebglAddon = await this._xtermAddonLoader.importAddon('webgl');
+
 			if (this._store.isDisposed) {
 				return;
 			}
@@ -485,6 +515,7 @@ export class TerminalStickyScrollOverlay extends Disposable {
 
 	private _getTheme(isHovering: boolean): ITheme {
 		const theme = this._themeService.getColorTheme();
+
 		return {
 			...this._xterm.getXtermTheme(),
 			background: isHovering

@@ -26,24 +26,33 @@ function log(...args: any[]): void {
 }
 function main() {
     const quality = process.env['VSCODE_QUALITY'];
+
     if (!quality) {
         throw new Error('Missing VSCODE_QUALITY, skipping mixin');
     }
     log(`Mixing in distro quality...`);
+
     const basePath = `.build/distro/mixin/${quality}`;
+
     for (const name of fs.readdirSync(basePath)) {
         const distroPath = path.join(basePath, name);
+
         const ossPath = path.relative(basePath, distroPath);
+
         if (ossPath === 'product.json') {
             const distro = JSON.parse(fs.readFileSync(distroPath, 'utf8')) as Product;
+
             const oss = JSON.parse(fs.readFileSync(ossPath, 'utf8')) as OSSProduct;
+
             let builtInExtensions = oss.builtInExtensions;
+
             if (Array.isArray(distro.builtInExtensions)) {
                 log('Overwriting built-in extensions:', distro.builtInExtensions.map(e => e.name));
                 builtInExtensions = distro.builtInExtensions;
             }
             else if (distro.builtInExtensions) {
                 const include = distro.builtInExtensions['include'] ?? [];
+
                 const exclude = distro.builtInExtensions['exclude'] ?? [];
                 log('OSS built-in extensions:', builtInExtensions.map(e => e.name));
                 log('Including built-in extensions:', include.map(e => e.name));

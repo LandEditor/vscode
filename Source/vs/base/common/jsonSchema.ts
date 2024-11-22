@@ -11,6 +11,7 @@ export interface IJSONSchema {
 	$schema?: string;
 	type?: JSONSchemaType | JSONSchemaType[];
 	title?: string;
+
 	default?: any;
 	definitions?: IJSONSchemaMap;
 	description?: string;
@@ -40,6 +41,7 @@ export interface IJSONSchema {
 	oneOf?: IJSONSchema[];
 	not?: IJSONSchema;
 	enum?: any[];
+
 	format?: string;
 
 	// schema draft 06
@@ -50,8 +52,10 @@ export interface IJSONSchema {
 
 	// schema draft 07
 	$comment?: string;
+
 	if?: IJSONSchema;
 	then?: IJSONSchema;
+
 	else?: IJSONSchema;
 
 	// schema 2019-09
@@ -83,6 +87,7 @@ export interface IJSONSchema {
 	enumDescriptions?: string[];
 	markdownEnumDescriptions?: string[];
 	markdownDescription?: string;
+
 	doNotSuggest?: boolean;
 	suggestSortText?: string;
 	allowComments?: boolean;
@@ -137,26 +142,32 @@ export function getCompressedContent(schema: IJSONSchema): string {
 
 	// visit all schema nodes and collect the ones that are equal
 	const equalsByString = new Map<string, Equals>();
+
 	const nodeToEquals = new Map<IJSONSchema, Equals>();
+
 	const visitSchemas = (next: IJSONSchema) => {
 		if (schema === next) {
 			return true;
 		}
 		const val = JSON.stringify(next);
+
 		if (val.length < 30) {
 			// the $ref takes around 25 chars, so we don't save anything
 			return true;
 		}
 		const eq = equalsByString.get(val);
+
 		if (!eq) {
 			const newEq = { schemas: [next] };
 			equalsByString.set(val, newEq);
 			nodeToEquals.set(next, newEq);
+
 			return true;
 		}
 		eq.schemas.push(next);
 		nodeToEquals.set(next, eq);
 		hasDups = true;
+
 		return false;
 	};
 	traverseNodes(schema, visitSchemas);
@@ -167,6 +178,7 @@ export function getCompressedContent(schema: IJSONSchema): string {
 	}
 
 	let defNodeName = '$defs';
+
 	while (schema.hasOwnProperty(defNodeName)) {
 		defNodeName += '_';
 	}
@@ -178,6 +190,7 @@ export function getCompressedContent(schema: IJSONSchema): string {
 		return JSON.stringify(root, (_key: string, value: any) => {
 			if (value !== root) {
 				const eq = nodeToEquals.get(value);
+
 				if (eq && eq.schemas.length > 1) {
 					if (!eq.id) {
 						eq.id = `_${definitions.length}`;
@@ -196,6 +209,7 @@ export function getCompressedContent(schema: IJSONSchema): string {
 
 	// now stringify the definitions. Each invication of stringify cann add new items to the definitions array, so the length can grow while we iterate
 	const defStrings: string[] = [];
+
 	for (let i = 0; i < definitions.length; i++) {
 		defStrings.push(`"_${i}":${stringify(definitions[i])}`);
 	}
@@ -225,11 +239,13 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 			}
 		}
 	};
+
 	const collectMapEntries = (...maps: (IJSONSchemaMap | undefined)[]) => {
 		for (const map of maps) {
 			if (isObject(map)) {
 				for (const key in map) {
 					const entry = map[key];
+
 					if (isObject(entry)) {
 						toWalk.push(entry);
 					}
@@ -237,6 +253,7 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 			}
 		}
 	};
+
 	const collectArrayEntries = (...arrays: (IJSONSchemaRef[] | undefined)[]) => {
 		for (const array of arrays) {
 			if (Array.isArray(array)) {
@@ -248,6 +265,7 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 			}
 		}
 	};
+
 	const collectEntryOrArrayEntries = (items: (IJSONSchemaRef[] | IJSONSchemaRef | undefined)) => {
 		if (Array.isArray(items)) {
 			for (const entry of items) {
@@ -263,8 +281,10 @@ function traverseNodes(root: IJSONSchema, visit: (schema: IJSONSchema) => boolea
 	const toWalk: IJSONSchema[] = [root];
 
 	let next = toWalk.pop();
+
 	while (next) {
 		const visitChildern = visit(next);
+
 		if (visitChildern) {
 			collectEntries(next.additionalItems, next.additionalProperties, next.not, next.contains, next.propertyNames, next.if, next.then, next.else, next.unevaluatedItems, next.unevaluatedProperties);
 			collectMapEntries(next.definitions, next.$defs, next.properties, next.patternProperties, <IJSONSchemaMap>next.dependencies, next.dependentSchemas);

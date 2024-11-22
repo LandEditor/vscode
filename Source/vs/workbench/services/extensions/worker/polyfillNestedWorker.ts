@@ -5,6 +5,7 @@
 import { NewWorkerMessage, TerminateWorkerMessage } from '../common/polyfillNestedWorker.protocol.js';
 declare function postMessage(data: any, transferables?: Transferable[]): void;
 declare type MessageEventHandler = ((ev: MessageEvent<any>) => any) | null;
+
 const _bootstrapFnSource = (function _bootstrapFn(workerUrl: string) {
     const listener: EventListener = (event: Event): void => {
         // uninstall handler
@@ -48,13 +49,18 @@ export class NestedWorker extends EventTarget implements Worker {
     onerror: ((this: AbstractWorker, ev: ErrorEvent) => any) | null = null;
     readonly terminate: () => void;
     readonly postMessage: (message: any, options?: any) => void;
+
     constructor(nativePostMessage: typeof postMessage, stringOrUrl: string | URL, options?: WorkerOptions) {
         super();
         // create bootstrap script
         const bootstrap = `((${_bootstrapFnSource})('${stringOrUrl}'))`;
+
         const blob = new Blob([bootstrap], { type: 'application/javascript' });
+
         const blobUrl = URL.createObjectURL(blob);
+
         const channel = new MessageChannel();
+
         const id = blobUrl; // works because blob url is unique, needs ID pool otherwise
         const msg: NewWorkerMessage = {
             type: '_newWorker',

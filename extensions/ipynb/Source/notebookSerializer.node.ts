@@ -9,6 +9,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
     private experimentalSave = vscode.workspace.getConfiguration('ipynb').get('experimental.serialization', false);
     private worker?: import('node:worker_threads').Worker;
     private tasks = new Map<string, DeferredPromise<Uint8Array>>();
+
     constructor(context: vscode.ExtensionContext) {
         super(context);
         context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
@@ -43,6 +44,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
             return this.worker;
         }
         const { Worker } = await import('node:worker_threads');
+
         const outputDir = getOutputDir(this.context);
         this.worker = new Worker(vscode.Uri.joinPath(this.context.extensionUri, outputDir, 'notebookSerializerWorker.js').fsPath, {});
         this.worker.on('exit', (exitCode) => {
@@ -56,6 +58,7 @@ export class NotebookSerializer extends NotebookSerializerBase {
             id: string;
         }) => {
             const task = this.tasks.get(result.id);
+
             if (task) {
                 task.complete(result.data);
                 this.tasks.delete(result.id);
@@ -66,18 +69,23 @@ export class NotebookSerializer extends NotebookSerializerBase {
                 console.error(`IPynb Notebook Serializer Worker errored unexpectedly`, err);
             }
         });
+
         return this.worker;
     }
     private async serializeViaWorker(data: vscode.NotebookData): Promise<Uint8Array> {
         const worker = await this.startWorker();
+
         const id = generateUuid();
+
         const deferred = new DeferredPromise<Uint8Array>();
         this.tasks.set(id, deferred);
         worker.postMessage({ data, id });
+
         return deferred.p;
     }
 }
 function getOutputDir(context: vscode.ExtensionContext): string {
     const main = context.extension.packageJSON.main as string;
+
     return main.indexOf('/dist/') !== -1 ? 'dist' : 'out';
 }

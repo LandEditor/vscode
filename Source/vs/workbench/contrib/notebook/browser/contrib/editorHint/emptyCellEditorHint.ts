@@ -22,6 +22,7 @@ import { IEditorService } from '../../../../../services/editor/common/editorServ
 
 export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribution {
 	public static readonly CONTRIB_ID = 'notebook.editor.contrib.emptyCellEditorHint';
+
 	constructor(
 		editor: ICodeEditor,
 		@IEditorService private readonly _editorService: IEditorService,
@@ -65,21 +66,25 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 
 	protected override _shouldRenderHint(): boolean {
 		const model = this.editor.getModel();
+
 		if (!model) {
 			return false;
 		}
 
 		const isNotebookCell = model?.uri.scheme === Schemas.vscodeNotebookCell;
+
 		if (!isNotebookCell) {
 			return false;
 		}
 
 		const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
 		if (!activeEditor || !activeEditor.isDisposed) {
 			return false;
 		}
 
 		const shouldRenderHint = super._shouldRenderHint();
+
 		if (!shouldRenderHint) {
 			return false;
 		}

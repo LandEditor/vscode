@@ -19,29 +19,38 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
     public constructor(private readonly client: ITypeScriptServiceClient, private readonly fileConfigurationManager: FileConfigurationManager) { }
     public async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context?: vscode.HoverContext): Promise<vscode.VerboseHover | undefined> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return undefined;
         }
         const enableExpandableHover = vscode.workspace.getConfiguration('typescript').get('experimental.expandableHover');
+
         let verbosityLevel: number | undefined;
+
         if (enableExpandableHover && this.client.apiVersion.gte(API.v570)) {
             verbosityLevel = Math.max(0, this.getPreviousLevel(context?.previousHover) + (context?.verbosityDelta ?? 0));
         }
         const args = { ...typeConverters.Position.toFileLocationRequestArgs(filepath, position), verbosityLevel };
+
         const response = await this.client.interruptGetErr(async () => {
             await this.fileConfigurationManager.ensureConfigurationForDocument(document, token);
+
             return this.client.execute('quickinfo', args, token);
         });
+
         if (response.type !== 'response' || !response.body) {
             return undefined;
         }
         const contents = this.getContents(document.uri, response.body, response._serverType);
+
         const range = typeConverters.Range.fromTextSpan(response.body);
+
         const hover = verbosityLevel !== undefined ?
             new vscode.VerboseHover(contents, range, 
             // @ts-expect-error
             /*canIncreaseVerbosity*/ response.body.canIncreaseVerbosityLevel, 
             /*canDecreaseVerbosity*/ verbosityLevel !== 0) : new vscode.Hover(contents, range);
+
         if (verbosityLevel !== undefined) {
             this.lastHoverAndLevel = [hover, verbosityLevel];
         }
@@ -49,8 +58,10 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
     }
     private getContents(resource: vscode.Uri, data: Proto.QuickInfoResponseBody, source: ServerType | undefined) {
         const parts: vscode.MarkdownString[] = [];
+
         if (data.displayString) {
             const displayParts: string[] = [];
+
             if (source === ServerType.Syntax && this.client.hasCapabilityForResource(resource, ClientCapability.Semantic)) {
                 displayParts.push(vscode.l10n.t({
                     message: "(loading...)",
@@ -62,6 +73,7 @@ class TypeScriptHoverProvider implements vscode.HoverProvider {
         }
         const md = documentationToMarkdown(data.documentation, data.tags, this.client, resource);
         parts.push(md);
+
         return parts;
     }
     private getPreviousLevel(previousHover: vscode.Hover | undefined): number {

@@ -11,9 +11,13 @@ export namespace inputLatency {
         max: number;
     }
     const totalKeydownTime: ICumulativeMeasurement = { total: 0, min: Number.MAX_VALUE, max: 0 };
+
     const totalInputTime: ICumulativeMeasurement = { ...totalKeydownTime };
+
     const totalRenderTime: ICumulativeMeasurement = { ...totalKeydownTime };
+
     const totalInputLatencyTime: ICumulativeMeasurement = { ...totalKeydownTime };
+
     let measurementsCount = 0;
     // The state of each event, this helps ensure the integrity of the measurement and that
     // something unexpected didn't happen that could skew the measurement.
@@ -221,6 +225,7 @@ export namespace inputLatency {
         clearCumulativeMeasurement(totalRenderTime);
         clearCumulativeMeasurement(totalInputLatencyTime);
         measurementsCount = 0;
+
         return result;
     }
     function cumulativeToFinalMeasurement(cumulative: ICumulativeMeasurement): IInputLatencySingleMeasurement {

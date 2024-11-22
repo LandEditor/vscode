@@ -32,6 +32,7 @@ export class ViewModelDecorations implements IDisposable {
     };
     private _cachedModelDecorationsResolver: IDecorationsViewportData | null;
     private _cachedModelDecorationsResolverViewRange: Range | null;
+
     constructor(editorId: number, model: ITextModel, configuration: IEditorConfiguration, linesCollection: IViewModelLines, coordinatesConverter: ICoordinatesConverter) {
         this.editorId = editorId;
         this.model = model;
@@ -64,13 +65,19 @@ export class ViewModelDecorations implements IDisposable {
     }
     private _getOrCreateViewModelDecoration(modelDecoration: IModelDecoration): ViewModelDecoration {
         const id = modelDecoration.id;
+
         let r = this._decorationsCache[id];
+
         if (!r) {
             const modelRange = modelDecoration.range;
+
             const options = modelDecoration.options;
+
             let viewRange: Range;
+
             if (options.isWholeLine) {
                 const start = this._coordinatesConverter.convertModelPositionToViewPosition(new Position(modelRange.startLineNumber, 1), PositionAffinity.Left, false, true);
+
                 const end = this._coordinatesConverter.convertModelPositionToViewPosition(new Position(modelRange.endLineNumber, this.model.getLineMaxColumn(modelRange.endLineNumber)), PositionAffinity.Right);
                 viewRange = new Range(start.lineNumber, start.column, end.lineNumber, end.column);
             }
@@ -90,6 +97,7 @@ export class ViewModelDecorations implements IDisposable {
     public getDecorationsViewportData(viewRange: Range): IDecorationsViewportData {
         let cacheIsValid = (this._cachedModelDecorationsResolver !== null);
         cacheIsValid = cacheIsValid && (viewRange.equalsRange(this._cachedModelDecorationsResolverViewRange));
+
         if (!cacheIsValid) {
             this._cachedModelDecorationsResolver = this._getDecorationsInRange(viewRange, false, false);
             this._cachedModelDecorationsResolverViewRange = viewRange;
@@ -98,31 +106,45 @@ export class ViewModelDecorations implements IDisposable {
     }
     public getInlineDecorationsOnLine(lineNumber: number, onlyMinimapDecorations: boolean = false, onlyMarginDecorations: boolean = false): InlineDecoration[] {
         const range = new Range(lineNumber, this._linesCollection.getViewLineMinColumn(lineNumber), lineNumber, this._linesCollection.getViewLineMaxColumn(lineNumber));
+
         return this._getDecorationsInRange(range, onlyMinimapDecorations, onlyMarginDecorations).inlineDecorations[0];
     }
     private _getDecorationsInRange(viewRange: Range, onlyMinimapDecorations: boolean, onlyMarginDecorations: boolean): IDecorationsViewportData {
         const modelDecorations = this._linesCollection.getDecorationsInRange(viewRange, this.editorId, filterValidationDecorations(this.configuration.options), onlyMinimapDecorations, onlyMarginDecorations);
+
         const startLineNumber = viewRange.startLineNumber;
+
         const endLineNumber = viewRange.endLineNumber;
+
         const decorationsInViewport: ViewModelDecoration[] = [];
+
         let decorationsInViewportLen = 0;
+
         const inlineDecorations: InlineDecoration[][] = [];
+
         for (let j = startLineNumber; j <= endLineNumber; j++) {
             inlineDecorations[j - startLineNumber] = [];
         }
         for (let i = 0, len = modelDecorations.length; i < len; i++) {
             const modelDecoration = modelDecorations[i];
+
             const decorationOptions = modelDecoration.options;
+
             if (!isModelDecorationVisible(this.model, modelDecoration)) {
                 continue;
             }
             const viewModelDecoration = this._getOrCreateViewModelDecoration(modelDecoration);
+
             const viewRange = viewModelDecoration.range;
             decorationsInViewport[decorationsInViewportLen++] = viewModelDecoration;
+
             if (decorationOptions.inlineClassName) {
                 const inlineDecoration = new InlineDecoration(viewRange, decorationOptions.inlineClassName, decorationOptions.inlineClassNameAffectsLetterSpacing ? InlineDecorationType.RegularAffectingLetterSpacing : InlineDecorationType.Regular);
+
                 const intersectedStartLineNumber = Math.max(startLineNumber, viewRange.startLineNumber);
+
                 const intersectedEndLineNumber = Math.min(endLineNumber, viewRange.endLineNumber);
+
                 for (let j = intersectedStartLineNumber; j <= intersectedEndLineNumber; j++) {
                     inlineDecorations[j - startLineNumber].push(inlineDecoration);
                 }
@@ -169,17 +191,23 @@ export function isModelDecorationInString(model: ITextModel, decoration: IModelD
 function testTokensInRange(model: ITextModel, range: Range, callback: (tokenType: StandardTokenType) => boolean): boolean {
     for (let lineNumber = range.startLineNumber; lineNumber <= range.endLineNumber; lineNumber++) {
         const lineTokens = model.tokenization.getLineTokens(lineNumber);
+
         const isFirstLine = lineNumber === range.startLineNumber;
+
         const isEndLine = lineNumber === range.endLineNumber;
+
         let tokenIdx = isFirstLine ? lineTokens.findTokenIndexAtOffset(range.startColumn - 1) : 0;
+
         while (tokenIdx < lineTokens.getCount()) {
             if (isEndLine) {
                 const startOffset = lineTokens.getStartOffset(tokenIdx);
+
                 if (startOffset > range.endColumn - 1) {
                     break;
                 }
             }
             const callbackResult = callback(lineTokens.getStandardTokenType(tokenIdx));
+
             if (!callbackResult) {
                 return false;
             }

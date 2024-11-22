@@ -34,6 +34,7 @@ export class DiffEditorEditors extends Disposable {
     public readonly isOriginalFocused = observableCodeEditor(this.original).isFocused;
     public readonly isModifiedFocused = observableCodeEditor(this.modified).isFocused;
     public readonly isFocused = derived(this, reader => this.isOriginalFocused.read(reader) || this.isModifiedFocused.read(reader));
+
     constructor(private readonly originalEditorElement: HTMLElement, private readonly modifiedEditorElement: HTMLElement, private readonly _options: DiffEditorOptions, private _argCodeEditorWidgetOptions: IDiffCodeEditorWidgetOptions, private readonly _createInnerEditor: (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>, editorWidgetOptions: ICodeEditorWidgetOptions) => CodeEditorWidget, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -59,20 +60,25 @@ export class DiffEditorEditors extends Disposable {
     }
     private _createLeftHandSideEditor(options: Readonly<IDiffEditorConstructionOptions>, codeEditorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
         const leftHandSideOptions = this._adjustOptionsForLeftHandSide(undefined, options);
+
         const editor = this._constructInnerEditor(this._instantiationService, this.originalEditorElement, leftHandSideOptions, codeEditorWidgetOptions);
         editor.setContextValue('isInDiffLeftEditor', true);
+
         return editor;
     }
     private _createRightHandSideEditor(options: Readonly<IDiffEditorConstructionOptions>, codeEditorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
         const rightHandSideOptions = this._adjustOptionsForRightHandSide(undefined, options);
+
         const editor = this._constructInnerEditor(this._instantiationService, this.modifiedEditorElement, rightHandSideOptions, codeEditorWidgetOptions);
         editor.setContextValue('isInDiffRightEditor', true);
+
         return editor;
     }
     private _constructInnerEditor(instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorConstructionOptions>, editorWidgetOptions: ICodeEditorWidgetOptions): CodeEditorWidget {
         const editor = this._createInnerEditor(instantiationService, container, options, editorWidgetOptions);
         this._register(editor.onDidContentSizeChange(e => {
             const width = this.original.getContentWidth() + this.modified.getContentWidth() + OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
+
             const height = Math.max(this.modified.getContentHeight(), this.original.getContentHeight());
             this._onDidContentSizeChange.fire({
                 contentHeight: height,
@@ -81,10 +87,12 @@ export class DiffEditorEditors extends Disposable {
                 contentWidthChanged: e.contentWidthChanged
             });
         }));
+
         return editor;
     }
     private _adjustOptionsForLeftHandSide(_reader: IReader | undefined, changedOptions: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
         const result = this._adjustOptionsForSubEditor(changedOptions);
+
         if (!this._options.renderSideBySide.get()) {
             // never wrap hidden editor
             result.wordWrapOverride1 = 'off';
@@ -98,6 +106,7 @@ export class DiffEditorEditors extends Disposable {
             result.wordWrapOverride1 = this._options.diffWordWrap.get();
         }
         result.glyphMargin = this._options.renderSideBySide.get();
+
         if (changedOptions.originalAriaLabel) {
             result.ariaLabel = changedOptions.originalAriaLabel;
         }
@@ -105,10 +114,12 @@ export class DiffEditorEditors extends Disposable {
         result.readOnly = !this._options.originalEditable.get();
         result.dropIntoEditor = { enabled: !result.readOnly };
         result.extraEditorClassName = 'original-in-monaco-diff-editor';
+
         return result;
     }
     private _adjustOptionsForRightHandSide(reader: IReader | undefined, changedOptions: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
         const result = this._adjustOptionsForSubEditor(changedOptions);
+
         if (changedOptions.modifiedAriaLabel) {
             result.ariaLabel = changedOptions.modifiedAriaLabel;
         }
@@ -117,6 +128,7 @@ export class DiffEditorEditors extends Disposable {
         result.revealHorizontalRightPadding = EditorOptions.revealHorizontalRightPadding.defaultValue + OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
         result.scrollbar!.verticalHasArrows = false;
         result.extraEditorClassName = 'modified-in-monaco-diff-editor';
+
         return result;
     }
     private _adjustOptionsForSubEditor(options: Readonly<IDiffEditorConstructionOptions>): IEditorConstructionOptions {
@@ -137,6 +149,7 @@ export class DiffEditorEditors extends Disposable {
         // Clone minimap options before changing them
         clonedOptions.minimap = { ...(clonedOptions.minimap || {}) };
         clonedOptions.minimap.enabled = false;
+
         if (this._options.hideUnchangedRegions.get()) {
             clonedOptions.stickyScroll = { enabled: false };
         }
@@ -150,6 +163,7 @@ export class DiffEditorEditors extends Disposable {
             ariaLabel = '';
         }
         const ariaNavigationTip = localize('diff-aria-navigation-tip', ' use {0} to open the accessibility help.', this._keybindingService.lookupKeybinding('editor.action.accessibilityHelp')?.getAriaLabel());
+
         if (this._options.accessibilityVerbose.get()) {
             return ariaLabel + ariaNavigationTip;
         }

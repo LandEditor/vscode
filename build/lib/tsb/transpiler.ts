@@ -20,11 +20,13 @@ function transpile(tsSrc: string, options: ts.TranspileOptions): {
     diag: ts.Diagnostic[];
 } {
     const isAmd = /\n(import|export)/m.test(tsSrc);
+
     if (!isAmd && options.compilerOptions?.module === ts.ModuleKind.AMD) {
         // enforce NONE module-system for not-amd cases
         options = { ...options, ...{ compilerOptions: { ...options.compilerOptions, module: ts.ModuleKind.None } } };
     }
     const out = ts.transpileModule(tsSrc, options);
+
     return {
         jsSrc: out.outputText,
         diag: out.diagnostics ?? []
@@ -37,6 +39,7 @@ if (!threads.isMainThread) {
             jsSrcs: [],
             diagnostics: []
         };
+
         for (const tsSrc of req.tsSrcs) {
             const out = transpile(tsSrc, req.options);
             res.jsSrcs.push(out.jsSrc);
@@ -47,27 +50,32 @@ if (!threads.isMainThread) {
 }
 class OutputFileNameOracle {
     readonly getOutputFileName: (name: string) => string;
+
     constructor(cmdLine: ts.ParsedCommandLine, configFilePath: string) {
         // very complicated logic to re-use TS internal functions to know the output path
         // given a TS input path and its config
         type InternalTsApi = typeof ts & {
             normalizePath(path: string): string;
+
             getOutputFileNames(commandLine: ts.ParsedCommandLine, inputFileName: string, ignoreCase: boolean): readonly string[];
         };
         this.getOutputFileName = (file) => {
             try {
                 // windows: path-sep normalizing
                 file = (<InternalTsApi>ts).normalizePath(file);
+
                 if (!cmdLine.options.configFilePath) {
                     // this is needed for the INTERNAL getOutputFileNames-call below...
                     cmdLine.options.configFilePath = configFilePath;
                 }
                 const isDts = file.endsWith('.d.ts');
+
                 if (isDts) {
                     file = file.slice(0, -5) + '.ts';
                     cmdLine.fileNames.push(file);
                 }
                 const outfile = (<InternalTsApi>ts).getOutputFileNames(cmdLine, file, true)[0];
+
                 if (isDts) {
                     cmdLine.fileNames.pop();
                 }
@@ -76,6 +84,7 @@ class OutputFileNameOracle {
             catch (err) {
                 console.error(file, cmdLine.fileNames);
                 console.error(err);
+
                 throw err;
             }
         };
@@ -93,22 +102,31 @@ class TranspileWorker {
         t1: number
     ];
     private _durations: number[] = [];
+
     constructor(outFileFn: (fileName: string) => string) {
         this._worker.addListener('message', (res: TranspileRes) => {
             if (!this._pending) {
                 console.error('RECEIVING data WITHOUT request');
+
                 return;
             }
             const [resolve, reject, files, options, t1] = this._pending;
+
             const outFiles: Vinyl[] = [];
+
             const diag: ts.Diagnostic[] = [];
+
             for (let i = 0; i < res.jsSrcs.length; i++) {
                 // inputs and outputs are aligned across the arrays
                 const file = files[i];
+
                 const jsSrc = res.jsSrcs[i];
+
                 const diag = res.diagnostics[i];
+
                 if (diag.length > 0) {
                     diag.push(...diag);
+
                     continue;
                 }
                 const enum SuffixTypes {
@@ -125,6 +143,7 @@ class TranspileWorker {
                     continue;
                 }
                 const outBase = options.compilerOptions?.outDir ?? file.base;
+
                 const outPath = outFileFn(file.path);
                 outFiles.push(new Vinyl({
                     path: outPath,
@@ -134,6 +153,7 @@ class TranspileWorker {
             }
             this._pending = undefined;
             this._durations.push(Date.now() - t1);
+
             if (diag.length > 0) {
                 reject(diag);
             }
@@ -155,6 +175,7 @@ class TranspileWorker {
         }
         return new Promise<Vinyl[]>((resolve, reject) => {
             this._pending = [resolve, reject, files, options, Date.now()];
+
             const req: TranspileReq = {
                 options,
                 tsSrcs: files.map(file => String(file.contents))
@@ -175,6 +196,7 @@ export class TscTranspiler implements ITranspiler {
     private _workerPool: TranspileWorker[] = [];
     private _queue: Vinyl[] = [];
     private _allJobs: Promise<any>[] = [];
+
     constructor(logFn: (topic: string, message: string) => void, private readonly _onError: (err: any) => void, configFilePath: string, private readonly _cmdLine: ts.ParsedCommandLine) {
         logFn('Transpile', `will use ${TscTranspiler.P} transpile worker`);
         this._outputFileNames = new OutputFileNameOracle(_cmdLine, configFilePath);
@@ -194,6 +216,7 @@ export class TscTranspiler implements ITranspiler {
             return;
         }
         const newLen = this._queue.push(file);
+
         if (newLen > TscTranspiler.P ** 2) {
             this._consumeQueue();
         }
@@ -210,6 +233,7 @@ export class TscTranspiler implements ITranspiler {
             }
         }
         const freeWorker = this._workerPool.filter(w => !w.isBusy);
+
         if (freeWorker.length === 0) {
             // OK, they will pick up work themselves
             return;
@@ -221,9 +245,11 @@ export class TscTranspiler implements ITranspiler {
             const job = new Promise(resolve => {
                 const consume = () => {
                     const files = this._queue.splice(0, TscTranspiler.P);
+
                     if (files.length === 0) {
                         // DONE
                         resolve(undefined);
+
                         return;
                     }
                     // work on the NEXT file
@@ -248,9 +274,11 @@ export class ESBuildTranspiler implements ITranspiler {
     private _jobs: Promise<any>[] = [];
     onOutfile?: ((file: Vinyl) => void) | undefined;
     private readonly _transformOpts: esbuild.TransformOptions;
+
     constructor(private readonly _logFn: (topic: string, message: string) => void, private readonly _onError: (err: any) => void, configFilePath: string, private readonly _cmdLine: ts.ParsedCommandLine) {
         _logFn('Transpile', `will use ESBuild to transpile source files`);
         this._outputFileNames = new OutputFileNameOracle(_cmdLine, configFilePath);
+
         const isExtension = configFilePath.includes('extensions');
         this._transformOpts = {
             target: ['es2022'],
@@ -293,6 +321,7 @@ export class ESBuildTranspiler implements ITranspiler {
                 return;
             }
             const outBase = this._cmdLine.options.outDir ?? file.base;
+
             const outPath = this._outputFileNames.getOutputFileName(file.path);
             this.onOutfile!(new Vinyl({
                 path: outPath,

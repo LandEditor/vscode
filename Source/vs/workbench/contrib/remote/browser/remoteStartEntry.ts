@@ -19,6 +19,7 @@ export class RemoteStartEntry extends Disposable implements IWorkbenchContributi
     private static readonly REMOTE_WEB_START_ENTRY_ACTIONS_COMMAND_ID = 'workbench.action.remote.showWebStartEntryActions';
     private readonly remoteExtensionId: string;
     private readonly startCommand: string;
+
     constructor(
     @ICommandService
     private readonly commandService: ICommandService, 
@@ -33,6 +34,7 @@ export class RemoteStartEntry extends Disposable implements IWorkbenchContributi
     @IContextKeyService
     private readonly contextKeyService: IContextKeyService) {
         super();
+
         const remoteExtensionTips = this.productService.remoteExtensionTips?.['tunnel'];
         this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? '';
         this.remoteExtensionId = remoteExtensionTips?.extensionId ?? '';
@@ -75,6 +77,7 @@ export class RemoteStartEntry extends Disposable implements IWorkbenchContributi
     private async _init(): Promise<void> {
         // Check if installed and enabled
         const installed = (await this.extensionManagementService.getInstalled()).find(value => ExtensionIdentifier.equals(value.identifier.id, this.remoteExtensionId));
+
         if (installed) {
             if (this.extensionEnablementService.isEnabled(installed)) {
                 showStartEntryInWeb.bindTo(this.contextKeyService).set(true);

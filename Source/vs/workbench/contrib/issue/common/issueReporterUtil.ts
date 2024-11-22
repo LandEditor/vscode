@@ -10,6 +10,7 @@ export function normalizeGitHubUrl(url: string): string {
     }
     // Remove trailing slash
     url = rtrim(url, '/');
+
     if (url.endsWith('/new')) {
         url = rtrim(url, '/new');
     }

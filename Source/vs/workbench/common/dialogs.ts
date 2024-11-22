@@ -28,10 +28,12 @@ export class DialogsModel extends Disposable implements IDialogsModel {
     readonly onDidShowDialog = this._onDidShowDialog.event;
     show(dialog: IDialogArgs): IDialogHandle {
         const promise = new DeferredPromise<IDialogResult | undefined>();
+
         const item: IDialogViewItem = {
             args: dialog,
             close: result => {
                 this.dialogs.splice(0, 1);
+
                 if (result instanceof Error) {
                     promise.error(result);
                 }
@@ -43,6 +45,7 @@ export class DialogsModel extends Disposable implements IDialogsModel {
         };
         this.dialogs.push(item);
         this._onWillShowDialog.fire();
+
         return {
             item,
             result: promise.p

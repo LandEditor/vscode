@@ -17,6 +17,7 @@ export class ServerTelemetryService extends TelemetryService implements IServerT
     // the ServerTelemetryService is responsible for knowing its telemetry level
     // this is done through IPC calls and initial value injections
     private _injectedTelemetryLevel: TelemetryLevel;
+
     constructor(config: ITelemetryServiceConfig, injectedTelemetryLevel: TelemetryLevel, 
     @IConfigurationService
     _configurationService: IConfigurationService, 
@@ -46,10 +47,12 @@ export class ServerTelemetryService extends TelemetryService implements IServerT
     async updateInjectedTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void> {
         if (telemetryLevel === undefined) {
             this._injectedTelemetryLevel = TelemetryLevel.NONE;
+
             throw new Error('Telemetry level cannot be undefined. This will cause infinite looping!');
         }
         // We always take the most restrictive level because we don't want multiple clients to connect and send data when one client does not consent
         this._injectedTelemetryLevel = this._injectedTelemetryLevel ? Math.min(this._injectedTelemetryLevel, telemetryLevel) : telemetryLevel;
+
         if (this._injectedTelemetryLevel === TelemetryLevel.NONE) {
             this.dispose();
         }

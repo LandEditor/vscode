@@ -76,17 +76,23 @@ class RunCommands extends Action2 {
     //  - and we want to be able to take on different other arguments in future, e.g., `runMode : 'serial' | 'concurrent'`
     async run(accessor: ServicesAccessor, args: unknown) {
         const notificationService = accessor.get(INotificationService);
+
         if (!this._isCommandArgs(args)) {
             notificationService.error(nls.localize('runCommands.invalidArgs', "'runCommands' has received an argument with incorrect type. Please, review the argument passed to the command."));
+
             return;
         }
         if (args.commands.length === 0) {
             notificationService.warn(nls.localize('runCommands.noCommandsToRun', "'runCommands' has not received commands to run. Did you forget to pass commands in the 'runCommands' argument?"));
+
             return;
         }
         const commandService = accessor.get(ICommandService);
+
         const logService = accessor.get(ILogService);
+
         let i = 0;
+
         try {
             for (; i < args.commands.length; ++i) {
                 const cmd = args.commands[i];
@@ -120,6 +126,7 @@ class RunCommands extends Action2 {
     }
     private _runCommand(commandService: ICommandService, cmd: RunnableCommand) {
         let commandID: string, commandArgs;
+
         if (typeof cmd === 'string') {
             commandID = cmd;
         }

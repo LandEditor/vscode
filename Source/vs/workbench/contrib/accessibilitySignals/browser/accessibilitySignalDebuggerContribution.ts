@@ -14,6 +14,7 @@ export class AccessibilitySignalLineDebuggerContribution extends Disposable impl
     @IAccessibilitySignalService
     private readonly accessibilitySignalService: AccessibilitySignalService) {
         super();
+
         const isEnabled = observableFromEvent(this, accessibilitySignalService.onSoundEnabledChanged(AccessibilitySignal.onDebugBreak), () => accessibilitySignalService.isSoundEnabled(AccessibilitySignal.onDebugBreak));
         this._register(autorunWithStore((reader, store) => {
             /** @description subscribe to debug sessions */
@@ -39,7 +40,9 @@ export class AccessibilitySignalLineDebuggerContribution extends Disposable impl
     private handleSession(session: IDebugSession): IDisposable {
         return session.onDidChangeState(e => {
             const stoppedDetails = session.getStoppedDetails();
+
             const BREAKPOINT_STOP_REASON = 'breakpoint';
+
             if (stoppedDetails && stoppedDetails.reason === BREAKPOINT_STOP_REASON) {
                 this.accessibilitySignalService.playSignal(AccessibilitySignal.onDebugBreak);
             }

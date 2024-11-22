@@ -35,6 +35,7 @@ export class RulersGpu extends ViewPart {
 
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		this._updateEntries(undefined);
+
 		return true;
 	}
 
@@ -50,13 +51,20 @@ export class RulersGpu extends ViewPart {
 
 	private _updateEntries(reader: IReader | undefined) {
 		const options = this._context.configuration.options;
+
 		const rulers = options.get(EditorOption.rulers);
+
 		const typicalHalfwidthCharacterWidth = options.get(EditorOption.fontInfo).typicalHalfwidthCharacterWidth;
+
 		const devicePixelRatio = this._viewGpuContext.devicePixelRatio.read(reader);
+
 		for (let i = 0, len = rulers.length; i < len; i++) {
 			const ruler = rulers[i];
+
 			const shape = this._gpuShapes[i];
+
 			const color = ruler.color ? Color.fromHex(ruler.color) : this._context.theme.getColor(editorRuler) ?? Color.white;
+
 			const rulerData: Parameters<RectangleRenderer['register']> = [
 				ruler.column * typicalHalfwidthCharacterWidth * devicePixelRatio,
 				0,
@@ -67,6 +75,7 @@ export class RulersGpu extends ViewPart {
 				color.rgba.b / 255,
 				color.rgba.a,
 			];
+
 			if (!shape) {
 				this._gpuShapes[i] = this._viewGpuContext.rectangleRenderer.register(...rulerData);
 			} else {

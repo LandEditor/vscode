@@ -5,8 +5,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as tss from './treeshaking';
+
 const REPO_ROOT = path.join(__dirname, '../../');
+
 const SRC_DIR = path.join(REPO_ROOT, 'src');
+
 const dirCache: {
     [dir: string]: boolean;
 } = {};
@@ -17,6 +20,7 @@ function writeFile(filePath: string, contents: Buffer | string): void {
         }
         dirCache[dirPath] = true;
         ensureDirs(path.dirname(dirPath));
+
         if (fs.existsSync(dirPath)) {
             return;
         }
@@ -29,10 +33,13 @@ export function extractEditor(options: tss.ITreeShakingOptions & {
     destRoot: string;
 }): void {
     const ts = require('typescript') as typeof import('typescript');
+
     const tsConfig = JSON.parse(fs.readFileSync(path.join(options.sourcesRoot, 'tsconfig.monaco.json')).toString());
+
     let compilerOptions: {
         [key: string]: any;
     };
+
     if (tsConfig.extends) {
         compilerOptions = Object.assign({}, require(path.join(options.sourcesRoot, tsConfig.extends)).compilerOptions, tsConfig.compilerOptions);
         delete tsConfig.extends;
@@ -62,6 +69,7 @@ export function extractEditor(options: tss.ITreeShakingOptions & {
         });
     }
     const result = tss.shake(options);
+
     for (const fileName in result) {
         if (result.hasOwnProperty(fileName)) {
             writeFile(path.join(options.destRoot, fileName), result[fileName]);
@@ -70,25 +78,34 @@ export function extractEditor(options: tss.ITreeShakingOptions & {
     const copied: {
         [fileName: string]: boolean;
     } = {};
+
     const copyFile = (fileName: string) => {
         if (copied[fileName]) {
             return;
         }
         copied[fileName] = true;
+
         const srcPath = path.join(options.sourcesRoot, fileName);
+
         const dstPath = path.join(options.destRoot, fileName);
         writeFile(dstPath, fs.readFileSync(srcPath));
     };
+
     const writeOutputFile = (fileName: string, contents: string | Buffer) => {
         writeFile(path.join(options.destRoot, fileName), contents);
     };
+
     for (const fileName in result) {
         if (result.hasOwnProperty(fileName)) {
             const fileContents = result[fileName];
+
             const info = ts.preProcessFile(fileContents);
+
             for (let i = info.importedFiles.length - 1; i >= 0; i--) {
                 const importedFileName = info.importedFiles[i].fileName;
+
                 let importedFilePath = importedFileName;
+
                 if (/(^\.\/)|(^\.\.\/)/.test(importedFilePath)) {
                     importedFilePath = path.join(path.dirname(fileName), importedFilePath);
                 }
@@ -97,6 +114,7 @@ export function extractEditor(options: tss.ITreeShakingOptions & {
                 }
                 else {
                     const pathToCopy = path.join(options.sourcesRoot, importedFilePath);
+
                     if (fs.existsSync(pathToCopy) && !fs.statSync(pathToCopy).isDirectory()) {
                         copyFile(importedFilePath);
                     }
@@ -121,10 +139,14 @@ export interface IOptions2 {
 }
 export function createESMSourcesAndResources2(options: IOptions2): void {
     const SRC_FOLDER = path.join(REPO_ROOT, options.srcFolder);
+
     const OUT_FOLDER = path.join(REPO_ROOT, options.outFolder);
+
     const OUT_RESOURCES_FOLDER = path.join(REPO_ROOT, options.outResourcesFolder);
+
     const getDestAbsoluteFilePath = (file: string): string => {
         const dest = options.renames[file.replace(/\\/g, '/')] || file;
+
         if (dest === 'tsconfig.json') {
             return path.join(OUT_FOLDER, `tsconfig.json`);
         }
@@ -133,7 +155,9 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
         }
         return path.join(OUT_RESOURCES_FOLDER, dest);
     };
+
     const allFiles = walkDirRecursive(SRC_FOLDER);
+
     for (const file of allFiles) {
         if (options.ignores.indexOf(file.replace(/\\/g, '/')) >= 0) {
             continue;
@@ -143,11 +167,13 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
             tsConfig.compilerOptions.module = 'es2022';
             tsConfig.compilerOptions.outDir = path.join(path.relative(OUT_FOLDER, OUT_RESOURCES_FOLDER), 'vs').replace(/\\/g, '/');
             write(getDestAbsoluteFilePath(file), JSON.stringify(tsConfig, null, '\t'));
+
             continue;
         }
         if (/\.ts$/.test(file) || /\.d\.ts$/.test(file) || /\.css$/.test(file) || /\.js$/.test(file) || /\.ttf$/.test(file)) {
             // Transport the files directly
             write(getDestAbsoluteFilePath(file), fs.readFileSync(path.join(SRC_FOLDER, file)));
+
             continue;
         }
         console.log(`UNKNOWN FILE: ${file}`);
@@ -158,12 +184,15 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
         }
         const result: string[] = [];
         _walkDirRecursive(dir, result, dir.length);
+
         return result;
     }
     function _walkDirRecursive(dir: string, result: string[], trimPos: number): void {
         const files = fs.readdirSync(dir);
+
         for (let i = 0; i < files.length; i++) {
             const file = path.join(dir, files[i]);
+
             if (fs.statSync(file).isDirectory()) {
                 _walkDirRecursive(file, result, trimPos);
             }
@@ -177,18 +206,24 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
             contents = toggleComments(contents.toString());
         }
         writeFile(absoluteFilePath, contents);
+
         function toggleComments(fileContents: string): string {
             const lines = fileContents.split(/\r\n|\r|\n/);
+
             let mode = 0;
+
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
+
                 if (mode === 0) {
                     if (/\/\/ ESM-comment-begin/.test(line)) {
                         mode = 1;
+
                         continue;
                     }
                     if (/\/\/ ESM-uncomment-begin/.test(line)) {
                         mode = 2;
+
                         continue;
                     }
                     continue;
@@ -196,14 +231,17 @@ export function createESMSourcesAndResources2(options: IOptions2): void {
                 if (mode === 1) {
                     if (/\/\/ ESM-comment-end/.test(line)) {
                         mode = 0;
+
                         continue;
                     }
                     lines[i] = '// ' + line;
+
                     continue;
                 }
                 if (mode === 2) {
                     if (/\/\/ ESM-uncomment-end/.test(line)) {
                         mode = 0;
+
                         continue;
                     }
                     lines[i] = line.replace(/^(\s*)\/\/ ?/, function (_, indent) {
@@ -220,24 +258,34 @@ function transportCSS(module: string, enqueue: (module: string) => void, write: 
         return false;
     }
     const filename = path.join(SRC_DIR, module);
+
     const fileContents = fs.readFileSync(filename).toString();
+
     const inlineResources = 'base64'; // see https://github.com/microsoft/monaco-editor/issues/148
     const newContents = _rewriteOrInlineUrls(fileContents, inlineResources === 'base64');
     write(module, newContents);
+
     return true;
+
     function _rewriteOrInlineUrls(contents: string, forceBase64: boolean): string {
         return _replaceURL(contents, (url) => {
             const fontMatch = url.match(/^(.*).ttf\?(.*)$/);
+
             if (fontMatch) {
                 const relativeFontPath = `${fontMatch[1]}.ttf`; // trim the query parameter
                 const fontPath = path.join(path.dirname(module), relativeFontPath);
                 enqueue(fontPath);
+
                 return relativeFontPath;
             }
             const imagePath = path.join(path.dirname(module), url);
+
             const fileContents = fs.readFileSync(path.join(SRC_DIR, imagePath));
+
             const MIME = /\.svg$/.test(url) ? 'image/svg+xml' : 'image/png';
+
             let DATA = ';base64,' + fileContents.toString('base64');
+
             if (!forceBase64 && /\.svg$/.test(url)) {
                 // .svg => url encode as explained at https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
                 const newText = fileContents.toString()
@@ -247,7 +295,9 @@ function transportCSS(module: string, enqueue: (module: string) => void, write: 
                     .replace(/&/g, '%26')
                     .replace(/#/g, '%23')
                     .replace(/\s+/g, ' ');
+
                 const encodedData = ',' + newText;
+
                 if (encodedData.length < DATA.length) {
                     DATA = encodedData;
                 }

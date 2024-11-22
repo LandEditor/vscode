@@ -19,6 +19,7 @@ export class DiffEditorOptions {
     }> { return this._options; }
     private readonly _diffEditorWidth = observableValue<number>(this, 0);
     private readonly _screenReaderMode = observableFromEvent(this, this._accessibilityService.onDidChangeScreenReaderOptimized, () => this._accessibilityService.isScreenReaderOptimized());
+
     constructor(options: Readonly<IDiffEditorOptions>, 
     @IAccessibilityService
     private readonly _accessibilityService: IAccessibilityService) {
@@ -76,6 +77,7 @@ export class DiffEditorOptions {
     public readonly hideUnchangedRegionsMinimumLineCount = derived(this, reader => this._options.read(reader).hideUnchangedRegions.minimumLineCount!);
     public updateOptions(changedOptions: IDiffEditorOptions): void {
         const newDiffEditorOptions = validateDiffEditorOptions(changedOptions, this._options.get());
+
         const newOptions = { ...this._options.get(), ...changedOptions, ...newDiffEditorOptions };
         this._options.set(newOptions, undefined, { changedOptions: changedOptions });
     }
@@ -89,6 +91,7 @@ export class DiffEditorOptions {
     private readonly shouldRenderInlineViewInSmartMode = this._model
         .map(this, model => derivedConstOnceDefined(this, reader => {
         const diffs = model?.diff.read(reader);
+
         return diffs ? isSimpleDiff(diffs, this.trueInlineDiffRenderingEnabled.read(reader)) : undefined;
     }))
         .flatten()

@@ -32,6 +32,7 @@ type OptionsWithCellContentMetadata = vscode.NotebookDocumentContentOptions & {
 };
 export function activate(context: vscode.ExtensionContext, serializer: vscode.NotebookSerializer) {
     keepNotebookModelStoreInSync(context);
+
     const notebookSerializerOptions: OptionsWithCellContentMetadata = {
         transientOutputs: false,
         transientDocumentMetadata: {
@@ -49,6 +50,7 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
         }
     };
     context.subscriptions.push(vscode.workspace.registerNotebookSerializer('jupyter-notebook', serializer, notebookSerializerOptions));
+
     const interactiveSerializeOptions: OptionsWithCellContentMetadata = {
         transientOutputs: false,
         transientCellMetadata: {
@@ -70,12 +72,15 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
                 return [];
             }
             const codelens = new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), { title: 'Open in Notebook Editor', command: 'ipynb.openIpynbInNotebookEditor', arguments: [document.uri] });
+
             return [codelens];
         }
     });
     context.subscriptions.push(vscode.commands.registerCommand('ipynb.newUntitledIpynb', async () => {
         const language = 'python';
+
         const cell = new vscode.NotebookCellData(vscode.NotebookCellKind.Code, '', language);
+
         const data = new vscode.NotebookData([cell]);
         data.metadata = {
             cells: [],
@@ -83,6 +88,7 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
             nbformat: 4,
             nbformat_minor: 2
         };
+
         const doc = await vscode.workspace.openNotebookDocument('jupyter-notebook', data);
         await vscode.window.showNotebookDocument(doc);
     }));
@@ -94,7 +100,9 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
         await vscode.window.showNotebookDocument(document);
     }));
     context.subscriptions.push(notebookImagePasteSetup());
+
     const enabled = vscode.workspace.getConfiguration('ipynb').get('pasteImagesAsAttachments.enabled', false);
+
     if (enabled) {
         const cleaner = new AttachmentCleaner();
         context.subscriptions.push(cleaner);
@@ -108,6 +116,7 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
         },
         setNotebookMetadata: async (resource: vscode.Uri, metadata: Partial<NotebookMetadata>): Promise<boolean> => {
             const document = vscode.workspace.notebookDocuments.find(doc => doc.uri.toString() === resource.toString());
+
             if (!document) {
                 return false;
             }
@@ -119,6 +128,7 @@ export function activate(context: vscode.ExtensionContext, serializer: vscode.No
                         ...metadata
                     } satisfies NotebookMetadata,
                 })]);
+
             return vscode.workspace.applyEdit(edit);
         },
     };

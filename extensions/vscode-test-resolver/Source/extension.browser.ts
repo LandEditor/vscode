@@ -9,6 +9,7 @@ export function activate(_context: vscode.ExtensionContext) {
             console.log(`Resolving ${_authority}`);
             console.log(`Activating vscode.github-authentication to simulate auth`);
             await vscode.extensions.getExtension('vscode.github-authentication')?.activate();
+
             return new vscode.ManagedResolvedAuthority(async () => {
                 return new InitialManagedMessagePassing();
             });
@@ -33,6 +34,7 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
         if (this._actual) {
             // we already got the HTTP headers
             this._actual.send(d);
+
             return;
         }
         if (this._isDisposed) {
@@ -41,12 +43,15 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
         }
         // we now received the HTTP headers
         const decoder = new TextDecoder();
+
         const str = decoder.decode(d);
         // example str GET ws://localhost/oss-dev?reconnectionToken=4354a323-a45a-452c-b5d7-d8d586e1cd5c&reconnection=false&skipWebSocketFrames=true HTTP/1.1
         const match = str.match(/GET\s+(\S+)\s+HTTP/);
+
         if (!match) {
             console.error(`Coult not parse ${str}`);
             this.closeEmitter.fire(new Error(`Coult not parse ${str}`));
+
             return;
         }
         // example url ws://localhost/oss-dev?reconnectionToken=4354a323-a45a-452c-b5d7-d8d586e1cd5c&reconnection=false&skipWebSocketFrames=true
@@ -58,6 +63,7 @@ class InitialManagedMessagePassing implements vscode.ManagedMessagePassing {
     public end(): void {
         if (this._actual) {
             this._actual.end();
+
             return;
         }
         this._isDisposed = true;
@@ -67,6 +73,7 @@ class OpeningManagedMessagePassing {
     private readonly socket: WebSocket;
     private isOpen = false;
     private bufferedData: Uint8Array[] = [];
+
     constructor(url: URL, dataEmitter: vscode.EventEmitter<Uint8Array>, closeEmitter: vscode.EventEmitter<Error | undefined>, _endEmitter: vscode.EventEmitter<void>) {
         this.socket = new WebSocket(`ws://localhost:9888${url.pathname}${url.search.replace(/skipWebSocketFrames=true/, 'skipWebSocketFrames=false')}`);
         this.socket.addEventListener('close', () => closeEmitter.fire(undefined));
@@ -86,12 +93,14 @@ class OpeningManagedMessagePassing {
             // const hash = crypto.createHash('sha1');
             // hash.update(requestNonce + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11');
             // const responseNonce = hash.digest('base64');
+
             const responseHeaders = [
                 `HTTP/1.1 101 Switching Protocols`,
                 `Upgrade: websocket`,
                 `Connection: Upgrade`,
                 `Sec-WebSocket-Accept: TODO`
             ];
+
             const textEncoder = new TextEncoder();
             textEncoder.encode(responseHeaders.join('\r\n') + '\r\n\r\n');
             dataEmitter.fire(textEncoder.encode(responseHeaders.join('\r\n') + '\r\n\r\n'));
@@ -100,6 +109,7 @@ class OpeningManagedMessagePassing {
     public send(d: Uint8Array): void {
         if (!this.isOpen) {
             this.bufferedData.push(d);
+
             return;
         }
         this.socket.send(d);

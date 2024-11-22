@@ -158,8 +158,10 @@ export class NativeWindow extends BaseWindow {
 			// as payload because the touch bar items are context aware depending on the editor
 			if (request.from === 'touchbar') {
 				const activeEditor = this.editorService.activeEditor;
+
 				if (activeEditor) {
 					const resource = EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
 					if (resource) {
 						args.push(resource);
 					}
@@ -180,6 +182,7 @@ export class NativeWindow extends BaseWindow {
 		// Support runKeybinding event
 		ipcRenderer.on('vscode:runKeybinding', (event: unknown, request: INativeRunKeybindingInWindowRequest) => {
 			const activeElement = getActiveElement();
+
 			if (activeElement) {
 				this.keybindingService.dispatchByUserSettingsLabel(request.userSettingsLabel, activeElement);
 			}
@@ -255,7 +258,9 @@ export class NativeWindow extends BaseWindow {
 					label: localize('downloadArmBuild', "Download"),
 					run: () => {
 						const quality = this.productService.quality;
+
 						const stableURL = 'https://code.visualstudio.com/docs/?dv=osx';
+
 						const insidersURL = 'https://code.visualstudio.com/docs/?dv=osx&build=insiders';
 						this.openerService.open(quality === 'stable' ? stableURL : insidersURL);
 					}
@@ -287,7 +292,9 @@ export class NativeWindow extends BaseWindow {
 		// Proxy Login Dialog
 		ipcRenderer.on('vscode:openProxyAuthenticationDialog', async (event: unknown, payload: { authInfo: AuthInfo; username?: string; password?: string; replyChannel: string }) => {
 			const rememberCredentialsKey = 'window.rememberProxyCredentials';
+
 			const rememberCredentials = this.storageService.getBoolean(rememberCredentialsKey, StorageScope.APPLICATION);
+
 			const result = await this.dialogService.input({
 				type: 'warning',
 				message: localize('proxyAuthRequired', "Proxy Authentication Required"),
@@ -340,6 +347,7 @@ export class NativeWindow extends BaseWindow {
 			const allowedUncHosts = new Set<string>();
 
 			const configuredAllowedUncHosts = this.configurationService.getValue<string[] | undefined>('security.allowedUNCHosts',) ?? [];
+
 			if (Array.isArray(configuredAllowedUncHosts)) {
 				for (const configuredAllowedUncHost of configuredAllowedUncHosts) {
 					if (typeof configuredAllowedUncHost === 'string') {
@@ -384,6 +392,7 @@ export class NativeWindow extends BaseWindow {
 
 		// Listen to editor closing (if we run with --wait)
 		const filesToWait = this.nativeEnvironmentService.filesToWait;
+
 		if (filesToWait) {
 			this.trackClosedWaitFiles(filesToWait.waitMarkerFileUri, coalesce(filesToWait.paths.map(path => path.fileUri)));
 		}
@@ -401,7 +410,9 @@ export class NativeWindow extends BaseWindow {
 		if (isMacintosh && !hasNativeTitlebar(this.configurationService)) {
 			this._register(Event.runAndSubscribe(this.layoutService.onDidAddContainer, ({ container, disposables }) => {
 				const targetWindow = getWindow(container);
+
 				const targetWindowId = targetWindow.vscodeWindowId;
+
 				const titlePart = assertIsDefined(this.layoutService.getContainer(targetWindow, Parts.TITLEBAR_PART));
 
 				disposables.add(addDisposableListener(titlePart, EventType.DBLCLICK, e => {
@@ -415,6 +426,7 @@ export class NativeWindow extends BaseWindow {
 		// Document edited: indicate for dirty working copies
 		this._register(this.workingCopyService.onDidChangeDirty(workingCopy => {
 			const gotDirty = workingCopy.isDirty();
+
 			if (gotDirty && !(workingCopy.capabilities & WorkingCopyCapabilities.Untitled) && this.filesConfigurationService.hasShortAutoSaveDelay(workingCopy.resource)) {
 				return; // do not indicate dirty of working copies that are auto saved after short delay
 			}
@@ -468,6 +480,7 @@ export class NativeWindow extends BaseWindow {
 			const confirmBeforeCloseSetting = this.configurationService.getValue<'always' | 'never' | 'keyboardOnly'>('window.confirmBeforeClose');
 
 			const confirmBeforeClose = confirmBeforeCloseSetting === 'always' || (confirmBeforeCloseSetting === 'keyboardOnly' && ModifierKeyEmitter.getInstance().isModifierPressed);
+
 			if (confirmBeforeClose) {
 
 				// When we need to confirm on close or quit, veto the shutdown
@@ -476,14 +489,17 @@ export class NativeWindow extends BaseWindow {
 
 				return veto((async () => {
 					let actualReason: ShutdownReason = reason;
+
 					if (reason === ShutdownReason.CLOSE && !isMacintosh) {
 						const windowCount = await this.nativeHostService.getWindowCount();
+
 						if (windowCount === 1) {
 							actualReason = ShutdownReason.QUIT; // Windows/Linux: closing last window means to QUIT
 						}
 					}
 
 					let confirmed = true;
+
 					if (confirmBeforeClose) {
 						confirmed = await this.instantiationService.invokeFunction(accessor => NativeWindow.confirmOnShutdown(accessor, actualReason));
 					}
@@ -550,10 +566,13 @@ export class NativeWindow extends BaseWindow {
 			switch (reason) {
 				case ShutdownReason.CLOSE:
 					return localize('shutdownErrorClose', "An unexpected error prevented the window to close");
+
 				case ShutdownReason.QUIT:
 					return localize('shutdownErrorQuit', "An unexpected error prevented the application to quit");
+
 				case ShutdownReason.RELOAD:
 					return localize('shutdownErrorReload', "An unexpected error prevented the window to reload");
+
 				case ShutdownReason.LOAD:
 					return localize('shutdownErrorLoad', "An unexpected error prevented to change the workspace");
 			}
@@ -562,10 +581,13 @@ export class NativeWindow extends BaseWindow {
 		switch (reason) {
 			case ShutdownReason.CLOSE:
 				return localize('shutdownTitleClose', "Closing the window is taking a bit longer...");
+
 			case ShutdownReason.QUIT:
 				return localize('shutdownTitleQuit', "Quitting the application is taking a bit longer...");
+
 			case ShutdownReason.RELOAD:
 				return localize('shutdownTitleReload', "Reloading the window is taking a bit longer...");
+
 			case ShutdownReason.LOAD:
 				return localize('shutdownTitleLoad', "Changing the workspace is taking a bit longer...");
 		}
@@ -575,10 +597,13 @@ export class NativeWindow extends BaseWindow {
 		switch (reason) {
 			case ShutdownReason.CLOSE:
 				return localize('shutdownForceClose', "Close Anyway");
+
 			case ShutdownReason.QUIT:
 				return localize('shutdownForceQuit', "Quit Anyway");
+
 			case ShutdownReason.RELOAD:
 				return localize('shutdownForceReload', "Reload Anyway");
+
 			case ShutdownReason.LOAD:
 				return localize('shutdownForceLoad', "Change Anyway");
 		}
@@ -588,6 +613,7 @@ export class NativeWindow extends BaseWindow {
 
 	private updateDocumentEdited(documentEdited: true | undefined): void {
 		let setDocumentEdited: boolean;
+
 		if (typeof documentEdited === 'boolean') {
 			setDocumentEdited = documentEdited;
 		} else {
@@ -605,6 +631,7 @@ export class NativeWindow extends BaseWindow {
 
 		// if panel is on the side, then return the larger minwidth
 		const panelOnSide = panelPosition === Position.LEFT || panelPosition === Position.RIGHT;
+
 		if (panelOnSide) {
 			return WindowMinimumSize.WIDTH_WITH_VERTICAL_PANEL;
 		}
@@ -620,6 +647,7 @@ export class NativeWindow extends BaseWindow {
 
 	private maybeCloseWindow(): void {
 		const closeWhenEmpty = this.configurationService.getValue('window.closeWhenEmpty') || this.nativeEnvironmentService.args.wait;
+
 		if (!closeWhenEmpty) {
 			return; // return early if configured to not close when empty
 		}
@@ -658,10 +686,12 @@ export class NativeWindow extends BaseWindow {
 
 		// Split up filepath into segments
 		const segments = filePath.split(posix.sep);
+
 		for (let i = segments.length; i > 0; i--) {
 			const isFile = (i === segments.length);
 
 			let pathOffset = i;
+
 			if (!isFile) {
 				pathOffset++; // for segments which are not the file name we want to open the folder
 			}
@@ -669,6 +699,7 @@ export class NativeWindow extends BaseWindow {
 			const path = URI.file(segments.slice(0, pathOffset).join(posix.sep));
 
 			let label: string;
+
 			if (!isFile) {
 				label = this.labelService.getUriBasenameLabel(dirname(path));
 			} else {
@@ -713,6 +744,7 @@ export class NativeWindow extends BaseWindow {
 		// Integrity / Root warning
 		(async () => {
 			const isAdmin = await this.nativeHostService.isAdmin();
+
 			const { isPure } = await this.integrityService.isPure();
 
 			// Update to title
@@ -727,6 +759,7 @@ export class NativeWindow extends BaseWindow {
 		// Installation Dir Warning
 		if (this.environmentService.isBuilt) {
 			let installLocationUri: URI;
+
 			if (isMacintosh) {
 				// appRoot = /Applications/Visual Studio Code - Insiders.app/Contents/Resources/app
 				installLocationUri = dirname(dirname(dirname(URI.file(this.nativeEnvironmentService.appRoot))));
@@ -752,6 +785,7 @@ export class NativeWindow extends BaseWindow {
 		// macOS 10.15 warning
 		if (isMacintosh) {
 			const majorVersion = this.nativeEnvironmentService.os.release.split('.')[0];
+
 			const eolReleases = new Map<string, string>([
 				['19', 'macOS Catalina'],
 			]);
@@ -787,18 +821,21 @@ export class NativeWindow extends BaseWindow {
 
 	private setupDriver(): void {
 		const that = this;
+
 		let pendingQuit = false;
 
 		registerWindowDriver(this.instantiationService, {
 			async exitApplication(): Promise<void> {
 				if (pendingQuit) {
 					that.logService.info('[driver] not handling exitApplication() due to pending quit() call');
+
 					return;
 				}
 
 				that.logService.info('[driver] handling exitApplication()');
 
 				pendingQuit = true;
+
 				return that.nativeHostService.quit();
 			}
 		});
@@ -806,12 +843,15 @@ export class NativeWindow extends BaseWindow {
 
 	private async openTunnel(address: string, port: number): Promise<RemoteTunnel | string | undefined> {
 		const remoteAuthority = this.environmentService.remoteAuthority;
+
 		const addressProvider: IAddressProvider | undefined = remoteAuthority ? {
 			getAddress: async (): Promise<IAddress> => {
 				return (await this.remoteAuthorityResolverService.resolveAuthority(remoteAuthority)).authority;
 			}
 		} : undefined;
+
 		const tunnel = await this.tunnelService.getExistingTunnel(address, port);
+
 		if (!tunnel || (typeof tunnel === 'string')) {
 			return this.tunnelService.openTunnel(addressProvider, address, port);
 		}
@@ -820,11 +860,15 @@ export class NativeWindow extends BaseWindow {
 
 	async resolveExternalUri(uri: URI, options?: OpenOptions): Promise<IResolvedExternalUri | undefined> {
 		let queryTunnel: RemoteTunnel | string | undefined;
+
 		if (options?.allowTunneling) {
 			const portMappingRequest = extractLocalHostUriMetaDataForPortMapping(uri);
+
 			const queryPortMapping = extractQueryLocalHostUriMetaDataForPortMapping(uri);
+
 			if (queryPortMapping) {
 				queryTunnel = await this.openTunnel(queryPortMapping.address, queryPortMapping.port);
+
 				if (queryTunnel && (typeof queryTunnel !== 'string')) {
 					// If the tunnel was mapped to a different port, dispose it, because some services
 					// validate the port number in the query string.
@@ -834,6 +878,7 @@ export class NativeWindow extends BaseWindow {
 					} else {
 						if (!portMappingRequest) {
 							const tunnel = queryTunnel;
+
 							return {
 								resolved: uri,
 								dispose: () => tunnel.dispose()
@@ -844,13 +889,17 @@ export class NativeWindow extends BaseWindow {
 			}
 			if (portMappingRequest) {
 				const tunnel = await this.openTunnel(portMappingRequest.address, portMappingRequest.port);
+
 				if (tunnel && (typeof tunnel !== 'string')) {
 					const addressAsUri = URI.parse(tunnel.localAddress).with({ path: uri.path });
+
 					const resolved = addressAsUri.scheme.startsWith(uri.scheme) ? addressAsUri : uri.with({ authority: tunnel.localAddress });
+
 					return {
 						resolved,
 						dispose() {
 							tunnel.dispose();
+
 							if (queryTunnel && (typeof queryTunnel !== 'string')) {
 								queryTunnel.dispose();
 							}
@@ -862,6 +911,7 @@ export class NativeWindow extends BaseWindow {
 
 		if (!options?.openExternal) {
 			const canHandleResource = await this.fileService.canHandleResource(uri);
+
 			if (canHandleResource) {
 				return {
 					resolved: URI.from({
@@ -883,8 +933,10 @@ export class NativeWindow extends BaseWindow {
 		this.openerService.setDefaultExternalOpener({
 			openExternal: async (href: string) => {
 				const success = await this.nativeHostService.openExternal(href, this.configurationService.getValue<string>('workbench.externalBrowser'));
+
 				if (!success) {
 					const fileCandidate = URI.parse(href);
+
 					if (fileCandidate.scheme === Schemas.file) {
 						// if opening failed, and this is a file, we can still try to reveal it
 						await this.nativeHostService.showItemInFolder(fileCandidate.fsPath);
@@ -932,7 +984,9 @@ export class NativeWindow extends BaseWindow {
 		}
 
 		const disabled = this.configurationService.getValue('keyboard.touchbar.enabled') === false;
+
 		const touchbarIgnored = this.configurationService.getValue('keyboard.touchbar.ignored');
+
 		const ignoredItems = Array.isArray(touchbarIgnored) ? touchbarIgnored : [];
 
 		// Fill actions into groups respecting order
@@ -940,7 +994,9 @@ export class NativeWindow extends BaseWindow {
 
 		// Convert into command action multi array
 		const items: ICommandAction[][] = [];
+
 		let group: ICommandAction[] = [];
+
 		if (!disabled) {
 			for (const action of actions) {
 
@@ -1002,9 +1058,11 @@ export class NativeWindow extends BaseWindow {
 
 	private async onOpenFiles(request: INativeOpenFileRequest): Promise<void> {
 		const diffMode = !!(request.filesToDiff && (request.filesToDiff.length === 2));
+
 		const mergeMode = !!(request.filesToMerge && (request.filesToMerge.length === 4));
 
 		const inputs = coalesce(await pathsToEditors(mergeMode ? request.filesToMerge : diffMode ? request.filesToDiff : request.filesToOpenOrCreate, this.fileService, this.logService));
+
 		if (inputs.length) {
 			const openedEditorPanes = await this.openResources(inputs, diffMode, mergeMode);
 
@@ -1083,6 +1141,7 @@ export class NativeWindow extends BaseWindow {
 			const currentWindowZoomLevel = getZoomLevel(mainWindow);
 
 			let notifyZoomLevel: number | undefined = undefined;
+
 			if (this.configuredWindowZoomLevel !== currentWindowZoomLevel) {
 				notifyZoomLevel = currentWindowZoomLevel;
 			}
@@ -1104,11 +1163,14 @@ export class NativeWindow extends BaseWindow {
 
 	private updateWindowZoomStatusEntry(targetWindowId: number): void {
 		const targetWindow = getWindowById(targetWindowId);
+
 		const entry = this.mapWindowIdToZoomStatusEntry.get(targetWindowId);
+
 		if (entry && targetWindow) {
 			const currentZoomLevel = getZoomLevel(targetWindow.window);
 
 			let text: string | undefined = undefined;
+
 			if (currentZoomLevel < this.configuredWindowZoomLevel) {
 				text = '$(zoom-out)';
 			} else if (currentZoomLevel > this.configuredWindowZoomLevel) {
@@ -1123,9 +1185,11 @@ export class NativeWindow extends BaseWindow {
 		this.configuredWindowZoomLevel = this.resolveConfiguredWindowZoomLevel();
 
 		let applyZoomLevel = false;
+
 		for (const { window } of getWindows()) {
 			if (getZoomLevel(window) !== this.configuredWindowZoomLevel) {
 				applyZoomLevel = true;
+
 				break;
 			}
 		}
@@ -1188,10 +1252,14 @@ class ZoomStatusEntry extends Disposable {
 		container.appendChild(left);
 
 		const zoomOutAction: Action = disposables.add(new Action('workbench.action.zoomOut', localize('zoomOut', "Zoom Out"), ThemeIcon.asClassName(Codicon.remove), true, () => this.commandService.executeCommand(zoomOutAction.id)));
+
 		const zoomInAction: Action = disposables.add(new Action('workbench.action.zoomIn', localize('zoomIn', "Zoom In"), ThemeIcon.asClassName(Codicon.plus), true, () => this.commandService.executeCommand(zoomInAction.id)));
+
 		const zoomResetAction: Action = disposables.add(new Action('workbench.action.zoomReset', localize('zoomReset', "Reset"), undefined, true, () => this.commandService.executeCommand(zoomResetAction.id)));
 		zoomResetAction.tooltip = localize('zoomResetLabel', "{0} ({1})", zoomResetAction.label, this.keybindingService.lookupKeybinding(zoomResetAction.id)?.getLabel());
+
 		const zoomSettingsAction: Action = disposables.add(new Action('workbench.action.openSettings', localize('zoomSettings', "Settings"), ThemeIcon.asClassName(Codicon.settingsGear), true, () => this.commandService.executeCommand(zoomSettingsAction.id, 'window.zoom')));
+
 		const zoomLevelLabel = disposables.add(new Action('zoomLabel', undefined, undefined, false));
 
 		this.zoomLevelLabel = zoomLevelLabel;
@@ -1225,7 +1293,9 @@ class ZoomStatusEntry extends Disposable {
 	private updateZoomLevelLabel(targetWindowId: number): void {
 		if (this.zoomLevelLabel) {
 			const targetWindow = getWindowById(targetWindowId, true).window;
+
 			const zoomFactor = Math.round(getZoomFactor(targetWindow) * 100);
+
 			const zoomLevel = getZoomLevel(targetWindow);
 
 			this.zoomLevelLabel.label = `${zoomLevel}`;

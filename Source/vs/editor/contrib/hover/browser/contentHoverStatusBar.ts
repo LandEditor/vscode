@@ -42,17 +42,21 @@ export class EditorHoverStatusBar extends Disposable implements IEditorHoverStat
 		}): IEditorHoverAction {
 
 		const keybinding = this._keybindingService.lookupKeybinding(actionOptions.commandId);
+
 		const keybindingLabel = keybinding ? keybinding.getLabel() : null;
 		this._hasContent = true;
+
 		const action = this._register(HoverAction.render(this.actionsElement, actionOptions, keybindingLabel));
 		this._register(this._hoverService.setupManagedHover(getDefaultHoverDelegate('element'), action.actionContainer, action.actionRenderedLabel));
 		this.actions.push(action);
+
 		return action;
 	}
 
 	public append(element: HTMLElement): HTMLElement {
 		const result = dom.append(this.actionsElement, element);
 		this._hasContent = true;
+
 		return result;
 	}
 }

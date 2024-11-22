@@ -41,6 +41,7 @@ import { IFilesConfigurationService } from '../../../../services/filesConfigurat
  */
 export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState> {
     static readonly ID = TEXT_FILE_EDITOR_ID;
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -107,6 +108,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
         mark('code/willSetInputToTextFileEditor');
         // Set input and resolve
         await super.setInput(input, options, context, token);
+
         try {
             const resolvedModel = await input.resolve(options);
             // Check for cancellation
@@ -128,6 +130,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
             // Restore view state (unless provided by options)
             if (!isTextEditorViewState(options?.viewState)) {
                 const editorViewState = this.loadEditorViewState(input, context);
+
                 if (editorViewState) {
                     if (options?.selection) {
                         editorViewState.cursorState = []; // prevent duplicate selections via options
@@ -145,6 +148,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
             // a resolved model might have more specific information about being
             // readonly or not that the input did not have.
             control.updateOptions(this.getReadonlyConfiguration(textFileModel.isReadonly()));
+
             if (control.handleInitialized) {
                 control.handleInitialized();
             }
@@ -167,10 +171,12 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
                     return this.hostService.openWindow([{ folderUri: input.resource }], { forceNewWindow: true });
                 }
             }));
+
             if (this.contextService.isInsideWorkspace(input.preferredResource)) {
                 actions.push(toAction({
                     id: 'workbench.files.action.reveal', label: localize('reveal', "Reveal Folder"), run: async () => {
                         await this.paneCompositeService.openPaneComposite(VIEWLET_ID, ViewContainerLocation.Sidebar, true);
+
                         return this.explorerService.select(input.preferredResource, true);
                     }
                 }));
@@ -180,6 +186,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
         // Handle case where a file is too large to open without confirmation
         if ((<FileOperationError>error).fileOperationResult === FileOperationResult.FILE_TOO_LARGE) {
             let message: string;
+
             if (error instanceof TooLargeFileOperationError) {
                 message = localize('fileTooLargeForHeapErrorWithSize', "The file is not displayed in the text editor because it is very large ({0}).", ByteSize.formatSize(error.size));
             }
@@ -196,6 +203,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
                 toAction({
                     id: 'workbench.files.action.createMissingFile', label: localize('createFile', "Create File"), run: async () => {
                         await this.textFileService.create([{ resource: input.preferredResource }]);
+
                         return this.editorService.openEditor({
                             resource: input.preferredResource,
                             options: {
@@ -210,6 +218,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
                 // a link to a file that does not exist to scaffold it quickly.
                 allowDialog: true
             });
+
             throw fileNotFoundError;
         }
         // Otherwise make sure the error bubbles up
@@ -217,6 +226,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
     }
     private openAsBinary(input: FileEditorInput, options: ITextEditorOptions | undefined): void {
         const defaultBinaryEditor = this.configurationService.getValue<string | undefined>('workbench.editor.defaultBinaryEditor');
+
         const editorOptions = {
             ...options,
             // Make sure to not steal away the currently active group
@@ -264,6 +274,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
     }
     protected override createEditorControl(parent: HTMLElement, initialOptions: ICodeEditorOptions): void {
         mark('code/willCreateTextFileEditorControl');
+
         super.createEditorControl(parent, initialOptions);
         mark('code/didCreateTextFileEditorControl');
     }

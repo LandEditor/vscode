@@ -33,6 +33,7 @@ class OutlineService implements IOutlineService {
     registerOutlineCreator(creator: IOutlineCreator<any, any>): IDisposable {
         const rm = this._factories.push(creator);
         this._onDidChange.fire();
+
         return toDisposable(() => {
             rm();
             this._onDidChange.fire();

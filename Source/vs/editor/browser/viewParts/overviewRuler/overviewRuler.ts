@@ -17,9 +17,11 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     private readonly _context: ViewContext;
     private readonly _domNode: FastDomNode<HTMLCanvasElement>;
     private readonly _zoneManager: OverviewZoneManager;
+
     constructor(context: ViewContext, cssClassName: string) {
         super();
         this._context = context;
+
         const options = this._context.configuration.options;
         this._domNode = createFastDomNode(document.createElement('canvas'));
         this._domNode.setClassName(cssClassName);
@@ -36,11 +38,13 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     }
     public override dispose(): void {
         this._context.removeEventHandler(this);
+
         super.dispose();
     }
     // ---- begin view event handlers
     public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
         const options = this._context.configuration.options;
+
         if (e.hasChanged(EditorOption.lineHeight)) {
             this._zoneManager.setLineHeight(options.get(EditorOption.lineHeight));
             this._render();
@@ -57,6 +61,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     }
     public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
         this._render();
+
         return true;
     }
     public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -68,6 +73,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     }
     public override onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean {
         this._render();
+
         return true;
     }
     // ---- end view event handlers
@@ -77,9 +83,11 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     public setLayout(position: OverviewRulerPosition): void {
         this._domNode.setTop(position.top);
         this._domNode.setRight(position.right);
+
         let hasChanged = false;
         hasChanged = this._zoneManager.setDOMWidth(position.width) || hasChanged;
         hasChanged = this._zoneManager.setDOMHeight(position.height) || hasChanged;
+
         if (hasChanged) {
             this._domNode.setWidth(this._zoneManager.getDOMWidth());
             this._domNode.setHeight(this._zoneManager.getDOMHeight());
@@ -97,11 +105,16 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
             return false;
         }
         const width = this._zoneManager.getCanvasWidth();
+
         const height = this._zoneManager.getCanvasHeight();
+
         const colorZones = this._zoneManager.resolveColorZones();
+
         const id2Color = this._zoneManager.getId2Color();
+
         const ctx = this._domNode.domNode.getContext('2d')!;
         ctx.clearRect(0, 0, width, height);
+
         if (colorZones.length > 0) {
             this._renderOneLane(ctx, colorZones, id2Color, width);
         }
@@ -109,12 +122,18 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
     }
     private _renderOneLane(ctx: CanvasRenderingContext2D, colorZones: ColorZone[], id2Color: string[], width: number): void {
         let currentColorId = 0;
+
         let currentFrom = 0;
+
         let currentTo = 0;
+
         for (const zone of colorZones) {
             const zoneColorId = zone.colorId;
+
             const zoneFrom = zone.from;
+
             const zoneTo = zone.to;
+
             if (zoneColorId !== currentColorId) {
                 ctx.fillRect(0, currentFrom, width, currentTo - currentFrom);
                 currentColorId = zoneColorId;

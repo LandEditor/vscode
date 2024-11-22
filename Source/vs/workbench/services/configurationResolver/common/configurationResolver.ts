@@ -52,6 +52,7 @@ interface PromptStringInputInfo {
     id: string;
     type: 'promptString';
     description: string;
+
     default?: string;
     password?: boolean;
 }
@@ -63,6 +64,7 @@ interface PickStringInputInfo {
         value: string;
         label?: string;
     })[];
+
     default?: string;
 }
 interface CommandInputInfo {

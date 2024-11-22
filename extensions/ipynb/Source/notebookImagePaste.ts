@@ -58,11 +58,13 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
 		const enabled = vscode.workspace.getConfiguration('ipynb', document).get('pasteImagesAsAttachments.enabled', true);
+
 		if (!enabled) {
 			return;
 		}
 
 		const insert = await this.createInsertImageAttachmentEdit(document, dataTransfer, token);
+
 		if (!insert) {
 			return;
 		}
@@ -70,6 +72,7 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 		const pasteEdit = new vscode.DocumentPasteEdit(insert.insertText, vscode.l10n.t('Insert Image as Attachment'), DropOrPasteEditProvider.kind);
 		pasteEdit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text];
 		pasteEdit.additionalEdit = insert.additionalEdit;
+
 		return [pasteEdit];
 	}
 
@@ -80,6 +83,7 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		const insert = await this.createInsertImageAttachmentEdit(document, dataTransfer, token);
+
 		if (!insert) {
 			return;
 		}
@@ -88,6 +92,7 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 		dropEdit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text];
 		dropEdit.additionalEdit = insert.additionalEdit;
 		dropEdit.title = vscode.l10n.t('Insert Image as Attachment');
+
 		return dropEdit;
 	}
 
@@ -97,24 +102,29 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 		token: vscode.CancellationToken,
 	): Promise<{ insertText: vscode.SnippetString; additionalEdit: vscode.WorkspaceEdit } | undefined> {
 		const imageData = await getDroppedImageData(dataTransfer, token);
+
 		if (!imageData.length || token.isCancellationRequested) {
 			return;
 		}
 
 		const currentCell = getCellFromCellDocument(document);
+
 		if (!currentCell) {
 			return undefined;
 		}
 
 		// create updated metadata for cell (prep for WorkspaceEdit)
 		const newAttachment = buildAttachment(currentCell, imageData);
+
 		if (!newAttachment) {
 			return;
 		}
 
 		// build edits
 		const additionalEdit = new vscode.WorkspaceEdit();
+
 		const nbEdit = vscode.NotebookEdit.updateCellMetadata(currentCell.index, newAttachment.metadata);
+
 		const notebookUri = currentCell.notebook.uri;
 		additionalEdit.set(notebookUri, [nbEdit]);
 
@@ -124,6 +134,7 @@ class DropOrPasteEditProvider implements vscode.DocumentPasteEditProvider, vscod
 			insertText.appendText('![');
 			insertText.appendPlaceholder(`${filename}`);
 			insertText.appendText(`](${/\s/.test(filename) ? `<attachment:${filename}>` : `attachment:${filename}`})`);
+
 			if (i !== newAttachment.filenames.length - 1) {
 				insertText.appendText(' ');
 			}
@@ -145,25 +156,30 @@ async function getDroppedImageData(
 		}
 
 		const file = item.asFile();
+
 		if (!file) {
 			return;
 		}
 
 		const data = await file.data();
+
 		return { fileName: file.name, mimeType, data };
 	})));
+
 	if (files.length) {
 		return files;
 	}
 
 	// Then fallback to image files in the uri-list
 	const urlList = await dataTransfer.get('text/uri-list')?.asString();
+
 	if (token.isCancellationRequested) {
 		return [];
 	}
 
 	if (urlList) {
 		const uris: vscode.Uri[] = [];
+
 		for (const resource of urlList.split(/\r?\n/g)) {
 			try {
 				uris.push(vscode.Uri.parse(resource));
@@ -174,11 +190,13 @@ async function getDroppedImageData(
 
 		const entries = await Promise.all(uris.map(async (uri) => {
 			const mimeType = getImageMimeType(uri);
+
 			if (!mimeType) {
 				return;
 			}
 
 			const data = await vscode.workspace.fs.readFile(uri);
+
 			return { fileName: basename(uri.fsPath), mimeType, data };
 		}));
 
@@ -210,17 +228,22 @@ function getCellFromCellDocument(cellDocument: vscode.TextDocument): vscode.Note
  */
 function encodeBase64(buffer: Uint8Array, padded = true, urlSafe = false) {
 	const base64Alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
 	const base64UrlSafeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
 
 	const dictionary = urlSafe ? base64UrlSafeAlphabet : base64Alphabet;
+
 	let output = '';
 
 	const remainder = buffer.byteLength % 3;
 
 	let i = 0;
+
 	for (; i < buffer.byteLength - remainder; i += 3) {
 		const a = buffer[i + 0];
+
 		const b = buffer[i + 1];
+
 		const c = buffer[i + 2];
 
 		output += dictionary[a >>> 2];
@@ -233,13 +256,16 @@ function encodeBase64(buffer: Uint8Array, padded = true, urlSafe = false) {
 		const a = buffer[i + 0];
 		output += dictionary[a >>> 2];
 		output += dictionary[(a << 4) & 0b111111];
+
 		if (padded) { output += '=='; }
 	} else if (remainder === 2) {
 		const a = buffer[i + 0];
+
 		const b = buffer[i + 1];
 		output += dictionary[a >>> 2];
 		output += dictionary[(a << 4 | b >>> 4) & 0b111111];
 		output += dictionary[(b << 2) & 0b111111];
+
 		if (padded) { output += '='; }
 	}
 
@@ -258,7 +284,9 @@ function buildAttachment(
 	attachments: readonly ImageAttachmentData[],
 ): { metadata: { [key: string]: any }; filenames: string[] } | undefined {
 	const cellMetadata = { ...cell.metadata };
+
 	const tempFilenames: string[] = [];
+
 	if (!attachments.length) {
 		return undefined;
 	}
@@ -271,13 +299,17 @@ function buildAttachment(
 		const b64 = encodeBase64(attachment.data);
 
 		const fileExt = extname(attachment.fileName);
+
 		const filenameWithoutExt = basename(attachment.fileName, fileExt);
 
 		let tempFilename = filenameWithoutExt + fileExt;
+
 		for (let appendValue = 2; tempFilename in cellMetadata.attachments; appendValue++) {
 			const objEntries = Object.entries(cellMetadata.attachments[tempFilename]);
+
 			if (objEntries.length) { // check that mime:b64 are present
 				const [mime, attachmentb64] = objEntries[0];
+
 				if (mime === attachment.mimeType && attachmentb64 === b64) { // checking if filename can be reused, based on comparison of image data
 					break;
 				} else {
@@ -298,6 +330,7 @@ function buildAttachment(
 
 export function notebookImagePasteSetup(): vscode.Disposable {
 	const provider = new DropOrPasteEditProvider();
+
 	return vscode.Disposable.from(
 		vscode.languages.registerDocumentPasteEditProvider(JUPYTER_NOTEBOOK_MARKDOWN_SELECTOR, provider, {
 			providedPasteEditKinds: [DropOrPasteEditProvider.kind],

@@ -26,10 +26,12 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
         const debugConsolePicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
         this._debugService.getModel().getSessions(true).filter(s => s.hasSeparateRepl()).forEach((session, index) => {
             const pick = this._createPick(session, index, filter);
+
             if (pick) {
                 debugConsolePicks.push(pick);
             }
         });
+
         if (debugConsolePicks.length > 0) {
             debugConsolePicks.push({ type: 'separator' });
         }
@@ -39,17 +41,21 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
             ariaLabel: createTerminalLabel,
             accept: () => this._commandService.executeCommand(SELECT_AND_START_ID)
         });
+
         return debugConsolePicks;
     }
     private _createPick(session: IDebugSession, sessionIndex: number, filter: string): IPickerQuickAccessItem | undefined {
         const label = session.name;
+
         const highlights = matchesFuzzy(filter, label, true);
+
         if (highlights) {
             return {
                 label,
                 highlights: { label: highlights },
                 accept: (keyMod, event) => {
                     this._debugService.focusStackFrame(undefined, undefined, session, { explicit: true });
+
                     if (!this._viewsService.isViewVisible(REPL_VIEW_ID)) {
                         this._viewsService.openView(REPL_VIEW_ID, true);
                     }

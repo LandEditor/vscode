@@ -54,5 +54,6 @@ function createMenu(event: IpcMainEvent, onClickChannel: string, items: ISeriali
         }
         menu.append(menuitem);
     });
+
     return menu;
 }

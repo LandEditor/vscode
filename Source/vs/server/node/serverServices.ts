@@ -83,6 +83,7 @@ const eventPrefix = 'monacoworkbench';
 
 export async function setupServerServices(connectionToken: ServerConnectionToken, args: ServerParsedArgs, REMOTE_DATA_FOLDER: string, disposables: DisposableStore) {
 	const services = new ServiceCollection();
+
 	const socketServer = new SocketServer<RemoteAgentConnectionContext>();
 
 	const productService: IProductService = { _serviceBrand: undefined, ...product };
@@ -97,13 +98,16 @@ export async function setupServerServices(connectionToken: ServerConnectionToken
 	socketServer.registerChannel('logger', new LoggerChannel(loggerService, (ctx: RemoteAgentConnectionContext) => getUriTransformer(ctx.remoteAuthority)));
 
 	const logger = loggerService.createLogger('remoteagent', { name: localize('remoteExtensionLog', "Server") });
+
 	const logService = new LogService(logger, [new ServerLogger(getLogLevel(environmentService))]);
 	services.set(ILogService, logService);
+
 	setTimeout(() => cleanupOlderLogs(environmentService.logsHome.with({ scheme: Schemas.file }).fsPath).then(null, err => logService.error(err)), 10000);
 	logService.onDidChangeLogLevel(logLevel => log(logService, logLevel, `Log level changed to ${LogLevelToString(logService.getLevel())}`));
 
 	logService.trace(`Remote configuration data at ${REMOTE_DATA_FOLDER}`);
 	logService.trace('process arguments:', environmentService.args);
+
 	if (Array.isArray(productService.serverGreeting)) {
 		logService.info(`\n\n${productService.serverGreeting.join('\n')}\n\n`);
 	}
@@ -152,7 +156,9 @@ export async function setupServerServices(connectionToken: ServerConnectionToken
 	services.set(IRequestService, requestService);
 
 	let oneDsAppender: ITelemetryAppender = NullAppender;
+
 	const isInternal = isInternalTelemetry(productService, configurationService);
+
 	if (supportsTelemetry(productService, environmentService)) {
 		if (!isLoggingOnly(productService, environmentService) && productService.aiConfig?.ariaKey) {
 			oneDsAppender = new OneDataSystemAppender(requestService, isInternal, eventPrefix, null, productService.aiConfig.ariaKey);
@@ -164,7 +170,9 @@ export async function setupServerServices(connectionToken: ServerConnectionToken
 			commonProperties: resolveCommonProperties(release(), hostname(), process.arch, productService.commit, productService.version + '-remote', machineId, sqmId, devDeviceId, isInternal, 'remoteAgent'),
 			piiPaths: getPiiPathsFromEnvironment(environmentService)
 		};
+
 		const initialTelemetryLevelArg = environmentService.args['telemetry-level'];
+
 		let injectedTelemetryLevel: TelemetryLevel = TelemetryLevel.USAGE;
 		// Convert the passed in CLI argument into a telemetry level for the telemetry service
 		if (initialTelemetryLevelArg === 'all') {
@@ -202,14 +210,19 @@ export async function setupServerServices(connectionToken: ServerConnectionToken
 			scrollback: configurationService.getValue<number>(TerminalSettingId.PersistentSessionScrollback) ?? 100
 		}
 	);
+
 	const ptyHostService = instantiationService.createInstance(PtyHostService, ptyHostStarter);
 	services.set(IPtyService, ptyHostService);
 
 	instantiationService.invokeFunction(accessor => {
 		const extensionManagementService = accessor.get(INativeServerExtensionManagementService);
+
 		const extensionsScannerService = accessor.get(IExtensionsScannerService);
+
 		const extensionGalleryService = accessor.get(IExtensionGalleryService);
+
 		const languagePackService = accessor.get(ILanguagePackService);
+
 		const remoteExtensionEnvironmentChannel = new RemoteAgentEnvironmentChannel(connectionToken, environmentService, userDataProfilesService, extensionHostStatusService);
 		socketServer.registerChannel('remoteextensionsenvironment', remoteExtensionEnvironmentChannel);
 
@@ -257,6 +270,7 @@ export class SocketServer<TContext = string> extends IPCServer<TContext> {
 
 	constructor() {
 		const emitter = new Emitter<ClientConnectionEvent>();
+
 		super(emitter.event);
 		this._onDidConnectEmitter = emitter;
 	}
@@ -332,6 +346,7 @@ class ServerLogger extends AbstractLogger {
 
 function now(): string {
 	const date = new Date();
+
 	return `${twodigits(date.getHours())}:${twodigits(date.getMinutes())}:${twodigits(date.getSeconds())}`;
 }
 
@@ -347,10 +362,15 @@ function twodigits(n: number): string {
  */
 async function cleanupOlderLogs(logsPath: string): Promise<void> {
 	const currentLog = path.basename(logsPath);
+
 	const logsRoot = path.dirname(logsPath);
+
 	const children = await Promises.readdir(logsRoot);
+
 	const allSessions = children.filter(name => /^\d{8}T\d{6}$/.test(name));
+
 	const oldSessions = allSessions.sort().filter((d) => d !== currentLog);
+
 	const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 9));
 
 	await Promise.all(toDelete.map(name => Promises.rm(path.join(logsRoot, name))));

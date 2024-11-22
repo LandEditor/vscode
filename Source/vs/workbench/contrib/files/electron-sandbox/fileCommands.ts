@@ -18,6 +18,7 @@ export function revealResourcesInOS(resources: URI[], nativeHostService: INative
     }
     else if (workspaceContextService.getWorkspace().folders.length) {
         const uri = workspaceContextService.getWorkspace().folders[0].uri;
+
         if (uri.scheme === Schemas.file) {
             nativeHostService.showItemInFolder(uri.fsPath);
         }

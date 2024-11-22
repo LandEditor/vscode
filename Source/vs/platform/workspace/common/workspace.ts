@@ -110,10 +110,12 @@ export interface IEmptyWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
 export type IAnyWorkspaceIdentifier = IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | IEmptyWorkspaceIdentifier;
 export function isSingleFolderWorkspaceIdentifier(obj: unknown): obj is ISingleFolderWorkspaceIdentifier {
     const singleFolderIdentifier = obj as ISingleFolderWorkspaceIdentifier | undefined;
+
     return typeof singleFolderIdentifier?.id === 'string' && URI.isUri(singleFolderIdentifier.uri);
 }
 export function isEmptyWorkspaceIdentifier(obj: unknown): obj is IEmptyWorkspaceIdentifier {
     const emptyWorkspaceIdentifier = obj as IEmptyWorkspaceIdentifier | undefined;
+
     return typeof emptyWorkspaceIdentifier?.id === 'string'
         && !isSingleFolderWorkspaceIdentifier(obj)
         && !isWorkspaceIdentifier(obj);
@@ -141,6 +143,7 @@ export function toWorkspaceIdentifier(arg0: IWorkspace | string | undefined, isE
     }
     // Multi root
     const workspace = arg0;
+
     if (workspace.configuration) {
         return {
             id: workspace.id,
@@ -161,6 +164,7 @@ export function toWorkspaceIdentifier(arg0: IWorkspace | string | undefined, isE
 }
 export function isWorkspaceIdentifier(obj: unknown): obj is IWorkspaceIdentifier {
     const workspaceIdentifier = obj as IWorkspaceIdentifier | undefined;
+
     return typeof workspaceIdentifier?.id === 'string' && URI.isUri(workspaceIdentifier.configPath);
 }
 export interface ISerializedSingleFolderWorkspaceIdentifier extends IBaseWorkspaceIdentifier {
@@ -177,11 +181,13 @@ export function reviveIdentifier(identifier: ISerializedWorkspaceIdentifier | IS
 export function reviveIdentifier(identifier: ISerializedWorkspaceIdentifier | ISerializedSingleFolderWorkspaceIdentifier | IEmptyWorkspaceIdentifier | undefined): IAnyWorkspaceIdentifier | undefined {
     // Single Folder
     const singleFolderIdentifierCandidate = identifier as ISerializedSingleFolderWorkspaceIdentifier | undefined;
+
     if (singleFolderIdentifierCandidate?.uri) {
         return { id: singleFolderIdentifierCandidate.id, uri: URI.revive(singleFolderIdentifierCandidate.uri) };
     }
     // Multi folder
     const workspaceIdentifierCandidate = identifier as ISerializedWorkspaceIdentifier | undefined;
+
     if (workspaceIdentifierCandidate?.configPath) {
         return { id: workspaceIdentifierCandidate.id, configPath: URI.revive(workspaceIdentifierCandidate.configPath) };
     }
@@ -228,6 +234,7 @@ export interface IWorkspace {
 }
 export function isWorkspace(thing: unknown): thing is IWorkspace {
     const candidate = thing as IWorkspace | undefined;
+
     return !!(candidate && typeof candidate === 'object'
         && typeof candidate.id === 'string'
         && Array.isArray(candidate.folders));
@@ -255,6 +262,7 @@ export interface IWorkspaceFolder extends IWorkspaceFolderData {
 }
 export function isWorkspaceFolder(thing: unknown): thing is IWorkspaceFolder {
     const candidate = thing as IWorkspaceFolder;
+
     return !!(candidate && typeof candidate === 'object'
         && URI.isUri(candidate.uri)
         && typeof candidate.name === 'string'
@@ -263,6 +271,7 @@ export function isWorkspaceFolder(thing: unknown): thing is IWorkspaceFolder {
 export class Workspace implements IWorkspace {
     private _foldersMap: TernarySearchTree<URI, WorkspaceFolder> = TernarySearchTree.forUris<WorkspaceFolder>(this._ignorePathCasing, () => true);
     private _folders!: WorkspaceFolder[];
+
     constructor(private _id: string, folders: WorkspaceFolder[], private _transient: boolean, private _configuration: URI | null, private _ignorePathCasing: (key: URI) => boolean) {
         this.folders = folders;
     }
@@ -300,6 +309,7 @@ export class Workspace implements IWorkspace {
     }
     private updateFoldersMap(): void {
         this._foldersMap = TernarySearchTree.forUris<WorkspaceFolder>(this._ignorePathCasing, () => true);
+
         for (const folder of this.folders) {
             this._foldersMap.set(folder.uri, folder);
         }
@@ -320,6 +330,7 @@ export class WorkspaceFolder implements IWorkspaceFolder {
     readonly uri: URI;
     readonly name: string;
     readonly index: number;
+
     constructor(data: IWorkspaceFolderData, 
     /**
      * Provides access to the original metadata for this workspace
@@ -354,6 +365,7 @@ export function isTemporaryWorkspace(workspace: IWorkspace): boolean;
 export function isTemporaryWorkspace(path: URI): boolean;
 export function isTemporaryWorkspace(arg1: IWorkspace | URI): boolean {
     let path: URI | null | undefined;
+
     if (URI.isUri(arg1)) {
         path = arg1;
     }
@@ -371,5 +383,6 @@ export function isSavedWorkspace(path: URI, environmentService: IEnvironmentServ
 }
 export function hasWorkspaceFileExtension(path: string | URI) {
     const ext = (typeof path === 'string') ? extname(path) : resourceExtname(path);
+
     return ext === WORKSPACE_SUFFIX;
 }

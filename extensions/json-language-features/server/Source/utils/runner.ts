@@ -7,6 +7,7 @@ import { RuntimeEnvironment } from '../jsonServer';
 export function formatError(message: string, err: any): string {
     if (err instanceof Error) {
         const error = <Error>err;
+
         return `${message}: ${error.message}\n${error.stack}`;
     }
     else if (typeof err === 'string') {
@@ -22,11 +23,13 @@ export function runSafeAsync<T>(runtime: RuntimeEnvironment, func: () => Thenabl
         runtime.timer.setImmediate(() => {
             if (token.isCancellationRequested) {
                 resolve(cancelValue());
+
                 return;
             }
             return func().then(result => {
                 if (token.isCancellationRequested) {
                     resolve(cancelValue());
+
                     return;
                 }
                 else {
@@ -48,8 +51,10 @@ export function runSafe<T, E>(runtime: RuntimeEnvironment, func: () => T, errorV
             else {
                 try {
                     const result = func();
+
                     if (token.isCancellationRequested) {
                         resolve(cancelValue());
+
                         return;
                     }
                     else {
@@ -66,5 +71,6 @@ export function runSafe<T, E>(runtime: RuntimeEnvironment, func: () => T, errorV
 }
 function cancelValue<E>() {
     console.log('cancelled');
+
     return new ResponseError<E>(LSPErrorCodes.RequestCancelled, 'Request cancelled');
 }

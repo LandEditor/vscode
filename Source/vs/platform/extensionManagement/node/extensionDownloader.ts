@@ -71,9 +71,12 @@ export class ExtensionsDownloader extends Disposable {
 		}
 
 		let signatureArchiveLocation;
+
 		try {
 			signatureArchiveLocation = await this.downloadSignatureArchive(extension);
+
 			const verificationStatus = (await this.extensionSignatureVerificationService.verify(extension.identifier.id, extension.version, location.fsPath, signatureArchiveLocation.fsPath, clientTargetPlatform))?.code;
+
 			if (verificationStatus === ExtensionSignatureVerificationCode.PackageIsInvalidZip || verificationStatus === ExtensionSignatureVerificationCode.SignatureArchiveIsInvalidZip) {
 				try {
 					// Delete the downloaded vsix if VSIX or signature archive is invalid
@@ -107,8 +110,10 @@ export class ExtensionsDownloader extends Disposable {
 	private async downloadVSIX(extension: IGalleryExtension, operation: InstallOperation): Promise<URI> {
 		try {
 			const location = joinPath(this.extensionsDownloadDir, this.getName(extension));
+
 			const attempts = await this.doDownload(extension, 'vsix', async () => {
 				await this.downloadFile(extension, location, location => this.extensionGalleryService.download(extension, location, operation));
+
 				try {
 					await this.validate(location.fsPath, 'extension/package.json');
 				} catch (error) {
@@ -137,8 +142,10 @@ export class ExtensionsDownloader extends Disposable {
 	private async downloadSignatureArchive(extension: IGalleryExtension): Promise<URI> {
 		try {
 			const location = joinPath(this.extensionsDownloadDir, `${this.getName(extension)}${ExtensionsDownloader.SignatureArchiveExtension}`);
+
 			const attempts = await this.doDownload(extension, 'sigzip', async () => {
 				await this.extensionGalleryService.downloadSignatureArchive(extension, location);
+
 				try {
 					await this.validate(location.fsPath, '.signature.p7s');
 				} catch (error) {
@@ -173,11 +180,13 @@ export class ExtensionsDownloader extends Disposable {
 		// Download directly if locaiton is not file scheme
 		if (location.scheme !== Schemas.file) {
 			await downloadFn(location);
+
 			return;
 		}
 
 		// Download to temporary location first only if file does not exist
 		const tempLocation = joinPath(this.extensionsDownloadDir, `.${generateUuid()}`);
+
 		try {
 			await downloadFn(tempLocation);
 		} catch (error) {
@@ -193,11 +202,13 @@ export class ExtensionsDownloader extends Disposable {
 		} catch (error) {
 			try { await this.fileService.del(tempLocation); } catch (e) { /* ignore */ }
 			let exists = false;
+
 			try { exists = await this.fileService.exists(location); } catch (e) { /* ignore */ }
 			if (exists) {
 				this.logService.info(`Rename failed because the file was downloaded by another source. So ignoring renaming.`, extension.identifier.id, location.path);
 			} else {
 				this.logService.info(`Rename failed because of ${getErrorMessage(error)}. Deleted the file from downloaded location`, tempLocation.path);
+
 				throw error;
 			}
 		}
@@ -205,9 +216,11 @@ export class ExtensionsDownloader extends Disposable {
 
 	private async doDownload(extension: IGalleryExtension, name: string, downloadFn: () => Promise<void>, retries: number): Promise<number> {
 		let attempts = 1;
+
 		while (true) {
 			try {
 				await downloadFn();
+
 				return attempts;
 			} catch (e) {
 				if (attempts++ > retries) {
@@ -228,7 +241,9 @@ export class ExtensionsDownloader extends Disposable {
 
 	async delete(location: URI): Promise<void> {
 		await this.cleanUpPromise;
+
 		const trashRelativePath = this.uriIdentityService.extUri.relativePath(this.extensionsDownloadDir, location);
+
 		if (trashRelativePath) {
 			await this.fileService.move(location, this.uriIdentityService.extUri.joinPath(this.extensionsTrashDir, trashRelativePath), true);
 		} else {
@@ -240,6 +255,7 @@ export class ExtensionsDownloader extends Disposable {
 		try {
 			if (!(await this.fileService.exists(this.extensionsDownloadDir))) {
 				this.logService.trace('Extension VSIX downloads cache dir does not exist');
+
 				return;
 			}
 
@@ -252,9 +268,12 @@ export class ExtensionsDownloader extends Disposable {
 			}
 
 			const folderStat = await this.fileService.resolve(this.extensionsDownloadDir, { resolveMetadata: true });
+
 			if (folderStat.children) {
 				const toDelete: URI[] = [];
+
 				const vsixs: [ExtensionKey, IFileStatWithMetadata][] = [];
+
 				const signatureArchives: URI[] = [];
 
 				for (const stat of folderStat.children) {
@@ -262,6 +281,7 @@ export class ExtensionsDownloader extends Disposable {
 						signatureArchives.push(stat.resource);
 					} else {
 						const extension = ExtensionKey.parse(stat.name);
+
 						if (extension) {
 							vsixs.push([extension, stat]);
 						}
@@ -269,7 +289,9 @@ export class ExtensionsDownloader extends Disposable {
 				}
 
 				const byExtension = groupByExtension(vsixs, ([extension]) => extension);
+
 				const distinct: IFileStatWithMetadata[] = [];
+
 				for (const p of byExtension) {
 					p.sort((a, b) => semver.rcompare(a[0].version, b[0].version));
 					toDelete.push(...p.slice(1).map(e => e[1].resource)); // Delete outdated extensions
@@ -281,6 +303,7 @@ export class ExtensionsDownloader extends Disposable {
 
 				await Promises.settled(toDelete.map(resource => {
 					this.logService.trace('Deleting from cache', resource.path);
+
 					return this.fileService.del(resource);
 				}));
 			}

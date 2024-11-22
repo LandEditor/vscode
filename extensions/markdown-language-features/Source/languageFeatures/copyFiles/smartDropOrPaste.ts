@@ -6,6 +6,7 @@ import * as vscode from 'vscode';
 import { IMdParser } from '../../markdownEngine';
 import { ITextDocument } from '../../types/textDocument';
 import { Schemes } from '../../util/schemes';
+
 const smartPasteLineRegexes = [
     { regex: /(\[[^\[\]]*](?:\([^\(\)]*\)|\[[^\[\]]*]))/g }, // In a Markdown link
     { regex: /\$\$[\s\S]*?\$\$/gm }, // In a fenced math block
@@ -62,11 +63,13 @@ async function shouldSmartPasteForSelection(parser: IMdParser, document: ITextDo
     }
     // Check if selection is inside a special block level element using markdown engine
     const tokens = await parser.tokenize(document);
+
     if (token.isCancellationRequested) {
         return false;
     }
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
+
         if (!token.map) {
             continue;
         }
@@ -92,6 +95,7 @@ async function shouldSmartPasteForSelection(parser: IMdParser, document: ITextDo
     }
     // Run additional regex checks on the current line to check if we are inside an inline element
     const line = document.getText(new vscode.Range(selectedRange.start.line, 0, selectedRange.start.line, Number.MAX_SAFE_INTEGER));
+
     for (const regex of smartPasteLineRegexes) {
         for (const match of line.matchAll(regex.regex)) {
             if (match.index === undefined) {
@@ -115,12 +119,14 @@ const externalUriSchemes: ReadonlySet<string> = new Set([
 ]);
 export function findValidUriInText(text: string): string | undefined {
     const trimmedUrlList = text.trim();
+
     if (!/^\S+$/.test(trimmedUrlList) // Uri must consist of a single sequence of characters without spaces
         || !trimmedUrlList.includes(':') // And it must have colon somewhere for the scheme. We will verify the schema again later
     ) {
         return;
     }
     let uri: vscode.Uri;
+
     try {
         uri = vscode.Uri.parse(trimmedUrlList);
     }

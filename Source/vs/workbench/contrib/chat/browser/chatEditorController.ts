@@ -48,6 +48,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 	static get(editor: ICodeEditor): ChatEditorController | null {
 		const controller = editor.getContribution<ChatEditorController>(ChatEditorController.ID);
+
 		return controller;
 	}
 
@@ -73,6 +74,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 			if (this._editor.getOption(EditorOption.inDiffEditor)) {
 				this._clearRendering();
+
 				return;
 			}
 
@@ -81,10 +83,12 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 			const model = modelObs.read(r);
 
 			const session = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			const entry = session?.entries.read(r).find(e => isEqual(e.modifiedURI, model?.uri));
 
 			if (!entry || entry.state.read(r) !== WorkingSetEntryState.Modified) {
 				this._clearRendering();
+
 				return;
 			}
 
@@ -94,6 +98,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 		const shouldBeReadOnly = derived(this, r => {
 			const value = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!value || value.state.read(r) !== ChatEditingSessionState.StreamingEdits) {
 				return false;
 			}
@@ -102,10 +107,12 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 
 		let actualReadonly: boolean | undefined;
+
 		let actualDeco: 'off' | 'editable' | 'on' | undefined;
 
 		this._register(autorun(r => {
 			const value = shouldBeReadOnly.read(r);
+
 			if (value) {
 				actualReadonly ??= this._editor.getOption(EditorOption.readOnly);
 				actualDeco ??= this._editor.getOption(EditorOption.renderValidationDecorations);
@@ -129,6 +136,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 	override dispose(): void {
 		this._clearRendering();
+
 		super.dispose();
 	}
 
@@ -147,20 +155,24 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 	private _updateWithDiff(entry: IModifiedFileEntry, diff: IDocumentDiff | null | undefined): void {
 		if (!diff) {
 			this._clearRendering();
+
 			return;
 		}
 
 		this._ctxHasEditorModification.set(true);
+
 		const originalModel = entry.originalModel;
 
 		const chatDiffAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
 		});
+
 		const chatDiffWholeLineAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffWholeLineAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 		const createOverviewDecoration = (overviewRulerColor: string, minimapColor: string) => {
 			return ModelDecorationOptions.createDynamic({
 				description: 'chat-editing-decoration',
@@ -168,12 +180,16 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 				minimap: { color: themeColorFromId(minimapColor), position: MinimapPosition.Gutter },
 			});
 		};
+
 		const modifiedDecoration = createOverviewDecoration(overviewRulerModifiedForeground, minimapGutterModifiedBackground);
+
 		const addedDecoration = createOverviewDecoration(overviewRulerAddedForeground, minimapGutterAddedBackground);
+
 		const deletedDecoration = createOverviewDecoration(overviewRulerDeletedForeground, minimapGutterDeletedBackground);
 
 		this._diffHunksRenderStore.clear();
 		this._diffHunkWidgets.length = 0;
+
 		const diffHunkDecorations: IModelDeltaDecoration[] = [];
 
 		this._editor.changeViewZones((viewZoneChangeAccessor) => {
@@ -181,22 +197,30 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 				viewZoneChangeAccessor.removeZone(id);
 			}
 			this._viewZones = [];
+
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
+
 			const mightContainNonBasicASCII = originalModel.mightContainNonBasicASCII();
+
 			const mightContainRTL = originalModel.mightContainRTL();
+
 			const renderOptions = RenderOptions.fromEditor(this._editor);
+
 			const editorLineCount = this._editor.getModel()?.getLineCount();
 
 			for (const diffEntry of diff.changes) {
 				const originalRange = diffEntry.original;
 				originalModel.tokenization.forceTokenization(Math.max(1, originalRange.endLineNumberExclusive - 1));
+
 				const source = new LineSource(
 					originalRange.mapToLineArray(l => originalModel.tokenization.getLineTokens(l)),
 					[],
 					mightContainNonBasicASCII,
 					mightContainRTL,
 				);
+
 				const decorations: InlineDecoration[] = [];
+
 				for (const i of diffEntry.innerChanges || []) {
 					decorations.push(new InlineDecoration(
 						i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
@@ -243,7 +267,9 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 					});
 				}
 				const domNode = document.createElement('div');
+
 				domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
+
 				const result = renderLines(source, renderOptions, decorations, domNode);
 
 				if (!isCreatedContent) {
@@ -259,6 +285,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 				// Add content widget for each diff change
 				const undoEdits: ISingleEditOperation[] = [];
+
 				for (const c of diffEntry.innerChanges ?? []) {
 					const oldText = originalModel.getValueInRange(c.originalRange);
 					undoEdits.push(EditOperation.replace(c.modifiedRange, oldText));
@@ -294,14 +321,18 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 		const activeWidgetIdx = derived(r => {
 			const position = positionObs.read(r);
+
 			if (!position) {
 				return -1;
 			}
 			const idx = diffHunkDecoCollection.getRanges().findIndex(r => r.containsPosition(position));
+
 			return idx;
 		});
+
 		const toggleWidget = (activeWidget: DiffHunkWidget | undefined) => {
 			const positionIdx = activeWidgetIdx.get();
+
 			for (let i = 0; i < this._diffHunkWidgets.length; i++) {
 				const widget = this._diffHunkWidgets[i];
 				widget.toggle(widget === activeWidget || i === positionIdx);
@@ -311,6 +342,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		this._diffHunksRenderStore.add(autorun(r => {
 			// reveal when cursor inside
 			const idx = activeWidgetIdx.read(r);
+
 			const widget = this._diffHunkWidgets[idx];
 			toggleWidget(widget);
 		}));
@@ -321,16 +353,19 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 			// reveal when hovering over
 			if (e.target.type === MouseTargetType.OVERLAY_WIDGET) {
 				const id = e.target.detail;
+
 				const widget = this._diffHunkWidgets.find(w => w.getId() === id);
 				toggleWidget(widget);
 
 			} else if (e.target.type === MouseTargetType.CONTENT_VIEW_ZONE) {
 				const zone = e.target.detail;
+
 				const idx = this._viewZones.findIndex(id => id === zone.viewZoneId);
 				toggleWidget(this._diffHunkWidgets[idx]);
 
 			} else if (e.target.position) {
 				const { position } = e.target;
+
 				const idx = diffHunkDecoCollection.getRanges().findIndex(r => r.containsPosition(position));
 				toggleWidget(this._diffHunkWidgets[idx]);
 
@@ -342,7 +377,9 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		this._diffHunksRenderStore.add(Event.any(this._editor.onDidScrollChange, this._editor.onDidLayoutChange)(() => {
 			for (let i = 0; i < this._diffHunkWidgets.length; i++) {
 				const widget = this._diffHunkWidgets[i];
+
 				const range = diffHunkDecoCollection.getRange(i);
+
 				if (range) {
 					widget.layout(range?.startLineNumber);
 				} else {
@@ -362,6 +399,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 
 	private _reveal(next: boolean, strict: boolean): boolean {
 		const position = this._editor.getPosition();
+
 		if (!position) {
 			return false;
 		}
@@ -375,9 +413,11 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		// over word level changes
 		for (let i = 0; i < decorations.length; i++) {
 			const decoration = decorations[i];
+
 			for (let j = 0; j < decorations.length; j++) {
 				if (i !== j && decoration && decorations[j]?.containsRange(decoration)) {
 					decorations[i] = undefined;
+
 					break;
 				}
 			}
@@ -390,11 +430,13 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		}
 
 		let idx = binarySearch(decorations, Range.fromPositions(position), Range.compareRangesUsingStarts);
+
 		if (idx < 0) {
 			idx = ~idx;
 		}
 
 		let target: number;
+
 		if (decorations[idx]?.containsPosition(position)) {
 			target = idx + (next ? 1 : -1);
 		} else {
@@ -411,6 +453,7 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		this._editor.setPosition(targetPosition);
 		this._editor.revealPositionInCenter(targetPosition, ScrollType.Smooth);
 		this._editor.focus();
+
 		return true;
 	}
 
@@ -419,13 +462,16 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 			return;
 		}
 		const lineRelativeTop = this._editor.getTopForLineNumber(this._editor.getPosition().lineNumber) - this._editor.getScrollTop();
+
 		let closestDistance = Number.MAX_VALUE;
 
 		if (!(closestWidget instanceof DiffHunkWidget)) {
 			for (const widget of this._diffHunkWidgets) {
 				const widgetTop = (<IOverlayWidgetPositionCoordinates | undefined>widget.getPosition()?.preference)?.top;
+
 				if (widgetTop !== undefined) {
 					const distance = Math.abs(widgetTop - lineRelativeTop);
+
 					if (distance < closestDistance) {
 						closestDistance = distance;
 						closestWidget = widget;
@@ -444,13 +490,16 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 			return;
 		}
 		const lineRelativeTop = this._editor.getTopForLineNumber(this._editor.getPosition().lineNumber) - this._editor.getScrollTop();
+
 		let closestDistance = Number.MAX_VALUE;
 
 		if (!(widget instanceof DiffHunkWidget)) {
 			for (const candidate of this._diffHunkWidgets) {
 				const widgetTop = (<IOverlayWidgetPositionCoordinates | undefined>candidate.getPosition()?.preference)?.top;
+
 				if (widgetTop !== undefined) {
 					const distance = Math.abs(widgetTop - lineRelativeTop);
+
 					if (distance < closestDistance) {
 						closestDistance = distance;
 						widget = candidate;
@@ -462,8 +511,11 @@ export class ChatEditorController extends Disposable implements IEditorContribut
 		if (widget instanceof DiffHunkWidget) {
 
 			const lineNumber = widget.getStartLineNumber();
+
 			const position = lineNumber ? new Position(lineNumber, 1) : undefined;
+
 			let selection = this._editor.getSelection();
+
 			if (position && !selection.containsPosition(position)) {
 				selection = Selection.fromPositions(position);
 			}
@@ -527,7 +579,9 @@ class DiffHunkWidget implements IOverlayWidget {
 	layout(startLineNumber: number): void {
 
 		const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+
 		const { contentLeft, contentWidth, verticalScrollbarWidth } = this._editor.getLayoutInfo();
+
 		const scrollTop = this._editor.getScrollTop();
 
 		this._position = {
@@ -544,6 +598,7 @@ class DiffHunkWidget implements IOverlayWidget {
 
 	toggle(show: boolean) {
 		this._domNode.classList.toggle('hover', show);
+
 		if (this._lastStartLineNumber) {
 			this.layout(this._lastStartLineNumber);
 		}

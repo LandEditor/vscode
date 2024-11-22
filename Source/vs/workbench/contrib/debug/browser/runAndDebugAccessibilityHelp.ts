@@ -19,6 +19,7 @@ export class RunAndDebugAccessibilityHelp implements IAccessibleViewImplentation
     name = 'runAndDebugHelp';
     when = ContextKeyExpr.or(ContextKeyExpr.and(ContextKeyExpr.equals('activeViewlet', 'workbench.view.debug'), SidebarFocusContext), ContextKeyExpr.equals(FocusedViewContext.key, VARIABLES_VIEW_ID), ContextKeyExpr.equals(FocusedViewContext.key, WATCH_VIEW_ID), ContextKeyExpr.equals(FocusedViewContext.key, CALLSTACK_VIEW_ID), ContextKeyExpr.equals(FocusedViewContext.key, LOADED_SCRIPTS_VIEW_ID), ContextKeyExpr.equals(FocusedViewContext.key, BREAKPOINTS_VIEW_ID));
     type: AccessibleViewType = AccessibleViewType.Help;
+
     getProvider(accessor: ServicesAccessor) {
         return new RunAndDebugAccessibilityHelpProvider(accessor.get(ICommandService), accessor.get(IViewsService));
     }
@@ -28,6 +29,7 @@ class RunAndDebugAccessibilityHelpProvider extends Disposable implements IAccess
     public readonly verbositySettingKey = AccessibilityVerbositySettingId.Debug;
     public readonly options = { type: AccessibleViewType.Help };
     private _focusedView: string | undefined;
+
     constructor(
     @ICommandService
     private readonly _commandService: ICommandService, 
@@ -40,16 +42,24 @@ class RunAndDebugAccessibilityHelpProvider extends Disposable implements IAccess
         switch (this._focusedView) {
             case 'Watch':
                 this._commandService.executeCommand('workbench.debug.action.focusWatchView');
+
                 break;
+
             case 'Variables':
                 this._commandService.executeCommand('workbench.debug.action.focusVariablesView');
+
                 break;
+
             case 'Call Stack':
                 this._commandService.executeCommand('workbench.debug.action.focusCallStackView');
+
                 break;
+
             case 'Breakpoints':
                 this._commandService.executeCommand('workbench.debug.action.focusBreakpointsView');
+
                 break;
+
             default:
                 this._commandService.executeCommand('workbench.view.debug');
         }

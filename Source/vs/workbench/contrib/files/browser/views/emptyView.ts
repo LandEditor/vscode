@@ -26,6 +26,7 @@ export class EmptyView extends ViewPane {
     static readonly ID: string = 'workbench.explorer.emptyView';
     static readonly NAME: ILocalizedString = nls.localize2('noWorkspace', "No Folder Opened");
     private _disposed: boolean = false;
+
     constructor(options: IViewletViewOptions, 
     @IThemeService
     themeService: IThemeService, 
@@ -63,6 +64,7 @@ export class EmptyView extends ViewPane {
         this._register(new DragAndDropObserver(container, {
             onDrop: e => {
                 container.style.backgroundColor = '';
+
                 const dropHandler = this.instantiationService.createInstance(ResourcesDropHandler, { allowWorkspaceOpen: !isWeb || isTemporaryWorkspace(this.contextService.getWorkspace()) });
                 dropHandler.handleDrop(e, getWindow(container));
             },
@@ -97,6 +99,7 @@ export class EmptyView extends ViewPane {
     }
     override dispose(): void {
         this._disposed = true;
+
         super.dispose();
     }
 }

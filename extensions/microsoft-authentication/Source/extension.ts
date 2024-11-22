@@ -14,23 +14,29 @@ import Logger from './logger';
 function shouldUseMsal(expService: IExperimentationService): boolean {
 	// First check if there is a setting value to allow user to override the default
 	const inspect = workspace.getConfiguration('microsoft-authentication').inspect<'msal' | 'classic'>('implementation');
+
 	if (inspect?.workspaceFolderValue !== undefined) {
 		Logger.debug(`Acquired MSAL enablement value from 'workspaceFolderValue'. Value: ${inspect.workspaceFolderValue}`);
+
 		return inspect.workspaceFolderValue === 'msal';
 	}
 	if (inspect?.workspaceValue !== undefined) {
 		Logger.debug(`Acquired MSAL enablement value from 'workspaceValue'. Value: ${inspect.workspaceValue}`);
+
 		return inspect.workspaceValue === 'msal';
 	}
 	if (inspect?.globalValue !== undefined) {
 		Logger.debug(`Acquired MSAL enablement value from 'globalValue'. Value: ${inspect.globalValue}`);
+
 		return inspect.globalValue === 'msal';
 	}
 
 	// Then check if the experiment value
 	const expValue = expService.getTreatmentVariable<boolean>('vscode', 'microsoft.useMsal');
+
 	if (expValue !== undefined) {
 		Logger.debug(`Acquired MSAL enablement value from 'exp'. Value: ${expValue}`);
+
 		return expValue;
 	}
 
@@ -42,6 +48,7 @@ let useMsal: boolean | undefined;
 
 export async function activate(context: ExtensionContext) {
 	const mainTelemetryReporter = new MicrosoftAuthenticationTelemetryReporter(context.extension.packageJSON.aiKey);
+
 	const expService = await createExperimentationService(
 		context,
 		mainTelemetryReporter,
@@ -55,6 +62,7 @@ export async function activate(context: ExtensionContext) {
 		}
 
 		const reload = l10n.t('Reload');
+
 		const result = await window.showInformationMessage(
 			'Reload required',
 			{

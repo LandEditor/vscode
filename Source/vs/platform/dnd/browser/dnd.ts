@@ -43,9 +43,11 @@ export interface IDraggedResourceEditorInput extends IBaseTextResourceEditorInpu
 }
 export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEditorInput> {
     const editors: IDraggedResourceEditorInput[] = [];
+
     if (e.dataTransfer && e.dataTransfer.types.length > 0) {
         // Data Transfer: Code Editors
         const rawEditorsData = e.dataTransfer.getData(CodeDataTransfers.EDITORS);
+
         if (rawEditorsData) {
             try {
                 editors.push(...parse(rawEditorsData));
@@ -68,6 +70,7 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
         if (e.dataTransfer?.files) {
             for (let i = 0; i < e.dataTransfer.files.length; i++) {
                 const file = e.dataTransfer.files[i];
+
                 if (file && getPathForFile(file)) {
                     try {
                         editors.push({ resource: URI.file(getPathForFile(file)!), isExternal: true, allowWorkspaceOpen: true });
@@ -80,9 +83,11 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
         }
         // Check for CodeFiles transfer
         const rawCodeFiles = e.dataTransfer.getData(CodeDataTransfers.FILES);
+
         if (rawCodeFiles) {
             try {
                 const codeFiles: string[] = JSON.parse(rawCodeFiles);
+
                 for (const codeFile of codeFiles) {
                     editors.push({ resource: URI.file(codeFile), isExternal: true, allowWorkspaceOpen: true });
                 }
@@ -93,8 +98,10 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
         }
         // Workbench contributions
         const contributions = Registry.as<IDragAndDropContributionRegistry>(Extensions.DragAndDropContribution).getAll();
+
         for (const contribution of contributions) {
             const data = e.dataTransfer.getData(contribution.dataFormatKey);
+
             if (data) {
                 try {
                     editors.push(...contribution.getEditorInputs(data));
@@ -109,7 +116,9 @@ export function extractEditorsDropData(e: DragEvent): Array<IDraggedResourceEdit
     // dragged editor multiple times because multiple data transfers
     // are being used (https://github.com/microsoft/vscode/issues/128925)
     const coalescedEditors: IDraggedResourceEditorInput[] = [];
+
     const seen = new ResourceMap<boolean>();
+
     for (const editor of editors) {
         if (!editor.resource) {
             coalescedEditors.push(editor);
@@ -126,9 +135,12 @@ export async function extractEditorsAndFilesDropData(accessor: ServicesAccessor,
     // Web: Check for file transfer
     if (e.dataTransfer && isWeb && containsDragType(e, DataTransfers.FILES)) {
         const files = e.dataTransfer.items;
+
         if (files) {
             const instantiationService = accessor.get(IInstantiationService);
+
             const filesData = await instantiationService.invokeFunction(accessor => extractFilesDropData(accessor, e));
+
             for (const fileData of filesData) {
                 editors.push({ resource: fileData.resource, contents: fileData.contents?.toString(), isExternal: true, allowWorkspaceOpen: fileData.isDirectory });
             }
@@ -138,8 +150,10 @@ export async function extractEditorsAndFilesDropData(accessor: ServicesAccessor,
 }
 export function createDraggedEditorInputFromRawResourcesData(rawResourcesData: string | undefined): IDraggedResourceEditorInput[] {
     const editors: IDraggedResourceEditorInput[] = [];
+
     if (rawResourcesData) {
         const resourcesRaw: string[] = JSON.parse(rawResourcesData);
+
         for (const resourceRaw of resourcesRaw) {
             if (resourceRaw.indexOf(':') > 0) { // mitigate https://github.com/microsoft/vscode/issues/124946
                 const { selection, uri } = extractSelection(URI.parse(resourceRaw));
@@ -158,12 +172,14 @@ async function extractFilesDropData(accessor: ServicesAccessor, event: DragEvent
     // Try to extract via `FileSystemHandle`
     if (WebFileSystemAccess.supported(mainWindow)) {
         const items = event.dataTransfer?.items;
+
         if (items) {
             return extractFileTransferData(accessor, items);
         }
     }
     // Try to extract via `FileList`
     const files = event.dataTransfer?.files;
+
     if (!files) {
         return [];
     }
@@ -176,16 +192,20 @@ async function extractFileTransferData(accessor: ServicesAccessor, items: DataTr
         return []; // only supported when running in web
     }
     const results: DeferredPromise<IFileTransferData | undefined>[] = [];
+
     for (let i = 0; i < items.length; i++) {
         const file = items[i];
+
         if (file) {
             const result = new DeferredPromise<IFileTransferData | undefined>();
             results.push(result);
             (async () => {
                 try {
                     const handle = await file.getAsFileSystemHandle();
+
                     if (!handle) {
                         result.complete(undefined);
+
                         return;
                     }
                     if (WebFileSystemAccess.isFileSystemFileHandle(handle)) {
@@ -214,25 +234,33 @@ async function extractFileTransferData(accessor: ServicesAccessor, items: DataTr
 }
 export async function extractFileListData(accessor: ServicesAccessor, files: FileList): Promise<IFileTransferData[]> {
     const dialogService = accessor.get(IDialogService);
+
     const results: DeferredPromise<IFileTransferData | undefined>[] = [];
+
     for (let i = 0; i < files.length; i++) {
         const file = files.item(i);
+
         if (file) {
             // Skip for very large files because this operation is unbuffered
             if (file.size > 100 * ByteSize.MB) {
                 dialogService.warn(localize('fileTooLarge', "File is too large to open as untitled editor. Please upload it first into the file explorer and then try again."));
+
                 continue;
             }
             const result = new DeferredPromise<IFileTransferData | undefined>();
             results.push(result);
+
             const reader = new FileReader();
             reader.onerror = () => result.complete(undefined);
             reader.onabort = () => result.complete(undefined);
             reader.onload = async (event) => {
                 const name = file.name;
+
                 const loadResult = event.target?.result ?? undefined;
+
                 if (typeof name !== 'string' || typeof loadResult === 'undefined') {
                     result.complete(undefined);
+
                     return;
                 }
                 result.complete({
@@ -252,7 +280,9 @@ export function containsDragType(event: DragEvent, ...dragTypesToFind: string[])
         return false;
     }
     const dragTypes = event.dataTransfer.types;
+
     const lowercaseDragTypes: string[] = [];
+
     for (let i = 0; i < dragTypes.length; i++) {
         lowercaseDragTypes.push(dragTypes[i].toLowerCase()); // somehow the types are lowercase
     }
@@ -280,7 +310,9 @@ export interface IDragAndDropContributionRegistry {
 }
 interface IDragAndDropContribution {
     readonly dataFormatKey: string;
+
     getEditorInputs(data: string): IDraggedResourceEditorInput[];
+
     setData(resources: IResourceStat[], event: DragMouseEvent | DragEvent): void;
 }
 class DragAndDropContributionRegistry implements IDragAndDropContributionRegistry {

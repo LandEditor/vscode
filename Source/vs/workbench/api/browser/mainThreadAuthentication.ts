@@ -31,6 +31,7 @@ interface AuthenticationForceNewSessionOptions {
 interface AuthenticationGetSessionOptions {
 	clearSessionPreference?: boolean;
 	createIfNone?: boolean;
+
 	forceNewSession?: boolean | AuthenticationForceNewSessionOptions;
 	silent?: boolean;
 	account?: AuthenticationSessionAccount;
@@ -111,6 +112,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 		}
 		const emitter = new Emitter<AuthenticationSessionsChangeEvent>();
 		this._registrations.set(id, emitter);
+
 		const provider = new MainThreadAuthenticationProvider(this._proxy, id, label, supportsMultipleAccounts, this.notificationService, emitter);
 		this.authenticationService.registerAuthenticationProvider(id, provider);
 	}
@@ -128,6 +130,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 	$sendDidChangeSessions(providerId: string, event: AuthenticationSessionsChangeEvent): void {
 		const obj = this._registrations.get(providerId);
+
 		if (obj instanceof Emitter) {
 			obj.fire(event);
 		}
@@ -156,12 +159,14 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 				},
 			}
 		];
+
 		if (options?.learnMore) {
 			buttons.push({
 				label: nls.localize('learnMore', "Learn more"),
 				run: async () => {
 					const result = this.loginPrompt(provider, extensionName, recreatingSession, options);
 					await this.openerService.open(URI.revive(options.learnMore!), { allowCommands: true });
+
 					return await result;
 				}
 			});
@@ -204,6 +209,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 	private async doGetSession(providerId: string, scopes: string[], extensionId: string, extensionName: string, options: AuthenticationGetSessionOptions): Promise<AuthenticationSession | undefined> {
 		const sessions = await this.authenticationService.getSessions(providerId, scopes, options.account, true);
+
 		const provider = this.authenticationService.getProvider(providerId);
 
 		// Error cases
@@ -246,6 +252,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 		// modal flows
 		if (options.createIfNone || options.forceNewSession) {
 			let uiOptions: AuthenticationForceNewSessionOptions | undefined;
+
 			if (typeof options.forceNewSession === 'object') {
 				uiOptions = options.forceNewSession;
 			}
@@ -253,18 +260,22 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 			// We only want to show the "recreating session" prompt if we are using forceNewSession & there are sessions
 			// that we will be "forcing through".
 			const recreatingSession = !!(options.forceNewSession && sessions.length);
+
 			const isAllowed = await this.loginPrompt(provider, extensionName, recreatingSession, uiOptions);
+
 			if (!isAllowed) {
 				throw new Error('User did not consent to login.');
 			}
 
 			let session: AuthenticationSession;
+
 			if (sessions?.length && !options.forceNewSession) {
 				session = provider.supportsMultipleAccounts && !options.account
 					? await this.authenticationExtensionsService.selectSession(providerId, extensionId, extensionName, scopes, sessions)
 					: sessions[0];
 			} else {
 				const accountToCreate: AuthenticationSessionAccount | undefined = options.account ?? matchingAccountPreferenceSession?.account;
+
 				do {
 					session = await this.authenticationService.createSession(providerId, scopes, { activateImmediate: true, account: accountToCreate });
 				} while (
@@ -276,12 +287,14 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 			this.authenticationAccessService.updateAllowedExtensions(providerId, session.account.label, [{ id: extensionId, name: extensionName, allowed: true }]);
 			this._updateAccountPreference(extensionId, providerId, session);
+
 			return session;
 		}
 
 		// For the silent flows, if we have a session but we don't have a session preference, we'll return the first one that is valid.
 		if (!matchingAccountPreferenceSession && !this.authenticationExtensionsService.getAccountPreference(extensionId, providerId)) {
 			const validSession = sessions.find(session => this.authenticationAccessService.isAccessAllowed(providerId, session.account.label, extensionId));
+
 			if (validSession) {
 				return validSession;
 			}
@@ -300,6 +313,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 	async $getSession(providerId: string, scopes: string[], extensionId: string, extensionName: string, options: AuthenticationGetSessionOptions): Promise<AuthenticationSession | undefined> {
 		this.sendClientIdUsageTelemetry(extensionId, providerId, scopes);
+
 		const session = await this.doGetSession(providerId, scopes, extensionId, extensionName, options);
 
 		if (session) {
@@ -312,6 +326,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 	async $getAccounts(providerId: string): Promise<ReadonlyArray<AuthenticationSessionAccount>> {
 		const accounts = await this.authenticationService.getAccounts(providerId);
+
 		return accounts;
 	}
 
@@ -322,11 +337,14 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 	private _sentClientIdUsageEvents = new Set<string>();
 	private sendClientIdUsageTelemetry(extensionId: string, providerId: string, scopes: string[]): void {
 		const containsVSCodeClientIdScope = scopes.some(scope => scope.startsWith('VSCODE_CLIENT_ID:'));
+
 		const key = `${extensionId}|${providerId}|${containsVSCodeClientIdScope}`;
+
 		if (this._sentClientIdUsageEvents.has(key)) {
 			return;
 		}
 		this._sentClientIdUsageEvents.add(key);
+
 		if (containsVSCodeClientIdScope) {
 			type ClientIdUsageClassification = {
 				owner: 'TylerLeonhardt';
@@ -339,6 +357,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 
 	private sendProviderUsageTelemetry(extensionId: string, providerId: string): void {
 		const key = `${extensionId}|${providerId}`;
+
 		if (this._sentProviderUsageEvents.has(key)) {
 			return;
 		}
@@ -360,17 +379,22 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 			return undefined;
 		}
 		const accountNamePreference = this.authenticationExtensionsService.getAccountPreference(extensionId, providerId);
+
 		if (accountNamePreference) {
 			const session = sessions.find(session => session.account.label === accountNamePreference);
+
 			return session;
 		}
 
 		const sessionIdPreference = this.authenticationExtensionsService.getSessionPreference(providerId, extensionId, scopes);
+
 		if (sessionIdPreference) {
 			const session = sessions.find(session => session.id === sessionIdPreference);
+
 			if (session) {
 				// Migrate the session preference to the account preference
 				this.authenticationExtensionsService.updateAccountPreference(extensionId, providerId, session.account);
+
 				return session;
 			}
 		}

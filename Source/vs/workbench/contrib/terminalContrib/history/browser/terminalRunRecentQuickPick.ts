@@ -42,15 +42,22 @@ export async function showRunRecentQuickPick(
 	}
 
 	const accessibleViewService = accessor.get(IAccessibleViewService);
+
 	const editorService = accessor.get(IEditorService);
+
 	const instantiationService = accessor.get(IInstantiationService);
+
 	const quickInputService = accessor.get(IQuickInputService);
+
 	const storageService = accessor.get(IStorageService);
 
 	const runRecentStorageKey = `${TerminalStorageKeys.PinnedRecentCommandsPrefix}.${instance.shellType}`;
+
 	let placeholder: string;
 	type Item = IQuickPickItem & { command?: ITerminalCommand; rawLabel: string };
+
 	let items: (Item | IQuickPickItem & { rawLabel: string } | IQuickPickSeparator)[] = [];
+
 	const commandMap: Set<string> = new Set();
 
 	const removeFromCommandHistoryButton: IQuickInputButton = {
@@ -68,10 +75,13 @@ export async function showRunRecentQuickPick(
 
 	if (type === 'command') {
 		placeholder = isMacintosh ? localize('selectRecentCommandMac', 'Select a command to run (hold Option-key to edit the command)') : localize('selectRecentCommand', 'Select a command to run (hold Alt-key to edit the command)');
+
 		const cmdDetection = instance.capabilities.get(TerminalCapability.CommandDetection);
+
 		const commands = cmdDetection?.commands;
 		// Current session history
 		const executingCommand = cmdDetection?.executingCommand;
+
 		if (executingCommand) {
 			commandMap.add(executingCommand);
 		}
@@ -88,10 +98,12 @@ export async function showRunRecentQuickPick(
 				// Trim off any whitespace and/or line endings, replace new lines with the
 				// Downwards Arrow with Corner Leftwards symbol
 				const label = entry.command.trim();
+
 				if (label.length === 0 || commandMap.has(label)) {
 					continue;
 				}
 				let description = collapseTildePath(entry.cwd, instance.userHome, instance.os === OperatingSystem.Windows ? '\\' : '/');
+
 				if (entry.exitCode) {
 					// Since you cannot get the last command's exit code on pwsh, just whether it failed
 					// or not, -1 is treated specially as simply failed
@@ -102,12 +114,15 @@ export async function showRunRecentQuickPick(
 					}
 				}
 				description = description.trim();
+
 				const buttons: IQuickInputButton[] = [commandOutputButton];
 				// Merge consecutive commands
 				const lastItem = items.length > 0 ? items[items.length - 1] : undefined;
+
 				if (lastItem?.type !== 'separator' && lastItem?.label === label) {
 					lastItem.id = entry.timestamp.toString();
 					lastItem.description = description;
+
 					continue;
 				}
 				items.push({
@@ -139,7 +154,9 @@ export async function showRunRecentQuickPick(
 
 		// Gather previous session history
 		const history = instantiationService.invokeFunction(getCommandHistory);
+
 		const previousSessionItems: (IQuickPickItem & { rawLabel: string })[] = [];
+
 		for (const [label, info] of history.entries) {
 			// Only add previous session item if it's not in this session
 			if (!commandMap.has(label) && info.shellType === instance.shellType) {
@@ -165,8 +182,10 @@ export async function showRunRecentQuickPick(
 
 		// Gather shell file history
 		const shellFileHistory = await instantiationService.invokeFunction(getShellFileHistory, instance.shellType);
+
 		if (shellFileHistory !== undefined) {
 			const dedupedShellFileItems: (IQuickPickItem & { rawLabel: string })[] = [];
+
 			for (const label of shellFileHistory.commands) {
 				if (!commandMap.has(label)) {
 					dedupedShellFileItems.unshift({
@@ -198,7 +217,9 @@ export async function showRunRecentQuickPick(
 		placeholder = isMacintosh
 			? localize('selectRecentDirectoryMac', 'Select a directory to go to (hold Option-key to edit the command)')
 			: localize('selectRecentDirectory', 'Select a directory to go to (hold Alt-key to edit the command)');
+
 		const cwds = instance.capabilities.get(TerminalCapability.CwdDetection)?.cwds || [];
+
 		if (cwds && cwds.length > 0) {
 			for (const label of cwds) {
 				items.push({ label, rawLabel: label });
@@ -209,6 +230,7 @@ export async function showRunRecentQuickPick(
 
 		// Gather previous session history
 		const history = instantiationService.invokeFunction(getDirectoryHistory);
+
 		const previousSessionItems: (IQuickPickItem & { rawLabel: string })[] = [];
 		// Only add previous session item if it's not in this session and it matches the remote authority
 		for (const [label, info] of history.entries) {
@@ -231,6 +253,7 @@ export async function showRunRecentQuickPick(
 		return;
 	}
 	const disposables = new DisposableStore();
+
 	const fuzzySearchToggle = disposables.add(new Toggle({
 		title: 'Fuzzy search',
 		icon: commandHistoryFuzzySearchIcon,
@@ -242,8 +265,11 @@ export async function showRunRecentQuickPick(
 	disposables.add(fuzzySearchToggle.onChange(() => {
 		instantiationService.invokeFunction(showRunRecentQuickPick, instance, terminalInRunCommandPicker, type, fuzzySearchToggle.checked ? 'fuzzy' : 'contiguous', quickPick.value);
 	}));
+
 	const outputProvider = disposables.add(instantiationService.createInstance(TerminalOutputProvider));
+
 	const quickPick = disposables.add(quickInputService.createQuickPick<Item | IQuickPickItem & { rawLabel: string }>({ useSeparators: true }));
+
 	const originalItems = items;
 	quickPick.items = [...originalItems];
 	quickPick.sortByLabel = false;
@@ -259,7 +285,9 @@ export async function showRunRecentQuickPick(
 			}
 		} else if (e.button === commandOutputButton) {
 			const selectedCommand = (e.item as Item).command;
+
 			const output = selectedCommand?.getOutput();
+
 			if (output && selectedCommand?.command) {
 				const textContent = await outputProvider.provideTextContent(URI.from(
 					{
@@ -268,6 +296,7 @@ export async function showRunRecentQuickPick(
 						fragment: output,
 						query: `terminal-output-${selectedCommand.timestamp}-${instance.instanceId}`
 					}));
+
 				if (textContent) {
 					await editorService.openEditor({
 						resource: textContent.uri
@@ -279,6 +308,7 @@ export async function showRunRecentQuickPick(
 	}));
 	disposables.add(quickPick.onDidTriggerSeparatorButton(async e => {
 		const resource = openResourceButtons.find(openResourceButton => e.button === openResourceButton)?.resource;
+
 		if (resource) {
 			await editorService.openEditor({
 				resource
@@ -290,7 +320,9 @@ export async function showRunRecentQuickPick(
 			await instantiationService.invokeFunction(showRunRecentQuickPick, instance, terminalInRunCommandPicker, type, filterMode, value);
 		}
 	}));
+
 	let terminalScrollStateSaved = false;
+
 	function restoreScrollState() {
 		terminalScrollStateSaved = false;
 		instance.xterm?.markTracker.restoreScrollState();
@@ -298,10 +330,12 @@ export async function showRunRecentQuickPick(
 	}
 	disposables.add(quickPick.onDidChangeActive(async () => {
 		const xterm = instance.xterm;
+
 		if (!xterm) {
 			return;
 		}
 		const [item] = quickPick.activeItems;
+
 		if (!item) {
 			return;
 		}
@@ -311,6 +345,7 @@ export async function showRunRecentQuickPick(
 				terminalScrollStateSaved = true;
 			}
 			const promptRowCount = item.command.getPromptRowCount();
+
 			const commandRowCount = item.command.getCommandRowCount();
 			xterm.markTracker.revealRange({
 				start: {
@@ -328,7 +363,9 @@ export async function showRunRecentQuickPick(
 	}));
 	disposables.add(quickPick.onDidAccept(async () => {
 		const result = quickPick.activeItems[0];
+
 		let text: string;
+
 		if (type === 'cwd') {
 			text = `cd ${await instance.preparePathForShell(result.rawLabel)}`;
 		} else { // command
@@ -336,12 +373,14 @@ export async function showRunRecentQuickPick(
 		}
 		quickPick.hide();
 		instance.runCommand(text, !quickPick.keyMods.alt);
+
 		if (quickPick.keyMods.alt) {
 			instance.focus();
 		}
 		restoreScrollState();
 	}));
 	disposables.add(quickPick.onDidHide(() => restoreScrollState()));
+
 	if (value) {
 		quickPick.value = value;
 	}
@@ -370,6 +409,7 @@ class TerminalOutputProvider extends Disposable implements ITextModelContentProv
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}

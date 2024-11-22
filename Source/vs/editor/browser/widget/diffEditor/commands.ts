@@ -37,6 +37,7 @@ export class ToggleCollapseUnchangedRegions extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue<boolean>('diffEditor.hideUnchangedRegions.enabled');
         configurationService.updateValue('diffEditor.hideUnchangedRegions.enabled', newValue);
     }
@@ -51,6 +52,7 @@ export class ToggleShowMovedCodeBlocks extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue<boolean>('diffEditor.experimental.showMoves');
         configurationService.updateValue('diffEditor.experimental.showMoves', newValue);
     }
@@ -65,6 +67,7 @@ export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
     }
     run(accessor: ServicesAccessor, ...args: unknown[]): void {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue<boolean>('diffEditor.useInlineViewWhenSpaceIsLimited');
         configurationService.updateValue('diffEditor.useInlineViewWhenSpaceIsLimited', newValue);
     }
@@ -85,6 +88,7 @@ export class SwitchSide extends EditorAction2 {
         dryRun: boolean;
     }): unknown {
         const diffEditor = findFocusedDiffEditor(accessor);
+
         if (diffEditor instanceof DiffEditorWidget) {
             if (arg && arg.dryRun) {
                 return { destinationSelection: diffEditor.mapToOtherSide().destinationSelection };
@@ -113,6 +117,7 @@ export class ExitCompareMove extends EditorAction2 {
     }
     runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
         const diffEditor = findFocusedDiffEditor(accessor);
+
         if (diffEditor instanceof DiffEditorWidget) {
             diffEditor.exitCompareMove();
         }
@@ -131,6 +136,7 @@ export class CollapseAllUnchangedRegions extends EditorAction2 {
     }
     runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
         const diffEditor = findFocusedDiffEditor(accessor);
+
         if (diffEditor instanceof DiffEditorWidget) {
             diffEditor.collapseAllUnchangedRegions();
         }
@@ -149,6 +155,7 @@ export class ShowAllUnchangedRegions extends EditorAction2 {
     }
     runEditorCommand(accessor: ServicesAccessor, editor: ICodeEditor, ...args: unknown[]): void {
         const diffEditor = findFocusedDiffEditor(accessor);
+
         if (diffEditor instanceof DiffEditorWidget) {
             diffEditor.showAllUnchangedRegions();
         }
@@ -165,6 +172,7 @@ export class RevertHunkOrSelection extends Action2 {
     }
     run(accessor: ServicesAccessor, arg: DiffEditorSelectionHunkToolbarContext): unknown {
         const diffEditor = findDiffEditor(accessor, arg.originalUri, arg.modifiedUri);
+
         if (diffEditor instanceof DiffEditorWidget) {
             diffEditor.revertRangeMappings(arg.mapping.innerChanges ?? []);
         }
@@ -174,6 +182,7 @@ export class RevertHunkOrSelection extends Action2 {
 const accessibleDiffViewerCategory: ILocalizedString = localize2('accessibleDiffViewer', "Accessible Diff Viewer");
 export class AccessibleDiffViewerNext extends Action2 {
     public static id = 'editor.action.accessibleDiffViewer.next';
+
     constructor() {
         super({
             id: AccessibleDiffViewerNext.id,
@@ -194,6 +203,7 @@ export class AccessibleDiffViewerNext extends Action2 {
 }
 export class AccessibleDiffViewerPrev extends Action2 {
     public static id = 'editor.action.accessibleDiffViewer.prev';
+
     constructor() {
         super({
             id: AccessibleDiffViewerPrev.id,
@@ -214,21 +224,29 @@ export class AccessibleDiffViewerPrev extends Action2 {
 }
 export function findDiffEditor(accessor: ServicesAccessor, originalUri: URI, modifiedUri: URI): IDiffEditor | null {
     const codeEditorService = accessor.get(ICodeEditorService);
+
     const diffEditors = codeEditorService.listDiffEditors();
+
     return diffEditors.find(diffEditor => {
         const modified = diffEditor.getModifiedEditor();
+
         const original = diffEditor.getOriginalEditor();
+
         return modified && modified.getModel()?.uri.toString() === modifiedUri.toString()
             && original && original.getModel()?.uri.toString() === originalUri.toString();
     }) || null;
 }
 export function findFocusedDiffEditor(accessor: ServicesAccessor): IDiffEditor | null {
     const codeEditorService = accessor.get(ICodeEditorService);
+
     const diffEditors = codeEditorService.listDiffEditors();
+
     const activeElement = getActiveElement();
+
     if (activeElement) {
         for (const d of diffEditors) {
             const container = d.getContainerDomNode();
+
             if (isElementOrParentOf(container, activeElement)) {
                 return d;
             }
@@ -238,6 +256,7 @@ export function findFocusedDiffEditor(accessor: ServicesAccessor): IDiffEditor |
 }
 function isElementOrParentOf(elementOrParent: Element, element: Element): boolean {
     let e: Element | null = element;
+
     while (e) {
         if (e === elementOrParent) {
             return true;

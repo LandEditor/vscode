@@ -9,5 +9,6 @@ export const ISemanticTokensStylingService = createDecorator<ISemanticTokensStyl
 export type DocumentTokensProvider = DocumentSemanticTokensProvider | DocumentRangeSemanticTokensProvider;
 export interface ISemanticTokensStylingService {
     readonly _serviceBrand: undefined;
+
     getStyling(provider: DocumentTokensProvider): SemanticTokensProviderStyling;
 }

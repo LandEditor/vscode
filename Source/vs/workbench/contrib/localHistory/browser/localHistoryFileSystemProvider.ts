@@ -44,6 +44,7 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
     }
     static fromLocalHistoryFileSystem(resource: URI): ILocalHistoryResource {
         const serializedLocalHistoryResource: ISerializedLocalHistoryResource = JSON.parse(resource.query);
+
         return {
             location: URI.parse(serializedLocalHistoryResource.location),
             associatedResource: URI.parse(serializedLocalHistoryResource.associatedResource)
@@ -54,6 +55,7 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
         location: LocalHistoryFileSystemProvider.EMPTY_RESOURCE,
         associatedResource: LocalHistoryFileSystemProvider.EMPTY_RESOURCE
     };
+
     get capabilities() {
         return FileSystemProviderCapabilities.FileReadWrite | FileSystemProviderCapabilities.Readonly;
     }
@@ -61,10 +63,13 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
     private readonly mapSchemeToProvider = new Map<string, Promise<IFileSystemProvider>>();
     private async withProvider(resource: URI): Promise<IFileSystemProvider> {
         const scheme = resource.scheme;
+
         let providerPromise = this.mapSchemeToProvider.get(scheme);
+
         if (!providerPromise) {
             // Resolve early when provider already exists
             const provider = this.fileService.getProvider(scheme);
+
             if (provider) {
                 providerPromise = Promise.resolve(provider);
             }
@@ -101,6 +106,7 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
         }
         // Otherwise delegate to provider
         const provider = await this.withProvider(location);
+
         if (hasReadWriteCapability(provider)) {
             return provider.readFile(location);
         }
@@ -110,6 +116,7 @@ export class LocalHistoryFileSystemProvider implements IFileSystemProvider, IFil
     //#region Unsupported File Operations
     readonly onDidChangeCapabilities = Event.None;
     readonly onDidChangeFile = Event.None;
+
     async writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> { }
     async mkdir(resource: URI): Promise<void> { }
     async readdir(resource: URI): Promise<[

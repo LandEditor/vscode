@@ -11,6 +11,7 @@ import { generateUuid } from '../../base/common/uuid.js';
 import { connectionTokenCookieName, connectionTokenQueryName } from '../../base/common/network.js';
 import { ServerParsedArgs } from './serverEnvironmentService.js';
 import { Promises } from '../../base/node/pfs.js';
+
 const connectionTokenRegex = /^[0-9A-Za-z_-]+$/;
 export const enum ServerConnectionTokenType {
     None,
@@ -25,6 +26,7 @@ export class NoneServerConnectionToken {
 }
 export class MandatoryServerConnectionToken {
     public readonly type = ServerConnectionTokenType.Mandatory;
+
     constructor(public readonly value: string) {
     }
     public validate(connectionToken: any): boolean {
@@ -37,8 +39,11 @@ export class ServerConnectionTokenParseError {
 }
 export async function parseServerConnectionToken(args: ServerParsedArgs, defaultValue: () => Promise<string>): Promise<ServerConnectionToken | ServerConnectionTokenParseError> {
     const withoutConnectionToken = args['without-connection-token'];
+
     const connectionToken = args['connection-token'];
+
     const connectionTokenFile = args['connection-token-file'];
+
     if (withoutConnectionToken) {
         if (typeof connectionToken !== 'undefined' || typeof connectionTokenFile !== 'undefined') {
             return new ServerConnectionTokenParseError(`Please do not use the argument '--connection-token' or '--connection-token-file' at the same time as '--without-connection-token'.`);
@@ -50,6 +55,7 @@ export async function parseServerConnectionToken(args: ServerParsedArgs, default
             return new ServerConnectionTokenParseError(`Please do not use the argument '--connection-token' at the same time as '--connection-token-file'.`);
         }
         let rawConnectionToken: string;
+
         try {
             rawConnectionToken = fs.readFileSync(connectionTokenFile).toString().replace(/\r?\n$/, '');
         }
@@ -79,7 +85,9 @@ export async function determineServerConnectionToken(args: ServerParsedArgs): Pr
         // First try to find a connection token
         try {
             const fileContents = await fs.promises.readFile(storageLocation);
+
             const connectionToken = fileContents.toString().replace(/\r?\n$/, '');
+
             if (connectionTokenRegex.test(connectionToken)) {
                 return connectionToken;
             }
@@ -87,6 +95,7 @@ export async function determineServerConnectionToken(args: ServerParsedArgs): Pr
         catch (err) { }
         // No connection token found, generate one
         const connectionToken = generateUuid();
+
         try {
             // Try to store it
             await Promises.writeFile(storageLocation, connectionToken, { mode: 0o600 });
@@ -94,6 +103,7 @@ export async function determineServerConnectionToken(args: ServerParsedArgs): Pr
         catch (err) { }
         return connectionToken;
     };
+
     return parseServerConnectionToken(args, readOrGenerateConnectionToken);
 }
 export function requestHasValidConnectionToken(connectionToken: ServerConnectionToken, req: http.IncomingMessage, parsedUrl: url.UrlWithParsedQuery) {
@@ -103,5 +113,6 @@ export function requestHasValidConnectionToken(connectionToken: ServerConnection
     }
     // Otherwise, check if there is a valid cookie
     const cookies = cookie.parse(req.headers.cookie || '');
+
     return connectionToken.validate(cookies[connectionTokenCookieName]);
 }

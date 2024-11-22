@@ -10,6 +10,7 @@ const nullScopedAccessibilityProgressSignalFactory = () => ({
     msDelayTime: -1,
     dispose: () => { },
 });
+
 let progressAccessibilitySignalSchedulerFactory: (msDelayTime: number, msLoopTime?: number) => IScopedAccessibilityProgressSignalDelegate = nullScopedAccessibilityProgressSignalFactory;
 export function setProgressAcccessibilitySignalScheduler(progressAccessibilitySignalScheduler: (msDelayTime: number, msLoopTime?: number) => IScopedAccessibilityProgressSignalDelegate) {
     progressAccessibilitySignalSchedulerFactory = progressAccessibilitySignalScheduler;

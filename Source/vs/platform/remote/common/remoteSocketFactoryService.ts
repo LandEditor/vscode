@@ -30,8 +30,10 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
     public register<T extends RemoteConnectionType>(type: T, factory: ISocketFactory<T>): IDisposable {
         this.factories[type] ??= [];
         this.factories[type]!.push(factory);
+
         return toDisposable(() => {
             const idx = this.factories[type]?.indexOf(factory);
+
             if (typeof idx === 'number' && idx >= 0) {
                 this.factories[type]?.splice(idx, 1);
             }
@@ -39,10 +41,12 @@ export class RemoteSocketFactoryService implements IRemoteSocketFactoryService {
     }
     private getSocketFactory<T extends RemoteConnectionType>(messagePassing: RemoteConnectionOfType<T>): ISocketFactory<T> | undefined {
         const factories = (this.factories[messagePassing.type] || []) as ISocketFactory<T>[];
+
         return factories.find(factory => factory.supports(messagePassing));
     }
     public connect(connectTo: RemoteConnection, path: string, query: string, debugLabel: string): Promise<ISocket> {
         const socketFactory = this.getSocketFactory(connectTo);
+
         if (!socketFactory) {
             throw new Error(`No socket factory found for ${connectTo}`);
         }

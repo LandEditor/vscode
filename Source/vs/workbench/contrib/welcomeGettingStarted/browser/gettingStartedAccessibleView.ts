@@ -30,18 +30,24 @@ export class GettingStartedAccessibleView implements IAccessibleViewImplentation
 
 	getProvider = (accessor: ServicesAccessor): AccessibleContentProvider | ExtensionContentProvider | undefined => {
 		const editorService = accessor.get(IEditorService);
+
 		const editorPane = editorService.activeEditorPane;
+
 		if (!(editorPane instanceof GettingStartedPage)) {
 			return;
 		}
 		const gettingStartedInput = editorPane.input;
+
 		if (!(gettingStartedInput instanceof GettingStartedInput) || !gettingStartedInput.selectedCategory) {
 			return;
 		}
 
 		const gettingStartedService = accessor.get(IWalkthroughsService);
+
 		const currentWalkthrough = gettingStartedService.getWalkthrough(gettingStartedInput.selectedCategory);
+
 		const currentStepIds = gettingStartedInput.selectedStep;
+
 		if (currentWalkthrough) {
 
 			return new GettingStartedAccessibleProvider(
@@ -79,20 +85,25 @@ class GettingStartedAccessibleProvider extends Disposable implements IAccessible
 
 	public get actions(): IAction[] {
 		const actions: IAction[] = [];
+
 		const step = this._activeWalkthroughSteps[this._currentStepIndex];
+
 		const nodes = step.description.map(lt => lt.nodes.filter((node): node is ILink => typeof node !== 'string').map(node => ({ href: node.href, label: node.label }))).flat();
+
 		if (nodes.length === 1) {
 			const node = nodes[0];
 
 			actions.push(new Action('walthrough.step.action', node.label, ThemeIcon.asClassName(Codicon.run), true, () => {
 
 				const isCommand = node.href.startsWith('command:');
+
 				const command = node.href.replace(/command:(toSide:)?/, 'command:');
 
 				if (isCommand) {
 					const commandURI = URI.parse(command);
 
 					let args: any = [];
+
 					try {
 						args = parse(decodeURIComponent(commandURI.query));
 					} catch {
@@ -117,6 +128,7 @@ class GettingStartedAccessibleProvider extends Disposable implements IAccessible
 	provideContent(): string {
 		if (this._focusedStep) {
 			const stepIndex = this._activeWalkthroughSteps.findIndex(step => step.id === this._focusedStep);
+
 			if (stepIndex !== -1) {
 				this._currentStepIndex = stepIndex;
 			}
@@ -127,6 +139,7 @@ class GettingStartedAccessibleProvider extends Disposable implements IAccessible
 	private _getContent(waltkrough: IResolvedWalkthrough, step: IResolvedWalkthroughStep, includeTitle?: boolean): string {
 
 		const description = step.description.map(lt => lt.nodes.filter(node => typeof node === 'string')).join('\n');
+
 		const stepsContent =
 			localize('gettingStarted.step', '{0}\n{1}', step.title, description);
 
@@ -145,6 +158,7 @@ class GettingStartedAccessibleProvider extends Disposable implements IAccessible
 	provideNextContent(): string | undefined {
 		if (++this._currentStepIndex >= this._activeWalkthroughSteps.length) {
 			--this._currentStepIndex;
+
 			return;
 		}
 		return this._getContent(this._walkthrough, this._activeWalkthroughSteps[this._currentStepIndex]);
@@ -153,6 +167,7 @@ class GettingStartedAccessibleProvider extends Disposable implements IAccessible
 	providePreviousContent(): string | undefined {
 		if (--this._currentStepIndex < 0) {
 			++this._currentStepIndex;
+
 			return;
 		}
 		return this._getContent(this._walkthrough, this._activeWalkthroughSteps[this._currentStepIndex]);

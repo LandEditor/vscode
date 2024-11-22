@@ -79,6 +79,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
      * A map from language id to a hash computed from the config files locations.
      */
     private readonly _done = new Map<string, number>();
+
     constructor(
     @ILanguageService
     private readonly _languageService: ILanguageService, 
@@ -104,12 +105,16 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private async _loadConfigurationsForMode(languageId: string): Promise<void> {
         const configurationFiles = this._languageService.getConfigurationFiles(languageId);
+
         const configurationHash = hash(configurationFiles.map(uri => uri.toString()));
+
         if (this._done.get(languageId) === configurationHash) {
             return;
         }
         this._done.set(languageId, configurationHash);
+
         const configs = await Promise.all(configurationFiles.map(configFile => this._readConfigFile(configFile)));
+
         for (const config of configs) {
             this._handleConfig(languageId, config);
         }
@@ -117,8 +122,11 @@ export class LanguageConfigurationFileHandler extends Disposable {
     private async _readConfigFile(configFileLocation: URI): Promise<ILanguageConfiguration> {
         try {
             const contents = await this._extensionResourceLoaderService.readExtensionResource(configFileLocation);
+
             const errors: ParseError[] = [];
+
             let configuration = <ILanguageConfiguration>parse(contents, errors);
+
             if (errors.length) {
                 console.error(nls.localize('parseErrors', "Errors parsing {0}: {1}", configFileLocation.toString(), errors.map(e => (`[${e.offset}, ${e.length}] ${getParseErrorMessage(e.error)}`)).join('\n')));
             }
@@ -130,19 +138,23 @@ export class LanguageConfigurationFileHandler extends Disposable {
         }
         catch (err) {
             console.error(err);
+
             return {};
         }
     }
     private static _extractValidCommentRule(languageId: string, configuration: ILanguageConfiguration): CommentRule | undefined {
         const source = configuration.comments;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!types.isObject(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`comments\` to be an object.`);
+
             return undefined;
         }
         let result: CommentRule | undefined = undefined;
+
         if (typeof source.lineComment !== 'undefined') {
             if (typeof source.lineComment !== 'string') {
                 console.warn(`[${languageId}]: language configuration: expected \`comments.lineComment\` to be a string.`);
@@ -165,18 +177,23 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private static _extractValidBrackets(languageId: string, configuration: ILanguageConfiguration): CharacterPair[] | undefined {
         const source = configuration.brackets;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!Array.isArray(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`brackets\` to be an array.`);
+
             return undefined;
         }
         let result: CharacterPair[] | undefined = undefined;
+
         for (let i = 0, len = source.length; i < len; i++) {
             const pair = source[i];
+
             if (!isCharacterPair(pair)) {
                 console.warn(`[${languageId}]: language configuration: expected \`brackets[${i}]\` to be an array of two strings.`);
+
                 continue;
             }
             result = result || [];
@@ -186,19 +203,24 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private static _extractValidAutoClosingPairs(languageId: string, configuration: ILanguageConfiguration): IAutoClosingPairConditional[] | undefined {
         const source = configuration.autoClosingPairs;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!Array.isArray(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs\` to be an array.`);
+
             return undefined;
         }
         let result: IAutoClosingPairConditional[] | undefined = undefined;
+
         for (let i = 0, len = source.length; i < len; i++) {
             const pair = source[i];
+
             if (Array.isArray(pair)) {
                 if (!isCharacterPair(pair)) {
                     console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+
                     continue;
                 }
                 result = result || [];
@@ -207,19 +229,23 @@ export class LanguageConfigurationFileHandler extends Disposable {
             else {
                 if (!types.isObject(pair)) {
                     console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}]\` to be an array of two strings or an object.`);
+
                     continue;
                 }
                 if (typeof pair.open !== 'string') {
                     console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].open\` to be a string.`);
+
                     continue;
                 }
                 if (typeof pair.close !== 'string') {
                     console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].close\` to be a string.`);
+
                     continue;
                 }
                 if (typeof pair.notIn !== 'undefined') {
                     if (!isStringArr(pair.notIn)) {
                         console.warn(`[${languageId}]: language configuration: expected \`autoClosingPairs[${i}].notIn\` to be a string array.`);
+
                         continue;
                     }
                 }
@@ -231,19 +257,24 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private static _extractValidSurroundingPairs(languageId: string, configuration: ILanguageConfiguration): IAutoClosingPair[] | undefined {
         const source = configuration.surroundingPairs;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!Array.isArray(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`surroundingPairs\` to be an array.`);
+
             return undefined;
         }
         let result: IAutoClosingPair[] | undefined = undefined;
+
         for (let i = 0, len = source.length; i < len; i++) {
             const pair = source[i];
+
             if (Array.isArray(pair)) {
                 if (!isCharacterPair(pair)) {
                     console.warn(`[${languageId}]: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+
                     continue;
                 }
                 result = result || [];
@@ -252,14 +283,17 @@ export class LanguageConfigurationFileHandler extends Disposable {
             else {
                 if (!types.isObject(pair)) {
                     console.warn(`[${languageId}]: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+
                     continue;
                 }
                 if (typeof pair.open !== 'string') {
                     console.warn(`[${languageId}]: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`);
+
                     continue;
                 }
                 if (typeof pair.close !== 'string') {
                     console.warn(`[${languageId}]: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`);
+
                     continue;
                 }
                 result = result || [];
@@ -270,18 +304,23 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private static _extractValidColorizedBracketPairs(languageId: string, configuration: ILanguageConfiguration): CharacterPair[] | undefined {
         const source = configuration.colorizedBracketPairs;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!Array.isArray(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
+
             return undefined;
         }
         const result: CharacterPair[] = [];
+
         for (let i = 0, len = source.length; i < len; i++) {
             const pair = source[i];
+
             if (!isCharacterPair(pair)) {
                 console.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`);
+
                 continue;
             }
             result.push([pair[0], pair[1]]);
@@ -290,25 +329,32 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     private static _extractValidOnEnterRules(languageId: string, configuration: ILanguageConfiguration): OnEnterRule[] | undefined {
         const source = configuration.onEnterRules;
+
         if (typeof source === 'undefined') {
             return undefined;
         }
         if (!Array.isArray(source)) {
             console.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
+
             return undefined;
         }
         let result: OnEnterRule[] | undefined = undefined;
+
         for (let i = 0, len = source.length; i < len; i++) {
             const onEnterRule = source[i];
+
             if (!types.isObject(onEnterRule)) {
                 console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
+
                 continue;
             }
             if (!types.isObject(onEnterRule.action)) {
                 console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`);
+
                 continue;
             }
             let indentAction: IndentAction;
+
             if (onEnterRule.action.indent === 'none') {
                 indentAction = IndentAction.None;
             }
@@ -323,9 +369,11 @@ export class LanguageConfigurationFileHandler extends Disposable {
             }
             else {
                 console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`);
+
                 continue;
             }
             const action: EnterAction = { indentAction };
+
             if (onEnterRule.action.appendText) {
                 if (typeof onEnterRule.action.appendText === 'string') {
                     action.appendText = onEnterRule.action.appendText;
@@ -343,18 +391,22 @@ export class LanguageConfigurationFileHandler extends Disposable {
                 }
             }
             const beforeText = this._parseRegex(languageId, `onEnterRules[${i}].beforeText`, onEnterRule.beforeText);
+
             if (!beforeText) {
                 continue;
             }
             const resultingOnEnterRule: OnEnterRule = { beforeText, action };
+
             if (onEnterRule.afterText) {
                 const afterText = this._parseRegex(languageId, `onEnterRules[${i}].afterText`, onEnterRule.afterText);
+
                 if (afterText) {
                     resultingOnEnterRule.afterText = afterText;
                 }
             }
             if (onEnterRule.previousLineText) {
                 const previousLineText = this._parseRegex(languageId, `onEnterRules[${i}].previousLineText`, onEnterRule.previousLineText);
+
                 if (previousLineText) {
                     resultingOnEnterRule.previousLineText = previousLineText;
                 }
@@ -366,18 +418,30 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
     public static extractValidConfig(languageId: string, configuration: ILanguageConfiguration): ExplicitLanguageConfiguration {
         const comments = this._extractValidCommentRule(languageId, configuration);
+
         const brackets = this._extractValidBrackets(languageId, configuration);
+
         const autoClosingPairs = this._extractValidAutoClosingPairs(languageId, configuration);
+
         const surroundingPairs = this._extractValidSurroundingPairs(languageId, configuration);
+
         const colorizedBracketPairs = this._extractValidColorizedBracketPairs(languageId, configuration);
+
         const autoCloseBefore = (typeof configuration.autoCloseBefore === 'string' ? configuration.autoCloseBefore : undefined);
+
         const wordPattern = (configuration.wordPattern ? this._parseRegex(languageId, `wordPattern`, configuration.wordPattern) : undefined);
+
         const indentationRules = (configuration.indentationRules ? this._mapIndentationRules(languageId, configuration.indentationRules) : undefined);
+
         let folding: FoldingRules | undefined = undefined;
+
         if (configuration.folding) {
             const rawMarkers = configuration.folding.markers;
+
             const startMarker = (rawMarkers && rawMarkers.start ? this._parseRegex(languageId, `folding.markers.start`, rawMarkers.start) : undefined);
+
             const endMarker = (rawMarkers && rawMarkers.end ? this._parseRegex(languageId, `folding.markers.end`, rawMarkers.end) : undefined);
+
             const markers: FoldingMarkers | undefined = (startMarker && endMarker ? { start: startMarker, end: endMarker } : undefined);
             folding = {
                 offSide: configuration.folding.offSide,
@@ -385,6 +449,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
             };
         }
         const onEnterRules = this._extractValidOnEnterRules(languageId, configuration);
+
         const richEditConfig: ExplicitLanguageConfiguration = {
             comments,
             brackets,
@@ -398,6 +463,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
             folding,
             __electricCharacterSupport: undefined,
         };
+
         return richEditConfig;
     }
     private _handleConfig(languageId: string, configuration: ILanguageConfiguration): void {
@@ -411,16 +477,19 @@ export class LanguageConfigurationFileHandler extends Disposable {
             }
             catch (err) {
                 console.warn(`[${languageId}]: Invalid regular expression in \`${confPath}\`: `, err);
+
                 return undefined;
             }
         }
         if (types.isObject(value)) {
             if (typeof value.pattern !== 'string') {
                 console.warn(`[${languageId}]: language configuration: expected \`${confPath}.pattern\` to be a string.`);
+
                 return undefined;
             }
             if (typeof value.flags !== 'undefined' && typeof value.flags !== 'string') {
                 console.warn(`[${languageId}]: language configuration: expected \`${confPath}.flags\` to be a string.`);
+
                 return undefined;
             }
             try {
@@ -428,18 +497,22 @@ export class LanguageConfigurationFileHandler extends Disposable {
             }
             catch (err) {
                 console.warn(`[${languageId}]: Invalid regular expression in \`${confPath}\`: `, err);
+
                 return undefined;
             }
         }
         console.warn(`[${languageId}]: language configuration: expected \`${confPath}\` to be a string or an object.`);
+
         return undefined;
     }
     private static _mapIndentationRules(languageId: string, indentationRules: IIndentationRules): IndentationRule | undefined {
         const increaseIndentPattern = this._parseRegex(languageId, `indentationRules.increaseIndentPattern`, indentationRules.increaseIndentPattern);
+
         if (!increaseIndentPattern) {
             return undefined;
         }
         const decreaseIndentPattern = this._parseRegex(languageId, `indentationRules.decreaseIndentPattern`, indentationRules.decreaseIndentPattern);
+
         if (!decreaseIndentPattern) {
             return undefined;
         }
@@ -447,6 +520,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
             increaseIndentPattern: increaseIndentPattern,
             decreaseIndentPattern: decreaseIndentPattern
         };
+
         if (indentationRules.indentNextLinePattern) {
             result.indentNextLinePattern = this._parseRegex(languageId, `indentationRules.indentNextLinePattern`, indentationRules.indentNextLinePattern);
         }
@@ -457,6 +531,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
     }
 }
 const schemaId = 'vscode://schemas/language-configuration';
+
 const schema: IJSONSchema = {
     allowComments: true,
     allowTrailingCommas: true,
@@ -803,5 +878,6 @@ const schema: IJSONSchema = {
         }
     }
 };
+
 const schemaRegistry = Registry.as<IJSONContributionRegistry>(Extensions.JSONContribution);
 schemaRegistry.registerSchema(schemaId, schema);

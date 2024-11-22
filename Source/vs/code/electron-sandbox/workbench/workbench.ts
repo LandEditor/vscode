@@ -10,12 +10,15 @@
     type IBootstrapWindow = import('vs/platform/window/electron-sandbox/window.js').IBootstrapWindow;
     type IMainWindowSandboxGlobals = import('vs/base/parts/sandbox/electron-sandbox/globals.js').IMainWindowSandboxGlobals;
     type IDesktopMain = import('vs/workbench/electron-sandbox/desktop.main.js').IDesktopMain;
+
     const bootstrapWindow: IBootstrapWindow = (window as any).MonacoBootstrapWindow; // defined by bootstrap-window.ts
     const preloadGlobals: IMainWindowSandboxGlobals = (window as any).vscode; // defined by preload.ts
     //#region Splash Screen Helpers
     function showSplash(configuration: INativeWindowConfiguration) {
         performance.mark('code/willShowPartsSplash');
+
         let data = configuration.partsSplash;
+
         if (data) {
             if (configuration.autoDetectHighContrast && configuration.colorScheme.highContrast) {
                 if ((configuration.colorScheme.dark && data.baseTheme !== 'hc-black') || (!configuration.colorScheme.dark && data.baseTheme !== 'hc-light')) {
@@ -34,8 +37,11 @@
         }
         // minimal color configuration (works with or without persisted data)
         let baseTheme;
+
         let shellBackground;
+
         let shellForeground;
+
         if (data) {
             baseTheme = data.baseTheme;
             shellBackground = data.colorInfo.editorBackground;
@@ -76,15 +82,18 @@
         // restore parts if possible (we might not always store layout info)
         if (data?.layoutInfo) {
             const { layoutInfo, colorInfo } = data;
+
             const splash = document.createElement('div');
             splash.id = 'monaco-parts-splash';
             splash.className = baseTheme ?? 'vs-dark';
+
             if (layoutInfo.windowBorder && colorInfo.windowBorder) {
                 splash.style.position = 'relative';
                 splash.style.height = 'calc(100vh - 2px)';
                 splash.style.width = 'calc(100vw - 2px)';
                 splash.style.border = `1px solid var(--window-border-color)`;
                 splash.style.setProperty('--window-border-color', colorInfo.windowBorder);
+
                 if (layoutInfo.windowBorderRadius) {
                     splash.style.borderRadius = layoutInfo.windowBorderRadius;
                 }
@@ -101,6 +110,7 @@
             titleDiv.style.backgroundColor = `${colorInfo.titleBarBackground}`;
             (titleDiv.style as any)['-webkit-app-region'] = 'drag';
             splash.appendChild(titleDiv);
+
             if (colorInfo.titleBarBorder && layoutInfo.titleBarHeight > 0) {
                 const titleBorder = document.createElement('div');
                 titleBorder.style.position = 'absolute';
@@ -117,6 +127,7 @@
             activityDiv.style.width = `${layoutInfo.activityBarWidth}px`;
             activityDiv.style.height = `calc(100% - ${layoutInfo.titleBarHeight + layoutInfo.statusBarHeight}px)`;
             activityDiv.style.top = `${layoutInfo.titleBarHeight}px`;
+
             if (layoutInfo.sideBarSide === 'left') {
                 activityDiv.style.left = '0';
             }
@@ -125,12 +136,14 @@
             }
             activityDiv.style.backgroundColor = `${colorInfo.activityBarBackground}`;
             splash.appendChild(activityDiv);
+
             if (colorInfo.activityBarBorder && layoutInfo.activityBarWidth > 0) {
                 const activityBorderDiv = document.createElement('div');
                 activityBorderDiv.style.position = 'absolute';
                 activityBorderDiv.style.width = '1px';
                 activityBorderDiv.style.height = '100%';
                 activityBorderDiv.style.top = '0';
+
                 if (layoutInfo.sideBarSide === 'left') {
                     activityBorderDiv.style.right = '0';
                     activityBorderDiv.style.borderRight = `1px solid ${colorInfo.activityBarBorder}`;
@@ -149,6 +162,7 @@
                 sideDiv.style.width = `${layoutInfo.sideBarWidth}px`;
                 sideDiv.style.height = `calc(100% - ${layoutInfo.titleBarHeight + layoutInfo.statusBarHeight}px)`;
                 sideDiv.style.top = `${layoutInfo.titleBarHeight}px`;
+
                 if (layoutInfo.sideBarSide === 'left') {
                     sideDiv.style.left = `${layoutInfo.activityBarWidth}px`;
                 }
@@ -157,6 +171,7 @@
                 }
                 sideDiv.style.backgroundColor = `${colorInfo.sideBarBackground}`;
                 splash.appendChild(sideDiv);
+
                 if (colorInfo.sideBarBorder && layoutInfo.sideBarWidth > 0) {
                     const sideBorderDiv = document.createElement('div');
                     sideBorderDiv.style.position = 'absolute';
@@ -164,6 +179,7 @@
                     sideBorderDiv.style.height = '100%';
                     sideBorderDiv.style.top = '0';
                     sideBorderDiv.style.right = '0';
+
                     if (layoutInfo.sideBarSide === 'left') {
                         sideBorderDiv.style.borderRight = `1px solid ${colorInfo.sideBarBorder}`;
                     }
@@ -181,6 +197,7 @@
             statusDiv.style.height = `${layoutInfo.statusBarHeight}px`;
             statusDiv.style.bottom = '0';
             statusDiv.style.left = '0';
+
             if (configuration.workspace && colorInfo.statusBarBackground) {
                 statusDiv.style.backgroundColor = colorInfo.statusBarBackground;
             }
@@ -188,6 +205,7 @@
                 statusDiv.style.backgroundColor = colorInfo.statusBarNoFolderBackground;
             }
             splash.appendChild(statusDiv);
+
             if (colorInfo.statusBarBorder && layoutInfo.statusBarHeight > 0) {
                 const statusBorderDiv = document.createElement('div');
                 statusBorderDiv.style.position = 'absolute';
@@ -228,6 +246,7 @@
             // before we wait for the scripts to be loaded.
             window.requestIdleCallback(() => {
                 const canvas = document.createElement('canvas');
+
                 const context = canvas.getContext('2d');
                 context?.clearRect(0, 0, canvas.width, canvas.height);
                 canvas.remove();

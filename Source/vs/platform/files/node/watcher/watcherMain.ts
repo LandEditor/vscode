@@ -8,6 +8,7 @@ import { Server as ChildProcessServer } from '../../../../base/parts/ipc/node/ip
 import { Server as UtilityProcessServer } from '../../../../base/parts/ipc/node/ipc.mp.js';
 import { isUtilityProcess } from '../../../../base/parts/sandbox/node/electronTypes.js';
 import { UniversalWatcher } from './watcher.js';
+
 let server: ChildProcessServer<string> | UtilityProcessServer;
 if (isUtilityProcess(process)) {
     server = new UtilityProcessServer();

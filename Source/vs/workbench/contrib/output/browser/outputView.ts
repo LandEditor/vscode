@@ -40,6 +40,7 @@ export class OutputViewPane extends ViewPane {
     private channelId: string | undefined;
     private editorPromise: CancelablePromise<OutputEditor> | null = null;
     private readonly scrollLockContextKey: IContextKey<boolean>;
+
     get scrollLock(): boolean { return !!this.scrollLockContextKey.get(); }
     set scrollLock(scrollLock: boolean) { this.scrollLockContextKey.set(scrollLock); }
     constructor(options: IViewPaneOptions, 
@@ -65,6 +66,7 @@ export class OutputViewPane extends ViewPane {
     hoverService: IHoverService) {
         super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
         this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(this.contextKeyService);
+
         const editorInstantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])));
         this.editor = this._register(editorInstantiationService.createInstance(OutputEditor));
         this._register(this.editor.onTitleAreaUpdate(() => {
@@ -89,6 +91,7 @@ export class OutputViewPane extends ViewPane {
         super.renderBody(container);
         this.editor.create(container);
         container.classList.add('output-view');
+
         const codeEditor = <ICodeEditor>this.editor.getControl();
         codeEditor.setAriaOptions({ role: 'document', activeDescendant: undefined });
         this._register(codeEditor.onDidChangeModelContent(() => {
@@ -104,8 +107,10 @@ export class OutputViewPane extends ViewPane {
                 return;
             }
             const model = codeEditor.getModel();
+
             if (model) {
                 const newPositionLine = e.position.lineNumber;
+
                 const lastLine = model.getLineCount();
                 this.scrollLock = lastLine !== newPositionLine;
             }
@@ -117,13 +122,16 @@ export class OutputViewPane extends ViewPane {
     }
     private onDidChangeVisibility(visible: boolean): void {
         this.editor.setVisible(visible);
+
         if (!visible) {
             this.clearInput();
         }
     }
     private setInput(channel: IOutputChannel): void {
         this.channelId = channel.id;
+
         const input = this.createInput(channel);
+
         if (!this.editor.input || !input.matches(this.editor.input)) {
             this.editorPromise?.cancel();
             this.editorPromise = createCancelablePromise(token => this.editor.setInput(this.createInput(channel), { preserveFocus: true }, Object.create(null), token)
@@ -141,6 +149,7 @@ export class OutputViewPane extends ViewPane {
 }
 class OutputEditor extends AbstractTextResourceEditor {
     private readonly resourceContext: ResourceContextKey;
+
     constructor(
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -189,7 +198,9 @@ class OutputEditor extends AbstractTextResourceEditor {
             invisibleCharacters: false,
             ambiguousCharacters: false,
         };
+
         const outputConfig = this.configurationService.getValue<any>('[Log]');
+
         if (outputConfig) {
             if (outputConfig['editor.minimap.enabled']) {
                 options.minimap = { enabled: true };
@@ -208,6 +219,7 @@ class OutputEditor extends AbstractTextResourceEditor {
     }
     override async setInput(input: TextResourceEditorInput, options: ITextEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
         const focus = !(options && options.preserveFocus);
+
         if (this.input && input.matches(this.input)) {
             return;
         }
@@ -217,6 +229,7 @@ class OutputEditor extends AbstractTextResourceEditor {
         }
         await super.setInput(input, options, context, token);
         this.resourceContext.set(input.resource);
+
         if (focus) {
             this.focus();
         }
@@ -232,8 +245,11 @@ class OutputEditor extends AbstractTextResourceEditor {
     }
     protected override createEditor(parent: HTMLElement): void {
         parent.setAttribute('role', 'document');
+
         super.createEditor(parent);
+
         const scopedContextKeyService = this.scopedContextKeyService;
+
         if (scopedContextKeyService) {
             CONTEXT_IN_OUTPUT.bindTo(scopedContextKeyService).set(true);
         }

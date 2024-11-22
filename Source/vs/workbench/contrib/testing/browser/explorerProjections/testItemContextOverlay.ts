@@ -14,6 +14,7 @@ export const getTestItemContextOverlay = (test: InternalTestItem | undefined, ca
         return [];
     }
     const testId = TestId.fromString(test.item.extId);
+
     return [
         [TestingContextKeys.testItemExtId.key, testId.localId],
         [TestingContextKeys.controllerId.key, test.controllerId],

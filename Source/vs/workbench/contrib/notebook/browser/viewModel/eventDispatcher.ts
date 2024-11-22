@@ -15,15 +15,21 @@ export class NotebookEventDispatcher extends Disposable {
     emit(events: NotebookViewEvent[]) {
         for (let i = 0, len = events.length; i < len; i++) {
             const e = events[i];
+
             switch (e.type) {
                 case NotebookViewEventType.LayoutChanged:
                     this._onDidChangeLayout.fire(e);
+
                     break;
+
                 case NotebookViewEventType.MetadataChanged:
                     this._onDidChangeMetadata.fire(e);
+
                     break;
+
                 case NotebookViewEventType.CellStateChanged:
                     this._onDidChangeCellState.fire(e);
+
                     break;
             }
         }

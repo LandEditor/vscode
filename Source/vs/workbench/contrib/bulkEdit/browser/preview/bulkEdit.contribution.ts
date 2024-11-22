@@ -29,6 +29,7 @@ import { registerIcon } from '../../../../../platform/theme/common/iconRegistry.
 import { IPaneCompositePartService } from '../../../../services/panecomposite/browser/panecomposite.js';
 async function getBulkEditPane(viewsService: IViewsService): Promise<BulkEditPane | undefined> {
     const view = await viewsService.openView(BulkEditPane.ID, true);
+
     if (view instanceof BulkEditPane) {
         return view;
     }
@@ -36,6 +37,7 @@ async function getBulkEditPane(viewsService: IViewsService): Promise<BulkEditPan
 }
 class UXState {
     private readonly _activePanel: string | undefined;
+
     constructor(
     @IPaneCompositePartService
     private readonly _paneCompositeService: IPaneCompositePartService, 
@@ -57,8 +59,10 @@ class UXState {
         if (editors) {
             for (const group of this._editorGroupsService.groups) {
                 const previewEditors: EditorInput[] = [];
+
                 for (const input of group.editors) {
                     const resource = EditorResourceAccessor.getCanonicalUri(input, { supportSideBySide: SideBySideEditor.PRIMARY });
+
                     if (resource?.scheme === BulkEditPane.Schema) {
                         previewEditors.push(input);
                     }
@@ -78,6 +82,7 @@ class BulkEditPreviewContribution {
     static readonly ctxEnabled = new RawContextKey('refactorPreview.enabled', false);
     private readonly _ctxEnabled: IContextKey<boolean>;
     private _activeSession: PreviewSession | undefined;
+
     constructor(
     @IPaneCompositePartService
     private readonly _paneCompositeService: IPaneCompositePartService, 
@@ -96,10 +101,14 @@ class BulkEditPreviewContribution {
     }
     private async _previewEdit(edits: ResourceEdit[]): Promise<ResourceEdit[]> {
         this._ctxEnabled.set(true);
+
         const uxState = this._activeSession?.uxState ?? new UXState(this._paneCompositeService, this._editorGroupsService);
+
         const view = await getBulkEditPane(this._viewsService);
+
         if (!view) {
             this._ctxEnabled.set(false);
+
             return edits;
         }
         // check for active preview session and let the user decide
@@ -110,12 +119,14 @@ class BulkEditPreviewContribution {
                 detail: localize('detail', "Press 'Continue' to discard the previous refactoring and continue with the current refactoring."),
                 primaryButton: localize({ key: 'continue', comment: ['&& denotes a mnemonic'] }, "&&Continue")
             });
+
             if (!confirmed) {
                 return [];
             }
         }
         // session
         let session: PreviewSession;
+
         if (this._activeSession) {
             await this._activeSession.uxState.restore(false, true);
             this._activeSession.cts.dispose(true);
@@ -162,6 +173,7 @@ registerAction2(class ApplyAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.accept();
     }
@@ -183,6 +195,7 @@ registerAction2(class DiscardAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.discard();
     }
@@ -208,6 +221,7 @@ registerAction2(class ToggleAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.toggleChecked();
     }
@@ -231,6 +245,7 @@ registerAction2(class GroupByFile extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.groupByFile();
     }
@@ -253,6 +268,7 @@ registerAction2(class GroupByType extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.groupByType();
     }
@@ -274,12 +290,15 @@ registerAction2(class ToggleGrouping extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const viewsService = accessor.get(IViewsService);
+
         const view = await getBulkEditPane(viewsService);
         view?.toggleGrouping();
     }
 });
 registerWorkbenchContribution2(BulkEditPreviewContribution.ID, BulkEditPreviewContribution, WorkbenchPhase.BlockRestore);
+
 const refactorPreviewViewIcon = registerIcon('refactor-preview-view-icon', Codicon.lightbulb, localize('refactorPreviewViewIcon', 'View icon of the refactor preview view.'));
+
 const container = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry).registerViewContainer({
     id: BulkEditPane.ID,
     title: localize2('panel', "Refactor Preview"),

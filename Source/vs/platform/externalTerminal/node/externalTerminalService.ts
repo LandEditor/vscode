@@ -13,9 +13,11 @@ import * as processes from '../../../base/node/processes.js';
 import * as nls from '../../../nls.js';
 import { DEFAULT_TERMINAL_OSX, IExternalTerminalService, IExternalTerminalSettings, ITerminalForPlatform } from '../common/externalTerminal.js';
 import { ITerminalEnvironment } from '../../terminal/common/terminal.js';
+
 const TERMINAL_TITLE = nls.localize('console.title', "VS Code Console");
 abstract class ExternalTerminalService {
     public _serviceBrand: undefined;
+
     async getDefaultTerminalForPlatforms(): Promise<ITerminalForPlatform> {
         return {
             windows: WindowsExternalTerminalService.getDefaultTerminalWindows(),
@@ -39,11 +41,14 @@ export class WindowsExternalTerminalService extends ExternalTerminalService impl
         // cmder ignores the environment cwd and instead opts to always open in %USERPROFILE%
         // unless otherwise specified
         const basename = path.basename(exec, '.exe').toLowerCase();
+
         if (basename === 'cmder') {
             spawner.spawn(exec, cwd ? [cwd] : undefined);
+
             return Promise.resolve(undefined);
         }
         const cmdArgs = ['/c', 'start', '/wait'];
+
         if (exec.indexOf(' ') >= 0) {
             // The "" argument is the window title. Without this, exec doesn't work when the path
             // contains spaces. #6590
@@ -57,6 +62,7 @@ export class WindowsExternalTerminalService extends ExternalTerminalService impl
         }
         return new Promise<void>((c, e) => {
             const env = getSanitizedEnvironment(process);
+
             const child = spawner.spawn(command, cmdArgs, { cwd, env, detached: true });
             child.on('error', e);
             child.on('exit', () => c());
@@ -64,21 +70,28 @@ export class WindowsExternalTerminalService extends ExternalTerminalService impl
     }
     public async runInTerminal(title: string, dir: string, args: string[], envVars: ITerminalEnvironment, settings: IExternalTerminalSettings): Promise<number | undefined> {
         const exec = 'windowsExec' in settings && settings.windowsExec ? settings.windowsExec : WindowsExternalTerminalService.getDefaultTerminalWindows();
+
         const wt = await WindowsExternalTerminalService.getWtExePath();
+
         return new Promise<number | undefined>((resolve, reject) => {
             const title = `"${dir} - ${TERMINAL_TITLE}"`;
+
             const command = `"${args.join('" "')}" & pause`; // use '|' to only pause on non-zero exit code
             // merge environment variables into a copy of the process.env
             const env = Object.assign({}, getSanitizedEnvironment(process), envVars);
             // delete environment variables that have a null value
             Object.keys(env).filter(v => env[v] === null).forEach(key => delete env[key]);
+
             const options: any = {
                 cwd: dir,
                 env: env,
                 windowsVerbatimArguments: true
             };
+
             let spawnExec: string;
+
             let cmdArgs: string[];
+
             if (path.basename(exec, '.exe') === 'wt') {
                 // Handle Windows Terminal specially; -d to set the cwd and run a cmd.exe instance
                 // inside it
@@ -113,6 +126,7 @@ export class WindowsExternalTerminalService extends ExternalTerminalService impl
     private static async getWtExePath() {
         try {
             const wtPath = await processes.win32.findExecutable('wt');
+
             return await pfs.Promises.exists(wtPath) ? wtPath : undefined;
         }
         catch {
@@ -127,17 +141,21 @@ export class MacExternalTerminalService extends ExternalTerminalService implemen
     }
     public runInTerminal(title: string, dir: string, args: string[], envVars: ITerminalEnvironment, settings: IExternalTerminalSettings): Promise<number | undefined> {
         const terminalApp = settings.osxExec || DEFAULT_TERMINAL_OSX;
+
         return new Promise<number | undefined>((resolve, reject) => {
             if (terminalApp === DEFAULT_TERMINAL_OSX || terminalApp === 'iTerm.app') {
                 // On OS X we launch an AppleScript that creates (or reuses) a Terminal window
                 // and then launches the program inside that window.
                 const script = terminalApp === DEFAULT_TERMINAL_OSX ? 'TerminalHelper' : 'iTermHelper';
+
                 const scriptpath = FileAccess.asFileUri(`vs/workbench/contrib/externalTerminal/node/${script}.scpt`).fsPath;
+
                 const osaArgs = [
                     scriptpath,
                     '-t', title || TERMINAL_TITLE,
                     '-w', dir,
                 ];
+
                 for (const a of args) {
                     osaArgs.push('-a');
                     osaArgs.push(a);
@@ -145,8 +163,10 @@ export class MacExternalTerminalService extends ExternalTerminalService implemen
                 if (envVars) {
                     // merge environment variables into a copy of the process.env
                     const env = Object.assign({}, getSanitizedEnvironment(process), envVars);
+
                     for (const key in env) {
                         const value = env[key];
+
                         if (value === null) {
                             osaArgs.push('-u');
                             osaArgs.push(key);
@@ -158,6 +178,7 @@ export class MacExternalTerminalService extends ExternalTerminalService implemen
                     }
                 }
                 let stderr = '';
+
                 const osa = cp.spawn(MacExternalTerminalService.OSASCRIPT, osaArgs);
                 osa.on('error', err => {
                     reject(improveError(err));
@@ -187,12 +208,15 @@ export class MacExternalTerminalService extends ExternalTerminalService implemen
     }
     spawnTerminal(spawner: typeof cp, configuration: IExternalTerminalSettings, cwd?: string): Promise<void> {
         const terminalApp = configuration.osxExec || DEFAULT_TERMINAL_OSX;
+
         return new Promise<void>((c, e) => {
             const args = ['-a', terminalApp];
+
             if (cwd) {
                 args.push(cwd);
             }
             const env = getSanitizedEnvironment(process);
+
             const child = spawner.spawn('/usr/bin/open', args, { cwd, env });
             child.on('error', e);
             child.on('exit', () => c());
@@ -206,6 +230,7 @@ export class LinuxExternalTerminalService extends ExternalTerminalService implem
     }
     public runInTerminal(title: string, dir: string, args: string[], envVars: ITerminalEnvironment, settings: IExternalTerminalSettings): Promise<number | undefined> {
         const execPromise = settings.linuxExec ? Promise.resolve(settings.linuxExec) : LinuxExternalTerminalService.getDefaultTerminalLinuxReady();
+
         return new Promise<number | undefined>((resolve, reject) => {
             const termArgs: string[] = [];
             //termArgs.push('--title');
@@ -219,17 +244,21 @@ export class LinuxExternalTerminalService extends ExternalTerminalService implem
                 }
                 termArgs.push('bash');
                 termArgs.push('-c');
+
                 const bashCommand = `${quote(args)}; echo; read -p "${LinuxExternalTerminalService.WAIT_MESSAGE}" -n1;`;
                 termArgs.push(`''${bashCommand}''`); // wrapping argument in two sets of ' because node is so "friendly" that it removes one set...
                 // merge environment variables into a copy of the process.env
                 const env = Object.assign({}, getSanitizedEnvironment(process), envVars);
                 // delete environment variables that have a null value
                 Object.keys(env).filter(v => env[v] === null).forEach(key => delete env[key]);
+
                 const options: any = {
                     cwd: dir,
                     env: env
                 };
+
                 let stderr = '';
+
                 const cmd = cp.spawn(exec, termArgs, options);
                 cmd.on('error', err => {
                     reject(improveError(err));
@@ -288,9 +317,11 @@ export class LinuxExternalTerminalService extends ExternalTerminalService implem
     }
     spawnTerminal(spawner: typeof cp, configuration: IExternalTerminalSettings, cwd?: string): Promise<void> {
         const execPromise = configuration.linuxExec ? Promise.resolve(configuration.linuxExec) : LinuxExternalTerminalService.getDefaultTerminalLinuxReady();
+
         return new Promise<void>((c, e) => {
             execPromise.then(exec => {
                 const env = getSanitizedEnvironment(process);
+
                 const child = spawner.spawn(exec, [], { cwd, env });
                 child.on('error', e);
                 child.on('exit', () => c());
@@ -301,6 +332,7 @@ export class LinuxExternalTerminalService extends ExternalTerminalService implem
 function getSanitizedEnvironment(process: NodeJS.Process) {
     const env = { ...process.env };
     sanitizeProcessEnvironment(env);
+
     return env;
 }
 /**
@@ -320,6 +352,7 @@ function improveError(err: Error & {
  */
 function quote(args: string[]): string {
     let r = '';
+
     for (const a of args) {
         if (a.indexOf(' ') >= 0) {
             r += '"' + a + '"';

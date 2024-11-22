@@ -41,12 +41,14 @@ export interface ISimpleSuggestWidgetFontInfo {
     fontSize: number;
     lineHeight: number;
     fontWeight: string;
+
     letterSpacing: number;
 }
 export class SimpleSuggestWidgetItemRenderer implements IListRenderer<SimpleCompletionItem, ISimpleSuggestionTemplateData> {
     private readonly _onDidToggleDetails = new Emitter<void>();
     readonly onDidToggleDetails: Event<void> = this._onDidToggleDetails.event;
     readonly templateId = 'suggestion';
+
     constructor(private readonly _getFontInfo: () => ISimpleSuggestWidgetFontInfo) {
     }
     dispose(): void {
@@ -54,27 +56,44 @@ export class SimpleSuggestWidgetItemRenderer implements IListRenderer<SimpleComp
     }
     renderTemplate(container: HTMLElement): ISimpleSuggestionTemplateData {
         const disposables = new DisposableStore();
+
         const root = container;
         root.classList.add('show-file-icons');
+
         const icon = append(container, $('.icon'));
+
         const colorspan = append(icon, $('span.colorspan'));
+
         const text = append(container, $('.contents'));
+
         const main = append(text, $('.main'));
+
         const iconContainer = append(main, $('.icon-label.codicon'));
+
         const left = append(main, $('span.left'));
+
         const right = append(main, $('span.right'));
+
         const iconLabel = new IconLabel(left, { supportHighlights: true, supportIcons: true });
         disposables.add(iconLabel);
+
         const parametersLabel = append(left, $('span.signature-label'));
+
         const qualifierLabel = append(left, $('span.qualifier-label'));
+
         const detailsLabel = append(right, $('span.details-label'));
         // const readMore = append(right, $('span.readMore' + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)));
         // readMore.title = nls.localize('readMore', "Read More");
+
         const configureFont = () => {
             const fontFeatureSettings = '';
+
             const { fontFamily, fontSize, lineHeight, fontWeight, letterSpacing } = this._getFontInfo();
+
             const fontSizePx = `${fontSize}px`;
+
             const lineHeightPx = `${lineHeight}px`;
+
             const letterSpacingPx = `${letterSpacing}px`;
             root.style.fontSize = fontSizePx;
             root.style.fontWeight = fontWeight;
@@ -93,12 +112,14 @@ export class SimpleSuggestWidgetItemRenderer implements IListRenderer<SimpleComp
         // 		configureFont();
         // 	}
         // }));
+
         return { root, left, right, icon, colorspan, iconLabel, iconContainer, parametersLabel, qualifierLabel, detailsLabel, disposables };
     }
     renderElement(element: SimpleCompletionItem, index: number, data: ISimpleSuggestionTemplateData): void {
         const { completion } = element;
         data.root.id = getAriaId(index);
         data.colorspan.style.backgroundColor = '';
+
         const labelOptions: IIconLabelValueOptions = {
             labelEscapeNewLines: true,
             matches: createMatches(element.score)

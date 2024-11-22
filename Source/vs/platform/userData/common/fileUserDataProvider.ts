@@ -25,6 +25,7 @@ export class FileUserDataProvider extends Disposable implements IFileSystemProvi
     readonly onDidChangeFile = this._onDidChangeFile.event;
     private readonly watchResources = TernarySearchTree.forUris<URI>(() => !(this.capabilities & FileSystemProviderCapabilities.PathCaseSensitive));
     private readonly atomicReadWriteResources = new ResourceSet((uri) => this.uriIdentityService.extUri.getComparisonKey(this.toFileSystemResource(uri)));
+
     constructor(private readonly fileSystemScheme: string, private readonly fileSystemProvider: IFileSystemProviderWithFileReadWriteCapability & IFileSystemProviderWithOpenReadWriteCloseCapability & IFileSystemProviderWithFileReadStreamCapability & IFileSystemProviderWithFileAtomicReadCapability & IFileSystemProviderWithFileAtomicWriteCapability & IFileSystemProviderWithFileAtomicDeleteCapability, private readonly userDataScheme: string, private readonly userDataProfilesService: IUserDataProfilesService, private readonly uriIdentityService: IUriIdentityService, private readonly logService: ILogService) {
         super();
         this.updateAtomicReadWritesResources();
@@ -33,6 +34,7 @@ export class FileUserDataProvider extends Disposable implements IFileSystemProvi
     }
     private updateAtomicReadWritesResources(): void {
         this.atomicReadWriteResources.clear();
+
         for (const profile of this.userDataProfilesService.profiles) {
             this.atomicReadWriteResources.add(profile.settingsResource);
             this.atomicReadWriteResources.add(profile.keybindingsResource);
@@ -54,7 +56,9 @@ export class FileUserDataProvider extends Disposable implements IFileSystemProvi
     }
     watch(resource: URI, opts: IWatchOptions): IDisposable {
         this.watchResources.set(resource, resource);
+
         const disposable = this.fileSystemProvider.watch(this.toFileSystemResource(resource), opts);
+
         return toDisposable(() => {
             this.watchResources.delete(resource);
             disposable.dispose();
@@ -110,11 +114,13 @@ export class FileUserDataProvider extends Disposable implements IFileSystemProvi
     }
     private handleFileChanges(changes: readonly IFileChange[]): void {
         const userDataChanges: IFileChange[] = [];
+
         for (const change of changes) {
             if (change.resource.scheme !== this.fileSystemScheme) {
                 continue; // only interested in file schemes
             }
             const userDataResource = this.toUserDataResource(change.resource);
+
             if (this.watchResources.findSubstr(userDataResource)) {
                 userDataChanges.push({
                     resource: userDataResource,

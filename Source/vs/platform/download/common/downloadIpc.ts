@@ -21,9 +21,11 @@ export class DownloadServiceChannel implements IServerChannel {
 }
 export class DownloadServiceChannelClient implements IDownloadService {
     declare readonly _serviceBrand: undefined;
+
     constructor(private channel: IChannel, private getUriTransformer: () => IURITransformer | null) { }
     async download(from: URI, to: URI): Promise<void> {
         const uriTransformer = this.getUriTransformer();
+
         if (uriTransformer) {
             from = uriTransformer.transformOutgoingURI(from);
             to = uriTransformer.transformOutgoingURI(to);

@@ -31,6 +31,7 @@ export interface IExtensionHostProxy {
     extensionTestsExecute(): Promise<number>;
     activateByEvent(activationEvent: string, activationKind: ActivationKind): Promise<void>;
     activate(extensionId: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<boolean>;
+
     setRemoteEnvironment(env: {
         [key: string]: string | null;
     }): Promise<void>;

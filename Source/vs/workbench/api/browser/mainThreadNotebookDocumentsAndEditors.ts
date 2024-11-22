@@ -40,9 +40,13 @@ class NotebookAndEditorState {
             };
         }
         const documentDelta = diffSets(before.documents, after.documents);
+
         const editorDelta = diffMaps(before.textEditors, after.textEditors);
+
         const newActiveEditor = before.activeEditor !== after.activeEditor ? after.activeEditor : undefined;
+
         const visibleEditorDelta = diffMaps(before.visibleEditors, after.visibleEditors);
+
         return {
             addedDocuments: documentDelta.added,
             removedDocuments: documentDelta.removed.map(e => e.uri),
@@ -74,6 +78,7 @@ export class MainThreadNotebooksAndEditors {
     private _currentState?: NotebookAndEditorState;
     private readonly _mainThreadNotebooks: MainThreadNotebookDocuments;
     private readonly _mainThreadEditors: MainThreadNotebookEditors;
+
     constructor(extHostContext: IExtHostContext, 
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -116,14 +121,18 @@ export class MainThreadNotebooksAndEditors {
     }
     private _updateState(focusedEditor?: INotebookEditor): void {
         const editors = new Map<string, IActiveNotebookEditor>();
+
         const visibleEditorsMap = new Map<string, IActiveNotebookEditor>();
+
         for (const editor of this._notebookEditorService.listNotebookEditors()) {
             if (editor.hasModel()) {
                 editors.set(editor.getId(), editor);
             }
         }
         const activeNotebookEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
         let activeEditor: string | null = null;
+
         if (activeNotebookEditor) {
             activeEditor = activeNotebookEditor.getId();
         }
@@ -136,6 +145,7 @@ export class MainThreadNotebooksAndEditors {
         }
         for (const editorPane of this._editorService.visibleEditorPanes) {
             const notebookEditor = getNotebookEditorFromEditorPane(editorPane);
+
             if (notebookEditor?.hasModel() && editors.has(notebookEditor.getId())) {
                 visibleEditorsMap.set(notebookEditor.getId(), notebookEditor);
             }
@@ -196,6 +206,7 @@ export class MainThreadNotebooksAndEditors {
     }
     private _asEditorAddData(add: IActiveNotebookEditor): INotebookEditorAddData {
         const pane = this._editorService.visibleEditorPanes.find(pane => getNotebookEditorFromEditorPane(pane) === add);
+
         return {
             id: add.getId(),
             documentUri: add.textModel.uri,

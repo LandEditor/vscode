@@ -31,20 +31,24 @@ export abstract class TypeScriptBaseCodeLensProvider extends Disposable implemen
     }
     async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<ReferencesCodeLens[]> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return [];
         }
         const response = await this.cachedResponse.execute(document, () => this.client.execute('navtree', { file: filepath }, token));
+
         if (response.type !== 'response') {
             return [];
         }
         const referenceableSpans: vscode.Range[] = [];
         response.body?.childItems?.forEach(item => this.walkNavTree(document, item, undefined, referenceableSpans));
+
         return referenceableSpans.map(span => new ReferencesCodeLens(document.uri, filepath, span));
     }
     protected abstract extractSymbol(document: vscode.TextDocument, item: Proto.NavigationTree, parent: Proto.NavigationTree | undefined): vscode.Range | undefined;
     private walkNavTree(document: vscode.TextDocument, item: Proto.NavigationTree, parent: Proto.NavigationTree | undefined, results: vscode.Range[]): void {
         const range = this.extractSymbol(document, item, parent);
+
         if (range) {
             results.push(range);
         }
@@ -57,14 +61,21 @@ export function getSymbolRange(document: vscode.TextDocument, item: Proto.Naviga
     }
     // In older versions, we have to calculate this manually. See #23924
     const span = item.spans?.[0];
+
     if (!span) {
         return undefined;
     }
     const range = typeConverters.Range.fromTextSpan(span);
+
     const text = document.getText(range);
+
     const identifierMatch = new RegExp(`^(.*?(\\b|\\W))${escapeRegExp(item.text || '')}(\\b|\\W)`, 'gm');
+
     const match = identifierMatch.exec(text);
+
     const prefixLength = match ? match.index + match[1].length : 0;
+
     const startOffset = document.offsetAt(new vscode.Position(range.start.line, range.start.character)) + prefixLength;
+
     return new vscode.Range(document.positionAt(startOffset), document.positionAt(startOffset + item.text.length));
 }

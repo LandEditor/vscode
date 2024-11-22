@@ -17,12 +17,14 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
     private selected = 0;
     private readonly _onDidSelect: Emitter<ISelectData>;
     private styles: ISelectBoxStyles;
+
     constructor(options: ISelectOptionItem[], selected: number, styles: ISelectBoxStyles, selectBoxOptions?: ISelectBoxOptions) {
         super();
         this.selectBoxOptions = selectBoxOptions || Object.create(null);
         this.options = [];
         this.selectElement = document.createElement('select');
         this.selectElement.className = 'monaco-select-box';
+
         if (typeof this.selectBoxOptions.ariaLabel === 'string') {
             this.selectElement.setAttribute('aria-label', this.selectBoxOptions.ariaLabel);
         }
@@ -53,6 +55,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
         }));
         this._register(dom.addStandardDisposableListener(this.selectElement, 'keydown', (e) => {
             let showSelect = false;
+
             if (isMacintosh) {
                 if (e.keyCode === KeyCode.DownArrow || e.keyCode === KeyCode.UpArrow || e.keyCode === KeyCode.Space) {
                     showSelect = true;
@@ -100,6 +103,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
             this.selected = 0;
         }
         this.selectElement.selectedIndex = this.selected;
+
         if ((this.selected < this.options.length) && typeof this.options[this.selected].text === 'string') {
             this.selectElement.title = this.options[this.selected].text;
         }
@@ -152,6 +156,7 @@ export class SelectBoxNative extends Disposable implements ISelectBoxDelegate {
         option.value = value;
         option.text = value;
         option.disabled = !!disabled;
+
         return option;
     }
 }

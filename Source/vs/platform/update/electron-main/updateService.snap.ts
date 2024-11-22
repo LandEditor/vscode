@@ -18,6 +18,7 @@ abstract class AbstractUpdateService implements IUpdateService {
     private _state: State = State.Uninitialized;
     private readonly _onStateChange = new Emitter<State>();
     readonly onStateChange: Event<State> = this._onStateChange.event;
+
     get state(): State {
         return this._state;
     }
@@ -35,6 +36,7 @@ abstract class AbstractUpdateService implements IUpdateService {
     protected logService: ILogService) {
         if (environmentMainService.disableUpdates) {
             this.logService.info('update#ctor - updates are disabled');
+
             return;
         }
         this.setState(State.Idle(this.getUpdateType()));
@@ -51,6 +53,7 @@ abstract class AbstractUpdateService implements IUpdateService {
     }
     async checkForUpdates(explicit: boolean): Promise<void> {
         this.logService.trace('update#checkForUpdates, state = ', this.state.type);
+
         if (this.state.type !== StateType.Idle) {
             return;
         }
@@ -58,6 +61,7 @@ abstract class AbstractUpdateService implements IUpdateService {
     }
     async downloadUpdate(): Promise<void> {
         this.logService.trace('update#downloadUpdate, state = ', this.state.type);
+
         if (this.state.type !== StateType.AvailableForDownload) {
             return;
         }
@@ -68,6 +72,7 @@ abstract class AbstractUpdateService implements IUpdateService {
     }
     async applyUpdate(): Promise<void> {
         this.logService.trace('update#applyUpdate, state = ', this.state.type);
+
         if (this.state.type !== StateType.Downloaded) {
             return;
         }
@@ -78,18 +83,21 @@ abstract class AbstractUpdateService implements IUpdateService {
     }
     quitAndInstall(): Promise<void> {
         this.logService.trace('update#quitAndInstall, state = ', this.state.type);
+
         if (this.state.type !== StateType.Ready) {
             return Promise.resolve(undefined);
         }
         this.logService.trace('update#quitAndInstall(): before lifecycle quit()');
         this.lifecycleMainService.quit(true /* will restart */).then(vetod => {
             this.logService.trace(`update#quitAndInstall(): after lifecycle quit() with veto: ${vetod}`);
+
             if (vetod) {
                 return;
             }
             this.logService.trace('update#quitAndInstall(): running raw#quitAndInstall()');
             this.doQuitAndInstall();
         });
+
         return Promise.resolve(undefined);
     }
     protected getUpdateType(): UpdateType {
@@ -99,6 +107,7 @@ abstract class AbstractUpdateService implements IUpdateService {
         // noop
     }
     abstract isLatestVersion(): Promise<boolean | undefined>;
+
     async _applySpecificUpdate(packagePath: string): Promise<void> {
         // noop
     }
@@ -115,10 +124,15 @@ export class SnapUpdateService extends AbstractUpdateService {
     @ITelemetryService
     private readonly telemetryService: ITelemetryService) {
         super(lifecycleMainService, environmentMainService, logService);
+
         const watcher = watch(path.dirname(this.snap));
+
         const onChange = Event.fromNodeEventEmitter(watcher, 'change', (_, fileName: string) => fileName);
+
         const onCurrentChange = Event.filter(onChange, n => n === 'current');
+
         const onDebouncedCurrentChange = Event.debounce(onCurrentChange, (_, e) => e, 2000);
+
         const listener = onDebouncedCurrentChange(() => this.checkForUpdates(false));
         lifecycleMainService.onWillShutdown(() => {
             listener.dispose();
@@ -156,12 +170,15 @@ export class SnapUpdateService extends AbstractUpdateService {
     }
     private async isUpdateAvailable(): Promise<boolean> {
         const resolvedCurrentSnapPath = await new Promise<string>((c, e) => realpath(`${path.dirname(this.snap)}/current`, (err, r) => err ? e(err) : c(r)));
+
         const currentRevision = path.basename(resolvedCurrentSnapPath);
+
         return this.snapRevision !== currentRevision;
     }
     isLatestVersion(): Promise<boolean | undefined> {
         return this.isUpdateAvailable().then(undefined, err => {
             this.logService.error('update#checkForSnapUpdate(): Could not get realpath of application.');
+
             return undefined;
         });
     }

@@ -24,6 +24,7 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
     readonly onRequestConnection = this._onRequestConnection.event;
     private readonly _onWillShutdown = new Emitter<void>();
     readonly onWillShutdown = this._onWillShutdown.event;
+
     constructor(private readonly _reconnectConstants: IReconnectConstants, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -43,7 +44,9 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
     }
     start(): IPtyHostConnection {
         this.utilityProcess = new UtilityProcess(this._logService, NullTelemetryService, this._lifecycleMainService);
+
         const inspectParams = parsePtyHostDebugPort(this._environmentMainService.args, this._environmentMainService.isBuilt);
+
         const execArgv = inspectParams.port ? [
             '--nolazy',
             `--inspect${inspectParams.break ? '-brk' : ''}=${inspectParams.port}`
@@ -55,8 +58,11 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
             args: ['--logsPath', this._environmentMainService.logsHome.with({ scheme: Schemas.file }).fsPath],
             env: this._createPtyHostConfiguration()
         });
+
         const port = this.utilityProcess.connect();
+
         const client = new MessagePortClient(port, 'ptyHost');
+
         const store = new DisposableStore();
         store.add(client);
         store.add(toDisposable(() => {
@@ -64,6 +70,7 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
             this.utilityProcess?.dispose();
             this.utilityProcess = undefined;
         }));
+
         return {
             client,
             store,
@@ -72,6 +79,7 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
     }
     private _createPtyHostConfiguration() {
         this._environmentMainService.unsetSnapExportedVariables();
+
         const config: {
             [key: string]: string;
         } = {
@@ -83,19 +91,24 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
             VSCODE_RECONNECT_SHORT_GRACE_TIME: String(this._reconnectConstants.shortGraceTime),
             VSCODE_RECONNECT_SCROLLBACK: String(this._reconnectConstants.scrollback),
         };
+
         const simulatedLatency = this._configurationService.getValue(TerminalSettingId.DeveloperPtyHostLatency);
+
         if (simulatedLatency && typeof simulatedLatency === 'number') {
             config.VSCODE_LATENCY = String(simulatedLatency);
         }
         const startupDelay = this._configurationService.getValue(TerminalSettingId.DeveloperPtyHostStartupDelay);
+
         if (startupDelay && typeof startupDelay === 'number') {
             config.VSCODE_STARTUP_DELAY = String(startupDelay);
         }
         this._environmentMainService.restoreSnapExportedVariables();
+
         return config;
     }
     private _onWindowConnection(e: IpcMainEvent, nonce: string) {
         this._onRequestConnection.fire();
+
         const port = this.utilityProcess!.connect();
         // Check back if the requesting window meanwhile closed
         // Since shared process is delayed on startup there is
@@ -103,6 +116,7 @@ export class ElectronPtyHostStarter extends Disposable implements IPtyHostStarte
         // was ready for a connection.
         if (e.sender.isDestroyed()) {
             port.close();
+
             return;
         }
         e.sender.postMessage('vscode:createPtyHostMessageChannelResult', nonce, [port]);

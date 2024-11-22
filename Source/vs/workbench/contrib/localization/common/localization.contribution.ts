@@ -77,6 +77,7 @@ class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureT
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const localizations = manifest.contributes?.localizations || [];
+
         if (!localizations.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -85,6 +86,7 @@ class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureT
             localize('localizations language name', "Language Name"),
             localize('localizations localized language name', "Language Name (Localized)"),
         ];
+
         const rows: IRowData[][] = localizations
             .sort((a, b) => a.languageId.localeCompare(b.languageId))
             .map(localization => {
@@ -94,6 +96,7 @@ class LocalizationsDataRenderer extends Disposable implements IExtensionFeatureT
                 localization.localizedLanguageName ?? ''
             ];
         });
+
         return {
             data: {
                 headers,

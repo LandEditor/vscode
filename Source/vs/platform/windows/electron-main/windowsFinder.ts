@@ -10,6 +10,7 @@ export async function findWindowOnFile(windows: ICodeWindow[], fileUri: URI, loc
     // First check for windows with workspaces that have a parent folder of the provided path opened
     for (const window of windows) {
         const workspace = window.openedWorkspace;
+
         if (isWorkspaceIdentifier(workspace)) {
             const resolvedWorkspace = await localWorkspaceResolver(workspace);
             // resolved workspace: folders are known and can be compared with
@@ -28,6 +29,7 @@ export async function findWindowOnFile(windows: ICodeWindow[], fileUri: URI, loc
     }
     // Then go with single folder windows that are parent of the provided file path
     const singleFolderWindowsOnFilePath = windows.filter(window => isSingleFolderWorkspaceIdentifier(window.openedWorkspace) && extUriBiasedIgnorePathCase.isEqualOrParent(fileUri, window.openedWorkspace.uri));
+
     if (singleFolderWindowsOnFilePath.length) {
         return singleFolderWindowsOnFilePath.sort((windowA, windowB) => -((windowA.openedWorkspace as ISingleFolderWorkspaceIdentifier).uri.path.length - (windowB.openedWorkspace as ISingleFolderWorkspaceIdentifier).uri.path.length))[0];
     }
@@ -50,6 +52,7 @@ export function findWindowOnExtensionDevelopmentPath(windows: ICodeWindow[], ext
     const matches = (uriString: string): boolean => {
         return extensionDevelopmentPaths.some(path => extUriBiasedIgnorePathCase.isEqual(URI.file(path), URI.file(uriString)));
     };
+
     for (const window of windows) {
         // match on extension development path. the path can be one or more paths
         // so we check if any of the paths match on any of the provided ones

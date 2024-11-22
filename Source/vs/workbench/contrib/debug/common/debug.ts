@@ -135,6 +135,7 @@ export interface IReplElement extends ITreeElement {
 }
 export interface INestingReplElement extends IReplElement {
     readonly hasChildren: boolean;
+
     getChildren(): Promise<IReplElement[]> | IReplElement[];
 }
 export interface IReplElementSource {
@@ -149,8 +150,10 @@ export interface IExpressionValue {
 }
 export interface IExpressionContainer extends ITreeElement, IExpressionValue {
     readonly hasChildren: boolean;
+
     getSession(): IDebugSession | undefined;
     evaluateLazy(): Promise<void>;
+
     getChildren(): Promise<IExpression[]>;
     readonly reference?: number;
     readonly memoryReference?: string;
@@ -165,7 +168,9 @@ export interface IDebugger {
     createDebugAdapter(session: IDebugSession): Promise<IDebugAdapter>;
     runInTerminal(args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined>;
     startDebugging(args: IConfig, parentSessionId: string): Promise<boolean>;
+
     getCustomTelemetryEndpoint(): ITelemetryEndpoint | undefined;
+
     getInitialConfigurationContent(initialConfigs?: IConfig[]): Promise<string>;
 }
 export interface IDebuggerMetadata {
@@ -185,8 +190,11 @@ export const enum State {
 export function getStateLabel(state: State): string {
     switch (state) {
         case State.Initializing: return 'initializing';
+
         case State.Stopped: return 'stopped';
+
         case State.Running: return 'running';
+
         default: return 'inactive';
     }
 }
@@ -337,22 +345,33 @@ export interface IDebugSession extends ITreeElement {
     readonly lifecycleManagedByParent: boolean;
     /** Test run this debug session was spawned by */
     readonly correlatedTestRun?: LiveTestResult;
+
     setSubId(subId: string | undefined): void;
+
     getMemory(memoryReference: string): IMemoryRegion;
+
     setName(name: string): void;
     readonly onDidChangeName: Event<string>;
+
     getLabel(): string;
+
     getSourceForUri(modelUri: uri): Source | undefined;
+
     getSource(raw?: DebugProtocol.Source): Source;
+
     setConfiguration(configuration: {
         resolved: IConfig;
         unresolved: IConfig | undefined;
     }): void;
     rawUpdate(data: IRawModelUpdate): void;
+
     getThread(threadId: number): IThread | undefined;
+
     getAllThreads(): IThread[];
     clearThreads(removeThreads: boolean, reference?: number): void;
+
     getStoppedDetails(): IRawStoppedDetails | undefined;
+
     getReplElements(): IReplElement[];
     hasSeparateRepl(): boolean;
     removeReplExpressions(): void;
@@ -386,12 +405,15 @@ export interface IDebugSession extends ITreeElement {
     sendDataBreakpoints(dbps: IDataBreakpoint[]): Promise<void>;
     sendInstructionBreakpoints(dbps: IInstructionBreakpoint[]): Promise<void>;
     sendExceptionBreakpoints(exbpts: IExceptionBreakpoint[]): Promise<void>;
+
     breakpointsLocations(uri: uri, lineNumber: number): Promise<IPosition[]>;
+
     getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
     resolveLocationReference(locationReference: number): Promise<IDebugLocationReferenced>;
     stackTrace(threadId: number, startFrame: number, levels: number, token: CancellationToken): Promise<DebugProtocol.StackTraceResponse | undefined>;
     exceptionInfo(threadId: number): Promise<IExceptionInfo | undefined>;
     scopes(frameId: number, threadId: number): Promise<DebugProtocol.ScopesResponse | undefined>;
+
     variables(variablesReference: number, threadId: number | undefined, filter: 'indexed' | 'named' | undefined, start: number | undefined, count: number | undefined): Promise<DebugProtocol.VariablesResponse | undefined>;
     evaluate(expression: string, frameId?: number, context?: string, location?: IDebugEvaluatePosition): Promise<DebugProtocol.EvaluateResponse | undefined>;
     customRequest(request: string, args: any): Promise<DebugProtocol.Response | undefined>;
@@ -405,14 +427,18 @@ export interface IDebugSession extends ITreeElement {
     stepInTargets(frameId: number): Promise<DebugProtocol.StepInTarget[] | undefined>;
     stepOut(threadId: number, granularity?: DebugProtocol.SteppingGranularity): Promise<void>;
     stepBack(threadId: number, granularity?: DebugProtocol.SteppingGranularity): Promise<void>;
+
     continue(threadId: number): Promise<void>;
     reverseContinue(threadId: number): Promise<void>;
     pause(threadId: number): Promise<void>;
     terminateThreads(threadIds: number[]): Promise<void>;
     completions(frameId: number | undefined, threadId: number, text: string, position: Position, overwriteBefore: number, token: CancellationToken): Promise<DebugProtocol.CompletionsResponse | undefined>;
+
     setVariable(variablesReference: number | undefined, name: string, value: string): Promise<DebugProtocol.SetVariableResponse | undefined>;
+
     setExpression(frameId: number, expression: string, value: string): Promise<DebugProtocol.SetExpressionResponse | undefined>;
     loadSource(resource: uri): Promise<DebugProtocol.SourceResponse | undefined>;
+
     getLoadedSources(): Promise<Source[]>;
     gotoTargets(source: DebugProtocol.Source, line: number, column?: number): Promise<DebugProtocol.GotoTargetsResponse | undefined>;
     goto(threadId: number, targetId: number): Promise<DebugProtocol.GotoResponse | undefined>;
@@ -461,6 +487,7 @@ export interface IThread extends ITreeElement {
     stepIn(granularity?: DebugProtocol.SteppingGranularity): Promise<any>;
     stepOut(granularity?: DebugProtocol.SteppingGranularity): Promise<any>;
     stepBack(granularity?: DebugProtocol.SteppingGranularity): Promise<any>;
+
     continue(): Promise<any>;
     pause(): Promise<any>;
     terminate(): Promise<any>;
@@ -481,8 +508,11 @@ export interface IStackFrame extends ITreeElement {
     readonly source: Source;
     readonly canRestart: boolean;
     readonly instructionPointerReference?: string;
+
     getScopes(): Promise<IScope[]>;
+
     getMostSpecificScopes(range: IRange): Promise<ReadonlyArray<IScope>>;
+
     forgetScopes(): void;
     restart(): Promise<any>;
     toString(): string;
@@ -491,6 +521,7 @@ export interface IStackFrame extends ITreeElement {
 }
 export function isFrameDeemphasized(frame: IStackFrame): boolean {
     const hint = frame.presentationHint ?? frame.source.presentationHint;
+
     return hint === 'deemphasize' || hint === 'subtle';
 }
 export interface IEnablement extends ITreeElement {
@@ -530,6 +561,7 @@ export interface IBaseBreakpoint extends IEnablement {
     /** The preferred mode label of the breakpoint from {@link DebugProtocol.BreakpointMode} */
     readonly modeLabel?: string;
     readonly sessionsThatVerified: string[];
+
     getIdFromAdapter(sessionId: string): number | undefined;
 }
 export interface IBreakpoint extends IBaseBreakpoint {
@@ -616,15 +648,19 @@ export interface IViewModel extends ITreeElement {
      * Returns the focused stack frame or undefined if there are no stack frames.
      */
     readonly focusedStackFrame: IStackFrame | undefined;
+
     setVisualizedExpression(original: IExpression, visualized: IExpression & {
         treeId: string;
     } | undefined): void;
     /** Returns the visualized expression if loaded, or a tree it should be visualized with, or undefined */
     getVisualizedExpression(expression: IExpression): IExpression | string | undefined;
+
     getSelectedExpression(): {
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined;
+
     setSelectedExpression(expression: IExpression | undefined, settingWatch: boolean): void;
     updateViews(): void;
     isMultiSessionView(): boolean;
@@ -641,6 +677,7 @@ export interface IViewModel extends ITreeElement {
     }>;
     onDidSelectExpression: Event<{
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined>;
     onDidEvaluateLazyExpression: Event<IExpressionContainer>;
@@ -660,7 +697,9 @@ export interface IEvaluate {
 }
 export interface IDebugModel extends ITreeElement {
     getSession(sessionId: string | undefined, includeInactive?: boolean): IDebugSession | undefined;
+
     getSessions(includeInactive?: boolean): IDebugSession[];
+
     getBreakpoints(filter?: {
         uri?: uri;
         originalUri?: uri;
@@ -670,7 +709,9 @@ export interface IDebugModel extends ITreeElement {
         triggeredOnly?: boolean;
     }): ReadonlyArray<IBreakpoint>;
     areBreakpointsActivated(): boolean;
+
     getFunctionBreakpoints(): ReadonlyArray<IFunctionBreakpoint>;
+
     getDataBreakpoints(): ReadonlyArray<IDataBreakpoint>;
     /**
      * Returns list of all exception breakpoints.
@@ -681,9 +722,12 @@ export interface IDebugModel extends ITreeElement {
      * @param sessionId Session id. If falsy, returns the breakpoints from the last set fallback session.
      */
     getExceptionBreakpointsForSession(sessionId?: string): ReadonlyArray<IExceptionBreakpoint>;
+
     getInstructionBreakpoints(): ReadonlyArray<IInstructionBreakpoint>;
+
     getWatchExpressions(): ReadonlyArray<IExpression & IEvaluate>;
     registerBreakpointModes(debugType: string, modes: DebugProtocol.BreakpointMode[]): void;
+
     getBreakpointModes(forBreakpointType: 'source' | 'exception' | 'data' | 'instruction'): DebugProtocol.BreakpointMode[];
     onDidChangeBreakpoints: Event<IBreakpointsChangeEvent | undefined>;
     onDidChangeCallStack: Event<void>;
@@ -857,6 +901,7 @@ export interface IDebuggerContribution extends IPlatformSpecificAdapterContribut
     configurationAttributes?: any;
     initialConfigurations?: any[];
     configurationSnippets?: IJSONSchemaSnippet[];
+
     variables?: {
         [key: string]: string;
     };
@@ -910,14 +955,18 @@ export interface IConfigurationManager {
     selectConfiguration(launch: ILaunch | undefined, name?: string, config?: IConfig, dynamicConfigOptions?: {
         type?: string;
     }): Promise<void>;
+
     getLaunches(): ReadonlyArray<ILaunch>;
+
     getLaunch(workspaceUri: uri | undefined): ILaunch | undefined;
+
     getAllConfigurations(): {
         launch: ILaunch;
         name: string;
         presentation?: IConfigPresentation;
     }[];
     removeRecentDynamicConfigurations(name: string, type: string): void;
+
     getRecentDynamicConfigurations(): {
         name: string;
         type: string;
@@ -931,6 +980,7 @@ export interface IConfigurationManager {
      */
     onDidChangeConfigurationProviders: Event<void>;
     hasDebugConfigurationProvider(debugType: string, triggerKind?: DebugConfigurationProviderTriggerKind): boolean;
+
     getDynamicProviders(): Promise<{
         label: string;
         type: string;
@@ -949,9 +999,12 @@ export enum DebuggerString {
 export interface IAdapterManager {
     onDidRegisterDebugger: Event<void>;
     hasEnabledDebuggers(): boolean;
+
     getDebugAdapterDescriptor(session: IDebugSession): Promise<IAdapterDescriptor | undefined>;
+
     getDebuggerLabel(type: string): string | undefined;
     someDebuggerInterestedInLanguage(language: string): boolean;
+
     getDebugger(type: string): IDebuggerMetadata | undefined;
     activateDebuggers(activationEvent: string, debugType?: string): Promise<void>;
     registerDebugAdapterFactory(debugTypes: string[], debugAdapterFactory: IDebugAdapterFactory): IDisposable;
@@ -960,8 +1013,10 @@ export interface IAdapterManager {
     unregisterDebugAdapterDescriptorFactory(debugAdapterDescriptorFactory: IDebugAdapterDescriptorFactory): void;
     substituteVariables(debugType: string, folder: IWorkspaceFolder | undefined, config: IConfig): Promise<IConfig>;
     runInTerminal(debugType: string, args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined>;
+
     getEnabledDebugger(type: string): (IDebugger & IDebuggerMetadata) | undefined;
     guessDebugger(gettingConfigurations: boolean): Promise<(IDebugger & IDebuggerMetadata) | undefined>;
+
     get onDidDebuggersExtPointRead(): Event<void>;
 }
 export interface ILaunch {
@@ -1130,6 +1185,7 @@ export interface IDebugService {
      * Notifies debug adapter of breakpoint changes.
      */
     removeInstructionBreakpoints(instructionReference?: string, offset?: number): Promise<void>;
+
     setExceptionBreakpointCondition(breakpoint: IExceptionBreakpoint, condition: string | undefined): Promise<void>;
     /**
      * Creates breakpoints based on the sesison filter options. This will create
@@ -1211,6 +1267,7 @@ export interface IDebugEditorContribution extends editorCommon.IEditorContributi
 export interface IBreakpointEditorContribution extends editorCommon.IEditorContribution {
     showBreakpointWidget(lineNumber: number, column: number | undefined, context?: BreakpointWidgetContext): void;
     closeBreakpointWidget(): void;
+
     getContextMenuActionsAtPosition(lineNumber: number, model: EditorIModel): IAction[];
 }
 export interface IReplConfiguration {
@@ -1256,7 +1313,9 @@ export interface IDebugVisualizationTreeItem {
 }
 export namespace IDebugVisualizationTreeItem {
     export type Serialized = IDebugVisualizationTreeItem;
+
     export const deserialize = (v: Serialized): IDebugVisualizationTreeItem => v;
+
     export const serialize = (item: IDebugVisualizationTreeItem): Serialized => item;
 }
 export interface IDebugVisualization {
@@ -1287,5 +1346,6 @@ export namespace IDebugVisualization {
         iconClass: v.iconClass,
         visualization: v.visualization,
     });
+
     export const serialize = (visualizer: IDebugVisualization): Serialized => visualizer;
 }

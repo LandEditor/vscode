@@ -48,6 +48,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     private static readonly TEXTFILE_SAVE_REPLACE_SOURCE = SaveSourceRegistry.registerSource('textFileOverwrite.source', localize('textFileOverwrite.source', "File Replaced"));
     readonly files: ITextFileEditorModelManager = this._register(this.instantiationService.createInstance(TextFileEditorModelManager));
     readonly untitled: IUntitledTextEditorModelManager = this.untitledTextEditorService;
+
     constructor(
     @IFileService
     protected readonly fileService: IFileService, 
@@ -95,6 +96,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             readonly label = localize('textFileModelDecorations', "Text File Model Decorations");
             private readonly _onDidChange = this._register(new Emitter<URI[]>());
             readonly onDidChange = this._onDidChange.event;
+
             constructor(private readonly files: ITextFileEditorModelManager) {
                 super();
                 this.registerListeners();
@@ -117,10 +119,12 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             }
             provideDecorations(uri: URI): IDecorationData | undefined {
                 const model = this.files.get(uri);
+
                 if (!model || model.isDisposed()) {
                     return undefined;
                 }
                 const isReadonly = model.isReadonly();
+
                 const isOrphaned = model.hasState(TextFileEditorModelState.ORPHAN);
                 // Readonly + Orphaned
                 if (isReadonly && isOrphaned) {
@@ -154,6 +158,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     //#endregin
     //#region text file read / write / create
     private _encoding: EncodingOracle | undefined;
+
     get encoding(): EncodingOracle {
         if (!this._encoding) {
             this._encoding = this._register(this.instantiationService.createInstance(EncodingOracle));
@@ -170,6 +175,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             // unbuffered reading.
             preferUnbuffered: true
         });
+
         return {
             ...bufferStream,
             encoding: decoder.detected.encoding || UTF8,
@@ -178,6 +184,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     }
     async readStream(resource: URI, options?: IReadTextFileOptions): Promise<ITextFileStreamContent> {
         const [bufferStream, decoder] = await this.doRead(resource, options);
+
         return {
             ...bufferStream,
             encoding: decoder.detected.encoding || UTF8,
@@ -193,6 +200,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         const cts = new CancellationTokenSource();
         // read stream raw (either buffered or unbuffered)
         let bufferStream: IFileStreamContent;
+
         if (options?.preferUnbuffered) {
             const content = await this.fileService.readFile(resource, options, cts.token);
             bufferStream = {
@@ -206,6 +214,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // read through encoding library
         try {
             const decoder = await this.doGetDecodedStream(resource, bufferStream.value, options);
+
             return [bufferStream, decoder];
         }
         catch (error) {
@@ -235,27 +244,36 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     }[], undoInfo?: IFileOperationUndoRedoInfo): Promise<readonly IFileStatWithMetadata[]> {
         const operationsWithContents: ICreateFileOperation[] = await Promise.all(operations.map(async (operation) => {
             const contents = await this.getEncodedReadable(operation.resource, operation.value);
+
             return {
                 resource: operation.resource,
                 contents,
                 overwrite: operation.options?.overwrite
             };
         }));
+
         return this.workingCopyFileService.create(operationsWithContents, CancellationToken.None, undoInfo);
     }
     async write(resource: URI, value: string | ITextSnapshot, options?: IWriteTextFileOptions): Promise<IFileStatWithMetadata> {
         const readable = await this.getEncodedReadable(resource, value, options);
+
         if (options?.writeElevated && this.elevatedFileService.isSupported(resource)) {
             return this.elevatedFileService.writeFileElevated(resource, readable, options);
         }
         return this.fileService.writeFile(resource, readable, options);
     }
     async getEncodedReadable(resource: URI, value: ITextSnapshot): Promise<VSBufferReadable>;
+
     async getEncodedReadable(resource: URI, value: string): Promise<VSBuffer>;
+
     async getEncodedReadable(resource: URI, value?: ITextSnapshot): Promise<VSBufferReadable | undefined>;
+
     async getEncodedReadable(resource: URI, value?: string): Promise<VSBuffer | undefined>;
+
     async getEncodedReadable(resource: URI, value?: string | ITextSnapshot): Promise<VSBuffer | VSBufferReadable | undefined>;
+
     async getEncodedReadable(resource: URI, value: string | ITextSnapshot, options?: IWriteTextFileOptions): Promise<VSBuffer | VSBufferReadable>;
+
     async getEncodedReadable(resource: URI, value?: string | ITextSnapshot, options?: IWriteTextFileOptions): Promise<VSBuffer | VSBufferReadable | undefined> {
         // check for encoding
         const { encoding, addBOM } = await this.encoding.getWriteEncoding(resource, options);
@@ -267,7 +285,9 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         }
         // otherwise create encoded readable
         value = value || '';
+
         const snapshot = typeof value === 'string' ? stringToSnapshot(value) : value;
+
         return toEncodeReadable(snapshot, encoding, { addBOM });
     }
     async getDecodedStream(resource: URI, value: VSBufferReadableStream, options?: IReadTextFileEncodingOptions): Promise<ReadableStream<string>> {
@@ -283,6 +303,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
                 this.textResourceConfigurationService.getValue(resource, 'files.candidateGuessEncodings'),
             overwriteEncoding: async (detectedEncoding) => {
                 const { encoding } = await this.encoding.getPreferredReadEncoding(resource, options, detectedEncoding ?? undefined);
+
                 return encoding;
             }
         });
@@ -293,6 +314,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // Untitled
         if (resource.scheme === Schemas.untitled) {
             const model = this.untitled.get(resource);
+
             if (model) {
                 let targetUri: URI | undefined;
                 // Untitled with associated file path don't need to prompt
@@ -312,6 +334,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // File
         else {
             const model = this.files.get(resource);
+
             if (model) {
                 return await model.save(options) ? resource : undefined;
             }
@@ -329,6 +352,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // Ensure target is not marked as readonly and prompt otherwise
         if (this.filesConfigurationService.isReadonly(target)) {
             const confirmed = await this.confirmMakeWriteable(target);
+
             if (!confirmed) {
                 return;
             }
@@ -351,6 +375,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             // model for the source or the target URI so we
             // simply try to save with both resources.
             const success = await this.save(source, options);
+
             if (!success) {
                 await this.save(target, options);
             }
@@ -364,6 +389,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // If the source is an existing text file model, we can directly
         // use that model to copy the contents to the target destination
         const textFileModel = this.files.get(source);
+
         if (textFileModel?.isResolved()) {
             success = await this.doSaveAsTextFile(textFileModel, source, target, options);
         }
@@ -377,6 +403,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // would give us access to the contents.
         else {
             const textModel = this.modelService.getModel(source);
+
             if (textModel) {
                 success = await this.doSaveAsTextFile(textModel, source, target, options);
             }
@@ -400,13 +427,17 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     private async doSaveAsTextFile(sourceModel: IResolvedTextEditorModel | ITextModel, source: URI, target: URI, options?: ITextFileSaveOptions): Promise<boolean> {
         // Find source encoding if any
         let sourceModelEncoding: string | undefined = undefined;
+
         const sourceModelWithEncodingSupport = (sourceModel as unknown as IEncodingSupport);
+
         if (typeof sourceModelWithEncodingSupport.getEncoding === 'function') {
             sourceModelEncoding = sourceModelWithEncodingSupport.getEncoding();
         }
         // Prefer an existing model if it is already resolved for the given target resource
         let targetExists: boolean = false;
+
         let targetModel = this.files.get(target);
+
         if (targetModel?.isResolved()) {
             targetExists = true;
         }
@@ -429,6 +460,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
                     if ((<TextFileOperationError>error).textFileOperationResult === TextFileOperationResult.FILE_IS_BINARY ||
                         (<FileOperationError>error).fileOperationResult === FileOperationResult.FILE_TOO_LARGE) {
                         await this.fileService.del(target);
+
                         return this.doSaveAsTextFile(sourceModel, source, target, options);
                     }
                 }
@@ -440,6 +472,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // path. This can happen if the file was created after the untitled file was opened.
         // See https://github.com/microsoft/vscode/issues/67946
         let write: boolean;
+
         if (sourceModel instanceof UntitledTextEditorModel && sourceModel.hasAssociatedFilePath && targetExists && this.uriIdentityService.extUri.isEqual(target, toLocalResource(sourceModel.resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme))) {
             write = await this.confirmOverwrite(target);
         }
@@ -450,6 +483,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             return false;
         }
         let sourceTextModel: ITextModel | undefined = undefined;
+
         if (sourceModel instanceof BaseTextEditorModel) {
             if (sourceModel.isResolved()) {
                 sourceTextModel = sourceModel.textEditorModel ?? undefined;
@@ -459,6 +493,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             sourceTextModel = sourceModel as ITextModel;
         }
         let targetTextModel: ITextModel | undefined = undefined;
+
         if (targetModel.isResolved()) {
             targetTextModel = targetModel.textEditorModel;
         }
@@ -470,12 +505,15 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             this.modelService.updateModel(targetTextModel, createTextBufferFactoryFromSnapshot(sourceTextModel.createSnapshot()));
             // language
             const sourceLanguageId = sourceTextModel.getLanguageId();
+
             const targetLanguageId = targetTextModel.getLanguageId();
+
             if (sourceLanguageId !== PLAINTEXT_LANGUAGE_ID && targetLanguageId === PLAINTEXT_LANGUAGE_ID) {
                 targetTextModel.setLanguage(sourceLanguageId); // only use if more specific than plain/text
             }
             // transient properties
             const sourceTransientProperties = this.codeEditorService.getTransientModelProperties(sourceTextModel);
+
             if (sourceTransientProperties) {
                 for (const [key, value] of sourceTransientProperties) {
                     this.codeEditorService.setTransientModelProperty(targetTextModel, key, value);
@@ -502,6 +540,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             detail: localize('overwriteIrreversible', "A file or folder with the name '{0}' already exists in the folder '{1}'. Replacing it will overwrite its current contents.", basename(resource), basename(dirname(resource))),
             primaryButton: localize({ key: 'replaceButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Replace"),
         });
+
         return confirmed;
     }
     private async confirmMakeWriteable(resource: URI): Promise<boolean> {
@@ -511,6 +550,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             detail: localize('confirmMakeWriteableDetail', "Paths can be configured as read-only via settings."),
             primaryButton: localize({ key: 'makeWriteableButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Save Anyway")
         });
+
         return confirmed;
     }
     private async suggestSavePath(resource: URI): Promise<URI> {
@@ -519,11 +559,14 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             return resource;
         }
         const remoteAuthority = this.environmentService.remoteAuthority;
+
         const defaultFilePath = await this.fileDialogService.defaultFilePath();
         // Otherwise try to suggest a path that can be saved
         let suggestedFilename: string | undefined = undefined;
+
         if (resource.scheme === Schemas.untitled) {
             const model = this.untitled.get(resource);
+
             if (model) {
                 // Untitled with associated file path
                 if (model.hasAssociatedFilePath) {
@@ -533,6 +576,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
                 // of untitled model if it is a valid path name and
                 // figure out the file extension from the mode if any.
                 let nameCandidate: string;
+
                 if (await this.pathService.hasValidBasename(joinPath(defaultFilePath, model.name), model.name)) {
                     nameCandidate = model.name;
                 }
@@ -540,6 +584,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
                     nameCandidate = basename(resource);
                 }
                 const languageId = model.getLanguageId();
+
                 if (languageId && languageId !== PLAINTEXT_LANGUAGE_ID) {
                     suggestedFilename = this.suggestFilename(languageId, nameCandidate);
                 }
@@ -558,15 +603,19 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     }
     suggestFilename(languageId: string, untitledName: string) {
         const languageName = this.languageService.getLanguageName(languageId);
+
         if (!languageName) {
             return untitledName; // unknown language, so we cannot suggest a better name
         }
         const untitledExtension = pathExtname(untitledName);
+
         const extensions = this.languageService.getExtensions(languageId);
+
         if (extensions.includes(untitledExtension)) {
             return untitledName; // preserve extension if it is compatible with the mode
         }
         const primaryExtension = extensions.at(0);
+
         if (primaryExtension) {
             if (untitledExtension) {
                 return `${untitledName.substring(0, untitledName.indexOf(untitledExtension))}${primaryExtension}`;
@@ -574,6 +623,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
             return `${untitledName}${primaryExtension}`;
         }
         const filenames = this.languageService.getFilenames(languageId);
+
         if (filenames.includes(untitledName)) {
             return untitledName; // preserve name if it is compatible with the mode
         }
@@ -585,6 +635,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // Untitled
         if (resource.scheme === Schemas.untitled) {
             const model = this.untitled.get(resource);
+
             if (model) {
                 return model.revert(options);
             }
@@ -592,6 +643,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
         // File
         else {
             const model = this.files.get(resource);
+
             if (model && (model.isDirty() || options?.force)) {
                 return model.revert(options);
             }
@@ -601,6 +653,7 @@ export abstract class AbstractTextFileService extends Disposable implements ITex
     //#region dirty
     isDirty(resource: URI): boolean {
         const model = resource.scheme === Schemas.untitled ? this.untitled.get(resource) : this.files.get(resource);
+
         if (model) {
             return model.isDirty();
         }
@@ -639,11 +692,13 @@ export class EncodingOracle extends Disposable implements IResourceEncodings {
         defaultEncodingOverrides.push({ parent: this.environmentService.userRoamingDataHome, encoding: UTF8 });
         // Workspace files (via extension and via untitled workspaces location)
         defaultEncodingOverrides.push({ extension: WORKSPACE_EXTENSION, encoding: UTF8 });
+
         defaultEncodingOverrides.push({ parent: this.environmentService.untitledWorkspacesHome, encoding: UTF8 });
         // Folder Settings
         this.contextService.getWorkspace().folders.forEach(folder => {
             defaultEncodingOverrides.push({ parent: joinPath(folder.uri, '.vscode'), encoding: UTF8 });
         });
+
         return defaultEncodingOverrides;
     }
     async getWriteEncoding(resource: URI, options?: IWriteTextFileOptions): Promise<{
@@ -651,10 +706,12 @@ export class EncodingOracle extends Disposable implements IResourceEncodings {
         addBOM: boolean;
     }> {
         const { encoding, hasBOM } = await this.getPreferredWriteEncoding(resource, options ? options.encoding : undefined);
+
         return { encoding, addBOM: hasBOM };
     }
     async getPreferredWriteEncoding(resource: URI, preferredEncoding?: string): Promise<IResourceEncoding> {
         const resourceEncoding = await this.getEncodingForResource(resource, preferredEncoding);
+
         return {
             encoding: resourceEncoding,
             hasBOM: resourceEncoding === UTF16be || resourceEncoding === UTF16le || resourceEncoding === UTF8_with_bom // enforce BOM for certain encodings
@@ -680,6 +737,7 @@ export class EncodingOracle extends Disposable implements IResourceEncodings {
             preferredEncoding = UTF8; // if we did not detect UTF 8 BOM before, this can only be UTF 8 then
         }
         const encoding = await this.getEncodingForResource(resource, preferredEncoding);
+
         return {
             encoding,
             hasBOM: encoding === UTF16be || encoding === UTF16le || encoding === UTF8_with_bom // enforce BOM for certain encodings
@@ -687,7 +745,9 @@ export class EncodingOracle extends Disposable implements IResourceEncodings {
     }
     private async getEncodingForResource(resource: URI, preferredEncoding?: string): Promise<string> {
         let fileEncoding: string;
+
         const override = this.getEncodingOverride(resource);
+
         if (override) {
             fileEncoding = override; // encoding override always wins
         }

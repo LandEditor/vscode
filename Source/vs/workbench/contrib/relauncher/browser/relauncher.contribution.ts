@@ -81,6 +81,7 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
     private readonly enablePPEExtensionsGallery = new ChangeObserver('boolean');
     private readonly restrictUNCAccess = new ChangeObserver('boolean');
     private readonly accessibilityVerbosityDebug = new ChangeObserver('boolean');
+
     constructor(
     @IHostService
     private readonly hostService: IHostService, 
@@ -116,10 +117,12 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
     }
     private update(askToRelaunch: boolean): void {
         let changed = false;
+
         function processChanged(didChange: boolean) {
             changed = changed || didChange;
         }
         const config = this.configurationService.getValue<IConfiguration>();
+
         if (isNative) {
             // Titlebar style
             processChanged((config.window.titleBarStyle === TitlebarStyle.NATIVE || config.window.titleBarStyle === TitlebarStyle.CUSTOM) && this.titleBarStyle.handleChange(config.window?.titleBarStyle));
@@ -136,6 +139,7 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
             // On linux turning on accessibility support will also pass this flag to the chrome renderer, thus a restart is required
             if (isLinux && typeof config.editor?.accessibilitySupport === 'string' && config.editor.accessibilitySupport !== this.accessibilitySupport) {
                 this.accessibilitySupport = config.editor.accessibilitySupport;
+
                 if (this.accessibilitySupport === 'on') {
                     changed = true;
                 }
@@ -151,6 +155,7 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
         processChanged(this.experimentsEnabled.handleChange(config.workbench?.enableExperiments));
         // Profiles
         processChanged(this.productService.quality !== 'stable' && this.enablePPEExtensionsGallery.handleChange(config._extensionsGallery?.enablePPE));
+
         if (askToRelaunch && changed && this.hostService.hasFocus) {
             this.doConfirm(isNative ?
                 localize('relaunchSettingMessage', "A setting has changed that requires a restart to take effect.") :
@@ -163,6 +168,7 @@ export class SettingsChangeRelauncher extends Disposable implements IWorkbenchCo
     }
     private async doConfirm(message: string, detail: string, primaryButton: string, confirmedFn: () => void): Promise<void> {
         const { confirmed } = await this.dialogService.confirm({ message, detail, primaryButton });
+
         if (confirmed) {
             confirmedFn();
         }
@@ -184,6 +190,7 @@ class ChangeObserver<T> {
     handleChange(value: T | undefined): boolean {
         if (typeof value === this.typeName && value !== this.lastValue) {
             this.lastValue = value;
+
             return true;
         }
         return false;
@@ -193,6 +200,7 @@ export class WorkspaceChangeExtHostRelauncher extends Disposable implements IWor
     private firstFolderResource?: URI;
     private extensionHostRestarter: RunOnceScheduler;
     private onDidChangeWorkspaceFoldersUnbind: IDisposable | undefined;
+
     constructor(
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -212,6 +220,7 @@ export class WorkspaceChangeExtHostRelauncher extends Disposable implements IWor
             }
             else if (isNative) {
                 const stopped = await extensionService.stopExtensionHosts(localize('restartExtensionHost.reason', "Restarting extension host due to a workspace folder change."));
+
                 if (stopped) {
                     extensionService.startExtensionHosts();
                 }
@@ -248,6 +257,7 @@ export class WorkspaceChangeExtHostRelauncher extends Disposable implements IWor
         const workspace = this.contextService.getWorkspace();
         // Restart extension host if first root folder changed (impact on deprecated workspace.rootPath API)
         const newFirstFolderResource = workspace.folders.length > 0 ? workspace.folders[0].uri : undefined;
+
         if (!isEqual(this.firstFolderResource, newFirstFolderResource)) {
             this.firstFolderResource = newFirstFolderResource;
             this.extensionHostRestarter.schedule(); // buffer calls to extension host restart

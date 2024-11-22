@@ -40,7 +40,9 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
             return undefined;
         }
         const untitledTextEditorInput = editorInput as UntitledTextEditorInput;
+
         let resource = untitledTextEditorInput.resource;
+
         if (untitledTextEditorInput.hasAssociatedFilePath) {
             resource = toLocalResource(resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme); // untitled with associated file path use the local schema
         }
@@ -49,7 +51,9 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
         // this information across restarts and not set the language unless
         // this is the case.
         let languageId: string | undefined;
+
         const languageIdCandidate = untitledTextEditorInput.getLanguageId();
+
         if (languageIdCandidate !== PLAINTEXT_LANGUAGE_ID) {
             languageId = languageIdCandidate;
         }
@@ -61,20 +65,26 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
             modeId: languageId,
             encoding: untitledTextEditorInput.getEncoding()
         };
+
         return JSON.stringify(serialized);
     }
     deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): UntitledTextEditorInput {
         return instantiationService.invokeFunction(accessor => {
             const deserialized: ISerializedUntitledTextEditorInput = JSON.parse(serializedEditorInput);
+
             const resource = URI.revive(deserialized.resourceJSON);
+
             const languageId = deserialized.modeId;
+
             const encoding = deserialized.encoding;
+
             return accessor.get(ITextEditorService).createTextEditor({ resource, languageId, encoding, forceUntitled: true }) as UntitledTextEditorInput;
         });
     }
 }
 export class UntitledTextEditorWorkingCopyEditorHandler extends Disposable implements IWorkbenchContribution, IWorkingCopyEditorHandler {
     static readonly ID = 'workbench.contrib.untitledTextEditorWorkingCopyEditorHandler';
+
     constructor(
     @IWorkingCopyEditorService
     workingCopyEditorService: IWorkingCopyEditorService, 

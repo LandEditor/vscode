@@ -6,6 +6,7 @@ import type * as nbformat from '@jupyterlab/nbformat';
 import { extensions, NotebookCellData, NotebookCellExecutionSummary, NotebookCellKind, NotebookCellOutput, NotebookCellOutputItem, NotebookData } from 'vscode';
 import { CellMetadata, CellOutputMetadata } from './common';
 import { textMimeTypes } from './constants';
+
 const jupyterLanguageToMonacoLanguageMapping = new Map([
     ['c#', 'csharp'],
     ['f#', 'fsharp'],
@@ -26,6 +27,7 @@ export function getPreferredLanguage(metadata?: nbformat.INotebookMetadata) {
 }
 function translateKernelLanguageToMonaco(language: string): string {
     language = language.toLowerCase();
+
     if (language.length === 2 && language.endsWith('#')) {
         return `${language.substring(0, 1)}sharp`;
     }
@@ -73,6 +75,7 @@ function sortOutputItemsBasedOnDisplayOrder(outputItems: NotebookCellOutputItem[
             index = -1;
         }
         index = index === -1 ? 100 : index;
+
         return {
             item, index
         };
@@ -81,10 +84,13 @@ function sortOutputItemsBasedOnDisplayOrder(outputItems: NotebookCellOutputItem[
 }
 function concatMultilineString(str: string | string[], trim?: boolean): string {
     const nonLineFeedWhiteSpaceTrim = /(^[\t\f\v\r ]+|[\t\f\v\r ]+$)/g;
+
     if (Array.isArray(str)) {
         let result = '';
+
         for (let i = 0; i < str.length; i += 1) {
             const s = str[i];
+
             if (i < str.length - 1 && !s.endsWith('\n')) {
                 result = result.concat(`${s}\n`);
             }
@@ -105,6 +111,7 @@ function convertJupyterOutputToBuffer(mime: string, value: unknown): NotebookCel
         if ((mime.startsWith('text/') || textMimeTypes.includes(mime)) &&
             (Array.isArray(value) || typeof value === 'string')) {
             const stringValue = Array.isArray(value) ? concatMultilineString(value) : value;
+
             return NotebookCellOutputItem.text(stringValue, mime);
         }
         else if (mime.startsWith('image/') && typeof value === 'string' && mime !== 'image/svg+xml') {
@@ -115,6 +122,7 @@ function convertJupyterOutputToBuffer(mime: string, value: unknown): NotebookCel
             }
             else {
                 const data = Uint8Array.from(atob(value), c => c.charCodeAt(0));
+
                 return new NotebookCellOutputItem(data, mime);
             }
         }
@@ -127,6 +135,7 @@ function convertJupyterOutputToBuffer(mime: string, value: unknown): NotebookCel
         else {
             // For everything else, treat the data as strings (or multi-line strings).
             value = Array.isArray(value) ? concatMultilineString(value) : value;
+
             return NotebookCellOutputItem.text(value as string, mime);
         }
     }
@@ -140,6 +149,7 @@ function getNotebookCellMetadata(cell: nbformat.IBaseCell): {
     // We put this only for VSC to display in diff view.
     // Else we don't use this.
     const cellMetadata: CellMetadata = {};
+
     if (cell.cell_type === 'code' && typeof cell['execution_count'] === 'number') {
         cellMetadata.execution_count = cell['execution_count'];
     }
@@ -159,6 +169,7 @@ function getOutputMetadata(output: nbformat.IOutput): CellOutputMetadata {
     const metadata: CellOutputMetadata = {
         outputType: output.output_type
     };
+
     if (output.transient) {
         metadata.transient = output.transient;
     }
@@ -168,6 +179,7 @@ function getOutputMetadata(output: nbformat.IOutput): CellOutputMetadata {
         case 'update_display_data': {
             metadata.executionCount = output.execution_count;
             metadata.metadata = output.metadata ? JSON.parse(JSON.stringify(output.metadata)) : {};
+
             break;
         }
         default:
@@ -194,7 +206,9 @@ function translateDisplayDataOutput(output: nbformat.IDisplayData | nbformat.IDi
     }
     */
     const metadata = getOutputMetadata(output);
+
     const items: NotebookCellOutputItem[] = [];
+
     if (output.data) {
         for (const key in output.data) {
             items.push(convertJupyterOutputToBuffer(key, output.data[key]));
@@ -204,6 +218,7 @@ function translateDisplayDataOutput(output: nbformat.IDisplayData | nbformat.IDi
 }
 function translateErrorOutput(output?: nbformat.IError): NotebookCellOutput {
     output = output || { output_type: 'error', ename: '', evalue: '', traceback: [] };
+
     return new NotebookCellOutput([
         NotebookCellOutputItem.error({
             name: output?.ename || '',
@@ -214,7 +229,9 @@ function translateErrorOutput(output?: nbformat.IError): NotebookCellOutput {
 }
 function translateStreamOutput(output: nbformat.IStream): NotebookCellOutput {
     const value = concatMultilineString(output.text);
+
     const item = output.name === 'stderr' ? NotebookCellOutputItem.stderr(value) : NotebookCellOutputItem.stdout(value);
+
     return new NotebookCellOutput([item], getOutputMetadata(output));
 }
 const cellOutputMappers = new Map<nbformat.OutputType, (output: any) => NotebookCellOutput>();
@@ -248,7 +265,9 @@ export function jupyterCellOutputToCellOutput(output: nbformat.IOutput): Noteboo
      *
      */
     const fn = cellOutputMappers.get(output.output_type as nbformat.OutputType);
+
     let result: NotebookCellOutput;
+
     if (fn) {
         result = fn(output);
     }
@@ -261,30 +280,40 @@ function createNotebookCellDataFromRawCell(cell: nbformat.IRawCell): NotebookCel
     const cellData = new NotebookCellData(NotebookCellKind.Code, concatMultilineString(cell.source), 'raw');
     cellData.outputs = [];
     cellData.metadata = getNotebookCellMetadata(cell);
+
     return cellData;
 }
 function createNotebookCellDataFromMarkdownCell(cell: nbformat.IMarkdownCell): NotebookCellData {
     const cellData = new NotebookCellData(NotebookCellKind.Markup, concatMultilineString(cell.source), 'markdown');
     cellData.outputs = [];
     cellData.metadata = getNotebookCellMetadata(cell);
+
     return cellData;
 }
 function createNotebookCellDataFromCodeCell(cell: nbformat.ICodeCell, cellLanguage: string): NotebookCellData {
     const cellOutputs = Array.isArray(cell.outputs) ? cell.outputs : [];
+
     const outputs = cellOutputs.map(jupyterCellOutputToCellOutput);
+
     const hasExecutionCount = typeof cell.execution_count === 'number' && cell.execution_count > 0;
+
     const source = concatMultilineString(cell.source);
+
     const executionSummary: NotebookCellExecutionSummary = hasExecutionCount
         ? { executionOrder: cell.execution_count as number }
         : {};
+
     const vscodeCustomMetadata = cell.metadata['vscode'] as {
         [key: string]: any;
     } | undefined;
+
     const cellLanguageId = vscodeCustomMetadata && vscodeCustomMetadata.languageId && typeof vscodeCustomMetadata.languageId === 'string' ? vscodeCustomMetadata.languageId : cellLanguage;
+
     const cellData = new NotebookCellData(NotebookCellKind.Code, source, cellLanguageId);
     cellData.outputs = outputs;
     cellData.metadata = getNotebookCellMetadata(cell);
     cellData.executionSummary = executionSummary;
+
     return cellData;
 }
 function createNotebookCellDataFromJupyterCell(cellLanguage: string, cell: nbformat.IBaseCell): NotebookCellData | undefined {
@@ -306,13 +335,16 @@ function createNotebookCellDataFromJupyterCell(cellLanguage: string, cell: nbfor
  */
 export function jupyterNotebookModelToNotebookData(notebookContent: Partial<nbformat.INotebookContent>, preferredLanguage: string): NotebookData {
     const notebookContentWithoutCells = { ...notebookContent, cells: [] };
+
     if (!Array.isArray(notebookContent.cells)) {
         throw new Error('Notebook content is missing cells');
     }
     const cells = notebookContent.cells
         .map(cell => createNotebookCellDataFromJupyterCell(preferredLanguage, cell))
         .filter((item): item is NotebookCellData => !!item);
+
     const notebookData = new NotebookData(cells);
     notebookData.metadata = notebookContentWithoutCells;
+
     return notebookData;
 }

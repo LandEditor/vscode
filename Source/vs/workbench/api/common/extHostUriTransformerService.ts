@@ -15,6 +15,7 @@ export class URITransformerService implements IURITransformerService {
     transformOutgoing: (uri: UriComponents) => UriComponents;
     transformOutgoingURI: (uri: URI) => URI;
     transformOutgoingScheme: (scheme: string) => string;
+
     constructor(delegate: IURITransformer | null) {
         if (!delegate) {
             this.transformIncoming = arg => arg;

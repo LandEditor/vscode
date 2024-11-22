@@ -17,6 +17,7 @@ export interface INotificationsModel {
     readonly onDidChangeNotification: Event<INotificationChangeEvent>;
     readonly onDidChangeFilter: Event<Partial<INotificationsFilter>>;
     addNotification(notification: INotification): INotificationHandle;
+
     setFilter(filter: Partial<INotificationsFilter>): void;
     //#endregion
     //#region  Notifications as Status
@@ -85,6 +86,7 @@ export class NotificationHandle extends Disposable implements INotificationHandl
     readonly onDidClose = this._onDidClose.event;
     private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
     readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
+
     constructor(private readonly item: INotificationViewItem, private readonly onClose: (item: INotificationViewItem) => void) {
         super();
         this.registerListeners();
@@ -128,20 +130,25 @@ export class NotificationsModel extends Disposable implements INotificationsMode
     private readonly _onDidChangeFilter = this._register(new Emitter<Partial<INotificationsFilter>>());
     readonly onDidChangeFilter = this._onDidChangeFilter.event;
     private readonly _notifications: INotificationViewItem[] = [];
+
     get notifications(): INotificationViewItem[] { return this._notifications; }
     private _statusMessage: IStatusMessageViewItem | undefined;
+
     get statusMessage(): IStatusMessageViewItem | undefined { return this._statusMessage; }
     private readonly filter = {
         global: NotificationsFilter.OFF,
         sources: new Map<string, NotificationsFilter>()
     };
+
     setFilter(filter: Partial<INotificationsFilter>): void {
         let globalChanged = false;
+
         if (typeof filter.global === 'number') {
             globalChanged = this.filter.global !== filter.global;
             this.filter.global = filter.global;
         }
         let sourcesChanged = false;
+
         if (filter.sources) {
             sourcesChanged = !mapsStrictEqualIgnoreOrder(this.filter.sources, filter.sources);
             this.filter.sources = filter.sources;
@@ -155,6 +162,7 @@ export class NotificationsModel extends Disposable implements INotificationsMode
     }
     addNotification(notification: INotification): INotificationHandle {
         const item = this.createViewItem(notification);
+
         if (!item) {
             return NotificationsModel.NO_OP_NOTIFICATION; // return early if this is a no-op
         }
@@ -170,6 +178,7 @@ export class NotificationsModel extends Disposable implements INotificationsMode
     }
     private onClose(item: INotificationViewItem): void {
         const liveItem = this.findNotification(item);
+
         if (liveItem && liveItem !== item) {
             liveItem.close(); // item could have been replaced with another one, make sure to close the live item
         }
@@ -182,37 +191,46 @@ export class NotificationsModel extends Disposable implements INotificationsMode
     }
     private createViewItem(notification: INotification): INotificationViewItem | undefined {
         const item = NotificationViewItem.create(notification, this.filter);
+
         if (!item) {
             return undefined;
         }
         // Item Events
         const fireNotificationChangeEvent = (kind: NotificationChangeType, detail?: NotificationViewItemContentChangeKind) => {
             const index = this._notifications.indexOf(item);
+
             if (index >= 0) {
                 this._onDidChangeNotification.fire({ item, index, kind, detail });
             }
         };
+
         const itemExpansionChangeListener = item.onDidChangeExpansion(() => fireNotificationChangeEvent(NotificationChangeType.EXPAND_COLLAPSE));
+
         const itemContentChangeListener = item.onDidChangeContent(e => fireNotificationChangeEvent(NotificationChangeType.CHANGE, e.kind));
         Event.once(item.onDidClose)(() => {
             itemExpansionChangeListener.dispose();
             itemContentChangeListener.dispose();
+
             const index = this._notifications.indexOf(item);
+
             if (index >= 0) {
                 this._notifications.splice(index, 1);
                 this._onDidChangeNotification.fire({ item, index, kind: NotificationChangeType.REMOVE });
             }
         });
+
         return item;
     }
     showStatusMessage(message: NotificationMessage, options?: IStatusMessageOptions): IDisposable {
         const item = StatusMessageViewItem.create(message, options);
+
         if (!item) {
             return Disposable.None;
         }
         // Remember as current status message and fire events
         this._statusMessage = item;
         this._onDidChangeStatusMessage.fire({ kind: StatusMessageChangeType.ADD, item });
+
         return toDisposable(() => {
             // Only reset status message if the item is still the one we had remembered
             if (this._statusMessage === item) {
@@ -266,6 +284,7 @@ export interface INotificationViewItemProgressState {
     infinite?: boolean;
     total?: number;
     worked?: number;
+
     done?: boolean;
 }
 export interface INotificationViewItemProgress extends INotificationProgress {
@@ -276,6 +295,7 @@ export class NotificationViewItemProgress extends Disposable implements INotific
     private readonly _state: INotificationViewItemProgressState;
     private readonly _onDidChange = this._register(new Emitter<void>());
     readonly onDidChange = this._onDidChange.event;
+
     constructor() {
         super();
         this._state = Object.create(null);
@@ -355,6 +375,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             return undefined; // we need a message to show
         }
         let severity: Severity;
+
         if (typeof notification.severity === 'number') {
             severity = notification.severity;
         }
@@ -362,10 +383,12 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             severity = Severity.Info;
         }
         const message = NotificationViewItem.parseNotificationMessage(notification.message);
+
         if (!message) {
             return undefined; // we need a message to show
         }
         let actions: INotificationActions | undefined;
+
         if (notification.actions) {
             actions = notification.actions;
         }
@@ -373,6 +396,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             actions = { primary: notification.message.actions };
         }
         let priority = notification.priority ?? NotificationPriority.DEFAULT;
+
         if (priority === NotificationPriority.DEFAULT && severity !== Severity.Error) {
             if (filter.global === NotificationsFilter.ERROR) {
                 priority = NotificationPriority.SILENT; // filtered globally
@@ -385,6 +409,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
     }
     private static parseNotificationMessage(input: NotificationMessage): INotificationMessage | undefined {
         let message: string | undefined;
+
         if (input instanceof Error) {
             message = toErrorMessage(input, false);
         }
@@ -403,10 +428,12 @@ export class NotificationViewItem extends Disposable implements INotificationVie
         message = message.replace(/(\r\n|\n|\r)/gm, ' ').trim();
         // Parse Links
         const linkedText = parseLinkedText(message);
+
         return { raw, linkedText, original: input };
     }
     private constructor(readonly id: string | undefined, private _severity: Severity, private _sticky: boolean | undefined, private _priority: NotificationPriority, private _message: INotificationMessage, private _source: string | INotificationSource | undefined, progress: INotificationProgressProperties | undefined, actions?: INotificationActions) {
         super();
+
         if (progress) {
             this.setProgress(progress);
         }
@@ -418,6 +445,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
         }
         else if (progress.total) {
             this.progress.total(progress.total);
+
             if (progress.worked) {
                 this.progress.worked(progress.worked);
             }
@@ -444,6 +472,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             return true; // explicitly sticky
         }
         const hasActions = this.hasActions;
+
         if ((hasActions && this._severity === Severity.Error) || // notification errors with actions are sticky
             (!hasActions && this._expanded) || // notifications that got expanded are sticky
             (this._progress && !this._progress.state.done) // notifications with running progress are sticky
@@ -498,6 +527,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
     }
     updateMessage(input: NotificationMessage): void {
         const message = NotificationViewItem.parseNotificationMessage(input);
+
         if (!message || message.raw === this._message.raw) {
             return;
         }
@@ -526,6 +556,7 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             return;
         }
         this._expanded = false;
+
         if (!skipEvents) {
             this._onDidChangeExpansion.fire();
         }
@@ -561,7 +592,9 @@ export class NotificationViewItem extends Disposable implements INotificationVie
             return false;
         }
         const primaryActions = (this._actions && this._actions.primary) || [];
+
         const otherPrimaryActions = (other.actions && other.actions.primary) || [];
+
         return equals(primaryActions, otherPrimaryActions, (action, otherAction) => (action.id + action.label) === (otherAction.id + otherAction.label));
     }
 }
@@ -570,6 +603,7 @@ export class ChoiceAction extends Action {
     readonly onDidRun = this._onDidRun.event;
     private readonly _keepOpen: boolean;
     private readonly _menu: ChoiceAction[] | undefined;
+
     constructor(id: string, choice: IPromptChoice) {
         super(id, choice.label, undefined, true, async () => {
             // Pass to runner
@@ -593,6 +627,7 @@ class StatusMessageViewItem {
             return undefined; // we need a message to show
         }
         let message: string | undefined;
+
         if (notification instanceof Error) {
             message = toErrorMessage(notification, false);
         }

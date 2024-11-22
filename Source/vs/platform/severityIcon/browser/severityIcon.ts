@@ -11,12 +11,16 @@ export namespace SeverityIcon {
         switch (severity) {
             case Severity.Ignore:
                 return 'severity-ignore ' + ThemeIcon.asClassName(Codicon.info);
+
             case Severity.Info:
                 return ThemeIcon.asClassName(Codicon.info);
+
             case Severity.Warning:
                 return ThemeIcon.asClassName(Codicon.warning);
+
             case Severity.Error:
                 return ThemeIcon.asClassName(Codicon.error);
+
             default:
                 return '';
         }

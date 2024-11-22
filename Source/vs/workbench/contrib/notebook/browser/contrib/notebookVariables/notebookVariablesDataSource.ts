@@ -32,6 +32,7 @@ export interface INotebookVariableElement {
 }
 export class NotebookVariableDataSource implements IAsyncDataSource<INotebookScope, INotebookVariableElement> {
     private cancellationTokenSource: CancellationTokenSource;
+
     constructor(private readonly notebookKernelService: INotebookKernelService) {
         this.cancellationTokenSource = new CancellationTokenSource();
     }
@@ -56,10 +57,13 @@ export class NotebookVariableDataSource implements IAsyncDataSource<INotebookSco
     }
     private async getVariables(parent: INotebookVariableElement): Promise<INotebookVariableElement[]> {
         const selectedKernel = this.notebookKernelService.getMatchingKernel(parent.notebook).selected;
+
         if (selectedKernel && selectedKernel.hasVariableProvider) {
             let children: INotebookVariableElement[] = [];
+
             if (parent.hasNamedChildren) {
                 const variables = selectedKernel.provideVariables(parent.notebook.uri, parent.extHostId, 'named', 0, this.cancellationTokenSource.token);
+
                 const childNodes = await variables
                     .map(variable => { return this.createVariableElement(variable, parent.notebook); })
                     .toPromise();
@@ -75,13 +79,19 @@ export class NotebookVariableDataSource implements IAsyncDataSource<INotebookSco
     }
     private async getIndexedChildren(parent: INotebookVariableElement, kernel: INotebookKernel) {
         const childNodes: INotebookVariableElement[] = [];
+
         if (parent.indexedChildrenCount > variablePageSize) {
             const nestedPageSize = Math.floor(Math.max(parent.indexedChildrenCount / variablePageSize, 100));
+
             const indexedChildCountLimit = 1000000;
+
             let start = parent.indexStart ?? 0;
+
             const last = start + Math.min(parent.indexedChildrenCount, indexedChildCountLimit);
+
             for (; start < last; start += nestedPageSize) {
                 let end = start + nestedPageSize;
+
                 if (end > last) {
                     end = last;
                 }
@@ -112,8 +122,10 @@ export class NotebookVariableDataSource implements IAsyncDataSource<INotebookSco
         }
         else if (parent.indexedChildrenCount > 0) {
             const variables = kernel.provideVariables(parent.notebook.uri, parent.extHostId, 'indexed', parent.indexStart ?? 0, this.cancellationTokenSource.token);
+
             for await (const variable of variables) {
                 childNodes.push(this.createVariableElement(variable, parent.notebook));
+
                 if (childNodes.length >= variablePageSize) {
                     break;
                 }
@@ -123,8 +135,10 @@ export class NotebookVariableDataSource implements IAsyncDataSource<INotebookSco
     }
     private async getRootVariables(notebook: NotebookTextModel): Promise<INotebookVariableElement[]> {
         const selectedKernel = this.notebookKernelService.getMatchingKernel(notebook).selected;
+
         if (selectedKernel && selectedKernel.hasVariableProvider) {
             const variables = selectedKernel.provideVariables(notebook.uri, undefined, 'named', 0, this.cancellationTokenSource.token);
+
             return await variables
                 .map(variable => { return this.createVariableElement(variable, notebook); })
                 .toPromise();

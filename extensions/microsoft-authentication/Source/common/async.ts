@@ -11,6 +11,7 @@ export class SequencerByKey<TKey> {
     private promiseMap = new Map<TKey, Promise<unknown>>();
     queue<T>(key: TKey, promiseTask: () => Promise<T>): Promise<T> {
         const runningPromise = this.promiseMap.get(key) ?? Promise.resolve();
+
         const newPromise = runningPromise
             .catch(() => { })
             .then(promiseTask)
@@ -20,11 +21,13 @@ export class SequencerByKey<TKey> {
             }
         });
         this.promiseMap.set(key, newPromise);
+
         return newPromise;
     }
 }
 export class IntervalTimer extends Disposable {
     private _token: any;
+
     constructor() {
         super(() => this.cancel());
         this._token = -1;
@@ -92,6 +95,7 @@ export class Limiter<T> implements ILimiter<T> {
     private readonly maxDegreeOfParalellism: number;
     private readonly outstandingPromises: ILimitedTaskFactory<T>[];
     private readonly _onDrained: EventEmitter<void>;
+
     constructor(maxDegreeOfParalellism: number) {
         this.maxDegreeOfParalellism = maxDegreeOfParalellism;
         this.outstandingPromises = [];
@@ -119,6 +123,7 @@ export class Limiter<T> implements ILimiter<T> {
             throw new Error('Object has been disposed');
         }
         this._size++;
+
         return new Promise<T>((c, e) => {
             this.outstandingPromises.push({ factory, c, e });
             this.consume();
@@ -128,6 +133,7 @@ export class Limiter<T> implements ILimiter<T> {
         while (this.outstandingPromises.length && this.runningPromises < this.maxDegreeOfParalellism) {
             const iLimitedTask = this.outstandingPromises.shift()!;
             this.runningPromises++;
+
             const promise = iLimitedTask.factory();
             promise.then(iLimitedTask.c, iLimitedTask.e);
             promise.then(() => this.consumed(), () => this.consumed());
@@ -138,6 +144,7 @@ export class Limiter<T> implements ILimiter<T> {
             return;
         }
         this.runningPromises--;
+
         if (--this._size === 0) {
             this._onDrained.fire();
         }
@@ -164,10 +171,12 @@ interface IScheduledLater extends Disposable {
 }
 const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
     let scheduled = true;
+
     const handle = setTimeout(() => {
         scheduled = false;
         fn();
     }, timeout);
+
     return {
         isTriggered: () => scheduled,
         dispose: () => {
@@ -176,6 +185,7 @@ const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
         },
     };
 };
+
 const microtaskDeferred = (fn: () => void): IScheduledLater => {
     let scheduled = true;
     queueMicrotask(() => {
@@ -184,6 +194,7 @@ const microtaskDeferred = (fn: () => void): IScheduledLater => {
             fn();
         }
     });
+
     return {
         isTriggered: () => scheduled,
         dispose: () => { scheduled = false; },
@@ -218,6 +229,7 @@ export class Delayer<T> implements Disposable {
     private doResolve: ((value?: any | Promise<any>) => void) | null;
     private doReject: ((err: any) => void) | null;
     private task: (() => T | Promise<T>) | null;
+
     constructor(public defaultDelay: number | typeof MicrotaskDelay) {
         this.deferred = null;
         this.completionPromise = null;
@@ -228,6 +240,7 @@ export class Delayer<T> implements Disposable {
     trigger(task: () => T | Promise<T>, delay = this.defaultDelay): Promise<T> {
         this.task = task;
         this.cancelTimeout();
+
         if (!this.completionPromise) {
             this.completionPromise = new Promise((resolve, reject) => {
                 this.doResolve = resolve;
@@ -235,9 +248,11 @@ export class Delayer<T> implements Disposable {
             }).then(() => {
                 this.completionPromise = null;
                 this.doResolve = null;
+
                 if (this.task) {
                     const task = this.task;
                     this.task = null;
+
                     return task();
                 }
                 return undefined;
@@ -248,6 +263,7 @@ export class Delayer<T> implements Disposable {
             this.doResolve?.(null);
         };
         this.deferred = delay === MicrotaskDelay ? microtaskDeferred(fn) : timeoutDeferred(delay, fn);
+
         return this.completionPromise;
     }
     isTriggered(): boolean {
@@ -255,6 +271,7 @@ export class Delayer<T> implements Disposable {
     }
     cancel(): void {
         this.cancelTimeout();
+
         if (this.completionPromise) {
             this.doReject?.(new CancellationError());
             this.completionPromise = null;
@@ -299,6 +316,7 @@ export class Throttler implements Disposable {
     private queuedPromise: Promise<any> | null;
     private queuedPromiseFactory: (() => Promise<any>) | null;
     private isDisposed = false;
+
     constructor() {
         this.activePromise = null;
         this.queuedPromise = null;
@@ -310,14 +328,17 @@ export class Throttler implements Disposable {
         }
         if (this.activePromise) {
             this.queuedPromiseFactory = promiseFactory;
+
             if (!this.queuedPromise) {
                 const onComplete = () => {
                     this.queuedPromise = null;
+
                     if (this.isDisposed) {
                         return;
                     }
                     const result = this.queue(this.queuedPromiseFactory!);
                     this.queuedPromiseFactory = null;
+
                     return result;
                 };
                 this.queuedPromise = new Promise(resolve => {
@@ -329,6 +350,7 @@ export class Throttler implements Disposable {
             });
         }
         this.activePromise = promiseFactory();
+
         return new Promise((resolve, reject) => {
             this.activePromise!.then((result: T) => {
                 this.activePromise = null;
@@ -355,6 +377,7 @@ export class Throttler implements Disposable {
 export class ThrottledDelayer<T> {
     private delayer: Delayer<Promise<T>>;
     private throttler: Throttler;
+
     constructor(defaultDelay: number) {
         this.delayer = new Delayer(defaultDelay);
         this.throttler = new Throttler();
@@ -390,6 +413,7 @@ export function once<T>(event: Event<T>): Event<T> {
     return (listener, thisArgs = null, disposables?) => {
         // we need this, in case the event fires during the listener call
         let didFire = false;
+
         let result: Disposable | undefined = undefined;
         result = event(e => {
             if (didFire) {
@@ -403,6 +427,7 @@ export function once<T>(event: Event<T>): Event<T> {
             }
             return listener.call(thisArgs, e);
         }, null, disposables);
+
         if (didFire) {
             result.dispose();
         }
@@ -416,6 +441,7 @@ export function toPromise<T>(event: Event<T>): Promise<T> {
     return new Promise(resolve => once(event)(resolve));
 }
 export type ValueCallback<T = unknown> = (value: T | Promise<T>) => void;
+
 const enum DeferredOutcome {
     Resolved,
     Rejected
@@ -446,6 +472,7 @@ export class DeferredPromise<T> {
         return this.outcome?.outcome === DeferredOutcome.Resolved ? this.outcome?.value : undefined;
     }
     public readonly p: Promise<T>;
+
     constructor() {
         this.p = new Promise<T>((c, e) => {
             this.completeCallback = c;

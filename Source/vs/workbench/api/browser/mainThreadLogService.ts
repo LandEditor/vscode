@@ -13,6 +13,7 @@ import { IEnvironmentService } from '../../../platform/environment/common/enviro
 @extHostNamedCustomer(MainContext.MainThreadLogger)
 export class MainThreadLoggerService implements MainThreadLoggerShape {
     private readonly disposables = new DisposableStore();
+
     constructor(extHostContext: IExtHostContext, 
     @ILoggerService
     private readonly loggerService: ILoggerService) {
@@ -31,6 +32,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
         string
     ][]): void {
         const logger = this.loggerService.getLogger(URI.revive(file));
+
         if (!logger) {
             throw new Error('Create the logger before logging');
         }
@@ -55,6 +57,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
     }
     $flush(file: UriComponents): void {
         const logger = this.loggerService.getLogger(URI.revive(file));
+
         if (!logger) {
             throw new Error('Create the logger before flushing');
         }
@@ -67,9 +70,12 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 // --- Internal commands to improve extension test runs
 CommandsRegistry.registerCommand('_extensionTests.setLogLevel', function (accessor: ServicesAccessor, level: string) {
     const loggerService = accessor.get(ILoggerService);
+
     const environmentService = accessor.get(IEnvironmentService);
+
     if (environmentService.isExtensionDevelopment && !!environmentService.extensionTestsLocationURI) {
         const logLevel = parseLogLevel(level);
+
         if (logLevel !== undefined) {
             loggerService.setLogLevel(logLevel);
         }
@@ -77,5 +83,6 @@ CommandsRegistry.registerCommand('_extensionTests.setLogLevel', function (access
 });
 CommandsRegistry.registerCommand('_extensionTests.getLogLevel', function (accessor: ServicesAccessor) {
     const logService = accessor.get(ILogService);
+
     return LogLevelToString(logService.getLevel());
 });

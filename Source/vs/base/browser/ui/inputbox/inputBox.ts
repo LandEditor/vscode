@@ -172,8 +172,10 @@ export class InputBox extends Widget {
 			this._register(this.scrollableElement.onScroll(e => this.input.scrollTop = e.scrollTop));
 
 			const onSelectionChange = this._register(new DomEmitter(container.ownerDocument, 'selectionchange'));
+
 			const onAnchoredSelectionChange = Event.filter(onSelectionChange.event, () => {
 				const selection = container.ownerDocument.getSelection();
+
 				return selection?.anchorNode === wrapper;
 			});
 
@@ -216,6 +218,7 @@ export class InputBox extends Widget {
 
 	protected onBlur(): void {
 		this._hideMessage();
+
 		if (this.options.showPlaceholderOnFocus) {
 			this.input.setAttribute('placeholder', '');
 		}
@@ -223,6 +226,7 @@ export class InputBox extends Widget {
 
 	protected onFocus(): void {
 		this._showMessage();
+
 		if (this.options.showPlaceholderOnFocus) {
 			this.input.setAttribute('placeholder', this.placeholder || '');
 		}
@@ -235,6 +239,7 @@ export class InputBox extends Widget {
 
 	public setTooltip(tooltip: string): void {
 		this.tooltip = tooltip;
+
 		if (!this.hover.value) {
 			this.hover.value = this._register(getBaseLayerHoverDelegate().setupDelayedHoverAtMouse(this.input, () => ({
 				content: tooltip,
@@ -307,6 +312,7 @@ export class InputBox extends Widget {
 
 		if (range) {
 			this.input.setSelectionRange(range.start, range.end);
+
 			if (range.end === this.input.value.length) {
 				this.input.scrollLeft = this.input.scrollWidth;
 			}
@@ -319,10 +325,12 @@ export class InputBox extends Widget {
 
 	public getSelection(): IRange | null {
 		const selectionStart = this.input.selectionStart;
+
 		if (selectionStart === null) {
 			return null;
 		}
 		const selectionEnd = this.input.selectionEnd ?? selectionStart;
+
 		return {
 			start: selectionStart,
 			end: selectionEnd,
@@ -355,8 +363,10 @@ export class InputBox extends Widget {
 		if (this.options.flexibleHeight && this.options.flexibleWidth) {
 			// textarea with horizontal scrolling
 			let horizontalPadding = 0;
+
 			if (this.mirror) {
 				const paddingLeft = parseFloat(this.mirror.style.paddingLeft || '') || 0;
+
 				const paddingRight = parseFloat(this.mirror.style.paddingRight || '') || 0;
 				horizontalPadding = paddingLeft + paddingRight;
 			}
@@ -385,7 +395,9 @@ export class InputBox extends Widget {
 		}
 
 		const scrollHeight = this.cachedContentHeight;
+
 		const height = this.cachedHeight;
+
 		const scrollTop = this.input.scrollTop;
 
 		this.scrollableElement.setScrollDimensions({ scrollHeight, height });
@@ -451,9 +463,12 @@ export class InputBox extends Widget {
 
 	public stylesForType(type: MessageType | undefined): { border: string | undefined; background: string | undefined; foreground: string | undefined } {
 		const styles = this.options.inputBoxStyles;
+
 		switch (type) {
 			case MessageType.INFO: return { border: styles.inputValidationInfoBorder, background: styles.inputValidationInfoBackground, foreground: styles.inputValidationInfoForeground };
+
 			case MessageType.WARNING: return { border: styles.inputValidationWarningBorder, background: styles.inputValidationWarningBackground, foreground: styles.inputValidationWarningForeground };
+
 			default: return { border: styles.inputValidationErrorBorder, background: styles.inputValidationErrorBackground, foreground: styles.inputValidationErrorForeground };
 		}
 	}
@@ -461,7 +476,9 @@ export class InputBox extends Widget {
 	private classForType(type: MessageType | undefined): string {
 		switch (type) {
 			case MessageType.INFO: return 'info';
+
 			case MessageType.WARNING: return 'warning';
+
 			default: return 'error';
 		}
 	}
@@ -472,6 +489,7 @@ export class InputBox extends Widget {
 		}
 
 		let div: HTMLElement;
+
 		const layout = () => div.style.width = dom.getTotalWidth(this.element) + 'px';
 
 		this.contextViewProvider.showContextView({
@@ -512,6 +530,7 @@ export class InputBox extends Widget {
 
 		// ARIA Support
 		let alertText: string;
+
 		if (this.message.type === MessageType.ERROR) {
 			alertText = nls.localize('alertErrorMessage', "Error: {0}", this.message.content);
 		} else if (this.message.type === MessageType.WARNING) {
@@ -555,8 +574,11 @@ export class InputBox extends Widget {
 		}
 
 		const value = this.value;
+
 		const lastCharCode = value.charCodeAt(value.length - 1);
+
 		const suffix = lastCharCode === 10 ? ' ' : '';
+
 		const mirrorTextContent = (value + suffix)
 			.replace(/\u000c/g, ''); // Don't measure with the form feed character, which messes up sizing
 
@@ -573,7 +595,9 @@ export class InputBox extends Widget {
 		const styles = this.options.inputBoxStyles;
 
 		const background = styles.inputBackground ?? '';
+
 		const foreground = styles.inputForeground ?? '';
+
 		const border = styles.inputBorder ?? '';
 
 		this.element.style.backgroundColor = background;
@@ -602,8 +626,11 @@ export class InputBox extends Widget {
 
 	public insertAtCursor(text: string): void {
 		const inputElement = this.inputElement;
+
 		const start = inputElement.selectionStart;
+
 		const end = inputElement.selectionEnd;
+
 		const content = inputElement.value;
 
 		if (start !== null && end !== null) {
@@ -644,6 +671,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 			key: 'history.inputbox.hint.suffix.noparens',
 			comment: ['Text is the suffix of an input field placeholder coming after the action the input field performs, this will be used when the input field ends in a closing parenthesis ")", for example "Filter (e.g. text, !exclude)". The character inserted into the final string is \u21C5 to represent the up and down arrow keys.']
 		}, ' or {0} for history', `\u21C5`);
+
 		const NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_IN_PARENS = nls.localize({
 			key: 'history.inputbox.hint.suffix.inparens',
 			comment: ['Text is the suffix of an input field placeholder coming after the action the input field performs, this will be used when the input field does NOT end in a closing parenthesis (eg. "Find"). The character inserted into the final string is \u21C5 to represent the up and down arrow keys.']
@@ -656,7 +684,9 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 		const addSuffix = () => {
 			if (options.showHistoryHint && options.showHistoryHint() && !this.placeholder.endsWith(NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_NO_PARENS) && !this.placeholder.endsWith(NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_IN_PARENS) && this.history.getHistory().length) {
 				const suffix = this.placeholder.endsWith(')') ? NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_NO_PARENS : NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_IN_PARENS;
+
 				const suffixedPlaceholder = this.placeholder + suffix;
+
 				if (options.showPlaceholderOnFocus && !dom.isActiveElement(this.input)) {
 					this.placeholder = suffixedPlaceholder;
 				}
@@ -685,6 +715,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 				}
 				else {
 					const revertedPlaceholder = this.placeholder.slice(0, this.placeholder.length - historyHint.length);
+
 					if (options.showPlaceholderOnFocus) {
 						this.placeholder = revertedPlaceholder;
 					}
@@ -694,6 +725,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 					return true;
 				}
 			};
+
 			if (!resetPlaceholder(NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_IN_PARENS)) {
 				resetPlaceholder(NLS_PLACEHOLDER_HISTORY_HINT_SUFFIX_NO_PARENS);
 			}
@@ -702,6 +734,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 
 	override dispose() {
 		super.dispose();
+
 		if (this.observer) {
 			this.observer.disconnect();
 			this.observer = undefined;
@@ -749,6 +782,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 		}
 
 		let next = this.getNextValue();
+
 		if (next) {
 			next = next === this.value ? this.getNextValue() : next;
 		}
@@ -763,6 +797,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 		}
 
 		let previous = this.getPreviousValue();
+
 		if (previous) {
 			previous = previous === this.value ? this.getPreviousValue() : previous;
 		}
@@ -794,6 +829,7 @@ export class HistoryInputBox extends InputBox implements IHistoryNavigationWidge
 
 	private getCurrentValue(): string | null {
 		let currentValue = this.history.current();
+
 		if (!currentValue) {
 			currentValue = this.history.last();
 			this.history.next();

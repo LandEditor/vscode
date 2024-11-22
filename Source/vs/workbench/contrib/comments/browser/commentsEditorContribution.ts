@@ -36,10 +36,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         fileComment: boolean;
     }) => {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return Promise.resolve();
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return Promise.resolve();
         }
@@ -55,10 +57,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
         fileComment: boolean;
     }) => {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return Promise.resolve();
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return Promise.resolve();
         }
@@ -92,10 +96,12 @@ registerAction2(class extends Action2 {
     }
     override run(accessor: ServicesAccessor, ...args: any[]): void {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
@@ -127,10 +133,12 @@ registerAction2(class extends Action2 {
     }
     override run(accessor: ServicesAccessor, ...args: any[]): void {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
@@ -165,10 +173,12 @@ registerAction2(class extends Action2 {
         fileComment: boolean;
     }): void {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
@@ -200,10 +210,12 @@ registerAction2(class extends Action2 {
     }
     override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
@@ -230,6 +242,7 @@ registerAction2(class extends Action2 {
     }
     override run(accessor: ServicesAccessor, ...args: any[]): void {
         const commentService = accessor.get(ICommentService);
+
         const enable = commentService.isCommentingEnabled;
         commentService.enableCommenting(!enable);
     }
@@ -262,16 +275,20 @@ registerAction2(class extends Action2 {
         fileComment: boolean;
     }): Promise<void> {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
         const position = args?.range ? new Range(args.range.startLineNumber, args.range.startLineNumber, args.range.endLineNumber, args.range.endColumn)
             : (args?.fileComment ? undefined : activeEditor.getSelection());
+
         const notificationService = accessor.get(INotificationService);
+
         try {
             await controller.addOrToggleCommentAtLine(position, undefined);
         }
@@ -298,18 +315,24 @@ registerAction2(class extends Action2 {
     }
     override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
         const activeEditor = getActiveEditor(accessor);
+
         if (!activeEditor) {
             return;
         }
         const controller = CommentController.get(activeEditor);
+
         if (!controller) {
             return;
         }
         const position = activeEditor.getSelection();
+
         const notificationService = accessor.get(INotificationService);
+
         let error = false;
+
         try {
             const commentAtLine = controller.getCommentsAtLine(position);
+
             if (commentAtLine.length === 0) {
                 error = true;
             }
@@ -398,6 +421,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: ctxCommentEditorFocused,
     handler: (accessor, args) => {
         const activeCodeEditor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
         if (activeCodeEditor instanceof SimpleCommentEditor) {
             activeCodeEditor.getParentThread().submitComment();
         }
@@ -411,19 +435,25 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: ContextKeyExpr.or(ctxCommentEditorFocused, CommentContextKeys.commentFocused),
     handler: (accessor, args) => {
         const activeCodeEditor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
         if (activeCodeEditor instanceof SimpleCommentEditor) {
             activeCodeEditor.getParentThread().collapse();
         }
         else if (activeCodeEditor) {
             const controller = CommentController.get(activeCodeEditor);
+
             if (!controller) {
                 return;
             }
             const notificationService = accessor.get(INotificationService);
+
             const commentService = accessor.get(ICommentService);
+
             let error = false;
+
             try {
                 const activeComment = commentService.lastActiveCommentcontroller?.activeComment;
+
                 if (!activeComment) {
                     error = true;
                 }
@@ -442,6 +472,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 });
 export function getActiveEditor(accessor: ServicesAccessor): IActiveCodeEditor | null {
     let activeTextEditorControl = accessor.get(IEditorService).activeTextEditorControl;
+
     if (isDiffEditor(activeTextEditorControl)) {
         if (activeTextEditorControl.getOriginalEditor().hasTextFocus()) {
             activeTextEditorControl = activeTextEditorControl.getOriginalEditor();
@@ -457,10 +488,12 @@ export function getActiveEditor(accessor: ServicesAccessor): IActiveCodeEditor |
 }
 function getActiveController(accessor: ServicesAccessor): CommentController | undefined {
     const activeEditor = getActiveEditor(accessor);
+
     if (!activeEditor) {
         return undefined;
     }
     const controller = CommentController.get(activeEditor);
+
     if (!controller) {
         return undefined;
     }

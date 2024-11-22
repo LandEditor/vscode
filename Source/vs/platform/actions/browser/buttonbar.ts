@@ -52,6 +52,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 		super(container);
 
 		this._actionRunner = this._store.add(new ActionRunner());
+
 		if (_options?.telemetrySource) {
 			this._actionRunner.onDidRun(e => {
 				telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
@@ -66,6 +67,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 		this._onDidChange.dispose();
 		this._updateStore.dispose();
 		this._store.dispose();
+
 		super.dispose();
 	}
 
@@ -82,8 +84,11 @@ export class WorkbenchButtonBar extends ButtonBar {
 		for (let i = 0; i < actions.length; i++) {
 
 			const secondary = i > 0;
+
 			const actionOrSubmenu = actions[i];
+
 			let action: IAction;
+
 			let btn: IButton;
 
 			if (actionOrSubmenu instanceof SubmenuAction && actionOrSubmenu.actions.length > 0) {
@@ -109,7 +114,9 @@ export class WorkbenchButtonBar extends ButtonBar {
 			btn.enabled = action.enabled;
 			btn.checked = action.checked ?? false;
 			btn.element.classList.add('default-colors');
+
 			const showLabel = conifgProvider(action, i)?.showLabel ?? true;
+
 			if (showLabel) {
 				btn.label = action.label;
 			} else {
@@ -129,7 +136,9 @@ export class WorkbenchButtonBar extends ButtonBar {
 				}
 			}
 			const kb = this._keybindingService.lookupKeybinding(action.id);
+
 			let tooltip: string;
+
 			if (kb) {
 				tooltip = localize('labelWithKeybinding', "{0} ({1})", action.tooltip || action.label, kb.getLabel());
 			} else {

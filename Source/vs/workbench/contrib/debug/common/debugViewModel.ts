@@ -13,6 +13,7 @@ export class ViewModel implements IViewModel {
     private _focusedThread: IThread | undefined;
     private selectedExpression: {
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined;
     private readonly _onDidFocusSession = new Emitter<IDebugSession | undefined>();
@@ -28,6 +29,7 @@ export class ViewModel implements IViewModel {
     }>();
     private readonly _onDidSelectExpression = new Emitter<{
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined>();
     private readonly _onDidEvaluateLazyExpression = new Emitter<IExpressionContainer>();
@@ -54,6 +56,7 @@ export class ViewModel implements IViewModel {
     private suspendDebuggeeSupported!: IContextKey<boolean>;
     private disassembleRequestSupported!: IContextKey<boolean>;
     private focusedStackFrameHasInstructionPointerReference!: IContextKey<boolean>;
+
     constructor(private contextKeyService: IContextKeyService) {
         contextKeyService.bufferChangeEvents(() => {
             this.expressionSelectedContextKey = CONTEXT_EXPRESSION_SELECTED.bindTo(contextKeyService);
@@ -88,7 +91,9 @@ export class ViewModel implements IViewModel {
     }
     setFocus(stackFrame: IStackFrame | undefined, thread: IThread | undefined, session: IDebugSession | undefined, explicit: boolean): void {
         const shouldEmitForStackFrame = this._focusedStackFrame !== stackFrame;
+
         const shouldEmitForSession = this._focusedSession !== session;
+
         const shouldEmitForThread = this._focusedThread !== thread;
         this._focusedStackFrame = stackFrame;
         this._focusedThread = thread;
@@ -106,10 +111,12 @@ export class ViewModel implements IViewModel {
             this.suspendDebuggeeSupported.set(!!session?.capabilities.supportSuspendDebuggee);
             this.disassembleRequestSupported.set(!!session?.capabilities.supportsDisassembleRequest);
             this.focusedStackFrameHasInstructionPointerReference.set(!!stackFrame?.instructionPointerReference);
+
             const attach = !!session && isSessionAttach(session);
             this.focusedSessionIsAttach.set(attach);
             this.focusedSessionIsNoDebug.set(!!session && !!session.configuration.noDebug);
         });
+
         if (shouldEmitForSession) {
             this._onDidFocusSession.fire(session);
         }
@@ -143,6 +150,7 @@ export class ViewModel implements IViewModel {
     }
     getSelectedExpression(): {
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined {
         return this.selectedExpression;
@@ -154,6 +162,7 @@ export class ViewModel implements IViewModel {
     }
     get onDidSelectExpression(): Event<{
         expression: IExpression;
+
         settingWatch: boolean;
     } | undefined> {
         return this._onDidSelectExpression.event;
@@ -177,7 +186,9 @@ export class ViewModel implements IViewModel {
         treeId: string;
     } | undefined): void {
         const current = this.visualized.get(original) || original;
+
         const key = this.getPreferredVisualizedKey(original);
+
         if (visualized) {
             this.visualized.set(original, visualized);
             this.preferredVisualizers.set(key, visualized.treeId);

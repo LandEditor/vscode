@@ -22,6 +22,7 @@ export class KeybindingsEditorInput extends EditorInput {
     readonly keybindingsModel: KeybindingsEditorModel;
     searchOptions: IKeybindingsEditorSearchOptions | null = null;
     readonly resource = undefined;
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService) {
@@ -45,6 +46,7 @@ export class KeybindingsEditorInput extends EditorInput {
     }
     override dispose(): void {
         this.keybindingsModel.dispose();
+
         super.dispose();
     }
 }

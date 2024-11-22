@@ -85,6 +85,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
     //#region Name
     private configuredLabelFormat: 'content' | 'name' = 'content';
     private cachedModelFirstLineWords: string | undefined = undefined;
+
     get name(): string {
         // Take name from first line if present and only if
         // we have no associated file path. In that case we
@@ -137,8 +138,10 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
         // Encoding
         if (!e || e.affectsConfiguration(this.resource, 'files.encoding')) {
             const configuredEncoding = this.textResourceConfigurationService.getValue(this.resource, 'files.encoding');
+
             if (this.configuredEncoding !== configuredEncoding && typeof configuredEncoding === 'string') {
                 this.configuredEncoding = configuredEncoding;
+
                 if (fromEvent && !this.preferredEncoding) {
                     this._onDidChangeEncoding.fire(); // do not fire event if we have a preferred encoding set
                 }
@@ -147,8 +150,10 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
         // Label Format
         if (!e || e.affectsConfiguration(this.resource, 'workbench.editor.untitled.labelFormat')) {
             const configuredLabelFormat = this.textResourceConfigurationService.getValue(this.resource, 'workbench.editor.untitled.labelFormat');
+
             if (this.configuredLabelFormat !== configuredLabelFormat && (configuredLabelFormat === 'content' || configuredLabelFormat === 'name')) {
                 this.configuredLabelFormat = configuredLabelFormat;
+
                 if (fromEvent) {
                     this._onDidChangeName.fire();
                 }
@@ -161,6 +166,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
             ? this.editorService.activeTextEditorLanguageId
             : languageId;
         this.preferredLanguageId = actualLanguage;
+
         if (actualLanguage) {
             super.setLanguageId(actualLanguage, source);
         }
@@ -174,6 +180,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
     //#endregion
     //#region Encoding
     private configuredEncoding: string | undefined;
+
     getEncoding(): string | undefined {
         return this.preferredEncoding || this.configuredEncoding;
     }
@@ -214,6 +221,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
     async revert(): Promise<void> {
         // Reset contents to be empty
         this.ignoreDirtyOnModelContentChange = true;
+
         try {
             this.updateTextEditorModel(createTextBufferFactory(''));
         }
@@ -247,11 +255,14 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
     override async resolve(): Promise<void> {
         // Create text editor model if not yet done
         let createdUntitledModel = false;
+
         let hasBackup = false;
+
         if (!this.textEditorModel) {
             let untitledContents: VSBufferReadableStream;
             // Check for backups or use initial value or empty
             const backup = await this.workingCopyBackupService.resolve(this);
+
             if (backup) {
                 untitledContents = backup.value;
                 hasBackup = true;
@@ -329,6 +340,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
         // - cannot be longer than FIRST_LINE_MAX_TITLE_LENGTH
         // - normalize multiple whitespaces to a single whitespace
         let modelFirstWordsCandidate: string | undefined = undefined;
+
         let firstLineText = textEditorModel
             .getValueInRange({
             startLineNumber: 1,
@@ -340,6 +352,7 @@ export class UntitledTextEditorModel extends BaseTextEditorModel implements IUnt
             .replace(/\u202E/g, ''); // drop Right-to-Left Override character (#190133)
         firstLineText = firstLineText.substr(0, getCharContainingOffset(// finally cap at FIRST_LINE_NAME_MAX_LENGTH (grapheme aware #111235)
         firstLineText, UntitledTextEditorModel.FIRST_LINE_NAME_MAX_LENGTH)[0]);
+
         if (firstLineText && ensureValidWordDefinition().exec(firstLineText)) {
             modelFirstWordsCandidate = firstLineText;
         }

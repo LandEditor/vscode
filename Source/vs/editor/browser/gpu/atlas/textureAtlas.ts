@@ -34,6 +34,7 @@ export class TextureAtlas extends Disposable {
 	 * much less frequently so as to not drop frames.
 	 */
 	private readonly _pages: TextureAtlasPage[] = [];
+
 	get pages(): IReadableTextureAtlasPage[] { return this._pages; }
 
 	readonly pageSize: number;
@@ -121,6 +122,7 @@ export class TextureAtlas extends Disposable {
 
 	private _tryGetGlyph(pageIndex: number, rasterizer: IGlyphRasterizer, chars: string, metadata: number): Readonly<ITextureAtlasPageGlyph> {
 		this._glyphPageIndex.set(chars, metadata, rasterizer.cacheKey, pageIndex);
+
 		return (
 			this._pages[pageIndex].getGlyph(rasterizer, chars, metadata)
 			?? (pageIndex + 1 < this._pages.length
@@ -134,6 +136,7 @@ export class TextureAtlas extends Disposable {
 		// TODO: Support more than 2 pages and the GPU texture layer limit
 		this._pages.push(this._instantiationService.createInstance(TextureAtlasPage, this._pages.length, this.pageSize, this._allocatorType));
 		this._glyphPageIndex.set(chars, metadata, rasterizer.cacheKey, this._pages.length - 1);
+
 		return this._pages[this._pages.length - 1].getGlyph(rasterizer, chars, metadata)!;
 	}
 
@@ -151,10 +154,12 @@ export class TextureAtlas extends Disposable {
 	 */
 	private _warmUpAtlas(rasterizer: IGlyphRasterizer): void {
 		const colorMap = this._colorMap;
+
 		if (!colorMap) {
 			throw new BugIndicatingError('Cannot warm atlas without color map');
 		}
 		this._warmUpTask.value?.clear();
+
 		const taskQueue = this._warmUpTask.value = new IdleTaskQueue();
 		// Warm up using roughly the larger glyphs first to help optimize atlas allocation
 		// A-Z

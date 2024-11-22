@@ -16,6 +16,7 @@ export class TextDiffEditorModel extends DiffEditorModel {
     protected override readonly _modifiedModel: BaseTextEditorModel | undefined;
     override get modifiedModel(): BaseTextEditorModel | undefined { return this._modifiedModel; }
     private _textDiffEditorModel: IDiffEditorModel | undefined = undefined;
+
     get textDiffEditorModel(): IDiffEditorModel | undefined { return this._textDiffEditorModel; }
     constructor(originalModel: BaseTextEditorModel, modifiedModel: BaseTextEditorModel) {
         super(originalModel, modifiedModel);
@@ -55,6 +56,7 @@ export class TextDiffEditorModel extends DiffEditorModel {
         // them without sideeffects. Rather rely on the models getting disposed when their related
         // inputs get disposed from the diffEditorInput.
         this._textDiffEditorModel = undefined;
+
         super.dispose();
     }
 }

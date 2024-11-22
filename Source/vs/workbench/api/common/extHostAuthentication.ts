@@ -26,6 +26,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
         extensionIdFilter?: string[];
     }>();
     private _getSessionTaskSingler = new TaskSingler<vscode.AuthenticationSession | undefined>();
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService) {
@@ -39,6 +40,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
      */
     getExtensionScopedSessionsEvent(extensionId: string): Event<vscode.AuthenticationSessionsChangeEvent> {
         const normalizedExtensionId = extensionId.toLowerCase();
+
         return Event.chain(this._onDidChangeSessions.event, ($) => $
             .filter(e => !e.extensionIdFilter || e.extensionIdFilter.includes(normalizedExtensionId))
             .map(e => ({ provider: e.provider })));
@@ -50,28 +52,38 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
     } | {
         forceNewSession: vscode.AuthenticationForceNewSessionOptions;
     })): Promise<vscode.AuthenticationSession>;
+
     async getSession(requestingExtension: IExtensionDescription, providerId: string, scopes: readonly string[], options: vscode.AuthenticationGetSessionOptions & {
         forceNewSession: true;
     }): Promise<vscode.AuthenticationSession>;
+
     async getSession(requestingExtension: IExtensionDescription, providerId: string, scopes: readonly string[], options: vscode.AuthenticationGetSessionOptions & {
         forceNewSession: vscode.AuthenticationForceNewSessionOptions;
     }): Promise<vscode.AuthenticationSession>;
+
     async getSession(requestingExtension: IExtensionDescription, providerId: string, scopes: readonly string[], options: vscode.AuthenticationGetSessionOptions): Promise<vscode.AuthenticationSession | undefined>;
+
     async getSession(requestingExtension: IExtensionDescription, providerId: string, scopes: readonly string[], options: vscode.AuthenticationGetSessionOptions = {}): Promise<vscode.AuthenticationSession | undefined> {
         const extensionId = ExtensionIdentifier.toKey(requestingExtension.identifier);
+
         const sortedScopes = [...scopes].sort().join(' ');
+
         return await this._getSessionTaskSingler.getOrCreate(`${extensionId} ${providerId} ${sortedScopes}`, async () => {
             await this._proxy.$ensureProvider(providerId);
+
             const extensionName = requestingExtension.displayName || requestingExtension.name;
+
             return this._proxy.$getSession(providerId, scopes, extensionId, extensionName, options);
         });
     }
     async getAccounts(providerId: string) {
         await this._proxy.$ensureProvider(providerId);
+
         return await this._proxy.$getAccounts(providerId);
     }
     async removeSession(providerId: string, sessionId: string): Promise<void> {
         const providerData = this._authenticationProviders.get(providerId);
+
         if (!providerData) {
             return this._proxy.$removeSession(providerId, sessionId);
         }
@@ -82,8 +94,10 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
             throw new Error(`An authentication provider with id '${id}' is already registered.`);
         }
         this._authenticationProviders.set(id, { label, provider, options: options ?? { supportsMultipleAccounts: false } });
+
         const listener = provider.onDidChangeSessions(e => this._proxy.$sendDidChangeSessions(id, e));
         this._proxy.$registerAuthenticationProvider(id, label, options?.supportsMultipleAccounts ?? false);
+
         return new Disposable(() => {
             listener.dispose();
             this._authenticationProviders.delete(id);
@@ -92,6 +106,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
     }
     async $createSession(providerId: string, scopes: string[], options: vscode.AuthenticationProviderSessionOptions): Promise<vscode.AuthenticationSession> {
         const providerData = this._authenticationProviders.get(providerId);
+
         if (providerData) {
             return await providerData.provider.createSession(scopes, options);
         }
@@ -99,6 +114,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
     }
     async $removeSession(providerId: string, sessionId: string): Promise<void> {
         const providerData = this._authenticationProviders.get(providerId);
+
         if (providerData) {
             return await providerData.provider.removeSession(sessionId);
         }
@@ -106,6 +122,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
     }
     async $getSessions(providerId: string, scopes: ReadonlyArray<string> | undefined, options: vscode.AuthenticationProviderSessionOptions): Promise<ReadonlyArray<vscode.AuthenticationSession>> {
         const providerData = this._authenticationProviders.get(providerId);
+
         if (providerData) {
             return await providerData.provider.getSessions(scopes, options);
         }
@@ -121,13 +138,16 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 }
 class TaskSingler<T> {
     private _inFlightPromises = new Map<string, Promise<T>>();
+
     getOrCreate(key: string, promiseFactory: () => Promise<T>) {
         const inFlight = this._inFlightPromises.get(key);
+
         if (inFlight) {
             return inFlight;
         }
         const promise = promiseFactory().finally(() => this._inFlightPromises.delete(key));
         this._inFlightPromises.set(key, promise);
+
         return promise;
     }
 }

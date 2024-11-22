@@ -173,7 +173,9 @@ registerAction2(class SaveMimeTypeDisplayOrder extends Action2 {
     }
     run(accessor: ServicesAccessor) {
         const service = accessor.get(INotebookService);
+
         const disposables = new DisposableStore();
+
         const qp = disposables.add(accessor.get(IQuickInputService).createQuickPick<IQuickPickItem & {
             target: ConfigurationTarget;
         }>());
@@ -184,6 +186,7 @@ registerAction2(class SaveMimeTypeDisplayOrder extends Action2 {
         ];
         disposables.add(qp.onDidAccept(() => {
             const target = qp.selectedItems[0]?.target;
+
             if (target !== undefined) {
                 service.saveMimeDisplayOrder(target);
             }
@@ -204,10 +207,14 @@ registerAction2(class NotebookWebviewResetAction extends Action2 {
     }
     run(accessor: ServicesAccessor, args?: UriComponents): void {
         const editorService = accessor.get(IEditorService);
+
         if (args) {
             const uri = URI.revive(args);
+
             const notebookEditorService = accessor.get(INotebookEditorService);
+
             const widgets = notebookEditorService.listNotebookEditors().filter(widget => widget.hasModel() && widget.textModel.uri.toString() === uri.toString());
+
             for (const widget of widgets) {
                 if (widget.hasModel()) {
                     widget.getInnerWebview()?.reload();
@@ -216,6 +223,7 @@ registerAction2(class NotebookWebviewResetAction extends Action2 {
         }
         else {
             const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
             if (!editor) {
                 return;
             }
@@ -249,7 +257,9 @@ registerAction2(class ToggleNotebookStickyScroll extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const newValue = !configurationService.getValue('notebook.stickyScroll.enabled');
+
         return configurationService.updateValue('notebook.stickyScroll.enabled', newValue);
     }
 });

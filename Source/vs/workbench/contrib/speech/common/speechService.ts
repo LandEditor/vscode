@@ -193,6 +193,7 @@ export function speechLanguageConfigToLanguage(config: unknown, lang = language)
         if (config === 'auto') {
             if (lang !== 'en') {
                 const langParts = lang.split('-');
+
                 return speechLanguageConfigToLanguage(`${langParts[0]}-${(langParts[1] ?? langParts[0]).toUpperCase()}`);
             }
         }

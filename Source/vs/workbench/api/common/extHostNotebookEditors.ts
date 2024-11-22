@@ -13,11 +13,13 @@ export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
     private readonly _onDidChangeNotebookEditorVisibleRanges = new Emitter<vscode.NotebookEditorVisibleRangesChangeEvent>();
     readonly onDidChangeNotebookEditorSelection = this._onDidChangeNotebookEditorSelection.event;
     readonly onDidChangeNotebookEditorVisibleRanges = this._onDidChangeNotebookEditorVisibleRanges.event;
+
     constructor(
     @ILogService
     private readonly _logService: ILogService, private readonly _notebooksAndEditors: ExtHostNotebookController) { }
     $acceptEditorPropertiesChanged(id: string, data: INotebookEditorPropertiesChangeData): void {
         this._logService.debug('ExtHostNotebook#$acceptEditorPropertiesChanged', id, data);
+
         const editor = this._notebooksAndEditors.getEditorById(id);
         // ONE: make all state updates
         if (data.visibleRanges) {

@@ -10,6 +10,7 @@ import { IProductService } from '../../product/common/productService.js';
 import { ITelemetryAppender, isLoggingOnly, supportsTelemetry, telemetryLogId, validateTelemetryData } from './telemetryUtils.js';
 export class TelemetryLogAppender extends Disposable implements ITelemetryAppender {
     private readonly logger: ILogger;
+
     constructor(
     @ILogService
     logService: ILogService, 
@@ -20,14 +21,18 @@ export class TelemetryLogAppender extends Disposable implements ITelemetryAppend
     @IProductService
     productService: IProductService, private readonly prefix: string = '') {
         super();
+
         const logger = loggerService.getLogger(telemetryLogId);
+
         if (logger) {
             this.logger = this._register(logger);
         }
         else {
             // Not a perfect check, but a nice way to indicate if we only have logging enabled for debug purposes and nothing is actually being sent
             const justLoggingAndNotSending = isLoggingOnly(productService, environmentService);
+
             const logSuffix = justLoggingAndNotSending ? ' (Not Sent)' : '';
+
             const isVisible = () => supportsTelemetry(productService, environmentService) && logService.getLevel() === LogLevel.Trace;
             this.logger = this._register(loggerService.createLogger(telemetryLogId, { name: localize('telemetryLog', "Telemetry{0}", logSuffix), hidden: !isVisible() }));
             this._register(logService.onDidChangeLogLevel(() => loggerService.setVisibility(telemetryLogId, isVisible())));

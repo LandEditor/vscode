@@ -4,12 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 import * as path from 'path';
 import * as es from 'event-stream';
+
 const pickle = require('chromium-pickle-js');
+
 const Filesystem = <typeof AsarFilesystem>require('asar/lib/filesystem');
 import * as VinylFile from 'vinyl';
 import * as minimatch from 'minimatch';
 declare class AsarFilesystem {
     readonly header: unknown;
+
     constructor(src: string);
     insertDirectory(path: string, shouldUnpack?: boolean): unknown;
     insertFile(path: string, shouldUnpack: boolean, file: {
@@ -28,6 +31,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         }
         return false;
     };
+
     const shouldSkipFile = (file: VinylFile): boolean => {
         for (const skipGlob of skipGlobs) {
             if (minimatch(file.relative, skipGlob)) {
@@ -46,20 +50,25 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         }
         return false;
     };
+
     const filesystem = new Filesystem(folderPath);
+
     const out: Buffer[] = [];
     // Keep track of pending inserts
     let pendingInserts = 0;
+
     let onFileInserted = () => { pendingInserts--; };
     // Do not insert twice the same directory
     const seenDir: {
         [key: string]: boolean;
     } = {};
+
     const insertDirectoryRecursive = (dir: string) => {
         if (seenDir[dir]) {
             return;
         }
         let lastSlash = dir.lastIndexOf('/');
+
         if (lastSlash === -1) {
             lastSlash = dir.lastIndexOf('\\');
         }
@@ -69,8 +78,10 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         seenDir[dir] = true;
         filesystem.insertDirectory(dir);
     };
+
     const insertDirectoryForFile = (file: string) => {
         let lastSlash = file.lastIndexOf('/');
+
         if (lastSlash === -1) {
             lastSlash = file.lastIndexOf('\\');
         }
@@ -78,6 +89,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
             insertDirectoryRecursive(file.substring(0, lastSlash));
         }
     };
+
     const insertFile = (relativePath: string, stat: {
         size: number;
         mode: number;
@@ -88,6 +100,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         // Create a closure capturing `onFileInserted`.
         filesystem.insertFile(relativePath, shouldUnpack, { stat: stat }, {}).then(() => onFileInserted(), () => onFileInserted());
     };
+
     return es.through(function (file) {
         if (file.stat.isDirectory()) {
             return;
@@ -102,6 +115,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
                 stat: file.stat,
                 contents: file.contents
             }));
+
             return;
         }
         if (shouldDuplicateFile(file)) {
@@ -114,6 +128,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         }
         const shouldUnpack = shouldUnpackFile(file);
         insertFile(file.relative, { size: file.contents.length, mode: file.stat.mode }, shouldUnpack);
+
         if (shouldUnpack) {
             // The file goes outside of xx.asar, in a folder xx.asar.unpacked
             const relative = path.relative(folderPath, file.path);
@@ -133,9 +148,12 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
             {
                 const headerPickle = pickle.createEmpty();
                 headerPickle.writeString(JSON.stringify(filesystem.header));
+
                 const headerBuf = headerPickle.toBuffer();
+
                 const sizePickle = pickle.createEmpty();
                 sizePickle.writeUInt32(headerBuf.length);
+
                 const sizeBuf = sizePickle.toBuffer();
                 out.unshift(headerBuf);
                 out.unshift(sizeBuf);
@@ -156,6 +174,7 @@ export function createAsar(folderPath: string, unpackGlobs: string[], skipGlobs:
         else {
             onFileInserted = () => {
                 pendingInserts--;
+
                 if (pendingInserts === 0) {
                     finish();
                 }

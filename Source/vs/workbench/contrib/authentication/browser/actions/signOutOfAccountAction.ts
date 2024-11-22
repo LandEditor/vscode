@@ -23,15 +23,22 @@ export class SignOutOfAccountAction extends Action2 {
         accountLabel: string;
     }): Promise<void> {
         const authenticationService = accessor.get(IAuthenticationService);
+
         const authenticationUsageService = accessor.get(IAuthenticationUsageService);
+
         const authenticationAccessService = accessor.get(IAuthenticationAccessService);
+
         const dialogService = accessor.get(IDialogService);
+
         if (!providerId || !accountLabel) {
             throw new Error('Invalid arguments. Expected: { providerId: string; accountLabel: string }');
         }
         const allSessions = await authenticationService.getSessions(providerId);
+
         const sessions = allSessions.filter(s => s.account.label === accountLabel);
+
         const accountUsages = authenticationUsageService.readAccountUsages(providerId, accountLabel);
+
         const { confirmed } = await dialogService.confirm({
             type: Severity.Info,
             message: accountUsages.length
@@ -39,6 +46,7 @@ export class SignOutOfAccountAction extends Action2 {
                 : localize('signOutMessageSimple', "Sign out of '{0}'?", accountLabel),
             primaryButton: localize({ key: 'signOut', comment: ['&& denotes a mnemonic'] }, "&&Sign Out")
         });
+
         if (confirmed) {
             const removeSessionPromises = sessions.map(session => authenticationService.removeSession(providerId, session.id));
             await Promise.all(removeSessionPromises);

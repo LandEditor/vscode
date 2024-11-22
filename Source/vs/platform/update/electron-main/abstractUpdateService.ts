@@ -39,6 +39,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
     private _state: State = State.Uninitialized;
     private readonly _onStateChange = new Emitter<State>();
     readonly onStateChange: Event<State> = this._onStateChange.event;
+
     get state(): State {
         return this._state;
     }
@@ -71,29 +72,37 @@ export abstract class AbstractUpdateService implements IUpdateService {
     protected async initialize(): Promise<void> {
         if (!this.environmentMainService.isBuilt) {
             this.setState(State.Disabled(DisablementReason.NotBuilt));
+
             return; // updates are never enabled when running out of sources
         }
         if (this.environmentMainService.disableUpdates) {
             this.setState(State.Disabled(DisablementReason.DisabledByEnvironment));
             this.logService.info('update#ctor - updates are disabled by the environment');
+
             return;
         }
         if (!this.productService.updateUrl || !this.productService.commit) {
             this.setState(State.Disabled(DisablementReason.MissingConfiguration));
             this.logService.info('update#ctor - updates are disabled as there is no update URL');
+
             return;
         }
         const updateMode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>('update.mode');
+
         const quality = this.getProductQuality(updateMode);
+
         if (!quality) {
             this.setState(State.Disabled(DisablementReason.ManuallyDisabled));
             this.logService.info('update#ctor - updates are disabled by user preference');
+
             return;
         }
         this.url = this.buildUpdateFeedUrl(quality);
+
         if (!this.url) {
             this.setState(State.Disabled(DisablementReason.InvalidConfiguration));
             this.logService.info('update#ctor - updates are disabled as the update URL is badly formed');
+
             return;
         }
         // hidden setting
@@ -103,8 +112,10 @@ export abstract class AbstractUpdateService implements IUpdateService {
             this.url = url.toString();
         }
         this.setState(State.Idle(this.getUpdateType()));
+
         if (updateMode === 'manual') {
             this.logService.info('update#ctor - manual checks only; automatic updates are disabled by user preference');
+
             return;
         }
         if (updateMode === 'start') {
@@ -130,6 +141,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
     }
     async checkForUpdates(explicit: boolean): Promise<void> {
         this.logService.trace('update#checkForUpdates, state = ', this.state.type);
+
         if (this.state.type !== StateType.Idle) {
             return;
         }
@@ -137,6 +149,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
     }
     async downloadUpdate(): Promise<void> {
         this.logService.trace('update#downloadUpdate, state = ', this.state.type);
+
         if (this.state.type !== StateType.AvailableForDownload) {
             return;
         }
@@ -147,6 +160,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
     }
     async applyUpdate(): Promise<void> {
         this.logService.trace('update#applyUpdate, state = ', this.state.type);
+
         if (this.state.type !== StateType.Downloaded) {
             return;
         }
@@ -157,18 +171,21 @@ export abstract class AbstractUpdateService implements IUpdateService {
     }
     quitAndInstall(): Promise<void> {
         this.logService.trace('update#quitAndInstall, state = ', this.state.type);
+
         if (this.state.type !== StateType.Ready) {
             return Promise.resolve(undefined);
         }
         this.logService.trace('update#quitAndInstall(): before lifecycle quit()');
         this.lifecycleMainService.quit(true /* will restart */).then(vetod => {
             this.logService.trace(`update#quitAndInstall(): after lifecycle quit() with veto: ${vetod}`);
+
             if (vetod) {
                 return;
             }
             this.logService.trace('update#quitAndInstall(): running raw#quitAndInstall()');
             this.doQuitAndInstall();
         });
+
         return Promise.resolve(undefined);
     }
     async isLatestVersion(): Promise<boolean | undefined> {
@@ -176,6 +193,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
             return undefined;
         }
         const mode = this.configurationService.getValue<'none' | 'manual' | 'start' | 'default'>('update.mode');
+
         if (mode === 'none') {
             return false;
         }
@@ -188,6 +206,7 @@ export abstract class AbstractUpdateService implements IUpdateService {
         catch (error) {
             this.logService.error('update#isLatestVersion(): failed to check for updates');
             this.logService.error(error);
+
             return undefined;
         }
     }

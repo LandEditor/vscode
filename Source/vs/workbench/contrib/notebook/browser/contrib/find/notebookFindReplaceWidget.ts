@@ -49,25 +49,41 @@ import { ICellRange } from '../../../common/notebookRange.js';
 
 
 const NLS_FIND_INPUT_LABEL = nls.localize('label.find', "Find");
+
 const NLS_FIND_INPUT_PLACEHOLDER = nls.localize('placeholder.find', "Find");
+
 const NLS_PREVIOUS_MATCH_BTN_LABEL = nls.localize('label.previousMatchButton', "Previous Match");
+
 const NLS_NEXT_MATCH_BTN_LABEL = nls.localize('label.nextMatchButton', "Next Match");
+
 const NLS_TOGGLE_SELECTION_FIND_TITLE = nls.localize('label.toggleSelectionFind', "Find in Selection");
+
 const NLS_CLOSE_BTN_LABEL = nls.localize('label.closeButton', "Close");
+
 const NLS_TOGGLE_REPLACE_MODE_BTN_LABEL = nls.localize('label.toggleReplaceButton', "Toggle Replace");
+
 const NLS_REPLACE_INPUT_LABEL = nls.localize('label.replace', "Replace");
+
 const NLS_REPLACE_INPUT_PLACEHOLDER = nls.localize('placeholder.replace', "Replace");
+
 const NLS_REPLACE_BTN_LABEL = nls.localize('label.replaceButton', "Replace");
+
 const NLS_REPLACE_ALL_BTN_LABEL = nls.localize('label.replaceAllButton', "Replace All");
 
 export const findFilterButton = registerIcon('find-filter', Codicon.filter, nls.localize('findFilterIcon', 'Icon for Find Filter in find widget.'));
+
 const NOTEBOOK_FIND_FILTERS = nls.localize('notebook.find.filter.filterAction', "Find Filters");
+
 const NOTEBOOK_FIND_IN_MARKUP_INPUT = nls.localize('notebook.find.filter.findInMarkupInput', "Markdown Source");
+
 const NOTEBOOK_FIND_IN_MARKUP_PREVIEW = nls.localize('notebook.find.filter.findInMarkupPreview', "Rendered Markdown");
+
 const NOTEBOOK_FIND_IN_CODE_INPUT = nls.localize('notebook.find.filter.findInCodeInput', "Code Cell Source");
+
 const NOTEBOOK_FIND_IN_CODE_OUTPUT = nls.localize('notebook.find.filter.findInCodeOutput', "Code Cell Output");
 
 const NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH = 419;
+
 const NOTEBOOK_FIND_WIDGET_INITIAL_HORIZONTAL_PADDING = 4;
 class NotebookFindFilterActionViewItem extends DropdownMenuActionViewItem {
 	constructor(readonly filters: NotebookFindFilters, action: IAction, options: IActionViewItemOptions, actionRunner: IActionRunner, @IContextMenuService contextMenuService: IContextMenuService) {
@@ -255,6 +271,7 @@ export class NotebookFindInput extends FindInput {
 
 	override setEnabled(enabled: boolean) {
 		super.setEnabled(enabled);
+
 		if (enabled && !this._filterChecked) {
 			this.regex?.enable();
 		} else {
@@ -264,6 +281,7 @@ export class NotebookFindInput extends FindInput {
 
 	updateFilterState(changed: boolean) {
 		this._filterChecked = changed;
+
 		if (this.regex) {
 			if (this._filterChecked) {
 				this.regex.disable();
@@ -390,10 +408,12 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 					}
 					try {
 						new RegExp(value);
+
 						return null;
 					} catch (e) {
 						this.foundMatch = false;
 						this.updateButtons(this.foundMatch);
+
 						return { content: e.message };
 					}
 				},
@@ -468,6 +488,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 
 		this.inSelectionToggle.onChange(() => {
 			const checked = this.inSelectionToggle.checked;
+
 			if (checked) {
 				// selection logic:
 				// 1. if there are multiple cells, do that.
@@ -476,6 +497,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 				// 		- if there is no range, cell in selection for that cell
 
 				const cellSelection: ICellRange[] = this._notebookEditor.getSelections();
+
 				const textSelection: Range[] = this._notebookEditor.getSelectionViewModels()[0].getSelections();
 
 				if (cellSelection.length > 1 || cellSelection.some(range => range.end - range.start > 1)) {
@@ -531,6 +553,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 			if (e.equals(KeyCode.Escape)) {
 				this.hide();
 				e.preventDefault();
+
 				return;
 			}
 		});
@@ -599,11 +622,13 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 
 		this._register(this._resizeSash.onDidChange((evt: ISashEvent) => {
 			let width = this._resizeOriginalWidth + evt.startX - evt.currentX;
+
 			if (width < NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH) {
 				width = NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH;
 			}
 
 			const maxWidth = this._getMaxWidth();
+
 			if (width > maxWidth) {
 				width = maxWidth;
 			}
@@ -621,6 +646,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 			// users double click on the sash
 			// try to emulate what happens with editor findWidget
 			const currentWidth = this._getDomWidth();
+
 			let width = NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH;
 
 			if (currentWidth <= NOTEBOOK_FIND_WIDGET_INITIAL_WIDTH) {
@@ -628,6 +654,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 			}
 
 			this._domNode.style.width = `${width}px`;
+
 			if (this._isReplaceVisible) {
 				this._replaceInput.width = dom.getTotalWidth(this._findInput.domNode);
 			}
@@ -690,6 +717,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 	private _updateButtons(): void {
 		this._findInput.setEnabled(this._isVisible);
 		this._replaceInput.setEnabled(this._isVisible && this._isReplaceVisible);
+
 		const findInputIsNonEmpty = (this._state.searchString.length > 0);
 		this._replaceBtn.setEnabled(this._isVisible && this._isReplaceVisible && findInputIsNonEmpty);
 		this._replaceAllBtn.setEnabled(this._isVisible && this._isReplaceVisible && findInputIsNonEmpty);
@@ -708,6 +736,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 		});
 
 		const decorations: INotebookDeltaDecoration[] = [];
+
 		for (const handle of cellHandles) {
 			decorations.push({
 				handle: handle,
@@ -724,6 +753,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 	private setTextSelectionDecorations(textRanges: Range[], cell: ICellViewModel) {
 		this._notebookEditor.changeModelDecorations(changeAccessor => {
 			const decorations: ICellModelDeltaDecorations[] = [];
+
 			for (const range of textRanges) {
 				decorations.push({
 					ownerId: cell.handle,
@@ -767,6 +797,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 
 		if (this._isVisible) {
 			this._findInput.select();
+
 			return;
 		}
 

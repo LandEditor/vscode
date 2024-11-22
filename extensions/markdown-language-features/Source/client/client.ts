@@ -46,6 +46,7 @@ export class MdLanguageClient implements IDisposable {
 }
 export async function startClient(factory: LanguageClientConstructor, parser: IMdParser): Promise<MdLanguageClient> {
     const mdFileGlob = `**/*.{${markdownFileExtensions.join(',')}}`;
+
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: 'markdown' }],
         synchronize: {
@@ -67,9 +68,12 @@ export async function startClient(factory: LanguageClientConstructor, parser: IM
             supportHtml: true,
         }
     };
+
     const client = factory('markdown', vscode.l10n.t("Markdown Language Server"), clientOptions);
     client.registerProposedFeatures();
+
     const notebookFeature = client.getFeature(NotebookDocumentSyncRegistrationType.method);
+
     if (notebookFeature !== undefined) {
         notebookFeature.register({
             id: String(Date.now()),
@@ -84,11 +88,13 @@ export async function startClient(factory: LanguageClientConstructor, parser: IM
     const workspace = new VsCodeMdWorkspace();
     client.onRequest(proto.parse, async (e) => {
         const uri = vscode.Uri.parse(e.uri);
+
         if (typeof e.text === 'string') {
             return parser.tokenize(new InMemoryDocument(uri, e.text, -1));
         }
         else {
             const doc = await workspace.getOrLoadMarkdownDocument(uri);
+
             if (doc) {
                 return parser.tokenize(doc);
             }
@@ -99,14 +105,17 @@ export async function startClient(factory: LanguageClientConstructor, parser: IM
     });
     client.onRequest(proto.fs_readFile, async (e): Promise<number[]> => {
         const uri = vscode.Uri.parse(e.uri);
+
         return Array.from(await vscode.workspace.fs.readFile(uri));
     });
     client.onRequest(proto.fs_stat, async (e): Promise<{
         isDirectory: boolean;
     } | undefined> => {
         const uri = vscode.Uri.parse(e.uri);
+
         try {
             const stat = await vscode.workspace.fs.stat(uri);
+
             return { isDirectory: stat.type === vscode.FileType.Directory };
         }
         catch {
@@ -120,16 +129,21 @@ export async function startClient(factory: LanguageClientConstructor, parser: IM
         }
     ][]> => {
         const uri = vscode.Uri.parse(e.uri);
+
         const result = await vscode.workspace.fs.readDirectory(uri);
+
         return result.map(([name, type]) => [name, { isDirectory: type === vscode.FileType.Directory }]);
     });
     client.onRequest(proto.findMarkdownFilesInWorkspace, async (): Promise<string[]> => {
         return (await vscode.workspace.findFiles(mdFileGlob, '**/node_modules/**')).map(x => x.toString());
     });
+
     const watchers = new FileWatcherManager();
     client.onRequest(proto.fs_watcher_create, async (params): Promise<void> => {
         const id = params.id;
+
         const uri = vscode.Uri.parse(params.uri);
+
         const sendWatcherChange = (kind: 'create' | 'change' | 'delete') => {
             client.sendRequest(proto.fs_watcher_onChange, { id, uri: params.uri, kind });
         };
@@ -149,5 +163,6 @@ export async function startClient(factory: LanguageClientConstructor, parser: IM
         return vscode.commands.executeCommand('editor.action.rename', [vscode.Uri.from(uri), new vscode.Position(pos.line, pos.character)]);
     });
     await client.start();
+
     return new MdLanguageClient(client, workspace);
 }

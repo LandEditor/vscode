@@ -46,6 +46,7 @@ export class ManagedTestCoverageBars extends Disposable {
                 h('.bar@tpcBar'),
             ]);
             this.attachHover(el.tpcBar, getOverallHoverText);
+
             return el;
         }
         else {
@@ -58,6 +59,7 @@ export class ManagedTestCoverageBars extends Disposable {
             this.attachHover(el.statement, stmtCoverageText);
             this.attachHover(el.function, fnCoverageText);
             this.attachHover(el.branch, branchCoverageText);
+
             return el;
         }
     });
@@ -79,6 +81,7 @@ export class ManagedTestCoverageBars extends Disposable {
     }
     public setCoverageInfo(coverage: CoverageBarSource | undefined) {
         const ds = this.visibleStore;
+
         if (!coverage) {
             if (this._coverage) {
                 this._coverage = undefined;
@@ -105,9 +108,13 @@ export class ManagedTestCoverageBars extends Disposable {
     }
     private doRender(coverage: CoverageBarSource) {
         const el = this.el.value;
+
         const precision = this.options.compact ? 0 : 2;
+
         const thresholds = getTestingConfiguration(this.configurationService, TestingConfigKeys.CoverageBarThresholds);
+
         const overallStat = coverUtils.calculateDisplayedStat(coverage, getTestingConfiguration(this.configurationService, TestingConfigKeys.CoveragePercent));
+
         if (this.options.overall !== false) {
             el.overall.textContent = coverUtils.displayPercent(overallStat, precision);
         }
@@ -125,33 +132,43 @@ export class ManagedTestCoverageBars extends Disposable {
     }
 }
 const barWidth = 16;
+
 const renderBar = (bar: HTMLElement, pct: number | undefined, isZero: boolean, thresholds: ITestingCoverageBarThresholds) => {
     if (pct === undefined) {
         bar.style.display = 'none';
+
         return;
     }
     bar.style.display = 'block';
     bar.style.width = `${barWidth}px`;
     // this is floored so the bar is only completely filled at 100% and not 99.9%
     bar.style.setProperty('--test-bar-width', `${Math.floor(pct * 16)}px`);
+
     if (isZero) {
         bar.style.color = 'currentColor';
         bar.style.opacity = '0.5';
+
         return;
     }
     bar.style.color = coverUtils.getCoverageColor(pct, thresholds);
     bar.style.opacity = '1';
 };
+
 const nf = new Intl.NumberFormat();
+
 const stmtCoverageText = (coverage: CoverageBarSource) => localize('statementCoverage', '{0}/{1} statements covered ({2})', nf.format(coverage.statement.covered), nf.format(coverage.statement.total), coverUtils.displayPercent(coverUtils.percent(coverage.statement)));
+
 const fnCoverageText = (coverage: CoverageBarSource) => coverage.declaration && localize('functionCoverage', '{0}/{1} functions covered ({2})', nf.format(coverage.declaration.covered), nf.format(coverage.declaration.total), coverUtils.displayPercent(coverUtils.percent(coverage.declaration)));
+
 const branchCoverageText = (coverage: CoverageBarSource) => coverage.branch && localize('branchCoverage', '{0}/{1} branches covered ({2})', nf.format(coverage.branch.covered), nf.format(coverage.branch.total), coverUtils.displayPercent(coverUtils.percent(coverage.branch)));
+
 const getOverallHoverText = (coverage: CoverageBarSource): IManagedHoverTooltipMarkdownString => {
     const str = [
         stmtCoverageText(coverage),
         fnCoverageText(coverage),
         branchCoverageText(coverage),
     ].filter(isDefined).join('\n\n');
+
     return {
         markdown: new MarkdownString().appendText(str),
         markdownNotSupportedFallback: str
@@ -183,12 +200,16 @@ export class ExplorerTestCoverageBars extends ManagedTestCoverageBars implements
     @ITestCoverageService
     testCoverageService: ITestCoverageService) {
         super(options, configurationService, hoverService);
+
         const isEnabled = observeTestingConfiguration(configurationService, TestingConfigKeys.ShowCoverageInExplorer);
         this._register(autorun(async (reader) => {
             let info: AbstractFileCoverage | undefined;
+
             const coverage = testCoverageService.selected.read(reader);
+
             if (coverage && isEnabled.read(reader)) {
                 const resource = this.resource.read(reader);
+
                 if (resource) {
                     info = coverage.getComputedForUri(resource);
                 }

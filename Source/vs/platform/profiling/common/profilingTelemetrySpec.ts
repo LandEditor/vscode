@@ -11,6 +11,7 @@ type TelemetrySampleData = {
     totalTime: number;
     percentage: number;
     perfBaseline: number;
+
     functionName: string;
     callers: string;
     callersAnnotated: string;
@@ -39,6 +40,7 @@ type TelemetrySampleDataClassification = {
         purpose: 'PerformanceAndHealth';
         comment: 'Performance baseline for the machine';
     };
+
     functionName: {
         classification: 'SystemMetaData';
         purpose: 'PerformanceAndHealth';
@@ -80,6 +82,7 @@ export function reportSample(data: SampleData, telemetryService: ITelemetryServi
     });
     // log a fake error with a clearer stack
     const fakeError = new PerformanceError(data);
+
     if (sendAsErrorTelemtry) {
         errorHandler.onUnexpectedError(fakeError);
     }
@@ -89,10 +92,12 @@ export function reportSample(data: SampleData, telemetryService: ITelemetryServi
 }
 class PerformanceError extends Error {
     readonly selfTime: number;
+
     constructor(data: SampleData) {
         super(`PerfSampleError: by ${data.source} in ${data.sample.location}`);
         this.name = 'PerfSampleError';
         this.selfTime = data.sample.selfTime;
+
         const trace = [data.sample.absLocation, ...data.sample.caller.map(c => c.absLocation)];
         this.stack = `\n\t at ${trace.join('\n\t at ')}`;
     }

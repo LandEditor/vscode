@@ -44,10 +44,12 @@ export const TypeHierarchyProviderRegistry = new LanguageFeatureRegistry<TypeHie
 export class TypeHierarchyModel {
     static async create(model: ITextModel, position: IPosition, token: CancellationToken): Promise<TypeHierarchyModel | undefined> {
         const [provider] = TypeHierarchyProviderRegistry.ordered(model);
+
         if (!provider) {
             return undefined;
         }
         const session = await provider.prepareTypeHierarchy(model, position, token);
+
         if (!session) {
             return undefined;
         }
@@ -62,6 +64,7 @@ export class TypeHierarchyModel {
     }
     fork(item: TypeHierarchyItem): TypeHierarchyModel {
         const that = this;
+
         return new class extends TypeHierarchyModel {
             constructor() {
                 super(that.id, that.provider, [item], that.ref.acquire());
@@ -71,6 +74,7 @@ export class TypeHierarchyModel {
     async provideSupertypes(item: TypeHierarchyItem, token: CancellationToken): Promise<TypeHierarchyItem[]> {
         try {
             const result = await this.provider.provideSupertypes(item, token);
+
             if (isNonEmptyArray(result)) {
                 return result;
             }
@@ -83,6 +87,7 @@ export class TypeHierarchyModel {
     async provideSubtypes(item: TypeHierarchyItem, token: CancellationToken): Promise<TypeHierarchyItem[]> {
         try {
             const result = await this.provider.provideSubtypes(item, token);
+
             if (isNonEmptyArray(result)) {
                 return result;
             }
@@ -99,17 +104,23 @@ CommandsRegistry.registerCommand('_executePrepareTypeHierarchy', async (accessor
     const [resource, position] = args;
     assertType(URI.isUri(resource));
     assertType(Position.isIPosition(position));
+
     const modelService = accessor.get(IModelService);
+
     let textModel = modelService.getModel(resource);
+
     let textModelReference: IDisposable | undefined;
+
     if (!textModel) {
         const textModelService = accessor.get(ITextModelService);
+
         const result = await textModelService.createModelReference(resource);
         textModel = result.object.textEditorModel;
         textModelReference = result;
     }
     try {
         const model = await TypeHierarchyModel.create(textModel, position, CancellationToken.None);
+
         if (!model) {
             return [];
         }
@@ -120,6 +131,7 @@ CommandsRegistry.registerCommand('_executePrepareTypeHierarchy', async (accessor
                 _models.delete(key);
             }
         });
+
         return [model.root];
     }
     finally {
@@ -128,6 +140,7 @@ CommandsRegistry.registerCommand('_executePrepareTypeHierarchy', async (accessor
 });
 function isTypeHierarchyItemDto(obj: any): obj is TypeHierarchyItem {
     const item = obj as TypeHierarchyItem;
+
     return typeof obj === 'object'
         && typeof item.name === 'string'
         && typeof item.kind === 'number'
@@ -140,6 +153,7 @@ CommandsRegistry.registerCommand('_executeProvideSupertypes', async (_accessor, 
     assertType(isTypeHierarchyItemDto(item));
     // find model
     const model = _models.get(item._sessionId);
+
     if (!model) {
         return undefined;
     }
@@ -150,6 +164,7 @@ CommandsRegistry.registerCommand('_executeProvideSubtypes', async (_accessor, ..
     assertType(isTypeHierarchyItemDto(item));
     // find model
     const model = _models.get(item._sessionId);
+
     if (!model) {
         return undefined;
     }

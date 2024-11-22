@@ -28,6 +28,7 @@ export class ProxyIdentifier<T> {
     _proxyIdentifierBrand: void = undefined;
     public readonly sid: string;
     public readonly nid: number;
+
     constructor(sid: string) {
         this.sid = sid;
         this.nid = (++ProxyIdentifier.count);
@@ -37,6 +38,7 @@ const identifiers: ProxyIdentifier<any>[] = [];
 export function createProxyIdentifier<T>(identifier: string): ProxyIdentifier<T> {
     const result = new ProxyIdentifier<T>(identifier);
     identifiers[result.nid] = result;
+
     return result;
 }
 /**

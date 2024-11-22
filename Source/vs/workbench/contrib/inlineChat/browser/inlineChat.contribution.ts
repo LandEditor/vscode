@@ -44,6 +44,7 @@ const editActionMenuItem: IMenuItem = {
 		CTX_INLINE_CHAT_EDITING
 	),
 };
+
 const generateActionMenuItem: IMenuItem = {
 	group: '0_main',
 	order: 0,
@@ -59,6 +60,7 @@ const generateActionMenuItem: IMenuItem = {
 };
 MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, editActionMenuItem);
 MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, generateActionMenuItem);
+
 const cancelActionMenuItem: IMenuItem = {
     group: '0_main',
     order: 0,
@@ -85,6 +87,7 @@ registerAction2(InlineChatActions.FocusInlineChat);
 registerAction2(InlineChatActions.ViewInChatAction);
 registerAction2(InlineChatActions.ToggleDiffForChange);
 registerAction2(InlineChatActions.AcceptChanges);
+
 const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(InlineChatNotebookContribution, LifecyclePhase.Restored);
 registerWorkbenchContribution2(InlineChatEnabler.Id, InlineChatEnabler, WorkbenchPhase.AfterRestored);

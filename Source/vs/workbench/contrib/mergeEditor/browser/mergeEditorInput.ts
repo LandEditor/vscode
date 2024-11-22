@@ -32,7 +32,9 @@ export class MergeEditorInput extends AbstractTextResourceEditorInput implements
         showConfirm: () => this._inputModel?.shouldConfirmClose() ?? false,
         confirm: async (editors) => {
             assertFn(() => editors.every(e => e.editor instanceof MergeEditorInput));
+
             const inputModels = editors.map(e => (e.editor as MergeEditorInput)._inputModel).filter(isDefined);
+
             return await this._inputModel!.confirmClose(inputModels);
         },
     };
@@ -71,6 +73,7 @@ export class MergeEditorInput extends AbstractTextResourceEditorInput implements
     }
     override get capabilities(): EditorInputCapabilities {
         let capabilities = super.capabilities | EditorInputCapabilities.MultipleEditors;
+
         if (this.useWorkingCopy) {
             capabilities |= EditorInputCapabilities.Untitled;
         }
@@ -105,6 +108,7 @@ export class MergeEditorInput extends AbstractTextResourceEditorInput implements
     }
     override async save(group: number, options?: ITextFileSaveOptions | undefined): Promise<IUntypedEditorInput | undefined> {
         await this._inputModel?.save(options);
+
         return undefined;
     }
     override toUntyped(): IResourceMergeEditorInput {

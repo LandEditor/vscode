@@ -23,6 +23,7 @@ import { IEditorGroupsService, IEditorPart } from '../../../../../services/edito
 import { Event } from '../../../../../../base/common/event.js';
 class ImplictKernelSelector implements IDisposable {
     readonly dispose: () => void;
+
     constructor(notebook: NotebookTextModel, suggested: INotebookKernel, 
     @INotebookKernelService
     notebookKernelService: INotebookKernelService, 
@@ -32,6 +33,7 @@ class ImplictKernelSelector implements IDisposable {
     logService: ILogService) {
         const disposables = new DisposableStore();
         this.dispose = disposables.dispose.bind(disposables);
+
         const selectKernel = () => {
             disposables.clear();
             notebookKernelService.selectKernelForNotebook(suggested, notebook);
@@ -47,6 +49,7 @@ class ImplictKernelSelector implements IDisposable {
                     case NotebookCellsChangeType.ChangeCellLanguage:
                         logService.trace('IMPLICIT kernel selection because of change event', event.kind);
                         selectKernel();
+
                         break;
                 }
             }
@@ -58,6 +61,7 @@ class ImplictKernelSelector implements IDisposable {
             provideHover() {
                 logService.trace('IMPLICIT kernel selection because of hover');
                 selectKernel();
+
                 return undefined;
             }
         }));
@@ -66,6 +70,7 @@ class ImplictKernelSelector implements IDisposable {
 class KernelStatus extends Disposable implements IWorkbenchContribution {
     private readonly _editorDisposables = this._register(new DisposableStore());
     private readonly _kernelInfoElement = this._register(new DisposableStore());
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -81,19 +86,24 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
     }
     private _updateStatusbar() {
         this._editorDisposables.clear();
+
         const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
         if (!activeEditor) {
             // not a notebook -> clean-up, done
             this._kernelInfoElement.clear();
+
             return;
         }
         const updateStatus = () => {
             if (activeEditor.notebookOptions.getDisplayOptions().globalToolbar) {
                 // kernel info rendered in the notebook toolbar already
                 this._kernelInfoElement.clear();
+
                 return;
             }
             const notebook = activeEditor.textModel;
+
             if (notebook) {
                 this._showKernelStatus(notebook);
             }
@@ -110,10 +120,14 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
     }
     private _showKernelStatus(notebook: NotebookTextModel) {
         this._kernelInfoElement.clear();
+
         const { selected, suggestions, all } = this._notebookKernelService.getMatchingKernel(notebook);
+
         const suggested = (suggestions.length === 1 ? suggestions[0] : undefined)
             ?? (all.length === 1) ? all[0] : undefined;
+
         let isSuggested = false;
+
         if (all.length === 0) {
             // no kernel -> no status
             return;
@@ -121,6 +135,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
         else if (selected || suggested) {
             // selected or single kernel
             let kernel = selected;
+
             if (!kernel) {
                 // proceed with suggested kernel - show UI and install handler that selects the kernel
                 // when non trivial interactions with the notebook happen.
@@ -153,6 +168,7 @@ class KernelStatus extends Disposable implements IWorkbenchContribution {
 class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
     private readonly _itemDisposables = this._register(new DisposableStore());
     private readonly _accessor = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -164,7 +180,9 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
     }
     private _update() {
         this._itemDisposables.clear();
+
         const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
         if (activeEditor) {
             this._itemDisposables.add(activeEditor.onDidChangeSelection(() => this._show(activeEditor)));
             this._itemDisposables.add(activeEditor.onDidChangeActiveCell(() => this._show(activeEditor)));
@@ -177,11 +195,14 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
     private _show(editor: INotebookEditor) {
         if (!editor.hasModel()) {
             this._accessor.clear();
+
             return;
         }
         const newText = this._getSelectionsText(editor);
+
         if (!newText) {
             this._accessor.clear();
+
             return;
         }
         const entry: IStatusbarEntry = {
@@ -190,6 +211,7 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
             ariaLabel: newText,
             command: CENTER_ACTIVE_CELL
         };
+
         if (!this._accessor.value) {
             this._accessor.value = this._statusbarService.addEntry(entry, 'notebook.activeCellStatus', StatusbarAlignment.RIGHT, 100);
         }
@@ -202,12 +224,16 @@ class ActiveCellStatus extends Disposable implements IWorkbenchContribution {
             return undefined;
         }
         const activeCell = editor.getActiveCell();
+
         if (!activeCell) {
             return undefined;
         }
         const idxFocused = editor.getCellIndex(activeCell) + 1;
+
         const numSelected = editor.getSelections().reduce((prev, range) => prev + (range.end - range.start), 0);
+
         const totalCells = editor.getLength();
+
         return numSelected > 1 ?
             nls.localize('notebook.multiActiveCellIndicator', "Cell {0} ({1} selected)", idxFocused, numSelected) :
             nls.localize('notebook.singleActiveCellIndicator', "Cell {0} of {1}", idxFocused, totalCells);
@@ -217,6 +243,7 @@ class NotebookIndentationStatus extends Disposable {
     private readonly _itemDisposables = this._register(new DisposableStore());
     private readonly _accessor = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
     static readonly ID = 'selectNotebookIndentation';
+
     constructor(
     @IEditorService
     private readonly _editorService: IEditorService, 
@@ -235,7 +262,9 @@ class NotebookIndentationStatus extends Disposable {
     }
     private _update() {
         this._itemDisposables.clear();
+
         const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
         if (activeEditor) {
             this._show(activeEditor);
             this._itemDisposables.add(activeEditor.onDidChangeSelection(() => {
@@ -250,22 +279,33 @@ class NotebookIndentationStatus extends Disposable {
     private _show(editor: INotebookEditor) {
         if (!editor.hasModel()) {
             this._accessor.clear();
+
             return;
         }
         const cellOptions = editor.getActiveCell()?.textModel?.getOptions();
+
         if (!cellOptions) {
             this._accessor.clear();
+
             return;
         }
         const cellEditorOverridesRaw = editor.notebookOptions.getDisplayOptions().editorOptionsCustomizations;
+
         const indentSize = cellEditorOverridesRaw?.['editor.indentSize'] ?? cellOptions?.indentSize;
+
         const insertSpaces = cellEditorOverridesRaw?.['editor.insertSpaces'] ?? cellOptions?.insertSpaces;
+
         const tabSize = cellEditorOverridesRaw?.['editor.tabSize'] ?? cellOptions?.tabSize;
+
         const width = typeof indentSize === 'number' ? indentSize : tabSize;
+
         const message = insertSpaces ? `Spaces: ${width}` : `Tab Size: ${width}`;
+
         const newText = message;
+
         if (!newText) {
             this._accessor.clear();
+
             return;
         }
         const entry: IStatusbarEntry = {
@@ -275,6 +315,7 @@ class NotebookIndentationStatus extends Disposable {
             tooltip: nls.localize('selectNotebookIndentation', "Select Indentation"),
             command: SELECT_NOTEBOOK_INDENTATION_ID
         };
+
         if (!this._accessor.value) {
             this._accessor.value = this._statusbarService.addEntry(entry, 'notebook.status.indentation', StatusbarAlignment.RIGHT, 100.4);
         }
@@ -285,10 +326,12 @@ class NotebookIndentationStatus extends Disposable {
 }
 class NotebookEditorStatusContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'notebook.contrib.editorStatus';
+
     constructor(
     @IEditorGroupsService
     private readonly editorGroupService: IEditorGroupsService) {
         super();
+
         for (const part of editorGroupService.parts) {
             this.createNotebookStatus(part);
         }
@@ -297,6 +340,7 @@ class NotebookEditorStatusContribution extends Disposable implements IWorkbenchC
     private createNotebookStatus(part: IEditorPart): void {
         const disposables = new DisposableStore();
         Event.once(part.onWillDispose)(() => disposables.dispose());
+
         const scopedInstantiationService = this.editorGroupService.getScopedInstantiationService(part);
         disposables.add(scopedInstantiationService.createInstance(KernelStatus));
         disposables.add(scopedInstantiationService.createInstance(ActiveCellStatus));

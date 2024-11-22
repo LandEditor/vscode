@@ -19,6 +19,7 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
     private _focusedInstance: ITerminalInstance | undefined;
     private readonly _onDidRequestClearProvider = new Emitter<AccessibleViewProviderId>();
     readonly onDidRequestClearLastProvider = this._onDidRequestClearProvider.event;
+
     constructor(private readonly _instance: Pick<ITerminalInstance, 'onDidExecuteText' | 'focus' | 'shellType' | 'capabilities' | 'onDidRequestFocus' | 'resource' | 'onDisposed'>, private _bufferTracker: BufferContentTracker, customHelp: () => string, 
     @IConfigurationService
     configurationService: IConfigurationService, 
@@ -46,13 +47,17 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
     }
     provideContent(): string {
         this._bufferTracker.update();
+
         return this._bufferTracker.lines.join('\n');
     }
     getSymbols(): IAccessibleViewSymbol[] {
         const commands = this._getCommandsWithEditorLine() ?? [];
+
         const symbols: IAccessibleViewSymbol[] = [];
+
         for (const command of commands) {
             const label = command.command.command;
+
             if (label) {
                 symbols.push({
                     label,
@@ -64,14 +69,19 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
     }
     private _getCommandsWithEditorLine(): ICommandWithEditorLine[] | undefined {
         const capability = this._instance.capabilities.get(TerminalCapability.CommandDetection);
+
         const commands = capability?.commands;
+
         const currentCommand = capability?.currentCommand;
+
         if (!commands?.length) {
             return;
         }
         const result: ICommandWithEditorLine[] = [];
+
         for (const command of commands) {
             const lineNumber = this._getEditorLineForCommand(command);
+
             if (lineNumber === undefined) {
                 continue;
             }
@@ -79,6 +89,7 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
         }
         if (currentCommand) {
             const lineNumber = this._getEditorLineForCommand(currentCommand);
+
             if (lineNumber !== undefined) {
                 result.push({ command: currentCommand, lineNumber });
             }
@@ -87,6 +98,7 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
     }
     private _getEditorLineForCommand(command: ITerminalCommand | ICurrentPartialCommand): number | undefined {
         let line: number | undefined;
+
         if ('marker' in command) {
             line = command.marker?.line;
         }
@@ -97,6 +109,7 @@ export class TerminalAccessibleBufferProvider extends Disposable implements IAcc
             return;
         }
         line = this._bufferTracker.bufferToEditorLineMapping.get(line);
+
         if (line === undefined) {
             return;
         }

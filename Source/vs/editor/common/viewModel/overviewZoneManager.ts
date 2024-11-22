@@ -10,6 +10,7 @@ export class ColorZone {
     public readonly from: number;
     public readonly to: number;
     public readonly colorId: number;
+
     constructor(from: number, to: number, colorId: number) {
         this.from = from | 0;
         this.to = to | 0;
@@ -38,6 +39,7 @@ export class OverviewRulerZone {
     public readonly heightInLines: number;
     public readonly color: string;
     private _colorZone: ColorZone | null;
+
     constructor(startLineNumber: number, endLineNumber: number, heightInLines: number, color: string) {
         this.startLineNumber = startLineNumber;
         this.endLineNumber = endLineNumber;
@@ -78,6 +80,7 @@ export class OverviewZoneManager {
         [color: string]: number;
     };
     private readonly _id2Color: string[];
+
     constructor(getVerticalOffsetForLine: (lineNumber: number) => number) {
         this._getVerticalOffsetForLine = getVerticalOffsetForLine;
         this._zones = [];
@@ -104,6 +107,7 @@ export class OverviewZoneManager {
         }
         this._lineHeight = lineHeight;
         this._colorZonesInvalid = true;
+
         return true;
     }
     public setPixelRatio(pixelRatio: number): void {
@@ -122,6 +126,7 @@ export class OverviewZoneManager {
         }
         this._domWidth = width;
         this._colorZonesInvalid = true;
+
         return true;
     }
     public getDOMHeight(): number {
@@ -136,6 +141,7 @@ export class OverviewZoneManager {
         }
         this._domHeight = height;
         this._colorZonesInvalid = true;
+
         return true;
     }
     public getOuterHeight(): number {
@@ -147,33 +153,50 @@ export class OverviewZoneManager {
         }
         this._outerHeight = outerHeight;
         this._colorZonesInvalid = true;
+
         return true;
     }
     public resolveColorZones(): ColorZone[] {
         const colorZonesInvalid = this._colorZonesInvalid;
+
         const lineHeight = Math.floor(this._lineHeight);
+
         const totalHeight = Math.floor(this.getCanvasHeight());
+
         const outerHeight = Math.floor(this._outerHeight);
+
         const heightRatio = totalHeight / outerHeight;
+
         const halfMinimumHeight = Math.floor(Constants.MINIMUM_HEIGHT * this._pixelRatio / 2);
+
         const allColorZones: ColorZone[] = [];
+
         for (let i = 0, len = this._zones.length; i < len; i++) {
             const zone = this._zones[i];
+
             if (!colorZonesInvalid) {
                 const colorZone = zone.getColorZones();
+
                 if (colorZone) {
                     allColorZones.push(colorZone);
+
                     continue;
                 }
             }
             const offset1 = this._getVerticalOffsetForLine(zone.startLineNumber);
+
             const offset2 = (zone.heightInLines === 0
                 ? this._getVerticalOffsetForLine(zone.endLineNumber) + lineHeight
                 : offset1 + zone.heightInLines * lineHeight);
+
             const y1 = Math.floor(heightRatio * offset1);
+
             const y2 = Math.floor(heightRatio * offset2);
+
             let ycenter = Math.floor((y1 + y2) / 2);
+
             let halfHeight = (y2 - ycenter);
+
             if (halfHeight < halfMinimumHeight) {
                 halfHeight = halfMinimumHeight;
             }
@@ -184,7 +207,9 @@ export class OverviewZoneManager {
                 ycenter = totalHeight - halfHeight;
             }
             const color = zone.color;
+
             let colorId = this._color2Id[color];
+
             if (!colorId) {
                 colorId = (++this._lastAssignedId);
                 this._color2Id[color] = colorId;
@@ -196,6 +221,7 @@ export class OverviewZoneManager {
         }
         this._colorZonesInvalid = false;
         allColorZones.sort(ColorZone.compare);
+
         return allColorZones;
     }
 }

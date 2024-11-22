@@ -23,6 +23,7 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 export class PreferencesContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.preferences';
     private editorOpeningListener: IDisposable | undefined;
+
     constructor(
     @IFileService
     fileService: IFileService, 
@@ -47,6 +48,7 @@ export class PreferencesContribution extends Disposable implements IWorkbenchCon
             }
         }));
         this.handleSettingsEditorRegistration();
+
         const fileSystemProvider = this._register(this.instantiationService.createInstance(SettingsFileSystemProvider));
         this._register(fileService.registerProvider(SettingsFileSystemProvider.SCHEMA, fileSystemProvider));
     }
@@ -67,8 +69,10 @@ export class PreferencesContribution extends Disposable implements IWorkbenchCon
                     }
                     // Single Folder Workspace Settings File
                     const state = this.workspaceService.getWorkbenchState();
+
                     if (state === WorkbenchState.FOLDER) {
                         const folders = this.workspaceService.getWorkspace().folders;
+
                         if (isEqual(resource, folders[0].toResource(FOLDER_SETTINGS_PATH))) {
                             return { editor: this.preferencesService.createSplitJsonEditorInput(ConfigurationTarget.WORKSPACE, resource), options };
                         }
@@ -76,6 +80,7 @@ export class PreferencesContribution extends Disposable implements IWorkbenchCon
                     // Multi Folder Workspace Settings File
                     else if (state === WorkbenchState.WORKSPACE) {
                         const folders = this.workspaceService.getWorkspace().folders;
+
                         for (const folder of folders) {
                             if (isEqual(resource, folder.toResource(FOLDER_SETTINGS_PATH))) {
                                 return { editor: this.preferencesService.createSplitJsonEditorInput(ConfigurationTarget.WORKSPACE_FOLDER, resource), options };
@@ -89,6 +94,7 @@ export class PreferencesContribution extends Disposable implements IWorkbenchCon
     }
     override dispose(): void {
         dispose(this.editorOpeningListener);
+
         super.dispose();
     }
 }

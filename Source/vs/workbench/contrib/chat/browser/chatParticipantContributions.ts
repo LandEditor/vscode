@@ -183,32 +183,38 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 				for (const providerDescriptor of extension.value) {
 					if (!providerDescriptor.name?.match(/^[\w-]+$/)) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT register participant with invalid name: ${providerDescriptor.name}. Name must match /^[\\w-]+$/.`);
+
 						continue;
 					}
 
 					if (providerDescriptor.fullName && strings.AmbiguousCharacters.getInstance(new Set()).containsAmbiguousCharacter(providerDescriptor.fullName)) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT register participant with fullName that contains ambiguous characters: ${providerDescriptor.fullName}.`);
+
 						continue;
 					}
 
 					// Spaces are allowed but considered "invisible"
 					if (providerDescriptor.fullName && strings.InvisibleCharacters.containsInvisibleCharacter(providerDescriptor.fullName.replace(/ /g, ''))) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT register participant with fullName that contains invisible characters: ${providerDescriptor.fullName}.`);
+
 						continue;
 					}
 
 					if (providerDescriptor.isDefault && !isProposedApiEnabled(extension.description, 'defaultChatParticipant')) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT use API proposal: defaultChatParticipant.`);
+
 						continue;
 					}
 
 					if ((providerDescriptor.defaultImplicitVariables || providerDescriptor.locations) && !isProposedApiEnabled(extension.description, 'chatParticipantAdditions')) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT use API proposal: chatParticipantAdditions.`);
+
 						continue;
 					}
 
 					if (!providerDescriptor.id || !providerDescriptor.name) {
 						this.logService.error(`Extension '${extension.description.identifier.value}' CANNOT register participant without both id and name.`);
+
 						continue;
 					}
 
@@ -280,8 +286,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	private registerViewContainer(): ViewContainer {
 		// Register View Container
 		const title = localize2('chat.viewContainer.label', "Chat");
+
 		const icon = Codicon.commentDiscussion;
+
 		const viewContainerId = CHAT_SIDEBAR_PANEL_ID;
+
 		const viewContainer: ViewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
 			id: viewContainerId,
 			title,
@@ -298,6 +307,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	private registerDefaultParticipantView(): IDisposable {
 		// Register View. Name must be hardcoded because we want to show it even when the extension fails to load due to an API version incompatibility.
 		const name = 'GitHub Copilot';
+
 		const viewDescriptor: IViewDescriptor[] = [{
 			id: ChatViewId,
 			containerIcon: this._viewContainer.icon,
@@ -334,8 +344,11 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 
 	private registerChatEditingView(): IDisposable {
 		const title = localize2('chatEditing.viewContainer.label', "Copilot Edits");
+
 		const icon = Codicon.editSession;
+
 		const viewContainerId = CHAT_EDITING_SIDEBAR_PANEL_ID;
+
 		const viewContainer: ViewContainer = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry).registerViewContainer({
 			id: viewContainerId,
 			title,
@@ -347,6 +360,7 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 		}, ViewContainerLocation.AuxiliaryBar, { doNotRegisterOpenCommand: true });
 
 		const id = 'workbench.panel.chat.view.edits';
+
 		const viewDescriptor: IViewDescriptor[] = [{
 			id,
 			containerIcon: viewContainer.icon,
@@ -402,7 +416,9 @@ export class ChatCompatibilityNotifier extends Disposable implements IWorkbenchC
 			extensionsWorkbenchService.onDidChangeExtensionsNotification,
 			() => {
 				const notification = extensionsWorkbenchService.getExtensionsNotification();
+
 				const chatExtension = notification?.extensions.find(ext => ext.identifier.id === 'github.copilot-chat');
+
 				if (chatExtension) {
 					isInvalid.set(true);
 					this.registerWelcomeView(chatExtension);
@@ -419,10 +435,15 @@ export class ChatCompatibilityNotifier extends Disposable implements IWorkbenchC
 		}
 
 		this.registeredWelcomeView = true;
+
 		const showExtensionLabel = localize('showExtension', "Show Extension");
+
 		const mainMessage = localize('chatFailErrorMessage', "Chat failed to load because the installed version of the {0} extension is not compatible with this version of {1}. Please ensure that the GitHub Copilot Chat extension is up to date.", 'GitHub Copilot Chat', this.productService.nameLong);
+
 		const commandButton = `[${showExtensionLabel}](command:${showExtensionsWithIdsCommandId}?${encodeURIComponent(JSON.stringify([['GitHub.copilot-chat']]))})`;
+
 		const versionMessage = `GitHub Copilot Chat version: ${chatExtension.version}`;
+
 		const viewsRegistry = Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry);
 		this._register(viewsRegistry.registerViewWelcomeContent(ChatViewId, {
 			content: [mainMessage, commandButton, versionMessage].join('\n\n'),

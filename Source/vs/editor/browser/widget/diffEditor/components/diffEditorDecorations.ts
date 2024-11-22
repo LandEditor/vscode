@@ -21,15 +21,22 @@ export class DiffEditorDecorations extends Disposable {
     }
     private readonly _decorations = derived(this, (reader) => {
         const diffModel = this._diffModel.read(reader);
+
         const diff = diffModel?.diff.read(reader);
+
         if (!diff) {
             return null;
         }
         const movedTextToCompare = this._diffModel.read(reader)!.movedTextToCompare.read(reader);
+
         const renderIndicators = this._options.renderIndicators.read(reader);
+
         const showEmptyDecorations = this._options.showEmptyDecorations.read(reader);
+
         const originalDecorations: IModelDeltaDecoration[] = [];
+
         const modifiedDecorations: IModelDeltaDecoration[] = [];
+
         if (!movedTextToCompare) {
             for (const m of diff.mappings) {
                 if (!m.lineRangeMapping.original.isEmpty) {
@@ -48,6 +55,7 @@ export class DiffEditorDecorations extends Disposable {
                 }
                 else {
                     const useInlineDiff = this._options.useTrueInlineDiffRendering.read(reader) && allowsTrueInlineDiffRendering(m.lineRangeMapping);
+
                     for (const i of m.lineRangeMapping.innerChanges || []) {
                         // Don't show empty markers outside the line range
                         if (m.lineRangeMapping.original.contains(i.originalRange.startLineNumber)) {
@@ -78,10 +86,12 @@ export class DiffEditorDecorations extends Disposable {
         if (movedTextToCompare) {
             for (const m of movedTextToCompare.changes) {
                 const fullRangeOriginal = m.original.toInclusiveRange();
+
                 if (fullRangeOriginal) {
                     originalDecorations.push({ range: fullRangeOriginal, options: renderIndicators ? diffLineDeleteDecorationBackgroundWithIndicator : diffLineDeleteDecorationBackground });
                 }
                 const fullRangeModified = m.modified.toInclusiveRange();
+
                 if (fullRangeModified) {
                     modifiedDecorations.push({ range: fullRangeModified, options: renderIndicators ? diffLineAddDecorationBackgroundWithIndicator : diffLineAddDecorationBackground });
                 }
@@ -92,6 +102,7 @@ export class DiffEditorDecorations extends Disposable {
             }
         }
         const activeMovedText = this._diffModel.read(reader)!.activeMovedText.read(reader);
+
         for (const m of diff.movedTexts) {
             originalDecorations.push({
                 range: m.lineRangeMapping.original.toInclusiveRange()!, options: {

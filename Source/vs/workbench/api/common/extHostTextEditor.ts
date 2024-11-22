@@ -39,12 +39,14 @@ export class TextEditorDecorationType {
 export interface ITextEditOperation {
 	range: vscode.Range;
 	text: string | null;
+
 	forceMoveMarkers: boolean;
 }
 
 export interface IEditData {
 	documentVersionId: number;
 	edits: ITextEditOperation[];
+
 	setEndOfLine: EndOfLine | undefined;
 	undoStopBefore: boolean;
 	undoStopAfter: boolean;
@@ -69,6 +71,7 @@ class TextEditorEdit {
 
 	finalize(): IEditData {
 		this._finalized = true;
+
 		return {
 			documentVersionId: this._documentVersionId,
 			edits: this._collectedEdits,
@@ -86,6 +89,7 @@ class TextEditorEdit {
 
 	replace(location: Position | Range | Selection, value: string): void {
 		this._throwIfFinalized();
+
 		let range: Range | null = null;
 
 		if (location instanceof Position) {
@@ -106,6 +110,7 @@ class TextEditorEdit {
 
 	delete(location: Range | Selection): void {
 		this._throwIfFinalized();
+
 		let range: Range | null = null;
 
 		if (location instanceof Range) {
@@ -128,6 +133,7 @@ class TextEditorEdit {
 
 	setEndOfLine(endOfLine: EndOfLine): void {
 		this._throwIfFinalized();
+
 		if (endOfLine !== EndOfLine.LF && endOfLine !== EndOfLine.CRLF) {
 			throw illegalArgument('endOfLine');
 		}
@@ -210,10 +216,12 @@ export class ExtHostTextEditorOptions {
 		}
 		if (typeof value === 'number') {
 			const r = Math.floor(value);
+
 			return (r > 0 ? r : null);
 		}
 		if (typeof value === 'string') {
 			const r = parseInt(value, 10);
+
 			if (isNaN(r)) {
 				return null;
 			}
@@ -224,6 +232,7 @@ export class ExtHostTextEditorOptions {
 
 	private _setTabSize(value: number | string) {
 		const tabSize = this._validateTabSize(value);
+
 		if (tabSize === null) {
 			// ignore invalid call
 			return;
@@ -249,10 +258,12 @@ export class ExtHostTextEditorOptions {
 		}
 		if (typeof value === 'number') {
 			const r = Math.floor(value);
+
 			return (r > 0 ? r : null);
 		}
 		if (typeof value === 'string') {
 			const r = parseInt(value, 10);
+
 			if (isNaN(r)) {
 				return null;
 			}
@@ -263,6 +274,7 @@ export class ExtHostTextEditorOptions {
 
 	private _setIndentSize(value: number | string) {
 		const indentSize = this._validateIndentSize(value);
+
 		if (indentSize === null) {
 			// ignore invalid call
 			return;
@@ -292,6 +304,7 @@ export class ExtHostTextEditorOptions {
 
 	private _setInsertSpaces(value: boolean | string) {
 		const insertSpaces = this._validateInsertSpaces(value);
+
 		if (typeof insertSpaces === 'boolean') {
 			if (this._insertSpaces === insertSpaces) {
 				// nothing to do
@@ -333,10 +346,12 @@ export class ExtHostTextEditorOptions {
 
 	public assign(newOptions: vscode.TextEditorOptions) {
 		const bulkConfigurationUpdate: ITextEditorConfigurationUpdate = {};
+
 		let hasUpdate = false;
 
 		if (typeof newOptions.tabSize !== 'undefined') {
 			const tabSize = this._validateTabSize(newOptions.tabSize);
+
 			if (tabSize === 'auto') {
 				hasUpdate = true;
 				bulkConfigurationUpdate.tabSize = tabSize;
@@ -350,6 +365,7 @@ export class ExtHostTextEditorOptions {
 
 		if (typeof newOptions.indentSize !== 'undefined') {
 			const indentSize = this._validateIndentSize(newOptions.indentSize);
+
 			if (indentSize === 'tabSize') {
 				hasUpdate = true;
 				bulkConfigurationUpdate.indentSize = indentSize;
@@ -364,6 +380,7 @@ export class ExtHostTextEditorOptions {
 
 		if (typeof newOptions.insertSpaces !== 'undefined') {
 			const insertSpaces = this._validateInsertSpaces(newOptions.insertSpaces);
+
 			if (insertSpaces === 'auto') {
 				hasUpdate = true;
 				bulkConfigurationUpdate.insertSpaces = insertSpaces;
@@ -492,6 +509,7 @@ export class ExtHostTextEditor {
 				}
 				const edit = new TextEditorEdit(document.value, options);
 				callback(edit);
+
 				return that._applyEdit(edit);
 			},
 			// --- snippet edit
@@ -512,6 +530,7 @@ export class ExtHostTextEditor {
 					ranges = [TypeConverters.Range.from(where)];
 				} else {
 					ranges = [];
+
 					for (const posOrRange of where) {
 						if (posOrRange instanceof Range) {
 							ranges.push(TypeConverters.Range.from(posOrRange));
@@ -525,6 +544,7 @@ export class ExtHostTextEditor {
 			},
 			setDecorations(decorationType: vscode.TextEditorDecorationType, ranges: Range[] | vscode.DecorationOptions[]): void {
 				const willBeEmpty = (ranges.length === 0);
+
 				if (willBeEmpty && !that._hasDecorationsForKey.has(decorationType.key)) {
 					// avoid no-op call to the renderer
 					return;
@@ -543,6 +563,7 @@ export class ExtHostTextEditor {
 						);
 					} else {
 						const _ranges: number[] = new Array<number>(4 * ranges.length);
+
 						for (let i = 0, len = ranges.length; i < len; i++) {
 							const range = ranges[i];
 							_ranges[4 * i] = range.start.line + 1;
@@ -612,6 +633,7 @@ export class ExtHostTextEditor {
 	private async _trySetSelection(): Promise<vscode.TextEditor | null | undefined> {
 		const selection = this._selections.map(TypeConverters.Selection.from);
 		await this._runOnProxy(() => this._proxy.$trySetSelections(this.id, selection));
+
 		return this.value;
 	}
 
@@ -643,6 +665,7 @@ export class ExtHostTextEditor {
 		// check that no edits are overlapping
 		for (let i = 0, count = editRanges.length - 1; i < count; i++) {
 			const rangeEnd = editRanges[i].end;
+
 			const nextRangeStart = editRanges[i + 1].start;
 
 			if (nextRangeStart.isBefore(rangeEnd)) {
@@ -671,6 +694,7 @@ export class ExtHostTextEditor {
 	private _runOnProxy(callback: () => Promise<any>): Promise<ExtHostTextEditor | undefined | null> {
 		if (this._disposed) {
 			this._logService.warn('TextEditor is closed/disposed');
+
 			return Promise.resolve(undefined);
 		}
 

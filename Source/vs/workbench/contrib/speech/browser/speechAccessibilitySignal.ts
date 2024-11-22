@@ -8,6 +8,7 @@ import { IWorkbenchContribution } from '../../../common/contributions.js';
 import { ISpeechService } from '../common/speechService.js';
 export class SpeechAccessibilitySignalContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.speechAccessibilitySignal';
+
     constructor(
     @IAccessibilitySignalService
     private readonly _accessibilitySignalService: IAccessibilitySignalService, 

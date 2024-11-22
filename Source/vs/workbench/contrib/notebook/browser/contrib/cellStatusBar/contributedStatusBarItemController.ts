@@ -14,6 +14,7 @@ export class ContributedStatusBarItemController extends Disposable implements IN
     static id: string = 'workbench.notebook.statusBar.contributed';
     private readonly _visibleCells = new Map<number, CellStatusBarHelper>();
     private readonly _observer: NotebookVisibleCellObserver;
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @INotebookCellStatusBarService
     private readonly _notebookCellStatusBarService: INotebookCellStatusBarService) {
@@ -26,9 +27,13 @@ export class ContributedStatusBarItemController extends Disposable implements IN
     }
     private _updateEverything(): void {
         const newCells = this._observer.visibleCells.filter(cell => !this._visibleCells.has(cell.handle));
+
         const visibleCellHandles = new Set(this._observer.visibleCells.map(item => item.handle));
+
         const currentCellHandles = Array.from(this._visibleCells.keys());
+
         const removedCells = currentCellHandles.filter(handle => !visibleCellHandles.has(handle));
+
         const itemsToUpdate = currentCellHandles.filter(handle => visibleCellHandles.has(handle));
         this._updateVisibleCells({ added: newCells, removed: removedCells.map(handle => ({ handle })) });
         itemsToUpdate.forEach(handle => this._visibleCells.get(handle)?.update());
@@ -40,6 +45,7 @@ export class ContributedStatusBarItemController extends Disposable implements IN
         }[];
     }): void {
         const vm = this._notebookEditor.getViewModel();
+
         if (!vm) {
             return;
         }
@@ -64,6 +70,7 @@ class CellStatusBarHelper extends Disposable {
     private _activeToken: CancellationTokenSource | undefined;
     private _isDisposed = false;
     private readonly _updateThrottler = this._register(new Throttler());
+
     constructor(private readonly _notebookViewModel: INotebookViewModel, private readonly _cell: ICellViewModel, private readonly _notebookCellStatusBarService: INotebookCellStatusBarService) {
         super();
         this._register(toDisposable(() => this._activeToken?.dispose(true)));
@@ -87,16 +94,23 @@ class CellStatusBarHelper extends Disposable {
     }
     private async _update() {
         const cellIndex = this._notebookViewModel.getCellIndex(this._cell);
+
         const docUri = this._notebookViewModel.notebookDocument.uri;
+
         const viewType = this._notebookViewModel.notebookDocument.viewType;
         this._activeToken?.dispose(true);
+
         const tokenSource = this._activeToken = new CancellationTokenSource();
+
         const itemLists = await this._notebookCellStatusBarService.getStatusBarItemsForCell(docUri, cellIndex, viewType, tokenSource.token);
+
         if (tokenSource.token.isCancellationRequested) {
             itemLists.forEach(itemList => itemList.dispose && itemList.dispose());
+
             return;
         }
         const items = itemLists.map(itemList => itemList.items).flat();
+
         const newIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this._cell.handle, items }]);
         this._currentItemLists.forEach(itemList => itemList.dispose && itemList.dispose());
         this._currentItemLists = itemLists;

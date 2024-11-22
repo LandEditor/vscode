@@ -24,8 +24,10 @@ export class MultiDiffEditorWidget extends Disposable {
     private readonly _viewModel = observableValue<MultiDiffEditorViewModel | undefined>(this, undefined);
     private readonly _widgetImpl = derivedWithStore(this, (reader, store) => {
         readHotReloadableExport(DiffEditorItemTemplate, reader);
+
         return store.add(this._instantiationService.createInstance((readHotReloadableExport(MultiDiffEditorWidgetImpl, reader)), this._element, this._dimension, this._viewModel, this._workbenchUIElementFactory));
     });
+
     constructor(private readonly _element: HTMLElement, private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService) {

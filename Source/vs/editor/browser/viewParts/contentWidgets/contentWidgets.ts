@@ -55,6 +55,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		const keys = Object.keys(this._widgets);
+
 		for (const widgetId of keys) {
 			this._widgets[widgetId].onConfigurationChanged(e);
 		}
@@ -69,18 +70,22 @@ export class ViewContentWidgets extends ViewPart {
 	}
 	public override onLineMappingChanged(e: viewEvents.ViewLineMappingChangedEvent): boolean {
 		this._updateAnchorsViewPositions();
+
 		return true;
 	}
 	public override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
 		this._updateAnchorsViewPositions();
+
 		return true;
 	}
 	public override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean {
 		this._updateAnchorsViewPositions();
+
 		return true;
 	}
 	public override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
 		this._updateAnchorsViewPositions();
+
 		return true;
 	}
 	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -94,6 +99,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	private _updateAnchorsViewPositions(): void {
 		const keys = Object.keys(this._widgets);
+
 		for (const widgetId of keys) {
 			this._widgets[widgetId].updateAnchorViewPosition();
 		}
@@ -121,12 +127,15 @@ export class ViewContentWidgets extends ViewPart {
 
 	public removeWidget(widget: IContentWidget): void {
 		const widgetId = widget.getId();
+
 		if (this._widgets.hasOwnProperty(widgetId)) {
 			const myWidget = this._widgets[widgetId];
 			delete this._widgets[widgetId];
 
 			const domNode = myWidget.domNode.domNode;
+
 			domNode.remove();
+
 			domNode.removeAttribute('monaco-visible-content-widget');
 
 			this.setShouldRender();
@@ -142,6 +151,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public onBeforeRender(viewportData: ViewportData): void {
 		const keys = Object.keys(this._widgets);
+
 		for (const widgetId of keys) {
 			this._widgets[widgetId].onBeforeRender(viewportData);
 		}
@@ -149,6 +159,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public prepareRender(ctx: RenderingContext): void {
 		const keys = Object.keys(this._widgets);
+
 		for (const widgetId of keys) {
 			this._widgets[widgetId].prepareRender(ctx);
 		}
@@ -156,6 +167,7 @@ export class ViewContentWidgets extends ViewPart {
 
 	public render(ctx: RestrictedRenderingContext): void {
 		const keys = Object.keys(this._widgets);
+
 		for (const widgetId of keys) {
 			this._widgets[widgetId].render(ctx);
 		}
@@ -222,6 +234,7 @@ class Widget {
 		this.suppressMouseDown = this._actual.suppressMouseDown || false;
 
 		const options = this._context.configuration.options;
+
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._fixedOverflowWidgets = options.get(EditorOption.fixedOverflowWidgets);
@@ -247,6 +260,7 @@ class Widget {
 	public onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): void {
 		const options = this._context.configuration.options;
 		this._lineHeight = options.get(EditorOption.lineHeight);
+
 		if (e.hasChanged(EditorOption.layoutInfo)) {
 			const layoutInfo = options.get(EditorOption.layoutInfo);
 			this._contentLeft = layoutInfo.contentLeft;
@@ -270,8 +284,10 @@ class Widget {
 			}
 			// Do not trust that widgets give a valid position
 			const validModelPosition = viewModel.model.validatePosition(position);
+
 			if (viewModel.coordinatesConverter.modelPositionIsVisible(validModelPosition)) {
 				const viewPosition = viewModel.coordinatesConverter.convertModelPositionToViewPosition(validModelPosition, affinity ?? undefined);
+
 				return new PositionPair(position, viewPosition);
 			}
 			return new PositionPair(position, null);
@@ -280,7 +296,9 @@ class Widget {
 
 	private _getMaxWidth(): number {
 		const elDocument = this.domNode.domNode.ownerDocument;
+
 		const elWindow = elDocument.defaultView;
+
 		return (
 			this.allowEditorOverflow
 				? elWindow?.innerWidth || elDocument.documentElement.offsetWidth || elDocument.body.offsetWidth
@@ -291,6 +309,7 @@ class Widget {
 	public setPosition(primaryAnchor: IPosition | null, secondaryAnchor: IPosition | null, preference: ContentWidgetPositionPreference[] | null, affinity: PositionAffinity | null): void {
 		this._setPosition(affinity, primaryAnchor, secondaryAnchor);
 		this._preference = preference;
+
 		if (this._primaryAnchor.viewPosition && this._preference && this._preference.length > 0) {
 			// this content widget would like to be visible if possible
 			// we change it from `display:none` to `display:block` even if it
@@ -309,19 +328,25 @@ class Widget {
 
 		// a) the box above the line
 		const aboveLineTop = anchor.top;
+
 		const heightAvailableAboveLine = aboveLineTop;
 
 		// b) the box under the line
 		const underLineTop = anchor.top + anchor.height;
+
 		const heightAvailableUnderLine = ctx.viewportHeight - underLineTop;
 
 		const aboveTop = aboveLineTop - height;
+
 		const fitsAbove = (heightAvailableAboveLine >= height);
+
 		const belowTop = underLineTop;
+
 		const fitsBelow = (heightAvailableUnderLine >= height);
 
 		// And its left
 		let left = anchor.left;
+
 		if (left + width > ctx.scrollLeft + ctx.viewportWidth) {
 			left = ctx.scrollLeft + ctx.viewportWidth - width;
 		}
@@ -335,14 +360,18 @@ class Widget {
 	private _layoutHorizontalSegmentInPage(windowSize: dom.Dimension, domNodePosition: dom.IDomNodePagePosition, left: number, width: number): [number, number] {
 		// Leave some clearance to the left/right
 		const LEFT_PADDING = 15;
+
 		const RIGHT_PADDING = 15;
 
 		// Initially, the limits are defined as the dom node limits
 		const MIN_LIMIT = Math.max(LEFT_PADDING, domNodePosition.left - width);
+
 		const MAX_LIMIT = Math.min(domNodePosition.left + domNodePosition.width + width, windowSize.width - RIGHT_PADDING);
 
 		const elDocument = this._viewDomNode.domNode.ownerDocument;
+
 		const elWindow = elDocument.defaultView;
+
 		let absoluteLeft = domNodePosition.left + left - (elWindow?.scrollX ?? 0);
 
 		if (absoluteLeft + width > MAX_LIMIT) {
@@ -362,22 +391,30 @@ class Widget {
 
 	private _layoutBoxInPage(anchor: AnchorCoordinate, width: number, height: number, ctx: RenderingContext): IBoxLayoutResult | null {
 		const aboveTop = anchor.top - height;
+
 		const belowTop = anchor.top + anchor.height;
 
 		const domNodePosition = dom.getDomNodePagePosition(this._viewDomNode.domNode);
+
 		const elDocument = this._viewDomNode.domNode.ownerDocument;
+
 		const elWindow = elDocument.defaultView;
+
 		const absoluteAboveTop = domNodePosition.top + aboveTop - (elWindow?.scrollY ?? 0);
+
 		const absoluteBelowTop = domNodePosition.top + belowTop - (elWindow?.scrollY ?? 0);
 
 		const windowSize = dom.getClientArea(elDocument.body);
+
 		const [left, absoluteAboveLeft] = this._layoutHorizontalSegmentInPage(windowSize, domNodePosition, anchor.left - ctx.scrollLeft + this._contentLeft, width);
 
 		// Leave some clearance to the top/bottom
 		const TOP_PADDING = 22;
+
 		const BOTTOM_PADDING = 22;
 
 		const fitsAbove = (absoluteAboveTop >= TOP_PADDING);
+
 		const fitsBelow = (absoluteBelowTop + height <= windowSize.height - BOTTOM_PADDING);
 
 		if (this._fixedOverflowWidgets) {
@@ -404,8 +441,11 @@ class Widget {
 	 */
 	private _getAnchorsCoordinates(ctx: RenderingContext): { primary: AnchorCoordinate | null; secondary: AnchorCoordinate | null } {
 		const primary = getCoordinates(this._primaryAnchor.viewPosition, this._affinity, this._lineHeight);
+
 		const secondaryViewPosition = (this._secondaryAnchor.viewPosition?.lineNumber === this._primaryAnchor.viewPosition?.lineNumber ? this._secondaryAnchor.viewPosition : null);
+
 		const secondary = getCoordinates(secondaryViewPosition, this._affinity, this._lineHeight);
+
 		return { primary, secondary };
 
 		function getCoordinates(position: Position | null, affinity: PositionAffinity | null, lineHeight: number): AnchorCoordinate | null {
@@ -414,13 +454,16 @@ class Widget {
 			}
 
 			const horizontalPosition = ctx.visibleRangeForPosition(position);
+
 			if (!horizontalPosition) {
 				return null;
 			}
 
 			// Left-align widgets that should appear :before content
 			const left = (position.column === 1 && affinity === PositionAffinity.LeftOfInjectedText ? 0 : horizontalPosition.left);
+
 			const top = ctx.getVerticalOffsetForLineNumber(position.lineNumber) - ctx.scrollTop;
+
 			return new AnchorCoordinate(top, left, lineHeight);
 		}
 	}
@@ -433,6 +476,7 @@ class Widget {
 		const fontInfo = this._context.configuration.options.get(EditorOption.fontInfo);
 
 		let left = secondary.left;
+
 		if (left < primary.left) {
 			left = Math.max(left, primary.left - width + fontInfo.typicalFullwidthCharacterWidth);
 		} else {
@@ -447,6 +491,7 @@ class Widget {
 		}
 
 		const { primary, secondary } = this._getAnchorsCoordinates(ctx);
+
 		if (!primary) {
 			return {
 				kind: 'offViewport',
@@ -458,6 +503,7 @@ class Widget {
 		if (this._cachedDomNodeOffsetWidth === -1 || this._cachedDomNodeOffsetHeight === -1) {
 
 			let preferredDimensions: IDimension | null = null;
+
 			if (typeof this._actual.beforeRender === 'function') {
 				preferredDimensions = safeInvoke(this._actual.beforeRender, this._actual);
 			}
@@ -466,6 +512,7 @@ class Widget {
 				this._cachedDomNodeOffsetHeight = preferredDimensions.height;
 			} else {
 				const domNode = this.domNode.domNode;
+
 				const clientRect = domNode.getBoundingClientRect();
 				this._cachedDomNodeOffsetWidth = Math.round(clientRect.width);
 				this._cachedDomNodeOffsetHeight = Math.round(clientRect.height);
@@ -475,6 +522,7 @@ class Widget {
 		const anchor = this._reduceAnchorCoordinates(primary, secondary, this._cachedDomNodeOffsetWidth);
 
 		let placement: IBoxLayoutResult | null;
+
 		if (this.allowEditorOverflow) {
 			placement = this._layoutBoxInPage(anchor, this._cachedDomNodeOffsetWidth, this._cachedDomNodeOffsetHeight, ctx);
 		} else {

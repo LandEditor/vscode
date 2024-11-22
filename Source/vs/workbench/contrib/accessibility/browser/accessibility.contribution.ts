@@ -21,6 +21,7 @@ import { ExtensionAccessibilityHelpDialogContribution } from './extensionAccesib
 registerAccessibilityConfiguration();
 registerSingleton(IAccessibleViewService, AccessibleViewService, InstantiationType.Delayed);
 registerSingleton(IAccessibleViewInformationService, AccessibleViewInformationService, InstantiationType.Delayed);
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchRegistry.registerWorkbenchContribution(EditorAccessibilityHelpContribution, LifecyclePhase.Eventually);
 workbenchRegistry.registerWorkbenchContribution(UnfocusedViewDimmingContribution, LifecyclePhase.Restored);

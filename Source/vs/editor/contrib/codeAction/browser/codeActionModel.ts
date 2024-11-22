@@ -31,6 +31,7 @@ type TriggeredCodeAction = {
 };
 class CodeActionOracle extends Disposable {
     private readonly _autoTriggerTimer = this._register(new TimeoutTimer());
+
     constructor(private readonly _editor: ICodeEditor, private readonly _markerService: IMarkerService, private readonly _signalChange: (triggered: TriggeredCodeAction | undefined) => void, private readonly _delay: number = 250) {
         super();
         this._register(this._markerService.onMarkerChanged(e => this._onMarkerChanges(e)));
@@ -42,6 +43,7 @@ class CodeActionOracle extends Disposable {
     }
     private _onMarkerChanges(resources: readonly URI[]): void {
         const model = this._editor.getModel();
+
         if (model && resources.some(resource => isEqual(resource, model.uri))) {
             this._tryAutoTrigger();
         }
@@ -56,10 +58,12 @@ class CodeActionOracle extends Disposable {
             return undefined;
         }
         const selection = this._editor.getSelection();
+
         if (trigger.type === CodeActionTriggerType.Invoke) {
             return selection;
         }
         const enabled = this._editor.getOption(EditorOption.lightbulb).enabled;
+
         if (enabled === ShowLightbulbIconMode.Off) {
             return undefined;
         }
@@ -68,12 +72,16 @@ class CodeActionOracle extends Disposable {
         }
         else if (enabled === ShowLightbulbIconMode.OnCode) {
             const isSelectionEmpty = selection.isEmpty();
+
             if (!isSelectionEmpty) {
                 return selection;
             }
             const model = this._editor.getModel();
+
             const { lineNumber, column } = selection.getPosition();
+
             const line = model.getLineContent(lineNumber);
+
             if (line.length === 0) {
                 // empty line
                 return undefined;
@@ -106,9 +114,11 @@ export namespace CodeActionsState {
         Triggered
     }
     export const Empty = { type: Type.Empty } as const;
+
     export class Triggered {
         readonly type = Type.Triggered;
         public readonly actions: Promise<CodeActionSet>;
+
         constructor(public readonly trigger: CodeActionTrigger, public readonly position: Position, private readonly _cancellablePromise: CancelablePromise<CodeActionSet>) {
             this.actions = _cancellablePromise.catch((e): CodeActionSet => {
                 if (isCancellationError(e)) {
@@ -139,6 +149,7 @@ export class CodeActionModel extends Disposable {
     private readonly _onDidChangeState = this._register(new Emitter<CodeActionsState.State>());
     public readonly onDidChangeState = this._onDidChangeState.event;
     private _disposed = false;
+
     constructor(private readonly _editor: ICodeEditor, private readonly _registry: LanguageFeatureRegistry<CodeActionProvider>, private readonly _markerService: IMarkerService, contextKeyService: IContextKeyService, private readonly _progressService?: IEditorProgressService, private readonly _configurationService?: IConfigurationService, private readonly _telemetryService?: ITelemetryService) {
         super();
         this._supportedCodeActions = SUPPORTED_CODE_ACTIONS.bindTo(contextKeyService);
@@ -157,11 +168,13 @@ export class CodeActionModel extends Disposable {
             return;
         }
         this._disposed = true;
+
         super.dispose();
         this.setState(CodeActionsState.Empty, true);
     }
     private _settingEnabledNearbyQuickfixes(): boolean {
         const model = this._editor?.getModel();
+
         return this._configurationService ? this._configurationService.getValue('editor.codeActionWidget.includeNearbyQuickFixes', { resource: model?.uri }) : false;
     }
     private _update(): void {
@@ -170,7 +183,9 @@ export class CodeActionModel extends Disposable {
         }
         this._codeActionOracle.value = undefined;
         this.setState(CodeActionsState.Empty);
+
         const model = this._editor.getModel();
+
         if (model
             && this._registry.has(model)
             && !this._editor.getOption(EditorOption.readOnly)) {
@@ -179,19 +194,25 @@ export class CodeActionModel extends Disposable {
             this._codeActionOracle.value = new CodeActionOracle(this._editor, this._markerService, trigger => {
                 if (!trigger) {
                     this.setState(CodeActionsState.Empty);
+
                     return;
                 }
                 const startPosition = trigger.selection.getStartPosition();
+
                 const actions = createCancelablePromise(async (token) => {
                     if (this._settingEnabledNearbyQuickfixes() && trigger.trigger.type === CodeActionTriggerType.Invoke && (trigger.trigger.triggerAction === CodeActionTriggerSource.QuickFix || trigger.trigger.filter?.include?.contains(CodeActionKind.QuickFix))) {
                         const codeActionSet = await getCodeActions(this._registry, model, trigger.selection, trigger.trigger, Progress.None, token);
+
                         const allCodeActions = [...codeActionSet.allActions];
+
                         if (token.isCancellationRequested) {
                             return emptyCodeActionSet;
                         }
                         // Search for quickfixes in the curret code action set.
                         const foundQuickfix = codeActionSet.validActions?.some(action => action.action.kind ? CodeActionKind.QuickFix.contains(new HierarchicalKind(action.action.kind)) : false);
+
                         const allMarkers = this._markerService.read({ resource: model.uri });
+
                         if (foundQuickfix) {
                             for (const action of codeActionSet.validActions) {
                                 if (action.action.command?.arguments?.some(arg => typeof arg === 'string' && arg.includes(APPLY_FIX_ALL_COMMAND_ID))) {
@@ -204,16 +225,23 @@ export class CodeActionModel extends Disposable {
                             // If markers exists, and there are no quickfixes found or length is zero, check for quickfixes on that line.
                             if (allMarkers.length > 0) {
                                 const currPosition = trigger.selection.getPosition();
+
                                 let trackedPosition = currPosition;
+
                                 let distance = Number.MAX_VALUE;
+
                                 const currentActions = [...codeActionSet.validActions];
+
                                 for (const marker of allMarkers) {
                                     const col = marker.endColumn;
+
                                     const row = marker.endLineNumber;
+
                                     const startRow = marker.startLineNumber;
                                     // Found quickfix on the same line and check relative distance to other markers
                                     if ((row === currPosition.lineNumber || startRow === currPosition.lineNumber)) {
                                         trackedPosition = new Position(row, col);
+
                                         const newCodeActionTrigger: CodeActionTrigger = {
                                             type: trigger.trigger.type,
                                             triggerAction: trigger.trigger.triggerAction,
@@ -221,8 +249,11 @@ export class CodeActionModel extends Disposable {
                                             autoApply: trigger.trigger.autoApply,
                                             context: { notAvailableMessage: trigger.trigger.context?.notAvailableMessage || '', position: trackedPosition }
                                         };
+
                                         const selectionAsPosition = new Selection(trackedPosition.lineNumber, trackedPosition.column, trackedPosition.lineNumber, trackedPosition.column);
+
                                         const actionsAtMarker = await getCodeActions(this._registry, model, selectionAsPosition, newCodeActionTrigger, Progress.None, token);
+
                                         if (actionsAtMarker.validActions.length !== 0) {
                                             for (const action of actionsAtMarker.validActions) {
                                                 if (action.action.command?.arguments?.some(arg => typeof arg === 'string' && arg.includes(APPLY_FIX_ALL_COMMAND_ID))) {
@@ -269,6 +300,7 @@ export class CodeActionModel extends Disposable {
                     // Case for manual triggers - specifically Source Actions and Refactors
                     if (trigger.trigger.type === CodeActionTriggerType.Invoke) {
                         const sw = new StopWatch();
+
                         const codeActions = await getCodeActions(this._registry, model, trigger.selection, trigger.trigger, Progress.None, token);
                         // Telemetry for duration of each code action on save.
                         if (this._telemetryService) {
@@ -299,11 +331,14 @@ export class CodeActionModel extends Disposable {
                     }
                     return getCodeActions(this._registry, model, trigger.selection, trigger.trigger, Progress.None, token);
                 });
+
                 if (trigger.trigger.type === CodeActionTriggerType.Invoke) {
                     this._progressService?.showWhile(actions, 250);
                 }
                 const newState = new CodeActionsState.Triggered(trigger.trigger, startPosition, actions);
+
                 let isManualToAutoTransition = false;
+
                 if (this._state.type === CodeActionsState.Type.Triggered) {
                     // Check if the current state is manual and the new state is automatic
                     isManualToAutoTransition = this._state.trigger.type === CodeActionTriggerType.Invoke &&
@@ -340,6 +375,7 @@ export class CodeActionModel extends Disposable {
             this._state.cancel();
         }
         this._state = newState;
+
         if (!skipNotify && !this._disposed) {
             this._onDidChangeState.fire(newState);
         }

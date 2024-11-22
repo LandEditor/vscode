@@ -12,6 +12,7 @@ const fixedEditorPaddingSingleLineCells = {
     top: 24,
     bottom: 24
 };
+
 const fixedEditorPadding = {
     top: 12,
     bottom: 12

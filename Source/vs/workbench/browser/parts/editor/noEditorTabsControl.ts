@@ -25,6 +25,7 @@ export class NoEditorTabsControl extends EditorTabsControl {
     private handleOpenedEditors(): boolean {
         const didChange = this.activeEditorChanged();
         this.activeEditor = this.tabsModel.activeEditor;
+
         return didChange;
     }
     private activeEditorChanged(): boolean {

@@ -26,6 +26,7 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
     @IMainProcessService
     private readonly mainProcessService: IMainProcessService) {
         super();
+
         const scheduler = this._register(new RunOnceScheduler(() => {
             this.cleanUpStorage();
         }, 30 * 1000 /* after 30s */));
@@ -33,12 +34,16 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
     }
     private async cleanUpStorage(): Promise<void> {
         this.logService.trace('[storage cleanup]: Starting to clean up workspace storage folders for unused empty workspaces.');
+
         try {
             const workspaceStorageHome = this.environmentService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath;
+
             const workspaceStorageFolders = await Promises.readdir(workspaceStorageHome);
+
             const storageClient = new StorageClient(this.mainProcessService.getChannel('storage'));
             await Promise.all(workspaceStorageFolders.map(async (workspaceStorageFolder) => {
                 const workspaceStoragePath = join(workspaceStorageHome, workspaceStorageFolder);
+
                 if (workspaceStorageFolder.length === NON_EMPTY_WORKSPACE_ID_LENGTH) {
                     return; // keep workspace storage for folders/workspaces that can be accessed still
                 }
@@ -46,10 +51,12 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
                     return; // keep workspace storage for empty extension development workspaces
                 }
                 const windows = await this.nativeHostService.getWindows({ includeAuxiliaryWindows: false });
+
                 if (windows.some(window => window.workspace?.id === workspaceStorageFolder)) {
                     return; // keep workspace storage for empty workspaces opened as window
                 }
                 const isStorageUsed = await storageClient.isUsed(workspaceStoragePath);
+
                 if (isStorageUsed) {
                     return; // keep workspace storage for empty workspaces that are in use
                 }

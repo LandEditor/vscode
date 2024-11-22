@@ -16,10 +16,13 @@ export namespace TsServerLogLevel {
         switch (value?.toLowerCase()) {
             case 'normal':
                 return TsServerLogLevel.Normal;
+
             case 'terse':
                 return TsServerLogLevel.Terse;
+
             case 'verbose':
                 return TsServerLogLevel.Verbose;
+
             case 'off':
             default:
                 return TsServerLogLevel.Off;
@@ -29,10 +32,13 @@ export namespace TsServerLogLevel {
         switch (value) {
             case TsServerLogLevel.Normal:
                 return 'normal';
+
             case TsServerLogLevel.Terse:
                 return 'terse';
+
             case TsServerLogLevel.Verbose:
                 return 'verbose';
+
             case TsServerLogLevel.Off:
             default:
                 return 'off';
@@ -52,6 +58,7 @@ export class ImplicitProjectConfiguration {
     public readonly experimentalDecorators: boolean;
     public readonly strictNullChecks: boolean;
     public readonly strictFunctionTypes: boolean;
+
     constructor(configuration: vscode.WorkspaceConfiguration) {
         this.target = ImplicitProjectConfiguration.readTarget(configuration);
         this.module = ImplicitProjectConfiguration.readModule(configuration);
@@ -121,6 +128,7 @@ type vscodeWatcherName = typeof vscodeWatcherName;
 export abstract class BaseServiceConfigurationProvider implements ServiceConfigurationProvider {
     public loadFromWorkspace(): TypeScriptServiceConfiguration {
         const configuration = vscode.workspace.getConfiguration();
+
         return {
             locale: this.readLocale(configuration),
             globalTsdk: this.readGlobalTsdk(configuration),
@@ -154,6 +162,7 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
     protected abstract readGlobalNodePath(configuration: vscode.WorkspaceConfiguration): string | null;
     protected readTsServerLogLevel(configuration: vscode.WorkspaceConfiguration): TsServerLogLevel {
         const setting = configuration.get<string>('typescript.tsserver.log', 'off');
+
         return TsServerLogLevel.fromString(setting);
     }
     protected readTsServerPluginPaths(configuration: vscode.WorkspaceConfiguration): string[] {
@@ -167,17 +176,22 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
     }
     protected readLocale(configuration: vscode.WorkspaceConfiguration): string | null {
         const value = configuration.get<string>('typescript.locale', 'auto');
+
         return !value || value === 'auto' ? null : value;
     }
     protected readUseSyntaxServer(configuration: vscode.WorkspaceConfiguration): SyntaxServerConfiguration {
         const value = configuration.get<string>('typescript.tsserver.useSyntaxServer');
+
         switch (value) {
             case 'never': return SyntaxServerConfiguration.Never;
+
             case 'always': return SyntaxServerConfiguration.Always;
+
             case 'auto': return SyntaxServerConfiguration.Auto;
         }
         // Fallback to deprecated setting
         const deprecatedValue = configuration.get<boolean | string>('typescript.tsserver.useSeparateSyntaxServer', true);
+
         if (deprecatedValue === 'forAllRequests') { // Undocumented setting
             return SyntaxServerConfiguration.Always;
         }
@@ -195,6 +209,7 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
     }
     private readUseVsCodeWatcher(configuration: vscode.WorkspaceConfiguration): boolean {
         const watcherExcludes = configuration.get<Record<string, boolean>>('files.watcherExclude') ?? {};
+
         if (watcherExcludes['**/node_modules/*/**'] === true || // VS Code default prior to 1.94.x
             watcherExcludes['**/node_modules/**'] === true ||
             watcherExcludes['**/node_modules'] === true ||
@@ -203,6 +218,7 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
             return false;
         }
         const experimentalConfig = configuration.inspect('typescript.tsserver.experimental.useVsCodeWatcher');
+
         if (typeof experimentalConfig?.globalValue === 'boolean') {
             return experimentalConfig.globalValue;
         }
@@ -216,6 +232,7 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
     }
     private readWatchOptions(configuration: vscode.WorkspaceConfiguration): Proto.WatchOptions | undefined {
         const watchOptions = configuration.get<Proto.WatchOptions | vscodeWatcherName>('typescript.tsserver.watchOptions');
+
         if (watchOptions === vscodeWatcherName) {
             return undefined;
         }
@@ -227,8 +244,11 @@ export abstract class BaseServiceConfigurationProvider implements ServiceConfigu
     }
     protected readMaxTsServerMemory(configuration: vscode.WorkspaceConfiguration): number {
         const defaultMaxMemory = 3072;
+
         const minimumMaxMemory = 128;
+
         const memoryInMB = configuration.get<number>('typescript.tsserver.maxTsServerMemory', defaultMaxMemory);
+
         if (!Number.isSafeInteger(memoryInMB)) {
             return defaultMaxMemory;
         }

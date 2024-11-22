@@ -18,6 +18,7 @@ export function isUTFEncoding(encoding: string): encoding is UTF_ENCODING {
 export const UTF16be_BOM = [0xFE, 0xFF];
 export const UTF16le_BOM = [0xFF, 0xFE];
 export const UTF8_BOM = [0xEF, 0xBB, 0xBF];
+
 const ZERO_BYTE_DETECTION_BUFFER_MAX_LEN = 512; // number of bytes to look at to decide about a file being binary or not
 const NO_ENCODING_GUESS_MIN_BYTES = 512; // when not auto guessing the encoding, small number of bytes are enough
 const AUTO_ENCODING_GUESS_MIN_BYTES = 512 * 8; // with auto guessing we want a lot more content to be read for guessing
@@ -62,6 +63,7 @@ class DecoderStream implements IDecoderStream {
      */
     static async create(encoding: string): Promise<DecoderStream> {
         let decoder: IDecoderStream | undefined = undefined;
+
         if (encoding !== UTF8) {
             const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
             decoder = iconv.getDecoder(toNodeEncoding(encoding));
@@ -94,12 +96,18 @@ class DecoderStream implements IDecoderStream {
 }
 export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeStreamOptions): Promise<IDecodeStreamResult> {
     const minBytesRequiredForDetection = options.minBytesRequiredForDetection ?? options.guessEncoding ? AUTO_ENCODING_GUESS_MIN_BYTES : NO_ENCODING_GUESS_MIN_BYTES;
+
     return new Promise<IDecodeStreamResult>((resolve, reject) => {
         const target = newWriteableStream<string>(strings => strings.join(''));
+
         const bufferedChunks: VSBuffer[] = [];
+
         let bytesBuffered = 0;
+
         let decoder: IDecoderStream | undefined = undefined;
+
         const cts = new CancellationTokenSource();
+
         const createDecoder = async () => {
             try {
                 // detect encoding from buffer
@@ -116,6 +124,7 @@ export function toDecodeStream(source: VSBufferReadableStream, options: IDecodeS
                 detected.encoding = await options.overwriteEncoding(detected.encoding);
                 // decode and write buffered content
                 decoder = await DecoderStream.create(detected.encoding);
+
                 const decoded = decoder.write(VSBuffer.concat(bufferedChunks).buffer);
                 target.write(decoded);
                 bufferedChunks.length = 0;
@@ -172,15 +181,20 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
     addBOM?: boolean;
 }): Promise<VSBufferReadable> {
     const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
+
     const encoder = iconv.getEncoder(toNodeEncoding(encoding), options);
+
     let bytesWritten = false;
+
     let done = false;
+
     return {
         read() {
             if (done) {
                 return null;
             }
             const chunk = readable.read();
+
             if (typeof chunk !== 'string') {
                 done = true;
                 // If we are instructed to add a BOM but we detect that no
@@ -191,26 +205,32 @@ export async function toEncodeReadable(readable: Readable<string>, encoding: str
                         case UTF8:
                         case UTF8_with_bom:
                             return VSBuffer.wrap(Uint8Array.from(UTF8_BOM));
+
                         case UTF16be:
                             return VSBuffer.wrap(Uint8Array.from(UTF16be_BOM));
+
                         case UTF16le:
                             return VSBuffer.wrap(Uint8Array.from(UTF16le_BOM));
                     }
                 }
                 const leftovers = encoder.end();
+
                 if (leftovers && leftovers.length > 0) {
                     bytesWritten = true;
+
                     return VSBuffer.wrap(leftovers);
                 }
                 return null;
             }
             bytesWritten = true;
+
             return VSBuffer.wrap(encoder.write(chunk));
         }
     };
 }
 export async function encodingExists(encoding: string): Promise<boolean> {
     const iconv = await importAMDNodeModule<typeof import('@vscode/iconv-lite-umd')>('@vscode/iconv-lite-umd', 'lib/iconv-lite-umd.js');
+
     return iconv.encodingExists(toNodeEncoding(encoding));
 }
 export function toNodeEncoding(enc: string | null): string {
@@ -224,6 +244,7 @@ export function detectEncodingByBOMFromBuffer(buffer: VSBuffer | null, bytesRead
         return null;
     }
     const b0 = buffer.readUInt8(0);
+
     const b1 = buffer.readUInt8(1);
     // UTF-16 BE
     if (b0 === UTF16be_BOM[0] && b1 === UTF16be_BOM[1]) {
@@ -263,15 +284,18 @@ async function guessEncodingByBuffer(buffer: VSBuffer, candidateGuessEncodings?:
     // ensure to convert candidate encodings to jschardet encoding names if provided
     if (candidateGuessEncodings) {
         candidateGuessEncodings = coalesce(candidateGuessEncodings.map(e => toJschardetEncoding(e)));
+
         if (candidateGuessEncodings.length === 0) {
             candidateGuessEncodings = undefined;
         }
     }
     const guessed = jschardet.detect(binaryString, candidateGuessEncodings ? { detectEncodings: candidateGuessEncodings } : undefined);
+
     if (!guessed || !guessed.encoding) {
         return null;
     }
     const enc = guessed.encoding.toLowerCase();
+
     if (0 <= IGNORE_ENCODINGS.indexOf(enc)) {
         return null; // see comment above why we ignore some encodings
     }
@@ -288,16 +312,21 @@ function normalizeEncoding(encodingName: string): string {
 }
 function toIconvLiteEncoding(encodingName: string): string {
     const normalizedEncodingName = normalizeEncoding(encodingName);
+
     const mapped = JSCHARDET_TO_ICONV_ENCODINGS[normalizedEncodingName];
+
     return mapped || normalizedEncodingName;
 }
 function toJschardetEncoding(encodingName: string): string | undefined {
     const normalizedEncodingName = normalizeEncoding(encodingName);
+
     const mapped = GUESSABLE_ENCODINGS[normalizedEncodingName];
+
     return mapped.guessableName;
 }
 function encodeLatin1(buffer: Uint8Array): string {
     let result = '';
+
     for (let i = 0; i < buffer.length; i++) {
         result += String.fromCharCode(buffer[i]);
     }
@@ -312,26 +341,37 @@ export function toCanonicalName(enc: string): string {
     switch (enc) {
         case 'shiftjis':
             return 'shift-jis';
+
         case 'utf16le':
             return 'utf-16le';
+
         case 'utf16be':
             return 'utf-16be';
+
         case 'big5hkscs':
             return 'big5-hkscs';
+
         case 'eucjp':
             return 'euc-jp';
+
         case 'euckr':
             return 'euc-kr';
+
         case 'koi8r':
             return 'koi8-r';
+
         case 'koi8u':
             return 'koi8-u';
+
         case 'macroman':
             return 'x-mac-roman';
+
         case 'utf8bom':
             return 'utf8';
+
         default: {
             const m = enc.match(/windows(\d+)/);
+
             if (m) {
                 return 'windows-' + m[1];
             }
@@ -355,6 +395,7 @@ export function detectEncodingFromBuffer({ buffer, bytesRead }: IReadResult, aut
     // Detect 0 bytes to see if file is binary or UTF-16 LE/BE
     // unless we already know that this file has a UTF-16 encoding
     let seemsBinary = false;
+
     if (encoding !== UTF16be && encoding !== UTF16le && buffer) {
         let couldBeUTF16LE = true; // e.g. 0xAA 0x00
         let couldBeUTF16BE = true; // e.g. 0x00 0xAA
@@ -368,6 +409,7 @@ export function detectEncodingFromBuffer({ buffer, bytesRead }: IReadResult, aut
         for (let i = 0; i < bytesRead && i < ZERO_BYTE_DETECTION_BUFFER_MAX_LEN; i++) {
             const isEndian = (i % 2 === 1); // assume 2-byte sequences typical for UTF-16
             const isZeroByte = (buffer.readUInt8(i) === 0);
+
             if (isZeroByte) {
                 containsZeroByte = true;
             }
@@ -679,6 +721,7 @@ export const SUPPORTED_ENCODINGS: EncodingsMap = {
 };
 export const GUESSABLE_ENCODINGS: EncodingsMap = (() => {
     const guessableEncodings: EncodingsMap = {};
+
     for (const encoding in SUPPORTED_ENCODINGS) {
         if (SUPPORTED_ENCODINGS[encoding].guessableName) {
             guessableEncodings[encoding] = SUPPORTED_ENCODINGS[encoding];

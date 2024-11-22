@@ -20,6 +20,7 @@ import { localize } from '../../../../nls.js';
 export class OneReference {
     readonly id: string = defaultGenerator.nextId();
     private _range?: IRange;
+
     constructor(readonly isProviderFirst: boolean, readonly parent: FileReferences, readonly link: LocationLink, private _rangeCallback: (ref: OneReference) => void) { }
     get uri() {
         return this.link.uri;
@@ -33,6 +34,7 @@ export class OneReference {
     }
     get ariaMessage(): string {
         const preview = this.parent.getPreview(this)?.preview(this.range);
+
         if (!preview) {
             return localize('aria.oneReference', "in {0} on line {1} at column {2}", basename(this.uri), this.range.startLineNumber, this.range.startColumn);
         }
@@ -51,16 +53,24 @@ export class FilePreview implements IDisposable {
         highlight: IMatch;
     } | undefined {
         const model = this._modelReference.object.textEditorModel;
+
         if (!model) {
             return undefined;
         }
         const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
+
         const word = model.getWordUntilPosition({ lineNumber: startLineNumber, column: startColumn - n });
+
         const beforeRange = new Range(startLineNumber, word.startColumn, startLineNumber, startColumn);
+
         const afterRange = new Range(endLineNumber, endColumn, endLineNumber, Constants.MAX_SAFE_SMALL_INTEGER);
+
         const before = model.getValueInRange(beforeRange).replace(/^\s+/, '');
+
         const inside = model.getValueInRange(range);
+
         const after = model.getValueInRange(afterRange).replace(/\s+$/, '');
+
         return {
             value: before + inside + after,
             highlight: { start: before.length, end: before.length + inside.length }
@@ -70,6 +80,7 @@ export class FilePreview implements IDisposable {
 export class FileReferences implements IDisposable {
     readonly children: OneReference[] = [];
     private _previews = new ResourceMap<FilePreview>();
+
     constructor(readonly parent: ReferencesModel, readonly uri: URI) { }
     dispose(): void {
         dispose(this._previews.values());
@@ -80,6 +91,7 @@ export class FileReferences implements IDisposable {
     }
     get ariaMessage(): string {
         const len = this.children.length;
+
         if (len === 1) {
             return localize('aria.fileReferences.1', "1 symbol in {0}, full path {1}", basename(this.uri), this.uri.fsPath);
         }
@@ -113,13 +125,16 @@ export class ReferencesModel implements IDisposable {
     readonly references: OneReference[] = [];
     readonly _onDidChangeReferenceRange = new Emitter<OneReference>();
     readonly onDidChangeReferenceRange: Event<OneReference> = this._onDidChangeReferenceRange.event;
+
     constructor(links: LocationLink[], title: string) {
         this._links = links;
         this._title = title;
         // grouping and sorting
         const [providersFirst] = links;
         links.sort(ReferencesModel._compareReferences);
+
         let current: FileReferences | undefined;
+
         for (const link of links) {
             if (!current || !extUri.isEqual(current.uri, link.uri, true)) {
                 // new group
@@ -164,9 +179,13 @@ export class ReferencesModel implements IDisposable {
     }
     nextOrPreviousReference(reference: OneReference, next: boolean): OneReference {
         const { parent } = reference;
+
         let idx = parent.children.indexOf(reference);
+
         const childCount = parent.children.length;
+
         const groupCount = parent.parent.groups.length;
+
         if (groupCount === 1 || next && idx + 1 < childCount || !next && idx > 0) {
             // cycling within one file
             if (next) {
@@ -178,12 +197,15 @@ export class ReferencesModel implements IDisposable {
             return parent.children[idx];
         }
         idx = parent.parent.groups.indexOf(parent);
+
         if (next) {
             idx = (idx + 1) % groupCount;
+
             return parent.parent.groups[idx].children[0];
         }
         else {
             idx = (idx + groupCount - 1) % groupCount;
+
             return parent.parent.groups[idx].children[parent.parent.groups[idx].children.length - 1];
         }
     }
@@ -211,6 +233,7 @@ export class ReferencesModel implements IDisposable {
                 return 0;
             }
         })[0];
+
         if (nearest) {
             return this.references[nearest.idx];
         }

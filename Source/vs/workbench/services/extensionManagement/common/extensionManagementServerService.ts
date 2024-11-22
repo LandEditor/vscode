@@ -19,6 +19,7 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
     readonly localExtensionManagementServer: IExtensionManagementServer | null = null;
     readonly remoteExtensionManagementServer: IExtensionManagementServer | null = null;
     readonly webExtensionManagementServer: IExtensionManagementServer | null = null;
+
     constructor(
     @IRemoteAgentService
     remoteAgentService: IRemoteAgentService, 
@@ -27,6 +28,7 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
     @IInstantiationService
     instantiationService: IInstantiationService) {
         const remoteAgentConnection = remoteAgentService.getConnection();
+
         if (remoteAgentConnection) {
             const extensionManagementService = instantiationService.createInstance(RemoteExtensionManagementService, remoteAgentConnection.getChannel<IChannel>('extensions'));
             this.remoteExtensionManagementServer = {
@@ -55,6 +57,7 @@ export class ExtensionManagementServerService implements IExtensionManagementSer
     }
     getExtensionInstallLocation(extension: IExtension): ExtensionInstallLocation | null {
         const server = this.getExtensionManagementServer(extension);
+
         return server === this.remoteExtensionManagementServer ? ExtensionInstallLocation.Remote : ExtensionInstallLocation.Web;
     }
 }

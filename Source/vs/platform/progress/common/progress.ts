@@ -74,6 +74,7 @@ export interface IProgressStep {
 export interface IProgressRunner {
     total(value: number): void;
     worked(value: number): void;
+
     done(): void;
 }
 export const emptyProgressRunner = Object.freeze<IProgressRunner>({
@@ -87,6 +88,7 @@ export interface IProgress<T> {
 export class Progress<T> implements IProgress<T> {
     static readonly None = Object.freeze<IProgress<unknown>>({ report() { } });
     private _value?: T;
+
     get value(): T | undefined { return this._value; }
     constructor(private callback: (data: T) => unknown) {
     }
@@ -97,10 +99,12 @@ export class Progress<T> implements IProgress<T> {
 }
 export class AsyncProgress<T> implements IProgress<T> {
     private _value?: T;
+
     get value(): T | undefined { return this._value; }
     private _asyncQueue?: T[];
     private _processingAsyncQueue?: boolean;
     private _drainListener: (() => void) | undefined;
+
     constructor(private callback: (data: T) => unknown) { }
     report(item: T) {
         if (!this._asyncQueue) {
@@ -117,6 +121,7 @@ export class AsyncProgress<T> implements IProgress<T> {
         }
         try {
             this._processingAsyncQueue = true;
+
             while (this._asyncQueue && this._asyncQueue.length) {
                 const item = this._asyncQueue.shift()!;
                 this._value = item;
@@ -125,6 +130,7 @@ export class AsyncProgress<T> implements IProgress<T> {
         }
         finally {
             this._processingAsyncQueue = false;
+
             const drainListener = this._drainListener;
             this._drainListener = undefined;
             drainListener?.();
@@ -161,12 +167,14 @@ export class UnmanagedProgress extends Disposable {
     private readonly deferred = new DeferredPromise<void>();
     private reporter?: IProgress<IProgressStep>;
     private lastStep?: IProgressStep;
+
     constructor(options: IProgressOptions | IProgressDialogOptions | IProgressNotificationOptions | IProgressWindowOptions | IProgressCompositeOptions, 
     @IProgressService
     progressService: IProgressService) {
         super();
         progressService.withProgress(options, reporter => {
             this.reporter = reporter;
+
             if (this.lastStep) {
                 reporter.report(this.lastStep);
             }
@@ -188,6 +196,7 @@ export class LongRunningOperation extends Disposable {
     private readonly currentOperationDisposables = this._register(new DisposableStore());
     private currentProgressRunner: IProgressRunner | undefined;
     private currentProgressTimeout: any;
+
     constructor(private progressIndicator: IProgressIndicator) {
         super();
     }
@@ -196,6 +205,7 @@ export class LongRunningOperation extends Disposable {
         this.stop();
         // Start new
         const newOperationId = ++this.currentOperationId;
+
         const newOperationToken = new CancellationTokenSource();
         this.currentProgressTimeout = setTimeout(() => {
             if (newOperationId === this.currentOperationId) {
@@ -205,6 +215,7 @@ export class LongRunningOperation extends Disposable {
         this.currentOperationDisposables.add(toDisposable(() => clearTimeout(this.currentProgressTimeout)));
         this.currentOperationDisposables.add(toDisposable(() => newOperationToken.cancel()));
         this.currentOperationDisposables.add(toDisposable(() => this.currentProgressRunner ? this.currentProgressRunner.done() : undefined));
+
         return {
             id: newOperationId,
             token: newOperationToken.token,

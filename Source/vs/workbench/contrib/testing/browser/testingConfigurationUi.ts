@@ -28,12 +28,15 @@ interface IConfigurationPickerOptions {
 }
 function buildPicker(accessor: ServicesAccessor, { onlyGroup, showConfigureButtons = true, onlyForTest, onlyConfigurable, placeholder = localize('testConfigurationUi.pick', 'Pick a test profile to use'), }: IConfigurationPickerOptions) {
     const profileService = accessor.get(ITestProfileService);
+
     const items: QuickPickInput<IQuickPickItem & {
         profile: ITestRunProfile;
     }>[] = [];
+
     const pushItems = (allProfiles: ITestRunProfile[], description?: string) => {
         for (const profiles of groupBy(allProfiles, (a, b) => a.group - b.group)) {
             let addedHeader = false;
+
             if (onlyGroup) {
                 if (profiles[0].group !== onlyGroup) {
                     continue;
@@ -63,6 +66,7 @@ function buildPicker(accessor: ServicesAccessor, { onlyGroup, showConfigureButto
             }
         }
     };
+
     if (onlyForTest !== undefined) {
         pushItems(profileService.getControllerProfiles(onlyForTest.controllerId).filter(p => canUseProfileWithTest(p, onlyForTest)));
     }
@@ -76,12 +80,14 @@ function buildPicker(accessor: ServicesAccessor, { onlyGroup, showConfigureButto
     }>({ useSeparators: true });
     quickpick.items = items;
     quickpick.placeholder = placeholder;
+
     return quickpick;
 }
 const triggerButtonHandler = (service: ITestProfileService, resolve: (arg: undefined) => void) => (evt: IQuickPickItemButtonEvent<IQuickPickItem>) => {
     const profile = (evt.item as {
         profile?: ITestRunProfile;
     }).profile;
+
     if (profile) {
         service.configure(profile.controllerId, profile.profileId);
         resolve(undefined);
@@ -93,13 +99,16 @@ CommandsRegistry.registerCommand({
         selected?: ITestRunProfile[];
     }) => {
         const profileService = accessor.get(ITestProfileService);
+
         const quickpick = buildPicker(accessor, options);
+
         if (!quickpick) {
             return;
         }
         const disposables = new DisposableStore();
         disposables.add(quickpick);
         quickpick.canSelectMany = true;
+
         if (options.selected) {
             quickpick.selectedItems = quickpick.items
                 .filter((i): i is IQuickPickItem & {
@@ -119,6 +128,7 @@ CommandsRegistry.registerCommand({
             quickpick.show();
         });
         disposables.dispose();
+
         return pick;
     }
 });
@@ -126,12 +136,15 @@ CommandsRegistry.registerCommand({
     id: 'vscode.pickTestProfile',
     handler: async (accessor: ServicesAccessor, options: IConfigurationPickerOptions) => {
         const profileService = accessor.get(ITestProfileService);
+
         const quickpick = buildPicker(accessor, options);
+
         if (!quickpick) {
             return;
         }
         const disposables = new DisposableStore();
         disposables.add(quickpick);
+
         const pick = await new Promise<ITestRunProfile | undefined>(resolve => {
             disposables.add(quickpick.onDidAccept(() => resolve((quickpick.selectedItems[0] as {
                 profile?: ITestRunProfile;
@@ -141,6 +154,7 @@ CommandsRegistry.registerCommand({
             quickpick.show();
         });
         disposables.dispose();
+
         return pick;
     }
 });

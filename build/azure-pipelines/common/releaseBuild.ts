@@ -8,6 +8,7 @@ import { CosmosClient } from '@azure/cosmos';
 import { retry } from './retry';
 function getEnv(name: string): string {
     const result = process.env[name];
+
     if (typeof result === 'undefined') {
         throw new Error('Missing env: ' + name);
     }
@@ -25,7 +26,9 @@ function createDefaultConfig(quality: string): Config {
 }
 async function getConfig(client: CosmosClient, quality: string): Promise<Config> {
     const query = `SELECT TOP 1 * FROM c WHERE c.id = "${quality}"`;
+
     const res = await client.database('builds').container('config').items.query(query).fetchAll();
+
     if (res.resources.length === 0) {
         return createDefaultConfig(quality);
     }
@@ -33,9 +36,11 @@ async function getConfig(client: CosmosClient, quality: string): Promise<Config>
 }
 async function main(force: boolean): Promise<void> {
 	const commit = getEnv('BUILD_SOURCEVERSION');
+
 	const quality = getEnv('VSCODE_QUALITY');
 
 	const aadCredentials = new ClientAssertionCredential(process.env['AZURE_TENANT_ID']!, process.env['AZURE_CLIENT_ID']!, () => Promise.resolve(process.env['AZURE_ID_TOKEN']!));
+
 	const client = new CosmosClient({ endpoint: process.env['AZURE_DOCUMENTDB_ENDPOINT']!, aadCredentials });
 
 	if (!force) {
@@ -45,6 +50,7 @@ async function main(force: boolean): Promise<void> {
 
 		if (config.frozen) {
 			console.log(`Skipping release because quality ${quality} is frozen.`);
+
 			return;
 		}
 	}

@@ -88,8 +88,11 @@ class CliMain extends Disposable {
 
 		return instantiationService.invokeFunction(async accessor => {
 			const logService = accessor.get(ILogService);
+
 			const fileService = accessor.get(IFileService);
+
 			const environmentService = accessor.get(INativeEnvironmentService);
+
 			const userDataProfilesService = accessor.get(IUserDataProfilesService);
 
 			// Log info
@@ -105,6 +108,7 @@ class CliMain extends Disposable {
 			await Promise.all(appenders.map(a => {
 				raceTimeout(a.flush(), 1000);
 			}));
+
 			return;
 		});
 	}
@@ -132,7 +136,9 @@ class CliMain extends Disposable {
 
 		// Log
 		const logger = this._register(loggerService.createLogger('cli', { name: localize('cli', "CLI") }));
+
 		const otherLoggers: ILogger[] = [];
+
 		if (loggerService.getLogLevel() === LogLevel.Trace) {
 			otherLoggers.push(new ConsoleLogger(loggerService.getLogLevel()));
 		}
@@ -153,6 +159,7 @@ class CliMain extends Disposable {
 
 		// User Data Profiles
 		const stateService = new StateReadonlyService(SaveStrategy.DELAYED, environmentService, logService, fileService);
+
 		const userDataProfilesService = new UserDataProfilesReadonlyService(stateService, uriIdentityService, environmentService, fileService, logService);
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
@@ -178,6 +185,7 @@ class CliMain extends Disposable {
 
 		// Get machine ID
 		let machineId: string | undefined = undefined;
+
 		try {
 			machineId = await resolveMachineId(stateService, logService);
 		} catch (error) {
@@ -186,6 +194,7 @@ class CliMain extends Disposable {
 			}
 		}
 		const sqmId = await resolveSqmId(stateService, logService);
+
 		const devDeviceId = await resolvedevDeviceId(stateService, logService);
 
 		// Initialize user data profiles after initializing the state
@@ -213,7 +222,9 @@ class CliMain extends Disposable {
 
 		// Telemetry
 		const appenders: ITelemetryAppender[] = [];
+
 		const isInternal = isInternalTelemetry(productService, configurationService);
+
 		if (supportsTelemetry(productService, environmentService)) {
 			if (productService.aiConfig && productService.aiConfig.ariaKey) {
 				appenders.push(new OneDataSystemAppender(requestService, isInternal, 'monacoworkbench', null, productService.aiConfig.ariaKey));
@@ -238,6 +249,7 @@ class CliMain extends Disposable {
 	private allowWindowsUNCPath(path: string): string {
 		if (isWindows) {
 			const host = getUNCHost(path);
+
 			if (host) {
 				addUNCHostToAllowlist(host);
 			}
@@ -251,6 +263,7 @@ class CliMain extends Disposable {
 		// Install handler for unexpected errors
 		setUnexpectedErrorHandler(error => {
 			const message = toErrorMessage(error, true);
+
 			if (!message) {
 				return;
 			}
@@ -269,8 +282,10 @@ class CliMain extends Disposable {
 
 	private async doRun(environmentService: INativeEnvironmentService, fileService: IFileService, userDataProfilesService: IUserDataProfilesService, instantiationService: IInstantiationService): Promise<void> {
 		let profile: IUserDataProfile | undefined = undefined;
+
 		if (environmentService.args.profile) {
 			profile = userDataProfilesService.profiles.find(p => p.name === environmentService.args.profile);
+
 			if (!profile) {
 				throw new Error(`Profile '${environmentService.args.profile}' not found.`);
 			}
@@ -285,6 +300,7 @@ class CliMain extends Disposable {
 		// Install Extension
 		else if (this.argv['install-extension'] || this.argv['install-builtin-extension']) {
 			const installOptions: InstallOptions = { isMachineScoped: !!this.argv['do-not-sync'], installPreReleaseVersion: !!this.argv['pre-release'], profileLocation };
+
 			return instantiationService.createInstance(ExtensionManagementCLI, new ConsoleLogger(LogLevel.Info, false)).installExtensions(this.asExtensionIdOrVSIX(this.argv['install-extension'] || []), this.asExtensionIdOrVSIX(this.argv['install-builtin-extension'] || []), installOptions, !!this.argv['force']);
 		}
 

@@ -58,6 +58,7 @@ export class DynamicEditorConfigurations extends Disposable implements IWorkbenc
     private defaultBinaryEditorConfigurationNode: IConfigurationNode | undefined;
     private editorAssociationsConfigurationNode: IConfigurationNode | undefined;
     private editorLargeFileConfirmationConfigurationNode: IConfigurationNode | undefined;
+
     constructor(
     @IEditorResolverService
     private readonly editorResolverService: IEditorResolverService, 
@@ -82,9 +83,11 @@ export class DynamicEditorConfigurations extends Disposable implements IWorkbenc
     }
     private updateDynamicEditorConfigurations(): void {
         const lockableEditors = [...this.editorResolverService.getEditors(), ...DynamicEditorConfigurations.AUTO_LOCK_EXTRA_EDITORS].filter(e => !DynamicEditorConfigurations.AUTO_LOCK_REMOVE_EDITORS.has(e.id));
+
         const binaryEditorCandidates = this.editorResolverService.getEditors().filter(e => e.priority !== RegisteredEditorPriority.exclusive).map(e => e.id);
         // Build config from registered editors
         const autoLockGroupConfiguration: IJSONSchemaMap = Object.create(null);
+
         for (const editor of lockableEditors) {
             autoLockGroupConfiguration[editor.id] = {
                 type: 'boolean',
@@ -94,6 +97,7 @@ export class DynamicEditorConfigurations extends Disposable implements IWorkbenc
         }
         // Build default config too
         const defaultAutoLockGroupConfiguration = Object.create(null);
+
         for (const editor of lockableEditors) {
             defaultAutoLockGroupConfiguration[editor.id] = DynamicEditorConfigurations.AUTO_LOCK_DEFAULT_ENABLED.has(editor.id);
         }

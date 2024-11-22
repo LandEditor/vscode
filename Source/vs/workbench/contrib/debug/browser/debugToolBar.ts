@@ -43,6 +43,7 @@ import * as icons from './debugIcons.js';
 import './media/debugToolBar.css';
 
 const DEBUG_TOOLBAR_POSITION_KEY = 'debug.actionswidgetposition';
+
 const DEBUG_TOOLBAR_Y_KEY = 'debug.actionswidgety';
 
 export class DebugToolBar extends Themable implements IWorkbenchContribution {
@@ -85,6 +86,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		// Do not allow the widget to overflow or underflow window controls.
 		// Use CSS calculations to avoid having to force layout with `.clientWidth`
 		const controlsOnLeft = customTitleBar && platform === Platform.Mac;
+
 		const controlsOnRight = customTitleBar && (platform === Platform.Windows || platform === Platform.Linux);
 		this.$el.style.transform = `translate(
 			min(
@@ -110,7 +112,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 					return this.instantiationService.createInstance(FocusSessionActionViewItem, action, undefined);
 				} else if (action.id === STOP_ID || action.id === DISCONNECT_ID) {
 					this.stopActionViewItemDisposables.clear();
+
 					const item = this.instantiationService.invokeFunction(accessor => createDisconnectMenuItemAction(action as MenuItemAction, this.stopActionViewItemDisposables, accessor, { hoverDelegate: options.hoverDelegate }));
+
 					if (item) {
 						return item;
 					}
@@ -122,7 +126,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		this.updateScheduler = this._register(new RunOnceScheduler(() => {
 			const state = this.debugService.state;
+
 			const toolBarLocation = this.configurationService.getValue<IDebugConfiguration>('debug').toolBarLocation;
+
 			if (
 				state === State.Inactive ||
 				toolBarLocation !== 'floating' ||
@@ -133,6 +139,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			}
 
 			const actions = getFlatActionBarActions(this.debugToolBarMenu.getActions({ shouldForwardArgs: true }));
+
 			if (!arrays.equals(actions, this.activeActions, (first, second) => first.id === second.id && first.enabled === second.enabled)) {
 				this.actionBar.clear();
 				this.actionBar.push(actions, { icon: true, label: false });
@@ -171,6 +178,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		this._register(dom.addDisposableGenericMouseUpListener(this.dragArea, (event: MouseEvent) => {
 			const mouseClickEvent = new StandardMouseEvent(dom.getWindow(this.dragArea), event);
+
 			if (mouseClickEvent.detail === 2) {
 				// double click on debug bar centers it again #8250
 				this.setCoordinates(0.5, this.yDefault);
@@ -180,10 +188,13 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		this._register(dom.addDisposableGenericMouseDownListener(this.dragArea, (e: MouseEvent) => {
 			this.dragArea.classList.add('dragged');
+
 			const activeWindow = dom.getWindow(this.layoutService.activeContainer);
+
 			const originEvent = new StandardMouseEvent(activeWindow, e);
 
 			const originX = this.getCurrentXPercent();
+
 			const originY = this.getCurrentYPosition();
 
 			const mouseMoveListener = dom.addDisposableGenericMouseMoveListener(activeWindow, (e: MouseEvent) => {
@@ -213,6 +224,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			// note: we intentionally don't keep the activeContainer before the
 			// `await` clause to avoid any races due to quickly switching windows.
 			await this.layoutService.whenContainerStylesLoaded(dom.getWindow(this.layoutService.activeContainer));
+
 			if (this.isBuilt) {
 				this.doShowInActiveContainer();
 				this.setCoordinates();
@@ -230,10 +242,13 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 	private storePosition(): void {
 		const activeWindow = dom.getWindow(this.layoutService.activeContainer);
+
 		const isMainWindow = this.layoutService.activeContainer === this.layoutService.mainContainer;
 
 		const x = this.getCurrentXPercent();
+
 		const y = this.getCurrentYPosition();
+
 		if (isMainWindow) {
 			this.storageService.store(DEBUG_TOOLBAR_POSITION_KEY, x, StorageScope.PROFILE, StorageTarget.MACHINE);
 			this.storageService.store(DEBUG_TOOLBAR_Y_KEY, y, StorageScope.PROFILE, StorageTarget.MACHINE);
@@ -252,6 +267,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			this.$el.style.boxShadow = widgetShadowColor ? `0 0 8px 2px ${widgetShadowColor}` : '';
 
 			const contrastBorderColor = this.getColor(widgetBorder);
+
 			const borderColor = this.getColor(debugToolBarBorder);
 
 			if (contrastBorderColor) {
@@ -266,19 +282,25 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	/** Gets the stored X position of the middle of the toolbar based on the current window width */
 	private getStoredXPosition() {
 		const currentWindow = dom.getWindow(this.layoutService.activeContainer);
+
 		const isMainWindow = currentWindow === mainWindow;
+
 		const storedPercentage = isMainWindow
 			? Number(this.storageService.get(DEBUG_TOOLBAR_POSITION_KEY, StorageScope.PROFILE))
 			: this.auxWindowCoordinates.get(currentWindow)?.x;
+
 		return storedPercentage !== undefined && !isNaN(storedPercentage) ? storedPercentage : 0.5;
 	}
 
 	private getStoredYPosition() {
 		const currentWindow = dom.getWindow(this.layoutService.activeContainer);
+
 		const isMainWindow = currentWindow === mainWindow;
+
 		const storedY = isMainWindow
 			? this.storageService.getNumber(DEBUG_TOOLBAR_Y_KEY, StorageScope.PROFILE)
 			: this.auxWindowCoordinates.get(currentWindow)?.y;
+
 		return storedY ?? this.yDefault;
 	}
 
@@ -304,7 +326,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	private get yRange(): [number, number] {
 		if (!this._yRange) {
 			const isTitleBarVisible = this.layoutService.isVisible(Parts.TITLEBAR_PART, dom.getWindow(this.layoutService.activeContainer));
+
 			const yMin = isTitleBarVisible ? 0 : this.layoutService.mainContainerOffset.top;
+
 			let yMax = 0;
 
 			if (isTitleBarVisible) {
@@ -326,6 +350,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	private show(): void {
 		if (this.isVisible) {
 			this.setCoordinates();
+
 			return;
 		}
 		if (!this.isBuilt) {
@@ -334,6 +359,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		}
 
 		this.isVisible = true;
+
 		dom.show(this.$el);
 		this.setCoordinates();
 	}
@@ -347,6 +373,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 	private hide(): void {
 		this.isVisible = false;
+
 		dom.hide(this.$el);
 	}
 
@@ -359,10 +386,13 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 export function createDisconnectMenuItemAction(action: MenuItemAction, disposables: DisposableStore, accessor: ServicesAccessor, options: IDropdownWithPrimaryActionViewItemOptions): IActionViewItem | undefined {
 	const menuService = accessor.get(IMenuService);
+
 	const contextKeyService = accessor.get(IContextKeyService);
+
 	const instantiationService = accessor.get(IInstantiationService);
 
 	const menu = menuService.getMenuActions(MenuId.DebugToolBarStop, contextKeyService, { shouldForwardArgs: true });
+
 	const secondary = getFlatActionBarActions(menu);
 
 	if (!secondary.length) {
@@ -370,18 +400,21 @@ export function createDisconnectMenuItemAction(action: MenuItemAction, disposabl
 	}
 
 	const dropdownAction = disposables.add(new Action('notebook.moreRunActions', localize('notebook.moreRunActionsLabel', "More..."), 'codicon-chevron-down', true));
+
 	const item = instantiationService.createInstance(DropdownWithPrimaryActionViewItem,
 		action as MenuItemAction,
 		dropdownAction,
 		secondary,
 		'debug-stop-actions',
 		options);
+
 	return item;
 }
 
 // Debug toolbar
 
 const debugViewTitleItems: IDisposable[] = [];
+
 const registerDebugToolBarItem = (id: string, title: string | ICommandActionTitle, order: number, icon?: { light?: URI; dark?: URI } | ThemeIcon, when?: ContextKeyExpression, precondition?: ContextKeyExpression, alt?: ICommandAction) => {
 	MenuRegistry.appendMenuItem(MenuId.DebugToolBar, {
 		group: 'navigation',
@@ -414,7 +447,9 @@ markAsSingleton(MenuRegistry.onDidChangeMenu(e => {
 	// In case the debug toolbar is docked we need to make sure that the docked toolbar has the up to date commands registered #115945
 	if (e.has(MenuId.DebugToolBar)) {
 		dispose(debugViewTitleItems);
+
 		const items = MenuRegistry.getMenuItems(MenuId.DebugToolBar);
+
 		for (const i of items) {
 			debugViewTitleItems.push(MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 				...i,

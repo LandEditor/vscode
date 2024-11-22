@@ -31,6 +31,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
     override readonly _serviceBrand: undefined;
     private _integratedTerminalInstances = new DebugTerminalCollection();
     private _terminalDisposedListener: IDisposable | undefined;
+
     constructor(
     @IExtHostRpcService
     extHostRpcService: IExtHostRpcService, 
@@ -70,6 +71,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
     }
     protected override daExecutableFromPackage(session: ExtHostDebugSession, extensionRegistry: ExtensionDescriptionRegistry): DebugAdapterExecutable | undefined {
         const dae = ExecutableDebugAdapter.platformAdapterExecutable(extensionRegistry.getAllExtensionDescriptions(), session.type);
+
         if (dae) {
             return new DebugAdapterExecutable(dae.command, dae.args, dae.options);
         }
@@ -87,13 +89,21 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
                 }));
             }
             const configProvider = await this._configurationService.getConfigProvider();
+
             const shell = this._terminalService.getDefaultShell(true);
+
             const shellArgs = this._terminalService.getDefaultShellArgs(true);
+
             const terminalName = args.title || nls.localize('debug.terminal.title', "Debug Process");
+
             const shellConfig = JSON.stringify({ shell, shellArgs });
+
             let terminal = await this._integratedTerminalInstances.checkout(shellConfig, terminalName);
+
             let cwdForPrepareCommand: string | undefined;
+
             let giveShellTimeToInitialize = false;
+
             if (!terminal) {
                 const options: vscode.TerminalOptions = {
                     shellPath: shell,
@@ -116,7 +126,9 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
                 cwdForPrepareCommand = args.cwd;
             }
             terminal.show(true);
+
             const shellProcessId = await terminal.processId;
+
             if (giveShellTimeToInitialize) {
                 // give a new terminal some time to initialize the shell (most recently, #228191)
                 // - If shell integration is available, use that as a deterministic signal
@@ -165,6 +177,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
                 }
             }
             const command = prepareCommand(shell, args.args, !!args.argsCanBeInterpretedByShell, cwdForPrepareCommand, args.env);
+
             if (terminal.shellIntegration) {
                 terminal.shellIntegration.executeCommand(command);
             }
@@ -178,6 +191,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
                     sessionListener.dispose();
                 }
             });
+
             return shellProcessId;
         }
         else if (args.kind === 'external') {
@@ -203,6 +217,7 @@ function runInExternalTerminal(args: DebugProtocol.RunInTerminalRequestArguments
         }
     }
     const config = configProvider.getConfiguration('terminal');
+
     return externalTerminalService.runInTerminal(args.title!, args.cwd, args.args, args.env || {}, config.external || {});
 }
 class DebugTerminalCollection {
@@ -216,6 +231,7 @@ class DebugTerminalCollection {
     }>();
     public async checkout(config: string, name: string, cleanupOthersByName = false) {
         const entries = [...this._terminalInstances.entries()];
+
         const promises = entries.map(([terminal, termInfo]) => createCancelablePromise(async (ct) => {
             // Only allow terminals that match the title.  See #123189
             if (terminal.name !== name) {
@@ -226,6 +242,7 @@ class DebugTerminalCollection {
             }
             // important: date check and map operations must be synchronous
             const now = Date.now();
+
             if (termInfo.lastUsedAt + DebugTerminalCollection.minUseDelay > now || ct.isCancellationRequested) {
                 return null;
             }
@@ -236,8 +253,10 @@ class DebugTerminalCollection {
                 return null;
             }
             termInfo.lastUsedAt = now;
+
             return terminal;
         }));
+
         return await firstParallel(promises, (t): t is vscode.Terminal => !!t);
     }
     public insert(terminal: vscode.Terminal, termConfig: string) {
@@ -245,6 +264,7 @@ class DebugTerminalCollection {
     }
     public free(terminal: vscode.Terminal) {
         const info = this._terminalInstances.get(terminal);
+
         if (info) {
             info.lastUsedAt = -1;
         }

@@ -44,6 +44,7 @@ export class ExtHostTask extends ExtHostTaskBase {
     @IExtHostVariableResolverProvider
     private readonly variableResolver: IExtHostVariableResolverProvider) {
         super(extHostRpc, initData, workspaceService, editorService, configurationService, extHostTerminalService, logService, deprecationService);
+
         if (initData.remote.isRemote && initData.remote.authority) {
             this.registerTaskSystem(Schemas.vscodeRemote, {
                 scheme: Schemas.vscodeRemote,
@@ -62,6 +63,7 @@ export class ExtHostTask extends ExtHostTaskBase {
     }
     public async executeTask(extension: IExtensionDescription, task: vscode.Task): Promise<vscode.TaskExecution> {
         const tTask = (task as types.Task);
+
         if (!task.execution && (tTask._id === undefined)) {
             throw new Error('Tasks to execute must include an execution');
         }
@@ -69,16 +71,20 @@ export class ExtHostTask extends ExtHostTaskBase {
         if (tTask._id !== undefined) {
             // Always get the task execution first to prevent timing issues when retrieving it later
             const handleDto = TaskHandleDTO.from(tTask, this.workspaceService);
+
             const executionDTO = await this._proxy.$getTaskExecution(handleDto);
+
             if (executionDTO.task === undefined) {
                 throw new Error('Task from execution DTO is undefined');
             }
             const execution = await this.getTaskExecution(executionDTO, task);
             this._proxy.$executeTask(handleDto).catch(() => { });
+
             return execution;
         }
         else {
             const dto = TaskDTO.from(task, extension);
+
             if (dto === undefined) {
                 return Promise.reject(new Error('Task is not valid'));
             }
@@ -91,6 +97,7 @@ export class ExtHostTask extends ExtHostTaskBase {
             // Always get the task execution first to prevent timing issues when retrieving it later
             const execution = await this.getTaskExecution(await this._proxy.$getTaskExecution(dto), task);
             this._proxy.$executeTask(dto).catch(() => { });
+
             return execution;
         }
     }
@@ -101,15 +108,19 @@ export class ExtHostTask extends ExtHostTaskBase {
         extension: IExtensionDescription;
     } {
         const taskDTOs: tasks.ITaskDTO[] = [];
+
         if (value) {
             for (const task of value) {
                 this.checkDeprecation(task, handler);
+
                 if (!task.definition || !validTypes[task.definition.type]) {
                     this._logService.warn(`The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`);
                 }
                 const taskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(task, handler.extension);
+
                 if (taskDTO) {
                     taskDTOs.push(taskDTO);
+
                     if (CustomExecutionDTO.is(taskDTO.execution)) {
                         // The ID is calculated on the main thread task side, so, let's call into it here.
                         // We need the task id's pre-computed for custom task executions because when OnDidStartTask
@@ -129,6 +140,7 @@ export class ExtHostTask extends ExtHostTaskBase {
     }
     private async getAFolder(workspaceFolders: vscode.WorkspaceFolder[] | undefined): Promise<IWorkspaceFolder> {
         let folder = (workspaceFolders && workspaceFolders.length > 0) ? workspaceFolders[0] : undefined;
+
         if (!folder) {
             const userhome = URI.file(homedir());
             folder = new WorkspaceFolder({ uri: userhome, name: resources.basename(userhome), index: 0 });
@@ -148,21 +160,28 @@ export class ExtHostTask extends ExtHostTaskBase {
             cwd?: string;
             path?: string;
         };
+
         variables: string[];
     }): Promise<{
         process?: string;
+
         variables: {
             [key: string]: string;
         };
     }> {
         const uri: URI = URI.revive(uriComponents);
+
         const result = {
             process: <unknown>undefined as string,
             variables: Object.create(null)
         };
+
         const workspaceFolder = await this._workspaceProvider.resolveWorkspaceFolder(uri);
+
         const workspaceFolders = (await this._workspaceProvider.getWorkspaceFolders2()) ?? [];
+
         const resolver = await this.variableResolver.getResolver();
+
         const ws: IWorkspaceFolder = workspaceFolder ? {
             uri: workspaceFolder.uri,
             name: workspaceFolder.name,
@@ -171,13 +190,16 @@ export class ExtHostTask extends ExtHostTaskBase {
                 throw new Error('Not implemented');
             }
         } : await this.getAFolder(workspaceFolders);
+
         for (const variable of toResolve.variables) {
             result.variables[variable] = await resolver.resolveAsync(ws, variable);
         }
         if (toResolve.process !== undefined) {
             let paths: string[] | undefined = undefined;
+
             if (toResolve.process.path !== undefined) {
                 paths = toResolve.process.path.split(path.delimiter);
+
                 for (let i = 0; i < paths.length; i++) {
                     paths[i] = await resolver.resolveAsync(ws, paths[i]);
                 }

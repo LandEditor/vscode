@@ -33,6 +33,7 @@ import { IWorkbenchEnvironmentService } from '../services/environment/common/env
 export abstract class BaseWindow extends Disposable {
     private static TIMEOUT_HANDLES = Number.MIN_SAFE_INTEGER; // try to not compete with the IDs of native `setTimeout`
     private static readonly TIMEOUT_DISPOSABLES = new Map<number, Set<IDisposable>>();
+
     constructor(targetWindow: CodeWindow, dom = { getWindowsCount, getWindows }, /* for testing */ 
     @IHostService
     protected readonly hostService: IHostService, 
@@ -46,6 +47,7 @@ export abstract class BaseWindow extends Disposable {
     //#region focus handling in multi-window applications
     protected enableWindowFocusOnElementFocus(targetWindow: CodeWindow): void {
         const originalFocus = targetWindow.HTMLElement.prototype.focus;
+
         const that = this;
         targetWindow.HTMLElement.prototype.focus = function (this: HTMLElement, options?: FocusOptions | undefined): void {
             // Ensure the window the element belongs to is focused
@@ -57,6 +59,7 @@ export abstract class BaseWindow extends Disposable {
     }
     private onElementFocus(targetWindow: CodeWindow): void {
         const activeWindow = getActiveWindow();
+
         if (activeWindow !== targetWindow && activeWindow.document.hasFocus()) {
             // Call original focus()
             targetWindow.focus();
@@ -87,6 +90,7 @@ export abstract class BaseWindow extends Disposable {
         // timeout is scheduled without being throttled (unless all windows are minimized).
         const originalSetTimeout = targetWindow.setTimeout;
         Object.defineProperty(targetWindow, 'vscodeOriginalSetTimeout', { get: () => originalSetTimeout });
+
         const originalClearTimeout = targetWindow.clearTimeout;
         Object.defineProperty(targetWindow, 'vscodeOriginalClearTimeout', { get: () => originalClearTimeout });
         targetWindow.setTimeout = function (this: unknown, handler: TimerHandler, timeout = 0, ...args: unknown[]): number {
@@ -94,12 +98,15 @@ export abstract class BaseWindow extends Disposable {
                 return originalSetTimeout.apply(this, [handler, timeout, ...args]);
             }
             const timeoutDisposables = new Set<IDisposable>();
+
             const timeoutHandle = BaseWindow.TIMEOUT_HANDLES++;
             BaseWindow.TIMEOUT_DISPOSABLES.set(timeoutHandle, timeoutDisposables);
+
             const handlerFn = createSingleCallFunction(handler, () => {
                 dispose(timeoutDisposables);
                 BaseWindow.TIMEOUT_DISPOSABLES.delete(timeoutHandle);
             });
+
             for (const { window, disposables } of dom.getWindows()) {
                 if (isAuxiliaryWindow(window) && window.document.visibilityState === 'hidden') {
                     continue; // skip over hidden windows (but never over main window)
@@ -107,12 +114,14 @@ export abstract class BaseWindow extends Disposable {
                 // we track didClear in case the browser does not properly clear the timeout
                 // this can happen for timeouts on unfocused windows
                 let didClear = false;
+
                 const handle = (window as any).vscodeOriginalSetTimeout.apply(this, [(...args: unknown[]) => {
                         if (didClear) {
                             return;
                         }
                         handlerFn(...args);
                     }, timeout, ...args]);
+
                 const timeoutDisposable = toDisposable(() => {
                     didClear = true;
                     (window as any).vscodeOriginalClearTimeout(handle);
@@ -125,6 +134,7 @@ export abstract class BaseWindow extends Disposable {
         };
         targetWindow.clearTimeout = function (this: unknown, timeoutHandle: number | undefined): void {
             const timeoutDisposables = typeof timeoutHandle === 'number' ? BaseWindow.TIMEOUT_DISPOSABLES.get(timeoutHandle) : undefined;
+
             if (timeoutDisposables) {
                 dispose(timeoutDisposables);
                 BaseWindow.TIMEOUT_DISPOSABLES.delete(timeoutHandle!);
@@ -139,6 +149,7 @@ export abstract class BaseWindow extends Disposable {
         this._register(this.hostService.onDidChangeFullScreen(({ windowId, fullscreen }) => {
             if (windowId === targetWindowId) {
                 const targetWindow = getWindowById(targetWindowId);
+
                 if (targetWindow) {
                     setFullscreen(fullscreen, targetWindow.window);
                 }
@@ -148,13 +159,17 @@ export abstract class BaseWindow extends Disposable {
     //#region Confirm on Shutdown
     static async confirmOnShutdown(accessor: ServicesAccessor, reason: ShutdownReason): Promise<boolean> {
         const dialogService = accessor.get(IDialogService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const message = reason === ShutdownReason.QUIT ?
             (isMacintosh ? localize('quitMessageMac', "Are you sure you want to quit?") : localize('quitMessage', "Are you sure you want to exit?")) :
             localize('closeWindowMessage', "Are you sure you want to close the window?");
+
         const primaryButton = reason === ShutdownReason.QUIT ?
             (isMacintosh ? localize({ key: 'quitButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Quit") : localize({ key: 'exitButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Exit")) :
             localize({ key: 'closeWindowButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Close Window");
+
         const res = await dialogService.confirm({
             message,
             primaryButton,
@@ -263,10 +278,12 @@ export class BrowserWindow extends BaseWindow {
         this.openerService.setDefaultExternalOpener({
             openExternal: async (href: string) => {
                 let isAllowedOpener = false;
+
                 if (this.browserEnvironmentService.options?.openerAllowedExternalUrlPrefixes) {
                     for (const trustedPopupPrefix of this.browserEnvironmentService.options.openerAllowedExternalUrlPrefixes) {
                         if (href.startsWith(trustedPopupPrefix)) {
                             isAllowedOpener = true;
+
                             break;
                         }
                     }
@@ -275,6 +292,7 @@ export class BrowserWindow extends BaseWindow {
                 if (matchesScheme(href, Schemas.http) || matchesScheme(href, Schemas.https)) {
                     if (isSafari) {
                         const opened = windowOpenWithSuccess(href, !isAllowedOpener);
+
                         if (!opened) {
                             await this.dialogService.prompt({
                                 type: Severity.Warning,
@@ -308,15 +326,19 @@ export class BrowserWindow extends BaseWindow {
                         this.lifecycleService.withExpectedShutdown({ disableShutdownHandling: true }, () => mainWindow.location.href = href);
                     };
                     invokeProtocolHandler();
+
                     const showProtocolUrlOpenedDialog = async () => {
                         const { downloadUrl } = this.productService;
+
                         let detail: string;
+
                         const buttons: IPromptButton<void>[] = [
                             {
                                 label: localize({ key: 'openExternalDialogButtonRetry.v2', comment: ['&& denotes a mnemonic'] }, "&&Try Again"),
                                 run: () => invokeProtocolHandler()
                             }
                         ];
+
                         if (downloadUrl !== undefined) {
                             detail = localize('openExternalDialogDetail.v2', "We launched {0} on your computer.\n\nIf {1} did not launch, try again or install it below.", this.productService.nameLong, this.productService.nameLong);
                             buttons.push({

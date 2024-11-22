@@ -161,6 +161,7 @@ registerAction2(class ViewAsTreeAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]) {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             await searchView.setTreeView(true);
         }
@@ -185,6 +186,7 @@ registerAction2(class ViewAsListAction extends Action2 {
     }
     async run(accessor: ServicesAccessor, ...args: any[]) {
         const searchView = getSearchView(accessor.get(IViewsService));
+
         if (searchView) {
             await searchView.setTreeView(false);
         }
@@ -198,9 +200,12 @@ const clearHistoryCommand: ICommandHandler = accessor => {
 };
 async function expandAll(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
+
     if (searchView) {
         const viewer = searchView.getControl();
+
         if (searchView.shouldShowAIResults()) {
             if (searchView.model.hasAIResults) {
                 await forcedExpandRecursively(viewer, undefined);
@@ -226,6 +231,7 @@ export async function forcedExpandRecursively(viewer: WorkbenchCompressibleAsync
         await viewer.expand(element, true);
     }
     const children = viewer.getNode(element)?.children;
+
     if (children) {
         for (const child of children) {
             if (isSearchResult(child.element)) {
@@ -237,22 +243,27 @@ export async function forcedExpandRecursively(viewer: WorkbenchCompressibleAsync
 }
 function clearSearchResults(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
     searchView?.clearSearchResults();
 }
 function cancelSearch(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
     searchView?.cancelSearch();
 }
 function refreshSearch(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
     searchView?.triggerQueryChange({ preserveFocus: false });
 }
 function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
     const viewsService = accessor.get(IViewsService);
+
     const searchView = getSearchView(viewsService);
+
     if (searchView) {
         const viewer = searchView.getControl();
         /**
@@ -260,9 +271,13 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
          * i.e. if Matches are returned by the navigator, and if so, collapse to them, otherwise collapse all levels.
          */
         const navigator = viewer.navigate();
+
         let node = navigator.first();
+
         let canCollapseFileMatchLevel = false;
+
         let canCollapseFirstLevel = false;
+
         do {
             node = navigator.next();
         } while (isTextSearchHeading(node));
@@ -274,16 +289,19 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
                 }
                 if (isSearchTreeMatch(node)) {
                     canCollapseFileMatchLevel = true;
+
                     break;
                 }
                 if (searchView.isTreeLayoutViewVisible && !canCollapseFirstLevel) {
                     let nodeToTest = node;
+
                     if (isSearchTreeFolderMatch(node)) {
                         const compressionStartNode = viewer.getCompressedTreeNode(node)?.elements[0].element;
                         // Match elements should never be compressed, so `!(compressionStartNode instanceof Match)` should always be true here. Same with `!(compressionStartNode instanceof TextSearchResult)`
                         nodeToTest = compressionStartNode && !(isSearchTreeMatch(compressionStartNode)) && !isTextSearchHeading(compressionStartNode) && !(isSearchResult(compressionStartNode)) ? compressionStartNode : node;
                     }
                     const immediateParent = nodeToTest.parent();
+
                     if (!(isTextSearchHeading(immediateParent) || isSearchTreeFolderMatchWorkspaceRoot(immediateParent) || isSearchTreeFolderMatchNoRoot(immediateParent) || isSearchResult(immediateParent))) {
                         canCollapseFirstLevel = true;
                     }
@@ -292,6 +310,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
         }
         if (canCollapseFileMatchLevel) {
             node = navigator.first();
+
             do {
                 if (isSearchTreeFileMatch(node)) {
                     viewer.collapse(node);
@@ -300,15 +319,18 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
         }
         else if (canCollapseFirstLevel) {
             node = navigator.first();
+
             if (node) {
                 do {
                     let nodeToTest = node;
+
                     if (isSearchTreeFolderMatch(node)) {
                         const compressionStartNode = viewer.getCompressedTreeNode(node)?.elements[0].element;
                         // Match elements should never be compressed, so !(compressionStartNode instanceof Match) should always be true here
                         nodeToTest = (compressionStartNode && !(isSearchTreeMatch(compressionStartNode)) && !(isSearchResult(compressionStartNode)) ? compressionStartNode : node);
                     }
                     const immediateParent = nodeToTest.parent();
+
                     if (isSearchTreeFolderMatchWorkspaceRoot(immediateParent) || isSearchTreeFolderMatchNoRoot(immediateParent)) {
                         if (viewer.hasNode(node)) {
                             viewer.collapse(node, true);
@@ -323,6 +345,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
         else if (isTextSearchHeading(navigator.first())) {
             // if AI results are visible, just collapse everything under the TextSearchResult.
             node = navigator.first();
+
             do {
                 if (!node) {
                     break;
@@ -336,6 +359,7 @@ function collapseDeepestExpandedLevel(accessor: ServicesAccessor) {
             viewer.collapseAll();
         }
         const firstFocusParent = viewer.getFocus()[0]?.parent();
+
         if (firstFocusParent && (isSearchTreeFolderMatch(firstFocusParent) || isSearchTreeFileMatch(firstFocusParent)) &&
             viewer.hasNode(firstFocusParent) && viewer.isCollapsed(firstFocusParent)) {
             viewer.domFocus();

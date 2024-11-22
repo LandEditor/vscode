@@ -110,8 +110,11 @@ export class ResourceWithCommentsRenderer implements IListRenderer<ITreeNode<Res
 
 	renderTemplate(container: HTMLElement) {
 		const labelContainer = dom.append(container, dom.$('.resource-container'));
+
 		const resourceLabel = this.labels.create(labelContainer);
+
 		const separator = dom.append(labelContainer, dom.$('.separator'));
+
 		const owner = labelContainer.appendChild(dom.$('.owner'));
 
 		return { resourceLabel, owner, separator };
@@ -144,6 +147,7 @@ export class CommentsMenus implements IDisposable {
 
 	getResourceActions(element: CommentNode): { actions: IAction[] } {
 		const actions = this.getActions(MenuId.CommentsViewThreadActions, element);
+
 		return { actions: actions.primary };
 	}
 
@@ -166,9 +170,11 @@ export class CommentsMenus implements IDisposable {
 			['commentThread', element.contextValue],
 			['canReply', element.thread.canReply]
 		];
+
 		const contextKeyService = this.contextKeyService.createOverlay(overlay);
 
 		const menu = this.menuService.getMenuActions(menuId, contextKeyService, { shouldForwardArgs: true });
+
 		return getContextMenuActions(menu, 'inline');
 	}
 
@@ -191,8 +197,11 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 
 	renderTemplate(container: HTMLElement) {
 		const threadContainer = dom.append(container, dom.$('.comment-thread-container'));
+
 		const metadataContainer = dom.append(threadContainer, dom.$('.comment-metadata-container'));
+
 		const metadata = dom.append(metadataContainer, dom.$('.comment-metadata'));
+
 		const threadMetadata = {
 			icon: dom.append(metadata, dom.$('.icon')),
 			userNames: dom.append(metadata, dom.$('.user')),
@@ -205,11 +214,13 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 		threadMetadata.separator.innerText = '\u00b7';
 
 		const actionsContainer = dom.append(metadataContainer, dom.$('.actions'));
+
 		const actionBar = new ActionBar(actionsContainer, {
 			actionViewItemProvider: this.actionViewItemProvider
 		});
 
 		const snippetContainer = dom.append(threadContainer, dom.$('.comment-snippet-container'));
+
 		const repliesMetadata = {
 			container: snippetContainer,
 			icon: dom.append(snippetContainer, dom.$('.icon')),
@@ -222,6 +233,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 		repliesMetadata.icon.classList.add(...ThemeIcon.asClassNameArray(Codicon.indent));
 
 		const disposables = [threadMetadata.timestamp, repliesMetadata.timestamp];
+
 		return { threadMetadata, repliesMetadata, actionBar, disposables };
 	}
 
@@ -243,9 +255,12 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 				disposables: disposables
 			}
 		});
+
 		const images = renderedComment.element.getElementsByTagName('img');
+
 		for (let i = 0; i < images.length; i++) {
 			const image = images[i];
+
 			const textDescription = dom.$('');
 			textDescription.textContent = image.alt ? nls.localize('imageWithLabel', "Image: {0}", image.alt) : nls.localize('image', "Image");
 			image.parentNode!.replaceChild(textDescription, image);
@@ -268,6 +283,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 		templateData.actionBar.clear();
 
 		const commentCount = node.element.replies.length + 1;
+
 		if (node.element.threadRelevance === CommentThreadApplicability.Outdated) {
 			templateData.threadMetadata.relevance.style.display = '';
 			templateData.threadMetadata.relevance.innerText = nls.localize('outdated', "Outdated");
@@ -281,6 +297,7 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 		templateData.threadMetadata.icon.classList.remove(...Array.from(templateData.threadMetadata.icon.classList.values())
 			.filter(value => value.startsWith('codicon')));
 		templateData.threadMetadata.icon.classList.add(...ThemeIcon.asClassNameArray(this.getIcon(node.element.threadState)));
+
 		if (node.element.threadState !== undefined) {
 			const color = this.getCommentThreadWidgetStateColor(node.element.threadState, this.themeService.getColorTheme());
 			templateData.threadMetadata.icon.style.setProperty(commentViewThreadStateColorVar, `${color}`);
@@ -288,15 +305,18 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 		}
 		templateData.threadMetadata.userNames.textContent = node.element.comment.userName;
 		templateData.threadMetadata.timestamp.setTimestamp(node.element.comment.timestamp ? new Date(node.element.comment.timestamp) : undefined);
+
 		const originalComment = node.element;
 
 		templateData.threadMetadata.commentPreview.innerText = '';
 		templateData.threadMetadata.commentPreview.style.height = '22px';
+
 		if (typeof originalComment.comment.body === 'string') {
 			templateData.threadMetadata.commentPreview.innerText = originalComment.comment.body;
 		} else {
 			const disposables = new DisposableStore();
 			templateData.disposables.push(disposables);
+
 			const renderedComment = this.getRenderedComment(originalComment.comment.body, disposables);
 			templateData.disposables.push(renderedComment);
 			templateData.threadMetadata.commentPreview.appendChild(renderedComment.element.firstElementChild ?? renderedComment.element);
@@ -321,11 +341,13 @@ export class CommentNodeRenderer implements IListRenderer<ITreeNode<CommentNode>
 
 		if (!node.element.hasReply()) {
 			templateData.repliesMetadata.container.style.display = 'none';
+
 			return;
 		}
 
 		templateData.repliesMetadata.container.style.display = '';
 		templateData.repliesMetadata.count.textContent = this.getCountString(commentCount);
+
 		const lastComment = node.element.replies[node.element.replies.length - 1].comment;
 		templateData.repliesMetadata.lastReplyDetail.textContent = nls.localize('lastReplyFrom', "Last reply from {0}", lastComment.userName);
 		templateData.repliesMetadata.timestamp.setTimestamp(lastComment.timestamp ? new Date(lastComment.timestamp) : undefined);
@@ -382,6 +404,7 @@ export class Filter implements ITreeFilter<ResourceWithCommentThreads | CommentN
 		// Filter by text. Do not apply negated filters on resources instead use exclude patterns
 		if (this.options.textFilter.text && !this.options.textFilter.negate) {
 			const uriMatches = FilterOptions._filter(this.options.textFilter.text, basename(resourceMarkers.resource));
+
 			if (uriMatches) {
 				return { visibility: true, data: { type: FilterDataType.Resource, uriMatches: uriMatches || [] } };
 			}
@@ -449,9 +472,12 @@ export class CommentsList extends WorkbenchObjectTree<CommentsModel | ResourceWi
 		@IKeybindingService private readonly keybindingService: IKeybindingService
 	) {
 		const delegate = new CommentsModelVirtualDelegate();
+
 		const actionViewItemProvider = createActionViewItem.bind(undefined, instantiationService);
+
 		const menus = instantiationService.createInstance(CommentsMenus);
 		menus.setContextKeyService(contextKeyService);
+
 		const renderers = [
 			instantiationService.createInstance(ResourceWithCommentsRenderer, labels),
 			instantiationService.createInstance(CommentNodeRenderer, actionViewItemProvider, menus)
@@ -497,6 +523,7 @@ export class CommentsList extends WorkbenchObjectTree<CommentsModel | ResourceWi
 
 	private commentsOnContextMenu(treeEvent: ITreeContextMenuEvent<CommentsModel | ResourceWithCommentThreads | CommentNode | null>): void {
 		const node: CommentsModel | ResourceWithCommentThreads | CommentNode | null = treeEvent.element;
+
 		if (!(node instanceof CommentNode)) {
 			return;
 		}
@@ -506,7 +533,9 @@ export class CommentsList extends WorkbenchObjectTree<CommentsModel | ResourceWi
 		event.stopPropagation();
 
 		this.setFocus([node]);
+
 		const actions = this.menus.getResourceContextActions(node);
+
 		if (!actions.length) {
 			return;
 		}
@@ -515,6 +544,7 @@ export class CommentsList extends WorkbenchObjectTree<CommentsModel | ResourceWi
 			getActions: () => actions,
 			getActionViewItem: (action) => {
 				const keybinding = this.keybindingService.lookupKeybinding(action.id);
+
 				if (keybinding) {
 					return new ActionViewItem(action, action, { label: true, keybinding: keybinding.getLabel() });
 				}
@@ -540,6 +570,7 @@ export class CommentsList extends WorkbenchObjectTree<CommentsModel | ResourceWi
 
 	getVisibleItemCount(): number {
 		let filtered = 0;
+
 		const root = this.getNode();
 
 		for (const resourceNode of root.children) {

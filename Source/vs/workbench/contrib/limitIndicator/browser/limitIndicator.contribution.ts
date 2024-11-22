@@ -14,7 +14,9 @@ import { Event } from '../../../../base/common/event.js';
 import * as nls from '../../../../nls.js';
 import { FoldingController } from '../../../../editor/contrib/folding/browser/folding.js';
 import { ColorDetector } from '../../../../editor/contrib/colorPicker/browser/colorDetector.js';
+
 const openSettingsCommand = 'workbench.action.openSettings';
+
 const configureSettingsLabel = nls.localize('status.button.configure', "Configure");
 /**
  * Uses that language status indicator to show information which language features have been limited for performance reasons.
@@ -27,16 +29,22 @@ export class LimitIndicatorContribution extends Disposable implements IWorkbench
     @ILanguageStatusService
     languageStatusService: ILanguageStatusService) {
         super();
+
         const accessors = [new ColorDecorationAccessor(), new FoldingRangeAccessor()];
+
         const statusEntries = accessors.map(indicator => new LanguageStatusEntry(languageStatusService, indicator));
         statusEntries.forEach(entry => this._register(entry));
+
         let control: any;
+
         const onActiveEditorChanged = () => {
             const activeControl = editorService.activeTextEditorControl;
+
             if (activeControl === control) {
                 return;
             }
             control = activeControl;
+
             const editor = getCodeEditor(activeControl);
             statusEntries.forEach(statusEntry => statusEntry.onActiveEditorChanged(editor));
         };
@@ -55,6 +63,7 @@ interface LanguageFeatureAccessor {
     readonly label: string;
     readonly source: string;
     readonly settingsId: string;
+
     getLimitReporter(editor: ICodeEditor): LimitInfo | undefined;
 }
 class ColorDecorationAccessor implements LanguageFeatureAccessor {
@@ -63,6 +72,7 @@ class ColorDecorationAccessor implements LanguageFeatureAccessor {
     readonly label = nls.localize('status.limitedColorDecorators.short', 'Color Decorators');
     readonly source = nls.localize('colorDecoratorsStatusItem.source', 'Color Decorators');
     readonly settingsId = 'editor.colorDecoratorsLimit';
+
     getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
         return ColorDetector.get(editor)?.limitReporter;
     }
@@ -73,6 +83,7 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
     readonly label = nls.localize('status.limitedFoldingRanges.short', 'Folding Ranges');
     readonly source = nls.localize('foldingRangesStatusItem.source', 'Folding');
     readonly settingsId = 'editor.foldingMaximumRegions';
+
     getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
         return FoldingController.get(editor)?.limitReporter;
     }
@@ -80,6 +91,7 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 class LanguageStatusEntry {
     private _limitStatusItem: IDisposable | undefined;
     private _indicatorChangeListener: IDisposable | undefined;
+
     constructor(private languageStatusService: ILanguageStatusService, private accessor: LanguageFeatureAccessor) {
     }
     onActiveEditorChanged(editor: ICodeEditor | null): boolean {
@@ -88,14 +100,17 @@ class LanguageStatusEntry {
             this._indicatorChangeListener = undefined;
         }
         let info: LimitInfo | undefined;
+
         if (editor) {
             info = this.accessor.getLimitReporter(editor);
         }
         this.updateStatusItem(info);
+
         if (info) {
             this._indicatorChangeListener = info.onDidChange(_ => {
                 this.updateStatusItem(info);
             });
+
             return true;
         }
         return false;

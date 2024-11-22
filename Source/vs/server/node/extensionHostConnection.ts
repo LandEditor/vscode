@@ -25,7 +25,9 @@ export async function buildUserEnvironment(startParamsEnv: {
     [key: string]: string | null;
 } = {}, withUserShellEnvironment: boolean, language: string, environmentService: IServerEnvironmentService, logService: ILogService, configurationService: IConfigurationService): Promise<IProcessEnvironment> {
     const nlsConfig = await getNLSConfiguration(language, environmentService.userDataPath);
+
     let userShellEnv: typeof process.env = {};
+
     if (withUserShellEnvironment) {
         try {
             userShellEnv = await getResolvedShellEnv(configurationService, logService, environmentService.args, process.env);
@@ -35,6 +37,7 @@ export async function buildUserEnvironment(startParamsEnv: {
         }
     }
     const processEnv = process.env;
+
     const env: IProcessEnvironment = {
         ...processEnv,
         ...userShellEnv,
@@ -45,9 +48,12 @@ export async function buildUserEnvironment(startParamsEnv: {
         },
         ...startParamsEnv
     };
+
     const binFolder = environmentService.isBuilt ? join(environmentService.appRoot, 'bin') : join(environmentService.appRoot, 'resources', 'server', 'bin-dev');
+
     const remoteCliBinFolder = join(binFolder, 'remote-cli'); // contains the `code` command that can talk to the remote server
     let PATH = readCaseInsensitive(env, 'PATH');
+
     if (PATH) {
         PATH = remoteCliBinFolder + delimiter + PATH;
     }
@@ -55,10 +61,12 @@ export async function buildUserEnvironment(startParamsEnv: {
         PATH = remoteCliBinFolder;
     }
     setCaseInsensitive(env, 'PATH', PATH);
+
     if (!environmentService.args['without-browser-env-var']) {
         env.BROWSER = join(binFolder, 'helpers', isWindows ? 'browser.cmd' : 'browser.sh'); // a command that opens a browser on the local machine
     }
     removeNulls(env);
+
     return env;
 }
 class ConnectionData {
@@ -68,8 +76,11 @@ class ConnectionData {
     }
     public toIExtHostSocketMessage(): IExtHostSocketMessage {
         let skipWebSocketFrames: boolean;
+
         let permessageDeflate: boolean;
+
         let inflateBytes: VSBuffer;
+
         if (this.socket instanceof NodeSocket) {
             skipWebSocketFrames = true;
             permessageDeflate = false;
@@ -97,6 +108,7 @@ export class ExtensionHostConnection extends Disposable {
     private _remoteAddress: string;
     private _extensionHostProcess: cp.ChildProcess | null;
     private _connectionData: ConnectionData | null;
+
     constructor(private readonly _reconnectionToken: string, remoteAddress: string, socket: NodeSocket | WebSocketNodeSocket, initialDataChunk: VSBuffer, 
     @IServerEnvironmentService
     private readonly _environmentService: IServerEnvironmentService, 
@@ -116,6 +128,7 @@ export class ExtensionHostConnection extends Disposable {
     }
     override dispose(): void {
         this._cleanResources();
+
         super.dispose();
     }
     private get _logPrefix(): string {
@@ -133,6 +146,7 @@ export class ExtensionHostConnection extends Disposable {
         disposables.add(toDisposable(() => {
             extHostSocket.destroy();
         }));
+
         const stopAndCleanup = () => {
             disposables.dispose();
         };
@@ -145,6 +159,7 @@ export class ExtensionHostConnection extends Disposable {
         disposables.add(Event.fromNodeEventEmitter<Buffer>(extHostSocket, 'data')((e) => {
             connectionData.socket.write(VSBuffer.wrap(e));
         }));
+
         if (connectionData.initialDataChunk.byteLength > 0) {
             extHostSocket.write(connectionData.initialDataChunk.buffer);
         }
@@ -152,8 +167,11 @@ export class ExtensionHostConnection extends Disposable {
     private async _sendSocketToExtensionHost(extensionHostProcess: cp.ChildProcess, connectionData: ConnectionData): Promise<void> {
         // Make sure all outstanding writes have been drained before sending the socket
         await connectionData.socketDrain();
+
         const msg = connectionData.toIExtHostSocketMessage();
+
         let socket: net.Socket;
+
         if (connectionData.socket instanceof NodeSocket) {
             socket = connectionData.socket.socket;
         }
@@ -174,10 +192,13 @@ export class ExtensionHostConnection extends Disposable {
     public acceptReconnection(remoteAddress: string, _socket: NodeSocket | WebSocketNodeSocket, initialDataChunk: VSBuffer): void {
         this._remoteAddress = remoteAddress;
         this._log(`The client has reconnected.`);
+
         const connectionData = new ConnectionData(_socket, initialDataChunk);
+
         if (!this._extensionHostProcess) {
             // The extension host didn't even start up yet
             this._connectionData = connectionData;
+
             return;
         }
         this._sendSocketToExtensionHost(this._extensionHostProcess, connectionData);
@@ -188,6 +209,7 @@ export class ExtensionHostConnection extends Disposable {
             return;
         }
         this._disposed = true;
+
         if (this._connectionData) {
             this._connectionData.socket.end();
             this._connectionData = null;
@@ -201,12 +223,15 @@ export class ExtensionHostConnection extends Disposable {
     public async start(startParams: IRemoteExtensionHostStartParams): Promise<void> {
         try {
             let execArgv: string[] = process.execArgv ? process.execArgv.filter(a => !/^--inspect(-brk)?=/.test(a)) : [];
+
             if (startParams.port && !(<any>process).pkg) {
                 execArgv = [`--inspect${startParams.break ? '-brk' : ''}=${startParams.port}`];
             }
             const env = await buildUserEnvironment(startParams.env, true, startParams.language, this._environmentService, this._logService, this._configurationService);
             removeDangerousEnvVariables(env);
+
             let extHostNamedPipeServer: net.Server | null;
+
             if (this._canSendSocket) {
                 writeExtHostConnection(new SocketExtHostConnection(), env);
                 extHostNamedPipeServer = null;
@@ -225,15 +250,19 @@ export class ExtensionHostConnection extends Disposable {
             opts.execArgv.unshift('--dns-result-order=ipv4first');
             // Run Extension Host as fork of current process
             const args = ['--type=extensionHost', `--transformURIs`];
+
             const useHostProxy = this._environmentService.args['use-host-proxy'];
             args.push(`--useHostProxy=${useHostProxy ? 'true' : 'false'}`);
             this._extensionHostProcess = cp.fork(FileAccess.asFileUri('bootstrap-fork').fsPath, args, opts);
+
             const pid = this._extensionHostProcess.pid;
             this._log(`<${pid}> Launched Extension Host Process.`);
             // Catch all output coming from the extension host process
             this._extensionHostProcess.stdout!.setEncoding('utf8');
             this._extensionHostProcess.stderr!.setEncoding('utf8');
+
             const onStdout = Event.fromNodeEventEmitter<string>(this._extensionHostProcess.stdout!, 'data');
+
             const onStderr = Event.fromNodeEventEmitter<string>(this._extensionHostProcess.stderr!, 'data');
             this._register(onStdout((e) => this._log(`<${pid}> ${e}`)));
             this._register(onStderr((e) => this._log(`<${pid}><stderr> ${e}`)));
@@ -248,6 +277,7 @@ export class ExtensionHostConnection extends Disposable {
                 this._log(`<${pid}> Extension Host Process exited with code: ${code}, signal: ${signal}.`);
                 this._cleanResources();
             });
+
             if (extHostNamedPipeServer) {
                 extHostNamedPipeServer.on('connection', (socket) => {
                     extHostNamedPipeServer.close();
@@ -267,6 +297,7 @@ export class ExtensionHostConnection extends Disposable {
         }
         catch (error) {
             console.error('ExtensionHostConnection errored');
+
             if (error) {
                 console.error(error);
             }
@@ -281,6 +312,7 @@ export class ExtensionHostConnection extends Disposable {
             namedPipeServer: net.Server;
         }>((resolve, reject) => {
             const pipeName = createRandomIPCHandle();
+
             const namedPipeServer = net.createServer();
             namedPipeServer.on('error', reject);
             namedPipeServer.listen(pipeName, () => {
@@ -294,13 +326,16 @@ function readCaseInsensitive(env: {
     [key: string]: string | undefined;
 }, key: string): string | undefined {
     const pathKeys = Object.keys(env).filter(k => k.toLowerCase() === key.toLowerCase());
+
     const pathKey = pathKeys.length > 0 ? pathKeys[0] : key;
+
     return env[pathKey];
 }
 function setCaseInsensitive(env: {
     [key: string]: unknown;
 }, key: string, value: string): void {
     const pathKeys = Object.keys(env).filter(k => k.toLowerCase() === key.toLowerCase());
+
     const pathKey = pathKeys.length > 0 ? pathKeys[0] : key;
     env[pathKey] = value;
 }

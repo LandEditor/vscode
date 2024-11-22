@@ -103,6 +103,7 @@ export function parseLocalFileData(text: string) {
 	}
 
 	let data: RawLocalFileCodeBlockData;
+
 	try {
 		data = JSON.parse(text);
 	} catch (e) {
@@ -110,6 +111,7 @@ export function parseLocalFileData(text: string) {
 	}
 
 	let uri: URI;
+
 	try {
 		uri = URI.revive(data?.uri);
 	} catch (e) {
@@ -117,6 +119,7 @@ export function parseLocalFileData(text: string) {
 	}
 
 	let range: IRange | undefined;
+
 	if (data.range) {
 		// Note that since this is coming from extensions, position are actually zero based and must be converted.
 		range = new Range(data.range.startLineNumber + 1, data.range.startColumn + 1, data.range.endLineNumber + 1, data.range.endColumn + 1);
@@ -170,7 +173,9 @@ export class CodeBlockPart extends Disposable {
 
 		this.resourceContextKey = this._register(instantiationService.createInstance(ResourceContextKey));
 		this.contextKeyService = this._register(contextKeyService.createScoped(this.element));
+
 		const scopedInstantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this.contextKeyService])));
+
 		const editorElement = dom.append(this.element, $('.interactive-result-editor'));
 		this.editor = this.createEditor(scopedInstantiationService, editorElement, {
 			...getSimpleEditorOptions(this.configurationService),
@@ -199,7 +204,9 @@ export class CodeBlockPart extends Disposable {
 		});
 
 		const toolbarElement = dom.append(this.element, $('.interactive-result-code-block-toolbar'));
+
 		const editorScopedService = this.editor.contextKeyService.createScoped(toolbarElement);
+
 		const editorScopedInstantiationService = this._register(scopedInstantiationService.createChild(new ServiceCollection([IContextKeyService, editorScopedService])));
 		this.toolbar = this._register(editorScopedInstantiationService.createInstance(MenuWorkbenchToolBar, toolbarElement, menuId, {
 			menuOptions: {
@@ -208,6 +215,7 @@ export class CodeBlockPart extends Disposable {
 		}));
 
 		const vulnsContainer = dom.append(this.element, $('.interactive-result-vulns'));
+
 		const vulnsHeaderElement = dom.append(vulnsContainer, $('.interactive-result-vulns-header', undefined));
 		this.vulnsButton = this._register(new Button(vulnsHeaderElement, {
 			buttonBackground: undefined,
@@ -276,6 +284,7 @@ export class CodeBlockPart extends Disposable {
 
 	override dispose() {
 		this.isDisposed = true;
+
 		super.dispose();
 	}
 
@@ -315,7 +324,9 @@ export class CodeBlockPart extends Disposable {
 		// scrollWidth = "the width of the content that needs to be scrolled"
 		// contentWidth = "the width of the area where content is displayed"
 		const horizontalScrollbarVisible = this.currentScrollWidth > this.editor.getLayoutInfo().contentWidth;
+
 		const scrollbarHeight = this.editor.getLayoutInfo().horizontalScrollbarHeight;
+
 		const bottomPadding = horizontalScrollbarVisible ?
 			Math.max(defaultCodeblockPadding - scrollbarHeight, 2) :
 			defaultCodeblockPadding;
@@ -324,6 +335,7 @@ export class CodeBlockPart extends Disposable {
 
 	private _configureForScreenReader(): void {
 		const toolbarElt = this.toolbar.getElement();
+
 		if (this.accessibilityService.isScreenReaderOptimized()) {
 			toolbarElt.style.display = 'block';
 			toolbarElt.ariaLabel = this.configurationService.getValue(AccessibilityVerbositySettingId.Chat) ? localize('chat.codeBlock.toolbarVerbose', 'Toolbar for code block which can be reached via tab') : localize('chat.codeBlock.toolbar', 'Code block toolbar');
@@ -348,6 +360,7 @@ export class CodeBlockPart extends Disposable {
 
 	layout(width: number): void {
 		const contentHeight = this.getContentHeight();
+
 		const editorBorder = 2;
 		this.editor.layout({ width: width - editorBorder, height: contentHeight });
 		this.updatePaddingForLayout();
@@ -356,7 +369,9 @@ export class CodeBlockPart extends Disposable {
 	private getContentHeight() {
 		if (this.currentCodeBlockData?.range) {
 			const lineCount = this.currentCodeBlockData.range.endLineNumber - this.currentCodeBlockData.range.startLineNumber + 1;
+
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
 			return lineCount * lineHeight;
 		}
 		return this.editor.getContentHeight();
@@ -364,6 +379,7 @@ export class CodeBlockPart extends Disposable {
 
 	async render(data: ICodeBlockData, width: number) {
 		this.currentCodeBlockData = data;
+
 		if (data.parentContextKeyService) {
 			this.contextKeyService.updateParent(data.parentContextKeyService);
 		}
@@ -375,6 +391,7 @@ export class CodeBlockPart extends Disposable {
 		}
 
 		await this.updateEditor(data);
+
 		if (this.isDisposed) {
 			return;
 		}
@@ -392,6 +409,7 @@ export class CodeBlockPart extends Disposable {
 			dom.clearNode(this.vulnsListElement);
 			this.element.classList.remove('no-vulns');
 			this.element.classList.toggle('chat-vulnerabilities-collapsed', !data.element.vulnerabilitiesListExpanded);
+
 			dom.append(this.vulnsListElement, ...data.vulns.map(v => $('li', undefined, $('span.chat-vuln-title', undefined, v.title), ' ' + v.description)));
 			this.vulnsButton.label = this.getVulnerabilitiesLabel();
 		} else {
@@ -411,6 +429,7 @@ export class CodeBlockPart extends Disposable {
 	private async updateEditor(data: ICodeBlockData): Promise<void> {
 		const textModel = await data.textModel;
 		this.editor.setModel(textModel);
+
 		if (data.range) {
 			this.editor.setSelection(data.range);
 			this.editor.revealRangeInCenter(data.range, ScrollType.Immediate);
@@ -434,7 +453,9 @@ export class CodeBlockPart extends Disposable {
 		const referencesLabel = this.currentCodeBlockData.vulns.length > 1 ?
 			localize('vulnerabilitiesPlural', "{0} vulnerabilities", this.currentCodeBlockData.vulns.length) :
 			localize('vulnerabilitiesSingular', "{0} vulnerability", 1);
+
 		const icon = (element: IChatResponseViewModel) => element.vulnerabilitiesListExpanded ? Codicon.chevronDown : Codicon.chevronRight;
+
 		return `${referencesLabel} $(${icon(this.currentCodeBlockData.element as IChatResponseViewModel).id})`;
 	}
 }
@@ -451,6 +472,7 @@ export class ChatCodeBlockContentProvider extends Disposable implements ITextMod
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
@@ -521,8 +543,11 @@ export class CodeCompareBlockPart extends Disposable {
 		this.messageElement.tabIndex = 0;
 
 		this.contextKeyService = this._register(contextKeyService.createScoped(this.element));
+
 		const scopedInstantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this.contextKeyService])));
+
 		const editorHeader = dom.append(this.element, $('.interactive-result-header.show-file-icons'));
+
 		const editorElement = dom.append(this.element, $('.interactive-result-editor'));
 		this.diffEditor = this.createDiffEditor(scopedInstantiationService, editorElement, {
 			...getSimpleEditorOptions(this.configurationService),
@@ -552,6 +577,7 @@ export class CodeCompareBlockPart extends Disposable {
 		this.resourceLabel = this._register(scopedInstantiationService.createInstance(ResourceLabel, editorHeader, { supportIcons: true }));
 
 		const editorScopedService = this.diffEditor.getModifiedEditor().contextKeyService.createScoped(editorHeader);
+
 		const editorScopedInstantiationService = this._register(scopedInstantiationService.createChild(new ServiceCollection([IContextKeyService, editorScopedService])));
 		this.toolbar = this._register(editorScopedInstantiationService.createInstance(MenuWorkbenchToolBar, editorHeader, menuId, {
 			menuOptions: {
@@ -653,7 +679,9 @@ export class CodeCompareBlockPart extends Disposable {
 		// scrollWidth = "the width of the content that needs to be scrolled"
 		// contentWidth = "the width of the area where content is displayed"
 		const horizontalScrollbarVisible = this.currentScrollWidth > this.diffEditor.getModifiedEditor().getLayoutInfo().contentWidth;
+
 		const scrollbarHeight = this.diffEditor.getModifiedEditor().getLayoutInfo().horizontalScrollbarHeight;
+
 		const bottomPadding = horizontalScrollbarVisible ?
 			Math.max(defaultCodeblockPadding - scrollbarHeight, 2) :
 			defaultCodeblockPadding;
@@ -662,6 +690,7 @@ export class CodeCompareBlockPart extends Disposable {
 
 	private _configureForScreenReader(): void {
 		const toolbarElt = this.toolbar.getElement();
+
 		if (this.accessibilityService.isScreenReaderOptimized()) {
 			toolbarElt.style.display = 'block';
 			toolbarElt.ariaLabel = this.configurationService.getValue(AccessibilityVerbositySettingId.Chat) ? localize('chat.codeBlock.toolbarVerbose', 'Toolbar for code block which can be reached via tab') : localize('chat.codeBlock.toolbar', 'Code block toolbar');
@@ -688,6 +717,7 @@ export class CodeCompareBlockPart extends Disposable {
 		const editorBorder = 2;
 
 		const toolbar = dom.getTotalHeight(this.toolbar.getElement());
+
 		const content = this.diffEditor.getModel()
 			? this.diffEditor.getContentHeight()
 			: dom.getTotalHeight(this.messageElement);
@@ -751,6 +781,7 @@ export class CodeCompareBlockPart extends Disposable {
 			const uriLabel = this.labelService.getUriLabel(data.edit.uri, { relative: true, noPrefix: true });
 
 			let template: string;
+
 			if (data.edit.state.applied === 1) {
 				template = localize('chat.edits.1', "Made 1 change in [[``{0}``]]", uriLabel);
 			} else if (data.edit.state.applied < 0) {
@@ -836,8 +867,10 @@ export class DefaultChatTextEditor {
 					continue;
 				}
 				const model = candidate.getModel();
+
 				if (!model || !isEqual(model.original.uri, item.uri) || model.modified.uri.scheme !== Schemas.vscodeChatCodeCompareBlock) {
 					diffEditor = candidate;
+
 					break;
 				}
 			}
@@ -852,11 +885,13 @@ export class DefaultChatTextEditor {
 
 	private async _applyWithDiffEditor(diffEditor: IDiffEditor, item: IChatTextEditGroup) {
 		const model = diffEditor.getModel();
+
 		if (!model) {
 			return 0;
 		}
 
 		const diff = diffEditor.getDiffComputationResult();
+
 		if (!diff || diff.identical) {
 			return 0;
 		}
@@ -867,6 +902,7 @@ export class DefaultChatTextEditor {
 		}
 
 		const modified = new TextModelText(model.modified);
+
 		const edits = diff.changes2.map(i => i.toRangeMapping().toTextEdit(modified).toSingleEditOperation());
 
 		model.original.pushStackElement();
@@ -878,6 +914,7 @@ export class DefaultChatTextEditor {
 
 	private async _apply(item: IChatTextEditGroup) {
 		const ref = await this.modelService.createModelReference(item.uri);
+
 		try {
 
 			if (!await this._checkSha1(ref.object.textEditorModel, item)) {
@@ -885,13 +922,16 @@ export class DefaultChatTextEditor {
 			}
 
 			ref.object.textEditorModel.pushStackElement();
+
 			let total = 0;
+
 			for (const group of item.edits) {
 				const edits = group.map(TextEdit.asEditOperation);
 				ref.object.textEditorModel.pushEditOperations(null, edits, () => null);
 				total += edits.length;
 			}
 			ref.object.textEditorModel.pushStackElement();
+
 			return total;
 
 		} finally {

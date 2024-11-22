@@ -59,14 +59,19 @@ class ToggleBreakpointAction extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const debugService = accessor.get(IDebugService);
 
 		const activePane = editorService.activeEditorPane;
+
 		if (activePane instanceof DisassemblyView) {
 			const location = activePane.focusedAddressAndOffset;
+
 			if (location) {
 				const bps = debugService.getModel().getInstructionBreakpoints();
+
 				const toRemove = bps.find(bp => bp.address === location.address);
+
 				if (toRemove) {
 					debugService.removeInstructionBreakpoints(toRemove.instructionReference, toRemove.offset);
 				} else {
@@ -77,15 +82,19 @@ class ToggleBreakpointAction extends Action2 {
 		}
 
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const editor = codeEditorService.getFocusedCodeEditor() || codeEditorService.getActiveCodeEditor();
+
 		if (editor?.hasModel()) {
 			const modelUri = editor.getModel().uri;
+
 			const canSet = debugService.canSetBreakpointsIn(editor.getModel());
 			// Does not account for multi line selections, Set to remove multiple cursor on the same line
 			const lineNumbers = [...new Set(editor.getSelections().map(s => s.getPosition().lineNumber))];
 
 			await Promise.all(lineNumbers.map(async line => {
 				const bps = debugService.getModel().getBreakpoints({ lineNumber: line, uri: modelUri });
+
 				if (bps.length) {
 					await Promise.all(bps.map(bp => debugService.removeBreakpoints(bp.getId())));
 				} else if (canSet) {
@@ -116,6 +125,7 @@ class ConditionalBreakpointAction extends EditorAction {
 		const debugService = accessor.get(IDebugService);
 
 		const position = editor.getPosition();
+
 		if (position && editor.hasModel() && debugService.canSetBreakpointsIn(editor.getModel())) {
 			editor.getContribution<IBreakpointEditorContribution>(BREAKPOINT_EDITOR_CONTRIBUTION_ID)?.showBreakpointWidget(position.lineNumber, undefined, BreakpointWidgetContext.CONDITION);
 		}
@@ -145,6 +155,7 @@ class LogPointAction extends EditorAction {
 		const debugService = accessor.get(IDebugService);
 
 		const position = editor.getPosition();
+
 		if (position && editor.hasModel() && debugService.canSetBreakpointsIn(editor.getModel())) {
 			editor.getContribution<IBreakpointEditorContribution>(BREAKPOINT_EDITOR_CONTRIBUTION_ID)?.showBreakpointWidget(position.lineNumber, position.column, BreakpointWidgetContext.LOG_MESSAGE);
 		}
@@ -175,6 +186,7 @@ class TriggerByBreakpointAction extends EditorAction {
 		const debugService = accessor.get(IDebugService);
 
 		const position = editor.getPosition();
+
 		if (position && editor.hasModel() && debugService.canSetBreakpointsIn(editor.getModel())) {
 			editor.getContribution<IBreakpointEditorContribution>(BREAKPOINT_EDITOR_CONTRIBUTION_ID)?.showBreakpointWidget(position.lineNumber, position.column, BreakpointWidgetContext.TRIGGER_POINT);
 		}
@@ -202,12 +214,15 @@ class EditBreakpointAction extends EditorAction {
 		const debugService = accessor.get(IDebugService);
 
 		const position = editor.getPosition();
+
 		const debugModel = debugService.getModel();
+
 		if (!(editor.hasModel() && position)) {
 			return;
 		}
 
 		const lineBreakpoints = debugModel.getBreakpoints({ lineNumber: position.lineNumber });
+
 		if (lineBreakpoints.length === 0) {
 			return;
 		}
@@ -219,7 +234,9 @@ class EditBreakpointAction extends EditorAction {
 
 			return Math.abs(b.column - position.column);
 		});
+
 		const closestBreakpointIndex = breakpointDistances.indexOf(Math.min(...breakpointDistances));
+
 		const closestBreakpoint = lineBreakpoints[closestBreakpointIndex];
 
 		editor.getContribution<IBreakpointEditorContribution>(BREAKPOINT_EDITOR_CONTRIBUTION_ID)?.showBreakpointWidget(closestBreakpoint.lineNumber, closestBreakpoint.column);
@@ -286,6 +303,7 @@ class ToggleDisassemblyViewSourceCodeAction extends Action2 {
 
 	run(accessor: ServicesAccessor, editor: ICodeEditor, ...args: any[]): void {
 		const configService = accessor.get(IConfigurationService);
+
 		if (configService) {
 			const value = configService.getValue<IDebugConfiguration>('debug').disassemblyView.showSourceCode;
 			configService.updateValue(ToggleDisassemblyViewSourceCodeAction.configID, !value);
@@ -319,17 +337,22 @@ export class RunToCursorAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const position = editor.getPosition();
+
 		if (!(editor.hasModel() && position)) {
 			return;
 		}
 		const uri = editor.getModel().uri;
 
 		const debugService = accessor.get(IDebugService);
+
 		const viewModel = debugService.getViewModel();
+
 		const uriIdentityService = accessor.get(IUriIdentityService);
 
 		let column: number | undefined = undefined;
+
 		const focusedStackFrame = viewModel.focusedStackFrame;
+
 		if (focusedStackFrame && uriIdentityService.extUri.isEqual(focusedStackFrame.source.uri, uri) && focusedStackFrame.range.startLineNumber === position.lineNumber) {
 			// If the cursor is on a line different than the one the debugger is currently paused on, then send the breakpoint on the line without a column
 			// otherwise set it at the precise column #102199
@@ -362,15 +385,21 @@ export class SelectionToReplAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const debugService = accessor.get(IDebugService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const viewModel = debugService.getViewModel();
+
 		const session = viewModel.focusedSession;
+
 		if (!editor.hasModel() || !session) {
 			return;
 		}
 
 		const selection = editor.getSelection();
+
 		let text: string;
+
 		if (selection.isEmpty()) {
 			text = editor.getModel().getLineContent(selection.selectionStartLineNumber).trim();
 		} else {
@@ -405,8 +434,11 @@ export class SelectionToWatchExpressionsAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const debugService = accessor.get(IDebugService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
 		if (!editor.hasModel()) {
 			return;
 		}
@@ -414,13 +446,16 @@ export class SelectionToWatchExpressionsAction extends EditorAction {
 		let expression: string | undefined = undefined;
 
 		const model = editor.getModel();
+
 		const selection = editor.getSelection();
 
 		if (!selection.isEmpty()) {
 			expression = model.getValueInRange(selection);
 		} else {
 			const position = editor.getPosition();
+
 			const evaluatableExpression = await getEvaluatableExpressionAtPosition(languageFeaturesService, model, position);
+
 			if (!evaluatableExpression) {
 				return;
 			}
@@ -453,6 +488,7 @@ class ShowDebugHoverAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const position = editor.getPosition();
+
 		if (!position || !editor.hasModel()) {
 			return;
 		}
@@ -483,10 +519,15 @@ class StepIntoTargetsAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<void> {
 		const debugService = accessor.get(IDebugService);
+
 		const contextMenuService = accessor.get(IContextMenuService);
+
 		const uriIdentityService = accessor.get(IUriIdentityService);
+
 		const session = debugService.getViewModel().focusedSession;
+
 		const frame = debugService.getViewModel().focusedStackFrame;
+
 		const selection = editor.getSelection();
 
 		const targetPosition = selection?.getPosition() || (frame && { lineNumber: frame.range.startLineNumber, column: frame.range.startColumn });
@@ -500,14 +541,17 @@ class StepIntoTargetsAction extends EditorAction {
 
 
 		const targets = await session.stepInTargets(frame.frameId);
+
 		if (!targets?.length) {
 			MessageController.get(editor)?.showMessage(NO_TARGETS_MESSAGE, targetPosition!);
+
 			return;
 		}
 
 		// If there is a selection, try to find the best target with a position to step into.
 		if (selection) {
 			const positionalTargets: { start: Position; end?: Position; target: DebugProtocol.StepInTarget }[] = [];
+
 			for (const target of targets) {
 				if (target.line) {
 					positionalTargets.push({
@@ -525,17 +569,23 @@ class StepIntoTargetsAction extends EditorAction {
 			// Try to find a target with a start and end that is around the cursor
 			// position. Or, if none, whatever is before the cursor.
 			const best = positionalTargets.find(t => t.end && needle.isBefore(t.end) && t.start.isBeforeOrEqual(needle)) || positionalTargets.find(t => t.end === undefined && t.start.isBeforeOrEqual(needle));
+
 			if (best) {
 				session.stepIn(frame.thread.threadId, best.target.id);
+
 				return;
 			}
 		}
 
 		// Otherwise, show a context menu and have the user pick a target
 		editor.revealLineInCenterIfOutsideViewport(frame.range.startLineNumber);
+
 		const cursorCoords = editor.getScrolledVisiblePosition(targetPosition!);
+
 		const editorCoords = getDomNodePagePosition(editor.getDomNode());
+
 		const x = editorCoords.left + cursorCoords.left;
+
 		const y = editorCoords.top + cursorCoords.top + cursorCoords.height;
 
 		contextMenuService.showContextMenu({
@@ -554,11 +604,14 @@ class GoToBreakpointAction extends EditorAction {
 
 	async run(accessor: ServicesAccessor, editor: ICodeEditor): Promise<any> {
 		const debugService = accessor.get(IDebugService);
+
 		const editorService = accessor.get(IEditorService);
+
 		const uriIdentityService = accessor.get(IUriIdentityService);
 
 		if (editor.hasModel()) {
 			const currentUri = editor.getModel().uri;
+
 			const currentLine = editor.getPosition().lineNumber;
 			//Breakpoints returned from `getBreakpoints` are already sorted.
 			const allEnabledBreakpoints = debugService.getModel().getBreakpoints({ enabledOnly: true });

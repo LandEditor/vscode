@@ -21,6 +21,7 @@ export const MIN_ZOOM_LEVEL = -8;
 export function applyZoom(zoomLevel: number, target: ApplyZoomTarget | Window): void {
     zoomLevel = Math.min(Math.max(zoomLevel, MIN_ZOOM_LEVEL), MAX_ZOOM_LEVEL); // cap zoom levels between -8 and 8
     const targetWindows: Window[] = [];
+
     if (target === ApplyZoomTarget.ACTIVE_WINDOW) {
         targetWindows.push(getActiveWindow());
     }
@@ -32,7 +33,9 @@ export function applyZoom(zoomLevel: number, target: ApplyZoomTarget | Window): 
     }
     for (const targetWindow of targetWindows) {
         getGlobals(targetWindow)?.webFrame?.setZoomLevel(zoomLevel);
+
         setZoomFactor(zoomLevelToZoomFactor(zoomLevel), targetWindow);
+
         setZoomLevel(zoomLevel, targetWindow);
     }
 }
@@ -46,6 +49,7 @@ function getGlobals(win: Window): ISandboxGlobals | undefined {
         const auxiliaryWindow = win as unknown as {
             vscode: ISandboxGlobals;
         };
+
         if (auxiliaryWindow?.vscode?.ipcRenderer && auxiliaryWindow?.vscode?.webFrame) {
             return auxiliaryWindow.vscode;
         }
@@ -62,6 +66,7 @@ export function zoomOut(target: ApplyZoomTarget | Window): void {
 export interface ILoadOptions<T extends ISandboxConfiguration = ISandboxConfiguration> {
     configureDeveloperSettings?: (config: T) => {
         forceDisableShowDevtoolsOnError?: boolean;
+
         forceEnableDeveloperKeybindings?: boolean;
         disallowReloadKeybinding?: boolean;
         removeDeveloperKeybindingsAfterLoad?: boolean;

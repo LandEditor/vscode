@@ -68,10 +68,13 @@ import { INLINE_CHAT_ID } from '../../inlineChat/common/inlineChat.js';
 import { ReplEditorControl } from '../../replNotebook/browser/replEditor.js';
 
 const DECORATION_KEY = 'interactiveInputDecoration';
+
 const INTERACTIVE_EDITOR_VIEW_STATE_PREFERENCE_KEY = 'InteractiveEditorViewState';
 
 const INPUT_CELL_VERTICAL_PADDING = 8;
+
 const INPUT_CELL_HORIZONTAL_PADDING_RIGHT = 10;
+
 const INPUT_EDITOR_PADDING = 8;
 
 
@@ -179,6 +182,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		this._register(this._notebookExecutionStateService.onDidChangeExecution((e) => {
 			if (e.type === NotebookExecutionType.cell && isEqual(e.notebook, this._notebookWidget.value?.viewModel?.notebookDocument.uri)) {
 				const cell = this._notebookWidget.value?.getCellByHandle(e.cellHandle);
+
 				if (cell && e.changed?.state) {
 					this._scrollIfNecessary(cell);
 				}
@@ -224,15 +228,18 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _createLayoutStyles(): void {
 		this._styleElement = domStylesheets.createStyleSheet(this._rootElement);
+
 		const styleSheets: string[] = [];
 
 		const {
 			codeCellLeftMargin,
 			cellRunGutter
 		} = this._notebookOptions.getLayoutConfiguration();
+
 		const {
 			focusIndicator
 		} = this._notebookOptions.getDisplayOptions();
+
 		const leftMargin = this._notebookOptions.getCellEditorContainerLeftMargin();
 
 		styleSheets.push(`
@@ -240,6 +247,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 				padding: ${INPUT_CELL_VERTICAL_PADDING}px ${INPUT_CELL_HORIZONTAL_PADDING_RIGHT}px ${INPUT_CELL_VERTICAL_PADDING}px ${leftMargin}px;
 			}
 		`);
+
 		if (focusIndicator === 'gutter') {
 			styleSheets.push(`
 				.interactive-editor .input-cell-container:focus-within .input-focus-indicator::before {
@@ -281,11 +289,14 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _computeEditorOptions(): IEditorOptions {
 		let overrideIdentifier: string | undefined = undefined;
+
 		if (this._codeEditorWidget) {
 			overrideIdentifier = this._codeEditorWidget.getModel()?.getLanguageId();
 		}
 		const editorOptions = deepClone(this._configurationService.getValue<IEditorOptions>('editor', { overrideIdentifier }));
+
 		const editorOptionsOverride = getSimpleEditorOptions(this._configurationService);
+
 		const computed = Object.freeze({
 			...editorOptions,
 			...editorOptionsOverride,
@@ -306,16 +317,19 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	protected override saveState(): void {
 		this._saveEditorViewState(this.input);
+
 		super.saveState();
 	}
 
 	override getViewState(): InteractiveEditorViewState | undefined {
 		const input = this.input;
+
 		if (!(input instanceof InteractiveEditorInput)) {
 			return undefined;
 		}
 
 		this._saveEditorViewState(input);
+
 		return this._loadNotebookEditorViewState(input);
 	}
 
@@ -326,6 +340,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 			}
 
 			const state = this._notebookWidget.value.getEditorViewState();
+
 			const editorState = this._codeEditorWidget.saveViewState();
 			this._editorMemento.saveEditorState(this.group, input.notebookEditorInput.resource, {
 				notebook: state,
@@ -336,6 +351,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _loadNotebookEditorViewState(input: InteractiveEditorInput): InteractiveEditorViewState | undefined {
 		const result = this._editorMemento.loadEditorState(this.group, input.notebookEditorInput.resource);
+
 		if (result) {
 			return result;
 		}
@@ -344,7 +360,9 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		for (const group of this._editorGroupService.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE)) {
 			if (group.activeEditorPane !== this && group.activeEditorPane === this && group.activeEditor?.matches(input)) {
 				const notebook = this._notebookWidget.value?.getEditorViewState();
+
 				const input = this._codeEditorWidget.saveViewState();
+
 				return {
 					notebook,
 					input
@@ -415,7 +433,9 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		if (this._lastLayoutDimensions) {
 			this._notebookEditorContainer.style.height = `${this._lastLayoutDimensions.dimension.height - this.inputCellContainerHeight}px`;
 			this._notebookWidget.value!.layout(new DOM.Dimension(this._lastLayoutDimensions.dimension.width, this._lastLayoutDimensions.dimension.height - this.inputCellContainerHeight), this._notebookEditorContainer);
+
 			const leftMargin = this._notebookOptions.getCellEditorContainerLeftMargin();
+
 			const maxHeight = Math.min(this._lastLayoutDimensions.dimension.height / 2, this.inputCellEditorHeight);
 			this._codeEditorWidget.layout(this._validateDimension(this._lastLayoutDimensions.dimension.width - leftMargin - INPUT_CELL_HORIZONTAL_PADDING_RIGHT, maxHeight));
 			this._inputFocusIndicator.style.height = `${this.inputCellEditorHeight}px`;
@@ -424,7 +444,9 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		}
 
 		await super.setInput(input, options, context, token);
+
 		const model = await input.resolve();
+
 		if (this._runbuttonToolbar) {
 			this._runbuttonToolbar.context = input.resource;
 		}
@@ -463,9 +485,11 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		}));
 
 		const languageId = this._notebookWidget.value?.activeKernel?.supportedLanguages[0] ?? input.language ?? PLAINTEXT_LANGUAGE_ID;
+
 		const editorModel = await input.resolveInput(languageId);
 		editorModel.setLanguage(languageId);
 		this._codeEditorWidget.setModel(editorModel);
+
 		if (viewState?.input) {
 			this._codeEditorWidget.restoreViewState(viewState.input);
 		}
@@ -519,6 +543,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 		});
 
 		const cursorAtBoundaryContext = INTERACTIVE_INPUT_CURSOR_BOUNDARY.bindTo(this._contextKeyService);
+
 		if (input.resource && input.historyService.has(input.resource)) {
 			cursorAtBoundaryContext.set('top');
 		} else {
@@ -527,10 +552,15 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 		this._widgetDisposableStore.add(this._codeEditorWidget.onDidChangeCursorPosition(({ position }) => {
 			const viewModel = this._codeEditorWidget._getViewModel()!;
+
 			const lastLineNumber = viewModel.getLineCount();
+
 			const lastLineCol = viewModel.getLineLength(lastLineNumber) + 1;
+
 			const viewPosition = viewModel.coordinatesConverter.convertModelPositionToViewPosition(position);
+
 			const firstLine = viewPosition.lineNumber === 1 && viewPosition.column === 1;
+
 			const lastLine = viewPosition.lineNumber === lastLineNumber && viewPosition.column === lastLineCol;
 
 			if (firstLine) {
@@ -550,8 +580,10 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 		this._widgetDisposableStore.add(editorModel.onDidChangeContent(() => {
 			const value = editorModel.getValue();
+
 			if (this.input?.resource) {
 				const historyService = (this.input as InteractiveEditorInput).historyService;
+
 				if (!historyService.matchesCurrent(this.input.resource, value)) {
 					historyService.replaceLast(this.input.resource, value);
 				}
@@ -567,21 +599,27 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	override setOptions(options: INotebookEditorOptions | undefined): void {
 		this._notebookWidget.value?.setOptions(options);
+
 		super.setOptions(options);
 	}
 
 	private _toEditorPaneSelectionChangeReason(e: ICursorPositionChangedEvent): EditorPaneSelectionChangeReason {
 		switch (e.source) {
 			case TextEditorSelectionSource.PROGRAMMATIC: return EditorPaneSelectionChangeReason.PROGRAMMATIC;
+
 			case TextEditorSelectionSource.NAVIGATION: return EditorPaneSelectionChangeReason.NAVIGATION;
+
 			case TextEditorSelectionSource.JUMP: return EditorPaneSelectionChangeReason.JUMP;
+
 			default: return EditorPaneSelectionChangeReason.USER;
 		}
 	}
 
 	private _cellAtBottom(cell: ICellViewModel): boolean {
 		const visibleRanges = this._notebookWidget.value?.visibleRanges || [];
+
 		const cellIndex = this._notebookWidget.value?.getCellIndex(cell);
+
 		if (cellIndex === Math.max(...visibleRanges.map(range => range.end - 1))) {
 			return true;
 		}
@@ -590,6 +628,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _scrollIfNecessary(cvm: ICellViewModel) {
 		const index = this._notebookWidget.value!.getCellIndex(cvm);
+
 		if (index === this._notebookWidget.value!.getLength() - 1) {
 			// If we're already at the bottom or auto scroll is enabled, scroll to the bottom
 			if (this._configurationService.getValue<boolean>(ReplEditorSettings.interactiveWindowAlwaysScrollOnNewCell) || this._cellAtBottom(cvm)) {
@@ -600,10 +639,12 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _syncWithKernel() {
 		const notebook = this._notebookWidget.value?.textModel;
+
 		const textModel = this._codeEditorWidget.getModel();
 
 		if (notebook && textModel) {
 			const info = this._notebookKernelService.getMatchingKernel(notebook);
+
 			const selectedOrSuggested = info.selected
 				?? (info.suggestions.length === 1 ? info.suggestions[0] : undefined)
 				?? (info.all.length === 1 ? info.all[0] : undefined);
@@ -624,6 +665,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 	layout(dimension: DOM.Dimension, position: DOM.IDomPosition): void {
 		this._rootElement.classList.toggle('mid-width', dimension.width < 1000 && dimension.width >= 600);
 		this._rootElement.classList.toggle('narrow-width', dimension.width < 600);
+
 		const editorHeightChanged = dimension.height !== this._lastLayoutDimensions?.dimension.height;
 		this._lastLayoutDimensions = { dimension, position };
 
@@ -641,7 +683,9 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 	private _layoutWidgets(dimension: DOM.Dimension, position: DOM.IDomPosition) {
 		const contentHeight = this._codeEditorWidget.hasModel() ? this._codeEditorWidget.getContentHeight() : this.inputCellEditorHeight;
+
 		const maxHeight = Math.min(dimension.height / 2, contentHeight);
+
 		const leftMargin = this._notebookOptions.getCellEditorContainerLeftMargin();
 
 		const inputCellContainerHeight = maxHeight + INPUT_CELL_VERTICAL_PADDING * 2;
@@ -714,6 +758,7 @@ export class InteractiveEditor extends EditorPane implements IEditorPaneWithScro
 
 		if (!visible) {
 			this._saveEditorViewState(this.input);
+
 			if (this.input && this._notebookWidget.value) {
 				this._notebookWidget.value.onWillHide();
 			}

@@ -12,6 +12,7 @@ export interface ErrorListenerUnbind {
 export class ErrorHandler {
     private unexpectedErrorHandler: (e: any) => void;
     private listeners: ErrorListenerCallback[];
+
     constructor() {
         this.listeners = [];
         this.unexpectedErrorHandler = function (e: any) {
@@ -28,6 +29,7 @@ export class ErrorHandler {
     }
     addListener(listener: ErrorListenerCallback): ErrorListenerUnbind {
         this.listeners.push(listener);
+
         return () => {
             this._removeListener(listener);
         };
@@ -71,6 +73,7 @@ export function isSigPipeError(e: unknown): e is Error {
         return false;
     }
     const cast = e as Record<string, string | undefined>;
+
     return cast.code === 'EPIPE' && cast.syscall?.toUpperCase() === 'WRITE';
 }
 /**
@@ -80,6 +83,7 @@ export function isSigPipeError(e: unknown): e is Error {
 */
 export function onBugIndicatingError(e: any): undefined {
     errorHandler.onUnexpectedError(e);
+
     return undefined;
 }
 export function onUnexpectedError(e: any): undefined {
@@ -108,7 +112,9 @@ export function transformErrorForSerialization(error: any): any;
 export function transformErrorForSerialization(error: any): any {
     if (error instanceof Error) {
         const { name, message } = error;
+
         const stack: string = (<any>error).stacktrace || (<any>error).stack;
+
         return {
             $isError: true,
             name,
@@ -122,6 +128,7 @@ export function transformErrorForSerialization(error: any): any {
 }
 export function transformErrorFromSerialization(data: SerializedError): Error {
     let error: Error;
+
     if (data.noTelemetry) {
         error = new ErrorNoTelemetry();
     }
@@ -131,18 +138,27 @@ export function transformErrorFromSerialization(data: SerializedError): Error {
     }
     error.message = data.message;
     error.stack = data.stack;
+
     return error;
 }
 // see https://github.com/v8/v8/wiki/Stack%20Trace%20API#basic-stack-traces
 export interface V8CallSite {
     getThis(): unknown;
+
     getTypeName(): string | null;
+
     getFunction(): Function | undefined;
+
     getFunctionName(): string | null;
+
     getMethodName(): string | null;
+
     getFileName(): string | null;
+
     getLineNumber(): number | null;
+
     getColumnNumber(): number | null;
+
     getEvalOrigin(): string | undefined;
     isToplevel(): boolean;
     isEval(): boolean;
@@ -174,6 +190,7 @@ export class CancellationError extends Error {
 export function canceled(): Error {
     const error = new Error(canceledName);
     error.name = error.message;
+
     return error;
 }
 export function illegalArgument(name?: string): Error {
@@ -212,6 +229,7 @@ export function getErrorMessage(err: any): string {
 export class NotImplementedError extends Error {
     constructor(message?: string) {
         super('NotImplemented');
+
         if (message) {
             this.message = message;
         }
@@ -220,6 +238,7 @@ export class NotImplementedError extends Error {
 export class NotSupportedError extends Error {
     constructor(message?: string) {
         super('NotSupported');
+
         if (message) {
             this.message = message;
         }
@@ -233,6 +252,7 @@ export class ExpectedError extends Error {
  */
 export class ErrorNoTelemetry extends Error {
     override readonly name: string;
+
     constructor(msg?: string) {
         super(msg);
         this.name = 'CodeExpectedError';
@@ -244,6 +264,7 @@ export class ErrorNoTelemetry extends Error {
         const result = new ErrorNoTelemetry();
         result.message = err.message;
         result.stack = err.stack;
+
         return result;
     }
     public static isErrorNoTelemetry(err: Error): err is ErrorNoTelemetry {

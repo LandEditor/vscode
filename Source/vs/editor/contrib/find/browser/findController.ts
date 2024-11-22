@@ -47,6 +47,7 @@ export function getSelectionSearchString(editor: ICodeEditor, seedSearchStringFr
 		|| seedSearchStringFromSelection === 'multiple') {
 		if (selection.isEmpty()) {
 			const wordAtPosition = editor.getConfiguredWordAtPosition(selection.getStartPosition());
+
 			if (wordAtPosition && (false === seedSearchStringFromNonEmptySelection)) {
 				return wordAtPosition.word;
 			}
@@ -164,6 +165,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	public override dispose(): void {
 		this.disposeModel();
+
 		super.dispose();
 	}
 
@@ -232,6 +234,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	public toggleCaseSensitive(): void {
 		this._state.change({ matchCase: !this._state.matchCase }, false);
+
 		if (!this._state.isRevealed) {
 			this.highlightFindOptions();
 		}
@@ -239,6 +242,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	public toggleWholeWords(): void {
 		this._state.change({ wholeWord: !this._state.wholeWord }, false);
+
 		if (!this._state.isRevealed) {
 			this.highlightFindOptions();
 		}
@@ -246,6 +250,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	public toggleRegex(): void {
 		this._state.change({ isRegex: !this._state.isRegex }, false);
+
 		if (!this._state.isRevealed) {
 			this.highlightFindOptions();
 		}
@@ -253,6 +258,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 	public togglePreserveCase(): void {
 		this._state.change({ preserveCase: !this._state.preserveCase }, false);
+
 		if (!this._state.isRevealed) {
 			this.highlightFindOptions();
 		}
@@ -310,6 +316,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 		if (opts.seedSearchStringFromSelection === 'single') {
 			const selectionSearchString = getSelectionSearchString(this._editor, opts.seedSearchStringFromSelection, opts.seedSearchStringFromNonEmptySelection);
+
 			if (selectionSearchString) {
 				if (this._state.isRegex) {
 					stateChanges.searchString = strings.escapeRegExpCharacters(selectionSearchString);
@@ -319,6 +326,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 			}
 		} else if (opts.seedSearchStringFromSelection === 'multiple' && !opts.updateSearchScope) {
 			const selectionSearchString = getSelectionSearchString(this._editor, opts.seedSearchStringFromSelection);
+
 			if (selectionSearchString) {
 				stateChanges.searchString = selectionSearchString;
 			}
@@ -346,6 +354,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 
 		if (opts.updateSearchScope) {
 			const currentSelections = this._editor.getSelections();
+
 			if (currentSelections.some(selection => !selection.isEmpty())) {
 				stateChanges.searchScope = currentSelections;
 			}
@@ -367,6 +376,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	public moveToNextMatch(): boolean {
 		if (this._model) {
 			this._model.moveToNextMatch();
+
 			return true;
 		}
 		return false;
@@ -375,6 +385,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	public moveToPrevMatch(): boolean {
 		if (this._model) {
 			this._model.moveToPrevMatch();
+
 			return true;
 		}
 		return false;
@@ -383,6 +394,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	public goToMatch(index: number): boolean {
 		if (this._model) {
 			this._model.moveToMatch(index);
+
 			return true;
 		}
 		return false;
@@ -391,6 +403,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 	public replace(): boolean {
 		if (this._model) {
 			this._model.replace();
+
 			return true;
 		}
 		return false;
@@ -400,9 +413,11 @@ export class CommonFindController extends Disposable implements IEditorContribut
 		if (this._model) {
 			if (this._editor.getModel()?.isTooLargeForHeapOperation()) {
 				this._notificationService.warn(nls.localize('too.large.for.replaceall', "The file is too large to perform a replace all operation."));
+
 				return false;
 			}
 			this._model.replaceAll();
+
 			return true;
 		}
 		return false;
@@ -412,6 +427,7 @@ export class CommonFindController extends Disposable implements IEditorContribut
 		if (this._model) {
 			this._model.selectAllMatches();
 			this._editor.focus();
+
 			return true;
 		}
 		return false;
@@ -465,18 +481,24 @@ export class FindController extends CommonFindController implements IFindControl
 		}
 
 		const selection = this._editor.getSelection();
+
 		let updateSearchScope = false;
 
 		switch (this._editor.getOption(EditorOption.find).autoFindInSelection) {
 			case 'always':
 				updateSearchScope = true;
+
 				break;
+
 			case 'never':
 				updateSearchScope = false;
+
 				break;
+
 			case 'multiline': {
 				const isSelectionMultipleLine = !!selection && selection.startLineNumber !== selection.endLineNumber;
 				updateSearchScope = isSelectionMultipleLine;
+
 				break;
 			}
 			default:
@@ -540,6 +562,7 @@ export const StartFindAction = registerMultiEditorAction(new MultiEditorAction({
 
 StartFindAction.addImplementation(0, (accessor: ServicesAccessor, editor: ICodeEditor, args: any): boolean | Promise<void> => {
 	const controller = CommonFindController.get(editor);
+
 	if (!controller) {
 		return false;
 	}
@@ -591,6 +614,7 @@ export class StartFindWithArgsAction extends EditorAction {
 
 	public async run(accessor: ServicesAccessor | null, editor: ICodeEditor, args?: IFindStartArguments): Promise<void> {
 		const controller = CommonFindController.get(editor);
+
 		if (controller) {
 			const newState: INewFindReplaceState = args ? {
 				searchString: args.searchString,
@@ -642,6 +666,7 @@ export class StartFindWithSelectionAction extends EditorAction {
 
 	public async run(accessor: ServicesAccessor | null, editor: ICodeEditor): Promise<void> {
 		const controller = CommonFindController.get(editor);
+
 		if (controller) {
 			await controller.start({
 				forceRevealReplace: false,
@@ -661,6 +686,7 @@ export class StartFindWithSelectionAction extends EditorAction {
 export abstract class MatchFindAction extends EditorAction {
 	public async run(accessor: ServicesAccessor | null, editor: ICodeEditor): Promise<void> {
 		const controller = CommonFindController.get(editor);
+
 		if (controller && !this._run(controller)) {
 			await controller.start({
 				forceRevealReplace: false,
@@ -701,8 +727,10 @@ export class NextMatchFindAction extends MatchFindAction {
 
 	protected _run(controller: CommonFindController): boolean {
 		const result = controller.moveToNextMatch();
+
 		if (result) {
 			controller.editor.pushUndoStop();
+
 			return true;
 		}
 
@@ -740,6 +768,7 @@ export class PreviousMatchFindAction extends MatchFindAction {
 export class MoveToMatchFindAction extends EditorAction {
 
 	private _highlightDecorations: string[] = [];
+
 	constructor() {
 		super({
 			id: FIND_IDS.GoToMatchFindAction,
@@ -750,32 +779,39 @@ export class MoveToMatchFindAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void | Promise<void> {
 		const controller = CommonFindController.get(editor);
+
 		if (!controller) {
 			return;
 		}
 
 		const matchesCount = controller.getState().matchesCount;
+
 		if (matchesCount < 1) {
 			const notificationService = accessor.get(INotificationService);
 			notificationService.notify({
 				severity: Severity.Warning,
 				message: nls.localize('findMatchAction.noResults', "No matches. Try searching for something else.")
 			});
+
 			return;
 		}
 
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const disposables = new DisposableStore();
+
 		const inputBox = disposables.add(quickInputService.createInputBox());
 		inputBox.placeholder = nls.localize('findMatchAction.inputPlaceHolder', "Type a number to go to a specific match (between 1 and {0})", matchesCount);
 
 		const toFindMatchIndex = (value: string): number | undefined => {
 			const index = parseInt(value);
+
 			if (isNaN(index)) {
 				return undefined;
 			}
 
 			const matchCount = controller.getState().matchesCount;
+
 			if (index > 0 && index <= matchCount) {
 				return index - 1; // zero based
 			} else if (index < 0 && index >= -matchCount) {
@@ -787,11 +823,14 @@ export class MoveToMatchFindAction extends EditorAction {
 
 		const updatePickerAndEditor = (value: string) => {
 			const index = toFindMatchIndex(value);
+
 			if (typeof index === 'number') {
 				// valid
 				inputBox.validationMessage = undefined;
 				controller.goToMatch(index);
+
 				const currentMatch = controller.getState().currentMatch;
+
 				if (currentMatch) {
 					this.addDecorations(editor, currentMatch);
 				}
@@ -806,6 +845,7 @@ export class MoveToMatchFindAction extends EditorAction {
 
 		disposables.add(inputBox.onDidAccept(() => {
 			const index = toFindMatchIndex(inputBox.value);
+
 			if (typeof index === 'number') {
 				controller.goToMatch(index);
 				inputBox.hide();
@@ -857,11 +897,13 @@ export class MoveToMatchFindAction extends EditorAction {
 export abstract class SelectionMatchFindAction extends EditorAction {
 	public async run(accessor: ServicesAccessor | null, editor: ICodeEditor): Promise<void> {
 		const controller = CommonFindController.get(editor);
+
 		if (!controller) {
 			return;
 		}
 
 		const selectionSearchString = getSelectionSearchString(editor, 'single', false);
+
 		if (selectionSearchString) {
 			controller.setSearchString(selectionSearchString);
 		}
@@ -946,11 +988,13 @@ StartFindReplaceAction.addImplementation(0, (accessor: ServicesAccessor, editor:
 		return false;
 	}
 	const controller = CommonFindController.get(editor);
+
 	if (!controller) {
 		return false;
 	}
 
 	const currentSelection = editor.getSelection();
+
 	const findInputFocused = controller.isFindInputFocused();
 	// we only seed search string from selection when the current selection is single line and not empty,
 	// + the find input is not focused

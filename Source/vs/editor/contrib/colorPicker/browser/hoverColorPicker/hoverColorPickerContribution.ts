@@ -31,6 +31,7 @@ export class HoverColorPickerContribution extends Disposable implements IEditorC
 	private onMouseDown(mouseEvent: IEditorMouseEvent) {
 
 		const colorDecoratorsActivatedOn = this._editor.getOption(EditorOption.colorDecoratorsActivatedOn);
+
 		if (colorDecoratorsActivatedOn !== 'click' && colorDecoratorsActivatedOn !== 'clickAndHover') {
 			return;
 		}
@@ -38,6 +39,7 @@ export class HoverColorPickerContribution extends Disposable implements IEditorC
 			return;
 		}
 		const hoverController = this._editor.getContribution<ContentHoverController>(ContentHoverController.ID);
+
 		if (!hoverController) {
 			return;
 		}
@@ -45,6 +47,7 @@ export class HoverColorPickerContribution extends Disposable implements IEditorC
 			return;
 		}
 		const targetRange = mouseEvent.target.range;
+
 		if (!targetRange) {
 			return;
 		}
@@ -55,6 +58,7 @@ export class HoverColorPickerContribution extends Disposable implements IEditorC
 
 export function isOnColorDecorator(mouseEvent: IPartialEditorMouseEvent): boolean {
 	const target = mouseEvent.target;
+
 	return !!target
 		&& target.type === MouseTargetType.CONTENT_TEXT
 		&& target.detail.injectedText?.options.attachedData === ColorDecorationInjectedTextMarker;

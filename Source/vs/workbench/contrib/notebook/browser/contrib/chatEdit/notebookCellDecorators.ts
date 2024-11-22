@@ -40,6 +40,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 	private diffForPreviouslyAppliedDecorators?: IDocumentDiff;
 
 	private readonly perEditorDisposables = this.add(new DisposableStore());
+
 	constructor(
 		notebookEditor: INotebookEditor,
 		public readonly modifiedCell: NotebookCellTextModel,
@@ -52,13 +53,17 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 		super();
 
 		const onDidChangeVisibleRanges = observableFromEvent(notebookEditor.onDidChangeVisibleRanges, () => notebookEditor.visibleRanges);
+
 		const editorObs = derived((r) => {
 			const visibleRanges = onDidChangeVisibleRanges.read(r);
+
 			const visibleCellHandles = visibleRanges.map(range => notebookEditor.getCellsInRange(range)).flat().map(c => c.handle);
+
 			if (!visibleCellHandles.includes(modifiedCell.handle)) {
 				return;
 			}
 			const editor = notebookEditor.codeEditors.find(item => item[0].handle === modifiedCell.handle)?.[1];
+
 			if (editor?.getModel() !== this.modifiedCell.textModel) {
 				return;
 			}
@@ -87,10 +92,12 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 		const shouldBeReadOnly = derived(this, r => {
 			const editor = editorObs.read(r);
+
 			if (!editor) {
 				return false;
 			}
 			const value = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			if (!value || value.state.read(r) !== ChatEditingSessionState.StreamingEdits) {
 				return false;
 			}
@@ -99,14 +106,17 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 
 		let actualReadonly: boolean | undefined;
+
 		let actualDeco: 'off' | 'editable' | 'on' | undefined;
 
 		this.add(autorun((r) => {
 			const editor = editorObs.read(r);
+
 			if (!editor) {
 				return;
 			}
 			const value = shouldBeReadOnly.read(r);
+
 			if (value) {
 				actualReadonly ??= editor.getOption(EditorOption.readOnly);
 				actualDeco ??= editor.getOption(EditorOption.renderValidationDecorations);
@@ -138,20 +148,26 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 		}
 		if (editor.getOption(EditorOption.inDiffEditor)) {
 			this.perEditorDisposables.clear();
+
 			return;
 		}
 		const model = editor.getModel();
+
 		if (!model || model !== this.modifiedCell.textModel) {
 			this.perEditorDisposables.clear();
+
 			return;
 		}
 
 		const originalModel = this.getOrCreateOriginalModel(editor);
+
 		if (!originalModel) {
 			this.perEditorDisposables.clear();
+
 			return;
 		}
 		const version = model.getVersionId();
+
 		const diff = await this._editorWorkerService.computeDiff(
 			originalModel.uri,
 			model.uri,
@@ -176,6 +192,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 	private getOrCreateOriginalModel(editor: ICodeEditor) {
 		if (!this._originalModel) {
 			const model = editor.getModel();
+
 			if (!model) {
 				return;
 			}
@@ -206,10 +223,12 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 			...diffAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
 		});
+
 		const chatDiffWholeLineAddDecoration = ModelDecorationOptions.createDynamic({
 			...diffWholeLineAddDecoration,
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		});
+
 		const createOverviewDecoration = (overviewRulerColor: string, minimapColor: string) => {
 			return ModelDecorationOptions.createDynamic({
 				description: 'chat-editing-decoration',
@@ -217,8 +236,11 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				minimap: { color: themeColorFromId(minimapColor), position: MinimapPosition.Gutter },
 			});
 		};
+
 		const modifiedDecoration = createOverviewDecoration(overviewRulerModifiedForeground, minimapGutterModifiedBackground);
+
 		const addedDecoration = createOverviewDecoration(overviewRulerAddedForeground, minimapGutterAddedBackground);
+
 		const deletedDecoration = createOverviewDecoration(overviewRulerDeletedForeground, minimapGutterDeletedBackground);
 
 		editor.changeViewZones((viewZoneChangeAccessor) => {
@@ -226,13 +248,18 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 				viewZoneChangeAccessor.removeZone(id);
 			}
 			this._viewZones = [];
+
 			const modifiedDecorations: IModelDeltaDecoration[] = [];
+
 			const mightContainNonBasicASCII = originalModel?.mightContainNonBasicASCII();
+
 			const mightContainRTL = originalModel?.mightContainRTL();
+
 			const renderOptions = RenderOptions.fromEditor(editor);
 
 			for (const diffEntry of diff.changes) {
 				const originalRange = diffEntry.original;
+
 				if (originalModel) {
 					originalModel.tokenization.forceTokenization(Math.max(1, originalRange.endLineNumberExclusive - 1));
 				}
@@ -242,7 +269,9 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 					mightContainNonBasicASCII,
 					mightContainRTL,
 				);
+
 				const decorations: InlineDecoration[] = [];
+
 				for (const i of diffEntry.innerChanges || []) {
 					decorations.push(new InlineDecoration(
 						i.originalRange.delta(-(diffEntry.original.startLineNumber - 1)),
@@ -279,10 +308,13 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 					});
 				}
 				const domNode = document.createElement('div');
+
 				domNode.className = 'chat-editing-original-zone view-lines line-delete monaco-mouse-cursor-text';
+
 				const result = renderLines(source, renderOptions, decorations, domNode);
 
 				const isCreatedContent = decorations.length === 1 && decorations[0].range.isEmpty() && decorations[0].range.startLineNumber === 1;
+
 				if (!isCreatedContent) {
 					const viewZoneData: IViewZone = {
 						afterLineNumber: diffEntry.modified.startLineNumber - 1,
@@ -302,6 +334,7 @@ export class NotebookCellDiffDecorator extends DisposableStore {
 
 export class NotebookInsertedCellDecorator extends Disposable {
 	private readonly decorators = this._register(new DisposableStore());
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 	) {
@@ -310,10 +343,12 @@ export class NotebookInsertedCellDecorator extends Disposable {
 	}
 	public apply(diffInfo: CellDiffInfo[]) {
 		const model = this.notebookEditor.textModel;
+
 		if (!model) {
 			return;
 		}
 		const cells = diffInfo.filter(diff => diff.type === 'insert').map((diff) => model.cells[diff.modifiedCellIndex]);
+
 		const ids = this.notebookEditor.deltaCellDecorations([], cells.map(cell => ({
 			handle: cell.handle,
 			options: { className: 'nb-insertHighlight', outputClassName: 'nb-insertHighlight' }
@@ -340,6 +375,7 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 	private readonly zoneRemover = this._register(new DisposableStore());
 	private readonly createdViewZones = new Map<number, string>();
 	private readonly deletedCellInfos = new Map<number, { height: number; previousIndex: number; offset: number }>();
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@ILanguageService private readonly languageService: ILanguageService,
@@ -349,16 +385,21 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 
 	public getTop(deletedIndex: number) {
 		const info = this.deletedCellInfos.get(deletedIndex);
+
 		if (!info) {
 			return;
 		}
 		const cells = this._notebookEditor.getCellsInRange({ start: info.previousIndex, end: info.previousIndex + 1 });
+
 		if (!cells.length) {
 			return;
 		}
 		const cell = cells[0];
+
 		const cellHeight = this._notebookEditor.getHeightOfElement(cell);
+
 		const top = this._notebookEditor.getAbsoluteTopOfElement(cell);
+
 		return top + cellHeight + info.offset;
 	}
 
@@ -366,10 +407,12 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 		this.clear();
 
 		let currentIndex = 0;
+
 		const deletedCellsToRender: { cells: { cell: NotebookCellTextModel; originalIndex: number; previousIndex: number }[]; index: number } = { cells: [], index: 0 };
 		diffInfo.forEach(diff => {
 			if (diff.type === 'delete') {
 				const deletedCell = original.cells[diff.originalCellIndex];
+
 				if (deletedCell) {
 					deletedCellsToRender.cells.push({ cell: deletedCell, originalIndex: diff.originalCellIndex, previousIndex: currentIndex });
 					deletedCellsToRender.index = currentIndex;
@@ -382,6 +425,7 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 				currentIndex = diff.modifiedCellIndex;
 			}
 		});
+
 		if (deletedCellsToRender.cells.length) {
 			this._createWidget(deletedCellsToRender.index + 1, deletedCellsToRender.cells);
 		}
@@ -398,19 +442,25 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 	}
 	private async _createWidgetImpl(index: number, cells: { cell: NotebookCellTextModel; originalIndex: number; previousIndex: number }[]) {
 		const rootContainer = document.createElement('div');
+
 		const widgets: NotebookDeletedCellWidget[] = [];
+
 		const heights = await Promise.all(cells.map(async cell => {
 			const widget = new NotebookDeletedCellWidget(this._notebookEditor, cell.cell.getValue(), cell.cell.language, rootContainer, cell.originalIndex, this.languageService);
 			widgets.push(widget);
+
 			const height = await widget.render();
 			this.deletedCellInfos.set(cell.originalIndex, { height, previousIndex: cell.previousIndex, offset: 0 });
+
 			return height;
 		}));
 
 		Array.from(this.deletedCellInfos.keys()).sort((a, b) => a - b).forEach((originalIndex) => {
 			const previousDeletedCell = this.deletedCellInfos.get(originalIndex - 1);
+
 			if (previousDeletedCell) {
 				const deletedCell = this.deletedCellInfos.get(originalIndex);
+
 				if (deletedCell) {
 					deletedCell.offset = previousDeletedCell.height + previousDeletedCell.offset;
 				}
@@ -447,6 +497,7 @@ export class NotebookDeletedCellDecorator extends Disposable implements INoteboo
 
 export class NotebookDeletedCellWidget extends Disposable {
 	private readonly container: HTMLElement;
+
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		// private readonly _index: number,
@@ -465,16 +516,23 @@ export class NotebookDeletedCellWidget extends Disposable {
 
 	public async render() {
 		const code = this.code;
+
 		const languageId = this.language;
+
 		const codeHtml = await tokenizeToString(this.languageService, code, languageId);
 
 		// const colorMap = this.getDefaultColorMap();
+
 		const fontInfo = this._notebookEditor.getBaseCellEditorOptions(languageId).value;
+
 		const fontFamilyVar = '--notebook-editor-font-family';
+
 		const fontSizeVar = '--notebook-editor-font-size';
+
 		const fontWeightVar = '--notebook-editor-font-weight';
 		// If we have any editors, then use left layout of one of those.
 		const editor = this._notebookEditor.codeEditors.map(c => c[1]).find(c => c);
+
 		const layoutInfo = editor?.getOptions().get(EditorOption.layoutInfo);
 
 		const style = ``
@@ -489,13 +547,19 @@ export class NotebookDeletedCellWidget extends Disposable {
 
 		const rootContainer = this.container;
 		rootContainer.classList.add('code-cell-row');
+
 		const container = DOM.append(rootContainer, DOM.$('.cell-inner-container'));
+
 		const focusIndicatorLeft = DOM.append(container, DOM.$('.cell-focus-indicator.cell-focus-indicator-side.cell-focus-indicator-left'));
+
 		const cellContainer = DOM.append(container, DOM.$('.cell.code'));
 		DOM.append(focusIndicatorLeft, DOM.$('div.execution-count-label'));
+
 		const editorPart = DOM.append(cellContainer, DOM.$('.cell-editor-part'));
+
 		let editorContainer = DOM.append(editorPart, DOM.$('.cell-editor-container'));
 		editorContainer = DOM.append(editorContainer, DOM.$('.code', { style }));
+
 		if (fontInfo.fontFamily) {
 			editorContainer.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		}
@@ -508,7 +572,9 @@ export class NotebookDeletedCellWidget extends Disposable {
 		editorContainer.innerHTML = (ttPolicy?.createHTML(codeHtml) || codeHtml) as string;
 
 		const lineCount = splitLines(code).length;
+
 		const height = (lineCount * (fontInfo.lineHeight || DefaultLineHeight)) + 12 + 12; // We have 12px top and bottom in generated code HTML;
+
 		const totalHeight = height + 16 + 16;
 
 		return totalHeight;
@@ -528,6 +594,7 @@ function areDiffsEqual(a: IDocumentDiff | undefined, b: IDocumentDiff | undefine
 		}
 		if (!a.moves.some((move, i) => {
 			const bMove = b.moves[i];
+
 			if (!areLineRangeMappinsEqual(move.changes, bMove.changes)) {
 				return true;
 			}
@@ -558,6 +625,7 @@ function areLineRangeMappinsEqual(a: readonly DetailedLineRangeMapping[], b: rea
 	}
 	if (a.some((c, i) => {
 		const bChange = b[i];
+
 		if (c.changedLineCount !== bChange.changedLineCount) {
 			return true;
 		}
@@ -566,6 +634,7 @@ function areLineRangeMappinsEqual(a: readonly DetailedLineRangeMapping[], b: rea
 		}
 		if ((c.innerChanges || []).some((innerC, innerIdx) => {
 			const bInnerC = bChange.innerChanges![innerIdx];
+
 			if (!innerC.modifiedRange.equalsRange(bInnerC.modifiedRange)) {
 				return true;
 			}

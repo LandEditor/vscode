@@ -21,8 +21,11 @@ export const FolderThemeIcon = Codicon.folder;
 export function getThemeTypeSelector(type: ColorScheme): string {
     switch (type) {
         case ColorScheme.DARK: return 'vs-dark';
+
         case ColorScheme.HIGH_CONTRAST_DARK: return 'hc-black';
+
         case ColorScheme.HIGH_CONTRAST_LIGHT: return 'hc-light';
+
         default: return 'vs';
     }
 }
@@ -82,10 +85,13 @@ export interface IThemingParticipant {
 }
 export interface IThemeService {
     readonly _serviceBrand: undefined;
+
     getColorTheme(): IColorTheme;
     readonly onDidColorThemeChange: Event<IColorTheme>;
+
     getFileIconTheme(): IFileIconTheme;
     readonly onDidFileIconThemeChange: Event<IFileIconTheme>;
+
     getProductIconTheme(): IProductIconTheme;
     readonly onDidProductIconThemeChange: Event<IProductIconTheme>;
 }
@@ -98,12 +104,14 @@ export interface IThemingRegistry {
      * Register a theming participant that is invoked on every theme change.
      */
     onColorThemeChange(participant: IThemingParticipant): IDisposable;
+
     getThemingParticipants(): IThemingParticipant[];
     readonly onThemingParticipantAdded: Event<IThemingParticipant>;
 }
 class ThemingRegistry implements IThemingRegistry {
     private themingParticipants: IThemingParticipant[] = [];
     private readonly onThemingParticipantAddedEmitter: Emitter<IThemingParticipant>;
+
     constructor() {
         this.themingParticipants = [];
         this.onThemingParticipantAddedEmitter = new Emitter<IThemingParticipant>();
@@ -111,6 +119,7 @@ class ThemingRegistry implements IThemingRegistry {
     public onColorThemeChange(participant: IThemingParticipant): IDisposable {
         this.themingParticipants.push(participant);
         this.onThemingParticipantAddedEmitter.fire(participant);
+
         return toDisposable(() => {
             const idx = this.themingParticipants.indexOf(participant);
             this.themingParticipants.splice(idx, 1);
@@ -133,6 +142,7 @@ export function registerThemingParticipant(participant: IThemingParticipant): ID
  */
 export class Themable extends Disposable {
     protected theme: IColorTheme;
+
     constructor(protected themeService: IThemeService) {
         super();
         this.theme = themeService.getColorTheme();
@@ -148,6 +158,7 @@ export class Themable extends Disposable {
     }
     protected getColor(id: string, modify?: (color: Color, theme: IColorTheme) => Color): string | null {
         let color = this.theme.getColor(id);
+
         if (color && modify) {
             color = modify(color, this.theme);
         }
@@ -159,6 +170,7 @@ export interface IPartsSplash {
     baseTheme: string;
     colorInfo: {
         background: string;
+
         foreground: string | undefined;
         editorBackground: string | undefined;
         titleBarBackground: string | undefined;

@@ -7,13 +7,20 @@ import { KeyCodeChord, ScanCodeChord, Keybinding, Chord } from './keybindings.js
 export class KeybindingParser {
     private static _readModifiers(input: string) {
         input = input.toLowerCase().trim();
+
         let ctrl = false;
+
         let shift = false;
+
         let alt = false;
+
         let meta = false;
+
         let matchedModifier: boolean;
+
         do {
             matchedModifier = false;
+
             if (/^ctrl(\+|\-)/.test(input)) {
                 ctrl = true;
                 input = input.substr('ctrl-'.length);
@@ -45,8 +52,11 @@ export class KeybindingParser {
                 matchedModifier = true;
             }
         } while (matchedModifier);
+
         let key: string;
+
         const firstSpaceIdx = input.indexOf(' ');
+
         if (firstSpaceIdx > 0) {
             key = input.substring(0, firstSpaceIdx);
             input = input.substring(firstSpaceIdx);
@@ -69,13 +79,18 @@ export class KeybindingParser {
         string
     ] {
         const mods = this._readModifiers(input);
+
         const scanCodeMatch = mods.key.match(/^\[([^\]]+)\]$/);
+
         if (scanCodeMatch) {
             const strScanCode = scanCodeMatch[1];
+
             const scanCode = ScanCodeUtils.lowerCaseToEnum(strScanCode);
+
             return [new ScanCodeChord(mods.ctrl, mods.shift, mods.alt, mods.meta, scanCode), mods.remains];
         }
         const keyCode = KeyCodeUtils.fromUserSettings(mods.key);
+
         return [new KeyCodeChord(mods.ctrl, mods.shift, mods.alt, mods.meta, keyCode), mods.remains];
     }
     static parseKeybinding(input: string): Keybinding | null {
@@ -83,7 +98,9 @@ export class KeybindingParser {
             return null;
         }
         const chords: Chord[] = [];
+
         let chord: Chord;
+
         while (input.length > 0) {
             [chord, input] = this.parseChord(input);
             chords.push(chord);

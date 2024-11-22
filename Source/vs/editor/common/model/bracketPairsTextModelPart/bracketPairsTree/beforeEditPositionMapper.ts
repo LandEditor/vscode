@@ -11,8 +11,10 @@ export class TextEditInfo {
         // Must be sorted in ascending order
         const edits = changes.map(c => {
             const range = Range.lift(c.range);
+
             return new TextEditInfo(positionToLength(range.getStartPosition()), positionToLength(range.getEndPosition()), lengthOfString(c.text));
         }).reverse();
+
         return edits;
     }
     constructor(public readonly startOffset: Length, public readonly endOffset: Length, public readonly newLength: Length) {
@@ -38,6 +40,7 @@ export class BeforeEditPositionMapper {
     */
     getOffsetBeforeChange(offset: Length): Length {
         this.adjustNextEdit(offset);
+
         return this.translateCurToOld(offset);
     }
     /**
@@ -46,8 +49,11 @@ export class BeforeEditPositionMapper {
     */
     getDistanceToNextChange(offset: Length): Length | null {
         this.adjustNextEdit(offset);
+
         const nextEdit = this.edits[this.nextEditIdx];
+
         const nextChangeOffset = nextEdit ? this.translateOldToCur(nextEdit.offsetObj) : null;
+
         if (nextChangeOffset === null) {
             return null;
         }
@@ -63,6 +69,7 @@ export class BeforeEditPositionMapper {
     }
     private translateCurToOld(newOffset: Length): Length {
         const offsetObj = lengthToObj(newOffset);
+
         if (offsetObj.lineCount - this.deltaOldToNewLineCount === this.deltaLineIdxInOld) {
             return toLength(offsetObj.lineCount - this.deltaOldToNewLineCount, offsetObj.columnCount - this.deltaOldToNewColumnCount);
         }
@@ -75,15 +82,20 @@ export class BeforeEditPositionMapper {
             const nextEdit = this.edits[this.nextEditIdx];
             // After applying the edit, what is its end offset (considering all previous edits)?
             const nextEditEndOffsetInCur = this.translateOldToCur(nextEdit.endOffsetAfterObj);
+
             if (lengthLessThanEqual(nextEditEndOffsetInCur, offset)) {
                 // We are after the edit, skip it
                 this.nextEditIdx++;
+
                 const nextEditEndOffsetInCurObj = lengthToObj(nextEditEndOffsetInCur);
                 // Before applying the edit, what is its end offset (considering all previous edits)?
                 const nextEditEndOffsetBeforeInCurObj = lengthToObj(this.translateOldToCur(nextEdit.endOffsetBeforeObj));
+
                 const lineDelta = nextEditEndOffsetInCurObj.lineCount - nextEditEndOffsetBeforeInCurObj.lineCount;
                 this.deltaOldToNewLineCount += lineDelta;
+
                 const previousColumnDelta = this.deltaLineIdxInOld === nextEdit.endOffsetBeforeObj.lineCount ? this.deltaOldToNewColumnCount : 0;
+
                 const columnDelta = nextEditEndOffsetInCurObj.columnCount - nextEditEndOffsetBeforeInCurObj.columnCount;
                 this.deltaOldToNewColumnCount = previousColumnDelta + columnDelta;
                 this.deltaLineIdxInOld = nextEdit.endOffsetBeforeObj.lineCount;
@@ -102,6 +114,7 @@ class TextEditInfoCache {
     public readonly endOffsetBeforeObj: TextLength;
     public readonly endOffsetAfterObj: TextLength;
     public readonly offsetObj: TextLength;
+
     constructor(startOffset: Length, endOffset: Length, textLength: Length) {
         this.endOffsetBeforeObj = lengthToObj(endOffset);
         this.endOffsetAfterObj = lengthToObj(lengthAdd(startOffset, textLength));

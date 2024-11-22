@@ -24,7 +24,9 @@ import { PromiseResult } from '../../../../base/common/observable.js';
 import { Range } from '../../../common/core/range.js';
 
 const EDITOR_TREESITTER_TELEMETRY = 'editor.experimental.treeSitterTelemetry';
+
 const MODULE_LOCATION_SUBPATH = `@vscode/tree-sitter-wasm/wasm`;
+
 const FILENAME_TREESITTER_WASM = `tree-sitter.wasm`;
 
 function getModuleLocation(environmentService: IEnvironmentService): AppResourcePath {
@@ -46,6 +48,7 @@ export class TextModelTreeSitter extends Disposable implements ITextModelTreeSit
 		parseImmediately: boolean = true
 	) {
 		super();
+
 		if (parseImmediately) {
 			this._register(Event.runAndSubscribe(this.model.onDidChangeLanguage, (e => this._onDidChangeLanguage(e ? e.newLanguage : this.model.getLanguageId()))));
 		} else {
@@ -66,7 +69,9 @@ export class TextModelTreeSitter extends Disposable implements ITextModelTreeSit
 		this._parseResult = undefined;
 
 		const token = cancelOnDispose(this._languageSessionDisposables);
+
 		let language: Parser.Language | undefined;
+
 		try {
 			language = await this._getLanguage(languageId, token);
 		} catch (e) {
@@ -77,6 +82,7 @@ export class TextModelTreeSitter extends Disposable implements ITextModelTreeSit
 		}
 
 		const Parser = await this._treeSitterImporter.getParserClass();
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -84,16 +90,19 @@ export class TextModelTreeSitter extends Disposable implements ITextModelTreeSit
 		const treeSitterTree = this._languageSessionDisposables.add(new TreeSitterParseResult(new Parser(), language, this._logService, this._telemetryService));
 		this._languageSessionDisposables.add(this.model.onDidChangeContent(e => this._onDidChangeContent(treeSitterTree, e.changes)));
 		await this._onDidChangeContent(treeSitterTree, []);
+
 		if (token.isCancellationRequested) {
 			return;
 		}
 
 		this._parseResult = treeSitterTree;
+
 		return this._parseResult;
 	}
 
 	private _getLanguage(languageId: string, token: CancellationToken): Promise<Parser.Language> {
 		const language = this._treeSitterLanguages.getOrInitLanguage(languageId);
+
 		if (language) {
 			return Promise.resolve(language);
 		}
@@ -115,6 +124,7 @@ export class TextModelTreeSitter extends Disposable implements ITextModelTreeSit
 
 	private async _onDidChangeContent(treeSitterTree: TreeSitterParseResult, changes: IModelContentChange[]) {
 		const diff = await treeSitterTree.onDidChangeContent(this.model, changes);
+
 		if (!diff || diff.length > 0) {
 			// Tree sitter is 0 based, text model is 1 based
 			const ranges = diff ? diff.map(r => new Range(r.startPosition.row + 1, r.startPosition.column + 1, r.endPosition.row + 1, r.endPosition.column + 1)) : [this.model.getFullModelRange()];
@@ -131,6 +141,7 @@ const enum TelemetryParseType {
 export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResult {
 	private _tree: Parser.Tree | undefined;
 	private _isDisposed: boolean = false;
+
 	constructor(public readonly parser: Parser,
 		public /** exposed for tests **/ readonly language: Parser.Language,
 		private readonly _logService: ILogService,
@@ -154,6 +165,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 	public async onDidChangeContent(model: ITextModel, changes: IModelContentChange[]): Promise<Parser.Range[] | undefined> {
 		const oldTree = this.tree?.copy();
 		this._applyEdits(model, changes);
+
 		return new Promise(resolve => {
 			this._onDidChangeContentQueue = this._onDidChangeContentQueue.then(async () => {
 				if (this.isDisposed) {
@@ -173,6 +185,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 	private _applyEdits(model: ITextModel, changes: IModelContentChange[]) {
 		for (const change of changes) {
 			const newEndOffset = change.rangeOffset + change.text.length;
+
 			const newEndPosition = model.getPositionAt(newEndOffset);
 
 			this.tree?.edit({
@@ -189,6 +202,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 
 	private async _parseAndUpdateTree(model: ITextModel) {
 		const tree = await this._parse(model);
+
 		if (!this._newEdits) {
 			this.tree = tree;
 		}
@@ -196,6 +210,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 
 	private _parse(model: ITextModel): Promise<Parser.Tree | undefined> {
 		let parseType: TelemetryParseType = TelemetryParseType.Full;
+
 		if (this.tree) {
 			parseType = TelemetryParseType.Incremental;
 		}
@@ -204,12 +219,17 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 
 	private async _parseAndYield(model: ITextModel, parseType: TelemetryParseType): Promise<Parser.Tree | undefined> {
 		const language = model.getLanguageId();
+
 		let tree: Parser.Tree | undefined;
+
 		let time: number = 0;
+
 		let passes: number = 0;
 		this._newEdits = false;
+
 		do {
 			const timer = performance.now();
+
 			try {
 				tree = this.parser.parse((index: number, position?: Parser.Point) => this._parseCallback(model, index), this.tree);
 			} catch (e) {
@@ -227,6 +247,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 			}
 		} while (!tree && !this._newEdits); // exit if there a new edits, as anhy parsing done while there are new edits is throw away work
 		this.sendParseTimeTelemetry(parseType, language, time, passes);
+
 		return tree;
 	}
 
@@ -248,6 +269,7 @@ export class TreeSitterParseResult implements IDisposable, ITreeSitterParseResul
 			time: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The ms it took to parse' };
 			passes: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The number of passes it took to parse' };
 		};
+
 		if (parseType === TelemetryParseType.Full) {
 			this._telemetryService.publicLog2<{ languageId: string; time: number; passes: number }, ParseTimeClassification>(`treeSitter.fullParse`, { languageId, time, passes });
 		} else {
@@ -278,6 +300,7 @@ export class TreeSitterLanguages extends Disposable {
 		} else {
 			// kick off adding the language, but don't wait
 			this._addLanguage(languageId);
+
 			return undefined;
 		}
 	}
@@ -287,15 +310,19 @@ export class TreeSitterLanguages extends Disposable {
 			return this._languages.getSyncIfCached(languageId);
 		} else {
 			await this._addLanguage(languageId);
+
 			return this._languages.get(languageId);
 		}
 	}
 
 	private async _addLanguage(languageId: string): Promise<void> {
 		const languagePromise = this._languages.get(languageId);
+
 		if (!languagePromise) {
 			this._languages.set(languageId, this._fetchLanguage(languageId));
+
 			const language = await this._languages.get(languageId);
+
 			if (!language) {
 				return undefined;
 			}
@@ -305,18 +332,24 @@ export class TreeSitterLanguages extends Disposable {
 
 	private async _fetchLanguage(languageId: string): Promise<Parser.Language | undefined> {
 		const grammarName = this._registeredLanguages.get(languageId);
+
 		const languageLocation = this._getLanguageLocation(languageId);
+
 		if (!grammarName || !languageLocation) {
 			return undefined;
 		}
 		const wasmPath: AppResourcePath = `${languageLocation}/${grammarName}.wasm`;
+
 		const languageFile = await (this._fileService.readFile(FileAccess.asFileUri(wasmPath)));
+
 		const Parser = await this._treeSitterImporter.getParserClass();
+
 		return Parser.Language.load(languageFile.value.buffer);
 	}
 
 	private _getLanguageLocation(languageId: string): AppResourcePath | undefined {
 		const grammarName = this._registeredLanguages.get(languageId);
+
 		if (!grammarName) {
 			return undefined;
 		}
@@ -384,6 +417,7 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 
 	getParseResult(textModel: ITextModel): ITreeSitterParseResult | undefined {
 		const textModelTreeSitter = this._textModelTreeSitters.get(textModel);
+
 		return textModelTreeSitter?.textModelTreeSitter.parseResult;
 	}
 
@@ -391,10 +425,13 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 		await this._init;
 
 		const language = await this._treeSitterLanguages.getLanguage(languageId);
+
 		const Parser = await this._treeSitterImporter.getParserClass();
+
 		if (language) {
 			const parser = new Parser();
 			parser.setLanguage(language);
+
 			return parser.parse(content);
 		}
 		return undefined;
@@ -402,12 +439,14 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 
 	private async _doInitParser() {
 		const Parser = await this._treeSitterImporter.getParserClass();
+
 		const environmentService = this._environmentService;
 		await Parser.init({
 			locateFile(_file: string, _folder: string) {
 				return FileAccess.asBrowserUri(`${getModuleLocation(environmentService)}/${FILENAME_TREESITTER_WASM}`).toString(true);
 			}
 		});
+
 		return true;
 	}
 
@@ -433,6 +472,7 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 		const setting = this._getSetting();
 
 		let hasLanguages = true;
+
 		if (setting.length === 0) {
 			hasLanguages = false;
 		}
@@ -448,10 +488,12 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 
 	private _getSetting(): string[] {
 		const setting = this._configurationService.getValue<string[]>(EDITOR_EXPERIMENTAL_PREFER_TREESITTER);
+
 		if (setting && setting.length > 0) {
 			return setting;
 		} else {
 			const expSetting = this._configurationService.getValue<boolean>(EDITOR_TREESITTER_TELEMETRY);
+
 			if (expSetting) {
 				return ['typescript'];
 			}
@@ -475,6 +517,7 @@ export class TreeSitterTextModelService extends Disposable implements ITreeSitte
 
 	private _createTextModelTreeSitter(model: ITextModel) {
 		const textModelTreeSitter = new TextModelTreeSitter(model, this._treeSitterLanguages, this._treeSitterImporter, this._logService, this._telemetryService);
+
 		const disposables = new DisposableStore();
 		disposables.add(textModelTreeSitter);
 		disposables.add(textModelTreeSitter.onDidChangeParseResult((ranges) => this._onDidUpdateTree.fire({ textModel: model, ranges })));

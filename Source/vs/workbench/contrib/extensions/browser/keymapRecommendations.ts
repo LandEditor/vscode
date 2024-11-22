@@ -7,6 +7,7 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { ExtensionRecommendationReason } from '../../../services/extensionRecommendations/common/extensionRecommendations.js';
 export class KeymapRecommendations extends ExtensionRecommendations {
     private _recommendations: ExtensionRecommendation[] = [];
+
     get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
     constructor(
     @IProductService

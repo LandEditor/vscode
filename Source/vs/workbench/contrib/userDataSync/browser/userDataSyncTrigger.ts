@@ -29,7 +29,9 @@ export class UserDataSyncTrigger extends Disposable implements IWorkbenchContrib
     @IHostService
     hostService: IHostService) {
         super();
+
         const event = Event.filter(Event.any<string | undefined>(Event.map(editorService.onDidActiveEditorChange, () => this.getUserDataEditorInputSource(editorService.activeEditor)), Event.map(Event.filter(viewsService.onDidChangeViewContainerVisibility, e => e.id === VIEWLET_ID && e.visible), e => e.id)), source => source !== undefined);
+
         if (isWeb) {
             this._register(Event.debounce<string, string[]>(Event.any<string>(Event.map(hostService.onDidChangeFocus, () => 'windowFocus'), Event.map(event, source => source!)), (last, source) => last ? [...last, source] : [source], 1000)(sources => userDataAutoSyncService.triggerSync(sources, true, false)));
         }
@@ -48,6 +50,7 @@ export class UserDataSyncTrigger extends Disposable implements IWorkbenchContrib
             return 'keybindingsEditor';
         }
         const resource = editorInput.resource;
+
         if (isEqual(resource, this.userDataProfilesService.defaultProfile.settingsResource)) {
             return 'settingsEditor';
         }

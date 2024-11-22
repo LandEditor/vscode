@@ -52,18 +52,22 @@ export class SuggestWidgetAdaptor extends Disposable {
 		}));
 
 		const suggestController = SuggestController.get(this.editor);
+
 		if (suggestController) {
 			this._register(suggestController.registerSelector({
 				priority: 100,
 				select: (model, pos, suggestItems) => {
 					const textModel = this.editor.getModel();
+
 					if (!textModel) {
 						// Should not happen
 						return -1;
 					}
 
 					const i = this.suggestControllerPreselector();
+
 					const itemToPreselect = i ? singleTextRemoveCommonPrefix(i, textModel) : undefined;
+
 					if (!itemToPreselect) {
 						return -1;
 					}
@@ -72,8 +76,11 @@ export class SuggestWidgetAdaptor extends Disposable {
 					const candidates = suggestItems
 						.map((suggestItem, index) => {
 							const suggestItemInfo = SuggestItemInfo.fromSuggestion(suggestController, textModel, position, suggestItem, this.isShiftKeyPressed);
+
 							const suggestItemTextEdit = singleTextRemoveCommonPrefix(suggestItemInfo.toSingleTextEdit(), textModel);
+
 							const valid = singleTextEditAugments(itemToPreselect, suggestItemTextEdit);
+
 							return { index, valid, prefixLength: suggestItemTextEdit.text.length, suggestItem };
 						})
 						.filter(item => item && item.valid && item.prefixLength > 0);
@@ -82,11 +89,13 @@ export class SuggestWidgetAdaptor extends Disposable {
 						candidates,
 						compareBy(s => s!.prefixLength, numberComparator)
 					);
+
 					return result ? result.index : - 1;
 				}
 			}));
 
 			let isBoundToSuggestWidget = false;
+
 			const bindToSuggestWidget = () => {
 				if (isBoundToSuggestWidget) {
 					return;
@@ -113,7 +122,9 @@ export class SuggestWidgetAdaptor extends Disposable {
 
 			this._register(suggestController.onWillInsertSuggestItem(e => {
 				const position = this.editor.getPosition();
+
 				const model = this.editor.getModel();
+
 				if (!position || !model) { return undefined; }
 
 				const suggestItemInfo = SuggestItemInfo.fromSuggestion(
@@ -143,12 +154,15 @@ export class SuggestWidgetAdaptor extends Disposable {
 
 	private getSuggestItemInfo(): SuggestItemInfo | undefined {
 		const suggestController = SuggestController.get(this.editor);
+
 		if (!suggestController || !this.isSuggestWidgetVisible) {
 			return undefined;
 		}
 
 		const focusedItem = suggestController.widget.value.getFocusedItem();
+
 		const position = this.editor.getPosition();
+
 		const model = this.editor.getModel();
 
 		if (!focusedItem || !position || !model) {
@@ -178,7 +192,9 @@ export class SuggestWidgetAdaptor extends Disposable {
 export class SuggestItemInfo {
 	public static fromSuggestion(suggestController: SuggestController, model: ITextModel, position: Position, item: CompletionItem, toggleMode: boolean): SuggestItemInfo {
 		let { insertText } = item.completion;
+
 		let isSnippetText = false;
+
 		if (item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet) {
 			const snippet = new SnippetParser().parse(insertText);
 

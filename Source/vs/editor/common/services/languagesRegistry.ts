@@ -13,7 +13,9 @@ import { ModesRegistry, PLAINTEXT_LANGUAGE_ID } from '../languages/modesRegistry
 import { ILanguageExtensionPoint, ILanguageNameIdPair, ILanguageIcon } from '../languages/language.js';
 import { Extensions, IConfigurationRegistry } from '../../../platform/configuration/common/configurationRegistry.js';
 import { Registry } from '../../../platform/registry/common/platform.js';
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
+
 const NULL_LANGUAGE_ID = 'vs.editor.nullLanguage';
 interface IResolvedLanguage {
     identifier: string;
@@ -29,6 +31,7 @@ export class LanguageIdCodec implements ILanguageIdCodec {
     private _nextLanguageId: number;
     private readonly _languageIdToLanguage: string[] = [];
     private readonly _languageToLanguageId = new Map<string, number>();
+
     constructor() {
         this._register(NULL_LANGUAGE_ID, LanguageId.Null);
         this._register(PLAINTEXT_LANGUAGE_ID, LanguageId.PlainText);
@@ -71,6 +74,7 @@ export class LanguagesRegistry extends Disposable {
     private _lowercaseNameMap: {
         [name: string]: string;
     };
+
     constructor(useModesRegistry = true, warnOnOverwrite = false) {
         super();
         LanguagesRegistry.instanceCount++;
@@ -81,6 +85,7 @@ export class LanguagesRegistry extends Disposable {
         this._mimeTypesMap = {};
         this._nameMap = {};
         this._lowercaseNameMap = {};
+
         if (useModesRegistry) {
             this._initializeFromRegistry();
             this._register(ModesRegistry.onDidChangeLanguages((m) => {
@@ -90,6 +95,7 @@ export class LanguagesRegistry extends Disposable {
     }
     override dispose() {
         LanguagesRegistry.instanceCount--;
+
         super.dispose();
     }
     public setDynamicLanguages(def: ILanguageExtensionPoint[]): void {
@@ -102,6 +108,7 @@ export class LanguagesRegistry extends Disposable {
         this._nameMap = {};
         this._lowercaseNameMap = {};
         clearPlatformLanguageAssociations();
+
         const desc = (<ILanguageExtensionPoint[]>[]).concat(ModesRegistry.getLanguages()).concat(this._dynamicLanguages);
         this._registerLanguages(desc);
     }
@@ -118,6 +125,7 @@ export class LanguagesRegistry extends Disposable {
         this._lowercaseNameMap = {};
         Object.keys(this._languages).forEach((langId) => {
             const language = this._languages[langId];
+
             if (language.name) {
                 this._nameMap[language.name] = language.identifier;
             }
@@ -133,7 +141,9 @@ export class LanguagesRegistry extends Disposable {
     }
     private _registerLanguage(lang: ILanguageExtensionPoint): void {
         const langId = lang.id;
+
         let resolvedLanguage: IResolvedLanguage;
+
         if (hasOwnProperty.call(this._languages, langId)) {
             resolvedLanguage = this._languages[langId];
         }
@@ -155,7 +165,9 @@ export class LanguagesRegistry extends Disposable {
     }
     private _mergeLanguage(resolvedLanguage: IResolvedLanguage, lang: ILanguageExtensionPoint): void {
         const langId = lang.id;
+
         let primaryMime: string | null = null;
+
         if (Array.isArray(lang.mimetypes) && lang.mimetypes.length > 0) {
             resolvedLanguage.mimetypes.push(...lang.mimetypes);
             primaryMime = lang.mimetypes[0];
@@ -189,11 +201,13 @@ export class LanguagesRegistry extends Disposable {
         }
         if (typeof lang.firstLine === 'string' && lang.firstLine.length > 0) {
             let firstLineRegexStr = lang.firstLine;
+
             if (firstLineRegexStr.charAt(0) !== '^') {
                 firstLineRegexStr = '^' + firstLineRegexStr;
             }
             try {
                 const firstLineRegex = new RegExp(firstLineRegexStr);
+
                 if (!regExpLeadsToEndlessLoop(firstLineRegex)) {
                     registerPlatformLanguageAssociation({ id: langId, mime: primaryMime, firstline: firstLineRegex }, this._warnOnOverwrite);
                 }
@@ -204,7 +218,9 @@ export class LanguagesRegistry extends Disposable {
             }
         }
         resolvedLanguage.aliases.push(langId);
+
         let langAliases: Array<string | null> | null = null;
+
         if (typeof lang.aliases !== 'undefined' && Array.isArray(lang.aliases)) {
             if (lang.aliases.length === 0) {
                 // signal that this language should not get a name
@@ -223,11 +239,13 @@ export class LanguagesRegistry extends Disposable {
             }
         }
         const containsAliases = (langAliases !== null && langAliases.length > 0);
+
         if (containsAliases && langAliases![0] === null) {
             // signal that this language should not get a name
         }
         else {
             const bestName = (containsAliases ? langAliases![0] : null) || langId;
+
             if (containsAliases || !resolvedLanguage.name) {
                 resolvedLanguage.name = bestName;
             }
@@ -250,6 +268,7 @@ export class LanguagesRegistry extends Disposable {
     }
     public getSortedRegisteredLanguageNames(): ILanguageNameIdPair[] {
         const result: ILanguageNameIdPair[] = [];
+
         for (const languageName in this._nameMap) {
             if (hasOwnProperty.call(this._nameMap, languageName)) {
                 result.push({
@@ -259,6 +278,7 @@ export class LanguagesRegistry extends Disposable {
             }
         }
         result.sort((a, b) => compareIgnoreCase(a.languageName, b.languageName));
+
         return result;
     }
     public getLanguageName(languageId: string): string | null {
@@ -272,6 +292,7 @@ export class LanguagesRegistry extends Disposable {
             return null;
         }
         const language = this._languages[languageId];
+
         return (language.mimetypes[0] || null);
     }
     public getExtensions(languageId: string): ReadonlyArray<string> {
@@ -291,6 +312,7 @@ export class LanguagesRegistry extends Disposable {
             return null;
         }
         const language = this._languages[languageId];
+
         return (language.icons[0] || null);
     }
     public getConfigurationFiles(languageId: string): ReadonlyArray<URI> {
@@ -301,6 +323,7 @@ export class LanguagesRegistry extends Disposable {
     }
     public getLanguageIdByLanguageName(languageName: string): string | null {
         const languageNameLower = languageName.toLowerCase();
+
         if (!hasOwnProperty.call(this._lowercaseNameMap, languageNameLower)) {
             return null;
         }

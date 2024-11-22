@@ -48,6 +48,7 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 }
 export class GotoLineAction extends EditorAction {
     static readonly ID = 'editor.action.quickCommand';
+
     constructor() {
         super({
             id: GotoLineAction.ID,

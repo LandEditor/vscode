@@ -84,6 +84,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
         return <typeof opts>result;
     }
     readonly configuration: SymbolNavigationActionConfig;
+
     constructor(configuration: SymbolNavigationActionConfig, opts: IAction2Options & IAction2F1RequiredOptions) {
         super(SymbolNavigationAction._patchConfig(opts));
         this.configuration = configuration;
@@ -94,28 +95,42 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
             return Promise.resolve(undefined);
         }
         const notificationService = accessor.get(INotificationService);
+
         const editorService = accessor.get(ICodeEditorService);
+
         const progressService = accessor.get(IEditorProgressService);
+
         const symbolNavService = accessor.get(ISymbolNavigationService);
+
         const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
         const instaService = accessor.get(IInstantiationService);
+
         const model = editor.getModel();
+
         const position = editor.getPosition();
+
         const anchor = SymbolNavigationAnchor.is(arg) ? arg : new SymbolNavigationAnchor(model, position);
+
         const cts = new EditorStateCancellationTokenSource(editor, CodeEditorStateFlag.Value | CodeEditorStateFlag.Position);
+
         const promise = raceCancellation(this._getLocationModel(languageFeaturesService, anchor.model, anchor.position, cts.token), cts.token).then(async (references) => {
             if (!references || cts.token.isCancellationRequested) {
                 return;
             }
             alert(references.ariaMessage);
+
             let altAction: SymbolNavigationAction | null | undefined;
+
             if (references.referenceAt(model.uri, position)) {
                 const altActionId = this._getAlternativeCommand(editor);
+
                 if (!SymbolNavigationAction._activeAlternativeCommands.has(altActionId) && SymbolNavigationAction._allSymbolNavigationCommands.has(altActionId)) {
                     altAction = SymbolNavigationAction._allSymbolNavigationCommands.get(altActionId)!;
                 }
             }
             const referenceCount = references.references.length;
+
             if (referenceCount === 0) {
                 // no result -> show message
                 if (!this.configuration.muteMessage) {
@@ -141,6 +156,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
             cts.dispose();
         });
         progressService.showWhile(promise, 250);
+
         return promise;
     }
     protected abstract _getLocationModel(languageFeaturesService: ILanguageFeaturesService, model: ITextModel, position: corePosition.Position, token: CancellationToken): Promise<ReferencesModel | undefined>;
@@ -149,13 +165,17 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
     protected abstract _getGoToPreference(editor: IActiveCodeEditor): GoToLocationValues;
     private async _onResult(editorService: ICodeEditorService, symbolNavService: ISymbolNavigationService, editor: IActiveCodeEditor, model: ReferencesModel, range?: Range): Promise<void> {
         const gotoLocation = this._getGoToPreference(editor);
+
         if (!(editor instanceof EmbeddedCodeEditorWidget) && (this.configuration.openInPeek || (gotoLocation === 'peek' && model.references.length > 1))) {
             this._openInPeek(editor, model, range);
         }
         else {
             const next = model.firstReference()!;
+
             const peek = model.references.length > 1 && gotoLocation === 'gotoAndPeek';
+
             const targetEditor = await this._openReference(editor, editorService, next, this.configuration.openToSide, !peek);
+
             if (peek && targetEditor) {
                 this._openInPeek(targetEditor, model, range);
             }
@@ -173,6 +193,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
         // range is the target-selection-range when we have one
         // and the fallback is the 'full' range
         let range: IRange | undefined = undefined;
+
         if (isLocationLink(reference)) {
             range = reference.targetSelectionRange;
         }
@@ -190,12 +211,15 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
                 selectionSource: TextEditorSelectionSource.JUMP
             }
         }, editor, sideBySide);
+
         if (!targetEditor) {
             return undefined;
         }
         if (highlight) {
             const modelNow = targetEditor.getModel();
+
             const decorations = targetEditor.createDecorationsCollection([{ range, options: { description: 'symbol-navigate-action-highlight', className: 'symbolHighlight' } }]);
+
             setTimeout(() => {
                 if (targetEditor.getModel() === modelNow) {
                     decorations.clear();
@@ -206,6 +230,7 @@ export abstract class SymbolNavigationAction extends EditorAction2 {
     }
     private _openInPeek(target: ICodeEditor, model: ReferencesModel, range?: Range) {
         const controller = ReferencesController.get(target);
+
         if (controller && target.hasModel()) {
             controller.toggleWidget(range ?? target.getSelection(), createCancelablePromise(_ => Promise.resolve(model)), this.configuration.openInPeek);
         }
@@ -233,6 +258,7 @@ export class DefinitionAction extends SymbolNavigationAction {
 }
 registerAction2(class GoToDefinitionAction extends DefinitionAction {
     static readonly id = 'editor.action.revealDefinition';
+
     constructor() {
         super({
             openToSide: false,
@@ -270,6 +296,7 @@ registerAction2(class GoToDefinitionAction extends DefinitionAction {
 });
 registerAction2(class OpenDefinitionToSideAction extends DefinitionAction {
     static readonly id = 'editor.action.revealDefinitionAside';
+
     constructor() {
         super({
             openToSide: true,
@@ -294,6 +321,7 @@ registerAction2(class OpenDefinitionToSideAction extends DefinitionAction {
 });
 registerAction2(class PeekDefinitionAction extends DefinitionAction {
     static readonly id = 'editor.action.peekDefinition';
+
     constructor() {
         super({
             openToSide: false,
@@ -338,6 +366,7 @@ class DeclarationAction extends SymbolNavigationAction {
 }
 registerAction2(class GoToDeclarationAction extends DeclarationAction {
     static readonly id = 'editor.action.revealDeclaration';
+
     constructor() {
         super({
             openToSide: false,
@@ -406,6 +435,7 @@ class TypeDefinitionAction extends SymbolNavigationAction {
 }
 registerAction2(class GoToTypeDefinitionAction extends TypeDefinitionAction {
     public static readonly ID = 'editor.action.goToTypeDefinition';
+
     constructor() {
         super({
             openToSide: false,
@@ -438,6 +468,7 @@ registerAction2(class GoToTypeDefinitionAction extends TypeDefinitionAction {
 });
 registerAction2(class PeekTypeDefinitionAction extends TypeDefinitionAction {
     public static readonly ID = 'editor.action.peekTypeDefinition';
+
     constructor() {
         super({
             openToSide: false,
@@ -475,6 +506,7 @@ class ImplementationAction extends SymbolNavigationAction {
 }
 registerAction2(class GoToImplementationAction extends ImplementationAction {
     public static readonly ID = 'editor.action.goToImplementation';
+
     constructor() {
         super({
             openToSide: false,
@@ -507,6 +539,7 @@ registerAction2(class GoToImplementationAction extends ImplementationAction {
 });
 registerAction2(class PeekImplementationAction extends ImplementationAction {
     public static readonly ID = 'editor.action.peekImplementation';
+
     constructor() {
         super({
             openToSide: false,
@@ -638,11 +671,15 @@ CommandsRegistry.registerCommand({
         assertType(Array.isArray(references));
         assertType(typeof multiple === 'undefined' || typeof multiple === 'string');
         assertType(typeof openInPeek === 'undefined' || typeof openInPeek === 'boolean');
+
         const editorService = accessor.get(ICodeEditorService);
+
         const editor = await editorService.openCodeEditor({ resource }, editorService.getFocusedCodeEditor());
+
         if (isCodeEditor(editor)) {
             editor.setPosition(position);
             editor.revealPositionInCenterIfOutsideViewport(position, ScrollType.Smooth);
+
             return editor.invokeWithinContext(accessor => {
                 const command = new class extends GenericGoToLocationAction {
                     protected override _getNoResultFoundMessage(info: IWordAtPosition | null) {
@@ -680,18 +717,24 @@ CommandsRegistry.registerCommand({
     handler: (accessor: ServicesAccessor, resource: any, position: any) => {
         assertType(URI.isUri(resource));
         assertType(corePosition.Position.isIPosition(position));
+
         const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
         const codeEditorService = accessor.get(ICodeEditorService);
+
         return codeEditorService.openCodeEditor({ resource }, codeEditorService.getFocusedCodeEditor()).then(control => {
             if (!isCodeEditor(control) || !control.hasModel()) {
                 return undefined;
             }
             const controller = ReferencesController.get(control);
+
             if (!controller) {
                 return undefined;
             }
             const references = createCancelablePromise(token => getReferencesAtPosition(languageFeaturesService.referenceProvider, control.getModel(), corePosition.Position.lift(position), false, false, token).then(references => new ReferencesModel(references, nls.localize('ref.title', 'References'))));
+
             const range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
+
             return Promise.resolve(controller.toggleWidget(range, references, false));
         });
     }

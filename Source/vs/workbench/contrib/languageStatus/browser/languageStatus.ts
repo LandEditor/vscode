@@ -57,6 +57,7 @@ class StoredCounter {
 	increment(): number {
 		const n = this.value + 1;
 		this._storageService.store(this._key, n, StorageScope.PROFILE, StorageTarget.MACHINE);
+
 		return n;
 	}
 }
@@ -144,6 +145,7 @@ class LanguageStatus {
 
 	private _restoreState(): void {
 		const raw = this._storageService.get(LanguageStatus._keyDedicatedItems, StorageScope.PROFILE, '[]');
+
 		try {
 			const ids = <string[]>JSON.parse(raw);
 			this._dedicated = new Set(ids);
@@ -168,8 +170,11 @@ class LanguageStatus {
 			return new LanguageStatusViewModel([], []);
 		}
 		const all = this._languageStatusService.getLanguageStatus(editor.getModel());
+
 		const combined: ILanguageStatus[] = [];
+
 		const dedicated: ILanguageStatus[] = [];
+
 		for (const item of all) {
 			if (this._dedicated.has(item.id)) {
 				dedicated.push(item);
@@ -181,6 +186,7 @@ class LanguageStatus {
 
 	private _update(): void {
 		const editor = getCodeEditor(this._editorService.activeTextEditorControl);
+
 		const model = this._createViewModel(editor);
 
 		if (this._model?.isEqual(model)) {
@@ -202,12 +208,17 @@ class LanguageStatus {
 
 		} else {
 			const [first] = model.combined;
+
 			const showSeverity = first.severity >= Severity.Warning;
+
 			const text = LanguageStatus._severityToComboCodicon(first.severity);
 
 			let isOneBusy = false;
+
 			const ariaLabels: string[] = [];
+
 			const element = document.createElement('div');
+
 			for (const status of model.combined) {
 				const isPinned = model.dedicated.includes(status);
 				element.appendChild(this._renderStatus(status, showSeverity, isPinned, this._renderDisposables));
@@ -222,6 +233,7 @@ class LanguageStatus {
 				command: ShowTooltipCommand,
 				text: isOneBusy ? '$(loading~spin)' : text,
 			};
+
 			if (!this._combinedEntry) {
 				this._combinedEntry = this._statusBarService.addEntry(props, LanguageStatus._id, StatusbarAlignment.RIGHT, { id: 'status.editor.mode', alignment: StatusbarAlignment.LEFT, compact: true });
 			} else {
@@ -231,12 +243,18 @@ class LanguageStatus {
 			// animate the status bar icon whenever language status changes, repeat animation
 			// when severity is warning or error, don't show animation when showing progress/busy
 			const userHasInteractedWithStatus = this._interactionCounter.value >= 3;
+
 			const targetWindow = dom.getWindow(editor?.getContainerDomNode());
+
 			const node = targetWindow.document.querySelector('.monaco-workbench .statusbar DIV#status\\.languageStatus A>SPAN.codicon');
+
 			const container = targetWindow.document.querySelector('.monaco-workbench .statusbar DIV#status\\.languageStatus');
+
 			if (dom.isHTMLElement(node) && container) {
 				const _wiggle = 'wiggle';
+
 				const _flash = 'flash';
+
 				if (!isOneBusy) {
 					// wiggle icon when severe or "new"
 					node.classList.toggle(_wiggle, showSeverity || !userHasInteractedWithStatus);
@@ -254,6 +272,7 @@ class LanguageStatus {
 			//  use that as signal that the user has interacted/learned language status items work
 			if (!userHasInteractedWithStatus) {
 				const hoverTarget = targetWindow.document.querySelector('.monaco-workbench .context-view');
+
 				if (dom.isHTMLElement(hoverTarget)) {
 					const observer = new MutationObserver(() => {
 						if (targetWindow.document.contains(element)) {
@@ -269,9 +288,12 @@ class LanguageStatus {
 
 		// dedicated status bar items are shows as-is in the status bar
 		const newDedicatedEntries = new Map<string, IStatusbarEntryAccessor>();
+
 		for (const status of model.dedicated) {
 			const props = LanguageStatus._asStatusbarEntry(status);
+
 			let entry = this._dedicatedEntries.get(status.id);
+
 			if (!entry) {
 				entry = this._statusBarService.addEntry(props, status.id, StatusbarAlignment.RIGHT, { id: 'status.editor.mode', alignment: StatusbarAlignment.RIGHT });
 			} else {
@@ -292,7 +314,9 @@ class LanguageStatus {
 		const severity = document.createElement('div');
 		severity.classList.add('severity', `sev${status.severity}`);
 		severity.classList.toggle('show', showSeverity);
+
 		const severityText = LanguageStatus._severityToSingleCodicon(status.severity);
+
 		dom.append(severity, ...renderLabelWithIcons(severityText));
 		parent.appendChild(severity);
 
@@ -306,7 +330,9 @@ class LanguageStatus {
 
 		const label = document.createElement('span');
 		label.classList.add('label');
+
 		const labelValue = typeof status.label === 'string' ? status.label : status.label.value;
+
 		dom.append(label, ...renderLabelWithIcons(computeText(labelValue, status.busy)));
 		left.appendChild(label);
 
@@ -321,6 +347,7 @@ class LanguageStatus {
 
 		// -- command (if available)
 		const { command } = status;
+
 		if (command) {
 			store.add(new Link(right, {
 				label: command.title,
@@ -333,10 +360,13 @@ class LanguageStatus {
 
 		// -- pin
 		const actionBar = new ActionBar(right, { hoverDelegate: nativeHoverDelegate });
+
 		const actionLabel: string = isPinned ? localize('unpin', "Remove from Status Bar") : localize('pin', "Add to Status Bar");
 		actionBar.setAriaLabel(actionLabel);
 		store.add(actionBar);
+
 		let action: Action;
+
 		if (!isPinned) {
 			action = new Action('pin', actionLabel, ThemeIcon.asClassName(Codicon.pin), true, () => {
 				this._dedicated.add(status.id);
@@ -361,7 +391,9 @@ class LanguageStatus {
 	private static _severityToComboCodicon(sev: Severity): string {
 		switch (sev) {
 			case Severity.Error: return '$(bracket-error)';
+
 			case Severity.Warning: return '$(bracket-dot)';
+
 			default: return '$(bracket)';
 		}
 	}
@@ -369,7 +401,9 @@ class LanguageStatus {
 	private static _severityToSingleCodicon(sev: Severity): string {
 		switch (sev) {
 			case Severity.Error: return '$(error)';
+
 			case Severity.Warning: return '$(info)';
+
 			default: return '$(check)';
 		}
 	}
@@ -378,6 +412,7 @@ class LanguageStatus {
 		for (const node of parseLinkedText(text).nodes) {
 			if (typeof node === 'string') {
 				const parts = renderLabelWithIcons(node);
+
 				dom.append(target, ...parts);
 			} else {
 				store.add(new Link(target, node, undefined, this._hoverService, this._openerService));
@@ -390,6 +425,7 @@ class LanguageStatus {
 			return status.accessibilityInfo;
 		}
 		const textValue = typeof status.label === 'string' ? status.label : status.label.value;
+
 		if (status.detail) {
 			return { label: localize('aria.1', '{0}, {1}', textValue, status.detail) };
 		} else {
@@ -402,6 +438,7 @@ class LanguageStatus {
 	private static _asStatusbarEntry(item: ILanguageStatus): IStatusbarEntry {
 
 		let kind: StatusbarEntryKind | undefined;
+
 		if (item.severity === Severity.Warning) {
 			kind = 'warning';
 		} else if (item.severity === Severity.Error) {

@@ -9,6 +9,7 @@ import { createDecorator } from '../../instantiation/common/instantiation.js';
 export const IIgnoredExtensionsManagementService = createDecorator<IIgnoredExtensionsManagementService>('IIgnoredExtensionsManagementService');
 export interface IIgnoredExtensionsManagementService {
     readonly _serviceBrand: any;
+
     getIgnoredExtensions(installed: ILocalExtension[]): string[];
     hasToNeverSyncExtension(extensionId: string): boolean;
     hasToAlwaysSyncExtension(extensionId: string): boolean;
@@ -17,16 +18,19 @@ export interface IIgnoredExtensionsManagementService {
 }
 export class IgnoredExtensionsManagementService implements IIgnoredExtensionsManagementService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService) {
     }
     hasToNeverSyncExtension(extensionId: string): boolean {
         const configuredIgnoredExtensions = this.getConfiguredIgnoredExtensions();
+
         return configuredIgnoredExtensions.includes(extensionId.toLowerCase());
     }
     hasToAlwaysSyncExtension(extensionId: string): boolean {
         const configuredIgnoredExtensions = this.getConfiguredIgnoredExtensions();
+
         return configuredIgnoredExtensions.includes(`-${extensionId.toLowerCase()}`);
     }
     updateIgnoredExtensions(ignoredExtensionId: string, ignore: boolean): Promise<void> {
@@ -51,8 +55,11 @@ export class IgnoredExtensionsManagementService implements IIgnoredExtensionsMan
     }
     getIgnoredExtensions(installed: ILocalExtension[]): string[] {
         const defaultIgnoredExtensions = installed.filter(i => i.isMachineScoped).map(i => i.identifier.id.toLowerCase());
+
         const value = this.getConfiguredIgnoredExtensions().map(id => id.toLowerCase());
+
         const added: string[] = [], removed: string[] = [];
+
         if (Array.isArray(value)) {
             for (const key of value) {
                 if (key.startsWith('-')) {
@@ -67,10 +74,12 @@ export class IgnoredExtensionsManagementService implements IIgnoredExtensionsMan
     }
     private getConfiguredIgnoredExtensions(): ReadonlyArray<string> {
         let userValue = this.configurationService.inspect<string[]>('settingsSync.ignoredExtensions').userValue;
+
         if (userValue !== undefined) {
             return userValue;
         }
         userValue = this.configurationService.inspect<string[]>('sync.ignoredExtensions').userValue;
+
         if (userValue !== undefined) {
             return userValue;
         }

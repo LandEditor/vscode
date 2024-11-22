@@ -114,6 +114,7 @@ export class InteractiveDocumentContribution extends Disposable implements IWork
 			{
 				createEditorInput: ({ resource }) => {
 					const editorInput = editorService.getEditors(EditorsOrder.SEQUENTIAL).find(editor => editor.editor instanceof InteractiveEditorInput && editor.editor.inputResource.toString() === resource.toString());
+
 					return editorInput!;
 				}
 			}
@@ -135,7 +136,9 @@ export class InteractiveDocumentContribution extends Disposable implements IWork
 			{
 				createEditorInput: ({ resource, options }) => {
 					const data = CellUri.parse(resource);
+
 					let cellOptions: ITextResourceEditorInput | undefined;
+
 					let iwResource = resource;
 
 					if (data) {
@@ -154,6 +157,7 @@ export class InteractiveDocumentContribution extends Disposable implements IWork
 					};
 
 					const editorInput = createEditor(iwResource, this.instantiationService);
+
 					return {
 						editor: editorInput,
 						options: notebookOptions
@@ -164,6 +168,7 @@ export class InteractiveDocumentContribution extends Disposable implements IWork
 						throw new Error('Interactive window editors must have a resource name');
 					}
 					const data = CellUri.parse(resource);
+
 					let cellOptions: ITextResourceEditorInput | undefined;
 
 					if (data) {
@@ -181,6 +186,7 @@ export class InteractiveDocumentContribution extends Disposable implements IWork
 					};
 
 					const editorInput = createEditor(resource, this.instantiationService);
+
 					return {
 						editor: editorInput,
 						options: notebookOptions
@@ -210,18 +216,23 @@ class InteractiveInputContentProvider implements ITextModelContentProvider {
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing) {
 			return existing;
 		}
 		const result: ITextModel | null = this._modelService.createModel('', null, resource, false);
+
 		return result;
 	}
 }
 
 function createEditor(resource: URI, instantiationService: IInstantiationService): EditorInput {
 	const counter = /\/Interactive-(\d+)/.exec(resource.path);
+
 	const inputBoxPath = counter && counter[1] ? `/InteractiveInput-${counter[1]}` : 'InteractiveInput';
+
 	const inputUri = URI.from({ scheme: Schemas.vscodeInteractiveInput, path: inputBoxPath });
+
 	const editorInput = InteractiveEditorInput.create(instantiationService, resource, inputUri);
 
 	return editorInput;
@@ -243,6 +254,7 @@ class InteractiveWindowWorkingCopyEditorHandler extends Disposable implements IW
 
 	handles(workingCopy: IWorkingCopyIdentifier): boolean {
 		const viewType = this._getViewType(workingCopy);
+
 		return !!viewType && viewType === 'interactive';
 
 	}
@@ -306,15 +318,18 @@ export class InteractiveEditorSerializer implements IEditorSerializer {
 
 	deserialize(instantiationService: IInstantiationService, raw: string) {
 		const data = <interactiveEditorInputData>parse(raw);
+
 		if (!data) {
 			return undefined;
 		}
 		const { resource, inputResource, name, language } = data;
+
 		if (!URI.isUri(resource) || !URI.isUri(inputResource)) {
 			return undefined;
 		}
 
 		const input = InteractiveEditorInput.create(instantiationService, resource, inputResource, name, language);
+
 		return input;
 	}
 }
@@ -377,12 +392,19 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor, showOptions?: number | { viewColumn?: number; preserveFocus?: boolean }, resource?: URI, id?: string, title?: string): Promise<{ notebookUri: URI; inputUri: URI; notebookEditorId?: string }> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorGroupService = accessor.get(IEditorGroupsService);
+
 		const historyService = accessor.get(IInteractiveHistoryService);
+
 		const kernelService = accessor.get(INotebookKernelService);
+
 		const logService = accessor.get(ILogService);
+
 		const configurationService = accessor.get(IConfigurationService);
+
 		const group = columnToEditorGroup(editorGroupService, configurationService, typeof showOptions === 'number' ? showOptions : showOptions?.viewColumn);
+
 		const editorOptions = {
 			activation: EditorActivation.PRESERVE,
 			preserveFocus: typeof showOptions !== 'number' ? (showOptions?.preserveFocus ?? false) : false
@@ -390,13 +412,20 @@ registerAction2(class extends Action2 {
 
 		if (resource && extname(resource) === '.interactive') {
 			logService.debug('Open interactive window from resource:', resource.toString());
+
 			const resourceUri = URI.revive(resource);
+
 			const editors = editorService.findEditors(resourceUri).filter(id => id.editor instanceof InteractiveEditorInput && id.editor.resource?.toString() === resourceUri.toString());
+
 			if (editors.length) {
 				logService.debug('Find existing interactive window:', resource.toString());
+
 				const editorInput = editors[0].editor as InteractiveEditorInput;
+
 				const currentGroup = editors[0].groupId;
+
 				const editor = await editorService.openEditor(editorInput, editorOptions, currentGroup);
+
 				const editorControl = editor?.getControl() as ReplEditorControl;
 
 				return {
@@ -415,8 +444,11 @@ registerAction2(class extends Action2 {
 		});
 
 		let notebookUri: URI | undefined = undefined;
+
 		let inputUri: URI | undefined = undefined;
+
 		let counter = 1;
+
 		do {
 			notebookUri = URI.from({ scheme: Schemas.untitled, path: `/Interactive-${counter}.interactive` });
 			inputUri = URI.from({ scheme: Schemas.vscodeInteractiveInput, path: `/InteractiveInput-${counter}` });
@@ -429,18 +461,24 @@ registerAction2(class extends Action2 {
 
 		if (id) {
 			const allKernels = kernelService.getMatchingKernel({ uri: notebookUri, notebookType: 'interactive' }).all;
+
 			const preferredKernel = allKernels.find(kernel => kernel.id === id);
+
 			if (preferredKernel) {
 				kernelService.preselectKernelForNotebook(preferredKernel, { uri: notebookUri, notebookType: 'interactive' });
 			}
 		}
 
 		historyService.clearHistory(notebookUri);
+
 		const editorInput: IUntypedEditorInput = { resource: notebookUri, options: editorOptions };
+
 		const editorPane = await editorService.openEditor(editorInput, group);
+
 		const editorControl = editorPane?.getControl() as ReplEditorControl;
 		// Extensions must retain references to these URIs to manipulate the interactive editor
 		logService.debug('New interactive window opened. Notebook editor id', editorControl?.notebookEditor?.getId());
+
 		return { notebookUri, inputUri, notebookEditorId: editorControl?.notebookEditor?.getId() };
 	}
 });
@@ -498,17 +536,25 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor, context?: UriComponents): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const bulkEditService = accessor.get(IBulkEditService);
+
 		const historyService = accessor.get(IInteractiveHistoryService);
+
 		const notebookEditorService = accessor.get(INotebookEditorService);
+
 		let editorControl: IEditorControl | undefined;
+
 		if (context) {
 			const resourceUri = URI.revive(context);
+
 			const editors = editorService.findEditors(resourceUri);
+
 			for (const found of editors) {
 				if (found.editor.typeId === InteractiveEditorInput.ID) {
 					const editor = await editorService.openEditor(found.editor, found.groupId);
 					editorControl = editor?.getControl();
+
 					break;
 				}
 			}
@@ -519,12 +565,16 @@ registerAction2(class extends Action2 {
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
 			const notebookDocument = editorControl.notebookEditor.textModel;
+
 			const textModel = editorControl.activeCodeEditor?.getModel();
+
 			const activeKernel = editorControl.notebookEditor.activeKernel;
+
 			const language = activeKernel?.supportedLanguages[0] ?? PLAINTEXT_LANGUAGE_ID;
 
 			if (notebookDocument && textModel && editorControl.activeCodeEditor) {
 				const index = notebookDocument.length;
+
 				const value = textModel.getValue();
 
 				if (isFalsyOrWhitespace(value)) {
@@ -532,6 +582,7 @@ registerAction2(class extends Action2 {
 				}
 
 				const ctrl = InlineChatController.get(editorControl.activeCodeEditor);
+
 				if (ctrl) {
 					ctrl.acceptHunk();
 				}
@@ -573,6 +624,7 @@ registerAction2(class extends Action2 {
 
 				// update the selection and focus in the extension host model
 				const editor = notebookEditorService.getNotebookEditor(editorControl.notebookEditor.getId());
+
 				if (editor) {
 					editor.setSelections([range]);
 					editor.setFocus(range);
@@ -594,11 +646,14 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
 			const notebookDocument = editorControl.notebookEditor.textModel;
+
 			const editor = editorControl.activeCodeEditor;
+
 			const range = editor?.getModel()?.getFullModelRange();
 
 
@@ -631,17 +686,21 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const historyService = accessor.get(IInteractiveHistoryService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
 			const notebookDocument = editorControl.notebookEditor.textModel;
+
 			const textModel = editorControl.activeCodeEditor?.getModel();
 
 			if (notebookDocument && textModel) {
 				const previousValue = historyService.getPreviousValue(notebookDocument.uri);
+
 				if (previousValue) {
 					textModel.setValue(previousValue);
 				}
@@ -672,15 +731,19 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const historyService = accessor.get(IInteractiveHistoryService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
 			const notebookDocument = editorControl.notebookEditor.textModel;
+
 			const textModel = editorControl.activeCodeEditor?.getModel();
 
 			if (notebookDocument && textModel) {
 				const nextValue = historyService.getNextValue(notebookDocument.uri);
+
 				if (nextValue !== null) {
 					textModel.setValue(nextValue);
 				}
@@ -707,6 +770,7 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
@@ -736,6 +800,7 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
@@ -764,6 +829,7 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
@@ -772,11 +838,16 @@ registerAction2(class extends Action2 {
 		else {
 			// find and open the most recent interactive window
 			const openEditors = editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE);
+
 			const interactiveWindow = Iterable.find(openEditors, identifier => { return identifier.editor.typeId === InteractiveEditorInput.ID; });
+
 			if (interactiveWindow) {
 				const editorInput = interactiveWindow.editor as InteractiveEditorInput;
+
 				const currentGroup = interactiveWindow.groupId;
+
 				const editor = await editorService.openEditor(editorInput, currentGroup);
+
 				const editorControl = editor?.getControl();
 
 				if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {
@@ -816,6 +887,7 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
+
 		const editorControl = editorService.activeEditorPane?.getControl();
 
 		if (editorControl && isReplEditorControl(editorControl) && editorControl.notebookEditor) {

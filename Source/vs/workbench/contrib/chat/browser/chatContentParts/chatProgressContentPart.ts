@@ -34,9 +34,11 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 		const followingContent = context.content.slice(context.contentIndex + 1);
 		this.showSpinner = forceShowSpinner ?? shouldShowSpinner(followingContent, context.element);
 		this.isHidden = forceShowMessage !== true && followingContent.some(part => part.kind !== 'progressMessage');
+
 		if (this.isHidden) {
 			// Placeholder, don't show the progress message
 			this.domNode = $('');
+
 			return;
 		}
 
@@ -46,13 +48,16 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 			alert(progress.content.value);
 		}
 		const codicon = icon ? icon : this.showSpinner ? ThemeIcon.modify(Codicon.loading, 'spin') : Codicon.check;
+
 		const markdown = new MarkdownString(progress.content.value, {
 			supportThemeIcons: true
 		});
+
 		const result = this._register(renderer.render(markdown));
 		result.element.classList.add('progress-step');
 
 		this.domNode = $('.progress-container');
+
 		const iconElement = $('div');
 		iconElement.classList.add(...ThemeIcon.asClassNameArray(codicon));
 		append(this.domNode, iconElement);
@@ -68,6 +73,7 @@ export class ChatProgressContentPart extends Disposable implements IChatContentP
 
 		// Needs rerender when spinner state changes
 		const showSpinner = shouldShowSpinner(followingContent, element);
+
 		return other.kind === 'progressMessage' && this.showSpinner === showSpinner;
 	}
 }

@@ -6,16 +6,22 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as codesign from 'electron-osx-sign';
 import { spawn } from '@malept/cross-spawn-promise';
+
 const root = path.dirname(path.dirname(__dirname));
 function getElectronVersion(): string {
     const npmrc = fs.readFileSync(path.join(root, '.npmrc'), 'utf8');
+
     const target = /^target="(.*)"$/m.exec(npmrc)![1];
+
     return target;
 }
 async function main(buildDir?: string): Promise<void> {
     const tempDir = process.env['AGENT_TEMPDIRECTORY'];
+
     const arch = process.env['VSCODE_ARCH'];
+
     const identity = process.env['CODESIGN_IDENTITY'];
+
     if (!buildDir) {
         throw new Error('$AGENT_BUILDDIRECTORY not set');
     }
@@ -23,15 +29,25 @@ async function main(buildDir?: string): Promise<void> {
         throw new Error('$AGENT_TEMPDIRECTORY not set');
     }
     const product = JSON.parse(fs.readFileSync(path.join(root, 'product.json'), 'utf8'));
+
     const baseDir = path.dirname(__dirname);
+
     const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
+
     const appName = product.nameLong + '.app';
+
     const appFrameworkPath = path.join(appRoot, appName, 'Contents', 'Frameworks');
+
     const helperAppBaseName = product.nameShort;
+
     const gpuHelperAppName = helperAppBaseName + ' Helper (GPU).app';
+
     const rendererHelperAppName = helperAppBaseName + ' Helper (Renderer).app';
+
     const pluginHelperAppName = helperAppBaseName + ' Helper (Plugin).app';
+
     const infoPlistPath = path.resolve(appRoot, appName, 'Contents', 'Info.plist');
+
     const defaultOpts: codesign.SignOptions = {
         app: path.join(appRoot, appName),
         platform: 'darwin',
@@ -45,6 +61,7 @@ async function main(buildDir?: string): Promise<void> {
         identity,
         'gatekeeper-assess': false
     };
+
     const appOpts = {
         ...defaultOpts,
         // TODO(deepak1556): Incorrectly declared type in electron-osx-sign
@@ -54,18 +71,21 @@ async function main(buildDir?: string): Promise<void> {
                 filePath.includes(pluginHelperAppName);
         }
     };
+
     const gpuHelperOpts: codesign.SignOptions = {
         ...defaultOpts,
         app: path.join(appFrameworkPath, gpuHelperAppName),
         entitlements: path.join(baseDir, 'azure-pipelines', 'darwin', 'helper-gpu-entitlements.plist'),
         'entitlements-inherit': path.join(baseDir, 'azure-pipelines', 'darwin', 'helper-gpu-entitlements.plist'),
     };
+
     const rendererHelperOpts: codesign.SignOptions = {
         ...defaultOpts,
         app: path.join(appFrameworkPath, rendererHelperAppName),
         entitlements: path.join(baseDir, 'azure-pipelines', 'darwin', 'helper-renderer-entitlements.plist'),
         'entitlements-inherit': path.join(baseDir, 'azure-pipelines', 'darwin', 'helper-renderer-entitlements.plist'),
     };
+
     const pluginHelperOpts: codesign.SignOptions = {
         ...defaultOpts,
         app: path.join(appFrameworkPath, pluginHelperAppName),

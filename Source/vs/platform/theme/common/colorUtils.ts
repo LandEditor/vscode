@@ -71,8 +71,10 @@ export type ColorTransform = {
     transparency: number;
 } | {
     op: ColorTransformType.IfDefinedThenElse;
+
     if: ColorIdentifier;
     then: ColorValue;
+
     else: ColorValue;
 };
 export interface ColorDefaults {
@@ -152,12 +154,14 @@ class ColorRegistry implements IColorRegistry {
         enum: string[];
         enumDescriptions: string[];
     } = { type: 'string', enum: [], enumDescriptions: [] };
+
     constructor() {
         this.colorsById = {};
     }
     public notifyThemeUpdate(colorThemeData: IColorTheme) {
         for (const key of Object.keys(this.colorsById)) {
             const color = colorThemeData.getColor(key);
+
             if (color) {
                 this.colorSchema.properties[key].oneOf[0].defaultSnippets[0].body = `\${1:${color.toString()}}`;
             }
@@ -167,7 +171,9 @@ class ColorRegistry implements IColorRegistry {
     public registerColor(id: string, defaults: ColorDefaults | ColorValue | null, description: string, needsTransparency = false, deprecationMessage?: string): ColorIdentifier {
         const colorContribution: ColorContribution = { id, description, defaults, needsTransparency, deprecationMessage };
         this.colorsById[id] = colorContribution;
+
         const propertySchema: IJSONSchemaWithSnippets = { type: 'string', format: 'color-hex', defaultSnippets: [{ body: '${1:#ff0000}' }] };
+
         if (deprecationMessage) {
             propertySchema.deprecationMessage = deprecationMessage;
         }
@@ -185,12 +191,15 @@ class ColorRegistry implements IColorRegistry {
         this.colorReferenceSchema.enum.push(id);
         this.colorReferenceSchema.enumDescriptions.push(description);
         this._onDidChangeSchema.fire();
+
         return id;
     }
     public deregisterColor(id: string): void {
         delete this.colorsById[id];
         delete this.colorSchema.properties[id];
+
         const index = this.colorReferenceSchema.enum.indexOf(id);
+
         if (index !== -1) {
             this.colorReferenceSchema.enum.splice(index, 1);
             this.colorReferenceSchema.enumDescriptions.splice(index, 1);
@@ -202,8 +211,10 @@ class ColorRegistry implements IColorRegistry {
     }
     public resolveDefaultColor(id: ColorIdentifier, theme: IColorTheme): Color | undefined {
         const colorDesc = this.colorsById[id];
+
         if (colorDesc?.defaults) {
             const colorValue = isColorDefaults(colorDesc.defaults) ? colorDesc.defaults[theme.type] : colorDesc.defaults;
+
             return resolveColorValue(colorValue, theme);
         }
         return undefined;
@@ -217,12 +228,15 @@ class ColorRegistry implements IColorRegistry {
     public toString() {
         const sorter = (a: string, b: string) => {
             const cat1 = a.indexOf('.') === -1 ? 0 : 1;
+
             const cat2 = b.indexOf('.') === -1 ? 0 : 1;
+
             if (cat1 !== cat2) {
                 return cat1 - cat2;
             }
             return a.localeCompare(b);
         };
+
         return Object.keys(this.colorsById).sort(sorter).map(k => `- \`${k}\`: ${this.colorsById[k].description}`).join('\n');
     }
 }
@@ -239,12 +253,16 @@ export function executeTransform(transform: ColorTransform, theme: IColorTheme):
     switch (transform.op) {
         case ColorTransformType.Darken:
             return resolveColorValue(transform.value, theme)?.darken(transform.factor);
+
         case ColorTransformType.Lighten:
             return resolveColorValue(transform.value, theme)?.lighten(transform.factor);
+
         case ColorTransformType.Transparent:
             return resolveColorValue(transform.value, theme)?.transparent(transform.factor);
+
         case ColorTransformType.Opaque: {
             const backgroundColor = resolveColorValue(transform.background, theme);
+
             if (!backgroundColor) {
                 return resolveColorValue(transform.value, theme);
             }
@@ -253,19 +271,24 @@ export function executeTransform(transform: ColorTransform, theme: IColorTheme):
         case ColorTransformType.OneOf:
             for (const candidate of transform.values) {
                 const color = resolveColorValue(candidate, theme);
+
                 if (color) {
                     return color;
                 }
             }
             return undefined;
+
         case ColorTransformType.IfDefinedThenElse:
             return resolveColorValue(theme.defines(transform.if) ? transform.then : transform.else, theme);
+
         case ColorTransformType.LessProminent: {
             const from = resolveColorValue(transform.value, theme);
+
             if (!from) {
                 return undefined;
             }
             const backgroundColor = resolveColorValue(transform.background, theme);
+
             if (!backgroundColor) {
                 return from.transparent(transform.factor * transform.transparency);
             }
@@ -321,8 +344,10 @@ export function resolveColorValue(colorValue: ColorValue | null, theme: IColorTh
     return undefined;
 }
 export const workbenchColorsSchemaId = 'vscode://schemas/workbench-colors';
+
 const schemaRegistry = platform.Registry.as<IJSONContributionRegistry>(JSONExtensions.JSONContribution);
 schemaRegistry.registerSchema(workbenchColorsSchemaId, colorRegistry.getColorSchema());
+
 const delayer = new RunOnceScheduler(() => schemaRegistry.notifySchemaChanged(workbenchColorsSchemaId), 200);
 colorRegistry.onDidChangeSchema(() => {
     if (!delayer.isScheduled()) {

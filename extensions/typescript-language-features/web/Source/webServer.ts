@@ -11,6 +11,7 @@ import { PathMapper } from './pathMapper';
 import { createSys } from './serverHost';
 import { findArgument, findArgumentStringArray, hasArgument, parseServerMode } from './util/args';
 import { StartSessionOptions, startWorkerSession } from './workerSession';
+
 const setSys: (s: ts.System) => void = (ts as any).setSys;
 async function initializeSession(args: readonly string[], extensionUri: URI, ports: {
     tsserver: MessagePort;
@@ -18,21 +19,31 @@ async function initializeSession(args: readonly string[], extensionUri: URI, por
     watcher: MessagePort;
 }): Promise<void> {
     const logLevel = parseLogLevel(findArgument(args, '--logVerbosity'));
+
     const logger = new Logger(logLevel);
+
     const modeOrUnknown = parseServerMode(args);
+
     const serverMode = typeof modeOrUnknown === 'number' ? modeOrUnknown : undefined;
+
     const unknownServerMode = typeof modeOrUnknown === 'string' ? modeOrUnknown : undefined;
     logger.tsLogger.info(`Starting TS Server`);
     logger.tsLogger.info(`Version: 0.0.0`);
     logger.tsLogger.info(`Arguments: ${args.join(' ')}`);
     logger.tsLogger.info(`ServerMode: ${serverMode} unknownServerMode: ${unknownServerMode}`);
+
     const sessionOptions = parseSessionOptions(args, serverMode);
+
     const enabledExperimentalTypeAcquisition = hasArgument(args, '--enableProjectWideIntelliSenseOnWeb') && hasArgument(args, '--experimentalTypeAcquisition');
+
     const pathMapper = new PathMapper(extensionUri);
+
     const watchManager = new FileWatcherManager(ports.watcher, extensionUri, enabledExperimentalTypeAcquisition, pathMapper, logger);
+
     const { sys, fs } = await createSys(ts, args, ports.sync, logger, watchManager, pathMapper, () => {
         removeEventListener('message', listener);
     });
+
     setSys(sys);
     startWorkerSession(ts, sys, fs, sessionOptions, ports.tsserver, pathMapper, logger);
 }
@@ -50,12 +61,16 @@ function parseSessionOptions(args: readonly string[], serverMode: ts.LanguageSer
     };
 }
 let hasInitialized = false;
+
 const listener = async (e: any) => {
     if (!hasInitialized) {
         hasInitialized = true;
+
         if ('args' in e.data) {
             const args = e.data.args;
+
             const extensionUri = URI.from(e.data.extensionUri);
+
             const [sync, tsserver, watcher] = e.ports as MessagePort[];
             await initializeSession(args, extensionUri, { sync, tsserver, watcher });
         }

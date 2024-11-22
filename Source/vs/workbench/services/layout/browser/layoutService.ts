@@ -89,9 +89,13 @@ export type PanelAlignment = 'left' | 'center' | 'right' | 'justify';
 export function positionToString(position: Position): string {
 	switch (position) {
 		case Position.LEFT: return 'left';
+
 		case Position.RIGHT: return 'right';
+
 		case Position.BOTTOM: return 'bottom';
+
 		case Position.TOP: return 'top';
+
 		default: return 'bottom';
 	}
 }
@@ -110,8 +114,11 @@ export function positionFromString(str: string): Position {
 function panelOpensMaximizedSettingToString(setting: PanelOpensMaximizedOptions): string {
 	switch (setting) {
 		case PanelOpensMaximizedOptions.ALWAYS: return 'always';
+
 		case PanelOpensMaximizedOptions.NEVER: return 'never';
+
 		case PanelOpensMaximizedOptions.REMEMBER_LAST: return 'preserve';
+
 		default: return 'preserve';
 	}
 }
@@ -205,6 +212,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 * Returns the target window container or parts HTML element within, if there is one.
 	 */
 	getContainer(targetWindow: Window): HTMLElement;
+
 	getContainer(targetWindow: Window, part: Parts): HTMLElement | undefined;
 
 	/**
@@ -218,7 +226,9 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 * Set part hidden or not in the target window.
 	 */
 	setPartHidden(hidden: boolean, part: Exclude<SINGLE_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void;
+
 	setPartHidden(hidden: boolean, part: Exclude<MULTI_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
+
 	setPartHidden(hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
 
 	/**
@@ -324,10 +334,12 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 	}
 
 	const inFullscreen = isFullscreen(window);
+
 	const nativeTitleBarEnabled = hasNativeTitlebar(configurationService);
 
 	if (!isWeb) {
 		const showCustomTitleBar = configurationService.getValue<CustomTitleBarVisibility>(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY);
+
 		if (showCustomTitleBar === CustomTitleBarVisibility.NEVER && nativeTitleBarEnabled || showCustomTitleBar === CustomTitleBarVisibility.WINDOWED && inFullscreen) {
 			return false;
 		}
@@ -359,16 +371,21 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 
 	// remaining behavior is based on menubar visibility
 	const menuBarVisibility = !isAuxiliaryWindow(window) ? getMenuBarVisibility(configurationService) : 'hidden';
+
 	switch (menuBarVisibility) {
 		case 'classic':
 			return !inFullscreen || !!menuBarToggled;
+
 		case 'compact':
 		case 'hidden':
 			return false;
+
 		case 'toggle':
 			return !!menuBarToggled;
+
 		case 'visible':
 			return true;
+
 		default:
 			return isWeb ? false : !inFullscreen || !!menuBarToggled;
 	}
@@ -383,13 +400,16 @@ function isTitleBarEmpty(configurationService: IConfigurationService): boolean {
 
 	// with the activity bar on top, we should always show
 	const activityBarPosition = configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
+
 	if (activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM) {
 		return false;
 	}
 
 	// with the editor actions on top, we should always show
 	const editorActionsLocation = configurationService.getValue<EditorActionsLocation>(LayoutSettings.EDITOR_ACTIONS_LOCATION);
+
 	const editorTabsMode = configurationService.getValue<EditorTabsMode>(LayoutSettings.EDITOR_TABS_MODE);
+
 	if (editorActionsLocation === EditorActionsLocation.TITLEBAR || editorActionsLocation === EditorActionsLocation.DEFAULT && editorTabsMode === EditorTabsMode.NONE) {
 		return false;
 	}

@@ -9,6 +9,7 @@ import { BrandedService, IConstructorSignature } from '../../platform/instantiat
 export interface IEditorFeature {
 }
 export type EditorFeatureCtor = IConstructorSignature<IEditorFeature>;
+
 const editorFeatures: EditorFeatureCtor[] = [];
 /**
  * Registers an editor feature. Editor features will be instantiated only once, as soon as

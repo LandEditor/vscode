@@ -31,6 +31,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     private patterns: ICustomEditorLabelPattern[] = [];
     private enabled = true;
     private cache = new MRUCache<string, string | null>(1000);
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -47,6 +48,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
             if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED)) {
                 const oldEnablement = this.enabled;
                 this.storeEnablementState();
+
                 if (oldEnablement !== this.enabled && this.patterns.length > 0) {
                     this._onDidChange.fire();
                 }
@@ -65,13 +67,17 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     private _templateRegexValidation: RegExp = /[a-zA-Z0-9]/;
     private storeCustomPatterns(): void {
         this.patterns = [];
+
         const customLabelPatterns = this.configurationService.getValue<ICustomEditorLabelObject>(CustomEditorLabelService.SETTING_ID_PATTERNS);
+
         for (const pattern in customLabelPatterns) {
             const template = customLabelPatterns[pattern];
+
             if (!this._templateRegexValidation.test(template)) {
                 continue;
             }
             const isAbsolutePath = isAbsolute(pattern);
+
             const parsedPattern = parseGlob(pattern);
             this.patterns.push({ pattern, template, isAbsolutePath, parsedPattern });
         }
@@ -79,6 +85,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     }
     private patternWeight(pattern: string): number {
         let weight = 0;
+
         for (const fragment of pattern.split('/')) {
             if (fragment === '**') {
                 weight += 1;
@@ -100,19 +107,25 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
             return undefined;
         }
         const key = resource.toString();
+
         const cached = this.cache.get(key);
+
         if (cached !== undefined) {
             return cached ?? undefined;
         }
         const result = this.applyPatterns(resource);
         this.cache.set(key, result ?? null);
+
         return result;
     }
     private applyPatterns(resource: URI): string | undefined {
         const root = this.workspaceContextService.getWorkspaceFolder(resource);
+
         let relativePath: string | undefined;
+
         for (const pattern of this.patterns) {
             let relevantPath: string;
+
             if (root && !pattern.isAbsolutePath) {
                 if (!relativePath) {
                     relativePath = getRelativePath(resourceDirname(root.uri), resource) ?? resource.path;
@@ -132,6 +145,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     private readonly _filenameCaptureExpression = /(?<filename>^\.*[^.]*)/;
     private applyTemplate(template: string, resource: URI, relevantPath: string): string {
         let parsedPath: undefined | ParsedPath;
+
         return template.replace(this._parsedTemplateExpression, (match: string, variable: string, ...args: any[]) => {
             parsedPath = parsedPath ?? parsePath(resource.path);
             // named group matches
@@ -139,28 +153,35 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
                 dirnameN?: string;
                 extnameN?: string;
             } = args.pop();
+
             if (variable === 'filename') {
                 const { filename } = this._filenameCaptureExpression.exec(parsedPath.base)?.groups ?? {};
+
                 if (filename) {
                     return filename;
                 }
             }
             else if (variable === 'extname') {
                 const extension = this.getExtnames(parsedPath.base);
+
                 if (extension) {
                     return extension;
                 }
             }
             else if (variable.startsWith('extname')) {
                 const n = parseInt(extnameN);
+
                 const nthExtname = this.getNthExtname(parsedPath.base, n);
+
                 if (nthExtname) {
                     return nthExtname;
                 }
             }
             else if (variable.startsWith('dirname')) {
                 const n = parseInt(dirnameN);
+
                 const nthDir = this.getNthDirname(dirname(relevantPath), n);
+
                 if (nthDir) {
                     return nthDir;
                 }
@@ -170,6 +191,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     }
     private removeLeadingDot(path: string): string {
         let withoutLeadingDot = path;
+
         while (withoutLeadingDot.startsWith('.')) {
             withoutLeadingDot = withoutLeadingDot.slice(1);
         }
@@ -178,7 +200,9 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     private getNthDirname(path: string, n: number): string | undefined {
         // grand-parent/parent/filename.ext1.ext2 -> [grand-parent, parent]
         path = path.startsWith('/') ? path.slice(1) : path;
+
         const pathFragments = path.split('/');
+
         return this.getNthFragment(pathFragments, n);
     }
     private getExtnames(fullFileName: string): string {
@@ -192,7 +216,9 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
     }
     private getNthFragment(fragments: string[], n: number): string | undefined {
         const length = fragments.length;
+
         let nth;
+
         if (n < 0) {
             nth = Math.abs(n) - 1;
         }
@@ -200,6 +226,7 @@ export class CustomEditorLabelService extends Disposable implements ICustomEdito
             nth = length - n - 1;
         }
         const nthFragment = fragments[nth];
+
         if (nthFragment === undefined || nthFragment === '') {
             return undefined;
         }
@@ -210,6 +237,7 @@ export const ICustomEditorLabelService = createDecorator<ICustomEditorLabelServi
 export interface ICustomEditorLabelService {
     readonly _serviceBrand: undefined;
     readonly onDidChange: Event<void>;
+
     getName(resource: URI): string | undefined;
 }
 registerSingleton(ICustomEditorLabelService, CustomEditorLabelService, InstantiationType.Delayed);

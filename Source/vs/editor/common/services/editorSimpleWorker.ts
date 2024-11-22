@@ -33,6 +33,7 @@ import { ICommonModel, WorkerTextModelSyncServer } from './textModelSync/textMod
 export interface IMirrorModel extends IMirrorTextModel {
     readonly uri: URI;
     readonly version: number;
+
     getValue(): string;
 }
 export interface IWorkerContext<H = undefined> {
@@ -72,6 +73,7 @@ declare const require: any;
 export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSyncChannelServer, IRequestHandler {
     _requestHandlerBrand: any;
     private readonly _workerTextModelSyncServer = new WorkerTextModelSyncServer();
+
     constructor() {
     }
     dispose(): void {
@@ -93,6 +95,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     }
     public async $computeUnicodeHighlights(url: string, options: UnicodeHighlighterOptions, range?: IRange): Promise<IUnicodeHighlightsResult> {
         const model = this._getModel(url);
+
         if (!model) {
             return { ranges: [], hasMore: false, ambiguousCharacterCount: 0, invisibleCharacterCount: 0, nonBasicAsciiCharacterCount: 0 };
         }
@@ -100,6 +103,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     }
     public async $findSectionHeaders(url: string, options: FindSectionHeaderOptions): Promise<SectionHeader[]> {
         const model = this._getModel(url);
+
         if (!model) {
             return [];
         }
@@ -108,19 +112,27 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     // ---- BEGIN diff --------------------------------------------------------------------------
     public async $computeDiff(originalUrl: string, modifiedUrl: string, options: IDocumentDiffProviderOptions, algorithm: DiffAlgorithmName): Promise<IDiffComputationResult | null> {
         const original = this._getModel(originalUrl);
+
         const modified = this._getModel(modifiedUrl);
+
         if (!original || !modified) {
             return null;
         }
         const result = EditorSimpleWorker.computeDiff(original, modified, options, algorithm);
+
         return result;
     }
     private static computeDiff(originalTextModel: ICommonModel | ITextModel, modifiedTextModel: ICommonModel | ITextModel, options: IDocumentDiffProviderOptions, algorithm: DiffAlgorithmName): IDiffComputationResult {
         const diffAlgorithm: ILinesDiffComputer = algorithm === 'advanced' ? linesDiffComputers.getDefault() : linesDiffComputers.getLegacy();
+
         const originalLines = originalTextModel.getLinesContent();
+
         const modifiedLines = modifiedTextModel.getLinesContent();
+
         const result = diffAlgorithm.computeDiff(originalLines, modifiedLines, options);
+
         const identical = (result.changes.length > 0 ? false : this._modelsAreIdentical(originalTextModel, modifiedTextModel));
+
         function getLineChanges(changes: readonly DetailedLineRangeMapping[]): ILineChange[] {
             return changes.map(m => ([m.original.startLineNumber, m.original.endLineNumberExclusive, m.modified.startLineNumber, m.modified.endLineNumberExclusive, m.innerChanges?.map(m => [
                     m.originalRange.startLineNumber,
@@ -148,13 +160,17 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     }
     private static _modelsAreIdentical(original: ICommonModel | ITextModel, modified: ICommonModel | ITextModel): boolean {
         const originalLineCount = original.getLineCount();
+
         const modifiedLineCount = modified.getLineCount();
+
         if (originalLineCount !== modifiedLineCount) {
             return false;
         }
         for (let line = 1; line <= originalLineCount; line++) {
             const originalLine = original.getLineContent(line);
+
             const modifiedLine = modified.getLineContent(line);
+
             if (originalLine !== modifiedLine) {
                 return false;
             }
@@ -163,12 +179,16 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     }
     public async $computeDirtyDiff(originalUrl: string, modifiedUrl: string, ignoreTrimWhitespace: boolean): Promise<IChange[] | null> {
         const original = this._getModel(originalUrl);
+
         const modified = this._getModel(modifiedUrl);
+
         if (!original || !modified) {
             return null;
         }
         const originalLines = original.getLinesContent();
+
         const modifiedLines = modified.getLinesContent();
+
         const diffComputer = new DiffComputer(originalLines, modifiedLines, {
             shouldComputeCharChanges: false,
             shouldPostProcessCharChanges: false,
@@ -176,6 +196,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             shouldMakePrettyDiff: true,
             maxComputationTime: 1000
         });
+
         return diffComputer.computeDiff().changes;
     }
     // ---- END diff --------------------------------------------------------------------------
@@ -183,10 +204,12 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     private static readonly _diffLimit = 100000;
     public async $computeMoreMinimalEdits(modelUrl: string, edits: TextEdit[], pretty: boolean): Promise<TextEdit[]> {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return edits;
         }
         const result: TextEdit[] = [];
+
         let lastEol: EndOfLineSequence | undefined = undefined;
         edits = edits.slice(0).sort((a, b) => {
             if (a.range && b.range) {
@@ -194,11 +217,14 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             }
             // eol only changes should go to the end
             const aRng = a.range ? 0 : 1;
+
             const bRng = b.range ? 0 : 1;
+
             return aRng - bRng;
         });
         // merge adjacent edits
         let writeIndex = 0;
+
         for (let readIndex = 1; readIndex < edits.length; readIndex++) {
             if (Range.getEndPosition(edits[writeIndex].range).equals(Range.getStartPosition(edits[readIndex].range))) {
                 edits[writeIndex].range = Range.fromPositions(Range.getStartPosition(edits[writeIndex].range), Range.getEndPosition(edits[readIndex].range));
@@ -210,6 +236,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             }
         }
         edits.length = writeIndex + 1;
+
         for (let { range, text, eol } of edits) {
             if (typeof eol === 'number') {
                 lastEol = eol;
@@ -220,6 +247,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             }
             const original = model.getValueInRange(range);
             text = text.replace(/\r\n|\n|\r/g, model.eol);
+
             if (original === text) {
                 // noop
                 continue;
@@ -227,18 +255,24 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             // make sure diff won't take too long
             if (Math.max(text.length, original.length) > EditorSimpleWorker._diffLimit) {
                 result.push({ range, text });
+
                 continue;
             }
             // compute diff between original and edit.text
             const changes = stringDiff(original, text, pretty);
+
             const editOffset = model.offsetAt(Range.lift(range).getStartPosition());
+
             for (const change of changes) {
                 const start = model.positionAt(editOffset + change.originalStart);
+
                 const end = model.positionAt(editOffset + change.originalStart + change.originalLength);
+
                 const newEdit: TextEdit = {
                     text: text.substr(change.modifiedStart, change.modifiedLength),
                     range: { startLineNumber: start.lineNumber, startColumn: start.column, endLineNumber: end.lineNumber, endColumn: end.column }
                 };
+
                 if (model.getValueInRange(newEdit.range) !== newEdit.text) {
                     result.push(newEdit);
                 }
@@ -251,10 +285,12 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     }
     public $computeHumanReadableDiff(modelUrl: string, edits: TextEdit[], options: ILinesDiffComputerOptions): TextEdit[] {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return edits;
         }
         const result: TextEdit[] = [];
+
         let lastEol: EndOfLineSequence | undefined = undefined;
         edits = edits.slice(0).sort((a, b) => {
             if (a.range && b.range) {
@@ -262,9 +298,12 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             }
             // eol only changes should go to the end
             const aRng = a.range ? 0 : 1;
+
             const bRng = b.range ? 0 : 1;
+
             return aRng - bRng;
         });
+
         for (let { range, text, eol } of edits) {
             if (typeof eol === 'number') {
                 lastEol = eol;
@@ -275,6 +314,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             }
             const original = model.getValueInRange(range);
             text = text.replace(/\r\n|\n|\r/g, model.eol);
+
             if (original === text) {
                 // noop
                 continue;
@@ -282,20 +322,27 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             // make sure diff won't take too long
             if (Math.max(text.length, original.length) > EditorSimpleWorker._diffLimit) {
                 result.push({ range, text });
+
                 continue;
             }
             // compute diff between original and edit.text
             const originalLines = original.split(/\r\n|\n|\r/);
+
             const modifiedLines = text.split(/\r\n|\n|\r/);
+
             const diff = linesDiffComputers.getDefault().computeDiff(originalLines, modifiedLines, options);
+
             const start = Range.lift(range).getStartPosition();
+
             function addPositions(pos1: Position, pos2: Position): Position {
                 return new Position(pos1.lineNumber + pos2.lineNumber - 1, pos2.lineNumber === 1 ? pos1.column + pos2.column - 1 : pos2.column);
             }
             function getText(lines: string[], range: Range): string[] {
                 const result: string[] = [];
+
                 for (let i = range.startLineNumber; i <= range.endLineNumber; i++) {
                     const line = lines[i - 1];
+
                     if (i === range.startLineNumber && i === range.endLineNumber) {
                         result.push(line.substring(range.startColumn - 1, range.endColumn - 1));
                     }
@@ -333,6 +380,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     // ---- END minimal edits ---------------------------------------------------------------
     public async $computeLinks(modelUrl: string): Promise<ILink[] | null> {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return null;
         }
@@ -341,6 +389,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     // --- BEGIN default document colors -----------------------------------------------------------
     public async $computeDefaultDocumentColors(modelUrl: string): Promise<IColorInformation[] | null> {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return null;
         }
@@ -353,10 +402,13 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
         duration: number;
     } | null> {
         const sw = new StopWatch();
+
         const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
+
         const seen = new Set<string>();
         outer: for (const url of modelUrls) {
             const model = this._getModel(url);
+
             if (!model) {
                 continue;
             }
@@ -365,6 +417,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
                     continue;
                 }
                 seen.add(word);
+
                 if (seen.size > EditorSimpleWorker._suggestionsLimit) {
                     break outer;
                 }
@@ -378,20 +431,25 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
         [word: string]: IRange[];
     }> {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return Object.create(null);
         }
         const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
+
         const result: {
             [word: string]: IRange[];
         } = Object.create(null);
+
         for (let line = range.startLineNumber; line < range.endLineNumber; line++) {
             const words = model.getLineWords(line, wordDefRegExp);
+
             for (const word of words) {
                 if (!isNaN(Number(word.word))) {
                     continue;
                 }
                 let array = result[word.word];
+
                 if (!array) {
                     array = [];
                     result[word.word] = array;
@@ -409,10 +467,12 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
     //#endregion
     public async $navigateValueSet(modelUrl: string, range: IRange, up: boolean, wordDef: string, wordDefFlags: string): Promise<IInplaceReplaceSupportResult | null> {
         const model = this._getModel(modelUrl);
+
         if (!model) {
             return null;
         }
         const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
+
         if (range.startColumn === range.endColumn) {
             range = {
                 startLineNumber: range.startLineNumber,
@@ -422,12 +482,16 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
             };
         }
         const selectionText = model.getValueInRange(range);
+
         const wordRange = model.getWordAtPosition({ lineNumber: range.startLineNumber, column: range.startColumn }, wordDefRegExp);
+
         if (!wordRange) {
             return null;
         }
         const word = model.getValueInRange(wordRange);
+
         const result = BasicInplaceReplace.INSTANCE.navigateValueSet(range, selectionText, wordRange, word, up);
+
         return result;
     }
 }
@@ -436,6 +500,7 @@ export class BaseEditorSimpleWorker implements IDisposable, IWorkerTextModelSync
  */
 export class EditorSimpleWorker extends BaseEditorSimpleWorker {
     private _foreignModule: any = null;
+
     constructor(private readonly _host: EditorWorkerHost, private readonly _foreignModuleFactory: IForeignModuleFactory | null) {
         super();
     }
@@ -447,13 +512,16 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
         const proxyMethodRequest = (method: string, args: any[]): Promise<any> => {
             return this._host.$fhr(method, args);
         };
+
         const foreignHost = createProxyObject(foreignHostMethods, proxyMethodRequest);
+
         const ctx: IWorkerContext<any> = {
             host: foreignHost,
             getMirrorModels: (): IMirrorModel[] => {
                 return this._getModels();
             }
         };
+
         if (this._foreignModuleFactory) {
             this._foreignModule = this._foreignModuleFactory(ctx, createData);
             // static foreing module
@@ -466,7 +534,9 @@ export class EditorSimpleWorker extends BaseEditorSimpleWorker {
                 this._foreignModule = foreignModule.create(ctx, createData);
                 resolve(getAllMethodNames(this._foreignModule));
             };
+
             const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
+
             import(`${url}`).then(onModuleCallback).catch(reject);
         });
     }

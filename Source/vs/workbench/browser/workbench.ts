@@ -59,6 +59,7 @@ export class Workbench extends Layout {
     readonly onWillShutdown = this._onWillShutdown.event;
     private readonly _onDidShutdown = this._register(new Emitter<void>());
     readonly onDidShutdown = this._onDidShutdown.event;
+
     constructor(parent: HTMLElement, private readonly options: IWorkbenchOptions | undefined, private readonly serviceCollection: ServiceCollection, logService: ILogService) {
         super(parent);
         // Perf: measure workbench startup time
@@ -84,10 +85,12 @@ export class Workbench extends Layout {
     } = { message: undefined, time: 0 };
     private handleUnexpectedError(error: unknown, logService: ILogService): void {
         const message = toErrorMessage(error, true);
+
         if (!message) {
             return;
         }
         const now = Date.now();
+
         if (message === this.previousUnexpectedError.message && now - this.previousUnexpectedError.time <= 1000) {
             return; // Return if error message identical to previous and shorter than 1 second
         }
@@ -104,15 +107,22 @@ export class Workbench extends Layout {
             const instantiationService = this.initServices(this.serviceCollection);
             instantiationService.invokeFunction(accessor => {
                 const lifecycleService = accessor.get(ILifecycleService);
+
                 const storageService = accessor.get(IStorageService);
+
                 const configurationService = accessor.get(IConfigurationService);
+
                 const hostService = accessor.get(IHostService);
+
                 const hoverService = accessor.get(IHoverService);
+
                 const dialogService = accessor.get(IDialogService);
+
                 const notificationService = accessor.get(INotificationService) as NotificationService;
                 // Default Hover Delegate must be registered before creating any workbench/layout components
                 // as these possibly will use the default hover delegate
                 setHoverDelegateFactory((placement, enableInstantHover) => instantiationService.createInstance(WorkbenchHoverDelegate, placement, enableInstantHover, {}));
+
                 setBaseLayerHoverDelegate(hoverService);
                 // Layout
                 this.initLayout(accessor);
@@ -132,10 +142,12 @@ export class Workbench extends Layout {
                 // Restore
                 this.restore(lifecycleService);
             });
+
             return instantiationService;
         }
         catch (error) {
             onUnexpectedError(error);
+
             throw error; // rethrow because this is a critical issue we cannot handle properly here
         }
     }
@@ -152,6 +164,7 @@ export class Workbench extends Layout {
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         // All Contributed Services
         const contributedServices = getSingletonServiceDescriptors();
+
         for (const [id, descriptor] of contributedServices) {
             serviceCollection.set(id, descriptor);
         }
@@ -161,12 +174,14 @@ export class Workbench extends Layout {
             const lifecycleService = accessor.get(ILifecycleService);
             // TODO@Sandeep debt around cyclic dependencies
             const configurationService = accessor.get(IConfigurationService) as any;
+
             if (typeof configurationService.acquireInstantiationService === 'function') {
                 configurationService.acquireInstantiationService(instantiationService);
             }
             // Signal to lifecycle that services are set
             lifecycleService.phase = LifecyclePhase.Ready;
         });
+
         return instantiationService;
     }
     private registerListeners(lifecycleService: ILifecycleService, storageService: IStorageService, configurationService: IConfigurationService, hostService: IHostService, dialogService: IDialogService): void {
@@ -212,6 +227,7 @@ export class Workbench extends Layout {
             return;
         }
         const aliasing = configurationService.getValue<'default' | 'antialiased' | 'none' | 'auto'>('workbench.fontAliasing');
+
         if (this.fontAliasing === aliasing) {
             return;
         }
@@ -226,9 +242,11 @@ export class Workbench extends Layout {
     }
     private restoreFontInfo(storageService: IStorageService, configurationService: IConfigurationService): void {
         const storedFontInfoRaw = storageService.get('editorFontInfo', StorageScope.APPLICATION);
+
         if (storedFontInfoRaw) {
             try {
                 const storedFontInfo = JSON.parse(storedFontInfoRaw);
+
                 if (Array.isArray(storedFontInfo)) {
                     FontMeasurements.restoreFontInfo(mainWindow, storedFontInfo);
                 }
@@ -241,6 +259,7 @@ export class Workbench extends Layout {
     }
     private storeFontInfo(storageService: IStorageService): void {
         const serializedFontInfo = FontMeasurements.serializeFontInfo(mainWindow);
+
         if (serializedFontInfo) {
             storageService.store('editorFontInfo', JSON.stringify(serializedFontInfo), StorageScope.APPLICATION, StorageTarget.MACHINE);
         }
@@ -248,9 +267,11 @@ export class Workbench extends Layout {
     private renderWorkbench(instantiationService: IInstantiationService, notificationService: NotificationService, storageService: IStorageService, configurationService: IConfigurationService): void {
         // ARIA & Signals
         setARIAContainer(this.mainContainer);
+
         setProgressAcccessibilitySignalScheduler((msDelayTime: number, msLoopTime?: number) => instantiationService.createInstance(AccessibilityProgressSignalScheduler, msDelayTime, msLoopTime));
         // State specific classes
         const platformClass = isWindows ? 'windows' : isLinux ? 'linux' : 'mac';
+
         const workbenchClasses = coalesce([
             'monaco-workbench',
             platformClass,
@@ -294,6 +315,7 @@ export class Workbench extends Layout {
         part.classList.add('part', ...classes);
         part.id = id;
         part.setAttribute('role', role);
+
         if (role === 'status') {
             part.setAttribute('aria-live', 'off');
         }
@@ -302,8 +324,10 @@ export class Workbench extends Layout {
     private createNotificationsHandlers(instantiationService: IInstantiationService, notificationService: NotificationService): void {
         // Instantiate Notification components
         const notificationsCenter = this._register(instantiationService.createInstance(NotificationsCenter, this.mainContainer, notificationService.model));
+
         const notificationsToasts = this._register(instantiationService.createInstance(NotificationsToasts, this.mainContainer, notificationService.model));
         this._register(instantiationService.createInstance(NotificationsAlerts, notificationService.model));
+
         const notificationsStatus = instantiationService.createInstance(NotificationsStatus, notificationService.model);
         this._register(instantiationService.createInstance(NotificationsTelemetry));
         // Visibility

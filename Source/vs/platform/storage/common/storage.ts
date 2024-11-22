@@ -82,6 +82,7 @@ export interface IStorageService {
      * to either the current workspace only, all workspaces or all profiles.
      */
     get(key: string, scope: StorageScope, fallbackValue: string): string;
+
     get(key: string, scope: StorageScope, fallbackValue?: string): string | undefined;
     /**
      * Retrieve an element stored with the given key from storage. Use
@@ -92,6 +93,7 @@ export interface IStorageService {
      * to either the current workspace only, all workspaces or all profiles.
      */
     getBoolean(key: string, scope: StorageScope, fallbackValue: boolean): boolean;
+
     getBoolean(key: string, scope: StorageScope, fallbackValue?: boolean): boolean | undefined;
     /**
      * Retrieve an element stored with the given key from storage. Use
@@ -103,6 +105,7 @@ export interface IStorageService {
      * to either the current workspace only, all workspaces or all profiles.
      */
     getNumber(key: string, scope: StorageScope, fallbackValue: number): number;
+
     getNumber(key: string, scope: StorageScope, fallbackValue?: number): number | undefined;
     /**
      * Retrieve an element stored with the given key from storage. Use
@@ -113,6 +116,7 @@ export interface IStorageService {
      * to either the current workspace only, all workspaces or all profiles.
      */
     getObject<T extends object>(key: string, scope: StorageScope, fallbackValue: T): T;
+
     getObject<T extends object>(key: string, scope: StorageScope, fallbackValue?: T): T | undefined;
     /**
      * Store a value under the given key to storage. The value will be
@@ -254,6 +258,7 @@ export interface IStorageServiceOptions {
 }
 export function loadKeyTargets(storage: IStorage): IKeyTargets {
     const keysRaw = storage.get(TARGET_KEY);
+
     if (keysRaw) {
         try {
             return JSON.parse(keysRaw);
@@ -275,6 +280,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
     private initializationPromise: Promise<void> | undefined;
     private readonly flushWhenIdleScheduler = this._register(new RunOnceScheduler(() => this.doFlushWhenIdle(), this.options.flushInterval));
     private readonly runFlushWhenIdle = this._register(new MutableDisposable());
+
     constructor(private readonly options: IStorageServiceOptions = { flushInterval: AbstractStorageService.DEFAULT_FLUSH_INTERVAL }) {
         super();
     }
@@ -304,6 +310,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
             this.initializationPromise = (async () => {
                 // Init all storage locations
                 mark('code/willInitStorage');
+
                 try {
                     await this.doInitialize(); // Ask subclasses to initialize storage
                 }
@@ -331,12 +338,17 @@ export abstract class AbstractStorageService extends Disposable implements IStor
             switch (scope) {
                 case StorageScope.APPLICATION:
                     this._applicationKeyTargets = undefined;
+
                     break;
+
                 case StorageScope.PROFILE:
                     this._profileKeyTargets = undefined;
+
                     break;
+
                 case StorageScope.WORKSPACE:
                     this._workspaceKeyTargets = undefined;
+
                     break;
             }
             // Emit as `didChangeTarget` event
@@ -351,22 +363,30 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         this._onWillSaveState.fire({ reason });
     }
     get(key: string, scope: StorageScope, fallbackValue: string): string;
+
     get(key: string, scope: StorageScope): string | undefined;
+
     get(key: string, scope: StorageScope, fallbackValue?: string): string | undefined {
         return this.getStorage(scope)?.get(key, fallbackValue);
     }
     getBoolean(key: string, scope: StorageScope, fallbackValue: boolean): boolean;
+
     getBoolean(key: string, scope: StorageScope): boolean | undefined;
+
     getBoolean(key: string, scope: StorageScope, fallbackValue?: boolean): boolean | undefined {
         return this.getStorage(scope)?.getBoolean(key, fallbackValue);
     }
     getNumber(key: string, scope: StorageScope, fallbackValue: number): number;
+
     getNumber(key: string, scope: StorageScope): number | undefined;
+
     getNumber(key: string, scope: StorageScope, fallbackValue?: number): number | undefined {
         return this.getStorage(scope)?.getNumber(key, fallbackValue);
     }
     getObject(key: string, scope: StorageScope, fallbackValue: object): object;
+
     getObject(key: string, scope: StorageScope): object | undefined;
+
     getObject(key: string, scope: StorageScope, fallbackValue?: object): object | undefined {
         return this.getStorage(scope)?.getObject(key, fallbackValue);
     }
@@ -381,6 +401,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         // We remove the key for undefined/null values
         if (isUndefinedOrNull(value)) {
             this.remove(key, scope, external);
+
             return;
         }
         // Update our datastructures but send events only after
@@ -404,6 +425,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         // Pause emitters
         this._onDidChangeValue.pause();
         this._onDidChangeTarget.pause();
+
         try {
             fn();
         }
@@ -415,9 +437,12 @@ export abstract class AbstractStorageService extends Disposable implements IStor
     }
     keys(scope: StorageScope, target: StorageTarget): string[] {
         const keys: string[] = [];
+
         const keyTargets = this.getKeyTargets(scope);
+
         for (const key of Object.keys(keyTargets)) {
             const keyTarget = keyTargets[key];
+
             if (keyTarget === target) {
                 keys.push(key);
             }
@@ -427,6 +452,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
     private updateKeyTarget(key: string, scope: StorageScope, target: StorageTarget | undefined, external = false): void {
         // Add
         const keyTargets = this.getKeyTargets(scope);
+
         if (typeof target === 'number') {
             if (keyTargets[key] !== target) {
                 keyTargets[key] = target;
@@ -466,8 +492,10 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationKeyTargets;
+
             case StorageScope.PROFILE:
                 return this.profileKeyTargets;
+
             default:
                 return this.workspaceKeyTargets;
         }
@@ -476,6 +504,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         [key: string]: StorageTarget;
     } {
         const storage = this.getStorage(scope);
+
         return storage ? loadKeyTargets(storage) : Object.create(null);
     }
     isNew(scope: StorageScope): boolean {
@@ -484,9 +513,13 @@ export abstract class AbstractStorageService extends Disposable implements IStor
     async flush(reason = WillSaveStateReason.NONE): Promise<void> {
         // Signal event to collect changes
         this._onWillSaveState.fire({ reason });
+
         const applicationStorage = this.getStorage(StorageScope.APPLICATION);
+
         const profileStorage = this.getStorage(StorageScope.PROFILE);
+
         const workspaceStorage = this.getStorage(StorageScope.WORKSPACE);
+
         switch (reason) {
             // Unspecific reason: just wait when data is flushed
             case WillSaveStateReason.NONE:
@@ -495,6 +528,7 @@ export abstract class AbstractStorageService extends Disposable implements IStor
                     profileStorage?.whenFlushed() ?? Promise.resolve(),
                     workspaceStorage?.whenFlushed() ?? Promise.resolve()
                 ]);
+
                 break;
             // Shutdown: we want to flush as soon as possible
             // and not hit any delays that might be there
@@ -504,24 +538,30 @@ export abstract class AbstractStorageService extends Disposable implements IStor
                     profileStorage?.flush(0) ?? Promise.resolve(),
                     workspaceStorage?.flush(0) ?? Promise.resolve()
                 ]);
+
                 break;
         }
     }
     async log(): Promise<void> {
         const applicationItems = this.getStorage(StorageScope.APPLICATION)?.items ?? new Map<string, string>();
+
         const profileItems = this.getStorage(StorageScope.PROFILE)?.items ?? new Map<string, string>();
+
         const workspaceItems = this.getStorage(StorageScope.WORKSPACE)?.items ?? new Map<string, string>();
+
         return logStorage(applicationItems, profileItems, workspaceItems, this.getLogDetails(StorageScope.APPLICATION) ?? '', this.getLogDetails(StorageScope.PROFILE) ?? '', this.getLogDetails(StorageScope.WORKSPACE) ?? '');
     }
     async optimize(scope: StorageScope): Promise<void> {
         // Await pending data to be flushed to the DB
         // before attempting to optimize the DB
         await this.flush();
+
         return this.getStorage(scope)?.optimize();
     }
     async switch(to: IAnyWorkspaceIdentifier | IUserDataProfile, preserveData: boolean): Promise<void> {
         // Signal as event so that clients can store data before we switch
         this.emitWillSaveState(WillSaveStateReason.NONE);
+
         if (isUserDataProfile(to)) {
             return this.switchToProfile(to, preserveData);
         }
@@ -540,9 +580,12 @@ export abstract class AbstractStorageService extends Disposable implements IStor
         this.withPausedEmitters(() => {
             // Signal storage keys that have changed
             const handledkeys = new Set<string>();
+
             for (const [key, oldValue] of oldStorage) {
                 handledkeys.add(key);
+
                 const newValue = newStorage.get(key);
+
                 if (newValue !== oldValue) {
                     this.emitDidChangeValue(scope, { key, external: true });
                 }
@@ -569,6 +612,7 @@ export class InMemoryStorageService extends AbstractStorageService {
     private readonly applicationStorage = this._register(new Storage(new InMemoryStorageDatabase(), { hint: StorageHint.STORAGE_IN_MEMORY }));
     private readonly profileStorage = this._register(new Storage(new InMemoryStorageDatabase(), { hint: StorageHint.STORAGE_IN_MEMORY }));
     private readonly workspaceStorage = this._register(new Storage(new InMemoryStorageDatabase(), { hint: StorageHint.STORAGE_IN_MEMORY }));
+
     constructor() {
         super();
         this._register(this.workspaceStorage.onDidChangeStorage(e => this.emitDidChangeValue(StorageScope.WORKSPACE, e)));
@@ -579,8 +623,10 @@ export class InMemoryStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return this.applicationStorage;
+
             case StorageScope.PROFILE:
                 return this.profileStorage;
+
             default:
                 return this.workspaceStorage;
         }
@@ -589,8 +635,10 @@ export class InMemoryStorageService extends AbstractStorageService {
         switch (scope) {
             case StorageScope.APPLICATION:
                 return 'inMemory (application)';
+
             case StorageScope.PROFILE:
                 return 'inMemory (profile)';
+
             default:
                 return 'inMemory (workspace)';
         }
@@ -618,24 +666,31 @@ export async function logStorage(application: Map<string, string>, profile: Map<
             return value;
         }
     };
+
     const applicationItems = new Map<string, string>();
+
     const applicationItemsParsed = new Map<string, string>();
     application.forEach((value, key) => {
         applicationItems.set(key, value);
         applicationItemsParsed.set(key, safeParse(value));
     });
+
     const profileItems = new Map<string, string>();
+
     const profileItemsParsed = new Map<string, string>();
     profile.forEach((value, key) => {
         profileItems.set(key, value);
         profileItemsParsed.set(key, safeParse(value));
     });
+
     const workspaceItems = new Map<string, string>();
+
     const workspaceItemsParsed = new Map<string, string>();
     workspace.forEach((value, key) => {
         workspaceItems.set(key, value);
         workspaceItemsParsed.set(key, safeParse(value));
     });
+
     if (applicationPath !== profilePath) {
         console.group(`Storage: Application (path: ${applicationPath})`);
     }
@@ -652,8 +707,10 @@ export async function logStorage(application: Map<string, string>, profile: Map<
     console.table(applicationValues);
     console.groupEnd();
     console.log(applicationItemsParsed);
+
     if (applicationPath !== profilePath) {
         console.group(`Storage: Profile (path: ${profilePath}, profile specific)`);
+
         const profileValues: {
             key: string;
             value: string;
@@ -666,6 +723,7 @@ export async function logStorage(application: Map<string, string>, profile: Map<
         console.log(profileItemsParsed);
     }
     console.group(`Storage: Workspace (path: ${workspacePath})`);
+
     const workspaceValues: {
         key: string;
         value: string;

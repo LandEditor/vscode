@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 (function () {
     const { ipcRenderer, webFrame, contextBridge } = require('electron');
+
     function validateIPC(channel: string): true | never {
         if (!channel || !channel.startsWith('vscode:')) {
             throw new Error(`Unsupported event IPC channel '${channel}'`);
@@ -23,6 +24,7 @@
             },
             invoke(channel: string, ...args: any[]): Promise<any> {
                 validateIPC(channel);
+
                 return ipcRenderer.invoke(channel, ...args);
             }
         },
@@ -37,6 +39,7 @@
             }
         }
     };
+
     try {
         contextBridge.exposeInMainWorld('vscode', globals);
     }

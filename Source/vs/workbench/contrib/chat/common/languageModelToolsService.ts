@@ -69,8 +69,11 @@ export interface ILanguageModelToolsService {
     onDidChangeTools: Event<void>;
     registerToolData(toolData: IToolData): IDisposable;
     registerToolImplementation(id: string, tool: IToolImpl): IDisposable;
+
     getTools(): Iterable<Readonly<IToolData>>;
+
     getTool(id: string): IToolData | undefined;
+
     getToolByName(name: string): IToolData | undefined;
     invokeTool(invocation: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult>;
 }

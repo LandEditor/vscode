@@ -73,10 +73,12 @@ export class HoverAction extends Disposable {
 
 		this.action = dom.append(this.actionContainer, $('a.action'));
 		this.action.setAttribute('role', 'button');
+
 		if (actionOptions.iconClass) {
 			dom.append(this.action, $(`span.icon.${actionOptions.iconClass}`));
 		}
 		this.actionRenderedLabel = keybindingLabel ? `${actionOptions.label} (${keybindingLabel})` : actionOptions.label;
+
 		const label = dom.append(this.action, $('span'));
 		label.textContent = this.actionRenderedLabel;
 
@@ -116,6 +118,7 @@ export class KeyDownAction extends Disposable {
 		super();
 		this._register(dom.addDisposableListener(container, dom.EventType.KEY_DOWN, e => {
 			const event = new StandardKeyboardEvent(e);
+
 			if (keyCodes.some(keyCode => event.equals(keyCode))) {
 				e.stopPropagation();
 				e.preventDefault();

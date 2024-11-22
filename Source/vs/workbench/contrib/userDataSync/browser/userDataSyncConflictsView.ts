@@ -70,22 +70,27 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
     }
     protected override renderTreeView(container: HTMLElement): void {
         super.renderTreeView(DOM.append(container, DOM.$('')));
+
         const that = this;
         this.treeView.message = localize('explanation', "Please go through each entry and merge to resolve conflicts.");
         this.treeView.dataProvider = { getChildren() { return that.getTreeItems(); } };
     }
     private async getTreeItems(): Promise<ITreeItem[]> {
         const roots: ITreeItem[] = [];
+
         const conflictResources: UserDataSyncConflictResource[] = this.userDataSyncService.conflicts
             .map(conflict => conflict.conflicts.map(resourcePreview => ({ ...resourcePreview, syncResource: conflict.syncResource, profile: conflict.profile })))
             .flat()
             .sort((a, b) => a.profile.id === b.profile.id ? 0 : a.profile.isDefault ? -1 : b.profile.isDefault ? 1 : a.profile.name.localeCompare(b.profile.name));
+
         const conflictResourcesByProfile: [
             IUserDataProfile,
             UserDataSyncConflictResource[]
         ][] = [];
+
         for (const previewResource of conflictResources) {
             let result = conflictResourcesByProfile[conflictResourcesByProfile.length - 1]?.[0].id === previewResource.profile.id ? conflictResourcesByProfile[conflictResourcesByProfile.length - 1][1] : undefined;
+
             if (!result) {
                 conflictResourcesByProfile.push([previewResource.profile, result = []]);
             }
@@ -93,8 +98,10 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
         }
         for (const [profile, resources] of conflictResourcesByProfile) {
             const children: ITreeItem[] = [];
+
             for (const resource of resources) {
                 const handle = JSON.stringify(resource);
+
                 const treeItem = {
                     handle,
                     resourceUri: resource.remoteResource,
@@ -117,6 +124,7 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
     }
     private parseHandle(handle: string): UserDataSyncConflictResource {
         const parsed: UserDataSyncConflictResource = JSON.parse(handle);
+
         return {
             syncResource: parsed.syncResource,
             profile: reviveProfile(parsed.profile, this.userDataProfilesService.profilesHome.scheme),
@@ -141,6 +149,7 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
             }
             async run(accessor: ServicesAccessor, handle: TreeViewItemHandleArg): Promise<void> {
                 const conflict = that.parseHandle(handle.$treeItemHandle);
+
                 return that.open(conflict);
             }
         }));
@@ -188,6 +197,7 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
             return;
         }
         const remoteResourceName = localize({ key: 'remoteResourceName', comment: ['remote as in file in cloud'] }, "{0} (Remote)", basename(conflictToOpen.remoteResource));
+
         const localResourceName = localize('localResourceName', "{0} (Local)", basename(conflictToOpen.remoteResource));
         await this.editorService.openEditor({
             input1: { resource: conflictToOpen.remoteResource, label: localize('Theirs', 'Theirs'), description: remoteResourceName },
@@ -201,6 +211,7 @@ export class UserDataSyncConflictsViewPane extends TreeViewPane implements IUser
                 override: DEFAULT_EDITOR_ASSOCIATION.id
             }
         });
+
         return;
     }
 }

@@ -25,6 +25,7 @@ export const IShareService = createDecorator<IShareService>('shareService');
 export interface IShareService {
     _serviceBrand: undefined;
     registerShareProvider(provider: IShareProvider): IDisposable;
+
     getShareActions(): ISubmenuItem[];
     provideShare(item: IShareableItem, token: CancellationToken): Thenable<URI | string | undefined>;
 }

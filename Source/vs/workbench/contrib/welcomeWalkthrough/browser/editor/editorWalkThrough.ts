@@ -14,7 +14,9 @@ import { Action2 } from '../../../../../platform/actions/common/actions.js';
 import { Categories } from '../../../../../platform/action/common/actionCommonCategories.js';
 import { walkThroughContentRegistry } from '../../common/walkThroughContentProvider.js';
 walkThroughContentRegistry.registerProvider('vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough', content);
+
 const typeId = 'workbench.editors.walkThroughInput';
+
 const inputOptions: WalkThroughInputOptions = {
     typeId,
     name: localize('editorWalkThrough.title', "Editor Playground"),
@@ -28,6 +30,7 @@ const inputOptions: WalkThroughInputOptions = {
 export class EditorWalkThroughAction extends Action2 {
     public static readonly ID = 'workbench.action.showInteractivePlayground';
     public static readonly LABEL = localize2('editorWalkThrough', 'Interactive Editor Playground');
+
     constructor() {
         super({
             id: EditorWalkThroughAction.ID,
@@ -41,7 +44,9 @@ export class EditorWalkThroughAction extends Action2 {
     }
     public override run(serviceAccessor: ServicesAccessor): Promise<void> {
         const editorService = serviceAccessor.get(IEditorService);
+
         const instantiationService = serviceAccessor.get(IInstantiationService);
+
         const input = instantiationService.createInstance(WalkThroughInput, inputOptions);
         // TODO @lramos15 adopt the resolver here
         return editorService.openEditor(input, { pinned: true })

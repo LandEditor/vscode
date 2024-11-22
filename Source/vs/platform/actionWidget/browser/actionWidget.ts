@@ -19,6 +19,7 @@ import { createDecorator, IInstantiationService, ServicesAccessor } from '../../
 import { KeybindingWeight } from '../../keybinding/common/keybindingsRegistry.js';
 import { inputActiveOptionBackground, registerColor } from '../../theme/common/colorRegistry.js';
 registerColor('actionBar.toggledBackground', inputActiveOptionBackground, localize('actionBar.toggledBackground', 'Background color for toggled action items in action bar.'));
+
 const ActionWidgetContextKeys = {
     Visible: new RawContextKey<boolean>('codeActionMenuVisible', false, localize('codeActionMenuVisible', "Whether the action widget list is visible"))
 };
@@ -31,10 +32,12 @@ export interface IActionWidgetService {
 }
 class ActionWidgetService extends Disposable implements IActionWidgetService {
     declare readonly _serviceBrand: undefined;
+
     get isVisible() {
         return ActionWidgetContextKeys.Visible.getValue(this._contextKeyService) || false;
     }
     private readonly _list = this._register(new MutableDisposable<ActionList<unknown>>());
+
     constructor(
     @IContextViewService
     private readonly _contextViewService: IContextViewService, 
@@ -46,11 +49,13 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
     }
     show<T>(user: string, supportsPreview: boolean, items: readonly IActionListItem<T>[], delegate: IActionListDelegate<T>, anchor: IAnchor, container: HTMLElement | undefined, actionBarActions?: readonly IAction[]): void {
         const visibleContext = ActionWidgetContextKeys.Visible.bindTo(this._contextKeyService);
+
         const list = this._instantiationService.createInstance(ActionList, user, supportsPreview, items, delegate);
         this._contextViewService.showContextView({
             getAnchor: () => anchor,
             render: (container: HTMLElement) => {
                 visibleContext.set(true);
+
                 return this._renderWidget(container, list, actionBarActions ?? []);
             },
             onHide: (didCancel) => {
@@ -80,6 +85,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
         widget.classList.add('action-widget');
         element.appendChild(widget);
         this._list.value = list;
+
         if (this._list.value) {
             widget.appendChild(this._list.value.domNode);
         }
@@ -89,11 +95,13 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
         const renderDisposables = new DisposableStore();
         // Invisible div to block mouse interaction in the rest of the UI
         const menuBlock = document.createElement('div');
+
         const block = element.appendChild(menuBlock);
         block.classList.add('context-view-block');
         renderDisposables.add(dom.addDisposableListener(block, dom.EventType.MOUSE_DOWN, e => e.stopPropagation()));
         // Invisible div to block mouse interaction with the menu
         const pointerBlockDiv = document.createElement('div');
+
         const pointerBlock = element.appendChild(pointerBlockDiv);
         pointerBlock.classList.add('context-view-pointerBlock');
         // Removes block on click INSIDE widget or ANY mouse movement
@@ -101,8 +109,10 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
         renderDisposables.add(dom.addDisposableListener(pointerBlock, dom.EventType.MOUSE_DOWN, () => pointerBlock.remove()));
         // Action bar
         let actionBarWidth = 0;
+
         if (actionBarActions.length) {
             const actionBar = this._createActionBar('.action-widget-action-bar', actionBarActions);
+
             if (actionBar) {
                 widget.appendChild(actionBar.getContainer().parentElement!);
                 renderDisposables.add(actionBar);
@@ -111,8 +121,10 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
         }
         const width = this._list.value?.layout(actionBarWidth);
         widget.style.width = `${width}px`;
+
         const focusTracker = renderDisposables.add(dom.trackFocus(element));
         renderDisposables.add(focusTracker.onDidBlur(() => this.hide(true)));
+
         return renderDisposables;
     }
     private _createActionBar(className: string, actions: readonly IAction[]): ActionBar | undefined {
@@ -120,8 +132,10 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
             return undefined;
         }
         const container = dom.$(className);
+
         const actionBar = new ActionBar(container);
         actionBar.push(actions, { icon: false, label: true });
+
         return actionBar;
     }
     private _onWidgetClosed(didCancel?: boolean): void {
@@ -129,6 +143,7 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
     }
 }
 registerSingleton(IActionWidgetService, ActionWidgetService, InstantiationType.Delayed);
+
 const weight = KeybindingWeight.EditorContrib + 1000;
 registerAction2(class extends Action2 {
     constructor() {
@@ -163,6 +178,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const widgetService = accessor.get(IActionWidgetService);
+
         if (widgetService instanceof ActionWidgetService) {
             widgetService.focusPrevious();
         }
@@ -184,6 +200,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const widgetService = accessor.get(IActionWidgetService);
+
         if (widgetService instanceof ActionWidgetService) {
             widgetService.focusNext();
         }
@@ -204,6 +221,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const widgetService = accessor.get(IActionWidgetService);
+
         if (widgetService instanceof ActionWidgetService) {
             widgetService.acceptSelected();
         }
@@ -223,6 +241,7 @@ registerAction2(class extends Action2 {
     }
     run(accessor: ServicesAccessor): void {
         const widgetService = accessor.get(IActionWidgetService);
+
         if (widgetService instanceof ActionWidgetService) {
             widgetService.acceptSelected(true);
         }

@@ -24,11 +24,13 @@ export interface IWorkbenchAssignmentService extends IAssignmentService {
 }
 class MementoKeyValueStorage implements IKeyValueStorage {
     private mementoObj: MementoObject;
+
     constructor(private memento: Memento) {
         this.mementoObj = memento.getMemento(StorageScope.APPLICATION, StorageTarget.MACHINE);
     }
     async getValue<T>(key: string, defaultValue?: T | undefined): Promise<T | undefined> {
         const value = await this.mementoObj[key];
+
         return value || defaultValue;
     }
     setValue<T>(key: string, value: T): void {
@@ -38,6 +40,7 @@ class MementoKeyValueStorage implements IKeyValueStorage {
 }
 class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
     private _lastAssignmentContext: string | undefined;
+
     constructor(private telemetryService: ITelemetryService, private productService: IProductService) { }
     get assignmentContext(): string[] | undefined {
         return this._lastAssignmentContext?.split(';');
@@ -51,6 +54,7 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
     }
     postEvent(eventName: string, props: Map<string, string>): void {
         const data: ITelemetryData = {};
+
         for (const [key, value] of props.entries()) {
             data[key] = value;
         }
@@ -102,6 +106,7 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
             };
         };
         this.telemetryService.publicLog2<TASClientReadTreatmentData, TASClientReadTreatmentClassification>('tasClientReadTreatmentComplete', { treatmentName: name, treatmentValue: JSON.stringify(result) });
+
         return result;
     }
     async getCurrentExperiments(): Promise<string[] | undefined> {
@@ -112,10 +117,12 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
             return undefined;
         }
         await this.tasClient;
+
         return (this.telemetry as WorkbenchAssignmentServiceTelemetry)?.assignmentContext;
     }
 }
 registerSingleton(IWorkbenchAssignmentService, WorkbenchAssignmentService, InstantiationType.Delayed);
+
 const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 registry.registerConfiguration({
     ...workbenchConfigurationNodeBase,

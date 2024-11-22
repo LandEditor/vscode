@@ -8,6 +8,7 @@ export const ASSIGNMENT_STORAGE_KEY = 'VSCode.ABExp.FeatureData';
 export const ASSIGNMENT_REFETCH_INTERVAL = 0; // no polling
 export interface IAssignmentService {
     readonly _serviceBrand: undefined;
+
     getTreatment<T extends string | number | boolean>(name: string): Promise<T | undefined>;
 }
 export enum TargetPopulation {
@@ -79,7 +80,9 @@ export class AssignmentFilterProvider implements IExperimentationFilterProvider 
     */
     private static trimVersionSuffix(version: string): string {
         const regex = /\-[a-zA-Z0-9]+$/;
+
         const result = version.split(regex);
+
         return result[0];
     }
     getFilterValue(filter: string): string | null {
@@ -90,21 +93,26 @@ export class AssignmentFilterProvider implements IExperimentationFilterProvider 
                 return this.appName; // productService.nameLong
             case Filters.ClientId:
                 return this.machineId;
+
             case Filters.Language:
                 return platform.language;
+
             case Filters.ExtensionName:
                 return 'vscode-core'; // always return vscode-core for exp service
             case Filters.ExtensionVersion:
                 return '999999.0'; // always return a very large number for cross-extension experimentation
             case Filters.TargetPopulation:
                 return this.targetPopulation;
+
             default:
                 return '';
         }
     }
     getFilters(): Map<string, any> {
         const filters: Map<string, any> = new Map<string, any>();
+
         const filterValues = Object.values(Filters);
+
         for (const value of filterValues) {
             filters.set(value, this.getFilterValue(value));
         }

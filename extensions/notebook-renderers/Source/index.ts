@@ -14,22 +14,29 @@ function clearContainer(container: HTMLElement) {
 }
 function renderImage(outputInfo: OutputItem, element: HTMLElement): IDisposable {
     const blob = new Blob([outputInfo.data()], { type: outputInfo.mime });
+
     const src = URL.createObjectURL(blob);
+
     const disposable = {
         dispose: () => {
             URL.revokeObjectURL(src);
         }
     };
+
     if (element.firstChild) {
         const display = element.firstChild as HTMLElement;
+
         if (display.firstChild && display.firstChild.nodeName === 'IMG' && display.firstChild instanceof HTMLImageElement) {
             display.firstChild.src = src;
+
             return disposable;
         }
     }
     const image = document.createElement('img');
     image.src = src;
+
     const alt = getAltText(outputInfo);
+
     if (alt) {
         image.alt = alt;
     }
@@ -38,24 +45,32 @@ function renderImage(outputInfo: OutputItem, element: HTMLElement): IDisposable 
         outputId: outputInfo.id,
         'preventDefaultContextMenuItems': true
     }));
+
     const display = document.createElement('div');
     display.classList.add('display');
     display.appendChild(image);
     element.appendChild(display);
+
     return disposable;
 }
 const preservedScriptAttributes: (keyof HTMLScriptElement)[] = [
     'type', 'src', 'nonce', 'noModule', 'async',
 ];
+
 const domEval = (container: Element) => {
     const arr = Array.from(container.getElementsByTagName('script'));
+
     for (let n = 0; n < arr.length; n++) {
         const node = arr[n];
+
         const scriptTag = document.createElement('script');
+
         const trustedScript = ttPolicy?.createScript(node.innerText) ?? node.innerText;
         scriptTag.text = trustedScript as string;
+
         for (const key of preservedScriptAttributes) {
             const val = node[key] || node.getAttribute && node.getAttribute(key);
+
             if (val) {
                 scriptTag.setAttribute(key, val as any);
             }
@@ -66,6 +81,7 @@ const domEval = (container: Element) => {
 };
 function getAltText(outputInfo: OutputItem) {
     const metadata = outputInfo.metadata;
+
     if (typeof metadata === 'object' && metadata && 'vscode_altText' in metadata && typeof metadata.vscode_altText === 'string') {
         return metadata.vscode_altText;
     }
@@ -74,7 +90,9 @@ function getAltText(outputInfo: OutputItem) {
 function fixUpSvgElement(outputInfo: OutputItem, element: HTMLElement) {
     if (outputInfo.mime.indexOf('svg') > -1) {
         const svgElement = element.querySelector('svg');
+
         const altText = getAltText(outputInfo);
+
         if (svgElement && altText) {
             const title = document.createElement('title');
             title.innerText = altText;
@@ -92,24 +110,32 @@ function fixUpSvgElement(outputInfo: OutputItem, element: HTMLElement) {
 }
 async function renderHTML(outputInfo: OutputItem, container: HTMLElement, signal: AbortSignal, hooks: Iterable<HtmlRenderingHook>): Promise<void> {
     clearContainer(container);
+
     let element: HTMLElement = document.createElement('div');
+
     const htmlContent = outputInfo.text();
+
     const trustedHtml = ttPolicy?.createHTML(htmlContent) ?? htmlContent;
     element.innerHTML = trustedHtml as string;
     fixUpSvgElement(outputInfo, element);
+
     for (const hook of hooks) {
         element = (await hook.postRender(outputInfo, element, signal)) ?? element;
+
         if (signal.aborted) {
             return;
         }
     }
     container.appendChild(element);
+
     domEval(element);
 }
 async function renderJavascript(outputInfo: OutputItem, container: HTMLElement, signal: AbortSignal, hooks: Iterable<JavaScriptRenderingHook>): Promise<void> {
     let scriptText = outputInfo.text();
+
     for (const hook of hooks) {
         scriptText = (await hook.preEvaluate(outputInfo, container, scriptText, signal)) ?? scriptText;
+
         if (signal.aborted) {
             return;
         }
@@ -117,10 +143,13 @@ async function renderJavascript(outputInfo: OutputItem, container: HTMLElement, 
     const script = document.createElement('script');
     script.type = 'module';
     script.textContent = scriptText;
+
     const element = document.createElement('div');
+
     const trustedHtml = ttPolicy?.createHTML(script.outerHTML) ?? script.outerHTML;
     element.innerHTML = trustedHtml as string;
     container.appendChild(element);
+
     domEval(element);
 }
 interface Event<T> {
@@ -131,6 +160,7 @@ function createDisposableStore(): {
     dispose(): void;
 } {
     const localDisposables: IDisposable[] = [];
+
     const disposable = {
         push: (...disposables: IDisposable[]) => {
             localDisposables.push(...disposables);
@@ -139,6 +169,7 @@ function createDisposableStore(): {
             localDisposables.forEach(d => d.dispose());
         }
     };
+
     return disposable;
 }
 type DisposableStore = ReturnType<typeof createDisposableStore>;
@@ -146,29 +177,40 @@ function renderError(outputInfo: OutputItem, outputElement: HTMLElement, ctx: IR
     const disposableStore = createDisposableStore();
     clearContainer(outputElement);
     type ErrorLike = Partial<Error>;
+
     let err: ErrorLike;
+
     try {
         err = <ErrorLike>JSON.parse(outputInfo.text());
     }
     catch (e) {
         console.log(e);
+
         return disposableStore;
     }
     const headerMessage = err.name && err.message ? `${err.name}: ${err.message}` : err.name || err.message;
+
     if (err.stack) {
         const minimalError = ctx.settings.minimalError && !!headerMessage?.length;
         outputElement.classList.add('traceback');
+
         const { formattedStack, errorLocation } = formatStackTrace(err.stack);
+
         const outputScrolling = !minimalError && scrollingEnabled(outputInfo, ctx.settings);
+
         const lineLimit = minimalError ? 1000 : ctx.settings.lineLimit;
+
         const outputOptions = { linesLimit: lineLimit, scrollable: outputScrolling, trustHtml, linkifyFilePaths: false };
+
         const content = createOutputContent(outputInfo.id, formattedStack, outputOptions);
+
         const stackTraceElement = document.createElement('div');
         stackTraceElement.appendChild(content);
         outputElement.classList.toggle('word-wrap', ctx.settings.outputWordWrap);
         disposableStore.push(ctx.onDidChangeSettings(e => {
             outputElement.classList.toggle('word-wrap', e.outputWordWrap);
         }));
+
         if (minimalError) {
             createMinimalError(errorLocation, headerMessage, stackTraceElement, outputElement);
         }
@@ -180,18 +222,22 @@ function renderError(outputInfo: OutputItem, outputElement: HTMLElement, ctx: IR
     }
     else {
         const header = document.createElement('div');
+
         if (headerMessage) {
             header.innerText = headerMessage;
             outputElement.appendChild(header);
         }
     }
     outputElement.classList.add('error');
+
     return disposableStore;
 }
 function createMinimalError(errorLocation: string | undefined, headerMessage: string, stackTrace: HTMLDivElement, outputElement: HTMLElement) {
     const outputDiv = document.createElement('div');
+
     const headerSection = document.createElement('div');
     headerSection.classList.add('error-output-header');
+
     if (errorLocation && errorLocation.indexOf('<a') === 0) {
         headerSection.innerHTML = errorLocation;
     }
@@ -199,6 +245,7 @@ function createMinimalError(errorLocation: string | undefined, headerMessage: st
     header.innerText = headerMessage;
     headerSection.appendChild(header);
     outputDiv.appendChild(headerSection);
+
     function addButton(linkElement: HTMLElement) {
         const button = document.createElement('li');
         button.appendChild(linkElement);
@@ -210,17 +257,20 @@ function createMinimalError(errorLocation: string | undefined, headerMessage: st
         button.onmouseout = function () {
             button.classList.remove('hover');
         };
+
         return button;
     }
     const buttons = document.createElement('ul');
     buttons.classList.add('error-output-actions');
     outputDiv.appendChild(buttons);
+
     const toggleStackLink = document.createElement('a');
     toggleStackLink.innerText = 'Show Details';
     toggleStackLink.href = '#!';
     buttons.appendChild(addButton(toggleStackLink));
     toggleStackLink.onclick = (e) => {
         e.preventDefault();
+
         const hidden = stackTrace.style.display === 'none';
         stackTrace.style.display = hidden ? '' : 'none';
         toggleStackLink.innerText = hidden ? 'Hide Details' : 'Show Details';
@@ -231,10 +281,14 @@ function createMinimalError(errorLocation: string | undefined, headerMessage: st
 }
 function getPreviousMatchingContentGroup(outputElement: HTMLElement) {
     const outputContainer = outputElement.parentElement;
+
     let match: HTMLElement | undefined = undefined;
+
     let previous = outputContainer?.previousSibling;
+
     while (previous) {
         const outputElement = (previous.firstChild as HTMLElement | null);
+
         if (!outputElement || !outputElement.classList.contains('output-stream')) {
             break;
         }
@@ -245,6 +299,7 @@ function getPreviousMatchingContentGroup(outputElement: HTMLElement) {
 }
 function onScrollHandler(e: globalThis.Event) {
     const target = e.target as HTMLElement;
+
     if (target.scrollTop === 0) {
         target.classList.remove('more-above');
     }
@@ -269,6 +324,7 @@ function initializeScroll(scrollableElement: HTMLElement, disposables: Disposabl
         const scrollbarVisible = scrollableElement.scrollHeight > scrollableElement.clientHeight;
         scrollableElement.classList.toggle('scrollbar-visible', scrollbarVisible);
         scrollableElement.scrollTop = scrollTop !== undefined ? scrollTop : scrollableElement.scrollHeight;
+
         if (scrollbarVisible) {
             scrollableElement.addEventListener('scroll', onScrollHandler);
             disposables.push({ dispose: () => scrollableElement.removeEventListener('scroll', onScrollHandler) });
@@ -280,6 +336,7 @@ function initializeScroll(scrollableElement: HTMLElement, disposables: Disposabl
 // Find the scrollTop of the existing scrollable output, return undefined if at the bottom or element doesn't exist
 function findScrolledHeight(container: HTMLElement): number | undefined {
     const scrollableElement = container.querySelector('.' + scrollableClass);
+
     if (scrollableElement && scrollableElement.scrollHeight - scrollableElement.scrollTop - scrollableElement.clientHeight > 2) {
         // not scrolled to the bottom
         return scrollableElement.scrollTop;
@@ -288,6 +345,7 @@ function findScrolledHeight(container: HTMLElement): number | undefined {
 }
 function scrollingEnabled(output: OutputItem, options: RenderOptions) {
     const metadata = output.metadata;
+
     return (typeof metadata === 'object' && metadata
         && 'scrollable' in metadata && typeof metadata.scrollable === 'boolean') ?
         metadata.scrollable : options.outputScrolling;
@@ -299,14 +357,19 @@ function scrollingEnabled(output: OutputItem, options: RenderOptions) {
 //          div output-item-id="{guid}"	<-- content from outputItem parameter
 function renderStream(outputInfo: OutputWithAppend, outputElement: HTMLElement, error: boolean, ctx: IRichRenderContext): IDisposable {
     const disposableStore = createDisposableStore();
+
     const outputScrolling = scrollingEnabled(outputInfo, ctx.settings);
+
     const outputOptions = { linesLimit: ctx.settings.lineLimit, scrollable: outputScrolling, trustHtml: false, error, linkifyFilePaths: ctx.settings.linkifyFilePaths };
     outputElement.classList.add('output-stream');
+
     const scrollTop = outputScrolling ? findScrolledHeight(outputElement) : undefined;
+
     const previousOutputParent = getPreviousMatchingContentGroup(outputElement);
     // If the previous output item for the same cell was also a stream, append this output to the previous
     if (previousOutputParent) {
         const existingContent = previousOutputParent.querySelector(`[output-item-id="${outputInfo.id}"]`) as HTMLElement | null;
+
         if (existingContent) {
             appendOutput(outputInfo, existingContent, outputOptions);
         }
@@ -319,7 +382,9 @@ function renderStream(outputInfo: OutputWithAppend, outputElement: HTMLElement, 
     }
     else {
         const existingContent = outputElement.querySelector(`[output-item-id="${outputInfo.id}"]`) as HTMLElement | null;
+
         let contentParent = existingContent?.parentElement;
+
         if (existingContent && contentParent) {
             appendOutput(outputInfo, existingContent, outputOptions);
         }
@@ -327,6 +392,7 @@ function renderStream(outputInfo: OutputWithAppend, outputElement: HTMLElement, 
             const newContent = createOutputContent(outputInfo.id, outputInfo.text(), outputOptions);
             contentParent = document.createElement('div');
             contentParent.appendChild(newContent);
+
             while (outputElement.firstChild) {
                 outputElement.firstChild.remove();
             }
@@ -344,9 +410,13 @@ function renderStream(outputInfo: OutputWithAppend, outputElement: HTMLElement, 
 function renderText(outputInfo: OutputItem, outputElement: HTMLElement, ctx: IRichRenderContext): IDisposable {
     const disposableStore = createDisposableStore();
     clearContainer(outputElement);
+
     const text = outputInfo.text();
+
     const outputScrolling = scrollingEnabled(outputInfo, ctx.settings);
+
     const outputOptions = { linesLimit: ctx.settings.lineLimit, scrollable: outputScrolling, trustHtml: false, linkifyFilePaths: ctx.settings.linkifyFilePaths };
+
     const content = createOutputContent(outputInfo.id, text, outputOptions);
     content.classList.add('output-plaintext');
     outputElement.classList.toggle('word-wrap', ctx.settings.outputWordWrap);
@@ -356,16 +426,21 @@ function renderText(outputInfo: OutputItem, outputElement: HTMLElement, ctx: IRi
     content.classList.toggle('scrollable', outputScrolling);
     outputElement.appendChild(content);
     initializeScroll(content, disposableStore);
+
     return disposableStore;
 }
 export const activate: ActivationFunction<void> = (ctx) => {
     const disposables = new Map<string, IDisposable>();
+
     const htmlHooks = new Set<HtmlRenderingHook>();
+
     const jsHooks = new Set<JavaScriptRenderingHook>();
+
     const latestContext = ctx as (RendererContext<void> & {
         readonly settings: RenderOptions;
         readonly onDidChangeSettings: Event<RenderOptions>;
     });
+
     const style = document.createElement('style');
     style.textContent = `
 	#container div.output.remove-padding {
@@ -478,10 +553,13 @@ export const activate: ActivationFunction<void> = (ctx) => {
 		padding-right: 12px;
 	}
 	`;
+
     document.body.appendChild(style);
+
     return {
         renderOutputItem: async (outputInfo, element, signal?: AbortSignal) => {
             element.classList.add('remove-padding');
+
             switch (outputInfo.mime) {
                 case 'text/html':
                 case 'image/svg+xml': {
@@ -489,6 +567,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
                         return;
                     }
                     await renderHTML(outputInfo, element, signal!, htmlHooks);
+
                     break;
                 }
                 case 'application/javascript': {
@@ -496,6 +575,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
                         return;
                     }
                     renderJavascript(outputInfo, element, signal!, jsHooks);
+
                     break;
                 }
                 case 'image/gif':
@@ -504,44 +584,55 @@ export const activate: ActivationFunction<void> = (ctx) => {
                 case 'image/git':
                     {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderImage(outputInfo, element);
                         disposables.set(outputInfo.id, disposable);
                     }
                     break;
+
                 case 'application/vnd.code.notebook.error':
                     {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderError(outputInfo, element, latestContext, ctx.workspace.isTrusted);
                         disposables.set(outputInfo.id, disposable);
                     }
                     break;
+
                 case 'application/vnd.code.notebook.stdout':
                 case 'application/x.notebook.stdout':
                 case 'application/x.notebook.stream':
                     {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderStream(outputInfo, element, false, latestContext);
                         disposables.set(outputInfo.id, disposable);
                     }
                     break;
+
                 case 'application/vnd.code.notebook.stderr':
                 case 'application/x.notebook.stderr':
                     {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderStream(outputInfo, element, true, latestContext);
                         disposables.set(outputInfo.id, disposable);
                     }
                     break;
+
                 case 'text/plain':
                     {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderText(outputInfo, element, latestContext);
                         disposables.set(outputInfo.id, disposable);
                     }
                     break;
+
                 default:
                     if (outputInfo.mime.indexOf('text/') > -1) {
                         disposables.get(outputInfo.id)?.dispose();
+
                         const disposable = renderText(outputInfo, element, latestContext);
                         disposables.set(outputInfo.id, disposable);
                     }
@@ -561,6 +652,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
         },
         experimental_registerHtmlRenderingHook: (hook: HtmlRenderingHook): IDisposable => {
             htmlHooks.add(hook);
+
             return {
                 dispose: () => {
                     htmlHooks.delete(hook);
@@ -569,6 +661,7 @@ export const activate: ActivationFunction<void> = (ctx) => {
         },
         experimental_registerJavaScriptRenderingHook: (hook: JavaScriptRenderingHook): IDisposable => {
             jsHooks.add(hook);
+
             return {
                 dispose: () => {
                     jsHooks.delete(hook);

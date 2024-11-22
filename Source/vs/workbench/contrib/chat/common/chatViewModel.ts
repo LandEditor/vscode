@@ -54,7 +54,9 @@ export interface IChatViewModel {
 	readonly onDidChange: Event<IChatViewModelChangeEvent>;
 	readonly requestInProgress: boolean;
 	readonly inputPlaceholder?: string;
+
 	getItems(): (IChatRequestViewModel | IChatResponseViewModel)[];
+
 	setInputPlaceholder(text: string): void;
 	resetInputPlaceholder(): void;
 }
@@ -182,10 +184,13 @@ export interface IChatResponseViewModel {
 	readonly isCompleteAddedRequest: boolean;
 	renderData?: IChatResponseRenderData;
 	currentRenderedHeight: number | undefined;
+
 	setVote(vote: ChatAgentVoteDirection): void;
+
 	setVoteDownReason(reason: ChatAgentVoteDownReason | undefined): void;
 	usedReferencesExpanded?: boolean;
 	vulnerabilitiesListExpanded: boolean;
+
 	setEditApplied(edit: IChatTextEditGroup, editCount: number): void;
 }
 
@@ -200,6 +205,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	private readonly _items: (ChatRequestViewModel | ChatResponseViewModel)[] = [];
 
 	private _inputPlaceholder: string | undefined = undefined;
+
 	get inputPlaceholder(): string | undefined {
 		return this._inputPlaceholder;
 	}
@@ -261,14 +267,18 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 				this.onAddResponse(e.response);
 			} else if (e.kind === 'removeRequest') {
 				const requestIdx = this._items.findIndex(item => isRequestVM(item) && item.id === e.requestId);
+
 				if (requestIdx >= 0) {
 					this._items.splice(requestIdx, 1);
 				}
 
 				const responseIdx = e.responseId && this._items.findIndex(item => isResponseVM(item) && item.id === e.responseId);
+
 				if (typeof responseIdx === 'number' && responseIdx >= 0) {
 					const items = this._items.splice(responseIdx, 1);
+
 					const item = items[0];
+
 					if (item instanceof ChatResponseViewModel) {
 						item.dispose();
 					}
@@ -309,6 +319,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 
 	updateCodeBlockTextModels(model: IChatRequestViewModel | IChatResponseViewModel) {
 		let content: string;
+
 		if (isRequestVM(model)) {
 			content = model.messageText;
 		} else {
@@ -319,6 +330,7 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 		marked.walkTokens(marked.lexer(content), token => {
 			if (token.type === 'code') {
 				const lang = token.lang || '';
+
 				const text = token.text;
 				this.codeBlockModelCollection.update(this._model.sessionId, model, codeBlockIndex++, { text, languageId: lang, isComplete: true });
 			}
@@ -422,6 +434,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	get username() {
 		if (this.agent) {
 			const isAllowed = this.chatAgentNameService.getAgentNameRestriction(this.agent);
+
 			if (isAllowed) {
 				return this.agent.fullName || this.agent.name;
 			} else {
@@ -520,6 +533,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	currentRenderedHeight: number | undefined;
 
 	private _usedReferencesExpanded: boolean | undefined;
+
 	get usedReferencesExpanded(): boolean | undefined {
 		if (typeof this._usedReferencesExpanded === 'boolean') {
 			return this._usedReferencesExpanded;
@@ -533,6 +547,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	}
 
 	private _vulnerabilitiesListExpanded: boolean = false;
+
 	get vulnerabilitiesListExpanded(): boolean {
 		return this._vulnerabilitiesListExpanded;
 	}
@@ -542,6 +557,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	}
 
 	private _contentUpdateTimings: IChatLiveUpdateData | undefined = undefined;
+
 	get contentUpdateTimings(): IChatLiveUpdateData | undefined {
 		return this._contentUpdateTimings;
 	}
@@ -567,10 +583,12 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 			// This should be true, if the model is changing
 			if (this._contentUpdateTimings) {
 				const now = Date.now();
+
 				const wordCount = countWords(_model.response.getMarkdown());
 
 				// Apply a min time difference, or the rate is typically too high for first few words
 				const timeDiff = Math.max(now - this._contentUpdateTimings.firstWordTime, 250);
+
 				const impliedWordLoadRate = this._contentUpdateTimings.lastWordCount / (timeDiff / 1000);
 				this.trace('onDidChange', `Update- got ${this._contentUpdateTimings.lastWordCount} words over last ${timeDiff}ms = ${impliedWordLoadRate} words/s. ${wordCount} words are now available.`);
 				this._contentUpdateTimings = {

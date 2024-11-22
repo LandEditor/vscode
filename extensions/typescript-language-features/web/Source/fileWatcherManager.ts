@@ -27,6 +27,7 @@ export class FileWatcherManager {
         options?: ts.WatchOptions;
     }>();
     private watchId = 0;
+
     constructor(private readonly watchPort: MessagePort, extensionUri: URI, private readonly enabledExperimentalTypeAcquisition: boolean, private readonly pathMapper: PathMapper, private readonly logger: Logger) {
         watchPort.onmessage = (e: any) => this.updateWatch(e.data.event, URI.from(e.data.uri), extensionUri);
     }
@@ -35,17 +36,22 @@ export class FileWatcherManager {
             return FileWatcherManager.noopWatcher;
         }
         this.logger.logVerbose('fs.watchFile', { path });
+
         let uri: URI;
+
         try {
             uri = this.pathMapper.toResource(path);
         }
         catch (e) {
             console.error(e);
+
             return FileWatcherManager.noopWatcher;
         }
         this.watchFiles.set(path, { callback, pollingInterval, options });
+
         const watchIds = [++this.watchId];
         this.watchPort.postMessage({ type: 'watchFile', uri: uri, id: watchIds[0] });
+
         if (this.enabledExperimentalTypeAcquisition && looksLikeNodeModules(path) && uri.scheme !== 'vscode-global-typings') {
             watchIds.push(++this.watchId);
             this.watchPort.postMessage({ type: 'watchFile', uri: mapUri(uri, 'vscode-global-typings'), id: watchIds[1] });
@@ -54,6 +60,7 @@ export class FileWatcherManager {
             close: () => {
                 this.logger.logVerbose('fs.watchFile.close', { path });
                 this.watchFiles.delete(path);
+
                 for (const id of watchIds) {
                     this.watchPort.postMessage({ type: 'dispose', id });
                 }
@@ -62,21 +69,27 @@ export class FileWatcherManager {
     }
     watchDirectory(path: string, callback: ts.DirectoryWatcherCallback, recursive?: boolean, options?: ts.WatchOptions): ts.FileWatcher {
         this.logger.logVerbose('fs.watchDirectory', { path });
+
         let uri: URI;
+
         try {
             uri = this.pathMapper.toResource(path);
         }
         catch (e) {
             console.error(e);
+
             return FileWatcherManager.noopWatcher;
         }
         this.watchDirectories.set(path, { callback, recursive, options });
+
         const watchIds = [++this.watchId];
         this.watchPort.postMessage({ type: 'watchDirectory', recursive, uri, id: this.watchId });
+
         return {
             close: () => {
                 this.logger.logVerbose('fs.watchDirectory.close', { path });
                 this.watchDirectories.delete(path);
+
                 for (const id of watchIds) {
                     this.watchPort.postMessage({ type: 'dispose', id });
                 }
@@ -85,14 +98,19 @@ export class FileWatcherManager {
     }
     private updateWatch(event: 'create' | 'change' | 'delete', uri: URI, extensionUri: URI) {
         const kind = this.toTsWatcherKind(event);
+
         const path = fromResource(extensionUri, uri);
+
         const fileWatcher = this.watchFiles.get(path);
+
         if (fileWatcher) {
             fileWatcher.callback(path, kind);
+
             return;
         }
         for (const watch of Array.from(this.watchDirectories.keys()).filter(dir => path.startsWith(dir))) {
             this.watchDirectories.get(watch)!.callback(path);
+
             return;
         }
         console.error(`no watcher found for ${path}`);

@@ -15,6 +15,7 @@ import { ExtHostContext, ExtHostTelemetryShape, MainContext, MainThreadTelemetry
 export class MainThreadTelemetry extends Disposable implements MainThreadTelemetryShape {
     private readonly _proxy: ExtHostTelemetryShape;
     private static readonly _name = 'pluginHostTelemetry';
+
     constructor(extHostContext: IExtHostContext, 
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService, 
@@ -26,6 +27,7 @@ export class MainThreadTelemetry extends Disposable implements MainThreadTelemet
     private readonly _productService: IProductService) {
         super();
         this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTelemetry);
+
         if (supportsTelemetry(this._productService, this._environmentService)) {
             this._register(this._configurationService.onDidChangeConfiguration(e => {
                 if (e.affectsConfiguration(TELEMETRY_SETTING_ID) || e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID)) {

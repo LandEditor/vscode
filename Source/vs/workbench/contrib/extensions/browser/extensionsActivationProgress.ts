@@ -12,6 +12,7 @@ import { ILogService } from '../../../../platform/log/common/log.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 export class ExtensionActivationProgress implements IWorkbenchContribution {
     private readonly _listener: IDisposable;
+
     constructor(
     @IExtensionService
     extensionService: IExtensionService, 
@@ -23,10 +24,13 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
             location: ProgressLocation.Window,
             title: localize('activation', "Activating Extensions...")
         };
+
         let deferred: DeferredPromise<any> | undefined;
+
         let count = 0;
         this._listener = extensionService.onWillActivateByEvent(e => {
             logService.trace('onWillActivateByEvent: ', e.event);
+
             if (!deferred) {
                 deferred = new DeferredPromise();
                 progressService.withProgress(options, _ => deferred!.p);

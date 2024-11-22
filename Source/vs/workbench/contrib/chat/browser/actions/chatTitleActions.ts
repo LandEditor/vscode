@@ -66,6 +66,7 @@ export function registerChatTitleActions() {
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const item = args[0];
+
 			if (!isResponseVM(item)) {
 				return;
 			}
@@ -113,11 +114,13 @@ export function registerChatTitleActions() {
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const item = args[0];
+
 			if (!isResponseVM(item)) {
 				return;
 			}
 
 			const reason = args[1];
+
 			if (typeof reason !== 'string') {
 				return;
 			}
@@ -165,6 +168,7 @@ export function registerChatTitleActions() {
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			const item = args[0];
+
 			if (!isResponseVM(item)) {
 				return;
 			}
@@ -213,6 +217,7 @@ export function registerChatTitleActions() {
 			const chatWidgetService = accessor.get(IChatWidgetService);
 
 			let item = args[0];
+
 			if (isChatEditingActionContext(item)) {
 				// Resolve chat editing action context to the last response VM
 				item = chatWidgetService.getWidgetBySessionId(item.sessionId)?.viewModel?.getItems().at(-1);
@@ -222,20 +227,28 @@ export function registerChatTitleActions() {
 			}
 
 			const chatService = accessor.get(IChatService);
+
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const chatModel = chatService.getSession(item.sessionId);
+
 			const chatRequests = chatModel?.getRequests();
+
 			if (!chatRequests) {
 				return;
 			}
 			const itemIndex = chatRequests?.findIndex(request => request.id === item.requestId);
+
 			if (chatModel?.initialLocation === ChatAgentLocation.EditingSession) {
 				const configurationService = accessor.get(IConfigurationService);
+
 				const dialogService = accessor.get(IDialogService);
 
 				// Prompt if the last request modified the working set and the user hasn't already disabled the dialog
 				const entriesModifiedInLastRequest = chatEditingService.currentEditingSessionObs.get()?.entries.get().filter((entry) => entry.lastModifyingRequestId === item.requestId) ?? [];
+
 				const shouldPrompt = entriesModifiedInLastRequest.length > 0 && configurationService.getValue('chat.editing.confirmEditRequestRetry') === true;
+
 				const confirmation = shouldPrompt
 					? await dialogService.confirm({
 						title: localize('chat.retryLast.confirmation.title2', "Do you want to retry your last request?"),
@@ -258,11 +271,13 @@ export function registerChatTitleActions() {
 
 				// Reset the snapshot
 				const snapshotRequest = chatRequests[itemIndex];
+
 				if (snapshotRequest) {
 					await chatEditingService.restoreSnapshot(snapshotRequest.id);
 				}
 			}
 			const request = chatModel?.getRequests().find(candidate => candidate.id === item.requestId);
+
 			const languageModelId = chatWidgetService.getWidgetBySessionId(item.sessionId)?.input.currentLanguageModel;
 			chatService.resendRequest(request!, { userSelectedModelId: languageModelId });
 		}
@@ -287,6 +302,7 @@ export function registerChatTitleActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const item = args[0];
+
 			if (!isResponseVM(item)) {
 				return;
 			}
@@ -305,10 +321,13 @@ export function registerChatTitleActions() {
 				}
 
 				const value = item.response.toString();
+
 				const splitContents = splitMarkdownAndCodeBlocks(value);
 
 				const focusRange = notebookEditor.getFocus();
+
 				const index = Math.max(focusRange.end, 0);
+
 				const bulkEditService = accessor.get(IBulkEditService);
 
 				await bulkEditService.apply(
@@ -320,8 +339,11 @@ export function registerChatTitleActions() {
 								count: 0,
 								cells: splitContents.map(content => {
 									const kind = content.type === 'markdown' ? CellKind.Markup : CellKind.Code;
+
 									const language = content.type === 'markdown' ? 'markdown' : content.language;
+
 									const mime = content.type === 'markdown' ? 'text/markdown' : `text/x-${content.language}`;
+
 									return {
 										cellKind: kind,
 										language,
@@ -369,8 +391,10 @@ export function registerChatTitleActions() {
 
 		run(accessor: ServicesAccessor, ...args: any[]) {
 			let item: ChatTreeItem | undefined = args[0];
+
 			if (!isRequestVM(item)) {
 				const chatWidgetService = accessor.get(IChatWidgetService);
+
 				const widget = chatWidgetService.lastFocusedWidget;
 				item = widget?.getFocus();
 			}
@@ -380,7 +404,9 @@ export function registerChatTitleActions() {
 			}
 
 			const chatService = accessor.get(IChatService);
+
 			const chatModel = chatService.getSession(item.sessionId);
+
 			if (chatModel?.initialLocation === ChatAgentLocation.EditingSession) {
 				return;
 			}
@@ -416,32 +442,45 @@ export function registerChatTitleActions() {
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 
 			const logService = accessor.get(ILogService);
+
 			const chatWidgetService = accessor.get(IChatWidgetService);
+
 			const chatService = accessor.get(IChatService);
+
 			const chatAgentService = accessor.get(IChatAgentService);
+
 			const viewsService = accessor.get(IViewsService);
+
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const quickPickService = accessor.get(IQuickInputService);
 
 			const editAgent = chatAgentService.getDefaultAgent(ChatAgentLocation.EditingSession);
+
 			if (!editAgent) {
 				logService.trace('[CHAT_MOVE] No edit agent found');
+
 				return;
 			}
 
 			const sourceWidget = chatWidgetService.lastFocusedWidget;
+
 			if (!sourceWidget || !sourceWidget.viewModel) {
 				logService.trace('[CHAT_MOVE] NO source model');
+
 				return;
 			}
 
 			const sourceModel = sourceWidget.viewModel.model;
+
 			let sourceRequests = sourceModel.getRequests().slice();
 
 			// when a response is passed (clicked on) ignore all item after it
 			const [first] = args;
+
 			if (isResponseVM(first)) {
 				const idx = sourceRequests.findIndex(candidate => candidate.id === first.requestId);
+
 				if (idx >= 0) {
 					sourceRequests.length = idx + 1;
 				}
@@ -454,15 +493,18 @@ export function registerChatTitleActions() {
 
 			if (sourceRequests.length === 0) {
 				logService.trace('[CHAT_MOVE] NO requests to move');
+
 				return;
 			}
 
 			await viewsService.openView(EditsViewId);
 
 			let editingSession = chatEditingService.currentEditingSessionObs.get();
+
 			if (!editingSession) {
 				await Event.toPromise(chatEditingService.onDidCreateEditingSession);
 				editingSession = chatEditingService.currentEditingSessionObs.get();
+
 				return;
 			}
 
@@ -471,12 +513,14 @@ export function registerChatTitleActions() {
 			}
 
 			const state = editingSession.state.get();
+
 			if (state === ChatEditingSessionState.Disposed) {
 				return;
 			}
 
 			// adopt request items and collect new working set entries
 			const workingSetAdditions = new ResourceSet();
+
 			for (const request of sourceRequests) {
 				await chatService.adoptRequest(editingSession.chatSessionId, request);
 				this._collectWorkingSetAdditions(request, workingSetAdditions);
@@ -508,6 +552,7 @@ export function registerChatTitleActions() {
 
 			const timeThreshold = 2 * 60000; // 2 minutes
 			const lastRequestTimestamp = requests[requests.length - 1].timestamp;
+
 			const relatedRequests = requests.filter(request => request.timestamp >= 0 && lastRequestTimestamp - request.timestamp <= timeThreshold);
 
 			const lastPick: IQuickPickItem = {
@@ -541,6 +586,7 @@ export function registerChatTitleActions() {
 
 			// custom pick
 			type PickType = (IQuickPickItem & { request: IChatRequestModel });
+
 			const customPicks: (IQuickPickItem & { request: IChatRequestModel })[] = requests.map(request => ({
 
 				picked: false,
@@ -571,9 +617,12 @@ export function registerChatTitleActions() {
 						return;
 					}
 					ignore = true;
+
 					try {
 						const [first] = e;
+
 						const idx = first ? customPicks.indexOf(first) : -1;
+
 						const selected = idx >= 0 ? customPicks.slice(idx) : [];
 						qp.selectedItems = selected;
 					} finally {
@@ -606,6 +655,7 @@ type Content = MarkdownContent | CodeContent;
 
 function splitMarkdownAndCodeBlocks(markdown: string): Content[] {
 	const lexer = new marked.Lexer();
+
 	const tokens = lexer.lex(markdown);
 
 	const splitContent: Content[] = [];

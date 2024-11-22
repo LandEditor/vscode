@@ -49,6 +49,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
     public readonly selected = observableValue<TestCoverage | undefined>('testCoverage', undefined);
     public readonly filterToTest = observableValue<TestId | undefined>('filterToTest', undefined);
     public readonly showInline = observableValue('inlineCoverage', false);
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -59,6 +60,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
     @IViewsService
     private readonly viewsService: IViewsService) {
         super();
+
         const toolbarConfig = observableConfigValue(TestingConfigKeys.CoverageToolbarEnabled, true, configService);
         this._register(bindContextKey(TestingContextKeys.coverageToolbarEnabled, contextKeyService, reader => toolbarConfig.read(reader)));
         this._register(bindContextKey(TestingContextKeys.inlineCoverageEnabled, contextKeyService, reader => this.showInline.read(reader)));
@@ -68,6 +70,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
         this._register(resultService.onResultsChanged(evt => {
             if ('completed' in evt) {
                 const coverage = evt.completed.tasks.find(t => t.coverage.get());
+
                 if (coverage) {
                     this.openCoverage(coverage, false);
                 }
@@ -77,6 +80,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
             }
             else if ('removed' in evt && this.selected.get()) {
                 const taskId = this.selected.get()?.fromTaskId;
+
                 if (evt.removed.some(e => e.tasks.some(t => t.id === taskId))) {
                     this.closeCoverage();
                 }
@@ -86,8 +90,11 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
     /** @inheritdoc */
     public async openCoverage(task: ITestRunTaskResults, focus = true) {
         this.lastOpenCts.value?.cancel();
+
         const cts = this.lastOpenCts.value = new CancellationTokenSource();
+
         const coverage = task.coverage.get();
+
         if (!coverage) {
             return;
         }
@@ -96,6 +103,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
             this.filterToTest.set(undefined, tx);
             this.selected.set(coverage, tx);
         });
+
         if (focus && !cts.token.isCancellationRequested) {
             this.viewsService.openView(Testing.CoverageViewId, true);
         }

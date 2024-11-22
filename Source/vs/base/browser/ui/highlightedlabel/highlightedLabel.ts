@@ -80,13 +80,16 @@ export class HighlightedLabel extends Disposable {
     }
     private render(): void {
         const children: Array<HTMLSpanElement | string> = [];
+
         let pos = 0;
+
         for (const highlight of this.highlights) {
             if (highlight.end === highlight.start) {
                 continue;
             }
             if (pos < highlight.start) {
                 const substring = this.text.substring(pos, highlight.start);
+
                 if (this.supportIcons) {
                     children.push(...renderLabelWithIcons(substring));
                 }
@@ -96,7 +99,9 @@ export class HighlightedLabel extends Disposable {
                 pos = highlight.start;
             }
             const substring = this.text.substring(pos, highlight.end);
+
             const element = dom.$('span.highlight', undefined, ...this.supportIcons ? renderLabelWithIcons(substring) : [substring]);
+
             if (highlight.extraClasses) {
                 element.classList.add(...highlight.extraClasses);
             }
@@ -105,6 +110,7 @@ export class HighlightedLabel extends Disposable {
         }
         if (pos < this.text.length) {
             const substring = this.text.substring(pos);
+
             if (this.supportIcons) {
                 children.push(...renderLabelWithIcons(substring));
             }
@@ -113,6 +119,7 @@ export class HighlightedLabel extends Disposable {
             }
         }
         dom.reset(this.domNode, ...children);
+
         if (this.options?.hoverDelegate?.showNativeHover) {
             /* While custom hover is not inside custom hover */
             this.domNode.title = this.title;
@@ -130,10 +137,13 @@ export class HighlightedLabel extends Disposable {
     }
     static escapeNewLines(text: string, highlights: readonly IHighlight[]): string {
         let total = 0;
+
         let extra = 0;
+
         return text.replace(/\r\n|\r|\n/g, (match, offset) => {
             extra = match === '\r\n' ? -1 : 0;
             offset += total;
+
             for (const highlight of highlights) {
                 if (highlight.end <= offset) {
                     continue;
@@ -146,6 +156,7 @@ export class HighlightedLabel extends Disposable {
                 }
             }
             total += extra;
+
             return '\u23CE';
         });
     }

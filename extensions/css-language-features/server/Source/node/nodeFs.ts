@@ -15,6 +15,7 @@ export function getNodeFSRequestService(): RequestService {
     return {
         getContent(location: string, encoding?: BufferEncoding) {
             ensureFileUri(location);
+
             return new Promise((c, e) => {
                 const uri = Uri.parse(location);
                 fs.readFile(uri.fsPath, encoding, (err, buf) => {
@@ -27,6 +28,7 @@ export function getNodeFSRequestService(): RequestService {
         },
         stat(location: string) {
             ensureFileUri(location);
+
             return new Promise((c, e) => {
                 const uri = Uri.parse(location);
                 fs.stat(uri.fsPath, (err, stats) => {
@@ -39,6 +41,7 @@ export function getNodeFSRequestService(): RequestService {
                         }
                     }
                     let type = FileType.Unknown;
+
                     if (stats.isFile()) {
                         type = FileType.File;
                     }
@@ -59,6 +62,7 @@ export function getNodeFSRequestService(): RequestService {
         },
         readDirectory(location: string) {
             ensureFileUri(location);
+
             return new Promise((c, e) => {
                 const path = Uri.parse(location).fsPath;
                 fs.readdir(path, { withFileTypes: true }, (err, children) => {

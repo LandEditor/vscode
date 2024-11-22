@@ -26,6 +26,7 @@ export class ColorPickerBody extends Disposable {
 		super();
 
 		this._domNode = $('.colorpicker-body');
+
 		dom.append(container, this._domNode);
 
 		this._saturationBox = new SaturationBox(this._domNode, this.model, this.pixelRatio);
@@ -65,6 +66,7 @@ export class ColorPickerBody extends Disposable {
 
 	private onDidHueChange(value: number): void {
 		const hsva = this.model.color.hsva;
+
 		const h = (1 - value) * 360;
 
 		this.model.color = new Color(new HSVA(h === 360 ? 0 : h, hsva.s, hsva.v, hsva.a));

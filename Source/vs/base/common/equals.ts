@@ -40,6 +40,7 @@ export function equalsIfDefined<T>(equals: EqualityComparer<T>): EqualityCompare
 export function equalsIfDefined<T>(equalsOrV1: EqualityComparer<T> | T, v2?: T | undefined | null, equals?: EqualityComparer<T>): EqualityComparer<T | undefined | null> | boolean {
     if (equals !== undefined) {
         const v1 = equalsOrV1 as T | undefined;
+
         if (v1 === undefined || v1 === null || v2 === undefined || v2 === null) {
             return v2 === v1;
         }
@@ -47,6 +48,7 @@ export function equalsIfDefined<T>(equalsOrV1: EqualityComparer<T> | T, v2?: T |
     }
     else {
         const equals = equalsOrV1 as EqualityComparer<T>;
+
         return (v1, v2) => {
             if (v1 === undefined || v1 === null || v2 === undefined || v2 === null) {
                 return v2 === v1;
@@ -76,10 +78,15 @@ export function structuralEquals<T>(a: T, b: T): boolean {
     if (a && typeof a === 'object' && b && typeof b === 'object') {
         if (Object.getPrototypeOf(a) === Object.prototype && Object.getPrototypeOf(b) === Object.prototype) {
             const aObj = a as Record<string, unknown>;
+
             const bObj = b as Record<string, unknown>;
+
             const keysA = Object.keys(aObj);
+
             const keysB = Object.keys(bObj);
+
             const keysBSet = new Set(keysB);
+
             if (keysA.length !== keysB.length) {
                 return false;
             }
@@ -104,6 +111,7 @@ export function getStructuralKey(t: unknown): string {
     return JSON.stringify(toNormalizedJsonStructure(t));
 }
 let objectId = 0;
+
 const objIds = new WeakMap<object, number>();
 function toNormalizedJsonStructure(t: unknown): unknown {
     if (Array.isArray(t)) {
@@ -112,7 +120,9 @@ function toNormalizedJsonStructure(t: unknown): unknown {
     if (t && typeof t === 'object') {
         if (Object.getPrototypeOf(t) === Object.prototype) {
             const tObj = t as Record<string, unknown>;
+
             const res: Record<string, unknown> = Object.create(null);
+
             for (const key of Object.keys(tObj).sort()) {
                 res[key] = toNormalizedJsonStructure(tObj[key]);
             }
@@ -120,6 +130,7 @@ function toNormalizedJsonStructure(t: unknown): unknown {
         }
         else {
             let objId = objIds.get(t);
+
             if (objId === undefined) {
                 objId = objectId++;
                 objIds.set(t, objId);

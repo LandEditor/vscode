@@ -32,6 +32,7 @@ export class StoredValue<T> extends Disposable {
      * Emitted whenever the value is updated or deleted.
      */
     public readonly onDidChange: Event<IStorageValueChangeEvent>;
+
     constructor(options: IStoredValueOptions<T>, 
     @IStorageService
     private readonly storage: IStorageService) {

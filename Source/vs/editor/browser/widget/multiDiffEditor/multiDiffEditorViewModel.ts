@@ -19,6 +19,7 @@ export class MultiDiffEditorViewModel extends Disposable {
     private readonly _documents: IObservable<readonly RefCounted<IDocumentDiffItem>[] | 'loading'> = observableFromValueWithChangeEvent(this.model, this.model.documents);
     private readonly _documentsArr = derived(this, reader => {
         const result = this._documents.read(reader);
+
         if (result === 'loading') {
             return [];
         }
@@ -80,6 +81,7 @@ export class DocumentDiffItemViewModel extends Disposable {
         return this.documentDiffItemRef.object;
     }
     public readonly isAlive = observableValue<boolean>(this, true);
+
     constructor(documentDiffItem: RefCounted<IDocumentDiffItem>, private readonly _editorViewModel: MultiDiffEditorViewModel, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -90,6 +92,7 @@ export class DocumentDiffItemViewModel extends Disposable {
             this.isAlive.set(false, undefined);
         }));
         this.documentDiffItemRef = this._register(documentDiffItem.createNewRef(this));
+
         function updateOptions(options: IDiffEditorOptions): IDiffEditorOptions {
             return {
                 ...options,
@@ -99,13 +102,16 @@ export class DocumentDiffItemViewModel extends Disposable {
             };
         }
         const options = this._instantiationService.createInstance(DiffEditorOptions, updateOptions(this.documentDiffItem.options || {}));
+
         if (this.documentDiffItem.onOptionsDidChange) {
             this._register(this.documentDiffItem.onOptionsDidChange(() => {
                 options.updateOptions(updateOptions(this.documentDiffItem.options || {}));
             }));
         }
         const diffEditorViewModelStore = new DisposableStore();
+
         const originalTextModel = this.documentDiffItem.original ?? diffEditorViewModelStore.add(this._modelService.createModel('', null));
+
         const modifiedTextModel = this.documentDiffItem.modified ?? diffEditorViewModelStore.add(this._modelService.createModel('', null));
         diffEditorViewModelStore.add(this.documentDiffItemRef.createNewRef(this));
         this.diffEditorViewModelRef = this._register(RefCounted.createWithDisposable(this._instantiationService.createInstance(DiffEditorViewModel, {

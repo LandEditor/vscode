@@ -75,6 +75,7 @@ class Logger extends AbstractMessageLogger {
         LogLevel,
         string
     ][] = [];
+
     constructor(private readonly channel: IChannel, private readonly file: URI, logLevel: LogLevel, loggerOptions?: ILoggerOptions, windowId?: number | undefined) {
         super(loggerOptions?.logLevel === 'always');
         this.setLevel(logLevel);
@@ -89,6 +90,7 @@ class Logger extends AbstractMessageLogger {
             LogLevel,
             string
         ][] = [[level, message]];
+
         if (this.isLoggerCreated) {
             this.doLog(messages);
         }
@@ -107,11 +109,13 @@ export class LoggerChannel implements IServerChannel {
     constructor(private readonly loggerService: ILoggerService, private getUriTransformer: (requestContext: any) => IURITransformer) { }
     listen(context: any, event: string): Event<any> {
         const uriTransformer = this.getUriTransformer(context);
+
         switch (event) {
             case 'onDidChangeLoggers': return Event.map<DidChangeLoggersEvent, DidChangeLoggersEvent>(this.loggerService.onDidChangeLoggers, (e) => ({
                 added: [...e.added].map(logger => this.transformLogger(logger, uriTransformer)),
                 removed: [...e.removed].map(logger => this.transformLogger(logger, uriTransformer)),
             }));
+
             case 'onDidChangeVisibility': return Event.map<[
                 URI,
                 boolean
@@ -119,6 +123,7 @@ export class LoggerChannel implements IServerChannel {
                 URI,
                 boolean
             ]>(this.loggerService.onDidChangeVisibility, e => [uriTransformer.transformOutgoingURI(e[0]), e[1]]);
+
             case 'onDidChangeLogLevel': return Event.map<LogLevel | [
                 URI,
                 LogLevel
@@ -131,8 +136,10 @@ export class LoggerChannel implements IServerChannel {
     }
     async call(context: any, command: string, arg?: any): Promise<any> {
         const uriTransformer: IURITransformer | null = this.getUriTransformer(context);
+
         switch (command) {
             case 'setLogLevel': return isLogLevel(arg[0]) ? this.loggerService.setLogLevel(arg[0]) : this.loggerService.setLogLevel(URI.revive(uriTransformer.transformIncoming(arg[0][0])), arg[0][1]);
+
             case 'getRegisteredLoggers': return Promise.resolve([...this.loggerService.getRegisteredLoggers()].map(logger => this.transformLogger(logger, uriTransformer)));
         }
         throw new Error(`Call not found: ${command}`);

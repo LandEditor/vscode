@@ -83,7 +83,9 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const context = args[0];
+
 			const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
 			const widgetService = accessor.get(IChatWidgetService);
 
 			let widget = widgetService.lastFocusedWidget;
@@ -130,11 +132,14 @@ export function registerNewChatActions() {
 		 */
 		private async _handleCurrentEditingSession(chatEditingService: IChatEditingService, dialogService: IDialogService): Promise<boolean> {
 			const currentEditingSession = chatEditingService.currentEditingSessionObs.get();
+
 			const currentEdits = currentEditingSession?.entries.get();
+
 			const currentEditCount = currentEdits?.length;
 
 			if (currentEditingSession && currentEditCount) {
 				const undecidedEdits = currentEdits.filter((edit) => edit.state.get() === WorkingSetEntryState.Modified);
+
 				if (undecidedEdits.length) {
 					const { result } = await dialogService.prompt({
 						title: localize('chat.startEditing.confirmation.title', "Start new editing session?"),
@@ -146,6 +151,7 @@ export function registerNewChatActions() {
 								label: localize('chat.startEditing.confirmation.acceptEdits', "Accept & Continue"),
 								run: async () => {
 									await currentEditingSession.accept();
+
 									return true;
 								}
 							},
@@ -153,6 +159,7 @@ export function registerNewChatActions() {
 								label: localize('chat.startEditing.confirmation.discardEdits', "Discard & Continue"),
 								run: async () => {
 									await currentEditingSession.reject();
+
 									return true;
 								}
 							}
@@ -168,18 +175,26 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const context = args[0];
+
 			const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
 			const widgetService = accessor.get(IChatWidgetService);
+
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const dialogService = accessor.get(IDialogService);
+
 			const viewsService = accessor.get(IViewsService);
+
 			if (!(await this._handleCurrentEditingSession(chatEditingService, dialogService))) {
 				return;
 			}
 			if (isChatViewTitleActionContext(context)) {
 				// Is running in the Chat view title
 				announceChatCleared(accessibilitySignalService);
+
 				const widget = widgetService.getWidgetBySessionId(context.sessionId);
+
 				if (widget) {
 					chatEditingService.currentEditingSessionObs.get()?.stop();
 					widget.clear();
@@ -189,6 +204,7 @@ export function registerNewChatActions() {
 			} else {
 				// Is running from f1 or keybinding
 				const chatView = await viewsService.openView(EditsViewId) as ChatViewPane;
+
 				const widget = chatView.widget;
 
 				announceChatCleared(accessibilitySignalService);
@@ -219,12 +235,17 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const context = args[0];
+
 			const accessibilitySignalService = accessor.get(IAccessibilitySignalService);
+
 			const widgetService = accessor.get(IChatWidgetService);
+
 			if (isChatViewTitleActionContext(context)) {
 				// Is running in the Chat view title
 				announceChatCleared(accessibilitySignalService);
+
 				const widget = widgetService.getWidgetBySessionId(context.sessionId);
+
 				if (widget) {
 					widget.clear();
 					widget.attachmentModel.clear();
@@ -235,6 +256,7 @@ export function registerNewChatActions() {
 				const viewsService = accessor.get(IViewsService);
 
 				const chatView = await viewsService.openView(EditsViewId) as ChatViewPane;
+
 				const widget = chatView.widget;
 
 				announceChatCleared(accessibilitySignalService);
@@ -265,8 +287,11 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const chatWidgetService = accessor.get(IChatWidgetService);
+
 			const currentEditingSession = chatEditingService.currentEditingSession;
+
 			if (!currentEditingSession) {
 				return;
 			}
@@ -297,8 +322,11 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const chatEditingService = accessor.get(IChatEditingService);
+
 			const chatWidgetService = accessor.get(IChatWidgetService);
+
 			const currentEditingSession = chatEditingService.currentEditingSession;
+
 			if (!currentEditingSession) {
 				return;
 			}
@@ -351,6 +379,7 @@ export function registerNewChatActions() {
 
 		async run(accessor: ServicesAccessor, ...args: any[]) {
 			const viewsService = accessor.get(IViewsService);
+
 			const chatView = await viewsService.openView(EditsViewId) as ChatViewPane;
 			chatView.widget.focusInput();
 		}

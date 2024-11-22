@@ -25,6 +25,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
     private readonly _onDidOpenInPlace = this._register(new Emitter<void>());
     readonly onDidOpenInPlace = this._onDidOpenInPlace.event;
     private metadata: string | undefined;
+
     constructor(id: string, group: IEditorGroup, private readonly callbacks: IOpenCallbacks, telemetryService: ITelemetryService, themeService: IThemeService, 
     @IStorageService
     storageService: IStorageService) {
@@ -42,6 +43,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
         // Update metadata
         const size = model.getSize();
         this.handleMetadataChanged(typeof size === 'number' ? ByteSize.formatSize(size) : '');
+
         return {
             icon: '$(warning)',
             label: localize('binaryError', "The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding."),

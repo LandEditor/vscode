@@ -27,6 +27,7 @@ const organizeImportsCommand: OrganizeImportsCommandMetadata = {
     kind: vscode.CodeActionKind.SourceOrganizeImports,
     mode: OrganizeImportsMode.All,
 };
+
 const sortImportsCommand: OrganizeImportsCommandMetadata = {
     commandIds: ['typescript.sortImports', 'javascript.sortImports'],
     minVersion: API.v430,
@@ -34,6 +35,7 @@ const sortImportsCommand: OrganizeImportsCommandMetadata = {
     kind: vscode.CodeActionKind.Source.append('sortImports'),
     mode: OrganizeImportsMode.SortAndCombine,
 };
+
 const removeUnusedImportsCommand: OrganizeImportsCommandMetadata = {
     commandIds: ['typescript.removeUnusedImports', 'javascript.removeUnusedImports'],
     minVersion: API.v490,
@@ -44,6 +46,7 @@ const removeUnusedImportsCommand: OrganizeImportsCommandMetadata = {
 class DidOrganizeImportsCommand implements Command {
     public static readonly ID = '_typescript.didOrganizeImports';
     public readonly id = DidOrganizeImportsCommand.ID;
+
     constructor(private readonly telemetryReporter: TelemetryReporter) { }
     public async execute(): Promise<any> {
         /* __GDPR__
@@ -71,6 +74,7 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider<ImportCodeA
             return [];
         }
         const file = this.client.toOpenTsFilePath(document);
+
         if (!file) {
             return [];
         }
@@ -79,10 +83,12 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider<ImportCodeA
     async resolveCodeAction(codeAction: ImportCodeAction, token: vscode.CancellationToken): Promise<ImportCodeAction | undefined> {
         const response = await this.client.interruptGetErr(async () => {
             await this.fileConfigManager.ensureConfigurationForDocument(codeAction.document, token);
+
             if (token.isCancellationRequested) {
                 return;
             }
             const file = this.client.toOpenTsFilePath(codeAction.document);
+
             if (!file) {
                 return;
             }
@@ -95,8 +101,10 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider<ImportCodeA
                 skipDestructiveCodeActions: this.commandMetadata.mode === OrganizeImportsMode.SortAndCombine,
                 mode: typeConverters.OrganizeImportsMode.toProtocolOrganizeImportsMode(this.commandMetadata.mode),
             };
+
             return this.client.execute('organizeImports', args, nulToken);
         });
+
         if (response?.type !== 'response' || !response.body || token.isCancellationRequested) {
             return;
         }
@@ -104,17 +112,20 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider<ImportCodeA
             codeAction.edit = typeConverters.WorkspaceEdit.fromFileCodeEdits(this.client, response.body);
         }
         codeAction.command = { command: DidOrganizeImportsCommand.ID, title: '', arguments: [] };
+
         return codeAction;
     }
 }
 export function register(selector: DocumentSelector, client: ITypeScriptServiceClient, commandManager: CommandManager, fileConfigurationManager: FileConfigurationManager, telemetryReporter: TelemetryReporter): vscode.Disposable {
     const disposables: vscode.Disposable[] = [];
+
     for (const command of [organizeImportsCommand, sortImportsCommand, removeUnusedImportsCommand]) {
         disposables.push(conditionalRegistration([
             requireMinVersion(client, command.minVersion ?? API.defaultVersion),
             requireSomeCapability(client, ClientCapability.Semantic),
         ], () => {
             const provider = new ImportsCodeActionProvider(client, command, commandManager, fileConfigurationManager, telemetryReporter);
+
             return vscode.Disposable.from(vscode.languages.registerCodeActionsProvider(selector.semantic, provider, {
                 providedCodeActionKinds: [command.kind]
             }));

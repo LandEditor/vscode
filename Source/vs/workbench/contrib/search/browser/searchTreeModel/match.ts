@@ -9,8 +9,10 @@ import { ISearchTreeMatch, ISearchTreeFileMatch, MATCH_PREFIX } from './searchTr
 import { Range } from '../../../../../editor/common/core/range.js';
 export function textSearchResultToMatches(rawMatch: ITextSearchMatch, fileMatch: ISearchTreeFileMatch, isAiContributed: boolean): ISearchTreeMatch[] {
     const previewLines = rawMatch.previewText.split('\n');
+
     return rawMatch.rangeLocations.map((rangeLocation) => {
         const previewRange: ISearchRange = rangeLocation.preview;
+
         return new MatchImpl(fileMatch, previewLines, previewRange, rangeLocation.source, isAiContributed);
     });
 }
@@ -22,8 +24,10 @@ export class MatchImpl implements ISearchTreeMatch {
     private _rangeInPreviewText: ISearchRange;
     // For replace
     private _fullPreviewRange: ISearchRange;
+
     constructor(protected _parent: ISearchTreeFileMatch, private _fullPreviewLines: string[], _fullPreviewRange: ISearchRange, _documentRange: ISearchRange, private readonly _isReadonly: boolean = false) {
         this._oneLinePreviewText = _fullPreviewLines[_fullPreviewRange.startLineNumber];
+
         const adjustedEndCol = _fullPreviewRange.startLineNumber === _fullPreviewRange.endLineNumber ?
             _fullPreviewRange.endColumn :
             this._oneLinePreviewText.length;
@@ -52,11 +56,14 @@ export class MatchImpl implements ISearchTreeMatch {
         after: string;
     } {
         const fullBefore = this._oneLinePreviewText.substring(0, this._rangeInPreviewText.startColumn - 1), before = lcut(fullBefore, 26, '…');
+
         let inside = this.getMatchString(), after = this._oneLinePreviewText.substring(this._rangeInPreviewText.endColumn - 1);
+
         let charsRemaining = MatchImpl.MAX_PREVIEW_CHARS - before.length;
         inside = inside.substr(0, charsRemaining);
         charsRemaining -= inside.length;
         after = after.substr(0, charsRemaining);
+
         return {
             before,
             fullBefore,
@@ -66,18 +73,23 @@ export class MatchImpl implements ISearchTreeMatch {
     }
     get replaceString(): string {
         const searchModel = this.parent().parent().searchModel;
+
         if (!searchModel.replacePattern) {
             throw new Error('searchModel.replacePattern must be set before accessing replaceString');
         }
         const fullMatchText = this.fullMatchText();
+
         let replaceString = searchModel.replacePattern.getReplaceString(fullMatchText, searchModel.preserveCase);
+
         if (replaceString !== null) {
             return replaceString;
         }
         // Search/find normalize line endings - check whether \r prevents regex from matching
         const fullMatchTextWithoutCR = fullMatchText.replace(/\r\n/g, '\n');
+
         if (fullMatchTextWithoutCR !== fullMatchText) {
             replaceString = searchModel.replacePattern.getReplaceString(fullMatchTextWithoutCR, searchModel.preserveCase);
+
             if (replaceString !== null) {
                 return replaceString;
             }
@@ -85,13 +97,16 @@ export class MatchImpl implements ISearchTreeMatch {
         // If match string is not matching then regex pattern has a lookahead expression
         const contextMatchTextWithSurroundingContent = this.fullMatchText(true);
         replaceString = searchModel.replacePattern.getReplaceString(contextMatchTextWithSurroundingContent, searchModel.preserveCase);
+
         if (replaceString !== null) {
             return replaceString;
         }
         // Search/find normalize line endings, this time in full context
         const contextMatchTextWithoutCR = contextMatchTextWithSurroundingContent.replace(/\r\n/g, '\n');
+
         if (contextMatchTextWithoutCR !== contextMatchTextWithSurroundingContent) {
             replaceString = searchModel.replacePattern.getReplaceString(contextMatchTextWithoutCR, searchModel.preserveCase);
+
             if (replaceString !== null) {
                 return replaceString;
             }
@@ -101,6 +116,7 @@ export class MatchImpl implements ISearchTreeMatch {
     }
     fullMatchText(includeSurrounding = false): string {
         let thisMatchPreviewLines: string[];
+
         if (includeSurrounding) {
             thisMatchPreviewLines = this._fullPreviewLines;
         }

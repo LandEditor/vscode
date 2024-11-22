@@ -23,5 +23,6 @@ export function nullTokenizeEncoded(languageId: LanguageId, state: IState | null
         | (FontStyle.None << MetadataConsts.FONT_STYLE_OFFSET)
         | (ColorId.DefaultForeground << MetadataConsts.FOREGROUND_OFFSET)
         | (ColorId.DefaultBackground << MetadataConsts.BACKGROUND_OFFSET)) >>> 0;
+
     return new EncodedTokenizationResult(tokens, state === null ? NullState : state);
 }

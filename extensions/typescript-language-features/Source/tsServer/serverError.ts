@@ -7,6 +7,7 @@ import { TypeScriptVersion } from './versionProvider';
 export class TypeScriptServerError extends Error {
     public static create(serverId: string, version: TypeScriptVersion, response: Proto.Response): TypeScriptServerError {
         const parsedResult = TypeScriptServerError.parseErrorText(response);
+
         return new TypeScriptServerError(serverId, version, response, parsedResult?.message, parsedResult?.stack, parsedResult?.sanitizedStack);
     }
     private constructor(public readonly serverId: string, public readonly version: TypeScriptVersion, private readonly response: Proto.Response, public readonly serverMessage: string | undefined, public readonly serverStack: string | undefined, private readonly sanitizedStack: string | undefined) {
@@ -38,14 +39,19 @@ export class TypeScriptServerError extends Error {
      */
     private static parseErrorText(response: Proto.Response) {
         const errorText = response.message;
+
         if (errorText) {
             const errorPrefix = 'Error processing request. ';
+
             if (errorText.startsWith(errorPrefix)) {
                 const prefixFreeErrorText = errorText.substr(errorPrefix.length);
+
                 const newlineIndex = prefixFreeErrorText.indexOf('\n');
+
                 if (newlineIndex >= 0) {
                     // Newline expected between message and stack.
                     const stack = prefixFreeErrorText.substring(newlineIndex + 1);
+
                     return {
                         message: prefixFreeErrorText.substring(0, newlineIndex),
                         stack,
@@ -64,9 +70,12 @@ export class TypeScriptServerError extends Error {
             return '';
         }
         const regex = /(\btsserver)?(\.(?:ts|tsx|js|jsx)(?::\d+(?::\d+)?)?)\)?$/igm;
+
         let serverStack = '';
+
         while (true) {
             const match = regex.exec(message);
+
             if (!match) {
                 break;
             }

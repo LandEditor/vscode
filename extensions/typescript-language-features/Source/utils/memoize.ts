@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 export function memoize(_target: any, key: string, descriptor: any) {
     let fnKey: string | undefined;
+
     let fn: Function | undefined;
+
     if (typeof descriptor.value === 'function') {
         fnKey = 'value';
         fn = descriptor.value;

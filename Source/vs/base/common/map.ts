@@ -5,6 +5,7 @@
 import { URI } from './uri.js';
 export function getOrSet<K, V>(map: Map<K, V>, key: K, value: V): V {
     let result = map.get(key);
+
     if (result === undefined) {
         result = value;
         map.set(key, result);
@@ -16,13 +17,16 @@ export function mapToString<K, V>(map: Map<K, V>): string {
     map.forEach((value, key) => {
         entries.push(`${key} => ${value}`);
     });
+
     return `Map(${map.size}) {${entries.join(', ')}}`;
 }
 export function setToString<K>(set: Set<K>): string {
     const entries: K[] = [];
+
     set.forEach(value => {
         entries.push(value);
     });
+
     return `Set(${set.size}) {${entries.join(', ')}}`;
 }
 interface ResourceMapKeyFn {
@@ -65,6 +69,7 @@ export class ResourceMap<T> implements Map<URI, T> {
         URI,
         T
     ])[], toKey?: ResourceMapKeyFn);
+
     constructor(arg?: ResourceMap<T> | ResourceMapKeyFn | readonly (readonly [
         URI,
         T
@@ -76,6 +81,7 @@ export class ResourceMap<T> implements Map<URI, T> {
         else if (isEntries(arg)) {
             this.map = new Map();
             this.toKey = toKey ?? ResourceMap.defaultToKey;
+
             for (const [resource, value] of arg) {
                 this.set(resource, value);
             }
@@ -87,6 +93,7 @@ export class ResourceMap<T> implements Map<URI, T> {
     }
     set(resource: URI, value: T): this {
         this.map.set(this.toKey(resource), new ResourceMapEntry(resource, value));
+
         return this;
     }
     get(resource: URI): T | undefined {
@@ -142,8 +149,11 @@ export class ResourceMap<T> implements Map<URI, T> {
 export class ResourceSet implements Set<URI> {
     readonly [Symbol.toStringTag]: string = 'ResourceSet';
     private readonly _map: ResourceMap<URI>;
+
     constructor(toKey?: ResourceMapKeyFn);
+
     constructor(entries: readonly URI[], toKey?: ResourceMapKeyFn);
+
     constructor(entriesOrKey?: readonly URI[] | ResourceMapKeyFn, toKey?: ResourceMapKeyFn) {
         if (!entriesOrKey || typeof entriesOrKey === 'function') {
             this._map = new ResourceMap(entriesOrKey);
@@ -158,6 +168,7 @@ export class ResourceSet implements Set<URI> {
     }
     add(value: URI): this {
         this._map.set(value, value);
+
         return this;
     }
     clear(): void {
@@ -206,6 +217,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
     private _tail: Item<K, V> | undefined;
     private _size: number;
     private _state: number;
+
     constructor() {
         this._map = new Map<K, Item<K, V>>();
         this._head = undefined;
@@ -237,6 +249,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
     }
     get(key: K, touch: Touch = Touch.None): V | undefined {
         const item = this._map.get(key);
+
         if (!item) {
             return undefined;
         }
@@ -247,26 +260,36 @@ export class LinkedMap<K, V> implements Map<K, V> {
     }
     set(key: K, value: V, touch: Touch = Touch.None): this {
         let item = this._map.get(key);
+
         if (item) {
             item.value = value;
+
             if (touch !== Touch.None) {
                 this.touch(item, touch);
             }
         }
         else {
             item = { key, value, next: undefined, previous: undefined };
+
             switch (touch) {
                 case Touch.None:
                     this.addItemLast(item);
+
                     break;
+
                 case Touch.AsOld:
                     this.addItemFirst(item);
+
                     break;
+
                 case Touch.AsNew:
                     this.addItemLast(item);
+
                     break;
+
                 default:
                     this.addItemLast(item);
+
                     break;
             }
             this._map.set(key, item);
@@ -279,12 +302,14 @@ export class LinkedMap<K, V> implements Map<K, V> {
     }
     remove(key: K): V | undefined {
         const item = this._map.get(key);
+
         if (!item) {
             return undefined;
         }
         this._map.delete(key);
         this.removeItem(item);
         this._size--;
+
         return item.value;
     }
     shift(): V | undefined {
@@ -298,11 +323,14 @@ export class LinkedMap<K, V> implements Map<K, V> {
         this._map.delete(item.key);
         this.removeItem(item);
         this._size--;
+
         return item.value;
     }
     forEach(callbackfn: (value: V, key: K, map: LinkedMap<K, V>) => void, thisArg?: any): void {
         const state = this._state;
+
         let current = this._head;
+
         while (current) {
             if (thisArg) {
                 callbackfn.bind(thisArg)(current.value, current.key, this);
@@ -318,8 +346,11 @@ export class LinkedMap<K, V> implements Map<K, V> {
     }
     keys(): IterableIterator<K> {
         const map = this;
+
         const state = this._state;
+
         let current = this._head;
+
         const iterator: IterableIterator<K> = {
             [Symbol.iterator]() {
                 return iterator;
@@ -331,6 +362,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 if (current) {
                     const result = { value: current.key, done: false };
                     current = current.next;
+
                     return result;
                 }
                 else {
@@ -338,12 +370,16 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 }
             }
         };
+
         return iterator;
     }
     values(): IterableIterator<V> {
         const map = this;
+
         const state = this._state;
+
         let current = this._head;
+
         const iterator: IterableIterator<V> = {
             [Symbol.iterator]() {
                 return iterator;
@@ -355,6 +391,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 if (current) {
                     const result = { value: current.value, done: false };
                     current = current.next;
+
                     return result;
                 }
                 else {
@@ -362,6 +399,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 }
             }
         };
+
         return iterator;
     }
     entries(): IterableIterator<[
@@ -369,8 +407,11 @@ export class LinkedMap<K, V> implements Map<K, V> {
         V
     ]> {
         const map = this;
+
         const state = this._state;
+
         let current = this._head;
+
         const iterator: IterableIterator<[
             K,
             V
@@ -391,6 +432,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                         V
                     ]> = { value: [current.key, current.value], done: false };
                     current = current.next;
+
                     return result;
                 }
                 else {
@@ -398,6 +440,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 }
             }
         };
+
         return iterator;
     }
     [Symbol.iterator](): IterableIterator<[
@@ -412,10 +455,13 @@ export class LinkedMap<K, V> implements Map<K, V> {
         }
         if (newSize === 0) {
             this.clear();
+
             return;
         }
         let current = this._head;
+
         let currentSize = this.size;
+
         while (current && currentSize > newSize) {
             this._map.delete(current.key);
             current = current.next;
@@ -423,6 +469,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
         }
         this._head = current;
         this._size = currentSize;
+
         if (current) {
             current.previous = undefined;
         }
@@ -434,10 +481,13 @@ export class LinkedMap<K, V> implements Map<K, V> {
         }
         if (newSize === 0) {
             this.clear();
+
             return;
         }
         let current = this._tail;
+
         let currentSize = this.size;
+
         while (current && currentSize > newSize) {
             this._map.delete(current.key);
             current = current.previous;
@@ -445,6 +495,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
         }
         this._tail = current;
         this._size = currentSize;
+
         if (current) {
             current.next = undefined;
         }
@@ -505,7 +556,9 @@ export class LinkedMap<K, V> implements Map<K, V> {
         }
         else {
             const next = item.next;
+
             const previous = item.previous;
+
             if (!next || !previous) {
                 throw new Error('Invalid list');
             }
@@ -528,6 +581,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 return;
             }
             const next = item.next;
+
             const previous = item.previous;
             // Unlink the item
             if (item === this._tail) {
@@ -553,6 +607,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
                 return;
             }
             const next = item.next;
+
             const previous = item.previous;
             // Unlink the item.
             if (item === this._head) {
@@ -584,6 +639,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
         this.forEach((value, key) => {
             data.push([key, value]);
         });
+
         return data;
     }
     fromJSON(data: [
@@ -591,6 +647,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
         V
     ][]): void {
         this.clear();
+
         for (const [key, value] of data) {
             this.set(key, value);
         }
@@ -599,6 +656,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
 abstract class Cache<K, V> extends LinkedMap<K, V> {
     protected _limit: number;
     protected _ratio: number;
+
     constructor(limit: number, ratio: number = 1) {
         super();
         this._limit = limit;
@@ -626,6 +684,7 @@ abstract class Cache<K, V> extends LinkedMap<K, V> {
     }
     override set(key: K, value: V): this {
         super.set(key, value, Touch.AsNew);
+
         return this;
     }
     protected checkTrim() {
@@ -645,6 +704,7 @@ export class LRUCache<K, V> extends Cache<K, V> {
     override set(key: K, value: V): this {
         super.set(key, value);
         this.checkTrim();
+
         return this;
     }
 }
@@ -660,6 +720,7 @@ export class MRUCache<K, V> extends Cache<K, V> {
             this.trim(Math.round(this._limit * this._ratio) - 1);
         }
         super.set(key, value);
+
         return this;
     }
 }
@@ -667,14 +728,17 @@ export class CounterSet<T> {
     private map = new Map<T, number>();
     add(value: T): CounterSet<T> {
         this.map.set(value, (this.map.get(value) || 0) + 1);
+
         return this;
     }
     delete(value: T): boolean {
         let counter = this.map.get(value) || 0;
+
         if (counter === 0) {
             return false;
         }
         counter--;
+
         if (counter === 0) {
             this.map.delete(value);
         }
@@ -694,6 +758,7 @@ export class CounterSet<T> {
 export class BidirectionalMap<K, V> {
     private readonly _m1 = new Map<K, V>();
     private readonly _m2 = new Map<V, K>();
+
     constructor(entries?: readonly (readonly [
         K,
         V
@@ -720,11 +785,13 @@ export class BidirectionalMap<K, V> {
     }
     delete(key: K): boolean {
         const value = this._m1.get(key);
+
         if (value === undefined) {
             return false;
         }
         this._m1.delete(key);
         this._m2.delete(value);
+
         return true;
     }
     forEach(callbackfn: (value: V, key: K, map: BidirectionalMap<K, V>) => void, thisArg?: any): void {
@@ -743,6 +810,7 @@ export class SetMap<K, V> {
     private map = new Map<K, Set<V>>();
     add(key: K, value: V): void {
         let values = this.map.get(key);
+
         if (!values) {
             values = new Set<V>();
             this.map.set(key, values);
@@ -751,16 +819,19 @@ export class SetMap<K, V> {
     }
     delete(key: K, value: V): void {
         const values = this.map.get(key);
+
         if (!values) {
             return;
         }
         values.delete(value);
+
         if (values.size === 0) {
             this.map.delete(key);
         }
     }
     forEach(key: K, fn: (value: V) => void): void {
         const values = this.map.get(key);
+
         if (!values) {
             return;
         }
@@ -768,6 +839,7 @@ export class SetMap<K, V> {
     }
     get(key: K): ReadonlySet<V> {
         const values = this.map.get(key);
+
         if (!values) {
             return new Set<V>();
         }
@@ -819,6 +891,7 @@ export class TwoKeyMap<TFirst extends string | number, TSecond extends string | 
         for (const first in this._data) {
             for (const second in this._data[first]) {
                 const value = this._data[first]![second];
+
                 if (value) {
                     yield value;
                 }

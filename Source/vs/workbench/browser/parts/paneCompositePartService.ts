@@ -27,16 +27,21 @@ export class PaneCompositePartService extends Disposable implements IPaneComposi
         viewContainerLocation: ViewContainerLocation;
     }>;
     private readonly paneCompositeParts = new Map<ViewContainerLocation, IPaneCompositePart>();
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService) {
         super();
+
         const panelPart = instantiationService.createInstance(PanelPart);
+
         const sideBarPart = instantiationService.createInstance(SidebarPart);
+
         const auxiliaryBarPart = instantiationService.createInstance(AuxiliaryBarPart);
         this.paneCompositeParts.set(ViewContainerLocation.Panel, panelPart);
         this.paneCompositeParts.set(ViewContainerLocation.Sidebar, sideBarPart);
         this.paneCompositeParts.set(ViewContainerLocation.AuxiliaryBar, auxiliaryBarPart);
+
         const eventDisposables = this._register(new DisposableStore());
         this.onDidPaneCompositeOpen = Event.any(...ViewContainerLocations.map(loc => Event.map(this.paneCompositeParts.get(loc)!.onDidPaneCompositeOpen, composite => { return { composite, viewContainerLocation: loc }; }, eventDisposables)));
         this.onDidPaneCompositeClose = Event.any(...ViewContainerLocations.map(loc => Event.map(this.paneCompositeParts.get(loc)!.onDidPaneCompositeClose, composite => { return { composite, viewContainerLocation: loc }; }, eventDisposables)));

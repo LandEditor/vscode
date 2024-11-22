@@ -27,10 +27,12 @@ export class NotebookProviderInfo {
     readonly priority: RegisteredEditorPriority;
     readonly providerDisplayName: string;
     private _selectors: NotebookSelector[];
+
     get selectors() {
         return this._selectors;
     }
     private _options: TransientOptions;
+
     get options() {
         return this._options;
     }
@@ -81,7 +83,9 @@ export class NotebookProviderInfo {
             return false;
         }
         const filenamePattern = selector.include;
+
         const excludeFilenamePattern = selector.exclude;
+
         if (glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())) {
             if (excludeFilenamePattern) {
                 if (glob.match(excludeFilenamePattern, basename(resource.fsPath).toLowerCase())) {
@@ -95,6 +99,7 @@ export class NotebookProviderInfo {
     static possibleFileEnding(selectors: NotebookSelector[]): string | undefined {
         for (const selector of selectors) {
             const ending = NotebookProviderInfo._possibleFileEnding(selector);
+
             if (ending) {
                 return ending;
             }
@@ -103,7 +108,9 @@ export class NotebookProviderInfo {
     }
     private static _possibleFileEnding(selector: NotebookSelector): string | undefined {
         const pattern = /^.*(\.[a-zA-Z0-9_-]+)$/;
+
         let candidate: string | undefined;
+
         if (typeof selector === 'string') {
             candidate = selector;
         }
@@ -115,6 +122,7 @@ export class NotebookProviderInfo {
         }
         if (candidate) {
             const match = pattern.exec(candidate);
+
             if (match) {
                 return match[1];
             }

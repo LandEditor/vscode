@@ -17,6 +17,7 @@ import { Lazy } from '../../../base/common/lazy.js';
 export class TextInputActionsProvider extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.textInputActionsProvider';
     private readonly textInputActions = new Lazy<IAction[]>(() => this.createActions());
+
     constructor(
     @IWorkbenchLayoutService
     private readonly layoutService: IWorkbenchLayoutService, 
@@ -44,9 +45,11 @@ export class TextInputActionsProvider extends Disposable implements IWorkbenchCo
                 // Web: paste is not supported due to security reasons
                 else {
                     const clipboardText = await this.clipboardService.readText();
+
                     if (isHTMLTextAreaElement(element) ||
                         isHTMLInputElement(element)) {
                         const selectionStart = element.selectionStart || 0;
+
                         const selectionEnd = element.selectionEnd || 0;
                         element.value = `${element.value.substring(0, selectionStart)}${clipboardText}${element.value.substring(selectionEnd, element.value.length)}`;
                         element.selectionStart = selectionStart + clipboardText.length;
@@ -71,10 +74,12 @@ export class TextInputActionsProvider extends Disposable implements IWorkbenchCo
             return; // make sure to not show these actions by accident if component indicated to prevent
         }
         const target = e.target;
+
         if (!(isHTMLElement(target)) || (target.nodeName.toLowerCase() !== 'input' && target.nodeName.toLowerCase() !== 'textarea')) {
             return; // only for inputs or textareas
         }
         EventHelper.stop(e, true);
+
         const event = new StandardMouseEvent(targetWindow, e);
         this.contextMenuService.showContextMenu({
             getAnchor: () => event,

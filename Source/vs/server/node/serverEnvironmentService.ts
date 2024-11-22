@@ -144,6 +144,7 @@ export interface ServerParsedArgs {
     'locate-extension'?: string[];
     'show-versions'?: boolean;
     'category'?: string;
+
     force?: boolean; // used by install-extension
     'do-not-sync'?: boolean; // used by install-extension
     'pre-release'?: boolean; // used by install-extension

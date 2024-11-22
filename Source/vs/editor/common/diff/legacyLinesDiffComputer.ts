@@ -10,6 +10,7 @@ import * as strings from '../../../base/common/strings.js';
 import { Range } from '../core/range.js';
 import { assertFn, checkAdjacentItems } from '../../../base/common/assert.js';
 import { LineRange } from '../core/lineRange.js';
+
 const MINIMUM_MATCHING_CHARACTER_LENGTH = 3;
 export class LegacyLinesDiffComputer implements ILinesDiffComputer {
     computeDiff(originalLines: string[], modifiedLines: string[], options: ILinesDiffComputerOptions): LinesDiff {
@@ -20,11 +21,16 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
             shouldMakePrettyDiff: true,
             shouldPostProcessCharChanges: true,
         });
+
         const result = diffComputer.computeDiff();
+
         const changes: DetailedLineRangeMapping[] = [];
+
         let lastChange: DetailedLineRangeMapping | null = null;
+
         for (const c of result.changes) {
             let originalRange: LineRange;
+
             if (c.originalEndLineNumber === 0) {
                 // Insertion
                 originalRange = new LineRange(c.originalStartLineNumber + 1, c.originalStartLineNumber + 1);
@@ -33,6 +39,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
                 originalRange = new LineRange(c.originalStartLineNumber, c.originalEndLineNumber + 1);
             }
             let modifiedRange: LineRange;
+
             if (c.modifiedEndLineNumber === 0) {
                 // Deletion
                 modifiedRange = new LineRange(c.modifiedStartLineNumber + 1, c.modifiedStartLineNumber + 1);
@@ -41,6 +48,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
                 modifiedRange = new LineRange(c.modifiedStartLineNumber, c.modifiedEndLineNumber + 1);
             }
             let change = new DetailedLineRangeMapping(originalRange, modifiedRange, c.charChanges?.map(c => new RangeMapping(new Range(c.originalStartLineNumber, c.originalStartColumn, c.originalEndLineNumber, c.originalEndColumn), new Range(c.modifiedStartLineNumber, c.modifiedStartColumn, c.modifiedEndLineNumber, c.modifiedEndColumn))));
+
             if (lastChange) {
                 if (lastChange.modified.endLineNumberExclusive === change.modified.startLineNumber
                     || lastChange.original.endLineNumberExclusive === change.original.startLineNumber) {
@@ -59,6 +67,7 @@ export class LegacyLinesDiffComputer implements ILinesDiffComputer {
                 m1.original.endLineNumberExclusive < m2.original.startLineNumber &&
                 m1.modified.endLineNumberExclusive < m2.modified.startLineNumber);
         });
+
         return new LinesDiff(changes, [], result.quitEarly);
     }
 }
@@ -105,15 +114,19 @@ export interface IDiffComputerResult {
 }
 function computeDiff(originalSequence: ISequence, modifiedSequence: ISequence, continueProcessingPredicate: () => boolean, pretty: boolean): IDiffResult {
     const diffAlgo = new LcsDiff(originalSequence, modifiedSequence, continueProcessingPredicate);
+
     return diffAlgo.ComputeDiff(pretty);
 }
 class LineSequence implements ISequence {
     public readonly lines: string[];
     private readonly _startColumns: number[];
     private readonly _endColumns: number[];
+
     constructor(lines: string[]) {
         const startColumns: number[] = [];
+
         const endColumns: number[] = [];
+
         for (let i = 0, length = lines.length; i < length; i++) {
             startColumns[i] = getFirstNonBlankColumn(lines[i], 1);
             endColumns[i] = getLastNonBlankColumn(lines[i], 1);
@@ -124,6 +137,7 @@ class LineSequence implements ISequence {
     }
     public getElements(): Int32Array | number[] | string[] {
         const elements: string[] = [];
+
         for (let i = 0, len = this.lines.length; i < len; i++) {
             elements[i] = this.lines[i].substring(this._startColumns[i] - 1, this._endColumns[i] - 1);
         }
@@ -140,13 +154,20 @@ class LineSequence implements ISequence {
     }
     public createCharSequence(shouldIgnoreTrimWhitespace: boolean, startIndex: number, endIndex: number): CharSequence {
         const charCodes: number[] = [];
+
         const lineNumbers: number[] = [];
+
         const columns: number[] = [];
+
         let len = 0;
+
         for (let index = startIndex; index <= endIndex; index++) {
             const lineContent = this.lines[index];
+
             const startColumn = (shouldIgnoreTrimWhitespace ? this._startColumns[index] : 1);
+
             const endColumn = (shouldIgnoreTrimWhitespace ? this._endColumns[index] : lineContent.length + 1);
+
             for (let col = startColumn; col < endColumn; col++) {
                 charCodes[len] = lineContent.charCodeAt(col - 1);
                 lineNumbers[len] = index + 1;
@@ -168,6 +189,7 @@ class CharSequence implements ISequence {
     private readonly _charCodes: number[];
     private readonly _lineNumbers: number[];
     private readonly _columns: number[];
+
     constructor(charCodes: number[], lineNumbers: number[], columns: number[]) {
         this._charCodes = charCodes;
         this._lineNumbers = lineNumbers;
@@ -191,6 +213,7 @@ class CharSequence implements ISequence {
             return this.getEndLineNumber(i - 1);
         }
         this._assertIndex(i, this._lineNumbers);
+
         return this._lineNumbers[i];
     }
     public getEndLineNumber(i: number): number {
@@ -200,6 +223,7 @@ class CharSequence implements ISequence {
             return this.getStartLineNumber(i + 1);
         }
         this._assertIndex(i, this._lineNumbers);
+
         if (this._charCodes[i] === CharCode.LineFeed) {
             return this._lineNumbers[i] + 1;
         }
@@ -212,6 +236,7 @@ class CharSequence implements ISequence {
             return this.getEndColumn(i - 1);
         }
         this._assertIndex(i, this._columns);
+
         return this._columns[i];
     }
     public getEndColumn(i: number): number {
@@ -221,6 +246,7 @@ class CharSequence implements ISequence {
             return this.getStartColumn(i + 1);
         }
         this._assertIndex(i, this._columns);
+
         if (this._charCodes[i] === CharCode.LineFeed) {
             return 1;
         }
@@ -236,6 +262,7 @@ class CharChange implements ICharChange {
     public modifiedStartColumn: number;
     public modifiedEndLineNumber: number;
     public modifiedEndColumn: number;
+
     constructor(originalStartLineNumber: number, originalStartColumn: number, originalEndLineNumber: number, originalEndColumn: number, modifiedStartLineNumber: number, modifiedStartColumn: number, modifiedEndLineNumber: number, modifiedEndColumn: number) {
         this.originalStartLineNumber = originalStartLineNumber;
         this.originalStartColumn = originalStartColumn;
@@ -248,13 +275,21 @@ class CharChange implements ICharChange {
     }
     public static createFromDiffChange(diffChange: IDiffChange, originalCharSequence: CharSequence, modifiedCharSequence: CharSequence): CharChange {
         const originalStartLineNumber = originalCharSequence.getStartLineNumber(diffChange.originalStart);
+
         const originalStartColumn = originalCharSequence.getStartColumn(diffChange.originalStart);
+
         const originalEndLineNumber = originalCharSequence.getEndLineNumber(diffChange.originalStart + diffChange.originalLength - 1);
+
         const originalEndColumn = originalCharSequence.getEndColumn(diffChange.originalStart + diffChange.originalLength - 1);
+
         const modifiedStartLineNumber = modifiedCharSequence.getStartLineNumber(diffChange.modifiedStart);
+
         const modifiedStartColumn = modifiedCharSequence.getStartColumn(diffChange.modifiedStart);
+
         const modifiedEndLineNumber = modifiedCharSequence.getEndLineNumber(diffChange.modifiedStart + diffChange.modifiedLength - 1);
+
         const modifiedEndColumn = modifiedCharSequence.getEndColumn(diffChange.modifiedStart + diffChange.modifiedLength - 1);
+
         return new CharChange(originalStartLineNumber, originalStartColumn, originalEndLineNumber, originalEndColumn, modifiedStartLineNumber, modifiedStartColumn, modifiedEndLineNumber, modifiedEndColumn);
     }
 }
@@ -263,13 +298,18 @@ function postProcessCharChanges(rawChanges: IDiffChange[]): IDiffChange[] {
         return rawChanges;
     }
     const result = [rawChanges[0]];
+
     let prevChange = result[0];
+
     for (let i = 1, len = rawChanges.length; i < len; i++) {
         const currChange = rawChanges[i];
+
         const originalMatchingLength = currChange.originalStart - (prevChange.originalStart + prevChange.originalLength);
+
         const modifiedMatchingLength = currChange.modifiedStart - (prevChange.modifiedStart + prevChange.modifiedLength);
         // Both of the above should be equal, but the continueProcessingPredicate may prevent this from being true
         const matchingLength = Math.min(originalMatchingLength, modifiedMatchingLength);
+
         if (matchingLength < MINIMUM_MATCHING_CHARACTER_LENGTH) {
             // Merge the current change into the previous one
             prevChange.originalLength = (currChange.originalStart + currChange.originalLength) - prevChange.originalStart;
@@ -289,6 +329,7 @@ class LineChange implements ILineChange {
     public modifiedStartLineNumber: number;
     public modifiedEndLineNumber: number;
     public charChanges: CharChange[] | undefined;
+
     constructor(originalStartLineNumber: number, originalEndLineNumber: number, modifiedStartLineNumber: number, modifiedEndLineNumber: number, charChanges: CharChange[] | undefined) {
         this.originalStartLineNumber = originalStartLineNumber;
         this.originalEndLineNumber = originalEndLineNumber;
@@ -298,10 +339,15 @@ class LineChange implements ILineChange {
     }
     public static createFromDiffResult(shouldIgnoreTrimWhitespace: boolean, diffChange: IDiffChange, originalLineSequence: LineSequence, modifiedLineSequence: LineSequence, continueCharDiff: () => boolean, shouldComputeCharChanges: boolean, shouldPostProcessCharChanges: boolean): LineChange {
         let originalStartLineNumber: number;
+
         let originalEndLineNumber: number;
+
         let modifiedStartLineNumber: number;
+
         let modifiedEndLineNumber: number;
+
         let charChanges: CharChange[] | undefined = undefined;
+
         if (diffChange.originalLength === 0) {
             originalStartLineNumber = originalLineSequence.getStartLineNumber(diffChange.originalStart) - 1;
             originalEndLineNumber = 0;
@@ -321,13 +367,17 @@ class LineChange implements ILineChange {
         if (shouldComputeCharChanges && diffChange.originalLength > 0 && diffChange.originalLength < 20 && diffChange.modifiedLength > 0 && diffChange.modifiedLength < 20 && continueCharDiff()) {
             // Compute character changes for diff chunks of at most 20 lines...
             const originalCharSequence = originalLineSequence.createCharSequence(shouldIgnoreTrimWhitespace, diffChange.originalStart, diffChange.originalStart + diffChange.originalLength - 1);
+
             const modifiedCharSequence = modifiedLineSequence.createCharSequence(shouldIgnoreTrimWhitespace, diffChange.modifiedStart, diffChange.modifiedStart + diffChange.modifiedLength - 1);
+
             if (originalCharSequence.getElements().length > 0 && modifiedCharSequence.getElements().length > 0) {
                 let rawChanges = computeDiff(originalCharSequence, modifiedCharSequence, continueCharDiff, true).changes;
+
                 if (shouldPostProcessCharChanges) {
                     rawChanges = postProcessCharChanges(rawChanges);
                 }
                 charChanges = [];
+
                 for (let i = 0, length = rawChanges.length; i < length; i++) {
                     charChanges.push(CharChange.createFromDiffChange(rawChanges[i], originalCharSequence, modifiedCharSequence));
                 }
@@ -354,6 +404,7 @@ export class DiffComputer {
     private readonly modified: LineSequence;
     private readonly continueLineDiff: () => boolean;
     private readonly continueCharDiff: () => boolean;
+
     constructor(originalLines: string[], modifiedLines: string[], opts: IDiffComputerOpts) {
         this.shouldComputeCharChanges = opts.shouldComputeCharChanges;
         this.shouldPostProcessCharChanges = opts.shouldPostProcessCharChanges;
@@ -400,12 +451,15 @@ export class DiffComputer {
             };
         }
         const diffResult = computeDiff(this.original, this.modified, this.continueLineDiff, this.shouldMakePrettyDiff);
+
         const rawChanges = diffResult.changes;
+
         const quitEarly = diffResult.quitEarly;
         // The diff is always computed with ignoring trim whitespace
         // This ensures we get the prettiest diff
         if (this.shouldIgnoreTrimWhitespace) {
             const lineChanges: LineChange[] = [];
+
             for (let i = 0, length = rawChanges.length; i < length; i++) {
                 lineChanges.push(LineChange.createFromDiffResult(this.shouldIgnoreTrimWhitespace, rawChanges[i], this.original, this.modified, this.continueCharDiff, this.shouldComputeCharChanges, this.shouldPostProcessCharChanges));
             }
@@ -417,24 +471,36 @@ export class DiffComputer {
         // Need to post-process and introduce changes where the trim whitespace is different
         // Note that we are looping starting at -1 to also cover the lines before the first change
         const result: LineChange[] = [];
+
         let originalLineIndex = 0;
+
         let modifiedLineIndex = 0;
+
         for (let i = -1 /* !!!! */, len = rawChanges.length; i < len; i++) {
             const nextChange = (i + 1 < len ? rawChanges[i + 1] : null);
+
             const originalStop = (nextChange ? nextChange.originalStart : this.originalLines.length);
+
             const modifiedStop = (nextChange ? nextChange.modifiedStart : this.modifiedLines.length);
+
             while (originalLineIndex < originalStop && modifiedLineIndex < modifiedStop) {
                 const originalLine = this.originalLines[originalLineIndex];
+
                 const modifiedLine = this.modifiedLines[modifiedLineIndex];
+
                 if (originalLine !== modifiedLine) {
                     // These lines differ only in trim whitespace
                     // Check the leading whitespace
                     {
                         let originalStartColumn = getFirstNonBlankColumn(originalLine, 1);
+
                         let modifiedStartColumn = getFirstNonBlankColumn(modifiedLine, 1);
+
                         while (originalStartColumn > 1 && modifiedStartColumn > 1) {
                             const originalChar = originalLine.charCodeAt(originalStartColumn - 2);
+
                             const modifiedChar = modifiedLine.charCodeAt(modifiedStartColumn - 2);
+
                             if (originalChar !== modifiedChar) {
                                 break;
                             }
@@ -448,12 +514,18 @@ export class DiffComputer {
                     // Check the trailing whitespace
                     {
                         let originalEndColumn = getLastNonBlankColumn(originalLine, 1);
+
                         let modifiedEndColumn = getLastNonBlankColumn(modifiedLine, 1);
+
                         const originalMaxColumn = originalLine.length + 1;
+
                         const modifiedMaxColumn = modifiedLine.length + 1;
+
                         while (originalEndColumn < originalMaxColumn && modifiedEndColumn < modifiedMaxColumn) {
                             const originalChar = originalLine.charCodeAt(originalEndColumn - 1);
+
                             const modifiedChar = originalLine.charCodeAt(modifiedEndColumn - 1);
+
                             if (originalChar !== modifiedChar) {
                                 break;
                             }
@@ -486,6 +558,7 @@ export class DiffComputer {
             return;
         }
         let charChanges: CharChange[] | undefined = undefined;
+
         if (this.shouldComputeCharChanges) {
             charChanges = [new CharChange(originalLineNumber, originalStartColumn, originalLineNumber, originalEndColumn, modifiedLineNumber, modifiedStartColumn, modifiedLineNumber, modifiedEndColumn)];
         }
@@ -493,10 +566,12 @@ export class DiffComputer {
     }
     private _mergeTrimWhitespaceCharChange(result: LineChange[], originalLineNumber: number, originalStartColumn: number, originalEndColumn: number, modifiedLineNumber: number, modifiedStartColumn: number, modifiedEndColumn: number): boolean {
         const len = result.length;
+
         if (len === 0) {
             return false;
         }
         const prevChange = result[len - 1];
+
         if (prevChange.originalEndLineNumber === 0 || prevChange.modifiedEndLineNumber === 0) {
             // Don't merge with inserts/deletes
             return false;
@@ -510,6 +585,7 @@ export class DiffComputer {
         if (prevChange.originalEndLineNumber + 1 === originalLineNumber && prevChange.modifiedEndLineNumber + 1 === modifiedLineNumber) {
             prevChange.originalEndLineNumber = originalLineNumber;
             prevChange.modifiedEndLineNumber = modifiedLineNumber;
+
             if (this.shouldComputeCharChanges && prevChange.charChanges) {
                 prevChange.charChanges.push(new CharChange(originalLineNumber, originalStartColumn, originalLineNumber, originalEndColumn, modifiedLineNumber, modifiedStartColumn, modifiedLineNumber, modifiedEndColumn));
             }
@@ -520,6 +596,7 @@ export class DiffComputer {
 }
 function getFirstNonBlankColumn(txt: string, defaultValue: number): number {
     const r = strings.firstNonWhitespaceIndex(txt);
+
     if (r === -1) {
         return defaultValue;
     }
@@ -527,6 +604,7 @@ function getFirstNonBlankColumn(txt: string, defaultValue: number): number {
 }
 function getLastNonBlankColumn(txt: string, defaultValue: number): number {
     const r = strings.lastNonWhitespaceIndex(txt);
+
     if (r === -1) {
         return defaultValue;
     }
@@ -537,6 +615,7 @@ function createContinueProcessingPredicate(maximumRuntime: number): () => boolea
         return () => true;
     }
     const startTime = Date.now();
+
     return () => {
         return Date.now() - startTime < maximumRuntime;
     };

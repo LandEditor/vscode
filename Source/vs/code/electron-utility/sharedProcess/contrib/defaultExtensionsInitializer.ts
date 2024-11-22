@@ -34,31 +34,40 @@ export class DefaultExtensionsInitializer extends Disposable {
 
 	private async initializeDefaultExtensions(): Promise<void> {
 		const extensionsLocation = this.getDefaultExtensionVSIXsLocation();
+
 		let stat: IFileStat;
+
 		try {
 			stat = await this.fileService.resolve(extensionsLocation);
+
 			if (!stat.children) {
 				this.logService.debug('There are no default extensions to initialize', extensionsLocation.toString());
+
 				return;
 			}
 		} catch (error) {
 			if (toFileOperationResult(error) === FileOperationResult.FILE_NOT_FOUND) {
 				this.logService.debug('There are no default extensions to initialize', extensionsLocation.toString());
+
 				return;
 			}
 			this.logService.error('Error initializing extensions', error);
+
 			return;
 		}
 
 		const vsixs = stat.children.filter(child => child.name.endsWith('.vsix'));
+
 		if (vsixs.length === 0) {
 			this.logService.debug('There are no default extensions to initialize', extensionsLocation.toString());
+
 			return;
 		}
 
 		this.logService.info('Initializing default extensions', extensionsLocation.toString());
 		await Promise.all(vsixs.map(async vsix => {
 			this.logService.info('Installing default extension', vsix.resource.toString());
+
 			try {
 				await this.extensionManagementService.install(vsix.resource, { donotIncludePackAndDependencies: true, keepExisting: false });
 				this.logService.info('Default extension installed', vsix.resource.toString());

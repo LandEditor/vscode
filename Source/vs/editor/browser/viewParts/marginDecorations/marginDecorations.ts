@@ -10,6 +10,7 @@ import * as viewEvents from '../../../common/viewEvents.js';
 export class MarginViewLineDecorationsOverlay extends DedupOverlay {
     private readonly _context: ViewContext;
     private _renderResult: string[] | null;
+
     constructor(context: ViewContext) {
         super();
         this._context = context;
@@ -19,6 +20,7 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
     public override dispose(): void {
         this._context.removeEventHandler(this);
         this._renderResult = null;
+
         super.dispose();
     }
     // --- begin event handlers
@@ -49,12 +51,18 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
     // --- end event handlers
     protected _getDecorations(ctx: RenderingContext): DecorationToRender[] {
         const decorations = ctx.getDecorationsInViewport();
+
         const r: DecorationToRender[] = [];
+
         let rLen = 0;
+
         for (let i = 0, len = decorations.length; i < len; i++) {
             const d = decorations[i];
+
             const marginClassName = d.options.marginClassName;
+
             const zIndex = d.options.zIndex;
+
             if (marginClassName) {
                 r[rLen++] = new DecorationToRender(d.range.startLineNumber, d.range.endLineNumber, marginClassName, null, zIndex);
             }
@@ -63,13 +71,20 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
     }
     public prepareRender(ctx: RenderingContext): void {
         const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
+
         const visibleEndLineNumber = ctx.visibleRange.endLineNumber;
+
         const toRender = this._render(visibleStartLineNumber, visibleEndLineNumber, this._getDecorations(ctx));
+
         const output: string[] = [];
+
         for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
             const lineIndex = lineNumber - visibleStartLineNumber;
+
             const decorations = toRender[lineIndex].getDecorations();
+
             let lineOutput = '';
+
             for (const decoration of decorations) {
                 lineOutput += '<div class="cmdr ' + decoration.className + '" style=""></div>';
             }

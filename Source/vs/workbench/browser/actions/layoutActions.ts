@@ -35,22 +35,35 @@ import { IPreferencesService } from '../../services/preferences/common/preferenc
 
 // Register Icons
 const menubarIcon = registerIcon('menuBar', Codicon.layoutMenubar, localize('menuBarIcon', "Represents the menu bar"));
+
 const activityBarLeftIcon = registerIcon('activity-bar-left', Codicon.layoutActivitybarLeft, localize('activityBarLeft', "Represents the activity bar in the left position"));
+
 const activityBarRightIcon = registerIcon('activity-bar-right', Codicon.layoutActivitybarRight, localize('activityBarRight', "Represents the activity bar in the right position"));
+
 const panelLeftIcon = registerIcon('panel-left', Codicon.layoutSidebarLeft, localize('panelLeft', "Represents a side bar in the left position"));
+
 const panelLeftOffIcon = registerIcon('panel-left-off', Codicon.layoutSidebarLeftOff, localize('panelLeftOff', "Represents a side bar in the left position toggled off"));
+
 const panelRightIcon = registerIcon('panel-right', Codicon.layoutSidebarRight, localize('panelRight', "Represents side bar in the right position"));
+
 const panelRightOffIcon = registerIcon('panel-right-off', Codicon.layoutSidebarRightOff, localize('panelRightOff', "Represents side bar in the right position toggled off"));
+
 const panelIcon = registerIcon('panel-bottom', Codicon.layoutPanel, localize('panelBottom', "Represents the bottom panel"));
+
 const statusBarIcon = registerIcon('statusBar', Codicon.layoutStatusbar, localize('statusBarIcon', "Represents the status bar"));
 
 const panelAlignmentLeftIcon = registerIcon('panel-align-left', Codicon.layoutPanelLeft, localize('panelBottomLeft', "Represents the bottom panel alignment set to the left"));
+
 const panelAlignmentRightIcon = registerIcon('panel-align-right', Codicon.layoutPanelRight, localize('panelBottomRight', "Represents the bottom panel alignment set to the right"));
+
 const panelAlignmentCenterIcon = registerIcon('panel-align-center', Codicon.layoutPanelCenter, localize('panelBottomCenter', "Represents the bottom panel alignment set to the center"));
+
 const panelAlignmentJustifyIcon = registerIcon('panel-align-justify', Codicon.layoutPanelJustify, localize('panelBottomJustify', "Represents the bottom panel alignment set to justified"));
 
 const fullscreenIcon = registerIcon('fullscreen', Codicon.screenFull, localize('fullScreenIcon', "Represents full screen"));
+
 const centerLayoutIcon = registerIcon('centerLayoutIcon', Codicon.layoutCentered, localize('centerLayoutIcon', "Represents centered layout mode"));
+
 const zenModeIcon = registerIcon('zenMode', Codicon.target, localize('zenModeIcon', "Represents zen mode"));
 
 
@@ -118,9 +131,11 @@ class MoveSidebarPositionAction extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const configurationService = accessor.get(IConfigurationService);
 
 		const position = layoutService.getSideBarPosition();
+
 		if (position !== this.position) {
 			return configurationService.updateValue(sidebarPositionConfigurationKey, positionToString(this.position));
 		}
@@ -168,9 +183,11 @@ export class ToggleSidebarPositionAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const configurationService = accessor.get(IConfigurationService);
 
 		const position = layoutService.getSideBarPosition();
+
 		const newPositionValue = (position === Position.LEFT) ? 'right' : 'left';
 
 		return configurationService.updateValue(sidebarPositionConfigurationKey, newPositionValue);
@@ -433,9 +450,11 @@ export class ToggleStatusbarVisibilityAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const configurationService = accessor.get(IConfigurationService);
 
 		const visibility = layoutService.isVisible(Parts.STATUSBAR_PART, mainWindow);
+
 		const newVisibilityValue = !visibility;
 
 		return configurationService.updateValue(ToggleStatusbarVisibilityAction.statusbarVisibleKey, newVisibilityValue);
@@ -461,6 +480,7 @@ abstract class AbstractSetShowTabsAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
+
 		return configurationService.updateValue(this.settingName, this.value);
 	}
 }
@@ -473,7 +493,9 @@ export class HideEditorTabsAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${LayoutSettings.EDITOR_TABS_MODE}`, EditorTabsMode.NONE).negate(), InEditorZenModeContext.negate())!;
+
 		const title = localize2('hideEditorTabs', 'Hide Editor Tabs');
+
 		super(LayoutSettings.EDITOR_TABS_MODE, EditorTabsMode.NONE, title, HideEditorTabsAction.ID, precondition, localize2('hideEditorTabsDescription', "Hide Tab Bar"));
 	}
 }
@@ -484,7 +506,9 @@ export class ZenHideEditorTabsAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${ZenModeSettings.SHOW_TABS}`, EditorTabsMode.NONE).negate(), InEditorZenModeContext)!;
+
 		const title = localize2('hideEditorTabsZenMode', 'Hide Editor Tabs in Zen Mode');
+
 		super(ZenModeSettings.SHOW_TABS, EditorTabsMode.NONE, title, ZenHideEditorTabsAction.ID, precondition, localize2('hideEditorTabsZenModeDescription', "Hide Tab Bar in Zen Mode"));
 	}
 }
@@ -497,6 +521,7 @@ export class ShowMultipleEditorTabsAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${LayoutSettings.EDITOR_TABS_MODE}`, EditorTabsMode.MULTIPLE).negate(), InEditorZenModeContext.negate())!;
+
 		const title = localize2('showMultipleEditorTabs', 'Show Multiple Editor Tabs');
 
 		super(LayoutSettings.EDITOR_TABS_MODE, EditorTabsMode.MULTIPLE, title, ShowMultipleEditorTabsAction.ID, precondition, localize2('showMultipleEditorTabsDescription', "Show Tab Bar with multiple tabs"));
@@ -509,6 +534,7 @@ export class ZenShowMultipleEditorTabsAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${ZenModeSettings.SHOW_TABS}`, EditorTabsMode.MULTIPLE).negate(), InEditorZenModeContext)!;
+
 		const title = localize2('showMultipleEditorTabsZenMode', 'Show Multiple Editor Tabs in Zen Mode');
 
 		super(ZenModeSettings.SHOW_TABS, EditorTabsMode.MULTIPLE, title, ZenShowMultipleEditorTabsAction.ID, precondition, localize2('showMultipleEditorTabsZenModeDescription', "Show Tab Bar in Zen Mode"));
@@ -523,6 +549,7 @@ export class ShowSingleEditorTabAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${LayoutSettings.EDITOR_TABS_MODE}`, EditorTabsMode.SINGLE).negate(), InEditorZenModeContext.negate())!;
+
 		const title = localize2('showSingleEditorTab', 'Show Single Editor Tab');
 
 		super(LayoutSettings.EDITOR_TABS_MODE, EditorTabsMode.SINGLE, title, ShowSingleEditorTabAction.ID, precondition, localize2('showSingleEditorTabDescription', "Show Tab Bar with one Tab"));
@@ -535,6 +562,7 @@ export class ZenShowSingleEditorTabAction extends AbstractSetShowTabsAction {
 
 	constructor() {
 		const precondition = ContextKeyExpr.and(ContextKeyExpr.equals(`config.${ZenModeSettings.SHOW_TABS}`, EditorTabsMode.SINGLE).negate(), InEditorZenModeContext)!;
+
 		const title = localize2('showSingleEditorTabZenMode', 'Show Single Editor Tab in Zen Mode');
 
 		super(ZenModeSettings.SHOW_TABS, EditorTabsMode.SINGLE, title, ZenShowSingleEditorTabAction.ID, precondition, localize2('showSingleEditorTabZenModeDescription', "Show Tab Bar in Zen Mode with one Tab"));
@@ -585,6 +613,7 @@ export class EditorActionsTitleBarAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
+
 		return configurationService.updateValue(LayoutSettings.EDITOR_ACTIONS_LOCATION, EditorActionsLocation.TITLEBAR);
 	}
 }
@@ -612,6 +641,7 @@ export class EditorActionsDefaultAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
+
 		return configurationService.updateValue(LayoutSettings.EDITOR_ACTIONS_LOCATION, EditorActionsLocation.DEFAULT);
 	}
 }
@@ -636,6 +666,7 @@ export class HideEditorActionsAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
+
 		return configurationService.updateValue(LayoutSettings.EDITOR_ACTIONS_LOCATION, EditorActionsLocation.HIDDEN);
 	}
 }
@@ -660,6 +691,7 @@ export class ShowEditorActionsAction extends Action2 {
 
 	run(accessor: ServicesAccessor): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
+
 		return configurationService.updateValue(LayoutSettings.EDITOR_ACTIONS_LOCATION, EditorActionsLocation.DEFAULT);
 	}
 }
@@ -735,6 +767,7 @@ registerAction2(class extends Action2 {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const oldettingValue = configurationService.getValue<string>('workbench.editor.pinnedTabsOnSeparateRow');
+
 		const newSettingValue = !oldettingValue;
 
 		return configurationService.updateValue('workbench.editor.pinnedTabsOnSeparateRow', newSettingValue);
@@ -778,7 +811,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.EditorContrib - 1000,
 	handler(accessor: ServicesAccessor) {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		if (InEditorZenModeContext.getValue(contextKeyService)) {
 			layoutService.toggleZenMode();
 		}
@@ -863,12 +898,17 @@ registerAction2(class extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const viewDescriptorService = accessor.get(IViewDescriptorService);
+
 		const instantiationService = accessor.get(IInstantiationService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const paneCompositePartService = accessor.get(IPaneCompositePartService);
 
 		const focusedViewId = FocusedViewContext.getValue(contextKeyService);
+
 		let viewId: string;
 
 		if (focusedViewId && viewDescriptorService.getViewDescriptorById(focusedViewId)?.canMoveView) {
@@ -877,6 +917,7 @@ registerAction2(class extends Action2 {
 
 		try {
 			viewId = await this.getView(quickInputService, viewDescriptorService, paneCompositePartService, viewId!);
+
 			if (!viewId) {
 				return;
 			}
@@ -892,6 +933,7 @@ registerAction2(class extends Action2 {
 		const viewlets = paneCompositePartService.getVisiblePaneCompositeIds(ViewContainerLocation.Sidebar);
 		viewlets.forEach(viewletId => {
 			const container = viewDescriptorService.getViewContainerById(viewletId)!;
+
 			const containerModel = viewDescriptorService.getViewContainerModel(container);
 
 			let hasAddedView = false;
@@ -916,6 +958,7 @@ registerAction2(class extends Action2 {
 		const panels = paneCompositePartService.getPinnedPaneCompositeIds(ViewContainerLocation.Panel);
 		panels.forEach(panel => {
 			const container = viewDescriptorService.getViewContainerById(panel)!;
+
 			const containerModel = viewDescriptorService.getViewContainerModel(container);
 
 			let hasAddedView = false;
@@ -941,6 +984,7 @@ registerAction2(class extends Action2 {
 		const sidePanels = paneCompositePartService.getPinnedPaneCompositeIds(ViewContainerLocation.AuxiliaryBar);
 		sidePanels.forEach(panel => {
 			const container = viewDescriptorService.getViewContainerById(panel)!;
+
 			const containerModel = viewDescriptorService.getViewContainerModel(container);
 
 			let hasAddedView = false;
@@ -967,6 +1011,7 @@ registerAction2(class extends Action2 {
 
 	private async getView(quickInputService: IQuickInputService, viewDescriptorService: IViewDescriptorService, paneCompositePartService: IPaneCompositePartService, viewId?: string): Promise<string> {
 		const disposables = new DisposableStore();
+
 		const quickPick = disposables.add(quickInputService.createQuickPick({ useSeparators: true }));
 		quickPick.placeholder = localize('moveFocusedView.selectView', "Select a View to Move");
 		quickPick.items = this.getViewItems(viewDescriptorService, paneCompositePartService);
@@ -975,6 +1020,7 @@ registerAction2(class extends Action2 {
 		return new Promise((resolve, reject) => {
 			disposables.add(quickPick.onDidAccept(() => {
 				const viewId = quickPick.selectedItems[0];
+
 				if (viewId.id) {
 					resolve(viewId.id);
 				} else {
@@ -1010,33 +1056,45 @@ class MoveFocusedViewAction extends Action2 {
 
 	run(accessor: ServicesAccessor, viewId?: string): void {
 		const viewDescriptorService = accessor.get(IViewDescriptorService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const paneCompositePartService = accessor.get(IPaneCompositePartService);
 
 		const focusedViewId = viewId || FocusedViewContext.getValue(contextKeyService);
 
 		if (focusedViewId === undefined || focusedViewId.trim() === '') {
 			dialogService.error(localize('moveFocusedView.error.noFocusedView', "There is no view currently focused."));
+
 			return;
 		}
 
 		const viewDescriptor = viewDescriptorService.getViewDescriptorById(focusedViewId);
+
 		if (!viewDescriptor || !viewDescriptor.canMoveView) {
 			dialogService.error(localize('moveFocusedView.error.nonMovableView', "The currently focused view is not movable."));
+
 			return;
 		}
 
 		const disposables = new DisposableStore();
+
 		const quickPick = disposables.add(quickInputService.createQuickPick({ useSeparators: true }));
 		quickPick.placeholder = localize('moveFocusedView.selectDestination', "Select a Destination for the View");
 		quickPick.title = localize({ key: 'moveFocusedView.title', comment: ['{0} indicates the title of the view the user has selected to move.'] }, "View: Move {0}", viewDescriptor.name.value);
 
 		const items: Array<IQuickPickItem | IQuickPickSeparator> = [];
+
 		const currentContainer = viewDescriptorService.getViewContainerByViewId(focusedViewId)!;
+
 		const currentLocation = viewDescriptorService.getViewLocationById(focusedViewId)!;
+
 		const isViewSolo = viewDescriptorService.getViewContainerModel(currentContainer).allViewDescriptors.length === 1;
 
 		if (!(isViewSolo && currentLocation === ViewContainerLocation.Panel)) {
@@ -1169,23 +1227,29 @@ registerAction2(class extends Action2 {
 
 	run(accessor: ServicesAccessor): void {
 		const viewDescriptorService = accessor.get(IViewDescriptorService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const dialogService = accessor.get(IDialogService);
+
 		const viewsService = accessor.get(IViewsService);
 
 		const focusedViewId = FocusedViewContext.getValue(contextKeyService);
 
 		let viewDescriptor: IViewDescriptor | null = null;
+
 		if (focusedViewId !== undefined && focusedViewId.trim() !== '') {
 			viewDescriptor = viewDescriptorService.getViewDescriptorById(focusedViewId);
 		}
 
 		if (!viewDescriptor) {
 			dialogService.error(localize('resetFocusedView.error.noFocusedView', "There is no view currently focused."));
+
 			return;
 		}
 
 		const defaultContainer = viewDescriptorService.getDefaultContainerById(viewDescriptor.id);
+
 		if (!defaultContainer || defaultContainer === viewDescriptorService.getViewContainerByViewId(viewDescriptor.id)) {
 			return;
 		}
@@ -1204,10 +1268,14 @@ abstract class BaseResizeViewAction extends Action2 {
 	protected resizePart(widthChange: number, heightChange: number, layoutService: IWorkbenchLayoutService, partToResize?: Parts): void {
 
 		let part: Parts | undefined;
+
 		if (partToResize === undefined) {
 			const isEditorFocus = layoutService.hasFocus(Parts.EDITOR_PART);
+
 			const isSidebarFocus = layoutService.hasFocus(Parts.SIDEBAR_PART);
+
 			const isPanelFocus = layoutService.hasFocus(Parts.PANEL_PART);
+
 			const isAuxiliaryBarFocus = layoutService.hasFocus(Parts.AUXILIARYBAR_PART);
 
 			if (isSidebarFocus) {
@@ -1378,6 +1446,7 @@ const CreateOptionLayoutItem = (id: string, active: ContextKeyExpression, label:
 };
 
 const MenuBarToggledContext = ContextKeyExpr.and(IsMacNativeContext.toNegated(), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'hidden'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'toggle'), ContextKeyExpr.notEquals('config.window.menuBarVisibility', 'compact')) as ContextKeyExpression;
+
 const ToggleVisibilityActions: CustomizeLayoutItem[] = [];
 if (!isMacintosh || !isNative) {
 	ToggleVisibilityActions.push(CreateToggleLayoutItem('workbench.action.toggleMenuBar', MenuBarToggledContext, localize('menuBar', "Menu Bar"), menubarIcon));
@@ -1443,14 +1512,17 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 	getItems(contextKeyService: IContextKeyService, keybindingService: IKeybindingService): QuickPickItem[] {
 		const toQuickPickItem = (item: CustomizeLayoutItem): IQuickPickItem => {
 			const toggled = item.active.evaluate(contextKeyService.getContext(null));
+
 			let label = item.useButtons ?
 				item.label :
 				item.label + (toggled && item.activeIcon ? ` $(${item.activeIcon.id})` : (!toggled && item.inactiveIcon ? ` $(${item.inactiveIcon.id})` : ''));
+
 			const ariaLabel =
 				item.label + (toggled && item.activeAriaLabel ? ` (${item.activeAriaLabel})` : (!toggled && item.inactiveAriaLabel ? ` (${item.inactiveAriaLabel})` : ''));
 
 			if (item.visualIcon) {
 				let icon = item.visualIcon;
+
 				if (isContextualLayoutVisualIcon(icon)) {
 					const useIconA = icon.whenA.evaluate(contextKeyService.getContext(null));
 					icon = useIconA ? icon.iconA : icon.iconB;
@@ -1476,6 +1548,7 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 				]
 			};
 		};
+
 		return [
 			{
 				type: 'separator',
@@ -1503,13 +1576,18 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 	run(accessor: ServicesAccessor): void {
 		if (this._currentQuickPick) {
 			this._currentQuickPick.hide();
+
 			return;
 		}
 
 		const configurationService = accessor.get(IConfigurationService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const commandService = accessor.get(ICommandService);
+
 		const quickInputService = accessor.get(IQuickInputService);
+
 		const keybindingService = accessor.get(IKeybindingService);
 
 		const disposables = new DisposableStore();
@@ -1543,6 +1621,7 @@ registerAction2(class CustomizeLayoutAction extends Action2 {
 		disposables.add(contextKeyService.onDidChangeContext(changeEvent => {
 			if (changeEvent.affectsSome(LayoutContextKeySet)) {
 				quickPick.items = this.getItems(contextKeyService, keybindingService);
+
 				if (selectedItem) {
 					quickPick.activeItems = quickPick.items.filter(item => (item as CustomizeLayoutItem).id === selectedItem?.id) as IQuickPickItem[];
 				}

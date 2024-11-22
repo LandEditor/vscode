@@ -13,6 +13,7 @@ import { CellKind } from '../../../common/notebookCommon.js';
 export class CellFocusIndicator extends CellContentPart {
     public codeFocusIndicator: FastDomNode<HTMLElement>;
     public outputFocusIndicator: FastDomNode<HTMLElement>;
+
     constructor(readonly notebookEditor: INotebookEditorDelegate, readonly titleToolbar: CellTitleToolbarPart, readonly top: FastDomNode<HTMLElement>, readonly left: FastDomNode<HTMLElement>, readonly right: FastDomNode<HTMLElement>, readonly bottom: FastDomNode<HTMLElement>) {
         super();
         this.codeFocusIndicator = new FastDomNode(DOM.append(this.left.domNode, DOM.$('.codeOutput-focus-indicator-container', undefined, DOM.$('.codeOutput-focus-indicator.code-focus-indicator'))));
@@ -36,6 +37,7 @@ export class CellFocusIndicator extends CellContentPart {
                 return;
             }
             const clickedOnInput = e.offsetY < (this.currentCell.layoutInfo as CodeCellLayoutInfo).outputContainerOffset;
+
             if (clickedOnInput) {
                 this.currentCell.isInputCollapsed = !this.currentCell.isInputCollapsed;
             }
@@ -57,8 +59,11 @@ export class CellFocusIndicator extends CellContentPart {
         }
         else {
             const cell = element as CodeCellViewModel;
+
             const layoutInfo = this.notebookEditor.notebookOptions.getLayoutConfiguration();
+
             const bottomToolbarDimensions = this.notebookEditor.notebookOptions.computeBottomToolbarDimensions(this.notebookEditor.textModel?.viewType);
+
             const indicatorHeight = cell.layoutInfo.codeIndicatorHeight + cell.layoutInfo.outputIndicatorHeight + cell.layoutInfo.commentHeight;
             this.left.setHeight(indicatorHeight);
             this.right.setHeight(indicatorHeight);
@@ -75,6 +80,7 @@ export class CellFocusIndicator extends CellContentPart {
     }
     private getIndicatorTopMargin() {
         const layoutInfo = this.notebookEditor.notebookOptions.getLayoutConfiguration();
+
         if (this.titleToolbar.hasActions) {
             return layoutInfo.editorToolbarHeight + layoutInfo.cellTopMargin;
         }

@@ -11,6 +11,7 @@ import { Mimes } from '../common/mime.js';
  */
 export class DelayedDragHandler extends Disposable {
     private timeout: any;
+
     constructor(container: HTMLElement, callback: () => void) {
         super();
         this._register(addDisposableListener(container, 'dragover', e => {
@@ -68,6 +69,7 @@ export function applyDragImage(event: DragEvent, label: string | null, clazz: st
     const dragImage = document.createElement('div');
     dragImage.className = clazz;
     dragImage.textContent = label;
+
     if (foregroundColor) {
         dragImage.style.color = foregroundColor;
     }
@@ -84,5 +86,6 @@ export function applyDragImage(event: DragEvent, label: string | null, clazz: st
 }
 export interface IDragAndDropData {
     update(dataTransfer: DataTransfer): void;
+
     getData(): unknown;
 }

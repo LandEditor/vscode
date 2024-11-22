@@ -15,6 +15,7 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
     static id: string = 'workbench.notebook.viewportWarmup';
     private readonly _warmupViewport: RunOnceScheduler;
     private readonly _warmupDocument: RunOnceScheduler | null = null;
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @INotebookService
     private readonly _notebookService: INotebookService, 
@@ -33,6 +34,7 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
                 this._warmupDocument?.schedule();
             }
         }));
+
         if (this._notebookEditor.hasModel()) {
             this._warmupDocument?.schedule();
         }
@@ -41,6 +43,7 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
         if (this._notebookEditor.hasModel()) {
             for (let i = 0; i < this._notebookEditor.getLength(); i++) {
                 const cell = this._notebookEditor.cellAt(i);
+
                 if (cell?.cellKind === CellKind.Markup && cell?.getEditState() === CellEditState.Preview && !cell.isInputCollapsed) {
                     // TODO@rebornix currently we disable markdown cell rendering in webview for accessibility
                     // this._notebookEditor.createMarkupPreview(cell);
@@ -61,6 +64,7 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
         const visibleRanges = this._notebookEditor.getVisibleRangesPlusViewportAboveAndBelow();
         cellRangesToIndexes(visibleRanges).forEach(index => {
             const cell = this._notebookEditor.cellAt(index);
+
             if (cell?.cellKind === CellKind.Markup && cell?.getEditState() === CellEditState.Preview && !cell.isInputCollapsed) {
                 (this._notebookEditor as INotebookEditorDelegate).createMarkupPreview(cell);
             }
@@ -74,12 +78,15 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
             return;
         }
         const outputs = viewCell.outputsViewModels;
+
         for (const output of outputs.slice(0, outputDisplayLimit)) {
             const [mimeTypes, pick] = output.resolveMimeTypes(this._notebookEditor.textModel!, undefined);
+
             if (!mimeTypes.find(mimeType => mimeType.isTrusted) || mimeTypes.length === 0) {
                 continue;
             }
             const pickedMimeTypeRenderer = mimeTypes[pick];
+
             if (!pickedMimeTypeRenderer) {
                 return;
             }
@@ -87,6 +94,7 @@ class NotebookViewportContribution extends Disposable implements INotebookEditor
                 return;
             }
             const renderer = this._notebookService.getRendererInfo(pickedMimeTypeRenderer.rendererId);
+
             if (!renderer) {
                 return;
             }

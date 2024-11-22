@@ -88,6 +88,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 	private _diffOperationIds: number = 0;
 
 	private readonly _diffInfo = observableValue<IDocumentDiff>(this, nullDocumentDiff);
+
 	get diffInfo(): IObservable<IDocumentDiff> {
 		return this._diffInfo;
 	}
@@ -131,6 +132,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		@IFileService private readonly _fileService: IFileService,
 	) {
 		super();
+
 		if (kind === ChatEditKind.Created) {
 			this.createdInRequestId = this._telemetryInfo.requestId;
 		}
@@ -138,6 +140,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		this.doc = resourceRef.object.textEditorModel;
 
 		this.originalContent = originalContent ?? this.doc.getValue();
+
 		const docSnapshot = this.docSnapshot = this._register(
 			modelService.createModel(
 				createTextBufferFactoryFromSnapshot(originalContent ? stringToSnapshot(originalContent) : this.doc.createSnapshot()),
@@ -150,8 +153,10 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		// Create a reference to this model to avoid it being disposed from under our nose
 		(async () => {
 			const reference = await textModelService.createModelReference(docSnapshot.uri);
+
 			if (this._store.isDisposed) {
 				reference.dispose();
+
 				return;
 			}
 			this._register(reference);
@@ -181,6 +186,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 
 	createSnapshot(requestId: string | undefined): ISnapshotEntry {
 		this._isFirstEditAfterStartOrSnapshot = true;
+
 		return {
 			resource: this.modifiedURI,
 			languageId: this.modifiedModel.getLanguageId(),
@@ -223,6 +229,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 
 		if (this._isEditFromUs) {
 			const e_sum = this._edit;
+
 			const e_ai = edit;
 			this._edit = e_sum.compose(e_ai);
 
@@ -245,6 +252,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 			//
 
 			const e_ai = this._edit;
+
 			const e_user = edit;
 
 			const e_user_r = e_user.tryRebase(e_ai.inverse(this.docSnapshot.getValue()), true);
@@ -263,11 +271,14 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 
 		if (!this.isCurrentlyBeingModified.get()) {
 			const didResetToOriginalContent = this.doc.getValue() === this.originalContent;
+
 			const currentState = this._stateObs.get();
+
 			switch (currentState) {
 				case WorkingSetEntryState.Modified:
 					if (didResetToOriginalContent) {
 						this._stateObs.set(WorkingSetEntryState.Rejected, undefined);
+
 						break;
 					}
 			}
@@ -290,7 +301,9 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		// push stack element for the first edit
 		if (this._isFirstEditAfterStartOrSnapshot) {
 			this._isFirstEditAfterStartOrSnapshot = false;
+
 			const request = this._chatService.getSession(this._telemetryInfo.sessionId)?.getRequests().at(-1);
+
 			const label = request?.message.text ? localize('chatEditing1', "Chat Edit: '{0}'", request.message.text) : localize('chatEditing2', "Chat Edit");
 			this._undoRedoService.pushElement(new SingleModelEditStackElement(label, 'chat.edit', this.doc, null));
 		}
@@ -302,7 +315,9 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 			if (!isLastEdits) {
 				this._stateObs.set(WorkingSetEntryState.Modified, tx);
 				this._isCurrentlyBeingModifiedObs.set(true, tx);
+
 				const maxLineNumber = ops.reduce((max, op) => Math.max(max, op.range.endLineNumber), 0);
+
 				const lineCount = this.doc.getLineCount();
 				this._rewriteRatioObs.set(Math.min(1, maxLineNumber / lineCount), tx);
 			} else {
@@ -316,6 +331,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 	private _applyEdits(edits: ISingleEditOperation[]) {
 		// make the actual edit
 		this._isEditFromUs = true;
+
 		try {
 			this.doc.pushEditOperations(null, edits, () => null);
 		} finally {
@@ -339,6 +355,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		}
 
 		const docVersionNow = this.doc.getVersionId();
+
 		const snapshotVersionNow = this.docSnapshot.getVersionId();
 
 		const [diff] = await Promise.all([
@@ -384,11 +401,13 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 
 		this._stateObs.set(WorkingSetEntryState.Rejected, transaction);
 		this._notifyAction('rejected');
+
 		if (this.createdInRequestId === this._telemetryInfo.requestId) {
 			await this._fileService.del(this.modifiedURI);
 			this._onDidDelete.fire();
 		} else {
 			this._setDocValue(this.docSnapshot.getValue());
+
 			if (this._allEditsAreFromUs) {
 				// save the file after discarding so that the dirty indicator goes away
 				// and so that an intermediate saved state gets reverted
@@ -402,6 +421,7 @@ export class ChatEditingModifiedFileEntry extends Disposable implements IModifie
 		if (this.doc.getValue() !== value) {
 
 			this.doc.pushStackElement();
+
 			const edit = EditOperation.replace(this.doc.getFullModelRange(), value);
 
 			this._applyEdits([edit]);

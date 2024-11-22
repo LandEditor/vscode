@@ -17,6 +17,7 @@ export function getReindentEditOperations(model: ITextModel, languageConfigurati
         return [];
     }
     const indentationRulesSupport = languageConfigurationService.getLanguageConfiguration(model.getLanguageId()).indentRulesSupport;
+
     if (!indentationRulesSupport) {
         return [];
     }
@@ -33,22 +34,29 @@ export function getReindentEditOperations(model: ITextModel, languageConfigurati
         return [];
     }
     const { tabSize, indentSize, insertSpaces } = model.getOptions();
+
     const shiftIndent = (indentation: string, count?: number) => {
         count = count || 1;
+
         return ShiftCommand.shiftIndent(indentation, indentation.length + count, tabSize, indentSize, insertSpaces);
     };
+
     const unshiftIndent = (indentation: string, count?: number) => {
         count = count || 1;
+
         return ShiftCommand.unshiftIndent(indentation, indentation.length + count, tabSize, indentSize, insertSpaces);
     };
+
     const indentEdits: ISingleEditOperation[] = [];
     // indentation being passed to lines below
     // Calculate indentation for the first line
     // If there is no passed-in indentation, we use the indentation of the first line as base.
     const currentLineText = model.getLineContent(startLineNumber);
+
     let globalIndent = strings.getLeadingWhitespace(currentLineText);
     // idealIndentForNextLine doesn't equal globalIndent when there is a line matching `indentNextLinePattern`.
     let idealIndentForNextLine: string = globalIndent;
+
     if (processedIndentRulesSupport.shouldIncrease(startLineNumber)) {
         idealIndentForNextLine = shiftIndent(idealIndentForNextLine);
         globalIndent = shiftIndent(globalIndent);
@@ -63,8 +71,11 @@ export function getReindentEditOperations(model: ITextModel, languageConfigurati
             continue;
         }
         const text = model.getLineContent(lineNumber);
+
         const oldIndentation = strings.getLeadingWhitespace(text);
+
         const currentIdealIndent = idealIndentForNextLine;
+
         if (processedIndentRulesSupport.shouldDecrease(lineNumber, currentIdealIndent)) {
             idealIndentForNextLine = unshiftIndent(idealIndentForNextLine);
             globalIndent = unshiftIndent(globalIndent);
@@ -96,5 +107,6 @@ function doesLineStartWithString(model: ITextModel, lineNumber: number): boolean
         return false;
     }
     const lineTokens = model.tokenization.getLineTokens(lineNumber);
+
     return lineTokens.getStandardTokenType(0) === StandardTokenType.String;
 }

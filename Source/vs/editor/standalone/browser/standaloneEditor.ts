@@ -45,6 +45,7 @@ import { MultiDiffEditorWidget } from '../../browser/widget/multiDiffEditor/mult
  */
 export function create(domElement: HTMLElement, options?: IStandaloneEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneCodeEditor {
     const instantiationService = StandaloneServices.initialize(override || {});
+
     return instantiationService.createInstance(StandaloneEditor, domElement, options);
 }
 /**
@@ -54,6 +55,7 @@ export function create(domElement: HTMLElement, options?: IStandaloneEditorConst
  */
 export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): IDisposable {
     const codeEditorService = StandaloneServices.get(ICodeEditorService);
+
     return codeEditorService.onCodeEditorAdd((editor) => {
         listener(<ICodeEditor>editor);
     });
@@ -64,6 +66,7 @@ export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): 
  */
 export function onDidCreateDiffEditor(listener: (diffEditor: IDiffEditor) => void): IDisposable {
     const codeEditorService = StandaloneServices.get(ICodeEditorService);
+
     return codeEditorService.onDiffEditorAdd((editor) => {
         listener(<IDiffEditor>editor);
     });
@@ -73,6 +76,7 @@ export function onDidCreateDiffEditor(listener: (diffEditor: IDiffEditor) => voi
  */
 export function getEditors(): readonly ICodeEditor[] {
     const codeEditorService = StandaloneServices.get(ICodeEditorService);
+
     return codeEditorService.listCodeEditors();
 }
 /**
@@ -80,6 +84,7 @@ export function getEditors(): readonly ICodeEditor[] {
  */
 export function getDiffEditors(): readonly IDiffEditor[] {
     const codeEditorService = StandaloneServices.get(ICodeEditorService);
+
     return codeEditorService.listDiffEditors();
 }
 /**
@@ -89,10 +94,12 @@ export function getDiffEditors(): readonly IDiffEditor[] {
  */
 export function createDiffEditor(domElement: HTMLElement, options?: IStandaloneDiffEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneDiffEditor {
     const instantiationService = StandaloneServices.initialize(override || {});
+
     return instantiationService.createInstance(StandaloneDiffEditor2, domElement, options);
 }
 export function createMultiFileDiffEditor(domElement: HTMLElement, override?: IEditorOverrideServices) {
     const instantiationService = StandaloneServices.initialize(override || {});
+
     return new MultiDiffEditorWidget(domElement, {}, instantiationService);
 }
 /**
@@ -125,9 +132,11 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
         throw new Error('Invalid action descriptor, `id`, `label` and `run` are required properties!');
     }
     const precondition = ContextKeyExpr.deserialize(descriptor.precondition);
+
     const run = (accessor: ServicesAccessor, ...args: any[]): void | Promise<void> => {
         return EditorCommand.runEditorCommand(accessor, args, precondition, (accessor, editor, args) => Promise.resolve(descriptor.run(editor, ...args)));
     };
+
     const toDispose = new DisposableStore();
     // Register the command
     toDispose.add(CommandsRegistry.registerCommand(descriptor.id, run));
@@ -147,6 +156,7 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
     // Register the keybindings
     if (Array.isArray(descriptor.keybindings)) {
         const keybindingService = StandaloneServices.get(IKeybindingService);
+
         if (!(keybindingService instanceof StandaloneKeybindingService)) {
             console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
         }
@@ -183,8 +193,10 @@ export function addKeybindingRule(rule: IKeybindingRule): IDisposable {
  */
 export function addKeybindingRules(rules: IKeybindingRule[]): IDisposable {
     const keybindingService = StandaloneServices.get(IKeybindingService);
+
     if (!(keybindingService instanceof StandaloneKeybindingService)) {
         console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
+
         return Disposable.None;
     }
     return keybindingService.addDynamicKeybindings(rules.map((rule) => {
@@ -202,7 +214,9 @@ export function addKeybindingRules(rules: IKeybindingRule[]): IDisposable {
  */
 export function createModel(value: string, language?: string, uri?: URI): ITextModel {
     const languageService = StandaloneServices.get(ILanguageService);
+
     const languageId = languageService.getLanguageIdByMimeType(language) || language;
+
     return createTextModel(StandaloneServices.get(IModelService), languageService, value, languageId, uri);
 }
 /**
@@ -210,6 +224,7 @@ export function createModel(value: string, language?: string, uri?: URI): ITextM
  */
 export function setModelLanguage(model: ITextModel, mimeTypeOrLanguageId: string): void {
     const languageService = StandaloneServices.get(ILanguageService);
+
     const languageId = languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) || mimeTypeOrLanguageId || PLAINTEXT_LANGUAGE_ID;
     model.setLanguage(languageService.createById(languageId));
 }
@@ -240,6 +255,7 @@ export function getModelMarkers(filter: {
     take?: number;
 }): IMarker[] {
     const markerService = StandaloneServices.get(IMarkerService);
+
     return markerService.read(filter);
 }
 /**
@@ -248,6 +264,7 @@ export function getModelMarkers(filter: {
  */
 export function onDidChangeMarkers(listener: (e: readonly URI[]) => void): IDisposable {
     const markerService = StandaloneServices.get(IMarkerService);
+
     return markerService.onMarkerChanged(listener);
 }
 /**
@@ -255,6 +272,7 @@ export function onDidChangeMarkers(listener: (e: readonly URI[]) => void): IDisp
  */
 export function getModel(uri: URI): ITextModel | null {
     const modelService = StandaloneServices.get(IModelService);
+
     return modelService.getModel(uri);
 }
 /**
@@ -262,6 +280,7 @@ export function getModel(uri: URI): ITextModel | null {
  */
 export function getModels(): ITextModel[] {
     const modelService = StandaloneServices.get(IModelService);
+
     return modelService.getModels();
 }
 /**
@@ -270,6 +289,7 @@ export function getModels(): ITextModel[] {
  */
 export function onDidCreateModel(listener: (model: ITextModel) => void): IDisposable {
     const modelService = StandaloneServices.get(IModelService);
+
     return modelService.onModelAdded(listener);
 }
 /**
@@ -278,6 +298,7 @@ export function onDidCreateModel(listener: (model: ITextModel) => void): IDispos
  */
 export function onWillDisposeModel(listener: (model: ITextModel) => void): IDisposable {
     const modelService = StandaloneServices.get(IModelService);
+
     return modelService.onModelRemoved(listener);
 }
 /**
@@ -289,6 +310,7 @@ export function onDidChangeModelLanguage(listener: (e: {
     readonly oldLanguage: string;
 }) => void): IDisposable {
     const modelService = StandaloneServices.get(IModelService);
+
     return modelService.onModelLanguageChanged((e) => {
         listener({
             model: e.model,
@@ -308,7 +330,9 @@ export function createWebWorker<T extends object>(opts: IWebWorkerOptions): Mona
  */
 export function colorizeElement(domNode: HTMLElement, options: IColorizerElementOptions): Promise<void> {
     const languageService = StandaloneServices.get(ILanguageService);
+
     const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
+
     return Colorizer.colorizeElement(themeService, languageService, domNode, options).then(() => {
         themeService.registerEditorContainer(domNode);
     });
@@ -318,8 +342,10 @@ export function colorizeElement(domNode: HTMLElement, options: IColorizerElement
  */
 export function colorize(text: string, languageId: string, options: IColorizerOptions): Promise<string> {
     const languageService = StandaloneServices.get(ILanguageService);
+
     const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
     themeService.registerEditorContainer(mainWindow.document.body);
+
     return Colorizer.colorize(languageService, text, languageId, options);
 }
 /**
@@ -328,6 +354,7 @@ export function colorize(text: string, languageId: string, options: IColorizerOp
 export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize: number = 4): string {
     const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
     themeService.registerEditorContainer(mainWindow.document.body);
+
     return Colorizer.colorizeModelLine(model, lineNumber, tabSize);
 }
 /**
@@ -335,6 +362,7 @@ export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize
  */
 function getSafeTokenizationSupport(language: string): Omit<languages.ITokenizationSupport, 'tokenizeEncoded'> {
     const tokenizationSupport = languages.TokenizationRegistry.get(language);
+
     if (tokenizationSupport) {
         return tokenizationSupport;
     }
@@ -349,12 +377,18 @@ function getSafeTokenizationSupport(language: string): Omit<languages.ITokenizat
 export function tokenize(text: string, languageId: string): languages.Token[][] {
     // Needed in order to get the mode registered for subsequent look-ups
     languages.TokenizationRegistry.getOrCreate(languageId);
+
     const tokenizationSupport = getSafeTokenizationSupport(languageId);
+
     const lines = splitLines(text);
+
     const result: languages.Token[][] = [];
+
     let state = tokenizationSupport.getInitialState();
+
     for (let i = 0, len = lines.length; i < len; i++) {
         const line = lines[i];
+
         const tokenizationResult = tokenizationSupport.tokenize(line, true, state);
         result[i] = tokenizationResult.tokens;
         state = tokenizationResult.endState;
@@ -398,6 +432,7 @@ export interface ILinkOpener {
  */
 export function registerLinkOpener(opener: ILinkOpener): IDisposable {
     const openerService = StandaloneServices.get(IOpenerService);
+
     return openerService.registerOpener({
         async open(resource: string | URI) {
             if (typeof resource === 'string') {
@@ -431,12 +466,15 @@ export interface ICodeEditorOpener {
  */
 export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
     const codeEditorService = StandaloneServices.get(ICodeEditorService);
+
     return codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean) => {
         if (!source) {
             return null;
         }
         const selection = input.options?.selection;
+
         let selectionOrPosition: IRange | IPosition | undefined;
+
         if (selection && typeof selection.endLineNumber === 'number' && typeof selection.endColumn === 'number') {
             selectionOrPosition = <IRange>selection;
         }

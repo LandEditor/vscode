@@ -23,6 +23,7 @@ export class LanguageService extends Disposable implements ILanguageService {
     private readonly _requestedRichLanguages = new Set<string>();
     protected readonly _registry: LanguagesRegistry;
     public readonly languageIdCodec: ILanguageIdCodec;
+
     constructor(warnOnOverwrite = false) {
         super();
         LanguageService.instanceCount++;
@@ -32,6 +33,7 @@ export class LanguageService extends Disposable implements ILanguageService {
     }
     public override dispose(): void {
         LanguageService.instanceCount--;
+
         super.dispose();
     }
     public registerLanguage(def: ILanguageExtensionPoint): IDisposable {
@@ -72,6 +74,7 @@ export class LanguageService extends Disposable implements ILanguageService {
     }
     public guessLanguageIdByFilepathOrFirstLine(resource: URI | null, firstLine?: string): string | null {
         const languageIds = this._registry.guessLanguageIdByFilepathOrFirstLine(resource, firstLine);
+
         return languageIds.at(0) ?? null;
     }
     public createById(languageId: string | null | undefined): ILanguageSelection {
@@ -82,12 +85,14 @@ export class LanguageService extends Disposable implements ILanguageService {
     public createByMimeType(mimeType: string | null | undefined): ILanguageSelection {
         return new LanguageSelection(this.onDidChange, () => {
             const languageId = this.getLanguageIdByMimeType(mimeType);
+
             return this._createAndGetLanguageIdentifier(languageId);
         });
     }
     public createByFilepathOrFirstLine(resource: URI | null, firstLine?: string): ILanguageSelection {
         return new LanguageSelection(this.onDidChange, () => {
             const languageId = this.guessLanguageIdByFilepathOrFirstLine(resource, firstLine);
+
             return this._createAndGetLanguageIdentifier(languageId);
         });
     }
@@ -118,6 +123,7 @@ export class LanguageService extends Disposable implements ILanguageService {
 class LanguageSelection implements ILanguageSelection {
     private readonly _value: IObservable<string>;
     public readonly onDidChange: Event<string>;
+
     constructor(onDidChangeLanguages: Event<void>, selector: () => string) {
         this._value = observableFromEvent(this, onDidChangeLanguages, () => selector());
         this.onDidChange = Event.fromObservable(this._value);

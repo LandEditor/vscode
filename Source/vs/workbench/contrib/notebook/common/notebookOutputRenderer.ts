@@ -11,6 +11,7 @@ import { INotebookRendererInfo, ContributedNotebookRendererEntrypoint, NotebookR
 class DependencyList {
     private readonly value: ReadonlySet<string>;
     public readonly defined: boolean;
+
     constructor(value: Iterable<string>) {
         this.value = new Set(value);
         this.defined = this.value.size > 0;
@@ -34,6 +35,7 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
     readonly mimeTypes: readonly string[];
     private readonly mimeTypeGlobs: glob.ParsedPattern[];
     readonly isBuiltin: boolean;
+
     constructor(descriptor: {
         readonly id: string;
         readonly displayName: string;
@@ -48,6 +50,7 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
         this.extensionId = descriptor.extension.identifier;
         this.extensionLocation = descriptor.extension.extensionLocation;
         this.isBuiltin = descriptor.extension.isBuiltin;
+
         if (typeof descriptor.entrypoint === 'string') {
             this.entrypoint = {
                 extends: undefined,
@@ -104,6 +107,7 @@ export class NotebookStaticPreloadInfo implements INotebookStaticPreloadInfo {
     readonly entrypoint: URI;
     readonly extensionLocation: URI;
     readonly localResourceRoots: readonly URI[];
+
     constructor(descriptor: {
         readonly type: string;
         readonly entrypoint: string;

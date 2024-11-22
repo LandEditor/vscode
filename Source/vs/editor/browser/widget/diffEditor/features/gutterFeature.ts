@@ -29,7 +29,9 @@ import { DiffEditorOptions } from '../diffEditorOptions.js';
 import { DiffEditorViewModel } from '../diffEditorViewModel.js';
 import { appendRemoveOnDispose, applyStyle, prependRemoveOnDispose } from '../utils.js';
 import { EditorGutter, IGutterItemInfo, IGutterItemView } from '../utils/editorGutter.js';
+
 const emptyArr: never[] = [];
+
 const width = 35;
 export class DiffEditorGutter extends Disposable {
     private readonly _menu = this._register(this._menuService.createMenu(MenuId.DiffEditorHunkToolbar, this._contextKeyService));
@@ -38,6 +40,7 @@ export class DiffEditorGutter extends Disposable {
     private readonly _showSash = derived(this, reader => this._options.renderSideBySide.read(reader) && this._hasActions.read(reader));
     public readonly width = derived(this, reader => this._hasActions.read(reader) ? width : 0);
     private readonly elements = h('div.gutter@gutter', { style: { position: 'absolute', height: '100%', width: width + 'px' } }, []);
+
     constructor(diffEditorRoot: HTMLDivElement, private readonly _diffModel: IObservable<DiffEditorViewModel | undefined>, private readonly _editors: DiffEditorEditors, private readonly _options: DiffEditorOptions, private readonly _sashLayout: SashLayout, private readonly _boundarySashes: IObservable<IBoundarySashes | undefined, void>, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService, 
@@ -53,25 +56,32 @@ export class DiffEditorGutter extends Disposable {
         this._register(applyStyle(this.elements.root, { display: this._hasActions.map(a => a ? 'block' : 'none') }));
         derivedDisposable(this, reader => {
             const showSash = this._showSash.read(reader);
+
             return !showSash ? undefined : new DiffEditorSash(diffEditorRoot, this._sashLayout.dimensions, this._options.enableSplitViewResizing, this._boundarySashes, derivedWithSetter(this, reader => this._sashLayout.sashLeft.read(reader) - width, (v, tx) => this._sashLayout.sashLeft.set(v + width, tx)), () => this._sashLayout.resetSash());
         }).recomputeInitiallyAndOnChange(this._store);
+
         const gutterItems = derived(this, reader => {
             const model = this._diffModel.read(reader);
+
             if (!model) {
                 return [];
             }
             const diffs = model.diff.read(reader);
+
             if (!diffs) {
                 return [];
             }
             const selection = this._selectedDiffs.read(reader);
+
             if (selection.length > 0) {
                 const m = DetailedLineRangeMapping.fromRangeMappings(selection.flatMap(s => s.rangeMappings));
+
                 return [
                     new DiffGutterItem(m, true, MenuId.DiffEditorSelectionToolbar, undefined, model.model.original.uri, model.model.modified.uri)
                 ];
             }
             const currentDiff = this._currentDiff.read(reader);
+
             return diffs.mappings.map(m => new DiffGutterItem(m.lineRangeMapping.withInnerChangesFromLineRanges(), m.lineRangeMapping === currentDiff?.lineRangeMapping, MenuId.DiffEditorHunkToolbar, undefined, model.model.original.uri, model.model.modified.uri));
         });
         this._register(new EditorGutter<DiffGutterItem>(this._editors.modified, this.elements.root, {
@@ -88,19 +98,27 @@ export class DiffEditorGutter extends Disposable {
     }
     public computeStagedValue(mapping: DetailedLineRangeMapping): string {
         const c = mapping.innerChanges ?? [];
+
         const modified = new TextModelText(this._editors.modifiedModel.get()!);
+
         const original = new TextModelText(this._editors.original.getModel()!);
+
         const edit = new TextEdit(c.map(c => c.toTextEdit(modified)));
+
         const value = edit.apply(original);
+
         return value;
     }
     private readonly _currentDiff = derived(this, (reader) => {
         const model = this._diffModel.read(reader);
+
         if (!model) {
             return undefined;
         }
         const mappings = model.diff.read(reader)?.mappings;
+
         const cursorPosition = this._editors.modifiedCursor.read(reader);
+
         if (!cursorPosition) {
             return undefined;
         }
@@ -109,21 +127,26 @@ export class DiffEditorGutter extends Disposable {
     private readonly _selectedDiffs = derived(this, (reader) => {
         /** @description selectedDiffs */
         const model = this._diffModel.read(reader);
+
         const diff = model?.diff.read(reader);
         // Return `emptyArr` because it is a constant. [] is always a new array and would trigger a change.
         if (!diff) {
             return emptyArr;
         }
         const selections = this._editors.modifiedSelections.read(reader);
+
         if (selections.every(s => s.isEmpty())) {
             return emptyArr;
         }
         const selectedLineNumbers = new LineRangeSet(selections.map(s => LineRange.fromRangeInclusive(s)));
+
         const selectedMappings = diff.mappings.filter(m => m.lineRangeMapping.innerChanges && selectedLineNumbers.intersects(m.lineRangeMapping.modified));
+
         const result = selectedMappings.map(mapping => ({
             mapping,
             rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(c => selections.some(s => Range.areIntersecting(c.modifiedRange, s)))
         }));
+
         if (result.length === 0 || result.every(r => r.rangeMappings.length === 0)) {
             return emptyArr;
         }
@@ -147,10 +170,12 @@ class DiffToolBar extends Disposable implements IGutterItemView {
     private readonly _showAlways = this._item.map(this, item => item.showAlways);
     private readonly _menuId = this._item.map(this, item => item.menuId);
     private readonly _isSmall = observableValue(this, false);
+
     constructor(private readonly _item: IObservable<DiffGutterItem>, target: HTMLElement, gutter: DiffEditorGutter, 
     @IInstantiationService
     instantiationService: IInstantiationService) {
         super();
+
         const hoverDelegate = this._register(instantiationService.createInstance(WorkbenchHoverDelegate, 'element', true, { position: { hoverPosition: HoverPosition.RIGHT } }));
         this._register(appendRemoveOnDispose(target, this._elements.root));
         this._register(autorun(reader => {
@@ -158,12 +183,14 @@ class DiffToolBar extends Disposable implements IGutterItemView {
             const showAlways = this._showAlways.read(reader);
             this._elements.root.classList.toggle('noTransition', true);
             this._elements.root.classList.toggle('showAlways', showAlways);
+
             setTimeout(() => {
                 this._elements.root.classList.toggle('noTransition', false);
             }, 0);
         }));
         this._register(autorunWithStore((reader, store) => {
             this._elements.buttons.replaceChildren();
+
             const i = store.add(instantiationService.createInstance(MenuWorkbenchToolBar, this._elements.buttons, this._menuId.read(reader), {
                 orientation: ActionsOrientation.VERTICAL,
                 hoverDelegate,
@@ -174,7 +201,9 @@ class DiffToolBar extends Disposable implements IGutterItemView {
                 hiddenItemStrategy: HiddenItemStrategy.Ignore,
                 actionRunner: new ActionRunnerWithContext(() => {
                     const item = this._item.get();
+
                     const mapping = item.mapping;
+
                     return {
                         mapping,
                         originalWithModifiedChanges: gutter.computeStagedValue(mapping),
@@ -198,15 +227,22 @@ class DiffToolBar extends Disposable implements IGutterItemView {
     layout(itemRange: OffsetRange, viewRange: OffsetRange): void {
         this._lastItemRange = itemRange;
         this._lastViewRange = viewRange;
+
         let itemHeight = this._elements.buttons.clientHeight;
         this._isSmall.set(this._item.get().mapping.original.startLineNumber === 1 && itemRange.length < 30, undefined);
         // Item might have changed
         itemHeight = this._elements.buttons.clientHeight;
+
         const middleHeight = itemRange.length / 2 - itemHeight / 2;
+
         const margin = itemHeight;
+
         let effectiveCheckboxTop = itemRange.start + middleHeight;
+
         const preferredViewPortRange = OffsetRange.tryCreate(margin, viewRange.endExclusive - margin - itemHeight);
+
         const preferredParentRange = OffsetRange.tryCreate(itemRange.start + margin, itemRange.endExclusive - itemHeight - margin);
+
         if (preferredParentRange && preferredViewPortRange && preferredParentRange.start < preferredParentRange.endExclusive) {
             effectiveCheckboxTop = preferredViewPortRange!.clip(effectiveCheckboxTop);
             effectiveCheckboxTop = preferredParentRange!.clip(effectiveCheckboxTop);

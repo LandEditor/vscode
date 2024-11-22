@@ -88,6 +88,7 @@ import './mainThreadAiRelatedInformation.js';
 import './mainThreadAiEmbeddingVector.js';
 export class ExtensionPoints implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.extensionPoints';
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {

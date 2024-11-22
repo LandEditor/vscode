@@ -24,6 +24,7 @@ export class PasteImageProvider implements DocumentPasteEditProvider {
 	public readonly copyMimeTypes = ['image/*'];
 	public readonly providedPasteEditKinds = [this.kind];
 	public readonly pasteMimeTypes = ['image/*'];
+
 	constructor(
 		private readonly chatWidgetService: IChatWidgetService,
 		private readonly extensionService: IExtensionService
@@ -44,13 +45,16 @@ export class PasteImageProvider implements DocumentPasteEditProvider {
 		];
 
 		let mimeType: string | undefined;
+
 		let imageItem: IDataTransferItem | undefined;
 
 		// Find the first matching image type in the dataTransfer
 		for (const type of supportedMimeTypes) {
 			imageItem = dataTransfer.get(type);
+
 			if (imageItem) {
 				mimeType = type;
+
 				break;
 			}
 		}
@@ -59,17 +63,21 @@ export class PasteImageProvider implements DocumentPasteEditProvider {
 			return;
 		}
 		const currClipboard = await imageItem.asFile()?.data();
+
 		if (token.isCancellationRequested || !currClipboard) {
 			return;
 		}
 
 		const widget = this.chatWidgetService.getWidgetByInputUri(_model.uri);
+
 		if (!widget) {
 			return;
 		}
 
 		const attachedVariables = widget.attachmentModel.attachments;
+
 		const displayName = localize('pastedImageName', 'Pasted Image');
+
 		let tempDisplayName = displayName;
 
 		for (let appendValue = 2; attachedVariables.some(attachment => attachment.name === tempDisplayName); appendValue++) {
@@ -84,6 +92,7 @@ export class PasteImageProvider implements DocumentPasteEditProvider {
 
 		// Make sure to attach only new contexts
 		const currentContextIds = widget.attachmentModel.getAttachmentIDs();
+
 		if (currentContextIds.has(imageContext.id)) {
 			return;
 		}
@@ -96,6 +105,7 @@ export class PasteImageProvider implements DocumentPasteEditProvider {
 
 async function getImageAttachContext(data: Uint8Array, mimeType: string, token: CancellationToken, displayName: string): Promise<IChatRequestVariableEntry | undefined> {
 	const imageHash = await imageToHash(data);
+
 	if (token.isCancellationRequested) {
 		return undefined;
 	}
@@ -114,7 +124,9 @@ async function getImageAttachContext(data: Uint8Array, mimeType: string, token: 
 
 export async function imageToHash(data: Uint8Array): Promise<string> {
 	const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+
 	const hashArray = Array.from(new Uint8Array(hashBuffer));
+
 	return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 

@@ -18,6 +18,7 @@ export function startsWith(haystack: string, needle: string): boolean {
  */
 export function endsWith(haystack: string, needle: string): boolean {
     const diff = haystack.length - needle.length;
+
     if (diff > 0) {
         return haystack.lastIndexOf(needle) === diff;
     }

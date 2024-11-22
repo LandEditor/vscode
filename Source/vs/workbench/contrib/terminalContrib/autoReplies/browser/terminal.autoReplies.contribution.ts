@@ -12,12 +12,14 @@ import { TerminalAutoRepliesSettingId, type ITerminalAutoRepliesConfiguration } 
 // #region Workbench contributions
 export class TerminalAutoRepliesContribution extends Disposable implements IWorkbenchContribution {
     static ID = 'terminalAutoReplies';
+
     constructor(
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
     @ITerminalInstanceService
     terminalInstanceService: ITerminalInstanceService) {
         super();
+
         for (const backend of terminalInstanceService.getRegisteredBackends()) {
             this._installListenersOnBackend(backend);
         }
@@ -26,9 +28,11 @@ export class TerminalAutoRepliesContribution extends Disposable implements IWork
     private _installListenersOnBackend(backend: ITerminalBackend): void {
         // Listen for config changes
         const initialConfig = this._configurationService.getValue<ITerminalAutoRepliesConfiguration>(TERMINAL_CONFIG_SECTION);
+
         for (const match of Object.keys(initialConfig.autoReplies)) {
             // Ensure the reply is valid
             const reply = initialConfig.autoReplies[match] as string | null;
+
             if (reply) {
                 backend.installAutoReply(match, reply);
             }
@@ -36,10 +40,13 @@ export class TerminalAutoRepliesContribution extends Disposable implements IWork
         this._register(this._configurationService.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration(TerminalAutoRepliesSettingId.AutoReplies)) {
                 backend.uninstallAllAutoReplies();
+
                 const config = this._configurationService.getValue<ITerminalAutoRepliesConfiguration>(TERMINAL_CONFIG_SECTION);
+
                 for (const match of Object.keys(config.autoReplies)) {
                     // Ensure the reply is valid
                     const reply = config.autoReplies[match] as string | null;
+
                     if (reply) {
                         backend.installAutoReply(match, reply);
                     }

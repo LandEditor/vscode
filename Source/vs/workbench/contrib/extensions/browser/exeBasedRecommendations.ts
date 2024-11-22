@@ -9,6 +9,7 @@ import { ExtensionRecommendationReason } from '../../../services/extensionRecomm
 export class ExeBasedRecommendations extends ExtensionRecommendations {
     private _otherTips: IExecutableBasedExtensionTip[] = [];
     private _importantTips: IExecutableBasedExtensionTip[] = [];
+
     get otherRecommendations(): ReadonlyArray<ExtensionRecommendation> { return this._otherTips.map(tip => this.toExtensionRecommendation(tip)); }
     get importantRecommendations(): ReadonlyArray<ExtensionRecommendation> { return this._importantTips.map(tip => this.toExtensionRecommendation(tip)); }
     get recommendations(): ReadonlyArray<ExtensionRecommendation> { return [...this.importantRecommendations, ...this.otherRecommendations]; }
@@ -24,9 +25,11 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
         const important = this._importantTips
             .filter(tip => tip.exeName.toLowerCase() === exe.toLowerCase())
             .map(tip => this.toExtensionRecommendation(tip));
+
         const others = this._otherTips
             .filter(tip => tip.exeName.toLowerCase() === exe.toLowerCase())
             .map(tip => this.toExtensionRecommendation(tip));
+
         return { important, others };
     }
     protected async doActivate(): Promise<void> {
@@ -44,6 +47,7 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
         const importantExeBasedRecommendations = new Map<string, IExecutableBasedExtensionTip>();
         this._importantTips = await this.extensionTipsService.getImportantExecutableBasedTips();
         this._importantTips.forEach(tip => importantExeBasedRecommendations.set(tip.extensionId.toLowerCase(), tip));
+
         return importantExeBasedRecommendations;
     }
     private toExtensionRecommendation(tip: IExecutableBasedExtensionTip): ExtensionRecommendation {

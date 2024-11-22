@@ -53,6 +53,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     private hasPendingConfigurationChange: boolean | undefined;
     private lastAppliedEditorOptions?: ICodeEditorOptions;
     private readonly inputListener = this._register(new MutableDisposable());
+
     constructor(id: string, group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -86,6 +87,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     private handleConfigurationChangeEvent(e: ITextResourceConfigurationChangeEvent): void {
         const resource = this.getActiveResource();
+
         if (!this.shouldHandleConfigurationChangeEvent(e, resource)) {
             return;
         }
@@ -111,6 +113,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
         Object.assign(editorConfiguration, this.getConfigurationOverrides(configuration));
         // ARIA label
         editorConfiguration.ariaLabel = this.computeAriaLabel();
+
         return editorConfiguration;
     }
     protected computeAriaLabel(): string {
@@ -159,6 +162,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     private registerCodeEditorListeners(): void {
         const mainControl = this.getMainControl();
+
         if (mainControl) {
             this._register(mainControl.onDidChangeModelLanguage(() => this.updateEditorConfiguration()));
             this._register(mainControl.onDidChangeModel(() => this.updateEditorConfiguration()));
@@ -170,15 +174,20 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     private toEditorPaneSelectionChangeReason(e: ICursorPositionChangedEvent): EditorPaneSelectionChangeReason {
         switch (e.source) {
             case TextEditorSelectionSource.PROGRAMMATIC: return EditorPaneSelectionChangeReason.PROGRAMMATIC;
+
             case TextEditorSelectionSource.NAVIGATION: return EditorPaneSelectionChangeReason.NAVIGATION;
+
             case TextEditorSelectionSource.JUMP: return EditorPaneSelectionChangeReason.JUMP;
+
             default: return EditorPaneSelectionChangeReason.USER;
         }
     }
     getSelection(): IEditorPaneSelection | undefined {
         const mainControl = this.getMainControl();
+
         if (mainControl) {
             const selection = mainControl.getSelection();
+
             if (selection) {
                 return new TextEditorPaneSelection(selection);
             }
@@ -219,10 +228,12 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     override clearInput(): void {
         // Clear input listener
         this.inputListener.clear();
+
         super.clearInput();
     }
     getScrollPosition(): IEditorPaneScrollPosition {
         const editor = this.getMainControl();
+
         if (!editor) {
             throw new Error('Control has not yet been initialized');
         }
@@ -234,10 +245,12 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     setScrollPosition(scrollPosition: IEditorPaneScrollPosition): void {
         const editor = this.getMainControl();
+
         if (!editor) {
             throw new Error('Control has not yet been initialized');
         }
         editor.setScrollTop(scrollPosition.scrollTop);
+
         if (scrollPosition.scrollLeft) {
             editor.setScrollLeft(scrollPosition.scrollLeft);
         }
@@ -253,6 +266,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     private updateEditorConfiguration(resource = this.getActiveResource()): void {
         let configuration: IEditorConfiguration | undefined = undefined;
+
         if (resource) {
             configuration = this.textResourceConfigurationService.getValue<IEditorConfiguration>(resource);
         }
@@ -264,6 +278,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
         // We do this so that we are not overwriting some dynamic editor settings (e.g. word wrap) that might
         // have been applied to the editor directly.
         let editorSettingsToApply = editorConfiguration;
+
         if (this.lastAppliedEditorOptions) {
             editorSettingsToApply = distinct(this.lastAppliedEditorOptions, editorSettingsToApply);
         }
@@ -274,8 +289,10 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     private getActiveResource(): URI | undefined {
         const mainControl = this.getMainControl();
+
         if (mainControl) {
             const model = mainControl.getModel();
+
             if (model) {
                 return model.uri;
             }
@@ -287,6 +304,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState> extends Abs
     }
     override dispose(): void {
         this.lastAppliedEditorOptions = undefined;
+
         super.dispose();
     }
 }
@@ -298,7 +316,9 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
             return EditorPaneSelectionCompareResult.DIFFERENT;
         }
         const thisLineNumber = Math.min(this.textSelection.selectionStartLineNumber, this.textSelection.positionLineNumber);
+
         const otherLineNumber = Math.min(other.textSelection.selectionStartLineNumber, other.textSelection.positionLineNumber);
+
         if (thisLineNumber === otherLineNumber) {
             return EditorPaneSelectionCompareResult.IDENTICAL;
         }
@@ -313,6 +333,7 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
             selection: this.textSelection,
             selectionRevealType: TextEditorSelectionRevealType.CenterIfOutsideViewport
         };
+
         return textEditorOptions;
     }
     log(): string {

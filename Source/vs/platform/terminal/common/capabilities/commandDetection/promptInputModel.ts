@@ -83,14 +83,17 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 	private _lastUserInput: string = '';
 
 	private _value: string = '';
+
 	get value() { return this._value; }
 	get prefix() { return this._value.substring(0, this._cursorIndex); }
 	get suffix() { return this._value.substring(this._cursorIndex, this._ghostTextIndex === -1 ? undefined : this._ghostTextIndex); }
 
 	private _cursorIndex: number = 0;
+
 	get cursorIndex() { return this._cursorIndex; }
 
 	private _ghostTextIndex: number = -1;
+
 	get ghostTextIndex() { return this._ghostTextIndex; }
 
 	private readonly _onDidStartInput = this._register(new Emitter<IPromptInputModelState>());
@@ -154,10 +157,12 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 	getCombinedString(emptyStringWhenEmpty?: boolean): string {
 		const value = this._value.replaceAll('\n', '\u23CE');
+
 		if (this._cursorIndex === -1) {
 			return value;
 		}
 		let result = `${value.substring(0, this.cursorIndex)}|`;
+
 		if (this.ghostTextIndex !== -1) {
 			result += `${value.substring(this.cursorIndex, this.ghostTextIndex)}[`;
 			result += `${value.substring(this.ghostTextIndex)}]`;
@@ -207,6 +212,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		if (this._lastPromptLine) {
 			if (this._commandStartX !== this._lastPromptLine.length) {
 				const line = this._xterm.buffer.active.getLine(this._commandStartMarker.line);
+
 				if (line?.translateToString(true).startsWith(this._lastPromptLine)) {
 					this._commandStartX = this._lastPromptLine.length;
 					this._sync();
@@ -229,6 +235,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		}
 
 		const event = this._createStateObject();
+
 		if (this._lastUserInput === '\u0003') {
 			this._lastUserInput = '';
 			this._onDidInterrupt.fire(event);
@@ -254,22 +261,31 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		}
 
 		const commandStartY = this._commandStartMarker?.line;
+
 		if (commandStartY === undefined) {
 			return;
 		}
 
 		const buffer = this._xterm.buffer.active;
+
 		let line = buffer.getLine(commandStartY);
+
 		const commandLine = line?.translateToString(true, this._commandStartX);
+
 		if (!line || commandLine === undefined) {
 			this._logService.trace(`PromptInputModel#_sync: no line`);
+
 			return;
 		}
 
 		const absoluteCursorY = buffer.baseY + buffer.cursorY;
+
 		let value = commandLine;
+
 		let ghostTextIndex = -1;
+
 		let cursorIndex: number;
+
 		if (absoluteCursorY === commandStartY) {
 			cursorIndex = this._getRelativeCursorIndex(this._commandStartX, buffer, line);
 		} else {
@@ -286,12 +302,16 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// From command start line to cursor line
 		for (let y = commandStartY + 1; y <= absoluteCursorY; y++) {
 			line = buffer.getLine(y);
+
 			const lineText = line?.translateToString(true);
+
 			if (lineText && line) {
 				// Check if the line wrapped without a new line (continuation)
 				if (line.isWrapped) {
 					value += lineText;
+
 					const relativeCursorIndex = this._getRelativeCursorIndex(0, buffer, line);
+
 					if (absoluteCursorY === y) {
 						cursorIndex += relativeCursorIndex;
 					} else {
@@ -303,8 +323,10 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 				else if (this._continuationPrompt === undefined || this._lineContainsContinuationPrompt(lineText)) {
 					const trimmedLineText = this._trimContinuationPrompt(lineText);
 					value += `\n${trimmedLineText}`;
+
 					if (absoluteCursorY === y) {
 						const continuationCellWidth = this._getContinuationPromptCellWidth(line, lineText);
+
 						const relativeCursorIndex = this._getRelativeCursorIndex(continuationCellWidth, buffer, line);
 						cursorIndex += relativeCursorIndex + 1;
 					} else {
@@ -319,7 +341,9 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// Below cursor line
 		for (let y = absoluteCursorY + 1; y < buffer.baseY + this._xterm.rows; y++) {
 			line = buffer.getLine(y);
+
 			const lineText = line?.translateToString(true);
+
 			if (lineText && line) {
 				if (this._continuationPrompt === undefined || this._lineContainsContinuationPrompt(lineText)) {
 					value += `\n${this._trimContinuationPrompt(lineText)}`;
@@ -342,6 +366,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 			// Handle backspace key
 			if (this._lastUserInput === '\x7F') {
 				this._lastUserInput = '';
+
 				if (cursorIndex === this._cursorIndex - 1) {
 					// If trailing whitespace is being increased by removing a non-whitespace character
 					if (this._value.trimEnd().length > value.trimEnd().length && value.trimEnd().length <= cursorIndex) {
@@ -358,20 +383,25 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 			// Handle delete key
 			if (this._lastUserInput === '\x1b[3~') {
 				this._lastUserInput = '';
+
 				if (cursorIndex === this._cursorIndex) {
 					trailingWhitespace = Math.max(trailingWhitespace - 1, 0);
 				}
 			}
 
 			const valueLines = value.split('\n');
+
 			const isMultiLine = valueLines.length > 1;
+
 			const valueEndTrimmed = value.trimEnd();
+
 			if (!isMultiLine) {
 				// Adjust trimmed whitespace value based on cursor position
 				if (valueEndTrimmed.length < value.length) {
 					// Handle space key
 					if (this._lastUserInput === ' ') {
 						this._lastUserInput = '';
+
 						if (cursorIndex > valueEndTrimmed.length && cursorIndex > this._cursorIndex) {
 							trailingWhitespace++;
 						}
@@ -381,6 +411,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 				// Handle case where a non-space character is inserted in the middle of trailing whitespace
 				const charBeforeCursor = cursorIndex === 0 ? '' : value[cursorIndex - 1];
+
 				if (trailingWhitespace > 0 && cursorIndex === this._cursorIndex + 1 && this._lastUserInput !== '' && charBeforeCursor !== ' ') {
 					trailingWhitespace = this._value.length - this._cursorIndex;
 				}
@@ -388,6 +419,7 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 
 			if (isMultiLine) {
 				valueLines[valueLines.length - 1] = valueLines.at(-1)?.trimEnd() ?? '';
+
 				const continuationOffset = (valueLines.length - 1) * (this._continuationPrompt?.length ?? 0);
 				trailingWhitespace = Math.max(0, cursorIndex - value.length - continuationOffset);
 			}
@@ -414,15 +446,20 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 	private _scanForGhostText(buffer: IBuffer, line: IBufferLine, cursorIndex: number): number {
 		// Check last non-whitespace character has non-ghost text styles
 		let ghostTextIndex = -1;
+
 		let proceedWithGhostTextCheck = false;
+
 		let x = buffer.cursorX;
+
 		while (x > 0) {
 			const cell = line.getCell(--x);
+
 			if (!cell) {
 				break;
 			}
 			if (cell.getChars().trim().length > 0) {
 				proceedWithGhostTextCheck = !this._isCellStyledLikeGhostText(cell);
+
 				break;
 			}
 		}
@@ -431,14 +468,18 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		// can look like this `Get-|Ch[ildItem]`
 		if (proceedWithGhostTextCheck) {
 			let potentialGhostIndexOffset = 0;
+
 			let x = buffer.cursorX;
+
 			while (x < line.length) {
 				const cell = line.getCell(x++);
+
 				if (!cell || cell.getCode() === 0) {
 					break;
 				}
 				if (this._isCellStyledLikeGhostText(cell)) {
 					ghostTextIndex = cursorIndex + potentialGhostIndexOffset;
+
 					break;
 				}
 				potentialGhostIndexOffset += cell.getChars().length;
@@ -464,7 +505,9 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 			return 0;
 		}
 		let buffer = '';
+
 		let x = 0;
+
 		while (buffer !== this._continuationPrompt) {
 			buffer += line.getCell(x++)!.getChars();
 		}

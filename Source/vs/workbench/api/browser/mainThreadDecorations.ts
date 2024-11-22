@@ -14,20 +14,24 @@ class DecorationRequestsQueue {
     private _requests = new Map<number, DecorationRequest>();
     private _resolver = new Map<number, (data: DecorationData) => any>();
     private _timer: any;
+
     constructor(private readonly _proxy: ExtHostDecorationsShape, private readonly _handle: number) {
         //
     }
     enqueue(uri: URI, token: CancellationToken): Promise<DecorationData> {
         const id = ++this._idPool;
+
         const result = new Promise<DecorationData>(resolve => {
             this._requests.set(id, { id, uri });
             this._resolver.set(id, resolve);
             this._processQueue();
         });
+
         const sub = token.onCancellationRequested(() => {
             this._requests.delete(id);
             this._resolver.delete(id);
         });
+
         return result.finally(() => sub.dispose());
     }
     private _processQueue(): void {
@@ -38,6 +42,7 @@ class DecorationRequestsQueue {
         this._timer = setTimeout(() => {
             // make request
             const requests = this._requests;
+
             const resolver = this._resolver;
             this._proxy.$provideDecorations(this._handle, [...requests.values()], CancellationToken.None).then(data => {
                 for (const [id, resolve] of resolver) {
@@ -58,6 +63,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
         IDisposable
     ]>();
     private readonly _proxy: ExtHostDecorationsShape;
+
     constructor(context: IExtHostContext, 
     @IDecorationsService
     private readonly _decorationsService: IDecorationsService) {
@@ -69,16 +75,20 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
     }
     $registerDecorationProvider(handle: number, label: string): void {
         const emitter = new Emitter<URI[]>();
+
         const queue = new DecorationRequestsQueue(this._proxy, handle);
+
         const registration = this._decorationsService.registerDecorationsProvider({
             label,
             onDidChange: emitter.event,
             provideDecorations: async (uri, token): Promise<IDecorationData | undefined> => {
                 const data = await queue.enqueue(uri, token);
+
                 if (!data) {
                     return undefined;
                 }
                 const [bubble, tooltip, letter, themeColor] = data;
+
                 return {
                     weight: 10,
                     bubble: bubble ?? false,
@@ -92,6 +102,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
     }
     $onDidChange(handle: number, resources: UriComponents[]): void {
         const provider = this._provider.get(handle);
+
         if (provider) {
             const [emitter] = provider;
             emitter.fire(resources && resources.map(r => URI.revive(r)));
@@ -99,6 +110,7 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
     }
     $unregisterDecorationProvider(handle: number): void {
         const provider = this._provider.get(handle);
+
         if (provider) {
             dispose(provider);
             this._provider.delete(handle);

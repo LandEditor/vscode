@@ -39,6 +39,7 @@ import { IRemoteAgentService } from '../../../services/remote/common/remoteAgent
 import { shouldUseEnvironmentVariableCollection } from '../../../../platform/terminal/common/terminalEnvironment.js';
 export class LocalTerminalBackendContribution implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.localTerminalBackend';
+
     constructor(
     @IInstantiationService
     instantiationService: IInstantiationService, 
@@ -61,6 +62,7 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
      */
     private get _proxy(): IPtyService { return this._directProxy || this._localPtyService; }
     private readonly _whenReady = new DeferredPromise<void>();
+
     get whenReady(): Promise<void> { return this._whenReady.p; }
     setReady(): void { this._whenReady.complete(); }
     private readonly _onDidRequestDetach = this._register(new Emitter<{
@@ -69,6 +71,7 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
         instanceId: number;
     }>());
     readonly onDidRequestDetach = this._onDidRequestDetach.event;
+
     constructor(
     @IWorkspaceContextService
     workspaceContextService: IWorkspaceContextService, 
@@ -118,11 +121,14 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
         // Check if connecting is in progress
         if (this._directProxyClientEventually) {
             await this._directProxyClientEventually.p;
+
             return;
         }
         this._logService.debug('Starting pty host');
+
         const directProxyClientEventually = new DeferredPromise<MessagePortClient>();
         this._directProxyClientEventually = directProxyClientEventually;
+
         const directProxy = ProxyChannel.toService<IPtyService>(getDelayedChannel(this._directProxyClientEventually.p.then(client => client.getChannel(TerminalIpcChannels.PtyHostWindow))));
         this._directProxy = directProxy;
         // The pty host should not get launched until at least the window restored phase
@@ -147,6 +153,7 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
             directProxy.onDidChangeProperty(e => this._ptys.get(e.id)?.handleDidChangeProperty(e.property));
             directProxy.onProcessExit(e => {
                 const pty = this._ptys.get(e.id);
+
                 if (pty) {
                     pty.handleExit(e.event);
                     this._ptys.delete(e.id);
@@ -166,12 +173,14 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     async acceptDetachInstanceReply(requestId: number, persistentProcessId?: number): Promise<void> {
         if (!persistentProcessId) {
             this._logService.warn('Cannot attach to feature terminals, custom pty terminals, or those without a persistentProcessId');
+
             return;
         }
         return this._proxy.acceptDetachInstanceReply(requestId, persistentProcessId);
     }
     async persistTerminalState(): Promise<void> {
         const ids = Array.from(this._ptys.keys());
+
         const serialized = await this._proxy.serializeTerminalState(ids);
         this._storageService.store(TerminalStorageKeys.TerminalBufferState, serialized, StorageScope.WORKSPACE, StorageTarget.MACHINE);
     }
@@ -194,18 +203,25 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     }
     async createProcess(shellLaunchConfig: IShellLaunchConfig, cwd: string, cols: number, rows: number, unicodeVersion: '6' | '11', env: IProcessEnvironment, options: ITerminalProcessOptions, shouldPersist: boolean): Promise<ITerminalChildProcess> {
         await this._connectToDirectProxy();
+
         const executableEnv = await this._shellEnvironmentService.getShellEnv();
+
         const id = await this._proxy.createProcess(shellLaunchConfig, cwd, cols, rows, unicodeVersion, env, executableEnv, options, shouldPersist, this._getWorkspaceId(), this._getWorkspaceName());
+
         const pty = new LocalPty(id, shouldPersist, this._proxy);
         this._ptys.set(id, pty);
+
         return pty;
     }
     async attachToProcess(id: number): Promise<ITerminalChildProcess | undefined> {
         await this._connectToDirectProxy();
+
         try {
             await this._proxy.attachToProcess(id);
+
             const pty = new LocalPty(id, true, this._proxy);
             this._ptys.set(id, pty);
+
             return pty;
         }
         catch (e) {
@@ -215,8 +231,10 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     }
     async attachToRevivedProcess(id: number): Promise<ITerminalChildProcess | undefined> {
         await this._connectToDirectProxy();
+
         try {
             const newId = await this._proxy.getRevivedPtyNewId(this._getWorkspaceId(), id) ?? id;
+
             return await this.attachToProcess(newId);
         }
         catch (e) {
@@ -226,11 +244,14 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     }
     async listProcesses(): Promise<IProcessDetails[]> {
         await this._connectToDirectProxy();
+
         return this._proxy.listProcesses();
     }
     async getLatency(): Promise<IPtyHostLatencyMeasurement[]> {
         const measurements: IPtyHostLatencyMeasurement[] = [];
+
         const sw = new StopWatch();
+
         if (this._directProxy) {
             await this._directProxy.getLatency();
             sw.stop();
@@ -246,6 +267,7 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
             label: 'window<->ptyhostservice<->ptyhost',
             latency: sw.elapsed()
         });
+
         return [
             ...measurements,
             ...results
@@ -286,15 +308,20 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     }
     async getTerminalLayoutInfo(): Promise<ITerminalsLayoutInfo | undefined> {
         const workspaceId = this._getWorkspaceId();
+
         const layoutArgs: IGetTerminalLayoutInfoArgs = { workspaceId };
         // Revive processes if needed
         const serializedState = this._storageService.get(TerminalStorageKeys.TerminalBufferState, StorageScope.WORKSPACE);
+
         const reviveBufferState = this._deserializeTerminalState(serializedState);
+
         if (reviveBufferState && reviveBufferState.length > 0) {
             try {
                 // Create variable resolver
                 const activeWorkspaceRootUri = this._historyService.getLastActiveWorkspaceRoot();
+
                 const lastActiveWorkspace = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+
                 const variableResolver = terminalEnvironment.createVariableResolver(lastActiveWorkspace, await this._terminalProfileResolverService.getEnvironment(this.remoteAuthority), this._configurationResolverService);
                 // Re-resolve the environments and replace it on the state so local terminals use a fresh
                 // environment
@@ -313,6 +340,7 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
                 // If reviving processes, send the terminal layout info back to the pty host as it
                 // will not have been persisted on application exit
                 const layoutInfo = this._storageService.get(TerminalStorageKeys.TerminalLayoutInfo, StorageScope.WORKSPACE);
+
                 if (layoutInfo) {
                     mark('code/terminal/willSetTerminalLayoutInfo');
                     await this._proxy.setTerminalLayoutInfo(JSON.parse(layoutInfo));
@@ -328,9 +356,13 @@ class LocalTerminalBackend extends BaseTerminalBackend implements ITerminalBacke
     }
     private async _resolveEnvironmentForRevive(variableResolver: terminalEnvironment.VariableResolver | undefined, shellLaunchConfig: IShellLaunchConfig): Promise<IProcessEnvironment> {
         const platformKey = isWindows ? 'windows' : (isMacintosh ? 'osx' : 'linux');
+
         const envFromConfigValue = this._configurationService.getValue<ITerminalEnvironment | undefined>(`terminal.integrated.env.${platformKey}`);
+
         const baseEnv = await (shellLaunchConfig.useShellEnvironment ? this.getShellEnvironment() : this.getEnvironment());
+
         const env = await terminalEnvironment.createTerminalEnvironment(shellLaunchConfig, envFromConfigValue, variableResolver, this._productService.version, this._configurationService.getValue(TerminalSettingId.DetectLocale), baseEnv);
+
         if (shouldUseEnvironmentVariableCollection(shellLaunchConfig)) {
             const workspaceFolder = terminalEnvironment.getWorkspaceForTerminal(shellLaunchConfig.cwd, this._workspaceContextService, this._historyService);
             await this._environmentVariableService.mergedCollection.applyToProcessEnvironment(env, { workspaceFolder }, variableResolver);

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { WebviewStyles } from '../../../../webview/browser/webview.js';
+
 const mapping: ReadonlyMap<string, string> = new Map([
     ['theme-font-family', 'vscode-font-family'],
     ['theme-font-weight', 'vscode-font-weight'],
@@ -60,6 +61,7 @@ const mapping: ReadonlyMap<string, string> = new Map([
     ['theme-notebook-diff-removed-background', 'vscode-diffEditor-removedTextBackground'],
     ['theme-notebook-diff-inserted-background', 'vscode-diffEditor-insertedTextBackground'],
 ]);
+
 const constants: Readonly<WebviewStyles> = {
     'theme-input-border-width': '1px',
     'theme-button-primary-hover-shadow': 'none',
@@ -74,6 +76,7 @@ const constants: Readonly<WebviewStyles> = {
  */
 export const transformWebviewThemeVars = (s: Readonly<WebviewStyles>): WebviewStyles => {
     const result = { ...s, ...constants };
+
     for (const [target, src] of mapping) {
         result[target] = s[src];
     }

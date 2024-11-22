@@ -52,9 +52,11 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
     private readonly universalWatchRequestDelayer = this._register(new ThrottledDelayer<void>(0));
     private watchUniversal(resource: URI, opts: IWatchOptions): IDisposable {
         const request = this.toWatchRequest(resource, opts);
+
         const remove = insert(this.universalWatchRequests, request);
         // Trigger update
         this.refreshUniversalWatchers();
+
         return toDisposable(() => {
             // Remove from list of paths to watch universally
             remove();
@@ -71,9 +73,11 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
             filter: opts.filter,
             correlationId: opts.correlationId
         };
+
         if (isRecursiveWatchRequest(request)) {
             // Adjust for polling
             const usePolling = this.options?.watcher?.recursive?.usePolling;
+
             if (usePolling === true) {
                 request.pollingInterval = this.options?.watcher?.recursive?.pollingInterval ?? 5000;
             }
@@ -120,9 +124,11 @@ export abstract class AbstractDiskFileSystemProvider extends Disposable implemen
             filter: opts.filter,
             correlationId: opts.correlationId
         };
+
         const remove = insert(this.nonRecursiveWatchRequests, request);
         // Trigger update
         this.refreshNonRecursiveWatchers();
+
         return toDisposable(() => {
             // Remove from list of paths to watch non-recursively
             remove();

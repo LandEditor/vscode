@@ -130,6 +130,7 @@ export class ActivitybarPart extends Part {
 		super.updateStyles();
 
 		const container = assertIsDefined(this.getContainer());
+
 		const background = this.getColor(ACTIVITY_BAR_BACKGROUND) || '';
 		container.style.backgroundColor = background;
 
@@ -244,6 +245,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 	private fillContextMenuActions(actions: IAction[], e?: MouseEvent | GestureEvent) {
 		// Menu
 		const menuBarVisibility = getMenuBarVisibility(this.configurationService);
+
 		if (menuBarVisibility === 'compact' || menuBarVisibility === 'hidden' || menuBarVisibility === 'toggle') {
 			actions.unshift(...[toAction({ id: 'toggleMenuVisibility', label: localize('menu', "Menu"), checked: menuBarVisibility === 'compact', run: () => this.configurationService.updateValue('window.menuBarVisibility', menuBarVisibility === 'compact' ? 'toggle' : 'compact') }), new Separator()]);
 		}
@@ -299,6 +301,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		if (this.menuBarContainer) {
 			this.keyboardNavigationDisposables.add(addDisposableListener(this.menuBarContainer, EventType.KEY_DOWN, e => {
 				const kbEvent = new StandardKeyboardEvent(e);
+
 				if (kbEvent.equals(KeyCode.DownArrow) || kbEvent.equals(KeyCode.RightArrow)) {
 					this.focus();
 				}
@@ -309,6 +312,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		if (this.compositeBarContainer) {
 			this.keyboardNavigationDisposables.add(addDisposableListener(this.compositeBarContainer, EventType.KEY_DOWN, e => {
 				const kbEvent = new StandardKeyboardEvent(e);
+
 				if (kbEvent.equals(KeyCode.DownArrow) || kbEvent.equals(KeyCode.RightArrow)) {
 					this.globalCompositeBar?.focus();
 				} else if (kbEvent.equals(KeyCode.UpArrow) || kbEvent.equals(KeyCode.LeftArrow)) {
@@ -321,6 +325,7 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 		if (this.globalCompositeBar) {
 			this.keyboardNavigationDisposables.add(addDisposableListener(this.globalCompositeBar.element, EventType.KEY_DOWN, e => {
 				const kbEvent = new StandardKeyboardEvent(e);
+
 				if (kbEvent.equals(KeyCode.UpArrow) || kbEvent.equals(KeyCode.LeftArrow)) {
 					this.focus(this.getVisiblePaneCompositeIds().length - 1);
 				}
@@ -370,7 +375,9 @@ export class ActivityBarCompositeBar extends PaneCompositeBar {
 
 	getActivityBarContextMenuActions(): IAction[] {
 		const activityBarPositionMenu = this.menuService.getMenuActions(MenuId.ActivityBarPositionMenu, this.contextKeyService, { shouldForwardArgs: true, renderShortTitle: true });
+
 		const positionActions = getContextMenuActions(activityBarPositionMenu).secondary;
+
 		return [
 			new SubmenuAction('workbench.action.panel.position', localize('activity bar position', "Activity Bar Position"), positionActions),
 			toAction({ id: ToggleSidebarPositionAction.ID, label: ToggleSidebarPositionAction.getLabel(this.layoutService), run: () => this.instantiationService.invokeFunction(accessor => new ToggleSidebarPositionAction().run(accessor)) })
@@ -548,6 +555,7 @@ registerAction2(
 registerThemingParticipant((theme, collector) => {
 
 	const activityBarActiveBorderColor = theme.getColor(ACTIVITY_BAR_ACTIVE_BORDER);
+
 	if (activityBarActiveBorderColor) {
 		collector.addRule(`
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked .active-item-indicator:before {
@@ -557,6 +565,7 @@ registerThemingParticipant((theme, collector) => {
 	}
 
 	const activityBarActiveFocusBorderColor = theme.getColor(ACTIVITY_BAR_ACTIVE_FOCUS_BORDER);
+
 	if (activityBarActiveFocusBorderColor) {
 		collector.addRule(`
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked:focus::before {
@@ -571,6 +580,7 @@ registerThemingParticipant((theme, collector) => {
 	}
 
 	const activityBarActiveBackgroundColor = theme.getColor(ACTIVITY_BAR_ACTIVE_BACKGROUND);
+
 	if (activityBarActiveBackgroundColor) {
 		collector.addRule(`
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item.checked .active-item-indicator {
@@ -582,6 +592,7 @@ registerThemingParticipant((theme, collector) => {
 
 	// Styling with Outline color (e.g. high contrast theme)
 	const outline = theme.getColor(activeContrastBorder);
+
 	if (outline) {
 		collector.addRule(`
 			.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item .action-label::before{
@@ -608,6 +619,7 @@ registerThemingParticipant((theme, collector) => {
 	// Styling without outline color
 	else {
 		const focusBorderColor = theme.getColor(focusBorder);
+
 		if (focusBorderColor) {
 			collector.addRule(`
 				.monaco-workbench .activitybar > .content :not(.monaco-menu) > .monaco-action-bar .action-item:focus .active-item-indicator::before {

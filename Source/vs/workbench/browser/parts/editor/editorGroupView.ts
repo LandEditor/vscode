@@ -250,27 +250,43 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private handleGroupContextKeys(): void {
 		const groupActiveEditorDirtyContext = this.editorPartsView.bind(ActiveEditorDirtyContext, this);
+
 		const groupActiveEditorPinnedContext = this.editorPartsView.bind(ActiveEditorPinnedContext, this);
+
 		const groupActiveEditorFirstContext = this.editorPartsView.bind(ActiveEditorFirstInGroupContext, this);
+
 		const groupActiveEditorLastContext = this.editorPartsView.bind(ActiveEditorLastInGroupContext, this);
+
 		const groupActiveEditorStickyContext = this.editorPartsView.bind(ActiveEditorStickyContext, this);
+
 		const groupEditorsCountContext = this.editorPartsView.bind(EditorGroupEditorsCountContext, this);
+
 		const groupLockedContext = this.editorPartsView.bind(ActiveEditorGroupLockedContext, this);
 
 		const multipleEditorsSelectedContext = MultipleEditorsSelectedInGroupContext.bindTo(this.scopedContextKeyService);
+
 		const twoEditorsSelectedContext = TwoEditorsSelectedInGroupContext.bindTo(this.scopedContextKeyService);
+
 		const selectedEditorsHaveFileOrUntitledResourceContext = SelectedEditorsInGroupFileOrUntitledResourceContextKey.bindTo(this.scopedContextKeyService);
 
 		const groupActiveEditorContext = this.editorPartsView.bind(ActiveEditorContext, this);
+
 		const groupActiveEditorIsReadonly = this.editorPartsView.bind(ActiveEditorReadonlyContext, this);
+
 		const groupActiveEditorCanRevert = this.editorPartsView.bind(ActiveEditorCanRevertContext, this);
+
 		const groupActiveEditorCanToggleReadonly = this.editorPartsView.bind(ActiveEditorCanToggleReadonlyContext, this);
+
 		const groupActiveCompareEditorCanSwap = this.editorPartsView.bind(ActiveCompareEditorCanSwapContext, this);
+
 		const groupTextCompareEditorVisibleContext = this.editorPartsView.bind(TextCompareEditorVisibleContext, this);
+
 		const groupTextCompareEditorActiveContext = this.editorPartsView.bind(TextCompareEditorActiveContext, this);
 
 		const groupActiveEditorAvailableEditorIds = this.editorPartsView.bind(ActiveEditorAvailableEditorIdsContext, this);
+
 		const groupActiveEditorCanSplitInGroupContext = this.editorPartsView.bind(ActiveEditorCanSplitInGroupContext, this);
+
 		const groupActiveEditorIsSideBySideEditorContext = this.editorPartsView.bind(SideBySideEditorActiveContext, this);
 
 		const activeEditorListener = this._register(new MutableDisposable());
@@ -280,6 +296,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 			this.scopedContextKeyService.bufferChangeEvents(() => {
 				const activeEditor = this.activeEditor;
+
 				const activeEditorPane = this.activeEditorPane;
 
 				this.resourceContext.set(EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY }));
@@ -306,6 +323,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 					groupActiveEditorIsReadonly.set(!!activeEditorPane.input.isReadonly());
 
 					const primaryEditorResource = EditorResourceAccessor.getOriginalUri(activeEditorPane.input, { supportSideBySide: SideBySideEditor.PRIMARY });
+
 					const secondaryEditorResource = EditorResourceAccessor.getOriginalUri(activeEditorPane.input, { supportSideBySide: SideBySideEditor.SECONDARY });
 					groupActiveCompareEditorCanSwap.set(activeEditorPane.input instanceof DiffEditorInput && !activeEditorPane.input.original.isReadonly() && !!primaryEditorResource && (this.fileService.hasProvider(primaryEditorResource) || primaryEditorResource.scheme === Schemas.untitled) && !!secondaryEditorResource && (this.fileService.hasProvider(secondaryEditorResource) || secondaryEditorResource.scheme === Schemas.untitled));
 					groupActiveEditorCanToggleReadonly.set(!!primaryEditorResource && this.fileService.hasProvider(primaryEditorResource) && !this.fileService.hasCapability(primaryEditorResource, FileSystemProviderCapabilities.Readonly));
@@ -328,35 +346,45 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			switch (e.kind) {
 				case GroupModelChangeKind.GROUP_LOCKED:
 					groupLockedContext.set(this.isLocked);
+
 					break;
+
 				case GroupModelChangeKind.EDITOR_ACTIVE:
 					groupActiveEditorFirstContext.set(this.model.isFirst(this.model.activeEditor));
 					groupActiveEditorLastContext.set(this.model.isLast(this.model.activeEditor));
 					groupActiveEditorPinnedContext.set(this.model.activeEditor ? this.model.isPinned(this.model.activeEditor) : false);
 					groupActiveEditorStickyContext.set(this.model.activeEditor ? this.model.isSticky(this.model.activeEditor) : false);
+
 					break;
+
 				case GroupModelChangeKind.EDITOR_CLOSE:
 					groupActiveEditorPinnedContext.set(this.model.activeEditor ? this.model.isPinned(this.model.activeEditor) : false);
 					groupActiveEditorStickyContext.set(this.model.activeEditor ? this.model.isSticky(this.model.activeEditor) : false);
+
 				case GroupModelChangeKind.EDITOR_OPEN:
 				case GroupModelChangeKind.EDITOR_MOVE:
 					groupActiveEditorFirstContext.set(this.model.isFirst(this.model.activeEditor));
 					groupActiveEditorLastContext.set(this.model.isLast(this.model.activeEditor));
+
 					break;
+
 				case GroupModelChangeKind.EDITOR_PIN:
 					if (e.editor && e.editor === this.model.activeEditor) {
 						groupActiveEditorPinnedContext.set(this.model.isPinned(this.model.activeEditor));
 					}
 					break;
+
 				case GroupModelChangeKind.EDITOR_STICKY:
 					if (e.editor && e.editor === this.model.activeEditor) {
 						groupActiveEditorStickyContext.set(this.model.isSticky(this.model.activeEditor));
 					}
 					break;
+
 				case GroupModelChangeKind.EDITORS_SELECTION:
 					multipleEditorsSelectedContext.set(this.model.selectedEditors.length > 1);
 					twoEditorsSelectedContext.set(this.model.selectedEditors.length === 2);
 					selectedEditorsHaveFileOrUntitledResourceContext.set(this.model.selectedEditors.every(e => e.resource && (this.fileService.hasProvider(e.resource) || e.resource.scheme === Schemas.untitled)));
+
 					break;
 			}
 
@@ -418,6 +446,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Toolbar actions
 		const containerToolbarMenu = this._register(this.menuService.createMenu(MenuId.EmptyEditorGroup, this.scopedContextKeyService));
+
 		const updateContainerToolbar = () => {
 
 			// Clear old actions
@@ -450,6 +479,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Find target anchor
 		let anchor: HTMLElement | StandardMouseEvent = this.element;
+
 		if (e) {
 			anchor = new StandardMouseEvent(getWindow(this.element), e);
 		}
@@ -478,6 +508,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// Title Container
 		const handleTitleClickOrTouch = (e: MouseEvent | GestureEvent): void => {
 			let target: HTMLElement;
+
 			if (isMouseEvent(e)) {
 				if (e.button !== 0 /* middle/right mouse button */ || (isMacintosh && e.ctrlKey /* macOS context menu */)) {
 					return undefined;
@@ -541,6 +572,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Determine editor options
 		let options: IEditorOptions;
+
 		if (from instanceof EditorGroupView) {
 			options = fillActiveEditorViewState(from); // if we copy from another group, ensure to copy its active editor viewstate
 		} else {
@@ -548,6 +580,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		}
 
 		const activeEditor = this.model.activeEditor;
+
 		if (!activeEditor) {
 			return;
 		}
@@ -610,9 +643,12 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		switch (e.kind) {
 			case GroupModelChangeKind.GROUP_LOCKED:
 				this.element.classList.toggle('locked', this.isLocked);
+
 				break;
+
 			case GroupModelChangeKind.EDITORS_SELECTION:
 				this.onDidChangeEditorSelection();
+
 				break;
 		}
 
@@ -626,22 +662,31 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 					this.onDidOpenEditor(e.editor, e.editorIndex);
 				}
 				break;
+
 			case GroupModelChangeKind.EDITOR_CLOSE:
 				if (isGroupEditorCloseEvent(e)) {
 					this.handleOnDidCloseEditor(e.editor, e.editorIndex, e.context, e.sticky);
 				}
 				break;
+
 			case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
 				this.onWillDisposeEditor(e.editor);
+
 				break;
+
 			case GroupModelChangeKind.EDITOR_DIRTY:
 				this.onDidChangeEditorDirty(e.editor);
+
 				break;
+
 			case GroupModelChangeKind.EDITOR_TRANSIENT:
 				this.onDidChangeEditorTransient(e.editor);
+
 				break;
+
 			case GroupModelChangeKind.EDITOR_LABEL:
 				this.onDidChangeEditorLabel(e.editor);
+
 				break;
 		}
 	}
@@ -721,12 +766,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		}
 
 		const path = resource ? resource.scheme === Schemas.file ? resource.fsPath : resource.path : undefined;
+
 		if (!path) {
 			return undefined;
 		}
 
 		// Remove query parameters from the resource extension
 		let resourceExt = extname(resource);
+
 		const queryStringLocation = resourceExt.indexOf('?');
 		resourceExt = queryStringLocation !== -1 ? resourceExt.substr(0, queryStringLocation) : resourceExt;
 
@@ -742,6 +789,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		const descriptor = editor.getTelemetryDescriptor();
 
 		const resource = EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.BOTH });
+
 		if (URI.isUri(resource)) {
 			descriptor['resource'] = this.toResourceTelemetryDescriptor(resource);
 
@@ -782,14 +830,18 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Split between visible and hidden editors
 		let activeEditor: EditorInput | undefined;
+
 		const inactiveEditors: EditorInput[] = [];
+
 		for (const disposedEditor of disposedEditors) {
 			const editorFindResult = this.model.findEditor(disposedEditor);
+
 			if (!editorFindResult) {
 				continue; // not part of the model anymore
 			}
 
 			const editor = editorFindResult[0];
+
 			if (!editor.isDisposed()) {
 				continue; // editor got reopened meanwhile
 			}
@@ -922,6 +974,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 	}
 
 	private _disposed = false;
+
 	get disposed(): boolean {
 		return this._disposed;
 	}
@@ -1051,6 +1104,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	findEditors(resource: URI, options?: IFindEditorOptions): EditorInput[] {
 		const canonicalResource = this.uriIdentityService.asCanonicalUri(resource);
+
 		return this.getEditors(EditorsOrder.SEQUENTIAL).filter(editor => {
 			if (editor.resource && isEqual(editor.resource, canonicalResource)) {
 				return true;
@@ -1059,6 +1113,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// Support side by side editor primary side if specified
 			if (options?.supportSideBySide === SideBySideEditor.PRIMARY || options?.supportSideBySide === SideBySideEditor.ANY) {
 				const primaryResource = EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
 				if (primaryResource && isEqual(primaryResource, canonicalResource)) {
 					return true;
 				}
@@ -1067,6 +1122,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// Support side by side editor secondary side if specified
 			if (options?.supportSideBySide === SideBySideEditor.SECONDARY || options?.supportSideBySide === SideBySideEditor.ANY) {
 				const secondaryResource = EditorResourceAccessor.getCanonicalUri(editor, { supportSideBySide: SideBySideEditor.SECONDARY });
+
 				if (secondaryResource && isEqual(secondaryResource, canonicalResource)) {
 					return true;
 				}
@@ -1132,6 +1188,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 			// Update model
 			const editor = sticky ? this.model.stick(candidate) : this.model.unstick(candidate);
+
 			if (!editor) {
 				return;
 			}
@@ -1139,6 +1196,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// If the index of the editor changed, we need to forward this to
 			// title control and also make sure to emit this as an event
 			const newIndexOfEditor = this.getIndexOfEditor(editor);
+
 			if (newIndexOfEditor !== oldIndexOfEditor) {
 				this.titleControl.moveEditor(editor, oldIndexOfEditor, newIndexOfEditor, true);
 			}
@@ -1186,6 +1244,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			|| (options?.pinned ?? typeof options?.index === 'number' /* unless specified, prefer to pin when opening with index */)
 			|| (typeof options?.index === 'number' && this.model.isSticky(options.index))
 			|| editor.hasCapability(EditorInputCapabilities.Scratchpad);
+
 		const openEditorOptions: IEditorOpenOptions = {
 			index: options ? options.index : undefined,
 			pinned,
@@ -1204,6 +1263,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		}
 
 		let activateGroup = false;
+
 		let restoreGroup = false;
 
 		if (options?.activation === EditorActivation.ACTIVATE) {
@@ -1230,6 +1290,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// ensures the right set of events are fired to the outside.
 		if (typeof openEditorOptions.index === 'number') {
 			const indexOfEditor = this.model.indexOf(editor);
+
 			if (indexOfEditor !== -1 && indexOfEditor !== openEditorOptions.index) {
 				this.doMoveEditorInsideGroup(editor, openEditorOptions);
 			}
@@ -1269,6 +1330,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Show in editor control if the active editor changed
 		let openEditorPromise: Promise<IEditorPane | undefined>;
+
 		if (context.active) {
 			openEditorPromise = (async () => {
 				const { pane, changed, cancelled, error } = await this.editorPane.openEditor(editor, options, internalOptions, { newInGroup: context.isNew });
@@ -1322,6 +1384,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Use the first editor as active editor
 		const firstEditor = editorsToOpen.at(0);
+
 		if (!firstEditor) {
 			return;
 		}
@@ -1337,6 +1400,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Open the other ones inactive
 		const inactiveEditors = editorsToOpen.slice(1);
+
 		const startingIndex = this.getIndexOfEditor(firstEditor.editor) + 1;
 		await Promises.settled(inactiveEditors.map(({ editor, options }, index) => {
 			return this.doOpenEditor(editor, {
@@ -1379,6 +1443,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		let moveFailed = false;
 
 		const movedEditors = new Set<EditorInput>();
+
 		for (const { editor, options } of editors) {
 			if (this.moveEditor(editor, target, options, internalOptions)) {
 				movedEditors.add(editor);
@@ -1402,6 +1467,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// Move within same group
 		if (this === target) {
 			this.doMoveEditorInsideGroup(editor, options);
+
 			return true;
 		}
 
@@ -1413,6 +1479,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private doMoveEditorInsideGroup(candidate: EditorInput, options?: IEditorOpenOptions): void {
 		const moveToIndex = options ? options.index : undefined;
+
 		if (typeof moveToIndex !== 'number') {
 			return; // do nothing if we move into same group without index
 		}
@@ -1421,7 +1488,9 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// the model. It is possible that the editor was already opened and we
 		// want to ensure that we use the existing instance in that case.
 		const currentIndex = this.model.indexOf(candidate);
+
 		const editor = this.model.getEditorByIndex(currentIndex);
+
 		if (!editor) {
 			return;
 		}
@@ -1454,6 +1523,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// Validate that we can move
 		if (!keepCopy || editor.hasCapability(EditorInputCapabilities.Singleton) /* singleton editors will always move */) {
 			const canMoveVeto = editor.canMove(this.id, target.id);
+
 			if (typeof canMoveVeto === 'string') {
 				this.dialogService.error(canMoveVeto, localize('moveErrorDetails', "Try saving or reverting the editor first and then try again."));
 
@@ -1546,6 +1616,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Check for confirmation and veto
 		const veto = await this.handleCloseConfirmation([editor]);
+
 		if (veto) {
 			return false;
 		}
@@ -1581,6 +1652,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private doCloseActiveEditor(preserveFocus = (this.groupsView.activeGroup !== this), internalOptions?: IInternalEditorCloseOptions): void {
 		const editorToClose = this.activeEditor;
+
 		const restoreFocus = !preserveFocus && this.shouldRestoreFocus(this.element);
 
 		// Optimization: if we are about to close the last editor in this group and settings
@@ -1591,8 +1663,10 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// event because it became empty, only to then trigger another one when the next
 		// group gets active.
 		const closeEmptyGroup = this.groupsView.partOptions.closeEmptyGroups;
+
 		if (closeEmptyGroup && this.active && this.count === 1) {
 			const mostRecentlyActiveGroups = this.groupsView.getGroups(GroupsOrder.MOST_RECENTLY_ACTIVE);
+
 			const nextActiveGroup = mostRecentlyActiveGroups[1]; // [0] will be the current one, so take [1]
 			if (nextActiveGroup) {
 				if (restoreFocus) {
@@ -1610,8 +1684,10 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Open next active if there are more to show
 		const nextActiveEditor = this.model.activeEditor;
+
 		if (nextActiveEditor) {
 			let activation: EditorActivation | undefined = undefined;
+
 			if (preserveFocus && this.groupsView.activeGroup !== this) {
 				// If we are opening the next editor in an inactive group
 				// without focussing it, ensure we preserve the editor
@@ -1666,6 +1742,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private shouldRestoreFocus(target: Element): boolean {
 		const activeElement = getActiveElement();
+
 		if (activeElement === target.ownerDocument.body) {
 			return true; // always restore focus if nothing is focused currently
 		}
@@ -1690,12 +1767,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// To prevent multiple confirmation dialogs from showing up one after the other
 		// we check if a pending confirmation is currently showing and if so, join that
 		let handleCloseConfirmationPromise = this.mapEditorToPendingConfirmation.get(editor);
+
 		if (!handleCloseConfirmationPromise) {
 			handleCloseConfirmationPromise = this.doHandleCloseConfirmation(editor);
 			this.mapEditorToPendingConfirmation.set(editor, handleCloseConfirmationPromise);
 		}
 
 		let veto: boolean;
+
 		try {
 			veto = await handleCloseConfirmationPromise;
 		} finally {
@@ -1733,6 +1812,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			}
 
 			const otherGroup = groupView;
+
 			if (otherGroup.contains(editor, { supportSideBySide: SideBySideEditor.BOTH })) {
 				return true; // exact editor still opened (either single, or split-in-group)
 			}
@@ -1752,8 +1832,11 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		// save fails which would result in the editor never closing.
 		// Also, we only do this if no custom confirmation handling is implemented.
 		let confirmation = ConfirmResult.CANCEL;
+
 		let saveReason = SaveReason.EXPLICIT;
+
 		let autoSave = false;
+
 		if (!editor.hasCapability(EditorInputCapabilities.Untitled) && !options?.skipAutoSave && !editor.closeHandler) {
 
 			// Auto-save on focus change: save, because a dialog would steal focus
@@ -1793,6 +1876,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// Show a file specific confirmation
 			else {
 				let name: string;
+
 				if (editor instanceof SideBySideEditorInput) {
 					name = editor.primary.getName(); // prefer shorter names by using primary's name in this case
 				} else {
@@ -1818,6 +1902,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		switch (confirmation) {
 			case ConfirmResult.SAVE: {
 				const result = await editor.save(this.id, { reason: saveReason });
+
 				if (!result && autoSave) {
 					// Save failed and we need to signal this back to the user, so
 					// we handle the dirty editor again but this time ensuring to
@@ -1873,6 +1958,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Check for confirmation and veto
 		const veto = await this.handleCloseConfirmation(editors.slice(0));
+
 		if (veto) {
 			return false;
 		}
@@ -1889,6 +1975,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		}
 
 		const filter = args;
+
 		const hasDirection = typeof filter.direction === 'number';
 
 		let editorsToClose = this.model.getEditors(hasDirection ? EditorsOrder.SEQUENTIAL : EditorsOrder.MOST_RECENTLY_ACTIVE, filter); // in MRU order only if direction is not specified
@@ -1917,6 +2004,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Close all inactive editors first
 		let closeActiveEditor = false;
+
 		for (const editor of editors) {
 			if (!this.isActive(editor)) {
 				this.doCloseInactiveEditor(editor);
@@ -1955,12 +2043,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Apply the `excludeConfirming` filter if present
 		let editors = this.model.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, options);
+
 		if (options?.excludeConfirming) {
 			editors = editors.filter(editor => !this.shouldConfirmClose(editor));
 		}
 
 		// Check for confirmation and veto
 		const veto = await this.handleCloseConfirmation(editors);
+
 		if (veto) {
 			return false;
 		}
@@ -1973,12 +2063,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 	private doCloseAllEditors(options?: ICloseAllEditorsOptions): void {
 		let editors = this.model.getEditors(EditorsOrder.SEQUENTIAL, options);
+
 		if (options?.excludeConfirming) {
 			editors = editors.filter(editor => !this.shouldConfirmClose(editor));
 		}
 
 		// Close all inactive editors first
 		const editorsToClose: EditorInput[] = [];
+
 		for (const editor of editors) {
 			if (!this.isActive(editor)) {
 				this.doCloseInactiveEditor(editor);
@@ -2006,9 +2098,12 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Extract active vs. inactive replacements
 		let activeReplacement: EditorReplacement | undefined;
+
 		const inactiveReplacements: EditorReplacement[] = [];
+
 		for (let { editor, replacement, forceReplaceDirty, options } of editors) {
 			const index = this.getIndexOfEditor(editor);
+
 			if (index >= 0) {
 				const isActiveEditor = this.isActive(editor);
 
@@ -2023,6 +2118,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 				options.pinned = options.pinned ?? true; // unless specified, prefer to pin upon replace
 
 				const editorToReplace = { editor, replacement, forceReplaceDirty, options };
+
 				if (isActiveEditor) {
 					activeReplacement = editorToReplace;
 				} else {
@@ -2040,6 +2136,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			// Close replaced inactive editor unless they match
 			if (!editor.matches(replacement)) {
 				let closed = false;
+
 				if (forceReplaceDirty) {
 					this.doCloseEditor(editor, true, { context: EditorCloseContext.REPLACE });
 					closed = true;
@@ -2095,8 +2192,10 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Editor actions require the editor control to be there, so we retrieve it via service
 		const activeEditorPane = this.activeEditorPane;
+
 		if (activeEditorPane instanceof EditorPane) {
 			const editorScopedContextKeyService = activeEditorPane.scopedContextKeyService ?? this.scopedContextKeyService;
+
 			const editorTitleMenu = disposables.add(this.menuService.createMenu(MenuId.EditorTitle, editorScopedContextKeyService, { emitEventsForSubmenuChanges: true, eventDebounceDelay: 0 }));
 			onDidChange = editorTitleMenu.onDidChange;
 
@@ -2134,6 +2233,7 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 
 		// Title control
 		const borderColor = this.getColor(EDITOR_GROUP_HEADER_BORDER) || this.getColor(contrastBorder);
+
 		if (!isEmpty && borderColor) {
 			this.titleContainer.classList.add('title-border-bottom');
 			this.titleContainer.style.setProperty('--title-border-bottom-color', borderColor);

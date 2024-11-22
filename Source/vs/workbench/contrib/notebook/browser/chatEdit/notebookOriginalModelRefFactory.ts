@@ -15,24 +15,30 @@ export const INotebookOriginalModelReferenceFactory = createDecorator<INotebookO
 
 export interface INotebookOriginalModelReferenceFactory {
 	readonly _serviceBrand: undefined;
+
 	getOrCreate(fileEntry: IModifiedFileEntry, viewType: string): Promise<IReference<NotebookTextModel>>;
 }
 
 
 export class OriginalNotebookModelReferenceCollection extends ReferenceCollection<Promise<NotebookTextModel>> {
 	private readonly modelsToDispose = new Set<string>();
+
 	constructor(@INotebookService private readonly notebookService: INotebookService) {
 		super();
 	}
 
 	protected override async createReferencedObject(key: string, fileEntry: IModifiedFileEntry, viewType: string): Promise<NotebookTextModel> {
 		this.modelsToDispose.delete(key);
+
 		const uri = fileEntry.originalURI;
+
 		const model = this.notebookService.getNotebookTextModel(uri);
+
 		if (model) {
 			return model;
 		}
 		const bytes = VSBuffer.fromString(fileEntry.originalModel.getValue());
+
 		const stream = bufferToStream(bytes);
 
 		return this.notebookService.createNotebookTextModel(viewType, uri, stream);

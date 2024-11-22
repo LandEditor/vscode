@@ -40,6 +40,7 @@ export class CheckedStates<T extends object> {
     }
     updateChecked(obj: T, value: boolean): void {
         const valueNow = this._states.get(obj);
+
         if (valueNow === value) {
             return;
         }
@@ -74,10 +75,12 @@ export class BulkFileOperation {
     textEdits: BulkTextEdit[] = [];
     originalEdits = new Map<number, ResourceTextEdit | ResourceFileEdit>();
     newUri?: URI;
+
     constructor(readonly uri: URI, readonly parent: BulkFileOperations) { }
     addEdit(index: number, type: BulkFileOperationType, edit: ResourceTextEdit | ResourceFileEdit) {
         this.type |= type;
         this.originalEdits.set(index, edit);
+
         if (edit instanceof ResourceTextEdit) {
             this.textEdits.push(new BulkTextEdit(this, edit));
         }
@@ -104,6 +107,7 @@ export class BulkCategory {
         return metadata?.label || '<default>';
     }
     readonly operationByResource = new Map<string, BulkFileOperation>();
+
     constructor(readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata) { }
     get fileOperations(): IterableIterator<BulkFileOperation> {
         return this.operationByResource.values();
@@ -112,12 +116,14 @@ export class BulkCategory {
 export class BulkFileOperations {
     static async create(accessor: ServicesAccessor, bulkEdit: ResourceEdit[]): Promise<BulkFileOperations> {
         const result = accessor.get(IInstantiationService).createInstance(BulkFileOperations, bulkEdit);
+
         return await result._init();
     }
     readonly checked = new CheckedStates<ResourceEdit>();
     readonly fileOperations: BulkFileOperation[] = [];
     readonly categories: BulkCategory[] = [];
     readonly conflicts: ConflictDetector;
+
     constructor(private readonly _bulkEdit: ResourceEdit[], 
     @IFileService
     private readonly _fileService: IFileService, 
@@ -131,14 +137,20 @@ export class BulkFileOperations {
     }
     async _init() {
         const operationByResource = new Map<string, BulkFileOperation>();
+
         const operationByCategory = new Map<string, BulkCategory>();
+
         const newToOldUri = new ResourceMap<URI>();
+
         for (let idx = 0; idx < this._bulkEdit.length; idx++) {
             const edit = this._bulkEdit[idx];
+
             let uri: URI;
+
             let type: BulkFileOperationType;
             // store inital checked state
             this.checked.updateChecked(edit, !edit.metadata?.needsConfirmation);
+
             if (edit instanceof ResourceTextEdit) {
                 type = BulkFileOperationType.TextEdit;
                 uri = edit.resource;
@@ -147,6 +159,7 @@ export class BulkFileOperations {
                 if (edit.newResource && edit.oldResource) {
                     type = BulkFileOperationType.Rename;
                     uri = edit.oldResource;
+
                     if (edit.options?.overwrite === undefined && edit.options?.ignoreIfExists && await this._fileService.exists(uri)) {
                         // noop -> "soft" rename to something that already exists
                         continue;
@@ -158,6 +171,7 @@ export class BulkFileOperations {
                 else if (edit.oldResource) {
                     type = BulkFileOperationType.Delete;
                     uri = edit.oldResource;
+
                     if (edit.options?.ignoreIfNotExists && !await this._fileService.exists(uri)) {
                         // noop -> "soft" delete something that doesn't exist
                         continue;
@@ -166,6 +180,7 @@ export class BulkFileOperations {
                 else if (edit.newResource) {
                     type = BulkFileOperationType.Create;
                     uri = edit.newResource;
+
                     if (edit.options?.overwrite === undefined && edit.options?.ignoreIfExists && await this._fileService.exists(uri)) {
                         // noop -> "soft" create something that already exists
                         continue;
@@ -182,6 +197,7 @@ export class BulkFileOperations {
             }
             const insert = (uri: URI, map: Map<string, BulkFileOperation>) => {
                 let key = extUri.getComparisonKey(uri, true);
+
                 let operation = map.get(key);
                 // rename
                 if (!operation && newToOldUri.has(uri)) {
@@ -198,7 +214,9 @@ export class BulkFileOperations {
             insert(uri, operationByResource);
             // insert into "this" category
             const key = BulkCategory.keyOf(edit.metadata);
+
             let category = operationByCategory.get(key);
+
             if (!category) {
                 category = new BulkCategory(edit.metadata);
                 operationByCategory.set(key, category);
@@ -213,6 +231,7 @@ export class BulkFileOperations {
         for (const file of this.fileOperations) {
             if (file.type !== BulkFileOperationType.TextEdit) {
                 let checked = true;
+
                 for (const edit of file.originalEdits.values()) {
                     if (edit instanceof ResourceFileEdit) {
                         checked = checked && this.checked.isChecked(edit);
@@ -237,15 +256,20 @@ export class BulkFileOperations {
                 return 1;
             }
         });
+
         return this;
     }
     getWorkspaceEdit(): ResourceEdit[] {
         const result: ResourceEdit[] = [];
+
         let allAccepted = true;
+
         for (let i = 0; i < this._bulkEdit.length; i++) {
             const edit = this._bulkEdit[i];
+
             if (this.checked.isChecked(edit)) {
                 result[i] = edit;
+
                 continue;
             }
             allAccepted = false;
@@ -255,10 +279,12 @@ export class BulkFileOperations {
         }
         // not all edits have been accepted
         coalesceInPlace(result);
+
         return result;
     }
     private async getFileEditOperation(edit: ResourceFileEdit): Promise<ISingleEditOperation | undefined> {
         const content = await edit.options.contents;
+
         if (!content) {
             return undefined;
         }
@@ -268,7 +294,9 @@ export class BulkFileOperations {
         for (const file of this.fileOperations) {
             if (file.uri.toString() === uri.toString()) {
                 const result: Promise<ISingleEditOperation | undefined>[] = [];
+
                 let ignoreAll = false;
+
                 for (const edit of file.originalEdits.values()) {
                     if (edit instanceof ResourceFileEdit) {
                         result.push(this.getFileEditOperation(edit));
@@ -312,6 +340,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
     private readonly _ready: Promise<any>;
     private readonly _modelPreviewEdits = new Map<string, ISingleEditOperation[]>();
     private readonly _instanceId = generateUuid();
+
     constructor(private readonly _operations: BulkFileOperations, 
     @ILanguageService
     private readonly _languageService: ILanguageService, 
@@ -341,21 +370,26 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
         const model = await this._getOrCreatePreviewModel(uri);
         // undo edits that have been done before
         const undoEdits = this._modelPreviewEdits.get(model.id);
+
         if (undoEdits) {
             model.applyEdits(undoEdits);
         }
         // apply new edits and keep (future) undo edits
         const newEdits = await this._operations.getFileEdits(uri);
+
         const newUndoEdits = model.applyEdits(newEdits, true);
         this._modelPreviewEdits.set(model.id, newUndoEdits);
     }
     private async _getOrCreatePreviewModel(uri: URI) {
         const previewUri = this.asPreviewUri(uri);
+
         let model = this._modelService.getModel(previewUri);
+
         if (!model) {
             try {
                 // try: copy existing
                 const ref = await this._textModelResolverService.createModelReference(uri);
+
                 const sourceModel = ref.object.textEditorModel;
                 model = this._modelService.createModel(createTextBufferFactoryFromSnapshot(sourceModel.createSnapshot()), this._languageService.createById(sourceModel.getLanguageId()), previewUri);
                 ref.dispose();
@@ -378,6 +412,7 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
             return this._modelService.createModel('', null, previewUri);
         }
         await this._ready;
+
         return this._modelService.getModel(previewUri);
     }
 }

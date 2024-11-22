@@ -29,6 +29,7 @@ import { Disposable } from '../../../../base/common/lifecycle.js';
 export class ContextMenuService implements IContextMenuService {
     declare readonly _serviceBrand: undefined;
     private impl: HTMLContextMenuService | NativeContextMenuService;
+
     get onDidShowContextMenu(): Event<void> { return this.impl.onDidShowContextMenu; }
     get onDidHideContextMenu(): Event<void> { return this.impl.onDidHideContextMenu; }
     constructor(
@@ -68,6 +69,7 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
     readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
     private readonly _onDidHideContextMenu = this._store.add(new Emitter<void>());
     readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
+
     constructor(
     @INotificationService
     private readonly notificationService: INotificationService, 
@@ -83,18 +85,27 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
     }
     showContextMenu(delegate: IContextMenuDelegate | IContextMenuMenuDelegate): void {
         delegate = ContextMenuMenuDelegate.transform(delegate, this.menuService, this.contextKeyService);
+
         const actions = delegate.getActions();
+
         if (actions.length) {
             const onHide = createSingleCallFunction(() => {
                 delegate.onHide?.(false);
+
                 dom.ModifierKeyEmitter.getInstance().resetKeyStatus();
                 this._onDidHideContextMenu.fire();
             });
+
             const menu = this.createMenu(delegate, actions, onHide);
+
             const anchor = delegate.getAnchor();
+
             let x: number | undefined;
+
             let y: number | undefined;
+
             let zoom = getZoomFactor(dom.isHTMLElement(anchor) ? dom.getWindow(anchor) : dom.getActiveWindow());
+
             if (dom.isHTMLElement(anchor)) {
                 const elementPosition = dom.getDomNodePagePosition(anchor);
                 // When drawing context menus, we adjust the pixel position for native menus using zoom level
@@ -116,7 +127,9 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
                     }
                     if (!isMacintosh) {
                         const window = dom.getWindow(anchor);
+
                         const availableHeightForMenu = window.screen.height - y;
+
                         if (availableHeightForMenu < actions.length * (isWindows ? 45 : 32) /* guess of 1 menu item height */) {
                             // this is a guess to detect whether the context menu would
                             // open to the bottom from this point or to the top. If the
@@ -164,6 +177,7 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
     }
     private createMenu(delegate: IContextMenuDelegate, entries: readonly IAction[], onHide: () => void, submenuIds = new Set<string>()): IContextMenuItem[] {
         const actionRunner = delegate.actionRunner || new ActionRunner();
+
         return coalesce(entries.map(entry => this.createMenuItem(delegate, entry, actionRunner, onHide, submenuIds)));
     }
     private createMenuItem(delegate: IContextMenuDelegate, entry: IAction, actionRunner: IActionRunner, onHide: () => void, submenuIds: Set<string>): IContextMenuItem | undefined {
@@ -175,6 +189,7 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
         if (entry instanceof SubmenuAction) {
             if (submenuIds.has(entry.id)) {
                 console.warn(`Found submenu cycle: ${entry.id}`);
+
                 return undefined;
             }
             return {
@@ -185,6 +200,7 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
         // Normal Menu Item
         else {
             let type: 'radio' | 'checkbox' | undefined = undefined;
+
             if (!!entry.checked) {
                 if (typeof delegate.getCheckedActionsRepresentation === 'function') {
                     type = delegate.getCheckedActionsRepresentation(entry);
@@ -207,14 +223,18 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
                     this.runAction(actionRunner, entry, delegate, event);
                 }
             };
+
             const keybinding = !!delegate.getKeyBinding ? delegate.getKeyBinding(entry) : this.keybindingService.lookupKeybinding(entry.id);
+
             if (keybinding) {
                 const electronAccelerator = keybinding.getElectronAccelerator();
+
                 if (electronAccelerator) {
                     item.accelerator = electronAccelerator;
                 }
                 else {
                     const label = keybinding.getLabel();
+
                     if (label) {
                         item.label = `${item.label} [${label}]`;
                     }
@@ -228,7 +248,9 @@ class NativeContextMenuService extends Disposable implements IContextMenuService
             this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: actionToRun.id, from: 'contextMenu' });
         }
         const context = delegate.getActionsContext ? delegate.getActionsContext(event) : undefined;
+
         const runnable = actionRunner.run(actionToRun, context);
+
         try {
             await runnable;
         }

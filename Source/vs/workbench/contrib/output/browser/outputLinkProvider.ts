@@ -19,6 +19,7 @@ export class OutputLinkProvider extends Disposable {
     private worker?: OutputLinkWorkerClient;
     private disposeWorkerScheduler: RunOnceScheduler;
     private linkProviderRegistration: IDisposable | undefined;
+
     constructor(
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -37,11 +38,13 @@ export class OutputLinkProvider extends Disposable {
     private updateLinkProviderWorker(): void {
         // Setup link provider depending on folders being opened or not
         const folders = this.contextService.getWorkspace().folders;
+
         if (folders.length > 0) {
             if (!this.linkProviderRegistration) {
                 this.linkProviderRegistration = this.languageFeaturesService.linkProvider.register([{ language: OUTPUT_MODE_ID, scheme: '*' }, { language: LOG_MODE_ID, scheme: '*' }], {
                     provideLinks: async (model) => {
                         const links = await this.provideLinks(model.uri);
+
                         return links && { links };
                     }
                 });
@@ -57,6 +60,7 @@ export class OutputLinkProvider extends Disposable {
     }
     private getOrCreateWorker(): OutputLinkWorkerClient {
         this.disposeWorkerScheduler.schedule();
+
         if (!this.worker) {
             this.worker = new OutputLinkWorkerClient(this.contextService, this.modelService);
         }
@@ -76,6 +80,7 @@ class OutputLinkWorkerClient extends Disposable {
     private readonly _workerClient: IWorkerClient<OutputLinkComputer>;
     private readonly _workerTextModelSyncClient: WorkerTextModelSyncClient;
     private readonly _initializeBarrier: Promise<void>;
+
     constructor(
     @IWorkspaceContextService
     private readonly contextService: IWorkspaceContextService, 
@@ -92,6 +97,7 @@ class OutputLinkWorkerClient extends Disposable {
     public async provideLinks(modelUri: URI): Promise<ILink[]> {
         await this._initializeBarrier;
         await this._workerTextModelSyncClient.ensureSyncedResources([modelUri]);
+
         return this._workerClient.proxy.$computeLinks(modelUri.toString());
     }
 }

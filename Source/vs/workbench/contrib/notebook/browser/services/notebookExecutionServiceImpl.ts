@@ -18,6 +18,7 @@ import { INotebookLoggingService } from '../../common/notebookLoggingService.js'
 export class NotebookExecutionService implements INotebookExecutionService, IDisposable {
     declare _serviceBrand: undefined;
     private _activeProxyKernelExecutionToken: CancellationTokenSource | undefined;
+
     constructor(
     @ICommandService
     private readonly _commandService: ICommandService, 
@@ -35,12 +36,16 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
     async executeNotebookCells(notebook: INotebookTextModel, cells: Iterable<NotebookCellTextModel>, contextKeyService: IContextKeyService): Promise<void> {
         const cellsArr = Array.from(cells)
             .filter(c => c.cellKind === CellKind.Code);
+
         if (!cellsArr.length) {
             return;
         }
         this._logService.debug(`Execution`, `${JSON.stringify(cellsArr.map(c => c.handle))}`);
+
         const message = nls.localize('notebookRunTrust', "Executing a notebook cell will run code from this workspace.");
+
         const trust = await this._workspaceTrustRequestService.requestWorkspaceTrust({ message });
+
         if (!trust) {
             return;
         }
@@ -49,22 +54,27 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
             NotebookCellTextModel,
             INotebookCellExecution
         ][] = [];
+
         for (const cell of cellsArr) {
             const cellExe = this._notebookExecutionStateService.getCellExecution(cell.uri);
+
             if (!!cellExe) {
                 continue;
             }
             cellExecutions.push([cell, this._notebookExecutionStateService.createCellExecution(notebook.uri, cell.handle)]);
         }
         const kernel = await KernelPickerMRUStrategy.resolveKernel(notebook, this._notebookKernelService, this._notebookKernelHistoryService, this._commandService);
+
         if (!kernel) {
             // clear all pending cell executions
             cellExecutions.forEach(cellExe => cellExe[1].complete({}));
+
             return;
         }
         this._notebookKernelHistoryService.addMostRecentKernel(kernel);
         // filter cell executions based on selected kernel
         const validCellExecutions: INotebookCellExecution[] = [];
+
         for (const [cell, cellExecution] of cellExecutions) {
             if (!kernel.supportedLanguages.includes(cell.language)) {
                 cellExecution.complete({});
@@ -80,6 +90,7 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
             await kernel.executeNotebookCellsRequest(notebook.uri, validCellExecutions.map(c => c.cellHandle));
             // the connecting state can change before the kernel resolves executeNotebookCellsRequest
             const unconfirmed = validCellExecutions.filter(exe => exe.state === NotebookCellExecutionState.Unconfirmed);
+
             if (unconfirmed.length) {
                 this._logService.debug(`Execution`, `Completing unconfirmed executions ${JSON.stringify(unconfirmed.map(exe => exe.cellHandle))}`);
                 unconfirmed.forEach(exe => exe.complete({}));
@@ -90,7 +101,9 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
     async cancelNotebookCellHandles(notebook: INotebookTextModel, cells: Iterable<number>): Promise<void> {
         const cellsArr = Array.from(cells);
         this._logService.debug(`Execution`, `CancelNotebookCellHandles ${JSON.stringify(cellsArr)}`);
+
         const kernel = this._notebookKernelService.getSelectedOrSuggestedKernel(notebook);
+
         if (kernel) {
             await kernel.cancelNotebookCellExecution(notebook.uri, cellsArr);
         }
@@ -101,6 +114,7 @@ export class NotebookExecutionService implements INotebookExecutionService, IDis
     private readonly cellExecutionParticipants = new Set<ICellExecutionParticipant>;
     registerExecutionParticipant(participant: ICellExecutionParticipant) {
         this.cellExecutionParticipants.add(participant);
+
         return toDisposable(() => this.cellExecutionParticipants.delete(participant));
     }
     private async runExecutionParticipants(executions: INotebookCellExecution[]): Promise<void> {

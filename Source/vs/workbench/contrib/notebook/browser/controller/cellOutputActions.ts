@@ -38,6 +38,7 @@ registerAction2(class ShowAllOutputsAction extends Action2 {
 
 	run(accessor: ServicesAccessor, context: INotebookOutputActionContext): void {
 		const cell = context.cell;
+
 		if (cell && cell.cellKind === CellKind.Code) {
 
 			for (let i = 1; i < cell.outputsViewModels.length; i++) {
@@ -79,6 +80,7 @@ registerAction2(class CopyCellOutputAction extends Action2 {
 		}
 
 		let outputViewModel: ICellOutputViewModel | undefined;
+
 		if (outputContext && 'outputId' in outputContext && typeof outputContext.outputId === 'string') {
 			outputViewModel = getOutputViewModelFromId(outputContext.outputId, notebookEditor);
 		} else if (outputContext && 'outputViewModel' in outputContext) {
@@ -88,6 +90,7 @@ registerAction2(class CopyCellOutputAction extends Action2 {
 		if (!outputViewModel) {
 			// not able to find the output from the provided context, use the active cell
 			const activeCell = notebookEditor.getActiveCell();
+
 			if (!activeCell) {
 				return;
 			}
@@ -113,6 +116,7 @@ registerAction2(class CopyCellOutputAction extends Action2 {
 			notebookEditor.copyOutputImage(outputViewModel);
 		} else {
 			const clipboardService = accessor.get(IClipboardService);
+
 			const logService = accessor.get(ILogService);
 
 			copyCellOutput(mimeType, outputViewModel, clipboardService, logService);
@@ -123,10 +127,13 @@ registerAction2(class CopyCellOutputAction extends Action2 {
 
 function getOutputViewModelFromId(outputId: string, notebookEditor: INotebookEditor): ICellOutputViewModel | undefined {
 	const notebookViewModel = notebookEditor.getViewModel();
+
 	if (notebookViewModel) {
 		const codeCells = notebookViewModel.viewCells.filter(cell => cell.cellKind === CellKind.Code) as CodeCellViewModel[];
+
 		for (const cell of codeCells) {
 			const output = cell.outputsViewModels.find(output => output.model.outputId === outputId || output.model.alternativeOutputId === outputId);
+
 			if (output) {
 				return output;
 			}
@@ -158,6 +165,7 @@ registerAction2(class OpenCellOutputInEditorAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, outputContext: INotebookOutputActionContext | { outputViewModel: ICellOutputViewModel } | undefined): Promise<void> {
 		const notebookEditor = this.getNoteboookEditor(accessor.get(IEditorService), outputContext);
+
 		const notebookModelService = accessor.get(INotebookEditorModelResolverService);
 
 		if (!notebookEditor) {
@@ -165,6 +173,7 @@ registerAction2(class OpenCellOutputInEditorAction extends Action2 {
 		}
 
 		let outputViewModel: ICellOutputViewModel | undefined;
+
 		if (outputContext && 'outputId' in outputContext && typeof outputContext.outputId === 'string') {
 			outputViewModel = getOutputViewModelFromId(outputContext.outputId, notebookEditor);
 		} else if (outputContext && 'outputViewModel' in outputContext) {

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 export module collections {
     const hasOwnProperty = Object.prototype.hasOwnProperty;
+
     export function lookup<T>(collection: {
         [keys: string]: T;
     }, key: string): T | null {
@@ -25,6 +26,7 @@ export module collections {
         }
         else {
             collection[key] = value;
+
             return value;
         }
     }
@@ -54,10 +56,13 @@ export module strings {
      * The empty string. The one and only.
      */
     export const empty = '';
+
     export const eolUnix = '\r\n';
+
     export function format(value: string, ...rest: any[]): string {
         return value.replace(/({\d+})/g, function (match) {
             const index = Number(match.substring(1, match.length - 1));
+
             return String(rest[index]) || match;
         });
     }
@@ -83,11 +88,13 @@ export module graph {
         private _nodes: {
             [key: string]: Node<T>;
         } = {};
+
         constructor(private _hashFn: (element: T) => string) {
             // empty
         }
         traverse(start: T, inwards: boolean, callback: (data: T) => void): void {
             const startNode = this.lookup(start);
+
             if (!startNode) {
                 return;
             }
@@ -97,16 +104,19 @@ export module graph {
             [key: string]: boolean;
         }, callback: (data: T) => void): void {
             const key = this._hashFn(node.data);
+
             if (collections.contains(seen, key)) {
                 return;
             }
             seen[key] = true;
             callback(node.data);
+
             const nodes = inwards ? node.outgoing : node.incoming;
             collections.forEach(nodes, (entry) => this._traverse(entry.value, inwards, seen, callback));
         }
         inertEdge(from: T, to: T): void {
             const fromNode = this.lookupOrInsertNode(from);
+
             const toNode = this.lookupOrInsertNode(to);
             fromNode.outgoing[this._hashFn(to)] = toNode;
             toNode.incoming[this._hashFn(from)] = fromNode;
@@ -121,7 +131,9 @@ export module graph {
         }
         lookupOrInsertNode(data: T): Node<T> {
             const key = this._hashFn(data);
+
             let node = collections.lookup(this._nodes, key);
+
             if (!node) {
                 node = newNode(data);
                 this._nodes[key] = node;

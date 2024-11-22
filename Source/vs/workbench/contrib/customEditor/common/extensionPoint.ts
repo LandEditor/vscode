@@ -13,6 +13,7 @@ import { CustomEditorPriority, CustomEditorSelector } from './customEditor.js';
 import { Extensions, IExtensionFeatureTableRenderer, IExtensionFeaturesRegistry, IRenderedData, IRowData, ITableData } from '../../../services/extensionManagement/common/extensionFeatures.js';
 import { ExtensionsRegistry } from '../../../services/extensions/common/extensionsRegistry.js';
 import { languagesExtPoint } from '../../../services/language/common/languageService.js';
+
 const Fields = Object.freeze({
     viewType: 'viewType',
     displayName: 'displayName',
@@ -96,6 +97,7 @@ export const customEditorsExtensionPoint = ExtensionsRegistry.registerExtensionP
     }) => {
         for (const contrib of contribs) {
             const viewType = contrib[Fields.viewType];
+
             if (viewType) {
                 result.push(`onCustomEditor:${viewType}`);
             }
@@ -109,6 +111,7 @@ class CustomEditorsDataRenderer extends Disposable implements IExtensionFeatureT
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const customEditors = manifest.contributes?.customEditors || [];
+
         if (!customEditors.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -117,6 +120,7 @@ class CustomEditorsDataRenderer extends Disposable implements IExtensionFeatureT
             nls.localize('customEditors priority', "Priority"),
             nls.localize('customEditors filenamePattern', "Filename Pattern"),
         ];
+
         const rows: IRowData[][] = customEditors
             .map(customEditor => {
             return [
@@ -125,6 +129,7 @@ class CustomEditorsDataRenderer extends Disposable implements IExtensionFeatureT
                 coalesce(customEditor.selector.map(x => x.filenamePattern)).join(', ')
             ];
         });
+
         return {
             data: {
                 headers,

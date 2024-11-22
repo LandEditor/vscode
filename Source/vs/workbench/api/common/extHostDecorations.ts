@@ -25,6 +25,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
     readonly _serviceBrand: undefined;
     private readonly _provider = new Map<number, ProviderData>();
     private readonly _proxy: MainThreadDecorationsShape;
+
     constructor(
     @IExtHostRpcService
     extHostRpc: IExtHostRpcService, 
@@ -36,28 +37,38 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
         const handle = ExtHostDecorations._handlePool++;
         this._provider.set(handle, { provider, extensionDescription });
         this._proxy.$registerDecorationProvider(handle, extensionDescription.identifier.value);
+
         const listener = provider.onDidChangeFileDecorations && provider.onDidChangeFileDecorations(e => {
             if (!e) {
                 this._proxy.$onDidChange(handle, null);
+
                 return;
             }
             const array = asArray(e);
+
             if (array.length <= ExtHostDecorations._maxEventSize) {
                 this._proxy.$onDidChange(handle, array);
+
                 return;
             }
             // too many resources per event. pick one resource per folder, starting
             // with parent folders
             this._logService.warn('[Decorations] CAPPING events from decorations provider', extensionDescription.identifier.value, array.length);
+
             const mapped = array.map(uri => ({ uri, rank: count(uri.path, '/') }));
+
             const groups = groupBy(mapped, (a, b) => a.rank - b.rank || compare(a.uri.path, b.uri.path));
+
             const picked: URI[] = [];
             outer: for (const uris of groups) {
                 let lastDirname: string | undefined;
+
                 for (const obj of uris) {
                     const myDirname = dirname(obj.uri.path);
+
                     if (lastDirname !== myDirname) {
                         lastDirname = myDirname;
+
                         if (picked.push(obj.uri) >= ExtHostDecorations._maxEventSize) {
                             break outer;
                         }
@@ -66,6 +77,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
             }
             this._proxy.$onDidChange(handle, picked);
         });
+
         return new Disposable(() => {
             listener?.dispose();
             this._proxy.$unregisterDecorationProvider(handle);
@@ -78,16 +90,20 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
             return Object.create(null);
         }
         const result: DecorationReply = Object.create(null);
+
         const { provider, extensionDescription: extensionId } = this._provider.get(handle)!;
         await Promise.all(requests.map(async (request) => {
             try {
                 const { uri, id } = request;
+
                 const data = await Promise.resolve(provider.provideFileDecoration(URI.revive(uri), token));
+
                 if (!data) {
                     return;
                 }
                 try {
                     FileDecoration.validate(data);
+
                     if (data.badge && typeof data.badge !== 'string') {
                         checkProposedApiEnabled(extensionId, 'codiconDecoration');
                     }
@@ -101,6 +117,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
                 this._logService.error(err);
             }
         }));
+
         return result;
     }
 }

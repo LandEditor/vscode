@@ -24,6 +24,7 @@ export function getColorClass(terminal: ITerminalInstance): string | undefined;
 export function getColorClass(extensionTerminalProfile: IExtensionTerminalProfile): string | undefined;
 export function getColorClass(terminalOrColorKey: ITerminalInstance | IExtensionTerminalProfile | ITerminalProfile | string): string | undefined {
 	let color = undefined;
+
 	if (typeof terminalOrColorKey === 'string') {
 		color = terminalOrColorKey;
 	} else if (terminalOrColorKey.color) {
@@ -42,6 +43,7 @@ export function getStandardColors(colorTheme: IColorTheme): string[] {
 
 	for (const colorKey in ansiColorMap) {
 		const color = colorTheme.getColor(colorKey);
+
 		if (color && !colorKey.toLowerCase().includes('bright')) {
 			standardColors.push(colorKey);
 		}
@@ -51,12 +53,18 @@ export function getStandardColors(colorTheme: IColorTheme): string[] {
 
 export function createColorStyleElement(colorTheme: IColorTheme): IDisposable {
 	const disposable = new DisposableStore();
+
 	const standardColors = getStandardColors(colorTheme);
+
 	const styleElement = createStyleSheet(undefined, undefined, disposable);
+
 	let css = '';
+
 	for (const colorKey of standardColors) {
 		const colorClass = getColorClass(colorKey);
+
 		const color = colorTheme.getColor(colorKey);
+
 		if (color) {
 			css += (
 				`.monaco-workbench .${colorClass} .codicon:first-child:not(.codicon-split-horizontal):not(.codicon-trashcan):not(.file-icon)` +
@@ -65,15 +73,20 @@ export function createColorStyleElement(colorTheme: IColorTheme): IDisposable {
 		}
 	}
 	styleElement.textContent = css;
+
 	return disposable;
 }
 
 export function getColorStyleContent(colorTheme: IColorTheme, editor?: boolean): string {
 	const standardColors = getStandardColors(colorTheme);
+
 	let css = '';
+
 	for (const colorKey of standardColors) {
 		const colorClass = getColorClass(colorKey);
+
 		const color = colorTheme.getColor(colorKey);
+
 		if (color) {
 			if (editor) {
 				css += (
@@ -94,10 +107,12 @@ export function getColorStyleContent(colorTheme: IColorTheme, editor?: boolean):
 
 export function getUriClasses(terminal: ITerminalInstance | IExtensionTerminalProfile | ITerminalProfile, colorScheme: ColorScheme, extensionContributed?: boolean): string[] | undefined {
 	const icon = terminal.icon;
+
 	if (!icon) {
 		return undefined;
 	}
 	const iconClasses: string[] = [];
+
 	let uri = undefined;
 
 	if (extensionContributed) {
@@ -115,6 +130,7 @@ export function getUriClasses(terminal: ITerminalInstance | IExtensionTerminalPr
 	}
 	if (uri instanceof URI) {
 		const uriIconKey = hash(uri.path).toString(36);
+
 		const className = `terminal-uri-icon-${uriIconKey}`;
 		iconClasses.push(className);
 		iconClasses.push(`terminal-uri-icon`);

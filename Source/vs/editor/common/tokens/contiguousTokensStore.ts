@@ -18,6 +18,7 @@ export class ContiguousTokensStore {
     private _lineTokens: (Uint32Array | ArrayBuffer | null)[];
     private _len: number;
     private readonly _languageIdCodec: ILanguageIdCodec;
+
     constructor(languageIdCodec: ILanguageIdCodec) {
         this._lineTokens = [];
         this._len = 0;
@@ -32,6 +33,7 @@ export class ContiguousTokensStore {
     }
     public getTokens(topLevelLanguageId: string, lineIndex: number, lineText: string): LineTokens {
         let rawLineTokens: Uint32Array | ArrayBuffer | null = null;
+
         if (lineIndex < this._len) {
             rawLineTokens = this._lineTokens[lineIndex];
         }
@@ -41,12 +43,15 @@ export class ContiguousTokensStore {
         const lineTokens = new Uint32Array(2);
         lineTokens[0] = lineText.length;
         lineTokens[1] = getDefaultMetadata(this._languageIdCodec.encodeLanguageId(topLevelLanguageId));
+
         return new LineTokens(lineTokens, lineText, this._languageIdCodec);
     }
     private static _massageTokens(topLevelLanguageId: LanguageId, lineTextLength: number, _tokens: Uint32Array | ArrayBuffer | null): Uint32Array | ArrayBuffer {
         const tokens = _tokens ? toUint32Array(_tokens) : null;
+
         if (lineTextLength === 0) {
             let hasDifferentLanguageId = false;
+
             if (tokens && tokens.length > 1) {
                 hasDifferentLanguageId = (TokenMetadata.getLanguageId(tokens[1]) !== topLevelLanguageId);
             }
@@ -58,10 +63,12 @@ export class ContiguousTokensStore {
             const tokens = new Uint32Array(2);
             tokens[0] = lineTextLength;
             tokens[1] = getDefaultMetadata(topLevelLanguageId);
+
             return tokens.buffer;
         }
         // Ensure the last token covers the end of the text
         tokens[tokens.length - 2] = lineTextLength;
+
         if (tokens.byteOffset === 0 && tokens.byteLength === tokens.buffer.byteLength) {
             // Store directly the ArrayBuffer pointer to save an object
             return tokens.buffer;
@@ -89,6 +96,7 @@ export class ContiguousTokensStore {
             return;
         }
         const lineTokens: (Uint32Array | ArrayBuffer | null)[] = [];
+
         for (let i = 0; i < insertCount; i++) {
             lineTokens[i] = null;
         }
@@ -98,8 +106,10 @@ export class ContiguousTokensStore {
     public setTokens(topLevelLanguageId: string, lineIndex: number, lineTextLength: number, _tokens: Uint32Array | ArrayBuffer | null, checkEquality: boolean): boolean {
         const tokens = ContiguousTokensStore._massageTokens(this._languageIdCodec.encodeLanguageId(topLevelLanguageId), lineTextLength, _tokens);
         this._ensureLine(lineIndex);
+
         const oldTokens = this._lineTokens[lineIndex];
         this._lineTokens[lineIndex] = tokens;
+
         if (checkEquality) {
             return !ContiguousTokensStore._equals(oldTokens, tokens);
         }
@@ -110,7 +120,9 @@ export class ContiguousTokensStore {
             return !_a && !_b;
         }
         const a = toUint32Array(_a);
+
         const b = toUint32Array(_b);
+
         if (a.length !== b.length) {
             return false;
         }
@@ -128,6 +140,7 @@ export class ContiguousTokensStore {
     }
     private _acceptDeleteRange(range: IRange): void {
         const firstLineIndex = range.startLineNumber - 1;
+
         if (firstLineIndex >= this._len) {
             return;
         }
@@ -137,11 +150,15 @@ export class ContiguousTokensStore {
                 return;
             }
             this._lineTokens[firstLineIndex] = ContiguousTokensEditing.delete(this._lineTokens[firstLineIndex], range.startColumn - 1, range.endColumn - 1);
+
             return;
         }
         this._lineTokens[firstLineIndex] = ContiguousTokensEditing.deleteEnding(this._lineTokens[firstLineIndex], range.startColumn - 1);
+
         const lastLineIndex = range.endLineNumber - 1;
+
         let lastLineTokens: Uint32Array | ArrayBuffer | null = null;
+
         if (lastLineIndex < this._len) {
             lastLineTokens = ContiguousTokensEditing.deleteBeginning(this._lineTokens[lastLineIndex], range.endColumn - 1);
         }
@@ -156,12 +173,14 @@ export class ContiguousTokensStore {
             return;
         }
         const lineIndex = position.lineNumber - 1;
+
         if (lineIndex >= this._len) {
             return;
         }
         if (eolCount === 0) {
             // Inserting text on one line
             this._lineTokens[lineIndex] = ContiguousTokensEditing.insert(this._lineTokens[lineIndex], position.column - 1, firstLineLength);
+
             return;
         }
         this._lineTokens[lineIndex] = ContiguousTokensEditing.deleteEnding(this._lineTokens[lineIndex], position.column - 1);
@@ -182,11 +201,16 @@ export class ContiguousTokensStore {
             fromLineNumber: number;
             toLineNumber: number;
         }[] = [];
+
         for (let i = 0, len = tokens.length; i < len; i++) {
             const element = tokens[i];
+
             let minChangedLineNumber = 0;
+
             let maxChangedLineNumber = 0;
+
             let hasChange = false;
+
             for (let lineNumber = element.startLineNumber; lineNumber <= element.endLineNumber; lineNumber++) {
                 if (hasChange) {
                     this.setTokens(textModel.getLanguageId(), lineNumber - 1, textModel.getLineLength(lineNumber), element.getLineTokens(lineNumber), false);
@@ -194,6 +218,7 @@ export class ContiguousTokensStore {
                 }
                 else {
                     const lineHasChange = this.setTokens(textModel.getLanguageId(), lineNumber - 1, textModel.getLineLength(lineNumber), element.getLineTokens(lineNumber), true);
+
                     if (lineHasChange) {
                         hasChange = true;
                         minChangedLineNumber = lineNumber;

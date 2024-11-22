@@ -11,6 +11,7 @@ export namespace GPULifecycle {
                 throw new Error('This browser does not support WebGPU');
             }
             const adapter = (await navigator.gpu.requestAdapter())!;
+
             if (!adapter) {
                 throw new Error('This browser supports WebGPU but it appears to be disabled');
             }
@@ -25,6 +26,7 @@ export namespace GPULifecycle {
     }
     export function createBuffer(device: GPUDevice, descriptor: GPUBufferDescriptor, initialValues?: Float32Array | (() => Float32Array)): IReference<GPUBuffer> {
         const buffer = device.createBuffer(descriptor);
+
         if (initialValues) {
             device.queue.writeBuffer(buffer, 0, isFunction(initialValues) ? initialValues() : initialValues);
         }

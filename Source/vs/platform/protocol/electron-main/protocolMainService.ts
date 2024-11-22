@@ -58,6 +58,7 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 		// Cleanup
 		this._register(toDisposable(() => {
 			defaultSession.protocol.unregisterProtocol(Schemas.vscodeFileResource);
+
 			defaultSession.protocol.uninterceptProtocol(Schemas.file);
 		}));
 	}
@@ -95,8 +96,10 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 		const path = this.requestToNormalizedFilePath(request);
 
 		let headers: Record<string, string> | undefined;
+
 		if (this.environmentService.crossOriginIsolated) {
 			const pathBasename = basename(path);
+
 			if (pathBasename === 'workbench.html' || pathBasename === 'workbench-dev.html') {
 				headers = COI.CoopAndCoep;
 			} else {
@@ -150,6 +153,7 @@ export class ProtocolMainService extends Disposable implements IProtocolMainServ
 
 		// Install IPC handler
 		const channel = resource.toString();
+
 		const handler = async (): Promise<T | undefined> => obj;
 		validatedIpcMain.handle(channel, handler);
 

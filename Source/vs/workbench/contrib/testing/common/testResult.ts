@@ -114,7 +114,9 @@ export class TaskRawOutput implements ITaskRawOutput {
     /** @inheritdoc */
     getRange(start: number, length: number): VSBuffer {
         const buf = VSBuffer.alloc(length);
+
         let bufLastWrite = 0;
+
         for (const chunk of this.getRangeIter(start, length)) {
             buf.buffer.set(chunk.buffer, bufLastWrite);
             bufLastWrite += chunk.byteLength;
@@ -124,17 +126,23 @@ export class TaskRawOutput implements ITaskRawOutput {
     /** @inheritdoc */
     *getRangeIter(start: number, length: number) {
         let soFar = 0;
+
         let internalLastRead = 0;
+
         for (const b of this.buffers) {
             if (internalLastRead + b.byteLength <= start) {
                 internalLastRead += b.byteLength;
+
                 continue;
             }
             const bstart = Math.max(0, start - internalLastRead);
+
             const bend = Math.min(b.byteLength, bstart + length - soFar);
+
             yield b.slice(bstart, bend);
             soFar += bend - bstart;
             internalLastRead += b.byteLength;
+
             if (soFar === length) {
                 break;
             }
@@ -145,9 +153,12 @@ export class TaskRawOutput implements ITaskRawOutput {
      */
     public append(data: VSBuffer, marker?: number) {
         const offset = this.offset;
+
         let length = data.byteLength;
+
         if (marker === undefined) {
             this.push(data);
+
             return { offset, length };
         }
         // Bytes that should be 'trimmed' off the end of data. This is done because
@@ -160,12 +171,16 @@ export class TaskRawOutput implements ITaskRawOutput {
             LF = 10
         }
         const start = VSBuffer.fromString(getMarkCode(marker, true));
+
         const end = VSBuffer.fromString(getMarkCode(marker, false));
         length += start.byteLength + end.byteLength;
         this.push(start);
+
         let trimLen = data.byteLength;
+
         for (; trimLen > 0; trimLen--) {
             const last = data.buffer[trimLen - 1];
+
             if (last !== TrimBytes.CR && last !== TrimBytes.LF) {
                 break;
             }
@@ -173,6 +188,7 @@ export class TaskRawOutput implements ITaskRawOutput {
         this.push(data.slice(0, trimLen));
         this.push(end);
         this.push(data.slice(trimLen));
+
         return { offset, length };
     }
     private push(data: VSBuffer) {
@@ -201,6 +217,7 @@ export const maxCountPriority = (counts: Readonly<TestStateCount>) => {
     }
     return TestResultState.Unset;
 };
+
 const getMarkCode = (marker: number, start: boolean) => `\x1b]633;SetMark;Id=${getMarkId(marker, start)};Hidden\x07`;
 interface TestResultItemWithChildren extends TestResultItem {
     /** Children in the run */
@@ -282,8 +299,10 @@ export class LiveTestResult extends Disposable implements ITestResult {
         getChildren: i => i.children,
         getParents: i => {
             const { testById: testByExtId } = this;
+
             return (function* () {
                 const parentId = TestId.fromString(i.item.extId).parentId;
+
                 if (parentId) {
                     for (const id of parentId.idsToRoot()) {
                         yield testByExtId.get(id.toString())!;
@@ -292,6 +311,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
             })();
         },
     };
+
     constructor(public readonly id: string, public readonly persist: boolean, public readonly request: ResolvedTestRunRequest, 
     @ITelemetryService
     private readonly telemetry: ITelemetryService) {
@@ -308,6 +328,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public appendOutput(output: VSBuffer, taskId: string, location?: IRichLocation, testId?: string): void {
         const preview = output.byteLength > 100 ? output.slice(0, 100).toString() + '…' : output.toString();
+
         let marker: number | undefined;
         // currently, the UI only exposes jump-to-message from tests or locations,
         // so no need to mark outputs that don't come from either of those.
@@ -315,8 +336,11 @@ export class LiveTestResult extends Disposable implements ITestResult {
             marker = this.testMarkerCounter++;
         }
         const index = this.mustGetTaskIndex(taskId);
+
         const task = this.tasks[index];
+
         const { offset, length } = task.output.append(output, marker);
+
         const message: ITestOutputMessage = {
             location,
             message: preview,
@@ -325,7 +349,9 @@ export class LiveTestResult extends Disposable implements ITestResult {
             marker,
             type: TestMessageType.Output,
         };
+
         const test = testId && this.testById.get(testId);
+
         if (test) {
             test.tasks[index].messages.push(message);
             this.changeEmitter.fire({ item: test, result: this, reason: TestResultItemChangeReason.NewMessage, message });
@@ -339,6 +365,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public addTask(task: ITestRunTask) {
         this.tasks.push({ ...task, coverage: observableValue(this, undefined), otherMessages: [], output: new TaskRawOutput() });
+
         for (const test of this.tests) {
             test.tasks.push({ duration: undefined, messages: [], state: TestResultState.Unset });
         }
@@ -350,6 +377,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public addTestChainToRun(controllerId: string, chain: ReadonlyArray<ITestItem>) {
         let parent = this.testById.get(chain[0].extId);
+
         if (!parent) { // must be a test root
             parent = this.addTestToRun(controllerId, chain[0], null);
         }
@@ -363,11 +391,14 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public updateState(testId: string, taskId: string, state: TestResultState, duration?: number) {
         const entry = this.testById.get(testId);
+
         if (!entry) {
             return;
         }
         const index = this.mustGetTaskIndex(taskId);
+
         const oldTerminalStatePrio = terminalStatePriorities[entry.tasks[index].state];
+
         const newTerminalStatePrio = terminalStatePriorities[state];
         // Ignore requests to set the state from one terminal state back to a
         // "lower" one, e.g. from failed back to passed:
@@ -382,6 +413,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public appendMessage(testId: string, taskId: string, message: ITestMessage) {
         const entry = this.testById.get(testId);
+
         if (!entry) {
             return;
         }
@@ -393,6 +425,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     public markTaskComplete(taskId: string) {
         const index = this.mustGetTaskIndex(taskId);
+
         const task = this.tasks[index];
         task.running = false;
         task.output.end();
@@ -422,16 +455,19 @@ export class LiveTestResult extends Disposable implements ITestResult {
             comment: 'Test outcome metrics. This helps us understand magnitude of feature use and how to build fix suggestions.';
             failures: {
                 comment: 'Number of test failures';
+
                 classification: 'SystemMetaData';
                 purpose: 'FeatureInsight';
             };
             passes: {
                 comment: 'Number of test failures';
+
                 classification: 'SystemMetaData';
                 purpose: 'FeatureInsight';
             };
             controller: {
                 comment: 'The test controller being used';
+
                 classification: 'SystemMetaData';
                 purpose: 'FeatureInsight';
             };
@@ -466,6 +502,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
      */
     protected setAllToState(state: TestResultState, taskId: string, when: (task: ITestTaskState, item: TestResultItem) => boolean) {
         const index = this.mustGetTaskIndex(taskId);
+
         for (const test of this.testById.values()) {
             if (when(test.tasks[index], test)) {
                 this.fireUpdateAndRefresh(test, index, state);
@@ -474,7 +511,9 @@ export class LiveTestResult extends Disposable implements ITestResult {
     }
     private fireUpdateAndRefresh(entry: TestResultItem, taskIndex: number, newState: TestResultState, newOwnDuration?: number) {
         const previousOwnComputed = entry.ownComputedState;
+
         const previousOwnDuration = entry.ownDuration;
+
         const changeEvent: TestResultItemChange = {
             item: entry,
             result: this,
@@ -483,11 +522,13 @@ export class LiveTestResult extends Disposable implements ITestResult {
             previousOwnDuration: previousOwnDuration,
         };
         entry.tasks[taskIndex].state = newState;
+
         if (newOwnDuration !== undefined) {
             entry.tasks[taskIndex].duration = newOwnDuration;
             entry.ownDuration = Math.max(entry.ownDuration || 0, newOwnDuration);
         }
         const newOwnComputed = maxPriority(...entry.tasks.map(t => t.state));
+
         if (newOwnComputed === previousOwnComputed) {
             if (newOwnDuration !== previousOwnDuration) {
                 this.changeEmitter.fire(changeEvent); // fire manually since state change won't do it
@@ -507,6 +548,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
         const node = itemToNode(controllerId, item, parent);
         this.testById.set(item.extId, node);
         this.counts[TestResultState.Unset]++;
+
         if (parent) {
             this.testById.get(parent)?.children.push(node);
         }
@@ -519,6 +561,7 @@ export class LiveTestResult extends Disposable implements ITestResult {
     }
     private mustGetTaskIndex(taskId: string) {
         const index = this.tasks.findIndex(t => t.id === taskId);
+
         if (index === -1) {
             throw new Error(`Unknown task ${taskId} in updateState`);
         }
@@ -576,6 +619,7 @@ export class HydratedTestResult implements ITestResult {
      */
     public readonly request: ResolvedTestRunRequest;
     private readonly testById = new Map<string, TestResultItem>();
+
     constructor(identity: IUriIdentityService, private readonly serialized: ISerializedTestResults, private readonly persist = true) {
         this.id = serialized.id;
         this.completedAt = serialized.completedAt;
@@ -590,6 +634,7 @@ export class HydratedTestResult implements ITestResult {
         }));
         this.name = serialized.name;
         this.request = serialized.request;
+
         for (const item of serialized.items) {
             const de = TestResultItem.deserialize(identity, item);
             this.counts[de.ownComputedState]++;

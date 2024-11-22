@@ -32,6 +32,7 @@ import { ICodeEditorService } from '../../../../editor/browser/services/codeEdit
 import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from '../../../../platform/configuration/common/configurationRegistry.js';
 import { workbenchConfigurationNodeBase } from '../../../common/configuration.js';
 import { DisposableStore } from '../../../../base/common/lifecycle.js';
+
 const targetMenus = [
     MenuId.EditorContextShare,
     MenuId.SCMResourceContextShare,
@@ -44,6 +45,7 @@ const targetMenus = [
 class ShareWorkbenchContribution {
     private static SHARE_ENABLED_SETTING = 'workbench.experimental.share.enabled';
     private _disposables: DisposableStore | undefined;
+
     constructor(
     @IShareService
     private readonly shareService: IShareService, 
@@ -55,6 +57,7 @@ class ShareWorkbenchContribution {
         this.configurationService.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
                 const settingValue = this.configurationService.getValue<boolean>(ShareWorkbenchContribution.SHARE_ENABLED_SETTING);
+
                 if (settingValue === true && this._disposables === undefined) {
                     this.registerActions();
                 }
@@ -72,6 +75,7 @@ class ShareWorkbenchContribution {
         this._disposables.add(registerAction2(class ShareAction extends Action2 {
             static readonly ID = 'workbench.action.share';
             static readonly LABEL = localize2('share', 'Share...');
+
             constructor() {
                 super({
                     id: ShareAction.ID,
@@ -90,20 +94,30 @@ class ShareWorkbenchContribution {
             }
             override async run(accessor: ServicesAccessor, ...args: any[]): Promise<void> {
                 const shareService = accessor.get(IShareService);
+
                 const activeEditor = accessor.get(IEditorService)?.activeEditor;
+
                 const resourceUri = (activeEditor && EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY }))
                     ?? accessor.get(IWorkspaceContextService).getWorkspace().folders[0].uri;
+
                 const clipboardService = accessor.get(IClipboardService);
+
                 const dialogService = accessor.get(IDialogService);
+
                 const urlService = accessor.get(IOpenerService);
+
                 const progressService = accessor.get(IProgressService);
+
                 const selection = accessor.get(ICodeEditorService).getActiveCodeEditor()?.getSelection() ?? undefined;
+
                 const result = await progressService.withProgress({
                     location: ProgressLocation.Window,
                     detail: localize('generating link', 'Generating link...')
                 }, async () => shareService.provideShare({ resourceUri, selection }, CancellationToken.None));
+
                 if (result) {
                     const uriText = result.toString();
+
                     const isResultText = typeof result === 'string';
                     await clipboardService.writeText(uriText);
                     dialogService.prompt({
@@ -122,7 +136,9 @@ class ShareWorkbenchContribution {
                 }
             }
         }));
+
         const actions = this.shareService.getShareActions();
+
         for (const menuId of targetMenus) {
             for (const action of actions) {
                 // todo@joyceerhl avoid duplicates
@@ -132,6 +148,7 @@ class ShareWorkbenchContribution {
     }
 }
 registerSingleton(IShareService, ShareService, InstantiationType.Delayed);
+
 const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(ShareWorkbenchContribution, LifecyclePhase.Eventually);
 Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).registerConfiguration({

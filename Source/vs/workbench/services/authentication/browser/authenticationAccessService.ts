@@ -43,6 +43,7 @@ export class AuthenticationAccessService extends Disposable implements IAuthenti
         providerId: string;
         accountName: string;
     }> = this._onDidChangeExtensionSessionAccess.event;
+
     constructor(
     @IStorageService
     private readonly _storageService: IStorageService, 
@@ -52,6 +53,7 @@ export class AuthenticationAccessService extends Disposable implements IAuthenti
     }
     isAccessAllowed(providerId: string, accountName: string, extensionId: string): boolean | undefined {
         const trustedExtensionAuthAccess = this._productService.trustedExtensionAuthAccess;
+
         if (Array.isArray(trustedExtensionAuthAccess)) {
             if (trustedExtensionAuthAccess.includes(extensionId)) {
                 return true;
@@ -61,7 +63,9 @@ export class AuthenticationAccessService extends Disposable implements IAuthenti
             return true;
         }
         const allowList = this.readAllowedExtensions(providerId, accountName);
+
         const extensionData = allowList.find(extension => extension.id === extensionId);
+
         if (!extensionData) {
             return undefined;
         }
@@ -72,8 +76,10 @@ export class AuthenticationAccessService extends Disposable implements IAuthenti
     }
     readAllowedExtensions(providerId: string, accountName: string): AllowedExtension[] {
         let trustedExtensions: AllowedExtension[] = [];
+
         try {
             const trustedExtensionSrc = this._storageService.get(`${providerId}-${accountName}`, StorageScope.APPLICATION);
+
             if (trustedExtensionSrc) {
                 trustedExtensions = JSON.parse(trustedExtensionSrc);
             }
@@ -83,8 +89,10 @@ export class AuthenticationAccessService extends Disposable implements IAuthenti
     }
     updateAllowedExtensions(providerId: string, accountName: string, extensions: AllowedExtension[]): void {
         const allowList = this.readAllowedExtensions(providerId, accountName);
+
         for (const extension of extensions) {
             const index = allowList.findIndex(e => e.id === extension.id);
+
             if (index === -1) {
                 allowList.push(extension);
             }

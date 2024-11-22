@@ -14,9 +14,11 @@ import { IInstantiationService } from '../../../../platform/instantiation/common
 import { ILinkDescriptor, Link } from '../../../../platform/opener/browser/link.js';
 import { widgetClose } from '../../../../platform/theme/common/iconRegistry.js';
 import { ThemeIcon } from '../../../../base/common/themables.js';
+
 const BANNER_ELEMENT_HEIGHT = 26;
 export class BannerController extends Disposable {
     private readonly banner: Banner;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {
@@ -44,6 +46,7 @@ class Banner extends Disposable {
     private readonly markdownRenderer: MarkdownRenderer;
     private messageActionsContainer: HTMLElement | undefined;
     private actionBar: ActionBar | undefined;
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService) {
@@ -65,6 +68,7 @@ class Banner extends Disposable {
         if (typeof message === 'string') {
             const element = $('span');
             element.innerText = message;
+
             return element;
         }
         return this.markdownRenderer.render(message).element;
@@ -77,12 +81,14 @@ class Banner extends Disposable {
         clearNode(this.element);
         // Banner aria label
         const ariaLabel = this.getAriaLabel(item);
+
         if (ariaLabel) {
             this.element.setAttribute('aria-label', ariaLabel);
         }
         // Icon
         const iconContainer = append(this.element, $('div.icon-container'));
         iconContainer.setAttribute('aria-hidden', 'true');
+
         if (item.icon) {
             iconContainer.appendChild($(`div${ThemeIcon.asCSSSelector(item.icon)}`));
         }
@@ -92,6 +98,7 @@ class Banner extends Disposable {
         messageContainer.appendChild(this.getBannerMessage(item.message));
         // Message Actions
         this.messageActionsContainer = append(this.element, $('div.message-actions-container'));
+
         if (item.actions) {
             for (const action of item.actions) {
                 this._register(this.instantiationService.createInstance(Link, this.messageActionsContainer, { ...action, tabIndex: -1 }, {}));

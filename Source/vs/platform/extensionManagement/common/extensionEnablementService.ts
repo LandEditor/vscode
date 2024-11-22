@@ -19,6 +19,7 @@ export class GlobalExtensionEnablementService extends Disposable implements IGlo
         readonly source?: string;
     }> = this._onDidChangeEnablement.event;
     private readonly storageManager: StorageManager;
+
     constructor(
     @IStorageService
     storageService: IStorageService, 
@@ -36,6 +37,7 @@ export class GlobalExtensionEnablementService extends Disposable implements IGlo
     async enableExtension(extension: IExtensionIdentifier, source?: string): Promise<boolean> {
         if (this._removeFromDisabledExtensions(extension)) {
             this._onDidChangeEnablement.fire({ extensions: [extension], source });
+
             return true;
         }
         return false;
@@ -43,6 +45,7 @@ export class GlobalExtensionEnablementService extends Disposable implements IGlo
     async disableExtension(extension: IExtensionIdentifier, source?: string): Promise<boolean> {
         if (this._addToDisabledExtensions(extension)) {
             this._onDidChangeEnablement.fire({ extensions: [extension], source });
+
             return true;
         }
         return false;
@@ -55,20 +58,25 @@ export class GlobalExtensionEnablementService extends Disposable implements IGlo
     }
     private _addToDisabledExtensions(identifier: IExtensionIdentifier): boolean {
         const disabledExtensions = this.getDisabledExtensions();
+
         if (disabledExtensions.every(e => !areSameExtensions(e, identifier))) {
             disabledExtensions.push(identifier);
             this._setDisabledExtensions(disabledExtensions);
+
             return true;
         }
         return false;
     }
     private _removeFromDisabledExtensions(identifier: IExtensionIdentifier): boolean {
         const disabledExtensions = this.getDisabledExtensions();
+
         for (let index = 0; index < disabledExtensions.length; index++) {
             const disabledExtension = disabledExtensions[index];
+
             if (areSameExtensions(disabledExtension, identifier)) {
                 disabledExtensions.splice(index, 1);
                 this._setDisabledExtensions(disabledExtensions);
+
                 return true;
             }
         }
@@ -90,12 +98,14 @@ export class StorageManager extends Disposable {
     } = Object.create(null);
     private _onDidChange: Emitter<IExtensionIdentifier[]> = this._register(new Emitter<IExtensionIdentifier[]>());
     readonly onDidChange: Event<IExtensionIdentifier[]> = this._onDidChange.event;
+
     constructor(private storageService: IStorageService) {
         super();
         this._register(storageService.onDidChangeValue(StorageScope.PROFILE, undefined, this._store)(e => this.onDidStorageChange(e)));
     }
     get(key: string, scope: StorageScope): IExtensionIdentifier[] {
         let value: string;
+
         if (scope === StorageScope.PROFILE) {
             if (isUndefinedOrNull(this.storage[key])) {
                 this.storage[key] = this._get(key, scope);
@@ -109,7 +119,9 @@ export class StorageManager extends Disposable {
     }
     set(key: string, value: IExtensionIdentifier[], scope: StorageScope): void {
         const newValue: string = JSON.stringify(value.map(({ id, uuid }): IExtensionIdentifier => ({ id, uuid })));
+
         const oldValue = this._get(key, scope);
+
         if (oldValue !== newValue) {
             if (scope === StorageScope.PROFILE) {
                 if (value.length) {
@@ -125,12 +137,17 @@ export class StorageManager extends Disposable {
     private onDidStorageChange(storageChangeEvent: IProfileStorageValueChangeEvent): void {
         if (!isUndefinedOrNull(this.storage[storageChangeEvent.key])) {
             const newValue = this._get(storageChangeEvent.key, storageChangeEvent.scope);
+
             if (newValue !== this.storage[storageChangeEvent.key]) {
                 const oldValues = this.get(storageChangeEvent.key, storageChangeEvent.scope);
                 delete this.storage[storageChangeEvent.key];
+
                 const newValues = this.get(storageChangeEvent.key, storageChangeEvent.scope);
+
                 const added = oldValues.filter(oldValue => !newValues.some(newValue => areSameExtensions(oldValue, newValue)));
+
                 const removed = newValues.filter(newValue => !oldValues.some(oldValue => areSameExtensions(oldValue, newValue)));
+
                 if (added.length || removed.length) {
                     this._onDidChange.fire([...added, ...removed]);
                 }

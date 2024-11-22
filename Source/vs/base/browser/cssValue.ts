@@ -15,8 +15,10 @@ function asFragment(raw: string): CssFragment {
 export function asCssValueWithDefault(cssPropertyValue: string | undefined, dflt: string): string {
     if (cssPropertyValue !== undefined) {
         const variableMatch = cssPropertyValue.match(/^\s*var\((.+)\)$/);
+
         if (variableMatch) {
             const varArguments = variableMatch[1].split(',', 2);
+
             if (varArguments.length === 2) {
                 dflt = asCssValueWithDefault(varArguments[1].trim(), dflt);
             }
@@ -29,6 +31,7 @@ export function asCssValueWithDefault(cssPropertyValue: string | undefined, dflt
 
 export function sizeValue(value: string): CssFragment {
 	const out = value.replaceAll(/[^\w.%+-]/gi, '');
+
 	if (out !== value) {
 		console.warn(`CSS size ${value} modified to ${out} to be safe for CSS`);
 	}
@@ -37,6 +40,7 @@ export function sizeValue(value: string): CssFragment {
 
 export function hexColorValue(value: string): CssFragment {
 	const out = value.replaceAll(/[^[0-9a-fA-F#]]/gi, '');
+
 	if (out !== value) {
 		console.warn(`CSS hex color ${value} modified to ${out} to be safe for CSS`);
 	}
@@ -45,6 +49,7 @@ export function hexColorValue(value: string): CssFragment {
 
 export function identValue(value: string): CssFragment {
 	const out = value.replaceAll(/[^_\-a-z0-9]/gi, '');
+
 	if (out !== value) {
 		console.warn(`CSS ident value ${value} modified to ${out} to be safe for CSS`);
 	}
@@ -66,6 +71,7 @@ export function asCSSUrl(uri: URI | null | undefined): CssFragment {
 
 export function className(value: string, escapingExpected = false): CssFragment {
 	const out = CSS.escape(value);
+
 	if (!escapingExpected && out !== value) {
 		console.warn(`CSS class name ${value} modified to ${out} to be safe for CSS`);
 	}
@@ -82,6 +88,7 @@ type InlineCssTemplateValue = CssFragment | Color;
 export function inline(strings: TemplateStringsArray, ...values: InlineCssTemplateValue[]): CssFragment {
 	return asFragment(strings.reduce((result, str, i) => {
 		const value = values[i] || '';
+
 		return result + str + value;
 	}, ''));
 }

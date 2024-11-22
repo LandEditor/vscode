@@ -10,6 +10,7 @@ export class InsertButton extends Disposable {
     private _button: HTMLElement;
     private readonly _onClicked = this._register(new Emitter<void>());
     public readonly onClicked = this._onClicked.event;
+
     constructor(container: HTMLElement) {
         super();
         this._button = dom.append(container, document.createElement('button'));

@@ -25,13 +25,16 @@ export function mergeEnvironments(parent: IProcessEnvironment, other: ITerminalE
     if (isWindows) {
         for (const configKey in other) {
             let actualKey = configKey;
+
             for (const envKey in parent) {
                 if (configKey.toLowerCase() === envKey.toLowerCase()) {
                     actualKey = envKey;
+
                     break;
                 }
             }
             const value = other[configKey];
+
             if (value !== undefined) {
                 _mergeEnvironmentValue(parent, actualKey, value);
             }
@@ -40,6 +43,7 @@ export function mergeEnvironments(parent: IProcessEnvironment, other: ITerminalE
     else {
         Object.keys(other).forEach((key) => {
             const value = other[key];
+
             if (value !== undefined) {
                 _mergeEnvironmentValue(parent, key, value);
             }
@@ -56,6 +60,7 @@ function _mergeEnvironmentValue(env: ITerminalEnvironment, key: string, value: s
 }
 export function addTerminalEnvironmentKeys(env: IProcessEnvironment, version: string | undefined, locale: string | undefined, detectLocale: 'auto' | 'off' | 'on'): void {
     env['TERM_PROGRAM'] = 'vscode';
+
     if (version) {
         env['TERM_PROGRAM_VERSION'] = version;
     }
@@ -70,6 +75,7 @@ function mergeNonNullKeys(env: IProcessEnvironment, other: ITerminalEnvironment 
     }
     for (const key of Object.keys(other)) {
         const value = other[key];
+
         if (value !== undefined && value !== null) {
             env[key] = value;
         }
@@ -86,6 +92,7 @@ async function resolveConfigurationVariables(variableResolver: VariableResolver,
             }
         }
     }));
+
     return env;
 }
 export function shouldSetLangEnvVariable(env: IProcessEnvironment, detectLocale: 'auto' | 'off' | 'on'): boolean {
@@ -94,13 +101,16 @@ export function shouldSetLangEnvVariable(env: IProcessEnvironment, detectLocale:
     }
     if (detectLocale === 'auto') {
         const lang = env['LANG'];
+
         return !lang || (lang.search(/\.UTF\-8$/) === -1 && lang.search(/\.utf8$/) === -1 && lang.search(/\.euc.+/) === -1);
     }
     return false; // 'off'
 }
 export function getLangEnvVariable(locale?: string): string {
     const parts = locale ? locale.split('-') : [];
+
     const n = parts.length;
+
     if (n === 0) {
         // Fallback to en_US if the locale is unknown
         return 'en_US.UTF-8';
@@ -166,6 +176,7 @@ export function getLangEnvVariable(locale?: string): string {
             uk: 'UA',
             zh: 'CN',
         };
+
         if (parts[0] in languageVariants) {
             parts.push(languageVariants[parts[0]]);
         }
@@ -179,10 +190,13 @@ export function getLangEnvVariable(locale?: string): string {
 export async function getCwd(shell: IShellLaunchConfig, userHome: string | undefined, variableResolver: VariableResolver | undefined, root: URI | undefined, customCwd: string | undefined, logService?: ILogService): Promise<string> {
     if (shell.cwd) {
         const unresolved = (typeof shell.cwd === 'object') ? shell.cwd.fsPath : shell.cwd;
+
         const resolved = await _resolveCwd(unresolved, variableResolver);
+
         return sanitizeCwd(resolved || unresolved);
     }
     let cwd: string | undefined;
+
     if (!shell.ignoreConfigurationCwd && customCwd) {
         if (variableResolver) {
             customCwd = await _resolveCwd(customCwd, variableResolver, logService);
@@ -209,6 +223,7 @@ async function _resolveCwd(cwd: string, variableResolver: VariableResolver | und
         }
         catch (e) {
             logService?.error('Could not resolve terminal cwd', e);
+
             return undefined;
         }
     }
@@ -224,6 +239,7 @@ export function createVariableResolver(lastActiveWorkspace: IWorkspaceFolder | u
 export async function createTerminalEnvironment(shellLaunchConfig: IShellLaunchConfig, envFromConfig: ITerminalEnvironment | undefined, variableResolver: VariableResolver | undefined, version: string | undefined, detectLocale: 'auto' | 'off' | 'on', baseEnv: IProcessEnvironment): Promise<IProcessEnvironment> {
     // Create a terminal environment based on settings, launch config and permissions
     const env: IProcessEnvironment = {};
+
     if (shellLaunchConfig.strictEnv) {
         // strictEnv is true, only use the requested env (ignoring null entries)
         mergeNonNullKeys(env, shellLaunchConfig.env);
@@ -231,6 +247,7 @@ export async function createTerminalEnvironment(shellLaunchConfig: IShellLaunchC
     else {
         // Merge process env with the env from config and from shellLaunchConfig
         mergeNonNullKeys(env, baseEnv);
+
         const allowedEnvFromConfig = { ...envFromConfig };
         // Resolve env vars from config and shell
         if (variableResolver) {
@@ -285,6 +302,7 @@ export async function createTerminalEnvironment(shellLaunchConfig: IShellLaunchC
  */
 export async function preparePathForShell(resource: string | URI, executable: string | undefined, title: string, shellType: TerminalShellType | undefined, backend: Pick<ITerminalBackend, 'getWslPath'> | undefined, os: OperatingSystem | undefined, isWindowsFrontend: boolean = isWindows): Promise<string> {
     let originalPath: string;
+
     if (isString(resource)) {
         originalPath = resource;
     }
@@ -302,12 +320,16 @@ export async function preparePathForShell(resource: string | URI, executable: st
         return originalPath;
     }
     const hasSpace = originalPath.includes(' ');
+
     const hasParens = originalPath.includes('(') || originalPath.includes(')');
+
     const pathBasename = path.basename(executable, '.exe');
+
     const isPowerShell = pathBasename === 'pwsh' ||
         title === 'pwsh' ||
         pathBasename === 'powershell' ||
         title === 'powershell';
+
     if (isPowerShell && (hasSpace || originalPath.includes('\''))) {
         return `& '${originalPath.replace(/'/g, '\'\'')}'`;
     }
@@ -330,6 +352,7 @@ export async function preparePathForShell(resource: string | URI, executable: st
             return originalPath;
         }
         const lowerExecutable = executable.toLowerCase();
+
         if (lowerExecutable.includes('wsl') || (lowerExecutable.includes('bash.exe') && !lowerExecutable.toLowerCase().includes('git'))) {
             return backend?.getWslPath(originalPath, 'win-to-unix') || originalPath;
         }
@@ -342,7 +365,9 @@ export async function preparePathForShell(resource: string | URI, executable: st
 }
 export function getWorkspaceForTerminal(cwd: URI | string | undefined, workspaceContextService: IWorkspaceContextService, historyService: IHistoryService): IWorkspaceFolder | undefined {
     const cwdUri = typeof cwd === 'string' ? URI.parse(cwd) : cwd;
+
     let workspaceFolder = cwdUri ? workspaceContextService.getWorkspaceFolder(cwdUri) ?? undefined : undefined;
+
     if (!workspaceFolder) {
         // fallback to last active workspace if cwd is not available or it is not in workspace
         // TOOD: last active workspace is known to be unreliable, we should remove this fallback eventually

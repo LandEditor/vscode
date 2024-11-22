@@ -10,6 +10,7 @@ import { Categories } from '../../../../platform/action/common/actionCommonCateg
 import { ServicesAccessor } from '../../../../platform/instantiation/common/instantiation.js';
 class ToggleRenderWhitespaceAction extends Action2 {
     static readonly ID = 'editor.action.toggleRenderWhitespace';
+
     constructor() {
         super({
             id: ToggleRenderWhitespaceAction.ID,
@@ -29,8 +30,11 @@ class ToggleRenderWhitespaceAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const renderWhitespace = configurationService.getValue<string>('editor.renderWhitespace');
+
         let newRenderWhitespace: string;
+
         if (renderWhitespace === 'none') {
             newRenderWhitespace = 'all';
         }

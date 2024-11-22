@@ -56,10 +56,12 @@ class EmbedderTerminalProcess extends Disposable implements ITerminalChildProces
     readonly onDidChangeProperty = this._onDidChangeProperty.event;
     private readonly _onProcessExit = this._register(new Emitter<number | undefined>());
     readonly onProcessExit = this._onProcessExit.event;
+
     constructor(readonly id: number, pty: IEmbedderTerminalPty) {
         super();
         this._pty = pty;
         this.onProcessData = this._pty.onDidWrite;
+
         if (this._pty.onDidClose) {
             this._register(this._pty.onDidClose(e => this._onProcessExit.fire(e || undefined)));
         }
@@ -73,6 +75,7 @@ class EmbedderTerminalProcess extends Disposable implements ITerminalChildProces
     async start(): Promise<ITerminalLaunchError | undefined> {
         this._onProcessReady.fire({ pid: -1, cwd: '', windowsPty: undefined });
         this._pty.open();
+
         return undefined;
     }
     shutdown(): void {

@@ -17,6 +17,7 @@ export const enum TunnelPrivacyId {
  * as a dispose+re-create call, and we don't want to have to restart the CLI.
  */
 const CLEANUP_TIMEOUT = 10000;
+
 const cliPath = process.env.VSCODE_FORWARDING_IS_DEV
     ? path.join(__dirname, '../../../cli/target/debug/code')
     : path.join(vscode.env.appRoot, process.platform === 'darwin' ? 'bin' : '../../bin', vscode.env.appQuality === 'stable' ? 'code-tunnel' : 'code-tunnel-insiders') + (process.platform === 'win32' ? '.exe' : '');
@@ -24,6 +25,7 @@ class Tunnel implements vscode.Tunnel {
     private readonly disposeEmitter = new vscode.EventEmitter<void>();
     public readonly onDidDispose = this.disposeEmitter.event;
     public localAddress!: string;
+
     constructor(public readonly remoteAddress: {
         port: number;
         host: string;
@@ -61,6 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return; // forwarding is local-only at the moment
     }
     const logger = new Logger(vscode.l10n.t('Port Forwarding'));
+
     const provider = new TunnelProvider(logger, context);
     context.subscriptions.push(vscode.commands.registerCommand('tunnel-forwarding.showLog', () => logger.show()), vscode.commands.registerCommand('tunnel-forwarding.restart', () => provider.restart()), provider.onDidStateChange(s => {
         vscode.commands.executeCommand('setContext', 'tunnelForwardingIsRunning', s.state !== State.Inactive);
@@ -78,6 +81,7 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() { }
 class Logger {
     private outputChannel?: vscode.LogOutputChannel;
+
     constructor(private readonly label: string) { }
     public show(): void {
         return this.outputChannel?.show();
@@ -106,6 +110,7 @@ class TunnelProvider implements vscode.TunnelProvider {
         this.stateChange.fire(state);
     }
     public readonly onDidStateChange = this.stateChange.event;
+
     constructor(private readonly logger: Logger, private readonly context: vscode.ExtensionContext) { }
     /** @inheritdoc */
     public async provideTunnel(tunnelOptions: vscode.TunnelOptions): Promise<vscode.Tunnel | undefined> {
@@ -120,6 +125,7 @@ class TunnelProvider implements vscode.TunnelProvider {
             this.tunnels.delete(tunnel);
             this.updateActivePortsIfRunning();
         });
+
         switch (this.state.state) {
             case State.Error:
             case State.Inactive:
@@ -127,6 +133,7 @@ class TunnelProvider implements vscode.TunnelProvider {
             // fall through since state is now starting
             case State.Starting:
                 this.updateActivePortsIfRunning();
+
                 return new Promise<Tunnel>((resolve, reject) => {
                     const l = this.stateChange.event(state => {
                         if (state.state === State.Active) {
@@ -140,9 +147,11 @@ class TunnelProvider implements vscode.TunnelProvider {
                         }
                     });
                 });
+
             case State.Active:
                 tunnel.setPortFormat(this.state.portFormat);
                 this.updateActivePortsIfRunning();
+
                 return tunnel;
         }
     }
@@ -154,12 +163,16 @@ class TunnelProvider implements vscode.TunnelProvider {
     }
     private async consentPublicPort(portNumber: number) {
         const didWarn = this.context.globalState.get(didWarnPublicKey, false);
+
         if (didWarn) {
             return true;
         }
         const continueOpt = vscode.l10n.t('Continue');
+
         const dontShowAgain = vscode.l10n.t("Don't show again");
+
         const r = await vscode.window.showWarningMessage(vscode.l10n.t("You're about to create a publicly forwarded port. Anyone on the internet will be able to connect to the service listening on port {0}. You should only proceed if this service is secure and non-sensitive.", portNumber), { modal: true }, continueOpt, dontShowAgain);
+
         if (r === continueOpt) {
             // continue
         }
@@ -188,6 +201,7 @@ class TunnelProvider implements vscode.TunnelProvider {
         }
         const ports = [...this.tunnels].map(t => ({ number: t.remoteAddress.port, privacy: t.privacy, protocol: t.protocol }));
         this.state.process.stdin.write(`${JSON.stringify(ports)}\n`);
+
         if (ports.length === 0 && !this.state.cleanupTimeout) {
             this.state.cleanupTimeout = setTimeout(() => this.killRunningProcess(), CLEANUP_TIMEOUT);
         }
@@ -200,6 +214,7 @@ class TunnelProvider implements vscode.TunnelProvider {
         const session = await vscode.authentication.getSession('github', ['user:email', 'read:org'], {
             createIfNone: true,
         });
+
         const args = [
             '--verbose',
             'tunnel',
@@ -208,8 +223,10 @@ class TunnelProvider implements vscode.TunnelProvider {
             'github',
         ];
         this.logger.log('info', '[forwarding] starting CLI');
+
         const child = spawn(cliPath, args, { stdio: 'pipe', env: { ...process.env, NO_COLOR: '1', VSCODE_CLI_ACCESS_TOKEN: session.accessToken } });
         this.state = { state: State.Starting, process: child };
+
         const progressP = new DeferredPromise<void>();
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
@@ -219,6 +236,7 @@ class TunnelProvider implements vscode.TunnelProvider {
                 args: ['command:tunnel-forwarding.showLog']
             }),
         }, () => progressP.p);
+
         let lastPortFormat: string | undefined;
         child.on('exit', status => {
             const msg = `[forwarding] exited with code ${status}`;
@@ -246,6 +264,7 @@ class TunnelProvider implements vscode.TunnelProvider {
                 const l: {
                     port_format: string;
                 } = JSON.parse(line);
+
                 if (l.port_format && l.port_format !== lastPortFormat) {
                     this.state = {
                         state: State.Active,

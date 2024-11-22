@@ -7,6 +7,7 @@ import { CharacterClassifier } from '../core/characterClassifier.js';
 import { ILink } from '../languages.js';
 export interface ILinkComputerTarget {
     getLineCount(): number;
+
     getLineContent(lineNumber: number): string;
 }
 export const enum State {
@@ -35,8 +36,10 @@ class Uint8Matrix {
     private readonly _data: Uint8Array;
     public readonly rows: number;
     public readonly cols: number;
+
     constructor(rows: number, cols: number, defaultValue: number) {
         const data = new Uint8Array(rows * cols);
+
         for (let i = 0, len = rows * cols; i < len; i++) {
             data[i] = defaultValue;
         }
@@ -54,11 +57,15 @@ class Uint8Matrix {
 export class StateMachine {
     private readonly _states: Uint8Matrix;
     private readonly _maxCharCode: number;
+
     constructor(edges: Edge[]) {
         let maxCharCode = 0;
+
         let maxState = State.Invalid;
+
         for (let i = 0, len = edges.length; i < len; i++) {
             const [from, chCode, to] = edges[i];
+
             if (chCode > maxCharCode) {
                 maxCharCode = chCode;
             }
@@ -71,7 +78,9 @@ export class StateMachine {
         }
         maxCharCode++;
         maxState++;
+
         const states = new Uint8Matrix(maxState, maxCharCode, State.Invalid);
+
         for (let i = 0, len = edges.length; i < len; i++) {
             const [from, chCode, to] = edges[i];
             states.set(from, chCode, to);
@@ -128,10 +137,12 @@ function getClassifier(): CharacterClassifier<CharacterClass> {
         _classifier = new CharacterClassifier<CharacterClass>(CharacterClass.None);
         // allow-any-unicode-next-line
         const FORCE_TERMINATION_CHARACTERS = ' \t<>\'\"、。｡､，．：；‘〈「『〔（［｛｢｣｝］）〕』」〉’｀～…';
+
         for (let i = 0; i < FORCE_TERMINATION_CHARACTERS.length; i++) {
             _classifier.set(FORCE_TERMINATION_CHARACTERS.charCodeAt(i), CharacterClass.ForceTermination);
         }
         const CANNOT_END_WITH_CHARACTERS = '.,;:';
+
         for (let i = 0; i < CANNOT_END_WITH_CHARACTERS.length; i++) {
             _classifier.set(CANNOT_END_WITH_CHARACTERS.charCodeAt(i), CharacterClass.CannotEndIn);
         }
@@ -142,9 +153,12 @@ export class LinkComputer {
     private static _createLink(classifier: CharacterClassifier<CharacterClass>, line: string, lineNumber: number, linkBeginIndex: number, linkEndIndex: number): ILink {
         // Do not allow to end link in certain characters...
         let lastIncludedCharIndex = linkEndIndex - 1;
+
         do {
             const chCode = line.charCodeAt(lastIncludedCharIndex);
+
             const chClass = classifier.get(chCode);
+
             if (chClass !== CharacterClass.CannotEndIn) {
                 break;
             }
@@ -153,7 +167,9 @@ export class LinkComputer {
         // Handle links enclosed in parens, square brackets and curlys.
         if (linkBeginIndex > 0) {
             const charCodeBeforeLink = line.charCodeAt(linkBeginIndex - 1);
+
             const lastCharCodeInLink = line.charCodeAt(lastIncludedCharIndex);
+
             if ((charCodeBeforeLink === CharCode.OpenParen && lastCharCodeInLink === CharCode.CloseParen)
                 || (charCodeBeforeLink === CharCode.OpenSquareBracket && lastCharCodeInLink === CharCode.CloseSquareBracket)
                 || (charCodeBeforeLink === CharCode.OpenCurlyBrace && lastCharCodeInLink === CharCode.CloseCurlyBrace)) {
@@ -175,46 +191,72 @@ export class LinkComputer {
     }
     public static computeLinks(model: ILinkComputerTarget, stateMachine: StateMachine = getStateMachine()): ILink[] {
         const classifier = getClassifier();
+
         const result: ILink[] = [];
+
         for (let i = 1, lineCount = model.getLineCount(); i <= lineCount; i++) {
             const line = model.getLineContent(i);
+
             const len = line.length;
+
             let j = 0;
+
             let linkBeginIndex = 0;
+
             let linkBeginChCode = 0;
+
             let state = State.Start;
+
             let hasOpenParens = false;
+
             let hasOpenSquareBracket = false;
+
             let inSquareBrackets = false;
+
             let hasOpenCurlyBracket = false;
+
             while (j < len) {
                 let resetStateMachine = false;
+
                 const chCode = line.charCodeAt(j);
+
                 if (state === State.Accept) {
                     let chClass: CharacterClass;
+
                     switch (chCode) {
                         case CharCode.OpenParen:
                             hasOpenParens = true;
                             chClass = CharacterClass.None;
+
                             break;
+
                         case CharCode.CloseParen:
                             chClass = (hasOpenParens ? CharacterClass.None : CharacterClass.ForceTermination);
+
                             break;
+
                         case CharCode.OpenSquareBracket:
                             inSquareBrackets = true;
                             hasOpenSquareBracket = true;
                             chClass = CharacterClass.None;
+
                             break;
+
                         case CharCode.CloseSquareBracket:
                             inSquareBrackets = false;
                             chClass = (hasOpenSquareBracket ? CharacterClass.None : CharacterClass.ForceTermination);
+
                             break;
+
                         case CharCode.OpenCurlyBrace:
                             hasOpenCurlyBracket = true;
                             chClass = CharacterClass.None;
+
                             break;
+
                         case CharCode.CloseCurlyBrace:
                             chClass = (hasOpenCurlyBracket ? CharacterClass.None : CharacterClass.ForceTermination);
+
                             break;
                         // The following three rules make it that ' or " or ` are allowed inside links
                         // only if the link is wrapped by some other quote character
@@ -231,18 +273,25 @@ export class LinkComputer {
                                 chClass = CharacterClass.ForceTermination;
                             }
                             break;
+
                         case CharCode.Asterisk:
                             // `*` terminates a link if the link began with `*`
                             chClass = (linkBeginChCode === CharCode.Asterisk) ? CharacterClass.ForceTermination : CharacterClass.None;
+
                             break;
+
                         case CharCode.Pipe:
                             // `|` terminates a link if the link began with `|`
                             chClass = (linkBeginChCode === CharCode.Pipe) ? CharacterClass.ForceTermination : CharacterClass.None;
+
                             break;
+
                         case CharCode.Space:
                             // ` ` allow space in between [ and ]
                             chClass = (inSquareBrackets ? CharacterClass.None : CharacterClass.ForceTermination);
+
                             break;
+
                         default:
                             chClass = classifier.get(chCode);
                     }
@@ -254,6 +303,7 @@ export class LinkComputer {
                 }
                 else if (state === State.End) {
                     let chClass: CharacterClass;
+
                     if (chCode === CharCode.OpenSquareBracket) {
                         // Allow for the authority part to contain ipv6 addresses which contain [ and ]
                         hasOpenSquareBracket = true;
@@ -272,6 +322,7 @@ export class LinkComputer {
                 }
                 else {
                     state = stateMachine.nextState(state, chCode);
+
                     if (state === State.Invalid) {
                         resetStateMachine = true;
                     }

@@ -26,6 +26,7 @@ import { IWorkingCopyEditorService } from '../common/workingCopyEditorService.js
 import { IEditorGroupsService } from '../../editor/common/editorGroupsService.js';
 export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.nativeWorkingCopyBackupTracker';
+
     constructor(
     @IWorkingCopyBackupService
     workingCopyBackupService: IWorkingCopyBackupService, 
@@ -70,9 +71,11 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         // do not want to trigger backup tracking during our shutdown handling
         // but we must resume, in case of a veto afterwards.
         const { resume } = this.suspendBackupOperations();
+
         try {
             // Modified working copies need treatment on shutdown
             const modifiedWorkingCopies = this.workingCopyService.modifiedWorkingCopies;
+
             if (modifiedWorkingCopies.length) {
                 return await this.onBeforeShutdownWithModified(reason, modifiedWorkingCopies);
             }
@@ -89,6 +92,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         // If auto save is enabled, save all non-untitled working copies
         // and then check again for modified copies
         const workingCopiesToAutoSave = modifiedWorkingCopies.filter(wc => !(wc.capabilities & WorkingCopyCapabilities.Untitled) && this.filesConfigurationService.getAutoSaveMode(wc.resource).mode !== AutoSaveMode.OFF);
+
         if (workingCopiesToAutoSave.length > 0) {
             // Save all modified working copies that can be auto-saved
             try {
@@ -99,6 +103,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
             }
             // If we still have modified working copies, we either have untitled ones or working copies that cannot be saved
             const remainingModifiedWorkingCopies = this.workingCopyService.modifiedWorkingCopies;
+
             if (remainingModifiedWorkingCopies.length) {
                 return this.handleModifiedBeforeShutdown(remainingModifiedWorkingCopies, reason);
             }
@@ -110,13 +115,17 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
     private async handleModifiedBeforeShutdown(modifiedWorkingCopies: readonly IWorkingCopy[], reason: ShutdownReason): Promise<boolean> {
         // Trigger backup if configured and enabled for shutdown reason
         let backups: IWorkingCopy[] = [];
+
         let backupError: Error | undefined = undefined;
+
         const modifiedWorkingCopiesToBackup = await this.shouldBackupBeforeShutdown(reason, modifiedWorkingCopies);
+
         if (modifiedWorkingCopiesToBackup.length > 0) {
             try {
                 const backupResult = await this.backupBeforeShutdown(modifiedWorkingCopiesToBackup);
                 backups = backupResult.backups;
                 backupError = backupResult.error;
+
                 if (backups.length === modifiedWorkingCopies.length) {
                     return false; // no veto (backup was successful for all working copies)
                 }
@@ -130,6 +139,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         if (backupError) {
             if (this.environmentService.isExtensionDevelopment) {
                 this.logService.error(`[backup tracker] error creating backups: ${backupError}`);
+
                 return false; // do not block shutdown during extension development (https://github.com/microsoft/vscode/issues/115028)
             }
             return this.showErrorDialog(localize('backupTrackerBackupFailed', "The following editors with unsaved changes could not be saved to the backup location."), remainingModifiedWorkingCopies, backupError, reason);
@@ -142,6 +152,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         catch (error) {
             if (this.environmentService.isExtensionDevelopment) {
                 this.logService.error(`[backup tracker] error saving or reverting modified working copies: ${error}`);
+
                 return false; // do not block shutdown during extension development (https://github.com/microsoft/vscode/issues/115028)
             }
             return this.showErrorDialog(localize('backupTrackerConfirmFailed', "The following editors with unsaved changes could not be saved or reverted."), remainingModifiedWorkingCopies, error, reason);
@@ -186,11 +197,15 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
     }
     private async showErrorDialog(message: string, workingCopies: readonly IWorkingCopy[], error: Error, reason: ShutdownReason): Promise<boolean> {
         this.logService.error(`[backup tracker] ${message}: ${error}`);
+
         const modifiedWorkingCopies = workingCopies.filter(workingCopy => workingCopy.isModified());
+
         const advice = localize('backupErrorDetails', "Try saving or reverting the editors with unsaved changes first and then try again.");
+
         const detail = modifiedWorkingCopies.length
             ? `${getFileNamesMessage(modifiedWorkingCopies.map(x => x.name))}\n${advice}`
             : advice;
+
         const { result } = await this.dialogService.prompt({
             type: 'error',
             message,
@@ -206,6 +221,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
                 }
             ],
         });
+
         return result ?? true;
     }
     private toForceShutdownLabel(reason: ShutdownReason): string {
@@ -213,8 +229,10 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
             case ShutdownReason.CLOSE:
             case ShutdownReason.LOAD:
                 return localize('shutdownForceClose', "Close Anyway");
+
             case ShutdownReason.QUIT:
                 return localize('shutdownForceQuit', "Quit Anyway");
+
             case ShutdownReason.RELOAD:
                 return localize('shutdownForceReload', "Reload Anyway");
         }
@@ -224,6 +242,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         error?: Error;
     }> {
         const backups: IWorkingCopy[] = [];
+
         let error: Error | undefined = undefined;
         await this.withProgressAndCancellation(async (token) => {
             // Perform a backup of all modified working copies unless a backup already exists
@@ -231,16 +250,19 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
                 await Promises.settled(modifiedWorkingCopies.map(async (workingCopy) => {
                     // Backup exists
                     const contentVersion = this.getContentVersion(workingCopy);
+
                     if (this.workingCopyBackupService.hasBackupSync(workingCopy, contentVersion)) {
                         backups.push(workingCopy);
                     }
                     // Backup does not exist
                     else {
                         const backup = await workingCopy.backup(token);
+
                         if (token.isCancellationRequested) {
                             return;
                         }
                         await this.workingCopyBackupService.backup(workingCopy, backup.content, contentVersion, backup.meta, token);
+
                         if (token.isCancellationRequested) {
                             return;
                         }
@@ -252,13 +274,16 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
                 error = backupError;
             }
         }, localize('backupBeforeShutdownMessage', "Backing up editors with unsaved changes is taking a bit longer..."), localize('backupBeforeShutdownDetail', "Click 'Cancel' to stop waiting and to save or revert editors with unsaved changes."));
+
         return { backups, error };
     }
     private async confirmBeforeShutdown(modifiedWorkingCopies: IWorkingCopy[]): Promise<boolean> {
         // Save
         const confirm = await this.fileDialogService.showSaveConfirm(modifiedWorkingCopies.map(workingCopy => workingCopy.name));
+
         if (confirm === ConfirmResult.SAVE) {
             const modifiedCountBeforeSave = this.workingCopyService.modifiedCount;
+
             try {
                 await this.doSaveAllBeforeShutdown(modifiedWorkingCopies, SaveReason.EXPLICIT);
             }
@@ -266,6 +291,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
                 this.logService.error(`[backup tracker] error saving modified working copies: ${error}`); // guard against misbehaving saves, we handle remaining modified below
             }
             const savedWorkingCopies = modifiedCountBeforeSave - this.workingCopyService.modifiedCount;
+
             if (savedWorkingCopies < modifiedWorkingCopies.length) {
                 return true; // veto (save failed or was canceled)
             }
@@ -291,6 +317,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
             // First save through the editor service if we save all to benefit
             // from some extras like switching to untitled modified editors before saving.
             let result: boolean | undefined = undefined;
+
             if (workingCopies.length === this.workingCopyService.modifiedCount) {
                 result = (await this.editorService.saveAll({
                     includeUntitled: { includeScratchpad: true },
@@ -350,6 +377,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
         // Discard backups from working copies the
         // user either saved or reverted
         await this.discardBackupsBeforeShutdown(arg1);
+
         return false; // no veto (no modified)
     }
     private discardBackupsBeforeShutdown(backupsToDiscard: IWorkingCopyIdentifier[]): Promise<void>;
@@ -392,6 +420,7 @@ export class NativeWorkingCopyBackupTracker extends WorkingCopyBackupTracker imp
     }
     private withProgressAndCancellation(promiseFactory: (token: CancellationToken) => Promise<void>, title: string, detail?: string, location = ProgressLocation.Dialog): Promise<void> {
         const cts = new CancellationTokenSource();
+
         return this.progressService.withProgress({
             location, // by default use a dialog to prevent the user from making any more changes now (https://github.com/microsoft/vscode/issues/122774)
             cancellable: true, // allow to cancel (https://github.com/microsoft/vscode/issues/112278)

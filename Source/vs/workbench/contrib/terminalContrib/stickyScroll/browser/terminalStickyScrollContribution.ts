@@ -27,6 +27,7 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
     private readonly _overlay = this._register(new MutableDisposable<TerminalStickyScrollOverlay>());
     private readonly _enableListeners = this._register(new MutableDisposable());
     private readonly _disableListeners = this._register(new MutableDisposable());
+
     constructor(private readonly _ctx: ITerminalContributionContext, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -69,6 +70,7 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
         }
         if (this._overlay.value) {
             this._enableListeners.clear();
+
             if (!this._disableListeners.value) {
                 this._disableListeners.value = this._ctx.instance.capabilities.onDidRemoveCapability(e => {
                     if (e.id === TerminalCapability.CommandDetection) {
@@ -79,6 +81,7 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
         }
         else {
             this._disableListeners.clear();
+
             if (!this._enableListeners.value) {
                 this._enableListeners.value = this._ctx.instance.capabilities.onDidAddCapability(e => {
                     if (e.id === TerminalCapability.CommandDetection) {
@@ -101,6 +104,7 @@ export class TerminalStickyScrollContribution extends Disposable implements ITer
     }
     private _shouldBeEnabled(): boolean {
         const capability = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection);
+
         return !!(this._configurationService.getValue(TerminalStickyScrollSettingId.Enabled) && capability && this._xterm?.raw?.element);
     }
 }

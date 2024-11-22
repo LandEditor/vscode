@@ -30,6 +30,7 @@ export class ChatGettingStartedContribution extends Disposable implements IWorkb
 		super();
 
 		const hideWelcomeView = this.storageService.getBoolean(ChatGettingStartedContribution.hideWelcomeView, StorageScope.APPLICATION, false);
+
 		if (!this.productService.gitHubEntitlement || hideWelcomeView) {
 			return;
 		}
@@ -43,6 +44,7 @@ export class ChatGettingStartedContribution extends Disposable implements IWorkb
 			for (const e of result) {
 				if (ExtensionIdentifier.equals(this.productService.gitHubEntitlement!.extensionId, e.identifier.id) && e.operation === InstallOperation.Install) {
 					this.recentlyInstalled = true;
+
 					return;
 				}
 			}
@@ -52,10 +54,12 @@ export class ChatGettingStartedContribution extends Disposable implements IWorkb
 			for (const ext of event) {
 				if (ExtensionIdentifier.equals(this.productService.gitHubEntitlement!.extensionId, ext.value)) {
 					const extensionStatus = this.extensionService.getExtensionsStatus();
+
 					if (extensionStatus[ext.value].activationTimes && this.recentlyInstalled) {
 						await this.commandService.executeCommand(CHAT_OPEN_ACTION_ID);
 						this.storageService.store(ChatGettingStartedContribution.hideWelcomeView, true, StorageScope.APPLICATION, StorageTarget.MACHINE);
 						this.recentlyInstalled = false;
+
 						return;
 					}
 				}

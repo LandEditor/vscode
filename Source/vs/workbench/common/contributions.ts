@@ -67,6 +67,7 @@ export interface IOnEditorWorkbenchContributionInstantiation {
 }
 function isOnEditorWorkbenchContributionInstantiation(obj: unknown): obj is IOnEditorWorkbenchContributionInstantiation {
     const candidate = obj as IOnEditorWorkbenchContributionInstantiation | undefined;
+
     return !!candidate && typeof candidate.editorTypeId === 'string';
 }
 export type WorkbenchContributionInstantiation = WorkbenchPhase | ILazyWorkbenchContributionInstantiation | IOnEditorWorkbenchContributionInstantiation;
@@ -74,6 +75,7 @@ function toWorkbenchPhase(phase: LifecyclePhase.Restored | LifecyclePhase.Eventu
     switch (phase) {
         case LifecyclePhase.Restored:
             return WorkbenchPhase.AfterRestored;
+
         case LifecyclePhase.Eventually:
             return WorkbenchPhase.Eventually;
     }
@@ -82,10 +84,13 @@ function toLifecyclePhase(instantiation: WorkbenchPhase): LifecyclePhase {
     switch (instantiation) {
         case WorkbenchPhase.BlockStartup:
             return LifecyclePhase.Starting;
+
         case WorkbenchPhase.BlockRestore:
             return LifecyclePhase.Ready;
+
         case WorkbenchPhase.AfterRestored:
             return LifecyclePhase.Restored;
+
         case WorkbenchPhase.Eventually:
             return LifecyclePhase.Eventually;
     }
@@ -136,6 +141,7 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
         string /* ID */,
         number /* Creation Time */
     ]>>();
+
     get timings() { return this.timingsByPhase; }
     private readonly pendingRestoredContributions = new DeferredPromise<void>();
     readonly whenRestored = this.pendingRestoredContributions.p;
@@ -180,13 +186,18 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
             return this.instancesById.get(id) as T;
         }
         const instantiationService = this.instantiationService;
+
         const lifecycleService = this.lifecycleService;
+
         const logService = this.logService;
+
         const environmentService = this.environmentService;
+
         if (!instantiationService || !lifecycleService || !logService || !environmentService) {
             throw new Error(`IWorkbenchContributionsRegistry#getContribution('${id}'): cannot be called before registry started`);
         }
         const contribution = this.contributionsById.get(id);
+
         if (!contribution) {
             throw new Error(`IWorkbenchContributionsRegistry#getContribution('${id}'): contribution with that identifier is unknown.`);
         }
@@ -194,7 +205,9 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
             logService.warn(`IWorkbenchContributionsRegistry#getContribution('${id}'): contribution instantiated before LifecyclePhase.Restored!`);
         }
         this.safeCreateContribution(instantiationService, logService, environmentService, contribution, lifecycleService.phase);
+
         const instance = this.instancesById.get(id);
+
         if (!instance) {
             throw new Error(`IWorkbenchContributionsRegistry#getContribution('${id}'): failed to create contribution.`);
         }
@@ -202,9 +215,13 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
     }
     start(accessor: ServicesAccessor): void {
         const instantiationService = this.instantiationService = accessor.get(IInstantiationService);
+
         const lifecycleService = this.lifecycleService = accessor.get(ILifecycleService);
+
         const logService = this.logService = accessor.get(ILogService);
+
         const environmentService = this.environmentService = accessor.get(IEnvironmentService);
+
         const editorPaneService = this.editorPaneService = accessor.get(IEditorPaneService);
         // Dispose contributions on shutdown
         this._register(lifecycleService.onDidShutdown(() => {
@@ -224,8 +241,10 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
     }
     private onEditor(editorTypeId: string, instantiationService: IInstantiationService, lifecycleService: ILifecycleService, logService: ILogService, environmentService: IEnvironmentService): void {
         const contributions = this.contributionsByEditor.get(editorTypeId);
+
         if (contributions) {
             this.contributionsByEditor.delete(editorTypeId);
+
             for (const contribution of contributions) {
                 this.safeCreateContribution(instantiationService, logService, environmentService, contribution, lifecycleService.phase);
             }
@@ -243,18 +262,22 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
     }
     private async doInstantiateByPhase(instantiationService: IInstantiationService, logService: ILogService, environmentService: IEnvironmentService, phase: LifecyclePhase): Promise<void> {
         const contributions = this.contributionsByPhase.get(phase);
+
         if (contributions) {
             this.contributionsByPhase.delete(phase);
+
             switch (phase) {
                 case LifecyclePhase.Starting:
                 case LifecyclePhase.Ready: {
                     // instantiate everything synchronously and blocking
                     // measure the time it takes as perf marks for diagnosis
                     mark(`code/willCreateWorkbenchContributions/${phase}`);
+
                     for (const contribution of contributions) {
                         this.safeCreateContribution(instantiationService, logService, environmentService, contribution, phase);
                     }
                     mark(`code/didCreateWorkbenchContributions/${phase}`);
+
                     break;
                 }
                 case LifecyclePhase.Restored:
@@ -268,6 +291,7 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
                         await this.pendingRestoredContributions.p;
                     }
                     this.doInstantiateWhenIdle(contributions, instantiationService, logService, environmentService, phase);
+
                     break;
                 }
             }
@@ -275,20 +299,26 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
     }
     private doInstantiateWhenIdle(contributions: IWorkbenchContributionRegistration[], instantiationService: IInstantiationService, logService: ILogService, environmentService: IEnvironmentService, phase: LifecyclePhase): void {
         mark(`code/willCreateWorkbenchContributions/${phase}`);
+
         let i = 0;
+
         const forcedTimeout = phase === LifecyclePhase.Eventually ? 3000 : 500;
+
         const instantiateSome = (idle: IdleDeadline) => {
             while (i < contributions.length) {
                 const contribution = contributions[i++];
                 this.safeCreateContribution(instantiationService, logService, environmentService, contribution, phase);
+
                 if (idle.timeRemaining() < 1) {
                     // time is up -> reschedule
                     runWhenGlobalIdle(instantiateSome, forcedTimeout);
+
                     break;
                 }
             }
             if (i === contributions.length) {
                 mark(`code/didCreateWorkbenchContributions/${phase}`);
+
                 if (phase === LifecyclePhase.Restored) {
                     this.pendingRestoredContributions.complete();
                 }
@@ -301,11 +331,13 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
             return;
         }
         const now = Date.now();
+
         try {
             if (typeof contribution.id === 'string') {
                 mark(`code/willCreateWorkbenchContribution/${phase}/${contribution.id}`);
             }
             const instance = instantiationService.createInstance(contribution.ctor);
+
             if (typeof contribution.id === 'string') {
                 this.instancesById.set(contribution.id, instance);
                 this.contributionsById.delete(contribution.id);
@@ -324,11 +356,13 @@ export class WorkbenchContributionsRegistry extends Disposable implements IWorkb
         }
         if (typeof contribution.id === 'string' || !environmentService.isBuilt /* only log out of sources where we have good ctor names */) {
             const time = Date.now() - now;
+
             if (time > (phase < LifecyclePhase.Restored ? WorkbenchContributionsRegistry.BLOCK_BEFORE_RESTORE_WARN_THRESHOLD : WorkbenchContributionsRegistry.BLOCK_AFTER_RESTORE_WARN_THRESHOLD)) {
                 logService.warn(`Creation of workbench contribution '${contribution.id ?? contribution.ctor.name}' took ${time}ms.`);
             }
             if (typeof contribution.id === 'string') {
                 let timingsForPhase = this.timingsByPhase.get(phase);
+
                 if (!timingsForPhase) {
                     timingsForPhase = [];
                     this.timingsByPhase.set(phase, timingsForPhase);

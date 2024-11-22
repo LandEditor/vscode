@@ -5,8 +5,10 @@
 import * as http from 'http';
 export class IPCClient {
     private ipcHandlePath: string;
+
     constructor(private handlerName: string) {
         const ipcHandlePath = process.env['VSCODE_GIT_IPC_HANDLE'];
+
         if (!ipcHandlePath) {
             throw new Error('Missing VSCODE_GIT_IPC_HANDLE');
         }
@@ -18,6 +20,7 @@ export class IPCClient {
             path: `/${this.handlerName}`,
             method: 'POST'
         };
+
         return new Promise((c, e) => {
             const req = http.request(opts, res => {
                 if (res.statusCode !== 200) {

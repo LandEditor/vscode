@@ -13,6 +13,7 @@ export class CharWidthRequest {
     public readonly chr: string;
     public readonly type: CharWidthRequestType;
     public width: number;
+
     constructor(chr: string, type: CharWidthRequestType) {
         this.chr = chr;
         this.type = type;
@@ -27,6 +28,7 @@ class DomCharWidthReader {
     private readonly _requests: CharWidthRequest[];
     private _container: HTMLElement | null;
     private _testElements: HTMLSpanElement[] | null;
+
     constructor(bareFontInfo: BareFontInfo, requests: CharWidthRequest[]) {
         this._bareFontInfo = bareFontInfo;
         this._requests = requests;
@@ -50,20 +52,26 @@ class DomCharWidthReader {
         container.style.position = 'absolute';
         container.style.top = '-50000px';
         container.style.width = '50000px';
+
         const regularDomNode = document.createElement('div');
         applyFontInfo(regularDomNode, this._bareFontInfo);
         container.appendChild(regularDomNode);
+
         const boldDomNode = document.createElement('div');
         applyFontInfo(boldDomNode, this._bareFontInfo);
         boldDomNode.style.fontWeight = 'bold';
         container.appendChild(boldDomNode);
+
         const italicDomNode = document.createElement('div');
         applyFontInfo(italicDomNode, this._bareFontInfo);
         italicDomNode.style.fontStyle = 'italic';
         container.appendChild(italicDomNode);
+
         const testElements: HTMLSpanElement[] = [];
+
         for (const request of this._requests) {
             let parent: HTMLElement;
+
             if (request.type === CharWidthRequestType.Regular) {
                 parent = regularDomNode;
             }
@@ -74,6 +82,7 @@ class DomCharWidthReader {
                 parent = italicDomNode;
             }
             parent!.appendChild(document.createElement('br'));
+
             const testElement = document.createElement('span');
             DomCharWidthReader._render(testElement, request);
             parent!.appendChild(testElement);
@@ -103,6 +112,7 @@ class DomCharWidthReader {
     private _readFromDomElements(): void {
         for (let i = 0, len = this._requests.length; i < len; i++) {
             const request = this._requests[i];
+
             const testElement = this._testElements![i];
             request.fulfill(testElement.offsetWidth / 256);
         }

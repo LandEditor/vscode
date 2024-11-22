@@ -52,10 +52,12 @@ export const CallHierarchyProviderRegistry = new LanguageFeatureRegistry<CallHie
 export class CallHierarchyModel {
     static async create(model: ITextModel, position: IPosition, token: CancellationToken): Promise<CallHierarchyModel | undefined> {
         const [provider] = CallHierarchyProviderRegistry.ordered(model);
+
         if (!provider) {
             return undefined;
         }
         const session = await provider.prepareCallHierarchy(model, position, token);
+
         if (!session) {
             return undefined;
         }
@@ -70,6 +72,7 @@ export class CallHierarchyModel {
     }
     fork(item: CallHierarchyItem): CallHierarchyModel {
         const that = this;
+
         return new class extends CallHierarchyModel {
             constructor() {
                 super(that.id, that.provider, [item], that.ref.acquire());
@@ -79,6 +82,7 @@ export class CallHierarchyModel {
     async resolveIncomingCalls(item: CallHierarchyItem, token: CancellationToken): Promise<IncomingCall[]> {
         try {
             const result = await this.provider.provideIncomingCalls(item, token);
+
             if (isNonEmptyArray(result)) {
                 return result;
             }
@@ -91,6 +95,7 @@ export class CallHierarchyModel {
     async resolveOutgoingCalls(item: CallHierarchyItem, token: CancellationToken): Promise<OutgoingCall[]> {
         try {
             const result = await this.provider.provideOutgoingCalls(item, token);
+
             if (isNonEmptyArray(result)) {
                 return result;
             }
@@ -107,17 +112,23 @@ CommandsRegistry.registerCommand('_executePrepareCallHierarchy', async (accessor
     const [resource, position] = args;
     assertType(URI.isUri(resource));
     assertType(Position.isIPosition(position));
+
     const modelService = accessor.get(IModelService);
+
     let textModel = modelService.getModel(resource);
+
     let textModelReference: IDisposable | undefined;
+
     if (!textModel) {
         const textModelService = accessor.get(ITextModelService);
+
         const result = await textModelService.createModelReference(resource);
         textModel = result.object.textEditorModel;
         textModelReference = result;
     }
     try {
         const model = await CallHierarchyModel.create(textModel, position, CancellationToken.None);
+
         if (!model) {
             return [];
         }
@@ -129,6 +140,7 @@ CommandsRegistry.registerCommand('_executePrepareCallHierarchy', async (accessor
                 _models.delete(key);
             }
         });
+
         return [model.root];
     }
     finally {
@@ -143,6 +155,7 @@ CommandsRegistry.registerCommand('_executeProvideIncomingCalls', async (_accesso
     assertType(isCallHierarchyItemDto(item));
     // find model
     const model = _models.get(item._sessionId);
+
     if (!model) {
         return undefined;
     }
@@ -153,6 +166,7 @@ CommandsRegistry.registerCommand('_executeProvideOutgoingCalls', async (_accesso
     assertType(isCallHierarchyItemDto(item));
     // find model
     const model = _models.get(item._sessionId);
+
     if (!model) {
         return undefined;
     }

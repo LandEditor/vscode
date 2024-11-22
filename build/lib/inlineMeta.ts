@@ -22,7 +22,9 @@ export function inlineMeta(result: NodeJS.ReadWriteStream, ctx: IInlineMetaConte
     return result.pipe(es.through(function (file: File) {
         if (matchesFile(file, ctx)) {
             let content = file.contents.toString();
+
             let markerFound = false;
+
             const packageMarker = `${packageJsonMarkerId}:"${packageJsonMarkerId}"`; // this needs to be the format after esbuild has processed the file (e.g. double quotes)
             if (content.includes(packageMarker)) {
                 content = content.replace(packageMarker, JSON.stringify(JSON.parse(ctx.packageJsonFn())).slice(1, -1) /* trim braces */);

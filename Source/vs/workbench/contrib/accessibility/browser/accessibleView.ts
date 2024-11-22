@@ -126,23 +126,27 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 		this._container = document.createElement('div');
 		this._container.classList.add('accessible-view');
+
 		if (this._configurationService.getValue(AccessibilityWorkbenchSettingId.HideAccessibleView)) {
 			this._container.classList.add('hide');
 		}
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
 			contributions: EditorExtensionsRegistry.getEditorContributions().filter(c => c.id !== CodeActionController.ID)
 		};
+
 		const titleBar = document.createElement('div');
 		titleBar.classList.add('accessible-view-title-bar');
 		this._title = document.createElement('div');
 		this._title.classList.add('accessible-view-title');
 		titleBar.appendChild(this._title);
+
 		const actionBar = document.createElement('div');
 		actionBar.classList.add('accessible-view-action-bar');
 		titleBar.appendChild(actionBar);
 		this._container.appendChild(titleBar);
 		this._toolbar = this._register(_instantiationService.createInstance(WorkbenchToolBar, actionBar, { orientation: ActionsOrientation.HORIZONTAL }));
 		this._toolbar.context = { viewId: 'accessibleView' };
+
 		const toolbarElt = this._toolbar.getElement();
 		toolbarElt.tabIndex = 0;
 
@@ -187,6 +191,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 		}));
 		this._register(this._editorWidget.onDidChangeCursorPosition(() => {
 			const cursorPosition = this._editorWidget.getPosition()?.lineNumber;
+
 			if (this._codeBlocks && cursorPosition !== undefined) {
 				const inCodeBlock = this._codeBlocks.find(c => c.startLine <= cursorPosition && c.endLine >= cursorPosition) !== undefined;
 				this._accessibleViewInCodeBlock.set(inCodeBlock);
@@ -217,11 +222,13 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	setPosition(position: Position, reveal?: boolean, select?: boolean): void {
 		this._editorWidget.setPosition(position);
+
 		if (reveal) {
 			this._editorWidget.revealPosition(position);
 		}
 		if (select) {
 			const lineLength = this._editorWidget.getModel()?.getLineLength(position.lineNumber) ?? 0;
+
 			if (lineLength) {
 				this._editorWidget.setSelection({ startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: lineLength + 1 });
 			}
@@ -230,11 +237,14 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	getCodeBlockContext(): ICodeBlockActionContext | undefined {
 		const position = this._editorWidget.getPosition();
+
 		if (!this._codeBlocks?.length || !position) {
 			return;
 		}
 		const codeBlockIndex = this._codeBlocks?.findIndex(c => c.startLine <= position?.lineNumber && c.endLine >= position?.lineNumber);
+
 		const codeBlock = codeBlockIndex !== undefined && codeBlockIndex > -1 ? this._codeBlocks[codeBlockIndex] : undefined;
+
 		if (!codeBlock || codeBlockIndex === undefined) {
 			return;
 		}
@@ -243,11 +253,14 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	navigateToCodeBlock(type: 'next' | 'previous'): void {
 		const position = this._editorWidget.getPosition();
+
 		if (!this._codeBlocks?.length || !position) {
 			return;
 		}
 		let codeBlock;
+
 		const codeBlocks = this._codeBlocks.slice();
+
 		if (type === 'previous') {
 			codeBlock = codeBlocks.reverse().find(c => c.endLine < position.lineNumber);
 		} else {
@@ -268,15 +281,18 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	show(provider?: AccesibleViewContentProvider, symbol?: IAccessibleViewSymbol, showAccessibleViewHelp?: boolean, position?: IPosition): void {
 		provider = provider ?? this._currentProvider;
+
 		if (!provider) {
 			return;
 		}
 		provider.onOpen?.();
+
 		const delegate: IContextViewDelegate = {
 			getAnchor: () => { return { x: (getActiveWindow().innerWidth / 2) - ((Math.min(this._layoutService.activeContainerDimension.width * 0.62 /* golden cut */, DIMENSIONS.MAX_WIDTH)) / 2), y: this._layoutService.activeContainerOffset.quickPickTop }; },
 			render: (container) => {
 				this._viewContainer = container;
 				this._viewContainer.classList.add('accessible-view-container');
+
 				return this._render(provider, container, showAccessibleViewHelp);
 			},
 			onHide: () => {
@@ -327,6 +343,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	previous(): void {
 		const newContent = this._currentProvider?.providePreviousContent?.();
+
 		if (!this._currentProvider || !this._viewContainer || !newContent) {
 			return;
 		}
@@ -335,6 +352,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	next(): void {
 		const newContent = this._currentProvider?.provideNextContent?.();
+
 		if (!this._currentProvider || !this._viewContainer || !newContent) {
 			return;
 		}
@@ -368,7 +386,9 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 		}
 		const lines = markdown.split('\n');
 		this._codeBlocks = [];
+
 		let inBlock = false;
+
 		let startLine = 0;
 
 		let languageId: string | undefined;
@@ -379,7 +399,9 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 				languageId = line.substring(3).trim();
 			} else if (inBlock && line.endsWith('```')) {
 				inBlock = false;
+
 				const endLine = i;
+
 				const code = lines.slice(startLine, endLine).join('\n');
 				this._codeBlocks?.push({ startLine, endLine, code, languageId });
 			}
@@ -389,10 +411,12 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	getSymbols(): IAccessibleViewSymbol[] | undefined {
 		const provider = this._currentProvider instanceof AccessibleContentProvider ? this._currentProvider : undefined;
+
 		if (!this._currentContent || !provider) {
 			return;
 		}
 		const symbols: IAccessibleViewSymbol[] = provider.getSymbols?.() || [];
+
 		if (symbols?.length) {
 			return symbols;
 		}
@@ -401,10 +425,12 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			return;
 		}
 		const markdownTokens: marked.TokensList | undefined = marked.marked.lexer(this._currentContent);
+
 		if (!markdownTokens) {
 			return;
 		}
 		this._convertTokensToSymbols(markdownTokens, symbols);
+
 		return symbols.length ? symbols : undefined;
 	}
 
@@ -417,12 +443,16 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	configureKeybindings(unassigned: boolean): void {
 		this._inQuickPick = true;
+
 		const provider = this._updateLastProvider();
+
 		const items = unassigned ? provider?.options?.configureKeybindingItems : provider?.options?.configuredKeybindingItems;
+
 		if (!items) {
 			return;
 		}
 		const disposables = this._register(new DisposableStore());
+
 		const quickPick: IQuickPick<IQuickPickItem> = disposables.add(this._quickInputService.createQuickPick());
 		quickPick.items = items;
 		quickPick.title = localize('keybindings', 'Configure keybindings');
@@ -430,6 +460,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 		quickPick.show();
 		disposables.add(quickPick.onDidAccept(async () => {
 			const item = quickPick.selectedItems[0];
+
 			if (item) {
 				await this._commandService.executeCommand('workbench.action.openGlobalKeybindings', item.id);
 			}
@@ -446,22 +477,28 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _convertTokensToSymbols(tokens: marked.TokensList, symbols: IAccessibleViewSymbol[]): void {
 		let firstListItem: string | undefined;
+
 		for (const token of tokens) {
 			let label: string | undefined = undefined;
+
 			if ('type' in token) {
 				switch (token.type) {
 					case 'heading':
 					case 'paragraph':
 					case 'code':
 						label = token.text;
+
 						break;
+
 					case 'list': {
 						const firstItem = (token as marked.Tokens.List).items[0];
+
 						if (!firstItem) {
 							break;
 						}
 						firstListItem = `- ${firstItem.text}`;
 						label = (token as marked.Tokens.List).items.map(i => i.text).join(', ');
+
 						break;
 					}
 				}
@@ -478,7 +515,9 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			return;
 		}
 		let lineNumber: number | undefined = symbol.lineNumber;
+
 		const markdownToParse = symbol.markdownToParse;
+
 		if (lineNumber === undefined && markdownToParse === undefined) {
 			// No symbols provided and we cannot parse this language
 			return;
@@ -488,6 +527,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			// Note that this scales poorly, thus isn't used for worst case scenarios like the terminal, for which a line number will always be provided.
 			// Parse the markdown to find the line number
 			const index = this._currentContent.split('\n').findIndex(line => line.includes(markdownToParse.split('\n')[0]) || (symbol.firstListItem && line.includes(symbol.firstListItem))) ?? -1;
+
 			if (index >= 0) {
 				lineNumber = index + 1;
 			}
@@ -522,21 +562,31 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _updateContent(provider: AccesibleViewContentProvider, updatedContent?: string): void {
 		let content = updatedContent ?? provider.provideContent();
+
 		if (provider.options.type === AccessibleViewType.View) {
 			this._currentContent = content;
 			this._hasUnassignedKeybindings.reset();
 			this._hasAssignedKeybindings.reset();
+
 			return;
 		}
 		const readMoreLinkHint = this._readMoreHint(provider);
+
 		const disableHelpHint = this._disableVerbosityHint(provider);
+
 		const screenReaderModeHint = this._screenReaderModeHint(provider);
+
 		const exitThisDialogHint = this._exitDialogHint(provider);
+
 		let configureKbHint = '';
+
 		let configureAssignedKbHint = '';
+
 		const resolvedContent = resolveContentAndKeybindingItems(this._keybindingService, screenReaderModeHint + content + readMoreLinkHint + disableHelpHint + exitThisDialogHint);
+
 		if (resolvedContent) {
 			content = resolvedContent.content.value;
+
 			if (resolvedContent.configureKeybindingItems) {
 				provider.options.configureKeybindingItems = resolvedContent.configureKeybindingItems;
 				this._hasUnassignedKeybindings.set(true);
@@ -558,29 +608,37 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 	private _render(provider: AccesibleViewContentProvider, container: HTMLElement, showAccessibleViewHelp?: boolean, updatedContent?: string): IDisposable {
 		this._currentProvider = provider;
 		this._accessibleViewCurrentProviderId.set(provider.id);
+
 		const verbose = this._verbosityEnabled();
 		this._updateContent(provider, updatedContent);
 		this.calculateCodeBlocks(this._currentContent);
 		this._updateContextKeys(provider, true);
+
 		const widgetIsFocused = this._editorWidget.hasTextFocus() || this._editorWidget.hasWidgetFocus();
 		this._getTextModel(URI.from({ path: `accessible-view-${provider.id}`, scheme: Schemas.accessibleView, fragment: this._currentContent })).then((model) => {
 			if (!model) {
 				return;
 			}
 			this._editorWidget.setModel(model);
+
 			const domNode = this._editorWidget.getDomNode();
+
 			if (!domNode) {
 				return;
 			}
 			model.setLanguage(provider.options.language ?? 'markdown');
 			container.appendChild(this._container);
+
 			let actionsHint = '';
+
 			const hasActions = this._accessibleViewSupportsNavigation.get() || this._accessibleViewVerbosityEnabled.get() || this._accessibleViewGoToSymbolSupported.get() || provider.actions?.length;
+
 			if (verbose && !showAccessibleViewHelp && hasActions) {
 				actionsHint = provider.options.position ? localize('ariaAccessibleViewActionsBottom', 'Explore actions such as disabling this hint (Shift+Tab), use Escape to exit this dialog.') : localize('ariaAccessibleViewActions', 'Explore actions such as disabling this hint (Shift+Tab).');
 			}
 			let ariaLabel = provider.options.type === AccessibleViewType.Help ? localize('accessibility-help', "Accessibility Help") : localize('accessible-view', "Accessible View");
 			this._title.textContent = ariaLabel;
+
 			if (actionsHint && provider.options.type === AccessibleViewType.View) {
 				ariaLabel = localize('accessible-view-hint', "Accessible View, {0}", actionsHint);
 			} else if (actionsHint) {
@@ -593,12 +651,17 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			}
 			this._editorWidget.updateOptions({ ariaLabel });
 			this._editorWidget.focus();
+
 			if (this._currentProvider?.options.position) {
 				const position = this._editorWidget.getPosition();
+
 				const isDefaultPosition = position?.lineNumber === 1 && position.column === 1;
+
 				if (this._currentProvider.options.position === 'bottom' || this._currentProvider.options.position === 'initial-bottom' && isDefaultPosition) {
 					const lastLine = this.editorWidget.getModel()?.getLineCount();
+
 					const position = lastLine !== undefined && lastLine > 0 ? new Position(lastLine, 1) : undefined;
+
 					if (position) {
 						this._editorWidget.setPosition(position);
 						this._editorWidget.revealLine(position.lineNumber);
@@ -620,6 +683,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			this._currentProvider?.dispose();
 			this._currentProvider = undefined;
 		};
+
 		const disposableStore = new DisposableStore();
 		disposableStore.add(this._editorWidget.onKeyDown((e) => {
 			if (e.keyCode === KeyCode.Enter) {
@@ -639,6 +703,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 		}));
 		disposableStore.add(addDisposableListener(this._toolbar.getElement(), EventType.KEY_DOWN, (e: KeyboardEvent) => {
 			const keyboardEvent = new StandardKeyboardEvent(e);
+
 			if (keyboardEvent.equals(KeyCode.Escape)) {
 				hide(e);
 			}
@@ -650,13 +715,17 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 		}));
 		disposableStore.add(this._editorWidget.onDidContentSizeChange(() => this._layout()));
 		disposableStore.add(this._layoutService.onDidLayoutActiveContainer(() => this._layout()));
+
 		return disposableStore;
 	}
 
 	private _updateToolbar(providedActions?: IAction[], type?: AccessibleViewType): void {
 		this._toolbar.setAriaLabel(type === AccessibleViewType.Help ? localize('accessibleHelpToolbar', 'Accessibility Help') : localize('accessibleViewToolbar', "Accessible View"));
+
 		const toolbarMenu = this._register(this._menuService.createMenu(MenuId.AccessibleView, this._contextKeyService));
+
 		const menuActions = getFlatActionBarActions(toolbarMenu.getActions({}));
+
 		if (providedActions) {
 			for (const providedAction of providedActions) {
 				providedAction.class = providedAction.class || ThemeIcon.asClassName(Codicon.primitiveSquare);
@@ -670,14 +739,18 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _layout(): void {
 		const dimension = this._layoutService.activeContainerDimension;
+
 		const maxHeight = dimension.height && dimension.height * .4;
+
 		const height = Math.min(maxHeight, this._editorWidget.getContentHeight());
+
 		const width = Math.min(dimension.width * 0.62 /* golden cut */, DIMENSIONS.MAX_WIDTH);
 		this._editorWidget.layout({ width, height });
 	}
 
 	private async _getTextModel(resource: URI): Promise<ITextModel | null> {
 		const existing = this._modelService.getModel(resource);
+
 		if (existing && !existing.isDisposed()) {
 			return existing;
 		}
@@ -693,6 +766,7 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _updateLastProvider(): AccesibleViewContentProvider | undefined {
 		const provider = this._currentProvider;
+
 		if (!provider) {
 			return;
 		}
@@ -720,15 +794,18 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 			provider.actions,
 			provider.onDidChangeContent?.bind(provider),
 		);
+
 		return lastProvider;
 	}
 
 	public showAccessibleViewHelp(): void {
 		const lastProvider = this._updateLastProvider();
+
 		if (!lastProvider) {
 			return;
 		}
 		let accessibleViewHelpProvider;
+
 		if (lastProvider instanceof AccessibleContentProvider) {
 			accessibleViewHelpProvider = new AccessibleContentProvider(
 				lastProvider.id,
@@ -762,11 +839,15 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _accessibleViewHelpDialogContent(providerHasSymbols?: boolean): string {
 		const navigationHint = this._navigationHint();
+
 		const goToSymbolHint = this._goToSymbolHint(providerHasSymbols);
+
 		const toolbarHint = localize('toolbar', "Navigate to the toolbar (Shift+Tab).");
+
 		const chatHints = this._getChatHints();
 
 		let hint = localize('intro', "In the accessible view, you can:\n");
+
 		if (navigationHint) {
 			hint += ' - ' + navigationHint + '\n';
 		}
@@ -811,24 +892,31 @@ export class AccessibleView extends Disposable implements ITextModelContentProvi
 
 	private _configureUnassignedKbHint(): string {
 		const configureKb = this._keybindingService.lookupKeybinding(AccessibilityCommandId.AccessibilityHelpConfigureKeybindings)?.getAriaLabel();
+
 		const keybindingToConfigureQuickPick = configureKb ? '(' + configureKb + ')' : 'by assigning a keybinding to the command Accessibility Help Configure Unassigned Keybindings.';
+
 		return localize('configureKb', '\nConfigure keybindings for commands that lack them {0}.', keybindingToConfigureQuickPick);
 	}
 
 	private _configureAssignedKbHint(): string {
 		const configureKb = this._keybindingService.lookupKeybinding(AccessibilityCommandId.AccessibilityHelpConfigureAssignedKeybindings)?.getAriaLabel();
+
 		const keybindingToConfigureQuickPick = configureKb ? '(' + configureKb + ')' : 'by assigning a keybinding to the command Accessibility Help Configure Assigned Keybindings.';
+
 		return localize('configureKbAssigned', '\nConfigure keybindings for commands that already have assignments {0}.', keybindingToConfigureQuickPick);
 	}
 
 	private _screenReaderModeHint(provider: AccesibleViewContentProvider): string {
 		const accessibilitySupport = this._accessibilityService.isScreenReaderOptimized();
+
 		let screenReaderModeHint = '';
+
 		const turnOnMessage = (
 			isMacintosh
 				? AccessibilityHelpNLS.changeConfigToOnMac
 				: AccessibilityHelpNLS.changeConfigToOnWinLinux
 		);
+
 		if (accessibilitySupport && provider.id === AccessibleViewProviderId.Editor) {
 			screenReaderModeHint = AccessibilityHelpNLS.auto_on;
 			screenReaderModeHint += '\n';
@@ -889,7 +977,9 @@ export class AccessibleViewService extends Disposable implements IAccessibleView
 			return null;
 		}
 		const keybinding = this._keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibleView)?.getAriaLabel();
+
 		let hint = null;
+
 		if (keybinding) {
 			hint = localize('acessibleViewHint', "Inspect this in the accessible view with {0}", keybinding);
 		} else {
@@ -908,6 +998,7 @@ export class AccessibleViewService extends Disposable implements IAccessibleView
 	}
 	getLastPosition(): Position | undefined {
 		const lastLine = this._accessibleView?.editorWidget.getModel()?.getLineCount();
+
 		return lastLine !== undefined && lastLine > 0 ? new Position(lastLine, 1) : undefined;
 	}
 	setPosition(position: Position, reveal?: boolean, select?: boolean): void {
@@ -927,11 +1018,15 @@ class AccessibleViewSymbolQuickPick {
 	}
 	show(provider: AccesibleViewContentProvider): void {
 		const disposables = new DisposableStore();
+
 		const quickPick = disposables.add(this._quickInputService.createQuickPick<IAccessibleViewSymbol>());
 		quickPick.placeholder = localize('accessibleViewSymbolQuickPickPlaceholder', "Type to search symbols");
 		quickPick.title = localize('accessibleViewSymbolQuickPickTitle', "Go to Symbol Accessible View");
+
 		const picks = [];
+
 		const symbols = this._accessibleView.getSymbols();
+
 		if (!symbols) {
 			return;
 		}
@@ -964,9 +1059,11 @@ function shouldHide(event: KeyboardEvent, keybindingService: IKeybindingService,
 		return false;
 	}
 	const standardKeyboardEvent = new StandardKeyboardEvent(event);
+
 	const resolveResult = keybindingService.softDispatch(standardKeyboardEvent, standardKeyboardEvent.target);
 
 	const isValidChord = resolveResult.kind === ResultKind.MoreChordsNeeded;
+
 	if (keybindingService.inChordMode || isValidChord) {
 		return false;
 	}

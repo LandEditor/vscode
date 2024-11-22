@@ -14,7 +14,9 @@ import type * as WindowsProcessTreeType from '@vscode/windows-process-tree';
 export interface IWindowsShellHelper extends IDisposable {
 	readonly onShellNameChanged: Event<string>;
 	readonly onShellTypeChanged: Event<TerminalShellType | undefined>;
+
 	getShellType(title: string): TerminalShellType | undefined;
+
 	getShellName(): Promise<string>;
 }
 
@@ -44,12 +46,16 @@ let windowsProcessTree: typeof WindowsProcessTreeType;
 export class WindowsShellHelper extends Disposable implements IWindowsShellHelper {
 	private _currentRequest: Promise<string> | undefined;
 	private _shellType: TerminalShellType | undefined;
+
 	get shellType(): TerminalShellType | undefined { return this._shellType; }
 	private _shellTitle: string = '';
+
 	get shellTitle(): string { return this._shellTitle; }
 	private readonly _onShellNameChanged = new Emitter<string>();
+
 	get onShellNameChanged(): Event<string> { return this._onShellNameChanged.event; }
 	private readonly _onShellTypeChanged = new Emitter<TerminalShellType | undefined>();
+
 	get onShellTypeChanged(): Event<TerminalShellType | undefined> { return this._onShellTypeChanged.event; }
 
 	constructor(
@@ -80,6 +86,7 @@ export class WindowsShellHelper extends Disposable implements IWindowsShellHelpe
 			await timeout(300);
 			this.getShellName().then(title => {
 				const type = this.getShellType(title);
+
 				if (type !== this._shellType) {
 					this._onShellTypeChanged.fire(type);
 					this._onShellNameChanged.fire(title);
@@ -106,8 +113,10 @@ export class WindowsShellHelper extends Disposable implements IWindowsShellHelpe
 			return tree.name;
 		}
 		let favouriteChild = 0;
+
 		for (; favouriteChild < tree.children.length; favouriteChild++) {
 			const child = tree.children[favouriteChild];
+
 			if (!child.children || child.children.length === 0) {
 				break;
 			}
@@ -142,6 +151,7 @@ export class WindowsShellHelper extends Disposable implements IWindowsShellHelpe
 				resolve(name);
 			});
 		});
+
 		return this._currentRequest;
 	}
 
@@ -149,16 +159,21 @@ export class WindowsShellHelper extends Disposable implements IWindowsShellHelpe
 		switch (executable.toLowerCase()) {
 			case 'cmd.exe':
 				return WindowsShellType.CommandPrompt;
+
 			case 'powershell.exe':
 			case 'pwsh.exe':
 				return GeneralShellType.PowerShell;
+
 			case 'bash.exe':
 			case 'git-cmd.exe':
 				return WindowsShellType.GitBash;
+
 			case 'julia.exe':
 				return GeneralShellType.Julia;
+
 			case 'nu.exe':
 				return GeneralShellType.NuShell;
+
 			case 'wsl.exe':
 			case 'ubuntu.exe':
 			case 'ubuntu1804.exe':
@@ -167,6 +182,7 @@ export class WindowsShellHelper extends Disposable implements IWindowsShellHelpe
 			case 'opensuse-42.exe':
 			case 'sles-12.exe':
 				return WindowsShellType.Wsl;
+
 			default:
 				if (executable.match(/python(\d(\.\d{0,2})?)?\.exe/)) {
 					return GeneralShellType.Python;

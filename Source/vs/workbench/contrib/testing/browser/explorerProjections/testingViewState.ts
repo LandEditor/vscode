@@ -17,6 +17,7 @@ export function isCollapsedInSerializedTestTree(serialized: ISerializedTestTreeC
         id = TestId.fromString(id);
     }
     let node = serialized;
+
     for (const part of id.path) {
         if (!node.children?.hasOwnProperty(part)) {
             return undefined;

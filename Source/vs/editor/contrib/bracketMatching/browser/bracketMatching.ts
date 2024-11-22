@@ -70,6 +70,7 @@ class SelectToBracketAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
 		let selectBrackets = true;
+
 		if (args && args.selectBrackets === false) {
 			selectBrackets = false;
 		}
@@ -182,12 +183,15 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 		}
 
 		const model = this._editor.getModel();
+
 		const newSelections = this._editor.getSelections().map(selection => {
 			const position = selection.getStartPosition();
 
 			// find matching brackets if position is on a bracket
 			const brackets = model.bracketPairs.matchBracket(position);
+
 			let newCursorPosition: Position | null = null;
+
 			if (brackets) {
 				if (brackets[0].containsPosition(position) && !brackets[1].containsPosition(position)) {
 					newCursorPosition = brackets[1].getStartPosition();
@@ -197,11 +201,13 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 			} else {
 				// find the enclosing brackets if the position isn't on a matching bracket
 				const enclosingBrackets = model.bracketPairs.findEnclosingBrackets(position);
+
 				if (enclosingBrackets) {
 					newCursorPosition = enclosingBrackets[1].getStartPosition();
 				} else {
 					// no enclosing brackets, try the very first next bracket
 					const nextBracket = model.bracketPairs.findNextBracket(position);
+
 					if (nextBracket && nextBracket.range) {
 						newCursorPosition = nextBracket.range.getStartPosition();
 					}
@@ -224,16 +230,20 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 		}
 
 		const model = this._editor.getModel();
+
 		const newSelections: Selection[] = [];
 
 		this._editor.getSelections().forEach(selection => {
 			const position = selection.getStartPosition();
+
 			let brackets = model.bracketPairs.matchBracket(position);
 
 			if (!brackets) {
 				brackets = model.bracketPairs.findEnclosingBrackets(position);
+
 				if (!brackets) {
 					const nextBracket = model.bracketPairs.findNextBracket(position);
+
 					if (nextBracket && nextBracket.range) {
 						brackets = model.bracketPairs.matchBracket(nextBracket.range.getStartPosition());
 					}
@@ -241,10 +251,12 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 			}
 
 			let selectFrom: Position | null = null;
+
 			let selectTo: Position | null = null;
 
 			if (brackets) {
 				brackets.sort(Range.compareRangesUsingStarts);
+
 				const [open, close] = brackets;
 				selectFrom = selectBrackets ? open.getStartPosition() : open.getEndPosition();
 				selectTo = selectBrackets ? close.getEndPosition() : close.getStartPosition();
@@ -277,6 +289,7 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 			const position = selection.getPosition();
 
 			let brackets = model.bracketPairs.matchBracket(position);
+
 			if (!brackets) {
 				brackets = model.bracketPairs.findEnclosingBrackets(position);
 			}
@@ -317,9 +330,12 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 		this._recomputeBrackets();
 
 		const newDecorations: IModelDeltaDecoration[] = [];
+
 		let newDecorationsLen = 0;
+
 		for (const bracketData of this._lastBracketsData) {
 			const brackets = bracketData.brackets;
+
 			if (brackets) {
 				newDecorations[newDecorationsLen++] = { range: brackets[0], options: bracketData.options };
 				newDecorations[newDecorationsLen++] = { range: brackets[1], options: bracketData.options };
@@ -334,27 +350,35 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 			// no model or no focus => no brackets!
 			this._lastBracketsData = [];
 			this._lastVersionId = 0;
+
 			return;
 		}
 
 		const selections = this._editor.getSelections();
+
 		if (selections.length > 100) {
 			// no bracket matching for high numbers of selections
 			this._lastBracketsData = [];
 			this._lastVersionId = 0;
+
 			return;
 		}
 
 		const model = this._editor.getModel();
+
 		const versionId = model.getVersionId();
+
 		let previousData: BracketsData[] = [];
+
 		if (this._lastVersionId === versionId) {
 			// use the previous data only if the model is at the same version id
 			previousData = this._lastBracketsData;
 		}
 
 		const positions: Position[] = [];
+
 		let positionsLen = 0;
+
 		for (let i = 0, len = selections.length; i < len; i++) {
 			const selection = selections[i];
 
@@ -370,9 +394,13 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 		}
 
 		const newData: BracketsData[] = [];
+
 		let newDataLen = 0;
+
 		let previousIndex = 0;
+
 		const previousLen = previousData.length;
+
 		for (let i = 0, len = positions.length; i < len; i++) {
 			const position = positions[i];
 
@@ -384,7 +412,9 @@ export class BracketMatchingController extends Disposable implements IEditorCont
 				newData[newDataLen++] = previousData[previousIndex];
 			} else {
 				let brackets = model.bracketPairs.matchBracket(position, 20 /* give at most 20ms to compute */);
+
 				let options = BracketMatchingController._DECORATION_OPTIONS_WITH_OVERVIEW_RULER;
+
 				if (!brackets && this._matchBrackets === 'always') {
 					brackets = model.bracketPairs.findEnclosingBrackets(position, 20 /* give at most 20ms to compute */);
 					options = BracketMatchingController._DECORATION_OPTIONS_WITHOUT_OVERVIEW_RULER;

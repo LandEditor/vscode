@@ -12,6 +12,7 @@ export class MainThreadLanguageModelTools extends Disposable implements MainThre
     private readonly _proxy: ExtHostLanguageModelToolsShape;
     private readonly _tools = this._register(new DisposableMap<string>());
     private readonly _countTokenCallbacks = new Map</* call ID */ string, CountTokensCallback>();
+
     constructor(extHostContext: IExtHostContext, 
     @ILanguageModelToolsService
     private readonly _languageModelToolsService: ILanguageModelToolsService) {
@@ -27,6 +28,7 @@ export class MainThreadLanguageModelTools extends Disposable implements MainThre
     }
     $countTokensForInvocation(callId: string, input: string, token: CancellationToken): Promise<number> {
         const fn = this._countTokenCallbacks.get(callId);
+
         if (!fn) {
             throw new Error(`Tool invocation call ${callId} not found`);
         }
@@ -37,6 +39,7 @@ export class MainThreadLanguageModelTools extends Disposable implements MainThre
             invoke: async (dto, countTokens, token) => {
                 try {
                     this._countTokenCallbacks.set(dto.callId, countTokens);
+
                     return await this._proxy.$invokeTool(dto, token);
                 }
                 finally {

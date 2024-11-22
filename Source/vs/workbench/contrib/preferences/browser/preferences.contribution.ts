@@ -46,17 +46,29 @@ import { IUserDataProfileService, CURRENT_PROFILE_CONTEXT } from '../../../servi
 import { IUserDataProfilesService } from '../../../../platform/userDataProfile/common/userDataProfile.js';
 import { isCodeEditor } from '../../../../editor/browser/editorBrowser.js';
 import { Categories } from '../../../../platform/action/common/actionCommonCategories.js';
+
 const SETTINGS_EDITOR_COMMAND_SEARCH = 'settings.action.search';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_FILE = 'settings.action.focusSettingsFile';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_SETTINGS_FROM_SEARCH = 'settings.action.focusSettingsFromSearch';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_SETTINGS_LIST = 'settings.action.focusSettingsList';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_TOC = 'settings.action.focusTOC';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_CONTROL = 'settings.action.focusSettingControl';
+
 const SETTINGS_EDITOR_COMMAND_FOCUS_UP = 'settings.action.focusLevelUp';
+
 const SETTINGS_EDITOR_COMMAND_SWITCH_TO_JSON = 'settings.switchToJSON';
+
 const SETTINGS_EDITOR_COMMAND_FILTER_ONLINE = 'settings.filterByOnline';
+
 const SETTINGS_EDITOR_COMMAND_FILTER_UNTRUSTED = 'settings.filterUntrusted';
+
 const SETTINGS_COMMAND_OPEN_SETTINGS = 'workbench.action.openSettings';
+
 const SETTINGS_COMMAND_FILTER_TELEMETRY = 'settings.filterByTelemetry';
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(EditorPaneDescriptor.create(SettingsEditor2, SettingsEditor2.ID, nls.localize('settingsEditor2', "Settings Editor 2")), [
     new SyncDescriptor(SettingsEditor2Input)
@@ -88,9 +100,13 @@ class SettingsEditor2InputSerializer implements IEditorSerializer {
 }
 Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(KeybindingsEditorInput.ID, KeybindingsEditorInputSerializer);
 Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(SettingsEditor2Input.ID, SettingsEditor2InputSerializer);
+
 const OPEN_USER_SETTINGS_UI_TITLE = nls.localize2('openSettings2', "Open Settings (UI)");
+
 const OPEN_USER_SETTINGS_JSON_TITLE = nls.localize2('openUserSettingsJson', "Open User Settings (JSON)");
+
 const OPEN_APPLICATION_SETTINGS_JSON_TITLE = nls.localize2('openApplicationSettingsJson', "Open Application Settings (JSON)");
+
 const category = Categories.Preferences;
 interface IOpenSettingsActionOptions {
     openToSide?: boolean;
@@ -116,6 +132,7 @@ function sanitizeOpenSettingsArgs(args: any): IOpenSettingsActionOptions {
         openToSide: sanitizeBoolean(args?.openToSide),
         query: sanitizeString(args?.query)
     };
+
     if (isString(args?.revealSetting?.key)) {
         sanitizedObject = {
             ...sanitizedObject,
@@ -129,6 +146,7 @@ function sanitizeOpenSettingsArgs(args: any): IOpenSettingsActionOptions {
 }
 class PreferencesActionsContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.preferencesActions';
+
     constructor(
     @IWorkbenchEnvironmentService
     private readonly environmentService: IWorkbenchEnvironmentService, 
@@ -179,6 +197,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             run(accessor: ServicesAccessor, args: string | IOpenSettingsActionOptions) {
                 // args takes a string for backcompat
                 const opts = typeof args === 'string' ? { query: args } : sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openSettings(opts);
             }
         }));
@@ -193,6 +212,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args: IOpenSettingsActionOptions) {
                 args = sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openSettings({ jsonEditor: false, ...args });
             }
         }));
@@ -210,9 +230,11 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args: IOpenSettingsActionOptions) {
                 args = sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openSettings({ jsonEditor: true, ...args });
             }
         }));
+
         const that = this;
         this._register(registerAction2(class extends Action2 {
             constructor() {
@@ -228,6 +250,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args: IOpenSettingsActionOptions) {
                 args = sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openApplicationSettings({ jsonEditor: true, ...args });
             }
         }));
@@ -243,6 +266,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args: IOpenSettingsActionOptions) {
                 args = sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openUserSettings(args);
             }
         }));
@@ -287,6 +311,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             run(accessor: ServicesAccessor, args?: string | IOpenSettingsActionOptions) {
                 // Match the behaviour of workbench.action.openSettings
                 args = typeof args === 'string' ? { query: args } : sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openWorkspaceSettings(args);
             }
         }));
@@ -320,6 +345,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args?: IOpenSettingsActionOptions) {
                 args = sanitizeOpenSettingsArgs(args);
+
                 return accessor.get(IPreferencesService).openWorkspaceSettings({ jsonEditor: true, ...args });
             }
         }));
@@ -337,8 +363,11 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             async run(accessor: ServicesAccessor, args?: IOpenSettingsActionOptions) {
                 const commandService = accessor.get(ICommandService);
+
                 const preferencesService = accessor.get(IPreferencesService);
+
                 const workspaceFolder = await commandService.executeCommand<IWorkspaceFolder>(PICK_WORKSPACE_FOLDER_COMMAND_ID);
+
                 if (workspaceFolder) {
                     args = sanitizeOpenSettingsArgs(args);
                     await preferencesService.openFolderSettings({ folderUri: workspaceFolder.uri, ...args });
@@ -359,8 +388,11 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             async run(accessor: ServicesAccessor, args?: IOpenSettingsActionOptions) {
                 const commandService = accessor.get(ICommandService);
+
                 const preferencesService = accessor.get(IPreferencesService);
+
                 const workspaceFolder = await commandService.executeCommand<IWorkspaceFolder>(PICK_WORKSPACE_FOLDER_COMMAND_ID);
+
                 if (workspaceFolder) {
                     args = sanitizeOpenSettingsArgs(args);
                     await preferencesService.openFolderSettings({ folderUri: workspaceFolder.uri, jsonEditor: true, ...args });
@@ -387,8 +419,11 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
                 }
                 else {
                     const commandService = accessor.get(ICommandService);
+
                     const preferencesService = accessor.get(IPreferencesService);
+
                     const workspaceFolder = await commandService.executeCommand<IWorkspaceFolder>(PICK_WORKSPACE_FOLDER_COMMAND_ID);
+
                     if (workspaceFolder) {
                         await preferencesService.openFolderSettings({ folderUri: workspaceFolder.uri });
                     }
@@ -409,6 +444,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof SettingsEditor2) {
                     editorPane.focusSearch(`@tag:usesOnlineServices`);
                 }
@@ -437,6 +473,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof SettingsEditor2) {
                     editorPane.focusSearch(`@tag:telemetry`);
                 }
@@ -449,6 +486,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
         this.extensionService.whenInstalledExtensionsRegistered()
             .then(() => {
             const remoteAuthority = this.environmentService.remoteAuthority;
+
             const hostLabel = this.labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority) || remoteAuthority;
             this._register(registerAction2(class extends Action2 {
                 constructor() {
@@ -464,6 +502,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
                 }
                 run(accessor: ServicesAccessor, args?: IOpenSettingsActionOptions) {
                     args = sanitizeOpenSettingsArgs(args);
+
                     return accessor.get(IPreferencesService).openRemoteSettings(args);
                 }
             }));
@@ -481,6 +520,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
                 }
                 run(accessor: ServicesAccessor, args?: IOpenSettingsActionOptions) {
                     args = sanitizeOpenSettingsArgs(args);
+
                     return accessor.get(IPreferencesService).openRemoteSettings({ jsonEditor: true, ...args });
                 }
             }));
@@ -489,6 +529,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
     private registerSettingsEditorActions() {
         function getPreferencesEditor(accessor: ServicesAccessor): SettingsEditor2 | null {
             const activeEditorPane = accessor.get(IEditorService).activeEditorPane;
+
             if (activeEditorPane instanceof SettingsEditor2) {
                 return activeEditorPane;
             }
@@ -586,6 +627,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor): void {
                 const preferencesEditor = getPreferencesEditor(accessor);
+
                 if (preferencesEditor instanceof SettingsEditor2) {
                     preferencesEditor.focusSettings();
                 }
@@ -610,6 +652,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor): void {
                 const preferencesEditor = getPreferencesEditor(accessor);
+
                 if (!(preferencesEditor instanceof SettingsEditor2)) {
                     return;
                 }
@@ -630,10 +673,12 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor): void {
                 const preferencesEditor = getPreferencesEditor(accessor);
+
                 if (!(preferencesEditor instanceof SettingsEditor2)) {
                     return;
                 }
                 const activeElement = preferencesEditor.getContainer()?.ownerDocument.activeElement;
+
                 if (activeElement?.classList.contains('monaco-list')) {
                     preferencesEditor.focusSettings(true);
                 }
@@ -656,6 +701,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor): void {
                 const preferencesEditor = getPreferencesEditor(accessor);
+
                 if (preferencesEditor instanceof SettingsEditor2) {
                     preferencesEditor.showContextMenu();
                 }
@@ -678,6 +724,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor): void {
                 const preferencesEditor = getPreferencesEditor(accessor);
+
                 if (!(preferencesEditor instanceof SettingsEditor2)) {
                     return;
                 }
@@ -695,7 +742,9 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
     }
     private registerKeybindingsActions() {
         const that = this;
+
         const category = nls.localize2('preferences', "Preferences");
+
         const id = 'workbench.action.openGlobalKeybindings';
         this._register(registerAction2(class extends Action2 {
             constructor() {
@@ -728,6 +777,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor, args: string | undefined) {
                 const query = typeof args === 'string' ? args : undefined;
+
                 return accessor.get(IPreferencesService).openGlobalKeybindingSettings(false, { query });
             }
         }));
@@ -789,6 +839,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.search('@source:system');
                 }
@@ -810,6 +861,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.search('@source:extension');
                 }
@@ -831,6 +883,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.search('@source:user');
                 }
@@ -850,6 +903,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.clearSearchResults();
                 }
@@ -871,6 +925,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.clearKeyboardShortcutSearchHistory();
                 }
@@ -887,6 +942,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyCode.Enter,
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.defineKeybinding(editorPane.activeKeybindingEntry!, false);
                 }
@@ -899,6 +955,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.CtrlCmd | KeyCode.KeyA),
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.defineKeybinding(editorPane.activeKeybindingEntry!, true);
                 }
@@ -911,6 +968,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.CtrlCmd | KeyCode.KeyE),
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor && editorPane.activeKeybindingEntry!.keybindingItem.keybinding) {
                     editorPane.defineWhenExpression(editorPane.activeKeybindingEntry!);
                 }
@@ -926,6 +984,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             },
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.removeKeybinding(editorPane.activeKeybindingEntry!);
                 }
@@ -938,6 +997,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: 0,
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.resetKeybinding(editorPane.activeKeybindingEntry!);
                 }
@@ -950,6 +1010,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyMod.CtrlCmd | KeyCode.KeyF,
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.focusSearch();
                 }
@@ -963,6 +1024,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyK },
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.recordSearchKeys();
                 }
@@ -976,6 +1038,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             mac: { primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyP },
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.toggleSortByPrecedence();
                 }
@@ -988,6 +1051,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: 0,
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.showSimilarKeybindings(editorPane.activeKeybindingEntry!);
                 }
@@ -1000,6 +1064,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyMod.CtrlCmd | KeyCode.KeyC,
             handler: async (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     await editorPane.copyKeybinding(editorPane.activeKeybindingEntry!);
                 }
@@ -1012,6 +1077,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: 0,
             handler: async (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     await editorPane.copyKeybindingCommand(editorPane.activeKeybindingEntry!);
                 }
@@ -1024,6 +1090,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: 0,
             handler: async (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     await editorPane.copyKeybindingCommandTitle(editorPane.activeKeybindingEntry!);
                 }
@@ -1036,6 +1103,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
             handler: (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.focusKeybindings();
                 }
@@ -1048,6 +1116,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyCode.Escape,
             handler: async (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.rejectWhenExpression(editorPane.activeKeybindingEntry!);
                 }
@@ -1060,17 +1129,21 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
             primary: KeyCode.Enter,
             handler: async (accessor, args: any) => {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof KeybindingsEditor) {
                     editorPane.acceptWhenExpression(editorPane.activeKeybindingEntry!);
                 }
             }
         });
+
         const profileScopedActionDisposables = this._register(new DisposableStore());
+
         const registerProfileScopedActions = () => {
             profileScopedActionDisposables.clear();
             profileScopedActionDisposables.add(registerAction2(class DefineKeybindingAction extends Action2 {
                 constructor() {
                     const when = ResourceContextKey.Resource.isEqualTo(that.userDataProfileService.currentProfile.keybindingsResource.toString());
+
                     super({
                         id: 'editor.action.defineKeybinding',
                         title: nls.localize2('defineKeybinding.start', "Define Keybinding"),
@@ -1089,6 +1162,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
                 }
                 async run(accessor: ServicesAccessor): Promise<void> {
                     const codeEditor = accessor.get(IEditorService).activeTextEditorControl;
+
                     if (isCodeEditor(codeEditor)) {
                         codeEditor.getContribution<IDefineKeybindingEditorContribution>(DEFINE_KEYBINDING_EDITOR_CONTRIB_ID)?.showDefineKeybindingWidget();
                     }
@@ -1100,6 +1174,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
     }
     private updatePreferencesEditorMenuItem() {
         const commandId = '_workbench.openWorkspaceSettingsEditor';
+
         if (this.workspaceContextService.getWorkbenchState() === WorkbenchState.WORKSPACE && !CommandsRegistry.getCommand(commandId)) {
             CommandsRegistry.registerCommand(commandId, () => this.preferencesService.openWorkspaceSettings({ jsonEditor: false }));
             MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
@@ -1118,6 +1193,7 @@ class PreferencesActionsContribution extends Disposable implements IWorkbenchCon
     private updatePreferencesEditorMenuItemForWorkspaceFolders() {
         for (const folder of this.workspaceContextService.getWorkspace().folders) {
             const commandId = `_workbench.openFolderSettings.${folder.uri.toString()}`;
+
             if (!CommandsRegistry.getCommand(commandId)) {
                 CommandsRegistry.registerCommand(commandId, () => {
                     if (this.workspaceContextService.getWorkbenchState() === WorkbenchState.FOLDER) {
@@ -1152,7 +1228,9 @@ class SettingsEditorTitleContribution extends Disposable implements IWorkbenchCo
     }
     private registerSettingsEditorTitleActions() {
         const registerOpenUserSettingsEditorFromJsonActionDisposables = this._register(new MutableDisposable());
+
         const openUserSettingsEditorWhen = ContextKeyExpr.and(ContextKeyExpr.or(ResourceContextKey.Resource.isEqualTo(this.userDataProfileService.currentProfile.settingsResource.toString()), ResourceContextKey.Resource.isEqualTo(this.userDataProfilesService.defaultProfile.settingsResource.toString())), ContextKeyExpr.not('isInDiffEditor'));
+
         const registerOpenUserSettingsEditorFromJsonAction = () => {
             registerOpenUserSettingsEditorFromJsonActionDisposables.value = undefined;
             registerOpenUserSettingsEditorFromJsonActionDisposables.value = registerAction2(class extends Action2 {
@@ -1171,6 +1249,7 @@ class SettingsEditorTitleContribution extends Disposable implements IWorkbenchCo
                 }
                 run(accessor: ServicesAccessor, args: IOpenSettingsActionOptions) {
                     args = sanitizeOpenSettingsArgs(args);
+
                     return accessor.get(IPreferencesService).openUserSettings({ jsonEditor: false, ...args });
                 }
             });
@@ -1180,6 +1259,7 @@ class SettingsEditorTitleContribution extends Disposable implements IWorkbenchCo
             // Force the action to check the context again.
             registerOpenUserSettingsEditorFromJsonAction();
         }));
+
         const openSettingsJsonWhen = ContextKeyExpr.and(CONTEXT_SETTINGS_EDITOR, CONTEXT_SETTINGS_JSON_EDITOR.toNegated());
         this._register(registerAction2(class extends Action2 {
             constructor() {
@@ -1197,6 +1277,7 @@ class SettingsEditorTitleContribution extends Disposable implements IWorkbenchCo
             }
             run(accessor: ServicesAccessor) {
                 const editorPane = accessor.get(IEditorService).activeEditorPane;
+
                 if (editorPane instanceof SettingsEditor2) {
                     return editorPane.switchToSettingsFile();
                 }

@@ -60,6 +60,7 @@ export class Selection extends Range {
      * The column on `positionLineNumber` where the selection has ended.
      */
     public readonly positionColumn: number;
+
     constructor(selectionStartLineNumber: number, selectionStartColumn: number, positionLineNumber: number, positionColumn: number) {
         super(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn);
         this.selectionStartLineNumber = selectionStartLineNumber;

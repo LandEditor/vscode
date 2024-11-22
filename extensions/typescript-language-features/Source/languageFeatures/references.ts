@@ -11,20 +11,25 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
     public constructor(private readonly client: ITypeScriptServiceClient) { }
     public async provideReferences(document: vscode.TextDocument, position: vscode.Position, options: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[]> {
         const filepath = this.client.toOpenTsFilePath(document);
+
         if (!filepath) {
             return [];
         }
         const args = typeConverters.Position.toFileLocationRequestArgs(filepath, position);
+
         const response = await this.client.execute('references', args, token);
+
         if (response.type !== 'response' || !response.body) {
             return [];
         }
         const result: vscode.Location[] = [];
+
         for (const ref of response.body.refs) {
             if (!options.includeDeclaration && ref.isDefinition) {
                 continue;
             }
             const url = this.client.toResource(ref.file);
+
             const location = typeConverters.Location.fromTextSpan(url, ref);
             result.push(location);
         }

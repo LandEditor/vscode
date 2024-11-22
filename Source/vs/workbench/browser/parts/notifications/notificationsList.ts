@@ -29,6 +29,7 @@ export class NotificationsList extends Disposable {
     private listDelegate: NotificationsListDelegate | undefined;
     private viewModel: INotificationViewItem[] = [];
     private isVisible: boolean | undefined;
+
     constructor(private readonly container: HTMLElement, private readonly options: INotificationsListOptions, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -51,12 +52,15 @@ export class NotificationsList extends Disposable {
         // List Container
         this.listContainer = document.createElement('div');
         this.listContainer.classList.add('notifications-list-container');
+
         const actionRunner = this._register(this.instantiationService.createInstance(NotificationActionRunner));
         // Notification Renderer
         const renderer = this.instantiationService.createInstance(NotificationRenderer, actionRunner);
         // List
         const listDelegate = this.listDelegate = new NotificationsListDelegate(this.listContainer);
+
         const options = this.options;
+
         const list = this.list = <WorkbenchList<INotificationViewItem>>this._register(this.instantiationService.createInstance(WorkbenchList, 'NotificationsList', this.listContainer, listDelegate, [renderer], {
             ...options,
             setRowLineHeight: false,
@@ -104,11 +108,15 @@ export class NotificationsList extends Disposable {
     }
     updateNotificationsList(start: number, deleteCount: number, items: INotificationViewItem[] = []) {
         const [list, listContainer] = assertAllDefined(this.list, this.listContainer);
+
         const listHasDOMFocus = isAncestorOfActiveElement(listContainer);
         // Remember focus and relative top of that item
         const focusedIndex = list.getFocus()[0];
+
         const focusedItem = this.viewModel[focusedIndex];
+
         let focusRelativeTop: number | null = null;
+
         if (typeof focusedIndex === 'number') {
             focusRelativeTop = list.getRelativeTop(focusedIndex);
         }
@@ -124,8 +132,10 @@ export class NotificationsList extends Disposable {
         // Otherwise restore focus if we had
         else if (typeof focusedIndex === 'number') {
             let indexToFocus = 0;
+
             if (focusedItem) {
                 let indexToFocusCandidate = this.viewModel.indexOf(focusedItem);
+
                 if (indexToFocusCandidate === -1) {
                     indexToFocusCandidate = focusedIndex - 1; // item could have been removed
                 }
@@ -145,6 +155,7 @@ export class NotificationsList extends Disposable {
     }
     updateNotificationHeight(item: INotificationViewItem): void {
         const index = this.viewModel.indexOf(item);
+
         if (index === -1) {
             return;
         }
@@ -179,6 +190,7 @@ export class NotificationsList extends Disposable {
     layout(width: number, maxHeight?: number): void {
         if (this.listContainer && this.list) {
             this.listContainer.style.width = `${width}px`;
+
             if (typeof maxHeight === 'number') {
                 this.list.getHTMLElement().style.maxHeight = `${maxHeight}px`;
             }
@@ -187,6 +199,7 @@ export class NotificationsList extends Disposable {
     }
     override dispose(): void {
         this.hide();
+
         super.dispose();
     }
 }
@@ -198,7 +211,9 @@ class NotificationAccessibilityProvider implements IListAccessibilityProvider<IN
     private readonly _configurationService: IConfigurationService) { }
     getAriaLabel(element: INotificationViewItem): string {
         let accessibleViewHint: string | undefined;
+
         const keybinding = this._keybindingService.lookupKeybinding('editor.action.accessibleView')?.getAriaLabel();
+
         if (this._configurationService.getValue('accessibility.verbosity.notification')) {
             accessibleViewHint = keybinding ? localize('notificationAccessibleViewHint', "Inspect the response in the accessible view with {0}", keybinding) : localize('notificationAccessibleViewHintNoKb', "Inspect the response in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding");
         }

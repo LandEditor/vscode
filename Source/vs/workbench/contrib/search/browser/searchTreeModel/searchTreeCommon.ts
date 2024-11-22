@@ -21,6 +21,7 @@ export function arrayContainsElementOrParent(element: RenderableMatch, testArray
             return true;
         }
     } while (!isSearchResult(element.parent()) && (element = <RenderableMatch>element.parent()));
+
     return false;
 }
 export interface IChangeEvent {
@@ -37,7 +38,9 @@ export const PLAIN_TEXT_SEARCH__RESULT_ID = 'plainTextSearch';
 export const AI_TEXT_SEARCH_RESULT_ID = 'aiTextSearch';
 export function createParentList(element: RenderableMatch): RenderableMatch[] {
     const parentArray: RenderableMatch[] = [];
+
     let currElement: RenderableMatch | ITextSearchHeading = element;
+
     while (!isTextSearchHeading(currElement)) {
         parentArray.push(currElement);
         currElement = currElement.parent();
@@ -65,6 +68,7 @@ export function mergeSearchResultEvents(events: IChangeEvent[]): IChangeEvent {
         }
         retEvent.elements = retEvent.elements.concat(e.elements);
     });
+
     return retEvent;
 }
 export interface ISearchModel {
@@ -72,6 +76,7 @@ export interface ISearchModel {
     readonly onSearchResultChanged: Event<IChangeEvent>;
     location: SearchModelLocation;
     id(): string;
+
     getAITextResultProviderName(): Promise<string>;
     isReplaceActive(): boolean;
     replaceActive: boolean;
@@ -112,11 +117,15 @@ export interface ISearchResult {
     fileCount(): number;
     count(): number;
     id(): string;
+
     setCachedSearchComplete(cachedSearchComplete: ISearchComplete | undefined, ai: boolean): void;
+
     getCachedSearchComplete(ai: boolean): ISearchComplete | undefined;
     toggleHighlights(value: boolean, ai?: boolean): void;
+
     getRangeHighlightDecorations(ai?: boolean): RangeHighlightDecorations;
     replaceAll(progress: IProgress<IProgressStep>): Promise<any>;
+
     setAIQueryUsingTextQuery(query?: ITextQuery | null): void;
     dispose(): void;
 }
@@ -132,6 +141,7 @@ export interface ITextSearchHeading {
     readonly hasChildren: boolean;
     name(): string;
     readonly isDirty: boolean;
+
     getFolderMatch(resource: URI): ISearchTreeFolderMatch | undefined;
     add(allRaw: IFileMatch[], searchInstanceID: string, ai: boolean, silent?: boolean): void;
     remove(matches: ISearchTreeFileMatch | ISearchTreeFolderMatch | (ISearchTreeFileMatch | ISearchTreeFolderMatch)[], ai?: boolean): void;
@@ -178,9 +188,11 @@ export interface ISearchTreeFolderMatch {
     replace(match: ISearchTreeFileMatch): Promise<any>;
     replacingAll: boolean;
     bindModel(model: ITextModel): void;
+
     getDownstreamFileMatch(uri: URI): ISearchTreeFileMatch | null;
     replaceAll(): Promise<any>;
     recursiveFileCount(): number;
+
     doRemoveFile(fileMatches: ISearchTreeFileMatch[], dispose?: boolean, trigger?: boolean, keepReadonly?: boolean): void;
     unbindNotebookEditorWidget(editor: NotebookEditorWidget, resource: URI): void;
     bindNotebookEditorWidget(editor: NotebookEditorWidget, resource: URI): Promise<void>;
@@ -207,6 +219,7 @@ export interface ISearchTreeFileMatch {
     resource: URI;
     onChange: Event<{
         didRemove?: boolean;
+
         forceUpdateModel?: boolean;
     }>;
     hasChildren: boolean;
@@ -216,6 +229,7 @@ export interface ISearchTreeFileMatch {
     hasOnlyReadOnlyMatches(): boolean;
     matches(): ISearchTreeMatch[];
     updateHighlights(): void;
+
     getSelectedMatch(): ISearchTreeMatch | null;
     parent(): ISearchTreeFolderMatch;
     bindModel(model: ITextModel): void;
@@ -224,6 +238,7 @@ export interface ISearchTreeFileMatch {
     add(match: ISearchTreeMatch, trigger?: boolean): void;
     replace(toReplace: ISearchTreeMatch): Promise<void>;
     remove(matches: ISearchTreeMatch | (ISearchTreeMatch[])): void;
+
     setSelectedMatch(match: ISearchTreeMatch | null): void;
     fileStat: IFileStatWithPartialMetadata | undefined;
     resolveFileStat(fileService: IFileService): Promise<void>;
@@ -248,6 +263,7 @@ export interface ISearchTreeMatch {
     fullMatchText(includeSurrounding?: boolean): string;
     rangeInPreview(): ISearchRange;
     fullPreviewLines(): string[];
+
     getMatchString(): string;
     isReadonly: boolean;
 }
@@ -305,6 +321,7 @@ export function isSearchTreeMatch(obj: any): obj is ISearchTreeMatch {
 }
 export function getFileMatches(matches: (ISearchTreeFileMatch | ISearchTreeFolderMatchWithResource)[]): ISearchTreeFileMatch[] {
     const folderMatches: ISearchTreeFolderMatchWithResource[] = [];
+
     const fileMatches: ISearchTreeFileMatch[] = [];
     matches.forEach((e) => {
         if (isSearchTreeFileMatch(e)) {
@@ -314,5 +331,6 @@ export function getFileMatches(matches: (ISearchTreeFileMatch | ISearchTreeFolde
             folderMatches.push(e);
         }
     });
+
     return fileMatches.concat(folderMatches.map(e => e.allDownstreamFileMatches()).flat());
 }

@@ -34,10 +34,12 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     private __proxy?: IPtyService;
     private get _connection(): IPtyHostConnection {
         this._ensurePtyHost();
+
         return this.__connection!;
     }
     private get _proxy(): IPtyService {
         this._ensurePtyHost();
+
         return this.__proxy!;
     }
     /**
@@ -106,6 +108,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
         event: number | undefined;
     }>());
     readonly onProcessExit = this._onProcessExit.event;
+
     constructor(private readonly _ptyHostStarter: IPtyHostStarter, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -144,6 +147,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
         }
         catch (error) {
             this._logService.error('ptyHost was unable to resolve shell environment', error);
+
             return {};
         }
     }
@@ -152,6 +156,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
         IPtyService
     ] {
         const connection = this._ptyHostStarter.start();
+
         const client = connection.client;
         // Log a full stack trace which will tell the exact reason the pty host is starting up
         if (this._logService.getLevel() === LogLevel.Trace) {
@@ -164,6 +169,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
         // Handle exit
         this._register(connection.onDidProcessExit(e => {
             this._onPtyHostExit.fire(e.code);
+
             if (!this._wasQuitRequested && !this._store.isDisposed) {
                 if (this._restartCount <= Constants.MaxRestarts) {
                     this._logService.error(`ptyHost terminated unexpectedly with code ${e.code}`);
@@ -194,12 +200,15 @@ export class PtyHostService extends Disposable implements IPtyHostService {
             }
         }));
         this._refreshIgnoreProcessNames();
+
         return [connection, proxy];
     }
     async createProcess(shellLaunchConfig: IShellLaunchConfig, cwd: string, cols: number, rows: number, unicodeVersion: '6' | '11', env: IProcessEnvironment, executableEnv: IProcessEnvironment, options: ITerminalProcessOptions, shouldPersist: boolean, workspaceId: string, workspaceName: string): Promise<number> {
         const timeout = setTimeout(() => this._handleUnresponsiveCreateProcess(), HeartbeatConstants.CreateProcessTimeout);
+
         const id = await this._proxy.createProcess(shellLaunchConfig, cwd, cols, rows, unicodeVersion, env, executableEnv, options, shouldPersist, workspaceId, workspaceName);
         clearTimeout(timeout);
+
         return id;
     }
     updateTitle(id: number, title: string, titleSource: TitleEventSource): Promise<void> {
@@ -260,8 +269,10 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     }
     async getLatency(): Promise<IPtyHostLatencyMeasurement[]> {
         const sw = new StopWatch();
+
         const results = await this._proxy.getLatency();
         sw.stop();
+
         return [
             {
                 label: 'ptyhostservice<->ptyhost',
@@ -284,6 +295,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     }
     async getProfiles(workspaceId: string, profiles: unknown, defaultProfile: unknown, includeDetectedProfiles: boolean = false): Promise<ITerminalProfile[]> {
         const shellEnv = await this._resolveShellEnv();
+
         return detectAvailableProfiles(profiles, defaultProfile, includeDetectedProfiles, this._configurationService, shellEnv, undefined, this._logService, this._resolveVariables.bind(this, workspaceId));
     }
     async getEnvironment(): Promise<IProcessEnvironment> {
@@ -348,6 +360,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     private _handleHeartbeat(isConnecting?: boolean) {
         this._clearHeartbeatTimeouts();
         this._heartbeatFirstTimeout = setTimeout(() => this._handleHeartbeatFirstTimeout(), isConnecting ? HeartbeatConstants.ConnectingBeatInterval : (HeartbeatConstants.BeatInterval * HeartbeatConstants.FirstWaitMultiplier));
+
         if (!this._isResponsive) {
             this._isResponsive = true;
             this._onPtyHostResponsive.fire();
@@ -361,6 +374,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     private _handleHeartbeatSecondTimeout() {
         this._logService.error(`No ptyHost heartbeat after ${(HeartbeatConstants.BeatInterval * HeartbeatConstants.FirstWaitMultiplier + HeartbeatConstants.BeatInterval * HeartbeatConstants.FirstWaitMultiplier) / 1000} seconds`);
         this._heartbeatSecondTimeout = undefined;
+
         if (this._isResponsive) {
             this._isResponsive = false;
             this._onPtyHostUnresponsive.fire();
@@ -369,6 +383,7 @@ export class PtyHostService extends Disposable implements IPtyHostService {
     private _handleUnresponsiveCreateProcess() {
         this._clearHeartbeatTimeouts();
         this._logService.error(`No ptyHost response to createProcess after ${HeartbeatConstants.CreateProcessTimeout / 1000} seconds`);
+
         if (this._isResponsive) {
             this._isResponsive = false;
             this._onPtyHostUnresponsive.fire();

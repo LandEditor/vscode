@@ -18,6 +18,7 @@ type SyncEnablementClassification = {
         comment: 'Flag indicating if settings sync is enabled or not';
     };
 };
+
 const enablementKey = 'sync.enable';
 export class UserDataSyncEnablementService extends Disposable implements IUserDataSyncEnablementService {
     _serviceBrand: any;
@@ -31,6 +32,7 @@ export class UserDataSyncEnablementService extends Disposable implements IUserDa
         SyncResource,
         boolean
     ]> = this._onDidChangeResourceEnablement.event;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService, 
@@ -47,6 +49,7 @@ export class UserDataSyncEnablementService extends Disposable implements IUserDa
         switch (this.environmentService.sync) {
             case 'on':
                 return true;
+
             case 'off':
                 return false;
         }
@@ -82,11 +85,14 @@ export class UserDataSyncEnablementService extends Disposable implements IUserDa
     private onDidStorageChange(storageChangeEvent: IApplicationStorageValueChangeEvent): void {
         if (enablementKey === storageChangeEvent.key) {
             this._onDidChangeEnablement.fire(this.isEnabled());
+
             return;
         }
         const resourceKey = ALL_SYNC_RESOURCES.filter(resourceKey => getEnablementKey(resourceKey) === storageChangeEvent.key)[0];
+
         if (resourceKey) {
             this._onDidChangeResourceEnablement.fire([resourceKey, this.isResourceEnabled(resourceKey)]);
+
             return;
         }
     }

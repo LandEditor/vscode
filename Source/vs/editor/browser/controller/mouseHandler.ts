@@ -51,6 +51,7 @@ export interface IPointerHandlerHelper {
 	getPositionFromDOMInfo(spanNode: HTMLElement, offset: number): Position | null;
 
 	visibleRangeForPosition(lineNumber: number, column: number): HorizontalPosition | null;
+
 	getLineWidth(lineNumber: number): number;
 }
 
@@ -140,8 +141,11 @@ export class MouseHandler extends ViewEventHandler {
 		const classifier = MouseWheelClassifier.INSTANCE;
 
 		let prevMouseWheelTime = 0;
+
 		let gestureStartZoomLevel = EditorZoom.getZoomLevel();
+
 		let gestureHasZoomModifiers = false;
+
 		let gestureAccumulatedDelta = 0;
 
 		const onMouseWheel = (browserEvent: IMouseWheelEvent) => {
@@ -152,11 +156,13 @@ export class MouseHandler extends ViewEventHandler {
 			}
 
 			const e = new StandardWheelEvent(browserEvent);
+
 			classifier.acceptStandardWheelEvent(e);
 
 			if (classifier.isPhysicalMouseWheel()) {
 				if (hasMouseWheelZoomModifiers(browserEvent)) {
 					const zoomLevel: number = EditorZoom.getZoomLevel();
+
 					const delta = e.deltaY > 0 ? 1 : -1;
 					EditorZoom.setZoomLevel(zoomLevel + delta);
 					e.preventDefault();
@@ -198,6 +204,7 @@ export class MouseHandler extends ViewEventHandler {
 
 	public override dispose(): void {
 		this._context.removeEventHandler(this);
+
 		if (this._mouseLeaveMonitor) {
 			this._mouseLeaveMonitor.dispose();
 			this._mouseLeaveMonitor = null;
@@ -210,6 +217,7 @@ export class MouseHandler extends ViewEventHandler {
 		if (e.hasChanged(EditorOption.layoutInfo)) {
 			// layout change
 			const height = this._context.configuration.options.get(EditorOption.layoutInfo).height;
+
 			if (this._height !== height) {
 				this._height = height;
 				this._mouseDownOperation.onHeightChanged();
@@ -219,6 +227,7 @@ export class MouseHandler extends ViewEventHandler {
 	}
 	public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
 		this._mouseDownOperation.onCursorStateChanged(e);
+
 		return false;
 	}
 	public override onFocusChanged(e: viewEvents.ViewFocusChangedEvent): boolean {
@@ -228,7 +237,9 @@ export class MouseHandler extends ViewEventHandler {
 
 	public getTargetAtClientPoint(clientX: number, clientY: number): IMouseTarget | null {
 		const clientPos = new ClientCoordinates(clientX, clientY);
+
 		const pos = clientPos.toPageCoordinates(dom.getWindow(this.viewHelper.viewDomNode));
+
 		const editorPos = createEditorPagePosition(this.viewHelper.viewDomNode);
 
 		if (pos.y < editorPos.y || pos.y > editorPos.y + editorPos.height || pos.x < editorPos.x || pos.x > editorPos.x + editorPos.width) {
@@ -236,13 +247,16 @@ export class MouseHandler extends ViewEventHandler {
 		}
 
 		const relativePos = createCoordinatesRelativeToEditor(this.viewHelper.viewDomNode, editorPos, pos);
+
 		return this.mouseTargetFactory.createMouseTarget(this.viewHelper.getLastRenderData(), editorPos, pos, relativePos, null);
 	}
 
 	protected _createMouseTarget(e: EditorMouseEvent, testEventTarget: boolean): IMouseTarget {
 		let target = e.target;
+
 		if (!this.viewHelper.viewDomNode.contains(target)) {
 			const shadowRoot = dom.getShadowRoot(this.viewHelper.viewDomNode);
+
 			if (shadowRoot) {
 				target = (<any>shadowRoot).elementsFromPoint(e.posx, e.posy).find(
 					(el: Element) => this.viewHelper.viewDomNode.contains(el)
@@ -265,6 +279,7 @@ export class MouseHandler extends ViewEventHandler {
 
 	protected _onMouseMove(e: EditorMouseEvent): void {
 		const targetIsWidget = this.mouseTargetFactory.mouseTargetIsWidget(e);
+
 		if (!targetIsWidget) {
 			e.preventDefault();
 		}
@@ -274,6 +289,7 @@ export class MouseHandler extends ViewEventHandler {
 			return;
 		}
 		const actualMouseMoveTime = e.timestamp;
+
 		if (actualMouseMoveTime < this.lastMouseLeaveTime) {
 			// Due to throttling, this event occurred before the mouse left the editor, therefore ignore it.
 			return;
@@ -308,13 +324,19 @@ export class MouseHandler extends ViewEventHandler {
 		const t = this._createMouseTarget(e, true);
 
 		const targetIsContent = (t.type === MouseTargetType.CONTENT_TEXT || t.type === MouseTargetType.CONTENT_EMPTY);
+
 		const targetIsGutter = (t.type === MouseTargetType.GUTTER_GLYPH_MARGIN || t.type === MouseTargetType.GUTTER_LINE_NUMBERS || t.type === MouseTargetType.GUTTER_LINE_DECORATIONS);
+
 		const targetIsLineNumbers = (t.type === MouseTargetType.GUTTER_LINE_NUMBERS);
+
 		const selectOnLineNumbers = this._context.configuration.options.get(EditorOption.selectOnLineNumbers);
+
 		const targetIsViewZone = (t.type === MouseTargetType.CONTENT_VIEW_ZONE || t.type === MouseTargetType.GUTTER_VIEW_ZONE);
+
 		const targetIsWidget = (t.type === MouseTargetType.CONTENT_WIDGET);
 
 		let shouldHandle = e.leftButton || e.middleButton;
+
 		if (platform.isMacintosh && e.leftButton && e.ctrlKey) {
 			shouldHandle = false;
 		}
@@ -333,6 +355,7 @@ export class MouseHandler extends ViewEventHandler {
 			e.preventDefault();
 		} else if (targetIsViewZone) {
 			const viewZoneData = t.detail;
+
 			if (shouldHandle && this.viewHelper.shouldSuppressMouseDownOnViewZone(viewZoneData.viewZoneId)) {
 				focus();
 				this._mouseDownOperation.start(t.type, e, pointerId);
@@ -406,6 +429,7 @@ class MouseDownOperation extends Disposable {
 		this._mouseState.setModifiers(e);
 
 		const position = this._findMousePosition(e, false);
+
 		if (!position) {
 			// Ignoring because position is unknown
 			return;
@@ -432,7 +456,9 @@ class MouseDownOperation extends Disposable {
 		this._mouseState.setStartedOnLineNumbers(targetType === MouseTargetType.GUTTER_LINE_NUMBERS);
 		this._mouseState.setStartButtons(e);
 		this._mouseState.setModifiers(e);
+
 		const position = this._findMousePosition(e, true);
+
 		if (!position || !position.position) {
 			// Ignoring because position is unknown
 			return;
@@ -517,38 +543,50 @@ class MouseDownOperation extends Disposable {
 
 	private _getPositionOutsideEditor(e: EditorMouseEvent): IMouseTarget | null {
 		const editorContent = e.editorPos;
+
 		const model = this._context.viewModel;
+
 		const viewLayout = this._context.viewLayout;
 
 		const mouseColumn = this._getMouseColumn(e);
 
 		if (e.posy < editorContent.y) {
 			const outsideDistance = editorContent.y - e.posy;
+
 			const verticalOffset = Math.max(viewLayout.getCurrentScrollTop() - outsideDistance, 0);
+
 			const viewZoneData = HitTestContext.getZoneAtCoord(this._context, verticalOffset);
+
 			if (viewZoneData) {
 				const newPosition = this._helpPositionJumpOverViewZone(viewZoneData);
+
 				if (newPosition) {
 					return MouseTarget.createOutsideEditor(mouseColumn, newPosition, 'above', outsideDistance);
 				}
 			}
 
 			const aboveLineNumber = viewLayout.getLineNumberAtVerticalOffset(verticalOffset);
+
 			return MouseTarget.createOutsideEditor(mouseColumn, new Position(aboveLineNumber, 1), 'above', outsideDistance);
 		}
 
 		if (e.posy > editorContent.y + editorContent.height) {
 			const outsideDistance = e.posy - editorContent.y - editorContent.height;
+
 			const verticalOffset = viewLayout.getCurrentScrollTop() + e.relativePos.y;
+
 			const viewZoneData = HitTestContext.getZoneAtCoord(this._context, verticalOffset);
+
 			if (viewZoneData) {
 				const newPosition = this._helpPositionJumpOverViewZone(viewZoneData);
+
 				if (newPosition) {
 					return MouseTarget.createOutsideEditor(mouseColumn, newPosition, 'below', outsideDistance);
 				}
 			}
 
 			const belowLineNumber = viewLayout.getLineNumberAtVerticalOffset(verticalOffset);
+
 			return MouseTarget.createOutsideEditor(mouseColumn, new Position(belowLineNumber, model.getLineMaxColumn(belowLineNumber)), 'below', outsideDistance);
 		}
 
@@ -556,11 +594,13 @@ class MouseDownOperation extends Disposable {
 
 		if (e.posx < editorContent.x) {
 			const outsideDistance = editorContent.x - e.posx;
+
 			return MouseTarget.createOutsideEditor(mouseColumn, new Position(possibleLineNumber, 1), 'left', outsideDistance);
 		}
 
 		if (e.posx > editorContent.x + editorContent.width) {
 			const outsideDistance = e.posx - editorContent.x - editorContent.width;
+
 			return MouseTarget.createOutsideEditor(mouseColumn, new Position(possibleLineNumber, model.getLineMaxColumn(possibleLineNumber)), 'right', outsideDistance);
 		}
 
@@ -569,18 +609,22 @@ class MouseDownOperation extends Disposable {
 
 	private _findMousePosition(e: EditorMouseEvent, testEventTarget: boolean): IMouseTarget | null {
 		const positionOutsideEditor = this._getPositionOutsideEditor(e);
+
 		if (positionOutsideEditor) {
 			return positionOutsideEditor;
 		}
 
 		const t = this._createMouseTarget(e, testEventTarget);
+
 		const hintedPosition = t.position;
+
 		if (!hintedPosition) {
 			return null;
 		}
 
 		if (t.type === MouseTargetType.CONTENT_VIEW_ZONE || t.type === MouseTargetType.GUTTER_VIEW_ZONE) {
 			const newPosition = this._helpPositionJumpOverViewZone(t.detail);
+
 			if (newPosition) {
 				return MouseTarget.createViewZone(t.type, t.element, t.mouseColumn, newPosition, t.detail);
 			}
@@ -592,7 +636,9 @@ class MouseDownOperation extends Disposable {
 	private _helpPositionJumpOverViewZone(viewZoneData: IMouseTargetViewZoneData): Position | null {
 		// Force position on view zones to go above or below depending on where selection started from
 		const selectionStart = new Position(this._currentSelection.selectionStartLineNumber, this._currentSelection.selectionStartColumn);
+
 		const positionBefore = viewZoneData.positionBefore;
+
 		const positionAfter = viewZoneData.positionAfter;
 
 		if (positionBefore && positionAfter) {
@@ -689,6 +735,7 @@ class TopBottomDragScrollingOperation extends Disposable {
 
 	public override dispose(): void {
 		this._animationFrameDisposable.dispose();
+
 		super.dispose();
 	}
 
@@ -702,8 +749,10 @@ class TopBottomDragScrollingOperation extends Disposable {
 	 */
 	private _tick(): number {
 		const now = Date.now();
+
 		const elapsed = now - this._lastTime;
 		this._lastTime = now;
+
 		return elapsed;
 	}
 
@@ -712,7 +761,9 @@ class TopBottomDragScrollingOperation extends Disposable {
 	 */
 	private _getScrollSpeed(): number {
 		const lineHeight = this._context.configuration.options.get(EditorOption.lineHeight);
+
 		const viewportInLines = this._context.configuration.options.get(EditorOption.layoutInfo).height / lineHeight;
+
 		const outsideDistanceInLines = this._position.outsideDistance / lineHeight;
 
 		if (outsideDistanceInLines <= 1.5) {
@@ -726,23 +777,31 @@ class TopBottomDragScrollingOperation extends Disposable {
 
 	private _execute(): void {
 		const lineHeight = this._context.configuration.options.get(EditorOption.lineHeight);
+
 		const scrollSpeedInLines = this._getScrollSpeed();
+
 		const elapsed = this._tick();
+
 		const scrollInPixels = scrollSpeedInLines * (elapsed / 1000) * lineHeight;
+
 		const scrollValue = (this._position.outsidePosition === 'above' ? -scrollInPixels : scrollInPixels);
 
 		this._context.viewModel.viewLayout.deltaScrollNow(0, scrollValue);
 		this._viewHelper.renderNow();
 
 		const viewportData = this._context.viewLayout.getLinesViewportData();
+
 		const edgeLineNumber = (this._position.outsidePosition === 'above' ? viewportData.startLineNumber : viewportData.endLineNumber);
 
 		// First, try to find a position that matches the horizontal position of the mouse
 		let mouseTarget: IMouseTarget;
 		{
 			const editorPos = createEditorPagePosition(this._viewHelper.viewDomNode);
+
 			const horizontalScrollbarHeight = this._context.configuration.options.get(EditorOption.layoutInfo).horizontalScrollbarHeight;
+
 			const pos = new PageCoordinates(this._mouseEvent.pos.x, editorPos.y + editorPos.height - horizontalScrollbarHeight - 0.1);
+
 			const relativePos = createCoordinatesRelativeToEditor(this._viewHelper.viewDomNode, editorPos, pos);
 			mouseTarget = this._mouseTargetFactory.createMouseTarget(this._viewHelper.getLastRenderData(), editorPos, pos, relativePos, null);
 		}
@@ -828,6 +887,7 @@ class MouseDownState {
 	public trySetCount(setMouseDownCount: number, newMouseDownPosition: Position): void {
 		// a. Invalidate multiple clicking if too much time has passed (will be hit by IE because the detail field of mouse events contains garbage in IE10)
 		const currentTime = (new Date()).getTime();
+
 		if (currentTime - this._lastSetMouseDownCountTime > MouseDownState.CLEAR_MOUSE_DOWN_COUNT_TIME) {
 			setMouseDownCount = 1;
 		}

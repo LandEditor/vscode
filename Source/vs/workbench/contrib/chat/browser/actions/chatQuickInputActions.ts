@@ -77,16 +77,20 @@ export function registerQuickChatActions() {
 
 		async run(accessor: ServicesAccessor) {
 			const quickChatService = accessor.get(IQuickChatService);
+
 			const codeEditorService = accessor.get(ICodeEditorService);
+
 			if (quickChatService.focused) {
 				quickChatService.close();
 			}
 			const codeEditor = codeEditorService.getActiveCodeEditor();
+
 			if (!codeEditor) {
 				return;
 			}
 
 			const controller = InlineChatController.get(codeEditor);
+
 			if (!controller) {
 				return;
 			}
@@ -149,9 +153,12 @@ class QuickChatGlobalAction extends Action2 {
 
 	override run(accessor: ServicesAccessor, query?: string | Omit<IQuickChatOpenOptions, 'selection'>): void {
 		const quickChatService = accessor.get(IQuickChatService);
+
 		let options: IQuickChatOpenOptions | undefined;
+
 		switch (typeof query) {
 			case 'string': options = { query }; break;
+
 			case 'object': options = query; break;
 		}
 		if (options?.query) {

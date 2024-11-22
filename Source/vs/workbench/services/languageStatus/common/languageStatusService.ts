@@ -37,6 +37,7 @@ export interface ILanguageStatusService {
     _serviceBrand: undefined;
     onDidChange: Event<void>;
     addStatus(status: ILanguageStatus): IDisposable;
+
     getLanguageStatus(model: ITextModel): ILanguageStatus[];
 }
 class LanguageStatusServiceImpl implements ILanguageStatusService {
@@ -49,6 +50,7 @@ class LanguageStatusServiceImpl implements ILanguageStatusService {
     getLanguageStatus(model: ITextModel): ILanguageStatus[] {
         return this._provider.ordered(model).sort((a, b) => {
             let res = b.severity - a.severity;
+
             if (res === 0) {
                 res = compare(a.source, b.source);
             }

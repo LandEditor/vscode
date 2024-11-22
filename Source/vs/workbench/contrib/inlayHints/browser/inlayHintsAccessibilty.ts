@@ -28,6 +28,7 @@ export class InlayHintsAccessibility implements IEditorContribution {
     private readonly _ariaElement: HTMLSpanElement;
     private readonly _ctxIsReading: IContextKey<boolean>;
     private readonly _sessionDispoosables = new DisposableStore();
+
     constructor(private readonly _editor: ICodeEditor, 
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -54,15 +55,18 @@ export class InlayHintsAccessibility implements IEditorContribution {
     }
     private async _read(line: number, hints: InlayHintItem[]) {
         this._sessionDispoosables.clear();
+
         if (!this._ariaElement.isConnected) {
             this._editor.getDomNode()?.appendChild(this._ariaElement);
         }
         if (!this._editor.hasModel() || !this._ariaElement.isConnected) {
             this._ctxIsReading.set(false);
+
             return;
         }
         const cts = new CancellationTokenSource();
         this._sessionDispoosables.add(cts);
+
         for (const hint of hints) {
             await hint.resolve(cts.token);
         }
@@ -71,12 +75,17 @@ export class InlayHintsAccessibility implements IEditorContribution {
         }
         const model = this._editor.getModel();
         // const text = this._editor.getModel().getLineContent(line);
+
         const newChildren: (string | HTMLElement)[] = [];
+
         let start = 0;
+
         let tooLongToRead = false;
+
         for (const item of hints) {
             // text
             const part = model.getValueInRange({ startLineNumber: line, startColumn: start + 1, endLineNumber: line, endColumn: item.hint.position.column });
+
             if (part.length > 0) {
                 newChildren.push(part);
                 start = item.hint.position.column - 1;
@@ -85,11 +94,14 @@ export class InlayHintsAccessibility implements IEditorContribution {
             if (start > 750) {
                 newChildren.push('…');
                 tooLongToRead = true;
+
                 break;
             }
             // hint
             const em = document.createElement('em');
+
             const { label } = item.hint;
+
             if (typeof label === 'string') {
                 em.innerText = label;
             }
@@ -123,7 +135,9 @@ export class InlayHintsAccessibility implements IEditorContribution {
             return;
         }
         const line = this._editor.getPosition().lineNumber;
+
         const hints = InlayHintsController.get(this._editor)?.getInlayHintsForLine(line);
+
         if (!hints || hints.length === 0) {
             this._accessibilitySignalService.playSignal(AccessibilitySignal.noInlayHints);
         }

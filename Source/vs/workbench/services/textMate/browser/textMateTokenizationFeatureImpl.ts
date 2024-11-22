@@ -100,6 +100,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 
 	private _handleGrammarsExtPoint(extensions: readonly IExtensionPointUser<ITMSyntaxExtensionPoint[]>[]): void {
 		this._grammarDefinitions = null;
+
 		if (this._grammarFactory) {
 			this._grammarFactory.dispose();
 			this._grammarFactory = null;
@@ -107,12 +108,16 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 		this._tokenizersRegistrations.clear();
 
 		this._grammarDefinitions = [];
+
 		for (const extension of extensions) {
 			const grammars = extension.value;
+
 			for (const grammar of grammars) {
 				const validatedGrammar = this._validateGrammarDefinition(extension, grammar);
+
 				if (validatedGrammar) {
 					this._grammarDefinitions.push(validatedGrammar);
+
 					if (validatedGrammar.language) {
 						const lazyTokenizationSupport = new LazyTokenizationSupport(() => this._createTokenizationSupport(validatedGrammar.language!));
 						this._tokenizersRegistrations.add(lazyTokenizationSupport);
@@ -137,11 +142,15 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 		const grammarLocation = resources.joinPath(extension.description.extensionLocation, grammar.path);
 
 		const embeddedLanguages: IValidEmbeddedLanguagesMap = Object.create(null);
+
 		if (grammar.embeddedLanguages) {
 			const scopes = Object.keys(grammar.embeddedLanguages);
+
 			for (let i = 0, len = scopes.length; i < len; i++) {
 				const scope = scopes[i];
+
 				const language = grammar.embeddedLanguages[scope];
+
 				if (typeof language !== 'string') {
 					// never hurts to be too careful
 					continue;
@@ -153,19 +162,27 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 		}
 
 		const tokenTypes: IValidTokenTypeMap = Object.create(null);
+
 		if (grammar.tokenTypes) {
 			const scopes = Object.keys(grammar.tokenTypes);
+
 			for (const scope of scopes) {
 				const tokenType = grammar.tokenTypes[scope];
+
 				switch (tokenType) {
 					case 'string':
 						tokenTypes[scope] = StandardTokenType.String;
+
 						break;
+
 					case 'other':
 						tokenTypes[scope] = StandardTokenType.Other;
+
 						break;
+
 					case 'comment':
 						tokenTypes[scope] = StandardTokenType.Comment;
+
 						break;
 				}
 			}
@@ -199,6 +216,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 	public startDebugMode(printFn: (str: string) => void, onStop: () => void): void {
 		if (this._debugMode) {
 			this._notificationService.error(nls.localize('alreadyDebugging', "Already Logging."));
+
 			return;
 		}
 
@@ -221,6 +239,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 						progress.report({
 							message: nls.localize('progress2', "Now logging TM Grammar parsing. Press Stop when finished.")
 						});
+
 						return new Promise<void>((resolve, reject) => { });
 					});
 				},
@@ -246,6 +265,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 		}
 
 		const [vscodeTextmate, vscodeOniguruma] = await Promise.all([importAMDNodeModule<typeof import('vscode-textmate')>('vscode-textmate', 'release/main.js'), this._getVSCodeOniguruma()]);
+
 		const onigLib: Promise<IOnigLib> = Promise.resolve({
 			createOnigScanner: (sources: string[]) => vscodeOniguruma.createOnigScanner(sources),
 			createOnigString: (str: string) => vscodeOniguruma.createOnigString(str)
@@ -277,11 +297,14 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 
 		try {
 			const grammarFactory = await this._getOrCreateGrammarFactory();
+
 			if (!grammarFactory.has(languageId)) {
 				return null;
 			}
 			const encodedLanguageId = this._languageService.languageIdCodec.encodeLanguageId(languageId);
+
 			const r = await grammarFactory.createGrammar(languageId, encodedLanguageId);
+
 			if (!r.grammar) {
 				return null;
 			}
@@ -291,6 +314,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 				-1,
 				this._configurationService
 			);
+
 			const tokenization = new TextMateTokenizationSupport(
 				r.grammar,
 				r.initialState,
@@ -302,6 +326,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 				},
 				true,
 			);
+
 			const disposable = tokenization.onDidEncounterLanguage((encodedLanguageId) => {
 				if (!this._encounteredLanguages[encodedLanguageId]) {
 					const languageId = this._languageService.languageIdCodec.decodeLanguageId(encodedLanguageId);
@@ -309,6 +334,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 					this._languageService.requestBasicLanguageFeatures(languageId);
 				}
 			});
+
 			return new TokenizationSupportWithLineLimit(encodedLanguageId, tokenization, disposable, maxTokenizationLineLength);
 		} catch (err) {
 			if (err.message && err.message === missingTMGrammarErrorMessage) {
@@ -316,6 +342,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 				return null;
 			}
 			onUnexpectedError(err);
+
 			return null;
 		}
 	}
@@ -329,7 +356,9 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 		this._currentTokenColorMap = colorTheme.tokenColorMap;
 
 		this._grammarFactory?.setTheme(this._currentTheme, this._currentTokenColorMap);
+
 		const colorMap = toColorMap(this._currentTokenColorMap);
+
 		const cssRules = generateTokensCSSForColorMap(colorMap);
 		this._styleElement.textContent = cssRules;
 		TokenizationRegistry.setColorMap(colorMap);
@@ -344,11 +373,14 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 			return null;
 		}
 		const grammarFactory = await this._getOrCreateGrammarFactory();
+
 		if (!grammarFactory.has(languageId)) {
 			return null;
 		}
 		const encodedLanguageId = this._languageService.languageIdCodec.encodeLanguageId(languageId);
+
 		const { grammar } = await grammarFactory.createGrammar(languageId, encodedLanguageId);
+
 		return grammar;
 	}
 
@@ -363,6 +395,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 						this._debugModePrintFunc(str);
 					}
 				});
+
 				return vscodeOniguruma;
 			})();
 		}
@@ -380,6 +413,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 			const response = await fetch(canASAR && this._environmentService.isBuilt
 				? FileAccess.asBrowserUri(`${nodeModulesAsarUnpackedPath}/vscode-oniguruma/release/onig.wasm`).toString(true)
 				: FileAccess.asBrowserUri(`${nodeModulesPath}/vscode-oniguruma/release/onig.wasm`).toString(true));
+
 			return response;
 		}
 	}
@@ -433,6 +467,7 @@ export class TextMateTokenizationFeature extends Disposable implements ITextMate
 
 function toColorMap(colorMap: string[]): Color[] {
 	const result: Color[] = [null!];
+
 	for (let i = 1, len = colorMap.length; i < len; i++) {
 		result[i] = Color.fromHex(colorMap[i]);
 	}
@@ -445,12 +480,16 @@ function equalsTokenRules(a: ITextMateThemingRule[] | null, b: ITextMateThemingR
 	}
 	for (let i = b.length - 1; i >= 0; i--) {
 		const r1 = b[i];
+
 		const r2 = a[i];
+
 		if (r1.scope !== r2.scope) {
 			return false;
 		}
 		const s1 = r1.settings;
+
 		const s2 = r2.settings;
+
 		if (s1 && s2) {
 			if (s1.fontStyle !== s2.fontStyle || s1.foreground !== s2.foreground || s1.background !== s2.background) {
 				return false;
@@ -465,31 +504,38 @@ function equalsTokenRules(a: ITextMateThemingRule[] | null, b: ITextMateThemingR
 function validateGrammarExtensionPoint(extensionLocation: URI, syntax: ITMSyntaxExtensionPoint, collector: ExtensionMessageCollector, _languageService: ILanguageService): boolean {
 	if (syntax.language && ((typeof syntax.language !== 'string') || !_languageService.isRegisteredLanguageId(syntax.language))) {
 		collector.error(nls.localize('invalid.language', "Unknown language in `contributes.{0}.language`. Provided value: {1}", grammarsExtPoint.name, String(syntax.language)));
+
 		return false;
 	}
 	if (!syntax.scopeName || (typeof syntax.scopeName !== 'string')) {
 		collector.error(nls.localize('invalid.scopeName', "Expected string in `contributes.{0}.scopeName`. Provided value: {1}", grammarsExtPoint.name, String(syntax.scopeName)));
+
 		return false;
 	}
 	if (!syntax.path || (typeof syntax.path !== 'string')) {
 		collector.error(nls.localize('invalid.path.0', "Expected string in `contributes.{0}.path`. Provided value: {1}", grammarsExtPoint.name, String(syntax.path)));
+
 		return false;
 	}
 	if (syntax.injectTo && (!Array.isArray(syntax.injectTo) || syntax.injectTo.some(scope => typeof scope !== 'string'))) {
 		collector.error(nls.localize('invalid.injectTo', "Invalid value in `contributes.{0}.injectTo`. Must be an array of language scope names. Provided value: {1}", grammarsExtPoint.name, JSON.stringify(syntax.injectTo)));
+
 		return false;
 	}
 	if (syntax.embeddedLanguages && !types.isObject(syntax.embeddedLanguages)) {
 		collector.error(nls.localize('invalid.embeddedLanguages', "Invalid value in `contributes.{0}.embeddedLanguages`. Must be an object map from scope name to language. Provided value: {1}", grammarsExtPoint.name, JSON.stringify(syntax.embeddedLanguages)));
+
 		return false;
 	}
 
 	if (syntax.tokenTypes && !types.isObject(syntax.tokenTypes)) {
 		collector.error(nls.localize('invalid.tokenTypes', "Invalid value in `contributes.{0}.tokenTypes`. Must be an object map from scope name to token type. Provided value: {1}", grammarsExtPoint.name, JSON.stringify(syntax.tokenTypes)));
+
 		return false;
 	}
 
 	const grammarLocation = resources.joinPath(extensionLocation, syntax.path);
+
 	if (!resources.isEqualOrParent(grammarLocation, extensionLocation)) {
 		collector.warn(nls.localize('invalid.path.1', "Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.", grammarsExtPoint.name, grammarLocation.path, extensionLocation.path));
 	}

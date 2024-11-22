@@ -34,6 +34,7 @@ export class UntitledTextEditorInput extends AbstractTextResourceEditorInput imp
     private modelResolve: Promise<void> | undefined = undefined;
     private readonly modelDisposables = this._register(new DisposableStore());
     private cachedUntitledTextEditorModelReference: IReference<IUntitledTextEditorModel> | undefined = undefined;
+
     constructor(protected model: IUntitledTextEditorModel, 
     @ITextFileService
     textFileService: ITextFileService, 
@@ -83,6 +84,7 @@ export class UntitledTextEditorInput extends AbstractTextResourceEditorInput imp
         // Without associated path: only use if name and description differ
         if (!this.model.hasAssociatedFilePath) {
             const descriptionCandidate = this.resource.path;
+
             if (descriptionCandidate !== this.getName()) {
                 return descriptionCandidate;
             }
@@ -96,7 +98,9 @@ export class UntitledTextEditorInput extends AbstractTextResourceEditorInput imp
         // if description should appear besides the name to distinguish better
         if (!this.model.hasAssociatedFilePath) {
             const name = this.getName();
+
             const description = this.getDescription();
+
             if (description && description !== name) {
                 return `${name} • ${description}`;
             }
@@ -149,11 +153,13 @@ export class UntitledTextEditorInput extends AbstractTextResourceEditorInput imp
                 override: this.editorId
             }
         };
+
         if (typeof options?.preserveViewState === 'number') {
             untypedInput.encoding = this.getEncoding();
             untypedInput.languageId = this.getLanguageId();
             untypedInput.contents = this.model.isModified() ? this.model.textEditorModel?.getValue() : undefined;
             untypedInput.options.viewState = findViewStateForEditor(this, options.preserveViewState, this.editorService);
+
             if (typeof untypedInput.contents === 'string' && !this.model.hasAssociatedFilePath && !options.preserveResource) {
                 // Given how generic untitled resources in the system are, we
                 // need to be careful not to set our resource into the untyped
@@ -185,6 +191,7 @@ export class UntitledTextEditorInput extends AbstractTextResourceEditorInput imp
         this.modelResolve = undefined;
         // Model reference
         this.disposeModelReference();
+
         super.dispose();
     }
     private disposeModelReference(): void {

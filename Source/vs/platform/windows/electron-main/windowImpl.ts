@@ -111,6 +111,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 	get lastFocusTime(): number { return this._lastFocusTime; }
 
 	protected _win: electron.BrowserWindow | null = null;
+
 	get win() { return this._win; }
 	protected setWin(win: electron.BrowserWindow, options?: BrowserWindowConstructorOptions): void {
 		this._win = win;
@@ -131,6 +132,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 		// Sheet Offsets
 		const useCustomTitleStyle = !hasNativeTitlebar(this.configurationService, options?.titleBarStyle === 'hidden' ? TitlebarStyle.CUSTOM : undefined /* unknown */);
+
 		if (isMacintosh && useCustomTitleStyle) {
 			win.setSheetOffset(isBigSurOrNewer(release()) ? 28 : 22); // offset dialogs by the height of the custom title bar if we have any
 		}
@@ -138,6 +140,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		// Update the window controls immediately based on cached or default values
 		if (useCustomTitleStyle && (useWindowControlsOverlay(this.configurationService) || isMacintosh)) {
 			const cachedWindowControlHeight = this.stateService.getItem<number>((BaseWindow.windowControlHeightStateStorageKey));
+
 			if (cachedWindowControlHeight) {
 				this.updateWindowControls({ height: cachedWindowControlHeight });
 			} else {
@@ -159,8 +162,11 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 			// This sets up a listener for the window hook. This is a Windows-only API provided by electron.
 			win.hookWindowMessage(WM_INITMENU, () => {
 				const [x, y] = win.getPosition();
+
 				const cursorPos = electron.screen.getCursorScreenPoint();
+
 				const cx = cursorPos.x - x;
+
 				const cy = cursorPos.y - y;
 
 				// In some cases, show the default system context menu
@@ -230,7 +236,9 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		// a window on its own. In that case calling setBounds() would cause https://github.com/microsoft/vscode/issues/75830
 
 		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+
 		const useNativeTabs = isMacintosh && windowSettings?.nativeTabs === true;
+
 		if ((isMacintosh || isWindows) && hasMultipleDisplays && (!useNativeTabs || electron.BrowserWindow.getAllWindows().length === 1)) {
 			if ([state.width, state.height, state.x, state.y].every(value => typeof value === 'number')) {
 				this._win?.setBounds({
@@ -302,6 +310,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		}
 
 		const win = this.win;
+
 		if (!win) {
 			return;
 		}
@@ -315,6 +324,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	handleTitleDoubleClick(): void {
 		const win = this.win;
+
 		if (!win) {
 			return;
 		}
@@ -322,12 +332,16 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		// Respect system settings on mac with regards to title click on windows title
 		if (isMacintosh) {
 			const action = electron.systemPreferences.getUserDefault('AppleActionOnDoubleClick', 'string');
+
 			switch (action) {
 				case 'Minimize':
 					win.minimize();
+
 					break;
+
 				case 'None':
 					break;
+
 				case 'Maximize':
 				default:
 					if (win.isMaximized()) {
@@ -356,6 +370,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void {
 		const win = this.win;
+
 		if (!win) {
 			return;
 		}
@@ -412,7 +427,9 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 		}
 
 		const win = this.win;
+
 		const isFullScreen = win?.isFullScreen();
+
 		const isSimpleFullScreen = win?.isSimpleFullScreen();
 
 		return Boolean(isFullScreen || isSimpleFullScreen);
@@ -420,6 +437,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	private setNativeFullScreen(fullscreen: boolean, fromRestore: boolean): void {
 		const win = this.win;
+
 		if (win?.isSimpleFullScreen()) {
 			win?.setSimpleFullScreen(false);
 		}
@@ -483,6 +501,7 @@ export abstract class BaseWindow extends Disposable implements IBaseWindow {
 
 	private setSimpleFullScreen(fullscreen: boolean): void {
 		const win = this.win;
+
 		if (win?.isFullScreen()) {
 			this.doSetNativeFullScreen(false, false);
 		}
@@ -521,6 +540,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	//#region Properties
 
 	private _id: number;
+
 	get id(): number { return this._id; }
 
 	protected override _win: electron.BrowserWindow;
@@ -535,6 +555,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		}
 
 		const profile = this.userDataProfilesService.profiles.find(profile => profile.id === this.config?.profiles.profile.id);
+
 		if (this.isExtensionDevelopmentHost && profile) {
 			return profile;
 		}
@@ -545,6 +566,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	get remoteAuthority(): string | undefined { return this._config?.remoteAuthority; }
 
 	private _config: INativeWindowConfiguration | undefined;
+
 	get config(): INativeWindowConfiguration | undefined { return this._config; }
 
 	get isExtensionDevelopmentHost(): boolean { return !!(this._config?.extensionDevelopmentPath); }
@@ -676,6 +698,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			}
 
 			const closeListener = this.onDidClose(() => handle());
+
 			const loadListener = this.onWillLoad(() => handle());
 		});
 	}
@@ -766,12 +789,17 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		switch (type) {
 			case WindowError.PROCESS_GONE:
 				this.logService.error(`CodeWindow: renderer process gone (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+
 				break;
+
 			case WindowError.UNRESPONSIVE:
 				this.logService.error('CodeWindow: detected unresponsive');
+
 				break;
+
 			case WindowError.LOAD:
 				this.logService.error(`CodeWindow: failed to load (reason: ${details?.reason || '<unknown>'}, code: ${details?.exitCode || '<unknown>'})`);
+
 				break;
 		}
 
@@ -804,6 +832,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				// non-zero exit code.
 				if (this.isExtensionDevelopmentTestFromCli) {
 					this.lifecycleMainService.kill(1);
+
 					return;
 				}
 
@@ -851,6 +880,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				// Process gone
 				else if (type === WindowError.PROCESS_GONE) {
 					let message: string;
+
 					if (!details) {
 						message = localize('appGone', "The window terminated unexpectedly");
 					} else {
@@ -903,7 +933,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 				// We have to reconstruct a openable from the current workspace
 				let uriToOpen: IWorkspaceToOpen | IFolderToOpen | undefined = undefined;
+
 				let forceEmpty = undefined;
+
 				if (isSingleFolderWorkspaceIdentifier(workspace)) {
 					uriToOpen = { folderUri: workspace.uri };
 				} else if (isWorkspaceIdentifier(workspace)) {
@@ -949,6 +981,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Menubar
 		if (!e || e.affectsConfiguration('window.menuBarVisibility')) {
 			const newMenuBarVisibility = this.getMenuBarVisibility();
+
 			if (newMenuBarVisibility !== this.currentMenuBarVisibility) {
 				this.currentMenuBarVisibility = newMenuBarVisibility;
 				this.setMenuBarVisibility(newMenuBarVisibility);
@@ -963,7 +996,9 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 			if (newHttpProxy?.indexOf('@') !== -1) {
 				const uri = URI.parse(newHttpProxy!);
+
 				const i = uri.authority.indexOf('@');
+
 				if (i !== -1) {
 					newHttpProxy = uri.with({ authority: uri.authority.substring(i + 1) })
 						.toString();
@@ -980,6 +1015,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 				this.currentNoProxy = newNoProxy;
 
 				const proxyRules = newHttpProxy || '';
+
 				const proxyBypassRules = newNoProxy ? `${newNoProxy},<local>` : '<local>';
 				this.logService.trace(`Setting proxy to '${proxyRules}', bypassing '${proxyBypassRules}'`);
 				this._win.webContents.session.setProxy({ proxyRules, proxyBypassRules, pacScript: '' });
@@ -1068,9 +1104,12 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// extension development host that had its environment set
 		// (for https://github.com/microsoft/vscode/issues/123508)
 		const currentUserEnv = (this._config ?? this.pendingLoadConfig)?.userEnv;
+
 		if (currentUserEnv) {
 			const shouldPreserveLaunchCliEnvironment = isLaunchedFromCli(currentUserEnv) && !isLaunchedFromCli(configuration.userEnv);
+
 			const shouldPreserveDebugEnvironmnet = this.isExtensionDevelopmentHost;
+
 			if (shouldPreserveLaunchCliEnvironment || shouldPreserveDebugEnvironmnet) {
 				configuration.userEnv = { ...currentUserEnv, ...configuration.userEnv }; // still allow to override certain environment as passed in
 			}
@@ -1102,6 +1141,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		configuration.partsSplash = this.themeMainService.getWindowSplash();
 		configuration.zoomLevel = this.getZoomLevel();
 		configuration.isCustomZoomLevel = typeof this.customZoomLevel === 'number';
+
 		if (configuration.isCustomZoomLevel && configuration.partsSplash) {
 			configuration.partsSplash.zoomLevel = configuration.zoomLevel;
 		}
@@ -1163,8 +1203,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Multi folder
 		if (isWorkspaceIdentifier(configuration.workspace)) {
 			const configPath = configuration.workspace.configPath;
+
 			if (configPath.scheme === Schemas.file) {
 				const workspaceExists = await this.fileService.exists(configPath);
+
 				if (!workspaceExists) {
 					return undefined;
 				}
@@ -1174,8 +1216,10 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// Single folder
 		else if (isSingleFolderWorkspaceIdentifier(configuration.workspace)) {
 			const uri = configuration.workspace.uri;
+
 			if (uri.scheme === Schemas.file) {
 				const folderExists = await this.fileService.exists(uri);
+
 				if (!folderExists) {
 					return undefined;
 				}
@@ -1194,6 +1238,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// fullscreen gets special treatment
 		if (this.isFullScreen) {
 			let display: electron.Display | undefined;
+
 			try {
 				display = electron.screen.getDisplayMatching(this.getBounds());
 			} catch (error) {
@@ -1222,6 +1267,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		}
 
 		const state: IWindowState = Object.create(null);
+
 		let mode: WindowMode;
 
 		// get window mode
@@ -1241,6 +1287,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		// only consider non-minimized window states
 		if (mode === WindowMode.Normal || mode === WindowMode.Maximized) {
 			let bounds: electron.Rectangle;
+
 			if (mode === WindowMode.Normal) {
 				bounds = this.getBounds();
 			} else {
@@ -1262,6 +1309,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		mark('code/willRestoreCodeWindowState');
 
 		let hasMultipleDisplays = false;
+
 		if (state) {
 
 			// Window zoom
@@ -1285,6 +1333,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 	getBounds(): electron.Rectangle {
 		const [x, y] = this._win.getPosition();
+
 		const [width, height] = this._win.getSize();
 
 		return { x, y, width, height };
@@ -1304,6 +1353,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 
 	private getMenuBarVisibility(): MenuBarVisibility {
 		let menuBarVisibility = getMenuBarVisibility(this.configurationService);
+
 		if (['visible', 'toggle', 'hidden'].indexOf(menuBarVisibility) < 0) {
 			menuBarVisibility = 'classic';
 		}
@@ -1343,21 +1393,25 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 			case ('classic'):
 				this._win.setMenuBarVisibility(!isFullscreen);
 				this._win.autoHideMenuBar = isFullscreen;
+
 				break;
 
 			case ('visible'):
 				this._win.setMenuBarVisibility(true);
 				this._win.autoHideMenuBar = false;
+
 				break;
 
 			case ('toggle'):
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = true;
+
 				break;
 
 			case ('hidden'):
 				this._win.setMenuBarVisibility(false);
 				this._win.autoHideMenuBar = false;
+
 				break;
 		}
 	}
@@ -1372,6 +1426,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		}
 
 		const windowSettings = this.configurationService.getValue<IWindowSettings | undefined>('window');
+
 		return windowSettings?.zoomLevel;
 	}
 
@@ -1395,6 +1450,7 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 		if (this._win) {
 			if (this._win.isDestroyed() || this._win.webContents.isDestroyed()) {
 				this.logService.warn(`Sending IPC message to channel '${channel}' for window that is destroyed`);
+
 				return;
 			}
 
@@ -1456,14 +1512,17 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	private createTouchBarGroupSegments(items: ISerializableCommandAction[] = []): ITouchBarSegment[] {
 		const segments: ITouchBarSegment[] = items.map(item => {
 			let icon: electron.NativeImage | undefined;
+
 			if (item.icon && !ThemeIcon.isThemeIcon(item.icon) && item.icon?.dark?.scheme === Schemas.file) {
 				icon = electron.nativeImage.createFromPath(URI.revive(item.icon.dark).fsPath);
+
 				if (icon.isEmpty()) {
 					icon = undefined;
 				}
 			}
 
 			let title: string;
+
 			if (typeof item.title === 'string') {
 				title = item.title;
 			} else {

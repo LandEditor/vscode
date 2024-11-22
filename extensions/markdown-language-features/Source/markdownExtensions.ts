@@ -33,6 +33,7 @@ export namespace MarkdownContributions {
         previewResourceRoots: [],
         markdownItPlugins: new Map()
     };
+
     export function merge(a: MarkdownContributions, b: MarkdownContributions): MarkdownContributions {
         return {
             previewScripts: [...a.previewScripts, ...b.previewScripts],
@@ -52,13 +53,18 @@ export namespace MarkdownContributions {
     }
     export function fromExtension(extension: vscode.Extension<any>): MarkdownContributions {
         const contributions = extension.packageJSON?.contributes;
+
         if (!contributions) {
             return MarkdownContributions.Empty;
         }
         const previewStyles = Array.from(getContributedStyles(contributions, extension));
+
         const previewScripts = Array.from(getContributedScripts(contributions, extension));
+
         const previewResourceRoots = previewStyles.length || previewScripts.length ? [extension.extensionUri] : [];
+
         const markdownItPlugins = getContributedMarkdownItPlugins(contributions, extension);
+
         return {
             previewScripts,
             previewStyles,
@@ -68,6 +74,7 @@ export namespace MarkdownContributions {
     }
     function getContributedMarkdownItPlugins(contributes: any, extension: vscode.Extension<any>): Map<string, Thenable<(md: any) => any>> {
         const map = new Map<string, Thenable<(md: any) => any>>();
+
         if (contributes['markdown.markdownItPlugins']) {
             map.set(extension.id, extension.activate().then(() => {
                 if (extension.exports && extension.exports.extendMarkdownIt) {
@@ -97,7 +104,9 @@ class VSCodeExtensionMarkdownContributionProvider extends Disposable implements 
         super();
         this._register(vscode.extensions.onDidChange(() => {
             const currentContributions = this._getCurrentContributions();
+
             const existingContributions = this._contributions || MarkdownContributions.Empty;
+
             if (!MarkdownContributions.equal(existingContributions, currentContributions)) {
                 this._contributions = currentContributions;
                 this._onContributionsChanged.fire(this);
@@ -111,6 +120,7 @@ class VSCodeExtensionMarkdownContributionProvider extends Disposable implements 
     public readonly onContributionsChanged = this._onContributionsChanged.event;
     public get contributions(): MarkdownContributions {
         this._contributions ??= this._getCurrentContributions();
+
         return this._contributions;
     }
     private _getCurrentContributions(): MarkdownContributions {

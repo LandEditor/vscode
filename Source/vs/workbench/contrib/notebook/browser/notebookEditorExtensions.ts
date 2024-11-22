@@ -7,6 +7,7 @@ import { INotebookEditor, INotebookEditorContribution, INotebookEditorContributi
 class EditorContributionRegistry {
     public static readonly INSTANCE = new EditorContributionRegistry();
     private readonly editorContributions: INotebookEditorContributionDescription[];
+
     constructor() {
         this.editorContributions = [];
     }

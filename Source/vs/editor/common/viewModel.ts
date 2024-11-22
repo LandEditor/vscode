@@ -30,35 +30,61 @@ export interface IViewModel extends ICursorSimpleModel {
      */
     setViewport(startLineNumber: number, endLineNumber: number, centeredLineNumber: number): void;
     visibleLinesStabilized(): void;
+
     setHasFocus(hasFocus: boolean): void;
     onCompositionStart(): void;
     onCompositionEnd(): void;
+
     getMinimapDecorationsInRange(range: Range): ViewModelDecoration[];
+
     getDecorationsInViewport(visibleRange: Range): ViewModelDecoration[];
+
     getViewportViewLineRenderingData(visibleRange: Range, lineNumber: number): ViewLineRenderingData;
+
     getViewLineRenderingData(lineNumber: number): ViewLineRenderingData;
+
     getViewLineData(lineNumber: number): ViewLineData;
+
     getMinimapLinesRenderingData(startLineNumber: number, endLineNumber: number, needed: boolean[]): MinimapLinesRenderingData;
+
     getCompletelyVisibleViewRange(): Range;
+
     getCompletelyVisibleViewRangeAtScrollTop(scrollTop: number): Range;
+
     getHiddenAreas(): Range[];
+
     getLineCount(): number;
+
     getLineContent(lineNumber: number): string;
+
     getLineLength(lineNumber: number): number;
+
     getActiveIndentGuide(lineNumber: number, minLineNumber: number, maxLineNumber: number): IActiveIndentGuideInfo;
+
     getLinesIndentGuides(startLineNumber: number, endLineNumber: number): number[];
+
     getBracketGuidesInRangeByLine(startLineNumber: number, endLineNumber: number, activePosition: IPosition | null, options: BracketGuideOptions): IndentGuide[][];
+
     getLineMinColumn(lineNumber: number): number;
+
     getLineMaxColumn(lineNumber: number): number;
+
     getLineFirstNonWhitespaceColumn(lineNumber: number): number;
+
     getLineLastNonWhitespaceColumn(lineNumber: number): number;
+
     getAllOverviewRulerDecorations(theme: EditorTheme): OverviewRulerDecorationsGroup[];
+
     getValueInRange(range: Range, eol: EndOfLinePreference): string;
+
     getValueLengthInRange(range: Range, eol: EndOfLinePreference): number;
     modifyPosition(position: Position, offset: number): Position;
+
     getInjectedTextAt(viewPosition: Position): InjectedText | null;
     deduceModelPositionRelativeToViewPosition(viewAnchorPosition: Position, deltaOffset: number, lineFeedCnt: number): Position;
+
     getPlainTextToCopy(modelRanges: Range[], emptySelectionClipboard: boolean, forceCRLF: boolean): string | string[];
+
     getRichTextToCopy(modelRanges: Range[], emptySelectionClipboard: boolean): {
         html: string;
         mode: string;
@@ -66,13 +92,21 @@ export interface IViewModel extends ICursorSimpleModel {
     createLineBreaksComputer(): ILineBreaksComputer;
     //#region cursor
     getPrimaryCursorState(): CursorState;
+
     getLastAddedCursorIndex(): number;
+
     getCursorStates(): CursorState[];
+
     setCursorStates(source: string | null | undefined, reason: CursorChangeReason, states: PartialCursorState[] | null): boolean;
+
     getCursorColumnSelectData(): IColumnSelectData;
+
     getCursorAutoClosedCharacters(): Range[];
+
     setCursorColumnSelectData(columnSelectData: IColumnSelectData): void;
+
     getPrevEditOperationType(): EditOperationType;
+
     setPrevEditOperationType(type: EditOperationType): void;
     revealAllCursors(source: string | null | undefined, revealHorizontal: boolean, minimalReveal?: boolean): void;
     revealPrimaryCursor(source: string | null | undefined, revealHorizontal: boolean, minimalReveal?: boolean): void;
@@ -87,26 +121,42 @@ export interface IViewModel extends ICursorSimpleModel {
 }
 export interface IViewLayout {
     getScrollable(): Scrollable;
+
     getScrollWidth(): number;
+
     getScrollHeight(): number;
+
     getCurrentScrollLeft(): number;
+
     getCurrentScrollTop(): number;
+
     getCurrentViewport(): Viewport;
+
     getFutureViewport(): Viewport;
+
     setScrollPosition(position: INewScrollPosition, type: ScrollType): void;
     deltaScrollNow(deltaScrollLeft: number, deltaScrollTop: number): void;
     validateScrollPosition(scrollPosition: INewScrollPosition): IScrollPosition;
+
     setMaxLineWidth(maxLineWidth: number): void;
+
     setOverlayWidgetsMinWidth(overlayWidgetsMinWidth: number): void;
+
     getLinesViewportData(): IPartialViewLinesViewportData;
+
     getLinesViewportDataAtScrollTop(scrollTop: number): IPartialViewLinesViewportData;
+
     getWhitespaces(): IEditorWhitespace[];
     isAfterLines(verticalOffset: number): boolean;
     isInTopPadding(verticalOffset: number): boolean;
     isInBottomPadding(verticalOffset: number): boolean;
+
     getLineNumberAtVerticalOffset(verticalOffset: number): number;
+
     getVerticalOffsetForLineNumber(lineNumber: number, includeViewZones?: boolean): number;
+
     getVerticalOffsetAfterLineNumber(lineNumber: number, includeViewZones?: boolean): number;
+
     getWhitespaceAtVerticalOffset(verticalOffset: number): IViewWhitespaceViewportData | null;
     /**
      * Get the layout information for whitespaces currently in the viewport
@@ -172,6 +222,7 @@ export class Viewport {
     readonly left: number;
     readonly width: number;
     readonly height: number;
+
     constructor(top: number, left: number, width: number, height: number) {
         this.top = top | 0;
         this.left = left | 0;
@@ -196,12 +247,15 @@ export interface ICoordinatesConverter {
     */
     convertModelRangeToViewRange(modelRange: Range, affinity?: PositionAffinity): Range;
     modelPositionIsVisible(modelPosition: Position): boolean;
+
     getModelLineViewLineCount(modelLineNumber: number): number;
+
     getViewLineNumberOfModelPosition(modelLineNumber: number, modelColumn: number): number;
 }
 export class MinimapLinesRenderingData {
     public readonly tabSize: number;
     public readonly data: Array<ViewLineData | null>;
+
     constructor(tabSize: number, data: Array<ViewLineData | null>) {
         this.tabSize = tabSize;
         this.data = data;
@@ -237,6 +291,7 @@ export class ViewLineData {
      * Additional inline decorations for this line.
     */
     public readonly inlineDecorations: readonly SingleLineInlineDecoration[] | null;
+
     constructor(content: string, continuesWithWrappedLine: boolean, minColumn: number, maxColumn: number, startVisibleColumn: number, tokens: IViewLineTokens, inlineDecorations: readonly SingleLineInlineDecoration[] | null) {
         this.content = content;
         this.continuesWithWrappedLine = continuesWithWrappedLine;
@@ -288,6 +343,7 @@ export class ViewLineRenderingData {
      * The visible column at the start of the line (after the fauxIndent)
      */
     public readonly startVisibleColumn: number;
+
     constructor(minColumn: number, maxColumn: number, content: string, continuesWithWrappedLine: boolean, mightContainRTL: boolean, mightContainNonBasicASCII: boolean, tokens: IViewLineTokens, inlineDecorations: InlineDecoration[], tabSize: number, startVisibleColumn: number) {
         this.minColumn = minColumn;
         this.maxColumn = maxColumn;
@@ -334,6 +390,7 @@ export class ViewModelDecoration {
     _viewModelDecorationBrand: void = undefined;
     public readonly range: Range;
     public readonly options: IModelDecorationOptions;
+
     constructor(range: Range, options: IModelDecorationOptions) {
         this.range = range;
         this.options = options;

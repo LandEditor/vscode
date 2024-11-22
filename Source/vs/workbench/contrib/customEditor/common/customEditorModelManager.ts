@@ -14,7 +14,9 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
     }>();
     public async getAllModels(resource: URI): Promise<ICustomEditorModel[]> {
         const keyStart = `${resource.toString()}@@@`;
+
         const models = [];
+
         for (const [key, entry] of this._references) {
             if (key.startsWith(keyStart) && entry.model) {
                 models.push(await entry.model);
@@ -24,16 +26,21 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
     }
     public async get(resource: URI, viewType: string): Promise<ICustomEditorModel | undefined> {
         const key = this.key(resource, viewType);
+
         const entry = this._references.get(key);
+
         return entry?.model;
     }
     public tryRetain(resource: URI, viewType: string): Promise<IReference<ICustomEditorModel>> | undefined {
         const key = this.key(resource, viewType);
+
         const entry = this._references.get(key);
+
         if (!entry) {
             return undefined;
         }
         entry.counter++;
+
         return entry.model.then(model => {
             return {
                 object: model,
@@ -48,11 +55,14 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
     }
     public add(resource: URI, viewType: string, model: Promise<ICustomEditorModel>): Promise<IReference<ICustomEditorModel>> {
         const key = this.key(resource, viewType);
+
         const existing = this._references.get(key);
+
         if (existing) {
             throw new Error('Model already exists');
         }
         this._references.set(key, { viewType, model, counter: 0 });
+
         return this.tryRetain(resource, viewType)!;
     }
     public disposeAllModelsForView(viewType: string): void {

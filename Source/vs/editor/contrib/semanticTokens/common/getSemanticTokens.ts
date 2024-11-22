@@ -29,6 +29,7 @@ export function hasDocumentSemanticTokensProvider(registry: LanguageFeatureRegis
 }
 function getDocumentSemanticTokensProviders(registry: LanguageFeatureRegistry<DocumentSemanticTokensProvider>, model: ITextModel): DocumentSemanticTokensProvider[] {
     const groups = registry.orderedGroups(model);
+
     return (groups.length > 0 ? groups[0] : []);
 }
 export async function getDocumentSemanticTokens(registry: LanguageFeatureRegistry<DocumentSemanticTokensProvider>, model: ITextModel, lastProvider: DocumentSemanticTokensProvider | null, lastResultId: string | null, token: CancellationToken): Promise<DocumentSemanticTokensResult | null> {
@@ -36,7 +37,9 @@ export async function getDocumentSemanticTokens(registry: LanguageFeatureRegistr
     // Get tokens from all providers at the same time.
     const results = await Promise.all(providers.map(async (provider) => {
         let result: SemanticTokens | SemanticTokensEdits | null | undefined;
+
         let error: any = null;
+
         try {
             result = await provider.provideDocumentSemanticTokens(model, (provider === lastProvider ? lastResultId : null), token);
         }
@@ -67,6 +70,7 @@ export async function getDocumentSemanticTokens(registry: LanguageFeatureRegistr
 }
 function _getDocumentSemanticTokensProviderHighestGroup(registry: LanguageFeatureRegistry<DocumentSemanticTokensProvider>, model: ITextModel): DocumentSemanticTokensProvider[] | null {
     const result = registry.orderedGroups(model);
+
     return (result.length > 0 ? result[0] : null);
 }
 class DocumentRangeSemanticTokensResult {
@@ -77,6 +81,7 @@ export function hasDocumentRangeSemanticTokensProvider(providers: LanguageFeatur
 }
 function getDocumentRangeSemanticTokensProviders(providers: LanguageFeatureRegistry<DocumentRangeSemanticTokensProvider>, model: ITextModel): DocumentRangeSemanticTokensProvider[] {
     const groups = providers.orderedGroups(model);
+
     return (groups.length > 0 ? groups[0] : []);
 }
 export async function getDocumentRangeSemanticTokens(registry: LanguageFeatureRegistry<DocumentRangeSemanticTokensProvider>, model: ITextModel, range: Range, token: CancellationToken): Promise<DocumentRangeSemanticTokensResult | null> {
@@ -84,6 +89,7 @@ export async function getDocumentRangeSemanticTokens(registry: LanguageFeatureRe
     // Get tokens from all providers at the same time.
     const results = await Promise.all(providers.map(async (provider) => {
         let result: SemanticTokens | null | undefined;
+
         try {
             result = await provider.provideDocumentRangeSemanticTokens(model, range, token);
         }
@@ -111,12 +117,16 @@ export async function getDocumentRangeSemanticTokens(registry: LanguageFeatureRe
 CommandsRegistry.registerCommand('_provideDocumentSemanticTokensLegend', async (accessor, ...args): Promise<SemanticTokensLegend | undefined> => {
     const [uri] = args;
     assertType(uri instanceof URI);
+
     const model = accessor.get(IModelService).getModel(uri);
+
     if (!model) {
         return undefined;
     }
     const { documentSemanticTokensProvider } = accessor.get(ILanguageFeaturesService);
+
     const providers = _getDocumentSemanticTokensProviderHighestGroup(documentSemanticTokensProvider, model);
+
     if (!providers) {
         // there is no provider => fall back to a document range semantic tokens provider
         return accessor.get(ICommandService).executeCommand('_provideDocumentRangeSemanticTokensLegend', uri);
@@ -126,20 +136,25 @@ CommandsRegistry.registerCommand('_provideDocumentSemanticTokensLegend', async (
 CommandsRegistry.registerCommand('_provideDocumentSemanticTokens', async (accessor, ...args): Promise<VSBuffer | undefined> => {
     const [uri] = args;
     assertType(uri instanceof URI);
+
     const model = accessor.get(IModelService).getModel(uri);
+
     if (!model) {
         return undefined;
     }
     const { documentSemanticTokensProvider } = accessor.get(ILanguageFeaturesService);
+
     if (!hasDocumentSemanticTokensProvider(documentSemanticTokensProvider, model)) {
         // there is no provider => fall back to a document range semantic tokens provider
         return accessor.get(ICommandService).executeCommand('_provideDocumentRangeSemanticTokens', uri, model.getFullModelRange());
     }
     const r = await getDocumentSemanticTokens(documentSemanticTokensProvider, model, null, null, CancellationToken.None);
+
     if (!r) {
         return undefined;
     }
     const { provider, tokens } = r;
+
     if (!tokens || !isSemanticTokens(tokens)) {
         return undefined;
     }
@@ -148,6 +163,7 @@ CommandsRegistry.registerCommand('_provideDocumentSemanticTokens', async (access
         type: 'full',
         data: tokens.data
     });
+
     if (tokens.resultId) {
         provider.releaseDocumentSemanticTokens(tokens.resultId);
     }
@@ -156,12 +172,16 @@ CommandsRegistry.registerCommand('_provideDocumentSemanticTokens', async (access
 CommandsRegistry.registerCommand('_provideDocumentRangeSemanticTokensLegend', async (accessor, ...args): Promise<SemanticTokensLegend | undefined> => {
     const [uri, range] = args;
     assertType(uri instanceof URI);
+
     const model = accessor.get(IModelService).getModel(uri);
+
     if (!model) {
         return undefined;
     }
     const { documentRangeSemanticTokensProvider } = accessor.get(ILanguageFeaturesService);
+
     const providers = getDocumentRangeSemanticTokensProviders(documentRangeSemanticTokensProvider, model);
+
     if (providers.length === 0) {
         // no providers
         return undefined;
@@ -175,9 +195,11 @@ CommandsRegistry.registerCommand('_provideDocumentRangeSemanticTokensLegend', as
         // as we cannot fall back to the one which would give results
         // => return the first legend for backwards compatibility and print a warning
         console.warn(`provideDocumentRangeSemanticTokensLegend might be out-of-sync with provideDocumentRangeSemanticTokens unless a range argument is passed in`);
+
         return providers[0].getLegend();
     }
     const result = await getDocumentRangeSemanticTokens(documentRangeSemanticTokensProvider, model, Range.lift(range), CancellationToken.None);
+
     if (!result) {
         return undefined;
     }
@@ -187,12 +209,16 @@ CommandsRegistry.registerCommand('_provideDocumentRangeSemanticTokens', async (a
     const [uri, range] = args;
     assertType(uri instanceof URI);
     assertType(Range.isIRange(range));
+
     const model = accessor.get(IModelService).getModel(uri);
+
     if (!model) {
         return undefined;
     }
     const { documentRangeSemanticTokensProvider } = accessor.get(ILanguageFeaturesService);
+
     const result = await getDocumentRangeSemanticTokens(documentRangeSemanticTokensProvider, model, Range.lift(range), CancellationToken.None);
+
     if (!result || !result.tokens) {
         // there is no provider or it didn't return tokens
         return undefined;

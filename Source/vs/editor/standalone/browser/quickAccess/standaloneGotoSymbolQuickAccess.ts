@@ -20,6 +20,7 @@ import { IOutlineModelService } from '../../../contrib/documentSymbols/browser/o
 import { ILanguageFeaturesService } from '../../../common/services/languageFeatures.js';
 export class StandaloneGotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccessProvider {
     protected readonly onDidActiveTextEditorControlChange = Event.None;
+
     constructor(
     @ICodeEditorService
     private readonly editorService: ICodeEditorService, 
@@ -35,6 +36,7 @@ export class StandaloneGotoSymbolQuickAccessProvider extends AbstractGotoSymbolQ
 }
 export class GotoSymbolAction extends EditorAction {
     static readonly ID = 'editor.action.quickOutline';
+
     constructor() {
         super({
             id: GotoSymbolAction.ID,

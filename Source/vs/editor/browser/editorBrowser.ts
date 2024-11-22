@@ -557,7 +557,9 @@ export interface PastePayload {
 export interface IOverviewRuler {
 	getDomNode(): HTMLElement;
 	dispose(): void;
+
 	setZones(zones: OverviewRulerZone[]): void;
+
 	setLayout(position: OverviewRulerPosition): void;
 }
 

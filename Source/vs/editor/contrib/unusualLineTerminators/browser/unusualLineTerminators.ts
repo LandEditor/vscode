@@ -12,6 +12,7 @@ import { IEditorContribution } from '../../../common/editorCommon.js';
 import { ITextModel } from '../../../common/model.js';
 import * as nls from '../../../../nls.js';
 import { IConfirmationResult, IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+
 const ignoreUnusualLineTerminators = 'ignoreUnusualLineTerminators';
 function writeIgnoreState(codeEditorService: ICodeEditorService, model: ITextModel, state: boolean): void {
     codeEditorService.setModelProperty(model.uri, ignoreUnusualLineTerminators, state);
@@ -23,6 +24,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
     public static readonly ID = 'editor.contrib.unusualLineTerminatorsDetector';
     private _config: 'auto' | 'off' | 'prompt';
     private _isPresentingDialog: boolean = false;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IDialogService
     private readonly _dialogService: IDialogService, 
@@ -56,10 +58,12 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
             return;
         }
         const model = this._editor.getModel();
+
         if (!model.mightContainUnusualLineTerminators()) {
             return;
         }
         const ignoreState = readIgnoreState(this._codeEditorService, model);
+
         if (ignoreState === true) {
             // this model should be ignored
             return;
@@ -71,6 +75,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
         if (this._config === 'auto') {
             // just do it!
             model.removeUnusualLineTerminators(this._editor.getSelections());
+
             return;
         }
         if (this._isPresentingDialog) {
@@ -79,6 +84,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
             return;
         }
         let result: IConfirmationResult;
+
         try {
             this._isPresentingDialog = true;
             result = await this._dialogService.confirm({
@@ -95,6 +101,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
         if (!result.confirmed) {
             // this model should be ignored
             writeIgnoreState(this._codeEditorService, model, true);
+
             return;
         }
         model.removeUnusualLineTerminators(this._editor.getSelections());

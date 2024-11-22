@@ -91,6 +91,7 @@ type WelcomeActionClassification = {
 };
 
 const viewPaneContainerExpandedIcon = registerIcon('view-pane-container-expanded', Codicon.chevronDown, nls.localize('viewPaneContainerExpandedIcon', 'Icon for an expanded view pane container.'));
+
 const viewPaneContainerCollapsedIcon = registerIcon('view-pane-container-collapsed', Codicon.chevronRight, nls.localize('viewPaneContainerCollapsedIcon', 'Icon for a collapsed view pane container.'));
 
 const viewsRegistry = Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry);
@@ -163,10 +164,12 @@ class ViewWelcomeController {
 
 		if (!enabled) {
 			this.enabledDisposables.clear();
+
 			return;
 		}
 
 		this.container.classList.add('welcome');
+
 		const viewWelcomeContainer = append(this.container, $('.welcome-view'));
 		this.element = $('.welcome-view-content', { tabIndex: 0 });
 		this.scrollableElement = new DomScrollableElement(this.element, { alwaysConsumeMouseWheel: true, horizontal: ScrollbarVisibility.Hidden, vertical: ScrollbarVisibility.Visible, });
@@ -235,10 +238,12 @@ class ViewWelcomeController {
 		if (contents.length === 0) {
 			this.container.classList.remove('welcome');
 			this.scrollableElement!.scanDomNode();
+
 			return;
 		}
 
 		let buttonsCount = 0;
+
 		for (const { content, precondition, renderSecondaryButtons } of contents) {
 			const lines = content.split('\n');
 
@@ -253,7 +258,9 @@ class ViewWelcomeController {
 
 				if (linkedText.nodes.length === 1 && typeof linkedText.nodes[0] !== 'string') {
 					const node = linkedText.nodes[0];
+
 					const buttonContainer = append(this.element!, $('.button-container'));
+
 					const button = new Button(buttonContainer, { title: node.title, supportIcons: true, secondary: renderSecondaryButtons && buttonsCount > 0 ? true : false, ...defaultButtonStyles, });
 					button.label = node.label;
 					button.onDidClick(_ => {
@@ -268,6 +275,7 @@ class ViewWelcomeController {
 						updateEnablement();
 
 						const keys = new Set(precondition.keys());
+
 						const onDidChangeContext = Event.filter(this.contextKeyService.onDidChangeContext, e => e.affectsSome(keys));
 						onDidChangeContext(updateEnablement, null, this.renderDisposables);
 					}
@@ -285,6 +293,7 @@ class ViewWelcomeController {
 								updateEnablement();
 
 								const keys = new Set(precondition.keys());
+
 								const onDidChangeContext = Event.filter(this.contextKeyService.onDidChangeContext, e => e.affectsSome(keys));
 								onDidChangeContext(updateEnablement, null, this.renderDisposables);
 							}
@@ -393,6 +402,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 		this.scopedContextKeyService = this._register(contextKeyService.createScoped(this.element));
 		this.scopedContextKeyService.createKey('view', this.id);
+
 		const viewLocationKey = this.scopedContextKeyService.createKey('viewLocation', ViewContainerLocationToString(viewDescriptorService.getViewLocationById(this.id)!));
 		this._register(Event.filter(viewDescriptorService.onDidChangeLocation, e => e.views.some(view => view.id === this.id))(() => viewLocationKey.set(ViewContainerLocationToString(viewDescriptorService.getViewLocationById(this.id)!))));
 
@@ -430,10 +440,12 @@ export abstract class ViewPane extends Pane implements IView {
 
 	override setExpanded(expanded: boolean): boolean {
 		const changed = super.setExpanded(expanded);
+
 		if (changed) {
 			this._onDidChangeBodyVisibility.fire(expanded);
 		}
 		this.updateTwistyIcon();
+
 		return changed;
 	}
 
@@ -472,6 +484,7 @@ export abstract class ViewPane extends Pane implements IView {
 		this._register(addDisposableListener(actions, EventType.CLICK, e => e.preventDefault()));
 
 		const viewContainerModel = this.viewDescriptorService.getViewContainerByViewId(this.id);
+
 		if (viewContainerModel) {
 			this._register(this.viewDescriptorService.getViewContainerModel(viewContainerModel).onDidChangeContainerInfo(({ title }) => this.updateTitle(this.title)));
 		} else {
@@ -503,8 +516,10 @@ export abstract class ViewPane extends Pane implements IView {
 		super.style(styles);
 
 		const icon = this.getIcon();
+
 		if (this.iconContainer) {
 			const fgColor = asCssValueWithDefault(styles.headerForeground, asCssVariable(foreground));
+
 			if (URI.isUri(icon)) {
 				// Apply background color to activity bar item provided with iconUrls
 				this.iconContainer.style.backgroundColor = fgColor;
@@ -523,11 +538,14 @@ export abstract class ViewPane extends Pane implements IView {
 
 	protected renderHeaderTitle(container: HTMLElement, title: string): void {
 		this.iconContainer = append(container, $('.icon', undefined));
+
 		const icon = this.getIcon();
 
 		let cssClass: string | undefined = undefined;
+
 		if (URI.isUri(icon)) {
 			cssClass = `view-${this.id.replace(/[\.\:]/g, '-')}`;
+
 			const iconClass = `.pane-header .icon.${cssClass}`;
 
 			createCSSRule(iconClass, `
@@ -558,7 +576,9 @@ export abstract class ViewPane extends Pane implements IView {
 
 	private _getAriaLabel(title: string): string {
 		const viewHasAccessibilityHelpContent = this.viewDescriptorService.getViewDescriptorById(this.id)?.accessibilityHelpContent;
+
 		const accessibleViewHasShownForView = this.accessibleViewInformationService?.hasShownAccessibleView(this.id);
+
 		if (!viewHasAccessibilityHelpContent || accessibleViewHasShownForView) {
 			return title;
 		}
@@ -568,6 +588,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 	protected updateTitle(title: string): void {
 		const calculatedTitle = this.calculateTitle(title);
+
 		if (this.titleContainer) {
 			this.titleContainer.textContent = calculatedTitle;
 			this.titleContainerHover?.update(calculatedTitle);
@@ -602,8 +623,11 @@ export abstract class ViewPane extends Pane implements IView {
 
 	private calculateTitle(title: string): string {
 		const viewContainer = this.viewDescriptorService.getViewContainerByViewId(this.id)!;
+
 		const model = this.viewDescriptorService.getViewContainerModel(viewContainer);
+
 		const viewDescriptor = this.viewDescriptorService.getViewDescriptorById(this.id);
+
 		const isDefault = this.viewDescriptorService.getDefaultContainerById(this.id) === viewContainer;
 
 		if (!isDefault && viewDescriptor?.containerTitle && model.title !== viewDescriptor.containerTitle) {
@@ -666,6 +690,7 @@ export abstract class ViewPane extends Pane implements IView {
 	private setActions(): void {
 		if (this.toolbar) {
 			const primaryActions = [...this.menuActions.getPrimaryActions()];
+
 			if (this.shouldShowFilterInHeader()) {
 				primaryActions.unshift(VIEWPANE_FILTER_ACTION);
 			}
@@ -690,12 +715,14 @@ export abstract class ViewPane extends Pane implements IView {
 	getActionViewItem(action: IAction, options?: IDropdownMenuActionViewItemOptions): IActionViewItem | undefined {
 		if (action.id === VIEWPANE_FILTER_ACTION.id) {
 			const that = this;
+
 			return new class extends BaseActionViewItem {
 				constructor() { super(null, action); }
 				override setFocusable(): void { /* noop input elements are focusable by default */ }
 				override get trapsArrowNavigation(): boolean { return true; }
 				override render(container: HTMLElement): void {
 					container.classList.add('viewpane-filter-container');
+
 					const filter = that.getFilterWidget()!;
 					append(container, filter.element);
 					filter.relayout();
@@ -755,6 +782,7 @@ export abstract class FilterViewPane extends ViewPane {
 		accessibleViewService?: IAccessibleViewInformationService
 	) {
 		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService, accessibleViewService);
+
 		const childInstantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])));
 		this.filterWidget = this._register(childInstantiationService.createInstance(FilterWidget, options.filterOptions));
 	}
@@ -772,13 +800,17 @@ export abstract class FilterViewPane extends ViewPane {
 		super.layoutBody(height, width);
 
 		this.dimension = new Dimension(width, height);
+
 		const wasFilterShownInHeader = !this.filterContainer?.hasChildNodes();
+
 		const shouldShowFilterInHeader = this.shouldShowFilterInHeader();
+
 		if (wasFilterShownInHeader !== shouldShowFilterInHeader) {
 			if (shouldShowFilterInHeader) {
 				reset(this.filterContainer!);
 			}
 			this.updateActions();
+
 			if (!shouldShowFilterInHeader) {
 				append(this.filterContainer!, this.filterWidget.element);
 			}
@@ -814,6 +846,7 @@ export function getLocationBasedViewColors(location: ViewContainerLocation | nul
 			stickyScrollBackground = PANEL_STICKY_SCROLL_BACKGROUND;
 			stickyScrollBorder = PANEL_STICKY_SCROLL_BORDER;
 			stickyScrollShadow = PANEL_STICKY_SCROLL_SHADOW;
+
 			break;
 
 		case ViewContainerLocation.Sidebar:
@@ -840,6 +873,7 @@ export function getLocationBasedViewColors(location: ViewContainerLocation | nul
 
 export abstract class ViewAction<T extends IView> extends Action2 {
 	override readonly desc: Readonly<IAction2Options> & { viewId: string };
+
 	constructor(desc: Readonly<IAction2Options> & { viewId: string }) {
 		super(desc);
 		this.desc = desc;
@@ -847,6 +881,7 @@ export abstract class ViewAction<T extends IView> extends Action2 {
 
 	run(accessor: ServicesAccessor, ...args: any[]): unknown {
 		const view = accessor.get(IViewsService).getActiveViewWithId(this.desc.viewId);
+
 		if (view) {
 			return this.runInView(accessor, <T>view, ...args);
 		}

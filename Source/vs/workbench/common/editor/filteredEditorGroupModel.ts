@@ -10,10 +10,12 @@ import { Disposable } from '../../../base/common/lifecycle.js';
 abstract class FilteredEditorGroupModel extends Disposable implements IReadonlyEditorGroupModel {
     private readonly _onDidModelChange = this._register(new Emitter<IGroupModelChangeEvent>());
     readonly onDidModelChange = this._onDidModelChange.event;
+
     constructor(protected readonly model: IReadonlyEditorGroupModel) {
         super();
         this._register(this.model.onDidModelChange(e => {
             const candidateOrIndex = e.editorIndex ?? e.editor;
+
             if (candidateOrIndex !== undefined) {
                 if (!this.filter(candidateOrIndex)) {
                     return; // exclude events for excluded items
@@ -43,6 +45,7 @@ abstract class FilteredEditorGroupModel extends Disposable implements IReadonlyE
         excludeSticky?: boolean;
     }): EditorInput[] {
         const editors = this.model.getEditors(order, options);
+
         return editors.filter(e => this.filter(e));
     }
     findEditor(candidate: EditorInput | null, options?: IMatchEditorOptions): [
@@ -50,6 +53,7 @@ abstract class FilteredEditorGroupModel extends Disposable implements IReadonlyE
         number
     ] | undefined {
         const result = this.model.findEditor(candidate, options);
+
         if (!result) {
             return undefined;
         }
@@ -82,6 +86,7 @@ export class StickyEditorGroupModel extends FilteredEditorGroupModel {
     }
     indexOf(editor: EditorInput | IUntypedEditorInput | null, editors?: EditorInput[], options?: IMatchEditorOptions): number {
         const editorIndex = this.model.indexOf(editor, editors, options);
+
         if (editorIndex < 0 || editorIndex >= this.model.stickyCount) {
             return -1;
         }
@@ -89,6 +94,7 @@ export class StickyEditorGroupModel extends FilteredEditorGroupModel {
     }
     contains(candidate: EditorInput | IUntypedEditorInput, options?: IMatchEditorOptions): boolean {
         const editorIndex = this.model.indexOf(candidate, undefined, options);
+
         return editorIndex >= 0 && editorIndex < this.model.stickyCount;
     }
     protected filter(candidateOrIndex: EditorInput | number): boolean {
@@ -114,6 +120,7 @@ export class UnstickyEditorGroupModel extends FilteredEditorGroupModel {
     }
     indexOf(editor: EditorInput | IUntypedEditorInput | null, editors?: EditorInput[], options?: IMatchEditorOptions): number {
         const editorIndex = this.model.indexOf(editor, editors, options);
+
         if (editorIndex < this.model.stickyCount || editorIndex >= this.model.count) {
             return -1;
         }
@@ -121,6 +128,7 @@ export class UnstickyEditorGroupModel extends FilteredEditorGroupModel {
     }
     contains(candidate: EditorInput | IUntypedEditorInput, options?: IMatchEditorOptions): boolean {
         const editorIndex = this.model.indexOf(candidate, undefined, options);
+
         return editorIndex >= this.model.stickyCount && editorIndex < this.model.count;
     }
     protected filter(candidateOrIndex: EditorInput | number): boolean {

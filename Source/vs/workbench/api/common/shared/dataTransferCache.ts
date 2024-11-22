@@ -14,6 +14,7 @@ export class DataTransferFileCache {
     } {
         const requestId = this.requestIdPool++;
         this.dataTransferFiles.set(requestId, coalesce(Array.from(dataTransfer, ([, item]) => item.asFile())));
+
         return {
             id: requestId,
             dispose: () => {
@@ -23,10 +24,12 @@ export class DataTransferFileCache {
     }
     async resolveFileData(requestId: number, dataItemId: string): Promise<VSBuffer> {
         const files = this.dataTransferFiles.get(requestId);
+
         if (!files) {
             throw new Error('No data transfer found');
         }
         const file = files.find(file => file.id === dataItemId);
+
         if (!file) {
             throw new Error('No matching file found in data transfer');
         }

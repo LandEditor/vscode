@@ -49,38 +49,50 @@ export class LanguagePackCachedDataCleaner extends Disposable {
     }
     private async cleanUpLanguagePackCache(): Promise<void> {
         this.logService.trace('[language pack cache cleanup]: Starting to clean up unused language packs.');
+
         try {
             const installed: IStringDictionary<boolean> = Object.create(null);
+
             const metaData: ILanguagePackFile = JSON.parse(await fs.promises.readFile(join(this.environmentService.userDataPath, 'languagepacks.json'), 'utf8'));
+
             for (const locale of Object.keys(metaData)) {
                 const entry = metaData[locale];
                 installed[`${entry.hash}.${locale}`] = true;
             }
             // Cleanup entries for language packs that aren't installed anymore
             const cacheDir = join(this.environmentService.userDataPath, 'clp');
+
             const cacheDirExists = await Promises.exists(cacheDir);
+
             if (!cacheDirExists) {
                 return;
             }
             const entries = await Promises.readdir(cacheDir);
+
             for (const entry of entries) {
                 if (installed[entry]) {
                     this.logService.trace(`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`);
+
                     continue;
                 }
                 this.logService.trace(`[language pack cache cleanup]: Removing unused language pack: ${entry}`);
                 await Promises.rm(join(cacheDir, entry));
             }
             const now = Date.now();
+
             for (const packEntry of Object.keys(installed)) {
                 const folder = join(cacheDir, packEntry);
+
                 const entries = await Promises.readdir(folder);
+
                 for (const entry of entries) {
                     if (entry === 'tcf.json') {
                         continue;
                     }
                     const candidate = join(folder, entry);
+
                     const stat = await fs.promises.stat(candidate);
+
                     if (stat.isDirectory() && (now - stat.mtime.getTime()) > this._DataMaxAge) {
                         this.logService.trace(`[language pack cache cleanup]: Removing language pack cache folder: ${join(packEntry, entry)}`);
                         await Promises.rm(candidate);

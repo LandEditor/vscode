@@ -12,22 +12,27 @@ export async function resolveMachineId(stateService: IStateService, logService: 
     // Call the node layers implementation to avoid code duplication
     const machineId = await resolveNodeMachineId(stateService, logService);
     stateService.setItem(machineIdKey, machineId);
+
     return machineId;
 }
 export async function resolveSqmId(stateService: IStateService, logService: ILogService): Promise<string> {
     const sqmId = await resolveNodeSqmId(stateService, logService);
     stateService.setItem(sqmIdKey, sqmId);
+
     return sqmId;
 }
 export async function resolvedevDeviceId(stateService: IStateService, logService: ILogService): Promise<string> {
     const devDeviceId = await resolveNodedevDeviceId(stateService, logService);
     stateService.setItem(devDeviceIdKey, devDeviceId);
+
     return devDeviceId;
 }
 
 export async function validatedevDeviceId(stateService: IStateService, logService: ILogService): Promise<void> {
 	const actualDeviceId = await getdevDeviceId(logService.error.bind(logService));
+
 	const currentDeviceId = await resolveNodedevDeviceId(stateService, logService);
+
 	if (actualDeviceId !== currentDeviceId) {
 		stateService.setItem(devDeviceIdKey, actualDeviceId);
 	}

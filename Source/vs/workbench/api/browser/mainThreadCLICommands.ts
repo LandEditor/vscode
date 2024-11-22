@@ -28,11 +28,13 @@ import { IExtensionManifestPropertiesService } from '../../services/extensions/c
 
 CommandsRegistry.registerCommand('_remoteCLI.openExternal', function (accessor: ServicesAccessor, uri: UriComponents | string): Promise<boolean> {
 	const openerService = accessor.get(IOpenerService);
+
 	return openerService.open(isString(uri) ? uri : URI.revive(uri), { openExternal: true, allowTunneling: true });
 });
 
 CommandsRegistry.registerCommand('_remoteCLI.windowOpen', function (accessor: ServicesAccessor, toOpen: IWindowOpenable[], options: IOpenWindowOptions) {
 	const commandService = accessor.get(ICommandService);
+
 	if (!toOpen.length) {
 		return commandService.executeCommand('_files.newWindow', options);
 	}
@@ -41,6 +43,7 @@ CommandsRegistry.registerCommand('_remoteCLI.windowOpen', function (accessor: Se
 
 CommandsRegistry.registerCommand('_remoteCLI.getSystemStatus', function (accessor: ServicesAccessor): Promise<string | undefined> {
 	const commandService = accessor.get(ICommandService);
+
 	return commandService.executeCommand<string>('_issues.getSystemStatus');
 });
 
@@ -48,24 +51,31 @@ interface ManageExtensionsArgs {
 	list?: { showVersions?: boolean; category?: string };
 	install?: (string | URI)[];
 	uninstall?: string[];
+
 	force?: boolean;
 }
 
 CommandsRegistry.registerCommand('_remoteCLI.manageExtensions', async function (accessor: ServicesAccessor, args: ManageExtensionsArgs): Promise<string | undefined> {
 	const instantiationService = accessor.get(IInstantiationService);
+
 	const extensionManagementServerService = accessor.get(IExtensionManagementServerService);
+
 	const remoteExtensionManagementService = extensionManagementServerService.remoteExtensionManagementServer?.extensionManagementService;
+
 	if (!remoteExtensionManagementService) {
 		return;
 	}
 
 	const lines: string[] = [];
+
 	const logger = new class extends AbstractMessageLogger {
 		protected override log(level: LogLevel, message: string): void {
 			lines.push(message);
 		}
 	}();
+
 	const childInstantiationService = instantiationService.createChild(new ServiceCollection([IExtensionManagementService, remoteExtensionManagementService]));
+
 	try {
 		const cliService = childInstantiationService.createInstance(RemoteExtensionManagementCLI, logger);
 
@@ -73,6 +83,7 @@ CommandsRegistry.registerCommand('_remoteCLI.manageExtensions', async function (
 			await cliService.listExtensions(!!args.list.showVersions, args.list.category, undefined);
 		} else {
 			const revive = (inputs: (string | UriComponents)[]) => inputs.map(input => isString(input) ? input : URI.revive(input));
+
 			if (Array.isArray(args.install) && args.install.length) {
 				try {
 					await cliService.installExtensions(revive(args.install), [], { isMachineScoped: true }, !!args.force);
@@ -122,6 +133,7 @@ class RemoteExtensionManagementCLI extends ExtensionManagementCLI {
 			// Web extensions installed on remote can be run in web worker extension host
 			&& !(isWeb && this._extensionManifestPropertiesService.canExecuteOnWeb(manifest))) {
 			this.logger.info(localize('cannot be installed', "Cannot install the '{0}' extension because it is declared to not run in this setup.", getExtensionId(manifest.publisher, manifest.name)));
+
 			return false;
 		}
 		return true;

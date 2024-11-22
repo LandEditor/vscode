@@ -6,6 +6,7 @@
 import { getNLSLanguage, getNLSMessages } from './nls.messages.js';
 // eslint-disable-next-line local/code-import-patterns
 export { getNLSLanguage, getNLSMessages } from './nls.messages.js';
+
 const isPseudo = getNLSLanguage() === 'pseudo' || (typeof document !== 'undefined' && document.location && typeof document.location.hash === 'string' && document.location.hash.indexOf('pseudo=true') >= 0);
 export interface ILocalizeInfo {
     key: string;
@@ -17,14 +18,18 @@ export interface ILocalizedString {
 }
 function _format(message: string, args: (string | number | boolean | undefined | null)[]): string {
     let result: string;
+
     if (args.length === 0) {
         result = message;
     }
     else {
         result = message.replace(/\{(\d+)\}/g, (match, rest) => {
             const index = rest[0];
+
             const arg = args[index];
+
             let result = match;
+
             if (typeof arg === 'string') {
                 result = arg;
             }
@@ -82,6 +87,7 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
  */
 function lookupMessage(index: number, fallback: string | null): string {
     const message = getNLSMessages()?.[index];
+
     if (typeof message !== 'string') {
         if (typeof fallback === 'string') {
             return fallback;
@@ -123,6 +129,7 @@ export function localize2(key: string, message: string, ...args: (string | numbe
  */
 export function localize2(data: ILocalizeInfo | string /* | number when built */, originalMessage: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString {
     let message: string;
+
     if (typeof data === 'number') {
         message = lookupMessage(data, originalMessage);
     }
@@ -130,6 +137,7 @@ export function localize2(data: ILocalizeInfo | string /* | number when built */
         message = originalMessage;
     }
     const value = _format(message, args);
+
     return {
         value,
         original: originalMessage === message ? value : _format(originalMessage, args)

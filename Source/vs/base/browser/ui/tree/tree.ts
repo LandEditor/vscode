@@ -115,16 +115,25 @@ export interface ITreeModel<T, TFilterData, TRef> {
     readonly onDidChangeCollapseState: Event<ICollapseStateChangeEvent<T, TFilterData>>;
     readonly onDidChangeRenderNodeCount: Event<ITreeNode<T, TFilterData>>;
     has(location: TRef): boolean;
+
     getListIndex(location: TRef): number;
+
     getListRenderCount(location: TRef): number;
+
     getNode(location?: TRef): ITreeNode<T, any>;
+
     getNodeLocation(node: ITreeNode<T, any>): TRef;
+
     getParentNodeLocation(location: TRef): TRef | undefined;
+
     getFirstElementChild(location: TRef): T | undefined;
+
     getLastElementAncestor(location?: TRef): T | undefined;
     isCollapsible(location: TRef): boolean;
+
     setCollapsible(location: TRef, collapsible?: boolean): boolean;
     isCollapsed(location: TRef): boolean;
+
     setCollapsed(location: TRef, collapsed?: boolean, recursive?: boolean): boolean;
     expandTo(location: TRef): void;
     rerender(location: TRef): void;
@@ -164,11 +173,14 @@ export interface ITreeNavigator<T> {
 }
 export interface IDataSource<TInput, T> {
     hasChildren?(element: TInput | T): boolean;
+
     getChildren(element: TInput | T): Iterable<T>;
 }
 export interface IAsyncDataSource<TInput, T> {
     hasChildren(element: TInput | T): boolean;
+
     getChildren(element: TInput | T): Iterable<T> | Promise<Iterable<T>>;
+
     getParent?(element: T): TInput | T;
 }
 export const enum TreeDragOverBubble {
@@ -198,6 +210,7 @@ export class WeakMapper<K extends object, V> {
     private _map = new WeakMap<K, V>();
     map(key: K): V {
         let result = this._map.get(key);
+
         if (!result) {
             result = this.fn(key);
             this._map.set(key, result);

@@ -88,6 +88,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		this._tokensDisposables.add(this._tokens.onDidChangeBackgroundTokenizationState(e => {
 			this._bracketPairsTextModelPart.handleDidChangeBackgroundTokenizationState();
 		}));
+
 		if (needsReset) {
 			// We need to reset the tokenization, as the new token provider otherwise won't have a chance to provide tokens until some action happens in the editor.
 			this._tokens.resetTokenization();
@@ -147,7 +148,9 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 	 */
 	public getLineTokens(lineNumber: number): LineTokens {
 		this.validateLineNumber(lineNumber);
+
 		const syntacticTokens = this._tokens.getLineTokens(lineNumber);
+
 		return this._semanticTokens.addSparseTokens(lineNumber, syntacticTokens);
 	}
 
@@ -185,11 +188,13 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	public hasAccurateTokensForLine(lineNumber: number): boolean {
 		this.validateLineNumber(lineNumber);
+
 		return this._tokens.hasAccurateTokensForLine(lineNumber);
 	}
 
 	public isCheapToTokenize(lineNumber: number): boolean {
 		this.validateLineNumber(lineNumber);
+
 		return this._tokens.isCheapToTokenize(lineNumber);
 	}
 
@@ -254,12 +259,16 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 		this.assertNotDisposed();
 
 		const position = this._textModel.validatePosition(_position);
+
 		const lineContent = this._textModel.getLineContent(position.lineNumber);
+
 		const lineTokens = this.getLineTokens(position.lineNumber);
+
 		const tokenIndex = lineTokens.findTokenIndexAtOffset(position.column - 1);
 
 		// (1). First try checking right biased word
 		const [rbStartOffset, rbEndOffset] = TokenizationTextModelPart._findLanguageBoundaries(lineTokens, tokenIndex);
+
 		const rightBiasedWord = getWordAtText(
 			position.column,
 			this.getLanguageConfiguration(lineTokens.getLanguageId(tokenIndex)).getWordDefinition(),
@@ -282,6 +291,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 				lineTokens,
 				tokenIndex - 1
 			);
+
 			const leftBiasedWord = getWordAtText(
 				position.column,
 				this.getLanguageConfiguration(lineTokens.getLanguageId(tokenIndex - 1)).getWordDefinition(),
@@ -310,12 +320,14 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 		// go left until a different language is hit
 		let startOffset = 0;
+
 		for (let i = tokenIndex; i >= 0 && lineTokens.getLanguageId(i) === languageId; i--) {
 			startOffset = lineTokens.getStartOffset(i);
 		}
 
 		// go right until a different language is hit
 		let endOffset = lineTokens.getLineContent().length;
+
 		for (
 			let i = tokenIndex, tokenCount = lineTokens.getCount();
 			i < tokenCount && lineTokens.getLanguageId(i) === languageId;
@@ -329,6 +341,7 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	public getWordUntilPosition(position: IPosition): IWordAtPosition {
 		const wordAtPosition = this.getWordAtPosition(position);
+
 		if (!wordAtPosition) {
 			return { word: '', startColumn: position.column, endColumn: position.column, };
 		}
@@ -349,7 +362,9 @@ export class TokenizationTextModelPart extends TextModelPart implements ITokeniz
 
 	public getLanguageIdAtPosition(lineNumber: number, column: number): string {
 		const position = this._textModel.validatePosition(new Position(lineNumber, column));
+
 		const lineTokens = this.getLineTokens(position.lineNumber);
+
 		return lineTokens.getLanguageId(lineTokens.findTokenIndexAtOffset(position.column - 1));
 	}
 
@@ -400,6 +415,7 @@ class GrammarTokens extends AbstractTokens {
 
 		this._register(TokenizationRegistry.onDidChange((e) => {
 			const languageId = this.getLanguageId();
+
 			if (e.changedLanguages.indexOf(languageId) === -1) {
 				return;
 			}
@@ -411,6 +427,7 @@ class GrammarTokens extends AbstractTokens {
 		this._register(attachedViews.onDidChangeVisibleRanges(({ view, state }) => {
 			if (state) {
 				let existing = this._attachedViewStates.get(view);
+
 				if (!existing) {
 					existing = new AttachedViewHandler(() => this.refreshRanges(existing!.lineRanges));
 					this._attachedViewStates.set(view, existing);
@@ -425,6 +442,7 @@ class GrammarTokens extends AbstractTokens {
 	public resetTokenization(fireTokenChangeEvent: boolean = true): void {
 		this._tokens.flush();
 		this._debugBackgroundTokens?.flush();
+
 		if (this._debugBackgroundStates) {
 			this._debugBackgroundStates = new TrackingTokenizationStateStore(this._textModel.getLineCount());
 		}
@@ -445,20 +463,24 @@ class GrammarTokens extends AbstractTokens {
 				return [null, null];
 			}
 			const tokenizationSupport = TokenizationRegistry.get(this.getLanguageId());
+
 			if (!tokenizationSupport) {
 				return [null, null];
 			}
 			let initialState: IState;
+
 			try {
 				initialState = tokenizationSupport.getInitialState();
 			} catch (e) {
 				onUnexpectedError(e);
+
 				return [null, null];
 			}
 			return [tokenizationSupport, initialState];
 		};
 
 		const [tokenizationSupport, initialState] = initializeTokenization();
+
 		if (tokenizationSupport && initialState) {
 			this._tokenizer = new TokenizerWithStateStoreAndTextModel(this._textModel.getLineCount(), tokenizationSupport, this._textModel, this._languageIdCodec);
 		} else {
@@ -468,6 +490,7 @@ class GrammarTokens extends AbstractTokens {
 		this._backgroundTokenizer.clear();
 
 		this._defaultBackgroundTokenizer = null;
+
 		if (this._tokenizer) {
 			const b: IBackgroundTokenizationStore = {
 				setTokens: (tokens) => {
@@ -580,7 +603,9 @@ class GrammarTokens extends AbstractTokens {
 		endLineNumber = Math.min(this._textModel.getLineCount(), endLineNumber);
 
 		const builder = new ContiguousMultilineTokensBuilder();
+
 		const { heuristicTokens } = this._tokenizer.tokenizeHeuristically(builder, startLineNumber, endLineNumber);
+
 		const changedTokens = this.setTokens(builder.finalize());
 
 		if (heuristicTokens) {
@@ -618,11 +643,13 @@ class GrammarTokens extends AbstractTokens {
 
 	public getLineTokens(lineNumber: number): LineTokens {
 		const lineText = this._textModel.getLineContent(lineNumber);
+
 		const result = this._tokens.getTokens(
 			this._textModel.getLanguageId(),
 			lineNumber - 1,
 			lineText
 		);
+
 		if (this._debugBackgroundTokens && this._debugBackgroundStates && this._tokenizer) {
 			if (this._debugBackgroundStates.getFirstInvalidEndStateLineNumberOrMax() > lineNumber && this._tokenizer.store.getFirstInvalidEndStateLineNumberOrMax() > lineNumber) {
 				const backgroundResult = this._debugBackgroundTokens.getTokens(
@@ -630,6 +657,7 @@ class GrammarTokens extends AbstractTokens {
 					lineNumber - 1,
 					lineText
 				);
+
 				if (!result.equals(backgroundResult) && this._debugBackgroundTokenizer.value?.reportMismatchingTokens) {
 					this._debugBackgroundTokenizer.value.reportMismatchingTokens(lineNumber);
 				}
@@ -645,6 +673,7 @@ class GrammarTokens extends AbstractTokens {
 
 		const position = this._textModel.validatePosition(new Position(lineNumber, column));
 		this.forceTokenization(position.lineNumber);
+
 		return this._tokenizer.getTokenTypeIfInsertingCharacter(position, character);
 	}
 
@@ -653,6 +682,7 @@ class GrammarTokens extends AbstractTokens {
 			return { mainLineTokens: null, additionalLines: null };
 		}
 		this.forceTokenization(lineNumber);
+
 		return this._tokenizer.tokenizeLineWithEdit(lineNumber, edit);
 	}
 

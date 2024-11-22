@@ -11,6 +11,7 @@ import { IConfigurationService } from '../../../../platform/configuration/common
 import { LinkedList } from '../../../../base/common/linkedList.js';
 export class WorkingCopyFileOperationParticipant extends Disposable {
     private readonly participants = new LinkedList<IWorkingCopyFileOperationParticipant>();
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -20,10 +21,12 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
     }
     addFileOperationParticipant(participant: IWorkingCopyFileOperationParticipant): IDisposable {
         const remove = this.participants.push(participant);
+
         return toDisposable(() => remove());
     }
     async participate(files: SourceTargetPair[], operation: FileOperation, undoInfo: IFileOperationUndoRedoInfo | undefined, token: CancellationToken): Promise<void> {
         const timeout = this.configurationService.getValue<number>('files.participants.timeout');
+
         if (typeof timeout !== 'number' || timeout <= 0) {
             return; // disabled
         }
@@ -39,6 +42,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
     }
     override dispose(): void {
         this.participants.clear();
+
         super.dispose();
     }
 }

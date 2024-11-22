@@ -39,6 +39,7 @@ export class DialogMainService implements IDialogMainService {
     private readonly windowFileDialogLocks = new Map<number, Set<number>>();
     private readonly windowDialogQueues = new Map<number, Queue<electron.MessageBoxReturnValue | electron.SaveDialogReturnValue | electron.OpenDialogReturnValue>>();
     private readonly noWindowDialogueQueue = new Queue<electron.MessageBoxReturnValue | electron.SaveDialogReturnValue | electron.OpenDialogReturnValue>();
+
     constructor(
     @ILogService
     private readonly logService: ILogService, 
@@ -56,8 +57,11 @@ export class DialogMainService implements IDialogMainService {
     }
     pickWorkspace(options: INativeOpenDialogOptions, window?: electron.BrowserWindow): Promise<string[] | undefined> {
         const title = localize('openWorkspaceTitle', "Open Workspace from File");
+
         const buttonLabel = mnemonicButtonLabel(localize({ key: 'openWorkspace', comment: ['&& denotes a mnemonic'] }, "&&Open"));
+
         const filters = WORKSPACE_FILTER;
+
         return this.doPick({ ...options, pickFiles: true, title, filters, buttonLabel }, window);
     }
     private async doPick(options: IInternalNativeOpenDialogOptions, window?: electron.BrowserWindow): Promise<string[] | undefined> {
@@ -83,6 +87,7 @@ export class DialogMainService implements IDialogMainService {
         }
         // Show Dialog
         const result = await this.showOpenDialog(dialogOptions, (window || electron.BrowserWindow.getFocusedWindow()) ?? undefined);
+
         if (result && result.filePaths && result.filePaths.length > 0) {
             return result.filePaths;
         }
@@ -93,6 +98,7 @@ export class DialogMainService implements IDialogMainService {
         // after the other.
         if (window) {
             let windowDialogQueue = this.windowDialogQueues.get(window.id);
+
             if (!windowDialogQueue) {
                 windowDialogQueue = new Queue<electron.MessageBoxReturnValue | electron.SaveDialogReturnValue | electron.OpenDialogReturnValue>();
                 this.windowDialogQueues.set(window.id, windowDialogQueue);
@@ -106,7 +112,9 @@ export class DialogMainService implements IDialogMainService {
     showMessageBox(rawOptions: electron.MessageBoxOptions, window?: electron.BrowserWindow): Promise<electron.MessageBoxReturnValue> {
         return this.getWindowDialogQueue<electron.MessageBoxReturnValue>(window).queue(async () => {
             const { options, buttonIndeces } = massageMessageBoxOptions(rawOptions, this.productService);
+
             let result: electron.MessageBoxReturnValue | undefined = undefined;
+
             if (window) {
                 result = await electron.dialog.showMessageBox(window, options);
             }
@@ -122,13 +130,16 @@ export class DialogMainService implements IDialogMainService {
     async showSaveDialog(options: electron.SaveDialogOptions, window?: electron.BrowserWindow): Promise<electron.SaveDialogReturnValue> {
         // Prevent duplicates of the same dialog queueing at the same time
         const fileDialogLock = this.acquireFileDialogLock(options, window);
+
         if (!fileDialogLock) {
             this.logService.error('[DialogMainService]: file save dialog is already or will be showing for the window with the same configuration');
+
             return { canceled: true, filePath: '' };
         }
         try {
             return await this.getWindowDialogQueue<electron.SaveDialogReturnValue>(window).queue(async () => {
                 let result: electron.SaveDialogReturnValue;
+
                 if (window) {
                     result = await electron.dialog.showSaveDialog(window, options);
                 }
@@ -136,6 +147,7 @@ export class DialogMainService implements IDialogMainService {
                     result = await electron.dialog.showSaveDialog(options);
                 }
                 result.filePath = this.normalizePath(result.filePath);
+
                 return result;
             });
         }
@@ -158,19 +170,23 @@ export class DialogMainService implements IDialogMainService {
         // Ensure the path exists (if provided)
         if (options.defaultPath) {
             const pathExists = await Promises.exists(options.defaultPath);
+
             if (!pathExists) {
                 options.defaultPath = undefined;
             }
         }
         // Prevent duplicates of the same dialog queueing at the same time
         const fileDialogLock = this.acquireFileDialogLock(options, window);
+
         if (!fileDialogLock) {
             this.logService.error('[DialogMainService]: file open dialog is already or will be showing for the window with the same configuration');
+
             return { canceled: true, filePaths: [] };
         }
         try {
             return await this.getWindowDialogQueue<electron.OpenDialogReturnValue>(window).queue(async () => {
                 let result: electron.OpenDialogReturnValue;
+
                 if (window) {
                     result = await electron.dialog.showOpenDialog(window, options);
                 }
@@ -178,6 +194,7 @@ export class DialogMainService implements IDialogMainService {
                     result = await electron.dialog.showOpenDialog(options);
                 }
                 result.filePaths = this.normalizePaths(result.filePaths);
+
                 return result;
             });
         }
@@ -198,17 +215,21 @@ export class DialogMainService implements IDialogMainService {
         // we figure this out by `hashing` the configuration
         // options for the dialog to prevent duplicates
         this.logService.trace('[DialogMainService]: request to acquire file dialog lock', options);
+
         let windowFileDialogLocks = this.windowFileDialogLocks.get(window.id);
+
         if (!windowFileDialogLocks) {
             windowFileDialogLocks = new Set();
             this.windowFileDialogLocks.set(window.id, windowFileDialogLocks);
         }
         const optionsHash = hash(options);
+
         if (windowFileDialogLocks.has(optionsHash)) {
             return undefined; // prevent duplicates, return
         }
         this.logService.trace('[DialogMainService]: new file dialog lock created', options);
         windowFileDialogLocks.add(optionsHash);
+
         return toDisposable(() => {
             this.logService.trace('[DialogMainService]: file dialog lock disposed', options);
             windowFileDialogLocks?.delete(optionsHash);

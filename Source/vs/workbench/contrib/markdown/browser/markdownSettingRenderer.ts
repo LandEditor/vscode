@@ -36,6 +36,7 @@ export class SimpleSettingRenderer {
     }
     get featuredSettingStates(): Map<string, boolean> {
         const result = new Map<string, boolean>();
+
         for (const [settingId, value] of this._featuredSettings) {
             result.set(settingId, this._configurationService.getValue(settingId) === value);
         }
@@ -43,9 +44,12 @@ export class SimpleSettingRenderer {
     }
     private replaceAnchor(raw: string): string | undefined {
         const match = this.codeSettingAnchorRegex.exec(raw);
+
         if (match && match.length === 4) {
             const settingId = match[2];
+
             const rendered = this.render(settingId, match[3]);
+
             if (rendered) {
                 return raw.replace(this.codeSettingAnchorRegex, rendered);
             }
@@ -54,9 +58,12 @@ export class SimpleSettingRenderer {
     }
     private replaceSimple(raw: string): string | undefined {
         const match = this.codeSettingSimpleRegex.exec(raw);
+
         if (match && match.length === 3) {
             const settingId = match[1];
+
             const rendered = this.render(settingId, match[2]);
+
             if (rendered) {
                 return raw.replace(this.codeSettingSimpleRegex, rendered);
             }
@@ -66,6 +73,7 @@ export class SimpleSettingRenderer {
     getHtmlRenderer(): (token: Tokens.HTML | Tokens.Tag) => string {
         return ({ raw }: Tokens.HTML | Tokens.Tag): string => {
             const replacedAnchor = this.replaceAnchor(raw);
+
             if (replacedAnchor) {
                 raw = replacedAnchor;
             }
@@ -75,6 +83,7 @@ export class SimpleSettingRenderer {
     getCodeSpanRenderer(): (token: Tokens.Codespan) => string {
         return ({ text }: Tokens.Codespan): string => {
             const replacedSimple = this.replaceSimple(text);
+
             if (replacedSimple) {
                 return replacedSimple;
             }
@@ -95,14 +104,17 @@ export class SimpleSettingRenderer {
             return undefined;
         }
         const setting = this.getSetting(settingId);
+
         if (!setting) {
             return value;
         }
         switch (setting.type) {
             case 'boolean':
                 return value === 'true';
+
             case 'number':
                 return parseInt(value, 10);
+
             case 'string':
             default:
                 return value;
@@ -110,6 +122,7 @@ export class SimpleSettingRenderer {
     }
     private render(settingId: string, newValue: string): string | undefined {
         const setting = this.getSetting(settingId);
+
         if (!setting) {
             return '';
         }
@@ -121,19 +134,23 @@ export class SimpleSettingRenderer {
         }
         else {
             const displayName = settingKeyToDisplayFormat(settingId);
+
             return nls.localize('viewInSettingsDetailed', "View \"{0}: {1}\" in Settings", displayName.category, displayName.label);
         }
     }
     private restorePreviousSettingMessage(settingId: string): string {
         const displayName = settingKeyToDisplayFormat(settingId);
+
         return nls.localize('restorePreviousValue', "Restore value of \"{0}: {1}\"", displayName.category, displayName.label);
     }
     private isAlreadySet(setting: ISetting, value: string | number | boolean): boolean {
         const currentValue = this._configurationService.getValue<boolean>(setting.key);
+
         return (currentValue === value || (currentValue === undefined && setting.value === value));
     }
     private booleanSettingMessage(setting: ISetting, booleanValue: boolean): string | undefined {
         const displayName = settingKeyToDisplayFormat(setting.key);
+
         if (this.isAlreadySet(setting, booleanValue)) {
             if (booleanValue) {
                 return nls.localize('alreadysetBoolTrue', "\"{0}: {1}\" is already enabled", displayName.category, displayName.label);
@@ -151,6 +168,7 @@ export class SimpleSettingRenderer {
     }
     private stringSettingMessage(setting: ISetting, stringValue: string): string | undefined {
         const displayName = settingKeyToDisplayFormat(setting.key);
+
         if (this.isAlreadySet(setting, stringValue)) {
             return nls.localize('alreadysetString', "\"{0}: {1}\" is already set to \"{2}\"", displayName.category, displayName.label, stringValue);
         }
@@ -158,6 +176,7 @@ export class SimpleSettingRenderer {
     }
     private numberSettingMessage(setting: ISetting, numberValue: number): string | undefined {
         const displayName = settingKeyToDisplayFormat(setting.key);
+
         if (this.isAlreadySet(setting, numberValue)) {
             return nls.localize('alreadysetNum', "\"{0}: {1}\" is already set to {2}", displayName.category, displayName.label, numberValue);
         }
@@ -165,7 +184,9 @@ export class SimpleSettingRenderer {
     }
     private renderSetting(setting: ISetting, newValue: string | undefined): string | undefined {
         const href = this.settingToUriString(setting.key, newValue);
+
         const title = nls.localize('changeSettingTitle', "View or change setting");
+
         return `<code tabindex="0"><a href="${href}" class="codesetting" title="${title}" aria-role="button"><svg width="14" height="14" viewBox="0 0 15 15" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M9.1 4.4L8.6 2H7.4l-.5 2.4-.7.3-2-1.3-.9.8 1.3 2-.2.7-2.4.5v1.2l2.4.5.3.8-1.3 2 .8.8 2-1.3.8.3.4 2.3h1.2l.5-2.4.8-.3 2 1.3.8-.8-1.3-2 .3-.8 2.3-.4V7.4l-2.4-.5-.3-.8 1.3-2-.8-.8-2 1.3-.7-.2zM9.4 1l.5 2.4L12 2.1l2 2-1.4 2.1 2.4.4v2.8l-2.4.5L14 12l-2 2-2.1-1.4-.5 2.4H6.6l-.5-2.4L4 13.9l-2-2 1.4-2.1L1 9.4V6.6l2.4-.5L2.1 4l2-2 2.1 1.4.4-2.4h2.8zm.6 7c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zM8 9c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1z"/></svg>
 			<span class="separator"></span>
 			<span class="setting-name">${setting.key}</span>
@@ -186,10 +207,12 @@ export class SimpleSettingRenderer {
     async restoreSetting(settingId: string): Promise<void> {
         const userOriginalSettingValue = this._updatedSettings.get(settingId);
         this._updatedSettings.delete(settingId);
+
         return this._configurationService.updateValue(settingId, userOriginalSettingValue, ConfigurationTarget.USER);
     }
     async setSetting(settingId: string, currentSettingValue: any, newSettingValue: any): Promise<void> {
         this._updatedSettings.set(settingId, currentSettingValue);
+
         return this._configurationService.updateValue(settingId, newSettingValue, ConfigurationTarget.USER);
     }
     getActions(uri: URI) {
@@ -197,9 +220,13 @@ export class SimpleSettingRenderer {
             return;
         }
         const actions: IAction[] = [];
+
         const settingId = uri.authority;
+
         const newSettingValue = this.parseValue(uri.authority, uri.path.substring(1));
+
         const currentSettingValue = this._configurationService.inspect(settingId).userValue;
+
         if ((newSettingValue !== undefined) && newSettingValue === currentSettingValue && this._updatedSettings.has(settingId)) {
             const restoreMessage = this.restorePreviousSettingMessage(settingId);
             actions.push({
@@ -215,7 +242,9 @@ export class SimpleSettingRenderer {
         }
         else if (newSettingValue !== undefined) {
             const setting = this.getSetting(settingId);
+
             const trySettingMessage = setting ? this.getSettingMessage(setting, newSettingValue) : undefined;
+
             if (setting && trySettingMessage) {
                 actions.push({
                     class: undefined,
@@ -250,10 +279,12 @@ export class SimpleSettingRenderer {
                 this._clipboardService.writeText(settingId);
             }
         });
+
         return actions;
     }
     private showContextMenu(uri: URI, x: number, y: number) {
         const actions = this.getActions(uri);
+
         if (!actions) {
             return;
         }
@@ -270,6 +301,7 @@ export class SimpleSettingRenderer {
             type ReleaseNotesSettingUsedClassification = {
                 owner: 'alexr00';
                 comment: 'Used to understand if the the action to update settings from the release notes is used.';
+
                 settingId: {
                     classification: 'SystemMetaData';
                     purpose: 'FeatureInsight';
@@ -282,6 +314,7 @@ export class SimpleSettingRenderer {
             this._telemetryService.publicLog2<ReleaseNotesSettingUsed, ReleaseNotesSettingUsedClassification>('releaseNotesSettingAction', {
                 settingId: uri.authority
             });
+
             return this.showContextMenu(uri, x, y);
         }
     }

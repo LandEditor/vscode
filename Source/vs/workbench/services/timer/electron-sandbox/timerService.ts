@@ -73,6 +73,7 @@ export class TimerService extends AbstractTimerService {
             info.arch = osProperties.arch;
             info.loadavg = osStatistics.loadavg;
             info.isARM64Emulated = isARM64Emulated;
+
             const processMemoryInfo = await process.getProcessMemoryInfo();
             info.meminfo = {
                 workingSetSize: processMemoryInfo.residentSet,
@@ -80,7 +81,9 @@ export class TimerService extends AbstractTimerService {
                 sharedBytes: processMemoryInfo.shared
             };
             info.isVMLikelyhood = Math.round((virtualMachineHint * 100));
+
             const rawCpus = osProperties.cpus;
+
             if (rawCpus && rawCpus.length > 0) {
                 info.cpus = { count: rawCpus.length, speed: rawCpus[0].speed, model: rawCpus[0].model };
             }
@@ -97,6 +100,7 @@ export class TimerService extends AbstractTimerService {
 registerSingleton(ITimerService, TimerService, InstantiationType.Delayed);
 //#region cached data logic
 const lastRunningCommitStorageKey = 'perf/lastRunningCommit';
+
 let _didUseCachedData: boolean | undefined = undefined;
 export function didUseCachedData(productService: IProductService, storageService: IStorageService, environmentService: INativeWorkbenchEnvironmentService): boolean {
     // browser code loading: only a guess based on

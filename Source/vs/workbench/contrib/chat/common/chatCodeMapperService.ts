@@ -54,9 +54,11 @@ export class CodeMapperService implements ICodeMapperService {
     private readonly providers: ICodeMapperProvider[] = [];
     registerCodeMapperProvider(handle: number, provider: ICodeMapperProvider): IDisposable {
         this.providers.push(provider);
+
         return {
             dispose: () => {
                 const index = this.providers.indexOf(provider);
+
                 if (index >= 0) {
                     this.providers.splice(index, 1);
                 }
@@ -66,6 +68,7 @@ export class CodeMapperService implements ICodeMapperService {
     async mapCode(request: ICodeMapperRequest, response: ICodeMapperResponse, token: CancellationToken) {
         for (const provider of this.providers) {
             const result = await provider.mapCode(request, response, token);
+
             if (result) {
                 return result;
             }
@@ -74,19 +77,26 @@ export class CodeMapperService implements ICodeMapperService {
     }
     async mapCodeFromResponse(responseModel: IChatResponseModel, response: ICodeMapperResponse, token: CancellationToken) {
         const fenceLanguageRegex = /^`{3,}/;
+
         const codeBlocks: ICodeMapperCodeBlock[] = [];
+
         const currentBlock = [];
+
         const markdownBeforeBlock = [];
+
         let currentBlockUri = undefined;
+
         let fence = undefined; // if set, we are in a block
         for (const lineOrUri of iterateLinesOrUris(responseModel)) {
             if (isString(lineOrUri)) {
                 const fenceLanguageIdMatch = lineOrUri.match(fenceLanguageRegex);
+
                 if (fenceLanguageIdMatch) {
                     // we found a line that starts with a fence
                     if (fence !== undefined && fenceLanguageIdMatch[0] === fence) {
                         // we are in a code block and the fence matches the opening fence: Close the code block
                         fence = undefined;
+
                         if (currentBlockUri) {
                             // report the code block if we have a URI
                             codeBlocks.push({ code: currentBlock.join(''), resource: currentBlockUri, markdownBeforeBlock: markdownBeforeBlock.join('') });
@@ -114,8 +124,10 @@ export class CodeMapperService implements ICodeMapperService {
             }
         }
         const conversation: (ConversationRequest | ConversationResponse)[] = [];
+
         for (const request of responseModel.session.getRequests()) {
             const response = request.response;
+
             if (!response || response === responseModel) {
                 break;
             }
@@ -137,14 +149,17 @@ function iterateLinesOrUris(responseModel: IChatResponseModel): Iterable<string 
     return {
         *[Symbol.iterator](): Iterator<string | URI> {
             let lastIncompleteLine = undefined;
+
             for (const part of responseModel.response.value) {
                 if (part.kind === 'markdownContent' || part.kind === 'markdownVuln') {
                     const lines = splitLinesIncludeSeparators(part.content.value);
+
                     if (lines.length > 0) {
                         if (lastIncompleteLine !== undefined) {
                             lines[0] = lastIncompleteLine + lines[0]; // merge the last incomplete line with the first markdown line
                         }
                         lastIncompleteLine = isLineIncomplete(lines[lines.length - 1]) ? lines.pop() : undefined;
+
                         for (const line of lines) {
                             yield line;
                         }
@@ -162,13 +177,17 @@ function iterateLinesOrUris(responseModel: IChatResponseModel): Iterable<string 
 }
 function isLineIncomplete(line: string) {
     const lastChar = line.charCodeAt(line.length - 1);
+
     return lastChar !== CharCode.LineFeed && lastChar !== CharCode.CarriageReturn;
 }
 export function getReferencesAsDocumentContext(res: readonly IChatContentReference[]): DocumentContextItem[] {
     const map = new ResourceMap<DocumentContextItem>();
+
     for (const r of res) {
         let uri;
+
         let range;
+
         if (URI.isUri(r.reference)) {
             uri = r.reference;
         }
@@ -178,6 +197,7 @@ export function getReferencesAsDocumentContext(res: readonly IChatContentReferen
         }
         if (uri) {
             const item = map.get(uri);
+
             if (item) {
                 if (range) {
                     item.ranges.push(range);

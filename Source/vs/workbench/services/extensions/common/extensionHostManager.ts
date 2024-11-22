@@ -31,6 +31,7 @@ import { Proxied, ProxyIdentifier } from './proxyIdentifier.js';
 import { IRPCProtocolLogger, RPCProtocol, RequestInitiator, ResponsiveState } from './rpcProtocol.js';
 // Enable to see detailed message communication between window and extension host
 const LOG_EXTENSION_HOST_COMMUNICATION = false;
+
 const LOG_USE_COLORS = true;
 type ExtensionHostStartupClassification = {
     owner: 'alexdima';
@@ -119,6 +120,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         this._customers = [];
         this._extensionHost = extensionHost;
         this.onDidExit = this._extensionHost.onExit;
+
         const startingTelemetryEvent: ExtensionHostStartupEvent = {
             time: Date.now(),
             action: 'starting',
@@ -134,6 +136,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
                 kind: extensionHostKindToString(this.kind)
             };
             this._telemetryService.publicLog2<ExtensionHostStartupEvent, ExtensionHostStartupClassification>('extensionHostStartup', successTelemetryEvent);
+
             return this._createExtensionHostCustomers(this.kind, protocol);
         }, (err) => {
             this._logService.error(`Error received from starting extension host (kind: ${extensionHostKindToString(this.kind)})`);
@@ -144,6 +147,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
                 action: 'error',
                 kind: extensionHostKindToString(this.kind)
             };
+
             if (err && err.name) {
                 failureTelemetryEvent.errorName = err.name;
             }
@@ -154,6 +158,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
                 failureTelemetryEvent.errorStack = err.stack;
             }
             this._telemetryService.publicLog2<ExtensionHostStartupEvent, ExtensionHostStartupClassification>('extensionHostStartup', failureTelemetryEvent);
+
             return null;
         });
         this._proxy.then(() => {
@@ -169,8 +174,10 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     public override dispose(): void {
         this._extensionHost?.dispose();
         this._rpcProtocol?.dispose();
+
         for (let i = 0, len = this._customers.length; i < len; i++) {
             const customer = this._customers[i];
+
             try {
                 customer.dispose();
             }
@@ -179,16 +186,21 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
             }
         }
         this._proxy = null;
+
         super.dispose();
     }
     private async measure(): Promise<ExtHostLatencyResult | null> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             return null;
         }
         const latency = await this._measureLatency(proxy);
+
         const down = await this._measureDown(proxy);
+
         const up = await this._measureUp(proxy);
+
         return {
             remoteAuthority: this._extensionHost.remoteAuthority,
             latency,
@@ -201,7 +213,9 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     }
     private async _measureLatency(proxy: IExtensionHostProxy): Promise<number> {
         const COUNT = 10;
+
         let sum = 0;
+
         for (let i = 0; i < COUNT; i++) {
             const sw = StopWatch.create();
             await proxy.test_latency(i);
@@ -216,13 +230,16 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     private async _measureUp(proxy: IExtensionHostProxy): Promise<number> {
         const SIZE = 10 * 1024 * 1024; // 10MB
         const buff = VSBuffer.alloc(SIZE);
+
         const value = Math.ceil(Math.random() * 256);
+
         for (let i = 0; i < buff.byteLength; i++) {
             buff.writeUInt8(i, value);
         }
         const sw = StopWatch.create();
         await proxy.test_up(buff);
         sw.stop();
+
         return ExtensionHostManager._convert(SIZE, sw.elapsed());
     }
     private async _measureDown(proxy: IExtensionHostProxy): Promise<number> {
@@ -230,10 +247,12 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         const sw = StopWatch.create();
         await proxy.test_down(SIZE);
         sw.stop();
+
         return ExtensionHostManager._convert(SIZE, sw.elapsed());
     }
     private _createExtensionHostCustomers(kind: ExtensionHostKind, protocol: IMessagePassingProtocol): IExtensionHostProxy {
         let logger: IRPCProtocolLogger | null = null;
+
         if (LOG_EXTENSION_HOST_COMMUNICATION || this._environmentService.logExtensionHostCommunication) {
             logger = new RPCLogger(kind);
         }
@@ -242,8 +261,11 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         }
         this._rpcProtocol = new RPCProtocol(protocol, logger);
         this._register(this._rpcProtocol.onDidChangeResponsiveState((responsiveState: ResponsiveState) => this._onDidChangeResponsiveState.fire(responsiveState)));
+
         let extensionHostProxy: IExtensionHostProxy | null = null as IExtensionHostProxy | null;
+
         let mainProxyIdentifiers: ProxyIdentifier<any>[] = [];
+
         const extHostContext: IInternalExtHostContext = {
             remoteAuthority: this._extensionHost.remoteAuthority,
             extensionHostKind: this.kind,
@@ -264,8 +286,10 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         };
         // Named customers
         const namedCustomers = ExtHostCustomersRegistry.getNamedCustomers();
+
         for (let i = 0, len = namedCustomers.length; i < len; i++) {
             const [id, ctor] = namedCustomers[i];
+
             try {
                 const instance = this._instantiationService.createInstance(ctor, extHostContext);
                 this._customers.push(instance);
@@ -279,6 +303,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         }
         // Customers
         const customers = ExtHostCustomersRegistry.getCustomers();
+
         for (const ctor of customers) {
             try {
                 const instance = this._instantiationService.createInstance(ctor, extHostContext);
@@ -294,10 +319,12 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         }
         // Check that no named customers are missing
         this._rpcProtocol.assertRegistered(mainProxyIdentifiers);
+
         return extensionHostProxy;
     }
     public async activate(extension: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<boolean> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             return false;
         }
@@ -320,6 +347,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
             return;
         }
         const proxy = await this._proxy;
+
         if (!proxy) {
             // this case is already covered above and logged.
             // i.e. the extension host could not be started
@@ -327,6 +355,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         }
         if (!this._extensionHost.extensions!.containsActivationEvent(activationEvent)) {
             this._resolvedActivationEvents.add(activationEvent);
+
             return;
         }
         await proxy.activateByEvent(activationEvent, activationKind);
@@ -341,6 +370,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
                 await this._extensionHost.enableInspectPort();
             }
             const port = this._extensionHost.getInspectPort();
+
             if (port) {
                 return port;
             }
@@ -349,13 +379,19 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     }
     public async resolveAuthority(remoteAuthority: string, resolveAttempt: number): Promise<IResolveAuthorityResult> {
         const sw = StopWatch.create(false);
+
         const prefix = () => `[${extensionHostKindToString(this._extensionHost.runningLocation.kind)}${this._extensionHost.runningLocation.affinity}][resolveAuthority(${getRemoteAuthorityPrefix(remoteAuthority)},${resolveAttempt})][${sw.elapsed()}ms] `;
+
         const logInfo = (msg: string) => this._logService.info(`${prefix()}${msg}`);
+
         const logError = (msg: string, err: any = undefined) => this._logService.error(`${prefix()}${msg}`, err);
         logInfo(`obtaining proxy...`);
+
         const proxy = await this._proxy;
+
         if (!proxy) {
             logError(`no proxy`);
+
             return {
                 type: 'error',
                 error: {
@@ -366,11 +402,15 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
             };
         }
         logInfo(`invoking...`);
+
         const intervalLogger = new IntervalTimer();
+
         try {
             intervalLogger.cancelAndSet(() => logInfo('waiting...'), 1000);
+
             const resolverResult = await proxy.resolveAuthority(remoteAuthority, resolveAttempt);
             intervalLogger.dispose();
+
             if (resolverResult.type === 'ok') {
                 logInfo(`returned ${resolverResult.value.authority.connectTo}`);
             }
@@ -382,6 +422,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         catch (err) {
             intervalLogger.dispose();
             logError(`returned an error`, err);
+
             return {
                 type: 'error',
                 error: {
@@ -394,6 +435,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     }
     public async getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             throw new Error(`Cannot resolve canonical URI`);
         }
@@ -401,14 +443,17 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     }
     public async start(extensionRegistryVersionId: number, allExtensions: IExtensionDescription[], myExtensions: ExtensionIdentifier[]): Promise<void> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             return;
         }
         const deltaExtensions = this._extensionHost.extensions!.set(extensionRegistryVersionId, allExtensions, myExtensions);
+
         return proxy.startExtensionHost(deltaExtensions);
     }
     public async extensionTestsExecute(): Promise<number> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             throw new Error('Could not obtain Extension Host Proxy');
         }
@@ -419,10 +464,12 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
     }
     public async deltaExtensions(incomingExtensionsDelta: IExtensionDescriptionDelta): Promise<void> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             return;
         }
         const outgoingExtensionsDelta = this._extensionHost.extensions!.delta(incomingExtensionsDelta);
+
         if (!outgoingExtensionsDelta) {
             // The extension host already has this version of the extensions.
             return;
@@ -436,6 +483,7 @@ export class ExtensionHostManager extends Disposable implements IExtensionHostMa
         [key: string]: string | null;
     }): Promise<void> {
         const proxy = await this._proxy;
+
         if (!proxy) {
             return;
         }
@@ -458,6 +506,7 @@ function prettyWithoutArrays(data: any): any {
     }
     if (data && typeof data === 'object' && typeof data.toString === 'function') {
         const result = data.toString();
+
         if (result !== '[object Object]') {
             return result;
         }
@@ -473,12 +522,17 @@ function pretty(data: any): any {
 class RPCLogger implements IRPCProtocolLogger {
     private _totalIncoming = 0;
     private _totalOutgoing = 0;
+
     constructor(private readonly _kind: ExtensionHostKind) { }
     private _log(direction: string, totalLength: number, msgLength: number, req: number, initiator: RequestInitiator, str: string, data: any): void {
         data = pretty(data);
+
         const colorTable = colorTables[initiator];
+
         const color = LOG_USE_COLORS ? colorTable[req % colorTable.length] : '#000000';
+
         let args = [`%c[${extensionHostKindToString(this._kind)}][${direction}]%c[${String(totalLength).padStart(7)}]%c[len: ${String(msgLength).padStart(5)}]%c${String(req).padStart(5)} - ${str}`, 'color: darkgreen', 'color: grey', 'color: grey', `color: ${color}`];
+
         if (/\($/.test(str)) {
             args = args.concat(data);
             args.push(')');
@@ -524,6 +578,7 @@ class TelemetryRPCLogger implements IRPCProtocolLogger {
         return Math.trunc(Math.random() * 1000) < 0.5;
     }
     private readonly _pendingRequests = new Map<number, string>();
+
     constructor(
     @ITelemetryService
     private readonly _telemetryService: ITelemetryService) { }
@@ -558,6 +613,7 @@ class TelemetryRPCLogger implements IRPCProtocolLogger {
 interface ExtHostLatencyResult {
     remoteAuthority: string | null;
     up: number;
+
     down: number;
     latency: number;
 }
@@ -567,11 +623,13 @@ interface ExtHostLatencyProvider {
 const providers: ExtHostLatencyProvider[] = [];
 function registerLatencyTestProvider(provider: ExtHostLatencyProvider): IDisposable {
     providers.push(provider);
+
     return {
         dispose: () => {
             for (let i = 0; i < providers.length; i++) {
                 if (providers[i] === provider) {
                     providers.splice(i, 1);
+
                     return;
                 }
             }
@@ -592,6 +650,7 @@ registerAction2(class MeasureExtHostLatencyAction extends Action2 {
     }
     async run(accessor: ServicesAccessor) {
         const editorService = accessor.get(IEditorService);
+
         const measurements = await Promise.all(getLatencyTestProviders().map(provider => provider.measure()));
         editorService.openEditor({ resource: undefined, contents: measurements.map(MeasureExtHostLatencyAction._print).join('\n\n'), options: { pinned: true } });
     }

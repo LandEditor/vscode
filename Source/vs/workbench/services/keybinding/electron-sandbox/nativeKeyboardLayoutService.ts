@@ -14,7 +14,9 @@ export const INativeKeyboardLayoutService = createDecorator<INativeKeyboardLayou
 export interface INativeKeyboardLayoutService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeKeyboardLayout: Event<void>;
+
     getRawKeyboardMapping(): IKeyboardMapping | null;
+
     getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null;
 }
 export class NativeKeyboardLayoutService extends Disposable implements INativeKeyboardLayoutService {
@@ -25,6 +27,7 @@ export class NativeKeyboardLayoutService extends Disposable implements INativeKe
     private _initPromise: Promise<void> | null;
     private _keyboardMapping: IKeyboardMapping | null;
     private _keyboardLayoutInfo: IKeyboardLayoutInfo | null;
+
     constructor(
     @IMainProcessService
     mainProcessService: IMainProcessService) {
@@ -35,6 +38,7 @@ export class NativeKeyboardLayoutService extends Disposable implements INativeKe
         this._keyboardLayoutInfo = null;
         this._register(this._keyboardLayoutService.onDidChangeKeyboardLayout(async ({ keyboardLayoutInfo, keyboardMapping }) => {
             await this.initialize();
+
             if (keyboardMappingEquals(this._keyboardMapping, keyboardMapping)) {
                 // the mappings are equal
                 return;
@@ -52,6 +56,7 @@ export class NativeKeyboardLayoutService extends Disposable implements INativeKe
     }
     private async _doInitialize(): Promise<void> {
         const keyboardLayoutData = await this._keyboardLayoutService.getKeyboardLayoutData();
+
         const { keyboardLayoutInfo, keyboardMapping } = keyboardLayoutData;
         this._keyboardMapping = keyboardMapping;
         this._keyboardLayoutInfo = keyboardLayoutInfo;

@@ -50,6 +50,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 
 	private _initializeHoverParticipants(): IEditorHoverParticipant[] {
 		const participants: IEditorHoverParticipant[] = [];
+
 		for (const participant of HoverParticipantRegistry.getAll()) {
 			const participantInstance = this._instantiationService.createInstance(participant, this._editor);
 			participants.push(participantInstance);
@@ -58,6 +59,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 		this._register(this._contentHoverWidget.onDidResize(() => {
 			this._participants.forEach(participant => participant.handleResize?.());
 		}));
+
 		return participants;
 	}
 
@@ -66,6 +68,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 			const messages = (result.hasLoadingMessage ? this._addLoadingMessage(result) : result.value);
 			this._withResult(new ContentHoverResult(messages, result.isComplete, result.options));
 		}));
+
 		const contentHoverWidgetNode = this._contentHoverWidget.getDomNode();
 		this._register(dom.addStandardDisposableListener(contentHoverWidgetNode, 'keydown', (e) => {
 			if (e.equals(KeyCode.Escape)) {
@@ -93,15 +96,19 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 		mouseEvent: IEditorMouseEvent | null
 	): boolean {
 		const contentHoverIsVisible = this._contentHoverWidget.position && this._currentResult;
+
 		if (!contentHoverIsVisible) {
 			if (anchor) {
 				this._startHoverOperationIfNecessary(anchor, mode, source, focus, false);
+
 				return true;
 			}
 			return false;
 		}
 		const isHoverSticky = this._editor.getOption(EditorOption.hover).sticky;
+
 		const isMouseGettingCloser = mouseEvent && this._contentHoverWidget.isMouseGettingCloser(mouseEvent.event.posx, mouseEvent.event.posy);
+
 		const isHoverStickyAndIsMouseGettingCloser = isHoverSticky && isMouseGettingCloser;
 		// The mouse is getting closer to the hover, so we will keep the hover untouched
 		// But we will kick off a hover update at the new anchor, insisting on keeping the hover visible.
@@ -114,18 +121,22 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 		// If mouse is not getting closer and anchor not defined, hide the hover
 		if (!anchor) {
 			this._setCurrentResult(null);
+
 			return false;
 		}
 		// If mouse if not getting closer and anchor is defined, and the new anchor is the same as the previous anchor
 		const currentAnchorEqualsPreviousAnchor = this._currentResult && this._currentResult.options.anchor.equals(anchor);
+
 		if (currentAnchorEqualsPreviousAnchor) {
 			return true;
 		}
 		// If mouse if not getting closer and anchor is defined, and the new anchor is not compatible with the previous anchor
 		const currentAnchorCompatibleWithPreviousAnchor = this._currentResult && anchor.canAdoptVisibleHover(this._currentResult.options.anchor, this._contentHoverWidget.position);
+
 		if (!currentAnchorCompatibleWithPreviousAnchor) {
 			this._setCurrentResult(null);
 			this._startHoverOperationIfNecessary(anchor, mode, source, focus, false);
+
 			return true;
 		}
 		// We aren't getting any closer to the hover, so we will filter existing results
@@ -134,15 +145,18 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 			this._setCurrentResult(this._currentResult.filter(anchor));
 		}
 		this._startHoverOperationIfNecessary(anchor, mode, source, focus, false);
+
 		return true;
 	}
 
 	private _startHoverOperationIfNecessary(anchor: HoverAnchor, mode: HoverStartMode, source: HoverStartSource, shouldFocus: boolean, insistOnKeepingHoverVisible: boolean): void {
 		const currentAnchorEqualToPreviousHover = this._hoverOperation.options && this._hoverOperation.options.anchor.equals(anchor);
+
 		if (currentAnchorEqualToPreviousHover) {
 			return;
 		}
 		this._hoverOperation.cancel();
+
 		const contentHoverComputerOptions: ContentHoverComputerOptions = {
 			anchor,
 			source,
@@ -154,15 +168,19 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 
 	private _setCurrentResult(hoverResult: ContentHoverResult | null): void {
 		let currentHoverResult = hoverResult;
+
 		const currentResultEqualToPreviousResult = this._currentResult === currentHoverResult;
+
 		if (currentResultEqualToPreviousResult) {
 			return;
 		}
 		const currentHoverResultIsEmpty = currentHoverResult && currentHoverResult.hoverParts.length === 0;
+
 		if (currentHoverResultIsEmpty) {
 			currentHoverResult = null;
 		}
 		this._currentResult = currentHoverResult;
+
 		if (this._currentResult) {
 			this._showHover(this._currentResult);
 		} else {
@@ -176,6 +194,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 				continue;
 			}
 			const loadingMessage = participant.createLoadingMessage(hoverResult.options.anchor);
+
 			if (!loadingMessage) {
 				continue;
 			}
@@ -186,18 +205,23 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 
 	private _withResult(hoverResult: ContentHoverResult): void {
 		const previousHoverIsVisibleWithCompleteResult = this._contentHoverWidget.position && this._currentResult && this._currentResult.isComplete;
+
 		if (!previousHoverIsVisibleWithCompleteResult) {
 			this._setCurrentResult(hoverResult);
 		}
 		// The hover is visible with a previous complete result.
 		const isCurrentHoverResultComplete = hoverResult.isComplete;
+
 		if (!isCurrentHoverResultComplete) {
 			// Instead of rendering the new partial result, we wait for the result to be complete.
 			return;
 		}
 		const currentHoverResultIsEmpty = hoverResult.hoverParts.length === 0;
+
 		const insistOnKeepingPreviousHoverVisible = hoverResult.options.insistOnKeepingHoverVisible;
+
 		const shouldKeepPreviousHoverVisible = currentHoverResultIsEmpty && insistOnKeepingPreviousHoverVisible;
+
 		if (shouldKeepPreviousHoverVisible) {
 			// The hover would now hide normally, so we'll keep the previous messages
 			return;
@@ -208,6 +232,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 	private _showHover(hoverResult: ContentHoverResult): void {
 		const context = this._getHoverContext();
 		this._renderedContentHover = new RenderedContentHover(this._editor, hoverResult, this._participants, context, this._keybindingService, this._hoverService);
+
 		if (this._renderedContentHover.domNodeHasChildren) {
 			this._contentHoverWidget.show(this._renderedContentHover);
 		} else {
@@ -224,47 +249,58 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 		const hide = () => {
 			this.hide();
 		};
+
 		const onContentsChanged = () => {
 			this._onContentsChanged.fire();
 			this._contentHoverWidget.onContentsChanged();
 		};
+
 		const setMinimumDimensions = (dimensions: dom.Dimension) => {
 			this._contentHoverWidget.setMinimumDimensions(dimensions);
 		};
+
 		return { hide, onContentsChanged, setMinimumDimensions };
 	}
 
 
 	public showsOrWillShow(mouseEvent: IEditorMouseEvent): boolean {
 		const isContentWidgetResizing = this._contentHoverWidget.isResizing;
+
 		if (isContentWidgetResizing) {
 			return true;
 		}
 		const anchorCandidates: HoverAnchor[] = this._findHoverAnchorCandidates(mouseEvent);
+
 		const anchorCandidatesExist = anchorCandidates.length > 0;
+
 		if (!anchorCandidatesExist) {
 			return this._startShowingOrUpdateHover(null, HoverStartMode.Delayed, HoverStartSource.Mouse, false, mouseEvent);
 		}
 		const anchor = anchorCandidates[0];
+
 		return this._startShowingOrUpdateHover(anchor, HoverStartMode.Delayed, HoverStartSource.Mouse, false, mouseEvent);
 	}
 
 	private _findHoverAnchorCandidates(mouseEvent: IEditorMouseEvent): HoverAnchor[] {
 		const anchorCandidates: HoverAnchor[] = [];
+
 		for (const participant of this._participants) {
 			if (!participant.suggestHoverAnchor) {
 				continue;
 			}
 			const anchor = participant.suggestHoverAnchor(mouseEvent);
+
 			if (!anchor) {
 				continue;
 			}
 			anchorCandidates.push(anchor);
 		}
 		const target = mouseEvent.target;
+
 		switch (target.type) {
 			case MouseTargetType.CONTENT_TEXT: {
 				anchorCandidates.push(new HoverRangeAnchor(0, target.range, mouseEvent.event.posx, mouseEvent.event.posy));
+
 				break;
 			}
 			case MouseTargetType.CONTENT_EMPTY: {
@@ -273,20 +309,25 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 				const mouseIsWithinLinesAndCloseToHover = !target.detail.isAfterLines
 					&& typeof target.detail.horizontalDistanceToText === 'number'
 					&& target.detail.horizontalDistanceToText < epsilon;
+
 				if (!mouseIsWithinLinesAndCloseToHover) {
 					break;
 				}
 				anchorCandidates.push(new HoverRangeAnchor(0, target.range, mouseEvent.event.posx, mouseEvent.event.posy));
+
 				break;
 			}
 		}
 		anchorCandidates.sort((a, b) => b.priority - a.priority);
+
 		return anchorCandidates;
 	}
 
 	private _onMouseLeave(e: MouseEvent): void {
 		const editorDomNode = this._editor.getDomNode();
+
 		const isMousePositionOutsideOfEditor = !editorDomNode || !isMousePositionWithinElement(editorDomNode, e.x, e.y);
+
 		if (isMousePositionOutsideOfEditor) {
 			this.hide();
 		}
@@ -298,6 +339,7 @@ export class ContentHoverWidgetWrapper extends Disposable implements IHoverWidge
 
 	public getWidgetContent(): string | undefined {
 		const node = this._contentHoverWidget.getDomNode();
+
 		if (!node.textContent) {
 			return undefined;
 		}

@@ -14,10 +14,12 @@ import { IWebviewService, KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED, KEYBIN
 import { WebviewEditor } from './webviewEditor.js';
 import { WebviewInput } from './webviewEditorInput.js';
 import { IEditorService } from '../../../services/editor/common/editorService.js';
+
 const webviewActiveContextKeyExpr = ContextKeyExpr.and(ContextKeyExpr.equals('activeEditor', WebviewEditor.ID), EditorContextKeys.focus.toNegated() /* https://github.com/microsoft/vscode/issues/58668 */)!;
 export class ShowWebViewEditorFindWidgetAction extends Action2 {
     public static readonly ID = 'editor.action.webvieweditor.showFind';
     public static readonly LABEL = nls.localize('editor.action.webvieweditor.showFind', "Show find");
+
     constructor() {
         super({
             id: ShowWebViewEditorFindWidgetAction.ID,
@@ -36,6 +38,7 @@ export class ShowWebViewEditorFindWidgetAction extends Action2 {
 export class HideWebViewEditorFindCommand extends Action2 {
     public static readonly ID = 'editor.action.webvieweditor.hideFind';
     public static readonly LABEL = nls.localize('editor.action.webvieweditor.hideFind', "Stop find");
+
     constructor() {
         super({
             id: HideWebViewEditorFindCommand.ID,
@@ -54,6 +57,7 @@ export class HideWebViewEditorFindCommand extends Action2 {
 export class WebViewEditorFindNextCommand extends Action2 {
     public static readonly ID = 'editor.action.webvieweditor.findNext';
     public static readonly LABEL = nls.localize('editor.action.webvieweditor.findNext', 'Find next');
+
     constructor() {
         super({
             id: WebViewEditorFindNextCommand.ID,
@@ -72,6 +76,7 @@ export class WebViewEditorFindNextCommand extends Action2 {
 export class WebViewEditorFindPreviousCommand extends Action2 {
     public static readonly ID = 'editor.action.webvieweditor.findPrevious';
     public static readonly LABEL = nls.localize('editor.action.webvieweditor.findPrevious', 'Find previous');
+
     constructor() {
         super({
             id: WebViewEditorFindPreviousCommand.ID,
@@ -102,6 +107,7 @@ export class ReloadWebviewAction extends Action2 {
     }
     public async run(accessor: ServicesAccessor): Promise<void> {
         const webviewService = accessor.get(IWebviewService);
+
         for (const webview of webviewService.webviews) {
             webview.reload();
         }
@@ -109,6 +115,8 @@ export class ReloadWebviewAction extends Action2 {
 }
 function getActiveWebviewEditor(accessor: ServicesAccessor): IWebview | undefined {
     const editorService = accessor.get(IEditorService);
+
     const activeEditor = editorService.activeEditor;
+
     return activeEditor instanceof WebviewInput ? activeEditor.webview : undefined;
 }

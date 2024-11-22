@@ -30,6 +30,7 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
     private readonly _debounceInformation: IFeatureDebounceInformation;
     private readonly _tokenizeViewport: RunOnceScheduler;
     private _outstandingRequests: CancelablePromise<any>[];
+
     constructor(editor: ICodeEditor, 
     @ISemanticTokensStylingService
     private readonly _semanticTokensStylingService: ISemanticTokensStylingService, 
@@ -47,6 +48,7 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
         this._debounceInformation = languageFeatureDebounceService.for(this._provider, 'DocumentRangeSemanticTokens', { min: 100, max: 500 });
         this._tokenizeViewport = this._register(new RunOnceScheduler(() => this._tokenizeViewportNow(), 100));
         this._outstandingRequests = [];
+
         const scheduleTokenizeViewport = () => {
             if (this._editor.hasModel()) {
                 this._tokenizeViewport.schedule(this._debounceInformation.get(this._editor.getModel()));
@@ -89,6 +91,7 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
         for (let i = 0, len = this._outstandingRequests.length; i < len; i++) {
             if (this._outstandingRequests[i] === req) {
                 this._outstandingRequests.splice(i, 1);
+
                 return;
             }
         }
@@ -98,6 +101,7 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
             return;
         }
         const model = this._editor.getModel();
+
         if (model.tokenization.hasCompleteSemanticTokens()) {
             return;
         }
@@ -118,17 +122,22 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
     }
     private _requestRange(model: ITextModel, range: Range): CancelablePromise<any> {
         const requestVersionId = model.getVersionId();
+
         const request = createCancelablePromise(token => Promise.resolve(getDocumentRangeSemanticTokens(this._provider, model, range, token)));
+
         const sw = new StopWatch(false);
         request.then((r) => {
             this._debounceInformation.update(model, sw.elapsed());
+
             if (!r || !r.tokens || model.isDisposed() || model.getVersionId() !== requestVersionId) {
                 return;
             }
             const { provider, tokens: result } = r;
+
             const styling = this._semanticTokensStylingService.getStyling(provider);
             model.tokenization.setPartialSemanticTokens(range, toMultilineTokens2(result, styling, model.getLanguageId()));
         }).then(() => this._removeOutstandingRequest(request), () => this._removeOutstandingRequest(request));
+
         return request;
     }
 }

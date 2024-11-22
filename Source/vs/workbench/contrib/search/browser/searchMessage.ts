@@ -18,13 +18,16 @@ import { Link } from '../../../../platform/opener/browser/link.js';
 import { URI } from '../../../../base/common/uri.js';
 export const renderSearchMessage = (message: TextSearchCompleteMessage, instantiationService: IInstantiationService, notificationService: INotificationService, openerService: IOpenerService, commandService: ICommandService, disposableStore: DisposableStore, triggerSearch: () => void): HTMLElement => {
     const div = dom.$('div.providerMessage');
+
     const linkedText = parseLinkedText(message.text);
+
     dom.append(div, dom.$('.' +
         SeverityIcon.className(message.type === TextSearchCompleteMessageType.Information
             ? Severity.Info
             : Severity.Warning)
             .split(' ')
             .join('.')));
+
     for (const node of linkedText.nodes) {
         if (typeof node === 'string') {
             dom.append(div, document.createTextNode(node));
@@ -36,8 +39,10 @@ export const renderSearchMessage = (message: TextSearchCompleteMessage, instanti
                         return;
                     }
                     const parsed = URI.parse(href, true);
+
                     if (parsed.scheme === Schemas.command && message.trusted) {
                         const result = await commandService.executeCommand(parsed.path);
+
                         if ((result as any)?.triggerSearch) {
                             triggerSearch();
                         }

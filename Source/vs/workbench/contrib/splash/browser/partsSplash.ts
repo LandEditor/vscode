@@ -26,6 +26,7 @@ export class PartsSplash {
     private static readonly _splashElementId = 'monaco-parts-splash';
     private readonly _disposables = new DisposableStore();
     private _didChangeTitleBarStyle?: boolean;
+
     constructor(
     @IThemeService
     private readonly _themeService: IThemeService, 
@@ -45,7 +46,9 @@ export class PartsSplash {
             this._removePartsSplash();
             perf.mark('code/didRemovePartsSplash');
         }, undefined, this._disposables);
+
         const lastIdleSchedule = this._disposables.add(new MutableDisposable());
+
         const savePartsSplashSoon = () => {
             lastIdleSchedule.value = dom.runWhenWindowIdle(mainWindow, () => this._savePartsSplash(), 2500);
         };
@@ -100,11 +103,13 @@ export class PartsSplash {
     }
     private _removePartsSplash(): void {
         const element = mainWindow.document.getElementById(PartsSplash._splashElementId);
+
         if (element) {
             element.style.display = 'none';
         }
         // remove initial colors
         const defaultStyles = mainWindow.document.head.getElementsByClassName('initialShellColors');
+
         defaultStyles[0]?.remove();
     }
 }

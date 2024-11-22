@@ -26,6 +26,7 @@ import { CopyPasteController } from '../../dropOrPasteInto/browser/copyPasteCont
 const CLIPBOARD_CONTEXT_MENU_GROUP = '9_cutcopypaste';
 
 const supportsCut = (platform.isNative || document.queryCommandSupported('cut'));
+
 const supportsCopy = (platform.isNative || document.queryCommandSupported('copy'));
 // Firefox only supports navigator.clipboard.readText() in browser extensions.
 // See https://developer.mozilla.org/en-US/docs/Web/API/Clipboard/readText#Browser_compatibility
@@ -34,6 +35,7 @@ const supportsPaste = (typeof navigator.clipboard === 'undefined' || browser.isF
 
 function registerCommand<T extends Command>(command: T): T {
 	command.register();
+
 	return command;
 }
 
@@ -194,10 +196,13 @@ function registerExecCommandImpl(target: MultiCommand | undefined, browserComman
 	target.addImplementation(10000, 'code-editor', (accessor: ServicesAccessor, args: any) => {
 		// Only if editor text focus (i.e. not if editor has widget focus).
 		const focusedEditor = accessor.get(ICodeEditorService).getFocusedCodeEditor();
+
 		if (focusedEditor && focusedEditor.hasTextFocus()) {
 			// Do not execute if there is no selection and empty selection clipboard is off
 			const emptySelectionClipboard = focusedEditor.getOption(EditorOption.emptySelectionClipboard);
+
 			const selection = focusedEditor.getSelection();
+
 			if (selection && selection.isEmpty() && !emptySelectionClipboard) {
 				return true;
 			}
@@ -217,6 +222,7 @@ function registerExecCommandImpl(target: MultiCommand | undefined, browserComman
 	// 2. (default) handle case when focus is somewhere else.
 	target.addImplementation(0, 'generic-dom', (accessor: ServicesAccessor, args: any) => {
 		getActiveDocument().execCommand(browserCommand);
+
 		return true;
 	});
 }
@@ -228,24 +234,30 @@ if (PasteAction) {
 	// 1. Paste: handle case when focus is in editor.
 	PasteAction.addImplementation(10000, 'code-editor', (accessor: ServicesAccessor, args: any) => {
 		const codeEditorService = accessor.get(ICodeEditorService);
+
 		const clipboardService = accessor.get(IClipboardService);
 
 		// Only if editor text focus (i.e. not if editor has widget focus).
 		const focusedEditor = codeEditorService.getFocusedCodeEditor();
+
 		if (focusedEditor && focusedEditor.hasModel() && focusedEditor.hasTextFocus()) {
 			// execCommand(paste) does not work with edit context
 			let result: boolean;
+
 			const experimentalEditContextEnabled = focusedEditor.getOption(EditorOption.experimentalEditContextEnabled);
+
 			if (experimentalEditContextEnabled) {
 				// Since we can not call execCommand('paste') on a dom node with edit context set
 				// we added a hidden text area that receives the paste execution
 				// see nativeEditContext.ts for more details
 				const textAreaDomNode = NativeEditContextRegistry.getTextArea(focusedEditor.getId());
+
 				if (textAreaDomNode) {
 					const currentFocusedElement = getActiveWindow().document.activeElement;
 					textAreaDomNode.focus();
 					result = focusedEditor.getContainerDomNode().ownerDocument.execCommand('paste');
 					textAreaDomNode.textContent = '';
+
 					if (isHTMLElement(currentFocusedElement)) {
 						currentFocusedElement.focus();
 					}
@@ -261,11 +273,16 @@ if (PasteAction) {
 				// Use the clipboard service if document.execCommand('paste') was not successful
 				return (async () => {
 					const clipboardText = await clipboardService.readText();
+
 					if (clipboardText !== '') {
 						const metadata = InMemoryClipboardMetadataManager.INSTANCE.get(clipboardText);
+
 						let pasteOnNewLine = false;
+
 						let multicursorText: string[] | null = null;
+
 						let mode: string | null = null;
+
 						if (metadata) {
 							pasteOnNewLine = (focusedEditor.getOption(EditorOption.emptySelectionClipboard) && !!metadata.isFromEmptySelection);
 							multicursorText = (typeof metadata.multicursorText !== 'undefined' ? metadata.multicursorText : null);
@@ -288,6 +305,7 @@ if (PasteAction) {
 	// 2. Paste: (default) handle case when focus is somewhere else.
 	PasteAction.addImplementation(0, 'generic-dom', (accessor: ServicesAccessor, args: any) => {
 		getActiveDocument().execCommand('paste');
+
 		return true;
 	});
 }

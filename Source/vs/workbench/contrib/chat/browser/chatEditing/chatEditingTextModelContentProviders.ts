@@ -12,6 +12,7 @@ type ChatEditingTextModelContentQueryData = {
     kind: 'empty';
 } | {
     kind: 'doc';
+
     documentId: string;
 };
 export class ChatEditingTextModelContentProvider implements ITextModelContentProvider {
@@ -34,14 +35,17 @@ export class ChatEditingTextModelContentProvider implements ITextModelContentPro
     private readonly _modelService: IModelService) { }
     async provideTextContent(resource: URI): Promise<ITextModel | null> {
         const existing = this._modelService.getModel(resource);
+
         if (existing && !existing.isDisposed()) {
             return existing;
         }
         const data: ChatEditingTextModelContentQueryData = JSON.parse(resource.query);
+
         if (data.kind === 'empty') {
             return this._modelService.createModel('', null, resource, false);
         }
         const session = this._currentSessionObs.get();
+
         if (!session) {
             return null;
         }
@@ -65,11 +69,14 @@ export class ChatEditingSnapshotTextModelContentProvider implements ITextModelCo
     private readonly _modelService: IModelService) { }
     async provideTextContent(resource: URI): Promise<ITextModel | null> {
         const existing = this._modelService.getModel(resource);
+
         if (existing && !existing.isDisposed()) {
             return existing;
         }
         const data: ChatEditingSnapshotTextModelContentQueryData = JSON.parse(resource.query);
+
         const session = this._currentSessionObs.get();
+
         if (!session || !data.requestId) {
             return null;
         }

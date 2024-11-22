@@ -12,6 +12,7 @@ import { Schemas } from '../../../../base/common/network.js';
 export class OpenLogsFolderAction extends Action {
     static readonly ID = 'workbench.action.openLogsFolder';
     static readonly TITLE = nls.localize2('openLogsFolder', "Open Logs Folder");
+
     constructor(id: string, label: string, 
     @INativeWorkbenchEnvironmentService
     private readonly environmentService: INativeWorkbenchEnvironmentService, 
@@ -26,6 +27,7 @@ export class OpenLogsFolderAction extends Action {
 export class OpenExtensionLogsFolderAction extends Action {
     static readonly ID = 'workbench.action.openExtensionLogsFolder';
     static readonly TITLE = nls.localize2('openExtensionLogsFolder', "Open Extension Logs Folder");
+
     constructor(id: string, label: string, 
     @INativeWorkbenchEnvironmentService
     private readonly environmentSerice: INativeWorkbenchEnvironmentService, 
@@ -37,6 +39,7 @@ export class OpenExtensionLogsFolderAction extends Action {
     }
     override async run(): Promise<void> {
         const folderStat = await this.fileService.resolve(this.environmentSerice.extHostLogsPath);
+
         if (folderStat.children && folderStat.children[0]) {
             return this.nativeHostService.showItemInFolder(folderStat.children[0].resource.with({ scheme: Schemas.file }).fsPath);
         }

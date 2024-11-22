@@ -45,13 +45,16 @@ export const testingStatesToIcons = new Map<TestResultState, ThemeIcon>([
 registerThemingParticipant((theme, collector) => {
     for (const [state, icon] of testingStatesToIcons.entries()) {
         const color = testStatesToIconColors[state];
+
         const retiredColor = testStatesToRetiredIconColors[state];
+
         if (!color) {
             continue;
         }
         collector.addRule(`.monaco-workbench ${ThemeIcon.asCSSSelector(icon)} {
 			color: ${theme.getColor(color)} !important;
 		}`);
+
         if (!retiredColor) {
             continue;
         }

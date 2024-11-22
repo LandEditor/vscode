@@ -28,6 +28,7 @@ class CopyMetadata {
 	static fromJSON(str: string): CopyMetadata | undefined {
 		try {
 			const parsed = JSON.parse(str);
+
 			return new CopyMetadata(
 				vscode.Uri.from(parsed.resource),
 				parsed.ranges.map((r: any) => new vscode.Range(r[0].line, r[0].character, r[1].line, r[1].character)));
@@ -56,6 +57,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		}
 
 		const file = this._client.toOpenTsFilePath(document);
+
 		if (!file) {
 			return;
 		}
@@ -64,6 +66,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			file,
 			copiedTextSpan: ranges.map(typeConverters.Range.toTextSpan),
 		}, token);
+
 		if (token.isCancellationRequested || response.type !== 'response' || !response.body) {
 			return;
 		}
@@ -84,17 +87,20 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		}
 
 		const file = this._client.toOpenTsFilePath(document);
+
 		if (!file) {
 			return;
 		}
 
 		const text = await dataTransfer.get('text/plain')?.asString();
+
 		if (!text || token.isCancellationRequested) {
 			return;
 		}
 
 		// Get optional metadata
 		const metadata = await this.extractMetadata(dataTransfer, token);
+
 		if (token.isCancellationRequested) {
 			return;
 		}
@@ -103,9 +109,12 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			file: string;
 			spans: protocol.TextSpan[];
 		} | undefined;
+
 		if (metadata) {
 			const spans = metadata.ranges.map(typeConverters.Range.toTextSpan);
+
 			const copyFile = this._client.toTsFilePath(metadata.resource);
+
 			if (copyFile) {
 				copiedFrom = { file: copyFile, spans };
 			}
@@ -122,6 +131,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			pasteLocations: ranges.map(typeConverters.Range.toTextSpan),
 			copiedFrom
 		}, token));
+
 		if (response.type !== 'response' || !response.body?.edits.length || token.isCancellationRequested) {
 			return;
 		}
@@ -130,15 +140,18 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		edit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text.append('plain')];
 
 		const additionalEdit = new vscode.WorkspaceEdit();
+
 		for (const edit of response.body.edits) {
 			additionalEdit.set(this._client.toResource(edit.fileName), edit.textChanges.map(typeConverters.TextEdit.fromCodeEdit));
 		}
 		edit.additionalEdit = additionalEdit;
+
 		return [edit];
 	}
 
 	private async extractMetadata(dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<CopyMetadata | undefined> {
 		const metadata = await dataTransfer.get(DocumentPasteProvider.metadataMimeType)?.asString();
+
 		if (token.isCancellationRequested) {
 			return undefined;
 		}
@@ -148,6 +161,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 
 	private isEnabled(document: vscode.TextDocument) {
 		const config = vscode.workspace.getConfiguration(this._modeId, document.uri);
+
 		return config.get(enabledSettingId, true);
 	}
 }

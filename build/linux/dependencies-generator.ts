@@ -43,10 +43,13 @@ export async function getDependencies(packageType: 'deb' | 'rpm', buildDir: stri
     // Get the files for which we want to find dependencies.
     const canAsar = false; // TODO@esm ASAR disabled in ESM
     const nativeModulesPath = path.join(buildDir, 'resources', 'app', canAsar ? 'node_modules.asar.unpacked' : 'node_modules');
+
     const findResult = spawnSync('find', [nativeModulesPath, '-name', '*.node']);
+
     if (findResult.status) {
         console.error('Error finding files:');
         console.error(findResult.stderr.toString());
+
         return [];
     }
     const appPath = path.join(buildDir, applicationName);
@@ -61,8 +64,10 @@ export async function getDependencies(packageType: 'deb' | 'rpm', buildDir: stri
     files.push(path.join(buildDir, 'chrome_crashpad_handler'));
     // Generate the dependencies.
     let dependencies: Set<string>[];
+
     if (packageType === 'deb') {
         const chromiumSysroot = await getChromiumSysroot(arch as DebianArchString);
+
         const vscodeSysroot = await getVSCodeSysroot(arch as DebianArchString);
         dependencies = generatePackageDepsDebian(files, arch as DebianArchString, chromiumSysroot, vscodeSysroot);
     }
@@ -75,13 +80,16 @@ export async function getDependencies(packageType: 'deb' | 'rpm', buildDir: stri
     const sortedDependencies: string[] = Array.from(mergedDependencies).filter(dependency => {
         return !bundledDeps.some(bundledDep => dependency.startsWith(bundledDep));
     }).sort();
+
     const referenceGeneratedDeps = packageType === 'deb' ?
         debianGeneratedDeps[arch as DebianArchString] :
         rpmGeneratedDeps[arch as RpmArchString];
+
     if (JSON.stringify(sortedDependencies) !== JSON.stringify(referenceGeneratedDeps)) {
         const failMessage = 'The dependencies list has changed.'
             + '\nOld:\n' + referenceGeneratedDeps.join('\n')
             + '\nNew:\n' + sortedDependencies.join('\n');
+
         if (FAIL_BUILD_FOR_NEW_DEPENDENCIES) {
             throw new Error(failMessage);
         }
@@ -94,9 +102,11 @@ export async function getDependencies(packageType: 'deb' | 'rpm', buildDir: stri
 // Based on https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/rpm/merge_package_deps.py.
 function mergePackageDeps(inputDeps: Set<string>[]): Set<string> {
     const requires = new Set<string>();
+
     for (const depSet of inputDeps) {
         for (const dep of depSet) {
             const trimmedDependency = dep.trim();
+
             if (trimmedDependency.length && !trimmedDependency.startsWith('#')) {
                 requires.add(trimmedDependency);
             }

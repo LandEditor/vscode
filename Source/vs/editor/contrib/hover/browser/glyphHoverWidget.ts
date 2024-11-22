@@ -67,6 +67,7 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 	public override dispose(): void {
 		this._hoverComputerOptions = undefined;
 		this._editor.removeOverlayWidget(this);
+
 		super.dispose();
 	}
 
@@ -98,12 +99,15 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 
 	public showsOrWillShow(mouseEvent: IEditorMouseEvent): boolean {
 		const target = mouseEvent.target;
+
 		if (target.type === MouseTargetType.GUTTER_GLYPH_MARGIN && target.detail.glyphMarginLane) {
 			this._startShowingAt(target.position.lineNumber, target.detail.glyphMarginLane);
+
 			return true;
 		}
 		if (target.type === MouseTargetType.GUTTER_LINE_NUMBERS) {
 			this._startShowingAt(target.position.lineNumber, 'lineNo');
+
 			return true;
 		}
 		return false;
@@ -125,6 +129,7 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 	public hide(): void {
 		this._hoverComputerOptions = undefined;
 		this._hoverOperation.cancel();
+
 		if (!this._isVisible) {
 			return;
 		}
@@ -149,7 +154,9 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 
 		for (const msg of messages) {
 			const markdownHoverElement = $('div.hover-row.markdown-hover');
+
 			const hoverContentsElement = dom.append(markdownHoverElement, $('div.hover-contents'));
+
 			const renderedContents = this._renderDisposeables.add(this._markdownRenderer.render(msg.value));
 			hoverContentsElement.appendChild(renderedContents.element);
 			fragment.appendChild(markdownHoverElement);
@@ -172,11 +179,17 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 		}
 
 		const editorLayout = this._editor.getLayoutInfo();
+
 		const topForLineNumber = this._editor.getTopForLineNumber(lineNumber);
+
 		const editorScrollTop = this._editor.getScrollTop();
+
 		const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+
 		const nodeHeight = this._hover.containerDomNode.clientHeight;
+
 		const top = topForLineNumber - editorScrollTop - ((nodeHeight - lineHeight) / 2);
+
 		const left = editorLayout.glyphMarginLeft + editorLayout.glyphMarginWidth + (laneOrLine === 'lineNo' ? editorLayout.lineNumbersWidth : 0);
 		this._hover.containerDomNode.style.left = `${left}px`;
 		this._hover.containerDomNode.style.top = `${Math.max(Math.round(top), 0)}px`;
@@ -184,7 +197,9 @@ export class GlyphHoverWidget extends Disposable implements IOverlayWidget, IHov
 
 	private _onMouseLeave(e: MouseEvent): void {
 		const editorDomNode = this._editor.getDomNode();
+
 		const isMousePositionOutsideOfEditor = !editorDomNode || !isMousePositionWithinElement(editorDomNode, e.x, e.y);
+
 		if (isMousePositionOutsideOfEditor) {
 			this.hide();
 		}

@@ -31,10 +31,12 @@ class NativeIssueContribution extends BaseIssueContribution {
     @IConfigurationService
     configurationService: IConfigurationService) {
         super(productService, configurationService);
+
         if (productService.reportIssueUrl) {
             this._register(registerAction2(ReportPerformanceIssueUsingReporterAction));
         }
         let disposable: IDisposable | undefined;
+
         const registerQuickAccessProvider = () => {
             disposable = Registry.as<IQuickAccessRegistry>(QuickAccessExtensions.Quickaccess).registerQuickAccessProvider({
                 ctor: IssueQuickAccess,
@@ -56,6 +58,7 @@ class NativeIssueContribution extends BaseIssueContribution {
                 registerQuickAccessProvider();
             }
         }));
+
         if (configurationService.getValue<boolean>('extensions.experimental.issueQuickAccess')) {
             registerQuickAccessProvider();
         }
@@ -64,6 +67,7 @@ class NativeIssueContribution extends BaseIssueContribution {
 Registry.as<IWorkbenchContributionsRegistry>(Extensions.Workbench).registerWorkbenchContribution(NativeIssueContribution, LifecyclePhase.Restored);
 class ReportPerformanceIssueUsingReporterAction extends Action2 {
     static readonly ID = 'workbench.action.reportPerformanceIssueUsingReporter';
+
     constructor() {
         super({
             id: ReportPerformanceIssueUsingReporterAction.ID,

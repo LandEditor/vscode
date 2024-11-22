@@ -15,7 +15,9 @@ export function registerDiagnosticsPushSupport(documents: TextDocuments<TextDocu
     const pendingValidationRequests: {
         [uri: string]: Disposable;
     } = {};
+
     const validationDelayMs = 500;
+
     const disposables: Disposable[] = [];
     // The content of a text document has changed. This event is emitted
     // when the text document first opened or when its content has changed.
@@ -27,8 +29,10 @@ export function registerDiagnosticsPushSupport(documents: TextDocuments<TextDocu
         cleanPendingValidation(event.document);
         connection.sendDiagnostics({ uri: event.document.uri, diagnostics: [] });
     }, undefined, disposables);
+
     function cleanPendingValidation(textDocument: TextDocument): void {
         const request = pendingValidationRequests[textDocument.uri];
+
         if (request) {
             request.dispose();
             delete pendingValidationRequests[textDocument.uri];
@@ -36,10 +40,12 @@ export function registerDiagnosticsPushSupport(documents: TextDocuments<TextDocu
     }
     function triggerValidation(textDocument: TextDocument): void {
         cleanPendingValidation(textDocument);
+
         const request = pendingValidationRequests[textDocument.uri] = runtime.timer.setTimeout(async () => {
             if (request === pendingValidationRequests[textDocument.uri]) {
                 try {
                     const diagnostics = await validate(textDocument);
+
                     if (request === pendingValidationRequests[textDocument.uri]) {
                         connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
                     }
@@ -58,7 +64,9 @@ export function registerDiagnosticsPushSupport(documents: TextDocuments<TextDocu
         dispose: () => {
             disposables.forEach(d => d.dispose());
             disposables.length = 0;
+
             const keys = Object.keys(pendingValidationRequests);
+
             for (const key of keys) {
                 pendingValidationRequests[key].dispose();
                 delete pendingValidationRequests[key];
@@ -76,12 +84,14 @@ export function registerDiagnosticsPullSupport(documents: TextDocuments<TextDocu
     const registration = connection.languages.diagnostics.on(async (params: DocumentDiagnosticParams, token: CancellationToken) => {
         return runSafe(runtime, async () => {
             const document = documents.get(params.textDocument.uri);
+
             if (document) {
                 return newDocumentDiagnosticReport(await validate(document));
             }
             return newDocumentDiagnosticReport([]);
         }, newDocumentDiagnosticReport([]), `Error while computing diagnostics for ${params.textDocument.uri}`, token);
     });
+
     function requestRefresh(): void {
         connection.languages.diagnostics.refresh();
     }

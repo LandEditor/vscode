@@ -27,12 +27,19 @@ export class BareFontInfo {
      */
     public static createFromValidatedSettings(options: IValidatedEditorOptions, pixelRatio: number, ignoreEditorZoom: boolean): BareFontInfo {
         const fontFamily = options.get(EditorOption.fontFamily);
+
         const fontWeight = options.get(EditorOption.fontWeight);
+
         const fontSize = options.get(EditorOption.fontSize);
+
         const fontFeatureSettings = options.get(EditorOption.fontLigatures);
+
         const fontVariationSettings = options.get(EditorOption.fontVariations);
+
         const lineHeight = options.get(EditorOption.lineHeight);
+
         const letterSpacing = options.get(EditorOption.letterSpacing);
+
         return BareFontInfo._create(fontFamily, fontWeight, fontSize, fontFeatureSettings, fontVariationSettings, lineHeight, letterSpacing, pixelRatio, ignoreEditorZoom);
     }
     /**
@@ -45,15 +52,23 @@ export class BareFontInfo {
         fontLigatures?: boolean | string;
         fontVariations?: boolean | string;
         lineHeight?: number;
+
         letterSpacing?: number;
     }, pixelRatio: number, ignoreEditorZoom: boolean = false): BareFontInfo {
         const fontFamily = EditorOptions.fontFamily.validate(opts.fontFamily);
+
         const fontWeight = EditorOptions.fontWeight.validate(opts.fontWeight);
+
         const fontSize = EditorOptions.fontSize.validate(opts.fontSize);
+
         const fontFeatureSettings = EditorOptions.fontLigatures2.validate(opts.fontLigatures);
+
         const fontVariationSettings = EditorOptions.fontVariations.validate(opts.fontVariations);
+
         const lineHeight = EditorOptions.lineHeight.validate(opts.lineHeight);
+
         const letterSpacing = EditorOptions.letterSpacing.validate(opts.letterSpacing);
+
         return BareFontInfo._create(fontFamily, fontWeight, fontSize, fontFeatureSettings, fontVariationSettings, lineHeight, letterSpacing, pixelRatio, ignoreEditorZoom);
     }
     /**
@@ -69,12 +84,14 @@ export class BareFontInfo {
         }
         // Enforce integer, minimum constraints
         lineHeight = Math.round(lineHeight);
+
         if (lineHeight < MINIMUM_LINE_HEIGHT) {
             lineHeight = MINIMUM_LINE_HEIGHT;
         }
         const editorZoomLevelMultiplier = 1 + (ignoreEditorZoom ? 0 : EditorZoom.getZoomLevel() * 0.1);
         fontSize *= editorZoomLevelMultiplier;
         lineHeight *= editorZoomLevelMultiplier;
+
         if (fontVariationSettings === EditorFontVariations.TRANSLATE) {
             if (fontWeight === 'normal' || fontWeight === 'bold') {
                 fontVariationSettings = EditorFontVariations.OFF;
@@ -115,6 +132,7 @@ export class BareFontInfo {
         fontFeatureSettings: string;
         fontVariationSettings: string;
         lineHeight: number;
+
         letterSpacing: number;
     }) {
         this.pixelRatio = opts.pixelRatio;
@@ -137,7 +155,9 @@ export class BareFontInfo {
      */
     public getMassagedFontFamily(): string {
         const fallbackFontFamily = EDITOR_FONT_DEFAULTS.fontFamily;
+
         const fontFamily = BareFontInfo._wrapInQuotes(this.fontFamily);
+
         if (fallbackFontFamily && this.fontFamily !== fallbackFontFamily) {
             return `${fontFamily}, ${fallbackFontFamily}`;
         }
@@ -180,6 +200,7 @@ export class FontInfo extends BareFontInfo {
         fontFeatureSettings: string;
         fontVariationSettings: string;
         lineHeight: number;
+
         letterSpacing: number;
         isMonospace: boolean;
         typicalHalfwidthCharacterWidth: number;

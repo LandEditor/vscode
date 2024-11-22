@@ -7,8 +7,10 @@ import { constants, statSync } from 'fs';
 import { additionalDeps } from './dep-lists';
 export function generatePackageDeps(files: string[]): Set<string>[] {
     const dependencies: Set<string>[] = files.map(file => calculatePackageDeps(file));
+
     const additionalDepsSet = new Set(additionalDeps);
     dependencies.push(additionalDepsSet);
+
     return dependencies;
 }
 // Based on https://source.chromium.org/chromium/chromium/src/+/main:chrome/installer/linux/rpm/calculate_package_deps.py.
@@ -23,9 +25,11 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
         console.error('Tried to stat ' + binaryPath + ' but failed.');
     }
     const findRequiresResult = spawnSync('/usr/lib/rpm/find-requires', { input: binaryPath + '\n' });
+
     if (findRequiresResult.status !== 0) {
         throw new Error(`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`);
     }
     const requires = new Set(findRequiresResult.stdout.toString('utf-8').trimEnd().split('\n'));
+
     return requires;
 }

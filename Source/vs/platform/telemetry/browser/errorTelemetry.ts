@@ -9,7 +9,9 @@ import BaseErrorTelemetry, { ErrorEvent } from '../common/errorTelemetry.js';
 export default class ErrorTelemetry extends BaseErrorTelemetry {
     protected override installErrorListeners(): void {
         let oldOnError: OnErrorEventHandler;
+
         const that = this;
+
         if (typeof mainWindow.onerror === 'function') {
             oldOnError = mainWindow.onerror;
         }
@@ -31,6 +33,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
             line,
             column
         };
+
         if (err) {
             // If it's the no telemetry error it doesn't get logged
             if (ErrorNoTelemetry.isErrorNoTelemetry(err)) {
@@ -38,6 +41,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
             }
             const { name, message, stack } = err;
             data.uncaught_error_name = name;
+
             if (message) {
                 data.uncaught_error_msg = message;
             }

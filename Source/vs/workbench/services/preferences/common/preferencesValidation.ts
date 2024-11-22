@@ -20,25 +20,35 @@ function isNullOrEmpty(value: unknown): boolean {
 }
 export function createValidator(prop: IConfigurationPropertySchema): (value: any) => (string | null) {
     const type: (string | undefined)[] = Array.isArray(prop.type) ? prop.type : [prop.type];
+
     const isNullable = canBeType(type, 'null');
+
     const isNumeric = (canBeType(type, 'number') || canBeType(type, 'integer')) && (type.length === 1 || type.length === 2 && isNullable);
+
     const numericValidations = getNumericValidators(prop);
+
     const stringValidations = getStringValidators(prop);
+
     const arrayValidator = getArrayValidator(prop);
+
     const objectValidator = getObjectValidator(prop);
+
     return value => {
         if (isNullable && isNullOrEmpty(value)) {
             return '';
         }
         const errors: string[] = [];
+
         if (arrayValidator) {
             const err = arrayValidator(value);
+
             if (err) {
                 errors.push(err);
             }
         }
         if (objectValidator) {
             const err = objectValidator(value);
+
             if (err) {
                 errors.push(err);
             }
@@ -79,6 +89,7 @@ export function getInvalidTypeError(value: any, type: undefined | string | strin
         return;
     }
     const typeArr = Array.isArray(type) ? type : [type];
+
     if (!typeArr.some(_type => valueValidatesAsType(value, _type))) {
         return nls.localize('invalidTypeError', "Setting has an invalid type, expected {0}. Fix in JSON.", JSON.stringify(type));
     }
@@ -86,6 +97,7 @@ export function getInvalidTypeError(value: any, type: undefined | string | strin
 }
 function valueValidatesAsType(value: any, type: string): boolean {
     const valueType = typeof value;
+
     if (type === 'boolean') {
         return valueType === 'boolean';
     }
@@ -122,13 +134,16 @@ function toRegExp(pattern: string): RegExp {
             // just log the error to avoid rendering the entire Settings editor blank.
             // Ref https://github.com/microsoft/vscode/issues/195054
             console.error(nls.localize('regexParsingError', "Error parsing the following regex both with and without the u flag:"), pattern);
+
             return /.*/;
         }
     }
 }
 function getStringValidators(prop: IConfigurationPropertySchema) {
     const uriRegex = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
+
     let patternRegex: RegExp | undefined;
+
     if (typeof prop.pattern === 'string') {
         patternRegex = toRegExp(prop.pattern);
     }
@@ -171,6 +186,7 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
             enabled: prop.format === 'uri',
             isValid: ((value: string) => {
                 const matches = value.match(uriRegex);
+
                 return !!(matches && matches[2]);
             }),
             message: nls.localize('validations.uriSchemeMissing', "URI with a scheme is expected.")
@@ -186,14 +202,20 @@ function getStringValidators(prop: IConfigurationPropertySchema) {
 }
 function getNumericValidators(prop: IConfigurationPropertySchema): Validator<number>[] {
     const type: (string | undefined)[] = Array.isArray(prop.type) ? prop.type : [prop.type];
+
     const isNullable = canBeType(type, 'null');
+
     const isIntegral = (canBeType(type, 'integer')) && (type.length === 1 || type.length === 2 && isNullable);
+
     const isNumeric = canBeType(type, 'number', 'integer') && (type.length === 1 || type.length === 2 && isNullable);
+
     if (!isNumeric) {
         return [];
     }
     let exclusiveMax: number | undefined;
+
     let exclusiveMin: number | undefined;
+
     if (typeof prop.exclusiveMaximum === 'boolean') {
         exclusiveMax = prop.exclusiveMaximum ? prop.maximum : undefined;
     }
@@ -242,19 +264,24 @@ function getNumericValidators(prop: IConfigurationPropertySchema): Validator<num
 function getArrayValidator(prop: IConfigurationPropertySchema): ((value: any) => (string | null)) | null {
     if (prop.type === 'array' && prop.items && !Array.isArray(prop.items)) {
         const propItems = prop.items;
+
         if (propItems && !Array.isArray(propItems.type)) {
             const withQuotes = (s: string) => `'` + s + `'`;
+
             return value => {
                 if (!value) {
                     return null;
                 }
                 let message = '';
+
                 if (!Array.isArray(value)) {
                     message += nls.localize('validations.arrayIncorrectType', 'Incorrect type. Expected an array.');
                     message += '\n';
+
                     return message;
                 }
                 const arrayValue = value as unknown[];
+
                 if (prop.uniqueItems) {
                     if (new Set(arrayValue).size < arrayValue.length) {
                         message += nls.localize('validations.stringArrayUniqueItems', 'Array has duplicate items');
@@ -273,6 +300,7 @@ function getArrayValidator(prop: IConfigurationPropertySchema): ((value: any) =>
                     if (!isStringArray(arrayValue)) {
                         message += nls.localize('validations.stringArrayIncorrectType', 'Incorrect type. Expected a string array.');
                         message += '\n';
+
                         return message;
                     }
                     if (typeof propItems.pattern === 'string') {
@@ -286,6 +314,7 @@ function getArrayValidator(prop: IConfigurationPropertySchema): ((value: any) =>
                         });
                     }
                     const propItemsEnum = propItems.enum;
+
                     if (propItemsEnum) {
                         arrayValue.forEach(v => {
                             if (propItemsEnum.indexOf(v) === -1) {
@@ -298,6 +327,7 @@ function getArrayValidator(prop: IConfigurationPropertySchema): ((value: any) =>
                 else if (propItems.type === 'integer' || propItems.type === 'number') {
                     arrayValue.forEach(v => {
                         const errorMessage = getErrorsForSchema(propItems, v);
+
                         if (errorMessage) {
                             message += `${v}: ${errorMessage}\n`;
                         }
@@ -312,19 +342,23 @@ function getArrayValidator(prop: IConfigurationPropertySchema): ((value: any) =>
 function getObjectValidator(prop: IConfigurationPropertySchema): ((value: any) => (string | null)) | null {
     if (prop.type === 'object') {
         const { properties, patternProperties, additionalProperties } = prop;
+
         return value => {
             if (!value) {
                 return null;
             }
             const errors: string[] = [];
+
             if (!isObject(value)) {
                 errors.push(nls.localize('validations.objectIncorrectType', 'Incorrect type. Expected an object.'));
             }
             else {
                 Object.keys(value).forEach((key: string) => {
                     const data = value[key];
+
                     if (properties && key in properties) {
                         const errorMessage = getErrorsForSchema(properties[key], data);
+
                         if (errorMessage) {
                             errors.push(`${key}: ${errorMessage}\n`);
                         }
@@ -334,6 +368,7 @@ function getObjectValidator(prop: IConfigurationPropertySchema): ((value: any) =
                         for (const pattern in patternProperties) {
                             if (RegExp(pattern).test(key)) {
                                 const errorMessage = getErrorsForSchema(patternProperties[pattern], data);
+
                                 if (errorMessage) {
                                     errors.push(`${key}: ${errorMessage}\n`);
                                 }
@@ -346,6 +381,7 @@ function getObjectValidator(prop: IConfigurationPropertySchema): ((value: any) =
                     }
                     else if (typeof additionalProperties === 'object') {
                         const errorMessage = getErrorsForSchema(additionalProperties, data);
+
                         if (errorMessage) {
                             errors.push(`${key}: ${errorMessage}\n`);
                         }
@@ -362,6 +398,8 @@ function getObjectValidator(prop: IConfigurationPropertySchema): ((value: any) =
 }
 function getErrorsForSchema(propertySchema: IConfigurationPropertySchema, data: any): string | null {
     const validator = createValidator(propertySchema);
+
     const errorMessage = validator(data);
+
     return errorMessage;
 }

@@ -30,13 +30,16 @@ export function merge(local: IUserDataProfile[], remote: ISyncUserDataProfile[] 
         removed: IUserDataProfile[];
         updated: ISyncUserDataProfile[];
     } = { added: [], removed: [], updated: [] };
+
     let remoteResult: {
         added: IUserDataProfile[];
         removed: ISyncUserDataProfile[];
         updated: IUserDataProfile[];
     } | null = { added: [], removed: [], updated: [] };
+
     if (!remote) {
         const added = local.filter(({ id }) => !ignored.includes(id));
+
         if (added.length) {
             remoteResult.added = added;
         }
@@ -49,12 +52,15 @@ export function merge(local: IUserDataProfile[], remote: ISyncUserDataProfile[] 
         };
     }
     const localToRemote = compare(local, remote, ignored);
+
     if (localToRemote.added.length > 0 || localToRemote.removed.length > 0 || localToRemote.updated.length > 0) {
         const baseToLocal = compare(lastSync, local, ignored);
+
         const baseToRemote = compare(lastSync, remote, ignored);
         // Remotely removed profiles
         for (const id of baseToRemote.removed) {
             const e = local.find(profile => profile.id === id);
+
             if (e) {
                 localResult.removed.push(e);
             }
@@ -100,6 +106,7 @@ export function merge(local: IUserDataProfile[], remote: ISyncUserDataProfile[] 
         // Locally removed profiles
         for (const id of baseToLocal.removed) {
             const removedProfile = remote.find(profile => profile.id === id);
+
             if (removedProfile) {
                 remoteResult.removed.push(removedProfile);
             }
@@ -117,16 +124,23 @@ function compare(from: IUserDataProfileInfo[] | null, to: IUserDataProfileInfo[]
 } {
     from = from ? from.filter(({ id }) => !ignoredProfiles.includes(id)) : [];
     to = to.filter(({ id }) => !ignoredProfiles.includes(id));
+
     const fromKeys = from.map(({ id }) => id);
+
     const toKeys = to.map(({ id }) => id);
+
     const added = toKeys.filter(key => !fromKeys.includes(key));
+
     const removed = fromKeys.filter(key => !toKeys.includes(key));
+
     const updated: string[] = [];
+
     for (const { id, name, icon, useDefaultFlags } of from) {
         if (removed.includes(id)) {
             continue;
         }
         const toProfile = to.find(p => p.id === id);
+
         if (!toProfile
             || toProfile.name !== name
             || toProfile.icon !== icon

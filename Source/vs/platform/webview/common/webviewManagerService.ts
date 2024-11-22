@@ -26,6 +26,7 @@ export interface FoundInFrameResult {
 export interface IWebviewManagerService {
     _serviceBrand: unknown;
     onFoundInFrame: Event<FoundInFrameResult>;
+
     setIgnoreMenuShortcuts(id: WebviewWebContentsId | WebviewWindowId, enabled: boolean): Promise<void>;
     findInFrame(windowId: WebviewWindowId, frameName: string, text: string, options: FindInFrameOptions): Promise<void>;
     stopFindInFrame(windowId: WebviewWindowId, frameName: string, options: {

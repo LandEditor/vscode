@@ -47,8 +47,11 @@ export interface IRenderVariableOptions {
     highlights?: IHighlight[];
 }
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
+
 const booleanRegex = /^(true|false)$/i;
+
 const stringRegex = /^(['"]).*\1$/;
+
 const enum Cls {
     Value = 'value',
     Unavailable = 'unavailable',
@@ -72,6 +75,7 @@ const allClasses: readonly Cls[] = Object.keys({
 export class DebugExpressionRenderer {
     private displayType: IObservable<boolean>;
     private readonly linkDetector: LinkDetector;
+
     constructor(
     @ICommandService
     private readonly commandService: ICommandService, 
@@ -86,9 +90,12 @@ export class DebugExpressionRenderer {
     }
     renderVariable(data: IVariableTemplateData, variable: Variable, options: IRenderVariableOptions = {}): IDisposable {
         const displayType = this.displayType.get();
+
         if (variable.available) {
             data.type.textContent = '';
+
             let text = variable.name;
+
             if (variable.value && typeof variable.name === 'string') {
                 if (variable.type && displayType) {
                     text += ': ';
@@ -106,9 +113,11 @@ export class DebugExpressionRenderer {
             data.label.set(':');
         }
         data.expression.classList.toggle('lazy', !!variable.presentationHint?.lazy);
+
         const commands = [
             { id: COPY_VALUE_ID, args: [variable, [variable]] as unknown[] }
         ];
+
         if (variable.evaluateName) {
             commands.push({ id: COPY_EVALUATE_PATH_ID, args: [{ variable }] });
         }
@@ -124,6 +133,7 @@ export class DebugExpressionRenderer {
         const store = new DisposableStore();
         // Use remembered capabilities so REPL elements can render even once a session ends
         const supportsANSI: boolean = options.session?.rememberedCapabilities?.supportsANSIStyling ?? options.wasANSI ?? false;
+
         let value = typeof expressionOrValue === 'string' ? expressionOrValue : expressionOrValue.value;
         // remove stale classes
         for (const cls of allClasses) {
@@ -133,6 +143,7 @@ export class DebugExpressionRenderer {
         // when resolving expressions we represent errors from the server as a variable with name === null.
         if (value === null || ((expressionOrValue instanceof Expression || expressionOrValue instanceof Variable || expressionOrValue instanceof ReplEvaluationResult) && !expressionOrValue.available)) {
             container.classList.add(Cls.Unavailable);
+
             if (value !== Expression.DEFAULT_VALUE) {
                 container.classList.add(Cls.Error);
             }
@@ -167,9 +178,13 @@ export class DebugExpressionRenderer {
         const session = options.session ?? ((expressionOrValue instanceof ExpressionContainer) ? expressionOrValue.getSession() : undefined);
         // Only use hovers for links if thre's not going to be a hover for the value.
         const hoverBehavior: DebugLinkHoverBehaviorTypeData = options.hover === false ? { type: DebugLinkHoverBehavior.Rich, store } : { type: DebugLinkHoverBehavior.None };
+
         dom.clearNode(container);
+
         const locationReference = options.locationReference ?? (expressionOrValue instanceof ExpressionContainer && expressionOrValue.valueLocationReference);
+
         let linkDetector: ILinkDetector = this.linkDetector;
+
         if (locationReference && session) {
             linkDetector = this.linkDetector.makeReferencedLinkDetector(locationReference, session);
         }
@@ -183,9 +198,13 @@ export class DebugExpressionRenderer {
             const { commands = [] } = options.hover || {};
             store.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), container, () => {
                 const container = dom.$('div');
+
                 const markdownHoverElement = dom.$('div.hover-row');
+
                 const hoverContentsElement = dom.append(markdownHoverElement, dom.$('div.hover-contents'));
+
                 const hoverContentsPre = dom.append(hoverContentsElement, dom.$('pre.debug-var-hover-pre'));
+
                 if (supportsANSI) {
                     // note: intentionally using `this.linkDetector` so we don't blindly linkify the
                     // entire contents and instead only link file paths that it contains.
@@ -195,10 +214,12 @@ export class DebugExpressionRenderer {
                     hoverContentsPre.textContent = value;
                 }
                 container.appendChild(markdownHoverElement);
+
                 return container;
             }, {
                 actions: commands.map(({ id, args }) => {
                     const description = CommandsRegistry.getCommand(id)?.metadata?.description;
+
                     return {
                         label: typeof description === 'string' ? description : description ? description.value : id,
                         commandId: id,

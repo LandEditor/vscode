@@ -19,18 +19,22 @@ export class ArrayNavigator<T> implements INavigator<T> {
     }
     next(): T | null {
         this.index = Math.min(this.index + 1, this.end);
+
         return this.current();
     }
     previous(): T | null {
         this.index = Math.max(this.index - 1, this.start - 1);
+
         return this.current();
     }
     first(): T | null {
         this.index = this.start;
+
         return this.current();
     }
     last(): T | null {
         this.index = this.end - 1;
+
         return this.current();
     }
 }

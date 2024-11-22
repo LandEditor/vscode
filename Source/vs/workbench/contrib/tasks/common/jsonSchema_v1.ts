@@ -7,6 +7,7 @@ import * as Objects from '../../../../base/common/objects.js';
 import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
 import { ProblemMatcherRegistry } from './problemMatcher.js';
 import commonSchema from './jsonSchemaCommon.js';
+
 const schema: IJSONSchema = {
     oneOf: [
         {
@@ -51,12 +52,14 @@ const schema: IJSONSchema = {
         }
     ]
 };
+
 const shellCommand: IJSONSchema = {
     type: 'boolean',
     default: true,
     description: nls.localize('JsonSchema.shell', 'Specifies whether the command is a shell command or an external program. Defaults to false if omitted.')
 };
 schema.definitions = Objects.deepClone(commonSchema.definitions);
+
 const definitions = schema.definitions!;
 definitions['commandConfiguration']['properties']!['isShellCommand'] = Objects.deepClone(shellCommand);
 definitions['taskDescription']['properties']!['isShellCommand'] = Objects.deepClone(shellCommand);
@@ -76,6 +79,7 @@ function fixReferences(literal: any) {
         }
         Object.getOwnPropertyNames(literal).forEach(property => {
             const value = literal[property];
+
             if (Array.isArray(value) || typeof value === 'object') {
                 fixReferences(value);
             }

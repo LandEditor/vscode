@@ -11,6 +11,7 @@ export interface IHistory<T> {
 	add(t: T): this;
 	has(t: T): boolean;
 	clear(): void;
+
 	forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void;
 	replace?(t: T[]): void;
 }
@@ -84,14 +85,17 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	private _onChange() {
 		this._reduceToLimit();
+
 		const elements = this._elements;
 		this._navigator = new ArrayNavigator(elements, 0, elements.length, elements.length);
 	}
 
 	private _reduceToLimit() {
 		const data = this._elements;
+
 		if (data.length > this._limit) {
 			const replaceValue = data.slice(data.length - this._limit);
+
 			if (this._history.replace) {
 				this._history.replace(replaceValue);
 			} else {
@@ -102,6 +106,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 
 	private _currentPosition(): number {
 		const currentElement = this._navigator.current();
+
 		if (!currentElement) {
 			return -1;
 		}
@@ -112,6 +117,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 	private get _elements(): T[] {
 		const elements: T[] = [];
 		this._history.forEach(e => elements.push(e));
+
 		return elements;
 	}
 }
@@ -133,6 +139,7 @@ export class HistoryNavigator2<T> {
 	private tail: HistoryNode<T>;
 	private cursor: HistoryNode<T>;
 	private _size: number;
+
 	get size(): number { return this._size; }
 
 	constructor(history: readonly T[], private capacity: number = 10, private identityFn: (t: T) => unknown = t => t) {
@@ -148,6 +155,7 @@ export class HistoryNavigator2<T> {
 		};
 
 		this.valueSet = new SetWithKey<T>([history[0]], identityFn);
+
 		for (let i = 1; i < history.length; i++) {
 			this.add(history[i]);
 		}
@@ -249,6 +257,7 @@ export class HistoryNavigator2<T> {
 
 	resetCursor(): T {
 		this.cursor = this.tail;
+
 		return this.cursor.value;
 	}
 
@@ -265,6 +274,7 @@ export class HistoryNavigator2<T> {
 		let temp = this.head;
 
 		const valueKey = this.identityFn(value);
+
 		while (temp !== this.tail) {
 			if (this.identityFn(temp.value) === valueKey) {
 				if (temp === this.head) {

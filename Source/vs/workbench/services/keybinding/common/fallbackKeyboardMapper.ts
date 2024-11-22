@@ -17,9 +17,13 @@ export class FallbackKeyboardMapper implements IKeyboardMapper {
     }
     public resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
         const ctrlKey = keyboardEvent.ctrlKey || (this._mapAltGrToCtrlAlt && keyboardEvent.altGraphKey);
+
         const altKey = keyboardEvent.altKey || (this._mapAltGrToCtrlAlt && keyboardEvent.altGraphKey);
+
         const chord = new KeyCodeChord(ctrlKey, keyboardEvent.shiftKey, altKey, keyboardEvent.metaKey, keyboardEvent.keyCode);
+
         const result = this.resolveKeybinding(new Keybinding([chord]));
+
         return result[0];
     }
     public resolveKeybinding(keybinding: Keybinding): ResolvedKeybinding[] {

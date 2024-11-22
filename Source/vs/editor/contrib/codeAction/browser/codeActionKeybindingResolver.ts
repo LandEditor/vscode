@@ -22,6 +22,7 @@ export class CodeActionKeybindingResolver {
         organizeImportsCommandId,
         fixAllCommandId
     ];
+
     constructor(
     @IKeybindingService
     private readonly keybindingService: IKeybindingService) { }
@@ -33,6 +34,7 @@ export class CodeActionKeybindingResolver {
             .map((item): ResolveCodeActionKeybinding => {
             // Special case these commands since they come built-in with VS Code and don't use 'commandArgs'
             let commandArgs = item.commandArgs;
+
             if (item.command === organizeImportsCommandId) {
                 commandArgs = { kind: CodeActionKind.SourceOrganizeImports.value };
             }
@@ -47,9 +49,11 @@ export class CodeActionKeybindingResolver {
                 })
             };
         }));
+
         return (action) => {
             if (action.kind) {
                 const binding = this.bestKeybindingForCodeAction(action, allCodeActionBindings.value);
+
                 return binding?.resolvedKeybinding;
             }
             return undefined;
@@ -60,6 +64,7 @@ export class CodeActionKeybindingResolver {
             return undefined;
         }
         const kind = new HierarchicalKind(action.kind);
+
         return candidates
             .filter(candidate => candidate.kind.contains(kind))
             .filter(candidate => {

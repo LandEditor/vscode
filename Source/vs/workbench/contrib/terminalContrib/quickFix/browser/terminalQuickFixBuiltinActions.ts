@@ -34,14 +34,19 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const regexMatch = matchResult.outputMatch?.regexMatch[0];
+
             if (!regexMatch || !matchResult.outputMatch) {
                 return;
             }
             const actions: TerminalQuickFixActionInternal[] = [];
+
             const startIndex = matchResult.outputMatch.outputLines.findIndex(l => l.includes(regexMatch)) + 1;
+
             const results = matchResult.outputMatch.outputLines.map(r => r.trim());
+
             for (let i = startIndex; i < results.length; i++) {
                 const fixedCommand = results[i];
+
                 if (fixedCommand) {
                     actions.push({
                         id: 'Git Similar',
@@ -93,6 +98,7 @@ export function gitTwoDashes(): ITerminalQuickFixInternalOptions {
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const problemArg = matchResult?.outputMatch?.regexMatch?.[1];
+
             if (!problemArg) {
                 return;
             }
@@ -120,10 +126,12 @@ export function freePort(runCallback: (port: string, commandLine: string) => Pro
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const port = matchResult?.outputMatch?.regexMatch?.groups?.portNumber;
+
             if (!port) {
                 return;
             }
             const label = localize("terminal.freePort", "Free port {0}", port);
+
             return {
                 type: TerminalQuickFixType.Port,
                 class: undefined,
@@ -171,18 +179,24 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const matches = matchResult.outputMatch;
+
             const commandToRun = 'git push --set-upstream origin ${group:branchName}';
+
             if (!matches) {
                 return;
             }
             const groups = matches.regexMatch.groups;
+
             if (!groups) {
                 return;
             }
             const actions: TerminalQuickFixActionInternal[] = [];
+
             let fixedCommand = commandToRun;
+
             for (const [key, value] of Object.entries(groups)) {
                 const varToResolve = '${group:' + `${key}` + '}';
+
                 if (!commandToRun.includes(varToResolve)) {
                     return [];
                 }
@@ -196,6 +210,7 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
                     shouldExecute: true,
                     source: QuickFixSource.Builtin
                 });
+
                 return actions;
             }
             return;
@@ -231,10 +246,12 @@ export function gitCreatePr(): ITerminalQuickFixInternalOptions {
         commandExitResult: 'success',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const link = matchResult?.outputMatch?.regexMatch?.groups?.link?.trimEnd();
+
             if (!link) {
                 return;
             }
             const label = localize("terminal.createPR", "Create PR {0}", link);
+
             return {
                 id: 'Git Create Pr',
                 label,
@@ -260,15 +277,19 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const lines = matchResult.outputMatch?.regexMatch.input?.split('\n');
+
             if (!lines) {
                 return;
             }
             // Find the start
             let i = 0;
+
             let inFeedbackProvider = false;
+
             for (; i < lines.length; i++) {
                 if (lines[i].match(PwshGeneralErrorOutputRegex)) {
                     inFeedbackProvider = true;
+
                     break;
                 }
             }
@@ -276,10 +297,12 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
                 return;
             }
             const suggestions = lines[i + 1].match(/The most similar commands are: (?<values>.+)./)?.groups?.values?.split(', ');
+
             if (!suggestions) {
                 return;
             }
             const result: ITerminalQuickFixTerminalCommandAction[] = [];
+
             for (const suggestion of suggestions) {
                 result.push({
                     id: 'Pwsh General Error',
@@ -306,15 +329,19 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
         commandExitResult: 'error',
         getQuickFixes: (matchResult: ITerminalCommandMatchResult) => {
             const lines = matchResult.outputMatch?.regexMatch.input?.split('\n');
+
             if (!lines) {
                 return;
             }
             // Find the start
             let i = 0;
+
             let inFeedbackProvider = false;
+
             for (; i < lines.length; i++) {
                 if (lines[i].match(PwshUnixCommandNotFoundErrorOutputRegex)) {
                     inFeedbackProvider = true;
+
                     break;
                 }
             }
@@ -323,13 +350,17 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
             }
             // Always remove the first element as it's the "Suggestion [cmd-not-found]"" line
             const result: ITerminalQuickFixTerminalCommandAction[] = [];
+
             let inSuggestions = false;
+
             for (; i < lines.length; i++) {
                 const line = lines[i].trim();
+
                 if (line.length === 0) {
                     break;
                 }
                 const installCommand = line.match(/You also have .+ installed, you can run '(?<command>.+)' instead./)?.groups?.command;
+
                 if (installCommand) {
                     result.push({
                         id: 'Pwsh Unix Command Not Found Error',
@@ -338,10 +369,12 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
                         source: QuickFixSource.Builtin
                     });
                     inSuggestions = false;
+
                     continue;
                 }
                 if (line.match(/Command '.+' not found, but can be installed with:/)) {
                     inSuggestions = true;
+
                     continue;
                 }
                 if (inSuggestions) {

@@ -38,10 +38,12 @@ export function register(language: ILanguageExtensionPoint): void {
 export function getLanguages(): ILanguageExtensionPoint[] {
     let result: ILanguageExtensionPoint[] = [];
     result = result.concat(ModesRegistry.getLanguages());
+
     return result;
 }
 export function getEncodedLanguageId(languageId: string): number {
     const languageService = StandaloneServices.get(ILanguageService);
+
     return languageService.languageIdCodec.encodeLanguageId(languageId);
 }
 /**
@@ -51,6 +53,7 @@ export function getEncodedLanguageId(languageId: string): number {
 export function onLanguage(languageId: string, callback: () => void): IDisposable {
     return StandaloneServices.withServices(() => {
         const languageService = StandaloneServices.get(ILanguageService);
+
         const disposable = languageService.onDidRequestRichLanguageFeatures((encounteredLanguageId) => {
             if (encounteredLanguageId === languageId) {
                 // stop listening
@@ -59,6 +62,7 @@ export function onLanguage(languageId: string, callback: () => void): IDisposabl
                 callback();
             }
         });
+
         return disposable;
     });
 }
@@ -70,6 +74,7 @@ export function onLanguage(languageId: string, callback: () => void): IDisposabl
 export function onLanguageEncountered(languageId: string, callback: () => void): IDisposable {
     return StandaloneServices.withServices(() => {
         const languageService = StandaloneServices.get(ILanguageService);
+
         const disposable = languageService.onDidRequestBasicLanguageFeatures((encounteredLanguageId) => {
             if (encounteredLanguageId === languageId) {
                 // stop listening
@@ -78,6 +83,7 @@ export function onLanguageEncountered(languageId: string, callback: () => void):
                 callback();
             }
         });
+
         return disposable;
     });
 }
@@ -86,10 +92,12 @@ export function onLanguageEncountered(languageId: string, callback: () => void):
  */
 export function setLanguageConfiguration(languageId: string, configuration: LanguageConfiguration): IDisposable {
     const languageService = StandaloneServices.get(ILanguageService);
+
     if (!languageService.isRegisteredLanguageId(languageId)) {
         throw new Error(`Cannot set configuration for unknown language ${languageId}`);
     }
     const languageConfigurationService = StandaloneServices.get(ILanguageConfigurationService);
+
     return languageConfigurationService.register(languageId, configuration, 100);
 }
 /**
@@ -98,6 +106,7 @@ export function setLanguageConfiguration(languageId: string, configuration: Lang
 export class EncodedTokenizationSupportAdapter implements languages.ITokenizationSupport, IDisposable {
     private readonly _languageId: string;
     private readonly _actual: EncodedTokensProvider;
+
     constructor(languageId: string, actual: EncodedTokensProvider) {
         this._languageId = languageId;
         this._actual = actual;
@@ -118,6 +127,7 @@ export class EncodedTokenizationSupportAdapter implements languages.ITokenizatio
     }
     public tokenizeEncoded(line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult {
         const result = this._actual.tokenizeEncoded(line, state);
+
         return new languages.EncodedTokenizationResult(result.tokens, result.endState);
     }
 }
@@ -135,9 +145,12 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
     }
     private static _toClassicTokens(tokens: IToken[], language: string): languages.Token[] {
         const result: languages.Token[] = [];
+
         let previousStartIndex: number = 0;
+
         for (let i = 0, len = tokens.length; i < len; i++) {
             const t = tokens[i];
+
             let startIndex = t.startIndex;
             // Prevent issues stemming from a buggy external tokenizer.
             if (i === 0) {
@@ -157,7 +170,9 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
         tokenize(line: string, state: languages.IState): ILineTokens;
     }, line: string, state: languages.IState): languages.TokenizationResult {
         const actualResult = actual.tokenize(line, state);
+
         const tokens = TokenizationSupportAdapter._toClassicTokens(actualResult.tokens, language);
+
         let endState: languages.IState;
         // try to save an object if possible
         if (actualResult.endState.equals(state)) {
@@ -173,13 +188,20 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
     }
     private _toBinaryTokens(languageIdCodec: languages.ILanguageIdCodec, tokens: IToken[]): Uint32Array {
         const languageId = languageIdCodec.encodeLanguageId(this._languageId);
+
         const tokenTheme = this._standaloneThemeService.getColorTheme().tokenTheme;
+
         const result: number[] = [];
+
         let resultLen = 0;
+
         let previousStartIndex: number = 0;
+
         for (let i = 0, len = tokens.length; i < len; i++) {
             const t = tokens[i];
+
             const metadata = tokenTheme.match(languageId, t.scopes) | MetadataConsts.BALANCED_BRACKETS_MASK;
+
             if (resultLen > 0 && result[resultLen - 1] === metadata) {
                 // same metadata
                 continue;
@@ -199,6 +221,7 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
             previousStartIndex = startIndex;
         }
         const actualResult = new Uint32Array(resultLen);
+
         for (let i = 0; i < resultLen; i++) {
             actualResult[i] = result[i];
         }
@@ -206,7 +229,9 @@ export class TokenizationSupportAdapter implements languages.ITokenizationSuppor
     }
     public tokenizeEncoded(line: string, hasEOL: boolean, state: languages.IState): languages.EncodedTokenizationResult {
         const actualResult = this._actual.tokenize(line, state);
+
         const tokens = this._toBinaryTokens(this._languageService.languageIdCodec, actualResult.tokens);
+
         let endState: languages.IState;
         // try to save an object if possible
         if (actualResult.endState.equals(state)) {
@@ -321,8 +346,10 @@ function isThenable<T>(obj: any): obj is Thenable<T> {
  */
 export function setColorMap(colorMap: string[] | null): void {
     const standaloneThemeService = StandaloneServices.get(IStandaloneThemeService);
+
     if (colorMap) {
         const result: Color[] = [null!];
+
         for (let i = 1, len = colorMap.length; i < len; i++) {
             result[i] = Color.fromHex(colorMap[i]);
         }
@@ -351,6 +378,7 @@ function createTokenizationSupportAdapter(languageId: string, provider: TokensPr
 export function registerTokensProviderFactory(languageId: string, factory: TokensProviderFactory): IDisposable {
     const adaptedFactory = new languages.LazyTokenizationSupport(async () => {
         const result = await Promise.resolve(factory.create());
+
         if (!result) {
             return null;
         }
@@ -359,6 +387,7 @@ export function registerTokensProviderFactory(languageId: string, factory: Token
         }
         return new MonarchTokenizer(StandaloneServices.get(ILanguageService), StandaloneServices.get(IStandaloneThemeService), languageId, compile(languageId, result), StandaloneServices.get(IConfigurationService));
     });
+
     return languages.TokenizationRegistry.registerFactory(languageId, adaptedFactory);
 }
 /**
@@ -369,6 +398,7 @@ export function registerTokensProviderFactory(languageId: string, factory: Token
  */
 export function setTokensProvider(languageId: string, provider: TokensProvider | EncodedTokensProvider | Thenable<TokensProvider | EncodedTokensProvider>): IDisposable {
     const languageService = StandaloneServices.get(ILanguageService);
+
     if (!languageService.isRegisteredLanguageId(languageId)) {
         throw new Error(`Cannot set tokens provider for unknown language ${languageId}`);
     }
@@ -387,6 +417,7 @@ export function setMonarchTokensProvider(languageId: string, languageDef: IMonar
     const create = (languageDef: IMonarchLanguage) => {
         return new MonarchTokenizer(StandaloneServices.get(ILanguageService), StandaloneServices.get(IStandaloneThemeService), languageId, compile(languageId, languageDef), StandaloneServices.get(IConfigurationService));
     };
+
     if (isThenable<IMonarchLanguage>(languageDef)) {
         return registerTokensProviderFactory(languageId, { create: () => languageDef });
     }
@@ -397,6 +428,7 @@ export function setMonarchTokensProvider(languageId: string, languageDef: IMonar
  */
 export function registerReferenceProvider(languageSelector: LanguageSelector, provider: languages.ReferenceProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.referenceProvider.register(languageSelector, provider);
 }
 /**
@@ -404,6 +436,7 @@ export function registerReferenceProvider(languageSelector: LanguageSelector, pr
  */
 export function registerRenameProvider(languageSelector: LanguageSelector, provider: languages.RenameProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.renameProvider.register(languageSelector, provider);
 }
 /**
@@ -411,6 +444,7 @@ export function registerRenameProvider(languageSelector: LanguageSelector, provi
  */
 export function registerNewSymbolNameProvider(languageSelector: LanguageSelector, provider: languages.NewSymbolNamesProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.newSymbolNamesProvider.register(languageSelector, provider);
 }
 /**
@@ -418,6 +452,7 @@ export function registerNewSymbolNameProvider(languageSelector: LanguageSelector
  */
 export function registerSignatureHelpProvider(languageSelector: LanguageSelector, provider: languages.SignatureHelpProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.signatureHelpProvider.register(languageSelector, provider);
 }
 /**
@@ -425,9 +460,11 @@ export function registerSignatureHelpProvider(languageSelector: LanguageSelector
  */
 export function registerHoverProvider(languageSelector: LanguageSelector, provider: languages.HoverProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.hoverProvider.register(languageSelector, {
         provideHover: async (model: model.ITextModel, position: Position, token: CancellationToken, context?: languages.HoverContext<languages.Hover>): Promise<languages.Hover | undefined> => {
             const word = model.getWordAtPosition(position);
+
             return Promise.resolve<languages.Hover | null | undefined>(provider.provideHover(model, position, token, context)).then((value): languages.Hover | undefined => {
                 if (!value) {
                     return undefined;
@@ -448,6 +485,7 @@ export function registerHoverProvider(languageSelector: LanguageSelector, provid
  */
 export function registerDocumentSymbolProvider(languageSelector: LanguageSelector, provider: languages.DocumentSymbolProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentSymbolProvider.register(languageSelector, provider);
 }
 /**
@@ -455,6 +493,7 @@ export function registerDocumentSymbolProvider(languageSelector: LanguageSelecto
  */
 export function registerDocumentHighlightProvider(languageSelector: LanguageSelector, provider: languages.DocumentHighlightProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentHighlightProvider.register(languageSelector, provider);
 }
 /**
@@ -462,6 +501,7 @@ export function registerDocumentHighlightProvider(languageSelector: LanguageSele
  */
 export function registerLinkedEditingRangeProvider(languageSelector: LanguageSelector, provider: languages.LinkedEditingRangeProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.linkedEditingRangeProvider.register(languageSelector, provider);
 }
 /**
@@ -469,6 +509,7 @@ export function registerLinkedEditingRangeProvider(languageSelector: LanguageSel
  */
 export function registerDefinitionProvider(languageSelector: LanguageSelector, provider: languages.DefinitionProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.definitionProvider.register(languageSelector, provider);
 }
 /**
@@ -476,6 +517,7 @@ export function registerDefinitionProvider(languageSelector: LanguageSelector, p
  */
 export function registerImplementationProvider(languageSelector: LanguageSelector, provider: languages.ImplementationProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.implementationProvider.register(languageSelector, provider);
 }
 /**
@@ -483,6 +525,7 @@ export function registerImplementationProvider(languageSelector: LanguageSelecto
  */
 export function registerTypeDefinitionProvider(languageSelector: LanguageSelector, provider: languages.TypeDefinitionProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.typeDefinitionProvider.register(languageSelector, provider);
 }
 /**
@@ -490,6 +533,7 @@ export function registerTypeDefinitionProvider(languageSelector: LanguageSelecto
  */
 export function registerCodeLensProvider(languageSelector: LanguageSelector, provider: languages.CodeLensProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.codeLensProvider.register(languageSelector, provider);
 }
 /**
@@ -497,14 +541,17 @@ export function registerCodeLensProvider(languageSelector: LanguageSelector, pro
  */
 export function registerCodeActionProvider(languageSelector: LanguageSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.codeActionProvider.register(languageSelector, {
         providedCodeActionKinds: metadata?.providedCodeActionKinds,
         documentation: metadata?.documentation,
         provideCodeActions: (model: model.ITextModel, range: Range, context: languages.CodeActionContext, token: CancellationToken): languages.ProviderResult<languages.CodeActionList> => {
             const markerService = StandaloneServices.get(IMarkerService);
+
             const markers = markerService.read({ resource: model.uri }).filter(m => {
                 return Range.areIntersectingOrTouching(m, range);
             });
+
             return provider.provideCodeActions(model, range, { markers, only: context.only, trigger: context.trigger }, token);
         },
         resolveCodeAction: provider.resolveCodeAction
@@ -515,6 +562,7 @@ export function registerCodeActionProvider(languageSelector: LanguageSelector, p
  */
 export function registerDocumentFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.DocumentFormattingEditProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentFormattingEditProvider.register(languageSelector, provider);
 }
 /**
@@ -522,6 +570,7 @@ export function registerDocumentFormattingEditProvider(languageSelector: Languag
  */
 export function registerDocumentRangeFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.DocumentRangeFormattingEditProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentRangeFormattingEditProvider.register(languageSelector, provider);
 }
 /**
@@ -529,6 +578,7 @@ export function registerDocumentRangeFormattingEditProvider(languageSelector: La
  */
 export function registerOnTypeFormattingEditProvider(languageSelector: LanguageSelector, provider: languages.OnTypeFormattingEditProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.onTypeFormattingEditProvider.register(languageSelector, provider);
 }
 /**
@@ -536,6 +586,7 @@ export function registerOnTypeFormattingEditProvider(languageSelector: LanguageS
  */
 export function registerLinkProvider(languageSelector: LanguageSelector, provider: languages.LinkProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.linkProvider.register(languageSelector, provider);
 }
 /**
@@ -543,6 +594,7 @@ export function registerLinkProvider(languageSelector: LanguageSelector, provide
  */
 export function registerCompletionItemProvider(languageSelector: LanguageSelector, provider: languages.CompletionItemProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.completionProvider.register(languageSelector, provider);
 }
 /**
@@ -550,6 +602,7 @@ export function registerCompletionItemProvider(languageSelector: LanguageSelecto
  */
 export function registerColorProvider(languageSelector: LanguageSelector, provider: languages.DocumentColorProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.colorProvider.register(languageSelector, provider);
 }
 /**
@@ -557,6 +610,7 @@ export function registerColorProvider(languageSelector: LanguageSelector, provid
  */
 export function registerFoldingRangeProvider(languageSelector: LanguageSelector, provider: languages.FoldingRangeProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.foldingRangeProvider.register(languageSelector, provider);
 }
 /**
@@ -564,6 +618,7 @@ export function registerFoldingRangeProvider(languageSelector: LanguageSelector,
  */
 export function registerDeclarationProvider(languageSelector: LanguageSelector, provider: languages.DeclarationProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.declarationProvider.register(languageSelector, provider);
 }
 /**
@@ -571,6 +626,7 @@ export function registerDeclarationProvider(languageSelector: LanguageSelector, 
  */
 export function registerSelectionRangeProvider(languageSelector: LanguageSelector, provider: languages.SelectionRangeProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.selectionRangeProvider.register(languageSelector, provider);
 }
 /**
@@ -582,6 +638,7 @@ export function registerSelectionRangeProvider(languageSelector: LanguageSelecto
  */
 export function registerDocumentSemanticTokensProvider(languageSelector: LanguageSelector, provider: languages.DocumentSemanticTokensProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentSemanticTokensProvider.register(languageSelector, provider);
 }
 /**
@@ -593,6 +650,7 @@ export function registerDocumentSemanticTokensProvider(languageSelector: Languag
  */
 export function registerDocumentRangeSemanticTokensProvider(languageSelector: LanguageSelector, provider: languages.DocumentRangeSemanticTokensProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.documentRangeSemanticTokensProvider.register(languageSelector, provider);
 }
 /**
@@ -600,10 +658,12 @@ export function registerDocumentRangeSemanticTokensProvider(languageSelector: La
  */
 export function registerInlineCompletionsProvider(languageSelector: LanguageSelector, provider: languages.InlineCompletionsProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.inlineCompletionsProvider.register(languageSelector, provider);
 }
 export function registerInlineEditProvider(languageSelector: LanguageSelector, provider: languages.InlineEditProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.inlineEditProvider.register(languageSelector, provider);
 }
 /**
@@ -611,6 +671,7 @@ export function registerInlineEditProvider(languageSelector: LanguageSelector, p
  */
 export function registerInlayHintsProvider(languageSelector: LanguageSelector, provider: languages.InlayHintsProvider): IDisposable {
     const languageFeaturesService = StandaloneServices.get(ILanguageFeaturesService);
+
     return languageFeaturesService.inlayHintsProvider.register(languageSelector, provider);
 }
 /**

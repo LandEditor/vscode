@@ -12,15 +12,22 @@ import { ITokenizerSource, TextBufferTokenizer } from './bracketPairsTree/tokeni
 import { IViewLineTokens } from '../../tokens/lineTokens.js';
 export function fixBracketsInLine(tokens: IViewLineTokens, languageConfigurationService: ILanguageConfigurationService): string {
     const denseKeyProvider = new DenseKeyProvider<string>();
+
     const bracketTokens = new LanguageAgnosticBracketTokens(denseKeyProvider, (languageId) => languageConfigurationService.getLanguageConfiguration(languageId));
+
     const tokenizer = new TextBufferTokenizer(new StaticTokenizerSource([tokens]), bracketTokens);
+
     const node = parseDocument(tokenizer, [], undefined, true);
+
     let str = '';
+
     const line = tokens.getLineContent();
+
     function processNode(node: AstNode, offset: Length) {
         if (node.kind === AstNodeKind.Pair) {
             processNode(node.openingBracket, offset);
             offset = lengthAdd(offset, node.openingBracket.length);
+
             if (node.child) {
                 processNode(node.child, offset);
                 offset = lengthAdd(offset, node.child.length);
@@ -31,6 +38,7 @@ export function fixBracketsInLine(tokens: IViewLineTokens, languageConfiguration
             }
             else {
                 const singleLangBracketTokens = bracketTokens.getSingleLanguageBracketTokens(node.openingBracket.languageId);
+
                 const closingTokenText = singleLangBracketTokens.findClosingTokenText(node.openingBracket.bracketIds);
                 str += closingTokenText;
             }
@@ -49,6 +57,7 @@ export function fixBracketsInLine(tokens: IViewLineTokens, languageConfiguration
         }
     }
     processNode(node, lengthZero);
+
     return str;
 }
 class StaticTokenizerSource implements ITokenizerSource {

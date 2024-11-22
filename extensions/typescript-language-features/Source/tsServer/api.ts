@@ -28,11 +28,13 @@ export class API {
     public static readonly v570 = API.fromSimpleString('5.7.0');
     public static fromVersionString(versionString: string): API {
         let version = semver.valid(versionString);
+
         if (!version) {
             return new API(vscode.l10n.t("invalid version"), '1.0.0', '1.0.0');
         }
         // Cut off any prerelease tag since we sometimes consume those on purpose.
         const index = versionString.indexOf('-');
+
         if (index >= 0) {
             version = version.substr(0, index);
         }

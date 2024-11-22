@@ -12,6 +12,7 @@ export class DragAndDropCommand implements ICommand {
     private readonly targetPosition: Position;
     private targetSelection: Selection | null;
     private readonly copy: boolean;
+
     constructor(selection: Selection, targetPosition: Position, copy: boolean) {
         this.selection = selection;
         this.targetPosition = targetPosition;
@@ -20,19 +21,23 @@ export class DragAndDropCommand implements ICommand {
     }
     public getEditOperations(model: ITextModel, builder: IEditOperationBuilder): void {
         const text = model.getValueInRange(this.selection);
+
         if (!this.copy) {
             builder.addEditOperation(this.selection, null);
         }
         builder.addEditOperation(new Range(this.targetPosition.lineNumber, this.targetPosition.column, this.targetPosition.lineNumber, this.targetPosition.column), text);
+
         if (this.selection.containsPosition(this.targetPosition) && !(this.copy && (this.selection.getEndPosition().equals(this.targetPosition) || this.selection.getStartPosition().equals(this.targetPosition)) // we allow users to paste content beside the selection
         )) {
             this.targetSelection = this.selection;
+
             return;
         }
         if (this.copy) {
             this.targetSelection = new Selection(this.targetPosition.lineNumber, this.targetPosition.column, this.selection.endLineNumber - this.selection.startLineNumber + this.targetPosition.lineNumber, this.selection.startLineNumber === this.selection.endLineNumber ?
                 this.targetPosition.column + this.selection.endColumn - this.selection.startColumn :
                 this.selection.endColumn);
+
             return;
         }
         if (this.targetPosition.lineNumber > this.selection.endLineNumber) {
@@ -40,6 +45,7 @@ export class DragAndDropCommand implements ICommand {
             this.targetSelection = new Selection(this.targetPosition.lineNumber - this.selection.endLineNumber + this.selection.startLineNumber, this.targetPosition.column, this.targetPosition.lineNumber, this.selection.startLineNumber === this.selection.endLineNumber ?
                 this.targetPosition.column + this.selection.endColumn - this.selection.startColumn :
                 this.selection.endColumn);
+
             return;
         }
         if (this.targetPosition.lineNumber < this.selection.endLineNumber) {
@@ -47,6 +53,7 @@ export class DragAndDropCommand implements ICommand {
             this.targetSelection = new Selection(this.targetPosition.lineNumber, this.targetPosition.column, this.targetPosition.lineNumber + this.selection.endLineNumber - this.selection.startLineNumber, this.selection.startLineNumber === this.selection.endLineNumber ?
                 this.targetPosition.column + this.selection.endColumn - this.selection.startColumn :
                 this.selection.endColumn);
+
             return;
         }
         // The target position is at the same line as the selection's end position.

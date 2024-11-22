@@ -17,13 +17,16 @@ export interface IAppInsightsCore {
     unload(isAsync: boolean, unloadComplete: (unloadState: ITelemetryUnloadState) => void): void;
 }
 const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
+
 const endpointHealthUrl = 'https://mobile.events.data.microsoft.com/ping';
 async function getClient(instrumentationKey: string, addInternalFlag?: boolean, xhrOverride?: IXHROverride): Promise<IAppInsightsCore> {
     // eslint-disable-next-line local/code-amd-node-module
     const oneDs = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-core-js')>('@microsoft/1ds-core-js', 'bundle/ms.core.min.js') : await import('@microsoft/1ds-core-js');
     // eslint-disable-next-line local/code-amd-node-module
     const postPlugin = isWeb ? await importAMDNodeModule<typeof import('@microsoft/1ds-post-js')>('@microsoft/1ds-post-js', 'bundle/ms.post.min.js') : await import('@microsoft/1ds-post-js');
+
     const appInsightsCore = new oneDs.AppInsightsCore();
+
     const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
     // Configure the app insights core to send to collector++ and disable logging of debug info
     const coreConfig: IExtendedConfiguration = {
@@ -38,6 +41,7 @@ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, 
                 collectorChannelPlugin
             ]]
     };
+
     if (xhrOverride) {
         coreConfig.extensionConfig = {};
         // Configure the channel to use a XHR Request override since it's not available in node
@@ -54,12 +58,14 @@ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, 
         envelope['ext'] = envelope['ext'] ?? {};
         envelope['ext']['web'] = envelope['ext']['web'] ?? {};
         envelope['ext']['web']['consentDetails'] = '{"GPC_DataSharingOptIn":false}';
+
         if (addInternalFlag) {
             envelope['ext']['utc'] = envelope['ext']['utc'] ?? {};
             // Sets it to be internal only based on Windows UTC flagging
             envelope['ext']['utc']['flags'] = 0x0000811ECD;
         }
     });
+
     return appInsightsCore;
 }
 // TODO @lramos15 maybe make more in line with src/vs/platform/telemetry/browser/appInsightsAppender.ts with caching support
@@ -68,6 +74,7 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
     private _asyncAiCore: Promise<IAppInsightsCore> | null;
     protected readonly endPointUrl = endpointUrl;
     protected readonly endPointHealthUrl = endpointHealthUrl;
+
     constructor(private readonly _isInternalTelemetry: boolean, private _eventPrefix: string, private _defaultData: {
         [key: string]: any;
     } | null, iKeyOrClientFactory: string | (() => IAppInsightsCore), // allow factory function for testing
@@ -89,6 +96,7 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
         }
         if (typeof this._aiCoreOrKey !== 'string') {
             callback(this._aiCoreOrKey);
+
             return;
         }
         if (!this._asyncAiCore) {
@@ -107,7 +115,9 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
         }
         data = mixin(data, this._defaultData);
         data = validateTelemetryData(data);
+
         const name = this._eventPrefix + '/' + eventName;
+
         try {
             this._withAIClient((aiClient) => {
                 aiClient.pluginVersionString = data?.properties.version ?? 'Unknown';

@@ -32,6 +32,7 @@ export class RangeHighlightDecorations extends Disposable {
     private rangeHighlightDecorationId: string | null = null;
     private editor: ICodeEditor | null = null;
     private readonly editorDisposables = this._register(new DisposableStore());
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService) {
@@ -49,6 +50,7 @@ export class RangeHighlightDecorations extends Disposable {
     }
     highlightRange(range: IRangeHighlightDecoration, editor?: any) {
         editor = editor ?? this.getEditor(range);
+
         if (isCodeEditor(editor)) {
             this.doHighlightRange(editor, range);
         }
@@ -65,6 +67,7 @@ export class RangeHighlightDecorations extends Disposable {
     }
     private getEditor(resourceRange: IRangeHighlightDecoration): ICodeEditor | undefined {
         const resource = this.editorService.activeEditor?.resource;
+
         if (resource && isEqual(resource, resourceRange.resource) && isCodeEditor(this.editorService.activeTextEditorControl)) {
             return this.editorService.activeTextEditorControl;
         }
@@ -105,6 +108,7 @@ export class RangeHighlightDecorations extends Disposable {
     }
     override dispose() {
         super.dispose();
+
         if (this.editor?.getModel()) {
             this.removeHighlightRange();
             this.editor = null;
@@ -133,11 +137,13 @@ export class FloatingEditorClickWidget extends FloatingClickWidget implements IO
     }
     override dispose(): void {
         this.editor.removeOverlayWidget(this);
+
         super.dispose();
     }
 }
 export class FloatingEditorClickMenu extends AbstractFloatingClickMenu implements IEditorContribution {
     static readonly ID = 'editor.contrib.floatingClickMenu';
+
     constructor(private readonly editor: ICodeEditor, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 

@@ -15,6 +15,7 @@ import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js'
 export class ToggleMultiCursorModifierAction extends Action2 {
     static readonly ID = 'workbench.action.toggleMultiCursorModifier';
     private static readonly multiCursorModifierConfigurationKey = 'editor.multiCursorModifier';
+
     constructor() {
         super({
             id: ToggleMultiCursorModifierAction.ID,
@@ -24,16 +25,20 @@ export class ToggleMultiCursorModifierAction extends Action2 {
     }
     override run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const editorConf = configurationService.getValue<{
             multiCursorModifier: 'ctrlCmd' | 'alt';
         }>('editor');
+
         const newValue: 'ctrlCmd' | 'alt' = (editorConf.multiCursorModifier === 'ctrlCmd' ? 'alt' : 'ctrlCmd');
+
         return configurationService.updateValue(ToggleMultiCursorModifierAction.multiCursorModifierConfigurationKey, newValue);
     }
 }
 const multiCursorModifier = new RawContextKey<string>('multiCursorModifier', 'altKey');
 class MultiCursorModifierContextKeyController extends Disposable implements IWorkbenchContribution {
     private readonly _multiCursorModifier: IContextKey<string>;
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -52,6 +57,7 @@ class MultiCursorModifierContextKeyController extends Disposable implements IWor
         const editorConf = this.configurationService.getValue<{
             multiCursorModifier: 'ctrlCmd' | 'alt';
         }>('editor');
+
         const value = (editorConf.multiCursorModifier === 'ctrlCmd' ? 'ctrlCmd' : 'altKey');
         this._multiCursorModifier.set(value);
     }

@@ -24,6 +24,7 @@ function getTagBodyText(tag: Proto.JSDocTagInfo, filePathConverter: IFilePathToR
         return '```\n' + text + '\n```';
     }
     let text = convertLinkTags(tag.text, filePathConverter);
+
     switch (tag.name) {
         case 'example': {
             // Example text does not support `{@link}` as it is considered code.
@@ -31,6 +32,7 @@ function getTagBodyText(tag: Proto.JSDocTagInfo, filePathConverter: IFilePathToR
             text = asPlainText(tag.text);
             // check for caption tags, fix for #79704
             const captionTagMatches = text.match(/<caption>(.*?)<\/caption>\s*(\r\n|\n)/);
+
             if (captionTagMatches && captionTagMatches.index === 0) {
                 return captionTagMatches[1] + '\n' + makeCodeblock(text.substr(captionTagMatches[0].length));
             }
@@ -41,6 +43,7 @@ function getTagBodyText(tag: Proto.JSDocTagInfo, filePathConverter: IFilePathToR
         case 'author': {
             // fix obsucated email address, #80898
             const emailMatch = text.match(/(.+)\s<([-.\w]+@[-.\w]+)>/);
+
             if (emailMatch === null) {
                 return text;
             }
@@ -63,10 +66,14 @@ function getTagDocumentation(tag: Proto.JSDocTagInfo, filePathConverter: IFilePa
         case 'param':
         case 'template': {
             const body = getTagBody(tag, filePathConverter);
+
             if (body?.length === 3) {
                 const param = body[1];
+
                 const doc = body[2];
+
                 const label = `*@${tag.name}* \`${param}\``;
+
                 if (!doc) {
                     return label;
                 }
@@ -85,7 +92,9 @@ function getTagDocumentation(tag: Proto.JSDocTagInfo, filePathConverter: IFilePa
     }
     // Generic tag
     const label = `*@${tag.name}*`;
+
     const text = getTagBodyText(tag, filePathConverter);
+
     if (!text) {
         return label;
     }
@@ -94,9 +103,12 @@ function getTagDocumentation(tag: Proto.JSDocTagInfo, filePathConverter: IFilePa
 function getTagBody(tag: Proto.JSDocTagInfo, filePathConverter: IFilePathToResourceConverter): Array<string> | undefined {
     if (tag.name === 'template') {
         const parts = tag.text;
+
         if (parts && typeof (parts) !== 'string') {
             const params = parts.filter(p => p.kind === 'typeParameterName').map(p => p.text).join(', ');
+
             const docs = parts.filter(p => p.kind === 'text').map(p => convertLinkTags(p.text.replace(/^\s*-?\s*/, ''), filePathConverter)).join(' ');
+
             return params ? ['', params, docs] : undefined;
         }
     }
@@ -122,31 +134,38 @@ function convertLinkTags(parts: readonly Proto.SymbolDisplayPart[] | string | un
         return parts;
     }
     const out: string[] = [];
+
     let currentLink: {
         name?: string;
         target?: Proto.FileSpan;
         text?: string;
         readonly linkcode: boolean;
     } | undefined;
+
     for (const part of parts) {
         switch (part.kind) {
             case 'link':
                 if (currentLink) {
                     if (currentLink.target) {
                         const file = filePathConverter.toResource(currentLink.target.file);
+
                         const args: OpenJsDocLinkCommand_Args = {
                             file: { ...file.toJSON(), $mid: undefined }, // Prevent VS Code from trying to transform the uri,
                             position: typeConverters.Position.fromLocation(currentLink.target.start)
                         };
+
                         const command = `command:${OpenJsDocLinkCommand.id}?${encodeURIComponent(JSON.stringify([args]))}`;
+
                         const linkText = currentLink.text ? currentLink.text : escapeMarkdownSyntaxTokensForCode(currentLink.name ?? '');
                         out.push(`[${currentLink.linkcode ? '`' + linkText + '`' : linkText}](${command})`);
                     }
                     else {
                         const text = currentLink.text ?? currentLink.name;
+
                         if (text) {
                             if (/^https?:/.test(text)) {
                                 const parts = text.split(' ');
+
                                 if (parts.length === 1 && !currentLink.linkcode) {
                                     out.push(`<${parts[0]}>`);
                                 }
@@ -168,19 +187,23 @@ function convertLinkTags(parts: readonly Proto.SymbolDisplayPart[] | string | un
                     };
                 }
                 break;
+
             case 'linkName':
                 if (currentLink) {
                     currentLink.name = part.text;
                     currentLink.target = (part as Proto.JSDocLinkDisplayPart).target;
                 }
                 break;
+
             case 'linkText':
                 if (currentLink) {
                     currentLink.text = part.text;
                 }
                 break;
+
             default:
                 out.push(part.text);
+
                 break;
         }
     }
@@ -197,6 +220,7 @@ export function documentationToMarkdown(documentation: readonly Proto.SymbolDisp
     appendDocumentationAsMarkdown(out, documentation, tags, filePathConverter);
     out.baseUri = baseUri;
     out.isTrusted = { enabledCommands: [OpenJsDocLinkCommand.id] };
+
     return out;
 }
 export function appendDocumentationAsMarkdown(out: vscode.MarkdownString, documentation: readonly Proto.SymbolDisplayPart[] | string | undefined, tags: readonly Proto.JSDocTagInfo[] | undefined, converter: IFilePathToResourceConverter): vscode.MarkdownString {
@@ -205,10 +229,12 @@ export function appendDocumentationAsMarkdown(out: vscode.MarkdownString, docume
     }
     if (tags) {
         const tagsPreview = tagsToMarkdown(tags, converter);
+
         if (tagsPreview) {
             out.appendMarkdown('\n\n' + tagsPreview);
         }
     }
     out.isTrusted = { enabledCommands: [OpenJsDocLinkCommand.id] };
+
     return out;
 }

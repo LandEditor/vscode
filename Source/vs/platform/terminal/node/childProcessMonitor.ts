@@ -9,6 +9,7 @@ import { Disposable } from '../../../base/common/lifecycle.js';
 import { ProcessItem } from '../../../base/common/processes.js';
 import { listProcesses } from '../../../base/node/ps.js';
 import { ILogService } from '../../log/common/log.js';
+
 const enum Constants {
     /**
      * The amount of time to throttle checks when the process receives output.
@@ -42,6 +43,7 @@ export class ChildProcessMonitor extends Disposable {
      * An event that fires when whether the process has child processes changes.
      */
     readonly onDidChangeHasChildProcesses = this._onDidChangeHasChildProcesses.event;
+
     constructor(private readonly _pid: number, 
     @ILogService
     private readonly _logService: ILogService) {
@@ -84,12 +86,15 @@ export class ChildProcessMonitor extends Disposable {
         // A single child process, handle special cases
         if (processItem.children.length === 1) {
             const item = processItem.children[0];
+
             let cmd: string;
+
             if (item.cmd.startsWith(`"`)) {
                 cmd = item.cmd.substring(1, item.cmd.indexOf(`"`, 1));
             }
             else {
                 const spaceIndex = item.cmd.indexOf(` `);
+
                 if (spaceIndex === -1) {
                     cmd = item.cmd;
                 }

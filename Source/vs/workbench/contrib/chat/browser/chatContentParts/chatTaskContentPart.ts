@@ -35,6 +35,7 @@ export class ChatTaskContentPart extends Disposable implements IChatContentPart 
 		} else {
 			// #217645
 			const isSettled = task.isSettled?.() ?? true;
+
 			const progressPart = this._register(instantiationService.createInstance(ChatProgressContentPart, task, renderer, context, !isSettled, true));
 			this.domNode = progressPart.domNode;
 			this.onDidChangeHeight = Event.None;

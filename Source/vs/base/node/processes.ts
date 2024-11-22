@@ -27,7 +27,9 @@ export interface IQueuedSender {
 // to workaround https://github.com/nodejs/node/issues/7657 (IPC can freeze process)
 export function createQueuedSender(childProcess: cp.ChildProcess): IQueuedSender {
     let msgQueue: string[] = [];
+
     let useQueue = false;
+
     const send = function (msg: any): void {
         if (useQueue) {
             msgQueue.push(msg); // add to the queue if the process cannot handle more messages
@@ -45,10 +47,12 @@ export function createQueuedSender(childProcess: cp.ChildProcess): IQueuedSender
                 msgQueueCopy.forEach(entry => send(entry));
             }
         });
+
         if (!result || Platform.isWindows /* workaround https://github.com/nodejs/node/issues/7657 */) {
             useQueue = true;
         }
     };
+
     return { send };
 }
 export namespace win32 {
@@ -61,6 +65,7 @@ export namespace win32 {
             cwd = process.cwd();
         }
         const dir = path.dirname(command);
+
         if (dir !== '.') {
             // We have a directory and the directory is relative (see above). Make the path absolute
             // to the current working directory.
@@ -76,6 +81,7 @@ export namespace win32 {
         async function fileExists(path: string): Promise<boolean> {
             if (await pfs.Promises.exists(path)) {
                 let statValue: Stats | undefined;
+
                 try {
                     statValue = await promises.stat(path);
                 }
@@ -94,6 +100,7 @@ export namespace win32 {
         for (const pathEntry of paths) {
             // The path entry is absolute.
             let fullPath: string;
+
             if (path.isAbsolute(pathEntry)) {
                 fullPath = path.join(pathEntry, command);
             }
@@ -104,10 +111,12 @@ export namespace win32 {
                 return fullPath;
             }
             let withExtension = fullPath + '.com';
+
             if (await fileExists(withExtension)) {
                 return withExtension;
             }
             withExtension = fullPath + '.exe';
+
             if (await fileExists(withExtension)) {
                 return withExtension;
             }

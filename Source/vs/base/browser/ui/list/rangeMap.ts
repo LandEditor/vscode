@@ -16,6 +16,7 @@ export interface IRangedGroup {
  */
 export function groupIntersect(range: IRange, groups: IRangedGroup[]): IRangedGroup[] {
     const result: IRangedGroup[] = [];
+
     for (const r of groups) {
         if (range.start >= r.range.end) {
             continue;
@@ -24,6 +25,7 @@ export function groupIntersect(range: IRange, groups: IRangedGroup[]): IRangedGr
             break;
         }
         const intersection = Range.intersect(range, r.range);
+
         if (Range.isEmpty(intersection)) {
             continue;
         }
@@ -48,13 +50,19 @@ export function shift({ start, end }: IRange, much: number): IRange {
  */
 export function consolidate(groups: IRangedGroup[]): IRangedGroup[] {
     const result: IRangedGroup[] = [];
+
     let previousGroup: IRangedGroup | null = null;
+
     for (const group of groups) {
         const start = group.range.start;
+
         const end = group.range.end;
+
         const size = group.size;
+
         if (previousGroup && size === previousGroup.size) {
             previousGroup.range.end = end;
+
             continue;
         }
         previousGroup = { range: { start, end }, size };
@@ -82,6 +90,7 @@ export class RangeMap implements IRangeMap {
     private groups: IRangedGroup[] = [];
     private _size = 0;
     private _paddingTop = 0;
+
     get paddingTop() {
         return this._paddingTop;
     }
@@ -95,9 +104,12 @@ export class RangeMap implements IRangeMap {
     }
     splice(index: number, deleteCount: number, items: IItem[] = []): void {
         const diff = items.length - deleteCount;
+
         const before = groupIntersect({ start: 0, end: index }, this.groups);
+
         const after = groupIntersect({ start: index + deleteCount, end: Number.POSITIVE_INFINITY }, this.groups)
             .map<IRangedGroup>(g => ({ range: shift(g.range, diff), size: g.size }));
+
         const middle = items.map<IRangedGroup>((item, i) => ({
             range: { start: index + i, end: index + i + 1 },
             size: item.size
@@ -110,6 +122,7 @@ export class RangeMap implements IRangeMap {
      */
     get count(): number {
         const len = this.groups.length;
+
         if (!len) {
             return 0;
         }
@@ -132,10 +145,14 @@ export class RangeMap implements IRangeMap {
             return 0;
         }
         let index = 0;
+
         let size = this._paddingTop;
+
         for (const group of this.groups) {
             const count = group.range.end - group.range.start;
+
             const newSize = size + (count * group.size);
+
             if (position < newSize) {
                 return index + Math.floor((position - size) / group.size);
             }
@@ -159,10 +176,14 @@ export class RangeMap implements IRangeMap {
             return -1;
         }
         let position = 0;
+
         let count = 0;
+
         for (const group of this.groups) {
             const groupCount = group.range.end - group.range.start;
+
             const newCount = count + groupCount;
+
             if (index < newCount) {
                 return this._paddingTop + position + ((index - count) * group.size);
             }

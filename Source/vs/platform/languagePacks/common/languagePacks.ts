@@ -20,12 +20,16 @@ export interface ILanguagePackItem extends IQuickPickItem {
 }
 export interface ILanguagePackService {
     readonly _serviceBrand: undefined;
+
     getAvailableLanguages(): Promise<Array<ILanguagePackItem>>;
+
     getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
+
     getBuiltInExtensionTranslationsUri(id: string, language: string): Promise<URI | undefined>;
 }
 export abstract class LanguagePackBaseService extends Disposable implements ILanguagePackService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IExtensionGalleryService
     protected readonly extensionGalleryService: IExtensionGalleryService) {
@@ -33,10 +37,14 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
     }
     abstract getBuiltInExtensionTranslationsUri(id: string, language: string): Promise<URI | undefined>;
     abstract getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
+
     async getAvailableLanguages(): Promise<ILanguagePackItem[]> {
         const timeout = new CancellationTokenSource();
+
         setTimeout(() => timeout.cancel(), 1000);
+
         let result;
+
         try {
             result = await this.extensionGalleryService.query({
                 text: 'category:"language packs"',
@@ -48,10 +56,14 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
             return [];
         }
         const languagePackExtensions = result.firstPage.filter(e => e.properties.localizedLanguages?.length && e.tags.some(t => t.startsWith('lp-')));
+
         const allFromMarketplace: ILanguagePackItem[] = languagePackExtensions.map(lp => {
             const languageName = lp.properties.localizedLanguages?.[0];
+
             const locale = getLocale(lp)!;
+
             const baseQuickPick = this.createQuickPickItem(locale, languageName, lp);
+
             return {
                 ...baseQuickPick,
                 extensionId: lp.identifier.id,
@@ -59,11 +71,14 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
             };
         });
         allFromMarketplace.push(this.createQuickPickItem('en', 'English'));
+
         return allFromMarketplace;
     }
     protected createQuickPickItem(locale: string, languageName?: string, languagePack?: IGalleryExtension): IQuickPickItem {
         const label = languageName ?? locale;
+
         let description: string | undefined;
+
         if (label !== locale) {
             description = `(${locale})`;
         }
@@ -73,8 +88,11 @@ export abstract class LanguagePackBaseService extends Disposable implements ILan
         }
         if (languagePack?.installCount) {
             description ??= '';
+
             const count = languagePack.installCount;
+
             let countLabel: string;
+
             if (count > 1000000) {
                 countLabel = `${Math.floor(count / 100000) / 10}M`;
             }

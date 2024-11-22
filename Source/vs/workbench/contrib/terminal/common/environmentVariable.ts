@@ -41,5 +41,6 @@ export interface IEnvironmentVariableCollectionWithPersistence extends IEnvironm
 }
 export interface IEnvironmentVariableInfo {
     readonly requiresAction: boolean;
+
     getStatus(scope: EnvironmentVariableScope | undefined): ITerminalStatus;
 }

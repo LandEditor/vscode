@@ -13,6 +13,7 @@ import * as dom from '../../dom.js';
 export const ARROW_IMG_SIZE = 11;
 export interface ScrollbarArrowOptions {
     onActivate: () => void;
+
     className: string;
     icon: ThemeIcon;
     bgWidth: number;
@@ -29,6 +30,7 @@ export class ScrollbarArrow extends Widget {
     private _pointerdownRepeatTimer: dom.WindowIntervalTimer;
     private _pointerdownScheduleRepeatTimer: TimeoutTimer;
     private _pointerMoveMonitor: GlobalPointerMoveMonitor;
+
     constructor(opts: ScrollbarArrowOptions) {
         super();
         this._onActivate = opts.onActivate;
@@ -37,6 +39,7 @@ export class ScrollbarArrow extends Widget {
         this.bgDomNode.style.position = 'absolute';
         this.bgDomNode.style.width = opts.bgWidth + 'px';
         this.bgDomNode.style.height = opts.bgHeight + 'px';
+
         if (typeof opts.top !== 'undefined') {
             this.bgDomNode.style.top = '0px';
         }
@@ -55,6 +58,7 @@ export class ScrollbarArrow extends Widget {
         this.domNode.style.position = 'absolute';
         this.domNode.style.width = ARROW_IMG_SIZE + 'px';
         this.domNode.style.height = ARROW_IMG_SIZE + 'px';
+
         if (typeof opts.top !== 'undefined') {
             this.domNode.style.top = opts.top + 'px';
         }

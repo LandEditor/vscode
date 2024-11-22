@@ -13,6 +13,7 @@ import type { IBufferLine, IBufferRange, Terminal } from '@xterm/xterm';
 import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
 import { detectLinks } from './terminalLinkParsing.js';
 import { ITerminalBackend, ITerminalLogService } from '../../../../../platform/terminal/common/terminal.js';
+
 const enum Constants {
     /**
      * The max line length to try extract word links from.
@@ -59,6 +60,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
     // - Window old max length: 260 ($MAX_PATH)
     // - Linux max length: 4096 ($PATH_MAX)
     readonly maxLinkLength = 500;
+
     constructor(readonly xterm: Terminal, private readonly _capabilities: ITerminalCapabilityStore, private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & {
         backend?: Pick<ITerminalBackend, 'getWslPath'>;
     }, private readonly _linkResolver: ITerminalLinkResolver, 
@@ -73,15 +75,20 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
         const links: ITerminalSimpleLink[] = [];
         // Get the text representation of the wrapped line
         const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+
         if (text === '' || text.length > Constants.MaxLineLength) {
             return [];
         }
         let stringIndex = -1;
+
         let resolvedLinkCount = 0;
+
         const os = this._processManager.os || OS;
+
         const parsedLinks = detectLinks(text, os);
         this._logService.trace('terminalLocalLinkDetector#detect text', text);
         this._logService.trace('terminalLocalLinkDetector#detect parsedLinks', parsedLinks);
+
         for (const parsedLink of parsedLinks) {
             // Don't try resolve any links of excessive length
             if (parsedLink.path.text.length > Constants.MaxResolvedLinkLength) {
@@ -96,8 +103,11 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
             }, startLine);
             // Get a single link candidate if the cwd of the line is known
             const linkCandidates: string[] = [];
+
             const osPath = osPathModule(os);
+
             const isUri = parsedLink.path.text.startsWith('file://');
+
             if (osPath.isAbsolute(parsedLink.path.text) || parsedLink.path.text.startsWith('~') || isUri) {
                 linkCandidates.push(parsedLink.path.text);
             }
@@ -115,6 +125,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
                 // Fallback to resolving against the initial cwd, removing any relative directory prefixes
                 if (linkCandidates.length === 0) {
                     linkCandidates.push(parsedLink.path.text);
+
                     if (parsedLink.path.text.match(/^(\.\.[\/\\])+/)) {
                         linkCandidates.push(parsedLink.path.text.replace(/^(\.\.[\/\\])+/, ''));
                     }
@@ -123,12 +134,18 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
             // If any candidates end with special characters that are likely to not be part of the
             // link, add a candidate excluding them.
             const specialEndCharRegex = /[\[\]"'\.]$/;
+
             const trimRangeMap: Map<string, number> = new Map();
+
             const specialEndLinkCandidates: string[] = [];
+
             for (const candidate of linkCandidates) {
                 let previous = candidate;
+
                 let removed = previous.replace(specialEndCharRegex, '');
+
                 let trimRange = 0;
+
                 while (removed !== previous) {
                     // Only trim the link if there is no suffix, otherwise the underline would be incorrect
                     if (!parsedLink.suffix) {
@@ -144,6 +161,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
             this._logService.trace('terminalLocalLinkDetector#detect linkCandidates', linkCandidates);
             // Validate the path and convert to the outgoing type
             const simpleLink = await this._validateAndGetLink(undefined, bufferRange, linkCandidates, trimRangeMap);
+
             if (simpleLink) {
                 simpleLink.parsedLink = parsedLink;
                 simpleLink.text = text.substring(parsedLink.prefix?.index ?? parsedLink.path.index, parsedLink.suffix ? parsedLink.suffix.suffix.index + parsedLink.suffix.suffix.text.length : parsedLink.path.index + parsedLink.path.text.length);
@@ -160,14 +178,20 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
         if (links.length === 0) {
             for (const matcher of fallbackMatchers) {
                 const match = text.match(matcher);
+
                 const group = match?.groups;
+
                 if (!group) {
                     continue;
                 }
                 const link = group?.link;
+
                 const path = group?.path;
+
                 const line = group?.line;
+
                 const col = group?.col;
+
                 if (!link || !path) {
                     continue;
                 }
@@ -177,6 +201,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
                 }
                 // Convert the link text's string index into a wrapped buffer range
                 stringIndex = text.indexOf(link);
+
                 const bufferRange = convertLinkRangeToBuffer(lines, this.xterm.cols, {
                     startColumn: stringIndex + 1,
                     startLineNumber: 1,
@@ -185,7 +210,9 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
                 }, startLine);
                 // Validate and add link
                 const suffix = line ? `:${line}${col ? `:${col}` : ''}` : '';
+
                 const simpleLink = await this._validateAndGetLink(`${path}${suffix}`, bufferRange, [path]);
+
                 if (simpleLink) {
                     links.push(simpleLink);
                 }
@@ -197,14 +224,18 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
         // the line by attributes and test whether it matches a path
         if (links.length === 0) {
             const rangeCandidates = getXtermRangesByAttr(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+
             for (const rangeCandidate of rangeCandidates) {
                 let text = '';
+
                 for (let y = rangeCandidate.start.y; y <= rangeCandidate.end.y; y++) {
                     const line = this.xterm.buffer.active.getLine(y);
+
                     if (!line) {
                         break;
                     }
                     const lineStartX = y === rangeCandidate.start.y ? rangeCandidate.start.x : 0;
+
                     const lineEndX = y === rangeCandidate.end.y ? rangeCandidate.end.x : this.xterm.cols - 1;
                     text += line.translateToString(false, lineStartX, lineEndX);
                 }
@@ -214,6 +245,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
                 rangeCandidate.end.y++;
                 // Validate and add link
                 const simpleLink = await this._validateAndGetLink(text, rangeCandidate, [text]);
+
                 if (simpleLink) {
                     links.push(simpleLink);
                 }
@@ -227,6 +259,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
     }
     private _isDirectoryInsideWorkspace(uri: URI) {
         const folders = this._workspaceContextService.getWorkspace().folders;
+
         for (let i = 0; i < folders.length; i++) {
             if (this._uriIdentityService.extUri.isEqualOrParent(uri, folders[i].uri)) {
                 return true;
@@ -237,10 +270,12 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
     private async _validateLinkCandidates(linkCandidates: string[]): Promise<ResolvedLink | undefined> {
         for (const link of linkCandidates) {
             let uri: URI | undefined;
+
             if (link.startsWith('file://')) {
                 uri = URI.parse(link);
             }
             const result = await this._linkResolver.resolveLink(this._processManager, link, uri);
+
             if (result) {
                 return result;
             }
@@ -254,8 +289,10 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
      */
     private async _validateAndGetLink(linkText: string | undefined, bufferRange: IBufferRange, linkCandidates: string[], trimRangeMap?: Map<string, number>): Promise<ITerminalSimpleLink | undefined> {
         const linkStat = await this._validateLinkCandidates(linkCandidates);
+
         if (linkStat) {
             let type: TerminalBuiltinLinkType;
+
             if (linkStat.isDirectory) {
                 if (this._isDirectoryInsideWorkspace(linkStat.uri)) {
                     type = TerminalBuiltinLinkType.LocalFolderInWorkspace;
@@ -269,8 +306,10 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
             }
             // Offset the buffer range if the link range was trimmed
             const trimRange = trimRangeMap?.get(linkStat.link);
+
             if (trimRange) {
                 bufferRange.end.x -= trimRange;
+
                 if (bufferRange.end.x < 0) {
                     bufferRange.end.y--;
                     bufferRange.end.x += this.xterm.cols;

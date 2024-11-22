@@ -27,8 +27,10 @@ import { IWindowsMainService } from '../../windows/electron-main/windows.js';
 export class ElectronURLListener extends Disposable {
     private uris: IProtocolUrl[] = [];
     private retryCount = 0;
+
     constructor(initialProtocolUrls: IProtocolUrl[] | undefined, private readonly urlService: IURLService, windowsMainService: IWindowsMainService, environmentMainService: IEnvironmentMainService, productService: IProductService, private readonly logService: ILogService) {
         super();
+
         if (initialProtocolUrls) {
             logService.trace('ElectronURLListener initialUrisToHandle:', initialProtocolUrls.map(url => url.originalUrl));
             // the initial set of URIs we need to handle once the window is ready
@@ -47,6 +49,7 @@ export class ElectronURLListener extends Disposable {
         });
         this._register(onOpenElectronUrl(url => {
             const uri = this.uriFromRawUrl(url);
+
             if (!uri) {
                 return;
             }
@@ -56,6 +59,7 @@ export class ElectronURLListener extends Disposable {
         const isWindowReady = windowsMainService.getWindows()
             .filter(window => window.isReady)
             .length > 0;
+
         if (isWindowReady) {
             logService.trace('ElectronURLListener: window is ready to handle URLs');
             this.flush();
@@ -76,12 +80,16 @@ export class ElectronURLListener extends Disposable {
     private async flush(): Promise<void> {
         if (this.retryCount++ > 10) {
             this.logService.trace('ElectronURLListener#flush(): giving up after 10 retries');
+
             return;
         }
         this.logService.trace('ElectronURLListener#flush(): flushing URLs');
+
         const uris: IProtocolUrl[] = [];
+
         for (const obj of this.uris) {
             const handled = await this.urlService.open(obj.uri, { originalUrl: obj.originalUrl });
+
             if (handled) {
                 this.logService.trace('ElectronURLListener#flush(): URL was handled', obj.originalUrl);
             }

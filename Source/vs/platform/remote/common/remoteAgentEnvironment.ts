@@ -10,6 +10,7 @@ export interface IRemoteAgentEnvironment {
     pid: number;
     connectionToken: string;
     appRoot: URI;
+
     settingsPath: URI;
     logsPath: URI;
     extensionHostLogsPath: URI;

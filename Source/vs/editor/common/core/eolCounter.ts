@@ -16,16 +16,22 @@ export function countEOL(text: string): [
     StringEOL
 ] {
     let eolCount = 0;
+
     let firstLineLength = 0;
+
     let lastLineStart = 0;
+
     let eol: StringEOL = StringEOL.Unknown;
+
     for (let i = 0, len = text.length; i < len; i++) {
         const chr = text.charCodeAt(i);
+
         if (chr === CharCode.CarriageReturn) {
             if (eolCount === 0) {
                 firstLineLength = i;
             }
             eolCount++;
+
             if (i + 1 < len && text.charCodeAt(i + 1) === CharCode.LineFeed) {
                 // \r\n... case
                 eol |= StringEOL.CRLF;
@@ -40,6 +46,7 @@ export function countEOL(text: string): [
         else if (chr === CharCode.LineFeed) {
             // \n... case
             eol |= StringEOL.LF;
+
             if (eolCount === 0) {
                 firstLineLength = i;
             }

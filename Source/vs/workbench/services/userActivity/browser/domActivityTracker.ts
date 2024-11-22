@@ -20,6 +20,7 @@ import { IUserActivityService } from '../common/userActivityService.js';
 const CHECK_INTERVAL = 30000;
 /** See {@link CHECK_INTERVAL} */
 const MIN_INTERVALS_WITHOUT_ACTIVITY = 2;
+
 const eventListenerOptions: AddEventListenerOptions = {
     passive: true, /** does not preventDefault() */
     capture: true, /** should dispatch first (before anyone stopPropagation()) */
@@ -27,16 +28,21 @@ const eventListenerOptions: AddEventListenerOptions = {
 export class DomActivityTracker extends Disposable {
     constructor(userActivityService: IUserActivityService) {
         super();
+
         let intervalsWithoutActivity = MIN_INTERVALS_WITHOUT_ACTIVITY;
+
         const intervalTimer = this._register(new dom.WindowIntervalTimer());
+
         const activeMutex = this._register(new MutableDisposable());
         activeMutex.value = userActivityService.markActive();
+
         const onInterval = () => {
             if (++intervalsWithoutActivity === MIN_INTERVALS_WITHOUT_ACTIVITY) {
                 activeMutex.clear();
                 intervalTimer.cancel();
             }
         };
+
         const onActivity = (targetWindow: Window & typeof globalThis) => {
             // if was inactive, they've now returned
             if (intervalsWithoutActivity === MIN_INTERVALS_WITHOUT_ACTIVITY) {

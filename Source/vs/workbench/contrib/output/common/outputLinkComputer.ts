@@ -19,6 +19,7 @@ export class OutputLinkComputer implements IRequestHandler {
     _requestHandlerBrand: any;
     private readonly workerTextModelSyncServer = new WorkerTextModelSyncServer();
     private patterns = new Map<URI /* folder uri */, RegExp[]>();
+
     constructor(workerServer: IWorkerServer) {
         this.workerTextModelSyncServer.bindToServer(workerServer);
     }
@@ -32,6 +33,7 @@ export class OutputLinkComputer implements IRequestHandler {
         const workspaceFolders = _workspaceFolders
             .sort((resourceStrA, resourceStrB) => resourceStrB.length - resourceStrA.length) // longest paths first (for https://github.com/microsoft/vscode/issues/88121)
             .map(resourceStr => URI.parse(resourceStr));
+
         for (const workspaceFolder of workspaceFolders) {
             const patterns = OutputLinkComputer.createPatterns(workspaceFolder);
             this.patterns.set(workspaceFolder, patterns);
@@ -42,10 +44,12 @@ export class OutputLinkComputer implements IRequestHandler {
     }
     $computeLinks(uri: string): ILink[] {
         const model = this.getModel(uri);
+
         if (!model) {
             return [];
         }
         const links: ILink[] = [];
+
         const lines = strings.splitLines(model.getValue());
         // For each workspace root patterns
         for (const [folderUri, folderPatterns] of this.patterns) {
@@ -57,6 +61,7 @@ export class OutputLinkComputer implements IRequestHandler {
                     return null;
                 }
             };
+
             for (let i = 0, len = lines.length; i < len; i++) {
                 links.push(...OutputLinkComputer.detectLinks(lines[i], i + 1, folderPatterns, resourceCreator));
             }
@@ -65,15 +70,21 @@ export class OutputLinkComputer implements IRequestHandler {
     }
     static createPatterns(workspaceFolder: URI): RegExp[] {
         const patterns: RegExp[] = [];
+
         const workspaceFolderPath = workspaceFolder.scheme === Schemas.file ? workspaceFolder.fsPath : workspaceFolder.path;
+
         const workspaceFolderVariants = [workspaceFolderPath];
+
         if (isWindows && workspaceFolder.scheme === Schemas.file) {
             workspaceFolderVariants.push(extpath.toSlashes(workspaceFolderPath));
         }
         for (const workspaceFolderVariant of workspaceFolderVariants) {
             const validPathCharacterPattern = '[^\\s\\(\\):<>\'"]';
+
             const validPathCharacterOrSpacePattern = `(?:${validPathCharacterPattern}| ${validPathCharacterPattern})`;
+
             const pathPattern = `${validPathCharacterOrSpacePattern}+\\.${validPathCharacterPattern}+`;
+
             const strictPathPattern = `${validPathCharacterPattern}+`;
             // Example: /workspaces/express/server.js on line 8, column 13
             patterns.push(new RegExp(strings.escapeRegExpCharacters(workspaceFolderVariant) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`, 'gi'));
@@ -100,13 +111,17 @@ export class OutputLinkComputer implements IRequestHandler {
         patterns.forEach(pattern => {
             pattern.lastIndex = 0; // the holy grail of software development
             let match: RegExpExecArray | null;
+
             let offset = 0;
+
             while ((match = pattern.exec(line)) !== null) {
                 // Convert the relative path information to a resource that we can use in links
                 const folderRelativePath = strings.rtrim(match[1], '.').replace(/\\/g, '/'); // remove trailing "." that likely indicate end of sentence
                 let resourceString: string | undefined;
+
                 try {
                     const resource = resourceCreator.toResource(folderRelativePath);
+
                     if (resource) {
                         resourceString = resource.toString();
                     }
@@ -117,6 +132,7 @@ export class OutputLinkComputer implements IRequestHandler {
                 // Append line/col information to URI if matching
                 if (match[3]) {
                     const lineNumber = match[3];
+
                     if (match[5]) {
                         const columnNumber = match[5];
                         resourceString = strings.format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
@@ -128,12 +144,14 @@ export class OutputLinkComputer implements IRequestHandler {
                 const fullMatch = strings.rtrim(match[0], '.'); // remove trailing "." that likely indicate end of sentence
                 const index = line.indexOf(fullMatch, offset);
                 offset = index + fullMatch.length;
+
                 const linkRange = {
                     startColumn: index + 1,
                     startLineNumber: lineIndex,
                     endColumn: index + 1 + fullMatch.length,
                     endLineNumber: lineIndex
                 };
+
                 if (links.some(link => Range.areIntersectingOrTouching(link.range, linkRange))) {
                     return; // Do not detect duplicate links
                 }
@@ -143,6 +161,7 @@ export class OutputLinkComputer implements IRequestHandler {
                 });
             }
         });
+
         return links;
     }
 }

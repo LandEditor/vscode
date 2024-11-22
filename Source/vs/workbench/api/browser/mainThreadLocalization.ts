@@ -20,6 +20,7 @@ export class MainThreadLocalization extends Disposable implements MainThreadLoca
     async $fetchBuiltInBundleUri(id: string, language: string): Promise<URI | undefined> {
         try {
             const uri = await this.languagePackService.getBuiltInExtensionTranslationsUri(id, language);
+
             return uri;
         }
         catch (e) {
@@ -28,6 +29,7 @@ export class MainThreadLocalization extends Disposable implements MainThreadLoca
     }
     async $fetchBundleContents(uriComponents: UriComponents): Promise<string> {
         const contents = await this.fileService.readFile(URI.revive(uriComponents));
+
         return contents.value.toString();
     }
 }

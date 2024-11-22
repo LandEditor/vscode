@@ -16,6 +16,7 @@ import { Snippet } from '../snippetsFile.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 export class ApplyFileSnippetAction extends SnippetsAction {
     static readonly Id = 'workbench.action.populateFileFromSnippet';
+
     constructor() {
         super({
             id: ApplyFileSnippetAction.Id,
@@ -25,18 +26,25 @@ export class ApplyFileSnippetAction extends SnippetsAction {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const snippetService = accessor.get(ISnippetsService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const editorService = accessor.get(IEditorService);
+
         const langService = accessor.get(ILanguageService);
+
         const editor = getCodeEditor(editorService.activeTextEditorControl);
+
         if (!editor || !editor.hasModel()) {
             return;
         }
         const snippets = await snippetService.getSnippets(undefined, { fileTemplateSnippets: true, noRecencySort: true, includeNoPrefixSnippets: true });
+
         if (snippets.length === 0) {
             return;
         }
         const selection = await this._pick(quickInputService, langService, snippets);
+
         if (!selection) {
             return;
         }
@@ -57,7 +65,9 @@ export class ApplyFileSnippetAction extends SnippetsAction {
             langId: string;
             snippet: Snippet;
         };
+
         const all: SnippetAndLanguage[] = [];
+
         for (const snippet of snippets) {
             if (isFalsyOrEmpty(snippet.scopes)) {
                 all.push({ langId: '', snippet });
@@ -71,10 +81,14 @@ export class ApplyFileSnippetAction extends SnippetsAction {
         type SnippetAndLanguagePick = IQuickPickItem & {
             snippet: SnippetAndLanguage;
         };
+
         const picks: (SnippetAndLanguagePick | IQuickPickSeparator)[] = [];
+
         const groups = groupBy(all, (a, b) => compare(a.langId, b.langId));
+
         for (const group of groups) {
             let first = true;
+
             for (const item of group) {
                 if (first) {
                     picks.push({
@@ -94,6 +108,7 @@ export class ApplyFileSnippetAction extends SnippetsAction {
             placeHolder: localize('placeholder', 'Select a snippet'),
             matchOnDetail: true,
         });
+
         return pick?.snippet;
     }
 }

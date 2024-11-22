@@ -25,6 +25,7 @@ export class MainThreadUrls implements MainThreadUrlsShape {
         extensionId: ExtensionIdentifier;
         disposable: IDisposable;
     }>();
+
     constructor(context: IExtHostContext, 
     @IURLService
     private readonly urlService: IURLService, 
@@ -34,13 +35,16 @@ export class MainThreadUrls implements MainThreadUrlsShape {
     }
     $registerUriHandler(handle: number, extensionId: ExtensionIdentifier, extensionDisplayName: string): Promise<void> {
         const handler = new ExtensionUrlHandler(this.proxy, handle, extensionId, extensionDisplayName);
+
         const disposable = this.urlService.registerHandler(handler);
         this.handlers.set(handle, { extensionId, disposable });
         this.extensionUrlHandler.registerExtensionHandler(extensionId, handler);
+
         return Promise.resolve(undefined);
     }
     $unregisterUriHandler(handle: number): Promise<void> {
         const tuple = this.handlers.get(handle);
+
         if (!tuple) {
             return Promise.resolve(undefined);
         }
@@ -48,6 +52,7 @@ export class MainThreadUrls implements MainThreadUrlsShape {
         this.extensionUrlHandler.unregisterExtensionHandler(extensionId);
         this.handlers.delete(handle);
         disposable.dispose();
+
         return Promise.resolve(undefined);
     }
     async $createAppUri(uri: UriComponents): Promise<URI> {

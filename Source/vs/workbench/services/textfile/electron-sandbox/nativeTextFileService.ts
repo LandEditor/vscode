@@ -27,6 +27,7 @@ import { Promises } from '../../../../base/common/async.js';
 import { IDecorationsService } from '../../decorations/common/decorations.js';
 export class NativeTextFileService extends AbstractTextFileService {
     protected override readonly environmentService: INativeWorkbenchEnvironmentService;
+
     constructor(
     @IFileService
     fileService: IFileService, 
@@ -85,15 +86,18 @@ export class NativeTextFileService extends AbstractTextFileService {
     override async read(resource: URI, options?: IReadTextFileOptions): Promise<ITextFileContent> {
         // ensure platform limits are applied
         options = this.ensureLimits(options);
+
         return super.read(resource, options);
     }
     override async readStream(resource: URI, options?: IReadTextFileOptions): Promise<ITextFileStreamContent> {
         // ensure platform limits are applied
         options = this.ensureLimits(options);
+
         return super.readStream(resource, options);
     }
     private ensureLimits(options?: IReadTextFileOptions): IReadTextFileOptions {
         let ensuredOptions: IReadTextFileOptions;
+
         if (!options) {
             ensuredOptions = Object.create(null);
         }
@@ -101,6 +105,7 @@ export class NativeTextFileService extends AbstractTextFileService {
             ensuredOptions = options;
         }
         let ensuredLimits: IFileReadLimits;
+
         if (!ensuredOptions.limits) {
             ensuredLimits = Object.create(null);
             ensuredOptions = {

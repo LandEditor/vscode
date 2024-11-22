@@ -95,6 +95,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
     }
     private get configuration() {
         const commandPaletteConfig = this.configurationService.getValue<IWorkbenchQuickAccessConfiguration>().workbench.commandPalette;
+
         return {
             preserveInput: commandPaletteConfig.preserveInput,
             experimental: commandPaletteConfig.experimental
@@ -105,6 +106,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
             return;
         }
         const config = this.configuration;
+
         const suggestedCommandIds = config.experimental.suggestCommands && this.productService.commandPaletteSuggestedCommandIds?.length
             ? new Set(this.productService.commandPaletteSuggestedCommandIds)
             : undefined;
@@ -114,6 +116,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
     protected async getCommandPicks(token: CancellationToken): Promise<Array<ICommandQuickPick>> {
         // wait for extensions registration or 800ms once
         await this.extensionRegistrationRace;
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -128,6 +131,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
                 }],
             trigger: (): TriggerAction => {
                 this.preferencesService.openGlobalKeybindingSettings(false, { query: createKeybindingCommandQuery(picks.commandId, picks.commandWhen) });
+
                 return TriggerAction.CLOSE_PICKER;
             },
         }));
@@ -146,6 +150,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
             return [];
         }
         let additionalPicks;
+
         try {
             // Wait a bit to see if the user is still typing
             await timeout(CommandsQuickAccessProvider.AI_RELATED_INFORMATION_DEBOUNCE, token);
@@ -160,6 +165,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
             });
         }
         const defaultAgent = this.chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
+
         if (defaultAgent) {
             additionalPicks.push({
                 label: localize('askXInChat', "Ask {0}: {1}", defaultAgent.fullName, filter),
@@ -173,13 +179,17 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
         const relatedInformation = await this.aiRelatedInformationService.getRelatedInformation(filter, [RelatedInformationType.CommandInformation], token) as CommandInformationResult[];
         // Sort by weight descending to get the most relevant results first
         relatedInformation.sort((a, b) => b.weight - a.weight);
+
         const setOfPicksSoFar = new Set(picksSoFar.map(p => p.commandId));
+
         const additionalPicks = new Array<ICommandQuickPick | IQuickPickSeparator>();
+
         for (const info of relatedInformation) {
             if (additionalPicks.length === CommandsQuickAccessProvider.AI_RELATED_INFORMATION_MAX_PICKS) {
                 break;
             }
             const pick = allPicks.find(p => p.commandId === info.command && !setOfPicksSoFar.has(p.commandId));
+
             if (pick) {
                 additionalPicks.push(pick);
             }
@@ -188,26 +198,35 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
     }
     private getGlobalCommandPicks(): ICommandQuickPick[] {
         const globalCommandPicks: ICommandQuickPick[] = [];
+
         const scopedContextKeyService = this.editorService.activeEditorPane?.scopedContextKeyService || this.editorGroupService.activeGroup.scopedContextKeyService;
+
         const globalCommandsMenu = this.menuService.getMenuActions(MenuId.CommandPalette, scopedContextKeyService);
+
         const globalCommandsMenuActions = globalCommandsMenu
             .reduce((r, [, actions]) => [...r, ...actions], <Array<MenuItemAction | SubmenuItemAction | string>>[])
             .filter(action => action instanceof MenuItemAction && action.enabled) as MenuItemAction[];
+
         for (const action of globalCommandsMenuActions) {
             // Label
             let label = (typeof action.item.title === 'string' ? action.item.title : action.item.title.value) || action.item.id;
             // Category
             const category = typeof action.item.category === 'string' ? action.item.category : action.item.category?.value;
+
             if (category) {
                 label = localize('commandWithCategory', "{0}: {1}", category, label);
             }
             // Alias
             const aliasLabel = typeof action.item.title !== 'string' ? action.item.title.original : undefined;
+
             const aliasCategory = (category && action.item.category && typeof action.item.category !== 'string') ? action.item.category.original : undefined;
+
             const commandAlias = (aliasLabel && category) ?
                 aliasCategory ? `${aliasCategory}: ${aliasLabel}` : `${category}: ${aliasLabel}` :
                 aliasLabel;
+
             const metadataDescription = action.item.metadata?.description;
+
             const commandDescription = metadataDescription === undefined || isLocalizedString(metadataDescription)
                 ? metadataDescription
                 // TODO: this type will eventually not be a string and when that happens, this should simplified.
@@ -226,6 +245,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 //#region Actions
 export class ShowAllCommandsAction extends Action2 {
     static readonly ID = 'workbench.action.showCommands';
+
     constructor() {
         super({
             id: ShowAllCommandsAction.ID,
@@ -253,9 +273,13 @@ export class ClearCommandHistoryAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const configurationService = accessor.get(IConfigurationService);
+
         const storageService = accessor.get(IStorageService);
+
         const dialogService = accessor.get(IDialogService);
+
         const commandHistoryLength = CommandsHistory.getConfiguredCommandHistoryLength(configurationService);
+
         if (commandHistoryLength > 0) {
             // Ask for confirmation
             const { confirmed } = await dialogService.confirm({
@@ -264,6 +288,7 @@ export class ClearCommandHistoryAction extends Action2 {
                 detail: localize('confirmClearDetail', "This action is irreversible!"),
                 primaryButton: localize({ key: 'clearButtonLabel', comment: ['&& denotes a mnemonic'] }, "&&Clear")
             });
+
             if (!confirmed) {
                 return;
             }

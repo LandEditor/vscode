@@ -9,6 +9,7 @@ function fatal(err: any): void {
 }
 function main(argv: string[]): void {
     const ipcClient = new IPCClient('git-editor');
+
     const commitMessagePath = argv[argv.length - 1];
     ipcClient.call({ commitMessagePath }).then(() => {
         setTimeout(() => process.exit(0), 0);

@@ -17,6 +17,7 @@ import { extractAgentAndCommand } from '../../common/chatParserTypes.js';
 import * as nls from '../../../../../nls.js';
 export class ChatAgentHoverParticipant implements IEditorHoverParticipant<ChatAgentHoverPart> {
     public readonly hoverOrdinal: number = 1;
+
     constructor(private readonly editor: ICodeEditor, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -29,10 +30,12 @@ export class ChatAgentHoverParticipant implements IEditorHoverParticipant<ChatAg
             return [];
         }
         const widget = this.chatWidgetService.getWidgetByInputUri(this.editor.getModel().uri);
+
         if (!widget) {
             return [];
         }
         const { agentPart } = extractAgentAndCommand(widget.parsedInput);
+
         if (!agentPart) {
             return [];
         }
@@ -46,20 +49,28 @@ export class ChatAgentHoverParticipant implements IEditorHoverParticipant<ChatAg
             return new RenderedHoverParts([]);
         }
         const disposables = new DisposableStore();
+
         const hover = disposables.add(this.instantiationService.createInstance(ChatAgentHover));
         disposables.add(hover.onDidChangeContents(() => context.onContentsChanged()));
+
         const hoverPart = hoverParts[0];
+
         const agent = hoverPart.agent;
         hover.setAgent(agent.id);
+
         const actions = getChatAgentHoverOptions(() => agent, this.commandService).actions;
+
         const wrapper = this.instantiationService.createInstance(ChatEditorHoverWrapper, hover.domNode, actions);
+
         const wrapperNode = wrapper.domNode;
         context.fragment.appendChild(wrapperNode);
+
         const renderedHoverPart: IRenderedHoverPart<ChatAgentHoverPart> = {
             hoverPart,
             hoverElement: wrapperNode,
             dispose() { disposables.dispose(); }
         };
+
         return new RenderedHoverParts([renderedHoverPart]);
     }
     public getAccessibleContent(hoverPart: ChatAgentHoverPart): string {

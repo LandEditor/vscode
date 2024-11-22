@@ -13,6 +13,7 @@ export class TypeScriptPluginPathsProvider {
     }
     public getPluginPaths(): string[] {
         const pluginPaths = [];
+
         for (const pluginPath of this.configuration.tsServerPluginPaths) {
             pluginPaths.push(...this.resolvePluginPath(pluginPath));
         }
@@ -23,6 +24,7 @@ export class TypeScriptPluginPathsProvider {
             return [pluginPath];
         }
         const workspacePath = RelativeWorkspacePathResolver.asAbsoluteWorkspacePath(pluginPath);
+
         if (workspacePath !== undefined) {
             return [workspacePath];
         }

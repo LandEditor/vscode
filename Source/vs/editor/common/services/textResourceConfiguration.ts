@@ -39,6 +39,7 @@ export interface ITextResourceConfigurationService {
      *
      */
     getValue<T>(resource: URI | undefined, section?: string): T;
+
     getValue<T>(resource: URI | undefined, position?: IPosition, section?: string): T;
     /**
      * Inspects the values of the section for the given resource by applying language overrides.

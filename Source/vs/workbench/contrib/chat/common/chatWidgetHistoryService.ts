@@ -29,6 +29,7 @@ export interface IChatWidgetHistoryService {
     _serviceBrand: undefined;
     readonly onDidClearHistory: Event<void>;
     clearHistory(): void;
+
     getHistory(location: ChatAgentLocation): IChatHistoryEntry[];
     saveHistory(location: ChatAgentLocation, history: IChatHistoryEntry[]): void;
 }
@@ -43,11 +44,14 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
     private viewState: IChatHistory;
     private readonly _onDidClearHistory = new Emitter<void>();
     readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
+
     constructor(
     @IStorageService
     storageService: IStorageService) {
         this.memento = new Memento('interactive-session', storageService);
+
         const loadedState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatHistory;
+
         for (const provider in loadedState.history) {
             // Migration from old format
             loadedState.history[provider] = loadedState.history[provider].map(entry => typeof entry === 'string' ? { text: entry } : entry);
@@ -56,6 +60,7 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
     }
     getHistory(location: ChatAgentLocation): IChatHistoryEntry[] {
         const key = this.getKey(location);
+
         return this.viewState.history?.[key] ?? [];
     }
     private getKey(location: ChatAgentLocation): string {

@@ -12,12 +12,14 @@ declare const globalThis: {
     postMessage: (message: any) => void;
     onmessage: (event: MessageEvent) => void;
 };
+
 let initialized = false;
 export function initialize(factory: any) {
     if (initialized) {
         return;
     }
     initialized = true;
+
     const simpleWorker = new SimpleWorkerServer((msg) => {
         globalThis.postMessage(msg);
     }, (workerServer: IWorkerServer) => new EditorSimpleWorker(EditorWorkerHost.getChannel(workerServer), null));

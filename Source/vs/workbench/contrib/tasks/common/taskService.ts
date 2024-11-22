@@ -63,7 +63,9 @@ export interface ITaskService {
     configureAction(): Action;
     run(task: Task | undefined, options?: IProblemMatcherRunOptions): Promise<ITaskSummary | undefined>;
     inTerminal(): boolean;
+
     getActiveTasks(): Promise<Task[]>;
+
     getBusyTasks(): Promise<Task[]>;
     terminate(task: Task): Promise<ITaskTerminateResponse>;
     tasks(filter?: ITaskFilter): Promise<Task[]>;
@@ -73,15 +75,19 @@ export interface ITaskService {
      */
     getKnownTasks(filter?: ITaskFilter): Promise<Task[]>;
     taskTypes(): string[];
+
     getWorkspaceTasks(runSource?: TaskRunSource): Promise<Map<string, IWorkspaceFolderTaskResult>>;
+
     getSavedTasks(type: 'persistent' | 'historical'): Promise<(Task | ConfiguringTask)[]>;
     removeRecentlyUsedTask(taskRecentlyUsedKey: string): void;
     /**
      * @param alias The task's name, label or defined identifier.
      */
     getTask(workspaceFolder: IWorkspace | IWorkspaceFolder | string, alias: string | ITaskIdentifier, compareId?: boolean): Promise<Task | undefined>;
+
     tryResolveTask(configuringTask: ConfiguringTask): Promise<Task | undefined>;
     createSorter(): TaskSorter;
+
     getTaskDescription(task: Task | ConfiguringTask): string | undefined;
     customize(task: ContributedTask | CustomTask | ConfiguringTask, properties?: {}, openConfig?: boolean): Promise<void>;
     openConfig(task: CustomTask | ConfiguringTask | undefined): Promise<boolean>;

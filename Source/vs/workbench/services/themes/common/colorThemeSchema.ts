@@ -8,6 +8,7 @@ import { Extensions as JSONExtensions, IJSONContributionRegistry } from '../../.
 import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
 import { workbenchColorsSchemaId } from '../../../../platform/theme/common/colorRegistry.js';
 import { tokenStylingSchemaId } from '../../../../platform/theme/common/tokenClassificationRegistry.js';
+
 const textMateScopes = [
     'comment',
     'comment.block',
@@ -112,6 +113,7 @@ const textMateScopes = [
 ];
 export const textmateColorsSchemaId = 'vscode://schemas/textmate-colors';
 export const textmateColorGroupSchemaId = `${textmateColorsSchemaId}#/definitions/colorGroup`;
+
 const textmateColorSchema: IJSONSchema = {
     type: 'array',
     definitions: {
@@ -212,6 +214,7 @@ const textmateColorSchema: IJSONSchema = {
     }
 };
 export const colorThemeSchemaId = 'vscode://schemas/color-theme';
+
 const colorThemeSchema: IJSONSchema = {
     type: 'object',
     allowComments: true,

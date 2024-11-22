@@ -11,6 +11,7 @@ import { IExtensionManifest } from '../../../../platform/extensions/common/exten
 import { SyncDescriptor } from '../../../../platform/instantiation/common/descriptors.js';
 import { IExtensionFeatureTableRenderer, IRenderedData, ITableData, IRowData, IExtensionFeaturesRegistry, Extensions } from '../../../services/extensionManagement/common/extensionFeatures.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
+
 const NotebookEditorContribution = Object.freeze({
     type: 'type',
     displayName: 'displayName',
@@ -107,7 +108,9 @@ const notebookProviderContribution: IJSONSchema = {
         }
     }
 };
+
 const defaultRendererSnippet = Object.freeze({ id: '', displayName: '', mimeTypes: [''], entrypoint: '' });
+
 const notebookRendererContribution: IJSONSchema = {
     description: nls.localize('contributes.notebook.renderer', 'Contributes notebook output renderer provider.'),
     type: 'array',
@@ -206,6 +209,7 @@ const notebookRendererContribution: IJSONSchema = {
         ]
     }
 };
+
 const notebookPreloadContribution: IJSONSchema = {
     description: nls.localize('contributes.preload.provider', 'Contributes notebook preloads.'),
     type: 'array',
@@ -270,6 +274,7 @@ class NotebooksDataRenderer extends Disposable implements IExtensionFeatureTable
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.notebooks || [];
+
         if (!contrib.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -277,6 +282,7 @@ class NotebooksDataRenderer extends Disposable implements IExtensionFeatureTable
             nls.localize('Notebook id', "ID"),
             nls.localize('Notebook name', "Name"),
         ];
+
         const rows: IRowData[][] = contrib
             .sort((a, b) => a.type.localeCompare(b.type))
             .map(notebook => {
@@ -285,6 +291,7 @@ class NotebooksDataRenderer extends Disposable implements IExtensionFeatureTable
                 notebook.displayName
             ];
         });
+
         return {
             data: {
                 headers,
@@ -301,6 +308,7 @@ class NotebookRenderersDataRenderer extends Disposable implements IExtensionFeat
     }
     render(manifest: IExtensionManifest): IRenderedData<ITableData> {
         const contrib = manifest.contributes?.notebookRenderer || [];
+
         if (!contrib.length) {
             return { data: { headers: [], rows: [] }, dispose: () => { } };
         }
@@ -308,6 +316,7 @@ class NotebookRenderersDataRenderer extends Disposable implements IExtensionFeat
             nls.localize('Notebook renderer name', "Name"),
             nls.localize('Notebook mimetypes', "Mimetypes"),
         ];
+
         const rows: IRowData[][] = contrib
             .sort((a, b) => a.displayName.localeCompare(b.displayName))
             .map(notebookRenderer => {
@@ -316,6 +325,7 @@ class NotebookRenderersDataRenderer extends Disposable implements IExtensionFeat
                 notebookRenderer.mimeTypes.join(',')
             ];
         });
+
         return {
             data: {
                 headers,

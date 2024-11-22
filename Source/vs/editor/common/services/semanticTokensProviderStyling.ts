@@ -8,6 +8,7 @@ import { IThemeService } from '../../../platform/theme/common/themeService.js';
 import { ILogService, LogLevel } from '../../../platform/log/common/log.js';
 import { SparseMultilineTokens } from '../tokens/sparseMultilineTokens.js';
 import { ILanguageService } from '../languages/language.js';
+
 const enum SemanticTokensProviderStylingConstants {
     NO_STYLING = 0b01111111111111111111111111111111
 }
@@ -17,6 +18,7 @@ export class SemanticTokensProviderStyling {
     private _hasWarnedOverlappingTokens = false;
     private _hasWarnedInvalidLengthTokens = false;
     private _hasWarnedInvalidEditStart = false;
+
     constructor(private readonly _legend: SemanticTokensLegend, 
     @IThemeService
     private readonly _themeService: IThemeService, 
@@ -28,19 +30,26 @@ export class SemanticTokensProviderStyling {
     }
     public getMetadata(tokenTypeIndex: number, tokenModifierSet: number, languageId: string): number {
         const encodedLanguageId = this._languageService.languageIdCodec.encodeLanguageId(languageId);
+
         const entry = this._hashTable.get(tokenTypeIndex, tokenModifierSet, encodedLanguageId);
+
         let metadata: number;
+
         if (entry) {
             metadata = entry.metadata;
+
             if (ENABLE_TRACE && this._logService.getLevel() === LogLevel.Trace) {
                 this._logService.trace(`SemanticTokensProviderStyling [CACHED] ${tokenTypeIndex} / ${tokenModifierSet}: foreground ${TokenMetadata.getForeground(metadata)}, fontStyle ${TokenMetadata.getFontStyle(metadata).toString(2)}`);
             }
         }
         else {
             let tokenType = this._legend.tokenTypes[tokenTypeIndex];
+
             const tokenModifiers: string[] = [];
+
             if (tokenType) {
                 let modifierSet = tokenModifierSet;
+
                 for (let modifierIndex = 0; modifierSet > 0 && modifierIndex < this._legend.tokenModifiers.length; modifierIndex++) {
                     if (modifierSet & 1) {
                         tokenModifiers.push(this._legend.tokenModifiers[modifierIndex]);
@@ -52,11 +61,13 @@ export class SemanticTokensProviderStyling {
                     tokenModifiers.push('not-in-legend');
                 }
                 const tokenStyle = this._themeService.getColorTheme().getTokenStyleMetadata(tokenType, tokenModifiers, languageId);
+
                 if (typeof tokenStyle === 'undefined') {
                     metadata = SemanticTokensProviderStylingConstants.NO_STYLING;
                 }
                 else {
                     metadata = 0;
+
                     if (typeof tokenStyle.italic !== 'undefined') {
                         const italicBit = (tokenStyle.italic ? FontStyle.Italic : 0) << MetadataConsts.FONT_STYLE_OFFSET;
                         metadata |= italicBit | MetadataConsts.SEMANTIC_USE_ITALIC;
@@ -91,6 +102,7 @@ export class SemanticTokensProviderStyling {
                 tokenType = 'not-in-legend';
             }
             this._hashTable.add(tokenTypeIndex, tokenModifierSet, encodedLanguageId, metadata);
+
             if (ENABLE_TRACE && this._logService.getLevel() === LogLevel.Trace) {
                 this._logService.trace(`SemanticTokensProviderStyling ${tokenTypeIndex} (${tokenType}) / ${tokenModifierSet} (${tokenModifiers.join(' ')}): foreground ${TokenMetadata.getForeground(metadata)}, fontStyle ${TokenMetadata.getFontStyle(metadata).toString(2)}`);
             }
@@ -130,24 +142,34 @@ const enum SemanticColoringConstants {
 }
 export function toMultilineTokens2(tokens: SemanticTokens, styling: SemanticTokensProviderStyling, languageId: string): SparseMultilineTokens[] {
     const srcData = tokens.data;
+
     const tokenCount = (tokens.data.length / 5) | 0;
+
     const tokensPerArea = Math.max(Math.ceil(tokenCount / SemanticColoringConstants.DesiredMaxAreas), SemanticColoringConstants.DesiredTokensPerArea);
+
     const result: SparseMultilineTokens[] = [];
+
     let tokenIndex = 0;
+
     let lastLineNumber = 1;
+
     let lastStartCharacter = 0;
+
     while (tokenIndex < tokenCount) {
         const tokenStartIndex = tokenIndex;
+
         let tokenEndIndex = Math.min(tokenStartIndex + tokensPerArea, tokenCount);
         // Keep tokens on the same line in the same area...
         if (tokenEndIndex < tokenCount) {
             let smallTokenEndIndex = tokenEndIndex;
+
             while (smallTokenEndIndex - 1 > tokenStartIndex && srcData[5 * smallTokenEndIndex] === 0) {
                 smallTokenEndIndex--;
             }
             if (smallTokenEndIndex - 1 === tokenStartIndex) {
                 // there are so many tokens on this line that our area would be empty, we must now go right
                 let bigTokenEndIndex = tokenEndIndex;
+
                 while (bigTokenEndIndex + 1 < tokenCount && srcData[5 * bigTokenEndIndex] === 0) {
                     bigTokenEndIndex++;
                 }
@@ -158,22 +180,35 @@ export function toMultilineTokens2(tokens: SemanticTokens, styling: SemanticToke
             }
         }
         let destData = new Uint32Array((tokenEndIndex - tokenStartIndex) * 4);
+
         let destOffset = 0;
+
         let areaLine = 0;
+
         let prevLineNumber = 0;
+
         let prevEndCharacter = 0;
+
         while (tokenIndex < tokenEndIndex) {
             const srcOffset = 5 * tokenIndex;
+
             const deltaLine = srcData[srcOffset];
+
             const deltaCharacter = srcData[srcOffset + 1];
             // Casting both `lineNumber`, `startCharacter` and `endCharacter` here to uint32 using `|0`
             // to validate below with the actual values that will be inserted in the Uint32Array result
             const lineNumber = (lastLineNumber + deltaLine) | 0;
+
             const startCharacter = (deltaLine === 0 ? (lastStartCharacter + deltaCharacter) | 0 : deltaCharacter);
+
             const length = srcData[srcOffset + 2];
+
             const endCharacter = (startCharacter + length) | 0;
+
             const tokenTypeIndex = srcData[srcOffset + 3];
+
             const tokenModifierSet = srcData[srcOffset + 4];
+
             if (endCharacter <= startCharacter) {
                 // this token is invalid (most likely a negative length casted to uint32)
                 styling.warnInvalidLengthSemanticTokens(lineNumber, startCharacter + 1);
@@ -184,6 +219,7 @@ export function toMultilineTokens2(tokens: SemanticTokens, styling: SemanticToke
             }
             else {
                 const metadata = styling.getMetadata(tokenTypeIndex, tokenModifierSet, languageId);
+
                 if (metadata !== SemanticTokensProviderStylingConstants.NO_STYLING) {
                     if (areaLine === 0) {
                         areaLine = lineNumber;
@@ -215,6 +251,7 @@ class HashTableEntry {
     public readonly languageId: number;
     public readonly metadata: number;
     public next: HashTableEntry | null;
+
     constructor(tokenTypeIndex: number, tokenModifierSet: number, languageId: number, metadata: number) {
         this.tokenTypeIndex = tokenTypeIndex;
         this.tokenModifierSet = tokenModifierSet;
@@ -230,6 +267,7 @@ class HashTable {
     private _currentLength: number;
     private _growCount: number;
     private _elements: (HashTableEntry | null)[];
+
     constructor() {
         this._elementsCount = 0;
         this._currentLengthIndex = 0;
@@ -251,7 +289,9 @@ class HashTable {
     }
     public get(tokenTypeIndex: number, tokenModifierSet: number, languageId: number): HashTableEntry | null {
         const hash = this._hashFunc(tokenTypeIndex, tokenModifierSet, languageId);
+
         let p = this._elements[hash];
+
         while (p) {
             if (p.tokenTypeIndex === tokenTypeIndex && p.tokenModifierSet === tokenModifierSet && p.languageId === languageId) {
                 return p;
@@ -262,6 +302,7 @@ class HashTable {
     }
     public add(tokenTypeIndex: number, tokenModifierSet: number, languageId: number, metadata: number): void {
         this._elementsCount++;
+
         if (this._growCount !== 0 && this._elementsCount >= this._growCount) {
             // expand!
             const oldElements = this._elements;
@@ -270,8 +311,10 @@ class HashTable {
             this._growCount = Math.round(this._currentLengthIndex + 1 < HashTable._SIZES.length ? 2 / 3 * this._currentLength : 0);
             this._elements = [];
             HashTable._nullOutEntries(this._elements, this._currentLength);
+
             for (const first of oldElements) {
                 let p = first;
+
                 while (p) {
                     const oldNext = p.next;
                     p.next = null;

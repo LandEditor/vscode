@@ -55,6 +55,7 @@ export class InlineCompletionsController extends Disposable {
 		this.editor,
 		() => {
 			this._editorObs.forceUpdate();
+
 			return this.model.get()?.selectedInlineCompletion.get()?.toSingleTextEdit(undefined);
 		},
 		(item) => this._editorObs.forceUpdate(_tx => {
@@ -84,11 +85,15 @@ export class InlineCompletionsController extends Disposable {
 
 	private readonly _cursorIsInIndentation = derived(this, reader => {
 		const cursorPos = this._editorObs.cursorPosition.read(reader);
+
 		if (cursorPos === null) { return false; }
 		const model = this._editorObs.model.read(reader);
+
 		if (!model) { return false; }
 		this._editorObs.versionId.read(reader);
+
 		const indentMaxColumn = model.getLineIndentColumn(cursorPos.lineNumber);
+
 		return cursorPos.column <= indentMaxColumn;
 	});
 
@@ -100,6 +105,7 @@ export class InlineCompletionsController extends Disposable {
 	public readonly model = derivedDisposable<InlineCompletionsModel | undefined>(this, reader => {
 		if (this._editorObs.isReadonly.read(reader)) { return undefined; }
 		const textModel = this._editorObs.model.read(reader);
+
 		if (!textModel) { return undefined; }
 
 		const model: InlineCompletionsModel = this._instantiationService.createInstance(
@@ -116,11 +122,13 @@ export class InlineCompletionsController extends Disposable {
 			this.optionInlineEditsEnabled,
 			this.editor,
 		);
+
 		return model;
 	}).recomputeInitiallyAndOnChange(this._store);
 
 	private readonly _ghostTexts = derived(this, (reader) => {
 		const model = this.model.read(reader);
+
 		return model?.ghostTexts.read(reader) ?? [];
 	});
 	private readonly _stablizedGhostTexts = convertItemsToStableObservables(this._ghostTexts, this._store);
@@ -137,6 +145,7 @@ export class InlineCompletionsController extends Disposable {
 
 	private readonly _inlineEdit = derived(this, reader => {
 		const s = this.model.read(reader)?.state.read(reader);
+
 		if (s?.kind === 'inlineEdit') {
 			return s.inlineEdit;
 		}
@@ -185,6 +194,7 @@ export class InlineCompletionsController extends Disposable {
 				inlineSuggestCommitId,
 				'acceptSelectedSuggestion',
 			]);
+
 			if (commands.has(e.commandId) && editor.hasTextFocus() && this._enabled.get()) {
 				this._editorObs.forceUpdate(tx => {
 					/** @description onDidExecuteCommand */
@@ -199,6 +209,7 @@ export class InlineCompletionsController extends Disposable {
 					return;
 				}
 				const m = this.model.get();
+
 				if (!m) { return; }
 				if (m.inlineCompletionState.get()?.primaryGhostText) {
 					this.model.get()?.stop();
@@ -231,6 +242,7 @@ export class InlineCompletionsController extends Disposable {
 		this._register(autorun(reader => {
 			/** @description InlineCompletionsController.forceRenderingAbove */
 			const state = this.model.read(reader)?.inlineCompletionState.read(reader);
+
 			if (state?.suggestItem) {
 				if (state.primaryGhostText.lineCount >= 2) {
 					this._suggestWidgetAdaptor.forceRenderingAbove();
@@ -245,7 +257,9 @@ export class InlineCompletionsController extends Disposable {
 
 		const currentInlineCompletionBySemanticId = derivedObservableWithCache<string | undefined>(this, (reader, last) => {
 			const model = this.model.read(reader);
+
 			const state = model?.inlineCompletionState.read(reader);
+
 			if (this._suggestWidgetSelectedItem.get()) {
 				return last;
 			}
@@ -254,11 +268,14 @@ export class InlineCompletionsController extends Disposable {
 		this._register(runOnChangeWithStore(derived(reader => {
 			this._playAccessibilitySignal.read(reader);
 			currentInlineCompletionBySemanticId.read(reader);
+
 			return {};
 		}), async (_value, _, _deltas, store) => {
 			/** @description InlineCompletionsController.playAccessibilitySignalAndReadSuggestion */
 			const model = this.model.get();
+
 			const state = model?.inlineCompletionState.get();
+
 			if (!state || !model) { return; }
 			const lineText = model.textModel.getLineContent(state.primaryGhostText.lineNumber);
 
@@ -266,6 +283,7 @@ export class InlineCompletionsController extends Disposable {
 			await waitForState(this._suggestWidgetSelectedItem, isUndefined, () => false, cancelOnDispose(store));
 
 			await this._accessibilitySignalService.playSignal(AccessibilitySignal.inlineSuggestion);
+
 			if (this.editor.getOption(EditorOption.screenReaderAnnounceInlineSuggestion)) {
 				this._provideScreenReaderUpdate(state.primaryGhostText.renderForScreenReader(lineText));
 			}
@@ -275,6 +293,7 @@ export class InlineCompletionsController extends Disposable {
 
 		this._register(createStyleSheetFromObservable(derived(reader => {
 			const fontFamily = this._fontFamily.read(reader);
+
 			if (fontFamily === '' || fontFamily === 'default') { return ''; }
 			return `
 .monaco-editor .ghost-text-decoration,
@@ -298,6 +317,7 @@ export class InlineCompletionsController extends Disposable {
 		this._register(contextKeySvcObs.bind(InlineCompletionContextKeys.hasSelection, reader => !this._editorObs.cursorSelection.read(reader)?.isEmpty()));
 		this._register(contextKeySvcObs.bind(InlineCompletionContextKeys.cursorAtInlineEdit, this.model.map((m, reader) => {
 			const s = m?.state?.read(reader);
+
 			return s?.kind === 'inlineEdit' && s.cursorAtInlineEdit;
 		})));
 		this._register(contextKeySvcObs.bind(InlineCompletionContextKeys.tabShouldAcceptInlineEdit, this.model.map((m, r) => !!m?.tabShouldAcceptInlineEdit.read(r))));
@@ -312,8 +332,11 @@ export class InlineCompletionsController extends Disposable {
 
 	private _provideScreenReaderUpdate(content: string): void {
 		const accessibleViewShowing = this._contextKeyService.getContextKeyValue<boolean>('accessibleViewIsShown');
+
 		const accessibleViewKeybinding = this._keybindingService.lookupKeybinding('editor.action.accessibleView');
+
 		let hint: string | undefined;
+
 		if (!accessibleViewShowing && accessibleViewKeybinding && this.editor.getOption(EditorOption.inlineCompletionsAccessibilityVerbose)) {
 			hint = localize('showAccessibleViewHint', "Inspect this in the accessible view ({0})", accessibleViewKeybinding.getAriaLabel());
 		}
@@ -322,6 +345,7 @@ export class InlineCompletionsController extends Disposable {
 
 	public shouldShowHoverAt(range: Range) {
 		const ghostText = this.model.get()?.primaryGhostText.get();
+
 		if (ghostText) {
 			return ghostText.parts.some(p => range.containsPosition(new Position(ghostText.lineNumber, p.column)));
 		}

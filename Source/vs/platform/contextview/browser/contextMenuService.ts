@@ -81,10 +81,12 @@ export namespace ContextMenuMenuDelegate {
 			return delegate;
 		}
 		const { menuId, menuActionOptions, contextKeyService } = delegate;
+
 		return {
 			...delegate,
 			getActions: () => {
 				let target: IAction[] = [];
+
 				if (menuId) {
 					const menu = menuService.getMenuActions(menuId, contextKeyService ?? globalContextKeyService, menuActionOptions);
 					target = getFlatContextMenuActions(menu);

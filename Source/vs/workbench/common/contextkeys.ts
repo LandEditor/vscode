@@ -137,6 +137,7 @@ export class ResourceContextKey {
     private readonly _extensionKey: IContextKey<string | null>;
     private readonly _hasResource: IContextKey<boolean>;
     private readonly _isFileSystemResource: IContextKey<boolean>;
+
     constructor(
     @IContextKeyService
     private readonly _contextKeyService: IContextKeyService, 
@@ -175,8 +176,10 @@ export class ResourceContextKey {
     }
     private _setLangId(): void {
         const value = this.get();
+
         if (!value) {
             this._langIdKey.set(null);
+
             return;
         }
         const langId = this._modelService.getModel(value)?.getLanguageId() ?? this._languageService.guessLanguageIdByFilepathOrFirstLine(value);
@@ -184,6 +187,7 @@ export class ResourceContextKey {
     }
     set(value: URI | null | undefined) {
         value = value ?? undefined;
+
         if (isEqual(this._value, value)) {
             return;
         }
@@ -228,9 +232,11 @@ export class ResourceContextKey {
 export function applyAvailableEditorIds(contextKey: IContextKey<string>, editor: EditorInput | undefined | null, editorResolverService: IEditorResolverService): void {
     if (!editor) {
         contextKey.set('');
+
         return;
     }
     const editorResource = editor.resource;
+
     if (editorResource?.scheme === Schemas.untitled && editor.editorId !== DEFAULT_EDITOR_ASSOCIATION.id) {
         // Non text editor untitled files cannot be easily serialized between extensions
         // so instead we disable this context key to prevent common commands that act on the active editor

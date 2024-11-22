@@ -16,6 +16,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
     private static readonly STORAGE_CHANGE_DEBOUNCE_TIME = 100;
     private readonly onDidChangeApplicationStorageEmitter = this._register(new Emitter<ISerializableItemsChangeEvent>());
     private readonly mapProfileToOnDidChangeProfileStorageEmitter = new Map<string /* profile ID */, Emitter<ISerializableItemsChangeEvent>>();
+
     constructor(private readonly logService: ILogService, private readonly storageMainService: IStorageMainService) {
         super();
         this.registerStorageChangeListeners(storageMainService.applicationStorage, this.onDidChangeApplicationStorageEmitter);
@@ -40,9 +41,11 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
     }
     private serializeStorageChangeEvents(events: IStorageChangeEvent[], storage: IStorageMain): ISerializableItemsChangeEvent {
         const changed = new Map<Key, Value>();
+
         const deleted = new Set<Key>();
         events.forEach(event => {
             const existing = storage.get(event.key);
+
             if (typeof existing === 'string') {
                 changed.set(event.key, existing);
             }
@@ -50,6 +53,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
                 deleted.add(event.key);
             }
         });
+
         return {
             changed: Array.from(changed.entries()),
             deleted: Array.from(deleted.values())
@@ -65,6 +69,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
                 }
                 // With profile: profile scope for the profile
                 let profileStorageChangeEmitter = this.mapProfileToOnDidChangeProfileStorageEmitter.get(profile.id);
+
                 if (!profileStorageChangeEmitter) {
                     profileStorageChangeEmitter = this._register(new Emitter<ISerializableItemsChangeEvent>());
                     this.registerStorageChangeListeners(this.storageMainService.profileStorage(profile), profileStorageChangeEmitter);
@@ -78,6 +83,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
     //#endregion
     async call(_: unknown, command: string, arg: IBaseSerializableStorageRequest): Promise<any> {
         const profile = arg.profile ? revive<IUserDataProfile>(arg.profile) : undefined;
+
         const workspace = reviveIdentifier(arg.workspace);
         // Get storage to be ready
         const storage = await this.withStorageInitialized(profile, workspace);
@@ -88,12 +94,14 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
             }
             case 'updateItems': {
                 const items: ISerializableUpdateRequest = arg;
+
                 if (items.insert) {
                     for (const [key, value] of items.insert) {
                         storage.set(key, value);
                     }
                 }
                 items.delete?.forEach(key => storage.delete(key));
+
                 break;
             }
             case 'optimize': {
@@ -101,6 +109,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
             }
             case 'isUsed': {
                 const path = arg.payload as string | undefined;
+
                 if (typeof path === 'string') {
                     return this.storageMainService.isUsed(path);
                 }
@@ -111,6 +120,7 @@ export class StorageDatabaseChannel extends Disposable implements IServerChannel
     }
     private async withStorageInitialized(profile: IUserDataProfile | undefined, workspace: IAnyWorkspaceIdentifier | undefined): Promise<IStorageMain> {
         let storage: IStorageMain;
+
         if (workspace) {
             storage = this.storageMainService.workspaceStorage(workspace);
         }

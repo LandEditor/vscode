@@ -18,8 +18,11 @@ export interface IMergeResult {
 }
 export function merge(local: IStringDictionary<string>, remote: IStringDictionary<string> | null, base: IStringDictionary<string> | null): IMergeResult {
     const localAdded: IStringDictionary<string> = {};
+
     const localUpdated: IStringDictionary<string> = {};
+
     const localRemoved: Set<string> = new Set<string>();
+
     if (!remote) {
         return {
             local: { added: localAdded, updated: localUpdated, removed: [...localRemoved.values()] },
@@ -28,6 +31,7 @@ export function merge(local: IStringDictionary<string>, remote: IStringDictionar
         };
     }
     const localToRemote = compare(local, remote);
+
     if (localToRemote.added.size === 0 && localToRemote.removed.size === 0 && localToRemote.updated.size === 0) {
         // No changes found between local and remote.
         return {
@@ -37,10 +41,15 @@ export function merge(local: IStringDictionary<string>, remote: IStringDictionar
         };
     }
     const baseToLocal = compare(base, local);
+
     const baseToRemote = compare(base, remote);
+
     const remoteAdded: IStringDictionary<string> = {};
+
     const remoteUpdated: IStringDictionary<string> = {};
+
     const remoteRemoved: Set<string> = new Set<string>();
+
     const conflicts: Set<string> = new Set<string>();
     // Removed snippets in Local
     for (const key of baseToLocal.removed.values()) {
@@ -144,16 +153,23 @@ function compare(from: IStringDictionary<string> | null, to: IStringDictionary<s
     updated: Set<string>;
 } {
     const fromKeys = from ? Object.keys(from) : [];
+
     const toKeys = to ? Object.keys(to) : [];
+
     const added = toKeys.filter(key => !fromKeys.includes(key)).reduce((r, key) => { r.add(key); return r; }, new Set<string>());
+
     const removed = fromKeys.filter(key => !toKeys.includes(key)).reduce((r, key) => { r.add(key); return r; }, new Set<string>());
+
     const updated: Set<string> = new Set<string>();
+
     for (const key of fromKeys) {
         if (removed.has(key)) {
             continue;
         }
         const fromSnippet = from![key]!;
+
         const toSnippet = to![key]!;
+
         if (fromSnippet !== toSnippet) {
             updated.add(key);
         }
@@ -162,5 +178,6 @@ function compare(from: IStringDictionary<string> | null, to: IStringDictionary<s
 }
 export function areSame(a: IStringDictionary<string>, b: IStringDictionary<string>): boolean {
     const { added, removed, updated } = compare(a, b);
+
     return added.size === 0 && removed.size === 0 && updated.size === 0;
 }

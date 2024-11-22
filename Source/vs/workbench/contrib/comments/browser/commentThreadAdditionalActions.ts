@@ -19,6 +19,7 @@ export class CommentThreadAdditionalActions<T extends IRange | ICellRange> exten
     private _container: HTMLElement | null;
     private _buttonBar: HTMLElement | null;
     private _commentFormActions!: CommentFormActions;
+
     constructor(container: HTMLElement, private _commentThread: languages.CommentThread<T>, private _contextKeyService: IContextKeyService, private _commentMenus: CommentMenus, private _actionRunDelegate: (() => void) | null, 
     @IKeybindingService
     private _keybindingService: IKeybindingService, 
@@ -26,6 +27,7 @@ export class CommentThreadAdditionalActions<T extends IRange | ICellRange> exten
     private _contextMenuService: IContextMenuService) {
         super();
         this._container = dom.append(container, dom.$('.comment-additional-actions'));
+
         dom.append(this._container, dom.$('.section-separator'));
         this._buttonBar = dom.append(this._container, dom.$('.button-bar'));
         this._createAdditionalActions(this._buttonBar);
@@ -41,14 +43,17 @@ export class CommentThreadAdditionalActions<T extends IRange | ICellRange> exten
         // Show the menu if at least one action is enabled.
         for (const group of groups) {
             const [, actions] = group;
+
             for (const action of actions) {
                 if (action.enabled) {
                     this._showMenu();
+
                     return;
                 }
                 for (const subAction of (action as SubmenuItemAction).actions ?? []) {
                     if (subAction.enabled) {
                         this._showMenu();
+
                         return;
                     }
                 }

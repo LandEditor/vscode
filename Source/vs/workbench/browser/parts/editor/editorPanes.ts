@@ -71,6 +71,7 @@ export class EditorPanes extends Disposable {
     get maximumWidth() { return this._activeEditorPane?.maximumWidth ?? DEFAULT_EDITOR_MAX_DIMENSIONS.width; }
     get maximumHeight() { return this._activeEditorPane?.maximumHeight ?? DEFAULT_EDITOR_MAX_DIMENSIONS.height; }
     private _activeEditorPane: EditorPane | null = null;
+
     get activeEditorPane(): IVisibleEditorPane | null { return this._activeEditorPane as IVisibleEditorPane | null; }
     private readonly editorPanes: EditorPane[] = [];
     private readonly mapEditorPaneToPendingSetInput = new Map<EditorPane, Promise<void>>();
@@ -79,6 +80,7 @@ export class EditorPanes extends Disposable {
     private boundarySashes: IBoundarySashes | undefined;
     private readonly editorOperation = this._register(new LongRunningOperation(this.editorProgressService));
     private readonly editorPanesRegistry = Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane);
+
     constructor(private readonly editorGroupParent: HTMLElement, private readonly editorPanesParent: HTMLElement, private readonly groupView: IEditorGroupView, 
     @IWorkbenchLayoutService
     private readonly layoutService: IWorkbenchLayoutService, 
@@ -107,7 +109,9 @@ export class EditorPanes extends Disposable {
         // For that we explicitly call into the group-view
         // to handle errors properly.
         const editor = this._activeEditorPane?.input;
+
         const options = this._activeEditorPane?.options;
+
         if (editor?.hasCapability(EditorInputCapabilities.RequiresTrust)) {
             this.groupView.openEditor(editor, options);
         }
@@ -135,6 +139,7 @@ export class EditorPanes extends Disposable {
         this.logService.error(error);
         // Show as modal dialog when explicit user action unless disabled
         let errorHandled = false;
+
         if (options?.source === EditorOpenSource.USER && (!isEditorOpenError(error) || error.allowDialog)) {
             errorHandled = await this.doShowErrorDialog(error, editor);
         }
@@ -144,6 +149,7 @@ export class EditorPanes extends Disposable {
         }
         // Show as editor placeholder: pass over the error to display
         const editorPlaceholderOptions: IErrorEditorPlaceholderOptions = { ...options };
+
         if (!isCancellationError(error)) {
             editorPlaceholderOptions.error = error;
         }
@@ -154,12 +160,17 @@ export class EditorPanes extends Disposable {
     }
     private async doShowErrorDialog(error: Error, editor: EditorInput): Promise<boolean> {
         let severity = Severity.Error;
+
         let message: string | undefined = undefined;
+
         let detail: string | undefined = toErrorMessage(error);
+
         let errorActions: readonly IAction[] | undefined = undefined;
+
         if (isEditorOpenError(error)) {
             errorActions = error.actions;
             severity = error.forceSeverity ?? Severity.Error;
+
             if (error.forceMessage) {
                 message = error.message;
                 detail = undefined;
@@ -169,6 +180,7 @@ export class EditorPanes extends Disposable {
             message = localize('editorOpenErrorDialog', "Unable to open '{0}'", editor.getName());
         }
         const buttons: IPromptButton<IAction | undefined>[] = [];
+
         if (errorActions && errorActions.length > 0) {
             for (const errorAction of errorActions) {
                 buttons.push({
@@ -184,6 +196,7 @@ export class EditorPanes extends Disposable {
             });
         }
         let cancelButton: IPromptCancelButton<undefined> | undefined = undefined;
+
         if (buttons.length === 1) {
             cancelButton = {
                 run: () => {
@@ -200,8 +213,10 @@ export class EditorPanes extends Disposable {
             buttons,
             cancelButton
         });
+
         if (result) {
             const errorActionResult = result.run();
+
             if (errorActionResult instanceof Promise) {
                 errorActionResult.catch(error => this.dialogService.error(toErrorMessage(error)));
             }
@@ -221,6 +236,7 @@ export class EditorPanes extends Disposable {
         // this has been explicitly disabled.
         if (!cancelled) {
             const focus = !options || !options.preserveFocus;
+
             if (focus && this.shouldRestoreFocus(activeElement)) {
                 pane.focus();
             }
@@ -238,10 +254,12 @@ export class EditorPanes extends Disposable {
             return true; // restore focus if nothing was focused
         }
         const activeElement = getActiveElement();
+
         if (!activeElement || activeElement === expectedActiveElement.ownerDocument.body) {
             return true; // restore focus if nothing is focused currently
         }
         const same = expectedActiveElement === activeElement;
+
         if (same) {
             return true; // restore focus if same element is still active
         }
@@ -311,12 +329,14 @@ export class EditorPanes extends Disposable {
     private doInstantiateEditorPane(descriptor: IEditorPaneDescriptor): EditorPane {
         // Return early if already instantiated
         const existingEditorPane = this.editorPanes.find(editorPane => descriptor.describes(editorPane));
+
         if (existingEditorPane) {
             return existingEditorPane;
         }
         // Otherwise instantiate new
         const editorPane = this._register(descriptor.instantiate(this.instantiationService, this.groupView));
         this.editorPanes.push(editorPane);
+
         return editorPane;
     }
     private doSetActiveEditorPane(editorPane: EditorPane | null) {
@@ -339,6 +359,7 @@ export class EditorPanes extends Disposable {
         // apply the options unless the options instruct us to
         // force open it even if it is the same
         let inputMatches = editorPane.input?.matches(editor);
+
         if (inputMatches && !options?.forceReload) {
             // We have to await a pending `setInput()` call for this
             // pane before we can call into `setOptions()`, otherwise
@@ -348,6 +369,7 @@ export class EditorPanes extends Disposable {
             }
             // At this point, the input might have changed, so we check again
             inputMatches = editorPane.input?.matches(editor);
+
             if (inputMatches) {
                 editorPane.setOptions(options);
             }
@@ -357,7 +379,9 @@ export class EditorPanes extends Disposable {
         // and to support cancellation. Any new operation that is
         // started will cancel the previous one.
         const operation = this.editorOperation.start(this.layoutService.isRestored() ? 800 : 3200);
+
         let cancelled = false;
+
         try {
             // Clear the current input before setting new input
             // This ensures that a slow loading input will not
@@ -368,6 +392,7 @@ export class EditorPanes extends Disposable {
             const pendingSetInput = editorPane.setInput(editor, options, context, operation.token);
             this.mapEditorPaneToPendingSetInput.set(editorPane, pendingSetInput);
             await pendingSetInput;
+
             if (!operation.isCurrent()) {
                 cancelled = true;
             }
@@ -403,6 +428,7 @@ export class EditorPanes extends Disposable {
         this.mapEditorPaneToPendingSetInput.delete(this._activeEditorPane);
         // Remove editor pane from parent
         const editorPaneContainer = this._activeEditorPane.getContainer();
+
         if (editorPaneContainer) {
             editorPaneContainer.remove();
             hide(editorPaneContainer);

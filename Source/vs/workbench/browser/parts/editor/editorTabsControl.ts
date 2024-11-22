@@ -57,6 +57,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
         // allow to preserve the context that is given to us in case
         // it applies.
         let mergedContext = this.context;
+
         if (context?.preserveFocus) {
             mergedContext = {
                 ...this.context,
@@ -77,11 +78,13 @@ export interface IEditorTabsControl extends IDisposable {
     pinEditor(editor: EditorInput): void;
     stickEditor(editor: EditorInput): void;
     unstickEditor(editor: EditorInput): void;
+
     setActive(isActive: boolean): void;
     updateEditorSelections(): void;
     updateEditorLabel(editor: EditorInput): void;
     updateEditorDirty(editor: EditorInput): void;
     layout(dimensions: IEditorTitleControlDimensions): Dimension;
+
     getHeight(): number;
 }
 export abstract class EditorTabsControl extends Themable implements IEditorTabsControl {
@@ -107,6 +110,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     private sideBySideEditorContext: IContextKey<boolean>;
     private groupLockedContext: IContextKey<boolean>;
     private renderDropdownAsChildElement: boolean;
+
     constructor(protected readonly parent: HTMLElement, protected readonly editorPartsView: IEditorPartsView, protected readonly groupsView: IEditorGroupsView, protected readonly groupView: IEditorGroupView, protected readonly tabsModel: IReadonlyEditorGroupModel, 
     @IContextMenuService
     protected readonly contextMenuService: IContextMenuService, 
@@ -128,9 +132,11 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     private readonly hostService: IHostService) {
         super(themeService);
         this.renderDropdownAsChildElement = false;
+
         const container = this.create(parent);
         // Context Keys
         this.contextMenuContextKeyService = this._register(this.contextKeyService.createScoped(container));
+
         const scopedInstantiationService = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.contextMenuContextKeyService])));
         this.resourceContext = this._register(scopedInstantiationService.createInstance(ResourceContextKey));
         this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(this.contextMenuContextKeyService);
@@ -144,6 +150,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     protected create(parent: HTMLElement): HTMLElement {
         this.updateTabHeight();
+
         return parent;
     }
     private get editorActionsEnabled(): boolean {
@@ -157,6 +164,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     private handleEditorActionToolBarVisibility(container: HTMLElement): void {
         const editorActionsEnabled = this.editorActionsEnabled;
+
         const editorActionsVisible = !!this.editorActionsToolbar;
         // Create toolbar if it is enabled (and not yet created)
         if (editorActionsEnabled && !editorActionsVisible) {
@@ -202,6 +210,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
         // Check Active Editor
         if (activeEditorPane instanceof EditorPane) {
             const result = activeEditorPane.getActionViewItem(action, options);
+
             if (result) {
                 return result;
             }
@@ -214,9 +223,12 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
             return;
         }
         this.editorActionsDisposables.clear();
+
         const editorActions = this.groupView.createEditorActions(this.editorActionsDisposables);
         this.editorActionsDisposables.add(editorActions.onDidChange(() => this.updateEditorActionsToolbar()));
+
         const editorActionsToolbar = assertIsDefined(this.editorActionsToolbar);
+
         const { primary, secondary } = this.prepareEditorActions(editorActions.actions);
         editorActionsToolbar.setActions(prepareActions(primary), prepareActions(secondary));
     }
@@ -238,11 +250,13 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
         const isNewWindowOperation = this.isNewWindowOperation(e);
         // Set editor group as transfer
         this.groupTransfer.setData([new DraggedEditorGroupIdentifier(this.groupView.id)], DraggedEditorGroupIdentifier.prototype);
+
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'copyMove';
         }
         // Drag all tabs of the group if tabs are enabled
         let hasDataTransfer = false;
+
         if (this.groupsView.partOptions.showTabs === 'multiple') {
             hasDataTransfer = this.doFillResourceDataTransfers(this.groupView.getEditors(EditorsOrder.SEQUENTIAL), e, isNewWindowOperation);
         }
@@ -259,6 +273,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
         // Drag Image
         if (this.groupView.activeEditor) {
             let label = this.groupView.activeEditor.getName();
+
             if (this.groupsView.partOptions.showTabs === 'multiple' && this.groupView.count > 1) {
                 label = localize('draggedEditorGroup', "{0} (+{1})", label, this.groupView.count - 1);
             }
@@ -268,12 +283,14 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     protected async onGroupDragEnd(e: DragEvent, previousDragEvent: DragEvent | undefined, element: HTMLElement, isNewWindowOperation: boolean): Promise<void> {
         this.groupTransfer.clearData(DraggedEditorGroupIdentifier.prototype);
+
         if (e.target !== element ||
             !isNewWindowOperation ||
             isWindowDraggedOver()) {
             return; // drag to open in new window is disabled
         }
         const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(e, element);
+
         if (!auxiliaryEditorPart) {
             return;
         }
@@ -285,18 +302,23 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     protected async maybeCreateAuxiliaryEditorPartAt(e: DragEvent, offsetElement: HTMLElement): Promise<IAuxiliaryEditorPart | undefined> {
         const { point, display } = await this.hostService.getCursorScreenPoint() ?? { point: { x: e.screenX, y: e.screenY } };
+
         const window = getActiveWindow();
+
         if (window.document.visibilityState === 'visible' && window.document.hasFocus()) {
             if (point.x >= window.screenX && point.x <= window.screenX + window.outerWidth && point.y >= window.screenY && point.y <= window.screenY + window.outerHeight) {
                 return; // refuse to create as long as the mouse was released over active focused window to reduce chance of opening by accident
             }
         }
         const offsetX = offsetElement.offsetWidth / 2;
+
         const offsetY = 30 /* take title bar height into account (approximation) */ + offsetElement.offsetHeight / 2;
+
         const bounds = {
             x: point.x - offsetX,
             y: point.y - offsetY
         };
+
         if (display) {
             if (bounds.x < display.x) {
                 bounds.x = display.x; // prevent overflow to the left
@@ -318,11 +340,13 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
             return true; // Singleton editors cannot be split
         }
         const isCopy = (e.ctrlKey && !isMacintosh) || (e.altKey && isMacintosh);
+
         return (!isCopy || sourceGroup === this.groupView.id);
     }
     protected doFillResourceDataTransfers(editors: readonly EditorInput[], e: DragEvent, disableStandardTransfer: boolean): boolean {
         if (editors.length) {
             this.instantiationService.invokeFunction(fillEditorsDragData, editors.map(editor => ({ editor, groupId: this.groupView.id })), e, { disableStandardTransfer });
+
             return true;
         }
         return false;
@@ -340,6 +364,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
         applyAvailableEditorIds(this.editorAvailableEditorIds, editor, this.editorResolverService);
         // Find target anchor
         let anchor: HTMLElement | StandardMouseEvent = node;
+
         if (isMouseEvent(e)) {
             anchor = new StandardMouseEvent(getWindow(node), e);
         }
@@ -359,6 +384,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     protected getKeybindingLabel(action: IAction): string | undefined {
         const keybinding = this.getKeybinding(action);
+
         return keybinding ? keybinding.getLabel() ?? undefined : undefined;
     }
     protected get tabHeight() {
@@ -366,6 +392,7 @@ export abstract class EditorTabsControl extends Themable implements IEditorTabsC
     }
     protected getHoverTitle(editor: EditorInput): string | IManagedHoverTooltipMarkdownString {
         const title = editor.getTitle(Verbosity.LONG);
+
         if (!this.tabsModel.isPinned(editor)) {
             return {
                 markdown: new MarkdownString('', { supportThemeIcons: true, isTrusted: true }).

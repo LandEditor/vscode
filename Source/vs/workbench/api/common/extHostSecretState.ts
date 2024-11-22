@@ -13,6 +13,7 @@ export class ExtHostSecretState implements ExtHostSecretStateShape {
         key: string;
     }>();
     readonly onDidChangePassword = this._onDidChangePassword.event;
+
     constructor(mainContext: IExtHostRpcService) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadSecretState);
     }

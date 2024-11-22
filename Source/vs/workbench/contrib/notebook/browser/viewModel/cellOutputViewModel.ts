@@ -9,12 +9,14 @@ import { ICellOutputViewModel, IGenericCellViewModel } from '../notebookBrowser.
 import { NotebookTextModel } from '../../common/model/notebookTextModel.js';
 import { ICellOutput, IOrderedMimeType, RENDERER_NOT_AVAILABLE } from '../../common/notebookCommon.js';
 import { INotebookService } from '../../common/notebookService.js';
+
 let handle = 0;
 export class CellOutputViewModel extends Disposable implements ICellOutputViewModel {
     private _onDidResetRendererEmitter = this._register(new Emitter<void>());
     readonly onDidResetRenderer = this._onDidResetRendererEmitter.event;
     private alwaysShow = false;
     visible = observableValue<boolean>('outputVisible', false);
+
     setVisible(visible = true, force: boolean = false) {
         if (!visible && this.alwaysShow) {
             // we are forced to show, so no-op
@@ -26,10 +28,12 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
         this.visible.set(visible, undefined);
     }
     outputHandle = handle++;
+
     get model(): ICellOutput {
         return this._outputRawData;
     }
     private _pickedMimeType: IOrderedMimeType | undefined;
+
     get pickedMimeType() {
         return this._pickedMimeType;
     }
@@ -44,6 +48,7 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
             return false;
         }
         const firstMimeType = this._outputRawData.outputs[0].mime;
+
         return this._outputRawData.outputs.some(output => output.mime !== firstMimeType);
     }
     resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [
@@ -51,7 +56,9 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
         number
     ] {
         const mimeTypes = this._notebookService.getOutputMimeTypeInfo(textModel, kernelProvides, this.model);
+
         const index = mimeTypes.findIndex(mimeType => mimeType.rendererId !== RENDERER_NOT_AVAILABLE && mimeType.isTrusted);
+
         return [mimeTypes, Math.max(index, 0)];
     }
     resetRenderer() {

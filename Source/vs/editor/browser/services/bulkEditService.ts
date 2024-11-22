@@ -92,6 +92,7 @@ export type IBulkEditPreviewHandler = (edits: ResourceEdit[], options?: IBulkEdi
 export interface IBulkEditService {
     readonly _serviceBrand: undefined;
     hasPreviewHandler(): boolean;
+
     setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable;
     apply(edit: ResourceEdit[] | WorkspaceEdit, options?: IBulkEditOptions): Promise<IBulkEditResult>;
 }

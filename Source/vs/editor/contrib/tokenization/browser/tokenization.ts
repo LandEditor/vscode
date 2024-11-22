@@ -21,6 +21,7 @@ class ForceRetokenizeAction extends EditorAction {
 		}
 		const model = editor.getModel();
 		model.tokenization.resetTokenization();
+
 		const sw = new StopWatch();
 		model.tokenization.forceTokenization(model.getLineCount());
 		sw.stop();

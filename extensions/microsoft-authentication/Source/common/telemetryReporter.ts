@@ -12,6 +12,7 @@ export const enum MicrosoftAccountType {
 export class MicrosoftAuthenticationTelemetryReporter implements IExperimentationTelemetry {
     private sharedProperties: Record<string, string> = {};
     protected _telemetryReporter: TelemetryReporter;
+
     constructor(aiKey: string) {
         this._telemetryReporter = new TelemetryReporter(aiKey);
     }

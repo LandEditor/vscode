@@ -10,7 +10,9 @@ import { AppResourcePath, FileAccess } from '../network.js';
 import { isWeb } from '../platform.js';
 import * as strings from '../strings.js';
 import { URI } from '../uri.js';
+
 const DEFAULT_CHANNEL = 'default';
+
 const INITIALIZE = '$initialize';
 export interface IWorker extends IDisposable {
     getId(): number;
@@ -48,22 +50,27 @@ const enum MessageType {
 }
 class RequestMessage {
     public readonly type = MessageType.Request;
+
     constructor(public readonly vsWorker: number, public readonly req: string, public readonly channel: string, public readonly method: string, public readonly args: any[]) { }
 }
 class ReplyMessage {
     public readonly type = MessageType.Reply;
+
     constructor(public readonly vsWorker: number, public readonly seq: string, public readonly res: any, public readonly err: any) { }
 }
 class SubscribeEventMessage {
     public readonly type = MessageType.SubscribeEvent;
+
     constructor(public readonly vsWorker: number, public readonly req: string, public readonly channel: string, public readonly eventName: string, public readonly arg: any) { }
 }
 class EventMessage {
     public readonly type = MessageType.Event;
+
     constructor(public readonly vsWorker: number, public readonly req: string, public readonly event: any) { }
 }
 class UnsubscribeEventMessage {
     public readonly type = MessageType.UnsubscribeEvent;
+
     constructor(public readonly vsWorker: number, public readonly req: string) { }
 }
 type Message = RequestMessage | ReplyMessage | SubscribeEventMessage | EventMessage | UnsubscribeEventMessage;
@@ -85,6 +92,7 @@ class SimpleWorkerProtocol {
     private _pendingEmitters: Map<string, Emitter<any>>;
     private _pendingEvents: Map<string, IDisposable>;
     private _handler: IMessageHandler;
+
     constructor(handler: IMessageHandler) {
         this._workerId = -1;
         this._handler = handler;
@@ -98,6 +106,7 @@ class SimpleWorkerProtocol {
     }
     public sendMessage(channel: string, method: string, args: any[]): Promise<any> {
         const req = String(++this._lastSentReq);
+
         return new Promise<any>((resolve, reject) => {
             this._pendingReplies[req] = {
                 resolve: resolve,
@@ -108,6 +117,7 @@ class SimpleWorkerProtocol {
     }
     public listen(channel: string, eventName: string, arg: any): Event<any> {
         let req: string | null = null;
+
         const emitter = new Emitter<any>({
             onWillAddFirstListener: () => {
                 req = String(++this._lastSentReq);
@@ -120,6 +130,7 @@ class SimpleWorkerProtocol {
                 req = null;
             }
         });
+
         return emitter.event;
     }
     public handleMessage(message: Message): void {
@@ -146,6 +157,7 @@ class SimpleWorkerProtocol {
                     else if (name.charCodeAt(0) === CharCode.DollarSign) { // $...
                         target[name] = async (...myArgs: any[]) => {
                             await sendMessageBarrier?.();
+
                             return this.sendMessage(channel, name, myArgs);
                         };
                     }
@@ -153,18 +165,23 @@ class SimpleWorkerProtocol {
                 return target[name];
             }
         };
+
         return new Proxy(Object.create(null), handler);
     }
     private _handleMessage(msg: Message): void {
         switch (msg.type) {
             case MessageType.Reply:
                 return this._handleReplyMessage(msg);
+
             case MessageType.Request:
                 return this._handleRequestMessage(msg);
+
             case MessageType.SubscribeEvent:
                 return this._handleSubscribeEventMessage(msg);
+
             case MessageType.Event:
                 return this._handleEventMessage(msg);
+
             case MessageType.UnsubscribeEvent:
                 return this._handleUnsubscribeEventMessage(msg);
         }
@@ -172,12 +189,15 @@ class SimpleWorkerProtocol {
     private _handleReplyMessage(replyMessage: ReplyMessage): void {
         if (!this._pendingReplies[replyMessage.seq]) {
             console.warn('Got reply to unknown seq');
+
             return;
         }
         const reply = this._pendingReplies[replyMessage.seq];
         delete this._pendingReplies[replyMessage.seq];
+
         if (replyMessage.err) {
             let err = replyMessage.err;
+
             if (replyMessage.err.$isError) {
                 err = new Error();
                 err.name = replyMessage.err.name;
@@ -185,12 +205,14 @@ class SimpleWorkerProtocol {
                 err.stack = replyMessage.err.stack;
             }
             reply.reject(err);
+
             return;
         }
         reply.resolve(replyMessage.res);
     }
     private _handleRequestMessage(requestMessage: RequestMessage): void {
         const req = requestMessage.req;
+
         const result = this._handler.handleMessage(requestMessage.channel, requestMessage.method, requestMessage.args);
         result.then((r) => {
             this._send(new ReplyMessage(this._workerId, req, r, undefined));
@@ -204,6 +226,7 @@ class SimpleWorkerProtocol {
     }
     private _handleSubscribeEventMessage(msg: SubscribeEventMessage): void {
         const req = msg.req;
+
         const disposable = this._handler.handleEvent(msg.channel, msg.eventName, msg.arg)((event) => {
             this._send(new EventMessage(this._workerId, req, event));
         });
@@ -212,6 +235,7 @@ class SimpleWorkerProtocol {
     private _handleEventMessage(msg: EventMessage): void {
         if (!this._pendingEmitters.has(msg.req)) {
             console.warn('Got event for unknown req');
+
             return;
         }
         this._pendingEmitters.get(msg.req)!.fire(msg.event);
@@ -219,6 +243,7 @@ class SimpleWorkerProtocol {
     private _handleUnsubscribeEventMessage(msg: UnsubscribeEventMessage): void {
         if (!this._pendingEvents.has(msg.req)) {
             console.warn('Got unsubscribe for unknown req');
+
             return;
         }
         this._pendingEvents.get(msg.req)!.dispose();
@@ -226,6 +251,7 @@ class SimpleWorkerProtocol {
     }
     private _send(msg: Message): void {
         const transfer: ArrayBuffer[] = [];
+
         if (msg.type === MessageType.Request) {
             for (let i = 0; i < msg.args.length; i++) {
                 if (msg.args[i] instanceof ArrayBuffer) {
@@ -248,11 +274,14 @@ export type Proxied<T> = {
 export interface IWorkerClient<W> {
     proxy: Proxied<W>;
     dispose(): void;
+
     setChannel<T extends object>(channel: string, handler: T): void;
+
     getChannel<T extends object>(channel: string): Proxied<T>;
 }
 export interface IWorkerServer {
     setChannel<T extends object>(channel: string, handler: T): void;
+
     getChannel<T extends object>(channel: string): Proxied<T>;
 }
 /**
@@ -265,6 +294,7 @@ export class SimpleWorkerClient<W extends object> extends Disposable implements 
     public readonly proxy: Proxied<W>;
     private readonly _localChannels: Map<string, object> = new Map();
     private readonly _remoteChannels: Map<string, object> = new Map();
+
     constructor(workerFactory: IWorkerFactory, workerDescriptor: IWorkerDescriptor) {
         super();
         this._worker = this._register(workerFactory.create({
@@ -292,9 +322,11 @@ export class SimpleWorkerClient<W extends object> extends Disposable implements 
         this._protocol.setWorkerId(this._worker.getId());
         // Gather loader configuration
         let loaderConfiguration: any = null;
+
         const globalRequire: {
             getConfig?(): object;
         } | undefined = (globalThis as any).require;
+
         if (typeof globalRequire !== 'undefined' && typeof globalRequire.getConfig === 'function') {
             // Get the configuration from the Monaco AMD Loader
             loaderConfiguration = globalRequire.getConfig();
@@ -316,6 +348,7 @@ export class SimpleWorkerClient<W extends object> extends Disposable implements 
     }
     private _handleMessage(channelName: string, method: string, args: any[]): Promise<any> {
         const channel: object | undefined = this._localChannels.get(channelName);
+
         if (!channel) {
             return Promise.reject(new Error(`Missing channel ${channelName} on main thread`));
         }
@@ -331,11 +364,13 @@ export class SimpleWorkerClient<W extends object> extends Disposable implements 
     }
     private _handleEvent(channelName: string, eventName: string, arg: any): Event<any> {
         const channel: object | undefined = this._localChannels.get(channelName);
+
         if (!channel) {
             throw new Error(`Missing channel ${channelName} on main thread`);
         }
         if (propertyIsDynamicEvent(eventName)) {
             const event = (channel as any)[eventName].call(channel, arg);
+
             if (typeof event !== 'function') {
                 throw new Error(`Missing dynamic event ${eventName} on main thread channel ${channelName}.`);
             }
@@ -343,6 +378,7 @@ export class SimpleWorkerClient<W extends object> extends Disposable implements 
         }
         if (propertyIsEvent(eventName)) {
             const event = (channel as any)[eventName];
+
             if (typeof event !== 'function') {
                 throw new Error(`Missing event ${eventName} on main thread channel ${channelName}.`);
             }
@@ -389,6 +425,7 @@ export class SimpleWorkerServer implements IWorkerServer {
     private _protocol: SimpleWorkerProtocol;
     private readonly _localChannels: Map<string, object> = new Map();
     private readonly _remoteChannels: Map<string, object> = new Map();
+
     constructor(postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void, requestHandlerFactory: IRequestHandlerFactory | null) {
         this._requestHandlerFactory = requestHandlerFactory;
         this._requestHandler = null;
@@ -408,6 +445,7 @@ export class SimpleWorkerServer implements IWorkerServer {
             return this.initialize(<number>args[0], <any>args[1], <string>args[2]);
         }
         const requestHandler: object | null | undefined = (channel === DEFAULT_CHANNEL ? this._requestHandler : this._localChannels.get(channel));
+
         if (!requestHandler) {
             return Promise.reject(new Error(`Missing channel ${channel} on worker thread`));
         }
@@ -423,11 +461,13 @@ export class SimpleWorkerServer implements IWorkerServer {
     }
     private _handleEvent(channel: string, eventName: string, arg: any): Event<any> {
         const requestHandler: object | null | undefined = (channel === DEFAULT_CHANNEL ? this._requestHandler : this._localChannels.get(channel));
+
         if (!requestHandler) {
             throw new Error(`Missing channel ${channel} on worker thread`);
         }
         if (propertyIsDynamicEvent(eventName)) {
             const event = (requestHandler as any)[eventName].call(requestHandler, arg);
+
             if (typeof event !== 'function') {
                 throw new Error(`Missing dynamic event ${eventName} on request handler.`);
             }
@@ -435,6 +475,7 @@ export class SimpleWorkerServer implements IWorkerServer {
         }
         if (propertyIsEvent(eventName)) {
             const event = (requestHandler as any)[eventName];
+
             if (typeof event !== 'function') {
                 throw new Error(`Missing event ${eventName} on request handler.`);
             }
@@ -454,9 +495,11 @@ export class SimpleWorkerServer implements IWorkerServer {
     }
     private async initialize(workerId: number, loaderConfig: any, moduleId: string): Promise<void> {
         this._protocol.setWorkerId(workerId);
+
         if (this._requestHandlerFactory) {
             // static request handler
             this._requestHandler = this._requestHandlerFactory(this);
+
             return;
         }
         if (loaderConfig) {
@@ -478,10 +521,12 @@ export class SimpleWorkerServer implements IWorkerServer {
             (globalThis as any).require.config(loaderConfig);
         }
         const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);
+
         return import(`${url}`).then((module: {
             create: IRequestHandlerFactory;
         }) => {
             this._requestHandler = module.create(this);
+
             if (!this._requestHandler) {
                 throw new Error(`No RequestHandler!`);
             }

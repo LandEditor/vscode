@@ -25,7 +25,9 @@ startPtyHost();
 async function startPtyHost() {
     // Parse environment variables
     const startupDelay = parseInt(process.env.VSCODE_STARTUP_DELAY ?? '0');
+
     const simulatedLatency = parseInt(process.env.VSCODE_LATENCY ?? '0');
+
     const reconnectConstants: IReconnectConstants = {
         graceTime: parseInt(process.env.VSCODE_RECONNECT_GRACE_TIME || '0'),
         shortGraceTime: parseInt(process.env.VSCODE_RECONNECT_SHORT_GRACE_TIME || '0'),
@@ -44,7 +46,9 @@ async function startPtyHost() {
     }
     // Setup RPC
     const _isUtilityProcess = isUtilityProcess(process);
+
     let server: ChildProcessServer<string> | UtilityProcessServer;
+
     if (_isUtilityProcess) {
         server = new UtilityProcessServer();
     }
@@ -53,10 +57,14 @@ async function startPtyHost() {
     }
     // Services
     const productService: IProductService = { _serviceBrand: undefined, ...product };
+
     const environmentService = new NativeEnvironmentService(parseArgs(process.argv, OPTIONS), productService);
+
     const loggerService = new LoggerService(getLogLevel(environmentService), environmentService.logsHome);
     server.registerChannel(TerminalIpcChannels.Logger, new LoggerChannel(loggerService, () => DefaultURITransformer));
+
     const logger = loggerService.createLogger('ptyhost', { name: localize('ptyHost', "Pty Host") });
+
     const logService = new LogService(logger);
     // Log developer config
     if (startupDelay) {
@@ -71,6 +79,7 @@ async function startPtyHost() {
     server.registerChannel(TerminalIpcChannels.Heartbeat, ProxyChannel.fromService(heartbeatService, disposables));
     // Init pty service
     const ptyService = new PtyService(logService, productService, reconnectConstants, simulatedLatency);
+
     const ptyServiceChannel = ProxyChannel.fromService(ptyService, disposables);
     server.registerChannel(TerminalIpcChannels.PtyHost, ptyServiceChannel);
     // Register a channel for direct communication via Message Port

@@ -16,11 +16,14 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
     }
     try {
         const { hostname, port, username, password } = new URL(url);
+
         const auth = username && password && `${username}:${password}`;
+
         return httpsOverHttp({ proxy: { host: hostname, port, proxyAuth: auth } });
     }
     catch (e) {
         window.showErrorMessage(`HTTPS_PROXY environment variable ignored: ${e.message}`);
+
         return globalAgent;
     }
 }
@@ -33,8 +36,11 @@ export function getOctokit(): Promise<Octokit> {
     if (!_octokit) {
         _octokit = getSession().then(async (session) => {
             const token = session.accessToken;
+
             const agent = getAgent();
+
             const { Octokit } = await import('@octokit/rest');
+
             return new Octokit({
                 request: { agent },
                 userAgent: 'GitHub VSCode',
@@ -42,6 +48,7 @@ export function getOctokit(): Promise<Octokit> {
             });
         }).then(null, async (err) => {
             _octokit = undefined;
+
             throw err;
         });
     }
@@ -52,11 +59,14 @@ export async function getOctokitGraphql(): Promise<graphql> {
     if (!_octokitGraphql) {
         try {
             const session = await authentication.getSession('github', scopes, { silent: true });
+
             if (!session) {
                 throw new AuthenticationError('No GitHub authentication session available.');
             }
             const token = session.accessToken;
+
             const { graphql } = await import('@octokit/graphql');
+
             return graphql.defaults({
                 headers: {
                     authorization: `token ${token}`
@@ -68,6 +78,7 @@ export async function getOctokitGraphql(): Promise<graphql> {
         }
         catch (err) {
             _octokitGraphql = undefined;
+
             throw err;
         }
     }

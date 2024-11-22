@@ -9,6 +9,7 @@ import { ITextModel } from '../../../common/model.js';
 export class MoveCaretCommand implements ICommand {
     private readonly _selection: Selection;
     private readonly _isMovingLeft: boolean;
+
     constructor(selection: Selection, isMovingLeft: boolean) {
         this._selection = selection;
         this._isMovingLeft = isMovingLeft;
@@ -18,8 +19,11 @@ export class MoveCaretCommand implements ICommand {
             return;
         }
         const lineNumber = this._selection.startLineNumber;
+
         const startColumn = this._selection.startColumn;
+
         const endColumn = this._selection.endColumn;
+
         if (this._isMovingLeft && startColumn === 1) {
             return;
         }
@@ -28,12 +32,14 @@ export class MoveCaretCommand implements ICommand {
         }
         if (this._isMovingLeft) {
             const rangeBefore = new Range(lineNumber, startColumn - 1, lineNumber, startColumn);
+
             const charBefore = model.getValueInRange(rangeBefore);
             builder.addEditOperation(rangeBefore, null);
             builder.addEditOperation(new Range(lineNumber, endColumn, lineNumber, endColumn), charBefore);
         }
         else {
             const rangeAfter = new Range(lineNumber, endColumn, lineNumber, endColumn + 1);
+
             const charAfter = model.getValueInRange(rangeAfter);
             builder.addEditOperation(rangeAfter, null);
             builder.addEditOperation(new Range(lineNumber, startColumn, lineNumber, startColumn), charAfter);

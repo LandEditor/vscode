@@ -45,11 +45,13 @@ export class DraggedEditorGroupIdentifier {
 }
 export async function extractTreeDropData(dataTransfer: VSDataTransfer): Promise<Array<IDraggedResourceEditorInput>> {
     const editors: IDraggedResourceEditorInput[] = [];
+
     const resourcesKey = Mimes.uriList.toLowerCase();
     // Data Transfer: Resources
     if (dataTransfer.has(resourcesKey)) {
         try {
             const asString = await dataTransfer.get(resourcesKey)?.asString();
+
             const rawResourcesData = JSON.stringify(UriList.parse(asString ?? ''));
             editors.push(...createDraggedEditorInputFromRawResourcesData(rawResourcesData));
         }
@@ -91,6 +93,7 @@ export class ResourcesDropHandler {
     }
     async handleDrop(event: DragEvent, targetWindow: Window, resolveTargetGroup?: () => IEditorGroup | undefined, afterDrop?: (targetGroup: IEditorGroup | undefined) => void, options?: IEditorOptions): Promise<void> {
         const editors = await this.instantiationService.invokeFunction(accessor => extractEditorsAndFilesDropData(accessor, event));
+
         if (!editors.length) {
             return;
         }
@@ -99,8 +102,10 @@ export class ResourcesDropHandler {
         // Check for workspace file / folder being dropped if we are allowed to do so
         if (this.options.allowWorkspaceOpen) {
             const localFilesAllowedToOpenAsWorkspace = coalesce(editors.filter(editor => editor.allowWorkspaceOpen && editor.resource?.scheme === Schemas.file).map(editor => editor.resource));
+
             if (localFilesAllowedToOpenAsWorkspace.length > 0) {
                 const isWorkspaceOpening = await this.handleWorkspaceDrop(localFilesAllowedToOpenAsWorkspace);
+
                 if (isWorkspaceOpening) {
                     return; // return early if the drop operation resulted in this window changing to a workspace
                 }
@@ -108,6 +113,7 @@ export class ResourcesDropHandler {
         }
         // Add external ones to recently open list unless dropped resource is a workspace
         const externalLocalFiles = coalesce(editors.filter(editor => editor.isExternal && editor.resource?.scheme === Schemas.file).map(editor => editor.resource));
+
         if (externalLocalFiles.length) {
             this.workspacesService.addRecentlyOpened(externalLocalFiles.map(resource => ({ fileUri: resource })));
         }
@@ -127,16 +133,19 @@ export class ResourcesDropHandler {
     }
     private async handleWorkspaceDrop(resources: URI[]): Promise<boolean> {
         const toOpen: IWindowOpenable[] = [];
+
         const folderURIs: IWorkspaceFolderCreationData[] = [];
         await Promise.all(resources.map(async (resource) => {
             // Check for Workspace
             if (hasWorkspaceFileExtension(resource)) {
                 toOpen.push({ workspaceUri: resource });
+
                 return;
             }
             // Check for Folder
             try {
                 const stat = await this.fileService.stat(resource);
+
                 if (stat.isDirectory) {
                     toOpen.push({ folderUri: stat.resource });
                     folderURIs.push({ uri: stat.resource });
@@ -181,8 +190,11 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
         return;
     }
     const textFileService = accessor.get(ITextFileService);
+
     const editorService = accessor.get(IEditorService);
+
     const fileService = accessor.get(IFileService);
+
     const labelService = accessor.get(ILabelService);
     // Extract resources from URIs or Editors that
     // can be handled by the file service
@@ -198,7 +210,9 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
         }
         return resourceOrEditor;
     }));
+
     const fileSystemResources = resources.filter(({ resource }) => fileService.hasProvider(resource));
+
     if (!options?.disableStandardTransfer) {
         // Text: allows to paste into text-capable areas
         const lineDelimiter = isWindows ? '\r\n' : '\n';
@@ -209,6 +223,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
         // - only a single file is supported
         // - only file:/ resources are supported
         const firstFile = fileSystemResources.find(({ isDirectory }) => !isDirectory);
+
         if (firstFile) {
             const firstFileUri = FileAccess.uriToFileUri(firstFile.resource); // enforce `file:` URIs
             if (firstFileUri.scheme === Schemas.file) {
@@ -218,22 +233,27 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
     }
     // Resource URLs: allows to drop multiple file resources to a target in VS Code
     const files = fileSystemResources.filter(({ isDirectory }) => !isDirectory);
+
     if (files.length) {
         event.dataTransfer.setData(DataTransfers.RESOURCES, JSON.stringify(files.map(({ resource }) => resource.toString())));
     }
     // Contributions
     const contributions = Registry.as<IDragAndDropContributionRegistry>(Extensions.DragAndDropContribution).getAll();
+
     for (const contribution of contributions) {
         contribution.setData(resources, event);
     }
     // Editors: enables cross window DND of editors
     // into the editor area while presering UI state
     const draggedEditors: IDraggedResourceEditorInput[] = [];
+
     for (const resourceOrEditor of resourcesOrEditors) {
         // Extract resource editor from provided object or URI
         let editor: IDraggedResourceEditorInput | undefined = undefined;
+
         if (isEditorIdentifier(resourceOrEditor)) {
             const untypedEditor = resourceOrEditor.editor.toUntyped({ preserveViewState: resourceOrEditor.groupId });
+
             if (untypedEditor) {
                 editor = { ...untypedEditor, resource: EditorResourceAccessor.getCanonicalUri(untypedEditor) };
             }
@@ -254,8 +274,10 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
         // provide everything from the `toUntyped` method.
         {
             const resource = editor.resource;
+
             if (resource) {
                 const textFileModel = textFileService.files.get(resource);
+
                 if (textFileModel) {
                     // language
                     if (typeof editor.languageId !== 'string') {
@@ -278,6 +300,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
                             for (const visibleEditorPane of editorService.visibleEditorPanes) {
                                 if (isEqual(visibleEditorPane.input.resource, resource)) {
                                     const viewState = visibleEditorPane.getViewState();
+
                                     if (viewState) {
                                         return viewState;
                                     }
@@ -296,6 +319,7 @@ export function fillEditorsDragData(accessor: ServicesAccessor, resourcesOrEdito
         event.dataTransfer.setData(CodeDataTransfers.EDITORS, stringify(draggedEditors));
         // Add a URI list entry
         const uriListEntries: URI[] = [];
+
         for (const editor of draggedEditors) {
             if (editor.resource) {
                 uriListEntries.push(editor.resource);
@@ -388,8 +412,11 @@ export class CompositeDragAndDropObserver extends Disposable {
         super();
         this._register(this.onDragEnd.event(e => {
             const id = e.dragAndDropData.getData().id;
+
             const type = e.dragAndDropData.getData().type;
+
             const data = this.readDragData(type);
+
             if (data?.getData().id === id) {
                 this.transferData.clearData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype);
             }
@@ -398,6 +425,7 @@ export class CompositeDragAndDropObserver extends Disposable {
     private readDragData(type: ViewType): CompositeDragAndDropData | undefined {
         if (this.transferData.hasData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype)) {
             const data = this.transferData.getData(type === 'view' ? DraggedViewIdentifier.prototype : DraggedCompositeIdentifier.prototype);
+
             if (data && data[0]) {
                 return new CompositeDragAndDropData(type, data[0].id);
             }
@@ -412,8 +440,10 @@ export class CompositeDragAndDropObserver extends Disposable {
         disposableStore.add(new DragAndDropObserver(element, {
             onDragEnter: e => {
                 e.preventDefault();
+
                 if (callbacks.onDragEnter) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (data) {
                         callbacks.onDragEnter({ eventData: e, dragAndDropData: data });
                     }
@@ -421,6 +451,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             },
             onDragLeave: e => {
                 const data = this.readDragData('composite') || this.readDragData('view');
+
                 if (callbacks.onDragLeave && data) {
                     callbacks.onDragLeave({ eventData: e, dragAndDropData: data });
                 }
@@ -428,6 +459,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             onDrop: e => {
                 if (callbacks.onDrop) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (!data) {
                         return;
                     }
@@ -438,8 +470,10 @@ export class CompositeDragAndDropObserver extends Disposable {
             },
             onDragOver: e => {
                 e.preventDefault();
+
                 if (callbacks.onDragOver) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (!data) {
                         return;
                     }
@@ -447,6 +481,7 @@ export class CompositeDragAndDropObserver extends Disposable {
                 }
             }
         }));
+
         if (callbacks.onDragStart) {
             this.onDragStart.event(e => {
                 callbacks.onDragStart!(e);
@@ -464,6 +499,7 @@ export class CompositeDragAndDropObserver extends Disposable {
         id: string;
     }, callbacks: ICompositeDragAndDropObserverCallbacks): IDisposable {
         element.draggable = true;
+
         const disposableStore = new DisposableStore();
         disposableStore.add(new DragAndDropObserver(element, {
             onDragStart: e => {
@@ -474,7 +510,9 @@ export class CompositeDragAndDropObserver extends Disposable {
             },
             onDragEnd: e => {
                 const { type } = draggedItemProvider();
+
                 const data = this.readDragData(type);
+
                 if (!data) {
                     return;
                 }
@@ -483,6 +521,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             onDragEnter: e => {
                 if (callbacks.onDragEnter) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (!data) {
                         return;
                     }
@@ -493,6 +532,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             },
             onDragLeave: e => {
                 const data = this.readDragData('composite') || this.readDragData('view');
+
                 if (!data) {
                     return;
                 }
@@ -501,6 +541,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             onDrop: e => {
                 if (callbacks.onDrop) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (!data) {
                         return;
                     }
@@ -512,6 +553,7 @@ export class CompositeDragAndDropObserver extends Disposable {
             onDragOver: e => {
                 if (callbacks.onDragOver) {
                     const data = this.readDragData('composite') || this.readDragData('view');
+
                     if (!data) {
                         return;
                     }
@@ -519,6 +561,7 @@ export class CompositeDragAndDropObserver extends Disposable {
                 }
             }
         }));
+
         if (callbacks.onDragStart) {
             this.onDragStart.event(e => {
                 callbacks.onDragStart!(e);
@@ -544,16 +587,20 @@ export class ResourceListDnDHandler<T> implements IListDragAndDrop<T> {
     private readonly instantiationService: IInstantiationService) { }
     getDragURI(element: T): string | null {
         const resource = this.toResource(element);
+
         return resource ? resource.toString() : null;
     }
     getDragLabel(elements: T[]): string | undefined {
         const resources = coalesce(elements.map(this.toResource));
+
         return resources.length === 1 ? basename(resources[0]) : resources.length > 1 ? String(resources.length) : undefined;
     }
     onDragStart(data: IDragAndDropData, originalEvent: DragEvent): void {
         const resources: URI[] = [];
+
         for (const element of (data as ElementsDragAndDropData<T>).elements) {
             const resource = this.toResource(element);
+
             if (resource) {
                 resources.push(resource);
             }
@@ -573,6 +620,7 @@ export class ResourceListDnDHandler<T> implements IListDragAndDrop<T> {
 class GlobalWindowDraggedOverTracker extends Disposable {
     private static readonly CHANNEL_NAME = 'monaco-workbench-global-dragged-over';
     private readonly broadcaster = this._register(new BroadcastDataChannel<boolean>(GlobalWindowDraggedOverTracker.CHANNEL_NAME));
+
     constructor() {
         super();
         this.registerListeners();
@@ -592,12 +640,14 @@ class GlobalWindowDraggedOverTracker extends Disposable {
         }));
     }
     private draggedOver = false;
+
     get isDraggedOver(): boolean { return this.draggedOver; }
     private markDraggedOver(fromBroadcast: boolean): void {
         if (this.draggedOver === true) {
             return; // alrady marked
         }
         this.draggedOver = true;
+
         if (!fromBroadcast) {
             this.broadcaster.postData(true);
         }
@@ -607,6 +657,7 @@ class GlobalWindowDraggedOverTracker extends Disposable {
             return; // alrady cleared
         }
         this.draggedOver = false;
+
         if (!fromBroadcast) {
             this.broadcaster.postData(false);
         }

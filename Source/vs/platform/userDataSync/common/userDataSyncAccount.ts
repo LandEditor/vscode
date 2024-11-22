@@ -21,12 +21,14 @@ export interface IUserDataSyncAccountService {
 export class UserDataSyncAccountService extends Disposable implements IUserDataSyncAccountService {
     _serviceBrand: any;
     private _account: IUserDataSyncAccount | undefined;
+
     get account(): IUserDataSyncAccount | undefined { return this._account; }
     private _onDidChangeAccount = this._register(new Emitter<IUserDataSyncAccount | undefined>());
     readonly onDidChangeAccount = this._onDidChangeAccount.event;
     private _onTokenFailed: Emitter<boolean> = this._register(new Emitter<boolean>());
     readonly onTokenFailed: Event<boolean> = this._onTokenFailed.event;
     private wasTokenFailed: boolean = false;
+
     constructor(
     @IUserDataSyncStoreService
     private readonly userDataSyncStoreService: IUserDataSyncStoreService, 
@@ -36,6 +38,7 @@ export class UserDataSyncAccountService extends Disposable implements IUserDataS
         this._register(userDataSyncStoreService.onTokenFailed(code => {
             this.logService.info('Settings Sync auth token failed', this.account?.authenticationProviderId, this.wasTokenFailed, code);
             this.updateAccount(undefined);
+
             if (code === UserDataSyncErrorCode.Forbidden) {
                 this._onTokenFailed.fire(true /*bail out immediately*/);
             }
@@ -49,6 +52,7 @@ export class UserDataSyncAccountService extends Disposable implements IUserDataS
     async updateAccount(account: IUserDataSyncAccount | undefined): Promise<void> {
         if (account && this._account ? account.token !== this._account.token || account.authenticationProviderId !== this._account.authenticationProviderId : account !== this._account) {
             this._account = account;
+
             if (this._account) {
                 this.userDataSyncStoreService.setAuthToken(this._account.token, this._account.authenticationProviderId);
             }

@@ -31,6 +31,7 @@ const enum HitTestResultType {
 
 class UnknownHitTestResult {
 	readonly type = HitTestResultType.Unknown;
+
 	constructor(
 		readonly hitTarget: HTMLElement | null = null
 	) { }
@@ -53,6 +54,7 @@ type HitTestResult = UnknownHitTestResult | ContentHitTestResult;
 namespace HitTestResult {
 	export function createFromDOMInfo(ctx: HitTestContext, spanNode: HTMLElement, offset: number): HitTestResult {
 		const position = ctx.getPositionFromDOMInfo(spanNode, offset);
+
 		if (position) {
 			return new ContentHitTestResult(position, spanNode, null);
 		}
@@ -250,6 +252,7 @@ export class HitTestContext {
 
 	constructor(context: ViewContext, viewHelper: IPointerHandlerHelper, lastRenderData: PointerHandlerLastRenderData) {
 		this.viewModel = context.viewModel;
+
 		const options = context.configuration.options;
 		this.layoutInfo = options.get(EditorOption.layoutInfo);
 		this.viewDomNode = viewHelper.viewDomNode;
@@ -272,9 +275,13 @@ export class HitTestContext {
 
 		if (viewZoneWhitespace) {
 			const viewZoneMiddle = viewZoneWhitespace.verticalOffset + viewZoneWhitespace.height / 2;
+
 			const lineCount = context.viewModel.getLineCount();
+
 			let positionBefore: Position | null = null;
+
 			let position: Position | null;
+
 			let positionAfter: Position | null = null;
 
 			if (viewZoneWhitespace.afterLineNumber !== lineCount) {
@@ -311,7 +318,9 @@ export class HitTestContext {
 		if (this._context.viewLayout.isAfterLines(mouseVerticalOffset)) {
 			// Below the last line
 			const lineNumber = this._context.viewModel.getLineCount();
+
 			const maxLineColumn = this._context.viewModel.getLineMaxColumn(lineNumber);
+
 			return {
 				range: new EditorRange(lineNumber, maxLineColumn, lineNumber, maxLineColumn),
 				isAfterLines: true
@@ -319,7 +328,9 @@ export class HitTestContext {
 		}
 
 		const lineNumber = this._context.viewLayout.getLineNumberAtVerticalOffset(mouseVerticalOffset);
+
 		const maxLineColumn = this._context.viewModel.getLineMaxColumn(lineNumber);
+
 		return {
 			range: new EditorRange(lineNumber, 1, lineNumber, maxLineColumn),
 			isAfterLines: false
@@ -520,6 +531,7 @@ export class MouseTargetFactory {
 
 	public mouseTargetIsWidget(e: EditorMouseEvent): boolean {
 		const t = <Element>e.target;
+
 		const path = PartFingerprints.collect(t, this._viewHelper.viewDomNode);
 
 		// Is it a content widget?
@@ -537,7 +549,9 @@ export class MouseTargetFactory {
 
 	public createMouseTarget(lastRenderData: PointerHandlerLastRenderData, editorPos: EditorPagePosition, pos: PageCoordinates, relativePos: CoordinatesRelativeToEditor, target: HTMLElement | null): IMouseTarget {
 		const ctx = new HitTestContext(this._context, this._viewHelper, lastRenderData);
+
 		const request = new HitTestRequest(ctx, editorPos, pos, relativePos, target);
+
 		try {
 			const r = MouseTargetFactory._createMouseTarget(ctx, request);
 
@@ -545,15 +559,19 @@ export class MouseTargetFactory {
 				// Snap to the nearest soft tab boundary if atomic soft tabs are enabled.
 				if (ctx.stickyTabStops && r.position !== null) {
 					const position = MouseTargetFactory._snapToSoftTabBoundary(r.position, ctx.viewModel);
+
 					const range = EditorRange.fromPositions(position, position).plusRange(r.range);
+
 					return request.fulfillContentText(position, range, r.detail);
 				}
 			}
 
 			// console.log(MouseTarget.toString(r));
+
 			return r;
 		} catch (err) {
 			// console.log(err);
+
 			return request.fulfillUnknown();
 		}
 	}
@@ -595,6 +613,7 @@ export class MouseTargetFactory {
 		// Is it a content widget?
 		if (ElementPath.isChildOfContentWidgets(request.targetPath) || ElementPath.isChildOfOverflowingContentWidgets(request.targetPath)) {
 			const widgetId = ctx.findAttribute(request.target, 'widgetId');
+
 			if (widgetId) {
 				return request.fulfillContentWidget(widgetId);
 			} else {
@@ -608,6 +627,7 @@ export class MouseTargetFactory {
 		// Is it an overlay widget?
 		if (ElementPath.isChildOfOverlayWidgets(request.targetPath) || ElementPath.isChildOfOverflowingOverlayWidgets(request.targetPath)) {
 			const widgetId = ctx.findAttribute(request.target, 'widgetId');
+
 			if (widgetId) {
 				return request.fulfillOverlayWidget(widgetId);
 			} else {
@@ -638,7 +658,9 @@ export class MouseTargetFactory {
 			// and first check if we are on top of a cursor
 
 			const lastViewCursorsRenderData = ctx.lastRenderData.lastViewCursorsRenderData;
+
 			const mouseContentHorizontalOffset = request.mouseContentHorizontalOffset;
+
 			const mouseVerticalOffset = request.mouseVerticalOffset;
 
 			for (const d of lastViewCursorsRenderData) {
@@ -668,8 +690,10 @@ export class MouseTargetFactory {
 
 	private static _hitTestViewZone(ctx: HitTestContext, request: ResolvedHitTestRequest): IMouseTarget | null {
 		const viewZoneData = ctx.getZoneAtCoord(request.mouseVerticalOffset);
+
 		if (viewZoneData) {
 			const mouseTargetType = (request.isInContentArea ? MouseTargetType.CONTENT_VIEW_ZONE : MouseTargetType.GUTTER_VIEW_ZONE);
+
 			return request.fulfillViewZone(mouseTargetType, viewZoneData.position, viewZoneData);
 		}
 
@@ -690,8 +714,11 @@ export class MouseTargetFactory {
 	private static _hitTestMargin(ctx: HitTestContext, request: ResolvedHitTestRequest): IMouseTarget | null {
 		if (request.isInMarginArea) {
 			const res = ctx.getFullLineRangeAtCoord(request.mouseVerticalOffset);
+
 			const pos = res.range.getStartPosition();
+
 			let offset = Math.abs(request.relativePos.x);
+
 			const detail: Mutable<IMouseTargetMarginData> = {
 				isAfterLines: res.isAfterLines,
 				glyphMarginLeft: ctx.layoutInfo.glyphMarginLeft,
@@ -705,8 +732,10 @@ export class MouseTargetFactory {
 			if (offset <= ctx.layoutInfo.glyphMarginWidth) {
 				// On the glyph margin
 				const modelCoordinate = ctx.viewModel.coordinatesConverter.convertViewPositionToModelPosition(res.range.getStartPosition());
+
 				const lanes = ctx.viewModel.glyphLanes.getLanesAtLine(modelCoordinate.lineNumber);
 				detail.glyphMarginLane = lanes[Math.floor(offset / ctx.lineHeight)];
+
 				return request.fulfillMargin(MouseTargetType.GUTTER_GLYPH_MARGIN, pos, res.range, detail);
 			}
 			offset -= ctx.layoutInfo.glyphMarginWidth;
@@ -736,7 +765,9 @@ export class MouseTargetFactory {
 		if (ctx.isAfterLines(request.mouseVerticalOffset) || ctx.isInBottomPadding(request.mouseVerticalOffset)) {
 			// This most likely indicates it happened after the last view-line
 			const lineCount = ctx.viewModel.getLineCount();
+
 			const maxLineColumn = ctx.viewModel.getLineMaxColumn(lineCount);
+
 			return request.fulfillContentEmpty(new Position(lineCount, maxLineColumn), EMPTY_CONTENT_AFTER_LINES);
 		}
 
@@ -744,42 +775,56 @@ export class MouseTargetFactory {
 		// See https://github.com/microsoft/vscode/issues/46942
 		if (ElementPath.isStrictChildOfViewLines(request.targetPath)) {
 			const lineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 			if (ctx.viewModel.getLineLength(lineNumber) === 0) {
 				const lineWidth = ctx.getLineWidth(lineNumber);
+
 				const detail = createEmptyContentDataInLines(request.mouseContentHorizontalOffset - lineWidth);
+
 				return request.fulfillContentEmpty(new Position(lineNumber, 1), detail);
 			}
 
 			const lineWidth = ctx.getLineWidth(lineNumber);
+
 			if (request.mouseContentHorizontalOffset >= lineWidth) {
 				// TODO: This is wrong for RTL
 				const detail = createEmptyContentDataInLines(request.mouseContentHorizontalOffset - lineWidth);
+
 				const pos = new Position(lineNumber, ctx.viewModel.getLineMaxColumn(lineNumber));
+
 				return request.fulfillContentEmpty(pos, detail);
 			}
 		} else {
 			if (ctx.viewLinesGpu) {
 				const lineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 				if (ctx.viewModel.getLineLength(lineNumber) === 0) {
 					const lineWidth = ctx.getLineWidth(lineNumber);
+
 					const detail = createEmptyContentDataInLines(request.mouseContentHorizontalOffset - lineWidth);
+
 					return request.fulfillContentEmpty(new Position(lineNumber, 1), detail);
 				}
 
 				const lineWidth = ctx.getLineWidth(lineNumber);
+
 				if (request.mouseContentHorizontalOffset >= lineWidth) {
 					// TODO: This is wrong for RTL
 					const detail = createEmptyContentDataInLines(request.mouseContentHorizontalOffset - lineWidth);
+
 					const pos = new Position(lineNumber, ctx.viewModel.getLineMaxColumn(lineNumber));
+
 					return request.fulfillContentEmpty(pos, detail);
 				}
 
 				const position = ctx.viewLinesGpu.getPositionAtCoordinate(lineNumber, request.mouseContentHorizontalOffset);
+
 				if (position) {
 					const detail: IMouseTargetContentTextData = {
 						injectedText: null,
 						mightBeForeignElement: false
 					};
+
 					return request.fulfillContentText(position, EditorRange.fromPositions(position, position), detail);
 				}
 			}
@@ -796,6 +841,7 @@ export class MouseTargetFactory {
 		if (request.wouldBenefitFromHitTestTargetSwitch) {
 			// We actually hit something different... Give it one last change by trying again with this new target
 			request.switchToHitTestTarget();
+
 			return this._createMouseTarget(ctx, request);
 		}
 
@@ -806,7 +852,9 @@ export class MouseTargetFactory {
 	private static _hitTestMinimap(ctx: HitTestContext, request: ResolvedHitTestRequest): IMouseTarget | null {
 		if (ElementPath.isChildOfMinimap(request.targetPath)) {
 			const possibleLineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 			const maxColumn = ctx.viewModel.getLineMaxColumn(possibleLineNumber);
+
 			return request.fulfillScrollbar(new Position(possibleLineNumber, maxColumn));
 		}
 		return null;
@@ -816,9 +864,12 @@ export class MouseTargetFactory {
 		if (ElementPath.isChildOfScrollableElement(request.targetPath)) {
 			if (request.target && request.target.nodeType === 1) {
 				const className = request.target.className;
+
 				if (className && /\b(slider|scrollbar)\b/.test(className)) {
 					const possibleLineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 					const maxColumn = ctx.viewModel.getLineMaxColumn(possibleLineNumber);
+
 					return request.fulfillScrollbar(new Position(possibleLineNumber, maxColumn));
 				}
 			}
@@ -831,7 +882,9 @@ export class MouseTargetFactory {
 		// Is it a child of the scrollable element?
 		if (ElementPath.isChildOfScrollableElement(request.targetPath)) {
 			const possibleLineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 			const maxColumn = ctx.viewModel.getLineMaxColumn(possibleLineNumber);
+
 			return request.fulfillScrollbar(new Position(possibleLineNumber, maxColumn));
 		}
 
@@ -840,8 +893,11 @@ export class MouseTargetFactory {
 
 	public getMouseColumn(relativePos: CoordinatesRelativeToEditor): number {
 		const options = this._context.configuration.options;
+
 		const layoutInfo = options.get(EditorOption.layoutInfo);
+
 		const mouseContentHorizontalOffset = this._context.viewLayout.getCurrentScrollLeft() + relativePos.x - layoutInfo.contentLeft;
+
 		return MouseTargetFactory._getMouseColumn(mouseContentHorizontalOffset, options.get(EditorOption.fontInfo).typicalHalfwidthCharacterWidth);
 	}
 
@@ -850,17 +906,20 @@ export class MouseTargetFactory {
 			return 1;
 		}
 		const chars = Math.round(mouseContentHorizontalOffset / typicalHalfwidthCharacterWidth);
+
 		return (chars + 1);
 	}
 
 	private static createMouseTargetFromHitTestPosition(ctx: HitTestContext, request: HitTestRequest, spanNode: HTMLElement, pos: Position, injectedText: InjectedText | null): IMouseTarget {
 		const lineNumber = pos.lineNumber;
+
 		const column = pos.column;
 
 		const lineWidth = ctx.getLineWidth(lineNumber);
 
 		if (request.mouseContentHorizontalOffset > lineWidth) {
 			const detail = createEmptyContentDataInLines(request.mouseContentHorizontalOffset - lineWidth);
+
 			return request.fulfillContentEmpty(pos, detail);
 		}
 
@@ -881,15 +940,19 @@ export class MouseTargetFactory {
 
 		const points: OffsetColumn[] = [];
 		points.push({ offset: visibleRange.left, column: column });
+
 		if (column > 1) {
 			const visibleRange = ctx.visibleRangeForPosition(lineNumber, column - 1);
+
 			if (visibleRange) {
 				points.push({ offset: visibleRange.left, column: column - 1 });
 			}
 		}
 		const lineMaxColumn = ctx.viewModel.getLineMaxColumn(lineNumber);
+
 		if (column < lineMaxColumn) {
 			const visibleRange = ctx.visibleRangeForPosition(lineNumber, column + 1);
+
 			if (visibleRange) {
 				points.push({ offset: visibleRange.left, column: column + 1 });
 			}
@@ -898,14 +961,18 @@ export class MouseTargetFactory {
 		points.sort((a, b) => a.offset - b.offset);
 
 		const mouseCoordinates = request.pos.toClientCoordinates(dom.getWindow(ctx.viewDomNode));
+
 		const spanNodeClientRect = spanNode.getBoundingClientRect();
+
 		const mouseIsOverSpanNode = (spanNodeClientRect.left <= mouseCoordinates.clientX && mouseCoordinates.clientX <= spanNodeClientRect.right);
 
 		let rng: EditorRange | null = null;
 
 		for (let i = 1; i < points.length; i++) {
 			const prev = points[i - 1];
+
 			const curr = points[i];
+
 			if (prev.offset <= request.mouseContentHorizontalOffset && request.mouseContentHorizontalOffset <= curr.offset) {
 				rng = new EditorRange(lineNumber, prev.column, lineNumber, curr.column);
 
@@ -914,6 +981,7 @@ export class MouseTargetFactory {
 				// Here we try to correct that if the mouse horizontal offset is closer to the right than the left
 
 				const prevDelta = Math.abs(prev.offset - request.mouseContentHorizontalOffset);
+
 				const nextDelta = Math.abs(curr.offset - request.mouseContentHorizontalOffset);
 
 				pos = (
@@ -937,7 +1005,9 @@ export class MouseTargetFactory {
 		// In Chrome, especially on Linux it is possible to click between lines,
 		// so try to adjust the `hity` below so that it lands in the center of a line
 		const lineNumber = ctx.getLineNumberAtVerticalOffset(request.mouseVerticalOffset);
+
 		const lineStartVerticalOffset = ctx.getVerticalOffsetForLineNumber(lineNumber);
+
 		const lineEndVerticalOffset = lineStartVerticalOffset + ctx.lineHeight;
 
 		const isBelowLastLine = (
@@ -947,6 +1017,7 @@ export class MouseTargetFactory {
 
 		if (!isBelowLastLine) {
 			const lineCenteredVerticalOffset = Math.floor((lineStartVerticalOffset + lineEndVerticalOffset) / 2);
+
 			let adjustedPageY = request.pos.y + (lineCenteredVerticalOffset - request.mouseVerticalOffset);
 
 			if (adjustedPageY <= request.editorPos.y) {
@@ -959,6 +1030,7 @@ export class MouseTargetFactory {
 			const adjustedPage = new PageCoordinates(request.pos.x, adjustedPageY);
 
 			const r = this._actualDoHitTestWithCaretRangeFromPoint(ctx, adjustedPage.toClientCoordinates(dom.getWindow(ctx.viewDomNode)));
+
 			if (r.type === HitTestResultType.Content) {
 				return r;
 			}
@@ -970,7 +1042,9 @@ export class MouseTargetFactory {
 
 	private static _actualDoHitTestWithCaretRangeFromPoint(ctx: HitTestContext, coords: ClientCoordinates): HitTestResult {
 		const shadowRoot = dom.getShadowRoot(ctx.viewDomNode);
+
 		let range: Range;
+
 		if (shadowRoot) {
 			if (typeof (<any>shadowRoot).caretRangeFromPoint === 'undefined') {
 				range = shadowCaretRangeFromPoint(shadowRoot, coords.clientX, coords.clientY);
@@ -1040,13 +1114,17 @@ export class MouseTargetFactory {
 		// Some other times, it returns the `<span>` with the inline decoration
 		if (hitResult.offsetNode.nodeType === hitResult.offsetNode.ELEMENT_NODE) {
 			const parent1 = hitResult.offsetNode.parentNode;
+
 			const parent1ClassName = parent1 && parent1.nodeType === parent1.ELEMENT_NODE ? (<HTMLElement>parent1).className : null;
+
 			const parent2 = parent1 ? parent1.parentNode : null;
+
 			const parent2ClassName = parent2 && parent2.nodeType === parent2.ELEMENT_NODE ? (<HTMLElement>parent2).className : null;
 
 			if (parent1ClassName === ViewLine.CLASS_NAME) {
 				// it returned the `<span>` of the line and the offset is the `<span>` with the inline decoration
 				const tokenSpan = hitResult.offsetNode.childNodes[Math.min(hitResult.offset, hitResult.offsetNode.childNodes.length - 1)];
+
 				if (tokenSpan) {
 					return HitTestResult.createFromDOMInfo(ctx, <HTMLElement>tokenSpan, 0);
 				}
@@ -1061,8 +1139,11 @@ export class MouseTargetFactory {
 
 	private static _snapToSoftTabBoundary(position: Position, viewModel: IViewModel): Position {
 		const lineContent = viewModel.getLineContent(position.lineNumber);
+
 		const { tabSize } = viewModel.model.getOptions();
+
 		const newPosition = AtomicTabMoveOperations.atomicPosition(lineContent, position.column - 1, tabSize, Direction.Nearest);
+
 		if (newPosition !== -1) {
 			return new Position(position.lineNumber, newPosition + 1);
 		}
@@ -1072,6 +1153,7 @@ export class MouseTargetFactory {
 	public static doHitTest(ctx: HitTestContext, request: BareHitTestRequest): HitTestResult {
 
 		let result: HitTestResult = new UnknownHitTestResult();
+
 		if (typeof (<any>ctx.viewDomNode.ownerDocument).caretRangeFromPoint === 'function') {
 			result = this._doHitTestWithCaretRangeFromPoint(ctx, request);
 		} else if ((<any>ctx.viewDomNode.ownerDocument).caretPositionFromPoint) {
@@ -1081,6 +1163,7 @@ export class MouseTargetFactory {
 			const injectedText = ctx.viewModel.getInjectedTextAt(result.position);
 
 			const normalizedPosition = ctx.viewModel.normalizePosition(result.position, PositionAffinity.None);
+
 			if (injectedText || !normalizedPosition.equals(result.position)) {
 				result = new ContentHitTestResult(normalizedPosition, result.spanNode, injectedText);
 			}
@@ -1108,12 +1191,19 @@ function shadowCaretRangeFromPoint(shadowRoot: ShadowRoot, x: number, y: number)
 
 		// And its font (the computed shorthand font property might be empty, see #3217)
 		const elWindow = dom.getWindow(el);
+
 		const fontStyle = elWindow.getComputedStyle(el, null).getPropertyValue('font-style');
+
 		const fontVariant = elWindow.getComputedStyle(el, null).getPropertyValue('font-variant');
+
 		const fontWeight = elWindow.getComputedStyle(el, null).getPropertyValue('font-weight');
+
 		const fontSize = elWindow.getComputedStyle(el, null).getPropertyValue('font-size');
+
 		const lineHeight = elWindow.getComputedStyle(el, null).getPropertyValue('line-height');
+
 		const fontFamily = elWindow.getComputedStyle(el, null).getPropertyValue('font-family');
+
 		const font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize}/${lineHeight} ${fontFamily}`;
 
 		// And also its txt content
@@ -1121,7 +1211,9 @@ function shadowCaretRangeFromPoint(shadowRoot: ShadowRoot, x: number, y: number)
 
 		// Position the pixel cursor at the left of the element
 		let pixelCursor = rect.left;
+
 		let offset = 0;
+
 		let step: number;
 
 		// If the point is on the right of the box put the cursor after the last character
@@ -1139,6 +1231,7 @@ function shadowCaretRangeFromPoint(shadowRoot: ShadowRoot, x: number, y: number)
 				// If the x of the point is smaller that the position of the cursor, the point is over that character
 				if (x < pixelCursor) {
 					offset = i;
+
 					break;
 				}
 				// Move between the current character and the next
@@ -1174,15 +1267,19 @@ class CharWidthReader {
 
 	public getCharWidth(char: string, font: string): number {
 		const cacheKey = char + font;
+
 		if (this._cache[cacheKey]) {
 			return this._cache[cacheKey];
 		}
 
 		const context = this._canvas.getContext('2d')!;
 		context.font = font;
+
 		const metrics = context.measureText(char);
+
 		const width = metrics.width;
 		this._cache[cacheKey] = width;
+
 		return width;
 	}
 }

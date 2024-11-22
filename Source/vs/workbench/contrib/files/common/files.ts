@@ -136,6 +136,7 @@ export interface ISortOrderConfiguration {
 }
 export class TextFileContentProvider extends Disposable implements ITextModelContentProvider {
     private readonly fileWatcherDisposable = this._register(new MutableDisposable());
+
     constructor(
     @ITextFileService
     private readonly textFileService: ITextFileService, 
@@ -160,6 +161,7 @@ export class TextFileContentProvider extends Disposable implements ITextModelCon
     }
     private static textFileToResource(resource: URI): URI {
         const { scheme, query } = JSON.parse(resource.query);
+
         return resource.with({ scheme, query });
     }
     async provideTextContent(resource: URI): Promise<ITextModel | null> {
@@ -180,6 +182,7 @@ export class TextFileContentProvider extends Disposable implements ITextModelCon
                     this.resolveEditorModel(resource, false /* do not create if missing */); // update model when resource changes
                 }
             }));
+
             if (codeEditorModel) {
                 disposables.add(Event.once(codeEditorModel.onWillDispose)(() => this.fileWatcherDisposable.clear()));
             }
@@ -190,14 +193,19 @@ export class TextFileContentProvider extends Disposable implements ITextModelCon
     private resolveEditorModel(resource: URI, createAsNeeded?: boolean): Promise<ITextModel | null>;
     private async resolveEditorModel(resource: URI, createAsNeeded: boolean = true): Promise<ITextModel | null> {
         const savedFileResource = TextFileContentProvider.textFileToResource(resource);
+
         const content = await this.textFileService.readStream(savedFileResource);
+
         let codeEditorModel = this.modelService.getModel(resource);
+
         if (codeEditorModel) {
             this.modelService.updateModel(codeEditorModel, content.value);
         }
         else if (createAsNeeded) {
             const textFileModel = this.modelService.getModel(savedFileResource);
+
             let languageSelector: ILanguageSelection;
+
             if (textFileModel) {
                 languageSelector = this.languageService.createById(textFileModel.getLanguageId());
             }
@@ -212,6 +220,7 @@ export class TextFileContentProvider extends Disposable implements ITextModelCon
 export class OpenEditor implements IEditorIdentifier {
     private id: number;
     private static COUNTER = 0;
+
     constructor(private _editor: EditorInput, private _group: IEditorGroup) {
         this.id = OpenEditor.COUNTER++;
     }

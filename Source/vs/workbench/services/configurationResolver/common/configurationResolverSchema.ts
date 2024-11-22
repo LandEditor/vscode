@@ -4,9 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 import * as nls from '../../../../nls.js';
 import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
+
 const idDescription = nls.localize('JsonSchema.input.id', "The input's id is used to associate an input with a variable of the form ${input:id}.");
+
 const typeDescription = nls.localize('JsonSchema.input.type', "The type of user input prompt to use.");
+
 const descriptionDescription = nls.localize('JsonSchema.input.description', "The description is shown when the user is prompted for input.");
+
 const defaultDescription = nls.localize('JsonSchema.input.default', "The default value for the input.");
 export const inputsSchema: IJSONSchema = {
     definitions: {

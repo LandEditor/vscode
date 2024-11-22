@@ -18,6 +18,7 @@ export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Run
     const disposables = [];
     disposables.push(client.onRequest(FsReadDirRequest.type, (uriString: string) => {
         const uri = Uri.parse(uriString);
+
         if (uri.scheme === 'file' && runtime.fileFs) {
             return runtime.fileFs.readDirectory(uriString);
         }
@@ -25,11 +26,13 @@ export function serveFileSystemRequests(client: BaseLanguageClient, runtime: Run
     }));
     disposables.push(client.onRequest(FsStatRequest.type, (uriString: string) => {
         const uri = Uri.parse(uriString);
+
         if (uri.scheme === 'file' && runtime.fileFs) {
             return runtime.fileFs.stat(uriString);
         }
         return workspace.fs.stat(uri);
     }));
+
     return Disposable.from(...disposables);
 }
 export enum FileType {

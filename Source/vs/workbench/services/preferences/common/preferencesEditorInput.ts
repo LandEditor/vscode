@@ -12,6 +12,7 @@ import { IUntypedEditorInput } from '../../../common/editor.js';
 import { EditorInput } from '../../../common/editor/editorInput.js';
 import { IPreferencesService } from './preferences.js';
 import { Settings2EditorModel } from './preferencesModels.js';
+
 const SettingsEditorIcon = registerIcon('settings-editor-label-icon', Codicon.settings, nls.localize('settingsEditorLabelIcon', 'Icon of the settings editor label.'));
 export class SettingsEditor2Input extends EditorInput {
     static readonly ID: string = 'workbench.input.settings2';
@@ -20,6 +21,7 @@ export class SettingsEditor2Input extends EditorInput {
         scheme: Schemas.vscodeSettings,
         path: `settingseditor`
     });
+
     constructor(
     @IPreferencesService
     _preferencesService: IPreferencesService) {
@@ -43,6 +45,7 @@ export class SettingsEditor2Input extends EditorInput {
     }
     override dispose(): void {
         this._settingsModel.dispose();
+
         super.dispose();
     }
 }

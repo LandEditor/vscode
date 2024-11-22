@@ -43,6 +43,7 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
     private static WORD_FILTER = or(matchesPrefix, matchesWords, matchesContiguousSubString);
     private readonly commandsHistory = this._register(this.instantiationService.createInstance(CommandsHistory));
     protected override readonly options: ICommandsQuickAccessOptions;
+
     constructor(options: ICommandsQuickAccessOptions, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -60,6 +61,7 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
     protected async _getPicks(filter: string, _disposables: DisposableStore, token: CancellationToken, runOptions?: IQuickAccessProviderRunOptions): Promise<Picks<ICommandQuickPick> | FastAndSlowPicks<ICommandQuickPick>> {
         // Ask subclass for all command picks
         const allCommandPicks = await this.getCommandPicks(token);
+
         if (token.isCancellationRequested) {
             return [];
         }
@@ -69,15 +71,19 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
                 key: commandPick.commandId,
                 textChunks: [this.getTfIdfChunk(commandPick)]
             })));
+
             const result = tfidf.calculateScores(filter, token);
+
             return normalizeTfIdfScores(result)
                 .filter(score => score.score > AbstractCommandsQuickAccessProvider.TFIDF_THRESHOLD)
                 .slice(0, AbstractCommandsQuickAccessProvider.TFIDF_MAX_RESULTS);
         });
         // Filter
         const filteredCommandPicks: ICommandQuickPick[] = [];
+
         for (const commandPick of allCommandPicks) {
             const labelHighlights = AbstractCommandsQuickAccessProvider.WORD_FILTER(filter, commandPick.label) ?? undefined;
+
             const aliasHighlights = commandPick.commandAlias ? AbstractCommandsQuickAccessProvider.WORD_FILTER(filter, commandPick.commandAlias) ?? undefined : undefined;
             // Add if matching in label or alias
             if (labelHighlights || aliasHighlights) {
@@ -94,11 +100,13 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
             // Handle tf-idf scoring for the rest if there's a filter
             else if (filter.length >= 3) {
                 const tfidf = runTfidf();
+
                 if (token.isCancellationRequested) {
                     return [];
                 }
                 // Add if we have a tf-idf score
                 const tfidfScore = tfidf.find(score => score.key === commandPick.commandId);
+
                 if (tfidfScore) {
                     commandPick.tfIdfScore = tfidfScore.score;
                     filteredCommandPicks.push(commandPick);
@@ -107,8 +115,10 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
         }
         // Add description to commands that have duplicate labels
         const mapLabelToCommand = new Map<string, ICommandQuickPick>();
+
         for (const commandPick of filteredCommandPicks) {
             const existingCommandForLabel = mapLabelToCommand.get(commandPick.label);
+
             if (existingCommandForLabel) {
                 commandPick.description = commandPick.commandId;
                 existingCommandForLabel.description = existingCommandForLabel.commandId;
@@ -133,7 +143,9 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
                 return -1; // other command has a score but first doesn't so first wins
             }
             const commandACounter = this.commandsHistory.peek(commandPickA.commandId);
+
             const commandBCounter = this.commandsHistory.peek(commandPickB.commandId);
+
             if (commandACounter && commandBCounter) {
                 return commandACounter > commandBCounter ? -1 : 1; // use more recently used command before older
             }
@@ -145,7 +157,9 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
             }
             if (this.options.suggestedCommandIds) {
                 const commandASuggestion = this.options.suggestedCommandIds.has(commandPickA.commandId);
+
                 const commandBSuggestion = this.options.suggestedCommandIds.has(commandPickB.commandId);
+
                 if (commandASuggestion && commandBSuggestion) {
                     return 0; // honor the order of the array
                 }
@@ -159,10 +173,15 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
             // both commands were never used, so we sort by name
             return commandPickA.label.localeCompare(commandPickB.label);
         });
+
         const commandPicks: Array<ICommandQuickPick | IQuickPickSeparator> = [];
+
         let addOtherSeparator = false;
+
         let addSuggestedSeparator = true;
+
         let addCommonlyUsedSeparator = !!this.options.suggestedCommandIds;
+
         for (let i = 0; i < filteredCommandPicks.length; i++) {
             const commandPick = filteredCommandPicks[i];
             // Separator: recently used
@@ -195,6 +214,7 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
             picks: commandPicks,
             additionalPicks: (async (): Promise<Picks<ICommandQuickPick>> => {
                 const additionalCommandPicks = await this.getAdditionalCommandPicks(allCommandPicks, filteredCommandPicks, filter, token);
+
                 if (token.isCancellationRequested) {
                     return [];
                 }
@@ -213,9 +233,11 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
             return commandPick;
         }
         const keybinding = this.keybindingService.lookupKeybinding(commandPick.commandId);
+
         const ariaLabel = keybinding ?
             localize('commandPickAriaLabelWithKeybinding', "{0}, {1}", commandPick.label, keybinding.getAriaLabel()) :
             commandPick.label;
+
         return {
             ...commandPick,
             ariaLabel,
@@ -246,6 +268,7 @@ export abstract class AbstractCommandsQuickAccessProvider extends PickerQuickAcc
     // TF-IDF string to be indexed
     private getTfIdfChunk({ label, commandAlias, commandDescription }: ICommandQuickPick) {
         let chunk = label;
+
         if (commandAlias && commandAlias !== label) {
             chunk += ` - ${commandAlias}`;
         }
@@ -282,6 +305,7 @@ export class CommandsHistory extends Disposable {
     private static counter = 1;
     private static hasChanges = false;
     private configuredCommandsHistoryLength = 0;
+
     constructor(
     @IStorageService
     private readonly storageService: IStorageService, 
@@ -310,6 +334,7 @@ export class CommandsHistory extends Disposable {
             return;
         }
         this.configuredCommandsHistoryLength = CommandsHistory.getConfiguredCommandHistoryLength(this.configurationService);
+
         if (CommandsHistory.cache && CommandsHistory.cache.limit !== this.configuredCommandsHistoryLength) {
             CommandsHistory.cache.limit = this.configuredCommandsHistoryLength;
             CommandsHistory.hasChanges = true;
@@ -317,7 +342,9 @@ export class CommandsHistory extends Disposable {
     }
     private load(): void {
         const raw = this.storageService.get(CommandsHistory.PREF_KEY_CACHE, StorageScope.PROFILE);
+
         let serializedCache: ISerializedCommandHistory | undefined;
+
         if (raw) {
             try {
                 serializedCache = JSON.parse(raw);
@@ -327,11 +354,13 @@ export class CommandsHistory extends Disposable {
             }
         }
         const cache = CommandsHistory.cache = new LRUCache<string, number>(this.configuredCommandsHistoryLength, 1);
+
         if (serializedCache) {
             let entries: {
                 key: string;
                 value: number;
             }[];
+
             if (serializedCache.usesLRU) {
                 entries = serializedCache.entries;
             }
@@ -367,7 +396,9 @@ export class CommandsHistory extends Disposable {
     }
     static getConfiguredCommandHistoryLength(configurationService: IConfigurationService): number {
         const config = <ICommandsQuickAccessConfiguration>configurationService.getValue();
+
         const configuredCommandHistoryLength = config.workbench?.commandPalette?.history;
+
         if (typeof configuredCommandHistoryLength === 'number') {
             return configuredCommandHistoryLength;
         }

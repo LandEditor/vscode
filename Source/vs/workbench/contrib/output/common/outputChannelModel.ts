@@ -36,6 +36,7 @@ class OutputFileListener extends Disposable {
     private watching: boolean = false;
     private syncDelayer: ThrottledDelayer<void>;
     private etag: string | undefined;
+
     constructor(private readonly file: URI, private readonly fileService: IFileService, private readonly logService: ILogService) {
         super();
         this.syncDelayer = new ThrottledDelayer<void>(500);
@@ -58,6 +59,7 @@ class OutputFileListener extends Disposable {
     }
     private async doWatch(): Promise<void> {
         const stat = await this.fileService.stat(this.file);
+
         if (stat.etag !== this.etag) {
             this.etag = stat.etag;
             this._onDidContentChange.fire(stat.size);
@@ -72,6 +74,7 @@ class OutputFileListener extends Disposable {
     }
     override dispose(): void {
         this.unwatch();
+
         super.dispose();
     }
 }
@@ -88,6 +91,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
     private replacePromise: Promise<void> | undefined;
     private startOffset: number = 0;
     private endOffset: number = 0;
+
     constructor(private readonly modelUri: URI, private readonly language: ILanguageSelection, private readonly file: URI, 
     @IFileService
     private readonly fileService: IFileService, 
@@ -119,6 +123,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
         this.loadModelPromise = Promises.withAsyncBody<ITextModel>(async (c, e) => {
             try {
                 let content = '';
+
                 if (await this.fileService.exists(this.file)) {
                     const fileContent = await this.fileService.readFile(this.file, { position: this.startOffset });
                     this.endOffset = this.startOffset + fileContent.value.byteLength;
@@ -135,6 +140,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
                 e(error);
             }
         });
+
         return this.loadModelPromise;
     }
     private createModel(content: string): ITextModel {
@@ -144,6 +150,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
         else {
             this.model = this.modelService.createModel(content, this.language, this.modelUri);
             this.fileHandler.watch(this.etag);
+
             const disposable = this.model.onWillDispose(() => {
                 this.cancelModelUpdate();
                 this.fileHandler.unwatch();
@@ -162,10 +169,12 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
             return;
         }
         this.modelUpdateInProgress = true;
+
         if (!this.modelUpdateCancellationSource.value) {
             this.modelUpdateCancellationSource.value = new CancellationTokenSource();
         }
         const token = this.modelUpdateCancellationSource.value.token;
+
         if (mode === OutputChannelUpdateMode.Clear) {
             this.clearContent(this.model);
         }
@@ -204,7 +213,9 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
             }
             /* Appned Content */
             const lastLine = model.getLineCount();
+
             const lastLineMaxColumn = model.getLineMaxColumn(lastLine);
+
             const edits = [EditOperation.insert(new Position(lastLine, lastLineMaxColumn), contentToAppend.toString())];
             this.doUpdateModel(model, edits, contentToAppend);
         }, immediate ? 0 : undefined).catch(error => {
@@ -235,6 +246,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
         }
         if (contentToReplace !== model.getValue()) {
             const edits = await this.editorWorkerService.computeMoreMinimalEdits(model.uri, [{ text: contentToReplace.toString(), range: model.getFullModelRange() }]);
+
             if (edits?.length) {
                 return edits.map(edit => EditOperation.replace(Range.lift(edit.range), edit.text));
             }
@@ -258,6 +270,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
     private async getContentToUpdate(): Promise<VSBuffer> {
         const content = await this.fileService.readFile(this.file, { position: this.endOffset });
         this.etag = content.etag;
+
         return content.value;
     }
     private onDidContentChange(size: number | undefined): void {
@@ -276,12 +289,14 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
     }
     override dispose(): void {
         this._onDispose.fire();
+
         super.dispose();
     }
 }
 class OutputChannelBackedByFile extends FileOutputChannelModel implements IOutputChannelModel {
     private logger: ILogger;
     private _offset: number;
+
     constructor(id: string, modelUri: URI, language: ILanguageSelection, file: URI, 
     @IFileService
     fileService: IFileService, 
@@ -310,6 +325,7 @@ class OutputChannelBackedByFile extends FileOutputChannelModel implements IOutpu
     private write(content: string): void {
         this._offset += VSBuffer.fromString(content).byteLength;
         this.logger.info(content);
+
         if (this.isVisible()) {
             this.logger.flush();
         }
@@ -319,6 +335,7 @@ export class DelegatedOutputChannelModel extends Disposable implements IOutputCh
     private readonly _onDispose: Emitter<void> = this._register(new Emitter<void>());
     readonly onDispose: Event<void> = this._onDispose.event;
     private readonly outputChannelModel: Promise<IOutputChannelModel>;
+
     constructor(id: string, modelUri: URI, language: ILanguageSelection, outputDir: Promise<URI>, 
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -329,10 +346,13 @@ export class DelegatedOutputChannelModel extends Disposable implements IOutputCh
     }
     private async createOutputChannelModel(id: string, modelUri: URI, language: ILanguageSelection, outputDirPromise: Promise<URI>): Promise<IOutputChannelModel> {
         const outputDir = await outputDirPromise;
+
         const file = resources.joinPath(outputDir, `${id.replace(/[\\/:\*\?"<>\|]/g, '')}.log`);
         await this.fileService.createFile(file);
+
         const outputChannelModel = this._register(this.instantiationService.createInstance(OutputChannelBackedByFile, id, modelUri, language, file));
         this._register(outputChannelModel.onDispose(() => this._onDispose.fire()));
+
         return outputChannelModel;
     }
     append(output: string): void {

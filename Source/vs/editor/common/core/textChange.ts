@@ -39,6 +39,7 @@ export class TextChange {
         const len = str.length;
         buffer.writeUInt32BE(b, len, offset);
         offset += 4;
+
         for (let i = 0; i < len; i++) {
             buffer.writeUInt16LE(b, str.charCodeAt(i), offset);
             offset += 2;
@@ -48,6 +49,7 @@ export class TextChange {
     private static _readString(b: Uint8Array, offset: number): string {
         const len = buffer.readUInt32BE(b, offset);
         offset += 4;
+
         return decodeUTF16LE(b, offset, len);
     }
     public writeSize(): number {
@@ -63,18 +65,23 @@ export class TextChange {
         offset += 4;
         offset = TextChange._writeString(b, this.oldText, offset);
         offset = TextChange._writeString(b, this.newText, offset);
+
         return offset;
     }
     public static read(b: Uint8Array, offset: number, dest: TextChange[]): number {
         const oldPosition = buffer.readUInt32BE(b, offset);
         offset += 4;
+
         const newPosition = buffer.readUInt32BE(b, offset);
         offset += 4;
+
         const oldText = TextChange._readString(b, offset);
         offset += TextChange._writeStringSize(oldText);
+
         const newText = TextChange._readString(b, offset);
         offset += TextChange._writeStringSize(newText);
         dest.push(new TextChange(oldPosition, oldText, newPosition, newText));
+
         return offset;
     }
 }
@@ -83,6 +90,7 @@ export function compressConsecutiveTextChanges(prevEdits: TextChange[] | null, c
         return currEdits;
     }
     const compressor = new TextChangeCompressor(prevEdits, currEdits);
+
     return compressor.compress();
 }
 class TextChangeCompressor {
@@ -94,6 +102,7 @@ class TextChangeCompressor {
     private _prevDeltaOffset: number;
     private _currLen: number;
     private _currDeltaOffset: number;
+
     constructor(prevEdits: TextChange[], currEdits: TextChange[]) {
         this._prevEdits = prevEdits;
         this._currEdits = currEdits;
@@ -106,45 +115,57 @@ class TextChangeCompressor {
     }
     public compress(): TextChange[] {
         let prevIndex = 0;
+
         let currIndex = 0;
+
         let prevEdit = this._getPrev(prevIndex);
+
         let currEdit = this._getCurr(currIndex);
+
         while (prevIndex < this._prevLen || currIndex < this._currLen) {
             if (prevEdit === null) {
                 this._acceptCurr(currEdit!);
                 currEdit = this._getCurr(++currIndex);
+
                 continue;
             }
             if (currEdit === null) {
                 this._acceptPrev(prevEdit);
                 prevEdit = this._getPrev(++prevIndex);
+
                 continue;
             }
             if (currEdit.oldEnd <= prevEdit.newPosition) {
                 this._acceptCurr(currEdit);
                 currEdit = this._getCurr(++currIndex);
+
                 continue;
             }
             if (prevEdit.newEnd <= currEdit.oldPosition) {
                 this._acceptPrev(prevEdit);
                 prevEdit = this._getPrev(++prevIndex);
+
                 continue;
             }
             if (currEdit.oldPosition < prevEdit.newPosition) {
                 const [e1, e2] = TextChangeCompressor._splitCurr(currEdit, prevEdit.newPosition - currEdit.oldPosition);
                 this._acceptCurr(e1);
                 currEdit = e2;
+
                 continue;
             }
             if (prevEdit.newPosition < currEdit.oldPosition) {
                 const [e1, e2] = TextChangeCompressor._splitPrev(prevEdit, currEdit.oldPosition - prevEdit.newPosition);
                 this._acceptPrev(e1);
                 prevEdit = e2;
+
                 continue;
             }
             // At this point, currEdit.oldPosition === prevEdit.newPosition
             let mergePrev: TextChange;
+
             let mergeCurr: TextChange;
+
             if (currEdit.oldEnd === prevEdit.newEnd) {
                 mergePrev = prevEdit;
                 mergeCurr = currEdit;
@@ -170,7 +191,9 @@ class TextChangeCompressor {
             this._currDeltaOffset += mergeCurr.newLength - mergeCurr.oldLength;
         }
         const merged = TextChangeCompressor._merge(this._result);
+
         const cleaned = TextChangeCompressor._removeNoOps(merged);
+
         return cleaned;
     }
     private _acceptCurr(currEdit: TextChange): void {
@@ -198,7 +221,9 @@ class TextChangeCompressor {
         TextChange
     ] {
         const preText = edit.newText.substr(0, offset);
+
         const postText = edit.newText.substr(offset);
+
         return [
             new TextChange(edit.oldPosition, edit.oldText, edit.newPosition, preText),
             new TextChange(edit.oldEnd, '', edit.newPosition + offset, postText)
@@ -209,7 +234,9 @@ class TextChangeCompressor {
         TextChange
     ] {
         const preText = edit.oldText.substr(0, offset);
+
         const postText = edit.oldText.substr(offset);
+
         return [
             new TextChange(edit.oldPosition, preText, edit.newPosition, edit.newText),
             new TextChange(edit.oldPosition + offset, postText, edit.newEnd, '')
@@ -220,10 +247,14 @@ class TextChangeCompressor {
             return edits;
         }
         const result: TextChange[] = [];
+
         let resultLen = 0;
+
         let prev = edits[0];
+
         for (let i = 1; i < edits.length; i++) {
             const curr = edits[i];
+
             if (prev.oldEnd === curr.oldPosition) {
                 // Merge into `prev`
                 prev = new TextChange(prev.oldPosition, prev.oldText + curr.oldText, prev.newPosition, prev.newText + curr.newText);
@@ -234,6 +265,7 @@ class TextChangeCompressor {
             }
         }
         result[resultLen++] = prev;
+
         return result;
     }
     private static _removeNoOps(edits: TextChange[]): TextChange[] {
@@ -241,9 +273,12 @@ class TextChangeCompressor {
             return edits;
         }
         const result: TextChange[] = [];
+
         let resultLen = 0;
+
         for (let i = 0; i < edits.length; i++) {
             const edit = edits[i];
+
             if (edit.oldText === edit.newText) {
                 continue;
             }

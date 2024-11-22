@@ -50,6 +50,7 @@ const chatViewsWelcomeExtensionPoint = extensionsRegistry.ExtensionsRegistry.reg
 });
 export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.chatViewsWelcomeHandler';
+
     constructor(
     @ILogService
     private readonly logService: ILogService) {
@@ -57,9 +58,12 @@ export class ChatViewsWelcomeHandler implements IWorkbenchContribution {
             for (const extension of delta.added) {
                 for (const providerDescriptor of extension.value) {
                     checkProposedApiEnabled(extension.description, 'chatParticipantPrivate');
+
                     const when = ContextKeyExpr.deserialize(providerDescriptor.when);
+
                     if (!when) {
                         this.logService.error(`Could not deserialize 'when' clause for chatViewsWelcome contribution: ${providerDescriptor.when}`);
+
                         continue;
                     }
                     const descriptor: IChatViewsWelcomeDescriptor = {

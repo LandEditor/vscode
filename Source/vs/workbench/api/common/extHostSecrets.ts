@@ -13,6 +13,7 @@ export class ExtensionSecrets implements vscode.SecretStorage {
     readonly #secretState: ExtHostSecretState;
     readonly onDidChange: Event<vscode.SecretStorageChangeEvent>;
     readonly disposables = new DisposableStore();
+
     constructor(extensionDescription: IExtensionDescription, secretState: ExtHostSecretState) {
         this._id = ExtensionIdentifier.toKey(extensionDescription.identifier);
         this.#secretState = secretState;

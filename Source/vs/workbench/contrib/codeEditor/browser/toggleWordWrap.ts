@@ -24,9 +24,13 @@ import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 
 import { IEditorService } from '../../../services/editor/common/editorService.js';
 
 const transientWordWrapState = 'transientWordWrapState';
+
 const isWordWrapMinifiedKey = 'isWordWrapMinified';
+
 const isDominatedByLongLinesKey = 'isDominatedByLongLines';
+
 const CAN_TOGGLE_WORD_WRAP = new RawContextKey<boolean>('canToggleWordWrap', false, true);
+
 const EDITOR_WORD_WRAP = new RawContextKey<boolean>('editorWordWrap', false, nls.localize('editorWordWrap', 'Whether the editor is currently using word wrapping.'));
 
 /**
@@ -80,10 +84,12 @@ class ToggleWordWrapAction extends EditorAction {
 
 		// Compute the new state
 		let newState: IWordWrapTransientState | null;
+
 		if (transientState) {
 			newState = null;
 		} else {
 			const actualWrappingInfo = editor.getOption(EditorOption.wrappingInfo);
+
 			const wordWrapOverride = (actualWrappingInfo.wrappingColumn === -1 ? 'on' : 'off');
 			newState = { wordWrapOverride };
 		}
@@ -94,10 +100,14 @@ class ToggleWordWrapAction extends EditorAction {
 
 		// if we are in a diff editor, update the other editor (if possible)
 		const diffEditor = findDiffEditorContainingCodeEditor(editor, codeEditorService);
+
 		if (diffEditor) {
 			const originalEditor = diffEditor.getOriginalEditor();
+
 			const modifiedEditor = diffEditor.getModifiedEditor();
+
 			const otherEditor = (originalEditor === editor ? modifiedEditor : originalEditor);
+
 			if (canToggleWordWrap(codeEditorService, otherEditor)) {
 				writeTransientState(otherEditor.getModel(), newState, codeEditorService);
 				diffEditor.updateOptions({});
@@ -116,7 +126,9 @@ function findDiffEditorContainingCodeEditor(editor: ICodeEditor, codeEditorServi
 	}
 	for (const diffEditor of codeEditorService.listDiffEditors()) {
 		const originalEditor = diffEditor.getOriginalEditor();
+
 		const modifiedEditor = diffEditor.getModifiedEditor();
+
 		if (originalEditor === editor || modifiedEditor === editor) {
 			return diffEditor;
 		}
@@ -136,9 +148,13 @@ class ToggleWordWrapController extends Disposable implements IEditorContribution
 		super();
 
 		const options = this._editor.getOptions();
+
 		const wrappingInfo = options.get(EditorOption.wrappingInfo);
+
 		const isWordWrapMinified = this._contextKeyService.createKey(isWordWrapMinifiedKey, wrappingInfo.isWordWrapMinified);
+
 		const isDominatedByLongLines = this._contextKeyService.createKey(isDominatedByLongLinesKey, wrappingInfo.isDominatedByLongLines);
+
 		let currentlyApplyingEditorConfig = false;
 
 		this._register(_editor.onDidChangeConfiguration((e) => {
@@ -146,9 +162,11 @@ class ToggleWordWrapController extends Disposable implements IEditorContribution
 				return;
 			}
 			const options = this._editor.getOptions();
+
 			const wrappingInfo = options.get(EditorOption.wrappingInfo);
 			isWordWrapMinified.set(wrappingInfo.isWordWrapMinified);
 			isDominatedByLongLines.set(wrappingInfo.isDominatedByLongLines);
+
 			if (!currentlyApplyingEditorConfig) {
 				// I am not the cause of the word wrap getting changed
 				ensureWordWrapSettings();
@@ -205,6 +223,7 @@ class DiffToggleWordWrapController extends Disposable implements IDiffEditorCont
 
 	private _ensureSyncedWordWrapToggle(): void {
 		const originalEditor = this._diffEditor.getOriginalEditor();
+
 		const modifiedEditor = this._diffEditor.getModifiedEditor();
 
 		if (!originalEditor.hasModel() || !modifiedEditor.hasModel()) {
@@ -212,6 +231,7 @@ class DiffToggleWordWrapController extends Disposable implements IDiffEditorCont
 		}
 
 		const originalTransientState = readTransientState(originalEditor.getModel(), this._codeEditorService);
+
 		const modifiedTransientState = readTransientState(modifiedEditor.getModel(), this._codeEditorService);
 
 		if (originalTransientState && !modifiedTransientState && canToggleWordWrap(this._codeEditorService, originalEditor)) {
@@ -235,6 +255,7 @@ function canToggleWordWrap(codeEditorService: ICodeEditorService, editor: ICodeE
 	}
 	// Ensure correct word wrap settings
 	const model = editor.getModel();
+
 	if (!model) {
 		return false;
 	}
@@ -280,6 +301,7 @@ class EditorWordWrapContextKeyTracker extends Disposable implements IWorkbenchCo
 
 	private _update(): void {
 		const activeEditor = this._codeEditorService.getFocusedCodeEditor() || this._codeEditorService.getActiveCodeEditor();
+
 		if (this._activeEditor === activeEditor) {
 			// no change
 			return;

@@ -12,9 +12,11 @@ import { CellContentPart } from '../cellPart.js';
 import { CodeCellViewModel } from '../../viewModel/codeCellViewModel.js';
 import { NotebookCellInternalMetadata } from '../../../common/notebookCommon.js';
 import { INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
+
 const UPDATE_EXECUTION_ORDER_GRACE_PERIOD = 200;
 export class CellExecutionPart extends CellContentPart {
     private readonly kernelDisposables = this._register(new DisposableStore());
+
     constructor(private readonly _notebookEditor: INotebookEditorDelegate, private readonly _executionOrderLabel: HTMLElement, 
     @INotebookExecutionStateService
     private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
@@ -22,6 +24,7 @@ export class CellExecutionPart extends CellContentPart {
         this._register(this._notebookEditor.onDidChangeActiveKernel(() => {
             if (this.currentCell) {
                 this.kernelDisposables.clear();
+
                 if (this._notebookEditor.activeKernel) {
                     this.kernelDisposables.add(this._notebookEditor.activeKernel.onDidChange(() => {
                         if (this.currentCell) {
@@ -49,6 +52,7 @@ export class CellExecutionPart extends CellContentPart {
                         this.updateExecutionOrder(this.currentCell!.internalMetadata, true);
                     }
                 }, UPDATE_EXECUTION_ORDER_GRACE_PERIOD, this.cellDisposables);
+
                 return;
             }
             const executionOrderLabel = typeof internalMetadata.executionOrder === 'number' ?
@@ -75,14 +79,20 @@ export class CellExecutionPart extends CellContentPart {
             }
             else {
                 DOM.show(this._executionOrderLabel);
+
                 let top = this.currentCell.layoutInfo.editorHeight - 22 + this.currentCell.layoutInfo.statusBarHeight;
+
                 if (this.currentCell instanceof CodeCellViewModel) {
                     const elementTop = this._notebookEditor.getAbsoluteTopOfElement(this.currentCell);
+
                     const editorBottom = elementTop + this.currentCell.layoutInfo.outputContainerOffset;
                     // another approach to avoid the flicker caused by sticky scroll is manually calculate the scrollBottom:
                     // const scrollBottom = this._notebookEditor.scrollTop + this._notebookEditor.getLayoutInfo().height - 26 - this._notebookEditor.getLayoutInfo().stickyHeight;
+
                     const scrollBottom = this._notebookEditor.scrollBottom;
+
                     const lineHeight = 22;
+
                     if (scrollBottom <= editorBottom) {
                         const offset = editorBottom - scrollBottom;
                         top -= offset;

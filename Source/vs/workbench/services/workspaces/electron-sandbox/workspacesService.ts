@@ -10,6 +10,7 @@ import { INativeHostService } from '../../../../platform/native/common/native.js
 // @ts-ignore: interface is implemented via proxy
 export class NativeWorkspacesService implements IWorkspacesService {
     declare readonly _serviceBrand: undefined;
+
     constructor(
     @IMainProcessService
     mainProcessService: IMainProcessService, 

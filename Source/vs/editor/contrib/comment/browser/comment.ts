@@ -34,8 +34,11 @@ abstract class CommentLineAction extends EditorAction {
 		}
 
 		const model = editor.getModel();
+
 		const commands: ICommand[] = [];
+
 		const modelOptions = model.getOptions();
+
 		const commentsOptions = editor.getOption(EditorOption.comments);
 
 		const selections = editor.getSelections().map((selection, index) => ({ selection, index, ignoreFirstLine: false }));
@@ -43,8 +46,10 @@ abstract class CommentLineAction extends EditorAction {
 
 		// Remove selections that would result in copying the same line
 		let prev = selections[0];
+
 		for (let i = 1; i < selections.length; i++) {
 			const curr = selections[i];
+
 			if (prev.selection.endLineNumber === curr.selection.startLineNumber) {
 				// these two selections would copy the same line
 				if (prev.index < curr.index) {
@@ -159,8 +164,11 @@ class BlockCommentAction extends EditorAction {
 		}
 
 		const commentsOptions = editor.getOption(EditorOption.comments);
+
 		const commands: ICommand[] = [];
+
 		const selections = editor.getSelections();
+
 		for (const selection of selections) {
 			commands.push(new BlockCommentCommand(selection, commentsOptions.insertSpace, languageConfigurationService));
 		}

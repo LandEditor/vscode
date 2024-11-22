@@ -20,6 +20,7 @@ export class FindMatchDecorationModel extends Disposable {
         kind: 'output';
         index: number;
     } | null = null;
+
     constructor(private readonly _notebookEditor: INotebookEditor, private readonly ownerID: string) {
         super();
     }
@@ -36,9 +37,11 @@ export class FindMatchDecorationModel extends Disposable {
         // we will highlight the match in the webview
         this._notebookEditor.changeModelDecorations(accessor => {
             const findMatchesOptions: ModelDecorationOptions = FindDecorations._CURRENT_FIND_MATCH_DECORATION;
+
             const decorations: IModelDeltaDecoration[] = [
                 { range: cellRange, options: findMatchesOptions }
             ];
+
             const deltaDecoration: ICellModelDeltaDecorations = {
                 ownerId: cell.handle,
                 decorations: decorations
@@ -59,10 +62,12 @@ export class FindMatchDecorationModel extends Disposable {
                     }
                 }
             }]);
+
         return null;
     }
     public async highlightCurrentFindMatchDecorationInWebview(cell: ICellViewModel, index: number): Promise<number | null> {
         this.clearCurrentFindMatchDecoration();
+
         const offset = await this._notebookEditor.findHighlightCurrent(index, this.ownerID);
         this._currentMatchDecorations = { kind: 'output', index: index };
         this._currentMatchCellDecorations = this._notebookEditor.deltaCellDecorations(this._currentMatchCellDecorations, [{
@@ -76,6 +81,7 @@ export class FindMatchDecorationModel extends Disposable {
                     }
                 }
             } satisfies INotebookDeltaDecoration]);
+
         return offset;
     }
     public clearCurrentFindMatchDecoration() {
@@ -93,9 +99,11 @@ export class FindMatchDecorationModel extends Disposable {
     public setAllFindMatchesDecorations(cellFindMatches: CellFindMatchWithIndex[]) {
         this._notebookEditor.changeModelDecorations((accessor) => {
             const findMatchesOptions: ModelDecorationOptions = FindDecorations._FIND_MATCH_DECORATION;
+
             const deltaDecorations: ICellModelDeltaDecorations[] = cellFindMatches.map(cellFindMatch => {
                 // Find matches
                 const newFindMatchesDecorations: IModelDeltaDecoration[] = new Array<IModelDeltaDecoration>(cellFindMatch.contentMatches.length);
+
                 for (let i = 0; i < cellFindMatch.contentMatches.length; i++) {
                     newFindMatchesDecorations[i] = {
                         range: cellFindMatch.contentMatches[i].range,
@@ -126,6 +134,7 @@ export class FindMatchDecorationModel extends Disposable {
     }
     override dispose() {
         this.clearDecorations();
+
         super.dispose();
     }
 }

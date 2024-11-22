@@ -23,12 +23,14 @@ export class PausedCellDecorationContribution extends Disposable implements INot
     private _currentTopDecorations: string[] = [];
     private _currentOtherDecorations: string[] = [];
     private _executingCellDecorations: string[] = [];
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @IDebugService
     private readonly _debugService: IDebugService, 
     @INotebookExecutionStateService
     private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
         super();
+
         const delayer = this._register(new Delayer(200));
         this._register(_debugService.getModel().onDidChangeCallStack(() => this.updateExecutionDecorations()));
         this._register(_debugService.getViewModel().onDidFocusStackFrame(() => this.updateExecutionDecorations()));
@@ -42,20 +44,27 @@ export class PausedCellDecorationContribution extends Disposable implements INot
         const exes = this._notebookEditor.textModel ?
             this._notebookExecutionStateService.getCellExecutionsByHandleForNotebook(this._notebookEditor.textModel.uri)
             : undefined;
+
         const topFrameCellsAndRanges: ICellAndRange[] = [];
+
         let focusedFrameCellAndRange: ICellAndRange | undefined = undefined;
+
         const getNotebookCellAndRange = (sf: IStackFrame): ICellAndRange | undefined => {
             const parsed = CellUri.parse(sf.source.uri);
+
             if (parsed && parsed.notebook.toString() === this._notebookEditor.textModel?.uri.toString()) {
                 return { handle: parsed.handle, range: sf.range };
             }
             return undefined;
         };
+
         for (const session of this._debugService.getModel().getSessions()) {
             for (const thread of session.getAllThreads()) {
                 const topFrame = thread.getTopStackFrame();
+
                 if (topFrame) {
                     const notebookCellAndRange = getNotebookCellAndRange(topFrame);
+
                     if (notebookCellAndRange) {
                         topFrameCellsAndRanges.push(notebookCellAndRange);
                         exes?.delete(notebookCellAndRange.handle);
@@ -64,8 +73,10 @@ export class PausedCellDecorationContribution extends Disposable implements INot
             }
         }
         const focusedFrame = this._debugService.getViewModel().focusedStackFrame;
+
         if (focusedFrame && focusedFrame.thread.stopped) {
             const thisFocusedFrameCellAndRange = getNotebookCellAndRange(focusedFrame);
+
             if (thisFocusedFrameCellAndRange &&
                 !topFrameCellsAndRanges.some(topFrame => topFrame.handle === thisFocusedFrameCellAndRange?.handle && Range.equalsRange(topFrame.range, thisFocusedFrameCellAndRange?.range))) {
                 focusedFrameCellAndRange = thisFocusedFrameCellAndRange;
@@ -74,6 +85,7 @@ export class PausedCellDecorationContribution extends Disposable implements INot
         }
         this.setTopFrameDecoration(topFrameCellsAndRanges);
         this.setFocusedFrameDecoration(focusedFrameCellAndRange);
+
         const exeHandles = exes ?
             Array.from(exes.entries())
                 .filter(([_, exe]) => exe.state === NotebookCellExecutionState.Executing)
@@ -91,12 +103,14 @@ export class PausedCellDecorationContribution extends Disposable implements INot
                     position: NotebookOverviewRulerLane.Full
                 }
             };
+
             return { handle, options };
         });
         this._currentTopDecorations = this._notebookEditor.deltaCellDecorations(this._currentTopDecorations, newDecorations);
     }
     private setFocusedFrameDecoration(focusedFrameCellAndRange: ICellAndRange | undefined): void {
         let newDecorations: INotebookDeltaDecoration[] = [];
+
         if (focusedFrameCellAndRange) {
             const options: INotebookCellDecorationOptions = {
                 overviewRuler: {
@@ -120,6 +134,7 @@ export class PausedCellDecorationContribution extends Disposable implements INot
                     position: NotebookOverviewRulerLane.Left
                 }
             };
+
             return { handle, options };
         });
         this._executingCellDecorations = this._notebookEditor.deltaCellDecorations(this._executingCellDecorations, newDecorations);
@@ -129,6 +144,7 @@ registerNotebookContribution(PausedCellDecorationContribution.id, PausedCellDeco
 export class NotebookBreakpointDecorations extends Disposable implements INotebookEditorContribution {
     static id: string = 'workbench.notebook.debug.notebookBreakpointDecorations';
     private _currentDecorations: string[] = [];
+
     constructor(private readonly _notebookEditor: INotebookEditor, 
     @IDebugService
     private readonly _debugService: IDebugService, 
@@ -140,9 +156,11 @@ export class NotebookBreakpointDecorations extends Disposable implements INotebo
     }
     private updateDecorations(): void {
         const enabled = this._configService.getValue('debug.showBreakpointsInOverviewRuler');
+
         const newDecorations = enabled ?
             this._debugService.getModel().getBreakpoints().map(breakpoint => {
                 const parsed = CellUri.parse(breakpoint.uri);
+
                 if (!parsed || parsed.notebook.toString() !== this._notebookEditor.textModel!.uri.toString()) {
                     return null;
                 }
@@ -154,6 +172,7 @@ export class NotebookBreakpointDecorations extends Disposable implements INotebo
                         position: NotebookOverviewRulerLane.Left
                     }
                 };
+
                 return { handle: parsed.handle, options };
             }).filter(x => !!x) as INotebookDeltaDecoration[]
             : [];

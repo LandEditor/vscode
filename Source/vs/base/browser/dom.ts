@@ -43,15 +43,20 @@ export const {
 	const windows = new Map<number, IRegisteredCodeWindow>();
 
 	ensureCodeWindow(mainWindow, 1);
+
 	const mainWindowRegistration = { window: mainWindow, disposables: new DisposableStore() };
 	windows.set(mainWindow.vscodeWindowId, mainWindowRegistration);
 
 	const onDidRegisterWindow = new event.Emitter<IRegisteredCodeWindow>();
+
 	const onDidUnregisterWindow = new event.Emitter<CodeWindow>();
+
 	const onWillUnregisterWindow = new event.Emitter<CodeWindow>();
 
 	function getWindowById(windowId: number): IRegisteredCodeWindow | undefined;
+
 	function getWindowById(windowId: number | undefined, fallbackToMain: true): IRegisteredCodeWindow;
+
 	function getWindowById(windowId: number | undefined, fallbackToMain?: boolean): IRegisteredCodeWindow | undefined {
 		const window = typeof windowId === 'number' ? windows.get(windowId) : undefined;
 
@@ -103,11 +108,13 @@ export const {
 		getWindowById,
 		getWindow(e: Node | UIEvent | undefined | null): CodeWindow {
 			const candidateNode = e as Node | undefined | null;
+
 			if (candidateNode?.ownerDocument?.defaultView) {
 				return candidateNode.ownerDocument.defaultView.window as CodeWindow;
 			}
 
 			const candidateEvent = e as UIEvent | undefined | null;
+
 			if (candidateEvent?.view) {
 				return candidateEvent.view.window as CodeWindow;
 			}
@@ -116,6 +123,7 @@ export const {
 		},
 		getDocument(e: Node | UIEvent | undefined | null): Document {
 			const candidateNode = e as Node | undefined | null;
+
 			return getWindow(candidateNode).document;
 		}
 	};
@@ -271,15 +279,19 @@ export let scheduleAtNextAnimationFrame: (targetWindow: Window, runner: () => vo
 
 export function disposableWindowInterval(targetWindow: Window, handler: () => void | boolean /* stop interval */ | Promise<unknown>, interval: number, iterations?: number): IDisposable {
 	let iteration = 0;
+
 	const timer = targetWindow.setInterval(() => {
 		iteration++;
+
 		if ((typeof iterations === 'number' && iteration >= iterations) || handler() === true) {
 			disposable.dispose();
 		}
 	}, interval);
+
 	const disposable = toDisposable(() => {
 		targetWindow.clearInterval(timer);
 	});
+
 	return disposable;
 }
 
@@ -361,8 +373,10 @@ class AnimationFrameQueueItem implements IDisposable {
 		NEXT_QUEUE.set(targetWindowId, []);
 
 		inAnimationFrameRunner.set(targetWindowId, true);
+
 		while (currentQueue.length > 0) {
 			currentQueue.sort(AnimationFrameQueueItem.sort);
+
 			const top = currentQueue.shift()!;
 			top.execute();
 		}
@@ -371,9 +385,11 @@ class AnimationFrameQueueItem implements IDisposable {
 
 	scheduleAtNextAnimationFrame = (targetWindow: Window, runner: () => void, priority: number = 0) => {
 		const targetWindowId = getWindowId(targetWindow);
+
 		const item = new AnimationFrameQueueItem(runner, priority);
 
 		let nextQueue = NEXT_QUEUE.get(targetWindowId);
+
 		if (!nextQueue) {
 			nextQueue = [];
 			NEXT_QUEUE.set(targetWindowId, nextQueue);
@@ -390,14 +406,18 @@ class AnimationFrameQueueItem implements IDisposable {
 
 	runAtThisOrScheduleAtNextAnimationFrame = (targetWindow: Window, runner: () => void, priority?: number) => {
 		const targetWindowId = getWindowId(targetWindow);
+
 		if (inAnimationFrameRunner.get(targetWindowId)) {
 			const item = new AnimationFrameQueueItem(runner, priority);
+
 			let currentQueue = CURRENT_QUEUE.get(targetWindowId);
+
 			if (!currentQueue) {
 				currentQueue = [];
 				CURRENT_QUEUE.set(targetWindowId, currentQueue);
 			}
 			currentQueue.push(item);
+
 			return item;
 		} else {
 			return scheduleAtNextAnimationFrame(targetWindow, runner, priority);
@@ -421,6 +441,7 @@ export interface IEventMerger<R, E> {
 }
 
 const MINIMUM_TIME_MS = 8;
+
 const DEFAULT_EVENT_MERGER: IEventMerger<Event, Event> = function (lastEvent: Event | null, currentEvent: Event) {
 	return currentEvent;
 };
@@ -431,7 +452,9 @@ class TimeoutThrottledDomListener<R, E extends Event> extends Disposable {
 		super();
 
 		let lastEvent: R | null = null;
+
 		let lastHandlerTime = 0;
+
 		const timeout = this._register(new TimeoutTimer());
 
 		const invokeHandler = () => {
@@ -443,6 +466,7 @@ class TimeoutThrottledDomListener<R, E extends Event> extends Disposable {
 		this._register(addDisposableListener(node, type, (e) => {
 
 			lastEvent = eventMerger(lastEvent, e);
+
 			const elapsedTime = (new Date()).getTime() - lastHandlerTime;
 
 			if (elapsedTime >= minimumTimeMs) {
@@ -465,6 +489,7 @@ export function getComputedStyle(el: HTMLElement): CSSStyleDeclaration {
 
 export function getClientArea(element: HTMLElement, fallback?: HTMLElement): Dimension {
 	const elWindow = getWindow(element);
+
 	const elDocument = elWindow.document;
 
 	// Try with DOM clientWidth / clientHeight
@@ -508,7 +533,9 @@ class SizeUtils {
 
 	private static getDimension(element: HTMLElement, cssPropertyName: string, jsPropertyName: string): number {
 		const computedStyle = getComputedStyle(element);
+
 		const value = computedStyle ? computedStyle.getPropertyValue(cssPropertyName) : '0';
+
 		return SizeUtils.convertToPixels(element, value);
 	}
 
@@ -610,7 +637,9 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
 	// and added borders to the mix
 
 	let offsetParent = element.offsetParent;
+
 	let top = element.offsetTop;
+
 	let left = element.offsetLeft;
 
 	while (
@@ -619,7 +648,9 @@ export function getTopLeftOffset(element: HTMLElement): IDomPosition {
 		&& element !== element.ownerDocument.documentElement
 	) {
 		top -= element.scrollTop;
+
 		const c = isShadowRoot(element) ? null : getComputedStyle(element);
+
 		if (c) {
 			left -= c.direction !== 'rtl' ? element.scrollLeft : -element.scrollLeft;
 		}
@@ -681,7 +712,9 @@ export function position(element: HTMLElement, top: number, right?: number, bott
  */
 export function getDomNodePagePosition(domNode: HTMLElement): IDomNodePagePosition {
 	const bb = domNode.getBoundingClientRect();
+
 	const window = getWindow(domNode);
+
 	return {
 		left: bb.left + window.scrollX,
 		top: bb.top + window.scrollY,
@@ -695,9 +728,12 @@ export function getDomNodePagePosition(domNode: HTMLElement): IDomNodePagePositi
  */
 export function getDomNodeZoomLevel(domNode: HTMLElement): number {
 	let testElement: HTMLElement | null = domNode;
+
 	let zoom = 1.0;
+
 	do {
 		const elementZoomLevel = (getComputedStyle(testElement) as any).zoom;
+
 		if (elementZoomLevel !== null && elementZoomLevel !== undefined && elementZoomLevel !== '1') {
 			zoom *= elementZoomLevel;
 		}
@@ -713,17 +749,21 @@ export function getDomNodeZoomLevel(domNode: HTMLElement): number {
 // Gets the width of the element, including margins.
 export function getTotalWidth(element: HTMLElement): number {
 	const margin = SizeUtils.getMarginLeft(element) + SizeUtils.getMarginRight(element);
+
 	return element.offsetWidth + margin;
 }
 
 export function getContentWidth(element: HTMLElement): number {
 	const border = SizeUtils.getBorderLeftWidth(element) + SizeUtils.getBorderRightWidth(element);
+
 	const padding = SizeUtils.getPaddingLeft(element) + SizeUtils.getPaddingRight(element);
+
 	return element.offsetWidth - border - padding;
 }
 
 export function getTotalScrollWidth(element: HTMLElement): number {
 	const margin = SizeUtils.getMarginLeft(element) + SizeUtils.getMarginRight(element);
+
 	return element.scrollWidth + margin;
 }
 
@@ -731,7 +771,9 @@ export function getTotalScrollWidth(element: HTMLElement): number {
 // Gets the height of the content of the specified element. The content height does not include borders or padding.
 export function getContentHeight(element: HTMLElement): number {
 	const border = SizeUtils.getBorderTopWidth(element) + SizeUtils.getBorderBottomWidth(element);
+
 	const padding = SizeUtils.getPaddingTop(element) + SizeUtils.getPaddingBottom(element);
+
 	return element.offsetHeight - border - padding;
 }
 
@@ -739,6 +781,7 @@ export function getContentHeight(element: HTMLElement): number {
 // Gets the height of the element, including its margins.
 export function getTotalHeight(element: HTMLElement): number {
 	const margin = SizeUtils.getMarginTop(element) + SizeUtils.getMarginBottom(element);
+
 	return element.offsetHeight + margin;
 }
 
@@ -749,7 +792,9 @@ function getRelativeLeft(element: HTMLElement, parent: HTMLElement): number {
 	}
 
 	const elementPosition = getTopLeftOffset(element);
+
 	const parentPosition = getTopLeftOffset(parent);
+
 	return elementPosition.left - parentPosition.left;
 }
 
@@ -757,7 +802,9 @@ export function getLargestChildWidth(parent: HTMLElement, children: HTMLElement[
 	const childWidths = children.map((child) => {
 		return Math.max(getTotalScrollWidth(child), getTotalWidth(child)) + getRelativeLeft(child, parent) || 0;
 	});
+
 	const maxWidth = Math.max(...childWidths);
+
 	return maxWidth;
 }
 
@@ -779,6 +826,7 @@ export function setParentFlowTo(fromChildElement: HTMLElement, toParentElement: 
 
 function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
 	const flowToParentId = node.dataset[parentFlowToDataKey];
+
 	if (typeof flowToParentId === 'string') {
 		return node.ownerDocument.getElementById(flowToParentId);
 	}
@@ -791,6 +839,7 @@ function getParentFlowToElement(node: HTMLElement): HTMLElement | null {
  */
 export function isAncestorUsingFlowTo(testChild: Node, testAncestor: Node): boolean {
 	let node: Node | null = testChild;
+
 	while (node) {
 		if (node === testAncestor) {
 			return true;
@@ -798,8 +847,10 @@ export function isAncestorUsingFlowTo(testChild: Node, testAncestor: Node): bool
 
 		if (isHTMLElement(node)) {
 			const flowToParentElement = getParentFlowToElement(node);
+
 			if (flowToParentElement) {
 				node = flowToParentElement;
+
 				continue;
 			}
 		}
@@ -909,6 +960,7 @@ export function getActiveDocument(): Document {
 	}
 
 	const documents = Array.from(getWindows()).map(({ window }) => window.document);
+
 	return documents.find(doc => doc.hasFocus()) ?? mainWindow.document;
 }
 
@@ -919,6 +971,7 @@ export function getActiveDocument(): Document {
  */
 export function getActiveWindow(): CodeWindow {
 	const document = getActiveDocument();
+
 	return (document.defaultView?.window ?? mainWindow) as CodeWindow;
 }
 
@@ -934,15 +987,19 @@ export const sharedMutationObserver = new class {
 
 	observe(target: Node, disposables: DisposableStore, options?: MutationObserverInit): event.Event<MutationRecord[]> {
 		let mutationObserversPerTarget = this.mutationObservers.get(target);
+
 		if (!mutationObserversPerTarget) {
 			mutationObserversPerTarget = new Map<number, IMutationObserver>();
 			this.mutationObservers.set(target, mutationObserversPerTarget);
 		}
 
 		const optionsHash = hash(options);
+
 		let mutationObserverPerOptions = mutationObserversPerTarget.get(optionsHash);
+
 		if (!mutationObserverPerOptions) {
 			const onDidMutate = new event.Emitter<MutationRecord[]>();
+
 			const observer = new MutationObserver(mutations => onDidMutate.fire(mutations));
 			observer.observe(target, options);
 
@@ -960,6 +1017,7 @@ export const sharedMutationObserver = new class {
 					observer.disconnect();
 
 					mutationObserversPerTarget?.delete(optionsHash);
+
 					if (mutationObserversPerTarget?.size === 0) {
 						this.mutationObservers.delete(target);
 					}
@@ -986,6 +1044,7 @@ export function createLinkElement(container: HTMLElement = mainWindow.document.h
 function createHeadElement(tagName: string, container: HTMLElement = mainWindow.document.head): HTMLElement {
 	const element = document.createElement(tagName);
 	container.appendChild(element);
+
 	return element;
 }
 
@@ -1125,6 +1184,7 @@ export function isEventLike(obj: unknown): obj is EventLike {
 export const EventHelper = {
 	stop: <T extends EventLike>(e: T, cancelBubble?: boolean): T => {
 		e.preventDefault();
+
 		if (cancelBubble) {
 			e.stopPropagation();
 		}
@@ -1140,6 +1200,7 @@ export interface IFocusTracker extends Disposable {
 
 export function saveParentsScrollTop(node: Element): number[] {
 	const r: number[] = [];
+
 	for (let i = 0; node && node.nodeType === node.ELEMENT_NODE; i++) {
 		r[i] = node.scrollTop;
 		node = <Element>node.parentNode;
@@ -1169,21 +1230,27 @@ class FocusTracker extends Disposable implements IFocusTracker {
 	private static hasFocusWithin(element: HTMLElement | Window): boolean {
 		if (isHTMLElement(element)) {
 			const shadowRoot = getShadowRoot(element);
+
 			const activeElement = (shadowRoot ? shadowRoot.activeElement : element.ownerDocument.activeElement);
+
 			return isAncestor(activeElement, element);
 		} else {
 			const window = element;
+
 			return isAncestor(window.document.activeElement, window.document);
 		}
 	}
 
 	constructor(element: HTMLElement | Window) {
 		super();
+
 		let hasFocus = FocusTracker.hasFocusWithin(element);
+
 		let loosingFocus = false;
 
 		const onFocus = () => {
 			loosingFocus = false;
+
 			if (!hasFocus) {
 				hasFocus = true;
 				this._onDidFocus.fire();
@@ -1205,6 +1272,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 
 		this._refreshStateHandler = () => {
 			const currentNodeHasFocus = FocusTracker.hasFocusWithin(<HTMLElement>element);
+
 			if (currentNodeHasFocus !== hasFocus) {
 				if (hasFocus) {
 					onBlur();
@@ -1216,6 +1284,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 
 		this._register(addDisposableListener(element, EventType.FOCUS, onFocus, true));
 		this._register(addDisposableListener(element, EventType.BLUR, onBlur, true));
+
 		if (isHTMLElement(element)) {
 			this._register(addDisposableListener(element, EventType.FOCUS_IN, () => this._refreshStateHandler()));
 			this._register(addDisposableListener(element, EventType.FOCUS_OUT, () => this._refreshStateHandler()));
@@ -1240,6 +1309,7 @@ export function trackFocus(element: HTMLElement | Window): IFocusTracker {
 
 export function after<T extends Node>(sibling: HTMLElement, child: T): T {
 	sibling.after(child);
+
 	return child;
 }
 
@@ -1247,6 +1317,7 @@ export function append<T extends Node>(parent: HTMLElement, child: T): T;
 export function append<T extends Node>(parent: HTMLElement, ...children: (T | string)[]): void;
 export function append<T extends Node>(parent: HTMLElement, ...children: (T | string)[]): T | void {
 	parent.append(...children);
+
 	if (children.length === 1 && typeof children[0] !== 'string') {
 		return <T>children[0];
 	}
@@ -1254,6 +1325,7 @@ export function append<T extends Node>(parent: HTMLElement, ...children: (T | st
 
 export function prepend<T extends Node>(parent: HTMLElement, child: T): T {
 	parent.insertBefore(child, parent.firstChild);
+
 	return child;
 }
 
@@ -1280,6 +1352,7 @@ function _$<T extends Element>(namespace: Namespace, description: string, attrs?
 	}
 
 	const tagName = match[1] || 'div';
+
 	let result: T;
 
 	if (namespace !== Namespace.HTML) {
@@ -1407,6 +1480,7 @@ export function finalHandler<T extends Event>(fn: (event: T) => unknown): (event
 export function domContentLoaded(targetWindow: Window): Promise<void> {
 	return new Promise<void>(resolve => {
 		const readyState = targetWindow.document.readyState;
+
 		if (readyState === 'complete' || (targetWindow.document && targetWindow.document.body !== null)) {
 			resolve(undefined);
 		} else {
@@ -1430,6 +1504,7 @@ export function domContentLoaded(targetWindow: Window): Promise<void> {
  */
 export function computeScreenAwareSize(window: Window, cssPx: number): number {
 	const screenPx = window.devicePixelRatio * cssPx;
+
 	return Math.max(1, Math.floor(screenPx)) / window.devicePixelRatio;
 }
 
@@ -1468,6 +1543,7 @@ export function windowOpenNoOpener(url: string): void {
 const popupWidth = 780, popupHeight = 640;
 export function windowOpenPopup(url: string): void {
 	const left = Math.floor(mainWindow.screenLeft + mainWindow.innerWidth / 2 - popupWidth / 2);
+
 	const top = Math.floor(mainWindow.screenTop + mainWindow.innerHeight / 2 - popupHeight / 2);
 	mainWindow.open(
 		url,
@@ -1493,12 +1569,14 @@ export function windowOpenPopup(url: string): void {
  */
 export function windowOpenWithSuccess(url: string, noOpener = true): boolean {
 	const newTab = mainWindow.open();
+
 	if (newTab) {
 		if (noOpener) {
 			// see `windowOpenNoOpener` for details on why this is important
 			(newTab as any).opener = null;
 		}
 		newTab.location.href = url;
+
 		return true;
 	}
 	return false;
@@ -1511,6 +1589,7 @@ export function animate(targetWindow: Window, fn: () => void): IDisposable {
 	};
 
 	let stepDisposable = scheduleAtNextAnimationFrame(targetWindow, step);
+
 	return toDisposable(() => stepDisposable.dispose());
 }
 
@@ -1521,6 +1600,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
 	// If the data is provided as Buffer, we create a
 	// blob URL out of it to produce a valid link
 	let url: string;
+
 	if (URI.isUri(dataOrUri)) {
 		url = dataOrUri.toString(true);
 	} else {
@@ -1536,6 +1616,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
 	// points to the file to download.
 	// See also https://developers.google.com/web/updates/2011/08/Downloading-resources-in-HTML5-a-download
 	const activeWindow = getActiveWindow();
+
 	const anchor = document.createElement('a');
 	activeWindow.document.body.appendChild(anchor);
 	anchor.download = name;
@@ -1553,6 +1634,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
 		// input element of type `file` and click it
 		// to gather the selected files
 		const activeWindow = getActiveWindow();
+
 		const input = document.createElement('input');
 		activeWindow.document.body.appendChild(input);
 		input.type = 'file';
@@ -1650,12 +1732,14 @@ export function hookDomPurifyHrefAndSrcSanitizer(allowedProtocols: readonly stri
 		for (const attr of ['href', 'src']) {
 			if (node.hasAttribute(attr)) {
 				const attrValue = node.getAttribute(attr) as string;
+
 				if (attr === 'href' && attrValue.startsWith('#')) {
 					// Allow fragment links
 					continue;
 				}
 
 				anchor.href = attrValue;
+
 				if (!allowedProtocols.includes(anchor.protocol.replace(/:$/, ''))) {
 					if (allowDataImages && attr === 'src' && anchor.href.startsWith('data:')) {
 						continue;
@@ -1764,6 +1848,7 @@ const defaultDomPurifyConfig = Object.freeze<dompurify.Config & { RETURN_TRUSTED
  */
 export function safeInnerHtml(node: HTMLElement, value: string, extraDomPurifyConfig?: dompurify.Config): void {
 	const hook = hookDomPurifyHrefAndSrcSanitizer(defaultSafeProtocols);
+
 	try {
 		const html = dompurify.sanitize(value, { ...defaultDomPurifyConfig, ...extraDomPurifyConfig });
 		node.innerHTML = html as unknown as string;
@@ -1779,11 +1864,14 @@ export function safeInnerHtml(node: HTMLElement, value: string, extraDomPurifyCo
  */
 function toBinary(str: string): string {
 	const codeUnits = new Uint16Array(str.length);
+
 	for (let i = 0; i < codeUnits.length; i++) {
 		codeUnits[i] = str.charCodeAt(i);
 	}
 	let binary = '';
+
 	const uint8array = new Uint8Array(codeUnits.buffer);
+
 	for (let i = 0; i < uint8array.length; i++) {
 		binary += String.fromCharCode(uint8array[i]);
 	}
@@ -2106,6 +2194,7 @@ export function h<TTag extends string, T extends Child[]>
 
 export function h(tag: string, ...args: [] | [attributes: { $: string } & Partial<ElementAttributes<HTMLElement>> | Record<string, any>, children?: any[]] | [children: any[]]): Record<string, HTMLElement> {
 	let attributes: { $?: string } & Partial<ElementAttributes<HTMLElement>>;
+
 	let children: (Record<string, HTMLElement> | HTMLElement)[] | undefined;
 
 	if (Array.isArray(args[0])) {
@@ -2123,6 +2212,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
 	}
 
 	const tagName = match.groups['tag'] || 'div';
+
 	const el = document.createElement(tagName);
 
 	if (match.groups['id']) {
@@ -2130,6 +2220,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
 	}
 
 	const classNames = [];
+
 	if (match.groups['class']) {
 		for (const className of match.groups['class'].split('.')) {
 			if (className !== '') {
@@ -2207,6 +2298,7 @@ export function svgElem<TTag extends string, T extends Child[]>
 
 export function svgElem(tag: string, ...args: [] | [attributes: { $: string } & Partial<ElementAttributes<HTMLElement>> | Record<string, any>, children?: any[]] | [children: any[]]): Record<string, HTMLElement> {
 	let attributes: { $?: string } & Partial<ElementAttributes<HTMLElement>>;
+
 	let children: (Record<string, HTMLElement> | HTMLElement)[] | undefined;
 
 	if (Array.isArray(args[0])) {
@@ -2224,6 +2316,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } & 
 	}
 
 	const tagName = match.groups['tag'] || 'div';
+
 	const el = document.createElementNS('http://www.w3.org/2000/svg', tagName) as any as HTMLElement;
 
 	if (match.groups['id']) {
@@ -2231,6 +2324,7 @@ export function svgElem(tag: string, ...args: [] | [attributes: { $: string } & 
 	}
 
 	const classNames = [];
+
 	if (match.groups['class']) {
 		for (const className of match.groups['class'].split('.')) {
 			if (className !== '') {
@@ -2304,6 +2398,7 @@ export function copyAttributes(from: Element, to: Element, filter?: string[]): v
 
 function copyAttribute(from: Element, to: Element, name: string): void {
 	const value = from.getAttribute(name);
+
 	if (value) {
 		to.setAttribute(name, value);
 	} else {
@@ -2345,7 +2440,9 @@ export class SafeTriangle {
 		target: HTMLElement
 	) {
 		const { top, left, right, bottom } = target.getBoundingClientRect();
+
 		const t = this.points;
+
 		let i = 0;
 
 		t[i++] = left;
@@ -2363,9 +2460,12 @@ export class SafeTriangle {
 
 	public contains(x: number, y: number) {
 		const { points, originX, originY } = this;
+
 		for (let i = 0; i < 4; i++) {
 			const p1 = 2 * i;
+
 			const p2 = 2 * ((i + 1) % 4);
+
 			if (isPointWithinTriangle(x, y, originX, originY, points[p1], points[p1 + 1], points[p2], points[p2 + 1])) {
 				return true;
 			}

@@ -130,18 +130,21 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		}));
 		this._register(this.extensionManagementService.onProfileAwareDidInstallExtensions(results => {
 			const profile = this.getProfileToWatch();
+
 			if (profile && results.some(r => !r.error && (r.applicationScoped || this.uriIdentityService.extUri.isEqual(r.profileLocation, profile.extensionsResource)))) {
 				this._onDidChange.fire({ extensions: true });
 			}
 		}));
 		this._register(this.extensionManagementService.onProfileAwareDidUninstallExtension(e => {
 			const profile = this.getProfileToWatch();
+
 			if (profile && !e.error && (e.applicationScoped || this.uriIdentityService.extUri.isEqual(e.profileLocation, profile.extensionsResource))) {
 				this._onDidChange.fire({ extensions: true });
 			}
 		}));
 		this._register(this.extensionManagementService.onProfileAwareDidUpdateExtensionMetadata(e => {
 			const profile = this.getProfileToWatch();
+
 			if (profile && e.local.isApplicationScoped || this.uriIdentityService.extUri.isEqual(e.profileLocation, profile?.extensionsResource)) {
 				this._onDidChange.fire({ extensions: true });
 			}
@@ -149,9 +152,11 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _name = '';
+
 	get name(): string { return this._name; }
 	set name(name: string) {
 		name = name.trim();
+
 		if (this._name !== name) {
 			this._name = name;
 			this._onDidChange.fire({ name: true });
@@ -159,6 +164,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _icon: string | undefined;
+
 	get icon(): string | undefined { return this._icon; }
 	set icon(icon: string | undefined) {
 		if (this._icon !== icon) {
@@ -168,6 +174,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _workspaces: readonly URI[] | undefined;
+
 	get workspaces(): readonly URI[] | undefined { return this._workspaces; }
 	set workspaces(workspaces: readonly URI[] | undefined) {
 		if (!arrays.equals(this._workspaces, workspaces, (a, b) => a.toString() === b.toString())) {
@@ -177,6 +184,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _flags: UseDefaultProfileFlags | undefined;
+
 	get flags(): UseDefaultProfileFlags | undefined { return this._flags; }
 	set flags(flags: UseDefaultProfileFlags | undefined) {
 		if (!equals(this._flags, flags)) {
@@ -186,6 +194,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _active: boolean = false;
+
 	get active(): boolean { return this._active; }
 	set active(active: boolean) {
 		if (this._active !== active) {
@@ -195,6 +204,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _message: string | undefined;
+
 	get message(): string | undefined { return this._message; }
 	set message(message: string | undefined) {
 		if (this._message !== message) {
@@ -204,6 +214,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	}
 
 	private _disabled: boolean = false;
+
 	get disabled(): boolean { return this._disabled; }
 	set disabled(saving: boolean) {
 		if (this._disabled !== saving) {
@@ -218,6 +229,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 	setFlag(key: ProfileResourceType, value: boolean): void {
 		const flags = this.flags ? { ...this.flags } : {};
+
 		if (value) {
 			flags[key] = true;
 		} else {
@@ -229,16 +241,19 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 	validate(): void {
 		if (!this.name) {
 			this.message = localize('name required', "Profile name is required and must be a non-empty value.");
+
 			return;
 		}
 		if (this.shouldValidateName() && this.name !== this.getInitialName() && this.userDataProfilesService.profiles.some(p => p.name === this.name)) {
 			this.message = localize('profileExists', "Profile with name {0} already exists.", this.name);
+
 			return;
 		}
 		if (
 			this.flags && this.flags.settings && this.flags.keybindings && this.flags.tasks && this.flags.snippets && this.flags.extensions
 		) {
 			this.message = localize('invalid configurations', "The profile should contain at least one configuration.");
+
 			return;
 		}
 		this.message = undefined;
@@ -253,10 +268,12 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 				ProfileResourceType.Snippets,
 				ProfileResourceType.Extensions
 			];
+
 			return Promise.all(resourceTypes.map<Promise<IProfileResourceTypeElement>>(async r => {
 				const children = (r === ProfileResourceType.Settings
 					|| r === ProfileResourceType.Keybindings
 					|| r === ProfileResourceType.Tasks) ? await this.getChildrenForResourceType(r) : [];
+
 				return {
 					handle: r,
 					checkbox: undefined,
@@ -280,22 +297,33 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 	protected async getChildrenFromProfile(profile: IUserDataProfile, resourceType: ProfileResourceType): Promise<IProfileResourceTypeChildElement[]> {
 		profile = this.getFlag(resourceType) ? this.userDataProfilesService.defaultProfile : profile;
+
 		let children: IProfileResourceChildTreeItem[] = [];
+
 		switch (resourceType) {
 			case ProfileResourceType.Settings:
 				children = await this.instantiationService.createInstance(SettingsResourceTreeItem, profile).getChildren();
+
 				break;
+
 			case ProfileResourceType.Keybindings:
 				children = await this.instantiationService.createInstance(KeybindingsResourceTreeItem, profile).getChildren();
+
 				break;
+
 			case ProfileResourceType.Snippets:
 				children = (await this.instantiationService.createInstance(SnippetsResourceTreeItem, profile).getChildren()) ?? [];
+
 				break;
+
 			case ProfileResourceType.Tasks:
 				children = await this.instantiationService.createInstance(TasksResourceTreeItem, profile).getChildren();
+
 				break;
+
 			case ProfileResourceType.Extensions:
 				children = await this.instantiationService.createInstance(ExtensionsResourceExportTreeItem, profile).getChildren();
+
 				break;
 		}
 		return children.map<IProfileResourceTypeChildElement>(child => this.toUserDataProfileResourceChildElement(child));
@@ -334,6 +362,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 
 	getCurrentWorkspace(): URI | undefined {
 		const workspace = this.workspaceContextService.getWorkspace();
+
 		return workspace.configuration ?? workspace.folders[0]?.uri;
 	}
 
@@ -370,6 +399,7 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 			return;
 		}
 		this.validate();
+
 		if (this.message) {
 			return;
 		}
@@ -438,6 +468,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 		this._register(this.userDataProfileService.onDidChangeCurrentProfile(() => this.active = this.userDataProfileService.currentProfile.id === this.profile.id));
 		this._register(this.userDataProfilesService.onDidChangeProfiles(({ updated }) => {
 			const profile = updated.find(p => p.id === this.profile.id);
+
 			if (profile) {
 				this._profile = profile;
 				this.reset();
@@ -465,6 +496,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 
 	public updateWorkspaces(toAdd: URI[], toRemove: URI[]): void {
 		const workspaces = new ResourceSet(this.workspaces ?? []);
+
 		for (const workspace of toAdd) {
 			workspaces.add(workspace);
 		}
@@ -483,6 +515,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 	}
 
 	private _isNewWindowProfile: boolean = false;
+
 	get isNewWindowProfile(): boolean { return this._isNewWindowProfile; }
 	set isNewWindowProfile(isNewWindowProfile: boolean) {
 		if (this._isNewWindowProfile !== isNewWindowProfile) {
@@ -506,6 +539,7 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 	protected override async getChildrenForResourceType(resourceType: ProfileResourceType): Promise<IProfileChildElement[]> {
 		if (resourceType === ProfileResourceType.Extensions) {
 			const children = await this.instantiationService.createInstance(ExtensionsResourceExportTreeItem, this.profile).getChildren();
+
 			return children.map<IProfileResourceTypeChildElement>(child =>
 				this.toUserDataProfileResourceChildElement(
 					child,
@@ -519,7 +553,9 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 						tooltip: '',
 						run: async () => {
 							const extensions = await this.extensionManagementService.getInstalled(undefined, this.profile.extensionsResource);
+
 							const extension = extensions.find(e => areSameExtensions(e.identifier, child.identifier));
+
 							if (extension) {
 								await this.extensionManagementService.toggleAppliationScope(extension, this.profile.extensionsResource);
 							}
@@ -541,6 +577,7 @@ const USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME = 'userdataprofiletemplateprevie
 export class NewProfileElement extends AbstractUserDataProfileElement {
 
 	private _copyFromTemplates = new ResourceMap<string>();
+
 	get copyFromTemplates(): ResourceMap<string> { return this._copyFromTemplates; }
 
 	private templatePromise: CancelablePromise<void> | undefined;
@@ -595,6 +632,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	}
 
 	private _copyFrom: IUserDataProfile | URI | undefined;
+
 	get copyFrom(): IUserDataProfile | URI | undefined { return this._copyFrom; }
 	set copyFrom(copyFrom: IUserDataProfile | URI | undefined) {
 		if (this._copyFrom !== copyFrom) {
@@ -602,6 +640,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 			this._onDidChange.fire({ copyFrom: true });
 			this.flags = undefined;
 			this.copyFlags = this.getCopyFlagsFrom(copyFrom);
+
 			if (copyFrom instanceof URI) {
 				this.templatePromise?.cancel();
 				this.templatePromise = undefined;
@@ -611,6 +650,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	}
 
 	private _copyFlags: ProfileResourceTypeFlags | undefined;
+
 	get copyFlags(): ProfileResourceTypeFlags | undefined { return this._copyFlags; }
 	set copyFlags(flags: ProfileResourceTypeFlags | undefined) {
 		if (!equals(this._copyFlags, flags)) {
@@ -621,12 +661,14 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 	private readonly previewProfileWatchDisposables = this._register(new DisposableStore());
 	private _previewProfile: IUserDataProfile | undefined;
+
 	get previewProfile(): IUserDataProfile | undefined { return this._previewProfile; }
 	set previewProfile(profile: IUserDataProfile | undefined) {
 		if (this._previewProfile !== profile) {
 			this._previewProfile = profile;
 			this._onDidChange.fire({ preview: true });
 			this.previewProfileWatchDisposables.clear();
+
 			if (this._previewProfile) {
 				this.previewProfileWatchDisposables.add(this.fileService.watch(this._previewProfile.snippetsHome));
 				this.previewProfileWatchDisposables.add(this.fileService.onDidFilesChange(e => {
@@ -657,11 +699,14 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 	private async initialize(): Promise<void> {
 		this.disabled = true;
+
 		try {
 			if (this.copyFrom instanceof URI) {
 				await this.resolveTemplate(this.copyFrom);
+
 				if (this.template) {
 					this.copyFromTemplates.set(this.copyFrom, this.template.name);
+
 					if (this.defaultName === this.name) {
 						this.name = this.defaultName = this.template.name ?? '';
 					}
@@ -691,6 +736,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 				this.setCopyFlag(ProfileResourceType.Snippets, true);
 				this.setCopyFlag(ProfileResourceType.Extensions, true);
 				this._onDidChange.fire({ copyFromInfo: true });
+
 				return;
 			}
 
@@ -715,12 +761,14 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		if (!this.templatePromise) {
 			this.templatePromise = createCancelablePromise(async token => {
 				const template = await this.userDataProfileImportExportService.resolveProfileTemplate(uri);
+
 				if (!token.isCancellationRequested) {
 					this.template = template;
 				}
 			});
 		}
 		await this.templatePromise;
+
 		return this.template;
 	}
 
@@ -729,12 +777,16 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 			switch (resourceType) {
 				case ProfileResourceType.Settings:
 					return !!this.template.settings;
+
 				case ProfileResourceType.Keybindings:
 					return !!this.template.keybindings;
+
 				case ProfileResourceType.Snippets:
 					return !!this.template.snippets;
+
 				case ProfileResourceType.Tasks:
 					return !!this.template.tasks;
+
 				case ProfileResourceType.Extensions:
 					return !!this.template.extensions;
 			}
@@ -774,6 +826,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		}
 		if (this.copyFrom instanceof URI) {
 			await this.resolveTemplate(this.copyFrom);
+
 			if (!this.template) {
 				return [];
 			}
@@ -787,36 +840,48 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 
 	private async getChildrenFromProfileTemplate(profileTemplate: IUserDataProfileTemplate, resourceType: ProfileResourceType): Promise<IProfileResourceTypeChildElement[]> {
 		const location = URI.from({ scheme: USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME, path: `/root/profiles/${profileTemplate.name}` });
+
 		const cacheLocation = URI.from({ scheme: USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME, path: `/root/cache/${profileTemplate.name}` });
+
 		const profile = toUserDataProfile(generateUuid(), this.name, location, cacheLocation);
+
 		switch (resourceType) {
 			case ProfileResourceType.Settings:
 				if (profileTemplate.settings) {
 					await this.instantiationService.createInstance(SettingsResource).apply(profileTemplate.settings, profile);
+
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
 				return [];
+
 			case ProfileResourceType.Keybindings:
 				if (profileTemplate.keybindings) {
 					await this.instantiationService.createInstance(KeybindingsResource).apply(profileTemplate.keybindings, profile);
+
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
 				return [];
+
 			case ProfileResourceType.Snippets:
 				if (profileTemplate.snippets) {
 					await this.instantiationService.createInstance(SnippetsResource).apply(profileTemplate.snippets, profile);
+
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
 				return [];
+
 			case ProfileResourceType.Tasks:
 				if (profileTemplate.tasks) {
 					await this.instantiationService.createInstance(TasksResource).apply(profileTemplate.tasks, profile);
+
 					return this.getChildrenFromProfile(profile, resourceType);
 				}
 				return [];
+
 			case ProfileResourceType.Extensions:
 				if (profileTemplate.extensions) {
 					const children = await this.instantiationService.createInstance(ExtensionsResourceImportTreeItem, profileTemplate.extensions).getChildren();
+
 					return children.map(child => this.toUserDataProfileResourceChildElement(child));
 				}
 				return [];
@@ -835,6 +900,7 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 	protected override async doSave(): Promise<void> {
 		if (this.previewProfile) {
 			const profile = await this.saveProfile(this.previewProfile);
+
 			if (profile) {
 				this.previewProfile = profile;
 			}
@@ -853,6 +919,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 	}
 
 	private _profiles: [AbstractUserDataProfileElement, DisposableStore][] = [];
+
 	get profiles(): AbstractUserDataProfileElement[] {
 		return this._profiles
 			.map(([profile]) => profile)
@@ -893,6 +960,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) {
 		super();
+
 		for (const profile of userDataProfilesService.profiles) {
 			if (!profile.isTransient) {
 				this._profiles.push(this.createProfileElement(profile));
@@ -904,6 +972,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 
 	private onDidChangeProfiles(e: DidChangeProfilesEvent): void {
 		let changed = false;
+
 		for (const profile of e.added) {
 			if (!profile.isTransient && profile.name !== this.newProfileElement?.name) {
 				changed = true;
@@ -915,6 +984,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				this.newProfileElement.previewProfile = undefined;
 			}
 			const index = this._profiles.findIndex(([p]) => p instanceof UserDataProfileElement && p.profile.id === profile.id);
+
 			if (index !== -1) {
 				changed = true;
 				this._profiles.splice(index, 1).map(([, disposables]) => disposables.dispose());
@@ -977,9 +1047,11 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		const primaryActions: IAction[] = [];
 		primaryActions.push(activateAction);
 		primaryActions.push(newWindowAction);
+
 		const secondaryActions: IAction[] = [];
 		secondaryActions.push(copyFromProfileAction);
 		secondaryActions.push(exportAction);
+
 		if (!profile.isDefault) {
 			secondaryActions.push(new Separator());
 			secondaryActions.push(deleteAction);
@@ -1006,6 +1078,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				primaryButton: localize('discard', "Discard & Create"),
 				cancelButton: localize('cancel', "Cancel")
 			});
+
 			if (!result.confirmed) {
 				return;
 			}
@@ -1017,16 +1090,21 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				await this.userDataProfileImportExportService.resolveProfileTemplate(copyFrom);
 			} catch (error) {
 				this.dialogService.error(getErrorMessage(error));
+
 				return;
 			}
 		}
 
 		if (!this.newProfileElement) {
 			const disposables = new DisposableStore();
+
 			const cancellationTokenSource = new CancellationTokenSource();
 			disposables.add(toDisposable(() => cancellationTokenSource.dispose(true)));
+
 			const primaryActions: Action[] = [];
+
 			const secondaryActions: Action[] = [];
+
 			const createAction = disposables.add(new Action(
 				'userDataProfile.create',
 				localize('create', "Create"),
@@ -1035,6 +1113,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				() => this.saveNewProfile(false, cancellationTokenSource.token)
 			));
 			primaryActions.push(createAction);
+
 			if (isWeb && copyFrom instanceof URI && isProfileURL(copyFrom)) {
 				primaryActions.push(new Action(
 					'userDataProfile.createInDesktop',
@@ -1052,6 +1131,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				() => this.discardNewProfile()
 			));
 			secondaryActions.push(cancelAction);
+
 			const previewProfileAction = disposables.add(new Action(
 				'userDataProfile.preview',
 				localize('preview', "Preview"),
@@ -1060,6 +1140,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				() => this.previewNewProfile(cancellationTokenSource.token)
 			));
 			secondaryActions.push(previewProfileAction);
+
 			const exportAction = disposables.add(new Action(
 				'userDataProfile.export',
 				localize('export', "Export..."),
@@ -1073,6 +1154,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				[primaryActions, secondaryActions],
 				[[cancelAction], [exportAction]],
 			));
+
 			const updateCreateActionLabel = () => {
 				if (createAction.enabled) {
 					if (this.newProfileElement?.copyFrom && this.userDataProfilesService.profiles.some(p => !p.isTransient && p.name === this.newProfileElement?.name)) {
@@ -1090,6 +1172,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				}
 				if (e.name || e.copyFrom) {
 					updateCreateActionLabel();
+
 					exportAction.enabled = isUserDataProfile(this.newProfileElement?.copyFrom);
 				}
 			}));
@@ -1111,6 +1194,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 	private removeNewProfile(): void {
 		if (this.newProfileElement) {
 			const index = this._profiles.findIndex(([p]) => p === this.newProfileElement);
+
 			if (index !== -1) {
 				this._profiles.splice(index, 1).map(([, disposables]) => disposables.dispose());
 			}
@@ -1126,8 +1210,10 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			return;
 		}
 		const profile = await this.saveNewProfile(true, token);
+
 		if (profile) {
 			this.newProfileElement.previewProfile = profile;
+
 			if (isWeb) {
 				await this.userDataProfileManagementService.switchProfile(profile);
 			} else {
@@ -1163,11 +1249,13 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		}
 
 		this.newProfileElement.validate();
+
 		if (this.newProfileElement.message) {
 			return undefined;
 		}
 
 		this.newProfileElement.disabled = true;
+
 		let profile: IUserDataProfile | undefined;
 
 		try {
@@ -1178,6 +1266,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			}
 			else {
 				const { flags, icon, name, copyFrom } = this.newProfileElement;
+
 				const useDefaultFlags: UseDefaultProfileFlags | undefined = flags
 					? flags.settings && flags.keybindings && flags.tasks && flags.globalState && flags.extensions ? undefined : flags
 					: undefined;
@@ -1190,10 +1279,12 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				type CreateProfileInfoEvent = {
 					source: string | undefined;
 				};
+
 				const createProfileTelemetryData: CreateProfileInfoEvent = { source: copyFrom instanceof URI ? 'template' : isUserDataProfile(copyFrom) ? 'profile' : copyFrom ? 'external' : undefined };
 
 				if (copyFrom instanceof URI) {
 					const template = await this.newProfileElement.resolveTemplate(copyFrom);
+
 					if (template) {
 						this.telemetryService.publicLog2<CreateProfileInfoEvent, CreateProfileInfoClassification>('userDataProfile.createFromTemplate', createProfileTelemetryData);
 						profile = await this.userDataProfileImportExportService.createProfileFromTemplate(
@@ -1245,7 +1336,9 @@ export class UserDataProfilesEditorModel extends EditorModel {
 
 		if (profile && !profile.isTransient && this.newProfileElement) {
 			this.removeNewProfile();
+
 			const existing = this._profiles.find(([p]) => p.name === profile.name);
+
 			if (existing) {
 				this._onDidChange.fire(existing[0]);
 			} else {
@@ -1262,6 +1355,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		}
 		if (this.newProfileElement.previewProfile) {
 			await this.userDataProfileManagementService.removeProfile(this.newProfileElement.previewProfile);
+
 			return;
 		}
 		this.removeNewProfile();
@@ -1275,6 +1369,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 			primaryButton: localize('delete', "Delete"),
 			cancelButton: localize('cancel', "Cancel")
 		});
+
 		if (result.confirmed) {
 			await this.userDataProfileManagementService.removeProfile(profile);
 		}

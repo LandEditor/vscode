@@ -13,6 +13,7 @@ import { DisposableStore } from '../../../../base/common/lifecycle.js';
 import { IExtensionsWorkbenchService } from '../common/extensions.js';
 export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
     static PREFIX = 'ext install ';
+
     constructor(
     @IExtensionsWorkbenchService
     private readonly extensionsWorkbenchService: IExtensionsWorkbenchService, 
@@ -47,6 +48,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
     private async getPicksForExtensionId(filter: string, fallback: IPickerQuickAccessItem, token: CancellationToken): Promise<Array<IPickerQuickAccessItem | IQuickPickSeparator>> {
         try {
             const [galleryExtension] = await this.galleryService.getExtensions([{ id: filter }], token);
+
             if (token.isCancellationRequested) {
                 return []; // return early if canceled
             }
@@ -63,6 +65,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
                 return []; // expected error
             }
             this.logService.error(error);
+
             return [fallback];
         }
     }
@@ -78,6 +81,7 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 }
 export class ManageExtensionsQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
     static PREFIX = 'ext ';
+
     constructor(
     @IExtensionsWorkbenchService
     private readonly extensionsWorkbenchService: IExtensionsWorkbenchService) {

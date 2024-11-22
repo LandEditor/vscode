@@ -44,6 +44,7 @@ export class NativeIssueFormService extends IssueFormService implements IIssueFo
             return;
         }
         const bounds = await this.nativeHostService.getActiveWindowPosition();
+
         if (!bounds) {
             return;
         }

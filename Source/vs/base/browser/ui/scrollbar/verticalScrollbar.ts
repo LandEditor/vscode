@@ -12,7 +12,9 @@ import { INewScrollPosition, Scrollable, ScrollbarVisibility, ScrollEvent } from
 export class VerticalScrollbar extends AbstractScrollbar {
     constructor(scrollable: Scrollable, options: ScrollableElementResolvedOptions, host: ScrollbarHost) {
         const scrollDimensions = scrollable.getScrollDimensions();
+
         const scrollPosition = scrollable.getCurrentScrollPosition();
+
         super({
             lazyRender: options.lazyRender,
             host: host,
@@ -24,8 +26,10 @@ export class VerticalScrollbar extends AbstractScrollbar {
             scrollable: scrollable,
             scrollByPage: options.scrollByPage
         });
+
         if (options.verticalHasArrows) {
             const arrowDelta = (options.arrowSize - ARROW_IMG_SIZE) / 2;
+
             const scrollbarDelta = (options.verticalScrollbarSize - ARROW_IMG_SIZE) / 2;
             this._createArrow({
                 className: 'scra',
@@ -66,6 +70,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
         this._shouldRender = this._onElementScrollSize(e.scrollHeight) || this._shouldRender;
         this._shouldRender = this._onElementScrollPosition(e.scrollTop) || this._shouldRender;
         this._shouldRender = this._onElementSize(e.height) || this._shouldRender;
+
         return this._shouldRender;
     }
     protected _pointerDownRelativePosition(offsetX: number, offsetY: number): number {

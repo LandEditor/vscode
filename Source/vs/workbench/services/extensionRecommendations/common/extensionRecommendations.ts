@@ -23,21 +23,31 @@ export const IExtensionRecommendationsService = createDecorator<IExtensionRecomm
 export interface IExtensionRecommendationsService {
     readonly _serviceBrand: undefined;
     readonly onDidChangeRecommendations: Event<void>;
+
     getAllRecommendationsWithReason(): IStringDictionary<IExtensionRecommendationReason>;
+
     getImportantRecommendations(): Promise<string[]>;
+
     getOtherRecommendations(): Promise<string[]>;
+
     getFileBasedRecommendations(): string[];
+
     getExeBasedRecommendations(exe?: string): Promise<{
         important: string[];
         others: string[];
     }>;
+
     getConfigBasedRecommendations(): Promise<{
         important: string[];
         others: string[];
     }>;
+
     getWorkspaceRecommendations(): Promise<Array<string | URI>>;
+
     getKeymapRecommendations(): string[];
+
     getLanguageRecommendations(): string[];
+
     getRemoteRecommendations(): string[];
 }
 export type IgnoredRecommendationChangeNotification = {

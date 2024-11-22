@@ -17,6 +17,7 @@ export const enum PreviewState {
 export abstract class MediaPreview extends Disposable {
     protected previewState = PreviewState.Visible;
     private _binarySize: number | undefined;
+
     constructor(extensionRoot: vscode.Uri, protected readonly resource: vscode.Uri, protected readonly webviewEditor: vscode.WebviewPanel, private readonly binarySizeStatusBarEntry: BinarySizeStatusBarEntry) {
         super();
         webviewEditor.webview.options = {
@@ -34,6 +35,7 @@ export abstract class MediaPreview extends Disposable {
             this.previewState = PreviewState.Disposed;
             this.dispose();
         }));
+
         const watcher = this._register(vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(resource, '*')));
         this._register(watcher.onDidChange(e => {
             if (e.toString() === this.resource.toString()) {
@@ -62,6 +64,7 @@ export abstract class MediaPreview extends Disposable {
             return;
         }
         const content = await this.getWebviewContents();
+
         if (this.previewState as PreviewState === PreviewState.Disposed) {
             return;
         }

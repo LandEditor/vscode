@@ -22,12 +22,14 @@ export interface CommandInformationResult extends RelatedInformationBaseResult {
 }
 export interface SettingInformationResult extends RelatedInformationBaseResult {
     type: RelatedInformationType.SettingInformation;
+
     setting: string;
 }
 export type RelatedInformationResult = CommandInformationResult | SettingInformationResult;
 export interface IAiRelatedInformationService {
     readonly _serviceBrand: undefined;
     isEnabled(): boolean;
+
     getRelatedInformation(query: string, types: RelatedInformationType[], token: CancellationToken): Promise<RelatedInformationResult[]>;
     registerAiRelatedInformationProvider(type: RelatedInformationType, provider: IAiRelatedInformationProvider): IDisposable;
 }

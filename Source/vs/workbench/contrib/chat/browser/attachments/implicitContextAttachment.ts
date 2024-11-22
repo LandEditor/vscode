@@ -53,19 +53,29 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		this.renderDisposables.clear();
 
 		this.domNode.classList.toggle('disabled', !this.attachment.enabled);
+
 		const label = this.resourceLabels.create(this.domNode, { supportIcons: true });
+
 		const file = URI.isUri(this.attachment.value) ? this.attachment.value : this.attachment.value!.uri;
+
 		const range = URI.isUri(this.attachment.value) || !this.attachment.isSelection ? undefined : this.attachment.value!.range;
 
 		const fileBasename = basename(file);
+
 		const fileDirname = dirname(file);
+
 		const friendlyName = `${fileBasename} ${fileDirname}`;
+
 		const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached file, {0}, line {1} to line {2}", friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached file, {0}", friendlyName);
 
 		const uriLabel = this.labelService.getUriLabel(file, { relative: true });
+
 		const currentFile = localize('openEditor', "Current file context");
+
 		const inactive = localize('enableHint', "disabled");
+
 		const currentFileHint = currentFile + (this.attachment.enabled ? '' : ` (${inactive})`);
+
 		const title = `${currentFileHint}\n${uriLabel}`;
 		label.setFile(file, {
 			fileKind: FileKind.FILE,
@@ -75,10 +85,12 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 		});
 		this.domNode.ariaLabel = ariaLabel;
 		this.domNode.tabIndex = 0;
+
 		const hintElement = dom.append(this.domNode, dom.$('span.chat-implicit-hint', undefined, 'Current file'));
 		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), hintElement, title));
 
 		const buttonMsg = this.attachment.enabled ? localize('disable', "Disable current file context") : localize('enable', "Enable current file context");
+
 		const toggleButton = this.renderDisposables.add(new Button(this.domNode, { supportIcons: true, title: buttonMsg }));
 		toggleButton.icon = this.attachment.enabled ? Codicon.eye : Codicon.eyeClosed;
 		this.renderDisposables.add(toggleButton.onDidClick((e) => {
@@ -94,6 +106,7 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 
 		this.renderDisposables.add(dom.addDisposableListener(this.domNode, dom.EventType.CONTEXT_MENU, async domEvent => {
 			const event = new StandardMouseEvent(dom.getWindow(domEvent), domEvent);
+
 			dom.EventHelper.stop(domEvent, true);
 
 			this.contextMenuService.showContextMenu({
@@ -101,6 +114,7 @@ export class ImplicitContextAttachmentWidget extends Disposable {
 				getAnchor: () => event,
 				getActions: () => {
 					const menu = this.menuService.getMenuActions(MenuId.ChatInputResourceAttachmentContext, scopedContextKeyService, { arg: file });
+
 					return getFlatContextMenuActions(menu);
 				},
 			});

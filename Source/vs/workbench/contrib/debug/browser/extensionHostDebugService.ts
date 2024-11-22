@@ -22,6 +22,7 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
     private workspaceProvider: IWorkspaceProvider;
     private readonly storageService: IStorageService;
     private readonly fileService: IFileService;
+
     constructor(
     @IRemoteAgentService
     remoteAgentService: IRemoteAgentService, 
@@ -38,7 +39,9 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
     @IFileService
     fileService: IFileService) {
         const connection = remoteAgentService.getConnection();
+
         let channel: IChannel;
+
         if (connection) {
             channel = connection.getChannel(ExtensionHostDebugBroadcastChannel.ChannelName);
         }
@@ -49,6 +52,7 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
         super(channel);
         this.storageService = storageService;
         this.fileService = fileService;
+
         if (environmentService.options && environmentService.options.workspaceProvider) {
             this.workspaceProvider = environmentService.options.workspaceProvider;
         }
@@ -72,6 +76,7 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
         // (unless this is API tests) to restore for a future session
         if (environmentService.isExtensionDevelopment && !environmentService.extensionTestsLocationURI) {
             const workspaceId = toWorkspaceIdentifier(contextService.getWorkspace());
+
             if (isSingleFolderWorkspaceIdentifier(workspaceId) || isWorkspaceIdentifier(workspaceId)) {
                 const serializedWorkspace = isSingleFolderWorkspaceIdentifier(workspaceId) ? { folderUri: workspaceId.uri.toJSON() } : { workspaceUri: workspaceId.configPath.toJSON() };
                 storageService.store(BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY, JSON.stringify(serializedWorkspace), StorageScope.PROFILE, StorageTarget.MACHINE);
@@ -84,7 +89,9 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
     override async openExtensionDevelopmentHostWindow(args: string[], _debugRenderer: boolean): Promise<IOpenExtensionWindowResult> {
         // Add environment parameters required for debug to work
         const environment = new Map<string, string>();
+
         const fileUriArg = this.findArgument('file-uri', args);
+
         if (fileUriArg && !hasWorkspaceFileExtension(fileUriArg)) {
             environment.set('openFile', fileUriArg);
         }
@@ -96,33 +103,41 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
             'inspect-brk-extensions',
             'inspect-extensions',
         ];
+
         for (const argName of copyArgs) {
             const value = this.findArgument(argName, args);
+
             if (value) {
                 environment.set(argName, value);
             }
         }
         // Find out which workspace to open debug window on
         let debugWorkspace: IWorkspace = undefined;
+
         const folderUriArg = this.findArgument('folder-uri', args);
+
         if (folderUriArg) {
             debugWorkspace = { folderUri: URI.parse(folderUriArg) };
         }
         else {
             const fileUriArg = this.findArgument('file-uri', args);
+
             if (fileUriArg && hasWorkspaceFileExtension(fileUriArg)) {
                 debugWorkspace = { workspaceUri: URI.parse(fileUriArg) };
             }
         }
         const extensionTestsPath = this.findArgument('extensionTestsPath', args);
+
         if (!debugWorkspace && !extensionTestsPath) {
             const lastExtensionDevelopmentWorkspace = this.storageService.get(BrowserExtensionHostDebugService.LAST_EXTENSION_DEVELOPMENT_WORKSPACE_KEY, StorageScope.PROFILE);
+
             if (lastExtensionDevelopmentWorkspace) {
                 try {
                     const serializedWorkspace: {
                         workspaceUri?: UriComponents;
                         folderUri?: UriComponents;
                     } = JSON.parse(lastExtensionDevelopmentWorkspace);
+
                     if (serializedWorkspace.workspaceUri) {
                         debugWorkspace = { workspaceUri: URI.revive(serializedWorkspace.workspaceUri) };
                     }
@@ -138,8 +153,10 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
         // Validate workspace exists
         if (debugWorkspace) {
             const debugWorkspaceResource = isFolderToOpen(debugWorkspace) ? debugWorkspace.folderUri : isWorkspaceToOpen(debugWorkspace) ? debugWorkspace.workspaceUri : undefined;
+
             if (debugWorkspaceResource) {
                 const workspaceExists = await this.fileService.exists(debugWorkspaceResource);
+
                 if (!workspaceExists) {
                     debugWorkspace = undefined;
                 }
@@ -150,11 +167,13 @@ class BrowserExtensionHostDebugService extends ExtensionHostDebugChannelClient i
             reuse: false, // debugging always requires a new window
             payload: Array.from(environment.entries()) // mandatory properties to enable debugging
         });
+
         return { success };
     }
     private findArgument(key: string, args: string[]): string | undefined {
         for (const a of args) {
             const k = `--${key}=`;
+
             if (a.indexOf(k) === 0) {
                 return a.substring(k.length);
             }

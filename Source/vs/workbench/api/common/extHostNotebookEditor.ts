@@ -12,6 +12,7 @@ export class ExtHostNotebookEditor {
     public static readonly apiEditorsToExtHost = new WeakMap<vscode.NotebookEditor, ExtHostNotebookEditor>();
     private _visible: boolean = false;
     private _editor?: vscode.NotebookEditor;
+
     constructor(readonly id: string, private readonly _proxy: MainThreadNotebookEditorsShape, readonly notebookData: ExtHostNotebookDocument, private _visibleRanges: vscode.NotebookRange[], private _selections: vscode.NotebookRange[], private _viewColumn: vscode.ViewColumn | undefined, private readonly viewType: string) { }
     get apiEditor(): vscode.NotebookEditor {
         if (!this._editor) {

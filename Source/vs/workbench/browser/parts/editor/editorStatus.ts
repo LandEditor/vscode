@@ -78,7 +78,9 @@ function toEditorWithEncodingSupport(input: EditorInput): IEncodingSupport | nul
     // Side by Side (diff) Editor
     if (input instanceof SideBySideEditorInput) {
         const primaryEncodingSupport = toEditorWithEncodingSupport(input.primary);
+
         const secondaryEncodingSupport = toEditorWithEncodingSupport(input.secondary);
+
         if (primaryEncodingSupport && secondaryEncodingSupport) {
             return new SideBySideEditorEncodingSupport(primaryEncodingSupport, secondaryEncodingSupport);
         }
@@ -86,6 +88,7 @@ function toEditorWithEncodingSupport(input: EditorInput): IEncodingSupport | nul
     }
     // File or Resource Editor
     const encodingSupport = input as IFileEditorInput;
+
     if (areFunctions(encodingSupport.setEncoding, encodingSupport.getEncoding)) {
         return encodingSupport;
     }
@@ -100,7 +103,9 @@ function toEditorWithLanguageSupport(input: EditorInput): ILanguageSupport | nul
     // Side by Side (diff) Editor
     if (input instanceof SideBySideEditorInput) {
         const primaryLanguageSupport = toEditorWithLanguageSupport(input.primary);
+
         const secondaryLanguageSupport = toEditorWithLanguageSupport(input.secondary);
+
         if (primaryLanguageSupport && secondaryLanguageSupport) {
             return new SideBySideEditorLanguageSupport(primaryLanguageSupport, secondaryLanguageSupport);
         }
@@ -108,6 +113,7 @@ function toEditorWithLanguageSupport(input: EditorInput): ILanguageSupport | nul
     }
     // File or Resource Editor
     const languageSupport = input as IFileEditorInput;
+
     if (typeof languageSupport.setLanguageId === 'function') {
         return languageSupport;
     }
@@ -178,23 +184,32 @@ type StateDelta = ({
 });
 class State {
     private _selectionStatus: string | undefined;
+
     get selectionStatus(): string | undefined { return this._selectionStatus; }
     private _languageId: string | undefined;
+
     get languageId(): string | undefined { return this._languageId; }
     private _encoding: string | undefined;
+
     get encoding(): string | undefined { return this._encoding; }
     private _EOL: string | undefined;
+
     get EOL(): string | undefined { return this._EOL; }
     private _indentation: string | undefined;
+
     get indentation(): string | undefined { return this._indentation; }
     private _tabFocusMode: boolean | undefined;
+
     get tabFocusMode(): boolean | undefined { return this._tabFocusMode; }
     private _columnSelectionMode: boolean | undefined;
+
     get columnSelectionMode(): boolean | undefined { return this._columnSelectionMode; }
     private _metadata: string | undefined;
+
     get metadata(): string | undefined { return this._metadata; }
     update(update: StateDelta): StateChange {
         const change = new StateChange();
+
         switch (update.type) {
             case 'selectionStatus':
                 if (this._selectionStatus !== update.selectionStatus) {
@@ -202,42 +217,49 @@ class State {
                     change.selectionStatus = true;
                 }
                 break;
+
             case 'indentation':
                 if (this._indentation !== update.indentation) {
                     this._indentation = update.indentation;
                     change.indentation = true;
                 }
                 break;
+
             case 'languageId':
                 if (this._languageId !== update.languageId) {
                     this._languageId = update.languageId;
                     change.languageId = true;
                 }
                 break;
+
             case 'encoding':
                 if (this._encoding !== update.encoding) {
                     this._encoding = update.encoding;
                     change.encoding = true;
                 }
                 break;
+
             case 'EOL':
                 if (this._EOL !== update.EOL) {
                     this._EOL = update.EOL;
                     change.EOL = true;
                 }
                 break;
+
             case 'tabFocusMode':
                 if (this._tabFocusMode !== update.tabFocusMode) {
                     this._tabFocusMode = update.tabFocusMode;
                     change.tabFocusMode = true;
                 }
                 break;
+
             case 'columnSelectionMode':
                 if (this._columnSelectionMode !== update.columnSelectionMode) {
                     this._columnSelectionMode = update.columnSelectionMode;
                     change.columnSelectionMode = true;
                 }
                 break;
+
             case 'metadata':
                 if (this._metadata !== update.metadata) {
                     this._metadata = update.metadata;
@@ -251,11 +273,13 @@ class State {
 class TabFocusMode extends Disposable {
     private readonly _onDidChange = this._register(new Emitter<boolean>());
     readonly onDidChange = this._onDidChange.event;
+
     constructor(
     @IConfigurationService
     private readonly configurationService: IConfigurationService) {
         super();
         this.registerListeners();
+
         const tabFocusModeConfig = configurationService.getValue<boolean>('editor.tabFocusMode') === true ? true : false;
         TabFocus.setTabFocusMode(tabFocusModeConfig);
     }
@@ -271,10 +295,15 @@ class TabFocusMode extends Disposable {
     }
 }
 const nlsSingleSelectionRange = localize('singleSelectionRange', "Ln {0}, Col {1} ({2} selected)");
+
 const nlsSingleSelection = localize('singleSelection', "Ln {0}, Col {1}");
+
 const nlsMultiSelectionRange = localize('multiSelectionRange', "{0} selections ({1} characters selected)");
+
 const nlsMultiSelection = localize('multiSelection', "{0} selections");
+
 const nlsEOLLF = localize('endOfLineLineFeed', "LF");
+
 const nlsEOLCRLF = localize('endOfLineCarriageReturnLineFeed', "CRLF");
 class EditorStatus extends Disposable {
     private readonly tabFocusModeElement = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
@@ -291,6 +320,7 @@ class EditorStatus extends Disposable {
     private toRender: StateChange | undefined = undefined;
     private readonly activeEditorListeners = this._register(new DisposableStore());
     private readonly delayedRender = this._register(new MutableDisposable());
+
     constructor(private readonly targetWindowId: number, 
     @IEditorService
     private readonly editorService: IEditorService, 
@@ -328,6 +358,7 @@ class EditorStatus extends Disposable {
     }
     private async showIndentationPicker(): Promise<unknown> {
         const activeTextEditorControl = getCodeEditor(this.editorService.activeTextEditorControl);
+
         if (!activeTextEditorControl) {
             return this.quickInputService.pick([{ label: localize('noEditor', "No text editor active at this time") }]);
         }
@@ -357,7 +388,9 @@ class EditorStatus extends Disposable {
         });
         picks.splice(3, 0, { type: 'separator', label: localize('indentConvert', "convert file") });
         picks.unshift({ type: 'separator', label: localize('indentView', "change view") });
+
         const action = await this.quickInputService.pick(picks, { placeHolder: localize('pickAction', "Select Action"), matchOnDetail: true });
+
         return action?.run();
     }
     private updateTabFocusModeElement(visible: boolean): void {
@@ -399,11 +432,14 @@ class EditorStatus extends Disposable {
     private updateSelectionElement(text: string | undefined): void {
         if (!text) {
             this.selectionElement.clear();
+
             return;
         }
         const editorURI = getCodeEditor(this.editorService.activeTextEditorControl)?.getModel()?.uri;
+
         if (editorURI?.scheme === Schemas.vscodeNotebookCell) {
             this.selectionElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -418,11 +454,14 @@ class EditorStatus extends Disposable {
     private updateIndentationElement(text: string | undefined): void {
         if (!text) {
             this.indentationElement.clear();
+
             return;
         }
         const editorURI = getCodeEditor(this.editorService.activeTextEditorControl)?.getModel()?.uri;
+
         if (editorURI?.scheme === Schemas.vscodeNotebookCell) {
             this.indentationElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -437,6 +476,7 @@ class EditorStatus extends Disposable {
     private updateEncodingElement(text: string | undefined): void {
         if (!text) {
             this.encodingElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -451,6 +491,7 @@ class EditorStatus extends Disposable {
     private updateEOLElement(text: string | undefined): void {
         if (!text) {
             this.eolElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -465,6 +506,7 @@ class EditorStatus extends Disposable {
     private updateLanguageIdElement(text: string | undefined): void {
         if (!text) {
             this.languageElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -479,6 +521,7 @@ class EditorStatus extends Disposable {
     private updateMetadataElement(text: string | undefined): void {
         if (!text) {
             this.metadataElement.clear();
+
             return;
         }
         const props: IStatusbarEntry = {
@@ -499,6 +542,7 @@ class EditorStatus extends Disposable {
     }
     private updateState(update: StateDelta): void {
         const changed = this.state.update(update);
+
         if (!changed.hasChanges()) {
             return; // Nothing really changed
         }
@@ -506,8 +550,10 @@ class EditorStatus extends Disposable {
             this.toRender = changed;
             this.delayedRender.value = runAtThisOrScheduleAtNextAnimationFrame(getWindowById(this.targetWindowId, true).window, () => {
                 this.delayedRender.clear();
+
                 const toRender = this.toRender;
                 this.toRender = undefined;
+
                 if (toRender) {
                     this.doRenderNow();
                 }
@@ -547,7 +593,9 @@ class EditorStatus extends Disposable {
     }
     private updateStatusBar(): void {
         const activeInput = this.editorService.activeEditor;
+
         const activeEditorPane = this.editorService.activeEditorPane;
+
         const activeCodeEditor = activeEditorPane ? getCodeEditor(activeEditorPane.getControl()) ?? undefined : undefined;
         // Update all states
         this.onColumnSelectionModeChange(activeCodeEditor);
@@ -590,12 +638,15 @@ class EditorStatus extends Disposable {
             this.activeEditorListeners.add(Event.accumulate(activeCodeEditor.onDidChangeModelContent)(e => {
                 this.onEOLChange(activeCodeEditor);
                 this.currentMarkerStatus.update(activeCodeEditor);
+
                 const selections = activeCodeEditor.getSelections();
+
                 if (selections) {
                     for (const inner of e) {
                         for (const change of inner.changes) {
                             if (selections.some(selection => Range.areIntersecting(selection, change.range))) {
                                 this.onSelectionChange(activeCodeEditor);
+
                                 break;
                             }
                         }
@@ -610,12 +661,15 @@ class EditorStatus extends Disposable {
         // Handle binary editors
         else if (activeEditorPane instanceof BaseBinaryResourceEditor || activeEditorPane instanceof BinaryResourceDiffEditor) {
             const binaryEditors: BaseBinaryResourceEditor[] = [];
+
             if (activeEditorPane instanceof BinaryResourceDiffEditor) {
                 const primary = activeEditorPane.getPrimaryEditorPane();
+
                 if (primary instanceof BaseBinaryResourceEditor) {
                     binaryEditors.push(primary);
                 }
                 const secondary = activeEditorPane.getSecondaryEditorPane();
+
                 if (secondary instanceof BaseBinaryResourceEditor) {
                     binaryEditors.push(secondary);
                 }
@@ -638,6 +692,7 @@ class EditorStatus extends Disposable {
         // We only support text based editors
         if (editorWidget && editorInput && toEditorWithLanguageSupport(editorInput)) {
             const textModel = editorWidget.getModel();
+
             if (textModel) {
                 const languageId = textModel.getLanguageId();
                 info.languageId = this.languageService.getLanguageName(languageId) ?? undefined;
@@ -647,8 +702,10 @@ class EditorStatus extends Disposable {
     }
     private onIndentationChange(editorWidget: ICodeEditor | undefined): void {
         const update: StateDelta = { type: 'indentation', indentation: undefined };
+
         if (editorWidget) {
             const model = editorWidget.getModel();
+
             if (model) {
                 const modelOpts = model.getOptions();
                 update.indentation = (modelOpts.insertSpaces
@@ -662,6 +719,7 @@ class EditorStatus extends Disposable {
     }
     private onMetadataChange(editor: IEditorPane | undefined): void {
         const update: StateDelta = { type: 'metadata', metadata: undefined };
+
         if (editor instanceof BaseBinaryResourceEditor || editor instanceof BinaryResourceDiffEditor) {
             update.metadata = editor.getMetadata();
         }
@@ -669,6 +727,7 @@ class EditorStatus extends Disposable {
     }
     private onColumnSelectionModeChange(editorWidget: ICodeEditor | undefined): void {
         const info: StateDelta = { type: 'columnSelectionMode', columnSelectionMode: false };
+
         if (editorWidget?.getOption(EditorOption.columnSelection)) {
             info.columnSelectionMode = true;
         }
@@ -682,7 +741,9 @@ class EditorStatus extends Disposable {
             info.selections = editorWidget.getSelections() || [];
             // Compute selection length
             info.charactersSelected = 0;
+
             const textModel = editorWidget.getModel();
+
             if (textModel) {
                 for (const selection of info.selections) {
                     if (typeof info.charactersSelected !== 'number') {
@@ -694,6 +755,7 @@ class EditorStatus extends Disposable {
             // Compute the visible column for one selection. This will properly handle tabs and their configured widths
             if (info.selections.length === 1) {
                 const editorPosition = editorWidget.getPosition();
+
                 const selectionClone = new Selection(info.selections[0].selectionStartLineNumber, info.selections[0].selectionStartColumn, info.selections[0].positionLineNumber, editorPosition ? editorWidget.getStatusbarColumn(editorPosition) : info.selections[0].positionColumn);
                 info.selections[0] = selectionClone;
             }
@@ -702,8 +764,10 @@ class EditorStatus extends Disposable {
     }
     private onEOLChange(editorWidget: ICodeEditor | undefined): void {
         const info: StateDelta = { type: 'EOL', EOL: undefined };
+
         if (editorWidget && !editorWidget.getOption(EditorOption.readOnly)) {
             const codeEditorModel = editorWidget.getModel();
+
             if (codeEditorModel) {
                 info.EOL = codeEditorModel.getEOL();
             }
@@ -720,9 +784,12 @@ class EditorStatus extends Disposable {
         // is still loading.
         if (editor && editorWidget?.hasModel()) {
             const encodingSupport: IEncodingSupport | null = editor.input ? toEditorWithEncodingSupport(editor.input) : null;
+
             if (encodingSupport) {
                 const rawEncoding = encodingSupport.getEncoding();
+
                 const encodingInfo = typeof rawEncoding === 'string' ? SUPPORTED_ENCODINGS[rawEncoding] : undefined;
+
                 if (encodingInfo) {
                     info.encoding = encodingInfo.labelShort; // if we have a label, take it from there
                 }
@@ -735,10 +802,13 @@ class EditorStatus extends Disposable {
     }
     private onResourceEncodingChange(resource: URI): void {
         const activeEditorPane = this.editorService.activeEditorPane;
+
         if (activeEditorPane) {
             const activeResource = EditorResourceAccessor.getCanonicalUri(activeEditorPane.input, { supportSideBySide: SideBySideEditor.PRIMARY });
+
             if (activeResource && isEqual(activeResource, resource)) {
                 const activeCodeEditor = getCodeEditor(activeEditorPane.getControl()) ?? undefined;
+
                 return this.onEncodingChange(activeEditorPane, activeCodeEditor); // only update if the encoding changed for the active resource
             }
         }
@@ -749,15 +819,18 @@ class EditorStatus extends Disposable {
     }
     private isActiveEditor(control: IEditorPane): boolean {
         const activeEditorPane = this.editorService.activeEditorPane;
+
         return !!activeEditorPane && activeEditorPane === control;
     }
 }
 export class EditorStatusContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.editorStatus';
+
     constructor(
     @IEditorGroupsService
     private readonly editorGroupService: IEditorGroupsService) {
         super();
+
         for (const part of editorGroupService.parts) {
             this.createEditorStatus(part);
         }
@@ -766,6 +839,7 @@ export class EditorStatusContribution extends Disposable implements IWorkbenchCo
     private createEditorStatus(part: IEditorPart): void {
         const disposables = new DisposableStore();
         Event.once(part.onWillDispose)(() => disposables.dispose());
+
         const scopedInstantiationService = this.editorGroupService.getScopedInstantiationService(part);
         disposables.add(scopedInstantiationService.createInstance(EditorStatus, part.windowId));
     }
@@ -775,6 +849,7 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
     private editor: ICodeEditor | undefined = undefined;
     private markers: IMarker[] = [];
     private currentMarker: IMarker | null = null;
+
     constructor(
     @IStatusbarService
     private readonly statusbarService: IStatusbarService, 
@@ -795,10 +870,13 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
     private updateStatus(): void {
         const previousMarker = this.currentMarker;
         this.currentMarker = this.getMarker();
+
         if (this.hasToUpdateStatus(previousMarker, this.currentMarker)) {
             if (this.currentMarker) {
                 const line = splitLines(this.currentMarker.message)[0];
+
                 const text = `${this.getType(this.currentMarker)} ${line}`;
+
                 if (!this.statusBarEntryAccessor.value) {
                     this.statusBarEntryAccessor.value = this.statusbarService.addEntry({ name: localize('currentProblem', "Current Problem"), text: '', ariaLabel: '' }, 'statusbar.currentProblem', StatusbarAlignment.LEFT);
                 }
@@ -821,7 +899,9 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
     private getType(marker: IMarker): string {
         switch (marker.severity) {
             case MarkerSeverity.Error: return '$(error)';
+
             case MarkerSeverity.Warning: return '$(warning)';
+
             case MarkerSeverity.Info: return '$(info)';
         }
         return '';
@@ -834,10 +914,12 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
             return null;
         }
         const model = this.editor.getModel();
+
         if (!model) {
             return null;
         }
         const position = this.editor.getPosition();
+
         if (!position) {
             return null;
         }
@@ -848,6 +930,7 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
             return;
         }
         const model = this.editor.getModel();
+
         if (!model) {
             return;
         }
@@ -861,6 +944,7 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
             return;
         }
         const model = this.editor.getModel();
+
         if (!model) {
             return;
         }
@@ -878,6 +962,7 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
     }
     private compareMarker(a: IMarker, b: IMarker): number {
         let res = compare(a.resource.toString(), b.resource.toString());
+
         if (res === 0) {
             res = MarkerSeverity.compare(a.severity, b.severity);
         }
@@ -889,6 +974,7 @@ class ShowCurrentMarkerInStatusbarContribution extends Disposable {
 }
 export class ShowLanguageExtensionsAction extends Action {
     static readonly ID = 'workbench.action.showLanguageExtensions';
+
     constructor(private fileExtension: string, 
     @ICommandService
     private readonly commandService: ICommandService, 
@@ -903,6 +989,7 @@ export class ShowLanguageExtensionsAction extends Action {
 }
 export class ChangeLanguageAction extends Action2 {
     static readonly ID = 'workbench.action.editor.changeLanguageMode';
+
     constructor() {
         super({
             id: ChangeLanguageAction.ID,
@@ -926,38 +1013,56 @@ export class ChangeLanguageAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor, languageMode?: string): Promise<void> {
         const quickInputService = accessor.get(IQuickInputService);
+
         const editorService = accessor.get(IEditorService);
+
         const languageService = accessor.get(ILanguageService);
+
         const languageDetectionService = accessor.get(ILanguageDetectionService);
+
         const textFileService = accessor.get(ITextFileService);
+
         const preferencesService = accessor.get(IPreferencesService);
+
         const instantiationService = accessor.get(IInstantiationService);
+
         const configurationService = accessor.get(IConfigurationService);
+
         const telemetryService = accessor.get(ITelemetryService);
+
         const activeTextEditorControl = getCodeEditor(editorService.activeTextEditorControl);
+
         if (!activeTextEditorControl) {
             await quickInputService.pick([{ label: localize('noEditor', "No text editor active at this time") }]);
+
             return;
         }
         const textModel = activeTextEditorControl.getModel();
+
         const resource = EditorResourceAccessor.getOriginalUri(editorService.activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY });
         // Compute language
         let currentLanguageName: string | undefined;
+
         let currentLanguageId: string | undefined;
+
         if (textModel) {
             currentLanguageId = textModel.getLanguageId();
             currentLanguageName = languageService.getLanguageName(currentLanguageId) ?? undefined;
         }
         let hasLanguageSupport = !!resource;
+
         if (resource?.scheme === Schemas.untitled && !textFileService.untitled.get(resource)?.hasAssociatedFilePath) {
             hasLanguageSupport = false; // no configuration for untitled resources (e.g. "Untitled-1")
         }
         // All languages are valid picks
         const languages = languageService.getSortedRegisteredLanguageNames();
+
         const picks: QuickPickInput[] = languages
             .map(({ languageName, languageId }) => {
             const extensions = languageService.getExtensions(languageId).join(' ');
+
             let description: string;
+
             if (currentLanguageName === languageName) {
                 description = localize('languageDescription', "({0}) - Configured Language", languageId);
             }
@@ -974,11 +1079,15 @@ export class ChangeLanguageAction extends Action2 {
         picks.unshift({ type: 'separator', label: localize('languagesPicks', "languages (identifier)") });
         // Offer action to configure via settings
         let configureLanguageAssociations: IQuickPickItem | undefined;
+
         let configureLanguageSettings: IQuickPickItem | undefined;
+
         let galleryAction: Action | undefined;
+
         if (hasLanguageSupport && resource) {
             const ext = extname(resource) || basename(resource);
             galleryAction = instantiationService.createInstance(ShowLanguageExtensionsAction, ext);
+
             if (galleryAction.enabled) {
                 picks.unshift(galleryAction);
             }
@@ -992,12 +1101,15 @@ export class ChangeLanguageAction extends Action2 {
             label: localize('autoDetect', "Auto Detect")
         };
         picks.unshift(autoDetectLanguage);
+
         const pick = typeof languageMode === 'string' ? { label: languageMode } : await quickInputService.pick(picks, { placeHolder: localize('pickLanguage', "Select Language Mode"), matchOnDescription: true });
+
         if (!pick) {
             return;
         }
         if (pick === galleryAction) {
             galleryAction.run();
+
             return;
         }
         // User decided to permanently configure associations, return right after
@@ -1010,22 +1122,29 @@ export class ChangeLanguageAction extends Action2 {
         // User decided to configure settings for current language
         if (pick === configureLanguageSettings) {
             preferencesService.openUserSettings({ jsonEditor: true, revealSetting: { key: `[${currentLanguageId ?? null}]`, edit: true } });
+
             return;
         }
         // Change language for active editor
         const activeEditor = editorService.activeEditor;
+
         if (activeEditor) {
             const languageSupport = toEditorWithLanguageSupport(activeEditor);
+
             if (languageSupport) {
                 // Find language
                 let languageSelection: ILanguageSelection | undefined;
+
                 let detectedLanguage: string | undefined;
+
                 if (pick === autoDetectLanguage) {
                     if (textModel) {
                         const resource = EditorResourceAccessor.getOriginalUri(activeEditor, { supportSideBySide: SideBySideEditor.PRIMARY });
+
                         if (resource) {
                             // Detect languages since we are in an untitled file
                             let languageId: string | undefined = languageService.guessLanguageIdByFilepathOrFirstLine(resource, textModel.getLineContent(1)) ?? undefined;
+
                             if (!languageId || languageId === 'unknown') {
                                 detectedLanguage = await languageDetectionService.detectLanguage(resource);
                                 languageId = detectedLanguage;
@@ -1039,10 +1158,12 @@ export class ChangeLanguageAction extends Action2 {
                 else {
                     const languageId = languageService.getLanguageIdByLanguageName(pick.label);
                     languageSelection = languageService.createById(languageId);
+
                     if (resource) {
                         // fire and forget to not slow things down
                         languageDetectionService.detectLanguage(resource).then(detectedLanguageId => {
                             const chosenLanguageId = languageService.getLanguageIdByLanguageName(pick.label) || 'unknown';
+
                             if (detectedLanguageId === currentLanguageId && currentLanguageId !== chosenLanguageId) {
                                 // If they didn't choose the detected language (which should also be the active language if automatic detection is enabled)
                                 // then the automatic language detection was likely wrong and the user is correcting it. In this case, we want telemetry.
@@ -1061,6 +1182,7 @@ export class ChangeLanguageAction extends Action2 {
                 // Change language
                 if (typeof languageSelection !== 'undefined') {
                     languageSupport.setLanguageId(languageSelection.languageId, ChangeLanguageAction.ID);
+
                     if (resource?.scheme === Schemas.untitled) {
                         type SetUntitledDocumentLanguageEvent = {
                             to: string;
@@ -1089,6 +1211,7 @@ export class ChangeLanguageAction extends Action2 {
                                 comment: 'Help understand effectiveness of automatic language detection';
                             };
                         };
+
                         const modelPreference = configurationService.getValue<boolean>('workbench.editor.preferHistoryBasedLanguageDetection') ? 'history' : 'classic';
                         telemetryService.publicLog2<SetUntitledDocumentLanguageEvent, SetUntitledDocumentLanguageClassification>('setUntitledDocumentLanguage', {
                             to: languageSelection.languageId,
@@ -1103,9 +1226,13 @@ export class ChangeLanguageAction extends Action2 {
     }
     private configureFileAssociation(resource: URI, languageService: ILanguageService, quickInputService: IQuickInputService, configurationService: IConfigurationService): void {
         const extension = extname(resource);
+
         const base = basename(resource);
+
         const currentAssociation = languageService.guessLanguageIdByFilepathOrFirstLine(URI.file(base));
+
         const languages = languageService.getSortedRegisteredLanguageNames();
+
         const picks: IQuickPickItem[] = languages.map(({ languageName, languageId }) => {
             return {
                 id: languageId,
@@ -1114,11 +1241,15 @@ export class ChangeLanguageAction extends Action2 {
                 description: (languageId === currentAssociation) ? localize('currentAssociation', "Current Association") : undefined
             };
         });
+
         setTimeout(async () => {
             const language = await quickInputService.pick(picks, { placeHolder: localize('pickLanguageToConfigure', "Select Language Mode to Associate with '{0}'", extension || base) });
+
             if (language) {
                 const fileAssociationsConfig = configurationService.inspect<{}>(FILES_ASSOCIATIONS_CONFIG);
+
                 let associationKey: string;
+
                 if (extension && base[0] !== '.') {
                     associationKey = `*${extension}`; // only use "*.ext" if the file path is in the form of <name>.<ext>
                 }
@@ -1127,6 +1258,7 @@ export class ChangeLanguageAction extends Action2 {
                 }
                 // If the association is already being made in the workspace, make sure to target workspace settings
                 let target = ConfigurationTarget.USER;
+
                 if (fileAssociationsConfig.workspaceValue && !!(fileAssociationsConfig.workspaceValue as any)[associationKey]) {
                     target = ConfigurationTarget.WORKSPACE;
                 }
@@ -1151,25 +1283,35 @@ export class ChangeEOLAction extends Action2 {
     }
     override async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const activeTextEditorControl = getCodeEditor(editorService.activeTextEditorControl);
+
         if (!activeTextEditorControl) {
             await quickInputService.pick([{ label: localize('noEditor', "No text editor active at this time") }]);
+
             return;
         }
         if (editorService.activeEditor?.isReadonly()) {
             await quickInputService.pick([{ label: localize('noWritableCodeEditor', "The active code editor is read-only.") }]);
+
             return;
         }
         let textModel = activeTextEditorControl.getModel();
+
         const EOLOptions: IChangeEOLEntry[] = [
             { label: nlsEOLLF, eol: EndOfLineSequence.LF },
             { label: nlsEOLCRLF, eol: EndOfLineSequence.CRLF },
         ];
+
         const selectedIndex = (textModel?.getEOL() === '\n') ? 0 : 1;
+
         const eol = await quickInputService.pick(EOLOptions, { placeHolder: localize('pickEndOfLine', "Select End of Line Sequence"), activeItem: EOLOptions[selectedIndex] });
+
         if (eol) {
             const activeCodeEditor = getCodeEditor(editorService.activeTextEditorControl);
+
             if (activeCodeEditor?.hasModel() && !editorService.activeEditor?.isReadonly()) {
                 textModel = activeCodeEditor.getModel();
                 textModel.pushStackElement();
@@ -1190,38 +1332,54 @@ export class ChangeEncodingAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const quickInputService = accessor.get(IQuickInputService);
+
         const fileService = accessor.get(IFileService);
+
         const textFileService = accessor.get(ITextFileService);
+
         const textResourceConfigurationService = accessor.get(ITextResourceConfigurationService);
+
         const activeTextEditorControl = getCodeEditor(editorService.activeTextEditorControl);
+
         if (!activeTextEditorControl) {
             await quickInputService.pick([{ label: localize('noEditor', "No text editor active at this time") }]);
+
             return;
         }
         const activeEditorPane = editorService.activeEditorPane;
+
         if (!activeEditorPane) {
             await quickInputService.pick([{ label: localize('noEditor', "No text editor active at this time") }]);
+
             return;
         }
         const encodingSupport: IEncodingSupport | null = toEditorWithEncodingSupport(activeEditorPane.input);
+
         if (!encodingSupport) {
             await quickInputService.pick([{ label: localize('noFileEditor', "No file active at this time") }]);
+
             return;
         }
         const saveWithEncodingPick: IQuickPickItem = { label: localize('saveWithEncoding', "Save with Encoding") };
+
         const reopenWithEncodingPick: IQuickPickItem = { label: localize('reopenWithEncoding', "Reopen with Encoding") };
+
         if (!Language.isDefaultVariant()) {
             const saveWithEncodingAlias = 'Save with Encoding';
+
             if (saveWithEncodingAlias !== saveWithEncodingPick.label) {
                 saveWithEncodingPick.detail = saveWithEncodingAlias;
             }
             const reopenWithEncodingAlias = 'Reopen with Encoding';
+
             if (reopenWithEncodingAlias !== reopenWithEncodingPick.label) {
                 reopenWithEncodingPick.detail = reopenWithEncodingAlias;
             }
         }
         let action: IQuickPickItem | undefined;
+
         if (encodingSupport instanceof UntitledTextEditorInput) {
             action = saveWithEncodingPick;
         }
@@ -1236,10 +1394,12 @@ export class ChangeEncodingAction extends Action2 {
         }
         await timeout(50); // quick input is sensitive to being opened so soon after another
         const resource = EditorResourceAccessor.getOriginalUri(activeEditorPane.input, { supportSideBySide: SideBySideEditor.PRIMARY });
+
         if (!resource || (!fileService.hasProvider(resource) && resource.scheme !== Schemas.untitled)) {
             return; // encoding detection only possible for resources the file service can handle or that are untitled
         }
         let guessedEncoding: string | undefined = undefined;
+
         if (fileService.hasProvider(resource)) {
             const content = await textFileService.readStream(resource, {
                 autoGuessEncoding: true,
@@ -1248,8 +1408,11 @@ export class ChangeEncodingAction extends Action2 {
             guessedEncoding = content.encoding;
         }
         const isReopenWithEncoding = (action === reopenWithEncodingPick);
+
         const configuredEncoding = textResourceConfigurationService.getValue(resource, 'files.encoding');
+
         let directMatchIndex: number | undefined;
+
         let aliasMatchIndex: number | undefined;
         // All encodings are valid picks
         const picks: QuickPickInput[] = Object.keys(SUPPORTED_ENCODINGS)
@@ -1277,6 +1440,7 @@ export class ChangeEncodingAction extends Action2 {
             }
             return { id: key, label: SUPPORTED_ENCODINGS[key].labelLong, description: key };
         });
+
         const items = picks.slice() as IQuickPickItem[];
         // If we have a guessed encoding, show it first unless it matches the configured encoding
         if (guessedEncoding && configuredEncoding !== guessedEncoding && SUPPORTED_ENCODINGS[guessedEncoding]) {
@@ -1287,6 +1451,7 @@ export class ChangeEncodingAction extends Action2 {
             placeHolder: isReopenWithEncoding ? localize('pickEncodingForReopen', "Select File Encoding to Reopen File") : localize('pickEncodingForSave', "Select File Encoding to Save with"),
             activeItem: items[typeof directMatchIndex === 'number' ? directMatchIndex : typeof aliasMatchIndex === 'number' ? aliasMatchIndex : -1]
         });
+
         if (!encoding) {
             return;
         }
@@ -1294,6 +1459,7 @@ export class ChangeEncodingAction extends Action2 {
             return;
         }
         const activeEncodingSupport = toEditorWithEncodingSupport(editorService.activeEditorPane.input);
+
         if (typeof encoding.id !== 'undefined' && activeEncodingSupport) {
             await activeEncodingSupport.setEncoding(encoding.id, isReopenWithEncoding ? EncodingMode.Decode : EncodingMode.Encode); // Set new encoding
         }

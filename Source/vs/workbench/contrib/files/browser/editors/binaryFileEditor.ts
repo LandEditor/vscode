@@ -20,6 +20,7 @@ import { IEditorGroup } from '../../../../services/editor/common/editorGroupsSer
  */
 export class BinaryFileEditor extends BaseBinaryResourceEditor {
     static readonly ID = BINARY_FILE_EDITOR_ID;
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -42,7 +43,9 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
             // active editor of the group, this is a safe assumption.
             // (https://github.com/microsoft/vscode/issues/124222)
             const activeEditor = this.group.activeEditor;
+
             const untypedActiveEditor = activeEditor?.toUntyped();
+
             if (!untypedActiveEditor) {
                 return; // we need untyped editor support
             }
@@ -54,6 +57,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
                     override: EditorResolution.PICK
                 }
             }, this.group);
+
             if (resolvedEditor === ResolvedStatus.NONE) {
                 resolvedEditor = undefined;
             }

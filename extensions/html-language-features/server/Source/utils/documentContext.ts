@@ -10,6 +10,7 @@ export function getDocumentContext(documentUri: string, workspaceFolders: Worksp
     function getRootFolder(): string | undefined {
         for (const folder of workspaceFolders) {
             let folderURI = folder.uri;
+
             if (!endsWith(folderURI, '/')) {
                 folderURI = folderURI + '/';
             }
@@ -27,12 +28,15 @@ export function getDocumentContext(documentUri: string, workspaceFolders: Worksp
             }
             if (ref[0] === '/') { // resolve absolute path against the current workspace folder
                 const folderUri = getRootFolder();
+
                 if (folderUri) {
                     return folderUri + ref.substr(1);
                 }
             }
             const baseUri = URI.parse(base);
+
             const baseUriDir = baseUri.path.endsWith('/') ? baseUri : Utils.dirname(baseUri);
+
             return Utils.resolvePath(baseUriDir, ref).toString(true);
         },
     };

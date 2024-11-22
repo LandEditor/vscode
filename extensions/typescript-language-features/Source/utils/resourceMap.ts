@@ -22,6 +22,7 @@ export class ResourceMap<T> {
         readonly resource: vscode.Uri;
         value: T;
     }>();
+
     constructor(protected readonly _normalizePath: (resource: vscode.Uri) => string | undefined = ResourceMap.defaultPathNormalizer, protected readonly config: {
         readonly onCaseInsensitiveFileSystem: boolean;
     }) { }
@@ -30,22 +31,27 @@ export class ResourceMap<T> {
     }
     public has(resource: vscode.Uri): boolean {
         const file = this.toKey(resource);
+
         return !!file && this._map.has(file);
     }
     public get(resource: vscode.Uri): T | undefined {
         const file = this.toKey(resource);
+
         if (!file) {
             return undefined;
         }
         const entry = this._map.get(file);
+
         return entry ? entry.value : undefined;
     }
     public set(resource: vscode.Uri, value: T) {
         const file = this.toKey(resource);
+
         if (!file) {
             return;
         }
         const entry = this._map.get(file);
+
         if (entry) {
             entry.value = value;
         }
@@ -55,6 +61,7 @@ export class ResourceMap<T> {
     }
     public delete(resource: vscode.Uri): void {
         const file = this.toKey(resource);
+
         if (file) {
             this._map.delete(file);
         }
@@ -73,6 +80,7 @@ export class ResourceMap<T> {
     }
     private toKey(resource: vscode.Uri): string | undefined {
         const key = this._normalizePath(resource);
+
         if (!key) {
             return key;
         }

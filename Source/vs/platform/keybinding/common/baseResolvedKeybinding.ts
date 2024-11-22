@@ -9,8 +9,10 @@ import { OperatingSystem } from '../../../base/common/platform.js';
 export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKeybinding {
     protected readonly _os: OperatingSystem;
     protected readonly _chords: readonly T[];
+
     constructor(os: OperatingSystem, chords: readonly T[]) {
         super();
+
         if (chords.length === 0) {
             throw illegalArgument(`chords`);
         }

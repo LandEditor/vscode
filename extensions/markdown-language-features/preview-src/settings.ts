@@ -15,8 +15,10 @@ export interface PreviewSettings {
 }
 export function getData<T = {}>(key: string): T {
     const element = document.getElementById('vscode-markdown-preview-data');
+
     if (element) {
         const data = element.getAttribute(key);
+
         if (data) {
             return JSON.parse(data);
         }

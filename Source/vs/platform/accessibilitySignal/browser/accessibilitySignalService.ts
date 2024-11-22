@@ -25,6 +25,7 @@ export interface IAccessibilitySignalService {
 	playSignalLoop(signal: AccessibilitySignal, milliseconds: number): IDisposable;
 
 	getEnabledState(signal: AccessibilitySignal, userGesture: boolean, modality?: AccessibilityModality | undefined): IValueWithChangeEvent<boolean>;
+
 	getDelayMs(signal: AccessibilitySignal, modality: AccessibilityModality, mode: 'line' | 'positional'): number;
 	/**
 	 * Avoid this method and prefer `.playSignal`!
@@ -86,12 +87,15 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 
 	public async playSignal(signal: AccessibilitySignal, options: IAccessbilitySignalOptions = {}): Promise<void> {
 		const shouldPlayAnnouncement = options.modality === 'announcement' || options.modality === undefined;
+
 		const announcementMessage = signal.announcementMessage;
+
 		if (shouldPlayAnnouncement && this.isAnnouncementEnabled(signal, options.userGesture) && announcementMessage) {
 			this.accessibilityService.status(announcementMessage);
 		}
 
 		const shouldPlaySound = options.modality === 'sound' || options.modality === undefined;
+
 		if (shouldPlaySound && this.isSoundEnabled(signal, options.userGesture)) {
 			this.sendSignalTelemetry(signal, options.source);
 			await this.playSound(signal.sound.getSound(), options.allowManyInParallel);
@@ -103,7 +107,9 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 			this.sendSignalTelemetry('signal' in signal ? signal.signal : signal, 'source' in signal ? signal.source : undefined);
 		}
 		const signalArray = signals.map(s => 'signal' in s ? s.signal : s);
+
 		const announcements = signalArray.filter(signal => this.isAnnouncementEnabled(signal)).map(s => s.announcementMessage);
+
 		if (announcements.length) {
 			this.accessibilityService.status(announcements.join(', '));
 		}
@@ -117,6 +123,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 
 	private sendSignalTelemetry(signal: AccessibilitySignal, source: string | undefined): void {
 		const isScreenReaderOptimized = this.accessibilityService.isScreenReaderOptimized();
+
 		const key = signal.name + (source ? `::${source}` : '') + (isScreenReaderOptimized ? '{screenReaderOptimized}' : '');
 		// Only send once per user session
 		if (this.sentTelemetry.has(key) || this.getVolumeInPercent() === 0) {
@@ -145,6 +152,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 
 	private getVolumeInPercent(): number {
 		const volume = this.configurationService.getValue<number>('accessibility.signalOptions.volume');
+
 		if (typeof volume !== 'number') {
 			return 50;
 		}
@@ -159,10 +167,12 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 			return;
 		}
 		this.playingSounds.add(sound);
+
 		const url = FileAccess.asBrowserUri(`vs/platform/accessibilitySignal/browser/media/${sound.fileName}`).toString(true);
 
 		try {
 			const sound = this.sounds.get(url);
+
 			if (sound) {
 				sound.volume = this.getVolumeInPercent() / 100;
 				sound.currentTime = 0;
@@ -183,6 +193,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 
 	public playSignalLoop(signal: AccessibilitySignal, milliseconds: number): IDisposable {
 		let playing = true;
+
 		const playSound = () => {
 			if (playing) {
 				this.playSignal(signal, { allowManyInParallel: true }).finally(() => {
@@ -195,6 +206,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 			}
 		};
 		playSound();
+
 		return toDisposable(() => playing = false);
 	}
 
@@ -245,6 +257,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 			return 0;
 		}
 		let value: { sound: number; announcement: number };
+
 		if (signal.name === AccessibilitySignal.errorAtPosition.name && mode === 'positional') {
 			value = this.configurationService.getValue('accessibility.signalOptions.experimental.delays.errorAtPosition');
 		} else if (signal.name === AccessibilitySignal.warningAtPosition.name && mode === 'positional') {
@@ -289,6 +302,7 @@ function playAudio(url: string, volume: number): Promise<HTMLAudioElement> {
 export class Sound {
 	private static register(options: { fileName: string }): Sound {
 		const sound = new Sound(options.fileName);
+
 		return sound;
 	}
 
@@ -329,6 +343,7 @@ export class SoundSource {
 			return this.randomOneOf[0];
 		} else {
 			const index = Math.floor(Math.random() * this.randomOneOf.length);
+
 			return this.randomOneOf[index];
 		}
 	}
@@ -355,12 +370,14 @@ export class AccessibilitySignal {
 			randomOneOf: Sound[];
 		};
 		legacySoundSettingsKey?: string;
+
 		settingsKey: string;
 		legacyAnnouncementSettingsKey?: string;
 		announcementMessage?: string;
 		delaySettingsKey?: string;
 	}): AccessibilitySignal {
 		const soundSource = new SoundSource('randomOneOf' in options.sound ? options.sound.randomOneOf : [options.sound]);
+
 		const signal = new AccessibilitySignal(
 			soundSource,
 			options.name,
@@ -370,6 +387,7 @@ export class AccessibilitySignal {
 			options.announcementMessage,
 		);
 		AccessibilitySignal._signals.add(signal);
+
 		return signal;
 	}
 

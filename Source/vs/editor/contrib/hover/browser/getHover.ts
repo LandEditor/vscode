@@ -21,6 +21,7 @@ async function executeProvider(provider: HoverProvider, ordinal: number, model: 
     const result = await Promise
         .resolve(provider.provideHover(model, position, token))
         .catch(onUnexpectedExternalError);
+
     if (!result || !isValid(result)) {
         return undefined;
     }
@@ -28,7 +29,9 @@ async function executeProvider(provider: HoverProvider, ordinal: number, model: 
 }
 export function getHoverProviderResultsAsAsyncIterable(registry: LanguageFeatureRegistry<HoverProvider>, model: ITextModel, position: Position, token: CancellationToken, recursive = false): AsyncIterableObject<HoverProviderResult> {
     const providers = registry.ordered(model, recursive);
+
     const promises = providers.map((provider, index) => executeProvider(provider, index, model, position, token));
+
     return AsyncIterableObject.fromPromisesResolveOrder(promises).coalesce();
 }
 export function getHoversPromise(registry: LanguageFeatureRegistry<HoverProvider>, model: ITextModel, position: Position, token: CancellationToken, recursive = false): Promise<Hover[]> {
@@ -36,14 +39,18 @@ export function getHoversPromise(registry: LanguageFeatureRegistry<HoverProvider
 }
 registerModelAndPositionCommand('_executeHoverProvider', (accessor, model, position): Promise<Hover[]> => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     return getHoversPromise(languageFeaturesService.hoverProvider, model, position, CancellationToken.None);
 });
 registerModelAndPositionCommand('_executeHoverProvider_recursive', (accessor, model, position): Promise<Hover[]> => {
     const languageFeaturesService = accessor.get(ILanguageFeaturesService);
+
     return getHoversPromise(languageFeaturesService.hoverProvider, model, position, CancellationToken.None, true);
 });
 function isValid(result: Hover) {
     const hasRange = (typeof result.range !== 'undefined');
+
     const hasHtmlContent = typeof result.contents !== 'undefined' && result.contents && result.contents.length > 0;
+
     return hasRange && hasHtmlContent;
 }

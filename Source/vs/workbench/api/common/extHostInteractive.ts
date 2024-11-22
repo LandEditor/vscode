@@ -30,12 +30,15 @@ export class ExtHostInteractive implements ExtHostInteractiveShape {
             notebookEditorId?: string;
         }) => {
             _logService.debug('[ExtHostInteractive] open iw with notebook editor id', v.notebookEditorId);
+
             if (v.notebookEditorId !== undefined) {
                 const editor = this._extHostNotebooks.getEditorById(v.notebookEditorId);
                 _logService.debug('[ExtHostInteractive] notebook editor found', editor.id);
+
                 return { notebookUri: URI.revive(v.notebookUri), inputUri: URI.revive(v.inputUri), notebookEditor: editor.apiEditor };
             }
             _logService.debug('[ExtHostInteractive] notebook editor not found, uris for the interactive document', v.notebookUri, v.inputUri);
+
             return { notebookUri: URI.revive(v.notebookUri), inputUri: URI.revive(v.inputUri) };
         }));
         this._commands.registerApiCommand(openApiCommand);

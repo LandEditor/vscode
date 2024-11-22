@@ -9,17 +9,21 @@ import * as net from 'net';
  */
 export function findFreePort(startPort: number, giveUpAfter: number, timeout: number, stride = 1): Promise<number> {
     let done = false;
+
     return new Promise(resolve => {
         const timeoutHandle = setTimeout(() => {
             if (!done) {
                 done = true;
+
                 return resolve(0);
             }
         }, timeout);
+
         doFindFreePort(startPort, giveUpAfter, stride, (port) => {
             if (!done) {
                 done = true;
                 clearTimeout(timeoutHandle);
+
                 return resolve(port);
             }
         });
@@ -33,6 +37,7 @@ function doFindFreePort(startPort: number, giveUpAfter: number, stride: number, 
     // If we can connect to the port it means the port is already taken so we continue searching
     client.once('connect', () => {
         dispose(client);
+
         return doFindFreePort(startPort + stride, giveUpAfter - 1, stride, clb);
     });
     client.once('data', () => {
@@ -139,14 +144,19 @@ export const BROWSER_RESTRICTED_PORTS: any = {
  */
 export function findFreePortFaster(startPort: number, giveUpAfter: number, timeout: number, hostname: string = '127.0.0.1'): Promise<number> {
     let resolved: boolean = false;
+
     let timeoutHandle: NodeJS.Timeout | undefined = undefined;
+
     let countTried: number = 1;
+
     const server = net.createServer({ pauseOnConnect: true });
+
     function doResolve(port: number, resolve: (port: number) => void) {
         if (!resolved) {
             resolved = true;
             server.removeAllListeners();
             server.close();
+
             if (timeoutHandle) {
                 clearTimeout(timeoutHandle);
             }

@@ -16,6 +16,7 @@ const externalUriOpenerIdSchemaAddition: IJSONSchema = {
     type: 'string',
     enum: []
 };
+
 const exampleUriPatterns = `
 - \`https://microsoft.com\`: Matches this specific domain using https
 - \`https://microsoft.com:8080\`: Matches this specific domain on this port using https

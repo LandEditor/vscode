@@ -9,7 +9,9 @@ import { Location } from 'jsonc-parser';
 import * as cp from 'child_process';
 import { dirname } from 'path';
 import { fromNow } from './date';
+
 const LIMIT = 40;
+
 const USER_AGENT = 'Visual Studio Code';
 export class PackageJSONContribution implements IJSONContribution {
     private mostDependedOn = ['lodash', 'async', 'underscore', 'request', 'commander', 'express', 'debug', 'chalk', 'colors', 'q', 'coffee-script',
@@ -33,10 +35,12 @@ export class PackageJSONContribution implements IJSONContribution {
             'main': '${5:pathToMain}',
             'dependencies': {}
         };
+
         const proposal = new CompletionItem(l10n.t("Default package.json"));
         proposal.kind = CompletionItemKind.Module;
         proposal.insertText = new SnippetString(JSON.stringify(defaultValue, null, '\t'));
         result.add(proposal);
+
         return Promise.resolve(null);
     }
     private isEnabled() {
@@ -51,6 +55,7 @@ export class PackageJSONContribution implements IJSONContribution {
         }
         if ((location.matches(['dependencies']) || location.matches(['devDependencies']) || location.matches(['optionalDependencies']) || location.matches(['peerDependencies']))) {
             let queryUrl: string;
+
             if (currentWord.length > 0) {
                 if (currentWord[0] === '@') {
                     if (currentWord.indexOf('/') !== -1) {
@@ -71,6 +76,7 @@ export class PackageJSONContribution implements IJSONContribution {
                     collector.setAsIncomplete();
                 }
                 queryUrl = `https://registry.npmjs.org/-/v1/search?size=${LIMIT}&text=${encodeURIComponent(currentWord)}`;
+
                 return this.xhr({
                     url: queryUrl,
                     headers: { agent: USER_AGENT }
@@ -78,10 +84,12 @@ export class PackageJSONContribution implements IJSONContribution {
                     if (success.status === 200) {
                         try {
                             const obj = JSON.parse(success.responseText);
+
                             if (obj && obj.objects && Array.isArray(obj.objects)) {
                                 const results = <{
                                     package: SearchPackageInfo;
                                 }[]>obj.objects;
+
                                 for (const result of results) {
                                     this.processPackage(result.package, addValue, isLast, collector);
                                 }
@@ -94,19 +102,23 @@ export class PackageJSONContribution implements IJSONContribution {
                     }
                     else {
                         collector.error(l10n.t("Request to the NPM repository failed: {0}", success.responseText));
+
                         return 0;
                     }
                     return undefined;
                 }, (error) => {
                     collector.error(l10n.t("Request to the NPM repository failed: {0}", error.responseText));
+
                     return 0;
                 });
             }
             else {
                 this.mostDependedOn.forEach((name) => {
                     const insertText = new SnippetString().appendText(JSON.stringify(name));
+
                     if (addValue) {
                         insertText.appendText(': "').appendTabstop().appendText('"');
+
                         if (!isLast) {
                             insertText.appendText(',');
                         }
@@ -120,6 +132,7 @@ export class PackageJSONContribution implements IJSONContribution {
                 });
                 this.collectScopedPackages(currentWord, addValue, isLast, collector);
                 collector.setAsIncomplete();
+
                 return Promise.resolve(null);
             }
         }
@@ -127,13 +140,17 @@ export class PackageJSONContribution implements IJSONContribution {
     }
     private collectScopedPackages(currentWord: string, addValue: boolean, isLast: boolean, collector: ISuggestionsCollector): Thenable<any> {
         const segments = currentWord.split('/');
+
         if (segments.length === 2 && segments[0].length > 1) {
             const scope = segments[0].substr(1);
+
             let name = segments[1];
+
             if (name.length < 4) {
                 name = '';
             }
             const queryUrl = `https://registry.npmjs.com/-/v1/search?text=scope:${scope}%20${name}&size=250`;
+
             return this.xhr({
                 url: queryUrl,
                 headers: { agent: USER_AGENT }
@@ -141,10 +158,12 @@ export class PackageJSONContribution implements IJSONContribution {
                 if (success.status === 200) {
                     try {
                         const obj = JSON.parse(success.responseText);
+
                         if (obj && Array.isArray(obj.objects)) {
                             const objects = <{
                                 package: SearchPackageInfo;
                             }[]>obj.objects;
+
                             for (const object of objects) {
                                 this.processPackage(object.package, addValue, isLast, collector);
                             }
@@ -169,10 +188,13 @@ export class PackageJSONContribution implements IJSONContribution {
         }
         if ((location.matches(['dependencies', '*']) || location.matches(['devDependencies', '*']) || location.matches(['optionalDependencies', '*']) || location.matches(['peerDependencies', '*']))) {
             const currentKey = location.path[location.path.length - 1];
+
             if (typeof currentKey === 'string') {
                 const info = await this.fetchPackageInfo(currentKey, resource);
+
                 if (info && info.version) {
                     let name = JSON.stringify(info.version);
+
                     let proposal = new CompletionItem(name);
                     proposal.kind = CompletionItemKind.Property;
                     proposal.insertText = name;
@@ -197,6 +219,7 @@ export class PackageJSONContribution implements IJSONContribution {
     }
     private getDocumentation(description: string | undefined, version: string | undefined, time: string | undefined, homepage: string | undefined): MarkdownString {
         const str = new MarkdownString();
+
         if (description) {
             str.appendText(description);
         }
@@ -213,12 +236,14 @@ export class PackageJSONContribution implements IJSONContribution {
     public resolveSuggestion(resource: Uri | undefined, item: CompletionItem): Thenable<CompletionItem | null> | null {
         if (item.kind === CompletionItemKind.Property && !item.documentation) {
             let name = item.label;
+
             if (typeof name !== 'string') {
                 name = name.label;
             }
             return this.fetchPackageInfo(name, resource).then(info => {
                 if (info) {
                     item.documentation = this.getDocumentation(info.description, info.version, info.time, info.homepage);
+
                     return item;
                 }
                 return null;
@@ -233,12 +258,15 @@ export class PackageJSONContribution implements IJSONContribution {
             return false;
         }
         const match = name.match(/^(?:@([^/~\s)('!*]+?)[/])?([^/~)('!*\s]+?)$/);
+
         if (match) {
             const scope = match[1];
+
             if (scope && encodeURIComponent(scope) !== scope) {
                 return false;
             }
             const name = match[2];
+
             return encodeURIComponent(name) === name;
         }
         return false;
@@ -248,6 +276,7 @@ export class PackageJSONContribution implements IJSONContribution {
             return undefined; // avoid unnecessary lookups
         }
         let info: ViewPackageInfo | undefined;
+
         if (this.npmCommandPath) {
             info = await this.npmView(this.npmCommandPath, pack, resource);
         }
@@ -259,14 +288,18 @@ export class PackageJSONContribution implements IJSONContribution {
     private npmView(npmCommandPath: string, pack: string, resource: Uri | undefined): Promise<ViewPackageInfo | undefined> {
         return new Promise((resolve, _reject) => {
             const args = ['view', '--json', '--', pack, 'description', 'dist-tags.latest', 'homepage', 'version', 'time'];
+
             const cwd = resource && resource.scheme === 'file' ? dirname(resource.fsPath) : undefined;
             // corepack npm wrapper would automatically update package.json. disable that behavior.
             // COREPACK_ENABLE_AUTO_PIN disables the package.json overwrite, and
             // COREPACK_ENABLE_PROJECT_SPEC makes the npm view command succeed
             //   even if packageManager specified a package manager other than npm.
             const env = { ...process.env, COREPACK_ENABLE_AUTO_PIN: '0', COREPACK_ENABLE_PROJECT_SPEC: '0' };
+
             let options: cp.ExecFileOptions = { cwd, env };
+
             let commandPath: string = npmCommandPath;
+
             if (process.platform === 'win32') {
                 options = { cwd, env, shell: true };
                 commandPath = `"${npmCommandPath}"`;
@@ -275,6 +308,7 @@ export class PackageJSONContribution implements IJSONContribution {
                 if (!error) {
                     try {
                         const content = JSON.parse(stdout);
+
                         const version = content['dist-tags.latest'] || content['version'];
                         resolve({
                             description: content['description'],
@@ -282,6 +316,7 @@ export class PackageJSONContribution implements IJSONContribution {
                             time: content.time?.[version],
                             homepage: content['homepage']
                         });
+
                         return;
                     }
                     catch (e) {
@@ -294,13 +329,17 @@ export class PackageJSONContribution implements IJSONContribution {
     }
     private async npmjsView(pack: string): Promise<ViewPackageInfo | undefined> {
         const queryUrl = 'https://registry.npmjs.org/' + encodeURIComponent(pack);
+
         try {
             const success = await this.xhr({
                 url: queryUrl,
                 headers: { agent: USER_AGENT }
             });
+
             const obj = JSON.parse(success.responseText);
+
             const version = obj['dist-tags']?.latest || Object.keys(obj.versions).pop() || '';
+
             return {
                 description: obj.description || '',
                 version,
@@ -319,6 +358,7 @@ export class PackageJSONContribution implements IJSONContribution {
         }
         if ((location.matches(['dependencies', '*']) || location.matches(['devDependencies', '*']) || location.matches(['optionalDependencies', '*']) || location.matches(['peerDependencies', '*']))) {
             const pack = location.path[location.path.length - 1];
+
             if (typeof pack === 'string') {
                 return this.fetchPackageInfo(pack, resource).then(info => {
                     if (info) {
@@ -333,9 +373,12 @@ export class PackageJSONContribution implements IJSONContribution {
     private processPackage(pack: SearchPackageInfo, addValue: boolean, isLast: boolean, collector: ISuggestionsCollector) {
         if (pack && pack.name) {
             const name = pack.name;
+
             const insertText = new SnippetString().appendText(JSON.stringify(name));
+
             if (addValue) {
                 insertText.appendText(': "');
+
                 if (pack.version) {
                     insertText.appendVariable('version', pack.version);
                 }
@@ -343,6 +386,7 @@ export class PackageJSONContribution implements IJSONContribution {
                     insertText.appendTabstop();
                 }
                 insertText.appendText('"');
+
                 if (!isLast) {
                     insertText.appendText(',');
                 }

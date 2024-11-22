@@ -32,6 +32,7 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
     private readonly _onDidChange = this._register(new Emitter<TimelineChangeEvent>());
     readonly onDidChange = this._onDidChange.event;
     private readonly timelineProviderDisposable = this._register(new MutableDisposable());
+
     constructor(
     @ITimelineService
     private readonly timelineService: ITimelineService, 
@@ -94,6 +95,7 @@ export class LocalHistoryTimeline extends Disposable implements IWorkbenchContri
         // for the provider to find entries for so that we can ensure
         // the timeline is always providing local history entries
         let resource: URI | undefined = undefined;
+
         if (uri.scheme === LocalHistoryFileSystemProvider.SCHEMA) {
             // `vscode-local-history`: convert back to the associated resource
             resource = LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(uri).associatedResource;

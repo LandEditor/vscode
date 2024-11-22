@@ -110,6 +110,7 @@ export interface IEditorReplacement {
 }
 export function isEditorReplacement(replacement: unknown): replacement is IEditorReplacement {
     const candidate = replacement as IEditorReplacement | undefined;
+
     return isEditorInput(candidate?.editor) && isEditorInput(candidate?.replacement);
 }
 export const enum GroupsOrder {
@@ -801,11 +802,13 @@ export interface IEditorGroup {
 }
 export function isEditorGroup(obj: unknown): obj is IEditorGroup {
     const group = obj as IEditorGroup | undefined;
+
     return !!group && typeof group.id === 'number' && Array.isArray(group.editors);
 }
 //#region Editor Group Helpers
 export function preferredSideBySideGroupDirection(configurationService: IConfigurationService): GroupDirection.DOWN | GroupDirection.RIGHT {
     const openSideBySideDirection = configurationService.getValue('workbench.editor.openSideBySideDirection');
+
     if (openSideBySideDirection === 'down') {
         return GroupDirection.DOWN;
     }

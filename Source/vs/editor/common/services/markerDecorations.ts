@@ -12,7 +12,9 @@ export const IMarkerDecorationsService = createDecorator<IMarkerDecorationsServi
 export interface IMarkerDecorationsService {
     readonly _serviceBrand: undefined;
     onDidChangeMarker: Event<ITextModel>;
+
     getMarker(uri: URI, decoration: IModelDecoration): IMarker | null;
+
     getLiveMarkers(uri: URI): [
         Range,
         IMarker

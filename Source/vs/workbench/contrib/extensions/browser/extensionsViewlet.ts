@@ -72,23 +72,37 @@ export const DefaultViewsContext = new RawContextKey<boolean>('defaultExtensionV
 export const ExtensionsSortByContext = new RawContextKey<string>('extensionsSortByValue', '');
 export const SearchMarketplaceExtensionsContext = new RawContextKey<boolean>('searchMarketplaceExtensions', false);
 export const SearchHasTextContext = new RawContextKey<boolean>('extensionSearchHasText', false);
+
 const InstalledExtensionsContext = new RawContextKey<boolean>('installedExtensions', false);
+
 const SearchInstalledExtensionsContext = new RawContextKey<boolean>('searchInstalledExtensions', false);
+
 const SearchRecentlyUpdatedExtensionsContext = new RawContextKey<boolean>('searchRecentlyUpdatedExtensions', false);
+
 const SearchExtensionUpdatesContext = new RawContextKey<boolean>('searchExtensionUpdates', false);
+
 const SearchOutdatedExtensionsContext = new RawContextKey<boolean>('searchOutdatedExtensions', false);
+
 const SearchEnabledExtensionsContext = new RawContextKey<boolean>('searchEnabledExtensions', false);
+
 const SearchDisabledExtensionsContext = new RawContextKey<boolean>('searchDisabledExtensions', false);
+
 const HasInstalledExtensionsContext = new RawContextKey<boolean>('hasInstalledExtensions', true);
 export const BuiltInExtensionsContext = new RawContextKey<boolean>('builtInExtensions', false);
+
 const SearchBuiltInExtensionsContext = new RawContextKey<boolean>('searchBuiltInExtensions', false);
+
 const SearchUnsupportedWorkspaceExtensionsContext = new RawContextKey<boolean>('searchUnsupportedWorkspaceExtensions', false);
+
 const SearchDeprecatedExtensionsContext = new RawContextKey<boolean>('searchDeprecatedExtensions', false);
 export const RecommendedExtensionsContext = new RawContextKey<boolean>('recommendedExtensions', false);
+
 const SortByUpdateDateContext = new RawContextKey<boolean>('sortByUpdateDate', false);
+
 const REMOTE_CATEGORY: ILocalizedString = localize2({ key: 'remote', comment: ['Remote as in remote machine'] }, "Remote");
 export class ExtensionsViewletViewsContribution extends Disposable implements IWorkbenchContribution {
     private readonly container: ViewContainer;
+
     constructor(
     @IExtensionManagementServerService
     private readonly extensionManagementServerService: IExtensionManagementServerService, 
@@ -124,6 +138,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
          * Default installed extensions views - Shows all user installed extensions.
          */
         const servers: IExtensionManagementServer[] = [];
+
         if (this.extensionManagementServerService.localExtensionManagementServer) {
             servers.push(this.extensionManagementServerService.localExtensionManagementServer);
         }
@@ -136,16 +151,21 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
         const getViewName = (viewTitle: string, server: IExtensionManagementServer): string => {
             return servers.length > 1 ? `${server.label} - ${viewTitle}` : viewTitle;
         };
+
         let installedWebExtensionsContextChangeEvent = Event.None;
+
         if (this.extensionManagementServerService.webExtensionManagementServer && this.extensionManagementServerService.remoteExtensionManagementServer) {
             const interestingContextKeys = new Set();
             interestingContextKeys.add('hasInstalledWebExtensions');
             installedWebExtensionsContextChangeEvent = Event.filter(this.contextKeyService.onDidChangeContext, e => e.affectsSome(interestingContextKeys));
         }
         const serverLabelChangeEvent = Event.any(this.labelService.onDidChangeFormatters, installedWebExtensionsContextChangeEvent);
+
         for (const server of servers) {
             const getInstalledViewName = (): string => getViewName(localize('installed', "Installed"), server);
+
             const onDidChangeTitle = Event.map<void, string>(serverLabelChangeEvent, () => getInstalledViewName());
+
             const id = servers.length > 1 ? `workbench.views.extensions.${server.id}.installed` : `workbench.views.extensions.installed`;
             /* Installed extensions view */
             viewDescriptors.push({
@@ -163,6 +183,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
                 /* Installed extensions views shall not be allowed to hidden when there are more than one server */
                 canToggleVisibility: servers.length === 1
             });
+
             if (server === this.extensionManagementServerService.remoteExtensionManagementServer && this.extensionManagementServerService.localExtensionManagementServer) {
                 this._register(registerAction2(class InstallLocalExtensionsInRemoteAction2 extends Action2 {
                     constructor() {
@@ -339,6 +360,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
             ctorDescriptor: new SyncDescriptor(ExtensionsListView, [{}]),
             when: ContextKeyExpr.and(ContextKeyExpr.has('searchWorkspaceUnsupportedExtensions')),
         });
+
         return viewDescriptors;
     }
     private createRecommendedExtensionsViewDescriptors(): IViewDescriptor[] {
@@ -357,13 +379,17 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
             when: ContextKeyExpr.has('recommendedExtensions'),
             order: 2
         });
+
         return viewDescriptors;
     }
     private createBuiltinExtensionsViewDescriptors(): IViewDescriptor[] {
         const viewDescriptors: IViewDescriptor[] = [];
+
         const configuredCategories = ['themes', 'programming languages'];
+
         const otherCategories = EXTENSION_CATEGORIES.filter(c => !configuredCategories.includes(c.toLowerCase()));
         otherCategories.push(NONE_CATEGORY);
+
         const otherCategoriesQuery = `${otherCategories.map(c => `category:"${c}"`).join(' ')} ${configuredCategories.map(c => `category:"-${c}"`).join(' ')}`;
         viewDescriptors.push({
             id: 'workbench.views.extensions.builtinFeatureExtensions',
@@ -383,6 +409,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
             ctorDescriptor: new SyncDescriptor(StaticQueryExtensionsView, [{ query: `@builtin category:"programming languages"` }]),
             when: ContextKeyExpr.has('builtInExtensions'),
         });
+
         return viewDescriptors;
     }
     private createUnsupportedWorkspaceExtensionsViewDescriptors(): IViewDescriptor[] {
@@ -411,6 +438,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
             ctorDescriptor: new SyncDescriptor(VirtualWorkspacePartiallySupportedExtensionsView, [{}]),
             when: ContextKeyExpr.and(VirtualWorkspaceContext, SearchUnsupportedWorkspaceExtensionsContext),
         });
+
         return viewDescriptors;
     }
     private createOtherLocalFilteredExtensionsViewDescriptors(): IViewDescriptor[] {
@@ -421,6 +449,7 @@ export class ExtensionsViewletViewsContribution extends Disposable implements IW
             ctorDescriptor: new SyncDescriptor(DeprecatedExtensionsView, [{}]),
             when: ContextKeyExpr.and(SearchDeprecatedExtensionsContext),
         });
+
         return viewDescriptors;
     }
 }
@@ -449,6 +478,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     private searchBox: SuggestEnabledInput | undefined;
     private notificationContainer: HTMLElement | undefined;
     private readonly searchViewletState: MementoObject;
+
     constructor(
     @IWorkbenchLayoutService
     layoutService: IWorkbenchLayoutService, 
@@ -522,13 +552,18 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     override create(parent: HTMLElement): void {
         parent.classList.add('extensions-viewlet');
         this.root = parent;
+
         const overlay = append(this.root, $('.overlay'));
+
         const overlayBackgroundColor = this.getColor(SIDE_BAR_DRAG_AND_DROP_BACKGROUND) ?? '';
         overlay.style.backgroundColor = overlayBackgroundColor;
         hide(overlay);
         this.header = append(this.root, $('.header'));
+
         const placeholder = localize('searchExtensions', "Search Extensions in Marketplace");
+
         const searchValue = this.searchViewletState['query.value'] ? this.searchViewletState['query.value'] : '';
+
         const searchContainer = append(this.header, $('.extensions-search-container'));
         this.searchBox = this._register(this.instantiationService.createInstance(SuggestEnabledInput, `${VIEWLET_ID}.searchbox`, searchContainer, {
             triggerCharacters: ['@'],
@@ -552,6 +587,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
         this.renderNotificaiton();
         this._register(this.extensionsWorkbenchService.onDidChangeExtensionsNotification(() => this.renderNotificaiton()));
         this.updateInstalledExtensionsContexts();
+
         if (this.searchBox.getValue()) {
             this.triggerSearch();
         }
@@ -560,6 +596,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             this.triggerSearch();
         }, this));
         this._register(this.searchBox.onShouldFocusResults(() => this.focusListView(), this));
+
         const controlElement = append(searchContainer, $('.extensions-search-actions-container'));
         this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, controlElement, extensionsSearchActionsMenu, {
             toolbarOptions: {
@@ -587,8 +624,10 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             onDrop: async (e: DragEvent) => {
                 if (this.isSupportedDragElement(e)) {
                     hide(overlay);
+
                     const vsixs = coalesce((await this.instantiationService.invokeFunction(accessor => extractEditorsAndFilesDropData(accessor, e)))
                         .map(editor => editor.resource && extname(editor.resource) === '.vsix' ? editor.resource : undefined));
+
                     if (vsixs.length > 0) {
                         try {
                             // Attempt to install the extension(s)
@@ -601,8 +640,11 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
                 }
             }
         }));
+
         super.create(append(this.root, $('.extensions')));
+
         const focusTracker = this._register(trackFocus(this.root));
+
         const isSearchBoxFocused = () => this.searchBox?.inputWidget.hasWidgetFocus();
         this._register(registerNavigableContainer({
             name: 'extensionsView',
@@ -626,14 +668,18 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     private _dimension: Dimension | undefined;
     override layout(dimension: Dimension): void {
         this._dimension = dimension;
+
         if (this.root) {
             this.root.classList.toggle('narrow', dimension.width <= 250);
             this.root.classList.toggle('mini', dimension.width <= 200);
         }
         this.searchBox?.layout(new Dimension(dimension.width - 34 - /*padding*/ 8 - (24 * 2), 20));
+
         const searchBoxHeight = 20 + 21 /*margin*/;
+
         const headerHeight = this.header && !!this.notificationContainer?.childNodes.length ? this.notificationContainer.clientHeight + searchBoxHeight + 10 /*margin*/ : searchBoxHeight;
         this.header!.style.height = `${headerHeight}px`;
+
         super.layout(new Dimension(dimension.width, dimension.height - headerHeight));
     }
     override getOptimalWidth(): number {
@@ -647,6 +693,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     async refresh(): Promise<void> {
         await this.updateInstalledExtensionsContexts();
         this.doSearch(true);
+
         if (this.configurationService.getValue(AutoCheckUpdatesConfigurationKey)) {
             this.extensionsWorkbenchService.checkForUpdates();
         }
@@ -658,14 +705,19 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
         }
         clearNode(this.notificationContainer);
         this.notificationDisposables.value = new DisposableStore();
+
         const status = this.extensionsWorkbenchService.getExtensionsNotification();
+
         const query = status?.extensions.map(extension => `@id:${extension.identifier.id}`).join(' ');
+
         if (status && (query === this.searchBox?.getValue() || !this.searchMarketplaceExtensionsContextKey.get())) {
             this.notificationContainer.setAttribute('aria-label', status.message);
             this.notificationContainer.classList.remove('hidden');
+
             const messageContainer = append(this.notificationContainer, $('.message-container'));
             append(messageContainer, $('span')).className = SeverityIcon.className(status.severity);
             append(messageContainer, $('span.message', undefined, status.message));
+
             const showAction = append(messageContainer, $('span.message-text-action', {
                 'tabindex': '0',
                 'role': 'button',
@@ -674,11 +726,13 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             this.notificationDisposables.value.add(addDisposableListener(showAction, EventType.CLICK, () => this.search(query ?? '')));
             this.notificationDisposables.value.add(addDisposableListener(showAction, EventType.KEY_DOWN, (e: KeyboardEvent) => {
                 const standardKeyboardEvent = new StandardKeyboardEvent(e);
+
                 if (standardKeyboardEvent.keyCode === KeyCode.Enter || standardKeyboardEvent.keyCode === KeyCode.Space) {
                     this.search(query ?? '');
                 }
                 standardKeyboardEvent.stopPropagation();
             }));
+
             const dismissAction = append(this.notificationContainer, $(`span.message-action${ThemeIcon.asCSSSelector(Codicon.close)}`, {
                 'tabindex': '0',
                 'role': 'button',
@@ -688,6 +742,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             this.notificationDisposables.value.add(addDisposableListener(dismissAction, EventType.CLICK, () => status.dismiss()));
             this.notificationDisposables.value.add(addDisposableListener(dismissAction, EventType.KEY_DOWN, (e: KeyboardEvent) => {
                 const standardKeyboardEvent = new StandardKeyboardEvent(e);
+
                 if (standardKeyboardEvent.keyCode === KeyCode.Enter || standardKeyboardEvent.keyCode === KeyCode.Space) {
                     status.dismiss();
                 }
@@ -722,6 +777,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     }
     protected override saveState(): void {
         const value = this.searchBox ? this.searchBox.getValue() : '';
+
         if (ExtensionsListView.isLocalExtensionsQuery(value)) {
             this.searchViewletState['query.value'] = value;
         }
@@ -752,6 +808,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             this.defaultViewsContextKey.set(!value || ExtensionsListView.isSortInstalledExtensionsQuery(value));
         });
         this.renderNotificaiton();
+
         return this.progress(Promise.all(this.panes.map(view => (<ExtensionsListView>view).show(this.normalizedQuery(), refresh)
             .then(model => this.alertSearchResult(model.length, view.id))))).then(() => undefined);
     }
@@ -759,13 +816,16 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
         const addedViews = super.onDidAddViewDescriptors(added);
         this.progress(Promise.all(addedViews.map(addedView => (<ExtensionsListView>addedView).show(this.normalizedQuery())
             .then(model => this.alertSearchResult(model.length, addedView.id)))));
+
         return addedViews;
     }
     private alertSearchResult(count: number, viewId: string): void {
         const view = this.viewContainerModel.visibleViewDescriptors.find(view => view.id === viewId);
+
         switch (count) {
             case 0:
                 break;
+
             case 1:
                 if (view) {
                     alert(localize('extensionFoundInSection', "1 extension found in the {0} section.", view.name.value));
@@ -774,6 +834,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
                     alert(localize('extensionFound', "1 extension found."));
                 }
                 break;
+
             default:
                 if (view) {
                     alert(localize('extensionsFoundInSection', "{0} extensions found in the {1} section.", count, view.name.value));
@@ -794,6 +855,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     }
     private focusListView(): void {
         const pane = this.getFirstExpandedPane();
+
         if (pane && pane.count() > 0) {
             pane.focus();
         }
@@ -805,6 +867,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
         if (this.configurationService.getValue<boolean>(CloseExtensionDetailsOnViewChangeKey)) {
             const promises = this.editorGroupService.groups.map(group => {
                 const editors = group.editors.filter(input => input instanceof ExtensionsInput);
+
                 return group.closeEditors(editors);
             });
             Promise.all(promises);
@@ -818,11 +881,13 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
             return;
         }
         const message = err && err.message || '';
+
         if (/ECONNREFUSED/.test(message)) {
             const error = createErrorWithActions(localize('suggestProxyError', "Marketplace returned 'ECONNREFUSED'. Please check the 'http.proxy' setting."), [
                 new Action('open user settings', localize('open user settings', "Open User Settings"), undefined, true, () => this.preferencesService.openUserSettings())
             ]);
             this.notificationService.error(error);
+
             return;
         }
         this.notificationService.error(err);
@@ -830,6 +895,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
     private isSupportedDragElement(e: DragEvent): boolean {
         if (e.dataTransfer) {
             const typesLowerCase = e.dataTransfer.types.map(t => t.toLocaleLowerCase());
+
             return typesLowerCase.indexOf('files') !== -1;
         }
         return false;
@@ -837,6 +903,7 @@ export class ExtensionsViewPaneContainer extends ViewPaneContainer implements IE
 }
 export class StatusUpdater extends Disposable implements IWorkbenchContribution {
     private readonly badgeHandle = this._register(new MutableDisposable());
+
     constructor(
     @IActivityService
     private readonly activityService: IActivityService, 
@@ -852,8 +919,11 @@ export class StatusUpdater extends Disposable implements IWorkbenchContribution 
     }
     private onServiceChange(): void {
         this.badgeHandle.clear();
+
         let badge: IBadge | undefined;
+
         const extensionsNotification = this.extensionsWorkbenchService.getExtensionsNotification();
+
         if (extensionsNotification) {
             if (extensionsNotification.severity === Severity.Warning) {
                 badge = new WarningBadge(() => extensionsNotification.message);
@@ -861,10 +931,14 @@ export class StatusUpdater extends Disposable implements IWorkbenchContribution 
         }
         else {
             const actionRequired = this.configurationService.getValue(AutoRestartConfigurationKey) === true ? [] : this.extensionsWorkbenchService.installed.filter(e => e.runtimeState !== undefined);
+
             const outdated = this.extensionsWorkbenchService.outdated.reduce((r, e) => r + (this.extensionEnablementService.isEnabled(e.local!) && !actionRequired.includes(e) ? 1 : 0), 0);
+
             const newBadgeNumber = outdated + actionRequired.length;
+
             if (newBadgeNumber > 0) {
                 let msg = '';
+
                 if (outdated) {
                     msg += outdated === 1 ? localize('extensionToUpdate', '{0} requires update', outdated) : localize('extensionsToUpdate', '{0} require update', outdated);
                 }
@@ -908,6 +982,7 @@ export class MaliciousExtensionChecker implements IWorkbenchContribution {
             return this.extensionsManagementService.getInstalled(ExtensionType.User).then(installed => {
                 const maliciousExtensions = installed
                     .filter(e => extensionsControlManifest.malicious.some(identifier => areSameExtensions(e.identifier, identifier)));
+
                 if (maliciousExtensions.length) {
                     return Promises.settled(maliciousExtensions.map(e => this.extensionsManagementService.uninstall(e).then(() => {
                         this.notificationService.prompt(Severity.Warning, localize('malicious warning', "We have uninstalled '{0}' which was reported to be problematic.", e.identifier.id), [{

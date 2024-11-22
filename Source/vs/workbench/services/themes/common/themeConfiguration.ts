@@ -17,13 +17,17 @@ import { ColorScheme } from '../../../../platform/theme/common/theme.js';
 import { IHostColorSchemeService } from './hostColorSchemeService.js';
 // Configuration: Themes
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+
 const colorThemeSettingEnum: string[] = [];
+
 const colorThemeSettingEnumItemLabels: string[] = [];
+
 const colorThemeSettingEnumDescriptions: string[] = [];
 export function formatSettingAsLink(str: string) {
     return `\`#${str}#\``;
 }
 export const COLOR_THEME_CONFIGURATION_SETTINGS_TAG = 'colorThemeConfiguration';
+
 const colorThemeSettingSchema: IConfigurationPropertySchema = {
     type: 'string',
     markdownDescription: nls.localize({ key: 'colorTheme', comment: ['{0} will become a link to another setting.'] }, "Specifies the color theme used in the workbench when {0} is not enabled.", formatSettingAsLink(ThemeSettings.DETECT_COLOR_SCHEME)),
@@ -34,6 +38,7 @@ const colorThemeSettingSchema: IConfigurationPropertySchema = {
     enumItemLabels: colorThemeSettingEnumItemLabels,
     errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
 };
+
 const preferredDarkThemeSettingSchema: IConfigurationPropertySchema = {
     type: 'string', //
     markdownDescription: nls.localize({ key: 'preferredDarkColorTheme', comment: ['{0} will become a link to another setting.'] }, 'Specifies the color theme when system color mode is dark and {0} is enabled.', formatSettingAsLink(ThemeSettings.DETECT_COLOR_SCHEME)),
@@ -44,6 +49,7 @@ const preferredDarkThemeSettingSchema: IConfigurationPropertySchema = {
     enumItemLabels: colorThemeSettingEnumItemLabels,
     errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
 };
+
 const preferredLightThemeSettingSchema: IConfigurationPropertySchema = {
     type: 'string',
     markdownDescription: nls.localize({ key: 'preferredLightColorTheme', comment: ['{0} will become a link to another setting.'] }, 'Specifies the color theme when system color mode is light and {0} is enabled.', formatSettingAsLink(ThemeSettings.DETECT_COLOR_SCHEME)),
@@ -54,6 +60,7 @@ const preferredLightThemeSettingSchema: IConfigurationPropertySchema = {
     enumItemLabels: colorThemeSettingEnumItemLabels,
     errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
 };
+
 const preferredHCDarkThemeSettingSchema: IConfigurationPropertySchema = {
     type: 'string',
     markdownDescription: nls.localize({ key: 'preferredHCDarkColorTheme', comment: ['{0} will become a link to another setting.'] }, 'Specifies the color theme when in high contrast dark mode and {0} is enabled.', formatSettingAsLink(ThemeSettings.DETECT_HC)),
@@ -64,6 +71,7 @@ const preferredHCDarkThemeSettingSchema: IConfigurationPropertySchema = {
     enumItemLabels: colorThemeSettingEnumItemLabels,
     errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
 };
+
 const preferredHCLightThemeSettingSchema: IConfigurationPropertySchema = {
     type: 'string',
     markdownDescription: nls.localize({ key: 'preferredHCLightColorTheme', comment: ['{0} will become a link to another setting.'] }, 'Specifies the color theme when in high contrast light mode and {0} is enabled.', formatSettingAsLink(ThemeSettings.DETECT_HC)),
@@ -74,12 +82,14 @@ const preferredHCLightThemeSettingSchema: IConfigurationPropertySchema = {
     enumItemLabels: colorThemeSettingEnumItemLabels,
     errorMessage: nls.localize('colorThemeError', "Theme is unknown or not installed."),
 };
+
 const detectColorSchemeSettingSchema: IConfigurationPropertySchema = {
     type: 'boolean',
     markdownDescription: nls.localize({ key: 'detectColorScheme', comment: ['{0} and {1} will become links to other settings.'] }, 'If enabled, will automatically select a color theme based on the system color mode. If the system color mode is dark, {0} is used, else {1}.', formatSettingAsLink(ThemeSettings.PREFERRED_DARK_THEME), formatSettingAsLink(ThemeSettings.PREFERRED_LIGHT_THEME)),
     default: false,
     tags: [COLOR_THEME_CONFIGURATION_SETTINGS_TAG],
 };
+
 const colorCustomizationsSchema: IConfigurationPropertySchema = {
     type: 'object',
     description: nls.localize('workbenchColors', "Overrides colors from the currently selected color theme."),
@@ -89,6 +99,7 @@ const colorCustomizationsSchema: IConfigurationPropertySchema = {
             body: {}
         }]
 };
+
 const fileIconThemeSettingSchema: IConfigurationPropertySchema = {
     type: ['string', 'null'],
     default: ThemeSettingDefaults.FILE_ICON_THEME,
@@ -98,6 +109,7 @@ const fileIconThemeSettingSchema: IConfigurationPropertySchema = {
     enumDescriptions: [nls.localize('noIconThemeDesc', 'No file icons')],
     errorMessage: nls.localize('iconThemeError', "File icon theme is unknown or not installed.")
 };
+
 const productIconThemeSettingSchema: IConfigurationPropertySchema = {
     type: ['string', 'null'],
     default: ThemeSettingDefaults.PRODUCT_ICON_THEME,
@@ -107,6 +119,7 @@ const productIconThemeSettingSchema: IConfigurationPropertySchema = {
     enumDescriptions: [nls.localize('defaultProductIconThemeDesc', 'Default')],
     errorMessage: nls.localize('productIconThemeError', "Product icon theme is unknown or not installed.")
 };
+
 const detectHCSchemeSettingSchema: IConfigurationPropertySchema = {
     type: 'boolean',
     default: true,
@@ -114,6 +127,7 @@ const detectHCSchemeSettingSchema: IConfigurationPropertySchema = {
     scope: ConfigurationScope.APPLICATION,
     tags: [COLOR_THEME_CONFIGURATION_SETTINGS_TAG],
 };
+
 const themeSettingsConfiguration: IConfigurationNode = {
     id: 'workbench',
     order: 7.1,
@@ -130,6 +144,7 @@ const themeSettingsConfiguration: IConfigurationNode = {
     }
 };
 configurationRegistry.registerConfiguration(themeSettingsConfiguration);
+
 const themeSettingsWindowConfiguration: IConfigurationNode = {
     id: 'window',
     order: 8.1,
@@ -147,6 +162,7 @@ function tokenGroupSettings(description: string): IJSONSchema {
     };
 }
 const themeSpecificSettingKey = '^\\[[^\\]]*(\\]\\s*\\[[^\\]]*)*\\]$';
+
 const tokenColorSchema: IJSONSchema = {
     type: 'object',
     properties: {
@@ -170,11 +186,13 @@ const tokenColorSchema: IJSONSchema = {
     },
     additionalProperties: false
 };
+
 const tokenColorCustomizationSchema: IConfigurationPropertySchema = {
     description: nls.localize('editorColors', "Overrides editor syntax colors and font style from the currently selected color theme."),
     default: {},
     allOf: [{ ...tokenColorSchema, patternProperties: { '^\\[': {} } }]
 };
+
 const semanticTokenColorSchema: IJSONSchema = {
     type: 'object',
     properties: {
@@ -191,11 +209,13 @@ const semanticTokenColorSchema: IJSONSchema = {
     },
     additionalProperties: false
 };
+
 const semanticTokenColorCustomizationSchema: IConfigurationPropertySchema = {
     description: nls.localize('semanticTokenColors', "Overrides editor semantic token color and styles from the currently selected color theme."),
     default: {},
     allOf: [{ ...semanticTokenColorSchema, patternProperties: { '^\\[': {} } }]
 };
+
 const tokenColorCustomizationConfiguration: IConfigurationNode = {
     id: 'editor',
     order: 7.2,
@@ -212,11 +232,17 @@ export function updateColorThemeConfigurationSchemas(themes: IWorkbenchColorThem
     colorThemeSettingEnum.splice(0, colorThemeSettingEnum.length, ...themes.map(t => t.settingsId));
     colorThemeSettingEnumDescriptions.splice(0, colorThemeSettingEnumDescriptions.length, ...themes.map(t => t.description || ''));
     colorThemeSettingEnumItemLabels.splice(0, colorThemeSettingEnumItemLabels.length, ...themes.map(t => t.label || ''));
+
     const themeSpecificWorkbenchColors: IJSONSchema = { properties: {} };
+
     const themeSpecificTokenColors: IJSONSchema = { properties: {} };
+
     const themeSpecificSemanticTokenColors: IJSONSchema = { properties: {} };
+
     const workbenchColors = { $ref: workbenchColorsSchemaId, additionalProperties: false };
+
     const tokenColors = { properties: tokenColorSchema.properties, additionalProperties: false };
+
     for (const t of themes) {
         // add theme specific color customization ("[Abyss]":{ ... })
         const themeId = `[${t.settingsId}]`;
@@ -285,26 +311,32 @@ export class ThemeConfiguration {
     }
     public getColorThemeSettingId(): ThemeSettings {
         const preferredScheme = this.getPreferredColorScheme();
+
         return preferredScheme ? colorSchemeToPreferred[preferredScheme] : ThemeSettings.COLOR_THEME;
     }
     public async setColorTheme(theme: IWorkbenchColorTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchColorTheme> {
         await this.writeConfiguration(this.getColorThemeSettingId(), theme.settingsId, settingsTarget);
+
         return theme;
     }
     public async setFileIconTheme(theme: IWorkbenchFileIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchFileIconTheme> {
         await this.writeConfiguration(ThemeSettings.FILE_ICON_THEME, theme.settingsId, settingsTarget);
+
         return theme;
     }
     public async setProductIconTheme(theme: IWorkbenchProductIconTheme, settingsTarget: ThemeSettingTarget): Promise<IWorkbenchProductIconTheme> {
         await this.writeConfiguration(ThemeSettings.PRODUCT_ICON_THEME, theme.settingsId, settingsTarget);
+
         return theme;
     }
     public isDefaultColorTheme(): boolean {
         const settings = this.configurationService.inspect(this.getColorThemeSettingId());
+
         return settings && settings.default?.value === settings.value;
     }
     public findAutoConfigurationTarget(key: string) {
         const settings = this.configurationService.inspect(key);
+
         if (!types.isUndefined(settings.workspaceFolderValue)) {
             return ConfigurationTarget.WORKSPACE_FOLDER;
         }
@@ -321,6 +353,7 @@ export class ThemeConfiguration {
             return;
         }
         const settings = this.configurationService.inspect(key);
+
         if (settingsTarget === 'auto') {
             return this.configurationService.updateValue(key, value);
         }

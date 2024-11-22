@@ -5,6 +5,7 @@
 import { CharCode } from './charCode.js';
 function roundFloat(number: number, decimalPoints: number): number {
     const decimal = Math.pow(10, decimalPoints);
+
     return Math.round(number * decimal) / decimal;
 }
 export class RGBA {
@@ -25,6 +26,7 @@ export class RGBA {
      * Alpha: float in [0-1]
      */
     readonly a: number;
+
     constructor(r: number, g: number, b: number, a: number = 1) {
         this.r = Math.min(255, Math.max(0, r)) | 0;
         this.g = Math.min(255, Math.max(0, g)) | 0;
@@ -53,6 +55,7 @@ export class HSLA {
      * Alpha: float in [0, 1]
      */
     readonly a: number;
+
     constructor(h: number, s: number, l: number, a: number) {
         this.h = Math.max(Math.min(360, h), 0) | 0;
         this.s = roundFloat(Math.max(Math.min(1, s), 0), 3);
@@ -70,26 +73,42 @@ export class HSLA {
      */
     static fromRGBA(rgba: RGBA): HSLA {
         const r = rgba.r / 255;
+
         const g = rgba.g / 255;
+
         const b = rgba.b / 255;
+
         const a = rgba.a;
+
         const max = Math.max(r, g, b);
+
         const min = Math.min(r, g, b);
+
         let h = 0;
+
         let s = 0;
+
         const l = (min + max) / 2;
+
         const chroma = max - min;
+
         if (chroma > 0) {
             s = Math.min((l <= 0.5 ? chroma / (2 * l) : chroma / (2 - (2 * l))), 1);
+
             switch (max) {
                 case r:
                     h = (g - b) / chroma + (g < b ? 6 : 0);
+
                     break;
+
                 case g:
                     h = (b - r) / chroma + 2;
+
                     break;
+
                 case b:
                     h = (r - g) / chroma + 4;
+
                     break;
             }
             h *= 60;
@@ -123,13 +142,17 @@ export class HSLA {
      */
     static toRGBA(hsla: HSLA): RGBA {
         const h = hsla.h / 360;
+
         const { s, l, a } = hsla;
+
         let r: number, g: number, b: number;
+
         if (s === 0) {
             r = g = b = l; // achromatic
         }
         else {
             const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+
             const p = 2 * l - q;
             r = HSLA._hue2rgb(p, q, h + 1 / 3);
             g = HSLA._hue2rgb(p, q, h);
@@ -156,6 +179,7 @@ export class HSVA {
      * Alpha: float in [0, 1]
      */
     readonly a: number;
+
     constructor(h: number, s: number, v: number, a: number) {
         this.h = Math.max(Math.min(360, h), 0) | 0;
         this.s = roundFloat(Math.max(Math.min(1, s), 0), 3);
@@ -168,13 +192,21 @@ export class HSVA {
     // from http://www.rapidtables.com/convert/color/rgb-to-hsv.htm
     static fromRGBA(rgba: RGBA): HSVA {
         const r = rgba.r / 255;
+
         const g = rgba.g / 255;
+
         const b = rgba.b / 255;
+
         const cmax = Math.max(r, g, b);
+
         const cmin = Math.min(r, g, b);
+
         const delta = cmax - cmin;
+
         const s = cmax === 0 ? 0 : (delta / cmax);
+
         let m: number;
+
         if (delta === 0) {
             m = 0;
         }
@@ -192,10 +224,15 @@ export class HSVA {
     // from http://www.rapidtables.com/convert/color/hsv-to-rgb.htm
     static toRGBA(hsva: HSVA): RGBA {
         const { h, s, v, a } = hsva;
+
         const c = v * s;
+
         const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+
         const m = v - c;
+
         let [r, g, b] = [0, 0, 0];
+
         if (h < 60) {
             r = c;
             g = x;
@@ -223,6 +260,7 @@ export class HSVA {
         r = Math.round((r + m) * 255);
         g = Math.round((g + m) * 255);
         b = Math.round((b + m) * 255);
+
         return new RGBA(r, g, b, a);
     }
 }
@@ -241,6 +279,7 @@ export class Color {
     }
     readonly rgba: RGBA;
     private _hsla?: HSLA;
+
     get hsla(): HSLA {
         if (this._hsla) {
             return this._hsla;
@@ -250,6 +289,7 @@ export class Color {
         }
     }
     private _hsva?: HSVA;
+
     get hsva(): HSVA {
         if (this._hsva) {
             return this._hsva;
@@ -284,9 +324,13 @@ export class Color {
      */
     getRelativeLuminance(): number {
         const R = Color._relativeLuminanceForComponent(this.rgba.r);
+
         const G = Color._relativeLuminanceForComponent(this.rgba.g);
+
         const B = Color._relativeLuminanceForComponent(this.rgba.b);
+
         const luminance = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+
         return roundFloat(luminance, 4);
     }
     /**
@@ -299,7 +343,9 @@ export class Color {
         // This is a naive but fast approach to reducing luminance as converting to
         // HSL and back is expensive
         let { r: fgR, g: fgG, b: fgB } = foreground.rgba;
+
         let cr = this.getContrastRatio(foreground);
+
         while (cr < ratio && (fgR > 0 || fgG > 0 || fgB > 0)) {
             // Reduce by 10% until the ratio is hit
             fgR -= Math.max(0, Math.ceil(fgR * 0.1));
@@ -319,7 +365,9 @@ export class Color {
         // This is a naive but fast approach to reducing luminance as converting to
         // HSL and back is expensive
         let { r: fgR, g: fgG, b: fgB } = foreground.rgba;
+
         let cr = this.getContrastRatio(foreground);
+
         while (cr < ratio && (fgR < 0xFF || fgG < 0xFF || fgB < 0xFF)) {
             fgR = Math.min(0xFF, fgR + Math.ceil((255 - fgR) * 0.1));
             fgG = Math.min(0xFF, fgG + Math.ceil((255 - fgG) * 0.1));
@@ -330,6 +378,7 @@ export class Color {
     }
     private static _relativeLuminanceForComponent(color: number): number {
         const c = color / 255;
+
         return (c <= 0.03928) ? c / 12.92 : Math.pow(((c + 0.055) / 1.055), 2.4);
     }
     /**
@@ -338,7 +387,9 @@ export class Color {
      */
     getContrastRatio(another: Color): number {
         const lum1 = this.getRelativeLuminance();
+
         const lum2 = another.getRelativeLuminance();
+
         return lum1 > lum2 ? (lum1 + 0.05) / (lum2 + 0.05) : (lum2 + 0.05) / (lum1 + 0.05);
     }
     /**
@@ -347,6 +398,7 @@ export class Color {
      */
     isDarker(): boolean {
         const yiq = (this.rgba.r * 299 + this.rgba.g * 587 + this.rgba.b * 114) / 1000;
+
         return yiq < 128;
     }
     /**
@@ -355,16 +407,21 @@ export class Color {
      */
     isLighter(): boolean {
         const yiq = (this.rgba.r * 299 + this.rgba.g * 587 + this.rgba.b * 114) / 1000;
+
         return yiq >= 128;
     }
     isLighterThan(another: Color): boolean {
         const lum1 = this.getRelativeLuminance();
+
         const lum2 = another.getRelativeLuminance();
+
         return lum1 > lum2;
     }
     isDarkerThan(another: Color): boolean {
         const lum1 = this.getRelativeLuminance();
+
         const lum2 = another.getRelativeLuminance();
+
         return lum1 < lum2;
     }
     /**
@@ -382,24 +439,35 @@ export class Color {
      */
     ensureConstrast(foreground: Color, ratio: number): Color {
         const bgL = this.getRelativeLuminance();
+
         const fgL = foreground.getRelativeLuminance();
+
         const cr = this.getContrastRatio(foreground);
+
         if (cr < ratio) {
             if (fgL < bgL) {
                 const resultA = this.reduceRelativeLuminace(foreground, ratio);
+
                 const resultARatio = this.getContrastRatio(resultA);
+
                 if (resultARatio < ratio) {
                     const resultB = this.increaseRelativeLuminace(foreground, ratio);
+
                     const resultBRatio = this.getContrastRatio(resultB);
+
                     return resultARatio > resultBRatio ? resultA : resultB;
                 }
                 return resultA;
             }
             const resultA = this.increaseRelativeLuminace(foreground, ratio);
+
             const resultARatio = this.getContrastRatio(resultA);
+
             if (resultARatio < ratio) {
                 const resultB = this.reduceRelativeLuminace(foreground, ratio);
+
                 const resultBRatio = this.getContrastRatio(resultB);
+
                 return resultARatio > resultBRatio ? resultA : resultB;
             }
             return resultA;
@@ -414,6 +482,7 @@ export class Color {
     }
     transparent(factor: number): Color {
         const { r, g, b, a } = this.rgba;
+
         return new Color(new RGBA(r, g, b, a * factor));
     }
     isTransparent(): boolean {
@@ -429,14 +498,20 @@ export class Color {
         const rgba = c.rgba;
         // Convert to 0..1 opacity
         const thisA = this.rgba.a;
+
         const colorA = rgba.a;
+
         const a = thisA + colorA * (1 - thisA);
+
         if (a < 1e-6) {
             return Color.transparent;
         }
         const r = this.rgba.r * thisA / a + rgba.r * colorA * (1 - thisA) / a;
+
         const g = this.rgba.g * thisA / a + rgba.g * colorA * (1 - thisA) / a;
+
         const b = this.rgba.b * thisA / a + rgba.b * colorA * (1 - thisA) / a;
+
         return new Color(new RGBA(r, g, b, a));
     }
     makeOpaque(opaqueBackground: Color): Color {
@@ -452,10 +527,12 @@ export class Color {
         const background = backgrounds.reduceRight((accumulator, color) => {
             return Color._flatten(color, accumulator);
         });
+
         return Color._flatten(this, background);
     }
     private static _flatten(foreground: Color, background: Color) {
         const backgroundAlpha = 1 - foreground.rgba.a;
+
         return new Color(new RGBA(backgroundAlpha * background.rgba.r + foreground.rgba.a * foreground.rgba.r, backgroundAlpha * background.rgba.g + foreground.rgba.a * foreground.rgba.g, backgroundAlpha * background.rgba.b + foreground.rgba.a * foreground.rgba.b));
     }
     private _toString?: string;
@@ -470,9 +547,12 @@ export class Color {
             return of;
         }
         factor = factor ? factor : 0.5;
+
         const lum1 = of.getRelativeLuminance();
+
         const lum2 = relative.getRelativeLuminance();
         factor = factor * (lum2 - lum1) / lum2;
+
         return of.lighten(factor);
     }
     static getDarkerColor(of: Color, relative: Color, factor?: number): Color {
@@ -480,9 +560,12 @@ export class Color {
             return of;
         }
         factor = factor ? factor : 0.5;
+
         const lum1 = of.getRelativeLuminance();
+
         const lum2 = relative.getRelativeLuminance();
         factor = factor * (lum1 - lum2) / lum1;
+
         return of.darken(factor);
     }
     static readonly white = new Color(new RGBA(255, 255, 255, 1));
@@ -517,6 +600,7 @@ export namespace Color {
             }
             function _toTwoDigitHex(n: number): string {
                 const r = n.toString(16);
+
                 return r.length !== 2 ? '0' + r : r;
             }
             /**
@@ -551,6 +635,7 @@ export namespace Color {
              */
             export function parseHex(hex: string): Color | null {
                 const length = hex.length;
+
                 if (length === 0) {
                     // Invalid color
                     return null;
@@ -562,31 +647,45 @@ export namespace Color {
                 if (length === 7) {
                     // #RRGGBB format
                     const r = 16 * _parseHexDigit(hex.charCodeAt(1)) + _parseHexDigit(hex.charCodeAt(2));
+
                     const g = 16 * _parseHexDigit(hex.charCodeAt(3)) + _parseHexDigit(hex.charCodeAt(4));
+
                     const b = 16 * _parseHexDigit(hex.charCodeAt(5)) + _parseHexDigit(hex.charCodeAt(6));
+
                     return new Color(new RGBA(r, g, b, 1));
                 }
                 if (length === 9) {
                     // #RRGGBBAA format
                     const r = 16 * _parseHexDigit(hex.charCodeAt(1)) + _parseHexDigit(hex.charCodeAt(2));
+
                     const g = 16 * _parseHexDigit(hex.charCodeAt(3)) + _parseHexDigit(hex.charCodeAt(4));
+
                     const b = 16 * _parseHexDigit(hex.charCodeAt(5)) + _parseHexDigit(hex.charCodeAt(6));
+
                     const a = 16 * _parseHexDigit(hex.charCodeAt(7)) + _parseHexDigit(hex.charCodeAt(8));
+
                     return new Color(new RGBA(r, g, b, a / 255));
                 }
                 if (length === 4) {
                     // #RGB format
                     const r = _parseHexDigit(hex.charCodeAt(1));
+
                     const g = _parseHexDigit(hex.charCodeAt(2));
+
                     const b = _parseHexDigit(hex.charCodeAt(3));
+
                     return new Color(new RGBA(16 * r + r, 16 * g + g, 16 * b + b));
                 }
                 if (length === 5) {
                     // #RGBA format
                     const r = _parseHexDigit(hex.charCodeAt(1));
+
                     const g = _parseHexDigit(hex.charCodeAt(2));
+
                     const b = _parseHexDigit(hex.charCodeAt(3));
+
                     const a = _parseHexDigit(hex.charCodeAt(4));
+
                     return new Color(new RGBA(16 * r + r, 16 * g + g, 16 * b + b, (16 * a + a) / 255));
                 }
                 // Invalid color
@@ -595,26 +694,47 @@ export namespace Color {
             function _parseHexDigit(charCode: CharCode): number {
                 switch (charCode) {
                     case CharCode.Digit0: return 0;
+
                     case CharCode.Digit1: return 1;
+
                     case CharCode.Digit2: return 2;
+
                     case CharCode.Digit3: return 3;
+
                     case CharCode.Digit4: return 4;
+
                     case CharCode.Digit5: return 5;
+
                     case CharCode.Digit6: return 6;
+
                     case CharCode.Digit7: return 7;
+
                     case CharCode.Digit8: return 8;
+
                     case CharCode.Digit9: return 9;
+
                     case CharCode.a: return 10;
+
                     case CharCode.A: return 10;
+
                     case CharCode.b: return 11;
+
                     case CharCode.B: return 11;
+
                     case CharCode.c: return 12;
+
                     case CharCode.C: return 12;
+
                     case CharCode.d: return 13;
+
                     case CharCode.D: return 13;
+
                     case CharCode.e: return 14;
+
                     case CharCode.E: return 14;
+
                     case CharCode.f: return 15;
+
                     case CharCode.F: return 15;
                 }
                 return 0;

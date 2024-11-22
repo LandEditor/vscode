@@ -35,6 +35,7 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
     private _hoverState: IHoverState = {
         mouseDown: false
     };
+
     constructor(private readonly _editor: ICodeEditor, 
     @IInstantiationService
     private readonly _instantiationService: IInstantiationService) {
@@ -58,6 +59,7 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
             sticky: hoverOpts.sticky,
             hidingDelay: hoverOpts.hidingDelay
         };
+
         if (hoverOpts.enabled) {
             this._listenersStore.add(this._editor.onMouseDown((e: IEditorMouseEvent) => this._onEditorMouseDown(e)));
             this._listenersStore.add(this._editor.onMouseUp(() => this._onEditorMouseUp()));
@@ -90,7 +92,9 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
     }
     private _onEditorMouseDown(mouseEvent: IEditorMouseEvent): void {
         this._hoverState.mouseDown = true;
+
         const shouldNotHideCurrentHoverWidget = this._isMouseOnGlyphHoverWidget(mouseEvent);
+
         if (shouldNotHideCurrentHoverWidget) {
             return;
         }
@@ -98,6 +102,7 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
     }
     private _isMouseOnGlyphHoverWidget(mouseEvent: IPartialEditorMouseEvent): boolean {
         const glyphHoverWidgetNode = this._glyphWidget?.getDomNode();
+
         if (glyphHoverWidgetNode) {
             return isMousePositionWithinElement(glyphHoverWidgetNode, mouseEvent.event.posx, mouseEvent.event.posy);
         }
@@ -111,7 +116,9 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
             return;
         }
         this._cancelScheduler();
+
         const shouldNotHideCurrentHoverWidget = this._isMouseOnGlyphHoverWidget(mouseEvent);
+
         if (shouldNotHideCurrentHoverWidget) {
             return;
         }
@@ -122,7 +129,9 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
     }
     private _shouldNotRecomputeCurrentHoverWidget(mouseEvent: IEditorMouseEvent): boolean {
         const isHoverSticky = this._hoverSettings.sticky;
+
         const isMouseOnGlyphHoverWidget = this._isMouseOnGlyphHoverWidget(mouseEvent);
+
         return isHoverSticky && isMouseOnGlyphHoverWidget;
     }
     private _onEditorMouseMove(mouseEvent: IEditorMouseEvent): void {
@@ -130,9 +139,12 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
             return;
         }
         this._mouseMoveEvent = mouseEvent;
+
         const shouldNotRecomputeCurrentHoverWidget = this._shouldNotRecomputeCurrentHoverWidget(mouseEvent);
+
         if (shouldNotRecomputeCurrentHoverWidget) {
             this._reactToEditorMouseMoveRunner.cancel();
+
             return;
         }
         this._reactToEditorMouseMove(mouseEvent);
@@ -142,6 +154,7 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
             return;
         }
         const glyphWidgetShowsOrWillShow = this._tryShowHoverWidget(mouseEvent);
+
         if (glyphWidgetShowsOrWillShow) {
             return;
         }
@@ -152,6 +165,7 @@ export class GlyphHoverController extends Disposable implements IEditorContribut
     }
     private _tryShowHoverWidget(mouseEvent: IEditorMouseEvent): boolean {
         const glyphWidget: IHoverWidget = this._getOrCreateGlyphWidget();
+
         return glyphWidget.showsOrWillShow(mouseEvent);
     }
     private _onKeyDown(e: IKeyboardEvent): void {

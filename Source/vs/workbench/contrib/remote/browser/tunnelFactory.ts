@@ -15,6 +15,7 @@ import { IContextKeyService } from '../../../../platform/contextkey/common/conte
 import { forwardedPortsFeaturesEnabled } from '../../../services/remote/common/tunnelModel.js';
 export class TunnelFactoryContribution extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.tunnelFactory';
+
     constructor(
     @ITunnelService
     tunnelService: ITunnelService, 
@@ -29,11 +30,15 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
     @IContextKeyService
     contextKeyService: IContextKeyService) {
         super();
+
         const tunnelFactory = environmentService.options?.tunnelProvider?.tunnelFactory;
+
         if (tunnelFactory) {
             // At this point we clearly want the ports view/features since we have a tunnel factory
             contextKeyService.createKey(forwardedPortsFeaturesEnabled.key, true);
+
             let privacyOptions = environmentService.options?.tunnelProvider?.features?.privacyOptions ?? [];
+
             if (environmentService.options?.tunnelProvider?.features?.public
                 && (privacyOptions.length === 0)) {
                 privacyOptions = [
@@ -52,6 +57,7 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
             this._register(tunnelService.setTunnelProvider({
                 forwardPort: async (tunnelOptions: TunnelOptions, tunnelCreationOptions: TunnelCreationOptions): Promise<RemoteTunnel | string | undefined> => {
                     let tunnelPromise: Promise<ITunnel> | undefined;
+
                     try {
                         tunnelPromise = tunnelFactory(tunnelOptions, tunnelCreationOptions);
                     }
@@ -62,17 +68,20 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
                         return undefined;
                     }
                     let tunnel: ITunnel;
+
                     try {
                         tunnel = await tunnelPromise;
                     }
                     catch (e) {
                         logService.trace('tunnelFactory: tunnel provider promise error');
+
                         if (e instanceof Error) {
                             return e.message;
                         }
                         return undefined;
                     }
                     const localAddress = tunnel.localAddress.startsWith('http') ? tunnel.localAddress : `http://${tunnel.localAddress}`;
+
                     const remoteTunnel: RemoteTunnel = {
                         tunnelRemotePort: tunnel.remoteAddress.port,
                         tunnelRemoteHost: tunnel.remoteAddress.host,
@@ -83,9 +92,11 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
                         protocol: tunnel.protocol ?? TunnelProtocol.Http,
                         dispose: async () => { await tunnel.dispose(); }
                     };
+
                     return remoteTunnel;
                 }
             }));
+
             const tunnelInformation = environmentService.options?.tunnelProvider?.features ?
                 {
                     features: {

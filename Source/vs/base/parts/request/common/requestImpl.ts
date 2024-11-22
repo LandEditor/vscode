@@ -14,7 +14,9 @@ export async function request(options: IRequestOptions, token: CancellationToken
 	}
 
 	const cancellation = new AbortController();
+
 	const disposable = token.onCancellationRequested(() => cancellation.abort());
+
 	const signal = options.timeout ? AbortSignal.any([
 		cancellation.signal,
 		AbortSignal.timeout(options.timeout),
@@ -27,6 +29,7 @@ export async function request(options: IRequestOptions, token: CancellationToken
 			body: options.data,
 			signal,
 		});
+
 		return {
 			res: {
 				statusCode: res.status,
@@ -62,6 +65,7 @@ function getRequestHeaders(options: IRequestOptions) {
 					continue outer;
 			}
 			const header = options.headers[k];
+
 			if (typeof header === 'string') {
 				headers.set(k, header);
 			} else if (Array.isArray(header)) {
@@ -94,5 +98,6 @@ function getResponseHeaders(res: Response): IHeaders {
 			headers[key] = value;
 		}
 	});
+
 	return headers;
 }

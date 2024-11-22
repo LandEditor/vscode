@@ -24,6 +24,7 @@ export function createProfileSchemaEnums(detectedProfiles: ITerminalProfile[], e
             description: createProfileDescription(e)
         };
     }));
+
     if (extensionProfiles) {
         result.push(...extensionProfiles.map(extensionProfile => {
             return {
@@ -39,6 +40,7 @@ export function createProfileSchemaEnums(detectedProfiles: ITerminalProfile[], e
 }
 function createProfileDescription(profile: ITerminalProfile): string {
     let description = `$(${ThemeIcon.isThemeIcon(profile.icon) ? profile.icon.id : profile.icon ? profile.icon : Codicon.terminal.id}) ${profile.profileName}\n- path: ${profile.path}`;
+
     if (profile.args) {
         if (typeof profile.args === 'string') {
             description += `\n- args: "${profile.args}"`;
@@ -60,6 +62,7 @@ function createProfileDescription(profile: ITerminalProfile): string {
 }
 function createExtensionProfileDescription(profile: IExtensionTerminalProfile): string {
     const description = `$(${ThemeIcon.isThemeIcon(profile.icon) ? profile.icon.id : profile.icon ? profile.icon : Codicon.terminal.id}) ${profile.title}\n- extensionIdentifier: ${profile.extensionIdentifier}`;
+
     return description;
 }
 export function terminalProfileArgsMatch(args1: string | string[] | undefined, args2: string | string[] | undefined): boolean {
@@ -98,10 +101,12 @@ export function terminalIconsEqual(a?: TerminalIcon, b?: TerminalIcon): boolean 
             light: unknown;
             dark: unknown;
         });
+
         const castedB = (b as {
             light: unknown;
             dark: unknown;
         });
+
         if ((URI.isUri(castedA.light) || isUriComponents(castedA.light)) && (URI.isUri(castedA.dark) || isUriComponents(castedA.dark))
             && (URI.isUri(castedB.light) || isUriComponents(castedB.light)) && (URI.isUri(castedB.dark) || isUriComponents(castedB.dark))) {
             return castedA.light.path === castedB.light.path && castedA.dark.path === castedB.dark.path;
@@ -112,10 +117,12 @@ export function terminalIconsEqual(a?: TerminalIcon, b?: TerminalIcon): boolean 
             scheme: unknown;
             path: unknown;
         });
+
         const castedB = (b as {
             scheme: unknown;
             path: unknown;
         });
+
         return castedA.path === castedB.path && castedA.scheme === castedB.scheme;
     }
     return false;

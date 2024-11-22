@@ -23,18 +23,26 @@ export class DiffEditorHeightCalculatorService {
     private readonly configurationService: IConfigurationService) { }
     public async diffAndComputeHeight(original: URI, modified: URI): Promise<number> {
         const [originalModel, modifiedModel] = await Promise.all([this.textModelResolverService.createModelReference(original), this.textModelResolverService.createModelReference(modified)]);
+
         try {
             const diffChanges = await this.editorWorkerService.computeDiff(original, modified, {
                 ignoreTrimWhitespace: true,
                 maxComputationTimeMs: 0,
                 computeMoves: false
             }, 'advanced').then(diff => diff?.changes || []);
+
             const unchangedRegionFeatureEnabled = this.configurationService.getValue<boolean>('diffEditor.hideUnchangedRegions.enabled');
+
             const minimumLineCount = this.configurationService.getValue<number>('diffEditor.hideUnchangedRegions.minimumLineCount');
+
             const contextLineCount = this.configurationService.getValue<number>('diffEditor.hideUnchangedRegions.contextLineCount');
+
             const originalLineCount = originalModel.object.textEditorModel.getLineCount();
+
             const modifiedLineCount = modifiedModel.object.textEditorModel.getLineCount();
+
             const unchanged = unchangedRegionFeatureEnabled ? UnchangedRegion.fromDiffs(diffChanges, originalLineCount, modifiedLineCount, minimumLineCount ?? 3, contextLineCount ?? 3) : [];
+
             const numberOfNewLines = diffChanges.reduce((prev, curr) => {
                 if (curr.original.isEmpty && !curr.modified.isEmpty) {
                     return prev + curr.modified.length;
@@ -44,10 +52,15 @@ export class DiffEditorHeightCalculatorService {
                 }
                 return prev;
             }, 0);
+
             const orginalNumberOfLines = originalModel.object.textEditorModel.getLineCount();
+
             const numberOfHiddenLines = unchanged.reduce((prev, curr) => prev + curr.lineCount, 0);
+
             const numberOfHiddenSections = unchanged.length;
+
             const unchangeRegionsHeight = numberOfHiddenSections * HeightOfHiddenLinesRegionInDiffEditor;
+
             const visibleLineCount = orginalNumberOfLines + numberOfNewLines - numberOfHiddenLines;
             // TODO: When we have a horizontal scrollbar, we need to add 12 to the height.
             // Right now there's no way to determine if a horizontal scrollbar is visible in the editor.

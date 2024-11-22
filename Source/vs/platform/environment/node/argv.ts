@@ -233,12 +233,18 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 	const firstArg = args.find(a => a.length > 0 && a[0] !== '-');
 
 	const alias: { [key: string]: string } = {};
+
 	const stringOptions: string[] = ['_'];
+
 	const booleanOptions: string[] = [];
+
 	const globalOptions: OptionDescriptions<any> = {};
+
 	let command: Subcommand<any> | undefined = undefined;
+
 	for (const optionId in options) {
 		const o = options[optionId];
+
 		if (o.type === 'subcommand') {
 			if (optionId === firstArg) {
 				command = o;
@@ -250,11 +256,13 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 
 			if (o.type === 'string' || o.type === 'string[]') {
 				stringOptions.push(optionId);
+
 				if (o.deprecates) {
 					stringOptions.push(...o.deprecates);
 				}
 			} else if (o.type === 'boolean') {
 				booleanOptions.push(optionId);
+
 				if (o.deprecates) {
 					booleanOptions.push(...o.deprecates);
 				}
@@ -266,11 +274,14 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 	}
 	if (command && firstArg) {
 		const options = globalOptions;
+
 		for (const optionId in command.options) {
 			options[optionId] = command.options[optionId];
 		}
 		const newArgs = args.filter(a => a !== firstArg);
+
 		const reporter = errorReporter.getSubcommandReporter ? errorReporter.getSubcommandReporter(firstArg) : undefined;
+
 		const subcommandOptions = parseArgs(newArgs, options, reporter);
 		// eslint-disable-next-line local/code-no-dangerous-type-assertions
 		return <T>{
@@ -284,6 +295,7 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 	const parsedArgs = minimist(args, { string: stringOptions, boolean: booleanOptions, alias });
 
 	const cleanedArgs: any = {};
+
 	const remainingArgs: any = parsedArgs;
 
 	// https://github.com/microsoft/vscode/issues/58177, https://github.com/microsoft/vscode/issues/106617
@@ -293,6 +305,7 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 
 	for (const optionId in options) {
 		const o = options[optionId];
+
 		if (o.type === 'subcommand') {
 			continue;
 		}
@@ -301,11 +314,13 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 		}
 
 		let val = remainingArgs[optionId];
+
 		if (o.deprecates) {
 			for (const deprecatedId of o.deprecates) {
 				if (remainingArgs.hasOwnProperty(deprecatedId)) {
 					if (!val) {
 						val = remainingArgs[deprecatedId];
+
 						if (val) {
 							errorReporter.onDeprecatedOption(deprecatedId, o.deprecationMessage || localize('deprecated.useInstead', 'Use {0} instead.', optionId));
 						}
@@ -322,6 +337,7 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 				}
 				if (!o.allowEmptyValue) {
 					const sanitized = val.filter((v: string) => v.length > 0);
+
 					if (sanitized.length !== val.length) {
 						errorReporter.onEmptyValue(optionId);
 						val = sanitized.length > 0 ? sanitized : undefined;
@@ -354,6 +370,7 @@ export function parseArgs<T>(args: string[], options: OptionDescriptions<T>, err
 
 function formatUsage(optionId: string, option: Option<any>) {
 	let args = '';
+
 	if (option.args) {
 		if (Array.isArray(option.args)) {
 			args = ` <${option.args.join('> <')}>`;
@@ -370,8 +387,10 @@ function formatUsage(optionId: string, option: Option<any>) {
 // exported only for testing
 export function formatOptions(options: OptionDescriptions<any>, columns: number): string[] {
 	const usageTexts: [string, string][] = [];
+
 	for (const optionId in options) {
 		const o = options[optionId];
+
 		const usageText = formatUsage(optionId, o);
 		usageTexts.push([usageText, o.description!]);
 	}
@@ -380,18 +399,25 @@ export function formatOptions(options: OptionDescriptions<any>, columns: number)
 
 function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 	const maxLength = usageTexts.reduce((previous, e) => Math.max(previous, e[0].length), 12);
+
 	const argLength = maxLength + 2/*left padding*/ + 1/*right padding*/;
+
 	if (columns - argLength < 25) {
 		// Use a condensed version on narrow terminals
 		return usageTexts.reduce<string[]>((r, ut) => r.concat([`  ${ut[0]}`, `      ${ut[1]}`]), []);
 	}
 	const descriptionColumns = columns - argLength - 1;
+
 	const result: string[] = [];
+
 	for (const ut of usageTexts) {
 		const usage = ut[0];
+
 		const wrappedDescription = wrapText(ut[1], descriptionColumns);
+
 		const keyPadding = indent(argLength - usage.length - 2/*left padding*/);
 		result.push('  ' + usage + keyPadding + wrappedDescription[0]);
+
 		for (let i = 1; i < wrappedDescription.length; i++) {
 			result.push(indent(argLength) + wrappedDescription[i]);
 		}
@@ -405,8 +431,10 @@ function indent(count: number): string {
 
 function wrapText(text: string, columns: number): string[] {
 	const lines: string[] = [];
+
 	while (text.length) {
 		const index = text.length < columns ? text.length : text.lastIndexOf(' ', columns);
+
 		const line = text.slice(0, index).trim();
 		text = text.slice(index);
 		lines.push(line);
@@ -416,12 +444,14 @@ function wrapText(text: string, columns: number): string[] {
 
 export function buildHelpMessage(productName: string, executableName: string, version: string, options: OptionDescriptions<any>, capabilities?: { noPipe?: boolean; noInputFiles: boolean }): string {
 	const columns = (process.stdout).isTTY && (process.stdout).columns || 80;
+
 	const inputFiles = capabilities?.noInputFiles !== true ? `[${localize('paths', 'paths')}...]` : '';
 
 	const help = [`${productName} ${version}`];
 	help.push('');
 	help.push(`${localize('usage', "Usage")}: ${executableName} [${localize('options', "options")}]${inputFiles}`);
 	help.push('');
+
 	if (capabilities?.noPipe !== true) {
 		if (isWindows) {
 			help.push(localize('stdinWindows', "To read output from another program, append '-' (e.g. 'echo Hello World | {0} -')", executableName));
@@ -431,15 +461,19 @@ export function buildHelpMessage(productName: string, executableName: string, ve
 		help.push('');
 	}
 	const optionsByCategory: { [P in keyof typeof helpCategories]?: OptionDescriptions<any> } = {};
+
 	const subcommands: { command: string; description: string }[] = [];
+
 	for (const optionId in options) {
 		const o = options[optionId];
+
 		if (o.type === 'subcommand') {
 			if (o.description) {
 				subcommands.push({ command: optionId, description: o.description });
 			}
 		} else if (o.description && o.cat) {
 			let optionsByCat = optionsByCategory[o.cat];
+
 			if (!optionsByCat) {
 				optionsByCategory[o.cat] = optionsByCat = {};
 			}
@@ -451,6 +485,7 @@ export function buildHelpMessage(productName: string, executableName: string, ve
 		const key = <keyof typeof helpCategories>helpCategoryKey;
 
 		const categoryOptions = optionsByCategory[key];
+
 		if (categoryOptions) {
 			help.push(helpCategories[key]);
 			help.push(...formatOptions(categoryOptions, columns));

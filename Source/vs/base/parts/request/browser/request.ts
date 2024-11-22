@@ -11,11 +11,14 @@ export async function request(options: IRequestOptions, token: CancellationToken
         throw canceled();
     }
     const cancellation = new AbortController();
+
     const disposable = token.onCancellationRequested(() => cancellation.abort());
+
     const signal = options.timeout ? AbortSignal.any([
         cancellation.signal,
         AbortSignal.timeout(options.timeout),
     ]) : cancellation.signal;
+
     try {
         const res = await fetch(options.url || '', {
             method: options.type || 'GET',
@@ -23,6 +26,7 @@ export async function request(options: IRequestOptions, token: CancellationToken
             body: options.data,
             signal,
         });
+
         return {
             res: {
                 statusCode: res.status,
@@ -59,6 +63,7 @@ function getRequestHeaders(options: IRequestOptions) {
                     continue outer;
             }
             const header = options.headers[k];
+
             if (typeof header === 'string') {
                 headers.set(k, header);
             }
@@ -93,5 +98,6 @@ function getResponseHeaders(res: Response): IHeaders {
             headers[key] = value;
         }
     });
+
     return headers;
 }

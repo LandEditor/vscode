@@ -11,6 +11,7 @@ import { mainWindow } from '../../../../base/browser/window.js';
 export class BrowserHostColorSchemeService extends Disposable implements IHostColorSchemeService {
     declare readonly _serviceBrand: undefined;
     private readonly _onDidSchemeChangeEvent = this._register(new Emitter<void>());
+
     constructor() {
         super();
         this.registerListeners();

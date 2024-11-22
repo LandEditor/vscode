@@ -129,6 +129,7 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
     private readonly _onDidChangeLabel = this._register(new Emitter<IUntitledTextEditorModel>());
     readonly onDidChangeLabel = this._onDidChangeLabel.event;
     private readonly mapResourceToModel = new ResourceMap<UntitledTextEditorModel>();
+
     constructor(
     @IInstantiationService
     private readonly instantiationService: IInstantiationService, 
@@ -145,6 +146,7 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
     async resolve(options?: IInternalUntitledTextEditorOptions): Promise<UntitledTextEditorModel> {
         const model = this.doCreateOrGet(options);
         await model.resolve();
+
         return model;
     }
     create(options?: IInternalUntitledTextEditorOptions): UntitledTextEditorModel {
@@ -183,6 +185,7 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
         }
         else if (!massagedOptions.associatedResource) {
             const configuration = this.configurationService.getValue<IFilesConfiguration>();
+
             if (configuration.files?.defaultLanguage) {
                 massagedOptions.languageId = configuration.files.defaultLanguage;
             }
@@ -190,13 +193,16 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
         // Take over encoding and initial value
         massagedOptions.encoding = options.encoding;
         massagedOptions.initialValue = options.initialValue;
+
         return massagedOptions;
     }
     private doCreate(options: IInternalUntitledTextEditorOptions): UntitledTextEditorModel {
         // Create a new untitled resource if none is provided
         let untitledResource = options.untitledResource;
+
         if (!untitledResource) {
             let counter = 1;
+
             do {
                 untitledResource = URI.from({ scheme: Schemas.untitled, path: `Untitled-${counter}` });
                 counter++;
@@ -205,6 +211,7 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
         // Create new model with provided options
         const model = this._register(this.instantiationService.createInstance(UntitledTextEditorModel, untitledResource, !!options.associatedResource, options.initialValue, options.languageId, options.encoding));
         this.registerModel(model);
+
         return model;
     }
     private registerModel(model: UntitledTextEditorModel): void {
@@ -247,6 +254,7 @@ export class UntitledTextEditorService extends Disposable implements IUntitledTe
         // either saved or reverted
         if (model.isDirty()) {
             await Event.toPromise(model.onDidChangeDirty);
+
             return this.canDispose(model);
         }
         return true;

@@ -59,6 +59,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
      * Complete options which are a combination of passed in options and env values.
      */
     public options: ComputedEditorOptions;
+
     constructor(isSimpleWidget: boolean, contextMenuId: MenuId, options: Readonly<IEditorConstructionOptions>, container: HTMLElement | null, 
     @IAccessibilityService
     private readonly _accessibilityService: IAccessibilityService) {
@@ -70,6 +71,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
         this._rawOptions = deepCloneAndMigrateOptions(options);
         this._validatedOptions = EditorOptionsUtil.validateOptions(this._rawOptions);
         this.options = this._computeOptions();
+
         if (this.options.get(EditorOption.automaticLayout)) {
             this._containerObserver.startObserving();
         }
@@ -82,7 +84,9 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
     }
     private _recomputeOptions(): void {
         const newOptions = this._computeOptions();
+
         const changeEvent = EditorOptionsUtil.checkEquals(this.options, newOptions);
+
         if (changeEvent === null) {
             // nothing changed!
             return;
@@ -93,8 +97,11 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
     }
     private _computeOptions(): ComputedEditorOptions {
         const partialEnv = this._readEnvConfiguration();
+
         const bareFontInfo = BareFontInfo.createFromValidatedSettings(this._validatedOptions, partialEnv.pixelRatio, this.isSimpleWidget);
+
         const fontInfo = this._readFontInfo(bareFontInfo);
+
         const env: IEnvironmentalOptions = {
             memory: this._computeOptionsMemory,
             outerWidth: partialEnv.outerWidth,
@@ -110,6 +117,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
             accessibilitySupport: partialEnv.accessibilitySupport,
             glyphMarginDecorationLaneCount: this._glyphMarginDecorationLaneCount
         };
+
         return EditorOptionsUtil.computeOptions(this._validatedOptions, env);
     }
     protected _readEnvConfiguration(): IEnvConfiguration {
@@ -132,7 +140,9 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
     }
     public updateOptions(_newOptions: Readonly<IEditorOptions>): void {
         const newOptions = deepCloneAndMigrateOptions(_newOptions);
+
         const didChange = EditorOptionsUtil.applyUpdate(this._rawOptions, newOptions);
+
         if (!didChange) {
             return;
         }
@@ -151,6 +161,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
     }
     public setModelLineCount(modelLineCount: number): void {
         const lineNumbersDigitCount = digitCount(modelLineCount);
+
         if (this._lineNumbersDigitCount === lineNumbersDigitCount) {
             return;
         }
@@ -181,6 +192,7 @@ export class EditorConfiguration extends Disposable implements IEditorConfigurat
 }
 function digitCount(n: number): number {
     let r = 0;
+
     while (n) {
         n = Math.floor(n / 10);
         r++;
@@ -189,6 +201,7 @@ function digitCount(n: number): number {
 }
 function getExtraEditorClassName(): string {
     let extra = '';
+
     if (!browser.isSafari && !browser.isWebkitWebView) {
         // Use user-select: none in all browsers except Safari and native macOS WebView
         extra += 'no-user-select ';
@@ -241,6 +254,7 @@ export class ComputedEditorOptions implements IComputedEditorOptions {
 class EditorOptionsUtil {
     public static validateOptions(options: IEditorOptions): ValidatedEditorOptions {
         const result = new ValidatedEditorOptions();
+
         for (const editorOption of editorOptionsRegistry) {
             const value = (editorOption.name === '_never_' ? undefined : (options as any)[editorOption.name]);
             result._write(editorOption.id, editorOption.validate(value));
@@ -249,6 +263,7 @@ class EditorOptionsUtil {
     }
     public static computeOptions(options: ValidatedEditorOptions, env: IEnvironmentalOptions): ComputedEditorOptions {
         const result = new ComputedEditorOptions();
+
         for (const editorOption of editorOptionsRegistry) {
             result._write(editorOption.id, editorOption.compute(env, result, options._read(editorOption.id)));
         }
@@ -273,10 +288,13 @@ class EditorOptionsUtil {
     }
     public static checkEquals(a: ComputedEditorOptions, b: ComputedEditorOptions): ConfigurationChangedEvent | null {
         const result: boolean[] = [];
+
         let somethingChanged = false;
+
         for (const editorOption of editorOptionsRegistry) {
             const changed = !EditorOptionsUtil._deepEquals(a._read(editorOption.id), b._read(editorOption.id));
             result[editorOption.id] = changed;
+
             if (changed) {
                 somethingChanged = true;
             }
@@ -289,6 +307,7 @@ class EditorOptionsUtil {
     */
     public static applyUpdate(options: IEditorOptions, update: Readonly<IEditorOptions>): boolean {
         let changed = false;
+
         for (const editorOption of editorOptionsRegistry) {
             if (update.hasOwnProperty(editorOption.name)) {
                 const result = editorOption.applyUpdate((options as any)[editorOption.name], (update as any)[editorOption.name]);
@@ -302,5 +321,6 @@ class EditorOptionsUtil {
 function deepCloneAndMigrateOptions(_options: Readonly<IEditorOptions>): IEditorOptions {
     const options = objects.deepClone(_options);
     migrateOptions(options);
+
     return options;
 }

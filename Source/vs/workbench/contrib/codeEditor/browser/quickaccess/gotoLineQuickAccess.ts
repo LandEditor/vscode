@@ -20,6 +20,7 @@ import { ITextEditorOptions } from '../../../../../platform/editor/common/editor
 import { IEditorGroupsService } from '../../../../services/editor/common/editorGroupsService.js';
 export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvider {
     protected readonly onDidActiveTextEditorControlChange = this.editorService.onDidActiveEditorChange;
+
     constructor(
     @IEditorService
     private readonly editorService: IEditorService, 
@@ -31,6 +32,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
     }
     private get configuration() {
         const editorConfig = this.configurationService.getValue<IWorkbenchEditorConfiguration>().workbench?.editor;
+
         return {
             openEditorPinned: !editorConfig?.enablePreviewFromQuickOpen || !editorConfig?.enablePreview
         };
@@ -41,6 +43,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
     protected override gotoLocation(context: IQuickAccessTextEditorContext, options: {
         range: IRange;
         keyMods: IKeyMods;
+
         forceSideBySide?: boolean;
         preserveFocus?: boolean;
     }): void {
@@ -62,6 +65,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 }
 class GotoLineAction extends Action2 {
     static readonly ID = 'workbench.action.gotoLine';
+
     constructor() {
         super({
             id: GotoLineAction.ID,

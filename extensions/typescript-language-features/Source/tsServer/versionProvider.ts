@@ -37,6 +37,7 @@ export class TypeScriptVersion {
     }
     public get displayName(): string {
         const version = this.apiVersion;
+
         return version ? version.displayName : vscode.l10n.t("Could not load the TypeScript version at this path");
     }
 }

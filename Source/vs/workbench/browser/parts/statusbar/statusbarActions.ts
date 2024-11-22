@@ -88,7 +88,9 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     when: StatusBarFocused,
     handler: (accessor: ServicesAccessor) => {
         const statusBarService = accessor.get(IStatusbarService);
+
         const editorService = accessor.get(IEditorService);
+
         if (statusBarService.isEntryFocused()) {
             statusBarService.focus(false);
         }

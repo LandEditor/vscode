@@ -46,6 +46,7 @@ export abstract class EditorPlaceholder extends EditorPane {
     private container: HTMLElement | undefined;
     private scrollbar: DomScrollableElement | undefined;
     private readonly inputDisposable = this._register(new MutableDisposable());
+
     constructor(id: string, group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -80,14 +81,18 @@ export abstract class EditorPlaceholder extends EditorPane {
         clearNode(container);
         // Delegate to implementation for contents
         const disposables = new DisposableStore();
+
         const { icon, label, actions } = await this.getContents(input, options, disposables);
+
         const truncatedLabel = truncate(label, EditorPlaceholder.PLACEHOLDER_LABEL_MAX_LENGTH);
         // Icon
         const iconContainer = container.appendChild($('.editor-placeholder-icon-container'));
+
         const iconWidget = disposables.add(new SimpleIconLabel(iconContainer));
         iconWidget.text = icon;
         // Label
         const labelContainer = container.appendChild($('.editor-placeholder-label-container'));
+
         const labelWidget = document.createElement('span');
         labelWidget.textContent = truncatedLabel;
         labelContainer.appendChild(labelWidget);
@@ -96,7 +101,9 @@ export abstract class EditorPlaceholder extends EditorPane {
         // Buttons
         if (actions.length) {
             const actionsContainer = container.appendChild($('.editor-placeholder-buttons-container'));
+
             const buttons = disposables.add(new ButtonBar(actionsContainer));
+
             for (let i = 0; i < actions.length; i++) {
                 const button = disposables.add(buttons.addButton({
                     ...defaultButtonStyles,
@@ -113,6 +120,7 @@ export abstract class EditorPlaceholder extends EditorPane {
         }
         // Adjust scrollbar
         scrollbar.scanDomNode();
+
         return disposables;
     }
     protected abstract getContents(input: EditorInput, options: IEditorOptions | undefined, disposables: DisposableStore): Promise<IEditorPlaceholderContents>;
@@ -121,6 +129,7 @@ export abstract class EditorPlaceholder extends EditorPane {
             clearNode(this.container);
         }
         this.inputDisposable.clear();
+
         super.clearInput();
     }
     layout(dimension: Dimension): void {
@@ -138,6 +147,7 @@ export abstract class EditorPlaceholder extends EditorPane {
     }
     override dispose(): void {
         this.container?.remove();
+
         super.dispose();
     }
 }
@@ -145,6 +155,7 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
     static readonly ID = 'workbench.editors.workspaceTrustRequiredEditor';
     private static readonly LABEL = localize('trustRequiredEditor', "Workspace Trust Required");
     static readonly DESCRIPTOR = EditorPaneDescriptor.create(WorkspaceTrustRequiredPlaceholderEditor, this.ID, this.LABEL);
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -180,6 +191,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
     private static readonly ID = 'workbench.editors.errorEditor';
     private static readonly LABEL = localize('errorEditor', "Error Editor");
     static readonly DESCRIPTOR = EditorPaneDescriptor.create(ErrorPlaceholderEditor, this.ID, this.LABEL);
+
     constructor(group: IEditorGroup, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -195,10 +207,13 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
     }
     protected async getContents(input: EditorInput, options: IErrorEditorPlaceholderOptions, disposables: DisposableStore): Promise<IEditorPlaceholderContents> {
         const resource = input.resource;
+
         const error = options.error;
+
         const isFileNotFound = (<FileOperationError | undefined>error)?.fileOperationResult === FileOperationResult.FILE_NOT_FOUND;
         // Error Label
         let label: string;
+
         if (isFileNotFound) {
             label = localize('unavailableResourceErrorEditorText', "The editor could not be opened because the file was not found.");
         }
@@ -213,6 +228,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
         }
         // Error Icon
         let icon = '$(error)';
+
         if (isEditorOpenError(error)) {
             if (error.forceSeverity === Severity.Info) {
                 icon = '$(info)';
@@ -223,12 +239,14 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
         }
         // Actions
         let actions: IEditorPlaceholderContentsAction[] | undefined = undefined;
+
         if (isEditorOpenError(error) && error.actions.length > 0) {
             actions = error.actions.map(action => {
                 return {
                     label: action.label,
                     run: () => {
                         const result = action.run();
+
                         if (result instanceof Promise) {
                             result.catch(error => this.dialogService.error(toErrorMessage(error)));
                         }

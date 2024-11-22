@@ -34,6 +34,7 @@ export class BreadcrumbsModel {
     private readonly _outlineDisposables = new DisposableStore();
     private readonly _onDidUpdate = new Emitter<this>();
     readonly onDidUpdate: Event<this> = this._onDidUpdate.event;
+
     constructor(readonly resource: URI, editor: IEditorPane | undefined, 
     @IConfigurationService
     configurationService: IConfigurationService, 
@@ -47,6 +48,7 @@ export class BreadcrumbsModel {
         this._disposables.add(this._cfgSymbolPath.onDidChange(_ => this._onDidUpdate.fire(this)));
         this._workspaceService.onDidChangeWorkspaceFolders(this._onDidChangeWorkspaceFolders, this, this._disposables);
         this._fileInfo = this._initFilePathInfo(resource);
+
         if (editor) {
             this._bindToEditor(editor);
             this._disposables.add(_outlineService.onDidChange(() => this._bindToEditor(editor)));
@@ -81,6 +83,7 @@ export class BreadcrumbsModel {
             return result;
         }
         const breadcrumbsElements = this._currentOutline.value.config.breadcrumbsDataSource.getBreadcrumbElements();
+
         for (let i = this._cfgSymbolPath.getValue() === 'last' && breadcrumbsElements.length > 0 ? breadcrumbsElements.length - 1 : 0; i < breadcrumbsElements.length; i++) {
             result.push(new OutlineElement2(breadcrumbsElements[i], this._currentOutline.value));
         }
@@ -100,14 +103,18 @@ export class BreadcrumbsModel {
             folder: this._workspaceService.getWorkspaceFolder(uri) ?? undefined,
             path: []
         };
+
         let uriPrefix: URI | null = uri;
+
         while (uriPrefix && uriPrefix.path !== '/') {
             if (info.folder && isEqual(info.folder.uri, uriPrefix)) {
                 break;
             }
             info.path.unshift(new FileElement(uriPrefix, info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER));
+
             const prevPathLength = uriPrefix.path.length;
             uriPrefix = dirname(uriPrefix);
+
             if (uriPrefix.path.length === prevPathLength) {
                 break;
             }
@@ -134,6 +141,7 @@ export class BreadcrumbsModel {
             }
             this._currentOutline.value = outline;
             this._onDidUpdate.fire(this);
+
             if (outline) {
                 this._outlineDisposables.add(outline.onDidChange(() => this._onDidUpdate.fire(this)));
             }

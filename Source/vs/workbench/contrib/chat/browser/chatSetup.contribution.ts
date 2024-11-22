@@ -97,6 +97,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 		super();
 
 		const entitlement = this.productService.gitHubEntitlement;
+
 		if (!entitlement) {
 			return;
 		}
@@ -169,6 +170,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 			for (const extension of result.removed) {
 				if (ExtensionIdentifier.equals(entitlement.extensionId, extension.identifier)) {
 					this.chatSetupState.update({ chatInstalled: false });
+
 					break;
 				}
 			}
@@ -176,6 +178,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 			for (const extension of result.added) {
 				if (ExtensionIdentifier.equals(entitlement.extensionId, extension.identifier)) {
 					this.chatSetupState.update({ chatInstalled: true });
+
 					break;
 				}
 			}
@@ -201,6 +204,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 	private registerAuthListeners(entitlement: IGitHubEntitlement): void {
 		const hasProviderSessions = async () => {
 			const sessions = await this.authenticationService.getSessions(entitlement.providerId);
+
 			return sessions.length > 0;
 		};
 
@@ -239,6 +243,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 		this._register(toDisposable(() => cts.dispose(true)));
 
 		let context: IRequestContext;
+
 		try {
 			context = await this.requestService.request({
 				type: 'GET',
@@ -256,11 +261,13 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 		}
 
 		const result = await asText(context);
+
 		if (!result) {
 			return false;
 		}
 
 		let parsedResult: any;
+
 		try {
 			parsedResult = JSON.parse(result);
 		} catch (err) {
@@ -268,6 +275,7 @@ class ChatSetupContribution extends Disposable implements IWorkbenchContribution
 		}
 
 		this.resolvedEntitlement = Boolean(parsedResult[entitlement.enablementKey]);
+
 		const trial = parsedResult[entitlement.trialKey] === entitlement.trialValue;
 		this.telemetryService.publicLog2<ChatSetupEntitlementEnablementEvent, ChatSetupEntitlementEnablementClassification>('chatInstallEntitlement', {
 			entitled: this.resolvedEntitlement,
@@ -320,9 +328,11 @@ class ChatSetupState {
 
 	private updateContext(): void {
 		const chatSetupTriggered = this.storageService.getBoolean(ChatSetupState.CHAT_SETUP_TRIGGERD, StorageScope.PROFILE, false);
+
 		const chatInstalled = this.storageService.getBoolean(ChatSetupState.CHAT_EXTENSION_INSTALLED, StorageScope.PROFILE, false);
 
 		const showChatSetup = chatSetupTriggered && !chatInstalled;
+
 		if (showChatSetup) {
 			// this is ugly but fixes flicker from a previous chat install
 			this.storageService.remove('chat.welcomeMessageContent.panel', StorageScope.APPLICATION);
@@ -348,6 +358,7 @@ class ChatSetupTriggerAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const viewsService = accessor.get(IViewsService);
+
 		const instantiationService = accessor.get(IInstantiationService);
 
 		instantiationService.createInstance(ChatSetupState).update({ triggered: true });
@@ -371,7 +382,9 @@ class ChatSetupHideAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const viewsDescriptorService = accessor.get(IViewDescriptorService);
+
 		const layoutService = accessor.get(IWorkbenchLayoutService);
+
 		const instantiationService = accessor.get(IInstantiationService);
 
 		const location = viewsDescriptorService.getViewLocationById(ChatViewId);
@@ -380,6 +393,7 @@ class ChatSetupHideAction extends Action2 {
 
 		if (location === ViewContainerLocation.AuxiliaryBar) {
 			const activeContainers = viewsDescriptorService.getViewContainersByLocation(location).filter(container => viewsDescriptorService.getViewContainerModel(container).activeViewDescriptors.length > 0);
+
 			if (activeContainers.length === 0) {
 				layoutService.setPartHidden(true, Parts.AUXILIARYBAR_PART); // hide if there are no views in the secondary sidebar
 			}
@@ -418,16 +432,23 @@ class ChatSetupInstallAction extends Action2 {
 
 	static async install(accessor: ServicesAccessor, signedIn: boolean) {
 		const extensionsWorkbenchService = accessor.get(IExtensionsWorkbenchService);
+
 		const productService = accessor.get(IProductService);
+
 		const telemetryService = accessor.get(ITelemetryService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const chatAgentService = accessor.get(IChatAgentService);
 
 		const setupInstallingContextKey = ChatContextKeys.ChatSetup.installing.bindTo(contextKeyService);
+
 		const activeElement = getActiveElement();
 
 		let installResult: 'installed' | 'cancelled' | 'failedInstall';
+
 		try {
 			setupInstallingContextKey.set(true);
 			showChatView(viewsService);
@@ -480,10 +501,15 @@ class ChatSetupSignInAndInstallChatAction extends Action2 {
 
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const authenticationService = accessor.get(IAuthenticationService);
+
 		const instantiationService = accessor.get(IInstantiationService);
+
 		const telemetryService = accessor.get(ITelemetryService);
+
 		const contextKeyService = accessor.get(IContextKeyService);
+
 		const viewsService = accessor.get(IViewsService);
+
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 
 		const hideSecondarySidebar = !layoutService.isVisible(Parts.AUXILIARYBAR_PART);
@@ -491,6 +517,7 @@ class ChatSetupSignInAndInstallChatAction extends Action2 {
 		const setupSigningInContextKey = ChatContextKeys.ChatSetup.signingIn.bindTo(contextKeyService);
 
 		let session: AuthenticationSession | undefined;
+
 		try {
 			setupSigningInContextKey.set(true);
 			showChatView(viewsService);

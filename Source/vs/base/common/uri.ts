@@ -6,8 +6,11 @@ import { CharCode } from './charCode.js';
 import { MarshalledId } from './marshallingIds.js';
 import * as paths from './path.js';
 import { isWindows } from './platform.js';
+
 const _schemePattern = /^\w[\w\d+.-]*$/;
+
 const _singleSlashStart = /^\//;
+
 const _doubleSlashStart = /^\/\//;
 function _validateUri(ret: URI, _strict?: boolean): void {
     // scheme, must be set
@@ -68,7 +71,9 @@ function _referenceResolution(scheme: string, path: string): string {
     return path;
 }
 const _empty = '';
+
 const _slash = '/';
+
 const _regexp = /^(([^:/?#]+?):)?(\/\/([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?/;
 /**
  * Uniform Resource Identifier (URI) http://tools.ietf.org/html/rfc3986.
@@ -199,6 +204,7 @@ export class URI implements UriComponents {
             return this;
         }
         let { scheme, authority, path, query, fragment } = change;
+
         if (scheme === undefined) {
             scheme = this.scheme;
         }
@@ -247,6 +253,7 @@ export class URI implements UriComponents {
      */
     static parse(value: string, _strict: boolean = false): URI {
         const match = _regexp.exec(value);
+
         if (!match) {
             return new Uri(_empty, _empty, _empty, _empty, _empty);
         }
@@ -265,6 +272,7 @@ export class URI implements UriComponents {
     good.scheme === 'file';
     good.path === '/coding/c#/project1';
     good.fragment === '';
+
     const bad = URI.parse('file://' + '/coding/c#/project1');
     bad.scheme === 'file';
     bad.path === '/coding/c'; // path is now broken
@@ -285,6 +293,7 @@ export class URI implements UriComponents {
         // or use the path as given
         if (path[0] === _slash && path[1] === _slash) {
             const idx = path.indexOf(_slash, 2);
+
             if (idx === -1) {
                 authority = path.substring(2);
                 path = _slash;
@@ -305,6 +314,7 @@ export class URI implements UriComponents {
      */
     static from(components: UriComponents, strict?: boolean): URI {
         const result = new Uri(components.scheme, components.authority, components.path, components.query, components.fragment, strict);
+
         return result;
     }
     /**
@@ -319,6 +329,7 @@ export class URI implements UriComponents {
             throw new Error(`[UriError]: cannot call joinPath on URI without path`);
         }
         let newPath: string;
+
         if (isWindows && uri.scheme === 'file') {
             newPath = URI.file(paths.win32.join(uriToFsPath(uri, true), ...pathFragment)).path;
         }
@@ -370,6 +381,7 @@ export class URI implements UriComponents {
             const result = new Uri(data);
             result._formatted = (<UriState>data).external ?? null;
             result._fsPath = (<UriState>data)._sep === _pathSepMarker ? (<UriState>data).fsPath ?? null : null;
+
             return result;
         }
     }
@@ -485,7 +497,9 @@ const encodeTable: {
 };
 function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthority: boolean): string {
     let res: string | undefined = undefined;
+
     let nativeEncodePos = -1;
+
     for (let pos = 0; pos < uriComponent.length; pos++) {
         const code = uriComponent.charCodeAt(pos);
         // unreserved characters: https://tools.ietf.org/html/rfc3986#section-2.3
@@ -517,6 +531,7 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
             }
             // check with default table first
             const escaped = encodeTable[code];
+
             if (escaped !== undefined) {
                 // check if we are delaying native encode
                 if (nativeEncodePos !== -1) {
@@ -539,8 +554,10 @@ function encodeURIComponentFast(uriComponent: string, isPath: boolean, isAuthori
 }
 function encodeURIComponentMinimal(path: string): string {
     let res: string | undefined = undefined;
+
     for (let pos = 0; pos < path.length; pos++) {
         const code = path.charCodeAt(pos);
+
         if (code === CharCode.Hash || code === CharCode.QuestionMark) {
             if (res === undefined) {
                 res = path.substr(0, pos);
@@ -560,6 +577,7 @@ function encodeURIComponentMinimal(path: string): string {
  */
 export function uriToFsPath(uri: URI, keepDriveLetterCasing: boolean): string {
     let value: string;
+
     if (uri.authority && uri.path.length > 1 && uri.scheme === 'file') {
         // unc path: file://shares/c$/far/boo
         value = `//${uri.authority}${uri.path}`;
@@ -591,8 +609,11 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
     const encoder = !skipEncoding
         ? encodeURIComponentFast
         : encodeURIComponentMinimal;
+
     let res = '';
+
     let { scheme, authority, path, query, fragment } = uri;
+
     if (scheme) {
         res += scheme;
         res += ':';
@@ -603,11 +624,13 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
     }
     if (authority) {
         let idx = authority.indexOf('@');
+
         if (idx !== -1) {
             // <user>@<auth>
             const userinfo = authority.substr(0, idx);
             authority = authority.substr(idx + 1);
             idx = userinfo.lastIndexOf(':');
+
             if (idx === -1) {
                 res += encoder(userinfo, false, false);
             }
@@ -621,6 +644,7 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
         }
         authority = authority.toLowerCase();
         idx = authority.lastIndexOf(':');
+
         if (idx === -1) {
             res += encoder(authority, false, true);
         }
@@ -634,12 +658,14 @@ function _asFormatted(uri: URI, skipEncoding: boolean): string {
         // lower-case windows drive letters in /C:/fff or C:/fff
         if (path.length >= 3 && path.charCodeAt(0) === CharCode.Slash && path.charCodeAt(2) === CharCode.Colon) {
             const code = path.charCodeAt(1);
+
             if (code >= CharCode.A && code <= CharCode.Z) {
                 path = `/${String.fromCharCode(code + 32)}:${path.substr(3)}`; // "/c:".length === 3
             }
         }
         else if (path.length >= 2 && path.charCodeAt(1) === CharCode.Colon) {
             const code = path.charCodeAt(0);
+
             if (code >= CharCode.A && code <= CharCode.Z) {
                 path = `${String.fromCharCode(code + 32)}:${path.substr(2)}`; // "/c:".length === 3
             }

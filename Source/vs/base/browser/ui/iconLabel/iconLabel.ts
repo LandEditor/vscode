@@ -131,8 +131,11 @@ export class IconLabel extends Disposable {
 
 	setLabel(label: string | string[], description?: string, options?: IIconLabelValueOptions): void {
 		const labelClasses = ['monaco-icon-label'];
+
 		const containerClasses = ['monaco-icon-label-container'];
+
 		let ariaLabel: string = '';
+
 		if (options) {
 			if (options.extraClasses) {
 				labelClasses.push(...options.extraClasses);
@@ -159,8 +162,10 @@ export class IconLabel extends Disposable {
 		}
 
 		const existingIconNode = this.domNode.element.querySelector('.monaco-icon-label-iconpath');
+
 		if (options?.iconPath) {
 			let iconNode;
+
 			if (!existingIconNode || !(dom.isHTMLElement(existingIconNode))) {
 				iconNode = dom.$('.monaco-icon-label-iconpath');
 				this.domNode.element.prepend(iconNode);
@@ -182,6 +187,7 @@ export class IconLabel extends Disposable {
 
 		if (description || this.descriptionNode) {
 			const descriptionNode = this.getOrCreateDescriptionNode();
+
 			if (descriptionNode instanceof HighlightedLabel) {
 				descriptionNode.set(description || '', options ? options.descriptionMatches : undefined, undefined, options?.labelEscapeNewLines);
 				this.setupHover(descriptionNode.element, options?.descriptionTitle);
@@ -200,6 +206,7 @@ export class IconLabel extends Disposable {
 
 	private setupHover(htmlElement: HTMLElement, tooltip: string | IManagedHoverTooltipMarkdownString | undefined): void {
 		const previousCustomHover = this.customHovers.get(htmlElement);
+
 		if (previousCustomHover) {
 			previousCustomHover.dispose();
 			this.customHovers.delete(htmlElement);
@@ -207,10 +214,12 @@ export class IconLabel extends Disposable {
 
 		if (!tooltip) {
 			htmlElement.removeAttribute('title');
+
 			return;
 		}
 
 		let hoverTarget = htmlElement;
+
 		if (this.creationOptions?.hoverTargetOverride) {
 			if (!dom.isAncestor(htmlElement, this.creationOptions.hoverTargetOverride)) {
 				throw new Error('hoverTargetOverrride must be an ancestor of the htmlElement');
@@ -232,6 +241,7 @@ export class IconLabel extends Disposable {
 			setupNativeHover(hoverTarget, tooltip);
 		} else {
 			const hoverDisposable = getBaseLayerHoverDelegate().setupManagedHover(this.hoverDelegate, hoverTarget, tooltip);
+
 			if (hoverDisposable) {
 				this.customHovers.set(htmlElement, hoverDisposable);
 			}
@@ -240,6 +250,7 @@ export class IconLabel extends Disposable {
 
 	public override dispose() {
 		super.dispose();
+
 		for (const disposable of this.customHovers.values()) {
 			disposable.dispose();
 		}
@@ -258,6 +269,7 @@ export class IconLabel extends Disposable {
 	private getOrCreateDescriptionNode() {
 		if (!this.descriptionNode) {
 			const descriptionContainer = this._register(new FastLabelNode(dom.append(this.labelContainer, dom.$('span.monaco-icon-description-container'))));
+
 			if (this.creationOptions?.supportDescriptionHighlights) {
 				this.descriptionNode = this._register(new HighlightedLabel(dom.append(descriptionContainer.element, dom.$('span.label-description')), { supportIcons: !!this.creationOptions.supportIcons }));
 			} else {
@@ -300,6 +312,7 @@ class Label {
 
 			for (let i = 0; i < label.length; i++) {
 				const l = label[i];
+
 				const id = options?.domId && `${options?.domId}_${i}`;
 
 				dom.append(this.container, dom.$('a.label-name', { id, 'data-icon-label-count': label.length, 'data-icon-label-index': i, 'role': 'treeitem' }, l));
@@ -328,6 +341,7 @@ function splitMatches(labels: string[], separator: string, matches: readonly IMa
 			.map(({ start, end }) => ({ start: start - labelStart, end: end - labelStart }));
 
 		labelStart = labelRange.end + separator.length;
+
 		return result;
 	});
 }
@@ -364,14 +378,18 @@ class LabelWithHighlights extends Disposable {
 			this.singleLabel = undefined;
 
 			const separator = options?.separator || '/';
+
 			const matches = splitMatches(label, separator, options?.matches);
 
 			for (let i = 0; i < label.length; i++) {
 				const l = label[i];
+
 				const m = matches ? matches[i] : undefined;
+
 				const id = options?.domId && `${options?.domId}_${i}`;
 
 				const name = dom.$('a.label-name', { id, 'data-icon-label-count': label.length, 'data-icon-label-index': i, 'role': 'treeitem' });
+
 				const highlightedLabel = this._register(new HighlightedLabel(dom.append(this.container, name), { supportIcons: this.supportIcons }));
 				highlightedLabel.set(l, m, undefined, options?.labelEscapeNewLines);
 

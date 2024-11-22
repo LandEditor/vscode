@@ -12,14 +12,20 @@ import * as parcelWatcher from '@parcel/watcher';
 function main() {
     const server = new HttpServer({ host: 'localhost', port: 5001, cors: true });
     server.use('/', redirectToMonacoEditorPlayground());
+
     const rootDir = path.join(__dirname, '..');
+
     const fileServer = new FileServer(rootDir);
     server.use(fileServer.handleRequest);
+
     const moduleIdMapper = new SimpleModuleIdPathMapper(path.join(rootDir, 'out'));
+
     const editorMainBundle = new CachedBundle('vs/editor/editor.main', moduleIdMapper);
     fileServer.overrideFileContent(editorMainBundle.entryModulePath, () => editorMainBundle.bundle());
+
     const loaderPath = path.join(rootDir, 'out/vs/loader.js');
     fileServer.overrideFileContent(loaderPath, async () => Buffer.from(new TextEncoder().encode(makeLoaderJsHotReloadable(await fsPromise.readFile(loaderPath, 'utf8'), new URL('/file-changes', server.url)))));
+
     const watcher = DirWatcher.watchRecursively(moduleIdMapper.rootDir);
     watcher.onDidChange((path, newContent) => {
         editorMainBundle.setModuleContent(path, newContent);
@@ -37,6 +43,7 @@ class HttpServer {
     private readonly server: http.Server;
     public readonly url: URL;
     private handler: ChainableRequestHandler[] = [];
+
     constructor(options: {
         host: string;
         port: number;
@@ -47,10 +54,12 @@ class HttpServer {
                 res.setHeader('Access-Control-Allow-Origin', '*');
             }
             let i = 0;
+
             const next = async (req: http.IncomingMessage, res: http.ServerResponse) => {
                 if (i >= this.handler.length) {
                     res.writeHead(404, { 'Content-Type': 'text/plain' });
                     res.end('404 Not Found');
+
                     return;
                 }
                 const handler = this.handler[i];
@@ -72,7 +81,9 @@ class HttpServer {
     ]) {
         const handler = args.length === 1 ? args[0] : (req, res, next) => {
             const path = args[0];
+
             const requestedUrl = new URL(req.url, this.url);
+
             if (requestedUrl.pathname === path) {
                 return args[1](req, res, next);
             }
@@ -93,19 +104,26 @@ function redirectToMonacoEditorPlayground(): ChainableRequestHandler {
 }
 class FileServer {
     private readonly overrides = new Map<string, () => Promise<Buffer>>();
+
     constructor(public readonly publicDir: string) { }
     public readonly handleRequest: ChainableRequestHandler = async (req, res, next) => {
         const requestedUrl = new URL(req.url!, `http://${req.headers.host}`);
+
         const pathName = requestedUrl.pathname;
+
         const filePath = path.join(this.publicDir, pathName);
+
         if (!filePath.startsWith(this.publicDir)) {
             res.writeHead(403, { 'Content-Type': 'text/plain' });
             res.end('403 Forbidden');
+
             return;
         }
         try {
             const override = this.overrides.get(filePath);
+
             let content: Buffer;
+
             if (override) {
                 content = await override();
             }
@@ -128,11 +146,14 @@ class FileServer {
     };
     public filePathToUrlPath(filePath: string): string | undefined {
         const relative = path.relative(this.publicDir, filePath);
+
         const isSubPath = !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+
         if (!isSubPath) {
             return undefined;
         }
         const relativePath = relative.replace(/\\/g, '/');
+
         return `/${relativePath}`;
     }
     public overrideFileContent(filePath: string, content: () => Promise<Buffer>): void {
@@ -141,23 +162,32 @@ class FileServer {
 }
 function getContentType(filePath: string): string {
     const extname = path.extname(filePath);
+
     switch (extname) {
         case '.js':
             return 'text/javascript';
+
         case '.css':
             return 'text/css';
+
         case '.json':
             return 'application/json';
+
         case '.png':
             return 'image/png';
+
         case '.jpg':
             return 'image/jpg';
+
         case '.svg':
             return 'image/svg+xml';
+
         case '.html':
             return 'text/html';
+
         case '.wasm':
             return 'application/wasm';
+
         default:
             return 'text/plain';
     }
@@ -170,12 +200,16 @@ interface IDisposable {
 class DirWatcher {
     public static watchRecursively(dir: string): DirWatcher {
         const listeners: ((path: string, newContent: string) => void)[] = [];
+
         const fileContents = new Map<string, string>();
+
         const event = (handler: (path: string, newContent: string) => void) => {
             listeners.push(handler);
+
             return {
                 dispose: () => {
                     const idx = listeners.indexOf(handler);
+
                     if (idx >= 0) {
                         listeners.splice(idx, 1);
                     }
@@ -186,6 +220,7 @@ class DirWatcher {
             for (const e of events) {
                 if (e.type === 'update') {
                     const newContent = await fsPromise.readFile(e.path, 'utf8');
+
                     if (fileContents.get(e.path) !== newContent) {
                         fileContents.set(e.path, newContent);
                         listeners.forEach(l => l(e.path, newContent));
@@ -193,6 +228,7 @@ class DirWatcher {
                 }
             }
         });
+
         return new DirWatcher(event);
     }
     constructor(public readonly onDidChange: (handler: (path: string, newContent: string) => void) => IDisposable) {
@@ -201,8 +237,10 @@ class DirWatcher {
 function handleGetFileChangesRequest(watcher: DirWatcher, fileServer: FileServer, moduleIdMapper: SimpleModuleIdPathMapper): ChainableRequestHandler {
     return async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
+
         const d = watcher.onDidChange((fsPath, newContent) => {
             const path = fileServer.filePathToUrlPath(fsPath);
+
             if (path) {
                 res.write(JSON.stringify({ changedPath: path, moduleId: moduleIdMapper.getModuleId(fsPath), newContent }) + '\n');
             }
@@ -212,12 +250,14 @@ function handleGetFileChangesRequest(watcher: DirWatcher, fileServer: FileServer
 }
 function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): string {
     loaderJsCode = loaderJsCode.replace(/constructor\(env, scriptLoader, defineFunc, requireFunc, loaderAvailableTimestamp = 0\) {/, '$&globalThis.___globalModuleManager = this; globalThis.vscode = { process: { env: { VSCODE_DEV: true } } }');
+
     const ___globalModuleManager: any = undefined;
     // This code will be appended to loader.js
     function $watchChanges(fileChangesUrl: string) {
         interface HotReloadConfig {
         }
         let reloadFn;
+
         if (globalThis.$sendMessageToParent) {
             reloadFn = () => globalThis.$sendMessageToParent({ kind: 'reload' });
         }
@@ -231,35 +271,45 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
         (fetch as any)(fileChangesUrl)
             .then(async (request) => {
             const reader = request.body.getReader();
+
             let buffer = '';
+
             while (true) {
                 const { done, value } = await reader.read();
+
                 if (done) {
                     break;
                 }
                 buffer += new TextDecoder().decode(value);
+
                 const lines = buffer.split('\n');
                 buffer = lines.pop()!;
+
                 const changes: {
                     relativePath: string;
                     config: HotReloadConfig | undefined;
                     path: string;
                     newContent: string;
                 }[] = [];
+
                 for (const line of lines) {
                     const data = JSON.parse(line);
+
                     const relativePath = data.changedPath.replace(/\\/g, '/').split('/out/')[1];
                     changes.push({ config: {}, path: data.changedPath, relativePath, newContent: data.newContent });
                 }
                 const result = handleChanges(changes, 'playground-server');
+
                 if (result.reloadFailedJsFiles.length > 0) {
                     reloadFn();
                 }
             }
         }).catch(err => {
             console.error(err);
+
             setTimeout(() => $watchChanges(fileChangesUrl), 1000);
         });
+
         function handleChanges(changes: {
             relativePath: string;
             config: HotReloadConfig | undefined;
@@ -273,14 +323,17 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
                 timeout: any;
                 shouldReload: boolean;
             } = globalThis.$hotReloadData || (globalThis.$hotReloadData = { count: 0, messageHideTimeout: undefined, shouldReload: false });
+
             const reloadFailedJsFiles: {
                 relativePath: string;
                 path: string;
             }[] = [];
+
             for (const change of changes) {
                 handleChange(change.relativePath, change.path, change.newContent, change.config);
             }
             return { reloadFailedJsFiles };
+
             function handleChange(relativePath: string, path: string, newSrc: string, config: any) {
                 if (relativePath.endsWith('.css')) {
                     handleCssChange(relativePath);
@@ -295,6 +348,7 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
                 }
                 const styleSheet = (([...document.querySelectorAll(`link[rel='stylesheet']`)] as HTMLLinkElement[]))
                     .find(l => new URL(l.href, document.location.href).pathname.endsWith(relativePath));
+
                 if (styleSheet) {
                     setMessage(`reload ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
                     console.log(debugSessionName, 'css reloaded', relativePath);
@@ -307,28 +361,39 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
             }
             function handleJsChange(relativePath: string, path: string, newSrc: string, config: any) {
                 const moduleIdStr = trimEnd(relativePath, '.js');
+
                 const requireFn: any = globalThis.require;
+
                 const moduleManager = (requireFn as any).moduleManager;
+
                 if (!moduleManager) {
                     console.log(debugSessionName, 'ignoring js change, as moduleManager is not available', relativePath);
+
                     return;
                 }
                 const moduleId = moduleManager._moduleIdProvider.getModuleId(moduleIdStr);
+
                 const oldModule = moduleManager._modules2[moduleId];
+
                 if (!oldModule) {
                     console.log(debugSessionName, 'ignoring js change, as module is not loaded', relativePath);
+
                     return;
                 }
                 // Check if we can reload
                 const g = globalThis as any;
                 // A frozen copy of the previous exports
                 const oldExports = Object.freeze({ ...oldModule.exports });
+
                 const reloadFn = g.$hotReload_applyNewExports?.({ oldExports, newSrc, config });
+
                 if (!reloadFn) {
                     console.log(debugSessionName, 'ignoring js change, as module does not support hot-reload', relativePath);
                     hotReloadData.shouldReload = true;
                     reloadFailedJsFiles.push({ relativePath, path });
+
                     setMessage(`hot reload not supported for ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
+
                     return;
                 }
                 // Eval maintains source maps
@@ -341,24 +406,31 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
                     // Redefine the module
                     delete moduleManager._modules2[moduleId];
                     moduleManager.defineModule(moduleIdStr, deps, callback);
+
                     const newModule = moduleManager._modules2[moduleId];
                     // Patch the exports of the old module, so that modules using the old module get the new exports
                     Object.assign(oldModule.exports, newModule.exports);
                     // We override the exports so that future reloads still patch the initial exports.
                     newModule.exports = oldModule.exports;
+
                     const successful = reloadFn(newModule.exports);
+
                     if (!successful) {
                         hotReloadData.shouldReload = true;
+
                         setMessage(`hot reload failed ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
                         console.log(debugSessionName, 'hot reload was not successful', relativePath);
+
                         return;
                     }
                     console.log(debugSessionName, 'hot reloaded', moduleIdStr);
+
                     setMessage(`successfully reloaded ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
                 });
             }
             function setMessage(message: string) {
                 const domElem = (document.querySelector('.titlebar-center .window-title')) as HTMLDivElement | undefined;
+
                 if (!domElem) {
                     return;
                 }
@@ -381,13 +453,16 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
             function formatPath(path: string): string {
                 const parts = path.split('/');
                 parts.reverse();
+
                 let result = parts[0];
                 parts.shift();
+
                 for (const p of parts) {
                     if (result.length + p.length > 40) {
                         break;
                     }
                     result = p + '/' + result;
+
                     if (result.length > 20) {
                         break;
                     }
@@ -409,12 +484,14 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
 ${$watchChanges.toString()}
 $watchChanges(${JSON.stringify(fileChangesUrl)});
 `;
+
     return `${loaderJsCode}\n${additionalJsCode}`;
 }
 // #endregion
 // #region Bundling
 class CachedBundle {
     public readonly entryModulePath = this.mapper.resolveRequestToPath(this.moduleId)!;
+
     constructor(private readonly moduleId: string, private readonly mapper: SimpleModuleIdPathMapper) {
     }
     private loader: ModuleLoader | undefined = undefined;
@@ -427,7 +504,9 @@ class CachedBundle {
                     await this.loader.addModuleAndDependencies(this.entryModulePath);
                 }
                 const editorEntryPoint = await this.loader.getModule(this.entryModulePath);
+
                 const content = bundleWithDependencies(editorEntryPoint!);
+
                 return content;
             })();
         }
@@ -438,6 +517,7 @@ class CachedBundle {
             return;
         }
         const module = await this.loader!.getModule(path);
+
         if (module) {
             if (!this.loader.updateContent(module, newContent)) {
                 this.loader = undefined;
@@ -448,32 +528,40 @@ class CachedBundle {
 }
 function bundleWithDependencies(module: IModule): Buffer {
     const visited = new Set<IModule>();
+
     const builder = new SourceMapBuilder();
+
     function visit(module: IModule) {
         if (visited.has(module)) {
             return;
         }
         visited.add(module);
+
         for (const dep of module.dependencies) {
             visit(dep);
         }
         builder.addSource(module.source);
     }
     visit(module);
+
     const sourceMap = builder.toSourceMap();
     sourceMap.sourceRoot = module.source.sourceMap.sourceRoot;
+
     const sourceMapBase64Str = Buffer.from(JSON.stringify(sourceMap)).toString('base64');
     builder.addLine(`//# sourceMappingURL=data:application/json;base64,${sourceMapBase64Str}`);
+
     return builder.toContent();
 }
 class ModuleLoader {
     private readonly modules = new Map<string, Promise<IModule | undefined>>();
+
     constructor(private readonly mapper: SimpleModuleIdPathMapper) { }
     public getModule(path: string): Promise<IModule | undefined> {
         return Promise.resolve(this.modules.get(path));
     }
     public updateContent(module: IModule, newContent: string): boolean {
         const parsedModule = parseModule(newContent, module.path, this.mapper);
+
         if (!parsedModule) {
             return false;
         }
@@ -482,6 +570,7 @@ class ModuleLoader {
         }
         module.dependencyRequests = parsedModule.dependencyRequests;
         module.source = parsedModule.source;
+
         return true;
     }
     async addModuleAndDependencies(path: string): Promise<IModule | undefined> {
@@ -490,7 +579,9 @@ class ModuleLoader {
         }
         const promise = (async () => {
             const content = await fsPromise.readFile(path, { encoding: 'utf-8' });
+
             const parsedModule = parseModule(content, path, this.mapper);
+
             if (!parsedModule) {
                 return undefined;
             }
@@ -499,11 +590,13 @@ class ModuleLoader {
                     return null;
                 }
                 const depPath = this.mapper.resolveRequestToPath(r, path);
+
                 if (!depPath) {
                     return null;
                 }
                 return await this.addModuleAndDependencies(depPath);
             }))).filter((d): d is IModule => !!d);
+
             const module: IModule = {
                 id: this.mapper.getModuleId(path)!,
                 dependencyRequests: parsedModule.dependencyRequests,
@@ -511,9 +604,11 @@ class ModuleLoader {
                 path,
                 source: parsedModule.source,
             };
+
             return module;
         })();
         this.modules.set(path, promise);
+
         return promise;
     }
 }
@@ -534,21 +629,29 @@ function parseModule(content: string, path: string, mapper: SimpleModuleIdPathMa
     dependencyRequests: string[];
 } | undefined {
     const m = content.match(/define\((\[.*?\])/);
+
     if (!m) {
         return undefined;
     }
     const dependencyRequests = JSON.parse(m[1].replace(/'/g, '"')) as string[];
+
     const sourceMapHeader = '//# sourceMappingURL=data:application/json;base64,';
+
     const idx = content.indexOf(sourceMapHeader);
+
     let sourceMap: any = null;
+
     if (idx !== -1) {
         const sourceMapJsonStr = Buffer.from(content.substring(idx + sourceMapHeader.length), 'base64').toString('utf-8');
         sourceMap = JSON.parse(sourceMapJsonStr);
         content = content.substring(0, idx);
     }
     content = content.replace('define([', `define("${mapper.getModuleId(path)}", [`);
+
     const contentBuffer = Buffer.from(encoder.encode(content));
+
     const source = new Source(contentBuffer, sourceMap);
+
     return { dependencyRequests, source };
 }
 class SimpleModuleIdPathMapper {
@@ -558,6 +661,7 @@ class SimpleModuleIdPathMapper {
             return null;
         }
         const moduleId = path.substring(this.rootDir.length + 1);
+
         return moduleId.replace(/\\/g, '/').substring(0, moduleId.length - 3);
     }
     public resolveRequestToPath(request: string, requestingModulePath?: string): string | null {
@@ -588,11 +692,13 @@ class Source {
     public readonly sourceMap: SourceMap;
     public readonly sourceLines: number;
     public readonly sourceMapMappings: Buffer;
+
     constructor(content: Buffer, sourceMap: SourceMap | undefined) {
         if (!sourceMap) {
             sourceMap = SourceMapBuilder.emptySourceMap;
         }
         let sourceLines = countNL(content);
+
         if (content.length > 0 && content[content.length - 1] !== 10) {
             sourceLines++;
             content = Buffer.concat([content, Buffer.from([10])]);
@@ -621,9 +727,12 @@ class SourceMapBuilder {
     addSource(source: Source) {
         const sourceMap = source.sourceMap;
         this.outputBuffer.addBuffer(source.content);
+
         const sourceRemap: number[] = [];
+
         for (const v of sourceMap.sources) {
             let pos = this.sources.indexOf(v);
+
             if (pos < 0) {
                 pos = this.sources.length;
                 this.sources.push(v);
@@ -631,24 +740,37 @@ class SourceMapBuilder {
             sourceRemap.push(pos);
         }
         let lastOutputCol = 0;
+
         const inputMappings = source.sourceMapMappings;
+
         let outputLine = 0;
+
         let ip = 0;
+
         let inOutputCol = 0;
+
         let inSourceIndex = 0;
+
         let inSourceLine = 0;
+
         let inSourceCol = 0;
+
         let shift = 0;
+
         let value = 0;
+
         let valpos = 0;
+
         const commit = () => {
             if (valpos === 0) {
                 return;
             }
             this.mappings.addVLQ(inOutputCol - lastOutputCol);
             lastOutputCol = inOutputCol;
+
             if (valpos === 1) {
                 valpos = 0;
+
                 return;
             }
             const outSourceIndex = sourceRemap[inSourceIndex];
@@ -660,8 +782,10 @@ class SourceMapBuilder {
             this.lastSourceCol = inSourceCol;
             valpos = 0;
         };
+
         while (ip < inputMappings.length) {
             let b = inputMappings[ip++];
+
             if (b === 59) { // ;
                 commit();
                 this.mappings.addByte(59);
@@ -675,31 +799,41 @@ class SourceMapBuilder {
             }
             else {
                 b = charToInteger[b];
+
                 if (b === 255) {
                     throw new Error('Invalid sourceMap');
                 }
                 value += (b & 31) << shift;
+
                 if (b & 32) {
                     shift += 5;
                 }
                 else {
                     const shouldNegate = value & 1;
                     value >>= 1;
+
                     if (shouldNegate) {
                         value = -value;
                     }
                     switch (valpos) {
                         case 0:
                             inOutputCol += value;
+
                             break;
+
                         case 1:
                             inSourceIndex += value;
+
                             break;
+
                         case 2:
                             inSourceLine += value;
+
                             break;
+
                         case 3:
                             inSourceCol += value;
+
                             break;
                     }
                     valpos++;
@@ -708,6 +842,7 @@ class SourceMapBuilder {
             }
         }
         commit();
+
         while (outputLine < source.sourceLines) {
             this.mappings.addByte(59);
             outputLine++;
@@ -730,6 +865,7 @@ export interface SourceMap {
     mappings: string | Buffer;
 }
 const charToInteger = Buffer.alloc(256);
+
 const integerToChar = Buffer.alloc(64);
 charToInteger.fill(255);
 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split('').forEach((char, i) => {
@@ -739,6 +875,7 @@ charToInteger.fill(255);
 class DynamicBuffer {
     private buffer: Buffer;
     private size: number;
+
     constructor() {
         this.buffer = Buffer.alloc(512);
         this.size = 0;
@@ -757,6 +894,7 @@ class DynamicBuffer {
     }
     addVLQ(num: number) {
         let clamped: number;
+
         if (num < 0) {
             num = (-num << 1) | 1;
         }
@@ -766,6 +904,7 @@ class DynamicBuffer {
         do {
             clamped = num & 31;
             num >>= 5;
+
             if (num > 0) {
                 clamped |= 32;
             }
@@ -789,6 +928,7 @@ class DynamicBuffer {
 }
 function countNL(b: Buffer): number {
     let res = 0;
+
     for (let i = 0; i < b.length; i++) {
         if (b[i] === 10) {
             res++;

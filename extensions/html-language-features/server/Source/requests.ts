@@ -59,12 +59,14 @@ export interface FileSystemProvider {
 }
 export function getFileSystemProvider(handledSchemas: string[], connection: Connection, runtime: RuntimeEnvironment): FileSystemProvider {
     const fileFs = runtime.fileFs && handledSchemas.indexOf('file') !== -1 ? runtime.fileFs : undefined;
+
     return {
         async stat(uri: string): Promise<FileStat> {
             if (fileFs && uri.startsWith('file:')) {
                 return fileFs.stat(uri);
             }
             const res = await connection.sendRequest(FsStatRequest.type, uri.toString());
+
             return res;
         },
         readDirectory(uri: string): Promise<[

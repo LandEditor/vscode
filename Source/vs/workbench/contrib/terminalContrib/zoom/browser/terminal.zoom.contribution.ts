@@ -28,6 +28,7 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
         return instance.getContribution<TerminalMouseWheelZoomContribution>(TerminalMouseWheelZoomContribution.ID);
     }
     private readonly _listener = this._register(new MutableDisposable());
+
     constructor(_ctx: ITerminalContributionContext | IDetachedCompatibleTerminalContributionContext, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService) {
@@ -54,12 +55,17 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
         // This is essentially a copy of what we do in the editor, just we modify font size directly
         // as there is no separate zoom level concept in the terminal
         const classifier = MouseWheelClassifier.INSTANCE;
+
         let prevMouseWheelTime = 0;
+
         let gestureStartFontSize = this._getConfigFontSize();
+
         let gestureHasZoomModifiers = false;
+
         let gestureAccumulatedDelta = 0;
         raw.attachCustomWheelEventHandler((e: WheelEvent) => {
             const browserEvent = e as any as IMouseWheelEvent;
+
             if (classifier.isPhysicalMouseWheel()) {
                 if (this._hasMouseWheelZoomModifiers(browserEvent)) {
                     const delta = browserEvent.deltaY > 0 ? -1 : 1;
@@ -67,6 +73,7 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
                     // EditorZoom.setZoomLevel(zoomLevel + delta);
                     browserEvent.preventDefault();
                     browserEvent.stopPropagation();
+
                     return false;
                 }
             }
@@ -82,14 +89,18 @@ class TerminalMouseWheelZoomContribution extends Disposable implements ITerminal
                 }
                 prevMouseWheelTime = Date.now();
                 gestureAccumulatedDelta += browserEvent.deltaY;
+
                 if (gestureHasZoomModifiers) {
                     const deltaAbs = Math.ceil(Math.abs(gestureAccumulatedDelta / 5));
+
                     const deltaDirection = gestureAccumulatedDelta > 0 ? -1 : 1;
+
                     const delta = deltaAbs * deltaDirection;
                     this._configurationService.updateValue(TerminalSettingId.FontSize, gestureStartFontSize + delta);
                     gestureAccumulatedDelta += browserEvent.deltaY;
                     browserEvent.preventDefault();
                     browserEvent.stopPropagation();
+
                     return false;
                 }
             }
@@ -111,7 +122,9 @@ registerTerminalAction({
     title: localize2('fontZoomIn', 'Increase Font Size'),
     run: async (c, accessor) => {
         const configurationService = accessor.get(IConfigurationService);
+
         const value = configurationService.getValue(TerminalSettingId.FontSize);
+
         if (isNumber(value)) {
             await configurationService.updateValue(TerminalSettingId.FontSize, value + 1);
         }
@@ -122,7 +135,9 @@ registerTerminalAction({
     title: localize2('fontZoomOut', 'Decrease Font Size'),
     run: async (c, accessor) => {
         const configurationService = accessor.get(IConfigurationService);
+
         const value = configurationService.getValue(TerminalSettingId.FontSize);
+
         if (isNumber(value)) {
             await configurationService.updateValue(TerminalSettingId.FontSize, value - 1);
         }

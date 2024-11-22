@@ -40,7 +40,9 @@ registerAction2(class extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor) {
             return;
         }
@@ -63,7 +65,9 @@ registerAction2(class extends NotebookMultiCellAction {
     }
     async runWithContext(accessor: ServicesAccessor, context: INotebookCommandContext): Promise<void> {
         const editorService = accessor.get(IEditorService);
+
         const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
         if (!editor) {
             return;
         }
@@ -74,6 +78,7 @@ registerAction2(class extends NotebookMultiCellAction {
 function notebookContainsTextModel(uri: URI, textModel: ITextModel) {
     if (textModel.uri.scheme === Schemas.vscodeNotebookCell) {
         const cellUri = CellUri.parse(textModel.uri);
+
         if (cellUri && isEqual(cellUri.notebook, uri)) {
             return true;
         }
@@ -84,6 +89,7 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
     // Get the search string result, following the same logic in _start function in 'vs/editor/contrib/find/browser/findController'
     if (opts.seedSearchStringFromSelection === 'single') {
         const selectionSearchString = getSelectionSearchString(editor, opts.seedSearchStringFromSelection, opts.seedSearchStringFromNonEmptySelection);
+
         if (selectionSearchString) {
             return {
                 searchString: selectionSearchString,
@@ -93,6 +99,7 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
     }
     else if (opts.seedSearchStringFromSelection === 'multiple' && !opts.updateSearchScope) {
         const selectionSearchString = getSelectionSearchString(editor, opts.seedSearchStringFromSelection);
+
         if (selectionSearchString) {
             return {
                 searchString: selectionSearchString,
@@ -104,7 +111,9 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
 }
 StartFindAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: ICodeEditor, args: any) => {
     const editorService = accessor.get(IEditorService);
+
     const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
     if (!editor) {
         return false;
     }
@@ -115,6 +124,7 @@ StartFindAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: 
         const codeEditorService = accessor.get(ICodeEditorService);
         // check if the active pane contains the active text editor
         const textEditor = codeEditorService.getFocusedCodeEditor() || codeEditorService.getActiveCodeEditor();
+
         if (editor.hasModel() && textEditor && textEditor.hasModel() && notebookContainsTextModel(editor.textModel.uri, textEditor.getModel())) {
             // the active text editor is in notebook editor
         }
@@ -123,6 +133,7 @@ StartFindAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: 
         }
     }
     const controller = editor.getContribution<NotebookFindContrib>(NotebookFindContrib.id);
+
     const searchStringOptions = getSearchStringOptions(codeEditor, {
         forceRevealReplace: false,
         seedSearchStringFromSelection: codeEditor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' ? 'single' : 'none',
@@ -133,11 +144,16 @@ StartFindAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: 
         updateSearchScope: false,
         loop: codeEditor.getOption(EditorOption.find).loop
     });
+
     let options: IShowNotebookFindWidgetOptions | undefined = undefined;
+
     const uri = codeEditor.getModel().uri;
+
     const data = CellUri.parse(uri);
+
     if (searchStringOptions?.selection && data) {
         const cell = editor.getCellByHandle(data.handle);
+
         if (cell) {
             options = {
                 searchStringSeededFrom: { cell, range: searchStringOptions.selection },
@@ -145,11 +161,14 @@ StartFindAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: 
         }
     }
     controller.show(searchStringOptions?.searchString, options);
+
     return true;
 });
 StartFindReplaceAction.addImplementation(100, (accessor: ServicesAccessor, codeEditor: ICodeEditor, args: any) => {
     const editorService = accessor.get(IEditorService);
+
     const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
+
     if (!editor) {
         return false;
     }
@@ -157,6 +176,7 @@ StartFindReplaceAction.addImplementation(100, (accessor: ServicesAccessor, codeE
         return false;
     }
     const controller = editor.getContribution<NotebookFindContrib>(NotebookFindContrib.id);
+
     const searchStringOptions = getSearchStringOptions(codeEditor, {
         forceRevealReplace: false,
         seedSearchStringFromSelection: codeEditor.getOption(EditorOption.find).seedSearchStringFromSelection !== 'never' ? 'single' : 'none',
@@ -167,8 +187,10 @@ StartFindReplaceAction.addImplementation(100, (accessor: ServicesAccessor, codeE
         updateSearchScope: false,
         loop: codeEditor.getOption(EditorOption.find).loop
     });
+
     if (controller) {
         controller.replace(searchStringOptions?.searchString);
+
         return true;
     }
     return false;

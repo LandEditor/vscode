@@ -24,6 +24,7 @@ import { IBoundarySashes } from '../../base/browser/ui/sash/sash.js';
 import { IBaseActionViewItemOptions } from '../../base/browser/ui/actionbar/actionViewItems.js';
 export abstract class PaneComposite extends Composite implements IPaneComposite {
     private viewPaneContainer?: ViewPaneContainer;
+
     constructor(id: string, 
     @ITelemetryService
     telemetryService: ITelemetryService, 
@@ -74,8 +75,10 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
     }
     override getMenuIds(): MenuId[] {
         const result: MenuId[] = [];
+
         if (this.viewPaneContainer?.menuActions) {
             result.push(this.viewPaneContainer.menuActions.menuId);
+
             if (this.viewPaneContainer.isViewMergedWithContainer()) {
                 result.push(this.viewPaneContainer.panes[0].menuActions.menuId);
             }
@@ -84,10 +87,13 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
     }
     override getActions(): readonly IAction[] {
         const result = [];
+
         if (this.viewPaneContainer?.menuActions) {
             result.push(...this.viewPaneContainer.menuActions.getPrimaryActions());
+
             if (this.viewPaneContainer.isViewMergedWithContainer()) {
                 const viewPane = this.viewPaneContainer.panes[0];
+
                 if (viewPane.shouldShowFilterInHeader()) {
                     result.push(VIEWPANE_FILTER_ACTION);
                 }
@@ -101,10 +107,14 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
             return [];
         }
         const viewPaneActions = this.viewPaneContainer.isViewMergedWithContainer() ? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions() : [];
+
         let menuActions = this.viewPaneContainer.menuActions.getSecondaryActions();
+
         const viewsSubmenuActionIndex = menuActions.findIndex(action => action instanceof SubmenuItemAction && action.item.submenu === ViewsSubMenu);
+
         if (viewsSubmenuActionIndex !== -1) {
             const viewsSubmenuAction = <SubmenuItemAction>menuActions[viewsSubmenuActionIndex];
+
             if (viewsSubmenuAction.actions.some(({ enabled }) => enabled)) {
                 if (menuActions.length === 1 && viewPaneActions.length === 0) {
                     menuActions = viewsSubmenuAction.actions.slice();

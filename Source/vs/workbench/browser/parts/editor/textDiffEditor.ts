@@ -46,7 +46,9 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
             return undefined;
         }
         const originalEditor = this.diffEditorControl.getOriginalEditor();
+
         const modifiedEditor = this.diffEditorControl.getModifiedEditor();
+
         return (originalEditor.hasTextFocus() ? originalEditor : modifiedEditor).invokeWithinContext(accessor => accessor.get(IContextKeyService));
     }
     constructor(group: IEditorGroup, 
@@ -95,6 +97,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
         this.inputLifecycleStopWatch = undefined;
         // Set input and resolve
         await super.setInput(input, options, context, token);
+
         try {
             const resolvedModel = await input.resolve();
             // Check for cancellation
@@ -104,22 +107,27 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
             // Fallback to open as binary if not text
             if (!(resolvedModel instanceof TextDiffEditorModel)) {
                 this.openAsBinary(input, options);
+
                 return undefined;
             }
             // Set Editor Model
             const control = assertIsDefined(this.diffEditorControl);
+
             const resolvedDiffEditorModel = resolvedModel as TextDiffEditorModel;
+
             const vm = resolvedDiffEditorModel.textDiffEditorModel ? control.createViewModel(resolvedDiffEditorModel.textDiffEditorModel) : null;
             this._previousViewModel = vm;
             await vm?.waitForDiff();
             control.setModel(vm);
             // Restore view state (unless provided by options)
             let hasPreviousViewState = false;
+
             if (!isTextEditorViewState(options?.viewState)) {
                 hasPreviousViewState = this.restoreTextDiffEditorViewState(input, options, context, control);
             }
             // Apply options to editor if any
             let optionsGotApplied = false;
+
             if (options) {
                 optionsGotApplied = applyTextEditorOptions(options, control, ScrollType.Immediate);
             }
@@ -151,6 +159,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
         // Handle case where a file is too large to open without confirmation
         if ((<FileOperationError>error).fileOperationResult === FileOperationResult.FILE_TOO_LARGE) {
             let message: string;
+
             if (error instanceof TooLargeFileOperationError) {
                 message = localize('fileTooLargeForHeapErrorWithSize', "At least one file is not displayed in the text compare editor because it is very large ({0}).", ByteSize.formatSize(error.size));
             }
@@ -164,11 +173,13 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     private restoreTextDiffEditorViewState(editor: DiffEditorInput, options: ITextEditorOptions | undefined, context: IEditorOpenContext, control: IDiffEditor): boolean {
         const editorViewState = this.loadEditorViewState(editor, context);
+
         if (editorViewState) {
             if (options?.selection && editorViewState.modified) {
                 editorViewState.modified.cursorState = []; // prevent duplicate selections via options
             }
             control.restoreViewState(editorViewState);
+
             if (options?.revealIfVisible) {
                 control.revealFirstDiff();
             }
@@ -178,10 +189,13 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     private openAsBinary(input: DiffEditorInput, options: ITextEditorOptions | undefined): void {
         const original = input.original;
+
         const modified = input.modified;
+
         const binaryDiffInput = this.instantiationService.createInstance(DiffEditorInput, input.getName(), input.getDescription(), original, modified, true);
         // Forward binary flag to input if supported
         const fileEditorFactory = Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).getFileEditorFactory();
+
         if (fileEditorFactory.isFileEditor(original)) {
             original.setForceOpenAsBinary();
         }
@@ -206,6 +220,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     override setOptions(options: ITextEditorOptions | undefined): void {
         super.setOptions(options);
+
         if (options) {
             applyTextEditorOptions(options, assertIsDefined(this.diffEditorControl), ScrollType.Smooth);
         }
@@ -231,6 +246,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
         }
         const verbose = configuration.accessibility?.verbosity?.diffEditor ?? false;
         (editorConfiguration as IDiffEditorOptions).accessibilityVerbose = verbose;
+
         return editorConfiguration;
     }
     protected override getConfigurationOverrides(configuration: IEditorConfiguration): IDiffEditorOptions {
@@ -257,6 +273,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     private isFileBinaryError(error: Error | Error[]): boolean {
         if (Array.isArray(error)) {
             const errors = <Error[]>error;
+
             return errors.some(error => this.isFileBinaryError(error));
         }
         return (<TextFileOperationError>error).textFileOperationResult === TextFileOperationResult.FILE_IS_BINARY;
@@ -270,6 +287,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
         // Log input lifecycle telemetry
         const inputLifecycleElapsed = this.inputLifecycleStopWatch?.elapsed();
         this.inputLifecycleStopWatch = undefined;
+
         if (typeof inputLifecycleElapsed === 'number') {
             this.logInputLifecycleTelemetry(inputLifecycleElapsed, this.getControl()?.getModel()?.modified?.getLanguageId());
         }
@@ -278,6 +296,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     private logInputLifecycleTelemetry(duration: number, languageId: string | undefined): void {
         let collapseUnchangedRegions = false;
+
         if (this.diffEditorControl instanceof DiffEditorWidget) {
             collapseUnchangedRegions = this.diffEditorControl.collapseUnchangedRegions;
         }
@@ -321,6 +340,7 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     protected override setEditorVisible(visible: boolean): void {
         super.setEditorVisible(visible);
+
         if (visible) {
             this.diffEditorControl?.onVisible();
         }
@@ -342,10 +362,12 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
             return undefined;
         }
         const model = this.diffEditorControl.getModel();
+
         if (!model || !model.modified || !model.original) {
             return undefined; // view state always needs a model
         }
         const modelUri = this.toEditorViewStateResource(model);
+
         if (!modelUri) {
             return undefined; // model URI is needed to make sure we save the view state correctly
         }
@@ -356,7 +378,9 @@ export class TextDiffEditor extends AbstractTextEditor<IDiffEditorViewState> imp
     }
     protected override toEditorViewStateResource(modelOrInput: IDiffEditorModel | EditorInput): URI | undefined {
         let original: URI | undefined;
+
         let modified: URI | undefined;
+
         if (modelOrInput instanceof DiffEditorInput) {
             original = modelOrInput.original.resource;
             modified = modelOrInput.modified.resource;

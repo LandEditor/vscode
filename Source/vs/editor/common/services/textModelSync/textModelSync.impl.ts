@@ -32,10 +32,12 @@ export class WorkerTextModelSyncClient extends Disposable {
     private _syncedModelsLastUsedTime: {
         [modelUrl: string]: number;
     } = Object.create(null);
+
     constructor(proxy: IWorkerTextModelSyncChannelServer, modelService: IModelService, keepIdleModels: boolean = false) {
         super();
         this._proxy = proxy;
         this._modelService = modelService;
+
         if (!keepIdleModels) {
             const timer = new IntervalTimer();
             timer.cancelAndSet(() => this._checkStopModelSync(), Math.round(STOP_SYNC_MODEL_DELTA_TIME_MS / 2));
@@ -48,11 +50,13 @@ export class WorkerTextModelSyncClient extends Disposable {
         }
         this._syncedModels = Object.create(null);
         this._syncedModelsLastUsedTime = Object.create(null);
+
         super.dispose();
     }
     public ensureSyncedResources(resources: URI[], forceLargeModels: boolean = false): void {
         for (const resource of resources) {
             const resourceStr = resource.toString();
+
             if (!this._syncedModels[resourceStr]) {
                 this._beginModelSync(resource, forceLargeModels);
             }
@@ -63,9 +67,12 @@ export class WorkerTextModelSyncClient extends Disposable {
     }
     private _checkStopModelSync(): void {
         const currentTime = (new Date()).getTime();
+
         const toRemove: string[] = [];
+
         for (const modelUrl in this._syncedModelsLastUsedTime) {
             const elapsedTime = currentTime - this._syncedModelsLastUsedTime[modelUrl];
+
             if (elapsedTime > STOP_SYNC_MODEL_DELTA_TIME_MS) {
                 toRemove.push(modelUrl);
             }
@@ -76,6 +83,7 @@ export class WorkerTextModelSyncClient extends Disposable {
     }
     private _beginModelSync(resource: URI, forceLargeModels: boolean): void {
         const model = this._modelService.getModel(resource);
+
         if (!model) {
             return;
         }
@@ -89,6 +97,7 @@ export class WorkerTextModelSyncClient extends Disposable {
             EOL: model.getEOL(),
             versionId: model.getVersionId()
         });
+
         const toDispose = new DisposableStore();
         toDispose.add(model.onDidChangeContent((e) => {
             this._proxy.$acceptModelChanged(modelUrl.toString(), e);
@@ -112,6 +121,7 @@ export class WorkerTextModelSyncServer implements IWorkerTextModelSyncChannelSer
     private readonly _models: {
         [uri: string]: MirrorModel;
     };
+
     constructor() {
         this._models = Object.create(null);
     }
@@ -124,6 +134,7 @@ export class WorkerTextModelSyncServer implements IWorkerTextModelSyncChannelSer
     public getModels(): ICommonModel[] {
         const all: MirrorModel[] = [];
         Object.keys(this._models).forEach((key) => all.push(this._models[key]));
+
         return all;
     }
     $acceptNewModel(data: IRawModelData): void {
@@ -155,10 +166,14 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public findMatches(regex: RegExp): RegExpMatchArray[] {
         const matches = [];
+
         for (let i = 0; i < this._lines.length; i++) {
             const line = this._lines[i];
+
             const offsetToAdd = this.offsetAt(new Position(i + 1, 1));
+
             const iteratorOverMatches = line.matchAll(regex);
+
             for (const match of iteratorOverMatches) {
                 if (match.index || match.index === 0) {
                     match.index = match.index + offsetToAdd;
@@ -179,6 +194,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public getWordAtPosition(position: IPosition, wordDefinition: RegExp): Range | null {
         const wordAtText = getWordAtText(position.column, ensureValidWordDefinition(wordDefinition), this._lines[position.lineNumber - 1], 0);
+
         if (wordAtText) {
             return new Range(position.lineNumber, wordAtText.startColumn, position.lineNumber, wordAtText.endColumn);
         }
@@ -186,6 +202,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public getWordUntilPosition(position: IPosition, wordDefinition: RegExp): IWordAtPosition {
         const wordAtPosition = this.getWordAtPosition(position, wordDefinition);
+
         if (!wordAtPosition) {
             return {
                 word: '',
@@ -201,17 +218,24 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public words(wordDefinition: RegExp): Iterable<string> {
         const lines = this._lines;
+
         const wordenize = this._wordenize.bind(this);
+
         let lineNumber = 0;
+
         let lineText = '';
+
         let wordRangesIdx = 0;
+
         let wordRanges: IWordRange[] = [];
+
         return {
             *[Symbol.iterator]() {
                 while (true) {
                     if (wordRangesIdx < wordRanges.length) {
                         const value = lineText.substring(wordRanges[wordRangesIdx].start, wordRanges[wordRangesIdx].end);
                         wordRangesIdx += 1;
+
                         yield value;
                     }
                     else {
@@ -231,8 +255,11 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public getLineWords(lineNumber: number, wordDefinition: RegExp): IWordAtPosition[] {
         const content = this._lines[lineNumber - 1];
+
         const ranges = this._wordenize(content, wordDefinition);
+
         const words: IWordAtPosition[] = [];
+
         for (const range of ranges) {
             words.push({
                 word: content.substring(range.start, range.end),
@@ -244,6 +271,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     private _wordenize(content: string, wordDefinition: RegExp): IWordRange[] {
         const result: IWordRange[] = [];
+
         let match: RegExpExecArray | null;
         wordDefinition.lastIndex = 0; // reset lastIndex just to be sure
         while (match = wordDefinition.exec(content)) {
@@ -257,30 +285,39 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     public getValueInRange(range: IRange): string {
         range = this._validateRange(range);
+
         if (range.startLineNumber === range.endLineNumber) {
             return this._lines[range.startLineNumber - 1].substring(range.startColumn - 1, range.endColumn - 1);
         }
         const lineEnding = this._eol;
+
         const startLineIndex = range.startLineNumber - 1;
+
         const endLineIndex = range.endLineNumber - 1;
+
         const resultLines: string[] = [];
         resultLines.push(this._lines[startLineIndex].substring(range.startColumn - 1));
+
         for (let i = startLineIndex + 1; i < endLineIndex; i++) {
             resultLines.push(this._lines[i]);
         }
         resultLines.push(this._lines[endLineIndex].substring(0, range.endColumn - 1));
+
         return resultLines.join(lineEnding);
     }
     public offsetAt(position: IPosition): number {
         position = this._validatePosition(position);
         this._ensureLineStarts();
+
         return this._lineStarts!.getPrefixSum(position.lineNumber - 2) + (position.column - 1);
     }
     public positionAt(offset: number): IPosition {
         offset = Math.floor(offset);
         offset = Math.max(0, offset);
         this._ensureLineStarts();
+
         const out = this._lineStarts!.getIndexOf(offset);
+
         const lineLength = this._lines[out.index].length;
         // Ensure we return a valid position
         return {
@@ -290,7 +327,9 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
     }
     private _validateRange(range: IRange): IRange {
         const start = this._validatePosition({ lineNumber: range.startLineNumber, column: range.startColumn });
+
         const end = this._validatePosition({ lineNumber: range.endLineNumber, column: range.endColumn });
+
         if (start.lineNumber !== range.startLineNumber
             || start.column !== range.startColumn
             || end.lineNumber !== range.endLineNumber
@@ -309,7 +348,9 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
             throw new Error('bad position');
         }
         let { lineNumber, column } = position;
+
         let hasChanged = false;
+
         if (lineNumber < 1) {
             lineNumber = 1;
             column = 1;
@@ -322,6 +363,7 @@ export class MirrorModel extends BaseMirrorModel implements ICommonModel {
         }
         else {
             const maxCharacter = this._lines[lineNumber - 1].length + 1;
+
             if (column < 1) {
                 column = 1;
                 hasChanged = true;
@@ -343,14 +385,22 @@ export interface ICommonModel extends ILinkComputerTarget, IDocumentColorCompute
     uri: URI;
     version: number;
     eol: string;
+
     getValue(): string;
+
     getLinesContent(): string[];
+
     getLineCount(): number;
+
     getLineContent(lineNumber: number): string;
+
     getLineWords(lineNumber: number, wordDefinition: RegExp): IWordAtPosition[];
     words(wordDefinition: RegExp): Iterable<string>;
+
     getWordUntilPosition(position: IPosition, wordDefinition: RegExp): IWordAtPosition;
+
     getValueInRange(range: IRange): string;
+
     getWordAtPosition(position: IPosition, wordDefinition: RegExp): Range | null;
     offsetAt(position: IPosition): number;
     positionAt(offset: number): IPosition;

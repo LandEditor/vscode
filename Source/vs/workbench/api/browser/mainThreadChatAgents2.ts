@@ -129,9 +129,12 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 	$transferActiveChatSession(toWorkspace: UriComponents): void {
 		const widget = this._chatWidgetService.lastFocusedWidget;
+
 		const sessionId = widget?.viewModel?.model.sessionId;
+
 		if (!sessionId) {
 			this._logService.error(`MainThreadChat#$transferActiveChatSession: No active chat session found`);
+
 			return;
 		}
 
@@ -141,7 +144,9 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 	async $registerAgent(handle: number, extension: ExtensionIdentifier, id: string, metadata: IExtensionChatAgentMetadata, dynamicProps: IDynamicChatAgentProps | undefined): Promise<void> {
 		await this._extensionService.whenInstalledExtensionsRegistered();
+
 		const staticAgentRegistration = this._chatAgentService.getAgent(id, true);
+
 		if (!staticAgentRegistration && !dynamicProps) {
 			if (this._chatAgentService.getAgentsByName(id).length) {
 				// Likely some extension authors will not adopt the new ID, so give a hint if they register a
@@ -155,6 +160,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 		const impl: IChatAgentImplementation = {
 			invoke: async (request, progress, history, token) => {
 				this._pendingProgress.set(request.requestId, progress);
+
 				try {
 					return await this._proxy.$invokeAgent(handle, request, { history }, token) ?? {};
 				} finally {
@@ -180,6 +186,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 		};
 
 		let disposable: IDisposable;
+
 		if (!staticAgentRegistration && dynamicProps) {
 			const extensionDescription = this._extensionService.extensions.find(e => ExtensionIdentifier.equals(e.identifier, extension));
 			disposable = this._chatAgentService.registerDynamicAgent(
@@ -212,9 +219,12 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 	async $updateAgent(handle: number, metadataUpdate: IExtensionChatAgentMetadata): Promise<void> {
 		await this._extensionService.whenInstalledExtensionsRegistered();
+
 		const data = this._agents.get(handle);
+
 		if (!data) {
 			this._logService.error(`MainThreadChatAgents2#$updateAgent: No agent with handle ${handle} registered`);
+
 			return;
 		}
 		data.hasFollowups = metadataUpdate.hasFollowups;
@@ -223,16 +233,22 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 	async $handleProgressChunk(requestId: string, progress: IChatProgressDto, responsePartHandle?: number): Promise<number | void> {
 		const revivedProgress = revive(progress) as IChatProgress;
+
 		if (revivedProgress.kind === 'progressTask') {
 			const handle = ++this._responsePartHandlePool;
+
 			const responsePartId = `${requestId}_${handle}`;
+
 			const task = new MainThreadChatTask(revivedProgress.content);
 			this._activeTasks.set(responsePartId, task);
 			this._pendingProgress.get(requestId)?.(task);
+
 			return handle;
 		} else if (responsePartHandle !== undefined) {
 			const responsePartId = `${requestId}_${responsePartHandle}`;
+
 			const task = this._activeTasks.get(responsePartId);
+
 			switch (revivedProgress.kind) {
 				case 'progressTaskResult':
 					if (task && revivedProgress.content) {
@@ -242,9 +258,11 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 						task?.complete(undefined);
 					}
 					return responsePartHandle;
+
 				case 'warning':
 				case 'reference':
 					task?.add(revivedProgress);
+
 					return;
 			}
 		}
@@ -261,11 +279,13 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 	$handleAnchorResolve(requestId: string, handle: string, resolveAnchor: Dto<IChatContentInlineReference> | undefined): void {
 		const anchor = this._unresolvedAnchors.get(requestId)?.get(handle);
+
 		if (!anchor) {
 			return;
 		}
 
 		this._unresolvedAnchors.get(requestId)?.delete(handle);
+
 		if (resolveAnchor) {
 			const revivedAnchor = revive(resolveAnchor) as IChatContentInlineReference;
 			anchor.inlineReference = revivedAnchor.inlineReference;
@@ -275,6 +295,7 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 	$registerAgentCompletionsProvider(handle: number, id: string, triggerCharacters: string[]): void {
 		const provide = async (query: string, token: CancellationToken) => {
 			const completions = await this._proxy.$invokeCompletionProvider(handle, query, token);
+
 			return completions.map((c) => ({ ...c, icon: c.icon ? ThemeIcon.fromId(c.icon) : undefined }));
 		};
 		this._agentIdsToCompletionProviders.set(id, this._chatAgentService.registerAgentCompletionProvider(id, provide));
@@ -284,12 +305,15 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 			triggerCharacters,
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
 				const widget = this._chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget || !widget.viewModel) {
 					return;
 				}
 
 				const triggerCharsPart = triggerCharacters.map(c => escapeRegExpCharacters(c)).join('');
+
 				const wordRegex = new RegExp(`[${triggerCharsPart}]\\S*`, 'g');
+
 				const query = getWordAtText(position.column, wordRegex, model.getLineContent(position.lineNumber), 0)?.word ?? '';
 
 				if (query && !triggerCharacters.some(c => query.startsWith(c))) {
@@ -297,21 +321,28 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 				}
 
 				const parsedRequest = this._instantiationService.createInstance(ChatRequestParser).parseChatRequest(widget.viewModel.sessionId, model.getValue()).parts;
+
 				const agentPart = parsedRequest.find((part): part is ChatRequestAgentPart => part instanceof ChatRequestAgentPart);
+
 				const thisAgentId = this._agents.get(handle)?.id;
+
 				if (agentPart?.agent.id !== thisAgentId) {
 					return;
 				}
 
 				const range = computeCompletionRanges(model, position, wordRegex);
+
 				if (!range) {
 					return null;
 				}
 
 				const result = await provide(query, token);
+
 				const variableItems = result.map(v => {
 					const insertText = v.insertText ?? (typeof v.label === 'string' ? v.label : v.label.label);
+
 					const rangeAfterInsert = new Range(range.insert.startLineNumber, range.insert.startColumn, range.insert.endLineNumber, range.insert.startColumn + insertText.length);
+
 					return {
 						label: v.label,
 						range,
@@ -366,13 +397,16 @@ export class MainThreadChatAgents2 extends Disposable implements MainThreadChatA
 
 function computeCompletionRanges(model: ITextModel, position: Position, reg: RegExp): { insert: Range; replace: Range } | undefined {
 	const varWord = getWordAtText(position.column, reg, model.getLineContent(position.lineNumber), 0);
+
 	if (!varWord && model.getWordUntilPosition(position).word) {
 		// inside a "normal" word
 		return;
 	}
 
 	let insert: Range;
+
 	let replace: Range;
+
 	if (!varWord) {
 		insert = replace = Range.fromPositions(position);
 	} else {

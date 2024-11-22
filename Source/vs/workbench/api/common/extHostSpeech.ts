@@ -13,18 +13,23 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
     private readonly providers = new Map<number, vscode.SpeechProvider>();
     private readonly sessions = new Map<number, CancellationTokenSource>();
     private readonly synthesizers = new Map<number, vscode.TextToSpeechSession>();
+
     constructor(mainContext: IMainContext) {
         this.proxy = mainContext.getProxy(MainContext.MainThreadSpeech);
     }
     async $createSpeechToTextSession(handle: number, session: number, language?: string): Promise<void> {
         const provider = this.providers.get(handle);
+
         if (!provider) {
             return;
         }
         const disposables = new DisposableStore();
+
         const cts = new CancellationTokenSource();
         this.sessions.set(session, cts);
+
         const speechToTextSession = await provider.provideSpeechToTextSession(cts.token, language ? { language } : undefined);
+
         if (!speechToTextSession) {
             return;
         }
@@ -42,13 +47,17 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
     }
     async $createTextToSpeechSession(handle: number, session: number, language?: string): Promise<void> {
         const provider = this.providers.get(handle);
+
         if (!provider) {
             return;
         }
         const disposables = new DisposableStore();
+
         const cts = new CancellationTokenSource();
         this.sessions.set(session, cts);
+
         const textToSpeech = await provider.provideTextToSpeechSession(cts.token, language ? { language } : undefined);
+
         if (!textToSpeech) {
             return;
         }
@@ -71,13 +80,17 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
     }
     async $createKeywordRecognitionSession(handle: number, session: number): Promise<void> {
         const provider = this.providers.get(handle);
+
         if (!provider) {
             return;
         }
         const disposables = new DisposableStore();
+
         const cts = new CancellationTokenSource();
         this.sessions.set(session, cts);
+
         const keywordRecognitionSession = await provider.provideKeywordRecognitionSession(cts.token);
+
         if (!keywordRecognitionSession) {
             return;
         }
@@ -97,6 +110,7 @@ export class ExtHostSpeech implements ExtHostSpeechShape {
         const handle = ExtHostSpeech.ID_POOL++;
         this.providers.set(handle, provider);
         this.proxy.$registerProvider(handle, identifier, { extension, displayName: extension.value });
+
         return toDisposable(() => {
             this.proxy.$unregisterProvider(handle);
             this.providers.delete(handle);

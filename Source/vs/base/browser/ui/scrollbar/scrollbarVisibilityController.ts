@@ -16,6 +16,7 @@ export class ScrollbarVisibilityController extends Disposable {
     private _isNeeded: boolean;
     private _isVisible: boolean;
     private _revealTimer: TimeoutTimer;
+
     constructor(visibility: ScrollbarVisibility, visibleClassName: string, invisibleClassName: string) {
         super();
         this._visibility = visibility;
@@ -50,6 +51,7 @@ export class ScrollbarVisibilityController extends Disposable {
     }
     private _updateShouldBeVisible(): void {
         const shouldBeVisible = this._applyVisibilitySetting();
+
         if (this._shouldBeVisible !== shouldBeVisible) {
             this._shouldBeVisible = shouldBeVisible;
             this.ensureVisibility();
@@ -71,6 +73,7 @@ export class ScrollbarVisibilityController extends Disposable {
         if (!this._isNeeded) {
             // Nothing to be rendered
             this._hide(false);
+
             return;
         }
         if (this._shouldBeVisible) {
@@ -92,6 +95,7 @@ export class ScrollbarVisibilityController extends Disposable {
     }
     private _hide(withFadeAway: boolean): void {
         this._revealTimer.cancel();
+
         if (!this._isVisible) {
             return;
         }

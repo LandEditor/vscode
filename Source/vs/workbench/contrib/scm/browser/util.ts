@@ -65,6 +65,7 @@ const compareActions = (a: IAction, b: IAction) => {
 
 export function connectPrimaryMenu(menu: IMenu, callback: (primary: IAction[], secondary: IAction[]) => void, primaryGroup?: string): IDisposable {
 	let cachedPrimary: IAction[] = [];
+
 	let cachedSecondary: IAction[] = [];
 
 	const updateActions = () => {
@@ -165,6 +166,7 @@ export function compareHistoryItemRefs(
 
 	// Assign order (current > remote > base > color)
 	const ref1Order = getHistoryItemRefOrder(ref1);
+
 	const ref2Order = getHistoryItemRefOrder(ref2);
 
 	return ref1Order - ref2Order;

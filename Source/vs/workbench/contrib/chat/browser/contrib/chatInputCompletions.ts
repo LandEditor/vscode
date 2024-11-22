@@ -53,11 +53,13 @@ class SlashCommandCompletions extends Disposable {
 			triggerCharacters: ['/'],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, _token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget || !widget.viewModel) {
 					return null;
 				}
 
 				const range = computeCompletionRanges(model, position, /\/\w*/g);
+
 				if (!range) {
 					return null;
 				}
@@ -68,13 +70,16 @@ class SlashCommandCompletions extends Disposable {
 				}
 
 				const parsedRequest = widget.parsedInput.parts;
+
 				const usedAgent = parsedRequest.find(p => p instanceof ChatRequestAgentPart);
+
 				if (usedAgent) {
 					// No (classic) global slash commands when an agent is used
 					return;
 				}
 
 				const slashCommands = this.chatSlashCommandService.getCommands(widget.location);
+
 				if (!slashCommands) {
 					return null;
 				}
@@ -82,6 +87,7 @@ class SlashCommandCompletions extends Disposable {
 				return {
 					suggestions: slashCommands.map((c, i): CompletionItem => {
 						const withSlash = `/${c.command}`;
+
 						return {
 							label: withSlash,
 							insertText: c.executeImmediately ? '' : `${withSlash} `,
@@ -100,11 +106,13 @@ class SlashCommandCompletions extends Disposable {
 			triggerCharacters: [chatAgentLeader],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, _token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget || !widget.viewModel) {
 					return null;
 				}
 
 				const range = computeCompletionRanges(model, position, /@\w*/g);
+
 				if (!range) {
 					return null;
 				}
@@ -115,6 +123,7 @@ class SlashCommandCompletions extends Disposable {
 				}
 
 				const slashCommands = this.chatSlashCommandService.getCommands(widget.location);
+
 				if (!slashCommands) {
 					return null;
 				}
@@ -122,6 +131,7 @@ class SlashCommandCompletions extends Disposable {
 				return {
 					suggestions: slashCommands.map((c, i): CompletionItem => {
 						const withSlash = `${chatSubcommandLeader}${c.command}`;
+
 						return {
 							label: withSlash,
 							insertText: c.executeImmediately ? '' : `${withSlash} `,
@@ -156,22 +166,27 @@ class AgentCompletions extends Disposable {
 			triggerCharacters: ['/'],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget || !widget.viewModel) {
 					return;
 				}
 
 				const range = computeCompletionRanges(model, position, /\/\w*/g);
+
 				if (!range) {
 					return null;
 				}
 
 				const parsedRequest = widget.parsedInput.parts;
+
 				const usedAgentIdx = parsedRequest.findIndex((p): p is ChatRequestAgentPart => p instanceof ChatRequestAgentPart);
+
 				if (usedAgentIdx < 0) {
 					return;
 				}
 
 				const usedSubcommand = parsedRequest.find(p => p instanceof ChatRequestAgentSubcommandPart);
+
 				if (usedSubcommand) {
 					// Only one allowed
 					return;
@@ -186,9 +201,11 @@ class AgentCompletions extends Disposable {
 				}
 
 				const usedAgent = parsedRequest[usedAgentIdx] as ChatRequestAgentPart;
+
 				return {
 					suggestions: usedAgent.agent.slashCommands.map((c, i): CompletionItem => {
 						const withSlash = `/${c.name}`;
+
 						return {
 							label: withSlash,
 							insertText: `${withSlash} `,
@@ -207,12 +224,15 @@ class AgentCompletions extends Disposable {
 			triggerCharacters: [chatAgentLeader],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				const viewModel = widget?.viewModel;
+
 				if (!widget || !viewModel) {
 					return;
 				}
 
 				const range = computeCompletionRanges(model, position, /(@|\/)\w*/g);
+
 				if (!range) {
 					return null;
 				}
@@ -232,6 +252,7 @@ class AgentCompletions extends Disposable {
 					// This is hacking the filter algorithm to make @terminal /explain match worse than @workspace /explain by making its match index later in the string.
 					// When I type `/exp`, the workspace one should be sorted over the terminal one.
 					const dummyPrefix = agent.id === 'github.copilot.terminalPanel' ? `0000` : ``;
+
 					return `${chatAgentLeader}${dummyPrefix}${agent.name}.${command}`;
 				};
 
@@ -239,6 +260,7 @@ class AgentCompletions extends Disposable {
 					.filter(a => !a.isDefault)
 					.map(agent => {
 						const { label: agentLabel, isDupe } = this.getAgentCompletionDetails(agent);
+
 						const detail = agent.description;
 
 						return {
@@ -259,7 +281,9 @@ class AgentCompletions extends Disposable {
 					suggestions: justAgents.concat(
 						agents.flatMap(agent => agent.slashCommands.map((c, i) => {
 							const { label: agentLabel, isDupe } = this.getAgentCompletionDetails(agent);
+
 							const label = `${agentLabel} ${chatSubcommandLeader}${c.name}`;
+
 							const item: CompletionItem = {
 								label: isDupe ?
 									{ label, description: c.description, detail: isDupe ? ` (${agent.publisherDisplayName})` : undefined } :
@@ -293,12 +317,15 @@ class AgentCompletions extends Disposable {
 			triggerCharacters: [chatSubcommandLeader],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				const viewModel = widget?.viewModel;
+
 				if (!widget || !viewModel) {
 					return;
 				}
 
 				const range = computeCompletionRanges(model, position, /(@|\/)\w*/g);
+
 				if (!range) {
 					return null;
 				}
@@ -314,9 +341,13 @@ class AgentCompletions extends Disposable {
 				return {
 					suggestions: agents.flatMap(agent => agent.slashCommands.map((c, i) => {
 						const { label: agentLabel, isDupe } = this.getAgentCompletionDetails(agent);
+
 						const withSlash = `${chatSubcommandLeader}${c.name}`;
+
 						const extraSortText = agent.id === 'github.copilot.terminalPanel' ? `z` : ``;
+
 						const sortText = `${chatSubcommandLeader}${extraSortText}${agent.name}${c.name}`;
+
 						const item: CompletionItem = {
 							label: { label: withSlash, description: agentLabel, detail: isDupe ? ` (${agent.publisherDisplayName})` : undefined },
 							commitCharacters: [' '],
@@ -351,11 +382,13 @@ class AgentCompletions extends Disposable {
 				}
 
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (widget?.location !== ChatAgentLocation.Panel) {
 					return;
 				}
 
 				const range = computeCompletionRanges(model, position, /(@|\/)\w*/g);
+
 				if (!range) {
 					return;
 				}
@@ -366,6 +399,7 @@ class AgentCompletions extends Disposable {
 				}
 
 				const label = localize('installLabel', "Install Chat Extensions...");
+
 				const item: CompletionItem = {
 					label,
 					insertText: '',
@@ -385,8 +419,11 @@ class AgentCompletions extends Disposable {
 
 	private getAgentCompletionDetails(agent: IChatAgentData): { label: string; isDupe: boolean } {
 		const isAllowed = this.chatAgentNameService.getAgentNameRestriction(agent);
+
 		const agentLabel = `${chatAgentLeader}${isAllowed ? agent.name : getFullyQualifiedId(agent)}`;
+
 		const isDupe = isAllowed && this.chatAgentService.agentHasDupeName(agent.id);
+
 		return { label: agentLabel, isDupe };
 	}
 }
@@ -409,6 +446,7 @@ class AssignSelectedAgentAction extends Action2 {
 
 	async run(accessor: ServicesAccessor, ...args: any[]) {
 		const arg: AssignSelectedAgentActionArgs = args[0];
+
 		if (!arg || !arg.widget || !arg.agent) {
 			return;
 		}
@@ -449,11 +487,13 @@ class BuiltinDynamicCompletions extends Disposable {
 			triggerCharacters: [chatVariableLeader],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget || !widget.supportsFileReferences) {
 					return null;
 				}
 
 				const result: CompletionList = { suggestions: [] };
+
 				const range = computeCompletionRanges(model, position, BuiltinDynamicCompletions.VariableNameDef, true);
 
 				if (range) {
@@ -470,6 +510,7 @@ class BuiltinDynamicCompletions extends Disposable {
 				}
 
 				const range2 = computeCompletionRanges(model, position, new RegExp(`${chatVariableLeader}[^\\s]*`, 'g'), true);
+
 				if (range2) {
 					await this.addFileEntries(widget, result, range2, token);
 				}
@@ -490,11 +531,15 @@ class BuiltinDynamicCompletions extends Disposable {
 		const makeFileCompletionItem = (resource: URI, description?: string): CompletionItem => {
 
 			const basename = this.labelService.getUriBasenameLabel(resource);
+
 			const text = `${chatVariableLeader}file:${basename}`;
+
 			const uriLabel = this.labelService.getUriLabel(resource, { relative: true });
+
 			const labelDescription = description
 				? localize('fileEntryDescription', '{0} ({1})', uriLabel, description)
 				: uriLabel;
+
 			const sortText = description ? 'z' : '{'; // after `z`
 
 			return {
@@ -517,16 +562,19 @@ class BuiltinDynamicCompletions extends Disposable {
 		};
 
 		let pattern: string | undefined;
+
 		if (info.varWord?.word && info.varWord.word.startsWith(chatVariableLeader)) {
 			pattern = info.varWord.word.toLowerCase().slice(1); // remove leading #
 		}
 
 		const seen = new ResourceSet();
+
 		const len = result.suggestions.length;
 
 		// RELATED FILES
 		if (widget.location === ChatAgentLocation.EditingSession && widget.viewModel && this._chatEditingService.currentEditingSessionObs.get()?.chatSessionId === widget.viewModel?.sessionId) {
 			const relatedFiles = (await raceTimeout(this._chatEditingService.getRelatedFiles(widget.viewModel.sessionId, widget.getInput(), token), 1000)) ?? [];
+
 			for (const relatedFileGroup of relatedFiles) {
 				for (const relatedFile of relatedFileGroup.files) {
 					if (seen.has(relatedFile.uri)) {
@@ -549,13 +597,16 @@ class BuiltinDynamicCompletions extends Disposable {
 			if (pattern) {
 				// use pattern if available
 				const basename = this.labelService.getUriBasenameLabel(item.resource).toLowerCase();
+
 				if (!isPatternInWord(pattern, 0, pattern.length, basename, 0, basename.length)) {
 					continue;
 				}
 			}
 
 			seen.add(item.resource);
+
 			const newLen = result.suggestions.push(makeFileCompletionItem(item.resource));
+
 			if (newLen - len >= 5) {
 				break;
 			}
@@ -587,6 +638,7 @@ class BuiltinDynamicCompletions extends Disposable {
 			});
 
 			const data = await this.searchService.fileSearch(query, token);
+
 			for (const match of data.results) {
 				if (seen.has(match.resource)) {
 					// already included via history
@@ -612,11 +664,13 @@ Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).regi
 export interface IChatCompletionRangeResult {
 	insert: Range;
 	replace: Range;
+
 	varWord: IWordAtPosition | null;
 }
 
 export function computeCompletionRanges(model: ITextModel, position: Position, reg: RegExp, onlyOnWordStart = false): IChatCompletionRangeResult | undefined {
 	const varWord = getWordAtText(position.column, reg, model.getLineContent(position.lineNumber), 0);
+
 	if (!varWord && model.getWordUntilPosition(position).word) {
 		// inside a "normal" word
 		return;
@@ -624,6 +678,7 @@ export function computeCompletionRanges(model: ITextModel, position: Position, r
 
 	if (!varWord && position.column > 1) {
 		const textBefore = model.getValueInRange(new Range(position.lineNumber, position.column - 1, position.lineNumber, position.column));
+
 		if (textBefore !== ' ') {
 			return;
 		}
@@ -631,6 +686,7 @@ export function computeCompletionRanges(model: ITextModel, position: Position, r
 
 	if (varWord && onlyOnWordStart) {
 		const wordBefore = model.getWordUntilPosition({ lineNumber: position.lineNumber, column: varWord.startColumn });
+
 		if (wordBefore.word) {
 			// inside a word
 			return;
@@ -638,7 +694,9 @@ export function computeCompletionRanges(model: ITextModel, position: Position, r
 	}
 
 	let insert: Range;
+
 	let replace: Range;
+
 	if (!varWord) {
 		insert = replace = Range.fromPositions(position);
 	} else {
@@ -651,6 +709,7 @@ export function computeCompletionRanges(model: ITextModel, position: Position, r
 
 function isEmptyUpToCompletionWord(model: ITextModel, rangeResult: IChatCompletionRangeResult): boolean {
 	const startToCompletionWordStart = new Range(1, 1, rangeResult.replace.startLineNumber, rangeResult.replace.startColumn);
+
 	return !!model.getValueInRange(startToCompletionWordStart).match(/^\s*$/);
 }
 
@@ -672,26 +731,32 @@ class VariableCompletions extends Disposable {
 			triggerCharacters: [chatVariableLeader],
 			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, _token: CancellationToken) => {
 				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+
 				if (!widget) {
 					return null;
 				}
 
 				const range = computeCompletionRanges(model, position, VariableCompletions.VariableNameDef, true);
+
 				if (!range) {
 					return null;
 				}
 
 				const usedAgent = widget.parsedInput.parts.find(p => p instanceof ChatRequestAgentPart);
+
 				const slowSupported = usedAgent ? usedAgent.agent.metadata.supportsSlowVariables : true;
 
 				const usedVariables = widget.parsedInput.parts.filter((p): p is ChatRequestVariablePart => p instanceof ChatRequestVariablePart);
+
 				const usedVariableNames = new Set(usedVariables.map(v => v.variableName));
+
 				const variableItems = Array.from(this.chatVariablesService.getVariables(widget.location))
 					// This doesn't look at dynamic variables like `file`, where multiple makes sense.
 					.filter(v => !usedVariableNames.has(v.name))
 					.filter(v => !v.isSlow || slowSupported)
 					.map((v): CompletionItem => {
 						const withLeader = `${chatVariableLeader}${v.name}`;
+
 						return {
 							label: withLeader,
 							range,
@@ -703,13 +768,16 @@ class VariableCompletions extends Disposable {
 					});
 
 				const usedTools = widget.parsedInput.parts.filter((p): p is ChatRequestToolPart => p instanceof ChatRequestToolPart);
+
 				const usedToolNames = new Set(usedTools.map(v => v.toolName));
+
 				const toolItems: CompletionItem[] = [];
 				toolItems.push(...Array.from(toolsService.getTools())
 					.filter(t => t.canBeReferencedInPrompt)
 					.filter(t => !usedToolNames.has(t.toolReferenceName ?? ''))
 					.map((t): CompletionItem => {
 						const withLeader = `${chatVariableLeader}${t.toolReferenceName}`;
+
 						return {
 							label: withLeader,
 							range,

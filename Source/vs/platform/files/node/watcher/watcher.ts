@@ -18,6 +18,7 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
     readonly onDidLogMessage = Event.any(this._onDidLogMessage.event, this.recursiveWatcher.onDidLogMessage, this.nonRecursiveWatcher.onDidLogMessage);
     private requests: IUniversalWatchRequest[] = [];
     private failedRecursiveRequests = 0;
+
     constructor() {
         super();
         this._register(this.recursiveWatcher.onDidError(e => {
@@ -33,6 +34,7 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
         // to step in for non-recursive watch requests, thus reducing
         // watcher duplication.
         let error: Error | undefined;
+
         try {
             await this.recursiveWatcher.watch(requests.filter(request => isRecursiveWatchRequest(request)));
         }

@@ -29,6 +29,7 @@ class EmbeddingsService implements IEmbeddingsService {
     private providers: Map<string, IEmbeddingsProvider>;
     private readonly _onDidChange = new Emitter<void>();
     readonly onDidChange: Event<void> = this._onDidChange.event;
+
     constructor() {
         this.providers = new Map<string, IEmbeddingsProvider>();
     }
@@ -38,6 +39,7 @@ class EmbeddingsService implements IEmbeddingsService {
     registerProvider(id: string, provider: IEmbeddingsProvider): IDisposable {
         this.providers.set(id, provider);
         this._onDidChange.fire();
+
         return {
             dispose: () => {
                 this.providers.delete(id);
@@ -49,6 +51,7 @@ class EmbeddingsService implements IEmbeddingsService {
         values: number[];
     }[]> {
         const provider = this.providers.get(id);
+
         if (provider) {
             return provider.provideEmbeddings(input, token);
         }
@@ -63,6 +66,7 @@ export class MainThreadEmbeddings implements MainThreadEmbeddingsShape {
     private readonly _store = new DisposableStore();
     private readonly _providers = this._store.add(new DisposableMap<number>);
     private readonly _proxy: ExtHostEmbeddingsShape;
+
     constructor(context: IExtHostContext, 
     @IEmbeddingsService
     private readonly embeddingsService: IEmbeddingsService) {

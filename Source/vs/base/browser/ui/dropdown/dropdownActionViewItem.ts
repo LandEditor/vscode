@@ -43,20 +43,25 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
     private _onDidChangeVisibility = this._register(new Emitter<boolean>());
     readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
     protected override readonly options: IDropdownMenuActionViewItemOptions;
+
     constructor(action: IAction, menuActionsOrProvider: readonly IAction[] | IActionProvider, contextMenuProvider: IContextMenuProvider, options: IDropdownMenuActionViewItemOptions = Object.create(null)) {
         super(null, action, options);
         this.menuActionsOrProvider = menuActionsOrProvider;
         this.contextMenuProvider = contextMenuProvider;
         this.options = options;
+
         if (this.options.actionRunner) {
             this.actionRunner = this.options.actionRunner;
         }
     }
     override render(container: HTMLElement): void {
         this.actionItem = container;
+
         const labelRenderer: ILabelRenderer = (el: HTMLElement): IDisposable | null => {
             this.element = append(el, $('a.action-label'));
+
             let classNames: string[] = [];
+
             if (typeof this.options.classNames === 'string') {
                 classNames = this.options.classNames.split(/\s+/g).filter(s => !!s);
             }
@@ -71,13 +76,17 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
             this.element.setAttribute('role', 'button');
             this.element.setAttribute('aria-haspopup', 'true');
             this.element.setAttribute('aria-expanded', 'false');
+
             if (this._action.label) {
                 this._register(getBaseLayerHoverDelegate().setupManagedHover(this.options.hoverDelegate ?? getDefaultHoverDelegate('mouse'), this.element, this._action.label));
             }
             this.element.ariaLabel = this._action.label || '';
+
             return null;
         };
+
         const isActionsArray = Array.isArray(this.menuActionsOrProvider);
+
         const options: IDropdownMenuOptions = {
             contextMenuProvider: this.contextMenuProvider,
             labelRenderer: labelRenderer,
@@ -97,6 +106,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
             getKeyBinding: this.options.keybindingProvider,
             context: this._context
         };
+
         if (this.options.anchorAlignmentProvider) {
             const that = this;
             this.dropdownMenu.menuOptions = {
@@ -111,6 +121,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
     }
     protected override getTooltip(): string | undefined {
         let title: string | null = null;
+
         if (this.action.tooltip) {
             title = this.action.tooltip;
         }
@@ -121,6 +132,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
     }
     override setActionContext(newContext: unknown): void {
         super.setActionContext(newContext);
+
         if (this.dropdownMenu) {
             if (this.dropdownMenu.menuOptions) {
                 this.dropdownMenu.menuOptions.context = newContext;
@@ -145,20 +157,26 @@ export interface IActionWithDropdownActionViewItemOptions extends IActionViewIte
 }
 export class ActionWithDropdownActionViewItem extends ActionViewItem {
     protected dropdownMenuActionViewItem: DropdownMenuActionViewItem | undefined;
+
     constructor(context: unknown, action: IAction, options: IActionWithDropdownActionViewItemOptions, private readonly contextMenuProvider: IContextMenuProvider) {
         super(context, action, options);
     }
     override render(container: HTMLElement): void {
         super.render(container);
+
         if (this.element) {
             this.element.classList.add('action-dropdown-item');
+
             const menuActionsProvider = {
                 getActions: () => {
                     const actionsProvider = (<IActionWithDropdownActionViewItemOptions>this.options).menuActionsOrProvider;
+
                     return Array.isArray(actionsProvider) ? actionsProvider : (actionsProvider as IActionProvider).getActions(); // TODO: microsoft/TypeScript#42768
                 }
             };
+
             const menuActionClassNames = (<IActionWithDropdownActionViewItemOptions>this.options).menuActionClassNames || [];
+
             const separator = h('div.action-dropdown-item-separator', [h('div', {})]).root;
             separator.classList.toggle('prominent', menuActionClassNames.includes('prominent'));
             append(this.element, separator);
@@ -170,7 +188,9 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
                     return;
                 }
                 const event = new StandardKeyboardEvent(e);
+
                 let handled: boolean = false;
+
                 if (this.dropdownMenuActionViewItem?.isFocused() && event.equals(KeyCode.LeftArrow)) {
                     handled = true;
                     this.dropdownMenuActionViewItem?.blur();

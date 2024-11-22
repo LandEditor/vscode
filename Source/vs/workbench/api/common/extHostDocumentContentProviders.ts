@@ -17,6 +17,7 @@ export class ExtHostDocumentContentProvider implements ExtHostDocumentContentPro
     private static _handlePool = 0;
     private readonly _documentContentProviders = new Map<number, vscode.TextDocumentContentProvider>();
     private readonly _proxy: MainThreadDocumentContentProvidersShape;
+
     constructor(mainContext: IMainContext, private readonly _documentsAndEditors: ExtHostDocumentsAndEditors, private readonly _logService: ILogService) {
         this._proxy = mainContext.getProxy(MainContext.MainThreadDocumentContentProviders);
     }
@@ -29,12 +30,15 @@ export class ExtHostDocumentContentProvider implements ExtHostDocumentContentPro
         const handle = ExtHostDocumentContentProvider._handlePool++;
         this._documentContentProviders.set(handle, provider);
         this._proxy.$registerTextContentProvider(handle, scheme);
+
         let subscription: IDisposable | undefined;
+
         if (typeof provider.onDidChange === 'function') {
             let lastEvent: Promise<void> | undefined;
             subscription = provider.onDidChange(async (uri) => {
                 if (uri.scheme !== scheme) {
                     this._logService.warn(`Provider for scheme '${scheme}' is firing event for schema '${uri.scheme}' which will be IGNORED`);
+
                     return;
                 }
                 if (!this._documentsAndEditors.getDocument(uri)) {
@@ -50,6 +54,7 @@ export class ExtHostDocumentContentProvider implements ExtHostDocumentContentPro
                         return;
                     }
                     const document = this._documentsAndEditors.getDocument(uri);
+
                     if (!document) {
                         // disposed in the meantime
                         return;
@@ -82,6 +87,7 @@ export class ExtHostDocumentContentProvider implements ExtHostDocumentContentPro
     }
     $provideTextDocumentContent(handle: number, uri: UriComponents): Promise<string | null | undefined> {
         const provider = this._documentContentProviders.get(handle);
+
         if (!provider) {
             return Promise.reject(new Error(`unsupported uri-scheme: ${uri.scheme}`));
         }

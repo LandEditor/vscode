@@ -20,6 +20,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
     declare readonly _serviceBrand: undefined;
     private impl: ITelemetryService;
     public readonly sendErrorTelemetry: boolean;
+
     get sessionId(): string { return this.impl.sessionId; }
     get machineId(): string { return this.impl.machineId; }
     get sqmId(): string { return this.impl.sqmId; }
@@ -38,9 +39,12 @@ export class TelemetryService extends Disposable implements ITelemetryService {
     @IConfigurationService
     configurationService: IConfigurationService) {
         super();
+
         if (supportsTelemetry(productService, environmentService)) {
             const isInternal = isInternalTelemetry(productService, configurationService);
+
             const channel = sharedProcessService.getChannel('telemetryAppender');
+
             const config: ITelemetryServiceConfig = {
                 appenders: [new TelemetryAppenderClient(channel)],
                 commonProperties: resolveWorkbenchCommonProperties(storageService, environmentService.os.release, environmentService.os.hostname, productService.commit, productService.version, environmentService.machineId, environmentService.sqmId, environmentService.devDeviceId, isInternal, process, environmentService.remoteAuthority),

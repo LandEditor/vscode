@@ -42,6 +42,7 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
     readonly onDidCreate = this._onDidCreate.event;
     private readonly mapResourceToWorkingCopy = new ResourceMap<W>();
     private readonly mapResourceToDisposeListener = new ResourceMap<IDisposable>();
+
     constructor(
     @IFileService
     protected readonly fileService: IFileService, 
@@ -56,6 +57,7 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
     }
     protected add(resource: URI, workingCopy: W): void {
         const knownWorkingCopy = this.get(resource);
+
         if (knownWorkingCopy === workingCopy) {
             return; // already cached
         }
@@ -70,6 +72,7 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
     protected remove(resource: URI): boolean {
         // Dispose any existing listener
         const disposeListener = this.mapResourceToDisposeListener.get(resource);
+
         if (disposeListener) {
             dispose(disposeListener);
             this.mapResourceToDisposeListener.delete(resource);
@@ -121,6 +124,7 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
     private async saveWithFallback(workingCopy: W): Promise<void> {
         // First try regular save
         let saveSuccess = false;
+
         try {
             saveSuccess = await workingCopy.save();
         }
@@ -130,6 +134,7 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
         // Then fallback to backup if that exists
         if (!saveSuccess || workingCopy.isDirty()) {
             const backup = await this.workingCopyBackupService.resolve(workingCopy);
+
             if (backup) {
                 await this.fileService.writeFile(workingCopy.resource, backup.value, { unlock: true });
             }

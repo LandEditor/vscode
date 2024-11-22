@@ -97,9 +97,13 @@ registerAction2(ClearCommandHistoryAction);
 registerAction2(ShowAllCommandsAction);
 registerAction2(OpenViewPickerAction);
 registerAction2(QuickAccessViewPickerAction);
+
 const inViewsPickerContextKey = 'inViewsPicker';
+
 const inViewsPickerContext = ContextKeyExpr.and(inQuickPickContext, ContextKeyExpr.has(inViewsPickerContextKey));
+
 const viewPickerKeybinding = QuickAccessViewPickerAction.KEYBINDING;
+
 const quickAccessNavigateNextInViewPickerId = 'workbench.action.quickOpenNavigateNextInViewPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigateNextInViewPickerId,
@@ -110,6 +114,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     linux: viewPickerKeybinding.linux,
     mac: viewPickerKeybinding.mac
 });
+
 const quickAccessNavigatePreviousInViewPickerId = 'workbench.action.quickOpenNavigatePreviousInViewPicker';
 KeybindingsRegistry.registerCommandAndKeybindingRule({
     id: quickAccessNavigatePreviousInViewPickerId,

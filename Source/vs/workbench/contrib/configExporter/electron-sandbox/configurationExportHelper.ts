@@ -14,6 +14,7 @@ import { IProductService } from '../../../../platform/product/common/productServ
 interface IExportedConfigurationNode {
     name: string;
     description: string;
+
     default: any;
     type?: string | string[];
     enum?: any[];
@@ -38,6 +39,7 @@ export class DefaultConfigurationExportHelper {
     @IProductService
     private readonly productService: IProductService) {
         const exportDefaultConfigurationPath = environmentService.args['export-default-configuration'];
+
         if (exportDefaultConfigurationPath) {
             this.writeConfigModelAndQuit(URI.file(exportDefaultConfigurationPath));
         }
@@ -53,26 +55,34 @@ export class DefaultConfigurationExportHelper {
     }
     private async writeConfigModel(target: URI): Promise<void> {
         const config = this.getConfigModel();
+
         const resultString = JSON.stringify(config, undefined, '  ');
         await this.fileService.writeFile(target, VSBuffer.fromString(resultString));
     }
     private getConfigModel(): IConfigurationExport {
         const configRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+
         const configurations = configRegistry.getConfigurations().slice();
+
         const settings: IExportedConfigurationNode[] = [];
+
         const processedNames = new Set<string>();
+
         const processProperty = (name: string, prop: IConfigurationPropertySchema) => {
             if (processedNames.has(name)) {
                 console.warn('Setting is registered twice: ' + name);
+
                 return;
             }
             processedNames.add(name);
+
             const propDetails: IExportedConfigurationNode = {
                 name,
                 description: prop.description || prop.markdownDescription || '',
                 default: prop.default,
                 type: prop.type
             };
+
             if (prop.enum) {
                 propDetails.enum = prop.enum;
             }
@@ -81,6 +91,7 @@ export class DefaultConfigurationExportHelper {
             }
             settings.push(propDetails);
         };
+
         const processConfig = (config: IConfigurationNode) => {
             if (config.properties) {
                 for (const name in config.properties) {
@@ -90,7 +101,9 @@ export class DefaultConfigurationExportHelper {
             config.allOf?.forEach(processConfig);
         };
         configurations.forEach(processConfig);
+
         const excludedProps = configRegistry.getExcludedConfigurationProperties();
+
         for (const name in excludedProps) {
             processProperty(name, excludedProps[name]);
         }
@@ -100,6 +113,7 @@ export class DefaultConfigurationExportHelper {
             commit: this.productService.commit,
             buildNumber: this.productService.settingsSearchBuildId
         };
+
         return result;
     }
 }

@@ -34,6 +34,7 @@ export class TextModelChangeRecorder extends Disposable {
 
 			store.add(this._editor.onDidChangeModelContent(e => {
 				const tm = this._editor.getModel();
+
 				if (!tm) { return; }
 				for (const source of sources) {
 					this._logService.info(formatRecordableLogEntry<IRecordableEditorLogEntry & { source: string }>('TextModel.setChangeReason', {

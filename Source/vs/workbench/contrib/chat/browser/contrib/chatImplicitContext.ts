@@ -37,7 +37,9 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 			editorService.onDidVisibleEditorsChange,
 			(() => {
 				activeEditorDisposables.clear();
+
 				const codeEditor = this.findActiveCodeEditor();
+
 				if (codeEditor) {
 					activeEditorDisposables.add(Event.debounce(
 						Event.any(
@@ -55,14 +57,17 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 
 	private findActiveCodeEditor(): ICodeEditor | undefined {
 		const codeEditor = this.codeEditorService.getActiveCodeEditor();
+
 		if (codeEditor) {
 			const model = codeEditor.getModel();
+
 			if (model) {
 				return codeEditor;
 			}
 		}
 		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
 			let codeEditor: ICodeEditor;
+
 			if (isDiffEditor(codeOrDiffEditor)) {
 				codeEditor = codeOrDiffEditor.getModifiedEditor();
 			} else if (isCodeEditor(codeOrDiffEditor)) {
@@ -72,6 +77,7 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 			}
 
 			const model = codeEditor.getModel();
+
 			if (model) {
 				return codeEditor;
 			}
@@ -81,17 +87,24 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 
 	private async updateImplicitContext(updateWidget?: IChatWidget): Promise<void> {
 		const cancelTokenSource = this._currentCancelTokenSource.value = new CancellationTokenSource();
+
 		const codeEditor = this.findActiveCodeEditor();
+
 		const model = codeEditor?.getModel();
+
 		const selection = codeEditor?.getSelection();
+
 		let newValue: Location | URI | undefined;
+
 		let isSelection = false;
+
 		if (model) {
 			if (selection && !selection.isEmpty()) {
 				newValue = { uri: model.uri, range: selection } satisfies Location;
 				isSelection = true;
 			} else {
 				const visibleRanges = codeEditor?.getVisibleRanges();
+
 				if (visibleRanges && visibleRanges.length > 0) {
 					// Merge visible ranges. Maybe the reference value could actually be an array of Locations?
 					// Something like a Location with an array of Ranges?
@@ -107,6 +120,7 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 		}
 
 		const uri = newValue instanceof URI ? newValue : newValue?.uri;
+
 		if (uri && await this.ignoredFilesService.fileIsIgnored(uri, cancelTokenSource.token)) {
 			newValue = undefined;
 		}
@@ -116,6 +130,7 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 		}
 
 		const widgets = updateWidget ? [updateWidget] : [...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Panel), ...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Editor)];
+
 		for (const widget of widgets) {
 			if (widget.input.implicitContext) {
 				widget.input.implicitContext.setValue(newValue, isSelection);
@@ -174,11 +189,13 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 	readonly onDidChangeValue = this._onDidChangeValue.event;
 
 	private _value: Location | URI | undefined;
+
 	get value() {
 		return this._value;
 	}
 
 	private _enabled = true;
+
 	get enabled() {
 		return this._enabled;
 	}

@@ -14,6 +14,7 @@ export class TreeViewsDnDService<T> implements ITreeViewsDnDService<T> {
         if ((uuid && this._dragOperations.has(uuid))) {
             const operation = this._dragOperations.get(uuid);
             this._dragOperations.delete(uuid);
+
             return operation;
         }
         return undefined;

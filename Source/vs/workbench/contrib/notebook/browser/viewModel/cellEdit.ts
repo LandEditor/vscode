@@ -20,6 +20,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
     label: string = 'Join Cell';
     code: string = 'undoredo.textBufferEdit';
     private _deletedRawCell: NotebookCellTextModel;
+
     constructor(public resource: URI, private index: number, private direction: 'above' | 'below', private cell: BaseCellViewModel, private selections: Selection[], private inverseRange: Range, private insertContent: string, private removedCell: BaseCellViewModel, private editingDelegate: IViewCellEditingDelegate) {
         this._deletedRawCell = this.removedCell.model;
     }
@@ -32,7 +33,9 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
             { range: this.inverseRange, text: '' }
         ]);
         this.cell.setSelections(this.selections);
+
         const cell = this.editingDelegate.createCellViewModel(this._deletedRawCell);
+
         if (this.direction === 'above') {
             this.editingDelegate.insertCell(this.index, this._deletedRawCell, { kind: SelectionStateType.Handle, primary: cell.handle, selections: [cell.handle] });
             cell.focusMode = CellFocusMode.Editor;

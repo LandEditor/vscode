@@ -14,11 +14,13 @@ declare module vsdaWeb {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     export class validator {
         free(): void;
+
         constructor();
         createNewMessage(original: string): string;
         validate(signed_message: string): 'ok' | 'error';
     }
     export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
+
     export function init(module_or_path?: InitInput | Promise<InitInput>): Promise<unknown>;
 }
 // Initialized if/when vsda is loaded
@@ -27,8 +29,11 @@ declare const vsda_web: {
     sign: typeof vsdaWeb.sign;
     validator: typeof vsdaWeb.validator;
 };
+
 const KEY_SIZE = 32;
+
 const IV_SIZE = 16;
+
 const STEP_SIZE = KEY_SIZE + IV_SIZE;
 export class SignService extends AbstractSignService implements ISignService {
     constructor(
@@ -39,6 +44,7 @@ export class SignService extends AbstractSignService implements ISignService {
     protected override getValidator(): Promise<IVsdaValidator> {
         return this.vsda().then(vsda => {
             const v = new vsda.validator();
+
             return {
                 createNewMessage: arg => v.createNewMessage(arg),
                 validate: arg => v.validate(arg),
@@ -52,6 +58,7 @@ export class SignService extends AbstractSignService implements ISignService {
     @memoize
     private async vsda(): Promise<typeof vsda_web> {
         const checkInterval = new WindowIntervalTimer();
+
         let [wasm] = await Promise.all([
             this.getWasmBytes(),
             new Promise<void>((resolve, reject) => {
@@ -65,17 +72,22 @@ export class SignService extends AbstractSignService implements ISignService {
                 }, 50, mainWindow);
             }).finally(() => checkInterval.dispose()),
         ]);
+
         const keyBytes = new TextEncoder().encode(this.productService.serverLicense?.join('\n') || '');
+
         for (let i = 0; i + STEP_SIZE < keyBytes.length; i += STEP_SIZE) {
             const key = await crypto.subtle.importKey('raw', keyBytes.slice(i + IV_SIZE, i + IV_SIZE + KEY_SIZE), { name: 'AES-CBC' }, false, ['decrypt']);
             wasm = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: keyBytes.slice(i, i + IV_SIZE) }, key, wasm);
         }
         await vsda_web.default(wasm);
+
         return vsda_web;
     }
     private async getWasmBytes(): Promise<ArrayBuffer> {
         const url = resolveAmdNodeModulePath('vsda', 'rust/web/vsda_bg.wasm');
+
         const response = await fetch(url);
+
         if (!response.ok) {
             throw new Error('error loading vsda');
         }

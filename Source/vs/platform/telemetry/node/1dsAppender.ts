@@ -27,9 +27,13 @@ interface IResponseData {
  */
 async function makeTelemetryRequest(options: IRequestOptions, requestService: IRequestService): Promise<IResponseData> {
     const response = await requestService.request(options, CancellationToken.None);
+
     const responseData = (await streamToBuffer(response.stream)).toString();
+
     const statusCode = response.res.statusCode ?? 200;
+
     const headers = response.res.headers as Record<string, any>;
+
     return {
         headers,
         statusCode,
@@ -46,6 +50,7 @@ async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IRe
         method: options.type,
         headers: options.headers
     };
+
     const responsePromise = new Promise<IResponseData>((resolve, reject) => {
         const req = https.request(options.url ?? '', httpsOptions, res => {
             res.on('data', function (responseData) {
@@ -67,10 +72,12 @@ async function makeLegacyTelemetryRequest(options: IRequestOptions): Promise<IRe
         });
         req.end();
     });
+
     return responsePromise;
 }
 async function sendPostAsync(requestService: IRequestService | undefined, payload: IPayloadData, oncomplete: OnCompleteFunc) {
     const telemetryRequestData = typeof payload.data === 'string' ? payload.data : new TextDecoder().decode(payload.data);
+
     const requestOptions: IRequestOptions = {
         type: 'POST',
         headers: {
@@ -81,6 +88,7 @@ async function sendPostAsync(requestService: IRequestService | undefined, payloa
         url: payload.urlString,
         data: telemetryRequestData
     };
+
     try {
         const responseData = requestService ? await makeTelemetryRequest(requestOptions, requestService) : await makeLegacyTelemetryRequest(requestOptions);
         oncomplete(responseData.statusCode, responseData.headers, responseData.responseData);
@@ -101,6 +109,7 @@ export class OneDataSystemAppender extends AbstractOneDataSystemAppender {
                 sendPostAsync(requestService, payload, oncomplete);
             }
         };
+
         super(isInternalTelemetry, eventPrefix, defaultData, iKeyOrClientFactory, customHttpXHROverride);
     }
 }

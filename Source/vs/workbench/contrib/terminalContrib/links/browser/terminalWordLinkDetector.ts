@@ -13,6 +13,7 @@ import { ITerminalSimpleLink, ITerminalLinkDetector, TerminalBuiltinLinkType } f
 import { convertLinkRangeToBuffer, getXtermLineContent } from './terminalLinkHelpers.js';
 import { ITerminalConfiguration, TERMINAL_CONFIG_SECTION } from '../../../terminal/common/terminal.js';
 import type { IBufferLine, Terminal } from '@xterm/xterm';
+
 const enum Constants {
     /**
      * The max line length to try extract word links from.
@@ -30,6 +31,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
     // quite small.
     readonly maxLinkLength = 100;
     private _separatorRegex!: RegExp;
+
     constructor(readonly xterm: Terminal, 
     @IConfigurationService
     private readonly _configurationService: IConfigurationService, 
@@ -47,6 +49,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
         const links: ITerminalSimpleLink[] = [];
         // Get the text representation of the wrapped line
         const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+
         if (text === '' || text.length > Constants.MaxLineLength) {
             return [];
         }
@@ -70,6 +73,7 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
             // Support this product's URL protocol
             if (matchesScheme(word.text, this._productService.urlProtocol)) {
                 const uri = URI.parse(word.text);
+
                 if (uri) {
                     links.push({
                         text: word.text,
@@ -92,8 +96,11 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
     }
     private _parseWords(text: string): Word[] {
         const words: Word[] = [];
+
         const splitWords = text.split(this._separatorRegex);
+
         let runningIndex = 0;
+
         for (let i = 0; i < splitWords.length; i++) {
             words.push({
                 text: splitWords[i],
@@ -106,7 +113,9 @@ export class TerminalWordLinkDetector extends Disposable implements ITerminalLin
     }
     private _refreshSeparatorCodes(): void {
         const separators = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).wordSeparators;
+
         let powerlineSymbols = '';
+
         for (let i = 0xe0b0; i <= 0xe0bf; i++) {
             powerlineSymbols += String.fromCharCode(i);
         }

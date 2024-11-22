@@ -9,14 +9,17 @@ import { URI } from '../../base/common/uri.js';
 import { CodeDataTransfers, getPathForFile } from '../../platform/dnd/browser/dnd.js';
 export function toVSDataTransfer(dataTransfer: DataTransfer) {
     const vsDataTransfer = new VSDataTransfer();
+
     for (const item of dataTransfer.items) {
         const type = item.type;
+
         if (item.kind === 'string') {
             const asStringValue = new Promise<string>(resolve => item.getAsString(resolve));
             vsDataTransfer.append(type, createStringDataTransferItem(asStringValue));
         }
         else if (item.kind === 'file') {
             const file = item.getAsFile();
+
             if (file) {
                 vsDataTransfer.append(type, createFileDataTransferItemFromFile(file));
             }
@@ -26,7 +29,9 @@ export function toVSDataTransfer(dataTransfer: DataTransfer) {
 }
 function createFileDataTransferItemFromFile(file: File): IDataTransferItem {
     const path = getPathForFile(file);
+
     const uri = path ? URI.parse(path!) : undefined;
+
     return createFileDataTransferItem(file.name, uri, async () => {
         return new Uint8Array(await file.arrayBuffer());
     });
@@ -41,6 +46,7 @@ export function toExternalVSDataTransfer(sourceDataTransfer: DataTransfer, overw
     const vsDataTransfer = toVSDataTransfer(sourceDataTransfer);
     // Try to expose the internal uri-list type as the standard type
     const uriList = vsDataTransfer.get(DataTransfers.INTERNAL_URI_LIST);
+
     if (uriList) {
         vsDataTransfer.replace(Mimes.uriList, uriList);
     }
@@ -48,10 +54,13 @@ export function toExternalVSDataTransfer(sourceDataTransfer: DataTransfer, overw
         if (overwriteUriList || !vsDataTransfer.has(Mimes.uriList)) {
             // Otherwise, fallback to adding dragged resources to the uri list
             const editorData: string[] = [];
+
             for (const item of sourceDataTransfer.items) {
                 const file = item.getAsFile();
+
                 if (file) {
                     const path = getPathForFile(file);
+
                     try {
                         if (path) {
                             editorData.push(URI.file(path).toString());

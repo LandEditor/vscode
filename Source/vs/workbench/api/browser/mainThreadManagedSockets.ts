@@ -16,6 +16,7 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
     private readonly _proxy: ExtHostManagedSocketsShape;
     private readonly _registrations = new Map<number, IDisposable>();
     private readonly _remoteSockets = new Map<number, RemoteSocketHalf>();
+
     constructor(extHostContext: IExtHostContext, 
     @IRemoteSocketFactoryService
     private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService) {
@@ -24,6 +25,7 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
     }
     async $registerSocketFactory(socketFactoryId: number): Promise<void> {
         const that = this;
+
         const socketFactory = new class implements ISocketFactory<RemoteConnectionType.Managed> {
             supports(connectTo: ManagedRemoteConnection): boolean {
                 return (connectTo.id === socketFactoryId);
@@ -76,6 +78,7 @@ export class MainThreadManagedSockets extends Disposable implements MainThreadMa
 export class MainThreadManagedSocket extends ManagedSocket {
     public static connect(socketId: number, proxy: ExtHostManagedSocketsShape, path: string, query: string, debugLabel: string, half: RemoteSocketHalf): Promise<MainThreadManagedSocket> {
         const socket = new MainThreadManagedSocket(socketId, proxy, debugLabel, half);
+
         return connectManagedSocket(socket, path, query, debugLabel, half);
     }
     private constructor(private readonly socketId: number, private readonly proxy: ExtHostManagedSocketsShape, debugLabel: string, half: RemoteSocketHalf) {

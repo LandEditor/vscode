@@ -48,6 +48,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
             return new Promise<string>(resolve => {
                 // Inform user about permissions problem (https://github.com/microsoft/vscode/issues/112089)
                 const listener = new DisposableStore();
+
                 const handle = this.notificationService.prompt(Severity.Error, localize('clipboardError', "Unable to read from the browser's clipboard. Please make sure you have granted access for this website to read from the clipboard."), [{
                         label: localize('retry', "Retry"),
                         run: async () => {

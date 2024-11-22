@@ -36,9 +36,11 @@ export interface IWorkspacesManagementMainService {
     enterWorkspace(intoWindow: ICodeWindow, openedWindows: ICodeWindow[], path: URI): Promise<IEnterWorkspaceResult | undefined>;
     createUntitledWorkspace(folders?: IWorkspaceFolderCreationData[], remoteAuthority?: string): Promise<IWorkspaceIdentifier>;
     deleteUntitledWorkspace(workspace: IWorkspaceIdentifier): Promise<void>;
+
     getUntitledWorkspaces(): IUntitledWorkspaceInfo[];
     isUntitledWorkspace(workspace: IWorkspaceIdentifier): boolean;
     resolveLocalWorkspace(path: URI): Promise<IResolvedWorkspace | undefined>;
+
     getWorkspaceIdentifier(workspacePath: URI): Promise<IWorkspaceIdentifier>;
 }
 export class WorkspacesManagementMainService extends Disposable implements IWorkspacesManagementMainService {
@@ -49,6 +51,7 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
     readonly onDidEnterWorkspace: Event<IWorkspaceEnteredEvent> = this._onDidEnterWorkspace.event;
     private readonly untitledWorkspacesHome = this.environmentMainService.untitledWorkspacesHome; // local URI that contains all untitled workspaces
     private untitledWorkspaces: IUntitledWorkspaceInfo[] = [];
+
     constructor(
     @IEnvironmentMainService
     private readonly environmentMainService: IEnvironmentMainService, 
@@ -68,9 +71,12 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
         // Resolve untitled workspaces
         try {
             const untitledWorkspacePaths = (await Promises.readdir(this.untitledWorkspacesHome.with({ scheme: Schemas.file }).fsPath)).map(folder => joinPath(this.untitledWorkspacesHome, folder, UNTITLED_WORKSPACE_NAME));
+
             for (const untitledWorkspacePath of untitledWorkspacePaths) {
                 const workspace = getWorkspaceIdentifier(untitledWorkspacePath);
+
                 const resolvedWorkspace = await this.resolveLocalWorkspace(untitledWorkspacePath);
+
                 if (!resolvedWorkspace) {
                     await this.deleteUntitledWorkspace(workspace);
                 }
@@ -99,6 +105,7 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
         }
         try {
             const contents = contentsFn(uri.fsPath);
+
             if (contents instanceof Promise) {
                 return contents.then(value => this.doResolveWorkspace(uri, value), error => undefined /* invalid workspace */);
             }
@@ -116,7 +123,9 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
     private doResolveWorkspace(path: URI, contents: string): IResolvedWorkspace | undefined {
         try {
             const workspace = this.doParseStoredWorkspace(path, contents);
+
             const workspaceIdentifier = getWorkspaceIdentifier(path);
+
             return {
                 id: workspaceIdentifier.id,
                 configPath: workspaceIdentifier.configPath,
@@ -144,10 +153,12 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
     }
     async createUntitledWorkspace(folders?: IWorkspaceFolderCreationData[], remoteAuthority?: string): Promise<IWorkspaceIdentifier> {
         const { workspace, storedWorkspace } = this.newUntitledWorkspace(folders, remoteAuthority);
+
         const configPath = workspace.configPath.fsPath;
         await fs.promises.mkdir(dirname(configPath), { recursive: true });
         await Promises.writeFile(configPath, JSON.stringify(storedWorkspace, null, '\t'));
         this.untitledWorkspaces.push({ workspace, remoteAuthority });
+
         return workspace;
     }
     private newUntitledWorkspace(folders: IWorkspaceFolderCreationData[] = [], remoteAuthority?: string): {
@@ -155,9 +166,13 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
         storedWorkspace: IStoredWorkspace;
     } {
         const randomId = (Date.now() + Math.round(Math.random() * 1000)).toString();
+
         const untitledWorkspaceConfigFolder = joinPath(this.untitledWorkspacesHome, randomId);
+
         const untitledWorkspaceConfigPath = joinPath(untitledWorkspaceConfigFolder, UNTITLED_WORKSPACE_NAME);
+
         const storedWorkspaceFolder: IStoredWorkspaceFolder[] = [];
+
         for (const folder of folders) {
             storedWorkspaceFolder.push(getStoredWorkspaceFolder(folder.uri, true, folder.name, untitledWorkspaceConfigFolder, extUriBiasedIgnorePathCase));
         }
@@ -185,11 +200,13 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
     }
     private async doDeleteUntitledWorkspace(workspace: IWorkspaceIdentifier): Promise<void> {
         const configPath = originalFSPath(workspace.configPath);
+
         try {
             // Delete Workspace
             await Promises.rm(dirname(configPath));
             // Mark Workspace Storage to be deleted
             const workspaceStoragePath = join(this.environmentMainService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath, workspace.id);
+
             if (await Promises.exists(workspaceStoragePath)) {
                 await Promises.writeFile(join(workspaceStoragePath, 'obsolete'), '');
             }
@@ -208,15 +225,18 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
             return undefined; // return early if the window is not ready or disposed
         }
         const isValid = await this.isValidTargetWorkspacePath(window, windows, path);
+
         if (!isValid) {
             return undefined; // return early if the workspace is not valid
         }
         const result = await this.doEnterWorkspace(window, getWorkspaceIdentifier(path));
+
         if (!result) {
             return undefined;
         }
         // Emit as event
         this._onDidEnterWorkspace.fire({ window, workspace: result.workspace });
+
         return result;
     }
     private async isValidTargetWorkspacePath(window: ICodeWindow, windows: ICodeWindow[], workspacePath?: URI): Promise<boolean> {
@@ -234,6 +254,7 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
                 message: localize('workspaceOpenedMessage', "Unable to save workspace '{0}'", basename(workspacePath)),
                 detail: localize('workspaceOpenedDetail', "The workspace is already opened in another window. Please close that window first and then try again.")
             }, electron.BrowserWindow.getFocusedWindow() ?? undefined);
+
             return false;
         }
         return true; // OK
@@ -245,6 +266,7 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
         window.focus();
         // Register window for backups and migrate current backups over
         let backupPath: string | undefined;
+
         if (!window.config.extensionDevelopmentPath) {
             if (window.config.backupPath) {
                 backupPath = await this.backupMainService.registerWorkspaceBackup({ workspace, remoteAuthority: window.remoteAuthority }, window.config.backupPath);
@@ -260,6 +282,7 @@ export class WorkspacesManagementMainService extends Disposable implements IWork
         // Update window configuration properly based on transition to workspace
         window.config.workspace = workspace;
         window.config.backupPath = backupPath;
+
         return { workspace, backupPath };
     }
 }

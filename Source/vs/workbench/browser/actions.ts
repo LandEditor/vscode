@@ -15,9 +15,11 @@ class MenuActions extends Disposable {
 	private readonly menu: IMenu;
 
 	private _primaryActions: IAction[] = [];
+
 	get primaryActions() { return this._primaryActions; }
 
 	private _secondaryActions: IAction[] = [];
+
 	get secondaryActions() { return this._secondaryActions; }
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
@@ -41,6 +43,7 @@ class MenuActions extends Disposable {
 
 	private updateActions(): void {
 		this.disposables.clear();
+
 		const newActions = getActionBarActions(this.menu.getActions(this.options));
 		this._primaryActions = newActions.primary;
 		this._secondaryActions = newActions.secondary;
@@ -95,6 +98,7 @@ export class CompositeMenuActions extends Disposable {
 	getContextMenuActions(): IAction[] {
 		if (this.contextMenuId) {
 			const menu = this.menuService.getMenuActions(this.contextMenuId, this.contextKeyService, this.options);
+
 			return getActionBarActions(menu).secondary;
 		}
 

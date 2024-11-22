@@ -36,6 +36,7 @@ interface ActionButtonState {
 }
 export class ActionButton {
     private _onDidChange = new EventEmitter<void>();
+
     get onDidChange(): Event<void> { return this._onDidChange.event; }
     private _state: ActionButtonState;
     private get state() { return this._state; }
@@ -47,6 +48,7 @@ export class ActionButton {
         this._onDidChange.fire();
     }
     private disposables: Disposable[] = [];
+
     constructor(readonly repository: Repository, readonly postCommitCommandCenter: CommitCommandsCenter) {
         this._state = {
             HEAD: undefined,
@@ -61,6 +63,7 @@ export class ActionButton {
         repository.onDidChangeOperations(this.onDidChangeOperations, this, this.disposables);
         this.disposables.push(repository.onDidChangeBranchProtection(() => this._onDidChange.fire()));
         this.disposables.push(postCommitCommandCenter.onDidChange(() => this._onDidChange.fire()));
+
         const root = Uri.file(repository.root);
         this.disposables.push(workspace.onDidChangeConfiguration(e => {
             if (e.affectsConfiguration('git.enableSmartCommit', root) ||
@@ -81,6 +84,7 @@ export class ActionButton {
             return undefined;
         }
         let actionButton: SourceControlActionButton | undefined;
+
         if (this.state.repositoryHasChangesToCommit) {
             // Commit Changes (enabled)
             actionButton = this.getCommitActionButton();
@@ -90,6 +94,7 @@ export class ActionButton {
     }
     private getCommitActionButton(): SourceControlActionButton | undefined {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const showActionButton = config.get<{
             commit: boolean;
         }>('showActionButton', { commit: true });
@@ -98,6 +103,7 @@ export class ActionButton {
             return undefined;
         }
         const primaryCommand = this.getCommitActionButtonPrimaryCommand();
+
         return {
             command: primaryCommand,
             secondaryCommands: this.getCommitActionButtonSecondaryCommands(),
@@ -137,6 +143,7 @@ export class ActionButton {
         }
         // Commit
         const commandGroups: Command[][] = [];
+
         for (const commands of this.postCommitCommandCenter.getSecondaryCommands()) {
             commandGroups.push(commands.map(c => {
                 return { command: c.command, title: c.title, tooltip: c.tooltip, arguments: c.arguments };
@@ -146,6 +153,7 @@ export class ActionButton {
     }
     private getPublishBranchActionButton(): SourceControlActionButton | undefined {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const showActionButton = config.get<{
             publish: boolean;
         }>('showActionButton', { publish: true });
@@ -155,6 +163,7 @@ export class ActionButton {
         }
         // Button icon
         const icon = this.state.isSyncInProgress ? '$(sync~spin)' : '$(cloud-upload)';
+
         return {
             command: {
                 command: 'git.publish',
@@ -173,17 +182,22 @@ export class ActionButton {
     }
     private getSyncChangesActionButton(): SourceControlActionButton | undefined {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const showActionButton = config.get<{
             sync: boolean;
         }>('showActionButton', { sync: true });
+
         const branchIsAheadOrBehind = (this.state.HEAD?.behind ?? 0) > 0 || (this.state.HEAD?.ahead ?? 0) > 0;
         // Branch does not have an upstream, branch is not ahead/behind the remote branch, commit/merge/rebase is in progress, or the button is disabled
         if (!this.state.HEAD?.upstream || !branchIsAheadOrBehind || this.state.isCommitInProgress || this.state.isMergeInProgress || this.state.isRebaseInProgress || !showActionButton.sync) {
             return undefined;
         }
         const ahead = this.state.HEAD.ahead ? ` ${this.state.HEAD.ahead}$(arrow-up)` : '';
+
         const behind = this.state.HEAD.behind ? ` ${this.state.HEAD.behind}$(arrow-down)` : '';
+
         const icon = this.state.isSyncInProgress ? '$(sync~spin)' : '$(sync)';
+
         return {
             command: {
                 command: 'git.sync',
@@ -200,9 +214,11 @@ export class ActionButton {
     private onDidChangeOperations(): void {
         const isCheckoutInProgress = this.repository.operations.isRunning(OperationKind.Checkout) ||
             this.repository.operations.isRunning(OperationKind.CheckoutTracking);
+
         const isCommitInProgress = this.repository.operations.isRunning(OperationKind.Commit) ||
             this.repository.operations.isRunning(OperationKind.PostCommitCommand) ||
             this.repository.operations.isRunning(OperationKind.RebaseContinue);
+
         const isSyncInProgress = this.repository.operations.isRunning(OperationKind.Sync) ||
             this.repository.operations.isRunning(OperationKind.Push) ||
             this.repository.operations.isRunning(OperationKind.Pull);
@@ -225,10 +241,15 @@ export class ActionButton {
     }
     private repositoryHasChangesToCommit(): boolean {
         const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
+
         const enableSmartCommit = config.get<boolean>('enableSmartCommit') === true;
+
         const suggestSmartCommit = config.get<boolean>('suggestSmartCommit') === true;
+
         const smartCommitChanges = config.get<'all' | 'tracked'>('smartCommitChanges', 'all');
+
         const resources = [...this.repository.indexGroup.resourceStates];
+
         if (
         // Smart commit enabled (all)
         (enableSmartCommit && smartCommitChanges === 'all') ||

@@ -60,6 +60,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
             // Add new
             pickerDisposable.value = this.doProvide(picker, token);
         }));
+
         return disposables;
     }
     private doProvide(picker: IQuickPick<IQuickPickItem, {
@@ -68,11 +69,13 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
         const disposables = new DisposableStore();
         // With text control
         const editor = this.activeTextEditorControl;
+
         if (editor && this.canProvideWithTextEditor(editor)) {
             const context: IQuickAccessTextEditorContext = { editor };
             // Restore any view state if this picker was closed
             // without actually going to a line
             const codeEditor = getCodeEditor(editor);
+
             if (codeEditor) {
                 // Remember view state and update it when the cursor position
                 // changes even later because it could be that the user has
@@ -121,15 +124,18 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
     protected gotoLocation({ editor }: IQuickAccessTextEditorContext, options: {
         range: IRange;
         keyMods: IKeyMods;
+
         forceSideBySide?: boolean;
         preserveFocus?: boolean;
     }): void {
         editor.setSelection(options.range, TextEditorSelectionSource.JUMP);
         editor.revealRangeInCenter(options.range, ScrollType.Smooth);
+
         if (!options.preserveFocus) {
             editor.focus();
         }
         const model = editor.getModel();
+
         if (model && 'getLineContent' in model) {
             status(`${model.getLineContent(options.range.startLineNumber)}`);
         }
@@ -156,6 +162,7 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
         editor.changeDecorations(changeAccessor => {
             // Reset old decorations if any
             const deleteDecorations: string[] = [];
+
             if (this.rangeHighlightDecorationId) {
                 deleteDecorations.push(this.rangeHighlightDecorationId.overviewRulerDecorationId);
                 deleteDecorations.push(this.rangeHighlightDecorationId.rangeHighlightId);
@@ -184,12 +191,14 @@ export abstract class AbstractEditorNavigationQuickAccessProvider implements IQu
                     }
                 }
             ];
+
             const [rangeHighlightId, overviewRulerDecorationId] = changeAccessor.deltaDecorations(deleteDecorations, newDecorations);
             this.rangeHighlightDecorationId = { rangeHighlightId, overviewRulerDecorationId };
         });
     }
     clearDecorations(editor: IEditor): void {
         const rangeHighlightDecorationId = this.rangeHighlightDecorationId;
+
         if (rangeHighlightDecorationId) {
             editor.changeDecorations(changeAccessor => {
                 changeAccessor.deltaDecorations([

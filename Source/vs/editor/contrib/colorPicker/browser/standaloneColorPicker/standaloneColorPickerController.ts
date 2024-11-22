@@ -14,6 +14,7 @@ export class StandaloneColorPickerController extends Disposable implements IEdit
     private _standaloneColorPickerWidget: StandaloneColorPickerWidget | null = null;
     private _standaloneColorPickerVisible: IContextKey<boolean>;
     private _standaloneColorPickerFocused: IContextKey<boolean>;
+
     constructor(private readonly _editor: ICodeEditor, 
     @IContextKeyService
     _contextKeyService: IContextKeyService, 

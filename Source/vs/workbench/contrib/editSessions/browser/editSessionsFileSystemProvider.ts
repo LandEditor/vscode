@@ -10,22 +10,29 @@ import { ChangeType, decodeEditSessionFileContent, EDIT_SESSIONS_SCHEME, EditSes
 import { NotSupportedError } from '../../../../base/common/errors.js';
 export class EditSessionsFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
     static readonly SCHEMA = EDIT_SESSIONS_SCHEME;
+
     constructor(
     @IEditSessionsStorageService
     private editSessionsStorageService: IEditSessionsStorageService) { }
     readonly capabilities: FileSystemProviderCapabilities = FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite;
+
     async readFile(resource: URI): Promise<Uint8Array> {
         const match = /(?<ref>[^/]+)\/(?<folderName>[^/]+)\/(?<filePath>.*)/.exec(resource.path.substring(1));
+
         if (!match?.groups) {
             throw FileSystemProviderErrorCode.FileNotFound;
         }
         const { ref, folderName, filePath } = match.groups;
+
         const data = await this.editSessionsStorageService.read('editSessions', ref);
+
         if (!data) {
             throw FileSystemProviderErrorCode.FileNotFound;
         }
         const content: EditSession = JSON.parse(data.content);
+
         const change = content.folders.find((f) => f.name === folderName)?.workingChanges.find((change) => change.relativeFilePath === filePath);
+
         if (!change || change.type === ChangeType.Deletion) {
             throw FileSystemProviderErrorCode.FileNotFound;
         }
@@ -33,7 +40,9 @@ export class EditSessionsFileSystemProvider implements IFileSystemProviderWithFi
     }
     async stat(resource: URI): Promise<IStat> {
         const content = await this.readFile(resource);
+
         const currentTime = Date.now();
+
         return {
             type: FileType.File,
             permissions: FilePermission.Readonly,

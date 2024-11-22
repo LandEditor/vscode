@@ -30,6 +30,7 @@ export class UnfocusedViewDimmingContribution extends Disposable implements IWor
 			let cssTextContent = '';
 
 			const enabled = ensureBoolean(configurationService.getValue(AccessibilityWorkbenchSettingId.DimUnfocusedEnabled), false);
+
 			if (enabled) {
 				const opacity = clamp(
 					ensureNumber(configurationService.getValue(AccessibilityWorkbenchSettingId.DimUnfocusedOpacity), ViewDimUnfocusedOpacityProperties.Default),
@@ -41,6 +42,7 @@ export class UnfocusedViewDimmingContribution extends Disposable implements IWor
 					// These filter rules are more specific than may be expected as the `filter`
 					// rule can cause problems if it's used inside the element like on editor hovers
 					const rules = new Set<string>();
+
 					const filterRule = `filter: opacity(${opacity});`;
 					// Terminal tabs
 					rules.add(`.monaco-workbench .pane-body.integrated-terminal:not(:focus-within) .tabs-container { ${filterRule} }`);

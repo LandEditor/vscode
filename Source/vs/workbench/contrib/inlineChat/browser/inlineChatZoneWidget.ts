@@ -68,6 +68,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				options: {
 					buttonConfigProvider: (action, index) => {
 						const isSecondary = index > 0;
+
 						if (new Set([ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, ACTION_REPORT_ISSUE]).has(action.id)) {
 							return { isSecondary, showIcon: true, showLabel: false };
 						} else {
@@ -104,6 +105,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			if (this.position && !this._usesResizeHeight) {
 				// only relayout when visible
 				revealFn ??= this._createZoneAndScrollRestoreFn(this.position);
+
 				const height = this._computeHeight();
 				this._relayout(height.linesValue);
 				revealFn();
@@ -154,6 +156,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		this._updatePadding();
 
 		const info = this.editor.getLayoutInfo();
+
 		let width = info.contentWidth - info.verticalScrollbarWidth;
 		width = Math.min(850, width);
 
@@ -163,18 +166,23 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 	private _computeHeight(): { linesValue: number; pixelsValue: number } {
 		const chatContentHeight = this.widget.contentHeight;
+
 		const editorHeight = this.editor.getLayoutInfo().height;
 
 		const contentHeight = this._decoratingElementsHeight() + Math.min(chatContentHeight, Math.max(this.widget.minHeight, editorHeight * 0.42));
+
 		const heightInLines = contentHeight / this.editor.getOption(EditorOption.lineHeight);
+
 		return { linesValue: heightInLines, pixelsValue: contentHeight };
 	}
 
 	protected override _getResizeBounds(): { minLines: number; maxLines: number } {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
+
 		const decoHeight = this._decoratingElementsHeight();
 
 		const minHeightPx = decoHeight + this.widget.minHeight;
+
 		const maxHeightPx = decoHeight + this.widget.contentHeight;
 
 		return {
@@ -195,6 +203,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		this._updatePadding();
 
 		const revealZone = this._createZoneAndScrollRestoreFn(position);
+
 		super.show(position, this._computeHeight().linesValue);
 		this.widget.chatWidget.setVisible(true);
 		this.widget.focus();
@@ -207,12 +216,14 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		assertType(this.container);
 
 		const info = this.editor.getLayoutInfo();
+
 		const marginWithoutIndentation = info.glyphMarginWidth + info.lineNumbersWidth + info.decorationsWidth;
 		this.container.style.paddingLeft = `${marginWithoutIndentation}px`;
 	}
 
 	reveal(position: Position) {
 		const stickyScroll = this.editor.getOption(EditorOption.stickyScroll);
+
 		const magicValue = stickyScroll.enabled ? stickyScroll.maxLineCount : 0;
 		this.editor.revealLines(position.lineNumber + magicValue, position.lineNumber + magicValue, ScrollType.Immediate);
 		this._scrollUp.reset();
@@ -221,6 +232,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 	override updatePositionAndHeight(position: Position): void {
 		const revealZone = this._createZoneAndScrollRestoreFn(position);
+
 		super.updatePositionAndHeight(position, !this._usesResizeHeight ? this._computeHeight().linesValue : undefined);
 		revealZone();
 	}
@@ -230,8 +242,11 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		const scrollState = StableEditorBottomScrollState.capture(this.editor);
 
 		const lineNumber = position.lineNumber <= 1 ? 1 : 1 + position.lineNumber;
+
 		const scrollTop = this.editor.getScrollTop();
+
 		const lineTop = this.editor.getTopForLineNumber(lineNumber);
+
 		const zoneTop = lineTop - this._computeHeight().pixelsValue;
 
 		const hasResponse = this.widget.chatWidget.viewModel?.getItems().find(candidate => {
@@ -250,18 +265,24 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			scrollState.restore(this.editor);
 
 			const scrollTop = this.editor.getScrollTop();
+
 			const lineTop = this.editor.getTopForLineNumber(lineNumber);
+
 			const zoneTop = lineTop - this._computeHeight().pixelsValue;
+
 			const editorHeight = this.editor.getLayoutInfo().height;
+
 			const lineBottom = this.editor.getBottomForLineNumber(lineNumber);
 
 			let newScrollTop = zoneTop;
+
 			let forceScrollTop = false;
 
 			if (lineBottom >= (scrollTop + editorHeight)) {
 				// revealing the top of the zone would push out the line we are interested in and
 				// therefore we keep the line in the viewport
 				newScrollTop = lineBottom - editorHeight;
+
 				forceScrollTop = true;
 			}
 
@@ -282,6 +303,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		this._ctxCursorPosition.reset();
 		this.widget.reset();
 		this.widget.chatWidget.setVisible(false);
+
 		super.hide();
 		aria.status(localize('inlineChatClosed', 'Closed inline chat widget'));
 		scrollState.restore(this.editor);
@@ -324,6 +346,7 @@ class ScrollUpState {
 	runIgnored(callback: () => void): () => void {
 		return () => {
 			this._ignoreEvents = true;
+
 			try {
 				return callback();
 			} finally {

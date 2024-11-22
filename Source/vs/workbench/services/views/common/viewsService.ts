@@ -20,8 +20,11 @@ export interface IViewsService {
     isViewContainerActive(id: string): boolean;
     openViewContainer(id: string, focus?: boolean): Promise<IPaneComposite | null>;
     closeViewContainer(id: string): void;
+
     getVisibleViewContainer(location: ViewContainerLocation): ViewContainer | null;
+
     getActiveViewPaneContainerWithId(viewContainerId: string): IViewPaneContainer | null;
+
     getFocusedViewName(): string;
     // View APIs
     readonly onDidChangeViewVisibility: Event<{
@@ -32,7 +35,10 @@ export interface IViewsService {
     isViewVisible(id: string): boolean;
     openView<T extends IView>(id: string, focus?: boolean): Promise<T | null>;
     closeView(id: string): void;
+
     getActiveViewWithId<T extends IView>(id: string): T | null;
+
     getViewWithId<T extends IView>(id: string): T | null;
+
     getViewProgressIndicator(id: string): IProgressIndicator | undefined;
 }

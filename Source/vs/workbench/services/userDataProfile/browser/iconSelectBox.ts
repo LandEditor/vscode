@@ -18,6 +18,7 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
     private readonly contextKeyService: IContextKeyService;
     private readonly inputFocusContextKey: IContextKey<boolean>;
     private readonly inputEmptyContextKey: IContextKey<boolean>;
+
     constructor(options: IIconSelectBoxOptions, 
     @IContextKeyService
     contextKeyService: IContextKeyService) {
@@ -26,6 +27,7 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
         WorkbenchIconSelectBoxFocusContextKey.bindTo(this.contextKeyService);
         this.inputFocusContextKey = WorkbenchIconSelectBoxInputFocusContextKey.bindTo(this.contextKeyService);
         this.inputEmptyContextKey = WorkbenchIconSelectBoxInputEmptyContextKey.bindTo(this.contextKeyService);
+
         if (this.inputBox) {
             const focusTracker = this._register(dom.trackFocus(this.inputBox.inputElement));
             this._register(focusTracker.onDidFocus(() => this.inputFocusContextKey.set(true)));
@@ -45,6 +47,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.UpArrow,
     handler: () => {
         const selectBox = WorkbenchIconSelectBox.getFocusedWidget();
+
         if (selectBox) {
             selectBox.focusPreviousRow();
         }
@@ -57,6 +60,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.DownArrow,
     handler: () => {
         const selectBox = WorkbenchIconSelectBox.getFocusedWidget();
+
         if (selectBox) {
             selectBox.focusNextRow();
         }
@@ -69,6 +73,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.RightArrow,
     handler: () => {
         const selectBox = WorkbenchIconSelectBox.getFocusedWidget();
+
         if (selectBox) {
             selectBox.focusNext();
         }
@@ -81,6 +86,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.LeftArrow,
     handler: () => {
         const selectBox = WorkbenchIconSelectBox.getFocusedWidget();
+
         if (selectBox) {
             selectBox.focusPrevious();
         }
@@ -93,6 +99,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
     primary: KeyCode.Enter,
     handler: () => {
         const selectBox = WorkbenchIconSelectBox.getFocusedWidget();
+
         if (selectBox) {
             selectBox.setSelection(selectBox.getFocus()[0]);
         }

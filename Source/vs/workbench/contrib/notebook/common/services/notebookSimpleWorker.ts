@@ -57,8 +57,10 @@ class MirrorCell {
 		hashValue = doHash(this.getValue(), hashValue);
 		hashValue = doHash(this.metadata, hashValue);
 		hashValue = doHash(this.internalMetadata, hashValue);
+
 		for (const op of this.outputs) {
 			hashValue = doHash(op.metadata, hashValue);
+
 			for (const output of op.outputs) {
 				hashValue = doHash(output.mime, hashValue);
 			}
@@ -68,6 +70,7 @@ class MirrorCell {
 		const digests = await Promise.all(this.outputs.flatMap(op =>
 			op.outputs.map(o => crypto.subtle.digest('sha-1', o.data.buffer))
 		));
+
 		for (const digest of digests) {
 			hashValue = numberHash(new Int32Array(digest)[0], hashValue);
 		}
@@ -101,14 +104,17 @@ class MirrorNotebookDocument {
 				cell.outputs = e.outputs;
 			} else if (e.kind === NotebookCellsChangeType.ChangeCellLanguage) {
 				this._assertIndex(e.index);
+
 				const cell = this.cells[e.index];
 				cell.language = e.language;
 			} else if (e.kind === NotebookCellsChangeType.ChangeCellMetadata) {
 				this._assertIndex(e.index);
+
 				const cell = this.cells[e.index];
 				cell.metadata = e.metadata;
 			} else if (e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata) {
 				this._assertIndex(e.index);
+
 				const cell = this.cells[e.index];
 				cell.internalMetadata = e.internalMetadata;
 			} else if (e.kind === NotebookCellsChangeType.ChangeDocumentMetadata) {
@@ -126,6 +132,7 @@ class MirrorNotebookDocument {
 	_spliceNotebookCells(splices: NotebookCellTextModelSplice<IMainCellDto>[]) {
 		splices.reverse().forEach(splice => {
 			const cellDtos = splice[2];
+
 			const newCells = cellDtos.map(cell => {
 				return new MirrorCell(
 					cell.handle,
@@ -152,6 +159,7 @@ class CellSequence implements ISequence {
 		await Promise.all(textModel.cells.map(async (c, i) => {
 			hashValue[i] = await c.getComparisonValue();
 		}));
+
 		return new CellSequence(hashValue);
 	}
 
@@ -159,9 +167,11 @@ class CellSequence implements ISequence {
 		const hashValue = new Map<string, number>();
 		await Promise.all(textModel.cells.map(async (c, i) => {
 			const value = await c.getComparisonValue();
+
 			const id: string = (c.metadata?.id || '') as string;
 			hashValue.set(id, value);
 		}));
+
 		return hashValue;
 	}
 
@@ -216,6 +226,7 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 
 	async $computeDiff(originalUrl: string, modifiedUrl: string): Promise<INotebookDiffResult> {
 		const original = this._getModel(originalUrl);
+
 		const modified = this._getModel(modifiedUrl);
 
 		const [originalSeq, modifiedSeq] = await Promise.all([
@@ -224,10 +235,13 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 		]);
 
 		const diff = new LcsDiff(originalSeq, modifiedSeq);
+
 		const diffResult = diff.ComputeDiff(false);
 
 		const originalMetadata = filter(original.metadata, key => !original.transientDocumentMetadata[key]);
+
 		const modifiedMetadata = filter(modified.metadata, key => !modified.transientDocumentMetadata[key]);
+
 		return {
 			metadataChanged: JSON.stringify(originalMetadata) !== JSON.stringify(modifiedMetadata),
 			cellsDiff: diffResult,
@@ -237,6 +251,7 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 
 	async $computeDiffWithCellIds(original: MirrorNotebookDocument, modified: MirrorNotebookDocument): Promise<IDiffResult | undefined> {
 		const originalCellIds = original.cells.map((cell, index) => ({ index, id: (cell.metadata?.id || '') as string }));
+
 		const modifiedCellIds = modified.cells.map((cell, index) => ({ index, id: (cell.metadata?.id || '') as string }));
 
 		if (originalCellIds.some(c => !c.id) || modifiedCellIds.some(c => !c.id)) {
@@ -253,6 +268,7 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 				const id: string = (c.metadata?.id || '') as string;
 				hashValue.set(id, value);
 			}));
+
 			return hashValue;
 		};
 
@@ -260,10 +276,13 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 
 		while (modifiedCellIds.length) {
 			const modifiedCell = modifiedCellIds.shift()!;
+
 			const originalCell = originalCellIds.find(c => c.id === modifiedCell.id);
+
 			if (originalCell) {
 				// Everything before this cell is a deletion
 				const index = originalCellIds.indexOf(originalCell);
+
 				const deletedFromOriginal = originalCellIds.splice(0, index + 1);
 
 				if (deletedFromOriginal.length === 1) {
@@ -316,10 +335,12 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 
 	$canPromptRecommendation(modelUrl: string): boolean {
 		const model = this._getModel(modelUrl);
+
 		const cells = model.cells;
 
 		for (let i = 0; i < cells.length; i++) {
 			const cell = cells[i];
+
 			if (cell.cellKind === CellKind.Markup) {
 				continue;
 			}
@@ -329,6 +350,7 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 			}
 
 			const searchParams = new SearchParams('import\\s*pandas|from\\s*pandas', true, false, null);
+
 			const searchData = searchParams.parseSearchRequest();
 
 			if (!searchData) {
@@ -337,13 +359,19 @@ export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable 
 
 			const builder = new PieceTreeTextBufferBuilder();
 			builder.acceptChunk(cell.getValue());
+
 			const bufferFactory = builder.finish(true);
+
 			const textBuffer = bufferFactory.create(cell.eol).textBuffer;
 
 			const lineCount = textBuffer.getLineCount();
+
 			const maxLineCount = Math.min(lineCount, 20);
+
 			const range = new Range(1, 1, maxLineCount, textBuffer.getLineLength(maxLineCount) + 1);
+
 			const cellMatches = textBuffer.findMatchesLineByLine(range, searchData, true, 1);
+
 			if (cellMatches.length > 0) {
 				return true;
 			}

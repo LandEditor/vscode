@@ -23,6 +23,7 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
     protected readonly _environment: IEnvironment;
     readonly whenReady: Promise<URI | undefined>;
     private _value?: URI;
+
     constructor(
     @IExtHostInitDataService
     initData: IExtHostInitDataService, 
@@ -42,10 +43,13 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
             return Promise.resolve(undefined);
         }
         const storageName = this._workspace.id;
+
         const storageUri = await this._getWorkspaceStorageURI(storageName);
+
         try {
             await this._extHostFileSystem.value.stat(storageUri);
             this._logService.trace('[ExtHostStorage] storage dir already exists', storageUri);
+
             return storageUri;
         }
         catch {
@@ -59,10 +63,12 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
                 configuration: URI.revive(this._workspace.configuration)?.toString(),
                 name: this._workspace.name
             }, undefined, 2)));
+
             return storageUri;
         }
         catch (e) {
             this._logService.error('[ExtHostStorage]', e);
+
             return undefined;
         }
     }

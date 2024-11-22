@@ -16,6 +16,7 @@ import { LifecyclePhase } from '../../../../../services/lifecycle/common/lifecyc
 class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
     private readonly _pausedCells = new Set<string>();
     private _scheduler: RunOnceScheduler;
+
     constructor(
     @IDebugService
     private readonly _debugService: IDebugService, 
@@ -32,14 +33,17 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
     }
     private async onDidChangeCallStack(fallBackOnStaleCallstack: boolean): Promise<void> {
         const newPausedCells = new Set<string>();
+
         for (const session of this._debugService.getModel().getSessions()) {
             for (const thread of session.getAllThreads()) {
                 let callStack = thread.getCallStack();
+
                 if (fallBackOnStaleCallstack && !callStack.length) {
                     callStack = (thread as Thread).getStaleCallStack();
                 }
                 callStack.forEach(sf => {
                     const parsed = CellUri.parse(sf.source.uri);
+
                     if (parsed) {
                         newPausedCells.add(sf.source.uri.toString());
                         this.editIsPaused(sf.source.uri, true);
@@ -57,8 +61,10 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
     }
     private editIsPaused(cellUri: URI, isPaused: boolean) {
         const parsed = CellUri.parse(cellUri);
+
         if (parsed) {
             const exeState = this._notebookExecutionStateService.getCellExecution(cellUri);
+
             if (exeState && (exeState.isPaused !== isPaused || !exeState.didPause)) {
                 exeState.update([{
                         editType: CellExecutionUpdateType.ExecutionState,

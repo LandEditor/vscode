@@ -22,7 +22,9 @@ export class OpenWebviewDeveloperToolsAction extends Action2 {
     }
     async run(accessor: ServicesAccessor): Promise<void> {
         const nativeHostService = accessor.get(INativeHostService);
+
         const iframeWebviewElements = getActiveWindow().document.querySelectorAll('iframe.webview.ready');
+
         if (iframeWebviewElements.length) {
             console.info(nls.localize('iframeWebviewAlert', "Using standard dev tools to debug iframe based webview"));
             nativeHostService.openDevTools();

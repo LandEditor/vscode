@@ -11,6 +11,7 @@ export class CursorContext {
     public readonly viewModel: ICursorSimpleModel;
     public readonly coordinatesConverter: ICoordinatesConverter;
     public readonly cursorConfig: CursorConfiguration;
+
     constructor(model: ITextModel, viewModel: ICursorSimpleModel, coordinatesConverter: ICoordinatesConverter, cursorConfig: CursorConfiguration) {
         this.model = model;
         this.viewModel = viewModel;

@@ -30,7 +30,9 @@ export function isFilterResult<T>(obj: any): obj is ITreeFilterDataResult<T> {
 export function getVisibleState(visibility: boolean | TreeVisibility): TreeVisibility {
     switch (visibility) {
         case true: return TreeVisibility.Visible;
+
         case false: return TreeVisibility.Hidden;
+
         default: return visibility;
     }
 }
@@ -92,6 +94,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     private filter?: ITreeFilter<T, TFilterData>;
     private autoExpandSingleChildren: boolean;
     private readonly refilterDelayer = new Delayer(MicrotaskDelay);
+
     constructor(private user: string, rootElement: T, options: IIndexTreeModelOptions<T, TFilterData> = {}) {
         this.collapseByDefault = typeof options.collapseByDefault === 'undefined' ? false : options.collapseByDefault;
         this.allowNonCollapsibleParents = options.allowNonCollapsibleParents ?? false;
@@ -125,11 +128,14 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     private spliceSmart(identity: IIdentityProvider<T>, location: number[], deleteCount: number, toInsertIterable: Iterable<ITreeElement<T>> = Iterable.empty(), options: IIndexTreeModelSpliceOptions<T, TFilterData>, recurseLevels = options.diffDepth ?? 0) {
         const { parentNode } = this.getParentNodeWithListIndex(location);
+
         if (!parentNode.lastDiffIds) {
             return this.spliceSimple(location, deleteCount, toInsertIterable, options);
         }
         const toInsert = [...toInsertIterable];
+
         const index = location[location.length - 1];
+
         const diff = new LcsDiff({ getElements: () => parentNode.lastDiffIds! }, {
             getElements: () => [
                 ...parentNode.children.slice(0, index),
@@ -140,9 +146,11 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         // if we were given a 'best effort' diff, use default behavior
         if (diff.quitEarly) {
             parentNode.lastDiffIds = undefined;
+
             return this.spliceSimple(location, deleteCount, toInsert, options);
         }
         const locationPrefix = location.slice(0, -1);
+
         const recurseSplice = (fromOriginal: number, fromModified: number, count: number) => {
             if (recurseLevels > 0) {
                 for (let i = 0; i < count; i++) {
@@ -152,8 +160,11 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
                 }
             }
         };
+
         let lastStartO = Math.min(parentNode.children.length, index + deleteCount);
+
         let lastStartM = toInsert.length;
+
         for (const change of diff.changes.sort((a, b) => b.originalStart - a.originalStart)) {
             recurseSplice(lastStartO, lastStartM, lastStartO - (change.originalStart + change.originalLength));
             lastStartO = change.originalStart;
@@ -165,30 +176,41 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     private spliceSimple(location: number[], deleteCount: number, toInsert: Iterable<ITreeElement<T>> = Iterable.empty(), { onDidCreateNode, onDidDeleteNode, diffIdentityProvider }: IIndexTreeModelSpliceOptions<T, TFilterData>) {
         const { parentNode, listIndex, revealed, visible } = this.getParentNodeWithListIndex(location);
+
         const treeListElementsToInsert: ITreeNode<T, TFilterData>[] = [];
+
         const nodesToInsertIterator = Iterable.map(toInsert, el => this.createTreeNode(el, parentNode, parentNode.visible ? TreeVisibility.Visible : TreeVisibility.Hidden, revealed, treeListElementsToInsert, onDidCreateNode));
+
         const lastIndex = location[location.length - 1];
         // figure out what's the visible child start index right before the
         // splice point
         let visibleChildStartIndex = 0;
+
         for (let i = lastIndex; i >= 0 && i < parentNode.children.length; i--) {
             const child = parentNode.children[i];
+
             if (child.visible) {
                 visibleChildStartIndex = child.visibleChildIndex;
+
                 break;
             }
         }
         const nodesToInsert: IIndexTreeNode<T, TFilterData>[] = [];
+
         let insertedVisibleChildrenCount = 0;
+
         let renderNodeCount = 0;
+
         for (const child of nodesToInsertIterator) {
             nodesToInsert.push(child);
             renderNodeCount += child.renderNodeCount;
+
             if (child.visible) {
                 child.visibleChildIndex = visibleChildStartIndex + insertedVisibleChildrenCount++;
             }
         }
         const deletedNodes = splice(parentNode.children, lastIndex, deleteCount, nodesToInsert);
+
         if (!diffIdentityProvider) {
             parentNode.lastDiffIds = undefined;
         }
@@ -200,6 +222,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         // figure out what is the count of deleted visible children
         let deletedVisibleChildrenCount = 0;
+
         for (const child of deletedNodes) {
             if (child.visible) {
                 deletedVisibleChildrenCount++;
@@ -209,6 +232,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         if (deletedVisibleChildrenCount !== 0) {
             for (let i = lastIndex + nodesToInsert.length; i < parentNode.children.length; i++) {
                 const child = parentNode.children[i];
+
                 if (child.visible) {
                     child.visibleChildIndex -= deletedVisibleChildrenCount;
                 }
@@ -216,6 +240,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         // update parent's visible children count
         parentNode.visibleChildrenCount += insertedVisibleChildrenCount - deletedVisibleChildrenCount;
+
         if (deletedNodes.length > 0 && onDidDeleteNode) {
             const visit = (node: ITreeNode<T, TFilterData>) => {
                 onDidDeleteNode(node);
@@ -229,11 +254,14 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             this._onDidSpliceRenderedNodes.fire({ start: listIndex, deleteCount: visibleDeleteCount, elements: treeListElementsToInsert });
         }
         this._onDidSpliceModel.fire({ insertedNodes: nodesToInsert, deletedNodes });
+
         let node: IIndexTreeNode<T, TFilterData> | undefined = parentNode;
+
         while (node) {
             if (node.visibility === TreeVisibility.Recurse) {
                 // delayed to avoid excessive refiltering, see #135941
                 this.refilterDelayer.trigger(() => this.refilter());
+
                 break;
             }
             node = node.parent;
@@ -244,6 +272,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             throw new TreeError(this.user, 'Invalid tree location');
         }
         const { node, listIndex, revealed } = this.getTreeNodeWithListIndex(location);
+
         if (node.visible && revealed) {
             this._onDidSpliceRenderedNodes.fire({ start: listIndex, deleteCount: 1, elements: [node] });
         }
@@ -253,6 +282,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     getListIndex(location: number[]): number {
         const { listIndex, visible, revealed } = this.getTreeNodeWithListIndex(location);
+
         return visible && revealed ? listIndex : -1;
     }
     getListRenderCount(location: number[]): number {
@@ -263,10 +293,12 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     setCollapsible(location: number[], collapsible?: boolean): boolean {
         const node = this.getTreeNode(location);
+
         if (typeof collapsible === 'undefined') {
             collapsible = !node.collapsible;
         }
         const update: CollapsibleStateUpdate = { collapsible };
+
         return this.eventBufferer.bufferEvents(() => this._setCollapseState(location, update));
     }
     isCollapsed(location: number[]): boolean {
@@ -274,22 +306,29 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     setCollapsed(location: number[], collapsed?: boolean, recursive?: boolean): boolean {
         const node = this.getTreeNode(location);
+
         if (typeof collapsed === 'undefined') {
             collapsed = !node.collapsed;
         }
         const update: CollapsedStateUpdate = { collapsed, recursive: recursive || false };
+
         return this.eventBufferer.bufferEvents(() => this._setCollapseState(location, update));
     }
     private _setCollapseState(location: number[], update: CollapseStateUpdate): boolean {
         const { node, listIndex, revealed } = this.getTreeNodeWithListIndex(location);
+
         const result = this._setListNodeCollapseState(node, listIndex, revealed, update);
+
         if (node !== this.root && this.autoExpandSingleChildren && result && !isCollapsibleStateUpdate(update) && node.collapsible && !node.collapsed && !update.recursive) {
             let onlyVisibleChildIndex = -1;
+
             for (let i = 0; i < node.children.length; i++) {
                 const child = node.children[i];
+
                 if (child.visible) {
                     if (onlyVisibleChildIndex > -1) {
                         onlyVisibleChildIndex = -1;
+
                         break;
                     }
                     else {
@@ -305,17 +344,22 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     private _setListNodeCollapseState(node: IIndexTreeNode<T, TFilterData>, listIndex: number, revealed: boolean, update: CollapseStateUpdate): boolean {
         const result = this._setNodeCollapseState(node, update, false);
+
         if (!revealed || !node.visible || !result) {
             return result;
         }
         const previousRenderNodeCount = node.renderNodeCount;
+
         const toInsert = this.updateNodeAfterCollapseChange(node);
+
         const deleteCount = previousRenderNodeCount - (listIndex === -1 ? 0 : 1);
         this._onDidSpliceRenderedNodes.fire({ start: listIndex + 1, deleteCount: deleteCount, elements: toInsert.slice(1) });
+
         return result;
     }
     private _setNodeCollapseState(node: IIndexTreeNode<T, TFilterData>, update: CollapseStateUpdate, deep: boolean): boolean {
         let result: boolean;
+
         if (node === this.root) {
             result = false;
         }
@@ -345,9 +389,11 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     expandTo(location: number[]): void {
         this.eventBufferer.bufferEvents(() => {
             let node = this.getTreeNode(location);
+
             while (node.parent) {
                 node = node.parent;
                 location = location.slice(0, location.length - 1);
+
                 if (node.collapsed) {
                     this._setCollapseState(location, { collapsed: false, recursive: false });
                 }
@@ -356,6 +402,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     refilter(): void {
         const previousRenderNodeCount = this.root.renderNodeCount;
+
         const toInsert = this.updateNodeAfterFilterChange(this.root);
         this._onDidSpliceRenderedNodes.fire({ start: 0, deleteCount: previousRenderNodeCount, elements: toInsert });
         this.refilterDelayer.cancel();
@@ -375,19 +422,26 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             visible: true,
             filterData: undefined
         };
+
         const visibility = this._filterNode(node, parentVisibility);
         node.visibility = visibility;
+
         if (revealed) {
             treeListElements.push(node);
         }
         const childElements = treeElement.children || Iterable.empty();
+
         const childRevealed = revealed && visibility !== TreeVisibility.Hidden && !node.collapsed;
+
         let visibleChildrenCount = 0;
+
         let renderNodeCount = 1;
+
         for (const el of childElements) {
             const child = this.createTreeNode(el, node, visibility, childRevealed, treeListElements, onDidCreateNode);
             node.children.push(child);
             renderNodeCount += child.renderNodeCount;
+
             if (child.visible) {
                 child.visibleChildIndex = visibleChildrenCount++;
             }
@@ -397,8 +451,10 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         node.visibleChildrenCount = visibleChildrenCount;
         node.visible = visibility === TreeVisibility.Recurse ? visibleChildrenCount > 0 : (visibility === TreeVisibility.Visible);
+
         if (!node.visible) {
             node.renderNodeCount = 0;
+
             if (revealed) {
                 treeListElements.pop();
             }
@@ -407,13 +463,16 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             node.renderNodeCount = renderNodeCount;
         }
         onDidCreateNode?.(node);
+
         return node;
     }
     private updateNodeAfterCollapseChange(node: IIndexTreeNode<T, TFilterData>): ITreeNode<T, TFilterData>[] {
         const previousRenderNodeCount = node.renderNodeCount;
+
         const result: ITreeNode<T, TFilterData>[] = [];
         this._updateNodeAfterCollapseChange(node, result);
         this._updateAncestorsRenderNodeCount(node.parent, result.length - previousRenderNodeCount);
+
         return result;
     }
     private _updateNodeAfterCollapseChange(node: IIndexTreeNode<T, TFilterData>, result: ITreeNode<T, TFilterData>[]): number {
@@ -422,28 +481,35 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         result.push(node);
         node.renderNodeCount = 1;
+
         if (!node.collapsed) {
             for (const child of node.children) {
                 node.renderNodeCount += this._updateNodeAfterCollapseChange(child, result);
             }
         }
         this._onDidChangeRenderNodeCount.fire(node);
+
         return node.renderNodeCount;
     }
     private updateNodeAfterFilterChange(node: IIndexTreeNode<T, TFilterData>): ITreeNode<T, TFilterData>[] {
         const previousRenderNodeCount = node.renderNodeCount;
+
         const result: ITreeNode<T, TFilterData>[] = [];
         this._updateNodeAfterFilterChange(node, node.visible ? TreeVisibility.Visible : TreeVisibility.Hidden, result);
         this._updateAncestorsRenderNodeCount(node.parent, result.length - previousRenderNodeCount);
+
         return result;
     }
     private _updateNodeAfterFilterChange(node: IIndexTreeNode<T, TFilterData>, parentVisibility: TreeVisibility, result: ITreeNode<T, TFilterData>[], revealed = true): boolean {
         let visibility: TreeVisibility;
+
         if (node !== this.root) {
             visibility = this._filterNode(node, parentVisibility);
+
             if (visibility === TreeVisibility.Hidden) {
                 node.visible = false;
                 node.renderNodeCount = 0;
+
                 return false;
             }
             if (revealed) {
@@ -452,11 +518,15 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         const resultStartLength = result.length;
         node.renderNodeCount = node === this.root ? 0 : 1;
+
         let hasVisibleDescendants = false;
+
         if (!node.collapsed || visibility! !== TreeVisibility.Hidden) {
             let visibleChildIndex = 0;
+
             for (const child of node.children) {
                 hasVisibleDescendants = this._updateNodeAfterFilterChange(child, visibility!, result, revealed && !node.collapsed) || hasVisibleDescendants;
+
                 if (child.visible) {
                     child.visibleChildIndex = visibleChildIndex++;
                 }
@@ -472,6 +542,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         if (!node.visible) {
             node.renderNodeCount = 0;
+
             if (revealed) {
                 result.pop();
             }
@@ -480,6 +551,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             node.renderNodeCount += result.length - resultStartLength;
         }
         this._onDidChangeRenderNodeCount.fire(node);
+
         return node.visible;
     }
     private _updateAncestorsRenderNodeCount(node: IIndexTreeNode<T, TFilterData> | undefined, diff: number): void {
@@ -494,16 +566,20 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     private _filterNode(node: IIndexTreeNode<T, TFilterData>, parentVisibility: TreeVisibility): TreeVisibility {
         const result = this.filter ? this.filter.filter(node.element, parentVisibility) : TreeVisibility.Visible;
+
         if (typeof result === 'boolean') {
             node.filterData = undefined;
+
             return result ? TreeVisibility.Visible : TreeVisibility.Hidden;
         }
         else if (isFilterResult<TFilterData>(result)) {
             node.filterData = result.data;
+
             return getVisibleState(result.visibility);
         }
         else {
             node.filterData = undefined;
+
             return getVisibleState(result);
         }
     }
@@ -513,6 +589,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             return true;
         }
         const [index, ...rest] = location;
+
         if (index < 0 || index > node.children.length) {
             return false;
         }
@@ -524,6 +601,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             return node;
         }
         const [index, ...rest] = location;
+
         if (index < 0 || index > node.children.length) {
             throw new TreeError(this.user, 'Invalid tree location');
         }
@@ -540,11 +618,14 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
             return { node: this.root, listIndex: -1, revealed: true, visible: false };
         }
         const { parentNode, listIndex, revealed, visible } = this.getParentNodeWithListIndex(location);
+
         const index = location[location.length - 1];
+
         if (index < 0 || index > parentNode.children.length) {
             throw new TreeError(this.user, 'Invalid tree location');
         }
         const node = parentNode.children[index];
+
         return { node, listIndex, revealed, visible: visible && node.visible };
     }
     private getParentNodeWithListIndex(location: number[], node: IIndexTreeNode<T, TFilterData> = this.root, listIndex: number = 0, revealed = true, visible = true): {
@@ -554,6 +635,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         visible: boolean;
     } {
         const [index, ...rest] = location;
+
         if (index < 0 || index > node.children.length) {
             throw new TreeError(this.user, 'Invalid tree location');
         }
@@ -563,6 +645,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
         }
         revealed = revealed && !node.collapsed;
         visible = visible && node.visible;
+
         if (rest.length === 0) {
             return { parentNode: node, listIndex, revealed, visible };
         }
@@ -574,6 +657,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     // TODO@joao perf!
     getNodeLocation(node: ITreeNode<T, TFilterData>): number[] {
         const location: number[] = [];
+
         let indexTreeNode = node as IIndexTreeNode<T, TFilterData>; // typing woes
         while (indexTreeNode.parent) {
             location.push(indexTreeNode.parent.children.indexOf(indexTreeNode));
@@ -594,6 +678,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     getFirstElementChild(location: number[]): T | undefined {
         const node = this.getTreeNode(location);
+
         if (node.children.length === 0) {
             return undefined;
         }
@@ -601,6 +686,7 @@ export class IndexTreeModel<T extends Exclude<any, undefined>, TFilterData = voi
     }
     getLastElementAncestor(location: number[] = []): T | undefined {
         const node = this.getTreeNode(location);
+
         if (node.children.length === 0) {
             return undefined;
         }

@@ -42,16 +42,20 @@ export interface ISerializableItemsChangeEvent {
 }
 abstract class BaseStorageDatabaseClient extends Disposable implements IStorageDatabase {
     abstract readonly onDidChangeItemsExternal: Event<IStorageItemsChangeEvent>;
+
     constructor(protected channel: IChannel, protected profile: UriDto<IUserDataProfile> | undefined, protected workspace: IAnyWorkspaceIdentifier | undefined) {
         super();
     }
     async getItems(): Promise<Map<string, string>> {
         const serializableRequest: IBaseSerializableStorageRequest = { profile: this.profile, workspace: this.workspace };
+
         const items: Item[] = await this.channel.call('getItems', serializableRequest);
+
         return new Map(items);
     }
     updateItems(request: IUpdateRequest): Promise<void> {
         const serializableRequest: ISerializableUpdateRequest = { profile: this.profile, workspace: this.workspace };
+
         if (request.insert) {
             serializableRequest.insert = Array.from(request.insert.entries());
         }
@@ -62,6 +66,7 @@ abstract class BaseStorageDatabaseClient extends Disposable implements IStorageD
     }
     optimize(): Promise<void> {
         const serializableRequest: IBaseSerializableStorageRequest = { profile: this.profile, workspace: this.workspace };
+
         return this.channel.call('optimize', serializableRequest);
     }
     abstract close(): Promise<void>;
@@ -69,6 +74,7 @@ abstract class BaseStorageDatabaseClient extends Disposable implements IStorageD
 abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabaseClient {
     private readonly _onDidChangeItemsExternal = this._register(new Emitter<IStorageItemsChangeEvent>());
     readonly onDidChangeItemsExternal = this._onDidChangeItemsExternal.event;
+
     constructor(channel: IChannel, profile: UriDto<IUserDataProfile> | undefined) {
         super(channel, profile, undefined);
         this.registerListeners();
@@ -124,6 +130,7 @@ export class StorageClient {
     constructor(private readonly channel: IChannel) { }
     isUsed(path: string): Promise<boolean> {
         const serializableRequest: ISerializableUpdateRequest = { payload: path, profile: undefined, workspace: undefined };
+
         return this.channel.call('isUsed', serializableRequest);
     }
 }

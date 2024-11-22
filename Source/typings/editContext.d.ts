@@ -16,24 +16,32 @@ interface EditContext extends EventTarget {
 	attachedElements(): HTMLElement[];
 
 	get text(): DOMString;
+
 	get selectionStart(): number;
+
 	get selectionEnd(): number;
+
 	get characterBoundsRangeStart(): number;
 	characterBounds(): DOMRect[];
 
 	get ontextupdate(): EventHandler<TextUpdateEvent> | null;
+
 	set ontextupdate(value: EventHandler | null);
 
 	get ontextformatupdate(): EventHandler | null;
+
 	set ontextformatupdate(value: EventHandler | null);
 
 	get oncharacterboundsupdate(): EventHandler | null;
+
 	set oncharacterboundsupdate(value: EventHandler | null);
 
 	get oncompositionstart(): EventHandler | null;
+
 	set oncompositionstart(value: EventHandler | null);
 
 	get oncompositionend(): EventHandler | null;
+
 	set oncompositionend(value: EventHandler | null);
 
 	addEventListener<K extends keyof EditContextEventHandlersEventMap>(type: K, listener: (this: GlobalEventHandlers, ev: EditContextEventHandlersEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
@@ -99,6 +107,7 @@ type UnderlineThickness = 'none' | 'thin' | 'thick';
 
 interface TextFormatUpdateEvent extends Event {
 	new(type: DOMString, options?: TextFormatUpdateEventInit): TextFormatUpdateEvent;
+
 	getTextFormats(): TextFormat[];
 }
 

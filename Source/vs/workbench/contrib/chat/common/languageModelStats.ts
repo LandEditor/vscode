@@ -34,6 +34,7 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
     private readonly _onDidChangeStats = this._register(new Emitter<string>());
     readonly onDidChangeLanguageMoelStats = this._onDidChangeStats.event;
     private readonly sessionStats = new Map<string, LanguageModelStats>();
+
     constructor(
     @IExtensionFeaturesManagementService
     private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService, 
@@ -42,6 +43,7 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
         super();
         this._register(_storageService.onDidChangeValue(StorageScope.APPLICATION, undefined, this._store)(e => {
             const model = this.getModel(e.key);
+
             if (model) {
                 this._onDidChangeStats.fire(model);
             }
@@ -56,6 +58,7 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
         this.addAccess(model, extensionId.value);
         // update session stats
         let sessionStats = this.sessionStats.get(model);
+
         if (!sessionStats) {
             sessionStats = { extensions: [] };
             this.sessionStats.set(model, sessionStats);
@@ -66,7 +69,9 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
     }
     private addAccess(model: string, extensionId: string): void {
         extensionId = extensionId.toLowerCase();
+
         const extensions = this.getAccessExtensions(model);
+
         if (!extensions.includes(extensionId)) {
             extensions.push(extensionId);
             this._storageService.store(this.getAccessKey(model), JSON.stringify(extensions), StorageScope.APPLICATION, StorageTarget.USER);
@@ -74,10 +79,13 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
     }
     private getAccessExtensions(model: string): string[] {
         const key = this.getAccessKey(model);
+
         const data = this._storageService.get(key, StorageScope.APPLICATION);
+
         try {
             if (data) {
                 const parsed = JSON.parse(data);
+
                 if (Array.isArray(parsed)) {
                     return parsed;
                 }
@@ -95,12 +103,14 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
     }
     private add(modelStats: LanguageModelStats, extensionId: string, participant: string | undefined, tokenCount: number | undefined): void {
         let extensionStats = modelStats.extensions.find(e => ExtensionIdentifier.equals(e.extensionId, extensionId));
+
         if (!extensionStats) {
             extensionStats = { extensionId, requestCount: 0, tokenCount: 0, participants: [] };
             modelStats.extensions.push(extensionStats);
         }
         if (participant) {
             let participantStats = extensionStats.participants.find(p => p.id === participant);
+
             if (!participantStats) {
                 participantStats = { id: participant, requestCount: 0, tokenCount: 0 };
                 extensionStats.participants.push(participantStats);
@@ -116,6 +126,7 @@ export class LanguageModelStatsService extends Disposable implements ILanguageMo
     private async read(model: string): Promise<LanguageModelStats> {
         try {
             const value = this._storageService.get(this.getKey(model), StorageScope.APPLICATION);
+
             if (value) {
                 return JSON.parse(value);
             }

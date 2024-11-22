@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { CharCode } from '../../../../base/common/charCode.js';
 import { buildReplaceStringWithCasePreserved } from '../../../../base/common/search.js';
+
 const enum ReplacePatternKind {
     StaticValue = 0,
     DynamicPieces = 1
@@ -13,6 +14,7 @@ const enum ReplacePatternKind {
  */
 class StaticValueReplacePattern {
     public readonly kind = ReplacePatternKind.StaticValue;
+
     constructor(public readonly staticValue: string) { }
 }
 /**
@@ -20,6 +22,7 @@ class StaticValueReplacePattern {
  */
 class DynamicPiecesReplacePattern {
     public readonly kind = ReplacePatternKind.DynamicPieces;
+
     constructor(public readonly pieces: ReplacePiece[]) { }
 }
 export class ReplacePattern {
@@ -51,39 +54,55 @@ export class ReplacePattern {
             }
         }
         let result = '';
+
         for (let i = 0, len = this._state.pieces.length; i < len; i++) {
             const piece = this._state.pieces[i];
+
             if (piece.staticValue !== null) {
                 // static value ReplacePiece
                 result += piece.staticValue;
+
                 continue;
             }
             // match index ReplacePiece
             let match: string = ReplacePattern._substitute(piece.matchIndex, matches);
+
             if (piece.caseOps !== null && piece.caseOps.length > 0) {
                 const repl: string[] = [];
+
                 const lenOps: number = piece.caseOps.length;
+
                 let opIdx: number = 0;
+
                 for (let idx: number = 0, len: number = match.length; idx < len; idx++) {
                     if (opIdx >= lenOps) {
                         repl.push(match.slice(idx));
+
                         break;
                     }
                     switch (piece.caseOps[opIdx]) {
                         case 'U':
                             repl.push(match[idx].toUpperCase());
+
                             break;
+
                         case 'u':
                             repl.push(match[idx].toUpperCase());
                             opIdx++;
+
                             break;
+
                         case 'L':
                             repl.push(match[idx].toLowerCase());
+
                             break;
+
                         case 'l':
                             repl.push(match[idx].toLowerCase());
                             opIdx++;
+
                             break;
+
                         default:
                             repl.push(match[idx]);
                     }
@@ -102,10 +121,12 @@ export class ReplacePattern {
             return matches[0];
         }
         let remainder = '';
+
         while (matchIndex > 0) {
             if (matchIndex < matches.length) {
                 // A match can be undefined
                 const match = (matches[matchIndex] || '');
+
                 return match + remainder;
             }
             remainder = String(matchIndex % 10) + remainder;
@@ -133,6 +154,7 @@ export class ReplacePiece {
     private constructor(staticValue: string | null, matchIndex: number, caseOps: string[] | null) {
         this.staticValue = staticValue;
         this.matchIndex = matchIndex;
+
         if (!caseOps || caseOps.length === 0) {
             this.caseOps = null;
         }
@@ -147,6 +169,7 @@ class ReplacePieceBuilder {
     private readonly _result: ReplacePiece[];
     private _resultLen: number;
     private _currentStaticPiece: string;
+
     constructor(source: string) {
         this._source = source;
         this._lastCharIndex = 0;
@@ -178,6 +201,7 @@ class ReplacePieceBuilder {
     }
     public finalize(): ReplacePattern {
         this.emitUnchanged(this._source.length);
+
         if (this._currentStaticPiece.length !== 0) {
             this._result[this._resultLen++] = ReplacePiece.staticValue(this._currentStaticPiece);
             this._currentStaticPiece = '';
@@ -205,33 +229,43 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
         return new ReplacePattern(null);
     }
     const caseOps: string[] = [];
+
     const result = new ReplacePieceBuilder(replaceString);
+
     for (let i = 0, len = replaceString.length; i < len; i++) {
         const chCode = replaceString.charCodeAt(i);
+
         if (chCode === CharCode.Backslash) {
             // move to next char
             i++;
+
             if (i >= len) {
                 // string ends with a \
                 break;
             }
             const nextChCode = replaceString.charCodeAt(i);
             // let replaceWithCharacter: string | null = null;
+
             switch (nextChCode) {
                 case CharCode.Backslash:
                     // \\ => inserts a "\"
                     result.emitUnchanged(i - 1);
                     result.emitStatic('\\', i + 1);
+
                     break;
+
                 case CharCode.n:
                     // \n => inserts a LF
                     result.emitUnchanged(i - 1);
                     result.emitStatic('\n', i + 1);
+
                     break;
+
                 case CharCode.t:
                     // \t => inserts a TAB
                     result.emitUnchanged(i - 1);
                     result.emitStatic('\t', i + 1);
+
                     break;
                 // Case modification of string replacements, patterned after Boost, but only applied
                 // to the replacement text, not subsequent content.
@@ -245,7 +279,9 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
                     // \L => lower-cases ALL following characters.
                     result.emitUnchanged(i - 1);
                     result.emitStatic('', i + 1);
+
                     caseOps.push(String.fromCharCode(nextChCode));
+
                     break;
             }
             continue;
@@ -253,22 +289,27 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
         if (chCode === CharCode.DollarSign) {
             // move to next char
             i++;
+
             if (i >= len) {
                 // string ends with a $
                 break;
             }
             const nextChCode = replaceString.charCodeAt(i);
+
             if (nextChCode === CharCode.DollarSign) {
                 // $$ => inserts a "$"
                 result.emitUnchanged(i - 1);
                 result.emitStatic('$', i + 1);
+
                 continue;
             }
             if (nextChCode === CharCode.Digit0 || nextChCode === CharCode.Ampersand) {
                 // $& and $0 => inserts the matched substring.
                 result.emitUnchanged(i - 1);
                 result.emitMatchIndex(0, i + 1, caseOps);
+
                 caseOps.length = 0;
+
                 continue;
             }
             if (CharCode.Digit1 <= nextChCode && nextChCode <= CharCode.Digit9) {
@@ -277,6 +318,7 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
                 // peek next char to probe for $nn
                 if (i + 1 < len) {
                     const nextNextChCode = replaceString.charCodeAt(i + 1);
+
                     if (CharCode.Digit0 <= nextNextChCode && nextNextChCode <= CharCode.Digit9) {
                         // $nn
                         // move to next char
@@ -284,13 +326,17 @@ export function parseReplaceString(replaceString: string): ReplacePattern {
                         matchIndex = matchIndex * 10 + (nextNextChCode - CharCode.Digit0);
                         result.emitUnchanged(i - 2);
                         result.emitMatchIndex(matchIndex, i + 1, caseOps);
+
                         caseOps.length = 0;
+
                         continue;
                     }
                 }
                 result.emitUnchanged(i - 1);
                 result.emitMatchIndex(matchIndex, i + 1, caseOps);
+
                 caseOps.length = 0;
+
                 continue;
             }
         }

@@ -72,6 +72,7 @@ export interface ITestProfileService {
  * Gets whether the given profile can be used to run the test.
  */
 export const canUseProfileWithTest = (profile: ITestRunProfile, test: InternalTestItem) => profile.controllerId === test.controllerId && (TestId.isRoot(test.item.extId) || !profile.tag || test.item.tags.includes(profile.tag));
+
 const sorter = (a: ITestRunProfile, b: ITestRunProfile) => {
     if (a.isDefault !== b.isDefault) {
         return a.isDefault ? -1 : 1;
@@ -111,6 +112,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     }>();
     /** @inheritdoc */
     public readonly onDidChange = this.changeEmitter.event;
+
     constructor(
     @IContextKeyService
     contextKeyService: IContextKeyService, 
@@ -136,12 +138,15 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     /** @inheritdoc */
     public addProfile(controller: IMainThreadTestController, profile: ITestRunProfile): void {
         const previousExplicitDefaultValue = this.userDefaults.get()?.[controller.id]?.[profile.profileId];
+
         const extended: IExtendedTestRunProfile = {
             ...profile,
             isDefault: previousExplicitDefaultValue ?? profile.isDefault,
             wasInitiallyDefault: profile.isDefault,
         };
+
         let record = this.controllerProfiles.get(profile.controllerId);
+
         if (record) {
             record.profiles.push(extended);
             record.profiles.sort(sorter);
@@ -159,10 +164,12 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     /** @inheritdoc */
     public updateProfile(controllerId: string, profileId: number, update: Partial<ITestRunProfile>): void {
         const ctrl = this.controllerProfiles.get(controllerId);
+
         if (!ctrl) {
             return;
         }
         const profile = ctrl.profiles.find(c => c.controllerId === controllerId && c.profileId === profileId);
+
         if (!profile) {
             return;
         }
@@ -172,6 +179,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
         // have through some extension-contributed UI)
         if (update.isDefault !== undefined) {
             const map = deepClone(this.userDefaults.get({}));
+
             setIsDefault(map, profile, update.isDefault);
             this.userDefaults.store(map);
         }
@@ -184,15 +192,18 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     /** @inheritdoc */
     public removeProfile(controllerId: string, profileId?: number): void {
         const ctrl = this.controllerProfiles.get(controllerId);
+
         if (!ctrl) {
             return;
         }
         if (!profileId) {
             this.controllerProfiles.delete(controllerId);
             this.changeEmitter.fire();
+
             return;
         }
         const index = ctrl.profiles.findIndex(c => c.profileId === profileId);
+
         if (index === -1) {
             return;
         }
@@ -203,10 +214,12 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     /** @inheritdoc */
     public capabilitiesForTest(test: ITestItem) {
         const ctrl = this.controllerProfiles.get(TestId.root(test.extId));
+
         if (!ctrl) {
             return 0;
         }
         let capabilities = 0;
+
         for (const profile of ctrl.profiles) {
             if (!profile.tag || test.tags.includes(profile.tag)) {
                 capabilities |= capabilities & profile.group ? TestRunProfileBitset.HasNonDefaultProfile : profile.group;
@@ -227,10 +240,12 @@ export class TestProfileService extends Disposable implements ITestProfileServic
         const allProfiles = controllerId
             ? (this.controllerProfiles.get(controllerId)?.profiles || [])
             : [...Iterable.flatMap(this.controllerProfiles.values(), c => c.profiles)];
+
         const defaults = allProfiles.filter(c => c.group === group && c.isDefault);
         // have *some* default profile to run if none are set otherwise
         if (defaults.length === 0) {
             const first = allProfiles.find(p => p.group === group);
+
             if (first) {
                 defaults.push(first);
             }
@@ -240,8 +255,10 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     /** @inheritdoc */
     public setGroupDefaultProfiles(group: TestRunProfileBitset, profiles: ITestRunProfile[]) {
         const next: DefaultsMap = {};
+
         for (const ctrl of this.controllerProfiles.values()) {
             next[ctrl.controller.id] = {};
+
             for (const profile of ctrl.profiles) {
                 if (profile.group !== group) {
                     continue;
@@ -255,6 +272,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
                     continue;
                 }
                 const matching = ctrl.profiles.find(p => p.group === group && p.label === profile.label);
+
                 if (matching) {
                     setIsDefault(next, profile, matching.isDefault);
                 }
@@ -269,6 +287,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
     }
     private refreshContextKeys() {
         let allCapabilities = 0;
+
         for (const { profiles } of this.controllerProfiles.values()) {
             for (const profile of profiles) {
                 allCapabilities |= allCapabilities & profile.group ? TestRunProfileBitset.HasNonDefaultProfile : profile.group;
@@ -283,6 +302,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 const setIsDefault = (map: DefaultsMap, profile: IExtendedTestRunProfile, isDefault: boolean) => {
     profile.isDefault = isDefault;
     map[profile.controllerId] ??= {};
+
     if (profile.isDefault !== profile.wasInitiallyDefault) {
         map[profile.controllerId][profile.profileId] = profile.isDefault;
     }

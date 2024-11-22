@@ -31,11 +31,17 @@ export interface IContextMenuDelegate {
      * or an `ContextMenuLocation` to position it at a specific location.
      */
     getAnchor(): HTMLElement | StandardMouseEvent | ContextMenuLocation;
+
     getActions(): readonly IAction[];
+
     getCheckedActionsRepresentation?(action: IAction): 'radio' | 'checkbox';
+
     getActionViewItem?(action: IAction, options: IActionViewItemOptions): IActionViewItem | undefined;
+
     getActionsContext?(event?: IContextMenuEvent): unknown;
+
     getKeyBinding?(action: IAction): ResolvedKeybinding | undefined;
+
     getMenuClassName?(): string;
     onHide?(didCancel: boolean): void;
     actionRunner?: IActionRunner;
@@ -43,6 +49,7 @@ export interface IContextMenuDelegate {
     autoSelectFirstItem?: boolean;
     anchorAlignment?: AnchorAlignment;
     anchorAxisAlignment?: AnchorAxisAlignment;
+
     domForShadowRoot?: HTMLElement;
 }
 export interface IContextMenuProvider {

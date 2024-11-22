@@ -7,19 +7,24 @@ import { URI } from '../../../../base/common/uri.js';
 // instead of relying on memoization of the stringified URI.
 export const testUrlMatchesGlob = (uri: URI, globUrl: string): boolean => {
     let url = uri.with({ query: null, fragment: null }).toString(true);
+
     const normalize = (url: string) => url.replace(/\/+$/, '');
     globUrl = normalize(globUrl);
     url = normalize(url);
+
     const memo = Array.from({ length: url.length + 1 }).map(() => Array.from({ length: globUrl.length + 1 }).map(() => undefined));
+
     if (/^[^./:]*:\/\//.test(globUrl)) {
         return doUrlMatch(memo, url, globUrl, 0, 0);
     }
     const scheme = /^(https?):\/\//.exec(url)?.[1];
+
     if (scheme) {
         return doUrlMatch(memo, url, `${scheme}://${globUrl}`, 0, 0);
     }
     return false;
 };
+
 const doUrlMatch = (memo: (boolean | undefined)[][], url: string, globUrl: string, urlOffset: number, globUrlOffset: number): boolean => {
     if (memo[urlOffset]?.[globUrlOffset] !== undefined) {
         return memo[urlOffset][globUrlOffset]!;
@@ -33,6 +38,7 @@ const doUrlMatch = (memo: (boolean | undefined)[][], url: string, globUrl: strin
     // Some path remaining in url
     if (globUrlOffset === globUrl.length) {
         const remaining = url.slice(urlOffset);
+
         return remaining[0] === '/';
     }
     if (url[urlOffset] === globUrl[globUrlOffset]) {
@@ -61,6 +67,7 @@ const doUrlMatch = (memo: (boolean | undefined)[][], url: string, globUrl: strin
         // any port match. Consume a port if it exists otherwise nothing. Always comsume the base.
         if (url[urlOffset] === ':') {
             let endPortIndex = urlOffset + 1;
+
             do {
                 endPortIndex++;
             } while (/[0-9]/.test(url[endPortIndex]));

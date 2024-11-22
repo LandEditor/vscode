@@ -41,10 +41,13 @@ export namespace ShellQuoting {
         switch (value.toLowerCase()) {
             case 'escape':
                 return ShellQuoting.Escape;
+
             case 'strong':
                 return ShellQuoting.Strong;
+
             case 'weak':
                 return ShellQuoting.Weak;
+
             default:
                 return ShellQuoting.Strong;
         }
@@ -124,10 +127,13 @@ export namespace RevealKind {
         switch (value.toLowerCase()) {
             case 'always':
                 return RevealKind.Always;
+
             case 'silent':
                 return RevealKind.Silent;
+
             case 'never':
                 return RevealKind.Never;
+
             default:
                 return RevealKind.Always;
         }
@@ -152,10 +158,13 @@ export namespace RevealProblemKind {
         switch (value.toLowerCase()) {
             case 'always':
                 return RevealProblemKind.Always;
+
             case 'never':
                 return RevealProblemKind.Never;
+
             case 'onproblem':
                 return RevealProblemKind.OnProblem;
+
             default:
                 return RevealProblemKind.OnProblem;
         }
@@ -181,10 +190,13 @@ export namespace PanelKind {
         switch (value.toLowerCase()) {
             case 'shared':
                 return PanelKind.Shared;
+
             case 'dedicated':
                 return PanelKind.Dedicated;
+
             case 'new':
                 return PanelKind.New;
+
             default:
                 return PanelKind.Shared;
         }
@@ -248,10 +260,13 @@ export namespace RuntimeType {
         switch (value.toLowerCase()) {
             case 'shell':
                 return RuntimeType.Shell;
+
             case 'process':
                 return RuntimeType.Process;
+
             case 'customExecution':
                 return RuntimeType.CustomExecution;
+
             default:
                 return RuntimeType.Process;
         }
@@ -259,8 +274,11 @@ export namespace RuntimeType {
     export function toString(value: RuntimeType): string {
         switch (value) {
             case RuntimeType.Shell: return 'shell';
+
             case RuntimeType.Process: return 'process';
+
             case RuntimeType.CustomExecution: return 'customExecution';
+
             default: return 'process';
         }
     }
@@ -313,9 +331,13 @@ export interface ICommandConfiguration {
 }
 export namespace TaskGroup {
     export const Clean: TaskGroup = { _id: 'clean', isDefault: false };
+
     export const Build: TaskGroup = { _id: 'build', isDefault: false };
+
     export const Rebuild: TaskGroup = { _id: 'rebuild', isDefault: false };
+
     export const Test: TaskGroup = { _id: 'test', isDefault: false };
+
     export function is(value: any): value is string {
         return value === Clean._id || value === Build._id || value === Rebuild._id || value === Test._id;
     }
@@ -345,14 +367,21 @@ export const enum TaskScope {
 }
 export namespace TaskSourceKind {
     export const Workspace: 'workspace' = 'workspace';
+
     export const Extension: 'extension' = 'extension';
+
     export const InMemory: 'inMemory' = 'inMemory';
+
     export const WorkspaceFile: 'workspaceFile' = 'workspaceFile';
+
     export const User: 'user' = 'user';
+
     export function toConfigurationTarget(kind: string): ConfigurationTarget {
         switch (kind) {
             case TaskSourceKind.User: return ConfigurationTarget.USER;
+
             case TaskSourceKind.WorkspaceFile: return ConfigurationTarget.WORKSPACE;
+
             default: return ConfigurationTarget.WORKSPACE_FOLDER;
         }
     }
@@ -501,6 +530,7 @@ export abstract class CommonTask {
     private _taskLoadMessages: string[] | undefined;
     protected constructor(id: string, label: string | undefined, type: string | undefined, runOptions: IRunOptions, configurationProperties: IConfigurationProperties, source: IBaseTaskSource) {
         this._id = id;
+
         if (label) {
             this._label = label;
         }
@@ -527,6 +557,7 @@ export abstract class CommonTask {
             id: string;
         }
         const key: IRecentTaskKey = { folder: this.getFolderId(), id: this._id };
+
         return JSON.stringify(key);
     }
     public clone(): Task {
@@ -550,10 +581,12 @@ export abstract class CommonTask {
             return key === this._label || key === this.configurationProperties.identifier || (compareId && key === this._id);
         }
         const identifier = this.getDefinition(true);
+
         return identifier !== undefined && identifier._key === key._key;
     }
     public getQualifiedLabel(): string {
         const workspaceFolder = this.getWorkspaceFolder();
+
         if (workspaceFolder) {
             return `${this._label} (${workspaceFolder.name})`;
         }
@@ -566,6 +599,7 @@ export abstract class CommonTask {
             id: this._id,
             task: <any>this
         };
+
         return result;
     }
     public addTaskLoadMessages(messages: string[] | undefined) {
@@ -602,6 +636,7 @@ export class CustomTask extends CommonTask {
         super(id, label, undefined, runOptions, configurationProperties, source);
         this._source = source;
         this.hasDefinedMatchers = hasDefinedMatchers;
+
         if (command) {
             this.command = command;
         }
@@ -621,20 +656,30 @@ export class CustomTask extends CommonTask {
         }
         else {
             let type: string;
+
             const commandRuntime = this.command ? this.command.runtime : undefined;
+
             switch (commandRuntime) {
                 case RuntimeType.Shell:
                     type = 'shell';
+
                     break;
+
                 case RuntimeType.Process:
                     type = 'process';
+
                     break;
+
                 case RuntimeType.CustomExecution:
                     type = 'customExecution';
+
                     break;
+
                 case undefined:
                     type = '$composite';
+
                     break;
+
                 default:
                     throw new Error('Unexpected task runtime');
             }
@@ -643,6 +688,7 @@ export class CustomTask extends CommonTask {
                 _key: this._id,
                 id: this._id
             };
+
             return result;
         }
     }
@@ -651,6 +697,7 @@ export class CustomTask extends CommonTask {
     }
     public override getMapKey(): string {
         const workspaceFolder = this._source.config.workspaceFolder;
+
         return workspaceFolder ? `${workspaceFolder.uri.toString()}|${this._id}|${this.instance}` : `${this._id}|${this.instance}`;
     }
     protected getFolderId(): string | undefined {
@@ -669,14 +716,17 @@ export class CustomTask extends CommonTask {
             id: string;
         }
         const workspaceFolder = this.getFolderId();
+
         if (!workspaceFolder) {
             return undefined;
         }
         let id: string = this.configurationProperties.identifier!;
+
         if (this._source.kind !== TaskSourceKind.Workspace) {
             id += this._source.kind;
         }
         const key: ICustomKey = { type: CUSTOMIZED_TASK_TYPE, folder: workspaceFolder, id };
+
         return JSON.stringify(key);
     }
     public override getWorkspaceFolder(): IWorkspaceFolder | undefined {
@@ -738,14 +788,17 @@ export class ConfiguringTask extends CommonTask {
             id: string;
         }
         const workspaceFolder = this.getFolderId();
+
         if (!workspaceFolder) {
             return undefined;
         }
         let id: string = this.configurationProperties.identifier!;
+
         if (this._source.kind !== TaskSourceKind.Workspace) {
             id += this._source.kind;
         }
         const key: ICustomKey = { type: CUSTOMIZED_TASK_TYPE, folder: workspaceFolder, id };
+
         return JSON.stringify(key);
     }
 }
@@ -795,6 +848,7 @@ export class ContributedTask extends CommonTask {
     }
     public override getMapKey(): string {
         const workspaceFolder = this._source.workspaceFolder;
+
         return workspaceFolder
             ? `${this._source.scope.toString()}|${workspaceFolder.uri.toString()}|${this._id}|${this.instance}`
             : `${this._source.scope.toString()}|${this._id}|${this.instance}`;
@@ -814,6 +868,7 @@ export class ContributedTask extends CommonTask {
         }
         const key: IContributedKey = { type: 'contributed', scope: this._source.scope, id: this._id };
         key.folder = this.getFolderId();
+
         return JSON.stringify(key);
     }
     public override getWorkspaceFolder(): IWorkspaceFolder | undefined {
@@ -885,6 +940,7 @@ export interface ITaskDefinition {
 }
 export class TaskSorter {
     private _order: Map<string, number> = new Map();
+
     constructor(workspaceFolders: IWorkspaceFolder[]) {
         for (let i = 0; i < workspaceFolders.length; i++) {
             this._order.set(workspaceFolders[i].uri.toString(), i);
@@ -892,12 +948,16 @@ export class TaskSorter {
     }
     public compare(a: Task | ConfiguringTask, b: Task | ConfiguringTask): number {
         const aw = a.getWorkspaceFolder();
+
         const bw = b.getWorkspaceFolder();
+
         if (aw && bw) {
             let ai = this._order.get(aw.uri.toString());
             ai = ai === undefined ? 0 : ai + 1;
+
             let bi = this._order.get(bw.uri.toString());
             bi = bi === undefined ? 0 : bi + 1;
+
             if (ai === bi) {
                 return a._label.localeCompare(b._label);
             }
@@ -1030,9 +1090,12 @@ export namespace TaskEvent {
 export namespace KeyedTaskIdentifier {
     function sortedStringify(literal: any): string {
         const keys = Object.keys(literal).sort();
+
         let result: string = '';
+
         for (const key of keys) {
             let stringified = literal[key];
+
             if (stringified instanceof Object) {
                 stringified = sortedStringify(stringified);
             }
@@ -1045,8 +1108,10 @@ export namespace KeyedTaskIdentifier {
     }
     export function create(value: ITaskIdentifier): KeyedTaskIdentifier {
         const resultKey = sortedStringify(value);
+
         const result = { _key: resultKey, type: value.taskType };
         Object.assign(result, value);
+
         return result;
     }
 }
@@ -1079,10 +1144,12 @@ export namespace TaskDefinition {
         error(message: string): void;
     }): KeyedTaskIdentifier | undefined {
         const definition = TaskDefinitionRegistry.get(external.type);
+
         if (definition === undefined) {
             // We have no task definition so we can't sanitize the literal. Take it as is
             const copy = Objects.deepClone(external);
             delete copy._key;
+
             return KeyedTaskIdentifier.create(copy);
         }
         const literal: {
@@ -1090,16 +1157,21 @@ export namespace TaskDefinition {
             [name: string]: any;
         } = Object.create(null);
         literal.type = definition.taskType;
+
         const required: Set<string> = new Set();
         definition.required.forEach(element => required.add(element));
+
         const properties = definition.properties;
+
         for (const property of Object.keys(properties)) {
             const value = external[property];
+
             if (value !== undefined && value !== null) {
                 literal[property] = value;
             }
             else if (required.has(property)) {
                 const schema = properties[property];
+
                 if (schema.default !== undefined) {
                     literal[property] = Objects.deepClone(schema.default);
                 }
@@ -1107,16 +1179,23 @@ export namespace TaskDefinition {
                     switch (schema.type) {
                         case 'boolean':
                             literal[property] = false;
+
                             break;
+
                         case 'number':
                         case 'integer':
                             literal[property] = 0;
+
                             break;
+
                         case 'string':
                             literal[property] = '';
+
                             break;
+
                         default:
                             reporter.error(nls.localize('TaskDefinition.missingRequiredProperty', 'Error: the task identifier \'{0}\' is missing the required property \'{1}\'. The task identifier will be ignored.', JSON.stringify(external, undefined, 0), property));
+
                             return undefined;
                     }
                 }

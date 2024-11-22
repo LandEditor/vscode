@@ -9,8 +9,11 @@ import * as filter from 'gulp-filter';
 import * as gzip from 'gulp-gzip';
 import * as mime from 'mime';
 import { ClientAssertionCredential } from '@azure/identity';
+
 const azure = require('gulp-azure-storage');
+
 const commit = process.env['BUILD_SOURCEVERSION'];
+
 const credential = new ClientAssertionCredential(process.env['AZURE_TENANT_ID']!, process.env['AZURE_CLIENT_ID']!, () => Promise.resolve(process.env['AZURE_ID_TOKEN']!));
 
 mime.define({
@@ -71,6 +74,7 @@ function wait(stream: es.ThroughStream): Promise<void> {
 }
 async function main(): Promise<void> {
     const files: string[] = [];
+
     const options = (compressed: boolean) => ({
         account: process.env.AZURE_STORAGE_ACCOUNT,
         credential,
@@ -81,15 +85,19 @@ async function main(): Promise<void> {
             cacheControl: 'max-age=31536000, public'
         }
     });
+
     const all = vfs.src('**', { cwd: '../vscode-web', base: '../vscode-web', dot: true })
         .pipe(filter(f => !f.isDirectory()));
+
     const compressed = all
         .pipe(filter(f => MimeTypesToCompress.has(mime.lookup(f.path))))
         .pipe(gzip({ append: false }))
         .pipe(azure.upload(options(true)));
+
     const uncompressed = all
         .pipe(filter(f => !MimeTypesToCompress.has(mime.lookup(f.path))))
         .pipe(azure.upload(options(false)));
+
     const out = es.merge(compressed, uncompressed)
         .pipe(es.through(function (f) {
         console.log('Uploaded:', f.relative);
@@ -98,11 +106,13 @@ async function main(): Promise<void> {
     }));
     console.log(`Uploading files to CDN...`); // debug
     await wait(out);
+
     const listing = new Vinyl({
         path: 'files.txt',
         contents: Buffer.from(files.join('\n')),
         stat: { mode: 0o666 } as any
     });
+
     const filesOut = es.readArray([listing])
         .pipe(gzip({ append: false }))
         .pipe(azure.upload(options(true)));

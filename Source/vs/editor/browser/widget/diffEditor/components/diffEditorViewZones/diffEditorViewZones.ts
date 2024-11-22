@@ -50,13 +50,16 @@ export class DiffEditorViewZones extends Disposable {
         orig: IObservableViewZone[];
         mod: IObservableViewZone[];
     }>;
+
     constructor(private readonly _targetWindow: Window, private readonly _editors: DiffEditorEditors, private readonly _diffModel: IObservable<DiffEditorViewModel | undefined>, private readonly _options: DiffEditorOptions, private readonly _diffEditorWidget: DiffEditorWidget, private readonly _canIgnoreViewZoneUpdateEvent: () => boolean, private readonly _origViewZonesToIgnore: Set<string>, private readonly _modViewZonesToIgnore: Set<string>, 
     @IClipboardService
     private readonly _clipboardService: IClipboardService, 
     @IContextMenuService
     private readonly _contextMenuService: IContextMenuService) {
         super();
+
         const state = observableValue('invalidateAlignmentsState', 0);
+
         const updateImmediately = this._register(new RunOnceScheduler(() => {
             state.set(state.get() + 1, undefined);
         }, 0));
@@ -80,33 +83,45 @@ export class DiffEditorViewZones extends Disposable {
                 updateImmediately.schedule();
             }
         }));
+
         const originalModelTokenizationCompleted = this._diffModel.map(m => m ? observableFromEvent(this, m.model.original.onDidChangeTokens, () => m.model.original.tokenization.backgroundTokenizationState === BackgroundTokenizationState.Completed) : undefined).map((m, reader) => m?.read(reader));
+
         const alignments = derived<ILineRangeAlignment[] | null>((reader) => {
             /** @description alignments */
             const diffModel = this._diffModel.read(reader);
+
             const diff = diffModel?.diff.read(reader);
+
             if (!diffModel || !diff) {
                 return null;
             }
             state.read(reader);
+
             const renderSideBySide = this._options.renderSideBySide.read(reader);
+
             const innerHunkAlignment = renderSideBySide;
+
             return computeRangeAlignment(this._editors.original, this._editors.modified, diff.mappings, this._origViewZonesToIgnore, this._modViewZonesToIgnore, innerHunkAlignment);
         });
+
         const alignmentsSyncedMovedText = derived<ILineRangeAlignment[] | null>((reader) => {
             /** @description alignmentsSyncedMovedText */
             const syncedMovedText = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
+
             if (!syncedMovedText) {
                 return null;
             }
             state.read(reader);
+
             const mappings = syncedMovedText.changes.map(c => new DiffMapping(c));
             // TODO dont include alignments outside syncedMovedText
             return computeRangeAlignment(this._editors.original, this._editors.modified, mappings, this._origViewZonesToIgnore, this._modViewZonesToIgnore, true);
         });
+
         function createFakeLinesDiv(): HTMLElement {
             const r = document.createElement('div');
             r.className = 'diagonal-fill';
+
             return r;
         }
         const alignmentViewZonesDisposables = this._register(new DisposableStore());
@@ -115,10 +130,15 @@ export class DiffEditorViewZones extends Disposable {
             mod: IObservableViewZone[];
         }>(this, (reader, store) => {
             alignmentViewZonesDisposables.clear();
+
             const alignmentsVal = alignments.read(reader) || [];
+
             const origViewZones: IObservableViewZone[] = [];
+
             const modViewZones: IObservableViewZone[] = [];
+
             const modifiedTopPaddingVal = this._modifiedTopPadding.read(reader);
+
             if (modifiedTopPaddingVal > 0) {
                 modViewZones.push({
                     afterLineNumber: 0,
@@ -129,6 +149,7 @@ export class DiffEditorViewZones extends Disposable {
                 });
             }
             const originalTopPaddingVal = this._originalTopPadding.read(reader);
+
             if (originalTopPaddingVal > 0) {
                 origViewZones.push({
                     afterLineNumber: 0,
@@ -139,9 +160,12 @@ export class DiffEditorViewZones extends Disposable {
                 });
             }
             const renderSideBySide = this._options.renderSideBySide.read(reader);
+
             const deletedCodeLineBreaksComputer = !renderSideBySide ? this._editors.modified._getViewModel()?.createLineBreaksComputer() : undefined;
+
             if (deletedCodeLineBreaksComputer) {
                 const originalModel = this._editors.original.getModel()!;
+
                 for (const a of alignmentsVal) {
                     if (a.diff) {
                         for (let i = a.originalRange.startLineNumber; i < a.originalRange.endLineNumberExclusive; i++) {
@@ -157,18 +181,26 @@ export class DiffEditorViewZones extends Disposable {
                 }
             }
             const lineBreakData = deletedCodeLineBreaksComputer?.finalize() ?? [];
+
             let lineBreakDataIdx = 0;
+
             const modLineHeight = this._editors.modified.getOption(EditorOption.lineHeight);
+
             const syncedMovedText = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
+
             const mightContainNonBasicASCII = this._editors.original.getModel()?.mightContainNonBasicASCII() ?? false;
+
             const mightContainRTL = this._editors.original.getModel()?.mightContainRTL() ?? false;
+
             const renderOptions = RenderOptions.fromEditor(this._editors.modified);
+
             for (const a of alignmentsVal) {
                 if (a.diff && !renderSideBySide && (!this._options.useTrueInlineDiffRendering.read(reader) || !allowsTrueInlineDiffRendering(a.diff))) {
                     if (!a.originalRange.isEmpty) {
                         originalModelTokenizationCompleted.read(reader); // Update view-zones once tokenization completes
                         const deletedCodeDomNode = document.createElement('div');
                         deletedCodeDomNode.classList.add('view-lines', 'line-delete', 'monaco-mouse-cursor-text');
+
                         const originalModel = this._editors.original.getModel()!;
                         // `a.originalRange` can be out of bound when the diff has not been updated yet.
                         // In this case, we do an early return.
@@ -177,14 +209,18 @@ export class DiffEditorViewZones extends Disposable {
                             return { orig: origViewZones, mod: modViewZones };
                         }
                         const source = new LineSource(a.originalRange.mapToLineArray(l => originalModel.tokenization.getLineTokens(l)), a.originalRange.mapToLineArray(_ => lineBreakData[lineBreakDataIdx++]), mightContainNonBasicASCII, mightContainRTL);
+
                         const decorations: InlineDecoration[] = [];
+
                         for (const i of a.diff.innerChanges || []) {
                             decorations.push(new InlineDecoration(i.originalRange.delta(-(a.diff.original.startLineNumber - 1)), diffDeleteDecoration.className!, InlineDecorationType.Regular));
                         }
                         const result = renderLines(source, renderOptions, decorations, deletedCodeDomNode);
+
                         const marginDomNode = document.createElement('div');
                         marginDomNode.className = 'inline-deleted-margin-view-zone';
                         applyFontInfo(marginDomNode, renderOptions.fontInfo);
+
                         if (this._options.renderIndicators.read(reader)) {
                             for (let i = 0; i < result.heightInLines; i++) {
                                 const marginElement = document.createElement('div');
@@ -195,6 +231,7 @@ export class DiffEditorViewZones extends Disposable {
                         }
                         let zoneId: string | undefined = undefined;
                         alignmentViewZonesDisposables.add(new InlineDiffDeletedCodeMargin(() => assertIsDefined(zoneId), marginDomNode, this._editors.modified, a.diff, this._diffEditorWidget, result.viewLineCounts, this._editors.original.getModel()!, this._contextMenuService, this._clipboardService));
+
                         for (let i = 0; i < result.viewLineCounts.length; i++) {
                             const count = result.viewLineCounts[i];
                             // Account for wrapped lines in the (collapsed) original editor (which doesn't wrap lines).
@@ -232,6 +269,7 @@ export class DiffEditorViewZones extends Disposable {
                 }
                 else {
                     const delta = a.modifiedHeightInPx - a.originalHeightInPx;
+
                     if (delta > 0) {
                         if (syncedMovedText?.lineRangeMapping.original.delta(-1).deltaLength(2).contains(a.originalRange.endLineNumberExclusive - 1)) {
                             continue;
@@ -256,9 +294,11 @@ export class DiffEditorViewZones extends Disposable {
                                 e.stopPropagation();
                                 _diffEditorWidget.revert(a.diff!);
                             }));
+
                             return $('div', {}, arrow);
                         }
                         let marginDomNode: HTMLElement | undefined = undefined;
+
                         if (a.diff && a.diff.modified.isEmpty && this._options.shouldRenderOldRevertArrows.read(reader)) {
                             marginDomNode = createViewZoneMarginArrow();
                         }
@@ -280,6 +320,7 @@ export class DiffEditorViewZones extends Disposable {
                     continue;
                 }
                 const delta = a.modifiedHeightInPx - a.originalHeightInPx;
+
                 if (delta > 0) {
                     origViewZones.push({
                         afterLineNumber: a.originalRange.endLineNumberExclusive - 1,
@@ -301,6 +342,7 @@ export class DiffEditorViewZones extends Disposable {
             }
             return { orig: origViewZones, mod: modViewZones };
         });
+
         let ignoreChange = false;
         this._register(this._editors.original.onDidScrollChange(e => {
             if (e.scrollLeftChanged && !ignoreChange) {
@@ -328,6 +370,7 @@ export class DiffEditorViewZones extends Disposable {
             const newScrollTopModified = this._originalScrollTop.read(reader)
                 - (this._originalScrollOffsetAnimated.get() - this._modifiedScrollOffsetAnimated.read(reader))
                 - (this._originalTopPadding.get() - this._modifiedTopPadding.read(reader));
+
             if (newScrollTopModified !== this._editors.modified.getScrollTop()) {
                 this._editors.modified.setScrollTop(newScrollTopModified, ScrollType.Immediate);
             }
@@ -337,6 +380,7 @@ export class DiffEditorViewZones extends Disposable {
             const newScrollTopOriginal = this._modifiedScrollTop.read(reader)
                 - (this._modifiedScrollOffsetAnimated.get() - this._originalScrollOffsetAnimated.read(reader))
                 - (this._modifiedTopPadding.get() - this._originalTopPadding.read(reader));
+
             if (newScrollTopOriginal !== this._editors.original.getScrollTop()) {
                 this._editors.original.setScrollTop(newScrollTopOriginal, ScrollType.Immediate);
             }
@@ -344,9 +388,12 @@ export class DiffEditorViewZones extends Disposable {
         this._register(autorun(reader => {
             /** @description update editor top offsets */
             const m = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
+
             let deltaOrigToMod = 0;
+
             if (m) {
                 const trueTopOriginal = this._editors.original.getTopForLineNumber(m.lineRangeMapping.original.startLineNumber, true) - this._originalTopPadding.get();
+
                 const trueTopModified = this._editors.modified.getTopForLineNumber(m.lineRangeMapping.modified.startLineNumber, true) - this._modifiedTopPadding.get();
                 deltaOrigToMod = trueTopModified - trueTopOriginal;
             }
@@ -387,16 +434,25 @@ interface ILineRangeAlignment {
 }
 function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor: CodeEditorWidget, diffs: readonly DiffMapping[], originalEditorAlignmentViewZones: ReadonlySet<string>, modifiedEditorAlignmentViewZones: ReadonlySet<string>, innerHunkAlignment: boolean): ILineRangeAlignment[] {
     const originalLineHeightOverrides = new ArrayQueue(getAdditionalLineHeights(originalEditor, originalEditorAlignmentViewZones));
+
     const modifiedLineHeightOverrides = new ArrayQueue(getAdditionalLineHeights(modifiedEditor, modifiedEditorAlignmentViewZones));
+
     const origLineHeight = originalEditor.getOption(EditorOption.lineHeight);
+
     const modLineHeight = modifiedEditor.getOption(EditorOption.lineHeight);
+
     const result: ILineRangeAlignment[] = [];
+
     let lastOriginalLineNumber = 0;
+
     let lastModifiedLineNumber = 0;
+
     function handleAlignmentsOutsideOfDiffs(untilOriginalLineNumberExclusive: number, untilModifiedLineNumberExclusive: number) {
         while (true) {
             let origNext = originalLineHeightOverrides.peek();
+
             let modNext = modifiedLineHeightOverrides.peek();
+
             if (origNext && origNext.lineNumber >= untilOriginalLineNumberExclusive) {
                 origNext = undefined;
             }
@@ -407,7 +463,9 @@ function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor:
                 break;
             }
             const distOrig = origNext ? origNext.lineNumber - lastOriginalLineNumber : Number.MAX_VALUE;
+
             const distNext = modNext ? modNext.lineNumber - lastModifiedLineNumber : Number.MAX_VALUE;
+
             if (distOrig < distNext) {
                 originalLineHeightOverrides.dequeue();
                 modNext = {
@@ -438,9 +496,13 @@ function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor:
     for (const m of diffs) {
         const c = m.lineRangeMapping;
         handleAlignmentsOutsideOfDiffs(c.original.startLineNumber, c.modified.startLineNumber);
+
         let first = true;
+
         let lastModLineNumber = c.modified.startLineNumber;
+
         let lastOrigLineNumber = c.original.startLineNumber;
+
         function emitAlignment(origLineNumberExclusive: number, modLineNumberExclusive: number, forceAlignment = false) {
             if (origLineNumberExclusive < lastOrigLineNumber || modLineNumberExclusive < lastModLineNumber) {
                 return;
@@ -454,13 +516,16 @@ function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor:
                 return;
             }
             const originalRange = new LineRange(lastOrigLineNumber, origLineNumberExclusive);
+
             const modifiedRange = new LineRange(lastModLineNumber, modLineNumberExclusive);
+
             if (originalRange.isEmpty && modifiedRange.isEmpty) {
                 return;
             }
             const originalAdditionalHeight = originalLineHeightOverrides
                 .takeWhile(v => v.lineNumber < origLineNumberExclusive)
                 ?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
+
             const modifiedAdditionalHeight = modifiedLineHeightOverrides
                 .takeWhile(v => v.lineNumber < modLineNumberExclusive)
                 ?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
@@ -483,6 +548,7 @@ function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor:
                 const originalModel = originalEditor.getModel()!;
                 // When the diff is invalid, the ranges might be out of bounds (this should be fixed in the diff model by applying edits directly).
                 const maxColumn = i.originalRange.endLineNumber <= originalModel.getLineCount() ? originalModel.getLineMaxColumn(i.originalRange.endLineNumber) : Number.MAX_SAFE_INTEGER;
+
                 if (i.originalRange.endColumn < maxColumn) {
                     // // There is some unmodified text on this line after the diff
                     emitAlignment(i.originalRange.endLineNumber, i.modifiedRange.endLineNumber);
@@ -494,6 +560,7 @@ function computeRangeAlignment(originalEditor: CodeEditorWidget, modifiedEditor:
         lastModifiedLineNumber = c.modified.endLineNumberExclusive;
     }
     handleAlignmentsOutsideOfDiffs(Number.MAX_VALUE, Number.MAX_VALUE);
+
     return result;
 }
 interface AdditionalLineHeightInfo {
@@ -505,16 +572,22 @@ function getAdditionalLineHeights(editor: CodeEditorWidget, viewZonesToIgnore: R
         lineNumber: number;
         heightInPx: number;
     }[] = [];
+
     const wrappingZoneHeights: {
         lineNumber: number;
         heightInPx: number;
     }[] = [];
+
     const hasWrapping = editor.getOption(EditorOption.wrappingInfo).wrappingColumn !== -1;
+
     const coordinatesConverter = editor._getViewModel()!.coordinatesConverter;
+
     const editorLineHeight = editor.getOption(EditorOption.lineHeight);
+
     if (hasWrapping) {
         for (let i = 1; i <= editor.getModel()!.getLineCount(); i++) {
             const lineCount = coordinatesConverter.getModelLineViewLineCount(i);
+
             if (lineCount > 1) {
                 wrappingZoneHeights.push({ lineNumber: i, heightInPx: editorLineHeight * (lineCount - 1) });
             }
@@ -528,6 +601,7 @@ function getAdditionalLineHeights(editor: CodeEditorWidget, viewZonesToIgnore: R
         viewZoneHeights.push({ lineNumber: modelLineNumber, heightInPx: w.height });
     }
     const result = joinCombine(viewZoneHeights, wrappingZoneHeights, v => v.lineNumber, (v1, v2) => ({ lineNumber: v1.lineNumber, heightInPx: v1.heightInPx + v2.heightInPx }));
+
     return result;
 }
 export function allowsTrueInlineDiffRendering(mapping: DetailedLineRangeMapping): boolean {

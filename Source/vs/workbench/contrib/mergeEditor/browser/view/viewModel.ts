@@ -25,6 +25,7 @@ export class MergeEditorViewModel extends Disposable {
         counter: number;
     }>(this, { range: undefined, counter: 0 });
     private readonly attachedHistory = this._register(new AttachedHistory(this.model.resultTextModel));
+
     constructor(public readonly model: MergeEditorModel, public readonly inputCodeEditorView1: InputCodeEditorView, public readonly inputCodeEditorView2: InputCodeEditorView, public readonly resultCodeEditorView: ResultCodeEditorView, public readonly baseCodeEditorView: IObservable<BaseCodeEditorView | undefined>, public readonly showNonConflictingChanges: IObservable<boolean>, 
     @IConfigurationService
     private readonly configurationService: IConfigurationService, 
@@ -36,11 +37,15 @@ export class MergeEditorViewModel extends Disposable {
                 return;
             }
             const baseRangeStates: ModifiedBaseRange[] = [];
+
             for (const change of e.changes) {
                 const rangeInBase = this.model.translateResultRangeToBase(Range.lift(change.range));
+
                 const baseRanges = this.model.findModifiedBaseRangesInRange(new LineRange(rangeInBase.startLineNumber, rangeInBase.endLineNumber - rangeInBase.startLineNumber));
+
                 if (baseRanges.length === 1) {
                     const isHandled = this.model.isHandled(baseRanges[0]).get();
+
                     if (!isHandled) {
                         baseRangeStates.push(baseRanges[0]);
                     }
@@ -84,11 +89,14 @@ export class MergeEditorViewModel extends Disposable {
             this.resultCodeEditorView,
             this.baseCodeEditorView.read(reader),
         ];
+
         const view = editors.find((e) => e && e.isFocused.read(reader));
+
         return view ? { view, counter: this.counter++ } : lastValue || { view: undefined, counter: this.counter++ };
     });
     public readonly baseShowDiffAgainst = derived<1 | 2 | undefined>(this, reader => {
         const lastFocusedEditor = this.lastFocusedEditor.read(reader);
+
         if (lastFocusedEditor.view === this.inputCodeEditorView1) {
             return 1;
         }
@@ -99,10 +107,12 @@ export class MergeEditorViewModel extends Disposable {
     });
     public readonly selectionInBase = derived(this, reader => {
         const sourceEditor = this.lastFocusedEditor.read(reader).view;
+
         if (!sourceEditor) {
             return undefined;
         }
         const selections = sourceEditor.selection.read(reader) || [];
+
         const rangesInBase = selections.map((selection) => {
             if (sourceEditor === this.inputCodeEditorView1) {
                 return this.model.translateInputRangeToBase(1, selection);
@@ -120,6 +130,7 @@ export class MergeEditorViewModel extends Disposable {
                 return selection;
             }
         });
+
         return {
             rangesInBase,
             sourceEditor
@@ -134,13 +145,16 @@ export class MergeEditorViewModel extends Disposable {
         }
         else {
             const input = editor === this.inputCodeEditorView1 ? 1 : 2;
+
             return modifiedBaseRange.getInputRange(input);
         }
     }
     public readonly activeModifiedBaseRange = derived(this, (reader) => {
         /** @description activeModifiedBaseRange */
         const focusedEditor = this.lastFocusedEditor.read(reader);
+
         const manualRange = this.manuallySetActiveModifiedBaseRange.read(reader);
+
         if (manualRange.counter > focusedEditor.counter) {
             return manualRange.range;
         }
@@ -148,12 +162,15 @@ export class MergeEditorViewModel extends Disposable {
             return;
         }
         const cursorLineNumber = focusedEditor.view.cursorLineNumber.read(reader);
+
         if (!cursorLineNumber) {
             return undefined;
         }
         const modifiedBaseRanges = this.model.modifiedBaseRanges.read(reader);
+
         return modifiedBaseRanges.find((r) => {
             const range = this.getRangeOfModifiedBaseRange(focusedEditor.view!, r, reader);
+
             return range.isEmpty
                 ? range.startLineNumber === cursorLineNumber
                 : range.contains(cursorLineNumber);
@@ -169,19 +186,25 @@ export class MergeEditorViewModel extends Disposable {
     }
     private goToConflict(getModifiedBaseRange: (editor: CodeEditorView, curLineNumber: number) => ModifiedBaseRange | undefined): void {
         let editor = this.lastFocusedEditor.get().view;
+
         if (!editor) {
             editor = this.resultCodeEditorView;
         }
         const curLineNumber = editor.editor.getPosition()?.lineNumber;
+
         if (curLineNumber === undefined) {
             return;
         }
         const modifiedBaseRange = getModifiedBaseRange(editor, curLineNumber);
+
         if (modifiedBaseRange) {
             const range = this.getRangeOfModifiedBaseRange(editor, modifiedBaseRange, undefined);
             editor.editor.focus();
+
             let startLineNumber = range.startLineNumber;
+
             let endLineNumberExclusive = range.endLineNumberExclusive;
+
             if (range.startLineNumber > editor.editor.getModel()!.getLineCount()) {
                 transaction(tx => {
                     this.setActiveModifiedBaseRange(modifiedBaseRange, tx);
@@ -211,8 +234,10 @@ export class MergeEditorViewModel extends Disposable {
     }
     public toggleActiveConflict(inputNumber: 1 | 2): void {
         const activeModifiedBaseRange = this.activeModifiedBaseRange.get();
+
         if (!activeModifiedBaseRange) {
             this.notificationService.error(localize('noConflictMessage', "There is currently no conflict focused that can be toggled."));
+
             return;
         }
         transaction(tx => {
@@ -235,10 +260,12 @@ class AttachedHistory extends Disposable {
         altId: number;
     }[] = [];
     private previousAltId: number = this.model.getAlternativeVersionId();
+
     constructor(private readonly model: ITextModel) {
         super();
         this._register(model.onDidChangeContent((e) => {
             const currentAltId = model.getAlternativeVersionId();
+
             if (e.isRedoing) {
                 for (const item of this.attachedHistory) {
                     if (this.previousAltId < item.altId && item.altId <= currentAltId) {
@@ -249,6 +276,7 @@ class AttachedHistory extends Disposable {
             else if (e.isUndoing) {
                 for (let i = this.attachedHistory.length - 1; i >= 0; i--) {
                     const item = this.attachedHistory[i];
+
                     if (currentAltId < item.altId && item.altId <= this.previousAltId) {
                         item.element.undo();
                     }

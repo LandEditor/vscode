@@ -50,6 +50,7 @@ export interface IStatusbarEntryLocation {
 }
 export function isStatusbarEntryLocation(thing: unknown): thing is IStatusbarEntryLocation {
     const candidate = thing as IStatusbarEntryLocation | undefined;
+
     return typeof candidate?.id === 'string' && typeof candidate.alignment === 'number';
 }
 export interface IStatusbarEntryPriority {
@@ -74,6 +75,7 @@ export interface IStatusbarEntryPriority {
 }
 export function isStatusbarEntryPriority(thing: unknown): thing is IStatusbarEntryPriority {
     const candidate = thing as IStatusbarEntryPriority | undefined;
+
     return (typeof candidate?.primary === 'number' || isStatusbarEntryLocation(candidate?.primary)) && typeof candidate?.secondary === 'number';
 }
 export const ShowTooltipCommand: Command = {

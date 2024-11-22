@@ -774,6 +774,7 @@ export class DynamicSpeechAccessibilityConfiguration extends Disposable implemen
 		}
 
 		const languages = this.getLanguages();
+
 		const languagesSorted = Object.keys(languages).sort((langA, langB) => {
 			return languages[langA].name.localeCompare(languages[langB].name);
 		});
@@ -851,11 +852,17 @@ Registry.as<IConfigurationMigrationRegistry>(WorkbenchExtensions.ConfigurationMi
 		key: 'accessibility.signalOptions',
 		migrateFn: (value, accessor) => {
 			const delayGeneral = getDelaysFromConfig(accessor, 'general');
+
 			const delayError = getDelaysFromConfig(accessor, 'errorAtPosition');
+
 			const delayWarning = getDelaysFromConfig(accessor, 'warningAtPosition');
+
 			const volume = getVolumeFromConfig(accessor);
+
 			const debouncePositionChanges = getDebouncePositionChangesFromConfig(accessor);
+
 			const result: [key: string, { value: any }][] = [];
+
 			if (!!volume) {
 				result.push(['accessibility.signalOptions.volume', { value: volume }]);
 			}
@@ -872,6 +879,7 @@ Registry.as<IConfigurationMigrationRegistry>(WorkbenchExtensions.ConfigurationMi
 				result.push(['accessibility.signalOptions.debouncePositionChanges', { value: debouncePositionChanges }]);
 			}
 			result.push(['accessibility.signalOptions', { value: undefined }]);
+
 			return result;
 		}
 	}]);
@@ -916,6 +924,7 @@ Registry.as<IConfigurationMigrationRegistry>(WorkbenchExtensions.ConfigurationMi
 		key: AccessibilityVoiceSettingId.AutoSynthesize,
 		migrateFn: (value: boolean) => {
 			let newValue: string | undefined;
+
 			if (value === true) {
 				newValue = 'on';
 			} else if (value === false) {
@@ -945,16 +954,21 @@ Registry.as<IConfigurationMigrationRegistry>(WorkbenchExtensions.ConfigurationMi
 		key: item.legacySoundSettingsKey,
 		migrateFn: (sound, accessor) => {
 			const configurationKeyValuePairs: ConfigurationKeyValuePairs = [];
+
 			const legacyAnnouncementSettingsKey = item.legacyAnnouncementSettingsKey;
+
 			let announcement: string | undefined;
+
 			if (legacyAnnouncementSettingsKey) {
 				announcement = accessor(legacyAnnouncementSettingsKey) ?? undefined;
+
 				if (announcement !== undefined && typeof announcement !== 'string') {
 					announcement = announcement ? 'auto' : 'off';
 				}
 			}
 			configurationKeyValuePairs.push([`${item.legacySoundSettingsKey}`, { value: undefined }]);
 			configurationKeyValuePairs.push([`${item.settingsKey}`, { value: announcement !== undefined ? { announcement, sound } : { sound } }]);
+
 			return configurationKeyValuePairs;
 		}
 	}) : undefined).filter(isDefined));
@@ -964,13 +978,16 @@ Registry.as<IConfigurationMigrationRegistry>(WorkbenchExtensions.ConfigurationMi
 		key: item.legacyAnnouncementSettingsKey!,
 		migrateFn: (announcement, accessor) => {
 			const configurationKeyValuePairs: ConfigurationKeyValuePairs = [];
+
 			const sound = accessor(item.settingsKey)?.sound || accessor(item.legacySoundSettingsKey!);
+
 			if (announcement !== undefined && typeof announcement !== 'string') {
 				announcement = announcement ? 'auto' : 'off';
 			}
 			configurationKeyValuePairs.push([`${item.settingsKey}`, { value: announcement !== undefined ? { announcement, sound } : { sound } }]);
 			configurationKeyValuePairs.push([`${item.legacyAnnouncementSettingsKey}`, { value: undefined }]);
 			configurationKeyValuePairs.push([`${item.legacySoundSettingsKey}`, { value: undefined }]);
+
 			return configurationKeyValuePairs;
 		}
 	})));

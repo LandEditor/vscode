@@ -30,6 +30,7 @@ export class NotebookChatEditorControllerContrib extends Disposable implements I
 
 	public static readonly ID: string = 'workbench.notebook.chatEditorController';
 	readonly _serviceBrand: undefined;
+
 	constructor(
 		notebookEditor: INotebookEditor,
 		@IInstantiationService instantiationService: IInstantiationService,
@@ -37,6 +38,7 @@ export class NotebookChatEditorControllerContrib extends Disposable implements I
 
 	) {
 		super();
+
 		if (configurationService.getValue<boolean>('notebook.experimental.chatEdits')) {
 			this._register(instantiationService.createInstance(NotebookChatEditorController, notebookEditor));
 		}
@@ -48,6 +50,7 @@ class NotebookChatEditorController extends Disposable {
 	private readonly deletedCellDecorator: NotebookDeletedCellDecorator;
 	private readonly insertedCellDecorator: NotebookInsertedCellDecorator;
 	private readonly _ctxHasEditorModification: IContextKey<boolean>;
+
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 		@IChatEditingService private readonly _chatEditingService: IChatEditingService,
@@ -60,13 +63,19 @@ class NotebookChatEditorController extends Disposable {
 		this._ctxHasEditorModification = ctxNotebookHasEditorModification.bindTo(contextKeyService);
 		this.deletedCellDecorator = this._register(instantiationService.createInstance(NotebookDeletedCellDecorator, notebookEditor));
 		this.insertedCellDecorator = this._register(instantiationService.createInstance(NotebookInsertedCellDecorator, notebookEditor));
+
 		const notebookModel = observableFromEvent(this.notebookEditor.onDidChangeModel, e => e);
+
 		const originalModel = observableValue<NotebookTextModel | undefined>('originalModel', undefined);
+
 		const viewModelAttached = observableFromEvent(this.notebookEditor.onDidAttachViewModel, () => !!this.notebookEditor.getViewModel());
+
 		const onDidChangeVisibleRanges = debouncedObservable2(observableFromEvent(this.notebookEditor.onDidChangeVisibleRanges, () => this.notebookEditor.visibleRanges), 50);
+
 		const decorators = new Map<NotebookCellTextModel, NotebookCellDiffDecorator>();
 
 		let updatedCellDecoratorsOnceBefore = false;
+
 		let updatedDeletedInsertedDecoratorsOnceBefore = false;
 
 
@@ -80,9 +89,12 @@ class NotebookChatEditorController extends Disposable {
 		this._register(toDisposable(() => clearDecorators()));
 
 		let notebookSynchronizer: IReference<NotebookModelSynchronizer>;
+
 		const entryObs = derived((r) => {
 			const session = this._chatEditingService.currentEditingSessionObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!model || !session) {
 				return;
 			}
@@ -92,7 +104,9 @@ class NotebookChatEditorController extends Disposable {
 
 		this._register(autorun(r => {
 			const entry = entryObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!entry || !model || entry.state.read(r) !== WorkingSetEntryState.Modified) {
 				clearDecorators();
 			}
@@ -100,7 +114,9 @@ class NotebookChatEditorController extends Disposable {
 
 		const notebookDiffInfo = derivedWithStore(this, (r, store) => {
 			const entry = entryObs.read(r);
+
 			const model = notebookModel.read(r);
+
 			if (!entry || !model) {
 				// If entry is undefined, then revert the changes to the notebook.
 				if (notebookSynchronizer && model) {
@@ -131,6 +147,7 @@ class NotebookChatEditorController extends Disposable {
 		this._register(autorun(r => {
 			// If there's no diff info, then we either accepted or rejected everything.
 			const diffs = notebookDiffInfo.read(r);
+
 			if (!diffs || !diffs.cellDiff.length) {
 				clearDecorators();
 				this._ctxHasEditorModification.reset();
@@ -141,8 +158,11 @@ class NotebookChatEditorController extends Disposable {
 
 		this._register(autorun(r => {
 			const entry = entryObs.read(r);
+
 			const diffInfo = notebookDiffInfo.read(r);
+
 			const modified = notebookModel.read(r);
+
 			const original = originalModel.read(r);
 			onDidChangeVisibleRanges.read(r);
 
@@ -154,22 +174,28 @@ class NotebookChatEditorController extends Disposable {
 			}
 
 			updatedCellDecoratorsOnceBefore = true;
+
 			const validDiffDecorators = new Set<NotebookCellDiffDecorator>();
 			diffInfo.cellDiff.forEach((diff) => {
 				if (diff.type === 'modified') {
 					const modifiedCell = modified.cells[diff.modifiedCellIndex];
+
 					const originalCell = original.cells[diff.originalCellIndex];
+
 					const editor = this.notebookEditor.codeEditors.find(([vm,]) => vm.handle === modifiedCell.handle)?.[1];
 
 					if (editor) {
 						const currentDecorator = decorators.get(modifiedCell);
+
 						if ((currentDecorator?.modifiedCell !== modifiedCell || currentDecorator?.originalCell !== originalCell)) {
 							currentDecorator?.dispose();
+
 							const decorator = this.instantiationService.createInstance(NotebookCellDiffDecorator, notebookEditor, modifiedCell, originalCell);
 							decorators.set(modifiedCell, decorator);
 							validDiffDecorators.add(decorator);
 							this._register(editor.onDidDispose(() => {
 								decorator.dispose();
+
 								if (decorators.get(modifiedCell) === decorator) {
 									decorators.delete(modifiedCell);
 								}
@@ -192,10 +218,15 @@ class NotebookChatEditorController extends Disposable {
 
 		this._register(autorun(r => {
 			const entry = entryObs.read(r);
+
 			const diffInfo = notebookDiffInfo.read(r);
+
 			const modified = notebookModel.read(r);
+
 			const original = originalModel.read(r);
+
 			const vmAttached = viewModelAttached.read(r);
+
 			if (!vmAttached || !entry || !modified || !original || !diffInfo) {
 				return;
 			}

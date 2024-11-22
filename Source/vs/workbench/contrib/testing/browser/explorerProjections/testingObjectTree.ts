@@ -25,10 +25,13 @@ export class TestingObjectTree<TFilterData = void> extends WorkbenchObjectTree<T
                 return false;
             }
             const localId = TestId.localId(node.element.test.item.extId);
+
             const inTree = parent.children?.[localId] || {};
             // only saved collapsed state if it's not the default (not collapsed, or a root depth)
             inTree.collapsed = node.depth === 0 || !node.collapsed ? node.collapsed : undefined;
+
             let hasAnyNonDefaultValue = inTree.collapsed !== undefined;
+
             if (node.children.length) {
                 for (const child of node.children) {
                     hasAnyNonDefaultValue = build(child, inTree) || hasAnyNonDefaultValue;

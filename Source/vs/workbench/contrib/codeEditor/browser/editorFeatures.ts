@@ -11,6 +11,7 @@ import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 
 class EditorFeaturesInstantiator extends Disposable implements IWorkbenchContribution {
     static readonly ID = 'workbench.contrib.editorFeaturesInstantiator';
     private _instantiated = false;
+
     constructor(
     @ICodeEditorService
     codeEditorService: ICodeEditorService, 
@@ -19,6 +20,7 @@ class EditorFeaturesInstantiator extends Disposable implements IWorkbenchContrib
         super();
         this._register(codeEditorService.onWillCreateCodeEditor(() => this._instantiate()));
         this._register(codeEditorService.onWillCreateDiffEditor(() => this._instantiate()));
+
         if (codeEditorService.listCodeEditors().length > 0 || codeEditorService.listDiffEditors().length > 0) {
             this._instantiate();
         }
@@ -30,9 +32,11 @@ class EditorFeaturesInstantiator extends Disposable implements IWorkbenchContrib
         this._instantiated = true;
         // Instantiate all editor features
         const editorFeatures = getEditorFeatures();
+
         for (const feature of editorFeatures) {
             try {
                 const instance = this._instantiationService.createInstance(feature);
+
                 if (typeof (<IDisposable>instance).dispose === 'function') {
                     this._register((<IDisposable>instance));
                 }

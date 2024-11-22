@@ -20,8 +20,11 @@ export class KeybindingIO {
         }
         const quotedSerializedKeybinding = JSON.stringify(item.resolvedKeybinding.getUserSettingsLabel());
         out.write(`{ "key": ${rightPaddedString(quotedSerializedKeybinding + ',', 25)} "command": `);
+
         const quotedSerializedWhen = item.when ? JSON.stringify(item.when.serialize()) : '';
+
         const quotedSerializeCommand = JSON.stringify(item.command);
+
         if (quotedSerializedWhen.length > 0) {
             out.write(`${quotedSerializeCommand},`);
             out.writeLine();
@@ -41,15 +44,19 @@ export class KeybindingIO {
         const keybinding = 'key' in input && typeof input.key === 'string'
             ? KeybindingParser.parseKeybinding(input.key)
             : null;
+
         const when = 'when' in input && typeof input.when === 'string'
             ? ContextKeyExpr.deserialize(input.when)
             : undefined;
+
         const command = 'command' in input && typeof input.command === 'string'
             ? input.command
             : null;
+
         const commandArgs = 'args' in input && typeof input.args !== 'undefined'
             ? input.args
             : undefined;
+
         return {
             keybinding,
             command,
@@ -77,6 +84,7 @@ export class OutputBuilder {
     }
     toString(): string {
         this.writeLine();
+
         return this._lines.join('\n');
     }
 }

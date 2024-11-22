@@ -44,7 +44,9 @@ abstract class NotebookSaveParticipant implements IStoredFileWorkingCopySavePart
     abstract participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void>;
     protected canParticipate(): boolean {
         const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+
         const controller = editor?.getContribution<NotebookMultiCursorController>(NotebookMultiCursorController.id);
+
         if (!controller) {
             return true;
         }
@@ -73,23 +75,33 @@ class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
             return undefined;
         }
         const enabled = this.configurationService.getValue<boolean>(NotebookSetting.formatOnSave);
+
         if (!enabled) {
             return undefined;
         }
         progress.report({ message: localize('notebookFormatSave.formatting', "Formatting") });
+
         const notebook = workingCopy.model.notebookModel;
+
         const formatApplied: boolean = await this.instantiationService.invokeFunction(CodeActionParticipantUtils.checkAndRunFormatCodeAction, notebook, progress, token);
+
         const disposable = new DisposableStore();
+
         try {
             if (!formatApplied) {
                 const allCellEdits = await Promise.all(notebook.cells.map(async (cell) => {
                     const ref = await this.textModelService.createModelReference(cell.uri);
                     disposable.add(ref);
+
                     const model = ref.object.textEditorModel;
+
                     const formatEdits = await getDocumentFormattingEditsWithSelectedProvider(this.editorWorkerService, this.languageFeaturesService, model, FormattingMode.Silent, token);
+
                     const edits: ResourceTextEdit[] = [];
+
                     if (formatEdits) {
                         edits.push(...formatEdits.map(edit => new ResourceTextEdit(model.uri, edit, model.getVersionId())));
+
                         return edits;
                     }
                     return [];
@@ -117,7 +129,9 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
     }
     async participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, progress: IProgress<IProgressStep>, _token: CancellationToken): Promise<void> {
         const trimTrailingWhitespaceOption = this.configurationService.getValue<boolean>('files.trimTrailingWhitespace');
+
         const trimInRegexAndStrings = this.configurationService.getValue<boolean>('files.trimTrailingWhitespaceInRegexAndStrings');
+
         if (trimTrailingWhitespaceOption && this.canParticipate()) {
             await this.doTrimTrailingWhitespace(workingCopy, context.reason === SaveReason.AUTO, trimInRegexAndStrings, progress);
         }
@@ -127,10 +141,15 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
             return;
         }
         const disposable = new DisposableStore();
+
         const notebook = workingCopy.model.notebookModel;
+
         const activeCellEditor = getActiveCellCodeEditor(this.editorService);
+
         let cursors: Position[] = [];
+
         let prevSelection: Selection[] = [];
+
         try {
             const allCellEdits = await Promise.all(notebook.cells.map(async (cell) => {
                 if (cell.cellKind !== CellKind.Code) {
@@ -138,13 +157,18 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
                 }
                 const ref = await this.textModelService.createModelReference(cell.uri);
                 disposable.add(ref);
+
                 const model = ref.object.textEditorModel;
+
                 const isActiveCell = (activeCellEditor && cell.uri.toString() === activeCellEditor.getModel()?.uri.toString());
+
                 if (isActiveCell) {
                     prevSelection = activeCellEditor.getSelections() ?? [];
+
                     if (isAutoSaved) {
                         cursors = prevSelection.map(s => s.getPosition()); // get initial cursor positions
                         const snippetsRange = SnippetController2.get(activeCellEditor)?.getSessionEnclosingRange();
+
                         if (snippetsRange) {
                             for (let lineNumber = snippetsRange.startLineNumber; lineNumber <= snippetsRange.endLineNumber; lineNumber++) {
                                 cursors.push(new Position(lineNumber, model.getLineMaxColumn(lineNumber)));
@@ -153,11 +177,13 @@ class TrimWhitespaceParticipant extends NotebookSaveParticipant {
                     }
                 }
                 const ops = trimTrailingWhitespace(model, cursors, trimInRegexesAndStrings);
+
                 if (!ops.length) {
                     return []; // Nothing to do
                 }
                 return ops.map(op => new ResourceTextEdit(model.uri, { ...op, text: op.text || '' }, model.getVersionId()));
             }));
+
             const filteredEdits = allCellEdits.flat().filter(edit => edit !== undefined) as ResourceEdit[];
             await this.bulkEditService.apply(filteredEdits, { label: localize('trimNotebookWhitespace', "Notebook Trim Trailing Whitespace"), code: 'undoredo.notebookTrimTrailingWhitespace' });
         }
@@ -188,6 +214,7 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
     private findLastNonEmptyLine(textBuffer: IReadonlyTextBuffer): number {
         for (let lineNumber = textBuffer.getLineCount(); lineNumber >= 1; lineNumber--) {
             const lineLength = textBuffer.getLineLength(lineNumber);
+
             if (lineLength) {
                 // this line has content
                 return lineNumber;
@@ -201,8 +228,11 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
             return;
         }
         const disposable = new DisposableStore();
+
         const notebook = workingCopy.model.notebookModel;
+
         const activeCellEditor = getActiveCellCodeEditor(this.editorService);
+
         try {
             const allCellEdits = await Promise.all(notebook.cells.map(async (cell) => {
                 if (cell.cellKind !== CellKind.Code) {
@@ -210,26 +240,34 @@ class TrimFinalNewLinesParticipant extends NotebookSaveParticipant {
                 }
                 // autosave -- don't trim every trailing line, just up to the cursor line
                 let cannotTouchLineNumber = 0;
+
                 const isActiveCell = (activeCellEditor && cell.uri.toString() === activeCellEditor.getModel()?.uri.toString());
+
                 if (isAutoSaved && isActiveCell) {
                     const selections = activeCellEditor.getSelections() ?? [];
+
                     for (const sel of selections) {
                         cannotTouchLineNumber = Math.max(cannotTouchLineNumber, sel.selectionStartLineNumber);
                     }
                 }
                 const textBuffer = cell.textBuffer;
+
                 const lastNonEmptyLine = this.findLastNonEmptyLine(textBuffer);
+
                 const deleteFromLineNumber = Math.max(lastNonEmptyLine + 1, cannotTouchLineNumber + 1);
+
                 if (deleteFromLineNumber > textBuffer.getLineCount()) {
                     return;
                 }
                 const deletionRange = new Range(deleteFromLineNumber, 1, textBuffer.getLineCount(), textBuffer.getLineLastNonWhitespaceColumn(textBuffer.getLineCount()));
+
                 if (deletionRange.isEmpty()) {
                     return;
                 }
                 // create the edit to delete all lines in deletionRange
                 return new ResourceTextEdit(cell.uri, { range: deletionRange, text: '' }, cell.textModel?.getVersionId());
             }));
+
             const filteredEdits = allCellEdits.flat().filter(edit => edit !== undefined) as ResourceEdit[];
             await this.bulkEditService.apply(filteredEdits, { label: localize('trimNotebookNewlines', "Trim Final New Lines"), code: 'undoredo.trimFinalNewLines' });
         }
@@ -261,10 +299,13 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
             return;
         }
         const disposable = new DisposableStore();
+
         const notebook = workingCopy.model.notebookModel;
         // get initial cursor positions
         const activeCellEditor = getActiveCellCodeEditor(this.editorService);
+
         let selections;
+
         if (activeCellEditor) {
             selections = activeCellEditor.getSelections() ?? [];
         }
@@ -274,12 +315,15 @@ class InsertFinalNewLineParticipant extends NotebookSaveParticipant {
                     return;
                 }
                 const lineCount = cell.textBuffer.getLineCount();
+
                 const lastLineIsEmptyOrWhitespace = cell.textBuffer.getLineFirstNonWhitespaceColumn(lineCount) === 0;
+
                 if (!lineCount || lastLineIsEmptyOrWhitespace) {
                     return;
                 }
                 return new ResourceTextEdit(cell.uri, { range: new Range(lineCount + 1, cell.textBuffer.getLineLength(lineCount), lineCount + 1, cell.textBuffer.getLineLength(lineCount)), text: cell.textBuffer.getEOL() }, cell.textModel?.getVersionId());
             }));
+
             const filteredEdits = allCellEdits.filter(edit => edit !== undefined) as ResourceEdit[];
             await this.bulkEditService.apply(filteredEdits, { label: localize('insertFinalNewLine', "Insert Final New Line"), code: 'undoredo.insertFinalNewLine' });
             // set cursor back to initial position after inserting final new line
@@ -308,6 +352,7 @@ class CodeActionOnSaveParticipant implements IStoredFileWorkingCopySaveParticipa
     }
     async participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
         const isTrusted = this.workspaceTrustManagementService.isWorkspaceTrusted();
+
         if (!isTrusted) {
             return;
         }
@@ -315,6 +360,7 @@ class CodeActionOnSaveParticipant implements IStoredFileWorkingCopySaveParticipa
             return;
         }
         let saveTrigger = '';
+
         if (context.reason === SaveReason.AUTO) {
             // currently this won't happen, as vs/editor/contrib/codeAction/browser/codeAction.ts L#104 filters out codeactions on autosave. Just future-proofing
             // ? notebook CodeActions on autosave seems dangerous (perf-wise)
@@ -329,27 +375,37 @@ class CodeActionOnSaveParticipant implements IStoredFileWorkingCopySaveParticipa
             return undefined;
         }
         const notebookModel = workingCopy.model.notebookModel;
+
         const setting = this.configurationService.getValue<{
             [kind: string]: string | boolean;
         }>(NotebookSetting.codeActionsOnSave);
+
         const settingItems: string[] = Array.isArray(setting)
             ? setting
             : Object.keys(setting).filter(x => setting[x]);
+
         const allCodeActions = this.createCodeActionsOnSave(settingItems);
+
         const excludedActions = allCodeActions
             .filter(x => setting[x.value] === 'never' || setting[x.value] === false);
+
         const includedActions = allCodeActions
             .filter(x => setting[x.value] === saveTrigger || setting[x.value] === true);
+
         const editorCodeActionsOnSave = includedActions.filter(x => !CodeActionKind.Notebook.contains(x));
+
         const notebookCodeActionsOnSave = includedActions.filter(x => CodeActionKind.Notebook.contains(x));
         // run notebook code actions
         if (notebookCodeActionsOnSave.length) {
             const nbDisposable = new DisposableStore();
             progress.report({ message: localize('notebookSaveParticipants.notebookCodeActions', "Running 'Notebook' code actions") });
+
             try {
                 const cell = notebookModel.cells[0];
+
                 const ref = await this.textModelService.createModelReference(cell.uri);
                 nbDisposable.add(ref);
+
                 const textEditorModel = ref.object.textEditorModel;
                 await this.instantiationService.invokeFunction(CodeActionParticipantUtils.applyOnSaveGenericCodeActions, textEditorModel, notebookCodeActionsOnSave, excludedActions, progress, token);
             }
@@ -380,10 +436,12 @@ class CodeActionOnSaveParticipant implements IStoredFileWorkingCopySaveParticipa
             }
             const cellDisposable = new DisposableStore();
             progress.report({ message: localize('notebookSaveParticipants.cellCodeActions', "Running 'Cell' code actions") });
+
             try {
                 await Promise.all(notebookModel.cells.map(async (cell) => {
                     const ref = await this.textModelService.createModelReference(cell.uri);
                     cellDisposable.add(ref);
+
                     const textEditorModel = ref.object.textEditorModel;
                     await this.instantiationService.invokeFunction(CodeActionParticipantUtils.applyOnSaveGenericCodeActions, textEditorModel, editorCodeActionsOnSave, excludedActions, progress, token);
                 }));
@@ -408,18 +466,29 @@ class CodeActionOnSaveParticipant implements IStoredFileWorkingCopySaveParticipa
 export class CodeActionParticipantUtils {
     static async checkAndRunFormatCodeAction(accessor: ServicesAccessor, notebookModel: NotebookTextModel, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<boolean> {
         const instantiationService: IInstantiationService = accessor.get(IInstantiationService);
+
         const textModelService: ITextModelService = accessor.get(ITextModelService);
+
         const logService: ILogService = accessor.get(ILogService);
+
         const configurationService: IConfigurationService = accessor.get(IConfigurationService);
+
         const formatDisposable = new DisposableStore();
+
         let formatResult: boolean = false;
         progress.report({ message: localize('notebookSaveParticipants.formatCodeActions', "Running 'Format' code actions") });
+
         try {
             const cell = notebookModel.cells[0];
+
             const ref = await textModelService.createModelReference(cell.uri);
+
             formatDisposable.add(ref);
+
             const textEditorModel = ref.object.textEditorModel;
+
             const defaultFormatterExtId = configurationService.getValue<string | undefined>(NotebookSetting.defaultFormatter);
+
             formatResult = await instantiationService.invokeFunction(CodeActionParticipantUtils.applyOnSaveFormatCodeAction, textEditorModel, new HierarchicalKind('notebook.format'), [], defaultFormatterExtId, progress, token);
         }
         catch {
@@ -427,14 +496,18 @@ export class CodeActionParticipantUtils {
         }
         finally {
             progress.report({ increment: 100 });
+
             formatDisposable.dispose();
         }
         return formatResult;
     }
     static async applyOnSaveGenericCodeActions(accessor: ServicesAccessor, model: ITextModel, codeActionsOnSave: readonly HierarchicalKind[], excludes: readonly HierarchicalKind[], progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
         const instantiationService: IInstantiationService = accessor.get(IInstantiationService);
+
         const languageFeaturesService: ILanguageFeaturesService = accessor.get(ILanguageFeaturesService);
+
         const logService: ILogService = accessor.get(ILogService);
+
         const getActionProgress = new class implements IProgress<CodeActionProvider> {
             private _names = new Set<string>();
             private _report(): void {
@@ -449,35 +522,44 @@ export class CodeActionParticipantUtils {
                 }
             }
         };
+
         for (const codeActionKind of codeActionsOnSave) {
             const actionsToRun = await CodeActionParticipantUtils.getActionsToRun(model, codeActionKind, excludes, languageFeaturesService, getActionProgress, token);
+
             if (token.isCancellationRequested) {
                 actionsToRun.dispose();
+
                 return;
             }
             try {
                 for (const action of actionsToRun.validActions) {
                     const codeActionEdits = action.action.edit?.edits;
+
                     let breakFlag = false;
+
                     if (!action.action.kind?.startsWith('notebook')) {
                         for (const edit of codeActionEdits ?? []) {
                             const workspaceTextEdit = edit as IWorkspaceTextEdit;
+
                             if (workspaceTextEdit.resource && isEqual(workspaceTextEdit.resource, model.uri)) {
                                 continue;
                             }
                             else {
                                 // error -> applied to multiple resources
                                 breakFlag = true;
+
                                 break;
                             }
                         }
                     }
                     if (breakFlag) {
                         logService.warn('Failed to apply code action on save, applied to multiple resources.');
+
                         continue;
                     }
                     progress.report({ message: localize('codeAction.apply', "Applying code action '{0}'.", action.action.title) });
                     await instantiationService.invokeFunction(applyCodeAction, action, ApplyCodeActionReason.OnSave, {}, token);
+
                     if (token.isCancellationRequested) {
                         return;
                     }
@@ -493,8 +575,11 @@ export class CodeActionParticipantUtils {
     }
     static async applyOnSaveFormatCodeAction(accessor: ServicesAccessor, model: ITextModel, formatCodeActionOnSave: HierarchicalKind, excludes: readonly HierarchicalKind[], extensionId: string | undefined, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<boolean> {
         const instantiationService: IInstantiationService = accessor.get(IInstantiationService);
+
         const languageFeaturesService: ILanguageFeaturesService = accessor.get(ILanguageFeaturesService);
+
         const logService: ILogService = accessor.get(ILogService);
+
         const getActionProgress = new class implements IProgress<CodeActionProvider> {
             private _names = new Set<string>();
             private _report(): void {
@@ -509,6 +594,7 @@ export class CodeActionParticipantUtils {
                 }
             }
         };
+
         const providedActions = await CodeActionParticipantUtils.getActionsToRun(model, formatCodeActionOnSave, excludes, languageFeaturesService, getActionProgress, token);
         // warn the user if there are more than one provided format action, and there is no specified defaultFormatter
         if (providedActions.validActions.length > 1 && !extensionId) {
@@ -516,21 +602,25 @@ export class CodeActionParticipantUtils {
         }
         if (token.isCancellationRequested) {
             providedActions.dispose();
+
             return false;
         }
         try {
             const action: CodeActionItem | undefined = extensionId ? providedActions.validActions.find(action => action.provider?.extensionId === extensionId) : providedActions.validActions[0];
+
             if (!action) {
                 return false;
             }
             progress.report({ message: localize('codeAction.apply', "Applying code action '{0}'.", action.action.title) });
             await instantiationService.invokeFunction(applyCodeAction, action, ApplyCodeActionReason.OnSave, {}, token);
+
             if (token.isCancellationRequested) {
                 return false;
             }
         }
         catch {
             logService.error('Failed to apply notebook format code action on save');
+
             return false;
         }
         finally {
@@ -549,8 +639,11 @@ export class CodeActionParticipantUtils {
 }
 function getActiveCellCodeEditor(editorService: IEditorService): ICodeEditor | undefined {
     const activePane = editorService.activeEditorPane;
+
     const notebookEditor = getNotebookEditorFromEditorPane(activePane);
+
     const activeCodeEditor = notebookEditor?.activeCodeEditor;
+
     return activeCodeEditor;
 }
 export class SaveParticipantsContribution extends Disposable implements IWorkbenchContribution {

@@ -62,6 +62,7 @@ struct VSOutput {
 		1.0
 	);
 	vsOut.color = shape.color;
+
 	return vsOut;
 }
 

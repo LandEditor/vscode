@@ -28,6 +28,7 @@ export interface ITestingDecorationsService {
      */
     syncDecorations(resource: URI): Iterable<ITestDecoration> & {
         readonly size: number;
+
         getById(decorationId: string): ITestDecoration | undefined;
     };
     /**
@@ -54,6 +55,7 @@ export interface ITestDecoration {
      * Editor decoration instance.
      */
     readonly editorDecoration: IModelDeltaDecoration;
+
     getContextMenuActions(): {
         object: IAction[];
         dispose(): void;
@@ -82,9 +84,12 @@ export class TestDecorations<T extends {
             return;
         }
         let startIndex = 0;
+
         let startLine = this.value[0].line;
+
         for (let i = 1; i < this.value.length; i++) {
             const v = this.value[i];
+
             if (v.line !== startLine) {
                 yield [startLine, this.value.slice(startIndex, i)];
                 startLine = v.line;

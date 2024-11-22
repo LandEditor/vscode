@@ -64,6 +64,7 @@ declare namespace semver {
 	 * Return the version incremented by the release type (major, minor, patch, or prerelease), or null if it's not valid.
 	 */
 	export function inc(version: string | SemVer, release: ReleaseType, optionsOrLoose?: boolean | Options, identifier?: string): string | null;
+
 	export function inc(version: string | SemVer, release: ReleaseType, identifier?: string): string | null;
 
 	/**
@@ -118,6 +119,7 @@ declare namespace semver {
 	 * Throws if an invalid comparison string is provided.
 	 */
 	export function cmp(v1: string | SemVer, operator: Operator, v2: string | SemVer, optionsOrLoose?: boolean | Options): boolean;
+
 	export type Operator = '===' | '!==' | '' | '=' | '==' | '!=' | '>' | '>=' | '<' | '<=';
 
 	/**
@@ -224,6 +226,7 @@ declare namespace semver {
 		raw: string;
 		loose: boolean;
 		options: Options;
+
 		format(): string;
 		inspect(): string;
 
@@ -298,6 +301,7 @@ declare namespace semver {
 		loose: boolean;
 		options: Options;
 		includePrerelease: boolean;
+
 		format(): string;
 		inspect(): string;
 

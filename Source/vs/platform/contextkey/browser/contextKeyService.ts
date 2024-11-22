@@ -38,8 +38,10 @@ export class Context implements IContext {
 
 	public setValue(key: string, value: any): boolean {
 		// console.log('SET ' + key + ' = ' + value + ' ON ' + this._id);
+
 		if (this._value[key] !== value) {
 			this._value[key] = value;
+
 			return true;
 		}
 		return false;
@@ -47,8 +49,10 @@ export class Context implements IContext {
 
 	public removeValue(key: string): boolean {
 		// console.log('REMOVE ' + key + ' FROM ' + this._id);
+
 		if (key in this._value) {
 			delete this._value[key];
+
 			return true;
 		}
 		return false;
@@ -56,6 +60,7 @@ export class Context implements IContext {
 
 	public getValue<T>(key: string): T | undefined {
 		const ret = this._value[key];
+
 		if (typeof ret === 'undefined' && this._parent) {
 			return this._parent.getValue<T>(key);
 		}
@@ -70,6 +75,7 @@ export class Context implements IContext {
 		let result = this._parent ? this._parent.collectAllValues() : Object.create(null);
 		result = { ...result, ...this._value };
 		delete result['_contextId'];
+
 		return result;
 	}
 }
@@ -120,10 +126,12 @@ class ConfigAwareContextValuesContainer extends Context {
 				emitter.fire(new ArrayContextKeyChangeEvent(allKeys));
 			} else {
 				const changedKeys: string[] = [];
+
 				for (const configKey of event.affectedKeys) {
 					const contextKey = `config.${configKey}`;
 
 					const cachedItems = this._values.findSuperstr(contextKey);
+
 					if (cachedItems !== undefined) {
 						changedKeys.push(...Iterable.map(cachedItems, ([key]) => key));
 						this._values.deleteSuperstr(contextKey);
@@ -155,14 +163,19 @@ class ConfigAwareContextValuesContainer extends Context {
 		}
 
 		const configKey = key.substr(ConfigAwareContextValuesContainer._keyPrefix.length);
+
 		const configValue = this._configurationService.getValue(configKey);
+
 		let value: any = undefined;
+
 		switch (typeof configValue) {
 			case 'number':
 			case 'boolean':
 			case 'string':
 				value = configValue;
+
 				break;
+
 			default:
 				if (Array.isArray(configValue)) {
 					value = JSON.stringify(configValue);
@@ -172,6 +185,7 @@ class ConfigAwareContextValuesContainer extends Context {
 		}
 
 		this._values.set(key, value);
+
 		return value;
 	}
 
@@ -186,6 +200,7 @@ class ConfigAwareContextValuesContainer extends Context {
 	override collectAllValues(): { [key: string]: any } {
 		const result: { [key: string]: any } = Object.create(null);
 		this._values.forEach((value, index) => result[index] = value);
+
 		return { ...result, ...super.collectAllValues() };
 	}
 }
@@ -293,6 +308,7 @@ export abstract class AbstractContextKeyService extends Disposable implements IC
 
 	bufferChangeEvents(callback: Function): void {
 		this._onDidChangeContext.pause();
+
 		try {
 			callback();
 		} finally {
@@ -319,10 +335,12 @@ export abstract class AbstractContextKeyService extends Disposable implements IC
 			throw new Error(`AbstractContextKeyService has been disposed`);
 		}
 		const context = this.getContextValuesContainer(this._myContextId);
+
 		const result = (rules ? rules.evaluate(context) : true);
 		// console.group(rules.serialize() + ' -> ' + result);
 		// rules.keys().forEach(key => { console.log(key, ctx[key]); });
 		// console.groupEnd();
+
 		return result;
 	}
 
@@ -338,6 +356,7 @@ export abstract class AbstractContextKeyService extends Disposable implements IC
 			return;
 		}
 		const myContext = this.getContextValuesContainer(this._myContextId);
+
 		if (!myContext) {
 			return;
 		}
@@ -410,6 +429,7 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
 		}
 		const id = (++this._lastContextId);
 		this._contexts.set(id, new Context(id, this.getContextValuesContainer(parentContextId)));
+
 		return id;
 	}
 
@@ -437,8 +457,10 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 		this._updateParentChangeListener();
 
 		this._domNode = domNode;
+
 		if (this._domNode.hasAttribute(KEYBINDING_CONTEXT_ATTR)) {
 			let extraInfo = '';
+
 			if ((this._domNode as HTMLElement).classList) {
 				extraInfo = Array.from((this._domNode as HTMLElement).classList.values()).join(', ');
 			}
@@ -452,6 +474,7 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 		// Forward parent events to this listener. Parent will change.
 		this._parentChangeListener.value = this._parent.onDidChangeContext(e => {
 			const thisContainer = this._parent.getContextValuesContainer(this._myContextId);
+
 			const thisContextValues = thisContainer.value;
 
 			if (!allEventKeysInContext(e, thisContextValues)) {
@@ -467,6 +490,7 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 
 		this._parent.disposeContext(this._myContextId);
 		this._domNode.removeAttribute(KEYBINDING_CONTEXT_ATTR);
+
 		super.dispose();
 	}
 
@@ -497,17 +521,21 @@ class ScopedContextKeyService extends AbstractContextKeyService {
 		}
 
 		const thisContainer = this._parent.getContextValuesContainer(this._myContextId);
+
 		const oldAllValues = thisContainer.collectAllValues();
 		this._parent = parentContextKeyService;
 		this._updateParentChangeListener();
+
 		const newParentContainer = this._parent.getContextValuesContainer(this._parent.contextId);
 		thisContainer.updateParent(newParentContainer);
 
 		const newAllValues = thisContainer.collectAllValues();
+
 		const allValuesDiff = {
 			...distinct(oldAllValues, newAllValues),
 			...distinct(newAllValues, oldAllValues)
 		};
+
 		const changedKeys = Object.keys(allValuesDiff);
 
 		this._onDidChangeContext.fire(new ArrayContextKeyChangeEvent(changedKeys));
@@ -554,12 +582,15 @@ class OverlayContextKeyService implements IContextKeyService {
 
 	getContextValuesContainer(contextId: number): IContext {
 		const parentContext = this.parent.getContextValuesContainer(contextId);
+
 		return new OverlayContext(parentContext, this.overlay);
 	}
 
 	contextMatchesRules(rules: ContextKeyExpression | undefined): boolean {
 		const context = this.getContextValuesContainer(this.contextId);
+
 		const result = (rules ? rules.evaluate(context) : true);
+
 		return result;
 	}
 
@@ -584,6 +615,7 @@ function findContextAttr(domNode: IContextKeyServiceTarget | null): number {
 	while (domNode) {
 		if (domNode.hasAttribute(KEYBINDING_CONTEXT_ATTR)) {
 			const attr = domNode.getAttribute(KEYBINDING_CONTEXT_ATTR);
+
 			if (attr) {
 				return parseInt(attr, 10);
 			}
@@ -626,7 +658,9 @@ CommandsRegistry.registerCommand({
 
 CommandsRegistry.registerCommand('_generateContextKeyInfo', function () {
 	const result: ContextKeyInfo[] = [];
+
 	const seen = new Set<string>();
+
 	for (const info of RawContextKey.all()) {
 		if (!seen.has(info.key)) {
 			seen.add(info.key);

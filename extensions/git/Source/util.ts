@@ -22,6 +22,7 @@ export interface IDisposable {
 
 export function dispose<T extends IDisposable>(disposables: T[]): T[] {
 	disposables.forEach(d => d.dispose());
+
 	return [];
 }
 
@@ -51,6 +52,7 @@ export function runAndSubscribeEvent<T>(event: Event<T>, handler: (e: T) => any,
 export function runAndSubscribeEvent<T>(event: Event<T>, handler: (e: T | undefined) => any): IDisposable;
 export function runAndSubscribeEvent<T>(event: Event<T>, handler: (e: T | undefined) => any, initial?: T): IDisposable {
 	handler(initial);
+
 	return event(e => handler(e));
 }
 
@@ -72,6 +74,7 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
 	return (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]) => {
 		const result = event(e => {
 			result.dispose();
+
 			return listener.call(thisArgs, e);
 		}, null, disposables);
 
@@ -82,6 +85,7 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
 export function debounceEvent<T>(event: Event<T>, delay: number): Event<T> {
 	return (listener: (e: T) => any, thisArgs?: any, disposables?: Disposable[]) => {
 		let timer: NodeJS.Timeout;
+
 		return event(e => {
 			clearTimeout(timer);
 			timer = setTimeout(() => listener.call(thisArgs, e), delay);
@@ -124,6 +128,7 @@ export function uniqBy<T>(arr: T[], fn: (el: T) => string): T[] {
 		}
 
 		seen[key] = true;
+
 		return true;
 	});
 }
@@ -132,6 +137,7 @@ export function groupBy<T>(arr: T[], fn: (el: T) => string): { [key: string]: T[
 	return arr.reduce((result, el) => {
 		const key = fn(el);
 		result[key] = [...(result[key] || []), el];
+
 		return result;
 	}, Object.create(null));
 }
@@ -186,6 +192,7 @@ export function uniqueFilter<T>(keyFn: (t: T) => string): (t: T) => boolean {
 		}
 
 		seen[key] = true;
+
 		return true;
 	};
 }
@@ -196,6 +203,7 @@ export function find<T>(array: T[], fn: (t: T) => boolean): T | undefined {
 	array.some(e => {
 		if (fn(e)) {
 			result = e;
+
 			return true;
 		}
 
@@ -208,6 +216,7 @@ export function find<T>(array: T[], fn: (t: T) => boolean): T | undefined {
 export async function grep(filename: string, pattern: RegExp): Promise<boolean> {
 	return new Promise<boolean>((c, e) => {
 		const fileStream = createReadStream(filename, { encoding: 'utf8' });
+
 		const stream = byline(fileStream);
 		stream.on('data', (line: string) => {
 			if (pattern.test(line)) {
@@ -224,7 +233,9 @@ export async function grep(filename: string, pattern: RegExp): Promise<boolean> 
 export function readBytes(stream: Readable, bytes: number): Promise<Buffer> {
 	return new Promise<Buffer>((complete, error) => {
 		let done = false;
+
 		const buffer = Buffer.allocUnsafe(bytes);
+
 		let bytesRead = 0;
 
 		stream.on('data', (data: Buffer) => {
@@ -265,6 +276,7 @@ export function detectUnicodeEncoding(buffer: Buffer): Encoding | null {
 	}
 
 	const b0 = buffer.readUInt8(0);
+
 	const b1 = buffer.readUInt8(1);
 
 	if (b0 === 0xFE && b1 === 0xFF) {
@@ -339,6 +351,7 @@ export function relativePath(from: string, to: string): string {
 
 export function* splitInChunks(array: string[], maxChunkLength: number): IterableIterator<string[]> {
 	let current: string[] = [];
+
 	let length = 0;
 
 	for (const value of array) {
@@ -432,6 +445,7 @@ export class PromiseSource<T> {
 	private _onDidComplete = new EventEmitter<Completion<T>>();
 
 	private _promise: Promise<T> | undefined;
+
 	get promise(): Promise<T> {
 		if (this._promise) {
 			return this._promise;
@@ -509,7 +523,9 @@ export namespace Versions {
 
 	export function fromString(version: string): Version {
 		const [ver, pre] = version.split('-');
+
 		const [major, minor, patch] = ver.split('.');
+
 		return from(major, minor, patch, pre);
 	}
 }
@@ -524,23 +540,29 @@ export function deltaHistoryItemRefs(before: SourceControlHistoryItemRef[], afte
 	}
 
 	const added: SourceControlHistoryItemRef[] = [];
+
 	const modified: SourceControlHistoryItemRef[] = [];
+
 	const removed: SourceControlHistoryItemRef[] = [];
 
 	let beforeIdx = 0;
+
 	let afterIdx = 0;
 
 	while (true) {
 		if (beforeIdx === before.length) {
 			added.push(...after.slice(afterIdx));
+
 			break;
 		}
 		if (afterIdx === after.length) {
 			removed.push(...before.slice(beforeIdx));
+
 			break;
 		}
 
 		const beforeElement = before[beforeIdx];
+
 		const afterElement = after[afterIdx];
 
 		const result = beforeElement.id.localeCompare(afterElement.id);
@@ -570,10 +592,15 @@ export function deltaHistoryItemRefs(before: SourceControlHistoryItemRef[], afte
 }
 
 const minute = 60;
+
 const hour = minute * 60;
+
 const day = hour * 24;
+
 const week = day * 7;
+
 const month = day * 30;
+
 const year = day * 365;
 
 /**
@@ -591,6 +618,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	const seconds = Math.round((new Date().getTime() - date) / 1000);
+
 	if (seconds < -30) {
 		return l10n.t('in {0}', fromNow(new Date().getTime() + seconds * 1000, false));
 	}
@@ -600,6 +628,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	let value: number;
+
 	if (seconds < minute) {
 		value = seconds;
 
@@ -628,6 +657,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < hour) {
 		value = Math.floor(seconds / minute);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -653,6 +683,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < day) {
 		value = Math.floor(seconds / hour);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -678,6 +709,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < week) {
 		value = Math.floor(seconds / day);
+
 		if (appendAgoLabel) {
 			return value === 1
 				? l10n.t('{0} day ago', value)
@@ -691,6 +723,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < month) {
 		value = Math.floor(seconds / week);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -716,6 +749,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 
 	if (seconds < year) {
 		value = Math.floor(seconds / month);
+
 		if (appendAgoLabel) {
 			if (value === 1) {
 				return useFullTimeWords
@@ -740,6 +774,7 @@ export function fromNow(date: number | Date, appendAgoLabel?: boolean, useFullTi
 	}
 
 	value = Math.floor(seconds / year);
+
 	if (appendAgoLabel) {
 		if (value === 1) {
 			return useFullTimeWords

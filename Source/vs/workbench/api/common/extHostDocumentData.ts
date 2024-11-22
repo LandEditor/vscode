@@ -12,6 +12,7 @@ import { MainThreadDocumentsShape } from './extHost.protocol.js';
 import { EndOfLine, Position, Range } from './extHostTypes.js';
 import type * as vscode from 'vscode';
 import { equals } from '../../../base/common/arrays.js';
+
 const _languageId2WordDefinition = new Map<string, RegExp>();
 export function setWordDefinitionFor(languageId: string, wordDefinition: RegExp | undefined): void {
     if (!wordDefinition) {
@@ -27,6 +28,7 @@ function getWordDefinitionFor(languageId: string): RegExp | undefined {
 export class ExtHostDocumentData extends MirrorTextModel {
     private _document?: vscode.TextDocument;
     private _isDisposed: boolean = false;
+
     constructor(private readonly _proxy: MainThreadDocumentsShape, uri: URI, lines: string[], eol: string, versionId: number, private _languageId: string, private _isDirty: boolean) {
         super(uri, lines, eol, versionId);
     }
@@ -86,6 +88,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     }
     private _getTextInRange(_range: vscode.Range): string {
         const range = this._validateRange(_range);
+
         if (range.isEmpty) {
             return '';
         }
@@ -94,14 +97,17 @@ export class ExtHostDocumentData extends MirrorTextModel {
         }
         const lineEnding = this._eol, startLineIndex = range.start.line, endLineIndex = range.end.line, resultLines: string[] = [];
         resultLines.push(this._lines[startLineIndex].substring(range.start.character));
+
         for (let i = startLineIndex + 1; i < endLineIndex; i++) {
             resultLines.push(this._lines[i]);
         }
         resultLines.push(this._lines[endLineIndex].substring(0, range.end.character));
+
         return resultLines.join(lineEnding);
     }
     private _lineAt(lineOrPosition: number | vscode.Position): vscode.TextLine {
         let line: number | undefined;
+
         if (lineOrPosition instanceof Position) {
             line = lineOrPosition.line;
         }
@@ -116,13 +122,16 @@ export class ExtHostDocumentData extends MirrorTextModel {
     private _offsetAt(position: vscode.Position): number {
         position = this._validatePosition(position);
         this._ensureLineStarts();
+
         return this._lineStarts!.getPrefixSum(position.line - 1) + position.character;
     }
     private _positionAt(offset: number): vscode.Position {
         offset = Math.floor(offset);
         offset = Math.max(0, offset);
         this._ensureLineStarts();
+
         const out = this._lineStarts!.getIndexOf(offset);
+
         const lineLength = this._lines[out.index].length;
         // Ensure we return a valid position
         return new Position(out.index, Math.min(out.remainder, lineLength));
@@ -133,7 +142,9 @@ export class ExtHostDocumentData extends MirrorTextModel {
             throw new Error('Invalid argument');
         }
         const start = this._validatePosition(range.start);
+
         const end = this._validatePosition(range.end);
+
         if (start === range.start && end === range.end) {
             return range;
         }
@@ -147,7 +158,9 @@ export class ExtHostDocumentData extends MirrorTextModel {
             return position.with(0, 0);
         }
         let { line, character } = position;
+
         let hasChanged = false;
+
         if (line < 0) {
             line = 0;
             character = 0;
@@ -160,6 +173,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
         }
         else {
             const maxCharacter = this._lines[line].length;
+
             if (character < 0) {
                 character = 0;
                 hasChanged = true;
@@ -176,6 +190,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
     }
     private _getWordRangeAtPosition(_position: vscode.Position, regexp?: RegExp): vscode.Range | undefined {
         const position = this._validatePosition(_position);
+
         if (!regexp) {
             // use default when custom-regexp isn't provided
             regexp = getWordDefinitionFor(this._languageId);
@@ -185,6 +200,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
             throw new Error(`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`);
         }
         const wordAtText = getWordAtText(position.character + 1, ensureValidWordDefinition(regexp), this._lines[position.line], 0);
+
         if (wordAtText) {
             return new Range(position.line, wordAtText.startColumn - 1, position.line, wordAtText.endColumn - 1);
         }
@@ -195,6 +211,7 @@ export class ExtHostDocumentLine implements vscode.TextLine {
     private readonly _line: number;
     private readonly _text: string;
     private readonly _isLastLine: boolean;
+
     constructor(line: number, text: string, isLastLine: boolean) {
         this._line = line;
         this._text = text;

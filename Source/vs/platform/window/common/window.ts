@@ -129,6 +129,7 @@ export type MenuBarVisibility = 'classic' | 'visible' | 'toggle' | 'hidden' | 'c
 
 export function getMenuBarVisibility(configurationService: IConfigurationService): MenuBarVisibility {
 	const nativeTitleBarEnabled = hasNativeTitlebar(configurationService);
+
 	const menuBarVisibility = configurationService.getValue<MenuBarVisibility | 'default'>('window.menuBarVisibility');
 
 	if (menuBarVisibility === 'default' || (nativeTitleBarEnabled && menuBarVisibility === 'compact') || (isMacintosh && isNative)) {
@@ -204,18 +205,22 @@ export function getTitleBarStyle(configurationService: IConfigurationService): T
 	}
 
 	const configuration = configurationService.getValue<IWindowSettings | undefined>('window');
+
 	if (configuration) {
 		const useNativeTabs = isMacintosh && configuration.nativeTabs === true;
+
 		if (useNativeTabs) {
 			return TitlebarStyle.NATIVE; // native tabs on sierra do not work with custom title style
 		}
 
 		const useSimpleFullScreen = isMacintosh && configuration.nativeFullScreen === false;
+
 		if (useSimpleFullScreen) {
 			return TitlebarStyle.NATIVE; // simple fullscreen does not work well with custom title style (https://github.com/microsoft/vscode/issues/63291)
 		}
 
 		const style = configuration.titleBarStyle;
+
 		if (style === TitlebarStyle.NATIVE || style === TitlebarStyle.CUSTOM) {
 			return style;
 		}
@@ -237,6 +242,7 @@ export function useWindowControlsOverlay(configurationService: IConfigurationSer
 
 	if (isLinux) {
 		const setting = configurationService.getValue('window.experimentalControlOverlay');
+
 		if (typeof setting === 'boolean') {
 			return setting;
 		}
@@ -248,6 +254,7 @@ export function useWindowControlsOverlay(configurationService: IConfigurationSer
 
 export function useNativeFullScreen(configurationService: IConfigurationService): boolean {
 	const windowConfig = configurationService.getValue<IWindowSettings | undefined>('window');
+
 	if (!windowConfig || typeof windowConfig.nativeFullScreen !== 'boolean') {
 		return true; // default
 	}
