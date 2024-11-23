@@ -3,31 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AsyncReferenceCollection, IReference, ReferenceCollection } from '../../../../../../base/common/lifecycle.js';
-import { IModifiedFileEntry } from '../../../../chat/common/chatEditingService.js';
-import { INotebookService } from '../../../common/notebookService.js';
-import { bufferToStream, VSBuffer } from '../../../../../../base/common/buffer.js';
-import { NotebookTextModel } from '../../../common/model/notebookTextModel.js';
-import { createDecorator, IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
+import {
+	bufferToStream,
+	VSBuffer,
+} from "../../../../../../base/common/buffer.js";
+import {
+	AsyncReferenceCollection,
+	IReference,
+	ReferenceCollection,
+} from "../../../../../../base/common/lifecycle.js";
+import {
+	createDecorator,
+	IInstantiationService,
+} from "../../../../../../platform/instantiation/common/instantiation.js";
+import { IModifiedFileEntry } from "../../../../chat/common/chatEditingService.js";
+import { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
+import { INotebookService } from "../../../common/notebookService.js";
 
-
-export const INotebookOriginalModelReferenceFactory = createDecorator<INotebookOriginalModelReferenceFactory>('INotebookOriginalModelReferenceFactory');
+export const INotebookOriginalModelReferenceFactory =
+	createDecorator<INotebookOriginalModelReferenceFactory>(
+		"INotebookOriginalModelReferenceFactory",
+	);
 
 export interface INotebookOriginalModelReferenceFactory {
 	readonly _serviceBrand: undefined;
 
-	getOrCreate(fileEntry: IModifiedFileEntry, viewType: string): Promise<IReference<NotebookTextModel>>;
+	getOrCreate(
+		fileEntry: IModifiedFileEntry,
+		viewType: string,
+	): Promise<IReference<NotebookTextModel>>;
 }
 
-
-export class OriginalNotebookModelReferenceCollection extends ReferenceCollection<Promise<NotebookTextModel>> {
+export class OriginalNotebookModelReferenceCollection extends ReferenceCollection<
+	Promise<NotebookTextModel>
+> {
 	private readonly modelsToDispose = new Set<string>();
 
-	constructor(@INotebookService private readonly notebookService: INotebookService) {
+	constructor(
+		@INotebookService private readonly notebookService: INotebookService,
+	) {
 		super();
 	}
 
-	protected override async createReferencedObject(key: string, fileEntry: IModifiedFileEntry, viewType: string): Promise<NotebookTextModel> {
+	protected override async createReferencedObject(
+		key: string,
+		fileEntry: IModifiedFileEntry,
+		viewType: string,
+	): Promise<NotebookTextModel> {
 		this.modelsToDispose.delete(key);
 
 		const uri = fileEntry.originalURI;
@@ -41,9 +63,16 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 
 		const stream = bufferToStream(bytes);
 
-		return this.notebookService.createNotebookTextModel(viewType, uri, stream);
+		return this.notebookService.createNotebookTextModel(
+			viewType,
+			uri,
+			stream,
+		);
 	}
-	protected override destroyReferencedObject(key: string, modelPromise: Promise<NotebookTextModel>): void {
+	protected override destroyReferencedObject(
+		key: string,
+		modelPromise: Promise<NotebookTextModel>,
+	): void {
 		this.modelsToDispose.add(key);
 
 		(async () => {
@@ -66,31 +95,51 @@ export class OriginalNotebookModelReferenceCollection extends ReferenceCollectio
 	}
 }
 
-export class NotebookOriginalModelReferenceFactory implements INotebookOriginalModelReferenceFactory {
+export class NotebookOriginalModelReferenceFactory
+	implements INotebookOriginalModelReferenceFactory
+{
 	readonly _serviceBrand: undefined;
-	private _resourceModelCollection: OriginalNotebookModelReferenceCollection & ReferenceCollection<Promise<NotebookTextModel>> /* TS Fail */ | undefined = undefined;
+	private _resourceModelCollection:
+		| (OriginalNotebookModelReferenceCollection &
+				ReferenceCollection<Promise<NotebookTextModel>>) /* TS Fail */
+		| undefined = undefined;
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
-			this._resourceModelCollection = this.instantiationService.createInstance(OriginalNotebookModelReferenceCollection);
+			this._resourceModelCollection =
+				this.instantiationService.createInstance(
+					OriginalNotebookModelReferenceCollection,
+				);
 		}
 
 		return this._resourceModelCollection;
 	}
 
-	private _asyncModelCollection: AsyncReferenceCollection<NotebookTextModel> | undefined = undefined;
+	private _asyncModelCollection:
+		| AsyncReferenceCollection<NotebookTextModel>
+		| undefined = undefined;
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
-			this._asyncModelCollection = new AsyncReferenceCollection(this.resourceModelCollection);
+			this._asyncModelCollection = new AsyncReferenceCollection(
+				this.resourceModelCollection,
+			);
 		}
 
 		return this._asyncModelCollection;
 	}
 
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
-	}
+	constructor(
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
-	getOrCreate(fileEntry: IModifiedFileEntry, viewType: string): Promise<IReference<NotebookTextModel>> {
-		return this.asyncModelCollection.acquire(fileEntry.originalURI.toString(), fileEntry, viewType);
+	getOrCreate(
+		fileEntry: IModifiedFileEntry,
+		viewType: string,
+	): Promise<IReference<NotebookTextModel>> {
+		return this.asyncModelCollection.acquire(
+			fileEntry.originalURI.toString(),
+			fileEntry,
+			viewType,
+		);
 	}
 }
-

@@ -6,7 +6,6 @@
 type DOMString = string;
 
 interface EditContext extends EventTarget {
-
 	updateText(rangeStart: number, rangeEnd: number, text: DOMString): void;
 	updateSelection(start: number, end: number): void;
 	updateControlBounds(controlBounds: DOMRect): void;
@@ -44,10 +43,32 @@ interface EditContext extends EventTarget {
 
 	set oncompositionend(value: EventHandler | null);
 
-	addEventListener<K extends keyof EditContextEventHandlersEventMap>(type: K, listener: (this: GlobalEventHandlers, ev: EditContextEventHandlersEventMap[K]) => any, options?: boolean | AddEventListenerOptions): void;
-	addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-	removeEventListener<K extends keyof EditContextEventHandlersEventMap>(type: K, listener: (this: GlobalEventHandlers, ev: EditContextEventHandlersEventMap[K]) => any, options?: boolean | EventListenerOptions): void;
-	removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+	addEventListener<K extends keyof EditContextEventHandlersEventMap>(
+		type: K,
+		listener: (
+			this: GlobalEventHandlers,
+			ev: EditContextEventHandlersEventMap[K],
+		) => any,
+		options?: boolean | AddEventListenerOptions,
+	): void;
+	addEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions,
+	): void;
+	removeEventListener<K extends keyof EditContextEventHandlersEventMap>(
+		type: K,
+		listener: (
+			this: GlobalEventHandlers,
+			ev: EditContextEventHandlersEventMap[K],
+		) => any,
+		options?: boolean | EventListenerOptions,
+	): void;
+	removeEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | EventListenerOptions,
+	): void;
 }
 
 interface EditContextInit {
@@ -67,7 +88,7 @@ interface EditContextEventHandlersEventMap {
 type EventHandler<TEvent extends Event = Event> = (event: TEvent) => void;
 
 interface TextUpdateEvent extends Event {
-	new(type: DOMString, options?: TextUpdateEventInit): TextUpdateEvent;
+	new (type: DOMString, options?: TextUpdateEventInit): TextUpdateEvent;
 
 	readonly updateRangeStart: number;
 	readonly updateRangeEnd: number;
@@ -87,7 +108,7 @@ interface TextUpdateEventInit extends EventInit {
 }
 
 interface TextFormat {
-	new(options?: TextFormatInit): TextFormat;
+	new (options?: TextFormatInit): TextFormat;
 
 	readonly rangeStart: number;
 	readonly rangeEnd: number;
@@ -102,11 +123,14 @@ interface TextFormatInit {
 	underlineThickness: UnderlineThickness;
 }
 
-type UnderlineStyle = 'none' | 'solid' | 'dotted' | 'dashed' | 'wavy';
-type UnderlineThickness = 'none' | 'thin' | 'thick';
+type UnderlineStyle = "none" | "solid" | "dotted" | "dashed" | "wavy";
+type UnderlineThickness = "none" | "thin" | "thick";
 
 interface TextFormatUpdateEvent extends Event {
-	new(type: DOMString, options?: TextFormatUpdateEventInit): TextFormatUpdateEvent;
+	new (
+		type: DOMString,
+		options?: TextFormatUpdateEventInit,
+	): TextFormatUpdateEvent;
 
 	getTextFormats(): TextFormat[];
 }
@@ -116,7 +140,10 @@ interface TextFormatUpdateEventInit extends EventInit {
 }
 
 interface CharacterBoundsUpdateEvent extends Event {
-	new(type: DOMString, options?: CharacterBoundsUpdateEventInit): CharacterBoundsUpdateEvent;
+	new (
+		type: DOMString,
+		options?: CharacterBoundsUpdateEventInit,
+	): CharacterBoundsUpdateEvent;
 
 	readonly rangeStart: number;
 	readonly rangeEnd: number;

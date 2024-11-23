@@ -2,64 +2,93 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Range } from '../core/range.js';
-import { ITextModel } from '../model.js';
-import { IndentAction, CompleteEnterAction } from './languageConfiguration.js';
-import { EditorAutoIndentStrategy } from '../config/editorOptions.js';
-import { getIndentationAtPosition, ILanguageConfigurationService } from './languageConfigurationRegistry.js';
-import { IndentationContextProcessor } from './supports/indentationLineProcessor.js';
-export function getEnterAction(autoIndent: EditorAutoIndentStrategy, model: ITextModel, range: Range, languageConfigurationService: ILanguageConfigurationService): CompleteEnterAction | null {
-    model.tokenization.forceTokenization(range.startLineNumber);
+import { EditorAutoIndentStrategy } from "../config/editorOptions.js";
+import { Range } from "../core/range.js";
+import { ITextModel } from "../model.js";
+import { CompleteEnterAction, IndentAction } from "./languageConfiguration.js";
+import {
+	getIndentationAtPosition,
+	ILanguageConfigurationService,
+} from "./languageConfigurationRegistry.js";
+import { IndentationContextProcessor } from "./supports/indentationLineProcessor.js";
 
-    const languageId = model.getLanguageIdAtPosition(range.startLineNumber, range.startColumn);
+export function getEnterAction(
+	autoIndent: EditorAutoIndentStrategy,
+	model: ITextModel,
+	range: Range,
+	languageConfigurationService: ILanguageConfigurationService,
+): CompleteEnterAction | null {
+	model.tokenization.forceTokenization(range.startLineNumber);
 
-    const richEditSupport = languageConfigurationService.getLanguageConfiguration(languageId);
+	const languageId = model.getLanguageIdAtPosition(
+		range.startLineNumber,
+		range.startColumn,
+	);
 
-    if (!richEditSupport) {
-        return null;
-    }
-    const indentationContextProcessor = new IndentationContextProcessor(model, languageConfigurationService);
+	const richEditSupport =
+		languageConfigurationService.getLanguageConfiguration(languageId);
 
-    const processedContextTokens = indentationContextProcessor.getProcessedTokenContextAroundRange(range);
+	if (!richEditSupport) {
+		return null;
+	}
+	const indentationContextProcessor = new IndentationContextProcessor(
+		model,
+		languageConfigurationService,
+	);
 
-    const previousLineText = processedContextTokens.previousLineProcessedTokens.getLineContent();
+	const processedContextTokens =
+		indentationContextProcessor.getProcessedTokenContextAroundRange(range);
 
-    const beforeEnterText = processedContextTokens.beforeRangeProcessedTokens.getLineContent();
+	const previousLineText =
+		processedContextTokens.previousLineProcessedTokens.getLineContent();
 
-    const afterEnterText = processedContextTokens.afterRangeProcessedTokens.getLineContent();
+	const beforeEnterText =
+		processedContextTokens.beforeRangeProcessedTokens.getLineContent();
 
-    const enterResult = richEditSupport.onEnter(autoIndent, previousLineText, beforeEnterText, afterEnterText);
+	const afterEnterText =
+		processedContextTokens.afterRangeProcessedTokens.getLineContent();
 
-    if (!enterResult) {
-        return null;
-    }
-    const indentAction = enterResult.indentAction;
+	const enterResult = richEditSupport.onEnter(
+		autoIndent,
+		previousLineText,
+		beforeEnterText,
+		afterEnterText,
+	);
 
-    let appendText = enterResult.appendText;
+	if (!enterResult) {
+		return null;
+	}
+	const indentAction = enterResult.indentAction;
 
-    const removeText = enterResult.removeText || 0;
-    // Here we add `\t` to appendText first because enterAction is leveraging appendText and removeText to change indentation.
-    if (!appendText) {
-        if ((indentAction === IndentAction.Indent) ||
-            (indentAction === IndentAction.IndentOutdent)) {
-            appendText = '\t';
-        }
-        else {
-            appendText = '';
-        }
-    }
-    else if (indentAction === IndentAction.Indent) {
-        appendText = '\t' + appendText;
-    }
-    let indentation = getIndentationAtPosition(model, range.startLineNumber, range.startColumn);
+	let appendText = enterResult.appendText;
 
-    if (removeText) {
-        indentation = indentation.substring(0, indentation.length - removeText);
-    }
-    return {
-        indentAction: indentAction,
-        appendText: appendText,
-        removeText: removeText,
-        indentation: indentation
-    };
+	const removeText = enterResult.removeText || 0;
+	// Here we add `\t` to appendText first because enterAction is leveraging appendText and removeText to change indentation.
+	if (!appendText) {
+		if (
+			indentAction === IndentAction.Indent ||
+			indentAction === IndentAction.IndentOutdent
+		) {
+			appendText = "\t";
+		} else {
+			appendText = "";
+		}
+	} else if (indentAction === IndentAction.Indent) {
+		appendText = "\t" + appendText;
+	}
+	let indentation = getIndentationAtPosition(
+		model,
+		range.startLineNumber,
+		range.startColumn,
+	);
+
+	if (removeText) {
+		indentation = indentation.substring(0, indentation.length - removeText);
+	}
+	return {
+		indentAction: indentAction,
+		appendText: appendText,
+		removeText: removeText,
+		indentation: indentation,
+	};
 }

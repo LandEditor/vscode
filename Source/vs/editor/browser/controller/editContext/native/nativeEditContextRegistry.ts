@@ -3,19 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from '../../../../../base/common/lifecycle.js';
+import { IDisposable } from "../../../../../base/common/lifecycle.js";
 
 class NativeEditContextRegistryImpl {
-
 	private _textAreaMapping: Map<string, HTMLTextAreaElement> = new Map();
 
-	registerTextArea(ownerID: string, textArea: HTMLTextAreaElement): IDisposable {
+	registerTextArea(
+		ownerID: string,
+		textArea: HTMLTextAreaElement,
+	): IDisposable {
 		this._textAreaMapping.set(ownerID, textArea);
 
 		return {
 			dispose: () => {
 				this._textAreaMapping.delete(ownerID);
-			}
+			},
 		};
 	}
 

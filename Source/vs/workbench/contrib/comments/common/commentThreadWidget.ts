@@ -3,6 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 export interface ICommentThreadWidget {
-    submitComment: () => Promise<void>;
-    collapse: () => void;
+	submitComment: () => Promise<void>;
+	collapse: () => void;
 }

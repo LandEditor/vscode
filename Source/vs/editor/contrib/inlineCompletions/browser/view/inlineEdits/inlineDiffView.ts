@@ -3,97 +3,167 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { autorunWithStore, derived, IObservable, observableFromEvent } from '../../../../../../base/common/observable.js';
-import { ICodeEditor } from '../../../../../browser/editorBrowser.js';
-import { observableCodeEditor } from '../../../../../browser/observableCodeEditor.js';
-import { rangeIsSingleLine } from '../../../../../browser/widget/diffEditor/components/diffEditorViewZones/diffEditorViewZones.js';
-import { LineSource, renderLines, RenderOptions } from '../../../../../browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js';
-import { diffLineDeleteDecorationBackgroundWithIndicator, diffLineDeleteDecorationBackground, diffLineAddDecorationBackgroundWithIndicator, diffLineAddDecorationBackground, diffWholeLineAddDecoration, diffAddDecorationEmpty, diffAddDecoration } from '../../../../../browser/widget/diffEditor/registrations.contribution.js';
-import { applyViewZones, IObservableViewZone } from '../../../../../browser/widget/diffEditor/utils.js';
-import { EditorOption } from '../../../../../common/config/editorOptions.js';
-import { Range } from '../../../../../common/core/range.js';
-import { AbstractText } from '../../../../../common/core/textEdit.js';
-import { DetailedLineRangeMapping } from '../../../../../common/diff/rangeMapping.js';
-import { IModelDeltaDecoration, ITextModel } from '../../../../../common/model.js';
-import { ModelDecorationOptions } from '../../../../../common/model/textModel.js';
-import { InlineDecoration, InlineDecorationType } from '../../../../../common/viewModel.js';
-import { classNames } from './utils.js';
+import { Disposable } from "../../../../../../base/common/lifecycle.js";
+import {
+	autorunWithStore,
+	derived,
+	IObservable,
+	observableFromEvent,
+} from "../../../../../../base/common/observable.js";
+import { ICodeEditor } from "../../../../../browser/editorBrowser.js";
+import { observableCodeEditor } from "../../../../../browser/observableCodeEditor.js";
+import { rangeIsSingleLine } from "../../../../../browser/widget/diffEditor/components/diffEditorViewZones/diffEditorViewZones.js";
+import {
+	LineSource,
+	renderLines,
+	RenderOptions,
+} from "../../../../../browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js";
+import {
+	diffAddDecoration,
+	diffAddDecorationEmpty,
+	diffLineAddDecorationBackground,
+	diffLineAddDecorationBackgroundWithIndicator,
+	diffLineDeleteDecorationBackground,
+	diffLineDeleteDecorationBackgroundWithIndicator,
+	diffWholeLineAddDecoration,
+} from "../../../../../browser/widget/diffEditor/registrations.contribution.js";
+import {
+	applyViewZones,
+	IObservableViewZone,
+} from "../../../../../browser/widget/diffEditor/utils.js";
+import { EditorOption } from "../../../../../common/config/editorOptions.js";
+import { Range } from "../../../../../common/core/range.js";
+import { AbstractText } from "../../../../../common/core/textEdit.js";
+import { DetailedLineRangeMapping } from "../../../../../common/diff/rangeMapping.js";
+import {
+	IModelDeltaDecoration,
+	ITextModel,
+} from "../../../../../common/model.js";
+import { ModelDecorationOptions } from "../../../../../common/model/textModel.js";
+import {
+	InlineDecoration,
+	InlineDecorationType,
+} from "../../../../../common/viewModel.js";
+import { classNames } from "./utils.js";
 
 export interface IOriginalEditorInlineDiffViewState {
 	diff: DetailedLineRangeMapping[];
 	modifiedText: AbstractText;
-	mode: 'mixedLines' | 'interleavedLines' | 'sideBySide';
+	mode: "mixedLines" | "interleavedLines" | "sideBySide";
 
 	modifiedCodeEditor: ICodeEditor;
 }
 
 export class OriginalEditorInlineDiffView extends Disposable {
-	public static supportsInlineDiffRendering(mapping: DetailedLineRangeMapping): boolean {
+	public static supportsInlineDiffRendering(
+		mapping: DetailedLineRangeMapping,
+	): boolean {
 		return allowsTrueInlineDiffRendering(mapping);
 	}
 
 	constructor(
 		private readonly _originalEditor: ICodeEditor,
-		private readonly _state: IObservable<IOriginalEditorInlineDiffViewState | undefined>,
+		private readonly _state: IObservable<
+			IOriginalEditorInlineDiffViewState | undefined
+		>,
 		private readonly _modifiedTextModel: ITextModel,
 	) {
 		super();
 
-		this._register(observableCodeEditor(this._originalEditor).setDecorations(this._decorations.map(d => d?.originalDecorations ?? [])));
+		this._register(
+			observableCodeEditor(this._originalEditor).setDecorations(
+				this._decorations.map((d) => d?.originalDecorations ?? []),
+			),
+		);
 
-		const modifiedCodeEditor = this._state.map(s => s?.modifiedCodeEditor);
-		this._register(autorunWithStore((reader, store) => {
-			const e = modifiedCodeEditor.read(reader);
+		const modifiedCodeEditor = this._state.map(
+			(s) => s?.modifiedCodeEditor,
+		);
+		this._register(
+			autorunWithStore((reader, store) => {
+				const e = modifiedCodeEditor.read(reader);
 
-			if (e) {
-				store.add(observableCodeEditor(e).setDecorations(this._decorations.map(d => d?.modifiedDecorations ?? [])));
-			}
-		}));
+				if (e) {
+					store.add(
+						observableCodeEditor(e).setDecorations(
+							this._decorations.map(
+								(d) => d?.modifiedDecorations ?? [],
+							),
+						),
+					);
+				}
+			}),
+		);
 
 		const editor = observableCodeEditor(this._originalEditor);
 
-		const tokenizationFinished = modelTokenizationFinished(_modifiedTextModel);
+		const tokenizationFinished =
+			modelTokenizationFinished(_modifiedTextModel);
 
 		const originalViewZones = derived(this, (reader) => {
 			const originalModel = editor.model.read(reader);
 
-			if (!originalModel) { return []; }
+			if (!originalModel) {
+				return [];
+			}
 
 			const origViewZones: IObservableViewZone[] = [];
 
-			const renderOptions = RenderOptions.fromEditor(this._originalEditor);
+			const renderOptions = RenderOptions.fromEditor(
+				this._originalEditor,
+			);
 
-			const modLineHeight = editor.getOption(EditorOption.lineHeight).read(reader);
+			const modLineHeight = editor
+				.getOption(EditorOption.lineHeight)
+				.read(reader);
 
 			const s = this._state.read(reader);
 
-			if (!s) { return origViewZones; }
+			if (!s) {
+				return origViewZones;
+			}
 
 			for (const diff of s.diff) {
-				if (s.mode !== 'interleavedLines') {
+				if (s.mode !== "interleavedLines") {
 					continue;
 				}
 
 				tokenizationFinished.read(reader); // Update view-zones once tokenization completes
 
-				const source = new LineSource(diff.modified.mapToLineArray(l => this._modifiedTextModel.tokenization.getLineTokens(l)));
+				const source = new LineSource(
+					diff.modified.mapToLineArray((l) =>
+						this._modifiedTextModel.tokenization.getLineTokens(l),
+					),
+				);
 
 				const decorations: InlineDecoration[] = [];
 
 				for (const i of diff.innerChanges || []) {
-					decorations.push(new InlineDecoration(
-						i.modifiedRange.delta(-(diff.original.startLineNumber - 1)),
-						diffAddDecoration.className!,
-						InlineDecorationType.Regular,
-					));
+					decorations.push(
+						new InlineDecoration(
+							i.modifiedRange.delta(
+								-(diff.original.startLineNumber - 1),
+							),
+							diffAddDecoration.className!,
+							InlineDecorationType.Regular,
+						),
+					);
 				}
 
-				const deletedCodeDomNode = document.createElement('div');
-				deletedCodeDomNode.classList.add('view-lines', 'line-insert', 'monaco-mouse-cursor-text');
+				const deletedCodeDomNode = document.createElement("div");
+				deletedCodeDomNode.classList.add(
+					"view-lines",
+					"line-insert",
+					"monaco-mouse-cursor-text",
+				);
 				// .inline-deleted-margin-view-zone
 
-				const result = renderLines(source, renderOptions, decorations, deletedCodeDomNode);
+				const result = renderLines(
+					source,
+					renderOptions,
+					decorations,
+					deletedCodeDomNode,
+				);
 
 				origViewZones.push({
 					afterLineNumber: diff.original.endLineNumberExclusive - 1,
@@ -112,14 +182,16 @@ export class OriginalEditorInlineDiffView extends Disposable {
 		this._register(applyViewZones(this._originalEditor, originalViewZones));
 	}
 
-	private readonly _decorations = derived(this, reader => {
+	private readonly _decorations = derived(this, (reader) => {
 		const diff = this._state.read(reader);
 
-		if (!diff) { return undefined; }
+		if (!diff) {
+			return undefined;
+		}
 
 		const modified = diff.modifiedText;
 
-		const showInline = diff.mode === 'mixedLines';
+		const showInline = diff.mode === "mixedLines";
 
 		const renderIndicators = false;
 
@@ -134,61 +206,97 @@ export class OriginalEditorInlineDiffView extends Disposable {
 
 			if (showFullLineDecorations) {
 				if (!m.original.isEmpty) {
-					originalDecorations.push({ range: m.original.toInclusiveRange()!, options: renderIndicators ? diffLineDeleteDecorationBackgroundWithIndicator : diffLineDeleteDecorationBackground });
+					originalDecorations.push({
+						range: m.original.toInclusiveRange()!,
+						options: renderIndicators
+							? diffLineDeleteDecorationBackgroundWithIndicator
+							: diffLineDeleteDecorationBackground,
+					});
 				}
 				if (!m.modified.isEmpty) {
-					modifiedDecorations.push({ range: m.modified.toInclusiveRange()!, options: renderIndicators ? diffLineAddDecorationBackgroundWithIndicator : diffLineAddDecorationBackground });
+					modifiedDecorations.push({
+						range: m.modified.toInclusiveRange()!,
+						options: renderIndicators
+							? diffLineAddDecorationBackgroundWithIndicator
+							: diffLineAddDecorationBackground,
+					});
 				}
 			}
 
 			if (m.modified.isEmpty || m.original.isEmpty) {
 				if (!m.original.isEmpty) {
-					const diffWholeLineDeleteDecoration = ModelDecorationOptions.register({
-						className: 'char-delete',
-						description: 'char-delete',
-						isWholeLine: false,
-					});
+					const diffWholeLineDeleteDecoration =
+						ModelDecorationOptions.register({
+							className: "char-delete",
+							description: "char-delete",
+							isWholeLine: false,
+						});
 
-					originalDecorations.push({ range: m.original.toInclusiveRange()!, options: diffWholeLineDeleteDecoration });
+					originalDecorations.push({
+						range: m.original.toInclusiveRange()!,
+						options: diffWholeLineDeleteDecoration,
+					});
 				}
 				if (!m.modified.isEmpty) {
-					modifiedDecorations.push({ range: m.modified.toInclusiveRange()!, options: diffWholeLineAddDecoration });
+					modifiedDecorations.push({
+						range: m.modified.toInclusiveRange()!,
+						options: diffWholeLineAddDecoration,
+					});
 				}
 			} else {
-				const useInlineDiff = showInline && allowsTrueInlineDiffRendering(m);
+				const useInlineDiff =
+					showInline && allowsTrueInlineDiffRendering(m);
 
 				for (const i of m.innerChanges || []) {
 					// Don't show empty markers outside the line range
 					if (m.original.contains(i.originalRange.startLineNumber)) {
 						originalDecorations.push({
-							range: i.originalRange, options: {
-								description: 'char-delete',
+							range: i.originalRange,
+							options: {
+								description: "char-delete",
 								shouldFillLineOnLineBreak: false,
 								className: classNames(
-									'char-delete',
-									(i.originalRange.isEmpty() && showEmptyDecorations && !useInlineDiff) && 'diff-range-empty'
+									"char-delete",
+									i.originalRange.isEmpty() &&
+										showEmptyDecorations &&
+										!useInlineDiff &&
+										"diff-range-empty",
 								),
-								inlineClassName: useInlineDiff ? 'strike-through' : null,
-								zIndex: 1
-							}
+								inlineClassName: useInlineDiff
+									? "strike-through"
+									: null,
+								zIndex: 1,
+							},
 						});
 					}
 					if (m.modified.contains(i.modifiedRange.startLineNumber)) {
-						modifiedDecorations.push({ range: i.modifiedRange, options: (i.modifiedRange.isEmpty() && showEmptyDecorations && !useInlineDiff) ? diffAddDecorationEmpty : diffAddDecoration });
+						modifiedDecorations.push({
+							range: i.modifiedRange,
+							options:
+								i.modifiedRange.isEmpty() &&
+								showEmptyDecorations &&
+								!useInlineDiff
+									? diffAddDecorationEmpty
+									: diffAddDecoration,
+						});
 					}
 					if (useInlineDiff) {
-						const insertedText = modified.getValueOfRange(i.modifiedRange);
+						const insertedText = modified.getValueOfRange(
+							i.modifiedRange,
+						);
 						originalDecorations.push({
-							range: Range.fromPositions(i.originalRange.getEndPosition()),
+							range: Range.fromPositions(
+								i.originalRange.getEndPosition(),
+							),
 							options: {
-								description: 'inserted-text',
+								description: "inserted-text",
 								before: {
 									content: insertedText,
-									inlineClassName: 'char-insert',
+									inlineClassName: "char-insert",
 								},
 								zIndex: 2,
 								showIfCollapsed: true,
-							}
+							},
 						});
 					}
 				}
@@ -199,12 +307,17 @@ export class OriginalEditorInlineDiffView extends Disposable {
 	});
 }
 
-function allowsTrueInlineDiffRendering(mapping: DetailedLineRangeMapping): boolean {
+function allowsTrueInlineDiffRendering(
+	mapping: DetailedLineRangeMapping,
+): boolean {
 	if (!mapping.innerChanges) {
 		return false;
 	}
-	return mapping.innerChanges.every(c =>
-		(rangeIsSingleLine(c.modifiedRange) && rangeIsSingleLine(c.originalRange)));
+	return mapping.innerChanges.every(
+		(c) =>
+			rangeIsSingleLine(c.modifiedRange) &&
+			rangeIsSingleLine(c.originalRange),
+	);
 }
 
 let i = 0;

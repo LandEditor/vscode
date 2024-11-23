@@ -2,128 +2,189 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ITextSearchMatch, ITextSearchPreviewOptions, ITextSearchResult } from './search.js';
-import { Range } from '../../../../editor/common/core/range.js';
-export const getFileResults = (bytes: Uint8Array, pattern: RegExp, options: {
-    surroundingContext: number;
-    previewOptions: ITextSearchPreviewOptions | undefined;
-    remainingResultQuota: number;
-}): ITextSearchResult[] => {
-    let text: string;
+import { Range } from "../../../../editor/common/core/range.js";
+import {
+	ITextSearchMatch,
+	ITextSearchPreviewOptions,
+	ITextSearchResult,
+} from "./search.js";
 
-    if (bytes[0] === 0xff && bytes[1] === 0xfe) {
-        text = new TextDecoder('utf-16le').decode(bytes);
-    }
-    else if (bytes[0] === 0xfe && bytes[1] === 0xff) {
-        text = new TextDecoder('utf-16be').decode(bytes);
-    }
-    else {
-        text = new TextDecoder('utf8').decode(bytes);
+export const getFileResults = (
+	bytes: Uint8Array,
+	pattern: RegExp,
+	options: {
+		surroundingContext: number;
+		previewOptions: ITextSearchPreviewOptions | undefined;
+		remainingResultQuota: number;
+	},
+): ITextSearchResult[] => {
+	let text: string;
 
-        if (text.slice(0, 1000).includes('\uFFFD') && bytes.includes(0)) {
-            return [];
-        }
-    }
-    const results: ITextSearchResult[] = [];
+	if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+		text = new TextDecoder("utf-16le").decode(bytes);
+	} else if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+		text = new TextDecoder("utf-16be").decode(bytes);
+	} else {
+		text = new TextDecoder("utf8").decode(bytes);
 
-    const patternIndecies: {
-        matchStartIndex: number;
-        matchedText: string;
-    }[] = [];
+		if (text.slice(0, 1000).includes("\uFFFD") && bytes.includes(0)) {
+			return [];
+		}
+	}
+	const results: ITextSearchResult[] = [];
 
-    let patternMatch: RegExpExecArray | null = null;
+	const patternIndecies: {
+		matchStartIndex: number;
+		matchedText: string;
+	}[] = [];
 
-    let remainingResultQuota = options.remainingResultQuota;
+	let patternMatch: RegExpExecArray | null = null;
 
-    while (remainingResultQuota >= 0 && (patternMatch = pattern.exec(text))) {
-        patternIndecies.push({ matchStartIndex: patternMatch.index, matchedText: patternMatch[0] });
-        remainingResultQuota--;
-    }
-    if (patternIndecies.length) {
-        const contextLinesNeeded = new Set<number>();
+	let remainingResultQuota = options.remainingResultQuota;
 
-        const resultLines = new Set<number>();
+	while (remainingResultQuota >= 0 && (patternMatch = pattern.exec(text))) {
+		patternIndecies.push({
+			matchStartIndex: patternMatch.index,
+			matchedText: patternMatch[0],
+		});
+		remainingResultQuota--;
+	}
+	if (patternIndecies.length) {
+		const contextLinesNeeded = new Set<number>();
 
-        const lineRanges: {
-            start: number;
-            end: number;
-        }[] = [];
+		const resultLines = new Set<number>();
 
-        const readLine = (lineNumber: number) => text.slice(lineRanges[lineNumber].start, lineRanges[lineNumber].end);
+		const lineRanges: {
+			start: number;
+			end: number;
+		}[] = [];
 
-        let prevLineEnd = 0;
+		const readLine = (lineNumber: number) =>
+			text.slice(
+				lineRanges[lineNumber].start,
+				lineRanges[lineNumber].end,
+			);
 
-        let lineEndingMatch: RegExpExecArray | null = null;
+		let prevLineEnd = 0;
 
-        const lineEndRegex = /\r?\n/g;
+		let lineEndingMatch: RegExpExecArray | null = null;
 
-        while ((lineEndingMatch = lineEndRegex.exec(text))) {
-            lineRanges.push({ start: prevLineEnd, end: lineEndingMatch.index });
-            prevLineEnd = lineEndingMatch.index + lineEndingMatch[0].length;
-        }
-        if (prevLineEnd < text.length) {
-            lineRanges.push({ start: prevLineEnd, end: text.length });
-        }
-        let startLine = 0;
+		const lineEndRegex = /\r?\n/g;
 
-        for (const { matchStartIndex, matchedText } of patternIndecies) {
-            if (remainingResultQuota < 0) {
-                break;
-            }
-            while (Boolean(lineRanges[startLine + 1]) && matchStartIndex > lineRanges[startLine].end) {
-                startLine++;
-            }
-            let endLine = startLine;
+		while ((lineEndingMatch = lineEndRegex.exec(text))) {
+			lineRanges.push({ start: prevLineEnd, end: lineEndingMatch.index });
+			prevLineEnd = lineEndingMatch.index + lineEndingMatch[0].length;
+		}
+		if (prevLineEnd < text.length) {
+			lineRanges.push({ start: prevLineEnd, end: text.length });
+		}
+		let startLine = 0;
 
-            while (Boolean(lineRanges[endLine + 1]) && matchStartIndex + matchedText.length > lineRanges[endLine].end) {
-                endLine++;
-            }
-            if (options.surroundingContext) {
-                for (let contextLine = Math.max(0, startLine - options.surroundingContext); contextLine < startLine; contextLine++) {
-                    contextLinesNeeded.add(contextLine);
-                }
-            }
-            let previewText = '';
+		for (const { matchStartIndex, matchedText } of patternIndecies) {
+			if (remainingResultQuota < 0) {
+				break;
+			}
+			while (
+				Boolean(lineRanges[startLine + 1]) &&
+				matchStartIndex > lineRanges[startLine].end
+			) {
+				startLine++;
+			}
+			let endLine = startLine;
 
-            let offset = 0;
+			while (
+				Boolean(lineRanges[endLine + 1]) &&
+				matchStartIndex + matchedText.length > lineRanges[endLine].end
+			) {
+				endLine++;
+			}
+			if (options.surroundingContext) {
+				for (
+					let contextLine = Math.max(
+						0,
+						startLine - options.surroundingContext,
+					);
+					contextLine < startLine;
+					contextLine++
+				) {
+					contextLinesNeeded.add(contextLine);
+				}
+			}
+			let previewText = "";
 
-            for (let matchLine = startLine; matchLine <= endLine; matchLine++) {
-                let previewLine = readLine(matchLine);
+			let offset = 0;
 
-                if (options.previewOptions?.charsPerLine && previewLine.length > options.previewOptions.charsPerLine) {
-                    offset = Math.max(matchStartIndex - lineRanges[startLine].start - 20, 0);
-                    previewLine = previewLine.substr(offset, options.previewOptions.charsPerLine);
-                }
-                previewText += `${previewLine}\n`;
-                resultLines.add(matchLine);
-            }
-            const fileRange = new Range(startLine, matchStartIndex - lineRanges[startLine].start, endLine, matchStartIndex + matchedText.length - lineRanges[endLine].start);
+			for (let matchLine = startLine; matchLine <= endLine; matchLine++) {
+				let previewLine = readLine(matchLine);
 
-            const previewRange = new Range(0, matchStartIndex - lineRanges[startLine].start - offset, endLine - startLine, matchStartIndex + matchedText.length - lineRanges[endLine].start - (endLine === startLine ? offset : 0));
+				if (
+					options.previewOptions?.charsPerLine &&
+					previewLine.length > options.previewOptions.charsPerLine
+				) {
+					offset = Math.max(
+						matchStartIndex - lineRanges[startLine].start - 20,
+						0,
+					);
+					previewLine = previewLine.substr(
+						offset,
+						options.previewOptions.charsPerLine,
+					);
+				}
+				previewText += `${previewLine}\n`;
+				resultLines.add(matchLine);
+			}
+			const fileRange = new Range(
+				startLine,
+				matchStartIndex - lineRanges[startLine].start,
+				endLine,
+				matchStartIndex +
+					matchedText.length -
+					lineRanges[endLine].start,
+			);
 
-            const match: ITextSearchMatch = {
-                rangeLocations: [{
-                        source: fileRange,
-                        preview: previewRange,
-                    }],
-                previewText: previewText
-            };
-            results.push(match);
+			const previewRange = new Range(
+				0,
+				matchStartIndex - lineRanges[startLine].start - offset,
+				endLine - startLine,
+				matchStartIndex +
+					matchedText.length -
+					lineRanges[endLine].start -
+					(endLine === startLine ? offset : 0),
+			);
 
-            if (options.surroundingContext) {
-                for (let contextLine = endLine + 1; contextLine <= Math.min(endLine + options.surroundingContext, lineRanges.length - 1); contextLine++) {
-                    contextLinesNeeded.add(contextLine);
-                }
-            }
-        }
-        for (const contextLine of contextLinesNeeded) {
-            if (!resultLines.has(contextLine)) {
-                results.push({
-                    text: readLine(contextLine),
-                    lineNumber: contextLine + 1,
-                });
-            }
-        }
-    }
-    return results;
+			const match: ITextSearchMatch = {
+				rangeLocations: [
+					{
+						source: fileRange,
+						preview: previewRange,
+					},
+				],
+				previewText: previewText,
+			};
+			results.push(match);
+
+			if (options.surroundingContext) {
+				for (
+					let contextLine = endLine + 1;
+					contextLine <=
+					Math.min(
+						endLine + options.surroundingContext,
+						lineRanges.length - 1,
+					);
+					contextLine++
+				) {
+					contextLinesNeeded.add(contextLine);
+				}
+			}
+		}
+		for (const contextLine of contextLinesNeeded) {
+			if (!resultLines.has(contextLine)) {
+				results.push({
+					text: readLine(contextLine),
+					lineNumber: contextLine + 1,
+				});
+			}
+		}
+	}
+	return results;
 };

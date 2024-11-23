@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from '../../../../base/common/event.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { basename } from '../../../../base/common/resources.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IRange } from '../../../../editor/common/core/range.js';
-import { IChatRequestVariableEntry } from '../common/chatModel.js';
+import { Emitter } from "../../../../base/common/event.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { basename } from "../../../../base/common/resources.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IRange } from "../../../../editor/common/core/range.js";
+import { IChatRequestVariableEntry } from "../common/chatModel.js";
 
 export class ChatAttachmentModel extends Disposable {
 	private _attachments = new Map<string, IChatRequestVariableEntry>();
@@ -45,10 +45,10 @@ export class ChatAttachmentModel extends Disposable {
 	asVariableEntry(uri: URI, range?: IRange): IChatRequestVariableEntry {
 		return {
 			value: range ? { uri, range } : uri,
-			id: uri.toString() + (range?.toString() ?? ''),
+			id: uri.toString() + (range?.toString() ?? ""),
 			name: basename(uri),
 			isFile: true,
-			isDynamic: true
+			isDynamic: true,
 		};
 	}
 

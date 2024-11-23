@@ -3,19 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../../../../base/common/event.js';
-import { Disposable, DisposableStore } from '../../../../../../base/common/lifecycle.js';
-import { ICodeEditor } from '../../../../../../editor/browser/editorBrowser.js';
-import { Selection, SelectionDirection } from '../../../../../../editor/common/core/selection.js';
-import { CursorChangeReason } from '../../../../../../editor/common/cursorEvents.js';
-import { FindMatch, IModelDeltaDecoration, ITextModel } from '../../../../../../editor/common/model.js';
-import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { IActiveNotebookEditor, ICellViewModel, INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
-import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
+import { Event } from "../../../../../../base/common/event.js";
+import {
+	Disposable,
+	DisposableStore,
+} from "../../../../../../base/common/lifecycle.js";
+import { ICodeEditor } from "../../../../../../editor/browser/editorBrowser.js";
+import {
+	Selection,
+	SelectionDirection,
+} from "../../../../../../editor/common/core/selection.js";
+import { CursorChangeReason } from "../../../../../../editor/common/cursorEvents.js";
+import {
+	FindMatch,
+	IModelDeltaDecoration,
+	ITextModel,
+} from "../../../../../../editor/common/model.js";
+import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
+import {
+	IActiveNotebookEditor,
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+} from "../../notebookBrowser.js";
+import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 
-class NotebookSelectionHighlighter extends Disposable implements INotebookEditorContribution {
-
-	static readonly id: string = 'notebook.selectionHighlighter';
+class NotebookSelectionHighlighter
+	extends Disposable
+	implements INotebookEditorContribution
+{
+	static readonly id: string = "notebook.selectionHighlighter";
 	private isEnabled: boolean = false;
 
 	private cellDecorationIds = new Map<ICellViewModel, string[]>();
@@ -28,60 +45,77 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
-		this.isEnabled = this.configurationService.getValue<boolean>('editor.selectionHighlight');
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor.selectionHighlight')) {
-				this.isEnabled = this.configurationService.getValue<boolean>('editor.selectionHighlight');
-			}
-		}));
+		this.isEnabled = this.configurationService.getValue<boolean>(
+			"editor.selectionHighlight",
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("editor.selectionHighlight")) {
+					this.isEnabled =
+						this.configurationService.getValue<boolean>(
+							"editor.selectionHighlight",
+						);
+				}
+			}),
+		);
 
-		this._register(this.notebookEditor.onDidChangeActiveCell(async () => {
-			if (!this.isEnabled) {
-				return;
-			}
-
-			this.anchorCell = this.notebookEditor.activeCellAndCodeEditor;
-
-			if (!this.anchorCell) {
-				return;
-			}
-
-			const activeCell = this.notebookEditor.getActiveCell();
-
-			if (!activeCell) {
-				return;
-			}
-
-			if (!activeCell.editorAttached) {
-				await Event.toPromise(activeCell.onDidChangeEditorAttachState);
-			}
-
-			this.clearNotebookSelectionDecorations();
-
-			this.anchorDisposables.clear();
-			this.anchorDisposables.add(this.anchorCell[1].onDidChangeCursorPosition((e) => {
-				if (e.reason !== CursorChangeReason.Explicit) {
+		this._register(
+			this.notebookEditor.onDidChangeActiveCell(async () => {
+				if (!this.isEnabled) {
 					return;
 				}
+
+				this.anchorCell = this.notebookEditor.activeCellAndCodeEditor;
 
 				if (!this.anchorCell) {
 					return;
 				}
 
-				if (this.notebookEditor.hasModel()) {
-					this.clearNotebookSelectionDecorations();
+				const activeCell = this.notebookEditor.getActiveCell();
+
+				if (!activeCell) {
+					return;
+				}
+
+				if (!activeCell.editorAttached) {
+					await Event.toPromise(
+						activeCell.onDidChangeEditorAttachState,
+					);
+				}
+
+				this.clearNotebookSelectionDecorations();
+
+				this.anchorDisposables.clear();
+				this.anchorDisposables.add(
+					this.anchorCell[1].onDidChangeCursorPosition((e) => {
+						if (e.reason !== CursorChangeReason.Explicit) {
+							return;
+						}
+
+						if (!this.anchorCell) {
+							return;
+						}
+
+						if (this.notebookEditor.hasModel()) {
+							this.clearNotebookSelectionDecorations();
+							this._update(this.notebookEditor);
+						}
+					}),
+				);
+
+				if (
+					this.notebookEditor.getEditorViewState().editorFocused &&
+					this.notebookEditor.hasModel()
+				) {
 					this._update(this.notebookEditor);
 				}
-			}));
-
-			if (this.notebookEditor.getEditorViewState().editorFocused && this.notebookEditor.hasModel()) {
-				this._update(this.notebookEditor);
-			}
-		}));
+			}),
+		);
 	}
 
 	private _update(editor: IActiveNotebookEditor) {
@@ -130,30 +164,30 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 	}
 
 	private updateCellDecorations(cell: ICellViewModel, matches: FindMatch[]) {
-		const selections: Selection[] = matches.map(m => {
+		const selections: Selection[] = matches.map((m) => {
 			return Selection.fromRange(m.range, SelectionDirection.LTR);
 		});
 
 		const newDecorations: IModelDeltaDecoration[] = [];
-		selections?.map(selection => {
+		selections?.map((selection) => {
 			const isEmpty = selection.isEmpty();
 
 			if (!isEmpty) {
 				newDecorations.push({
 					range: selection,
 					options: {
-						description: '',
-						className: '.nb-selection-highlight',
-					}
+						description: "",
+						className: ".nb-selection-highlight",
+					},
 				});
 			}
 		});
 
 		const oldDecorations = this.cellDecorationIds.get(cell) ?? [];
-		this.cellDecorationIds.set(cell, cell.deltaModelDecorations(
-			oldDecorations,
-			newDecorations
-		));
+		this.cellDecorationIds.set(
+			cell,
+			cell.deltaModelDecorations(oldDecorations, newDecorations),
+		);
 	}
 
 	private clearNotebookSelectionDecorations() {
@@ -168,7 +202,7 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 	}
 
 	private getSearchText(selection: Selection, model: ITextModel): string {
-		return model.getValueInRange(selection).replace(/\r\n/g, '\n');
+		return model.getValueInRange(selection).replace(/\r\n/g, "\n");
 	}
 
 	override dispose(): void {
@@ -177,4 +211,7 @@ class NotebookSelectionHighlighter extends Disposable implements INotebookEditor
 	}
 }
 
-registerNotebookContribution(NotebookSelectionHighlighter.id, NotebookSelectionHighlighter);
+registerNotebookContribution(
+	NotebookSelectionHighlighter.id,
+	NotebookSelectionHighlighter,
+);

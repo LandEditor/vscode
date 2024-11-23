@@ -179,47 +179,61 @@ function getParams(type: string): Params[] {
 				},
 			];
 
-		case 'sign-pgp':
-			return [{
-				keyCode: 'CP-450779-Pgp',
-				operationSetCode: 'LinuxSign',
-				parameters: [],
-				toolName: 'sign',
-				toolVersion: '1.0'
-			}];
+		case "sign-pgp":
+			return [
+				{
+					keyCode: "CP-450779-Pgp",
+					operationSetCode: "LinuxSign",
+					parameters: [],
+					toolName: "sign",
+					toolVersion: "1.0",
+				},
+			];
 
-		case 'sign-darwin':
-			return [{
-				keyCode: 'CP-401337-Apple',
-				operationSetCode: 'MacAppDeveloperSign',
-				parameters: [{ parameterName: 'Hardening', parameterValue: '--options=runtime' }],
-				toolName: 'sign',
-				toolVersion: '1.0'
-			}];
+		case "sign-darwin":
+			return [
+				{
+					keyCode: "CP-401337-Apple",
+					operationSetCode: "MacAppDeveloperSign",
+					parameters: [
+						{
+							parameterName: "Hardening",
+							parameterValue: "--options=runtime",
+						},
+					],
+					toolName: "sign",
+					toolVersion: "1.0",
+				},
+			];
 
-		case 'notarize-darwin':
-			return [{
-				keyCode: 'CP-401337-Apple',
-				operationSetCode: 'MacAppNotarize',
-				parameters: [],
-				toolName: 'sign',
-				toolVersion: '1.0'
-			}];
+		case "notarize-darwin":
+			return [
+				{
+					keyCode: "CP-401337-Apple",
+					operationSetCode: "MacAppNotarize",
+					parameters: [],
+					toolName: "sign",
+					toolVersion: "1.0",
+				},
+			];
 
-		case 'nuget':
-			return [{
-				keyCode: 'CP-401405',
-				operationSetCode: 'NuGetSign',
-				parameters: [],
-				toolName: 'sign',
-				toolVersion: '1.0'
-			}, {
-				keyCode: 'CP-401405',
-				operationSetCode: 'NuGetVerify',
-				parameters: [],
-				toolName: 'sign',
-				toolVersion: '1.0'
-			}];
+		case "nuget":
+			return [
+				{
+					keyCode: "CP-401405",
+					operationSetCode: "NuGetSign",
+					parameters: [],
+					toolName: "sign",
+					toolVersion: "1.0",
+				},
+				{
+					keyCode: "CP-401405",
+					operationSetCode: "NuGetVerify",
+					parameters: [],
+					toolName: "sign",
+					toolVersion: "1.0",
+				},
+			];
 
 		default:
 			throw new Error(`Sign type ${type} not found`);

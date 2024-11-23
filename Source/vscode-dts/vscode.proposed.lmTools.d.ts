@@ -5,5 +5,4 @@
 
 // version: 15
 
-declare module 'vscode' {
-}
+declare module "vscode" {}

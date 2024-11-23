@@ -2,16 +2,32 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as vscode from 'vscode';
-import { getExperimentationService, IExperimentationService, IExperimentationTelemetry, TargetPopulation } from 'vscode-tas-client';
-export async function createExperimentationService(context: vscode.ExtensionContext, experimentationTelemetry: IExperimentationTelemetry, isPreRelease: boolean): Promise<IExperimentationService> {
-    const id = context.extension.id;
+import * as vscode from "vscode";
+import {
+	getExperimentationService,
+	IExperimentationService,
+	IExperimentationTelemetry,
+	TargetPopulation,
+} from "vscode-tas-client";
 
-    const version = context.extension.packageJSON['version'];
+export async function createExperimentationService(
+	context: vscode.ExtensionContext,
+	experimentationTelemetry: IExperimentationTelemetry,
+	isPreRelease: boolean,
+): Promise<IExperimentationService> {
+	const id = context.extension.id;
 
-    const service = getExperimentationService(id, version, isPreRelease ? TargetPopulation.Insiders : TargetPopulation.Public, experimentationTelemetry, context.globalState) as unknown as IExperimentationService;
-    await service.initializePromise;
-    await service.initialFetch;
+	const version = context.extension.packageJSON["version"];
 
-    return service;
+	const service = getExperimentationService(
+		id,
+		version,
+		isPreRelease ? TargetPopulation.Insiders : TargetPopulation.Public,
+		experimentationTelemetry,
+		context.globalState,
+	) as unknown as IExperimentationService;
+	await service.initializePromise;
+	await service.initialFetch;
+
+	return service;
 }

@@ -3,13 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { equals } from '../../../base/common/arrays.js';
-import { IDisposable } from '../../../base/common/lifecycle.js';
-import { URI } from '../../../base/common/uri.js';
-import { IUriIdentityService } from '../../uriIdentity/common/uriIdentity.js';
+import { equals } from "../../../base/common/arrays.js";
+import { IDisposable } from "../../../base/common/lifecycle.js";
+import { URI } from "../../../base/common/uri.js";
+import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 
 export interface IResolvableEditorModel extends IDisposable {
-
 	/**
 	 * Resolves the model.
 	 */
@@ -21,15 +20,18 @@ export interface IResolvableEditorModel extends IDisposable {
 	isResolved(): boolean;
 }
 
-export function isResolvedEditorModel(model: IDisposable | undefined | null): model is IResolvableEditorModel {
+export function isResolvedEditorModel(
+	model: IDisposable | undefined | null,
+): model is IResolvableEditorModel {
 	const candidate = model as IResolvableEditorModel | undefined | null;
 
-	return typeof candidate?.resolve === 'function'
-		&& typeof candidate?.isResolved === 'function';
+	return (
+		typeof candidate?.resolve === "function" &&
+		typeof candidate?.isResolved === "function"
+	);
 }
 
 export interface IBaseUntypedEditorInput {
-
 	/**
 	 * Optional options to use when opening the input.
 	 */
@@ -47,7 +49,6 @@ export interface IBaseUntypedEditorInput {
 }
 
 export interface IBaseResourceEditorInput extends IBaseUntypedEditorInput {
-
 	/**
 	 * Hint to indicate that this input should be treated as a
 	 * untitled file.
@@ -63,7 +64,6 @@ export interface IBaseResourceEditorInput extends IBaseUntypedEditorInput {
 }
 
 export interface IBaseTextResourceEditorInput extends IBaseResourceEditorInput {
-
 	/**
 	 * Optional options to use when opening the text input.
 	 */
@@ -89,15 +89,15 @@ export interface IBaseTextResourceEditorInput extends IBaseResourceEditorInput {
 }
 
 export interface IResourceEditorInput extends IBaseResourceEditorInput {
-
 	/**
 	 * The resource URI of the resource to open.
 	 */
 	readonly resource: URI;
 }
 
-export interface ITextResourceEditorInput extends IResourceEditorInput, IBaseTextResourceEditorInput {
-
+export interface ITextResourceEditorInput
+	extends IResourceEditorInput,
+		IBaseTextResourceEditorInput {
 	/**
 	 * Optional options to use when opening the text input.
 	 */
@@ -109,7 +109,6 @@ export interface ITextResourceEditorInput extends IResourceEditorInput, IBaseTex
  * resource, type and editor identifier.
  */
 export interface IResourceEditorInputIdentifier {
-
 	/**
 	 * The type of the editor.
 	 */
@@ -127,7 +126,6 @@ export interface IResourceEditorInputIdentifier {
 }
 
 export enum EditorActivation {
-
 	/**
 	 * Activate the editor after it opened. This will automatically restore
 	 * the editor if it is minimized.
@@ -150,11 +148,10 @@ export enum EditorActivation {
 	 * Otherwise, if focus moves into the editor, it will activate and restore
 	 * automatically.
 	 */
-	PRESERVE
+	PRESERVE,
 }
 
 export enum EditorResolution {
-
 	/**
 	 * Displays a picker and allows the user to decide which editor to use.
 	 */
@@ -163,11 +160,10 @@ export enum EditorResolution {
 	/**
 	 * Only exclusive editors are considered.
 	 */
-	EXCLUSIVE_ONLY
+	EXCLUSIVE_ONLY,
 }
 
 export enum EditorOpenSource {
-
 	/**
 	 * Default: the editor is opening via a programmatic call
 	 * to the editor service API.
@@ -178,11 +174,10 @@ export enum EditorOpenSource {
 	 * Indicates that a user action triggered the opening, e.g.
 	 * via mouse or keyboard use.
 	 */
-	USER
+	USER,
 }
 
 export interface IEditorOptions {
-
 	/**
 	 * Tells the editor to not receive keyboard focus when the editor is being opened.
 	 *
@@ -336,20 +331,19 @@ export const enum TextEditorSelectionRevealType {
 }
 
 export const enum TextEditorSelectionSource {
-
 	/**
 	 * Programmatic source indicates a selection change that
 	 * was not triggered by the user via keyboard or mouse
 	 * but through text editor APIs.
 	 */
-	PROGRAMMATIC = 'api',
+	PROGRAMMATIC = "api",
 
 	/**
 	 * Navigation source indicates a selection change that
 	 * was caused via some command or UI component such as
 	 * an outline tree.
 	 */
-	NAVIGATION = 'code.navigation',
+	NAVIGATION = "code.navigation",
 
 	/**
 	 * Jump source indicates a selection change that
@@ -357,11 +351,10 @@ export const enum TextEditorSelectionSource {
 	 * location in the same or different text editor such
 	 * as "Go to definition".
 	 */
-	JUMP = 'code.jump'
+	JUMP = "code.jump",
 }
 
 export interface ITextEditorOptions extends IEditorOptions {
-
 	/**
 	 * Text editor selection.
 	 */
@@ -383,7 +376,7 @@ export type ITextEditorChange = [
 	originalStartLineNumber: number,
 	originalEndLineNumber: number,
 	modifiedStartLineNumber: number,
-	modifiedEndLineNumber: number
+	modifiedEndLineNumber: number,
 ];
 
 export interface ITextEditorDiffInformation {
@@ -396,11 +389,16 @@ export interface ITextEditorDiffInformation {
 export function isTextEditorDiffInformationEqual(
 	uriIdentityService: IUriIdentityService,
 	diff1: ITextEditorDiffInformation | undefined,
-	diff2: ITextEditorDiffInformation | undefined): boolean {
-	return diff1?.documentVersion === diff2?.documentVersion &&
+	diff2: ITextEditorDiffInformation | undefined,
+): boolean {
+	return (
+		diff1?.documentVersion === diff2?.documentVersion &&
 		uriIdentityService.extUri.isEqual(diff1?.original, diff2?.original) &&
 		uriIdentityService.extUri.isEqual(diff1?.modified, diff2?.modified) &&
 		equals<ITextEditorChange>(diff1?.changes, diff2?.changes, (a, b) => {
-			return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
-		});
+			return (
+				a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3]
+			);
+		})
+	);
 }

@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/84899
 
 	export enum TextEditorChangeKind {
 		Addition = 1,
 		Deletion = 2,
-		Modification = 3
+		Modification = 3,
 	}
 
 	export interface TextEditorChange {
@@ -40,5 +40,4 @@ declare module 'vscode' {
 	export namespace window {
 		export const onDidChangeTextEditorDiffInformation: Event<TextEditorDiffInformationChangeEvent>;
 	}
-
 }

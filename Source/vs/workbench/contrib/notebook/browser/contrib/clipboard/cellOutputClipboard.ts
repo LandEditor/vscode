@@ -2,62 +2,73 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IClipboardService } from '../../../../../../platform/clipboard/common/clipboardService.js';
-import { ILogService } from '../../../../../../platform/log/common/log.js';
-import { ICellOutputViewModel, ICellViewModel } from '../../notebookBrowser.js';
-import { isTextStreamMime } from '../../../common/notebookCommon.js';
-export async function copyCellOutput(mimeType: string | undefined, outputViewModel: ICellOutputViewModel, clipboardService: IClipboardService, logService: ILogService) {
-    const cellOutput = outputViewModel.model;
+import { IClipboardService } from "../../../../../../platform/clipboard/common/clipboardService.js";
+import { ILogService } from "../../../../../../platform/log/common/log.js";
+import { isTextStreamMime } from "../../../common/notebookCommon.js";
+import { ICellOutputViewModel, ICellViewModel } from "../../notebookBrowser.js";
 
-    const output = mimeType && TEXT_BASED_MIMETYPES.includes(mimeType) ?
-        cellOutput.outputs.find(output => output.mime === mimeType) :
-        cellOutput.outputs.find(output => TEXT_BASED_MIMETYPES.includes(output.mime));
-    mimeType = output?.mime;
+export async function copyCellOutput(
+	mimeType: string | undefined,
+	outputViewModel: ICellOutputViewModel,
+	clipboardService: IClipboardService,
+	logService: ILogService,
+) {
+	const cellOutput = outputViewModel.model;
 
-    if (!mimeType || !output) {
-        return;
-    }
-    const decoder = new TextDecoder();
+	const output =
+		mimeType && TEXT_BASED_MIMETYPES.includes(mimeType)
+			? cellOutput.outputs.find((output) => output.mime === mimeType)
+			: cellOutput.outputs.find((output) =>
+					TEXT_BASED_MIMETYPES.includes(output.mime),
+				);
+	mimeType = output?.mime;
 
-    let text = decoder.decode(output.data.buffer);
-    // append adjacent text streams since they are concatenated in the renderer
-    if (isTextStreamMime(mimeType)) {
-        const cellViewModel = outputViewModel.cellViewModel as ICellViewModel;
+	if (!mimeType || !output) {
+		return;
+	}
+	const decoder = new TextDecoder();
 
-        let index = cellViewModel.outputsViewModels.indexOf(outputViewModel) + 1;
+	let text = decoder.decode(output.data.buffer);
+	// append adjacent text streams since they are concatenated in the renderer
+	if (isTextStreamMime(mimeType)) {
+		const cellViewModel = outputViewModel.cellViewModel as ICellViewModel;
 
-        while (index < cellViewModel.model.outputs.length) {
-            const nextCellOutput = cellViewModel.model.outputs[index];
+		let index =
+			cellViewModel.outputsViewModels.indexOf(outputViewModel) + 1;
 
-            const nextOutput = nextCellOutput.outputs.find(output => isTextStreamMime(output.mime));
+		while (index < cellViewModel.model.outputs.length) {
+			const nextCellOutput = cellViewModel.model.outputs[index];
 
-            if (!nextOutput) {
-                break;
-            }
-            text = text + decoder.decode(nextOutput.data.buffer);
-            index = index + 1;
-        }
-    }
-    if (mimeType.endsWith('error')) {
-        text = text.replace(/\\u001b\[[0-9;]*m/gi, '').replaceAll('\\n', '\n');
-    }
-    try {
-        await clipboardService.writeText(text);
-    }
-    catch (e) {
-        logService.error(`Failed to copy content: ${e}`);
-    }
+			const nextOutput = nextCellOutput.outputs.find((output) =>
+				isTextStreamMime(output.mime),
+			);
+
+			if (!nextOutput) {
+				break;
+			}
+			text = text + decoder.decode(nextOutput.data.buffer);
+			index = index + 1;
+		}
+	}
+	if (mimeType.endsWith("error")) {
+		text = text.replace(/\\u001b\[[0-9;]*m/gi, "").replaceAll("\\n", "\n");
+	}
+	try {
+		await clipboardService.writeText(text);
+	} catch (e) {
+		logService.error(`Failed to copy content: ${e}`);
+	}
 }
 export const TEXT_BASED_MIMETYPES = [
-    'text/latex',
-    'text/html',
-    'application/vnd.code.notebook.error',
-    'application/vnd.code.notebook.stdout',
-    'application/x.notebook.stdout',
-    'application/x.notebook.stream',
-    'application/vnd.code.notebook.stderr',
-    'application/x.notebook.stderr',
-    'text/plain',
-    'text/markdown',
-    'application/json'
+	"text/latex",
+	"text/html",
+	"application/vnd.code.notebook.error",
+	"application/vnd.code.notebook.stdout",
+	"application/x.notebook.stdout",
+	"application/x.notebook.stream",
+	"application/vnd.code.notebook.stderr",
+	"application/x.notebook.stderr",
+	"text/plain",
+	"text/markdown",
+	"application/json",
 ];

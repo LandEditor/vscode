@@ -3,33 +3,70 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './media/chatEditorOverlay.css';
-import { DisposableStore, MutableDisposable } from '../../../../base/common/lifecycle.js';
-import { autorun, IReader, ISettableObservable, ITransaction, observableFromEvent, observableSignal, observableValue, transaction } from '../../../../base/common/observable.js';
-import { isEqual } from '../../../../base/common/resources.js';
-import { ICodeEditor, IOverlayWidget, IOverlayWidgetPosition, OverlayWidgetPositionPreference } from '../../../../editor/browser/editorBrowser.js';
-import { IEditorContribution } from '../../../../editor/common/editorCommon.js';
-import { HiddenItemStrategy, MenuWorkbenchToolBar, WorkbenchToolBar } from '../../../../platform/actions/browser/toolbar.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { ChatEditingSessionState, IChatEditingService, IChatEditingSession, IModifiedFileEntry, WorkingSetEntryState } from '../common/chatEditingService.js';
-import { MenuId, MenuRegistry } from '../../../../platform/actions/common/actions.js';
-import { ActionViewItem } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
-import { ACTIVE_GROUP, IEditorService } from '../../../services/editor/common/editorService.js';
-import { Range } from '../../../../editor/common/core/range.js';
-import { IActionRunner } from '../../../../base/common/actions.js';
-import { getWindow, reset, scheduleAtNextAnimationFrame } from '../../../../base/browser/dom.js';
-import { EditorOption } from '../../../../editor/common/config/editorOptions.js';
-import { renderIcon } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { ThemeIcon } from '../../../../base/common/themables.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { assertType } from '../../../../base/common/types.js';
-import { localize } from '../../../../nls.js';
-import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
-import { ctxNotebookHasEditorModification } from '../../notebook/browser/contrib/chatEdit/notebookChatEditController.js';
-import { AcceptAction, RejectAction } from './chatEditorActions.js';
+import "./media/chatEditorOverlay.css";
+
+import {
+	getWindow,
+	reset,
+	scheduleAtNextAnimationFrame,
+} from "../../../../base/browser/dom.js";
+import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
+import { renderIcon } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
+import { IActionRunner } from "../../../../base/common/actions.js";
+import { Codicon } from "../../../../base/common/codicons.js";
+import {
+	DisposableStore,
+	MutableDisposable,
+} from "../../../../base/common/lifecycle.js";
+import {
+	autorun,
+	IReader,
+	ISettableObservable,
+	ITransaction,
+	observableFromEvent,
+	observableSignal,
+	observableValue,
+	transaction,
+} from "../../../../base/common/observable.js";
+import { isEqual } from "../../../../base/common/resources.js";
+import { ThemeIcon } from "../../../../base/common/themables.js";
+import { assertType } from "../../../../base/common/types.js";
+import {
+	ICodeEditor,
+	IOverlayWidget,
+	IOverlayWidgetPosition,
+	OverlayWidgetPositionPreference,
+} from "../../../../editor/browser/editorBrowser.js";
+import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
+import { Range } from "../../../../editor/common/core/range.js";
+import { IEditorContribution } from "../../../../editor/common/editorCommon.js";
+import { localize } from "../../../../nls.js";
+import {
+	HiddenItemStrategy,
+	MenuWorkbenchToolBar,
+	WorkbenchToolBar,
+} from "../../../../platform/actions/browser/toolbar.js";
+import {
+	MenuId,
+	MenuRegistry,
+} from "../../../../platform/actions/common/actions.js";
+import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import {
+	ACTIVE_GROUP,
+	IEditorService,
+} from "../../../services/editor/common/editorService.js";
+import { ctxNotebookHasEditorModification } from "../../notebook/browser/contrib/chatEdit/notebookChatEditController.js";
+import {
+	ChatEditingSessionState,
+	IChatEditingService,
+	IChatEditingSession,
+	IModifiedFileEntry,
+	WorkingSetEntryState,
+} from "../common/chatEditingService.js";
+import { AcceptAction, RejectAction } from "./chatEditorActions.js";
 
 class ChatEditorOverlayWidget implements IOverlayWidget {
-
 	readonly allowEditorOverflow = false;
 
 	private readonly _domNode: HTMLElement;
@@ -39,129 +76,207 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	private _isAdded: boolean = false;
 	private readonly _showStore = new DisposableStore();
 
-	private readonly _entry = observableValue<{ entry: IModifiedFileEntry; next: IModifiedFileEntry } | undefined>(this, undefined);
+	private readonly _entry = observableValue<
+		{ entry: IModifiedFileEntry; next: IModifiedFileEntry } | undefined
+	>(this, undefined);
 
-	private readonly _navigationBearings = observableValue<{ changeCount: number; activeIdx: number; entriesCount: number }>(this, { changeCount: -1, activeIdx: -1, entriesCount: -1 });
+	private readonly _navigationBearings = observableValue<{
+		changeCount: number;
+		activeIdx: number;
+		entriesCount: number;
+	}>(this, { changeCount: -1, activeIdx: -1, entriesCount: -1 });
 
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IEditorService editorService: IEditorService,
 		@IInstantiationService instaService: IInstantiationService,
 	) {
-		this._domNode = document.createElement('div');
-		this._domNode.classList.add('chat-editor-overlay-widget');
+		this._domNode = document.createElement("div");
+		this._domNode.classList.add("chat-editor-overlay-widget");
 
-		this._progressNode = document.createElement('div');
-		this._progressNode.classList.add('chat-editor-overlay-progress');
+		this._progressNode = document.createElement("div");
+		this._progressNode.classList.add("chat-editor-overlay-progress");
 		this._domNode.appendChild(this._progressNode);
 
-		const toolbarNode = document.createElement('div');
-		toolbarNode.classList.add('chat-editor-overlay-toolbar');
+		const toolbarNode = document.createElement("div");
+		toolbarNode.classList.add("chat-editor-overlay-toolbar");
 		this._domNode.appendChild(toolbarNode);
 
-		this._toolbar = instaService.createInstance(MenuWorkbenchToolBar, toolbarNode, MenuId.ChatEditingEditorContent, {
-			telemetrySource: 'chatEditor.overlayToolbar',
-			hiddenItemStrategy: HiddenItemStrategy.Ignore,
-			toolbarOptions: {
-				primaryGroup: () => true,
-				useSeparatorsInPrimaryActions: true
-			},
-			menuOptions: { renderShortTitle: true },
-			actionViewItemProvider: (action, options) => {
-				const that = this;
+		this._toolbar = instaService.createInstance(
+			MenuWorkbenchToolBar,
+			toolbarNode,
+			MenuId.ChatEditingEditorContent,
+			{
+				telemetrySource: "chatEditor.overlayToolbar",
+				hiddenItemStrategy: HiddenItemStrategy.Ignore,
+				toolbarOptions: {
+					primaryGroup: () => true,
+					useSeparatorsInPrimaryActions: true,
+				},
+				menuOptions: { renderShortTitle: true },
+				actionViewItemProvider: (action, options) => {
+					const that = this;
 
-				if (action.id === navigationBearingFakeActionId) {
-					return new class extends ActionViewItem {
-
-						constructor() {
-							super(undefined, action, { ...options, icon: false, label: true, keybindingNotRenderedWithLabel: true });
-						}
-
-						override render(container: HTMLElement) {
-							super.render(container);
-
-							container.classList.add('label-item');
-
-							this._store.add(autorun(r => {
-								assertType(this.label);
-
-								const { changeCount, activeIdx } = that._navigationBearings.read(r);
-
-								const n = activeIdx === -1 ? '?' : `${activeIdx + 1}`;
-
-								const m = changeCount === -1 ? '?' : `${changeCount}`;
-								this.label.innerText = localize('nOfM', "{0} of {1}", n, m);
-
-								this.updateTooltip();
-							}));
-						}
-
-						protected override getTooltip(): string | undefined {
-							const { changeCount, entriesCount } = that._navigationBearings.get();
-
-							if (changeCount === -1 || entriesCount === -1) {
-								return undefined;
-							} else if (changeCount === 1 && entriesCount === 1) {
-								return localize('tooltip_11', "1 change in 1 file");
-							} else if (changeCount === 1) {
-								return localize('tooltip_1n', "1 change in {0} files", entriesCount);
-							} else if (entriesCount === 1) {
-								return localize('tooltip_n1', "{0} changes in 1 file", changeCount);
-							} else {
-								return localize('tooltip_nm', "{0} changes in {1} files", changeCount, entriesCount);
+					if (action.id === navigationBearingFakeActionId) {
+						return new (class extends ActionViewItem {
+							constructor() {
+								super(undefined, action, {
+									...options,
+									icon: false,
+									label: true,
+									keybindingNotRenderedWithLabel: true,
+								});
 							}
-						}
-					};
-				}
 
-				if (action.id === AcceptAction.ID || action.id === RejectAction.ID) {
-					return new class extends ActionViewItem {
+							override render(container: HTMLElement) {
+								super.render(container);
 
-						private readonly _reveal = this._store.add(new MutableDisposable());
+								container.classList.add("label-item");
 
-						constructor() {
-							super(undefined, action, { ...options, icon: false, label: true, keybindingNotRenderedWithLabel: true });
-						}
-						override set actionRunner(actionRunner: IActionRunner) {
-							super.actionRunner = actionRunner;
+								this._store.add(
+									autorun((r) => {
+										assertType(this.label);
 
-							const store = new DisposableStore();
+										const { changeCount, activeIdx } =
+											that._navigationBearings.read(r);
 
-							store.add(actionRunner.onWillRun(_e => {
-								that._editor.focus();
-							}));
+										const n =
+											activeIdx === -1
+												? "?"
+												: `${activeIdx + 1}`;
 
-							store.add(actionRunner.onDidRun(e => {
-								if (e.action !== this.action) {
-									return;
+										const m =
+											changeCount === -1
+												? "?"
+												: `${changeCount}`;
+										this.label.innerText = localize(
+											"nOfM",
+											"{0} of {1}",
+											n,
+											m,
+										);
+
+										this.updateTooltip();
+									}),
+								);
+							}
+
+							protected override getTooltip():
+								| string
+								| undefined {
+								const { changeCount, entriesCount } =
+									that._navigationBearings.get();
+
+								if (changeCount === -1 || entriesCount === -1) {
+									return undefined;
+								} else if (
+									changeCount === 1 &&
+									entriesCount === 1
+								) {
+									return localize(
+										"tooltip_11",
+										"1 change in 1 file",
+									);
+								} else if (changeCount === 1) {
+									return localize(
+										"tooltip_1n",
+										"1 change in {0} files",
+										entriesCount,
+									);
+								} else if (entriesCount === 1) {
+									return localize(
+										"tooltip_n1",
+										"{0} changes in 1 file",
+										changeCount,
+									);
+								} else {
+									return localize(
+										"tooltip_nm",
+										"{0} changes in {1} files",
+										changeCount,
+										entriesCount,
+									);
 								}
-								const d = that._entry.get();
+							}
+						})();
+					}
 
-								if (!d || d.entry === d.next) {
-									return;
-								}
-								const change = d.next.diffInfo.get().changes.at(0);
+					if (
+						action.id === AcceptAction.ID ||
+						action.id === RejectAction.ID
+					) {
+						return new (class extends ActionViewItem {
+							private readonly _reveal = this._store.add(
+								new MutableDisposable(),
+							);
 
-								return editorService.openEditor({
-									resource: d.next.modifiedURI,
-									options: {
-										selection: change && Range.fromPositions({ lineNumber: change.original.startLineNumber, column: 1 }),
-										revealIfOpened: false,
-										revealIfVisible: false,
-									}
-								}, ACTIVE_GROUP);
-							}));
+							constructor() {
+								super(undefined, action, {
+									...options,
+									icon: false,
+									label: true,
+									keybindingNotRenderedWithLabel: true,
+								});
+							}
+							override set actionRunner(
+								actionRunner: IActionRunner,
+							) {
+								super.actionRunner = actionRunner;
 
-							this._reveal.value = store;
-						}
-						override get actionRunner(): IActionRunner {
-							return super.actionRunner;
-						}
-					};
-				}
-				return undefined;
-			}
-		});
+								const store = new DisposableStore();
+
+								store.add(
+									actionRunner.onWillRun((_e) => {
+										that._editor.focus();
+									}),
+								);
+
+								store.add(
+									actionRunner.onDidRun((e) => {
+										if (e.action !== this.action) {
+											return;
+										}
+										const d = that._entry.get();
+
+										if (!d || d.entry === d.next) {
+											return;
+										}
+										const change = d.next.diffInfo
+											.get()
+											.changes.at(0);
+
+										return editorService.openEditor(
+											{
+												resource: d.next.modifiedURI,
+												options: {
+													selection:
+														change &&
+														Range.fromPositions({
+															lineNumber:
+																change.original
+																	.startLineNumber,
+															column: 1,
+														}),
+													revealIfOpened: false,
+													revealIfVisible: false,
+												},
+											},
+											ACTIVE_GROUP,
+										);
+									}),
+								);
+
+								this._reveal.value = store;
+							}
+							override get actionRunner(): IActionRunner {
+								return super.actionRunner;
+							}
+						})();
+					}
+					return undefined;
+				},
+			},
+		);
 	}
 
 	dispose() {
@@ -171,7 +286,7 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	}
 
 	getId(): string {
-		return 'chatEditorOverlayWidget';
+		return "chatEditorOverlayWidget";
 	}
 
 	getDomNode(): HTMLElement {
@@ -179,75 +294,100 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	}
 
 	getPosition(): IOverlayWidgetPosition | null {
-		return { preference: OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER };
+		return {
+			preference: OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER,
+		};
 	}
 
-	show(session: IChatEditingSession, activeEntry: IModifiedFileEntry, next: IModifiedFileEntry) {
-
+	show(
+		session: IChatEditingSession,
+		activeEntry: IModifiedFileEntry,
+		next: IModifiedFileEntry,
+	) {
 		this._showStore.clear();
 
 		this._entry.set({ entry: activeEntry, next }, undefined);
 
-		this._showStore.add(autorun(r => {
-			const busy = activeEntry.isCurrentlyBeingModified.read(r);
-			this._domNode.classList.toggle('busy', busy);
-		}));
+		this._showStore.add(
+			autorun((r) => {
+				const busy = activeEntry.isCurrentlyBeingModified.read(r);
+				this._domNode.classList.toggle("busy", busy);
+			}),
+		);
 
 		const slickRatio = ObservableAnimatedValue.const(0);
 
 		let t = Date.now();
-		this._showStore.add(autorun(r => {
-			const value = activeEntry.rewriteRatio.read(r);
+		this._showStore.add(
+			autorun((r) => {
+				const value = activeEntry.rewriteRatio.read(r);
 
-			slickRatio.changeAnimation(prev => {
-				const result = new AnimatedValue(prev.getValue(), value, Date.now() - t);
-				t = Date.now();
+				slickRatio.changeAnimation((prev) => {
+					const result = new AnimatedValue(
+						prev.getValue(),
+						value,
+						Date.now() - t,
+					);
+					t = Date.now();
 
-				return result;
-			}, undefined);
+					return result;
+				}, undefined);
 
-			const value2 = slickRatio.getValue(r);
-			reset(this._progressNode, value === 0
-				? renderIcon(ThemeIcon.modify(Codicon.loading, 'spin'))
-				: `${Math.round(value2 * 100)}%`
-			);
-		}));
+				const value2 = slickRatio.getValue(r);
+				reset(
+					this._progressNode,
+					value === 0
+						? renderIcon(ThemeIcon.modify(Codicon.loading, "spin"))
+						: `${Math.round(value2 * 100)}%`,
+				);
+			}),
+		);
 
+		const editorPositionObs = observableFromEvent(
+			this._editor.onDidChangeCursorPosition,
+			() => this._editor.getPosition(),
+		);
 
-		const editorPositionObs = observableFromEvent(this._editor.onDidChangeCursorPosition, () => this._editor.getPosition());
+		this._showStore.add(
+			autorun((r) => {
+				const position = editorPositionObs.read(r);
 
-		this._showStore.add(autorun(r => {
-			const position = editorPositionObs.read(r);
+				if (!position) {
+					return;
+				}
 
-			if (!position) {
-				return;
-			}
+				const entries = session.entries.read(r);
 
-			const entries = session.entries.read(r);
+				let changes = 0;
 
-			let changes = 0;
+				let activeIdx = -1;
 
-			let activeIdx = -1;
+				for (const entry of entries) {
+					const diffInfo = entry.diffInfo.read(r);
 
-			for (const entry of entries) {
-				const diffInfo = entry.diffInfo.read(r);
-
-				if (activeIdx !== -1 || entry !== activeEntry) {
-					// just add up
-					changes += diffInfo.changes.length;
-
-				} else {
-					for (const change of diffInfo.changes) {
-						if (change.modified.includes(position.lineNumber)) {
-							activeIdx = changes;
+					if (activeIdx !== -1 || entry !== activeEntry) {
+						// just add up
+						changes += diffInfo.changes.length;
+					} else {
+						for (const change of diffInfo.changes) {
+							if (change.modified.includes(position.lineNumber)) {
+								activeIdx = changes;
+							}
+							changes += 1;
 						}
-						changes += 1;
 					}
 				}
-			}
 
-			this._navigationBearings.set({ changeCount: changes, activeIdx, entriesCount: entries.length }, undefined);
-		}));
+				this._navigationBearings.set(
+					{
+						changeCount: changes,
+						activeIdx,
+						entriesCount: entries.length,
+					},
+					undefined,
+				);
+			}),
+		);
 
 		if (!this._isAdded) {
 			this._editor.addOverlayWidget(this);
@@ -256,10 +396,12 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	}
 
 	hide() {
-
-		transaction(tx => {
+		transaction((tx) => {
 			this._entry.set(undefined, tx);
-			this._navigationBearings.set({ changeCount: -1, activeIdx: -1, entriesCount: -1 }, tx);
+			this._navigationBearings.set(
+				{ changeCount: -1, activeIdx: -1, entriesCount: -1 },
+				tx,
+			);
 		});
 
 		if (this._isAdded) {
@@ -270,19 +412,18 @@ class ChatEditorOverlayWidget implements IOverlayWidget {
 	}
 }
 
-export const navigationBearingFakeActionId = 'chatEditor.navigation.bearings';
+export const navigationBearingFakeActionId = "chatEditor.navigation.bearings";
 
 MenuRegistry.appendMenuItem(MenuId.ChatEditingEditorContent, {
 	command: {
 		id: navigationBearingFakeActionId,
-		title: localize('label', "Navigation Status"),
+		title: localize("label", "Navigation Status"),
 		precondition: ContextKeyExpr.false(),
 	},
 	when: ctxNotebookHasEditorModification.negate(),
-	group: 'navigate',
-	order: -1
+	group: "navigate",
+	order: -1,
 });
-
 
 export class ObservableAnimatedValue {
 	public static const(value: number): ObservableAnimatedValue {
@@ -291,9 +432,7 @@ export class ObservableAnimatedValue {
 
 	private readonly _value: ISettableObservable<AnimatedValue>;
 
-	constructor(
-		initialValue: AnimatedValue,
-	) {
+	constructor(initialValue: AnimatedValue) {
 		this._value = observableValue(this, initialValue);
 	}
 
@@ -301,7 +440,10 @@ export class ObservableAnimatedValue {
 		this._value.set(value, tx);
 	}
 
-	changeAnimation(fn: (prev: AnimatedValue) => AnimatedValue, tx: ITransaction | undefined): void {
+	changeAnimation(
+		fn: (prev: AnimatedValue) => AnimatedValue,
+		tx: ITransaction | undefined,
+	): void {
 		const value = fn(this._value.get());
 		this._value.set(value, tx);
 	}
@@ -337,7 +479,6 @@ class Scheduler {
 }
 
 export class AnimatedValue {
-
 	static const(value: number): AnimatedValue {
 		return new AnimatedValue(value, value, 0);
 	}
@@ -364,27 +505,38 @@ export class AnimatedValue {
 		if (timePassed >= this.durationMs) {
 			return this.endValue;
 		}
-		const value = easeOutExpo(timePassed, this.startValue, this.endValue - this.startValue, this.durationMs);
+		const value = easeOutExpo(
+			timePassed,
+			this.startValue,
+			this.endValue - this.startValue,
+			this.durationMs,
+		);
 
 		return value;
 	}
 }
 
-function easeOutExpo(passedTime: number, start: number, length: number, totalDuration: number): number {
+function easeOutExpo(
+	passedTime: number,
+	start: number,
+	length: number,
+	totalDuration: number,
+): number {
 	return passedTime === totalDuration
 		? start + length
-		: length * (-Math.pow(2, -10 * passedTime / totalDuration) + 1) + start;
+		: length * (-Math.pow(2, (-10 * passedTime) / totalDuration) + 1) +
+				start;
 }
 
-
 export class ChatEditorOverlayController implements IEditorContribution {
-
-	static readonly ID = 'editor.contrib.chatOverlayController';
+	static readonly ID = "editor.contrib.chatOverlayController";
 
 	private readonly _store = new DisposableStore();
 
 	static get(editor: ICodeEditor) {
-		return editor.getContribution<ChatEditorOverlayController>(ChatEditorOverlayController.ID);
+		return editor.getContribution<ChatEditorOverlayController>(
+			ChatEditorOverlayController.ID,
+		);
 	}
 
 	constructor(
@@ -392,55 +544,73 @@ export class ChatEditorOverlayController implements IEditorContribution {
 		@IChatEditingService chatEditingService: IChatEditingService,
 		@IInstantiationService instaService: IInstantiationService,
 	) {
-		const modelObs = observableFromEvent(this._editor.onDidChangeModel, () => this._editor.getModel());
+		const modelObs = observableFromEvent(
+			this._editor.onDidChangeModel,
+			() => this._editor.getModel(),
+		);
 
-		const widget = instaService.createInstance(ChatEditorOverlayWidget, this._editor);
+		const widget = instaService.createInstance(
+			ChatEditorOverlayWidget,
+			this._editor,
+		);
 
 		if (this._editor.getOption(EditorOption.inDiffEditor)) {
 			return;
 		}
 
-		this._store.add(autorun(r => {
-			const model = modelObs.read(r);
+		this._store.add(
+			autorun((r) => {
+				const model = modelObs.read(r);
 
-			const session = chatEditingService.currentEditingSessionObs.read(r);
+				const session =
+					chatEditingService.currentEditingSessionObs.read(r);
 
-			if (!session || !model) {
-				widget.hide();
+				if (!session || !model) {
+					widget.hide();
 
-				return;
-			}
+					return;
+				}
 
-			const state = session.state.read(r);
+				const state = session.state.read(r);
 
-			if (state === ChatEditingSessionState.Disposed) {
-				widget.hide();
+				if (state === ChatEditingSessionState.Disposed) {
+					widget.hide();
 
-				return;
-			}
+					return;
+				}
 
-			const entries = session.entries.read(r);
+				const entries = session.entries.read(r);
 
-			const idx = entries.findIndex(e => isEqual(e.modifiedURI, model.uri));
+				const idx = entries.findIndex((e) =>
+					isEqual(e.modifiedURI, model.uri),
+				);
 
-			if (idx < 0) {
-				widget.hide();
+				if (idx < 0) {
+					widget.hide();
 
-				return;
-			}
+					return;
+				}
 
-			const isModifyingOrModified = entries.some(e => e.state.read(r) === WorkingSetEntryState.Modified || e.isCurrentlyBeingModified.read(r));
+				const isModifyingOrModified = entries.some(
+					(e) =>
+						e.state.read(r) === WorkingSetEntryState.Modified ||
+						e.isCurrentlyBeingModified.read(r),
+				);
 
-			if (!isModifyingOrModified) {
-				widget.hide();
+				if (!isModifyingOrModified) {
+					widget.hide();
 
-				return;
-			}
+					return;
+				}
 
-			const entry = entries[idx];
-			widget.show(session, entry, entries[(idx + 1) % entries.length]);
-
-		}));
+				const entry = entries[idx];
+				widget.show(
+					session,
+					entry,
+					entries[(idx + 1) % entries.length],
+				);
+			}),
+		);
 	}
 
 	dispose() {

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../common/lifecycle.js';
-import type { IHoverDelegate2 } from './hover.js';
+import { Disposable } from "../../../common/lifecycle.js";
+import type { IHoverDelegate2 } from "./hover.js";
 
 let baseHoverDelegate: IHoverDelegate2 = {
 	showHover: () => undefined,
@@ -14,13 +14,15 @@ let baseHoverDelegate: IHoverDelegate2 = {
 	hideHover: () => undefined,
 	showAndFocusLastHover: () => undefined,
 	setupManagedHover: () => null!,
-	showManagedHover: () => undefined
+	showManagedHover: () => undefined,
 };
 /**
  * Sets the hover delegate for use **only in the `base/` layer**.
  */
-export function setBaseLayerHoverDelegate(hoverDelegate: IHoverDelegate2): void {
-    baseHoverDelegate = hoverDelegate;
+export function setBaseLayerHoverDelegate(
+	hoverDelegate: IHoverDelegate2,
+): void {
+	baseHoverDelegate = hoverDelegate;
 }
 /**
  * Gets the hover delegate for use **only in the `base/` layer**.
@@ -30,5 +32,5 @@ export function setBaseLayerHoverDelegate(hoverDelegate: IHoverDelegate2): void 
  * only reason this should be used is if `IHoverService` is not available.
  */
 export function getBaseLayerHoverDelegate(): IHoverDelegate2 {
-    return baseHoverDelegate;
+	return baseHoverDelegate;
 }

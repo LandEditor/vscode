@@ -3,17 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Iterable } from '../../../../base/common/iterator.js';
-import { Disposable, IReference } from '../../../../base/common/lifecycle.js';
-import { Schemas } from '../../../../base/common/network.js';
-import { URI } from '../../../../base/common/uri.js';
-import { Range } from '../../../../editor/common/core/range.js';
-import { ILanguageService } from '../../../../editor/common/languages/language.js';
-import { EndOfLinePreference, ITextModel } from '../../../../editor/common/model.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/common/services/resolverService.js';
-import { extractCodeblockUrisFromText, extractVulnerabilitiesFromText, IMarkdownVulnerability } from './annotations.js';
-import { IChatRequestViewModel, IChatResponseViewModel, isResponseVM } from './chatViewModel.js';
-
+import { Iterable } from "../../../../base/common/iterator.js";
+import { Disposable, IReference } from "../../../../base/common/lifecycle.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { URI } from "../../../../base/common/uri.js";
+import { Range } from "../../../../editor/common/core/range.js";
+import { ILanguageService } from "../../../../editor/common/languages/language.js";
+import {
+	EndOfLinePreference,
+	ITextModel,
+} from "../../../../editor/common/model.js";
+import {
+	IResolvedTextEditorModel,
+	ITextModelService,
+} from "../../../../editor/common/services/resolverService.js";
+import {
+	extractCodeblockUrisFromText,
+	extractVulnerabilitiesFromText,
+	IMarkdownVulnerability,
+} from "./annotations.js";
+import {
+	IChatRequestViewModel,
+	IChatResponseViewModel,
+	isResponseVM,
+} from "./chatViewModel.js";
 
 interface CodeBlockContent {
 	readonly text: string;
@@ -28,12 +41,14 @@ interface CodeBlockEntry {
 }
 
 export class CodeBlockModelCollection extends Disposable {
-
-	private readonly _models = new Map<string, {
-		model: Promise<IReference<IResolvedTextEditorModel>>;
-		vulns: readonly IMarkdownVulnerability[];
-		codemapperUri?: URI;
-	}>();
+	private readonly _models = new Map<
+		string,
+		{
+			model: Promise<IReference<IResolvedTextEditorModel>>;
+			vulns: readonly IMarkdownVulnerability[];
+			codemapperUri?: URI;
+		}
+	>();
 
 	/**
 	 * Max number of models to keep in memory.
@@ -54,20 +69,30 @@ export class CodeBlockModelCollection extends Disposable {
 		this.clear();
 	}
 
-	get(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): CodeBlockEntry | undefined {
-		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+	get(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+	): CodeBlockEntry | undefined {
+		const entry = this._models.get(
+			this.getKey(sessionId, chat, codeBlockIndex),
+		);
 
 		if (!entry) {
 			return;
 		}
 		return {
-			model: entry.model.then(ref => ref.object.textEditorModel),
+			model: entry.model.then((ref) => ref.object.textEditorModel),
 			vulns: entry.vulns,
-			codemapperUri: entry.codemapperUri
+			codemapperUri: entry.codemapperUri,
 		};
 	}
 
-	getOrCreate(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): CodeBlockEntry {
+	getOrCreate(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+	): CodeBlockEntry {
 		const existing = this.get(sessionId, chat, codeBlockIndex);
 
 		if (existing) {
@@ -92,7 +117,11 @@ export class CodeBlockModelCollection extends Disposable {
 			this.delete(first);
 		}
 
-		return { model: model.then(x => x.object.textEditorModel), vulns: [], codemapperUri: undefined };
+		return {
+			model: model.then((x) => x.object.textEditorModel),
+			vulns: [],
+			codemapperUri: undefined,
+		};
 	}
 
 	private delete(key: string) {
@@ -102,28 +131,43 @@ export class CodeBlockModelCollection extends Disposable {
 			return;
 		}
 
-		entry.model.then(ref => ref.object.dispose());
+		entry.model.then((ref) => ref.object.dispose());
 
 		this._models.delete(key);
 	}
 
 	clear(): void {
-		this._models.forEach(async entry => (await entry.model).dispose());
+		this._models.forEach(async (entry) => (await entry.model).dispose());
 		this._models.clear();
 	}
 
-	updateSync(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, content: CodeBlockContent): CodeBlockEntry {
+	updateSync(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+		content: CodeBlockContent,
+	): CodeBlockEntry {
 		const entry = this.getOrCreate(sessionId, chat, codeBlockIndex);
 
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
 
 		const newText = fixCodeText(extractedVulns.newText, content.languageId);
-		this.setVulns(sessionId, chat, codeBlockIndex, extractedVulns.vulnerabilities);
+		this.setVulns(
+			sessionId,
+			chat,
+			codeBlockIndex,
+			extractedVulns.vulnerabilities,
+		);
 
 		const codeblockUri = extractCodeblockUrisFromText(newText);
 
 		if (codeblockUri) {
-			this.setCodemapperUri(sessionId, chat, codeBlockIndex, codeblockUri.uri);
+			this.setCodemapperUri(
+				sessionId,
+				chat,
+				codeBlockIndex,
+				codeblockUri.uri,
+			);
 		}
 
 		if (content.isComplete) {
@@ -133,8 +177,14 @@ export class CodeBlockModelCollection extends Disposable {
 		return this.get(sessionId, chat, codeBlockIndex) ?? entry;
 	}
 
-	markCodeBlockCompleted(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number): void {
-		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+	markCodeBlockCompleted(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+	): void {
+		const entry = this._models.get(
+			this.getKey(sessionId, chat, codeBlockIndex),
+		);
 
 		if (!entry) {
 			return;
@@ -142,18 +192,33 @@ export class CodeBlockModelCollection extends Disposable {
 		// TODO: fill this in once we've implemented https://github.com/microsoft/vscode/issues/232538
 	}
 
-	async update(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, content: CodeBlockContent): Promise<CodeBlockEntry> {
+	async update(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+		content: CodeBlockContent,
+	): Promise<CodeBlockEntry> {
 		const entry = this.getOrCreate(sessionId, chat, codeBlockIndex);
 
 		const extractedVulns = extractVulnerabilitiesFromText(content.text);
 
 		let newText = fixCodeText(extractedVulns.newText, content.languageId);
-		this.setVulns(sessionId, chat, codeBlockIndex, extractedVulns.vulnerabilities);
+		this.setVulns(
+			sessionId,
+			chat,
+			codeBlockIndex,
+			extractedVulns.vulnerabilities,
+		);
 
 		const codeblockUri = extractCodeblockUrisFromText(newText);
 
 		if (codeblockUri) {
-			this.setCodemapperUri(sessionId, chat, codeBlockIndex, codeblockUri.uri);
+			this.setCodemapperUri(
+				sessionId,
+				chat,
+				codeBlockIndex,
+				codeblockUri.uri,
+			);
 			newText = codeblockUri.textWithoutResult;
 		}
 
@@ -168,9 +233,15 @@ export class CodeBlockModelCollection extends Disposable {
 		}
 
 		if (content.languageId) {
-			const vscodeLanguageId = this.languageService.getLanguageIdByLanguageName(content.languageId);
+			const vscodeLanguageId =
+				this.languageService.getLanguageIdByLanguageName(
+					content.languageId,
+				);
 
-			if (vscodeLanguageId && vscodeLanguageId !== textModel.getLanguageId()) {
+			if (
+				vscodeLanguageId &&
+				vscodeLanguageId !== textModel.getLanguageId()
+			) {
 				textModel.setLanguage(vscodeLanguageId);
 			}
 		}
@@ -187,7 +258,12 @@ export class CodeBlockModelCollection extends Disposable {
 			const lastLine = textModel.getLineCount();
 
 			const lastCol = textModel.getLineMaxColumn(lastLine);
-			textModel.applyEdits([{ range: new Range(lastLine, lastCol, lastLine, lastCol), text }]);
+			textModel.applyEdits([
+				{
+					range: new Range(lastLine, lastCol, lastLine, lastCol),
+					text,
+				},
+			]);
 		} else {
 			// console.log(`Failed to optimize setText`);
 			textModel.setValue(newText);
@@ -196,27 +272,49 @@ export class CodeBlockModelCollection extends Disposable {
 		return entry;
 	}
 
-	private setCodemapperUri(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, codemapperUri: URI) {
-		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+	private setCodemapperUri(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+		codemapperUri: URI,
+	) {
+		const entry = this._models.get(
+			this.getKey(sessionId, chat, codeBlockIndex),
+		);
 
 		if (entry) {
 			entry.codemapperUri = codemapperUri;
 		}
 	}
 
-	private setVulns(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, codeBlockIndex: number, vulnerabilities: IMarkdownVulnerability[]) {
-		const entry = this._models.get(this.getKey(sessionId, chat, codeBlockIndex));
+	private setVulns(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		codeBlockIndex: number,
+		vulnerabilities: IMarkdownVulnerability[],
+	) {
+		const entry = this._models.get(
+			this.getKey(sessionId, chat, codeBlockIndex),
+		);
 
 		if (entry) {
 			entry.vulns = vulnerabilities;
 		}
 	}
 
-	private getKey(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, index: number): string {
+	private getKey(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		index: number,
+	): string {
 		return `${sessionId}/${chat.id}/${index}`;
 	}
 
-	private getCodeBlockUri(sessionId: string, chat: IChatRequestViewModel | IChatResponseViewModel, index: number): URI {
+	private getCodeBlockUri(
+		sessionId: string,
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+		index: number,
+	): URI {
 		const metadata = this.getUriMetaData(chat);
 
 		return URI.from({
@@ -227,20 +325,23 @@ export class CodeBlockModelCollection extends Disposable {
 		});
 	}
 
-	private getUriMetaData(chat: IChatRequestViewModel | IChatResponseViewModel) {
+	private getUriMetaData(
+		chat: IChatRequestViewModel | IChatResponseViewModel,
+	) {
 		if (!isResponseVM(chat)) {
 			return undefined;
 		}
 
 		return {
-			references: chat.contentReferences.map(ref => {
-				if (typeof ref.reference === 'string') {
+			references: chat.contentReferences.map((ref) => {
+				if (typeof ref.reference === "string") {
 					return;
 				}
 
-				const uriOrLocation = 'variableName' in ref.reference ?
-					ref.reference.value :
-					ref.reference;
+				const uriOrLocation =
+					"variableName" in ref.reference
+						? ref.reference.value
+						: ref.reference;
 
 				if (!uriOrLocation) {
 					return;
@@ -248,7 +349,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 				if (URI.isUri(uriOrLocation)) {
 					return {
-						uri: uriOrLocation.toJSON()
+						uri: uriOrLocation.toJSON(),
 					};
 				}
 
@@ -256,14 +357,14 @@ export class CodeBlockModelCollection extends Disposable {
 					uri: uriOrLocation.uri.toJSON(),
 					range: uriOrLocation.range,
 				};
-			})
+			}),
 		};
 	}
 }
 
 function fixCodeText(text: string, languageId: string | undefined): string {
-	if (languageId === 'php') {
-		if (!text.trim().startsWith('<')) {
+	if (languageId === "php") {
+		if (!text.trim().startsWith("<")) {
 			return `<?php\n${text}`;
 		}
 	}

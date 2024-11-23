@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/73524
 
 	/**
@@ -80,7 +79,11 @@ declare module 'vscode' {
 		 * @param options A set of options to consider while searching files.
 		 * @param token A cancellation token.
 		 */
-		provideFileSearchResults(pattern: string, options: FileSearchProviderOptions, token: CancellationToken): ProviderResult<Uri[]>;
+		provideFileSearchResults(
+			pattern: string,
+			options: FileSearchProviderOptions,
+			token: CancellationToken,
+		): ProviderResult<Uri[]>;
 	}
 
 	export namespace workspace {
@@ -94,6 +97,9 @@ declare module 'vscode' {
 		 * @param provider The provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerFileSearchProvider2(scheme: string, provider: FileSearchProvider2): Disposable;
+		export function registerFileSearchProvider2(
+			scheme: string,
+			provider: FileSearchProvider2,
+		): Disposable;
 	}
 }

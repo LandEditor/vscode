@@ -9,8 +9,8 @@
  * TODO@esm remove me once we no longer ship an AMD build.
  */
 export function getNLSMessages(): string[] {
-    return globalThis._VSCODE_NLS_MESSAGES;
+	return globalThis._VSCODE_NLS_MESSAGES;
 }
 export function getNLSLanguage(): string | undefined {
-    return globalThis._VSCODE_NLS_LANGUAGE;
+	return globalThis._VSCODE_NLS_LANGUAGE;
 }

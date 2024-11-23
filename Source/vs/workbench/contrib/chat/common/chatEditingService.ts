@@ -3,22 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
-import { Event } from '../../../../base/common/event.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { ResourceMap } from '../../../../base/common/map.js';
-import { IObservable, ITransaction } from '../../../../base/common/observable.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IDocumentDiff } from '../../../../editor/common/diff/documentDiffProvider.js';
-import { TextEdit } from '../../../../editor/common/languages.js';
-import { ITextModel } from '../../../../editor/common/model.js';
-import { localize } from '../../../../nls.js';
-import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IChatResponseModel } from './chatModel.js';
-export const IChatEditingService = createDecorator<IChatEditingService>('chatEditingService');
-export interface IChatEditingService {
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from "../../../../base/common/cancellation.js";
+import { Event } from "../../../../base/common/event.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import { ResourceMap } from "../../../../base/common/map.js";
+import {
+	IObservable,
+	ITransaction,
+} from "../../../../base/common/observable.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IDocumentDiff } from "../../../../editor/common/diff/documentDiffProvider.js";
+import { TextEdit } from "../../../../editor/common/languages.js";
+import { ITextModel } from "../../../../editor/common/model.js";
+import { localize } from "../../../../nls.js";
+import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import { IChatResponseModel } from "./chatModel.js";
 
+export const IChatEditingService =
+	createDecorator<IChatEditingService>("chatEditingService");
+export interface IChatEditingService {
 	_serviceBrand: undefined;
 
 	readonly onDidCreateEditingSession: Event<IChatEditingSession>;
@@ -34,7 +41,10 @@ export interface IChatEditingService {
 
 	readonly editingSessionFileLimit: number;
 
-	startOrContinueEditingSession(chatSessionId: string, options?: { silent: boolean }): Promise<IChatEditingSession>;
+	startOrContinueEditingSession(
+		chatSessionId: string,
+		options?: { silent: boolean },
+	): Promise<IChatEditingSession>;
 
 	getEditingSession(resource: URI): IChatEditingSession | null;
 	createSnapshot(requestId: string): void;
@@ -43,9 +53,16 @@ export interface IChatEditingService {
 	restoreSnapshot(requestId: string | undefined): Promise<void>;
 
 	hasRelatedFilesProviders(): boolean;
-	registerRelatedFilesProvider(handle: number, provider: IChatRelatedFilesProvider): IDisposable;
+	registerRelatedFilesProvider(
+		handle: number,
+		provider: IChatRelatedFilesProvider,
+	): IDisposable;
 
-	getRelatedFiles(chatSessionId: string, prompt: string, token: CancellationToken): Promise<{ group: string; files: IChatRelatedFile[] }[] | undefined>;
+	getRelatedFiles(
+		chatSessionId: string,
+		prompt: string,
+		token: CancellationToken,
+	): Promise<{ group: string; files: IChatRelatedFile[] }[] | undefined>;
 }
 
 export interface IChatRequestDraft {
@@ -64,10 +81,16 @@ export interface IChatRelatedFile {
 
 export interface IChatRelatedFilesProvider {
 	readonly description: string;
-	provideRelatedFiles(chatRequest: IChatRequestDraft, token: CancellationToken): Promise<IChatRelatedFile[] | undefined>;
+	provideRelatedFiles(
+		chatRequest: IChatRequestDraft,
+		token: CancellationToken,
+	): Promise<IChatRelatedFile[] | undefined>;
 }
 
-export interface WorkingSetDisplayMetadata { state: WorkingSetEntryState; description?: string }
+export interface WorkingSetDisplayMetadata {
+	state: WorkingSetEntryState;
+	description?: string;
+}
 
 export interface IChatEditingSession {
 	readonly chatSessionId: string;
@@ -78,7 +101,11 @@ export interface IChatEditingSession {
 	readonly hiddenRequestIds: IObservable<readonly string[]>;
 	readonly workingSet: ResourceMap<WorkingSetDisplayMetadata>;
 	readonly isVisible: boolean;
-	addFileToWorkingSet(uri: URI, description?: string, kind?: WorkingSetEntryState.Transient | WorkingSetEntryState.Suggested): void;
+	addFileToWorkingSet(
+		uri: URI,
+		description?: string,
+		kind?: WorkingSetEntryState.Transient | WorkingSetEntryState.Suggested,
+	): void;
 	show(): Promise<void>;
 	remove(reason: WorkingSetEntryRemovalReason, ...uris: URI[]): void;
 	accept(...uris: URI[]): Promise<void>;
@@ -94,7 +121,7 @@ export interface IChatEditingSession {
 
 export const enum WorkingSetEntryRemovalReason {
 	User,
-	Programmatic
+	Programmatic,
 }
 
 export const enum WorkingSetEntryState {
@@ -124,28 +151,57 @@ export interface IModifiedFileEntry {
 	reject(transaction: ITransaction | undefined): Promise<void>;
 }
 export interface IChatEditingSessionStream {
-	textEdits(resource: URI, textEdits: TextEdit[], isLastEdits: boolean, responseModel: IChatResponseModel): void;
+	textEdits(
+		resource: URI,
+		textEdits: TextEdit[],
+		isLastEdits: boolean,
+		responseModel: IChatResponseModel,
+	): void;
 }
 export const enum ChatEditingSessionState {
-    Initial = 0,
-    StreamingEdits = 1,
-    Idle = 2,
-    Disposed = 3
+	Initial = 0,
+	StreamingEdits = 1,
+	Idle = 2,
+	Disposed = 3,
 }
-export const CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME = 'chat-editing-multi-diff-source';
-export const chatEditingWidgetFileStateContextKey = new RawContextKey<WorkingSetEntryState>('chatEditingWidgetFileState', undefined, localize('chatEditingWidgetFileState', "The current state of the file in the chat editing widget"));
-export const decidedChatEditingResourceContextKey = new RawContextKey<string[]>('decidedChatEditingResource', []);
-export const chatEditingResourceContextKey = new RawContextKey<string | undefined>('chatEditingResource', undefined);
-export const inChatEditingSessionContextKey = new RawContextKey<boolean | undefined>('inChatEditingSession', undefined);
-export const applyingChatEditsContextKey = new RawContextKey<boolean | undefined>('isApplyingChatEdits', undefined);
-export const hasUndecidedChatEditingResourceContextKey = new RawContextKey<boolean | undefined>('hasUndecidedChatEditingResource', false);
-export const hasAppliedChatEditsContextKey = new RawContextKey<boolean | undefined>('hasAppliedChatEdits', false);
-export const applyingChatEditsFailedContextKey = new RawContextKey<boolean | undefined>('applyingChatEditsFailed', false);
-export const chatEditingMaxFileAssignmentName = 'chatEditingSessionFileLimit';
+export const CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME =
+	"chat-editing-multi-diff-source";
+export const chatEditingWidgetFileStateContextKey =
+	new RawContextKey<WorkingSetEntryState>(
+		"chatEditingWidgetFileState",
+		undefined,
+		localize(
+			"chatEditingWidgetFileState",
+			"The current state of the file in the chat editing widget",
+		),
+	);
+export const decidedChatEditingResourceContextKey = new RawContextKey<string[]>(
+	"decidedChatEditingResource",
+	[],
+);
+export const chatEditingResourceContextKey = new RawContextKey<
+	string | undefined
+>("chatEditingResource", undefined);
+export const inChatEditingSessionContextKey = new RawContextKey<
+	boolean | undefined
+>("inChatEditingSession", undefined);
+export const applyingChatEditsContextKey = new RawContextKey<
+	boolean | undefined
+>("isApplyingChatEdits", undefined);
+export const hasUndecidedChatEditingResourceContextKey = new RawContextKey<
+	boolean | undefined
+>("hasUndecidedChatEditingResource", false);
+export const hasAppliedChatEditsContextKey = new RawContextKey<
+	boolean | undefined
+>("hasAppliedChatEdits", false);
+export const applyingChatEditsFailedContextKey = new RawContextKey<
+	boolean | undefined
+>("applyingChatEditsFailed", false);
+export const chatEditingMaxFileAssignmentName = "chatEditingSessionFileLimit";
 export const defaultChatEditingMaxFileLimit = 10;
 export const enum ChatEditKind {
-    Created,
-    Modified
+	Created,
+	Modified,
 }
 
 export interface IChatEditingActionContext {
@@ -153,6 +209,8 @@ export interface IChatEditingActionContext {
 	sessionId: string;
 }
 
-export function isChatEditingActionContext(thing: unknown): thing is IChatEditingActionContext {
-	return typeof thing === 'object' && !!thing && 'sessionId' in thing;
+export function isChatEditingActionContext(
+	thing: unknown,
+): thing is IChatEditingActionContext {
+	return typeof thing === "object" && !!thing && "sessionId" in thing;
 }

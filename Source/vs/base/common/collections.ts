@@ -16,60 +16,69 @@ export type INumberDictionary<V> = Record<number, V>;
  * Groups the collection into a dictionary based on the provided
  * group function.
  */
-export function groupBy<K extends string | number | symbol, V>(data: V[], groupFn: (element: V) => K): Record<K, V[]> {
-    const result: Record<K, V[]> = Object.create(null);
+export function groupBy<K extends string | number | symbol, V>(
+	data: V[],
+	groupFn: (element: V) => K,
+): Record<K, V[]> {
+	const result: Record<K, V[]> = Object.create(null);
 
-    for (const element of data) {
-        const key = groupFn(element);
+	for (const element of data) {
+		const key = groupFn(element);
 
-        let target = result[key];
+		let target = result[key];
 
-        if (!target) {
-            target = result[key] = [];
-        }
-        target.push(element);
-    }
-    return result;
+		if (!target) {
+			target = result[key] = [];
+		}
+		target.push(element);
+	}
+	return result;
 }
-export function diffSets<T>(before: ReadonlySet<T>, after: ReadonlySet<T>): {
-    removed: T[];
-    added: T[];
+export function diffSets<T>(
+	before: ReadonlySet<T>,
+	after: ReadonlySet<T>,
+): {
+	removed: T[];
+	added: T[];
 } {
-    const removed: T[] = [];
+	const removed: T[] = [];
 
-    const added: T[] = [];
+	const added: T[] = [];
 
-    for (const element of before) {
-        if (!after.has(element)) {
-            removed.push(element);
-        }
-    }
-    for (const element of after) {
-        if (!before.has(element)) {
-            added.push(element);
-        }
-    }
-    return { removed, added };
+	for (const element of before) {
+		if (!after.has(element)) {
+			removed.push(element);
+		}
+	}
+	for (const element of after) {
+		if (!before.has(element)) {
+			added.push(element);
+		}
+	}
+	return { removed, added };
 }
-export function diffMaps<K, V>(before: Map<K, V>, after: Map<K, V>): {
-    removed: V[];
-    added: V[];
+export function diffMaps<K, V>(
+	before: Map<K, V>,
+	after: Map<K, V>,
+): {
+	removed: V[];
+	added: V[];
 } {
-    const removed: V[] = [];
+	const removed: V[] = [];
 
-    const added: V[] = [];
+	const added: V[] = [];
 
-    for (const [index, value] of before) {
-        if (!after.has(index)) {
-            removed.push(value);
-        }
-    }
-    for (const [index, value] of after) {
-        if (!before.has(index)) {
-            added.push(value);
-        }
-    }
-    return { removed, added };
+	for (const [index, value] of before) {
+		if (!after.has(index)) {
+			removed.push(value);
+		}
+	}
+	for (const [index, value] of after) {
+		if (!before.has(index)) {
+			added.push(value);
+		}
+	}
+	return { removed, added };
 }
 /**
  * Computes the intersection of two sets.
@@ -79,62 +88,67 @@ export function diffMaps<K, V>(before: Map<K, V>, after: Map<K, V>): {
  * @returns A new set containing the elements that are in both `setA` and `setB`.
  */
 export function intersection<T>(setA: Set<T>, setB: Iterable<T>): Set<T> {
-    const result = new Set<T>();
+	const result = new Set<T>();
 
-    for (const elem of setB) {
-        if (setA.has(elem)) {
-            result.add(elem);
-        }
-    }
-    return result;
+	for (const elem of setB) {
+		if (setA.has(elem)) {
+			result.add(elem);
+		}
+	}
+	return result;
 }
 export class SetWithKey<T> implements Set<T> {
-    private _map = new Map<any, T>();
+	private _map = new Map<any, T>();
 
-    constructor(values: T[], private toKey: (t: T) => unknown) {
-        for (const value of values) {
-            this.add(value);
-        }
-    }
-    get size(): number {
-        return this._map.size;
-    }
-    add(value: T): this {
-        const key = this.toKey(value);
-        this._map.set(key, value);
+	constructor(
+		values: T[],
+		private toKey: (t: T) => unknown,
+	) {
+		for (const value of values) {
+			this.add(value);
+		}
+	}
+	get size(): number {
+		return this._map.size;
+	}
+	add(value: T): this {
+		const key = this.toKey(value);
+		this._map.set(key, value);
 
-        return this;
-    }
-    delete(value: T): boolean {
-        return this._map.delete(this.toKey(value));
-    }
-    has(value: T): boolean {
-        return this._map.has(this.toKey(value));
-    }
-    *entries(): IterableIterator<[
-        T,
-        T
-    ]> {
-        for (const entry of this._map.values()) {
-            yield [entry, entry];
-        }
-    }
-    keys(): IterableIterator<T> {
-        return this.values();
-    }
-    *values(): IterableIterator<T> {
-        for (const entry of this._map.values()) {
-            yield entry;
-        }
-    }
-    clear(): void {
-        this._map.clear();
-    }
-    forEach(callbackfn: (value: T, value2: T, set: Set<T>) => void, thisArg?: any): void {
-        this._map.forEach(entry => callbackfn.call(thisArg, entry, entry, this));
-    }
-    [Symbol.iterator](): IterableIterator<T> {
-        return this.values();
-    }
-    [Symbol.toStringTag]: string = 'SetWithKey';
+		return this;
+	}
+	delete(value: T): boolean {
+		return this._map.delete(this.toKey(value));
+	}
+	has(value: T): boolean {
+		return this._map.has(this.toKey(value));
+	}
+	*entries(): IterableIterator<[T, T]> {
+		for (const entry of this._map.values()) {
+			yield [entry, entry];
+		}
+	}
+	keys(): IterableIterator<T> {
+		return this.values();
+	}
+	*values(): IterableIterator<T> {
+		for (const entry of this._map.values()) {
+			yield entry;
+		}
+	}
+	clear(): void {
+		this._map.clear();
+	}
+	forEach(
+		callbackfn: (value: T, value2: T, set: Set<T>) => void,
+		thisArg?: any,
+	): void {
+		this._map.forEach((entry) =>
+			callbackfn.call(thisArg, entry, entry, this),
+		);
+	}
+	[Symbol.iterator](): IterableIterator<T> {
+		return this.values();
+	}
+	[Symbol.toStringTag]: string = "SetWithKey";
 }

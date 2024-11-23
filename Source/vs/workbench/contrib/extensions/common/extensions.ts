@@ -3,26 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { Event } from '../../../../base/common/event.js';
-import { IPager } from '../../../../base/common/paging.js';
-import { IQueryOptions, ILocalExtension, IGalleryExtension, IExtensionIdentifier, InstallOptions, IExtensionInfo, IExtensionQueryOptions, IDeprecationInfo, InstallExtensionResult } from '../../../../platform/extensionManagement/common/extensionManagement.js';
-import { EnablementState, IExtensionManagementServer, IResourceExtension } from '../../../services/extensionManagement/common/extensionManagement.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
-import { areSameExtensions } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
-import { IExtensionManifest, ExtensionType } from '../../../../platform/extensions/common/extensions.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IView, IViewPaneContainer } from '../../../common/views.js';
-import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { IExtensionsStatus as IExtensionRuntimeStatus } from '../../../services/extensions/common/extensions.js';
-import { IExtensionEditorOptions } from './extensionsInput.js';
-import { MenuId } from '../../../../platform/actions/common/actions.js';
-import { ProgressLocation } from '../../../../platform/progress/common/progress.js';
-import { Severity } from '../../../../platform/notification/common/notification.js';
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
+import { CancellationToken } from "../../../../base/common/cancellation.js";
+import { Event } from "../../../../base/common/event.js";
+import { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import { Disposable, IDisposable } from "../../../../base/common/lifecycle.js";
+import { IPager } from "../../../../base/common/paging.js";
+import { URI } from "../../../../base/common/uri.js";
+import { MenuId } from "../../../../platform/actions/common/actions.js";
+import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
+import {
+	IDeprecationInfo,
+	IExtensionIdentifier,
+	IExtensionInfo,
+	IExtensionQueryOptions,
+	IGalleryExtension,
+	ILocalExtension,
+	InstallExtensionResult,
+	InstallOptions,
+	IQueryOptions,
+} from "../../../../platform/extensionManagement/common/extensionManagement.js";
+import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
+import {
+	ExtensionType,
+	IExtensionManifest,
+} from "../../../../platform/extensions/common/extensions.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import { Severity } from "../../../../platform/notification/common/notification.js";
+import { ProgressLocation } from "../../../../platform/progress/common/progress.js";
+import { IView, IViewPaneContainer } from "../../../common/views.js";
+import {
+	EnablementState,
+	IExtensionManagementServer,
+	IResourceExtension,
+} from "../../../services/extensionManagement/common/extensionManagement.js";
+import { IExtensionsStatus as IExtensionRuntimeStatus } from "../../../services/extensions/common/extensions.js";
+import { IExtensionEditorOptions } from "./extensionsInput.js";
 
-export const VIEWLET_ID = 'workbench.view.extensions';
+export const VIEWLET_ID = "workbench.view.extensions";
 
 export interface IExtensionsViewPaneContainer extends IViewPaneContainer {
 	readonly searchValue: string | undefined;
@@ -38,18 +55,21 @@ export const enum ExtensionState {
 	Installing,
 	Installed,
 	Uninstalling,
-	Uninstalled
+	Uninstalled,
 }
 
 export const enum ExtensionRuntimeActionType {
-	ReloadWindow = 'reloadWindow',
-	RestartExtensions = 'restartExtensions',
-	DownloadUpdate = 'downloadUpdate',
-	ApplyUpdate = 'applyUpdate',
-	QuitAndInstall = 'quitAndInstall',
+	ReloadWindow = "reloadWindow",
+	RestartExtensions = "restartExtensions",
+	DownloadUpdate = "downloadUpdate",
+	ApplyUpdate = "applyUpdate",
+	QuitAndInstall = "quitAndInstall",
 }
 
-export type ExtensionRuntimeState = { action: ExtensionRuntimeActionType; reason: string };
+export type ExtensionRuntimeState = {
+	action: ExtensionRuntimeActionType;
+	reason: string;
+};
 
 export interface IExtension {
 	readonly type: ExtensionType;
@@ -107,7 +127,8 @@ export interface IExtension {
 	readonly deprecationInfo?: IDeprecationInfo;
 }
 
-export const IExtensionsWorkbenchService = createDecorator<IExtensionsWorkbenchService>('extensionsWorkbenchService');
+export const IExtensionsWorkbenchService =
+	createDecorator<IExtensionsWorkbenchService>("extensionsWorkbenchService");
 
 export interface InstallExtensionOptions extends InstallOptions {
 	version?: string;
@@ -133,18 +154,46 @@ export interface IExtensionsWorkbenchService {
 	readonly whenInitialized: Promise<void>;
 	queryLocal(server?: IExtensionManagementServer): Promise<IExtension[]>;
 	queryGallery(token: CancellationToken): Promise<IPager<IExtension>>;
-	queryGallery(options: IQueryOptions, token: CancellationToken): Promise<IPager<IExtension>>;
+	queryGallery(
+		options: IQueryOptions,
+		token: CancellationToken,
+	): Promise<IPager<IExtension>>;
 
-	getExtensions(extensionInfos: IExtensionInfo[], token: CancellationToken): Promise<IExtension[]>;
+	getExtensions(
+		extensionInfos: IExtensionInfo[],
+		token: CancellationToken,
+	): Promise<IExtension[]>;
 
-	getExtensions(extensionInfos: IExtensionInfo[], options: IExtensionQueryOptions, token: CancellationToken): Promise<IExtension[]>;
+	getExtensions(
+		extensionInfos: IExtensionInfo[],
+		options: IExtensionQueryOptions,
+		token: CancellationToken,
+	): Promise<IExtension[]>;
 
-	getResourceExtensions(locations: URI[], isWorkspaceScoped: boolean): Promise<IExtension[]>;
+	getResourceExtensions(
+		locations: URI[],
+		isWorkspaceScoped: boolean,
+	): Promise<IExtension[]>;
 	canInstall(extension: IExtension): Promise<true | IMarkdownString>;
-	install(id: string, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	install(vsix: URI, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	install(extension: IExtension, installOptions?: InstallExtensionOptions, progressLocation?: ProgressLocation | string): Promise<IExtension>;
-	installInServer(extension: IExtension, server: IExtensionManagementServer): Promise<void>;
+	install(
+		id: string,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string,
+	): Promise<IExtension>;
+	install(
+		vsix: URI,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string,
+	): Promise<IExtension>;
+	install(
+		extension: IExtension,
+		installOptions?: InstallExtensionOptions,
+		progressLocation?: ProgressLocation | string,
+	): Promise<IExtension>;
+	installInServer(
+		extension: IExtension,
+		server: IExtensionManagementServer,
+	): Promise<void>;
 
 	downloadVSIX(extension: string, prerelease: boolean): Promise<void>;
 	uninstall(extension: IExtension): Promise<void>;
@@ -154,22 +203,37 @@ export interface IExtensionsWorkbenchService {
 
 	setLanguage(extension: IExtension): Promise<void>;
 
-	setEnablement(extensions: IExtension | IExtension[], enablementState: EnablementState): Promise<void>;
+	setEnablement(
+		extensions: IExtension | IExtension[],
+		enablementState: EnablementState,
+	): Promise<void>;
 	isAutoUpdateEnabledFor(extensionOrPublisher: IExtension | string): boolean;
-	updateAutoUpdateEnablementFor(extensionOrPublisher: IExtension | string, enable: boolean): Promise<void>;
-	shouldRequireConsentToUpdate(extension: IExtension): Promise<string | undefined>;
+	updateAutoUpdateEnablementFor(
+		extensionOrPublisher: IExtension | string,
+		enable: boolean,
+	): Promise<void>;
+	shouldRequireConsentToUpdate(
+		extension: IExtension,
+	): Promise<string | undefined>;
 	updateAutoUpdateForAllExtensions(value: boolean): Promise<void>;
-	open(extension: IExtension | string, options?: IExtensionEditorOptions): Promise<void>;
+	open(
+		extension: IExtension | string,
+		options?: IExtensionEditorOptions,
+	): Promise<void>;
 	openSearch(searchValue: string, focus?: boolean): Promise<void>;
 
 	getAutoUpdateValue(): AutoUpdateConfigurationValue;
 	checkForUpdates(): Promise<void>;
 
-	getExtensionRuntimeStatus(extension: IExtension): IExtensionRuntimeStatus | undefined;
+	getExtensionRuntimeStatus(
+		extension: IExtension,
+	): IExtensionRuntimeStatus | undefined;
 	updateAll(): Promise<InstallExtensionResult[]>;
 	updateRunningExtensions(): Promise<void>;
 
-	readonly onDidChangeExtensionsNotification: Event<IExtensionsNotification | undefined>;
+	readonly onDidChangeExtensionsNotification: Event<
+		IExtensionsNotification | undefined
+	>;
 
 	getExtensionsNotification(): IExtensionsNotification | undefined;
 
@@ -180,20 +244,24 @@ export interface IExtensionsWorkbenchService {
 }
 
 export const enum ExtensionEditorTab {
-	Readme = 'readme',
-	Features = 'features',
-	Changelog = 'changelog',
-	Dependencies = 'dependencies',
-	ExtensionPack = 'extensionPack',
+	Readme = "readme",
+	Features = "features",
+	Changelog = "changelog",
+	Dependencies = "dependencies",
+	ExtensionPack = "extensionPack",
 }
 
-export const ConfigurationKey = 'extensions';
-export const AutoUpdateConfigurationKey = 'extensions.autoUpdate';
-export const AutoCheckUpdatesConfigurationKey = 'extensions.autoCheckUpdates';
-export const CloseExtensionDetailsOnViewChangeKey = 'extensions.closeExtensionDetailsOnViewChange';
-export const AutoRestartConfigurationKey = 'extensions.autoRestart';
+export const ConfigurationKey = "extensions";
+export const AutoUpdateConfigurationKey = "extensions.autoUpdate";
+export const AutoCheckUpdatesConfigurationKey = "extensions.autoCheckUpdates";
+export const CloseExtensionDetailsOnViewChangeKey =
+	"extensions.closeExtensionDetailsOnViewChange";
+export const AutoRestartConfigurationKey = "extensions.autoRestart";
 
-export type AutoUpdateConfigurationValue = boolean | 'onlyEnabledExtensions' | 'onlySelectedExtensions';
+export type AutoUpdateConfigurationValue =
+	| boolean
+	| "onlyEnabledExtensions"
+	| "onlySelectedExtensions";
 
 export interface IExtensionsConfiguration {
 	autoUpdate: boolean;
@@ -209,24 +277,33 @@ export interface IExtensionContainer extends IDisposable {
 }
 
 export class ExtensionContainers extends Disposable {
-
 	constructor(
 		private readonly containers: IExtensionContainer[],
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super();
 		this._register(extensionsWorkbenchService.onChange(this.update, this));
 	}
 
 	set extension(extension: IExtension) {
-		this.containers.forEach(c => c.extension = extension);
+		this.containers.forEach((c) => (c.extension = extension));
 	}
 
 	private update(extension: IExtension | undefined): void {
 		for (const container of this.containers) {
 			if (extension && container.extension) {
-				if (areSameExtensions(container.extension.identifier, extension.identifier)) {
-					if (container.extension.server && extension.server && container.extension.server !== extension.server) {
+				if (
+					areSameExtensions(
+						container.extension.identifier,
+						extension.identifier,
+					)
+				) {
+					if (
+						container.extension.server &&
+						extension.server &&
+						container.extension.server !== extension.server
+					) {
 						if (container.updateWhenCounterExtensionChanges) {
 							container.update();
 						}
@@ -241,24 +318,38 @@ export class ExtensionContainers extends Disposable {
 	}
 }
 
-export const WORKSPACE_RECOMMENDATIONS_VIEW_ID = 'workbench.views.extensions.workspaceRecommendations';
-export const OUTDATED_EXTENSIONS_VIEW_ID = 'workbench.views.extensions.searchOutdated';
-export const TOGGLE_IGNORE_EXTENSION_ACTION_ID = 'workbench.extensions.action.toggleIgnoreExtension';
-export const SELECT_INSTALL_VSIX_EXTENSION_COMMAND_ID = 'workbench.extensions.action.installVSIX';
-export const INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID = 'workbench.extensions.command.installFromVSIX';
+export const WORKSPACE_RECOMMENDATIONS_VIEW_ID =
+	"workbench.views.extensions.workspaceRecommendations";
+export const OUTDATED_EXTENSIONS_VIEW_ID =
+	"workbench.views.extensions.searchOutdated";
+export const TOGGLE_IGNORE_EXTENSION_ACTION_ID =
+	"workbench.extensions.action.toggleIgnoreExtension";
+export const SELECT_INSTALL_VSIX_EXTENSION_COMMAND_ID =
+	"workbench.extensions.action.installVSIX";
+export const INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID =
+	"workbench.extensions.command.installFromVSIX";
 
-export const LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID = 'workbench.extensions.action.listWorkspaceUnsupportedExtensions';
+export const LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID =
+	"workbench.extensions.action.listWorkspaceUnsupportedExtensions";
 
 // Context Keys
-export const HasOutdatedExtensionsContext = new RawContextKey<boolean>('hasOutdatedExtensions', false);
-export const CONTEXT_HAS_GALLERY = new RawContextKey<boolean>('hasGallery', false);
+export const HasOutdatedExtensionsContext = new RawContextKey<boolean>(
+	"hasOutdatedExtensions",
+	false,
+);
+export const CONTEXT_HAS_GALLERY = new RawContextKey<boolean>(
+	"hasGallery",
+	false,
+);
 
 // Context Menu Groups
-export const THEME_ACTIONS_GROUP = '_theme_';
-export const INSTALL_ACTIONS_GROUP = '0_install';
-export const UPDATE_ACTIONS_GROUP = '0_update';
+export const THEME_ACTIONS_GROUP = "_theme_";
+export const INSTALL_ACTIONS_GROUP = "0_install";
+export const UPDATE_ACTIONS_GROUP = "0_update";
 
-export const extensionsSearchActionsMenu = new MenuId('extensionsSearchActionsMenu');
+export const extensionsSearchActionsMenu = new MenuId(
+	"extensionsSearchActionsMenu",
+);
 
 export interface IExtensionArg {
 	id: string;

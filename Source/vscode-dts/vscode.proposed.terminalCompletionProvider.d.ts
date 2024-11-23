@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/226562
 
-	export interface TerminalCompletionProvider<T extends TerminalCompletionItem> {
+	export interface TerminalCompletionProvider<
+		T extends TerminalCompletionItem,
+	> {
 		id: string;
 		/**
 		 * Provide completions for the given position and document.
@@ -16,9 +17,12 @@ declare module 'vscode' {
 		 * @param token A cancellation token.
 		 * @return A list of completions.
 		 */
-		provideTerminalCompletions(terminal: Terminal, context: TerminalCompletionContext, token: CancellationToken): ProviderResult<T[]>;
+		provideTerminalCompletions(
+			terminal: Terminal,
+			context: TerminalCompletionContext,
+			token: CancellationToken,
+		): ProviderResult<T[]>;
 	}
-
 
 	export interface TerminalCompletionItem {
 		/**
@@ -47,7 +51,6 @@ declare module 'vscode' {
 		kind?: TerminalCompletionItemKind;
 	}
 
-
 	/**
 	 * Terminal item kinds.
 	 */
@@ -56,7 +59,7 @@ declare module 'vscode' {
 		Folder = 1,
 		Flag = 2,
 		Method = 3,
-		Argument = 4
+		Argument = 4,
 	}
 
 	export interface TerminalCompletionContext {
@@ -78,6 +81,11 @@ declare module 'vscode' {
 		 * @param provider The completion provider.
 		 * @returns A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerTerminalCompletionProvider<T extends TerminalCompletionItem>(provider: TerminalCompletionProvider<T>, ...triggerCharacters: string[]): Disposable;
+		export function registerTerminalCompletionProvider<
+			T extends TerminalCompletionItem,
+		>(
+			provider: TerminalCompletionProvider<T>,
+			...triggerCharacters: string[]
+		): Disposable;
 	}
 }

@@ -3,16 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DecorationOptions, l10n, Position, Range, TextEditor, TextEditorChange, TextEditorDecorationType, TextEditorChangeKind, ThemeColor, Uri, window, workspace, EventEmitter, ConfigurationChangeEvent } from 'vscode';
-import { Model } from './model';
-import { dispose, fromNow, IDisposable, pathEquals } from './util';
-import { Repository } from './repository';
-import { throttle } from './decorators';
-import { BlameInformation } from './git';
+import {
+	ConfigurationChangeEvent,
+	DecorationOptions,
+	EventEmitter,
+	l10n,
+	Position,
+	Range,
+	TextEditor,
+	TextEditorChange,
+	TextEditorChangeKind,
+	TextEditorDecorationType,
+	ThemeColor,
+	Uri,
+	window,
+	workspace,
+} from "vscode";
 
-const notCommittedYetId = '0000000000000000000000000000000000000000';
+import { throttle } from "./decorators";
+import { BlameInformation } from "./git";
+import { Model } from "./model";
+import { Repository } from "./repository";
+import { dispose, fromNow, IDisposable, pathEquals } from "./util";
 
-function isLineChanged(lineNumber: number, changes: readonly TextEditorChange[]): boolean {
+const notCommittedYetId = "0000000000000000000000000000000000000000";
+
+function isLineChanged(
+	lineNumber: number,
+	changes: readonly TextEditorChange[],
+): boolean {
 	for (const change of changes) {
 		// If the change is a delete, skip it
 		if (change.kind === TextEditorChangeKind.Deletion) {
@@ -31,45 +50,71 @@ function isLineChanged(lineNumber: number, changes: readonly TextEditorChange[])
 	return false;
 }
 
-function mapLineNumber(lineNumber: number, changes: readonly TextEditorChange[]): number {
+function mapLineNumber(
+	lineNumber: number,
+	changes: readonly TextEditorChange[],
+): number {
 	if (changes.length === 0) {
 		return lineNumber;
 	}
 
 	for (const change of changes) {
 		// Line number is before the change so there is not need to process further
-		if ((change.kind === TextEditorChangeKind.Addition && lineNumber < change.modifiedStartLineNumber) ||
-			(change.kind === TextEditorChangeKind.Modification && lineNumber < change.modifiedStartLineNumber) ||
-			(change.kind === TextEditorChangeKind.Deletion && lineNumber < change.originalStartLineNumber)) {
+		if (
+			(change.kind === TextEditorChangeKind.Addition &&
+				lineNumber < change.modifiedStartLineNumber) ||
+			(change.kind === TextEditorChangeKind.Modification &&
+				lineNumber < change.modifiedStartLineNumber) ||
+			(change.kind === TextEditorChangeKind.Deletion &&
+				lineNumber < change.originalStartLineNumber)
+		) {
 			break;
 		}
 
 		// Map line number to the original line number
 		if (change.kind === TextEditorChangeKind.Addition) {
 			// Addition
-			lineNumber = lineNumber - (change.modifiedEndLineNumber - change.originalStartLineNumber);
+			lineNumber =
+				lineNumber -
+				(change.modifiedEndLineNumber - change.originalStartLineNumber);
 		} else if (change.kind === TextEditorChangeKind.Deletion) {
 			// Deletion
-			lineNumber = lineNumber + (change.originalEndLineNumber - change.originalStartLineNumber) + 1;
+			lineNumber =
+				lineNumber +
+				(change.originalEndLineNumber -
+					change.originalStartLineNumber) +
+				1;
 		} else if (change.kind === TextEditorChangeKind.Modification) {
 			// Modification
-			const originalLineCount = change.originalEndLineNumber - change.originalStartLineNumber + 1;
+			const originalLineCount =
+				change.originalEndLineNumber -
+				change.originalStartLineNumber +
+				1;
 
-			const modifiedLineCount = change.modifiedEndLineNumber - change.modifiedStartLineNumber + 1;
+			const modifiedLineCount =
+				change.modifiedEndLineNumber -
+				change.modifiedStartLineNumber +
+				1;
 
 			if (originalLineCount !== modifiedLineCount) {
-				lineNumber = lineNumber - (modifiedLineCount - originalLineCount);
+				lineNumber =
+					lineNumber - (modifiedLineCount - originalLineCount);
 			}
 		} else {
-			throw new Error('Unexpected change kind');
+			throw new Error("Unexpected change kind");
 		}
 	}
 
 	return lineNumber;
 }
 
-function processTextEditorChangesWithBlameInformation(blameInformation: BlameInformation[], changes: readonly TextEditorChange[]): TextEditorChange[] {
-	const [notYetCommittedBlameInformation] = blameInformation.filter(b => b.id === notCommittedYetId);
+function processTextEditorChangesWithBlameInformation(
+	blameInformation: BlameInformation[],
+	changes: readonly TextEditorChange[],
+): TextEditorChange[] {
+	const [notYetCommittedBlameInformation] = blameInformation.filter(
+		(b) => b.id === notCommittedYetId,
+	);
 
 	if (!notYetCommittedBlameInformation) {
 		return [...changes];
@@ -78,12 +123,23 @@ function processTextEditorChangesWithBlameInformation(blameInformation: BlameInf
 	const changesWithBlameInformation: TextEditorChange[] = [];
 
 	for (const change of changes) {
-		const originalStartLineNumber = mapLineNumber(change.originalStartLineNumber, changes);
+		const originalStartLineNumber = mapLineNumber(
+			change.originalStartLineNumber,
+			changes,
+		);
 
-		const originalEndLineNumber = mapLineNumber(change.originalEndLineNumber, changes);
+		const originalEndLineNumber = mapLineNumber(
+			change.originalEndLineNumber,
+			changes,
+		);
 
-		if (notYetCommittedBlameInformation.ranges.some(range =>
-			range.startLineNumber === originalStartLineNumber && range.endLineNumber === originalEndLineNumber)) {
+		if (
+			notYetCommittedBlameInformation.ranges.some(
+				(range) =>
+					range.startLineNumber === originalStartLineNumber &&
+					range.endLineNumber === originalEndLineNumber,
+			)
+		) {
 			continue;
 		}
 
@@ -94,12 +150,12 @@ function processTextEditorChangesWithBlameInformation(blameInformation: BlameInf
 }
 
 interface RepositoryBlameInformation {
-	readonly commit: string; /* commit used for blame information */
+	readonly commit: string /* commit used for blame information */;
 	readonly blameInformation: Map<Uri, ResourceBlameInformation>;
 }
 
 interface ResourceBlameInformation {
-	readonly staged: boolean; /* whether the file is staged */
+	readonly staged: boolean /* whether the file is staged */;
 	readonly blameInformation: BlameInformation[];
 }
 
@@ -109,11 +165,19 @@ interface LineBlameInformation {
 }
 
 export class GitBlameController {
-	private readonly _onDidChangeBlameInformation = new EventEmitter<TextEditor>();
-	public readonly onDidChangeBlameInformation = this._onDidChangeBlameInformation.event;
+	private readonly _onDidChangeBlameInformation =
+		new EventEmitter<TextEditor>();
+	public readonly onDidChangeBlameInformation =
+		this._onDidChangeBlameInformation.event;
 
-	readonly textEditorBlameInformation = new Map<TextEditor, readonly LineBlameInformation[]>();
-	private readonly _repositoryBlameInformation = new Map<Repository, RepositoryBlameInformation>();
+	readonly textEditorBlameInformation = new Map<
+		TextEditor,
+		readonly LineBlameInformation[]
+	>();
+	private readonly _repositoryBlameInformation = new Map<
+		Repository,
+		RepositoryBlameInformation
+	>();
 
 	private _repositoryDisposables = new Map<Repository, IDisposable[]>();
 	private _disposables: IDisposable[] = [];
@@ -121,11 +185,27 @@ export class GitBlameController {
 	constructor(private readonly _model: Model) {
 		this._disposables.push(new GitBlameEditorDecoration(this));
 
-		this._model.onDidOpenRepository(this._onDidOpenRepository, this, this._disposables);
-		this._model.onDidCloseRepository(this._onDidCloseRepository, this, this._disposables);
+		this._model.onDidOpenRepository(
+			this._onDidOpenRepository,
+			this,
+			this._disposables,
+		);
+		this._model.onDidCloseRepository(
+			this._onDidCloseRepository,
+			this,
+			this._disposables,
+		);
 
-		window.onDidChangeTextEditorSelection(e => this._updateTextEditorBlameInformation(e.textEditor), this, this._disposables);
-		window.onDidChangeTextEditorDiffInformation(e => this._updateTextEditorBlameInformation(e.textEditor), this, this._disposables);
+		window.onDidChangeTextEditorSelection(
+			(e) => this._updateTextEditorBlameInformation(e.textEditor),
+			this,
+			this._disposables,
+		);
+		window.onDidChangeTextEditorDiffInformation(
+			(e) => this._updateTextEditorBlameInformation(e.textEditor),
+			this,
+			this._disposables,
+		);
 
 		this._updateTextEditorBlameInformation(window.activeTextEditor);
 	}
@@ -133,7 +213,11 @@ export class GitBlameController {
 	private _onDidOpenRepository(repository: Repository): void {
 		const repositoryDisposables: IDisposable[] = [];
 
-		repository.onDidRunGitStatus(() => this._onDidRunGitStatus(repository), this, repositoryDisposables);
+		repository.onDidRunGitStatus(
+			() => this._onDidRunGitStatus(repository),
+			this,
+			repositoryDisposables,
+		);
 		this._repositoryDisposables.set(repository, repositoryDisposables);
 	}
 
@@ -149,7 +233,8 @@ export class GitBlameController {
 	}
 
 	private _onDidRunGitStatus(repository: Repository): void {
-		let repositoryBlameInformation = this._repositoryBlameInformation.get(repository);
+		let repositoryBlameInformation =
+			this._repositoryBlameInformation.get(repository);
 
 		if (!repositoryBlameInformation) {
 			return;
@@ -165,9 +250,13 @@ export class GitBlameController {
 		}
 
 		// 2. Resource has been staged/unstaged (remove blame information for the resource)
-		for (const [uri, resourceBlameInformation] of repositoryBlameInformation?.blameInformation.entries() ?? []) {
-			const isStaged = repository.indexGroup.resourceStates
-				.some(r => pathEquals(uri.fsPath, r.resourceUri.fsPath));
+		for (const [
+			uri,
+			resourceBlameInformation,
+		] of repositoryBlameInformation?.blameInformation.entries() ?? []) {
+			const isStaged = repository.indexGroup.resourceStates.some((r) =>
+				pathEquals(uri.fsPath, r.resourceUri.fsPath),
+			);
 
 			if (resourceBlameInformation.staged !== isStaged) {
 				repositoryBlameInformation?.blameInformation.delete(uri);
@@ -182,47 +271,67 @@ export class GitBlameController {
 		}
 	}
 
-	private async _getBlameInformation(resource: Uri): Promise<BlameInformation[] | undefined> {
+	private async _getBlameInformation(
+		resource: Uri,
+	): Promise<BlameInformation[] | undefined> {
 		const repository = this._model.getRepository(resource);
 
 		if (!repository || !repository.HEAD?.commit) {
 			return undefined;
 		}
 
-		const repositoryBlameInformation = this._repositoryBlameInformation.get(repository) ?? {
-			commit: repository.HEAD.commit,
-			blameInformation: new Map<Uri, ResourceBlameInformation>()
-		} satisfies RepositoryBlameInformation;
+		const repositoryBlameInformation =
+			this._repositoryBlameInformation.get(repository) ??
+			({
+				commit: repository.HEAD.commit,
+				blameInformation: new Map<Uri, ResourceBlameInformation>(),
+			} satisfies RepositoryBlameInformation);
 
-		let resourceBlameInformation = repositoryBlameInformation.blameInformation.get(resource);
+		let resourceBlameInformation =
+			repositoryBlameInformation.blameInformation.get(resource);
 
-		if (repositoryBlameInformation.commit === repository.HEAD.commit && resourceBlameInformation) {
+		if (
+			repositoryBlameInformation.commit === repository.HEAD.commit &&
+			resourceBlameInformation
+		) {
 			return resourceBlameInformation.blameInformation;
 		}
 
-		const staged = repository.indexGroup.resourceStates
-			.some(r => pathEquals(resource.fsPath, r.resourceUri.fsPath));
+		const staged = repository.indexGroup.resourceStates.some((r) =>
+			pathEquals(resource.fsPath, r.resourceUri.fsPath),
+		);
 
-		const blameInformation = await repository.blame2(resource.fsPath) ?? [];
-		resourceBlameInformation = { staged, blameInformation } satisfies ResourceBlameInformation;
+		const blameInformation =
+			(await repository.blame2(resource.fsPath)) ?? [];
+		resourceBlameInformation = {
+			staged,
+			blameInformation,
+		} satisfies ResourceBlameInformation;
 
 		this._repositoryBlameInformation.set(repository, {
 			...repositoryBlameInformation,
-			blameInformation: repositoryBlameInformation.blameInformation.set(resource, resourceBlameInformation)
+			blameInformation: repositoryBlameInformation.blameInformation.set(
+				resource,
+				resourceBlameInformation,
+			),
 		});
 
 		return resourceBlameInformation.blameInformation;
 	}
 
 	@throttle
-	private async _updateTextEditorBlameInformation(textEditor: TextEditor | undefined): Promise<void> {
+	private async _updateTextEditorBlameInformation(
+		textEditor: TextEditor | undefined,
+	): Promise<void> {
 		const diffInformation = textEditor?.diffInformation;
 
 		if (!diffInformation || diffInformation.isStale) {
 			return;
 		}
 
-		const resourceBlameInformation = await this._getBlameInformation(textEditor.document.uri);
+		const resourceBlameInformation = await this._getBlameInformation(
+			textEditor.document.uri,
+		);
 
 		if (!resourceBlameInformation) {
 			return;
@@ -232,34 +341,52 @@ export class GitBlameController {
 		// This is done since git blame information is the source of truth and we don't
 		// need the diff information for those ranges. The complete diff information is
 		// still used to determine whether a line is changed or not.
-		const diffInformationWithBlame = processTextEditorChangesWithBlameInformation(
-			resourceBlameInformation,
-			diffInformation.changes);
+		const diffInformationWithBlame =
+			processTextEditorChangesWithBlameInformation(
+				resourceBlameInformation,
+				diffInformation.changes,
+			);
 
 		const lineBlameInformation: LineBlameInformation[] = [];
 
-		for (const lineNumber of textEditor.selections.map(s => s.active.line)) {
+		for (const lineNumber of textEditor.selections.map(
+			(s) => s.active.line,
+		)) {
 			// Check if the line is contained in the diff information
 			if (isLineChanged(lineNumber + 1, diffInformation.changes)) {
-				lineBlameInformation.push({ lineNumber, blameInformation: l10n.t('Not Committed Yet') });
+				lineBlameInformation.push({
+					lineNumber,
+					blameInformation: l10n.t("Not Committed Yet"),
+				});
 
 				continue;
 			}
 
 			// Map the line number to the git blame ranges
-			const lineNumberWithDiff = mapLineNumber(lineNumber + 1, diffInformationWithBlame);
+			const lineNumberWithDiff = mapLineNumber(
+				lineNumber + 1,
+				diffInformationWithBlame,
+			);
 
-			const blameInformation = resourceBlameInformation.find(blameInformation => {
-				return blameInformation.ranges.find(range => {
-					return lineNumberWithDiff >= range.startLineNumber && lineNumberWithDiff <= range.endLineNumber;
-				});
-			});
+			const blameInformation = resourceBlameInformation.find(
+				(blameInformation) => {
+					return blameInformation.ranges.find((range) => {
+						return (
+							lineNumberWithDiff >= range.startLineNumber &&
+							lineNumberWithDiff <= range.endLineNumber
+						);
+					});
+				},
+			);
 
 			if (blameInformation) {
 				if (blameInformation.id !== notCommittedYetId) {
 					lineBlameInformation.push({ lineNumber, blameInformation });
 				} else {
-					lineBlameInformation.push({ lineNumber, blameInformation: l10n.t('Not Committed Yet (Staged)') });
+					lineBlameInformation.push({
+						lineNumber,
+						blameInformation: l10n.t("Not Committed Yet (Staged)"),
+					});
 				}
 			}
 		}
@@ -286,17 +413,25 @@ class GitBlameEditorDecoration {
 		this._decorationType = window.createTextEditorDecorationType({
 			isWholeLine: true,
 			after: {
-				color: new ThemeColor('git.blame.editorDecorationForeground')
-			}
+				color: new ThemeColor("git.blame.editorDecorationForeground"),
+			},
 		});
 		this._disposables.push(this._decorationType);
 
-		workspace.onDidChangeConfiguration(this._onDidChangeConfiguration, this, this._disposables);
-		this._controller.onDidChangeBlameInformation(e => this._updateDecorations(e), this, this._disposables);
+		workspace.onDidChangeConfiguration(
+			this._onDidChangeConfiguration,
+			this,
+			this._disposables,
+		);
+		this._controller.onDidChangeBlameInformation(
+			(e) => this._updateDecorations(e),
+			this,
+			this._disposables,
+		);
 	}
 
 	private _onDidChangeConfiguration(e: ConfigurationChangeEvent): void {
-		if (!e.affectsConfiguration('git.blame.editorDecoration.enabled')) {
+		if (!e.affectsConfiguration("git.blame.editorDecoration.enabled")) {
 			return;
 		}
 
@@ -312,9 +447,9 @@ class GitBlameEditorDecoration {
 	}
 
 	private _isEnabled(): boolean {
-		const config = workspace.getConfiguration('git');
+		const config = workspace.getConfiguration("git");
 
-		return config.get<boolean>('blame.editorDecoration.enabled', false);
+		return config.get<boolean>("blame.editorDecoration.enabled", false);
 	}
 
 	private _updateDecorations(textEditor: TextEditor): void {
@@ -322,7 +457,8 @@ class GitBlameEditorDecoration {
 			return;
 		}
 
-		const blameInformation = this._controller.textEditorBlameInformation.get(textEditor);
+		const blameInformation =
+			this._controller.textEditorBlameInformation.get(textEditor);
 
 		if (!blameInformation) {
 			textEditor.setDecorations(this._decorationType, []);
@@ -330,10 +466,11 @@ class GitBlameEditorDecoration {
 			return;
 		}
 
-		const decorations = blameInformation.map(blame => {
-			const contentText = typeof blame.blameInformation === 'string'
-				? blame.blameInformation
-				: `${blame.blameInformation.message ?? ''}, ${blame.blameInformation.authorName ?? ''} (${fromNow(blame.blameInformation.date ?? Date.now(), true, true)})`;
+		const decorations = blameInformation.map((blame) => {
+			const contentText =
+				typeof blame.blameInformation === "string"
+					? blame.blameInformation
+					: `${blame.blameInformation.message ?? ""}, ${blame.blameInformation.authorName ?? ""} (${fromNow(blame.blameInformation.date ?? Date.now(), true, true)})`;
 
 			return this._createDecoration(blame.lineNumber, contentText);
 		});
@@ -341,15 +478,18 @@ class GitBlameEditorDecoration {
 		textEditor.setDecorations(this._decorationType, decorations);
 	}
 
-	private _createDecoration(lineNumber: number, contentText: string): DecorationOptions {
+	private _createDecoration(
+		lineNumber: number,
+		contentText: string,
+	): DecorationOptions {
 		const position = new Position(lineNumber, Number.MAX_SAFE_INTEGER);
 
 		return {
 			range: new Range(position, position),
 			renderOptions: {
 				after: {
-					contentText: `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0${contentText}`
-				}
+					contentText: `\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0${contentText}`,
+				},
 			},
 		};
 	}

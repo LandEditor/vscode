@@ -5,8 +5,7 @@
 
 // https://github.com/microsoft/vscode/issues/229431
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export namespace env {
 		/**
 		 * Retrieves a base64 representation of a native window

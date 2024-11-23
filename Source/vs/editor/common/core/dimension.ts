@@ -3,6 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 export interface IDimension {
-    width: number;
-    height: number;
+	width: number;
+	height: number;
 }

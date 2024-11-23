@@ -3,56 +3,86 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationTokenSource } from '../../../../../base/common/cancellation.js';
-import { Emitter, Event } from '../../../../../base/common/event.js';
-import { Disposable, DisposableStore, MutableDisposable } from '../../../../../base/common/lifecycle.js';
-import { basename } from '../../../../../base/common/resources.js';
-import { URI } from '../../../../../base/common/uri.js';
-import { ICodeEditor, isCodeEditor, isDiffEditor } from '../../../../../editor/browser/editorBrowser.js';
-import { ICodeEditorService } from '../../../../../editor/browser/services/codeEditorService.js';
-import { Location } from '../../../../../editor/common/languages.js';
-import { IWorkbenchContribution } from '../../../../common/contributions.js';
-import { EditorsOrder } from '../../../../common/editor.js';
-import { IEditorService } from '../../../../services/editor/common/editorService.js';
-import { ChatAgentLocation } from '../../common/chatAgents.js';
-import { IBaseChatRequestVariableEntry, IChatRequestImplicitVariableEntry } from '../../common/chatModel.js';
-import { ILanguageModelIgnoredFilesService } from '../../common/ignoredFiles.js';
-import { IChatWidget, IChatWidgetService } from '../chat.js';
+import { CancellationTokenSource } from "../../../../../base/common/cancellation.js";
+import { Emitter, Event } from "../../../../../base/common/event.js";
+import {
+	Disposable,
+	DisposableStore,
+	MutableDisposable,
+} from "../../../../../base/common/lifecycle.js";
+import { basename } from "../../../../../base/common/resources.js";
+import { URI } from "../../../../../base/common/uri.js";
+import {
+	ICodeEditor,
+	isCodeEditor,
+	isDiffEditor,
+} from "../../../../../editor/browser/editorBrowser.js";
+import { ICodeEditorService } from "../../../../../editor/browser/services/codeEditorService.js";
+import { Location } from "../../../../../editor/common/languages.js";
+import { IWorkbenchContribution } from "../../../../common/contributions.js";
+import { EditorsOrder } from "../../../../common/editor.js";
+import { IEditorService } from "../../../../services/editor/common/editorService.js";
+import { ChatAgentLocation } from "../../common/chatAgents.js";
+import {
+	IBaseChatRequestVariableEntry,
+	IChatRequestImplicitVariableEntry,
+} from "../../common/chatModel.js";
+import { ILanguageModelIgnoredFilesService } from "../../common/ignoredFiles.js";
+import { IChatWidget, IChatWidgetService } from "../chat.js";
 
-export class ChatImplicitContextContribution extends Disposable implements IWorkbenchContribution {
-	static readonly ID = 'chat.implicitContext';
+export class ChatImplicitContextContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "chat.implicitContext";
 
-	private readonly _currentCancelTokenSource = this._register(new MutableDisposable<CancellationTokenSource>());
+	private readonly _currentCancelTokenSource = this._register(
+		new MutableDisposable<CancellationTokenSource>(),
+	);
 
 	constructor(
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
-		@ILanguageModelIgnoredFilesService private readonly ignoredFilesService: ILanguageModelIgnoredFilesService,
+		@IChatWidgetService
+		private readonly chatWidgetService: IChatWidgetService,
+		@ILanguageModelIgnoredFilesService
+		private readonly ignoredFilesService: ILanguageModelIgnoredFilesService,
 	) {
 		super();
 
 		const activeEditorDisposables = this._register(new DisposableStore());
-		this._register(Event.runAndSubscribe(
-			editorService.onDidVisibleEditorsChange,
-			(() => {
-				activeEditorDisposables.clear();
+		this._register(
+			Event.runAndSubscribe(
+				editorService.onDidVisibleEditorsChange,
+				() => {
+					activeEditorDisposables.clear();
 
-				const codeEditor = this.findActiveCodeEditor();
+					const codeEditor = this.findActiveCodeEditor();
 
-				if (codeEditor) {
-					activeEditorDisposables.add(Event.debounce(
-						Event.any(
-							codeEditor.onDidChangeModel,
-							codeEditor.onDidChangeCursorSelection,
-							codeEditor.onDidScrollChange),
-						() => undefined,
-						500)(() => this.updateImplicitContext()));
-				}
+					if (codeEditor) {
+						activeEditorDisposables.add(
+							Event.debounce(
+								Event.any(
+									codeEditor.onDidChangeModel,
+									codeEditor.onDidChangeCursorSelection,
+									codeEditor.onDidScrollChange,
+								),
+								() => undefined,
+								500,
+							)(() => this.updateImplicitContext()),
+						);
+					}
 
-				this.updateImplicitContext();
-			})));
-		this._register(chatWidgetService.onDidAddWidget(widget => this.updateImplicitContext(widget)));
+					this.updateImplicitContext();
+				},
+			),
+		);
+		this._register(
+			chatWidgetService.onDidAddWidget((widget) =>
+				this.updateImplicitContext(widget),
+			),
+		);
 	}
 
 	private findActiveCodeEditor(): ICodeEditor | undefined {
@@ -65,7 +95,9 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 				return codeEditor;
 			}
 		}
-		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+		for (const codeOrDiffEditor of this.editorService.getVisibleTextEditorControls(
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
+		)) {
 			let codeEditor: ICodeEditor;
 
 			if (isDiffEditor(codeOrDiffEditor)) {
@@ -85,8 +117,11 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 		return undefined;
 	}
 
-	private async updateImplicitContext(updateWidget?: IChatWidget): Promise<void> {
-		const cancelTokenSource = this._currentCancelTokenSource.value = new CancellationTokenSource();
+	private async updateImplicitContext(
+		updateWidget?: IChatWidget,
+	): Promise<void> {
+		const cancelTokenSource = (this._currentCancelTokenSource.value =
+			new CancellationTokenSource());
 
 		const codeEditor = this.findActiveCodeEditor();
 
@@ -100,7 +135,10 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 
 		if (model) {
 			if (selection && !selection.isEmpty()) {
-				newValue = { uri: model.uri, range: selection } satisfies Location;
+				newValue = {
+					uri: model.uri,
+					range: selection,
+				} satisfies Location;
 				isSelection = true;
 			} else {
 				const visibleRanges = codeEditor?.getVisibleRanges();
@@ -109,7 +147,7 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 					// Merge visible ranges. Maybe the reference value could actually be an array of Locations?
 					// Something like a Location with an array of Ranges?
 					let range = visibleRanges[0];
-					visibleRanges.slice(1).forEach(r => {
+					visibleRanges.slice(1).forEach((r) => {
 						range = range.plusRange(r);
 					});
 					newValue = { uri: model.uri, range } satisfies Location;
@@ -121,7 +159,13 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 
 		const uri = newValue instanceof URI ? newValue : newValue?.uri;
 
-		if (uri && await this.ignoredFilesService.fileIsIgnored(uri, cancelTokenSource.token)) {
+		if (
+			uri &&
+			(await this.ignoredFilesService.fileIsIgnored(
+				uri,
+				cancelTokenSource.token,
+			))
+		) {
 			newValue = undefined;
 		}
 
@@ -129,7 +173,16 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 			return;
 		}
 
-		const widgets = updateWidget ? [updateWidget] : [...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Panel), ...this.chatWidgetService.getWidgetsByLocations(ChatAgentLocation.Editor)];
+		const widgets = updateWidget
+			? [updateWidget]
+			: [
+					...this.chatWidgetService.getWidgetsByLocations(
+						ChatAgentLocation.Panel,
+					),
+					...this.chatWidgetService.getWidgetsByLocations(
+						ChatAgentLocation.Editor,
+					),
+				];
 
 		for (const widget of widgets) {
 			if (widget.input.implicitContext) {
@@ -139,18 +192,21 @@ export class ChatImplicitContextContribution extends Disposable implements IWork
 	}
 }
 
-export class ChatImplicitContext extends Disposable implements IChatRequestImplicitVariableEntry {
+export class ChatImplicitContext
+	extends Disposable
+	implements IChatRequestImplicitVariableEntry
+{
 	get id() {
 		if (URI.isUri(this.value)) {
-			return 'vscode.implicit.file';
+			return "vscode.implicit.file";
 		} else if (this.value) {
 			if (this._isSelection) {
-				return 'vscode.implicit.selection';
+				return "vscode.implicit.selection";
 			} else {
-				return 'vscode.implicit.viewport';
+				return "vscode.implicit.viewport";
 			}
 		} else {
-			return 'vscode.implicit';
+			return "vscode.implicit";
 		}
 	}
 
@@ -160,11 +216,11 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 		} else if (this.value) {
 			return `file:${basename(this.value.uri)}`;
 		} else {
-			return 'implicit';
+			return "implicit";
 		}
 	}
 
-	readonly kind = 'implicit';
+	readonly kind = "implicit";
 
 	get modelDescription(): string {
 		if (URI.isUri(this.value)) {
@@ -223,7 +279,7 @@ export class ChatImplicitContext extends Disposable implements IChatRequestImpli
 			value: this.value,
 			isFile: true,
 			isDynamic: true,
-			modelDescription: this.modelDescription
+			modelDescription: this.modelDescription,
 		};
 	}
 }

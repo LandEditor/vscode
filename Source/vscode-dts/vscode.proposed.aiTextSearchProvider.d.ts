@@ -5,7 +5,7 @@
 
 // version: 2
 
-declare module 'vscode' {
+declare module "vscode" {
 	/**
 	 * An AITextSearchProvider provides additional AI text search results in the workspace.
 	 */
@@ -23,7 +23,12 @@ declare module 'vscode' {
 		 * @param progress A progress callback that must be invoked for all results.
 		 * @param token A cancellation token.
 		 */
-		provideAITextSearchResults(query: string, options: TextSearchProviderOptions, progress: Progress<TextSearchResult2>, token: CancellationToken): ProviderResult<TextSearchComplete2>;
+		provideAITextSearchResults(
+			query: string,
+			options: TextSearchProviderOptions,
+			progress: Progress<TextSearchResult2>,
+			token: CancellationToken,
+		): ProviderResult<TextSearchComplete2>;
 	}
 
 	export namespace workspace {
@@ -36,6 +41,9 @@ declare module 'vscode' {
 		 * @param provider The provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerAITextSearchProvider(scheme: string, provider: AITextSearchProvider): Disposable;
+		export function registerAITextSearchProvider(
+			scheme: string,
+			provider: AITextSearchProvider,
+		): Disposable;
 	}
 }

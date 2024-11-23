@@ -3,44 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DataTransfers } from '../../../../base/browser/dnd.js';
-import { $, DragAndDropObserver } from '../../../../base/browser/dom.js';
-import { renderLabelWithIcons } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { coalesce } from '../../../../base/common/arrays.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { Mimes } from '../../../../base/common/mime.js';
-import { basename, joinPath } from '../../../../base/common/resources.js';
-import { URI } from '../../../../base/common/uri.js';
-import { localize } from '../../../../nls.js';
-import { containsDragType, extractEditorsDropData, IDraggedResourceEditorInput } from '../../../../platform/dnd/browser/dnd.js';
-import { FileType, IFileService, IFileSystemProvider } from '../../../../platform/files/common/files.js';
-import { IThemeService, Themable } from '../../../../platform/theme/common/themeService.js';
-import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IExtensionService, isProposedApiEnabled } from '../../../services/extensions/common/extensions.js';
-import { IChatRequestVariableEntry } from '../common/chatModel.js';
-import { ChatAttachmentModel } from './chatAttachmentModel.js';
-import { IChatInputStyles } from './chatInputPart.js';
+import { DataTransfers } from "../../../../base/browser/dnd.js";
+import { $, DragAndDropObserver } from "../../../../base/browser/dom.js";
+import { renderLabelWithIcons } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
+import { coalesce } from "../../../../base/common/arrays.js";
+import { Codicon } from "../../../../base/common/codicons.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import { Mimes } from "../../../../base/common/mime.js";
+import { basename, joinPath } from "../../../../base/common/resources.js";
+import { URI } from "../../../../base/common/uri.js";
+import { localize } from "../../../../nls.js";
+import {
+	containsDragType,
+	extractEditorsDropData,
+	IDraggedResourceEditorInput,
+} from "../../../../platform/dnd/browser/dnd.js";
+import {
+	FileType,
+	IFileService,
+	IFileSystemProvider,
+} from "../../../../platform/files/common/files.js";
+import {
+	IThemeService,
+	Themable,
+} from "../../../../platform/theme/common/themeService.js";
+import { EditorInput } from "../../../common/editor/editorInput.js";
+import {
+	IExtensionService,
+	isProposedApiEnabled,
+} from "../../../services/extensions/common/extensions.js";
+import { IChatRequestVariableEntry } from "../common/chatModel.js";
+import { ChatAttachmentModel } from "./chatAttachmentModel.js";
+import { IChatInputStyles } from "./chatInputPart.js";
 
 enum ChatDragAndDropType {
 	FILE_INTERNAL,
 	FILE_EXTERNAL,
 	FOLDER,
-	IMAGE
+	IMAGE,
 }
 
 export class ChatDragAndDrop extends Themable {
-
-	private readonly overlays: Map<HTMLElement, { overlay: HTMLElement; disposable: IDisposable }> = new Map();
+	private readonly overlays: Map<
+		HTMLElement,
+		{ overlay: HTMLElement; disposable: IDisposable }
+	> = new Map();
 	private overlayText?: HTMLElement;
-	private overlayTextBackground: string = '';
+	private overlayTextBackground: string = "";
 
 	constructor(
 		protected readonly attachmentModel: ChatAttachmentModel,
 		private readonly styles: IChatInputStyles,
 		@IThemeService themeService: IThemeService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IFileService protected readonly fileService: IFileService
+		@IFileService protected readonly fileService: IFileService,
 	) {
 		super(themeService);
 
@@ -50,7 +66,10 @@ export class ChatDragAndDrop extends Themable {
 	addOverlay(target: HTMLElement, overlayContainer: HTMLElement): void {
 		this.removeOverlay(target);
 
-		const { overlay, disposable } = this.createOverlay(target, overlayContainer);
+		const { overlay, disposable } = this.createOverlay(
+			target,
+			overlayContainer,
+		);
 		this.overlays.set(target, { overlay, disposable });
 	}
 
@@ -69,9 +88,12 @@ export class ChatDragAndDrop extends Themable {
 	}
 
 	private currentActiveTarget: HTMLElement | undefined = undefined;
-	private createOverlay(target: HTMLElement, overlayContainer: HTMLElement): { overlay: HTMLElement; disposable: IDisposable } {
-		const overlay = document.createElement('div');
-		overlay.classList.add('chat-dnd-overlay');
+	private createOverlay(
+		target: HTMLElement,
+		overlayContainer: HTMLElement,
+	): { overlay: HTMLElement; disposable: IDisposable } {
+		const overlay = document.createElement("div");
+		overlay.classList.add("chat-dnd-overlay");
 		this.updateOverlayStyles(overlay);
 		overlayContainer.appendChild(overlay);
 
@@ -91,7 +113,6 @@ export class ChatDragAndDrop extends Themable {
 				this.currentActiveTarget = target;
 
 				this.onDragEnter(e, target);
-
 			},
 			onDragLeave: (e) => {
 				if (target === this.currentActiveTarget) {
@@ -144,11 +165,15 @@ export class ChatDragAndDrop extends Themable {
 		this.attachmentModel.addContext(...contexts);
 	}
 
-	private updateDropFeedback(e: DragEvent, target: HTMLElement, dropType: ChatDragAndDropType | undefined): void {
+	private updateDropFeedback(
+		e: DragEvent,
+		target: HTMLElement,
+		dropType: ChatDragAndDropType | undefined,
+	): void {
 		const showOverlay = dropType !== undefined;
 
 		if (e.dataTransfer) {
-			e.dataTransfer.dropEffect = showOverlay ? 'copy' : 'none';
+			e.dataTransfer.dropEffect = showOverlay ? "copy" : "none";
 		}
 
 		this.setOverlay(target, dropType);
@@ -157,7 +182,11 @@ export class ChatDragAndDrop extends Themable {
 	private guessDropType(e: DragEvent): ChatDragAndDropType | undefined {
 		// This is an esstimation based on the datatransfer types/items
 		if (this.isImageDnd(e)) {
-			return this.extensionService.extensions.some(ext => isProposedApiEnabled(ext, 'chatReferenceBinaryData')) ? ChatDragAndDropType.IMAGE : undefined;
+			return this.extensionService.extensions.some((ext) =>
+				isProposedApiEnabled(ext, "chatReferenceBinaryData"),
+			)
+				? ChatDragAndDropType.IMAGE
+				: undefined;
 		} else if (containsDragType(e, DataTransfers.FILES)) {
 			return ChatDragAndDropType.FILE_EXTERNAL;
 		} else if (containsDragType(e, DataTransfers.INTERNAL_URI_LIST)) {
@@ -178,20 +207,28 @@ export class ChatDragAndDrop extends Themable {
 
 	protected getDropTypeName(type: ChatDragAndDropType): string {
 		switch (type) {
-			case ChatDragAndDropType.FILE_INTERNAL: return localize('file', 'File');
+			case ChatDragAndDropType.FILE_INTERNAL:
+				return localize("file", "File");
 
-			case ChatDragAndDropType.FILE_EXTERNAL: return localize('file', 'File');
+			case ChatDragAndDropType.FILE_EXTERNAL:
+				return localize("file", "File");
 
-			case ChatDragAndDropType.FOLDER: return localize('folder', 'Folder');
+			case ChatDragAndDropType.FOLDER:
+				return localize("folder", "Folder");
 
-			case ChatDragAndDropType.IMAGE: return localize('image', 'Image');
+			case ChatDragAndDropType.IMAGE:
+				return localize("image", "Image");
 		}
 	}
 
 	private guessDropType(e: DragEvent): ChatDragAndDropType | undefined {
 		// This is an esstimation based on the datatransfer types/items
 		if (this.isImageDnd(e)) {
-			return this.extensionService.extensions.some(ext => isProposedApiEnabled(ext, 'chatReferenceBinaryData')) ? ChatDragAndDropType.IMAGE : undefined;
+			return this.extensionService.extensions.some((ext) =>
+				isProposedApiEnabled(ext, "chatReferenceBinaryData"),
+			)
+				? ChatDragAndDropType.IMAGE
+				: undefined;
 		} else if (containsDragType(e, DataTransfers.FILES)) {
 			return ChatDragAndDropType.FILE_EXTERNAL;
 		} else if (containsDragType(e, DataTransfers.INTERNAL_URI_LIST)) {
@@ -212,19 +249,23 @@ export class ChatDragAndDrop extends Themable {
 
 	private getDropTypeName(type: ChatDragAndDropType): string {
 		switch (type) {
-			case ChatDragAndDropType.FILE_INTERNAL: return localize('file', 'File');
+			case ChatDragAndDropType.FILE_INTERNAL:
+				return localize("file", "File");
 
-			case ChatDragAndDropType.FILE_EXTERNAL: return localize('file', 'File');
+			case ChatDragAndDropType.FILE_EXTERNAL:
+				return localize("file", "File");
 
-			case ChatDragAndDropType.FOLDER: return localize('folder', 'Folder');
+			case ChatDragAndDropType.FOLDER:
+				return localize("folder", "Folder");
 
-			case ChatDragAndDropType.IMAGE: return localize('image', 'Image');
+			case ChatDragAndDropType.IMAGE:
+				return localize("image", "Image");
 		}
 	}
 
 	private isImageDnd(e: DragEvent): boolean {
 		// Image detection should not have false positives, only false negatives are allowed
-		if (containsDragType(e, 'image')) {
+		if (containsDragType(e, "image")) {
 			return true;
 		}
 
@@ -234,7 +275,7 @@ export class ChatDragAndDrop extends Themable {
 			if (files && files.length > 0) {
 				const file = files[0];
 
-				return file.type.startsWith('image/');
+				return file.type.startsWith("image/");
 			}
 
 			const items = e.dataTransfer?.items;
@@ -242,38 +283,52 @@ export class ChatDragAndDrop extends Themable {
 			if (items && items.length > 0) {
 				const item = items[0];
 
-				return item.type.startsWith('image/');
+				return item.type.startsWith("image/");
 			}
 		}
 
 		return false;
 	}
 
-	private async getAttachContext(e: DragEvent): Promise<IChatRequestVariableEntry[]> {
+	private async getAttachContext(
+		e: DragEvent,
+	): Promise<IChatRequestVariableEntry[]> {
 		if (!this.isDragEventSupported(e)) {
 			return [];
 		}
 
 		const data = extractEditorsDropData(e);
 
-		return coalesce(await Promise.all(data.map(editorInput => {
-			return this.resolveAttachContext(editorInput);
-		})));
+		return coalesce(
+			await Promise.all(
+				data.map((editorInput) => {
+					return this.resolveAttachContext(editorInput);
+				}),
+			),
+		);
 	}
 
-	private async resolveAttachContext(editorInput: IDraggedResourceEditorInput): Promise<IChatRequestVariableEntry | undefined> {
+	private async resolveAttachContext(
+		editorInput: IDraggedResourceEditorInput,
+	): Promise<IChatRequestVariableEntry | undefined> {
 		// Image
 		const imageContext = getImageAttachContext(editorInput);
 
 		if (imageContext) {
-			return this.extensionService.extensions.some(ext => isProposedApiEnabled(ext, 'chatReferenceBinaryData')) ? imageContext : undefined;
+			return this.extensionService.extensions.some((ext) =>
+				isProposedApiEnabled(ext, "chatReferenceBinaryData"),
+			)
+				? imageContext
+				: undefined;
 		}
 
 		// File
 		return await this.getEditorAttachContext(editorInput);
 	}
 
-	private async getEditorAttachContext(editor: EditorInput | IDraggedResourceEditorInput): Promise<IChatRequestVariableEntry | undefined> {
+	private async getEditorAttachContext(
+		editor: EditorInput | IDraggedResourceEditorInput,
+	): Promise<IChatRequestVariableEntry | undefined> {
 		if (!editor.resource) {
 			return undefined;
 		}
@@ -293,7 +348,10 @@ export class ChatDragAndDrop extends Themable {
 		return getResourceAttachContext(editor.resource, stat.isDirectory);
 	}
 
-	private setOverlay(target: HTMLElement, type: ChatDragAndDropType | undefined): void {
+	private setOverlay(
+		target: HTMLElement,
+		type: ChatDragAndDropType | undefined,
+	): void {
 		// Remove any previous overlay text
 		this.overlayText?.remove();
 		this.overlayText = undefined;
@@ -303,75 +361,102 @@ export class ChatDragAndDrop extends Themable {
 		if (type !== undefined) {
 			// Render the overlay text
 
-			const iconAndtextElements = renderLabelWithIcons(`$(${Codicon.attach.id}) ${this.getOverlayText(type)}`);
+			const iconAndtextElements = renderLabelWithIcons(
+				`$(${Codicon.attach.id}) ${this.getOverlayText(type)}`,
+			);
 
-			const htmlElements = iconAndtextElements.map(element => {
-				if (typeof element === 'string') {
-					return $('span.overlay-text', undefined, element);
+			const htmlElements = iconAndtextElements.map((element) => {
+				if (typeof element === "string") {
+					return $("span.overlay-text", undefined, element);
 				}
 				return element;
 			});
 
-			this.overlayText = $('span.attach-context-overlay-text', undefined, ...htmlElements);
+			this.overlayText = $(
+				"span.attach-context-overlay-text",
+				undefined,
+				...htmlElements,
+			);
 			this.overlayText.style.backgroundColor = this.overlayTextBackground;
 			overlay.appendChild(this.overlayText);
 		}
 
-		overlay.classList.toggle('visible', type !== undefined);
+		overlay.classList.toggle("visible", type !== undefined);
 	}
 
 	protected getOverlayText(type: ChatDragAndDropType): string {
 		const typeName = this.getDropTypeName(type);
 
-		return localize('attacAsContext', 'Attach {0} as Context', typeName);
+		return localize("attacAsContext", "Attach {0} as Context", typeName);
 	}
 
 	private updateOverlayStyles(overlay: HTMLElement): void {
-		overlay.style.backgroundColor = this.getColor(this.styles.overlayBackground) || '';
-		overlay.style.color = this.getColor(this.styles.listForeground) || '';
+		overlay.style.backgroundColor =
+			this.getColor(this.styles.overlayBackground) || "";
+		overlay.style.color = this.getColor(this.styles.listForeground) || "";
 	}
 
 	override updateStyles(): void {
-		this.overlays.forEach(overlay => this.updateOverlayStyles(overlay.overlay));
-		this.overlayTextBackground = this.getColor(this.styles.listBackground) || '';
+		this.overlays.forEach((overlay) =>
+			this.updateOverlayStyles(overlay.overlay),
+		);
+		this.overlayTextBackground =
+			this.getColor(this.styles.listBackground) || "";
 	}
 }
 
 export class EditsDragAndDrop extends ChatDragAndDrop {
-
 	constructor(
 		attachmentModel: ChatAttachmentModel,
 		styles: IChatInputStyles,
 		@IThemeService themeService: IThemeService,
 		@IExtensionService extensionService: IExtensionService,
-		@IFileService fileService: IFileService
+		@IFileService fileService: IFileService,
 	) {
-		super(attachmentModel, styles, themeService, extensionService, fileService);
+		super(
+			attachmentModel,
+			styles,
+			themeService,
+			extensionService,
+			fileService,
+		);
 	}
 
 	protected override handleDrop(context: IChatRequestVariableEntry[]): void {
 		this.handleDropAsync(context);
 	}
 
-	protected async handleDropAsync(context: IChatRequestVariableEntry[]): Promise<void> {
-		const nonDirectoryContext = context.filter(context => !context.isDirectory);
+	protected async handleDropAsync(
+		context: IChatRequestVariableEntry[],
+	): Promise<void> {
+		const nonDirectoryContext = context.filter(
+			(context) => !context.isDirectory,
+		);
 
 		const directories = context
-			.filter(context => context.isDirectory)
-			.map(context => context.value)
-			.filter(value => !!value && URI.isUri(value));
+			.filter((context) => context.isDirectory)
+			.map((context) => context.value)
+			.filter((value) => !!value && URI.isUri(value));
 
 		// If there are directories, we need to resolve the files and add them to the working set
 		for (const directory of directories) {
-			const fileSystemProvider = this.fileService.getProvider(directory.scheme);
+			const fileSystemProvider = this.fileService.getProvider(
+				directory.scheme,
+			);
 
 			if (!fileSystemProvider) {
 				continue;
 			}
 
-			const resolvedFiles = await resolveFilesInDirectory(directory, fileSystemProvider, false);
+			const resolvedFiles = await resolveFilesInDirectory(
+				directory,
+				fileSystemProvider,
+				false,
+			);
 
-			const resolvedFileContext = resolvedFiles.map(file => getResourceAttachContext(file, false)).filter(context => !!context);
+			const resolvedFileContext = resolvedFiles
+				.map((file) => getResourceAttachContext(file, false))
+				.filter((context) => !!context);
 			nonDirectoryContext.push(...resolvedFileContext);
 		}
 
@@ -384,10 +469,18 @@ export class EditsDragAndDrop extends ChatDragAndDrop {
 		switch (type) {
 			case ChatDragAndDropType.FILE_INTERNAL:
 			case ChatDragAndDropType.FILE_EXTERNAL:
-				return localize('addToWorkingSet', 'Add {0} to Working Set', typeName);
+				return localize(
+					"addToWorkingSet",
+					"Add {0} to Working Set",
+					typeName,
+				);
 
 			case ChatDragAndDropType.FOLDER:
-				return localize('addToWorkingSet', 'Add {0} to Working Set', localize('files', 'Files'));
+				return localize(
+					"addToWorkingSet",
+					"Add {0} to Working Set",
+					localize("files", "Files"),
+				);
 
 			default:
 				return super.getOverlayText(type);
@@ -395,7 +488,11 @@ export class EditsDragAndDrop extends ChatDragAndDrop {
 	}
 }
 
-async function resolveFilesInDirectory(resource: URI, fileSystemProvider: IFileSystemProvider, shouldRecurse: boolean): Promise<URI[]> {
+async function resolveFilesInDirectory(
+	resource: URI,
+	fileSystemProvider: IFileSystemProvider,
+	shouldRecurse: boolean,
+): Promise<URI[]> {
 	const entries = await fileSystemProvider.readdir(resource);
 
 	const files: URI[] = [];
@@ -412,23 +509,32 @@ async function resolveFilesInDirectory(resource: URI, fileSystemProvider: IFileS
 		}
 	}
 
-	const subFiles = await Promise.all(folders.map(folder => resolveFilesInDirectory(folder, fileSystemProvider, shouldRecurse)));
+	const subFiles = await Promise.all(
+		folders.map((folder) =>
+			resolveFilesInDirectory(folder, fileSystemProvider, shouldRecurse),
+		),
+	);
 
 	return [...files, ...subFiles.flat()];
 }
 
-function getResourceAttachContext(resource: URI, isDirectory: boolean): IChatRequestVariableEntry | undefined {
+function getResourceAttachContext(
+	resource: URI,
+	isDirectory: boolean,
+): IChatRequestVariableEntry | undefined {
 	return {
 		value: resource,
 		id: resource.toString(),
 		name: basename(resource),
 		isFile: !isDirectory,
 		isDirectory,
-		isDynamic: true
+		isDynamic: true,
 	};
 }
 
-function getImageAttachContext(editor: EditorInput | IDraggedResourceEditorInput): IChatRequestVariableEntry | undefined {
+function getImageAttachContext(
+	editor: EditorInput | IDraggedResourceEditorInput,
+): IChatRequestVariableEntry | undefined {
 	if (!editor.resource) {
 		return undefined;
 	}
@@ -444,7 +550,7 @@ function getImageAttachContext(editor: EditorInput | IDraggedResourceEditorInput
 			icon: Codicon.fileMedia,
 			isDynamic: true,
 			isImage: true,
-			isFile: false
+			isFile: false,
 		};
 	}
 

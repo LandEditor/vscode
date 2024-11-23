@@ -3,20 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { DocumentSelector } from '../configuration/documentSelector';
-import * as typeConverters from '../typeConverters';
-import { ClientCapability, ITypeScriptServiceClient } from '../typescriptService';
-import { conditionalRegistration, requireGlobalConfiguration, requireMinVersion, requireSomeCapability } from './util/dependentRegistration';
-import protocol from '../tsServer/protocol/protocol';
-import { API } from '../tsServer/api';
-import { LanguageDescription } from '../configuration/languageDescription';
+import * as vscode from "vscode";
+
+import { DocumentSelector } from "../configuration/documentSelector";
+import { LanguageDescription } from "../configuration/languageDescription";
+import { API } from "../tsServer/api";
+import protocol from "../tsServer/protocol/protocol";
+import * as typeConverters from "../typeConverters";
+import {
+	ClientCapability,
+	ITypeScriptServiceClient,
+} from "../typescriptService";
+import {
+	conditionalRegistration,
+	requireGlobalConfiguration,
+	requireMinVersion,
+	requireSomeCapability,
+} from "./util/dependentRegistration";
 
 class CopyMetadata {
 	constructor(
 		readonly resource: vscode.Uri,
 		readonly ranges: readonly vscode.Range[],
-	) { }
+	) {}
 
 	toJSON() {
 		return JSON.stringify({
@@ -31,7 +40,16 @@ class CopyMetadata {
 
 			return new CopyMetadata(
 				vscode.Uri.from(parsed.resource),
-				parsed.ranges.map((r: any) => new vscode.Range(r[0].line, r[0].character, r[1].line, r[1].character)));
+				parsed.ranges.map(
+					(r: any) =>
+						new vscode.Range(
+							r[0].line,
+							r[0].character,
+							r[1].line,
+							r[1].character,
+						),
+				),
+			);
 		} catch {
 			// ignore
 		}
@@ -39,19 +57,26 @@ class CopyMetadata {
 	}
 }
 
-const enabledSettingId = 'updateImportsOnPaste.enabled';
+const enabledSettingId = "updateImportsOnPaste.enabled";
 
 class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
-
-	static readonly kind = vscode.DocumentDropOrPasteEditKind.Text.append('updateImports', 'jsts');
-	static readonly metadataMimeType = 'application/vnd.code.jsts.metadata';
+	static readonly kind = vscode.DocumentDropOrPasteEditKind.Text.append(
+		"updateImports",
+		"jsts",
+	);
+	static readonly metadataMimeType = "application/vnd.code.jsts.metadata";
 
 	constructor(
 		private readonly _modeId: string,
 		private readonly _client: ITypeScriptServiceClient,
-	) { }
+	) {}
 
-	async prepareDocumentPaste(document: vscode.TextDocument, ranges: readonly vscode.Range[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken) {
+	async prepareDocumentPaste(
+		document: vscode.TextDocument,
+		ranges: readonly vscode.Range[],
+		dataTransfer: vscode.DataTransfer,
+		token: vscode.CancellationToken,
+	) {
 		if (!this.isEnabled(document)) {
 			return;
 		}
@@ -62,17 +87,29 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const response = await this._client.execute('preparePasteEdits', {
-			file,
-			copiedTextSpan: ranges.map(typeConverters.Range.toTextSpan),
-		}, token);
+		const response = await this._client.execute(
+			"preparePasteEdits",
+			{
+				file,
+				copiedTextSpan: ranges.map(typeConverters.Range.toTextSpan),
+			},
+			token,
+		);
 
-		if (token.isCancellationRequested || response.type !== 'response' || !response.body) {
+		if (
+			token.isCancellationRequested ||
+			response.type !== "response" ||
+			!response.body
+		) {
 			return;
 		}
 
-		dataTransfer.set(DocumentPasteProvider.metadataMimeType,
-			new vscode.DataTransferItem(new CopyMetadata(document.uri, ranges).toJSON()));
+		dataTransfer.set(
+			DocumentPasteProvider.metadataMimeType,
+			new vscode.DataTransferItem(
+				new CopyMetadata(document.uri, ranges).toJSON(),
+			),
+		);
 	}
 
 	async provideDocumentPasteEdits(
@@ -92,7 +129,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const text = await dataTransfer.get('text/plain')?.asString();
+		const text = await dataTransfer.get("text/plain")?.asString();
 
 		if (!text || token.isCancellationRequested) {
 			return;
@@ -105,10 +142,12 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		let copiedFrom: {
-			file: string;
-			spans: protocol.TextSpan[];
-		} | undefined;
+		let copiedFrom:
+			| {
+					file: string;
+					spans: protocol.TextSpan[];
+			  }
+			| undefined;
 
 		if (metadata) {
 			const spans = metadata.ranges.map(typeConverters.Range.toTextSpan);
@@ -124,33 +163,57 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const response = await this._client.interruptGetErr(() => this._client.execute('getPasteEdits', {
-			file,
-			// TODO: only supports a single paste for now
-			pastedText: [text],
-			pasteLocations: ranges.map(typeConverters.Range.toTextSpan),
-			copiedFrom
-		}, token));
+		const response = await this._client.interruptGetErr(() =>
+			this._client.execute(
+				"getPasteEdits",
+				{
+					file,
+					// TODO: only supports a single paste for now
+					pastedText: [text],
+					pasteLocations: ranges.map(typeConverters.Range.toTextSpan),
+					copiedFrom,
+				},
+				token,
+			),
+		);
 
-		if (response.type !== 'response' || !response.body?.edits.length || token.isCancellationRequested) {
+		if (
+			response.type !== "response" ||
+			!response.body?.edits.length ||
+			token.isCancellationRequested
+		) {
 			return;
 		}
 
-		const edit = new vscode.DocumentPasteEdit('', vscode.l10n.t("Paste with imports"), DocumentPasteProvider.kind);
-		edit.yieldTo = [vscode.DocumentDropOrPasteEditKind.Text.append('plain')];
+		const edit = new vscode.DocumentPasteEdit(
+			"",
+			vscode.l10n.t("Paste with imports"),
+			DocumentPasteProvider.kind,
+		);
+		edit.yieldTo = [
+			vscode.DocumentDropOrPasteEditKind.Text.append("plain"),
+		];
 
 		const additionalEdit = new vscode.WorkspaceEdit();
 
 		for (const edit of response.body.edits) {
-			additionalEdit.set(this._client.toResource(edit.fileName), edit.textChanges.map(typeConverters.TextEdit.fromCodeEdit));
+			additionalEdit.set(
+				this._client.toResource(edit.fileName),
+				edit.textChanges.map(typeConverters.TextEdit.fromCodeEdit),
+			);
 		}
 		edit.additionalEdit = additionalEdit;
 
 		return [edit];
 	}
 
-	private async extractMetadata(dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<CopyMetadata | undefined> {
-		const metadata = await dataTransfer.get(DocumentPasteProvider.metadataMimeType)?.asString();
+	private async extractMetadata(
+		dataTransfer: vscode.DataTransfer,
+		token: vscode.CancellationToken,
+	): Promise<CopyMetadata | undefined> {
+		const metadata = await dataTransfer
+			.get(DocumentPasteProvider.metadataMimeType)
+			?.asString();
 
 		if (token.isCancellationRequested) {
 			return undefined;
@@ -160,22 +223,36 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 	}
 
 	private isEnabled(document: vscode.TextDocument) {
-		const config = vscode.workspace.getConfiguration(this._modeId, document.uri);
+		const config = vscode.workspace.getConfiguration(
+			this._modeId,
+			document.uri,
+		);
 
 		return config.get(enabledSettingId, true);
 	}
 }
 
-export function register(selector: DocumentSelector, language: LanguageDescription, client: ITypeScriptServiceClient) {
-	return conditionalRegistration([
-		requireSomeCapability(client, ClientCapability.Semantic),
-		requireMinVersion(client, API.v570),
-		requireGlobalConfiguration(language.id, enabledSettingId),
-	], () => {
-		return vscode.languages.registerDocumentPasteEditProvider(selector.semantic, new DocumentPasteProvider(language.id, client), {
-			providedPasteEditKinds: [DocumentPasteProvider.kind],
-			copyMimeTypes: [DocumentPasteProvider.metadataMimeType],
-			pasteMimeTypes: [DocumentPasteProvider.metadataMimeType],
-		});
-	});
+export function register(
+	selector: DocumentSelector,
+	language: LanguageDescription,
+	client: ITypeScriptServiceClient,
+) {
+	return conditionalRegistration(
+		[
+			requireSomeCapability(client, ClientCapability.Semantic),
+			requireMinVersion(client, API.v570),
+			requireGlobalConfiguration(language.id, enabledSettingId),
+		],
+		() => {
+			return vscode.languages.registerDocumentPasteEditProvider(
+				selector.semantic,
+				new DocumentPasteProvider(language.id, client),
+				{
+					providedPasteEditKinds: [DocumentPasteProvider.kind],
+					copyMimeTypes: [DocumentPasteProvider.metadataMimeType],
+					pasteMimeTypes: [DocumentPasteProvider.metadataMimeType],
+				},
+			);
+		},
+	);
 }
