@@ -28,8 +28,9 @@ import { Registry } from "../../registry/common/platform.js";
 
 //#region Editor / Resources DND
 export const CodeDataTransfers = {
-	EDITORS: "CodeEditors",
-	FILES: "CodeFiles",
+	EDITORS: 'CodeEditors',
+	FILES: 'CodeFiles',
+	SYMBOLS: 'application/vnd.code.symbols'
 };
 export interface IDraggedResourceEditorInput
 	extends IBaseTextResourceEditorInput {
@@ -448,6 +449,32 @@ export class LocalSelectionTransfer<T> {
 		}
 	}
 }
+
+export interface DocumentSymbolTransferData {
+	name: string;
+	fsPath: string;
+	range: {
+		startLineNumber: number;
+		startColumn: number;
+		endLineNumber: number;
+		endColumn: number;
+	};
+	kind: number;
+}
+
+export function extractSymbolDropData(e: DragEvent): DocumentSymbolTransferData[] {
+	const rawSymbolsData = e.dataTransfer?.getData(CodeDataTransfers.SYMBOLS);
+	if (rawSymbolsData) {
+		try {
+			return JSON.parse(rawSymbolsData);
+		} catch (error) {
+			// Invalid transfer
+		}
+	}
+
+	return [];
+}
+
 /**
  * A helper to get access to Electrons `webUtils.getPathForFile` function
  * in a safe way without crashing the application when running in the web.

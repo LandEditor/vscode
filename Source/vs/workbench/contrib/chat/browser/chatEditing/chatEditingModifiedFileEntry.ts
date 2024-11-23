@@ -77,7 +77,7 @@ export class ChatEditingModifiedFileEntry
 	public readonly entryId = `${ChatEditingModifiedFileEntry.scheme}::${++ChatEditingModifiedFileEntry.lastEntryId}`;
 
 	private readonly docSnapshot: ITextModel;
-	private readonly originalContent;
+	public readonly initialContent: string;
 	private readonly doc: ITextModel;
 	private readonly docFileEditorModel: IResolvedTextFileEditorModel;
 	private _allEditsAreFromUs: boolean = true;
@@ -178,7 +178,7 @@ export class ChatEditingModifiedFileEntry
 		},
 		private _telemetryInfo: IModifiedEntryTelemetryInfo,
 		kind: ChatEditKind,
-		originalContent: string | undefined,
+		initialContent: string | undefined,
 		@IModelService modelService: IModelService,
 		@ITextModelService textModelService: ITextModelService,
 		@ILanguageService languageService: ILanguageService,
@@ -197,15 +197,10 @@ export class ChatEditingModifiedFileEntry
 			.object as IResolvedTextFileEditorModel;
 		this.doc = resourceRef.object.textEditorModel;
 
-		this.originalContent = originalContent ?? this.doc.getValue();
-
-		const docSnapshot = (this.docSnapshot = this._register(
+		this.initialContent = initialContent ?? this.doc.getValue();
+		const docSnapshot = this.docSnapshot = this._register(
 			modelService.createModel(
-				createTextBufferFactoryFromSnapshot(
-					originalContent
-						? stringToSnapshot(originalContent)
-						: this.doc.createSnapshot(),
-				),
+				createTextBufferFactoryFromSnapshot(initialContent ? stringToSnapshot(initialContent) : this.doc.createSnapshot()),
 				languageService.createById(this.doc.getLanguageId()),
 				ChatEditingTextModelContentProvider.getFileURI(
 					this.entryId,
@@ -281,7 +276,6 @@ export class ChatEditingModifiedFileEntry
 			telemetryInfo: this._telemetryInfo,
 		};
 	}
-
 	restoreFromSnapshot(snapshot: ISnapshotEntry) {
 		this._stateObs.set(snapshot.state, undefined);
 		this.docSnapshot.setValue(snapshot.original);
@@ -289,8 +283,8 @@ export class ChatEditingModifiedFileEntry
 		this._edit = snapshot.originalToCurrentEdit;
 	}
 
-	resetToInitialValue(value: string) {
-		this._setDocValue(value);
+	resetToInitialValue() {
+		this._setDocValue(this.initialContent);
 	}
 
 	acceptStreamingEditsStart(tx: ITransaction) {
@@ -357,9 +351,7 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		if (!this.isCurrentlyBeingModified.get()) {
-			const didResetToOriginalContent =
-				this.doc.getValue() === this.originalContent;
-
+			const didResetToOriginalContent = this.doc.getValue() === this.initialContent;
 			const currentState = this._stateObs.get();
 
 			switch (currentState) {
@@ -582,11 +574,11 @@ export class ChatEditingModifiedFileEntry
 }
 
 export interface IModifiedEntryTelemetryInfo {
-	agentId: string | undefined;
-	command: string | undefined;
-	sessionId: string;
-	requestId: string;
-	result: IChatAgentResult | undefined;
+	readonly agentId: string | undefined;
+	readonly command: string | undefined;
+	readonly sessionId: string;
+	readonly requestId: string;
+	readonly result: IChatAgentResult | undefined;
 }
 
 export interface ISnapshotEntry {

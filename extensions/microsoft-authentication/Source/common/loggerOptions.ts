@@ -18,8 +18,13 @@ export class MsalLoggerOptions {
 		containsPii: boolean,
 	): void {
 		if (containsPii) {
+			// TODO: Should we still log the message if it contains PII? It's just going to
+			// an output channel that doesn't leave the machine.
+			this._output.debug('Skipped logging message because it may contain PII');
 			return;
 		}
+
+		// Log to output channel one level lower than the MSAL log level
 		switch (level) {
 			case MsalLogLevel.Error:
 				this._output.error(message);
@@ -32,23 +37,18 @@ export class MsalLoggerOptions {
 				return;
 
 			case MsalLogLevel.Info:
-				this._output.info(message);
-
-				return;
-
-			case MsalLogLevel.Verbose:
 				this._output.debug(message);
 
 				return;
-
-			case MsalLogLevel.Trace:
+			case MsalLogLevel.Verbose:
 				this._output.trace(message);
 
 				return;
-
+			case MsalLogLevel.Trace:
+				// Do not log trace messages
+				return;
 			default:
-				this._output.info(message);
-
+				this._output.debug(message);
 				return;
 		}
 	}

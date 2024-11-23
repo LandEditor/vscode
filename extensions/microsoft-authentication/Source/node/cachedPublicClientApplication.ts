@@ -58,14 +58,9 @@ export class CachedPublicClientApplication
 		system: {
 			loggerOptions: {
 				correlationId: `${this._clientId}] [${this._authority}`,
-				loggerCallback: (level, message, containsPii) =>
-					this._loggerOptions.loggerCallback(
-						level,
-						message,
-						containsPii,
-					),
-				logLevel: LogLevel.Info,
-			},
+				loggerCallback: (level, message, containsPii) => this._loggerOptions.loggerCallback(level, message, containsPii),
+				logLevel: LogLevel.Trace
+			}
 		},
 		broker: {
 			nativeBrokerPlugin: new NativeBrokerPlugin(),
@@ -76,14 +71,6 @@ export class CachedPublicClientApplication
 	};
 	private readonly _isBrokerAvailable =
 		this._config.broker?.nativeBrokerPlugin?.isBrokerAvailable ?? false;
-
-	/**
-	 * We keep track of the last time an account was removed so we can recreate the PCA if we detect that an account was removed.
-	 * This is due to MSAL-node not providing a way to detect when an account is removed from the cache. An internal issue has been
-	 * filed to track this. If MSAL-node ever provides a way to detect this or handle this better in the Persistant Cache Plugin,
-	 * we can remove this logic.
-	 */
-	private _lastCreated: Date;
 
 	//#region Events
 
@@ -107,8 +94,9 @@ export class CachedPublicClientApplication
 		private readonly _secretStorage: SecretStorage,
 		private readonly _logger: LogOutputChannel,
 	) {
+		// TODO:@TylerLeonhardt clean up old use of memento. Remove this in an iteration
+		this._globalMemento.update(`lastRemoval:${this._clientId}:${this._authority}`, undefined);
 		this._pca = new PublicClientApplication(this._config);
-		this._lastCreated = new Date();
 		this._disposable = Disposable.from(
 			this._registerOnSecretStorageChanged(),
 			this._onDidAccountsChangeEmitter,
@@ -224,11 +212,6 @@ export class CachedPublicClientApplication
 	}
 
 	removeAccount(account: AccountInfo): Promise<void> {
-		this._globalMemento.update(
-			`lastRemoval:${this._clientId}:${this._authority}`,
-			new Date(),
-		);
-
 		if (this._isBrokerAvailable) {
 			return this._accountAccess.setAllowedAccess(account, false);
 		}
@@ -272,26 +255,9 @@ export class CachedPublicClientApplication
 
 	private async _update() {
 		const before = this._accounts;
-		this._logger.debug(
-			`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`,
-		);
-		// Dates are stored as strings in the memento
-		const lastRemovalDate = this._globalMemento.get<string>(
-			`lastRemoval:${this._clientId}:${this._authority}`,
-		);
-
-		if (
-			lastRemovalDate &&
-			this._lastCreated &&
-			Date.parse(lastRemovalDate) > this._lastCreated.getTime()
-		) {
-			this._logger.debug(
-				`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication removal detected... recreating PCA...`,
-			);
-			this._pca = new PublicClientApplication(this._config);
-			this._lastCreated = new Date();
-		}
-
+		this._logger.debug(`[update] [${this._clientId}] [${this._authority}] CachedPublicClientApplication update before: ${before.length}`);
+		// Clear in-memory cache so we know we're getting account data from the SecretStorage
+		this._pca.clearCache();
 		let after = await this._pca.getAllAccounts();
 
 		if (this._isBrokerAvailable) {

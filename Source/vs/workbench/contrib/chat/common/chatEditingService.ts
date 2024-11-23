@@ -41,11 +41,7 @@ export interface IChatEditingService {
 
 	readonly editingSessionFileLimit: number;
 
-	startOrContinueEditingSession(
-		chatSessionId: string,
-		options?: { silent: boolean },
-	): Promise<IChatEditingSession>;
-
+	startOrContinueEditingSession(chatSessionId: string): Promise<IChatEditingSession>;
 	getEditingSession(resource: URI): IChatEditingSession | null;
 	createSnapshot(requestId: string): void;
 
@@ -98,7 +94,6 @@ export interface IChatEditingSession {
 	readonly onDidDispose: Event<void>;
 	readonly state: IObservable<ChatEditingSessionState>;
 	readonly entries: IObservable<readonly IModifiedFileEntry[]>;
-	readonly hiddenRequestIds: IObservable<readonly string[]>;
 	readonly workingSet: ResourceMap<WorkingSetDisplayMetadata>;
 	readonly isVisible: boolean;
 	addFileToWorkingSet(

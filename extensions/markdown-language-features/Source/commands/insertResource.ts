@@ -5,14 +5,14 @@
 import * as vscode from "vscode";
 import { Utils } from "vscode-uri";
 
-import { Command } from "../commandManager";
-import {
-	createUriListSnippet,
-	mediaFileExtensions,
-} from "../languageFeatures/copyFiles/shared";
-import { coalesce } from "../util/arrays";
-import { getParentDocumentUri } from "../util/document";
-import { Schemes } from "../util/schemes";
+import * as vscode from 'vscode';
+import { Utils } from 'vscode-uri';
+import { Command } from '../commandManager';
+import { createUriListSnippet, linkEditKind, mediaFileExtensions } from '../languageFeatures/copyFiles/shared';
+import { coalesce } from '../util/arrays';
+import { getParentDocumentUri } from '../util/document';
+import { Schemes } from '../util/schemes';
+
 
 export class InsertLinkFromWorkspace implements Command {
 	public readonly id = "markdown.editor.insertLinkFromWorkspace";
@@ -98,23 +98,15 @@ function createInsertLinkEdit(
 			(selection, i): vscode.SnippetTextEdit | undefined => {
 				const selectionText = activeEditor.document.getText(selection);
 
-				const snippet = createUriListSnippet(
-					activeEditor.document.uri,
-					selectedFiles.map((uri) => ({ uri })),
-					{
-						insertAsMedia: insertAsMedia,
-						placeholderText: selectionText,
-						placeholderStartIndex: (i + 1) * selectedFiles.length,
-						separator: insertAsMedia ? "\n" : " ",
-					},
-				);
-
-				return snippet
-					? new vscode.SnippetTextEdit(selection, snippet.snippet)
-					: undefined;
-			},
-		),
-	);
+function createInsertLinkEdit(activeEditor: vscode.TextEditor, selectedFiles: readonly vscode.Uri[], insertAsMedia: boolean) {
+	const snippetEdits = coalesce(activeEditor.selections.map((selection, i): vscode.SnippetTextEdit | undefined => {
+		const selectionText = activeEditor.document.getText(selection);
+		const snippet = createUriListSnippet(activeEditor.document.uri, selectedFiles.map(uri => ({ uri })), {
+			linkKindHint: insertAsMedia ? 'media' : linkEditKind,
+			placeholderText: selectionText,
+			placeholderStartIndex: (i + 1) * selectedFiles.length,
+			separator: insertAsMedia ? '\n' : ' ',
+		});
 
 	if (!snippetEdits.length) {
 		return;

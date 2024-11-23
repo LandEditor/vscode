@@ -351,6 +351,7 @@ export interface IExtension {
 	readonly changelogUrl?: URI;
 	readonly isValid: boolean;
 	readonly validations: readonly [Severity, string][];
+	readonly preRelease: boolean;
 }
 /**
  * **!Do not construct directly!**
@@ -474,6 +475,7 @@ export interface IRelaxedExtensionDescription
 	isUserBuiltin: boolean;
 	isUnderDevelopment: boolean;
 	extensionLocation: URI;
+	preRelease: boolean;
 }
 export type IExtensionDescription = Readonly<IRelaxedExtensionDescription>;
 export function isApplicationScopedExtension(

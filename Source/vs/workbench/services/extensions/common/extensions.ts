@@ -43,6 +43,7 @@ export const nullExtensionDescription = Object.freeze<IExtensionDescription>({
 	targetPlatform: TargetPlatform.UNDEFINED,
 	isUserBuiltin: false,
 	isUnderDevelopment: false,
+	preRelease: false,
 });
 export type WebWorkerExtHostConfigValue = boolean | "auto";
 export const webWorkerExtHostConfig = "extensions.webWorker";
@@ -635,6 +636,7 @@ export function toExtension(
 		targetPlatform: extensionDescription.targetPlatform,
 		validations: [],
 		isValid: true,
+		preRelease: extensionDescription.preRelease,
 	};
 }
 export function toExtensionDescription(
@@ -657,7 +659,8 @@ export function toExtensionDescription(
 		uuid: extension.identifier.uuid,
 		targetPlatform: extension.targetPlatform,
 		publisherDisplayName: extension.publisherDisplayName,
-		...extension.manifest,
+		preRelease: extension.preRelease,
+		...extension.manifest
 	};
 }
 export class NullExtensionService implements IExtensionService {

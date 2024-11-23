@@ -8,34 +8,29 @@ import { RunOnceScheduler } from "../../../../base/common/async.js";
 import * as platform from "../../../../base/common/platform.js";
 import { Constants } from "../../../../base/common/uint.js";
 
-import "./viewLines.css";
-
-import { EditorOption } from "../../../common/config/editorOptions.js";
-import { Position } from "../../../common/core/position.js";
-import { Range } from "../../../common/core/range.js";
-import { Selection } from "../../../common/core/selection.js";
-import { ScrollType } from "../../../common/editorCommon.js";
-import * as viewEvents from "../../../common/viewEvents.js";
-import { ViewportData } from "../../../common/viewLayout/viewLinesViewportData.js";
-import { Viewport } from "../../../common/viewModel.js";
-import { ViewContext } from "../../../common/viewModel/viewContext.js";
-import { applyFontInfo } from "../../config/domFontInfo.js";
-import {
-	HorizontalPosition,
-	HorizontalRange,
-	IViewLines,
-	LineVisibleRanges,
-	VisibleRanges,
-} from "../../view/renderingContext.js";
-import { VisibleLinesCollection } from "../../view/viewLayer.js";
-import {
-	PartFingerprint,
-	PartFingerprints,
-	ViewPart,
-} from "../../view/viewPart.js";
-import { DomReadingContext } from "./domReadingContext.js";
-import { ViewLine } from "./viewLine.js";
-import { ViewLineOptions } from "./viewLineOptions.js";
+import { FastDomNode } from '../../../../base/browser/fastDomNode.js';
+import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from '../../../../base/browser/ui/mouseCursor/mouseCursor.js';
+import { RunOnceScheduler } from '../../../../base/common/async.js';
+import * as platform from '../../../../base/common/platform.js';
+import { Constants } from '../../../../base/common/uint.js';
+import './viewLines.css';
+import { applyFontInfo } from '../../config/domFontInfo.js';
+import { HorizontalPosition, HorizontalRange, IViewLines, LineVisibleRanges, VisibleRanges } from '../../view/renderingContext.js';
+import { VisibleLinesCollection } from '../../view/viewLayer.js';
+import { PartFingerprint, PartFingerprints, ViewPart } from '../../view/viewPart.js';
+import { DomReadingContext } from './domReadingContext.js';
+import { ViewLine } from './viewLine.js';
+import { EditorOption } from '../../../common/config/editorOptions.js';
+import { Position } from '../../../common/core/position.js';
+import { Range } from '../../../common/core/range.js';
+import { Selection } from '../../../common/core/selection.js';
+import { ScrollType } from '../../../common/editorCommon.js';
+import * as viewEvents from '../../../common/viewEvents.js';
+import { ViewportData } from '../../../common/viewLayout/viewLinesViewportData.js';
+import { Viewport } from '../../../common/viewModel.js';
+import { ViewContext } from '../../../common/viewModel/viewContext.js';
+import { ViewLineOptions } from './viewLineOptions.js';
+import type { ViewGpuContext } from '../../gpu/viewGpuContext.js';
 
 class LastRenderedData {
 	private _currentVisibleRange: Range;
@@ -128,7 +123,7 @@ export class ViewLines extends ViewPart implements IViewLines {
 	private _stickyScrollEnabled: boolean;
 	private _maxNumberStickyLines: number;
 
-	constructor(context: ViewContext, linesContent: FastDomNode<HTMLElement>) {
+	constructor(context: ViewContext, viewGpuContext: ViewGpuContext | undefined, linesContent: FastDomNode<HTMLElement>) {
 		super(context);
 
 		const conf = this._context.configuration;
@@ -161,7 +156,7 @@ export class ViewLines extends ViewPart implements IViewLines {
 		this._linesContent = linesContent;
 		this._textRangeRestingSpot = document.createElement("div");
 		this._visibleLines = new VisibleLinesCollection({
-			createLine: () => new ViewLine(this._viewLineOptions),
+			createLine: () => new ViewLine(viewGpuContext, this._viewLineOptions),
 		});
 		this.domNode = this._visibleLines.domNode;
 		PartFingerprints.write(this.domNode, PartFingerprint.ViewLines);

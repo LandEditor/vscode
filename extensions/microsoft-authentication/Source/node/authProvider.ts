@@ -2,30 +2,19 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Environment } from "@azure/ms-rest-azure-env";
-import {
-	AccountInfo,
-	AuthenticationResult,
-	ServerError,
-} from "@azure/msal-node";
-import {
-	AuthenticationGetSessionOptions,
-	AuthenticationProvider,
-	AuthenticationProviderAuthenticationSessionsChangeEvent,
-	AuthenticationProviderSessionOptions,
-	AuthenticationSession,
-	AuthenticationSessionAccountInformation,
-	CancellationError,
-	env,
-	EventEmitter,
-	ExtensionContext,
-	l10n,
-	LogOutputChannel,
-	Memento,
-	SecretStorage,
-	Uri,
-	window,
-} from "vscode";
+import { AccountInfo, AuthenticationResult, ServerError } from '@azure/msal-node';
+import { AuthenticationGetSessionOptions, AuthenticationProvider, AuthenticationProviderAuthenticationSessionsChangeEvent, AuthenticationProviderSessionOptions, AuthenticationSession, AuthenticationSessionAccountInformation, CancellationError, env, EventEmitter, ExtensionContext, l10n, LogOutputChannel, Uri, window } from 'vscode';
+import { Environment } from '@azure/ms-rest-azure-env';
+import { CachedPublicClientApplicationManager } from './publicClientCache';
+import { UriHandlerLoopbackClient } from '../common/loopbackClientAndOpener';
+import { UriEventHandler } from '../UriEventHandler';
+import { ICachedPublicClientApplication } from '../common/publicClientCache';
+import { MicrosoftAccountType, MicrosoftAuthenticationTelemetryReporter } from '../common/telemetryReporter';
+import { loopbackTemplate } from './loopbackTemplate';
+import { ScopeData } from '../common/scopeData';
+import { EventBufferer } from '../common/event';
+import { BetterTokenStorage } from '../betterSecretStorage';
+import { IStoredSession } from '../AADHelper';
 
 import { IStoredSession } from "../AADHelper";
 import { BetterTokenStorage } from "../betterSecretStorage";
@@ -329,9 +318,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 		let result: AuthenticationResult | undefined;
 
 		try {
-			const windowHandle = env.handle
-				? Buffer.from(env.handle, "base64")
-				: undefined;
+			const windowHandle = window.nativeHandle ? Buffer.from(window.nativeHandle) : undefined;
 			result = await cachedPca.acquireTokenInteractive({
 				openBrowser: async (url: string) => {
 					await env.openExternal(Uri.parse(url));
@@ -387,9 +374,7 @@ export class MsalAuthProvider implements AuthenticationProvider {
 			);
 
 			try {
-				const windowHandle = env.handle
-					? Buffer.from(env.handle)
-					: undefined;
+				const windowHandle = window.nativeHandle ? Buffer.from(window.nativeHandle) : undefined;
 				result = await cachedPca.acquireTokenInteractive({
 					openBrowser: (url: string) =>
 						loopbackClient.openBrowser(url),

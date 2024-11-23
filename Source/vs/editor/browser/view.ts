@@ -231,8 +231,7 @@ export class View extends ViewEventHandler {
 		this._viewParts.push(this._scrollbar);
 
 		// View Lines
-		this._viewLines = new ViewLines(this._context, this._linesContent);
-
+		this._viewLines = new ViewLines(this._context, this._viewGpuContext, this._linesContent);
 		if (this._viewGpuContext) {
 			this._viewLinesGpu = this._instantiationService.createInstance(
 				ViewLinesGpu,
@@ -288,9 +287,7 @@ export class View extends ViewEventHandler {
 		);
 
 		if (this._viewGpuContext) {
-			marginViewOverlays.addDynamicOverlay(
-				new GpuMarkOverlay(this._context),
-			);
+			marginViewOverlays.addDynamicOverlay(new GpuMarkOverlay(this._context, this._viewGpuContext));
 		}
 
 		// Glyph margin widgets

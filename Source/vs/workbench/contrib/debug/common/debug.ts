@@ -1801,31 +1801,14 @@ export interface IConfigurationManager {
 		triggerKind?: DebugConfigurationProviderTriggerKind,
 	): boolean;
 
-	getDynamicProviders(): Promise<
-		{
-			label: string;
-			type: string;
-			pick: () => Promise<
-				| {
-						launch: ILaunch;
-						config: IConfig;
-				  }
-				| undefined
-			>;
-		}[]
-	>;
-	registerDebugConfigurationProvider(
-		debugConfigurationProvider: IDebugConfigurationProvider,
-	): IDisposable;
-	unregisterDebugConfigurationProvider(
-		debugConfigurationProvider: IDebugConfigurationProvider,
-	): void;
-	resolveConfigurationByProviders(
-		folderUri: uri | undefined,
-		type: string | undefined,
-		debugConfiguration: any,
-		token: CancellationToken,
-	): Promise<any>;
+	hasDebugConfigurationProvider(debugType: string, triggerKind?: DebugConfigurationProviderTriggerKind): boolean;
+	getDynamicProviders(): Promise<{ label: string; type: string; pick: () => Promise<{ launch: ILaunch; config: IConfig; label: string } | undefined> }[]>;
+	getDynamicConfigurationsByType(type: string, token?: CancellationToken): Promise<{ launch: ILaunch; config: IConfig; label: string }[]>;
+
+	registerDebugConfigurationProvider(debugConfigurationProvider: IDebugConfigurationProvider): IDisposable;
+	unregisterDebugConfigurationProvider(debugConfigurationProvider: IDebugConfigurationProvider): void;
+
+	resolveConfigurationByProviders(folderUri: uri | undefined, type: string | undefined, debugConfiguration: any, token: CancellationToken): Promise<any>;
 }
 export enum DebuggerString {
 	UnverifiedBreakpoints = "unverifiedBreakpoints",
@@ -1868,15 +1851,23 @@ export interface IAdapterManager {
 		sessionId: string,
 	): Promise<number | undefined>;
 
-	getEnabledDebugger(
-		type: string,
-	): (IDebugger & IDebuggerMetadata) | undefined;
-	guessDebugger(
-		gettingConfigurations: boolean,
-	): Promise<(IDebugger & IDebuggerMetadata) | undefined>;
+	substituteVariables(debugType: string, folder: IWorkspaceFolder | undefined, config: IConfig): Promise<IConfig>;
+	runInTerminal(debugType: string, args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined>;
+	getEnabledDebugger(type: string): (IDebugger & IDebuggerMetadata) | undefined;
+	guessDebugger(gettingConfigurations: boolean): Promise<IGuessedDebugger | undefined>;
 
 	get onDidDebuggersExtPointRead(): Event<void>;
 }
+
+export interface IGuessedDebugger {
+	debugger: IDebugger;
+	withConfig?: {
+		label: string;
+		launch: ILaunch;
+		config: IConfig;
+	};
+}
+
 export interface ILaunch {
 	/**
 	 * Resource pointing to the launch.json this object is wrapping.

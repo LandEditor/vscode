@@ -31,7 +31,7 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 		document: vscode.TextDocument,
 		ranges: readonly vscode.Range[],
 		dataTransfer: vscode.DataTransfer,
-		_context: vscode.DocumentPasteEditContext,
+		context: vscode.DocumentPasteEditContext,
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
 		const pasteUrlSetting = vscode.workspace
@@ -53,19 +53,18 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
+		// TODO: If the user has explicitly requested to paste as a markdown link,
+		// try to paste even if we don't have a valid uri
 		const uriText = findValidUriInText(text);
 
 		if (!uriText) {
 			return;
 		}
 
-		const edit = createInsertUriListEdit(
-			document,
-			ranges,
-			UriList.from(uriText),
-			{ preserveAbsoluteUris: true },
-		);
-
+		const edit = createInsertUriListEdit(document, ranges, UriList.from(uriText), {
+			linkKindHint: context.only,
+			preserveAbsoluteUris: true
+		});
 		if (!edit) {
 			return;
 		}

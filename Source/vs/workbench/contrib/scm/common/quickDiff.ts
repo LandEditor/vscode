@@ -15,13 +15,14 @@ export interface QuickDiffProvider {
 	rootUri: URI | undefined;
 	selector?: LanguageSelector;
 	isSCM: boolean;
-
+	visible: boolean;
 	getOriginalResource(uri: URI): Promise<URI | null>;
 }
 export interface QuickDiff {
 	label: string;
 	originalResource: URI;
 	isSCM: boolean;
+	visible: boolean;
 }
 export interface IQuickDiffService {
 	readonly _serviceBrand: undefined;

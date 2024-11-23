@@ -50,15 +50,12 @@ export function isIMatchInNotebook(obj: any): obj is IMatchInNotebook {
 	return (
 		typeof obj === "object" &&
 		obj !== null &&
-		typeof obj.parent === "function" &&
-		typeof obj.cellParent === "object" &&
-		typeof obj.isWebviewMatch === "function" &&
-		typeof obj.isReadonly === "function" &&
-		typeof obj.cellIndex === "number" &&
-		(typeof obj.webviewIndex === "number" ||
-			obj.webviewIndex === undefined) &&
-		(typeof obj.cell === "object" || obj.cell === undefined)
-	);
+		typeof obj.parent === 'function' &&
+		typeof obj.cellParent === 'object' &&
+		typeof obj.isWebviewMatch === 'function' &&
+		typeof obj.cellIndex === 'number' &&
+		(typeof obj.webviewIndex === 'number' || obj.webviewIndex === undefined) &&
+		(typeof obj.cell === 'object' || obj.cell === undefined);
 }
 export interface ICellMatch {
 	hasCellViewModel(): boolean;

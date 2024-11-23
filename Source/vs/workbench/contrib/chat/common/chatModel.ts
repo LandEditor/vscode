@@ -801,16 +801,11 @@ export interface ISerializableChatRequestData {
 	message: string | IParsedChatRequest; // string => old format
 	/** Is really like "prompt data". This is the message in the format in which the agent gets it + variable values. */
 	variableData: IChatRequestVariableData;
-	response:
-		| ReadonlyArray<
-				| IMarkdownString
-				| IChatResponseProgressFileTreeData
-				| IChatContentInlineReference
-				| IChatAgentMarkdownContentWithVulnerability
-		  >
-		| undefined;
+	response: ReadonlyArray<IMarkdownString | IChatResponseProgressFileTreeData | IChatContentInlineReference | IChatAgentMarkdownContentWithVulnerability> | undefined;
+	isHidden: boolean;
 	responseId?: string;
 	agent?: ISerializableChatAgentData;
+	workingSet?: UriComponents[];
 	slashCommand?: IChatAgentCommand;
 	// responseErrorDetails: IChatResponseErrorDetails | undefined;
 	result?: IChatAgentResult; // Optional for backcompat
@@ -1225,63 +1220,21 @@ export class ChatModel extends Disposable implements IChatModel {
 						: reviveParsedChatRequest(raw.message);
 
 				// Old messages don't have variableData, or have it in the wrong (non-array) shape
-				const variableData: IChatRequestVariableData =
-					this.reviveVariableData(raw.variableData);
-
-				const request = new ChatRequestModel(
-					this,
-					parsedRequest,
-					variableData,
-					raw.timestamp ?? -1,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					undefined,
-					raw.requestId,
-				);
-
-				if (
-					raw.response ||
-					raw.result ||
-					(raw as any).responseErrorDetails
-				) {
-					const agent =
-						raw.agent && "metadata" in raw.agent // Check for the new format, ignore entries in the old format
-							? reviveSerializedAgent(raw.agent)
-							: undefined;
+				const variableData: IChatRequestVariableData = this.reviveVariableData(raw.variableData);
+				const request = new ChatRequestModel(this, parsedRequest, variableData, raw.timestamp ?? -1, undefined, undefined, undefined, undefined, raw.workingSet?.map((uri) => URI.revive(uri)), undefined, raw.requestId);
+				request.isHidden = !!raw.isHidden;
+				if (raw.response || raw.result || (raw as any).responseErrorDetails) {
+					const agent = (raw.agent && 'metadata' in raw.agent) ? // Check for the new format, ignore entries in the old format
+						reviveSerializedAgent(raw.agent) : undefined;
 
 					// Port entries from old format
-					const result =
-						"responseErrorDetails" in raw
-							? // eslint-disable-next-line local/code-no-dangerous-type-assertions
-								({
-									errorDetails: raw.responseErrorDetails,
-								} as IChatAgentResult)
-							: raw.result;
-					request.response = new ChatResponseModel(
-						raw.response ?? [new MarkdownString(raw.response)],
-						this,
-						agent,
-						raw.slashCommand,
-						request.id,
-						true,
-						raw.isCanceled,
-						raw.vote,
-						raw.voteDownReason,
-						result,
-						raw.followups,
-						undefined,
-						undefined,
-						raw.responseId,
-					);
-
-					if (raw.usedContext) {
-						// @ulugbekna: if this's a new vscode sessions, doc versions are incorrect anyway?
-						request.response.applyReference(
-							revive(raw.usedContext),
-						);
+					const result = 'responseErrorDetails' in raw ?
+						// eslint-disable-next-line local/code-no-dangerous-type-assertions
+						{ errorDetails: raw.responseErrorDetails } as IChatAgentResult : raw.result;
+					request.response = new ChatResponseModel(raw.response ?? [new MarkdownString(raw.response)], this, agent, raw.slashCommand, request.id, true, raw.isCanceled, raw.vote, raw.voteDownReason, result, raw.followups, undefined, undefined, raw.responseId);
+					request.response.isHidden = !!raw.isHidden;
+					if (raw.usedContext) { // @ulugbekna: if this's a new vscode sessions, doc versions are incorrect anyway?
+						request.response.applyReference(revive(raw.usedContext));
 					}
 
 					raw.contentReferences?.forEach((r) =>
@@ -1685,12 +1638,14 @@ export class ChatModel extends Disposable implements IChatModel {
 							})
 						: undefined,
 					responseId: r.response?.id,
+					isHidden: r.isHidden,
 					result: r.response?.result,
 					followups: r.response?.followups,
 					isCanceled: r.response?.isCanceled,
 					vote: r.response?.vote,
 					voteDownReason: r.response?.voteDownReason,
 					agent: agentJson,
+					workingSet: r.workingSet,
 					slashCommand: r.response?.slashCommand,
 					usedContext: r.response?.usedContext,
 					contentReferences: r.response?.contentReferences,

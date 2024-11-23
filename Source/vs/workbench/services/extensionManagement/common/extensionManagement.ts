@@ -176,6 +176,7 @@ export const enum EnablementState {
 	EnabledByEnvironment,
 	DisabledByVirtualWorkspace,
 	DisabledByInvalidExtension,
+	DisabledByAllowlist,
 	DisabledByExtensionDependency,
 	DisabledGlobally,
 	DisabledWorkspace,
