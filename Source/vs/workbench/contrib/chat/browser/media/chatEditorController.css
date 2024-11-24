@@ -26,7 +26,10 @@
 	color: var(--vscode-button-foreground);
 }
 
-.chat-diff-change-content-widget .monaco-action-bar .action-item .action-label.codicon {
+.chat-diff-change-content-widget
+	.monaco-action-bar
+	.action-item
+	.action-label.codicon {
 	width: unset;
 	padding: 2px;
 	font-size: 12px;
@@ -34,6 +37,9 @@
 	color: var(--vscode-button-foreground);
 }
 
-.chat-diff-change-content-widget .monaco-action-bar .action-item .action-label.codicon[class*='codicon-'] {
+.chat-diff-change-content-widget
+	.monaco-action-bar
+	.action-item
+	.action-label.codicon[class*="codicon-"] {
 	font-size: 12px;
 }

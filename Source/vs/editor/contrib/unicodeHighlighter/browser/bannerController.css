@@ -16,7 +16,6 @@
 	background: var(--vscode-banner-background);
 }
 
-
 .editor-banner .icon-container {
 	display: flex;
 	flex-shrink: 0;

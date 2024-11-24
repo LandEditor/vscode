@@ -376,7 +376,7 @@ export type ITextEditorChange = [
 	originalStartLineNumber: number,
 	originalEndLineNumberExclusive: number,
 	modifiedStartLineNumber: number,
-	modifiedEndLineNumberExclusive: number
+	modifiedEndLineNumberExclusive: number,
 ];
 
 export interface ITextEditorDiffInformation {

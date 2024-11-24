@@ -3,21 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getClientArea, getTopLeftOffset, isHTMLDivElement, isHTMLTextAreaElement } from '../../../../base/browser/dom.js';
-import { mainWindow } from '../../../../base/browser/window.js';
-import { coalesce } from '../../../../base/common/arrays.js';
-import { language, locale } from '../../../../base/common/platform.js';
-import { IEnvironmentService } from '../../../../platform/environment/common/environment.js';
-import { IFileService } from '../../../../platform/files/common/files.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import localizedStrings from '../../../../platform/languagePacks/common/localizedStrings.js';
-import { ILogFile, getLogs } from '../../../../platform/log/browser/log.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { Registry } from '../../../../platform/registry/common/platform.js';
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
-import { IWindowDriver, IElement, ILocaleInfo, ILocalizedStrings } from '../common/driver.js';
-import { ILifecycleService, LifecyclePhase } from '../../lifecycle/common/lifecycle.js';
-import type { Terminal as XtermTerminal } from '@xterm/xterm';
+import type { Terminal as XtermTerminal } from "@xterm/xterm";
+
+import {
+	getClientArea,
+	getTopLeftOffset,
+	isHTMLDivElement,
+	isHTMLTextAreaElement,
+} from "../../../../base/browser/dom.js";
+import { mainWindow } from "../../../../base/browser/window.js";
+import { coalesce } from "../../../../base/common/arrays.js";
+import { language, locale } from "../../../../base/common/platform.js";
+import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
+import { IFileService } from "../../../../platform/files/common/files.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import localizedStrings from "../../../../platform/languagePacks/common/localizedStrings.js";
+import { getLogs, ILogFile } from "../../../../platform/log/browser/log.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { Registry } from "../../../../platform/registry/common/platform.js";
+import {
+	IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from "../../../common/contributions.js";
+import {
+	ILifecycleService,
+	LifecyclePhase,
+} from "../../lifecycle/common/lifecycle.js";
+import {
+	IElement,
+	ILocaleInfo,
+	ILocalizedStrings,
+	IWindowDriver,
+} from "../common/driver.js";
 
 export class BrowserWindowDriver implements IWindowDriver {
 	constructor(
@@ -170,26 +187,30 @@ export class BrowserWindowDriver implements IWindowDriver {
 			}
 			const selectionStart = editContext.selectionStart;
 			const selectionEnd = editContext.selectionEnd;
-			const event = new TextUpdateEvent('textupdate', {
+			const event = new TextUpdateEvent("textupdate", {
 				updateRangeStart: selectionStart,
 				updateRangeEnd: selectionEnd,
 				text,
 				selectionStart: selectionStart + text.length,
 				selectionEnd: selectionStart + text.length,
 				compositionStart: 0,
-				compositionEnd: 0
+				compositionEnd: 0,
 			});
 			editContext.dispatchEvent(event);
 		} else if (isHTMLTextAreaElement(element)) {
 			const start = element.selectionStart;
 			const newStart = start + text.length;
 			const value = element.value;
-			const newValue = value.substr(0, start) + text + value.substr(start);
+			const newValue =
+				value.substr(0, start) + text + value.substr(start);
 
 			element.value = newValue;
 			element.setSelectionRange(newStart, newStart);
 
-			const event = new Event('input', { 'bubbles': true, 'cancelable': true });
+			const event = new Event("input", {
+				"bubbles": true,
+				"cancelable": true,
+			});
 			element.dispatchEvent(event);
 		}
 	}

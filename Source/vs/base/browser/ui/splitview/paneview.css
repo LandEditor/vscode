@@ -49,7 +49,10 @@
 	margin: 0 2px;
 }
 
-.monaco-pane-view .pane.horizontal:not(.expanded) > .pane-header > .codicon:first-of-type {
+.monaco-pane-view
+	.pane.horizontal:not(.expanded)
+	> .pane-header
+	> .codicon:first-of-type {
 	margin: 2px;
 }
 
@@ -70,12 +73,19 @@
 /* TODO: actions should be part of the pane, but they aren't yet */
 .monaco-pane-view .pane:hover > .pane-header.expanded > .actions,
 .monaco-pane-view .pane:focus-within > .pane-header.expanded > .actions,
-.monaco-pane-view .pane > .pane-header.actions-always-visible.expanded > .actions,
+.monaco-pane-view
+	.pane
+	> .pane-header.actions-always-visible.expanded
+	> .actions,
 .monaco-pane-view .pane > .pane-header.focused.expanded > .actions {
 	display: initial;
 }
 
-.monaco-pane-view .pane > .pane-header .monaco-action-bar .action-item.select-container {
+.monaco-pane-view
+	.pane
+	> .pane-header
+	.monaco-action-bar
+	.action-item.select-container {
 	cursor: default;
 }
 
@@ -87,7 +97,12 @@
 }
 
 .linux .monaco-pane-view .pane > .pane-header .action-item .monaco-select-box,
-.windows .monaco-pane-view .pane > .pane-header .action-item .monaco-select-box {
+.windows
+	.monaco-pane-view
+	.pane
+	> .pane-header
+	.action-item
+	.monaco-select-box {
 	padding: 0px 23px 0px 8px;
 }
 
@@ -148,5 +163,10 @@
 }
 
 #monaco-pane-drop-overlay > .pane-overlay-indicator.overlay-move-transition {
-	transition: top 70ms ease-out, left 70ms ease-out, width 70ms ease-out, height 70ms ease-out, opacity 150ms ease-out;
+	transition:
+		top 70ms ease-out,
+		left 70ms ease-out,
+		width 70ms ease-out,
+		height 70ms ease-out,
+		opacity 150ms ease-out;
 }

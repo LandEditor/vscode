@@ -3,19 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize, localize2 } from '../../../../../nls.js';
-import { Action2, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
-import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
-import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { NotebookOutlineContext } from '../contrib/outline/notebookOutline.js';
-import { FoldingController } from './foldingController.js';
-import { CellFoldingState, ICellViewModel, INotebookEditor } from '../notebookBrowser.js';
-import * as icons from '../notebookIcons.js';
-import { OutlineEntry } from '../viewModel/OutlineEntry.js';
-import { CellKind } from '../../common/notebookCommon.js';
-import { OutlineTarget } from '../../../../services/outline/browser/outline.js';
-import { CELL_TITLE_CELL_GROUP_ID, CellToolbarOrder } from './coreActions.js';
-import { executeSectionCondition } from './executeActions.js';
+import { localize, localize2 } from "../../../../../nls.js";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "../../../../../platform/actions/common/actions.js";
+import { ContextKeyExpr } from "../../../../../platform/contextkey/common/contextkey.js";
+import { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
+import { OutlineTarget } from "../../../../services/outline/browser/outline.js";
+import { CellKind } from "../../common/notebookCommon.js";
+import { NotebookOutlineContext } from "../contrib/outline/notebookOutline.js";
+import {
+	CellFoldingState,
+	ICellViewModel,
+	INotebookEditor,
+} from "../notebookBrowser.js";
+import * as icons from "../notebookIcons.js";
+import { OutlineEntry } from "../viewModel/OutlineEntry.js";
+import { CELL_TITLE_CELL_GROUP_ID, CellToolbarOrder } from "./coreActions.js";
+import { executeSectionCondition } from "./executeActions.js";
+import { FoldingController } from "./foldingController.js";
 
 export type NotebookOutlineEntryArgs = {
 	notebookEditor: INotebookEditor;
@@ -30,76 +38,101 @@ export type NotebookCellArgs = {
 export class NotebookRunSingleCellInSection extends Action2 {
 	constructor() {
 		super({
-			id: 'notebook.section.runSingleCell',
+			id: "notebook.section.runSingleCell",
 			title: {
-				...localize2('runCell', "Run Cell"),
-				mnemonicTitle: localize({ key: 'mirunCell', comment: ['&& denotes a mnemonic'] }, "&&Run Cell"),
+				...localize2("runCell", "Run Cell"),
+				mnemonicTitle: localize(
+					{ key: "mirunCell", comment: ["&& denotes a mnemonic"] },
+					"&&Run Cell",
+				),
 			},
-			shortTitle: localize('runCell', "Run Cell"),
+			shortTitle: localize("runCell", "Run Cell"),
 			icon: icons.executeIcon,
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
-					group: 'inline',
+					group: "inline",
 					order: 1,
 					when: ContextKeyExpr.and(
-						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Code),
-						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
+						NotebookOutlineContext.CellKind.isEqualTo(
+							CellKind.Code,
+						),
+						NotebookOutlineContext.OutlineElementTarget.isEqualTo(
+							OutlineTarget.OutlinePane,
+						),
 						NotebookOutlineContext.CellHasChildren.toNegated(),
 						NotebookOutlineContext.CellHasHeader.toNegated(),
-					)
-				}
-			]
+					),
+				},
+			],
 		});
 	}
 
-	override async run(_accessor: ServicesAccessor, context: any): Promise<void> {
+	override async run(
+		_accessor: ServicesAccessor,
+		context: any,
+	): Promise<void> {
 		if (!checkOutlineEntryContext(context)) {
 			return;
 		}
 
-		context.notebookEditor.executeNotebookCells([context.outlineEntry.cell]);
+		context.notebookEditor.executeNotebookCells([
+			context.outlineEntry.cell,
+		]);
 	}
 }
 
 export class NotebookRunCellsInSection extends Action2 {
 	constructor() {
 		super({
-			id: 'notebook.section.runCells',
+			id: "notebook.section.runCells",
 			title: {
-				...localize2('runCellsInSection', "Run Cells In Section"),
-				mnemonicTitle: localize({ key: 'mirunCellsInSection', comment: ['&& denotes a mnemonic'] }, "&&Run Cells In Section"),
+				...localize2("runCellsInSection", "Run Cells In Section"),
+				mnemonicTitle: localize(
+					{
+						key: "mirunCellsInSection",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Run Cells In Section",
+				),
 			},
-			shortTitle: localize('runCellsInSection', "Run Cells In Section"),
+			shortTitle: localize("runCellsInSection", "Run Cells In Section"),
 			icon: icons.executeIcon, // TODO @Yoyokrazy replace this with new icon later
 			menu: [
 				{
 					id: MenuId.NotebookStickyScrollContext,
-					group: 'notebookExecution',
-					order: 1
+					group: "notebookExecution",
+					order: 1,
 				},
 				{
 					id: MenuId.NotebookOutlineActionMenu,
-					group: 'inline',
+					group: "inline",
 					order: 1,
 					when: ContextKeyExpr.and(
-						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Markup),
-						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
+						NotebookOutlineContext.CellKind.isEqualTo(
+							CellKind.Markup,
+						),
+						NotebookOutlineContext.OutlineElementTarget.isEqualTo(
+							OutlineTarget.OutlinePane,
+						),
 						NotebookOutlineContext.CellHasChildren,
 						NotebookOutlineContext.CellHasHeader,
-					)
+					),
 				},
 				{
 					id: MenuId.NotebookCellTitle,
 					order: CellToolbarOrder.RunSection,
 					group: CELL_TITLE_CELL_GROUP_ID,
-					when: executeSectionCondition
-				}
-			]
+					when: executeSectionCondition,
+				},
+			],
 		});
 	}
 
-	override async run(_accessor: ServicesAccessor, context: any): Promise<void> {
+	override async run(
+		_accessor: ServicesAccessor,
+		context: any,
+	): Promise<void> {
 		let cell: ICellViewModel;
 		if (checkOutlineEntryContext(context)) {
 			cell = context.outlineEntry.cell;
@@ -113,12 +146,17 @@ export class NotebookRunCellsInSection extends Action2 {
 		if (idx === undefined) {
 			return;
 		}
-		const length = context.notebookEditor.getViewModel()?.getFoldedLength(idx);
+		const length = context.notebookEditor
+			.getViewModel()
+			?.getFoldedLength(idx);
 		if (length === undefined) {
 			return;
 		}
 
-		const cells = context.notebookEditor.getCellsInRange({ start: idx, end: idx + length + 1 });
+		const cells = context.notebookEditor.getCellsInRange({
+			start: idx,
+			end: idx + length + 1,
+		});
 		context.notebookEditor.executeNotebookCells(cells);
 	}
 }
@@ -126,30 +164,45 @@ export class NotebookRunCellsInSection extends Action2 {
 export class NotebookFoldSection extends Action2 {
 	constructor() {
 		super({
-			id: 'notebook.section.foldSection',
+			id: "notebook.section.foldSection",
 			title: {
-				...localize2('foldSection', "Fold Section"),
-				mnemonicTitle: localize({ key: 'mifoldSection', comment: ['&& denotes a mnemonic'] }, "&&Fold Section"),
+				...localize2("foldSection", "Fold Section"),
+				mnemonicTitle: localize(
+					{
+						key: "mifoldSection",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Fold Section",
+				),
 			},
-			shortTitle: localize('foldSection', "Fold Section"),
+			shortTitle: localize("foldSection", "Fold Section"),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
-					group: 'notebookFolding',
+					group: "notebookFolding",
 					order: 2,
 					when: ContextKeyExpr.and(
-						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Markup),
-						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
+						NotebookOutlineContext.CellKind.isEqualTo(
+							CellKind.Markup,
+						),
+						NotebookOutlineContext.OutlineElementTarget.isEqualTo(
+							OutlineTarget.OutlinePane,
+						),
 						NotebookOutlineContext.CellHasChildren,
 						NotebookOutlineContext.CellHasHeader,
-						NotebookOutlineContext.CellFoldingState.isEqualTo(CellFoldingState.Expanded)
-					)
-				}
-			]
+						NotebookOutlineContext.CellFoldingState.isEqualTo(
+							CellFoldingState.Expanded,
+						),
+					),
+				},
+			],
 		});
 	}
 
-	override async run(_accessor: ServicesAccessor, context: any): Promise<void> {
+	override async run(
+		_accessor: ServicesAccessor,
+		context: any,
+	): Promise<void> {
 		if (!checkOutlineEntryContext(context)) {
 			return;
 		}
@@ -157,43 +210,68 @@ export class NotebookFoldSection extends Action2 {
 		this.toggleFoldRange(context.outlineEntry, context.notebookEditor);
 	}
 
-	private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
-		const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+	private toggleFoldRange(
+		entry: OutlineEntry,
+		notebookEditor: INotebookEditor,
+	) {
+		const foldingController =
+			notebookEditor.getContribution<FoldingController>(
+				FoldingController.id,
+			);
 		const index = entry.index;
 		const headerLevel = entry.level;
 		const newFoldingState = CellFoldingState.Collapsed;
 
-		foldingController.setFoldingStateDown(index, newFoldingState, headerLevel);
+		foldingController.setFoldingStateDown(
+			index,
+			newFoldingState,
+			headerLevel,
+		);
 	}
 }
 
 export class NotebookExpandSection extends Action2 {
 	constructor() {
 		super({
-			id: 'notebook.section.expandSection',
+			id: "notebook.section.expandSection",
 			title: {
-				...localize2('expandSection', "Expand Section"),
-				mnemonicTitle: localize({ key: 'miexpandSection', comment: ['&& denotes a mnemonic'] }, "&&Expand Section"),
+				...localize2("expandSection", "Expand Section"),
+				mnemonicTitle: localize(
+					{
+						key: "miexpandSection",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Expand Section",
+				),
 			},
-			shortTitle: localize('expandSection', "Expand Section"),
+			shortTitle: localize("expandSection", "Expand Section"),
 			menu: [
 				{
 					id: MenuId.NotebookOutlineActionMenu,
-					group: 'notebookFolding',
+					group: "notebookFolding",
 					order: 2,
 					when: ContextKeyExpr.and(
-						NotebookOutlineContext.CellKind.isEqualTo(CellKind.Markup),
-						NotebookOutlineContext.OutlineElementTarget.isEqualTo(OutlineTarget.OutlinePane),
+						NotebookOutlineContext.CellKind.isEqualTo(
+							CellKind.Markup,
+						),
+						NotebookOutlineContext.OutlineElementTarget.isEqualTo(
+							OutlineTarget.OutlinePane,
+						),
 						NotebookOutlineContext.CellHasChildren,
 						NotebookOutlineContext.CellHasHeader,
-						NotebookOutlineContext.CellFoldingState.isEqualTo(CellFoldingState.Collapsed)
-					)
-				}
-			]
+						NotebookOutlineContext.CellFoldingState.isEqualTo(
+							CellFoldingState.Collapsed,
+						),
+					),
+				},
+			],
 		});
 	}
 
-	override async run(_accessor: ServicesAccessor, context: any): Promise<void> {
+	override async run(
+		_accessor: ServicesAccessor,
+		context: any,
+	): Promise<void> {
 		if (!checkOutlineEntryContext(context)) {
 			return;
 		}
@@ -201,13 +279,23 @@ export class NotebookExpandSection extends Action2 {
 		this.toggleFoldRange(context.outlineEntry, context.notebookEditor);
 	}
 
-	private toggleFoldRange(entry: OutlineEntry, notebookEditor: INotebookEditor) {
-		const foldingController = notebookEditor.getContribution<FoldingController>(FoldingController.id);
+	private toggleFoldRange(
+		entry: OutlineEntry,
+		notebookEditor: INotebookEditor,
+	) {
+		const foldingController =
+			notebookEditor.getContribution<FoldingController>(
+				FoldingController.id,
+			);
 		const index = entry.index;
 		const headerLevel = entry.level;
 		const newFoldingState = CellFoldingState.Expanded;
 
-		foldingController.setFoldingStateDown(index, newFoldingState, headerLevel);
+		foldingController.setFoldingStateDown(
+			index,
+			newFoldingState,
+			headerLevel,
+		);
 	}
 }
 
@@ -218,7 +306,9 @@ export class NotebookExpandSection extends Action2 {
  * @param context - Notebook Outline Context containing a notebook editor and outline entry
  * @returns true if context is valid, false otherwise
  */
-function checkOutlineEntryContext(context: any): context is NotebookOutlineEntryArgs {
+function checkOutlineEntryContext(
+	context: any,
+): context is NotebookOutlineEntryArgs {
 	return !!(context && context.notebookEditor && context.outlineEntry);
 }
 

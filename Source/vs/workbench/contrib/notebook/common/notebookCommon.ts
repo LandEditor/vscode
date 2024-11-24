@@ -3,40 +3,55 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from '../../../../base/common/buffer.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { IDiffResult } from '../../../../base/common/diff/diff.js';
-import { Event } from '../../../../base/common/event.js';
-import * as glob from '../../../../base/common/glob.js';
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
-import { Iterable } from '../../../../base/common/iterator.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { Mimes } from '../../../../base/common/mime.js';
-import { Schemas } from '../../../../base/common/network.js';
-import { basename } from '../../../../base/common/path.js';
-import { isWindows } from '../../../../base/common/platform.js';
-import { ISplice } from '../../../../base/common/sequence.js';
-import { ThemeColor } from '../../../../base/common/themables.js';
-import { URI, UriComponents } from '../../../../base/common/uri.js';
-import { Range } from '../../../../editor/common/core/range.js';
-import { ILineChange } from '../../../../editor/common/diff/legacyLinesDiffComputer.js';
-import * as editorCommon from '../../../../editor/common/editorCommon.js';
-import { Command, WorkspaceEditMetadata } from '../../../../editor/common/languages.js';
-import { IReadonlyTextBuffer } from '../../../../editor/common/model.js';
-import { IAccessibilityInformation } from '../../../../platform/accessibility/common/accessibility.js';
-import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
-import { IFileReadLimits } from '../../../../platform/files/common/files.js';
-import { UndoRedoGroup } from '../../../../platform/undoRedo/common/undoRedo.js';
-import { IRevertOptions, ISaveOptions, IUntypedEditorInput } from '../../../common/editor.js';
-import { NotebookTextModel } from './model/notebookTextModel.js';
-import { ICellExecutionError } from './notebookExecutionStateService.js';
-import { INotebookTextModelLike } from './notebookKernelService.js';
-import { ICellRange } from './notebookRange.js';
-import { RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
-import { generateMetadataUri, generate as generateUri, parseMetadataUri, parse as parseUri } from '../../../services/notebook/common/notebookDocumentService.js';
-import { IWorkingCopyBackupMeta, IWorkingCopySaveEvent } from '../../../services/workingCopy/common/workingCopy.js';
-import { SnapshotContext } from '../../../services/workingCopy/common/fileWorkingCopy.js';
+import { VSBuffer } from "../../../../base/common/buffer.js";
+import { CancellationToken } from "../../../../base/common/cancellation.js";
+import { IDiffResult } from "../../../../base/common/diff/diff.js";
+import { Event } from "../../../../base/common/event.js";
+import * as glob from "../../../../base/common/glob.js";
+import { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import { Iterable } from "../../../../base/common/iterator.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import { Mimes } from "../../../../base/common/mime.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { basename } from "../../../../base/common/path.js";
+import { isWindows } from "../../../../base/common/platform.js";
+import { ISplice } from "../../../../base/common/sequence.js";
+import { ThemeColor } from "../../../../base/common/themables.js";
+import { URI, UriComponents } from "../../../../base/common/uri.js";
+import { Range } from "../../../../editor/common/core/range.js";
+import { ILineChange } from "../../../../editor/common/diff/legacyLinesDiffComputer.js";
+import * as editorCommon from "../../../../editor/common/editorCommon.js";
+import {
+	Command,
+	WorkspaceEditMetadata,
+} from "../../../../editor/common/languages.js";
+import { IReadonlyTextBuffer } from "../../../../editor/common/model.js";
+import { IAccessibilityInformation } from "../../../../platform/accessibility/common/accessibility.js";
+import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
+import { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
+import { IFileReadLimits } from "../../../../platform/files/common/files.js";
+import { UndoRedoGroup } from "../../../../platform/undoRedo/common/undoRedo.js";
+import {
+	IRevertOptions,
+	ISaveOptions,
+	IUntypedEditorInput,
+} from "../../../common/editor.js";
+import { RegisteredEditorPriority } from "../../../services/editor/common/editorResolverService.js";
+import {
+	generateMetadataUri,
+	generate as generateUri,
+	parseMetadataUri,
+	parse as parseUri,
+} from "../../../services/notebook/common/notebookDocumentService.js";
+import { SnapshotContext } from "../../../services/workingCopy/common/fileWorkingCopy.js";
+import {
+	IWorkingCopyBackupMeta,
+	IWorkingCopySaveEvent,
+} from "../../../services/workingCopy/common/workingCopy.js";
+import { NotebookTextModel } from "./model/notebookTextModel.js";
+import { ICellExecutionError } from "./notebookExecutionStateService.js";
+import { INotebookTextModelLike } from "./notebookKernelService.js";
+import { ICellRange } from "./notebookRange.js";
 
 export const NOTEBOOK_EDITOR_ID = "workbench.editor.notebook";
 export const NOTEBOOK_DIFF_EDITOR_ID =
@@ -319,10 +334,24 @@ export interface INotebookTextModel extends INotebookTextModelLike {
 	readonly versionId: number;
 	readonly length: number;
 	readonly cells: readonly ICell[];
-	reset(cells: ICellDto2[], metadata: NotebookDocumentMetadata, transientOptions: TransientOptions): void;
+	reset(
+		cells: ICellDto2[],
+		metadata: NotebookDocumentMetadata,
+		transientOptions: TransientOptions,
+	): void;
 	createSnapshot(options: INotebookSnapshotOptions): NotebookData;
-	restoreSnapshot(snapshot: NotebookData, transientOptions?: TransientOptions): void;
-	applyEdits(rawEdits: ICellEditOperation[], synchronous: boolean, beginSelectionState: ISelectionState | undefined, endSelectionsComputer: () => ISelectionState | undefined, undoRedoGroup: UndoRedoGroup | undefined, computeUndoRedo?: boolean): boolean;
+	restoreSnapshot(
+		snapshot: NotebookData,
+		transientOptions?: TransientOptions,
+	): void;
+	applyEdits(
+		rawEdits: ICellEditOperation[],
+		synchronous: boolean,
+		beginSelectionState: ISelectionState | undefined,
+		endSelectionsComputer: () => ISelectionState | undefined,
+		undoRedoGroup: UndoRedoGroup | undefined,
+		computeUndoRedo?: boolean,
+	): boolean;
 	onDidChangeContent: Event<NotebookTextModelChangedEvent>;
 	onWillDispose: Event<void>;
 }

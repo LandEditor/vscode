@@ -8,7 +8,8 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-selectionHighlightBorder);
 }
-.monaco-editor.hc-black .focused .selectionHighlight, .monaco-editor.hc-light .focused .selectionHighlight {
+.monaco-editor.hc-black .focused .selectionHighlight,
+.monaco-editor.hc-light .focused .selectionHighlight {
 	border-style: dotted;
 }
 
@@ -17,7 +18,8 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-wordHighlightBorder);
 }
-.monaco-editor.hc-black .wordHighlight, .monaco-editor.hc-light .wordHighlight {
+.monaco-editor.hc-black .wordHighlight,
+.monaco-editor.hc-light .wordHighlight {
 	border-style: dotted;
 }
 
@@ -26,7 +28,8 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-wordHighlightStrongBorder);
 }
-.monaco-editor.hc-black .wordHighlightStrong, .monaco-editor.hc-light .wordHighlightStrong {
+.monaco-editor.hc-black .wordHighlightStrong,
+.monaco-editor.hc-light .wordHighlightStrong {
 	border-style: dotted;
 }
 
@@ -35,6 +38,7 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-wordHighlightTextBorder);
 }
-.monaco-editor.hc-black .wordHighlightText, .monaco-editor.hc-light .wordHighlightText {
+.monaco-editor.hc-black .wordHighlightText,
+.monaco-editor.hc-light .wordHighlightText {
 	border-style: dotted;
 }

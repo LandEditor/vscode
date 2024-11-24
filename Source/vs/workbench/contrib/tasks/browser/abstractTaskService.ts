@@ -5197,9 +5197,7 @@ export abstract class AbstractTaskService
 		this._progressService.withProgress(options, () => promise);
 	}
 
-	private async _getGlobTasks(
-		taskGroupId: string,
-	): Promise<{
+	private async _getGlobTasks(taskGroupId: string): Promise<{
 		globGroupTasks: (Task | ConfiguringTask)[];
 		globTasksDetected: boolean;
 	}> {

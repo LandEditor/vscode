@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { groupAdjacentBy } from '../../../base/common/arrays.js';
-import { assertFn, checkAdjacentItems } from '../../../base/common/assert.js';
-import { BugIndicatingError } from '../../../base/common/errors.js';
-import { LineRange } from '../core/lineRange.js';
-import { Position } from '../core/position.js';
-import { Range } from '../core/range.js';
-import { AbstractText, SingleTextEdit, TextEdit } from '../core/textEdit.js';
-import { IChange } from './legacyLinesDiffComputer.js';
+import { groupAdjacentBy } from "../../../base/common/arrays.js";
+import { assertFn, checkAdjacentItems } from "../../../base/common/assert.js";
+import { BugIndicatingError } from "../../../base/common/errors.js";
+import { LineRange } from "../core/lineRange.js";
+import { Position } from "../core/position.js";
+import { Range } from "../core/range.js";
+import { AbstractText, SingleTextEdit, TextEdit } from "../core/textEdit.js";
+import { IChange } from "./legacyLinesDiffComputer.js";
 
 /**
  * Maps a line range in the original text model to a line range in the modified text model.
@@ -547,27 +547,43 @@ export function getLineRangeMapping(
 	]);
 }
 
-export function lineRangeMappingFromChanges(changes: IChange[]): LineRangeMapping[] {
+export function lineRangeMappingFromChanges(
+	changes: IChange[],
+): LineRangeMapping[] {
 	const lineRangeMapping: LineRangeMapping[] = [];
 
 	for (const change of changes) {
 		let originalRange: LineRange;
 		if (change.originalEndLineNumber === 0) {
 			// Insertion
-			originalRange = new LineRange(change.originalStartLineNumber + 1, change.originalStartLineNumber + 1);
+			originalRange = new LineRange(
+				change.originalStartLineNumber + 1,
+				change.originalStartLineNumber + 1,
+			);
 		} else {
-			originalRange = new LineRange(change.originalStartLineNumber, change.originalEndLineNumber + 1);
+			originalRange = new LineRange(
+				change.originalStartLineNumber,
+				change.originalEndLineNumber + 1,
+			);
 		}
 
 		let modifiedRange: LineRange;
 		if (change.modifiedEndLineNumber === 0) {
 			// Deletion
-			modifiedRange = new LineRange(change.modifiedStartLineNumber + 1, change.modifiedStartLineNumber + 1);
+			modifiedRange = new LineRange(
+				change.modifiedStartLineNumber + 1,
+				change.modifiedStartLineNumber + 1,
+			);
 		} else {
-			modifiedRange = new LineRange(change.modifiedStartLineNumber, change.modifiedEndLineNumber + 1);
+			modifiedRange = new LineRange(
+				change.modifiedStartLineNumber,
+				change.modifiedEndLineNumber + 1,
+			);
 		}
 
-		lineRangeMapping.push(new LineRangeMapping(originalRange, modifiedRange));
+		lineRangeMapping.push(
+			new LineRangeMapping(originalRange, modifiedRange),
+		);
 	}
 
 	return lineRangeMapping;

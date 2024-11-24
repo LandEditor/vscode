@@ -17,7 +17,11 @@ declare module "vscode" {
 		 * @param token A cancellation token.
 		 * @return A list of completions.
 		 */
-		provideTerminalCompletions(terminal: Terminal, context: TerminalCompletionContext, token: CancellationToken): ProviderResult<T[] | TerminalCompletionList<T>>;
+		provideTerminalCompletions(
+			terminal: Terminal,
+			context: TerminalCompletionContext,
+			token: CancellationToken,
+		): ProviderResult<T[] | TerminalCompletionList<T>>;
 	}
 
 	export interface TerminalCompletionItem {
@@ -89,8 +93,9 @@ declare module "vscode" {
 	 * Represents a collection of {@link TerminalCompletionItem completion items} to be presented
 	 * in the terminal.
 	 */
-	export class TerminalCompletionList<T extends TerminalCompletionItem = TerminalCompletionItem> {
-
+	export class TerminalCompletionList<
+		T extends TerminalCompletionItem = TerminalCompletionItem,
+	> {
 		/**
 		 * Resources that should be shown in the completions list for the cwd of the terminal.
 		 */
@@ -107,7 +112,10 @@ declare module "vscode" {
 		 * @param items The completion items.
 		 * @param resourceRequestConfig Indicates which resources should be shown as completions for the cwd of the terminal.
 		 */
-		constructor(items?: T[], resourceRequestConfig?: TerminalResourceRequestConfig);
+		constructor(
+			items?: T[],
+			resourceRequestConfig?: TerminalResourceRequestConfig,
+		);
 	}
 
 	export interface TerminalResourceRequestConfig {

@@ -3,55 +3,80 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { renderStringAsPlaintext } from '../../../../base/browser/markdownRenderer.js';
-import { RunOnceScheduler } from '../../../../base/common/async.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { CancellationError, isCancellationError } from '../../../../base/common/errors.js';
-import { Emitter } from '../../../../base/common/event.js';
-import { Iterable } from '../../../../base/common/iterator.js';
-import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { localize } from '../../../../nls.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { IExtensionService } from '../../../services/extensions/common/extensions.js';
-import { ChatModel } from '../common/chatModel.js';
-import { ChatToolInvocation } from '../common/chatProgressTypes/chatToolInvocation.js';
-import { IChatService } from '../common/chatService.js';
-import { CountTokensCallback, ILanguageModelToolsService, IToolData, IToolImpl, IToolInvocation, IToolResult } from '../common/languageModelToolsService.js';
+import { renderStringAsPlaintext } from "../../../../base/browser/markdownRenderer.js";
+import { RunOnceScheduler } from "../../../../base/common/async.js";
+import { CancellationToken } from "../../../../base/common/cancellation.js";
+import {
+	CancellationError,
+	isCancellationError,
+} from "../../../../base/common/errors.js";
+import { Emitter } from "../../../../base/common/event.js";
+import { Iterable } from "../../../../base/common/iterator.js";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { localize } from "../../../../nls.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
+import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
+import { IExtensionService } from "../../../services/extensions/common/extensions.js";
+import { ChatModel } from "../common/chatModel.js";
+import { ChatToolInvocation } from "../common/chatProgressTypes/chatToolInvocation.js";
+import { IChatService } from "../common/chatService.js";
+import {
+	CountTokensCallback,
+	ILanguageModelToolsService,
+	IToolData,
+	IToolImpl,
+	IToolInvocation,
+	IToolResult,
+} from "../common/languageModelToolsService.js";
 
 interface IToolEntry {
 	data: IToolData;
 	impl?: IToolImpl;
 }
 
-export class LanguageModelToolsService extends Disposable implements ILanguageModelToolsService {
+export class LanguageModelToolsService
+	extends Disposable
+	implements ILanguageModelToolsService
+{
 	_serviceBrand: undefined;
 
 	private _onDidChangeTools = new Emitter<void>();
 	readonly onDidChangeTools = this._onDidChangeTools.event;
 
 	/** Throttle tools updates because it sends all tools and runs on context key updates */
-	private _onDidChangeToolsScheduler = new RunOnceScheduler(() => this._onDidChangeTools.fire(), 750);
+	private _onDidChangeToolsScheduler = new RunOnceScheduler(
+		() => this._onDidChangeTools.fire(),
+		750,
+	);
 
 	private _tools = new Map<string, IToolEntry>();
 	private _toolContextKeys = new Set<string>();
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IChatService private readonly _chatService: IChatService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
 
-		this._register(this._contextKeyService.onDidChangeContext(e => {
-			if (e.affectsSome(this._toolContextKeys)) {
-				// Not worth it to compute a delta here unless we have many tools changing often
-				this._onDidChangeToolsScheduler.schedule();
-			}
-		}));
+		this._register(
+			this._contextKeyService.onDidChangeContext((e) => {
+				if (e.affectsSome(this._toolContextKeys)) {
+					// Not worth it to compute a delta here unless we have many tools changing often
+					this._onDidChangeToolsScheduler.schedule();
+				}
+			}),
+		);
 	}
 
 	registerToolData(toolData: IToolData): IDisposable {
@@ -62,7 +87,7 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		this._tools.set(toolData.id, { data: toolData });
 		this._onDidChangeToolsScheduler.schedule();
 
-		toolData.when?.keys().forEach(key => this._toolContextKeys.add(key));
+		toolData.when?.keys().forEach((key) => this._toolContextKeys.add(key));
 
 		return toDisposable(() => {
 			this._tools.delete(toolData.id);
@@ -74,7 +99,9 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 	private _refreshAllToolContextKeys() {
 		this._toolContextKeys.clear();
 		for (const tool of this._tools.values()) {
-			tool.data.when?.keys().forEach(key => this._toolContextKeys.add(key));
+			tool.data.when
+				?.keys()
+				.forEach((key) => this._toolContextKeys.add(key));
 		}
 	}
 
@@ -95,8 +122,13 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 	}
 
 	getTools(): Iterable<Readonly<IToolData>> {
-		const toolDatas = Iterable.map(this._tools.values(), i => i.data);
-		return Iterable.filter(toolDatas, toolData => !toolData.when || this._contextKeyService.contextMatchesRules(toolData.when));
+		const toolDatas = Iterable.map(this._tools.values(), (i) => i.data);
+		return Iterable.filter(
+			toolDatas,
+			(toolData) =>
+				!toolData.when ||
+				this._contextKeyService.contextMatchesRules(toolData.when),
+		);
 	}
 
 	getTool(id: string): IToolData | undefined {
@@ -105,7 +137,11 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 
 	private _getToolEntry(id: string): IToolEntry | undefined {
 		const entry = this._tools.get(id);
-		if (entry && (!entry.data.when || this._contextKeyService.contextMatchesRules(entry.data.when))) {
+		if (
+			entry &&
+			(!entry.data.when ||
+				this._contextKeyService.contextMatchesRules(entry.data.when))
+		) {
 			return entry;
 		} else {
 			return undefined;
@@ -121,7 +157,11 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		return undefined;
 	}
 
-	async invokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult> {
+	async invokeTool(
+		dto: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken,
+	): Promise<IToolResult> {
 		// When invoking a tool, don't validate the "when" clause. An extension may have invoked a tool just as it was becoming disabled, and just let it go through rather than throw and break the chat.
 		let tool = this._tools.get(dto.toolId);
 		if (!tool) {
@@ -129,12 +169,16 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		}
 
 		if (!tool.impl) {
-			await this._extensionService.activateByEvent(`onLanguageModelTool:${dto.toolId}`);
+			await this._extensionService.activateByEvent(
+				`onLanguageModelTool:${dto.toolId}`,
+			);
 
 			// Extension should activate and register the tool implementation
 			tool = this._tools.get(dto.toolId);
 			if (!tool?.impl) {
-				throw new Error(`Tool ${dto.toolId} does not have an implementation registered.`);
+				throw new Error(
+					`Tool ${dto.toolId} does not have an implementation registered.`,
+				);
 			}
 		}
 
@@ -143,16 +187,29 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 
 		try {
 			if (dto.context) {
-				const model = this._chatService.getSession(dto.context?.sessionId) as ChatModel;
+				const model = this._chatService.getSession(
+					dto.context?.sessionId,
+				) as ChatModel;
 				const request = model.getRequests().at(-1)!;
 
-				const prepared = tool.impl.prepareToolInvocation ?
-					await tool.impl.prepareToolInvocation(dto.parameters, token)
+				const prepared = tool.impl.prepareToolInvocation
+					? await tool.impl.prepareToolInvocation(
+							dto.parameters,
+							token,
+						)
 					: undefined;
 
-				const defaultMessage = localize('toolInvocationMessage', "Using {0}", `"${tool.data.displayName}"`);
-				const invocationMessage = prepared?.invocationMessage ?? defaultMessage;
-				toolInvocation = new ChatToolInvocation(invocationMessage, prepared?.confirmationMessages);
+				const defaultMessage = localize(
+					"toolInvocationMessage",
+					"Using {0}",
+					`"${tool.data.displayName}"`,
+				);
+				const invocationMessage =
+					prepared?.invocationMessage ?? defaultMessage;
+				toolInvocation = new ChatToolInvocation(
+					invocationMessage,
+					prepared?.confirmationMessages,
+				);
 				token.onCancellationRequested(() => {
 					toolInvocation!.confirmed.complete(false);
 				});
@@ -164,39 +221,48 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 					}
 				}
 			} else {
-				const prepared = tool.impl.prepareToolInvocation ?
-					await tool.impl.prepareToolInvocation(dto.parameters, token)
+				const prepared = tool.impl.prepareToolInvocation
+					? await tool.impl.prepareToolInvocation(
+							dto.parameters,
+							token,
+						)
 					: undefined;
 
 				if (prepared?.confirmationMessages) {
-					const result = await this._dialogService.confirm({ message: prepared.confirmationMessages.title, detail: renderStringAsPlaintext(prepared.confirmationMessages.message) });
+					const result = await this._dialogService.confirm({
+						message: prepared.confirmationMessages.title,
+						detail: renderStringAsPlaintext(
+							prepared.confirmationMessages.message,
+						),
+					});
 					if (!result.confirmed) {
 						throw new CancellationError();
 					}
 				}
 			}
 
-
 			const result = await tool.impl.invoke(dto, countTokens, token);
-			this._telemetryService.publicLog2<LanguageModelToolInvokedEvent, LanguageModelToolInvokedClassification>(
-				'languageModelToolInvoked',
-				{
-					result: 'success',
-					chatSessionId: dto.context?.sessionId,
-					toolId: tool.data.id,
-					toolExtensionId: tool.data.extensionId?.value,
-				});
+			this._telemetryService.publicLog2<
+				LanguageModelToolInvokedEvent,
+				LanguageModelToolInvokedClassification
+			>("languageModelToolInvoked", {
+				result: "success",
+				chatSessionId: dto.context?.sessionId,
+				toolId: tool.data.id,
+				toolExtensionId: tool.data.extensionId?.value,
+			});
 			return result;
 		} catch (err) {
-			const result = isCancellationError(err) ? 'userCancelled' : 'error';
-			this._telemetryService.publicLog2<LanguageModelToolInvokedEvent, LanguageModelToolInvokedClassification>(
-				'languageModelToolInvoked',
-				{
-					result,
-					chatSessionId: dto.context?.sessionId,
-					toolId: tool.data.id,
-					toolExtensionId: tool.data.extensionId?.value,
-				});
+			const result = isCancellationError(err) ? "userCancelled" : "error";
+			this._telemetryService.publicLog2<
+				LanguageModelToolInvokedEvent,
+				LanguageModelToolInvokedClassification
+			>("languageModelToolInvoked", {
+				result,
+				chatSessionId: dto.context?.sessionId,
+				toolId: tool.data.id,
+				toolExtensionId: tool.data.extensionId?.value,
+			});
 			throw err;
 		} finally {
 			toolInvocation?.isCompleteDeferred.complete();
@@ -205,17 +271,33 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 }
 
 type LanguageModelToolInvokedEvent = {
-	result: 'success' | 'error' | 'userCancelled';
+	result: "success" | "error" | "userCancelled";
 	chatSessionId: string | undefined;
 	toolId: string;
 	toolExtensionId: string | undefined;
 };
 
 type LanguageModelToolInvokedClassification = {
-	result: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Whether invoking the LanguageModelTool resulted in an error.' };
-	chatSessionId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The ID of the chat session that the tool was used within, if applicable.' };
-	toolId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The ID of the tool used.' };
-	toolExtensionId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The extension that contributed the tool.' };
-	owner: 'roblourens';
-	comment: 'Provides insight into the usage of language model tools.';
+	result: {
+		classification: "SystemMetaData";
+		purpose: "FeatureInsight";
+		comment: "Whether invoking the LanguageModelTool resulted in an error.";
+	};
+	chatSessionId: {
+		classification: "SystemMetaData";
+		purpose: "FeatureInsight";
+		comment: "The ID of the chat session that the tool was used within, if applicable.";
+	};
+	toolId: {
+		classification: "SystemMetaData";
+		purpose: "FeatureInsight";
+		comment: "The ID of the tool used.";
+	};
+	toolExtensionId: {
+		classification: "SystemMetaData";
+		purpose: "FeatureInsight";
+		comment: "The extension that contributed the tool.";
+	};
+	owner: "roblourens";
+	comment: "Provides insight into the usage of language model tools.";
 };

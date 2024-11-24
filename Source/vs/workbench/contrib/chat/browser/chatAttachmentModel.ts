@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from '../../../../base/common/event.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { basename } from '../../../../base/common/resources.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IRange } from '../../../../editor/common/core/range.js';
-import { IChatEditingService } from '../common/chatEditingService.js';
-import { IChatRequestVariableEntry } from '../common/chatModel.js';
+import { Emitter } from "../../../../base/common/event.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { basename } from "../../../../base/common/resources.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IRange } from "../../../../editor/common/core/range.js";
+import { IChatEditingService } from "../common/chatEditingService.js";
+import { IChatRequestVariableEntry } from "../common/chatModel.js";
 
 export class ChatAttachmentModel extends Disposable {
 	private _attachments = new Map<string, IChatRequestVariableEntry>();
@@ -75,12 +75,11 @@ export class ChatAttachmentModel extends Disposable {
 }
 
 export class EditsAttachmentModel extends ChatAttachmentModel {
-
 	private _onFileLimitExceeded = this._register(new Emitter<void>());
 	readonly onFileLimitExceeded = this._onFileLimitExceeded.event;
 
 	private get fileAttachments() {
-		return this.attachments.filter(attachment => attachment.isFile);
+		return this.attachments.filter((attachment) => attachment.isFile);
 	}
 
 	private readonly _excludedFileAttachments: IChatRequestVariableEntry[] = [];
@@ -89,27 +88,48 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 	}
 
 	constructor(
-		@IChatEditingService private readonly _chatEditingService: IChatEditingService,
+		@IChatEditingService
+		private readonly _chatEditingService: IChatEditingService,
 	) {
 		super();
 	}
 
 	private isExcludeFileAttachment(fileAttachmentId: string) {
-		return this._excludedFileAttachments.some(attachment => attachment.id === fileAttachmentId);
+		return this._excludedFileAttachments.some(
+			(attachment) => attachment.id === fileAttachmentId,
+		);
 	}
 
 	override addContext(...attachments: IChatRequestVariableEntry[]) {
 		const currentAttachmentIds = this.getAttachmentIDs();
 
-		const fileAttachments = attachments.filter(attachment => attachment.isFile);
-		const newFileAttachments = fileAttachments.filter(attachment => !currentAttachmentIds.has(attachment.id));
-		const otherAttachments = attachments.filter(attachment => !attachment.isFile);
+		const fileAttachments = attachments.filter(
+			(attachment) => attachment.isFile,
+		);
+		const newFileAttachments = fileAttachments.filter(
+			(attachment) => !currentAttachmentIds.has(attachment.id),
+		);
+		const otherAttachments = attachments.filter(
+			(attachment) => !attachment.isFile,
+		);
 
-		const availableFileCount = Math.max(0, this._chatEditingService.editingSessionFileLimit - this.fileAttachments.length);
-		const fileAttachmentsToBeAdded = newFileAttachments.slice(0, availableFileCount);
+		const availableFileCount = Math.max(
+			0,
+			this._chatEditingService.editingSessionFileLimit -
+				this.fileAttachments.length,
+		);
+		const fileAttachmentsToBeAdded = newFileAttachments.slice(
+			0,
+			availableFileCount,
+		);
 
 		if (newFileAttachments.length > availableFileCount) {
-			const attachmentsExceedingSize = newFileAttachments.slice(availableFileCount).filter(attachment => !this.isExcludeFileAttachment(attachment.id));
+			const attachmentsExceedingSize = newFileAttachments
+				.slice(availableFileCount)
+				.filter(
+					(attachment) =>
+						!this.isExcludeFileAttachment(attachment.id),
+				);
 			this._excludedFileAttachments.push(...attachmentsExceedingSize);
 			this._onDidChangeContext.fire();
 			this._onFileLimitExceeded.fire();
@@ -119,21 +139,36 @@ export class EditsAttachmentModel extends ChatAttachmentModel {
 	}
 
 	override clear(): void {
-		this._excludedFileAttachments.splice(0, this._excludedFileAttachments.length);
+		this._excludedFileAttachments.splice(
+			0,
+			this._excludedFileAttachments.length,
+		);
 		super.clear();
 	}
 
 	override delete(variableEntryId: string) {
-		const excludedFileIndex = this._excludedFileAttachments.findIndex(attachment => attachment.id === variableEntryId);
+		const excludedFileIndex = this._excludedFileAttachments.findIndex(
+			(attachment) => attachment.id === variableEntryId,
+		);
 		if (excludedFileIndex !== -1) {
 			this._excludedFileAttachments.splice(excludedFileIndex, 1);
 		}
 
 		super.delete(variableEntryId);
 
-		if (this.fileAttachments.length < this._chatEditingService.editingSessionFileLimit) {
-			const availableFileCount = Math.max(0, this._chatEditingService.editingSessionFileLimit - this.fileAttachments.length);
-			const reAddAttachments = this._excludedFileAttachments.splice(0, availableFileCount);
+		if (
+			this.fileAttachments.length <
+			this._chatEditingService.editingSessionFileLimit
+		) {
+			const availableFileCount = Math.max(
+				0,
+				this._chatEditingService.editingSessionFileLimit -
+					this.fileAttachments.length,
+			);
+			const reAddAttachments = this._excludedFileAttachments.splice(
+				0,
+				availableFileCount,
+			);
 			super.addContext(...reAddAttachments);
 		}
 	}

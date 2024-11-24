@@ -3,33 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DataTransfers } from '../../../../base/browser/dnd.js';
-import { $, DragAndDropObserver } from '../../../../base/browser/dom.js';
-import { renderLabelWithIcons } from '../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { coalesce } from '../../../../base/common/arrays.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { Mimes } from '../../../../base/common/mime.js';
-import { basename, joinPath } from '../../../../base/common/resources.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IRange } from '../../../../editor/common/core/range.js';
-import { SymbolKinds } from '../../../../editor/common/languages.js';
-import { localize } from '../../../../nls.js';
-import { CodeDataTransfers, containsDragType, DocumentSymbolTransferData, extractEditorsDropData, extractSymbolDropData, IDraggedResourceEditorInput } from '../../../../platform/dnd/browser/dnd.js';
-import { FileType, IFileService, IFileSystemProvider } from '../../../../platform/files/common/files.js';
-import { IThemeService, Themable } from '../../../../platform/theme/common/themeService.js';
-import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IExtensionService, isProposedApiEnabled } from '../../../services/extensions/common/extensions.js';
-import { IChatRequestVariableEntry } from '../common/chatModel.js';
-import { ChatAttachmentModel } from './chatAttachmentModel.js';
-import { IChatInputStyles } from './chatInputPart.js';
+import { DataTransfers } from "../../../../base/browser/dnd.js";
+import { $, DragAndDropObserver } from "../../../../base/browser/dom.js";
+import { renderLabelWithIcons } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
+import { coalesce } from "../../../../base/common/arrays.js";
+import { Codicon } from "../../../../base/common/codicons.js";
+import { IDisposable } from "../../../../base/common/lifecycle.js";
+import { Mimes } from "../../../../base/common/mime.js";
+import { basename, joinPath } from "../../../../base/common/resources.js";
+import { URI } from "../../../../base/common/uri.js";
+import { IRange } from "../../../../editor/common/core/range.js";
+import { SymbolKinds } from "../../../../editor/common/languages.js";
+import { localize } from "../../../../nls.js";
+import {
+	CodeDataTransfers,
+	containsDragType,
+	DocumentSymbolTransferData,
+	extractEditorsDropData,
+	extractSymbolDropData,
+	IDraggedResourceEditorInput,
+} from "../../../../platform/dnd/browser/dnd.js";
+import {
+	FileType,
+	IFileService,
+	IFileSystemProvider,
+} from "../../../../platform/files/common/files.js";
+import {
+	IThemeService,
+	Themable,
+} from "../../../../platform/theme/common/themeService.js";
+import { EditorInput } from "../../../common/editor/editorInput.js";
+import {
+	IExtensionService,
+	isProposedApiEnabled,
+} from "../../../services/extensions/common/extensions.js";
+import { IChatRequestVariableEntry } from "../common/chatModel.js";
+import { ChatAttachmentModel } from "./chatAttachmentModel.js";
+import { IChatInputStyles } from "./chatInputPart.js";
 
 enum ChatDragAndDropType {
 	FILE_INTERNAL,
 	FILE_EXTERNAL,
 	FOLDER,
 	IMAGE,
-	SYMBOL
+	SYMBOL,
 }
 
 export class ChatDragAndDrop extends Themable {
@@ -171,7 +188,11 @@ export class ChatDragAndDrop extends Themable {
 	private guessDropType(e: DragEvent): ChatDragAndDropType | undefined {
 		// This is an esstimation based on the datatransfer types/items
 		if (this.isImageDnd(e)) {
-			return this.extensionService.extensions.some(ext => isProposedApiEnabled(ext, 'chatReferenceBinaryData')) ? ChatDragAndDropType.IMAGE : undefined;
+			return this.extensionService.extensions.some((ext) =>
+				isProposedApiEnabled(ext, "chatReferenceBinaryData"),
+			)
+				? ChatDragAndDropType.IMAGE
+				: undefined;
 		} else if (containsDragType(e, CodeDataTransfers.SYMBOLS)) {
 			return ChatDragAndDropType.SYMBOL;
 		} else if (containsDragType(e, DataTransfers.FILES)) {
@@ -194,11 +215,16 @@ export class ChatDragAndDrop extends Themable {
 
 	protected getDropTypeName(type: ChatDragAndDropType): string {
 		switch (type) {
-			case ChatDragAndDropType.FILE_INTERNAL: return localize('file', 'File');
-			case ChatDragAndDropType.FILE_EXTERNAL: return localize('file', 'File');
-			case ChatDragAndDropType.FOLDER: return localize('folder', 'Folder');
-			case ChatDragAndDropType.IMAGE: return localize('image', 'Image');
-			case ChatDragAndDropType.SYMBOL: return localize('symbol', 'Symbol');
+			case ChatDragAndDropType.FILE_INTERNAL:
+				return localize("file", "File");
+			case ChatDragAndDropType.FILE_EXTERNAL:
+				return localize("file", "File");
+			case ChatDragAndDropType.FOLDER:
+				return localize("folder", "Folder");
+			case ChatDragAndDropType.IMAGE:
+				return localize("image", "Image");
+			case ChatDragAndDropType.SYMBOL:
+				return localize("symbol", "Symbol");
 		}
 	}
 
@@ -292,21 +318,26 @@ export class ChatDragAndDrop extends Themable {
 		return getResourceAttachContext(editor.resource, stat.isDirectory);
 	}
 
-	private resolveSymbolsAttachContext(symbols: DocumentSymbolTransferData[]): IChatRequestVariableEntry[] {
-		return symbols.map(symbol => {
+	private resolveSymbolsAttachContext(
+		symbols: DocumentSymbolTransferData[],
+	): IChatRequestVariableEntry[] {
+		return symbols.map((symbol) => {
 			const resource = URI.file(symbol.fsPath);
 			return {
-				kind: 'symbol',
+				kind: "symbol",
 				id: symbolId(resource, symbol.range),
 				value: { uri: resource, range: symbol.range },
 				fullName: `$(${SymbolKinds.toIcon(symbol.kind).id}) ${symbol.name}`,
 				name: symbol.name,
-				isDynamic: true
+				isDynamic: true,
 			};
 		});
 	}
 
-	private setOverlay(target: HTMLElement, type: ChatDragAndDropType | undefined): void {
+	private setOverlay(
+		target: HTMLElement,
+		type: ChatDragAndDropType | undefined,
+	): void {
 		// Remove any previous overlay text
 		this.overlayText?.remove();
 		this.overlayText = undefined;
@@ -513,7 +544,7 @@ function getImageAttachContext(
 }
 
 function symbolId(resource: URI, range?: IRange): string {
-	let rangePart = '';
+	let rangePart = "";
 	if (range) {
 		rangePart = `:${range.startLineNumber}`;
 		if (range.startLineNumber !== range.endLineNumber) {

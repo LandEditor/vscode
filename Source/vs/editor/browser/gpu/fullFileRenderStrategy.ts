@@ -3,26 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getActiveWindow } from '../../../base/browser/dom.js';
-import { BugIndicatingError } from '../../../base/common/errors.js';
-import { MandatoryMutableDisposable } from '../../../base/common/lifecycle.js';
-import { EditorOption } from '../../common/config/editorOptions.js';
-import { CursorColumns } from '../../common/core/cursorColumns.js';
-import type { IViewLineTokens } from '../../common/tokens/lineTokens.js';
-import { ViewEventHandler } from '../../common/viewEventHandler.js';
-import { ViewEventType, type ViewConfigurationChangedEvent, type ViewDecorationsChangedEvent, type ViewLinesChangedEvent, type ViewLinesDeletedEvent, type ViewLinesInsertedEvent, type ViewScrollChangedEvent, type ViewTokensChangedEvent, type ViewZonesChangedEvent } from '../../common/viewEvents.js';
-import type { ViewportData } from '../../common/viewLayout/viewLinesViewportData.js';
-import type { InlineDecoration, ViewLineRenderingData } from '../../common/viewModel.js';
-import type { ViewContext } from '../../common/viewModel/viewContext.js';
-import type { ViewLineOptions } from '../viewParts/viewLines/viewLineOptions.js';
-import type { ITextureAtlasPageGlyph } from './atlas/atlas.js';
-import { fullFileRenderStrategyWgsl } from './fullFileRenderStrategy.wgsl.js';
-import { BindingId, type IGpuRenderStrategy } from './gpu.js';
-import { GPULifecycle } from './gpuDisposable.js';
-import { quadVertices } from './gpuUtils.js';
-import { GlyphRasterizer } from './raster/glyphRasterizer.js';
-import { ViewGpuContext } from './viewGpuContext.js';
-import { Color } from '../../../base/common/color.js';
+import { getActiveWindow } from "../../../base/browser/dom.js";
+import { Color } from "../../../base/common/color.js";
+import { BugIndicatingError } from "../../../base/common/errors.js";
+import { MandatoryMutableDisposable } from "../../../base/common/lifecycle.js";
+import { EditorOption } from "../../common/config/editorOptions.js";
+import { CursorColumns } from "../../common/core/cursorColumns.js";
+import type { IViewLineTokens } from "../../common/tokens/lineTokens.js";
+import { ViewEventHandler } from "../../common/viewEventHandler.js";
+import {
+	ViewEventType,
+	type ViewConfigurationChangedEvent,
+	type ViewDecorationsChangedEvent,
+	type ViewLinesChangedEvent,
+	type ViewLinesDeletedEvent,
+	type ViewLinesInsertedEvent,
+	type ViewScrollChangedEvent,
+	type ViewTokensChangedEvent,
+	type ViewZonesChangedEvent,
+} from "../../common/viewEvents.js";
+import type { ViewportData } from "../../common/viewLayout/viewLinesViewportData.js";
+import type {
+	InlineDecoration,
+	ViewLineRenderingData,
+} from "../../common/viewModel.js";
+import type { ViewContext } from "../../common/viewModel/viewContext.js";
+import type { ViewLineOptions } from "../viewParts/viewLines/viewLineOptions.js";
+import type { ITextureAtlasPageGlyph } from "./atlas/atlas.js";
+import { fullFileRenderStrategyWgsl } from "./fullFileRenderStrategy.wgsl.js";
+import { BindingId, type IGpuRenderStrategy } from "./gpu.js";
+import { GPULifecycle } from "./gpuDisposable.js";
+import { quadVertices } from "./gpuUtils.js";
+import { GlyphRasterizer } from "./raster/glyphRasterizer.js";
+import { ViewGpuContext } from "./viewGpuContext.js";
 
 const enum Constants {
 	IndicesPerCell = 6,
@@ -180,7 +193,9 @@ export class FullFileRenderStrategy
 		return true;
 	}
 
-	public override onDecorationsChanged(e: ViewDecorationsChangedEvent): boolean {
+	public override onDecorationsChanged(
+		e: ViewDecorationsChangedEvent,
+	): boolean {
 		// TODO: Don't clear all cells if we can avoid it
 		this._invalidateAllLines();
 
@@ -311,18 +326,27 @@ export class FullFileRenderStrategy
 				this._cellValueBuffers[bufferIndex],
 			);
 			buffer.fill(0, 0, buffer.length);
-			this._device.queue.writeBuffer(this._cellBindBuffer, 0, buffer.buffer, 0, buffer.byteLength);
+			this._device.queue.writeBuffer(
+				this._cellBindBuffer,
+				0,
+				buffer.buffer,
+				0,
+				buffer.byteLength,
+			);
 		}
 		this._finalRenderedLine = 0;
 	}
 
-	update(viewportData: ViewportData, viewLineOptions: ViewLineOptions): number {
+	update(
+		viewportData: ViewportData,
+		viewLineOptions: ViewLineOptions,
+	): number {
 		// IMPORTANT: This is a hot function. Variables are pre-allocated and shared within the
 		// loop. This is done so we don't need to trust the JIT compiler to do this optimization to
 		// avoid potential additional blocking time in garbage collector which is a common cause of
 		// dropped frames.
 
-		let chars = '';
+		let chars = "";
 		let y = 0;
 
 		let x = 0;
@@ -347,7 +371,7 @@ export class FullFileRenderStrategy
 
 		let lineData: ViewLineRenderingData;
 		let decoration: InlineDecoration;
-		let content: string = '';
+		let content: string = "";
 		let fillStartIndex = 0;
 
 		let fillEndIndex = 0;
@@ -446,9 +470,21 @@ export class FullFileRenderStrategy
 			y++
 		) {
 			// Only attempt to render lines that the GPU renderer can handle
-			if (!this._viewGpuContext.canRender(viewLineOptions, viewportData, y)) {
-				fillStartIndex = ((y - 1) * this._viewGpuContext.maxGpuCols) * Constants.IndicesPerCell;
-				fillEndIndex = (y * this._viewGpuContext.maxGpuCols) * Constants.IndicesPerCell;
+			if (
+				!this._viewGpuContext.canRender(
+					viewLineOptions,
+					viewportData,
+					y,
+				)
+			) {
+				fillStartIndex =
+					(y - 1) *
+					this._viewGpuContext.maxGpuCols *
+					Constants.IndicesPerCell;
+				fillEndIndex =
+					y *
+					this._viewGpuContext.maxGpuCols *
+					Constants.IndicesPerCell;
 				cellBuffer.fill(0, fillStartIndex, fillEndIndex);
 
 				continue;
@@ -497,35 +533,50 @@ export class FullFileRenderStrategy
 						// This is Range.strictContainsPosition except it works at the cell level,
 						// it's also inlined to avoid overhead.
 						if (
-							(y < decoration.range.startLineNumber || y > decoration.range.endLineNumber) ||
-							(y === decoration.range.startLineNumber && x < decoration.range.startColumn - 1) ||
-							(y === decoration.range.endLineNumber && x >= decoration.range.endColumn - 1)
+							y < decoration.range.startLineNumber ||
+							y > decoration.range.endLineNumber ||
+							(y === decoration.range.startLineNumber &&
+								x < decoration.range.startColumn - 1) ||
+							(y === decoration.range.endLineNumber &&
+								x >= decoration.range.endColumn - 1)
 						) {
 							continue;
 						}
 
-						const rules = ViewGpuContext.decorationCssRuleExtractor.getStyleRules(this._viewGpuContext.canvas.domNode, decoration.inlineClassName);
+						const rules =
+							ViewGpuContext.decorationCssRuleExtractor.getStyleRules(
+								this._viewGpuContext.canvas.domNode,
+								decoration.inlineClassName,
+							);
 						for (const rule of rules) {
 							for (const r of rule.style) {
-								const value = rule.styleMap.get(r)?.toString() ?? '';
+								const value =
+									rule.styleMap.get(r)?.toString() ?? "";
 								switch (r) {
-									case 'color': {
+									case "color": {
 										// TODO: This parsing and error handling should move into canRender so fallback
 										//       to DOM works
-										const parsedColor = Color.Format.CSS.parse(value);
+										const parsedColor =
+											Color.Format.CSS.parse(value);
 										if (!parsedColor) {
-											throw new BugIndicatingError('Invalid color format ' + value);
+											throw new BugIndicatingError(
+												"Invalid color format " + value,
+											);
 										}
-										charMetadata = parsedColor.toNumber24Bit();
+										charMetadata =
+											parsedColor.toNumber24Bit();
 										break;
 									}
-									default: throw new BugIndicatingError('Unexpected inline decoration style');
+									default:
+										throw new BugIndicatingError(
+											"Unexpected inline decoration style",
+										);
 								}
 							}
 						}
 					}
 
-					if (chars === ' ' || chars === '\t') {
+					if (chars === " " || chars === "\t") {
 						// Zero out glyph to ensure it doesn't get rendered
 						cellIndex =
 							((y - 1) * this._viewGpuContext.maxGpuCols + x) *
@@ -548,17 +599,31 @@ export class FullFileRenderStrategy
 						continue;
 					}
 
-					glyph = this._viewGpuContext.atlas.getGlyph(this._glyphRasterizer.value, chars, tokenMetadata, charMetadata);
+					glyph = this._viewGpuContext.atlas.getGlyph(
+						this._glyphRasterizer.value,
+						chars,
+						tokenMetadata,
+						charMetadata,
+					);
 
 					// TODO: Support non-standard character widths
-					absoluteOffsetX = Math.round((x + xOffset) * viewLineOptions.spaceWidth * dpr);
-					absoluteOffsetY = (
-						Math.ceil((
-							// Top of line including line height
-							viewportData.relativeVerticalOffset[y - viewportData.startLineNumber] +
+					absoluteOffsetX = Math.round(
+						(x + xOffset) * viewLineOptions.spaceWidth * dpr,
+					);
+					absoluteOffsetY = Math.ceil(
+						// Top of line including line height
+						(viewportData.relativeVerticalOffset[
+							y - viewportData.startLineNumber
+						] +
 							// Delta to top of line after line height
-							Math.floor((viewportData.lineHeight - this._context.configuration.options.get(EditorOption.fontSize)) / 2)
-						) * dpr)
+							Math.floor(
+								(viewportData.lineHeight -
+									this._context.configuration.options.get(
+										EditorOption.fontSize,
+									)) /
+									2,
+							)) *
+							dpr,
 					);
 
 					// TODO: Support non-standard character widths

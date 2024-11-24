@@ -20,23 +20,42 @@
 	visibility: hidden;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container {
 	display: block;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container div {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	div {
 	overflow: hidden;
 }
 
 .comments-panel .comments-panel-container .tree-container .resource-container,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata-container,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata-container,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container {
 	display: flex;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata {
 	flex: 1;
 	display: flex;
 }
@@ -46,19 +65,43 @@
 	padding-right: 5px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .icon {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.icon {
 	padding-top: 4px;
 	padding-right: 5px;
 	min-width: fit-content;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container .count,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata-container .relevance,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata-container .user {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container
+	.count,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata-container
+	.relevance,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata-container
+	.user {
 	min-width: fit-content;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata-container .relevance {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata-container
+	.relevance {
 	border-radius: 2px;
 	background-color: var(--vscode-badge-background);
 	color: var(--vscode-badge-foreground);
@@ -70,15 +113,32 @@
 	line-height: 14px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container .text {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container
+	.text {
 	display: flex;
 	flex: 1;
 	min-width: 0;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .reply-detail,
-.comments-panel .comments-panel-container .tree-container .resource-container .owner,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .timestamp {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.reply-detail,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.resource-container
+	.owner,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.timestamp {
 	display: block;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -87,22 +147,43 @@
 	opacity: 0.8;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .text * {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.text
+	* {
 	margin: 0;
 	text-overflow: ellipsis;
 	overflow: hidden;
 	padding-right: 5px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata .text * {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata
+	.text
+	* {
 	max-width: 700px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .range {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.range {
 	opacity: 0.8;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container .text code {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container
+	.text
+	code {
 	font-family: var(--monaco-monospace-font);
 }
 
@@ -125,13 +206,25 @@
 	margin-left: 10px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-metadata-container,
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-metadata-container,
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container {
 	line-height: 22px;
 	margin-right: 5px;
 }
 
-.comments-panel .comments-panel-container .tree-container .comment-thread-container .comment-snippet-container {
+.comments-panel
+	.comments-panel-container
+	.tree-container
+	.comment-thread-container
+	.comment-snippet-container {
 	padding-left: 16px;
 }
 
@@ -164,8 +257,20 @@
 	padding: 2px;
 }
 
-.comments-panel .monaco-list .monaco-list-row:hover .comment-metadata-container .actions,
-.comments-panel .monaco-list .monaco-list-row.selected .comment-metadata-container .actions,
-.comments-panel .monaco-list .monaco-list-row.focused .comment-metadata-container .actions {
+.comments-panel
+	.monaco-list
+	.monaco-list-row:hover
+	.comment-metadata-container
+	.actions,
+.comments-panel
+	.monaco-list
+	.monaco-list-row.selected
+	.comment-metadata-container
+	.actions,
+.comments-panel
+	.monaco-list
+	.monaco-list-row.focused
+	.comment-metadata-container
+	.actions {
 	display: block;
 }

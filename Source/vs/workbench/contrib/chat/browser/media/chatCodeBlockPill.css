@@ -4,7 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 .chat-codeblock-pill-widget {
-	border: 1px solid var(--vscode-chat-requestBorder, var(--vscode-input-background, transparent));
+	border: 1px solid
+		var(
+			--vscode-chat-requestBorder,
+			var(--vscode-input-background, transparent)
+		);
 	border-radius: 4px;
 	text-wrap: nowrap;
 	width: fit-content;
@@ -20,7 +24,10 @@
 	text-wrap: wrap;
 }
 
-.interactive-item-container .value .rendered-markdown .chat-codeblock-pill-widget {
+.interactive-item-container
+	.value
+	.rendered-markdown
+	.chat-codeblock-pill-widget {
 	color: inherit;
 }
 

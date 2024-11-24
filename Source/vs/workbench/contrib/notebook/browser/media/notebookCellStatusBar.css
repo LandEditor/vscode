@@ -11,7 +11,10 @@
 	overflow: hidden;
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-hidden .cell-statusbar-container {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-hidden
+	.cell-statusbar-container {
 	display: none;
 }
 
@@ -21,16 +24,26 @@
 }
 
 .monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-left,
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-right {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-status-right {
 	display: flex;
 	z-index: var(--z-index-notebook-cell-status);
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-right .cell-contributed-items {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-status-right
+	.cell-contributed-items {
 	justify-content: flex-end;
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-contributed-items {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-contributed-items {
 	display: flex;
 	flex-wrap: wrap;
 	overflow: hidden;
@@ -48,11 +61,18 @@
 	text-overflow: clip;
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-item.cell-status-item-has-command {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-status-item.cell-status-item-has-command {
 	cursor: pointer;
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-left > .cell-contributed-items {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-status-left
+	> .cell-contributed-items {
 	margin-left: 10px;
 }
 
@@ -61,10 +81,16 @@
 	color: unset; /* Inherit from parent cell-status-item */
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container .cell-status-item-show-when-active {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container
+	.cell-status-item-show-when-active {
 	display: none;
 }
 
-.monaco-workbench .notebookOverlay .cell-statusbar-container.is-active-cell .cell-status-item-show-when-active {
+.monaco-workbench
+	.notebookOverlay
+	.cell-statusbar-container.is-active-cell
+	.cell-status-item-show-when-active {
 	display: initial;
 }

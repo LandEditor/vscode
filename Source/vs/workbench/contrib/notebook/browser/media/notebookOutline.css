@@ -56,6 +56,8 @@
 	display: flex;
 }
 
-.monaco-list-row .notebook-outline-element.notebook-outline-toolbar-dropdown-active .action-menu {
+.monaco-list-row
+	.notebook-outline-element.notebook-outline-toolbar-dropdown-active
+	.action-menu {
 	display: flex;
 }

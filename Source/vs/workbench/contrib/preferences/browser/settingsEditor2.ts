@@ -2649,7 +2649,7 @@ export class SettingsEditor2 extends EditorPane {
 	private layoutSplitView(dimension: DOM.Dimension): void {
 		const listHeight =
 			dimension.height -
-			(72 + 11 + 14) /* header height + editor padding */;
+			(72 + 11 + 14); /* header height + editor padding */
 		this.splitView.el.style.height = `${listHeight}px`;
 		// We call layout first so the splitView has an idea of how much
 		// space it has, otherwise setViewVisible results in the first panel

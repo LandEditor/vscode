@@ -5,8 +5,7 @@
 
 // https://github.com/microsoft/vscode/issues/229431
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export namespace window {
 		/**
 		 * Retrieves the native window handle of the current active window.

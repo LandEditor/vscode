@@ -13,7 +13,7 @@
 	opacity: 1;
 
 	/* Background rule added for IE9 - to allow clicks on dom node */
-	background:rgba(0,0,0,0);
+	background: rgba(0, 0, 0, 0);
 
 	transition: opacity 100ms linear;
 	/* In front of peek view */

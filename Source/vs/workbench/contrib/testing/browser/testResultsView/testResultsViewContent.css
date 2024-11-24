@@ -8,7 +8,12 @@
 	color: var(--vscode-peekViewResult-lineForeground);
 }
 
-.monaco-editor .test-output-peek .test-output-peek-tree .monaco-list:focus .monaco-list-rows > .monaco-list-row.selected:not(.highlighted) {
+.monaco-editor
+	.test-output-peek
+	.test-output-peek-tree
+	.monaco-list:focus
+	.monaco-list-rows
+	> .monaco-list-row.selected:not(.highlighted) {
 	background-color: var(--vscode-peekViewResult-selectionBackground);
 	color: var(--vscode-peekViewResult-selectionForeground) !important;
 }

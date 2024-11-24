@@ -48,14 +48,16 @@
 	flex-basis: 100%;
 }
 
-.monaco-text-button.monaco-text-button-with-short-label > .monaco-button-label-short {
+.monaco-text-button.monaco-text-button-with-short-label
+	> .monaco-button-label-short {
 	flex-grow: 1;
 	width: 0;
 	overflow: hidden;
 }
 
 .monaco-text-button.monaco-text-button-with-short-label > .monaco-button-label,
-.monaco-text-button.monaco-text-button-with-short-label > .monaco-button-label-short {
+.monaco-text-button.monaco-text-button-with-short-label
+	> .monaco-button-label-short {
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -138,7 +140,7 @@
 /* default color styles - based on CSS variables */
 
 .monaco-button.default-colors,
-.monaco-button-dropdown.default-colors > .monaco-button{
+.monaco-button-dropdown.default-colors > .monaco-button {
 	color: var(--vscode-button-foreground);
 	background-color: var(--vscode-button-background);
 }
@@ -165,7 +167,9 @@
 	border-bottom: 1px solid var(--vscode-button-border);
 }
 
-.monaco-button-dropdown.default-colors .monaco-button.secondary + .monaco-button-dropdown-separator {
+.monaco-button-dropdown.default-colors
+	.monaco-button.secondary
+	+ .monaco-button-dropdown-separator {
 	background-color: var(--vscode-button-secondaryBackground);
 }
 

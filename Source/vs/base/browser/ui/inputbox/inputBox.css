@@ -7,7 +7,7 @@
 	position: relative;
 	display: block;
 	padding: 0;
-	box-sizing:	border-box;
+	box-sizing: border-box;
 	border-radius: 2px;
 
 	/* Customizable */
@@ -16,7 +16,6 @@
 
 .monaco-inputbox > .ibwrapper > .input,
 .monaco-inputbox > .ibwrapper > .mirror {
-
 	/* Customizable */
 	padding: 4px 6px;
 }
@@ -28,7 +27,7 @@
 
 .monaco-inputbox > .ibwrapper > .input {
 	display: inline-block;
-	box-sizing:	border-box;
+	box-sizing: border-box;
 	width: 100%;
 	height: 100%;
 	line-height: inherit;
@@ -80,7 +79,7 @@
 	overflow: hidden;
 	text-align: left;
 	width: 100%;
-	box-sizing:	border-box;
+	box-sizing: border-box;
 	padding: 0.4em;
 	font-size: 12px;
 	line-height: 17px;

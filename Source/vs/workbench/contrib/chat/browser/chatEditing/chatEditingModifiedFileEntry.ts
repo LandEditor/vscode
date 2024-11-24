@@ -198,9 +198,13 @@ export class ChatEditingModifiedFileEntry
 		this.doc = resourceRef.object.textEditorModel;
 
 		this.initialContent = initialContent ?? this.doc.getValue();
-		const docSnapshot = this.docSnapshot = this._register(
+		const docSnapshot = (this.docSnapshot = this._register(
 			modelService.createModel(
-				createTextBufferFactoryFromSnapshot(initialContent ? stringToSnapshot(initialContent) : this.doc.createSnapshot()),
+				createTextBufferFactoryFromSnapshot(
+					initialContent
+						? stringToSnapshot(initialContent)
+						: this.doc.createSnapshot(),
+				),
 				languageService.createById(this.doc.getLanguageId()),
 				ChatEditingTextModelContentProvider.getFileURI(
 					this.entryId,
@@ -351,7 +355,8 @@ export class ChatEditingModifiedFileEntry
 		}
 
 		if (!this.isCurrentlyBeingModified.get()) {
-			const didResetToOriginalContent = this.doc.getValue() === this.initialContent;
+			const didResetToOriginalContent =
+				this.doc.getValue() === this.initialContent;
 			const currentState = this._stateObs.get();
 
 			switch (currentState) {

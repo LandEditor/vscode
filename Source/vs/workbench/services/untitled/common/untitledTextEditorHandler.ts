@@ -97,14 +97,12 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 
 			const encoding = deserialized.encoding;
 
-			return accessor
-				.get(ITextEditorService)
-				.createTextEditor({
-					resource,
-					languageId,
-					encoding,
-					forceUntitled: true,
-				}) as UntitledTextEditorInput;
+			return accessor.get(ITextEditorService).createTextEditor({
+				resource,
+				languageId,
+				encoding,
+				forceUntitled: true,
+			}) as UntitledTextEditorInput;
 		});
 	}
 }

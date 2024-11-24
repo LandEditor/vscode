@@ -16,5 +16,5 @@
 }
 
 .monaco-editor .margin-view-overlays .gpu-mark:hover {
-	background-color: var(--vscode-editorWarning-foreground)
+	background-color: var(--vscode-editorWarning-foreground);
 }

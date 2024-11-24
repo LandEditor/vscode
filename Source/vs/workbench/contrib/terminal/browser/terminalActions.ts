@@ -1910,12 +1910,10 @@ export function registerTerminalActions() {
 		),
 		precondition: sharedWhenClause.terminalAvailable,
 		run: (c, accessor) =>
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@feature:terminal",
-				}),
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@feature:terminal",
+			}),
 	});
 	registerActiveInstanceAction({
 		id: TerminalCommandId.SetDimensions,

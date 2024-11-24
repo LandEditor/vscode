@@ -3,22 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from '../../../base/common/buffer.js';
-import { IStringDictionary } from '../../../base/common/collections.js';
-import { PerformanceMark } from '../../../base/common/performance.js';
-import { isLinux, isMacintosh, isNative, isWeb } from '../../../base/common/platform.js';
-import { URI, UriComponents, UriDto } from '../../../base/common/uri.js';
-import { ISandboxConfiguration } from '../../../base/parts/sandbox/common/sandboxTypes.js';
-import { IConfigurationService } from '../../configuration/common/configuration.js';
-import { IEditorOptions } from '../../editor/common/editor.js';
-import { NativeParsedArgs } from '../../environment/common/argv.js';
-import { FileType } from '../../files/common/files.js';
-import { ILoggerResource, LogLevel } from '../../log/common/log.js';
-import { PolicyDefinition, PolicyValue } from '../../policy/common/policy.js';
-import product from '../../product/common/product.js';
-import { IPartsSplash } from '../../theme/common/themeService.js';
-import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
-import { IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from '../../workspace/common/workspace.js';
+import { VSBuffer } from "../../../base/common/buffer.js";
+import { IStringDictionary } from "../../../base/common/collections.js";
+import { PerformanceMark } from "../../../base/common/performance.js";
+import {
+	isLinux,
+	isMacintosh,
+	isNative,
+	isWeb,
+} from "../../../base/common/platform.js";
+import { URI, UriComponents, UriDto } from "../../../base/common/uri.js";
+import { ISandboxConfiguration } from "../../../base/parts/sandbox/common/sandboxTypes.js";
+import { IConfigurationService } from "../../configuration/common/configuration.js";
+import { IEditorOptions } from "../../editor/common/editor.js";
+import { NativeParsedArgs } from "../../environment/common/argv.js";
+import { FileType } from "../../files/common/files.js";
+import { ILoggerResource, LogLevel } from "../../log/common/log.js";
+import { PolicyDefinition, PolicyValue } from "../../policy/common/policy.js";
+import product from "../../product/common/product.js";
+import { IPartsSplash } from "../../theme/common/themeService.js";
+import { IUserDataProfile } from "../../userDataProfile/common/userDataProfile.js";
+import {
+	IAnyWorkspaceIdentifier,
+	ISingleFolderWorkspaceIdentifier,
+	IWorkspaceIdentifier,
+} from "../../workspace/common/workspace.js";
 
 export const WindowMinimumSize = {
 	WIDTH: 400,

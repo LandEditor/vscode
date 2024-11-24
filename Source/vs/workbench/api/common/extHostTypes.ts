@@ -2602,13 +2602,13 @@ export class TerminalCompletionItem implements vscode.TerminalCompletionItem {
 	}
 }
 
-
 /**
  * Represents a collection of {@link CompletionItem completion items} to be presented
  * in the editor.
  */
-export class TerminalCompletionList<T extends TerminalCompletionItem = TerminalCompletionItem> {
-
+export class TerminalCompletionList<
+	T extends TerminalCompletionItem = TerminalCompletionItem,
+> {
 	/**
 	 * Resources should be shown in the completions list
 	 */
@@ -2625,7 +2625,10 @@ export class TerminalCompletionList<T extends TerminalCompletionItem = TerminalC
 	 * @param items The completion items.
 	 * @param isIncomplete The list is not complete.
 	 */
-	constructor(items?: T[], resourceRequestConfig?: TerminalResourceRequestConfig) {
+	constructor(
+		items?: T[],
+		resourceRequestConfig?: TerminalResourceRequestConfig,
+	) {
 		this.items = items ?? [];
 		this.resourceRequestConfig = resourceRequestConfig;
 	}

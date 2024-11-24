@@ -3,14 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { FourKeyMap } from '../../../../base/common/map.js';
-import { ILogService, LogLevel } from '../../../../platform/log/common/log.js';
-import { IThemeService } from '../../../../platform/theme/common/themeService.js';
-import type { IBoundingBox, IGlyphRasterizer } from '../raster/raster.js';
-import type { IReadableTextureAtlasPage, ITextureAtlasAllocator, ITextureAtlasPageGlyph, GlyphMap } from './atlas.js';
-import { TextureAtlasShelfAllocator } from './textureAtlasShelfAllocator.js';
-import { TextureAtlasSlabAllocator } from './textureAtlasSlabAllocator.js';
+import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
+import { FourKeyMap } from "../../../../base/common/map.js";
+import { ILogService, LogLevel } from "../../../../platform/log/common/log.js";
+import { IThemeService } from "../../../../platform/theme/common/themeService.js";
+import type { IBoundingBox, IGlyphRasterizer } from "../raster/raster.js";
+import type {
+	GlyphMap,
+	IReadableTextureAtlasPage,
+	ITextureAtlasAllocator,
+	ITextureAtlasPageGlyph,
+} from "./atlas.js";
+import { TextureAtlasShelfAllocator } from "./textureAtlasShelfAllocator.js";
+import { TextureAtlasSlabAllocator } from "./textureAtlasSlabAllocator.js";
 
 export type AllocatorType =
 	| "shelf"
@@ -43,7 +48,8 @@ export class TextureAtlasPage
 
 	private readonly _canvas: OffscreenCanvas;
 
-	private readonly _glyphMap: GlyphMap<ITextureAtlasPageGlyph> = new FourKeyMap();
+	private readonly _glyphMap: GlyphMap<ITextureAtlasPageGlyph> =
+		new FourKeyMap();
 	private readonly _glyphInOrderSet: Set<ITextureAtlasPageGlyph> = new Set();
 
 	get glyphs(): IterableIterator<ITextureAtlasPageGlyph> {
@@ -94,20 +100,43 @@ export class TextureAtlasPage
 		);
 	}
 
-	public getGlyph(rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, charMetadata: number): Readonly<ITextureAtlasPageGlyph> | undefined {
+	public getGlyph(
+		rasterizer: IGlyphRasterizer,
+		chars: string,
+		tokenMetadata: number,
+		charMetadata: number,
+	): Readonly<ITextureAtlasPageGlyph> | undefined {
 		// IMPORTANT: There are intentionally no intermediate variables here to aid in runtime
 		// optimization as it's a very hot function
-		return this._glyphMap.get(chars, tokenMetadata, charMetadata, rasterizer.cacheKey) ?? this._createGlyph(rasterizer, chars, tokenMetadata, charMetadata);
+		return (
+			this._glyphMap.get(
+				chars,
+				tokenMetadata,
+				charMetadata,
+				rasterizer.cacheKey,
+			) ??
+			this._createGlyph(rasterizer, chars, tokenMetadata, charMetadata)
+		);
 	}
 
-	private _createGlyph(rasterizer: IGlyphRasterizer, chars: string, tokenMetadata: number, charMetadata: number): Readonly<ITextureAtlasPageGlyph> | undefined {
+	private _createGlyph(
+		rasterizer: IGlyphRasterizer,
+		chars: string,
+		tokenMetadata: number,
+		charMetadata: number,
+	): Readonly<ITextureAtlasPageGlyph> | undefined {
 		// Ensure the glyph can fit on the page
 		if (this._glyphInOrderSet.size >= TextureAtlasPage.maximumGlyphCount) {
 			return undefined;
 		}
 
 		// Rasterize and allocate the glyph
-		const rasterizedGlyph = rasterizer.rasterizeGlyph(chars, tokenMetadata, charMetadata, this._colorMap);
+		const rasterizedGlyph = rasterizer.rasterizeGlyph(
+			chars,
+			tokenMetadata,
+			charMetadata,
+			this._colorMap,
+		);
 		const glyph = this._allocator.allocate(rasterizedGlyph);
 
 		// Ensure the glyph was allocated
@@ -118,7 +147,13 @@ export class TextureAtlasPage
 		}
 
 		// Save the glyph
-		this._glyphMap.set(chars, tokenMetadata, charMetadata, rasterizer.cacheKey, glyph);
+		this._glyphMap.set(
+			chars,
+			tokenMetadata,
+			charMetadata,
+			rasterizer.cacheKey,
+			glyph,
+		);
 		this._glyphInOrderSet.add(glyph);
 
 		// Update page version and it's tracked used area

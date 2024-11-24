@@ -28,9 +28,9 @@ import { Registry } from "../../registry/common/platform.js";
 
 //#region Editor / Resources DND
 export const CodeDataTransfers = {
-	EDITORS: 'CodeEditors',
-	FILES: 'CodeFiles',
-	SYMBOLS: 'application/vnd.code.symbols'
+	EDITORS: "CodeEditors",
+	FILES: "CodeFiles",
+	SYMBOLS: "application/vnd.code.symbols",
 };
 export interface IDraggedResourceEditorInput
 	extends IBaseTextResourceEditorInput {
@@ -462,7 +462,9 @@ export interface DocumentSymbolTransferData {
 	kind: number;
 }
 
-export function extractSymbolDropData(e: DragEvent): DocumentSymbolTransferData[] {
+export function extractSymbolDropData(
+	e: DragEvent,
+): DocumentSymbolTransferData[] {
 	const rawSymbolsData = e.dataTransfer?.getData(CodeDataTransfers.SYMBOLS);
 	if (rawSymbolsData) {
 		try {

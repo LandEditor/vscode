@@ -70,7 +70,8 @@
 }
 
 .monaco-editor .parameter-hints-widget .code {
-	font-family: var(--vscode-parameterHintsWidget-editorFontFamily), var(--vscode-parameterHintsWidget-editorFontFamilyDefault);
+	font-family: var(--vscode-parameterHintsWidget-editorFontFamily),
+		var(--vscode-parameterHintsWidget-editorFontFamilyDefault);
 }
 
 .monaco-editor .parameter-hints-widget .docs {

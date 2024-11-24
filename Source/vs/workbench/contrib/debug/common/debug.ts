@@ -1801,14 +1801,37 @@ export interface IConfigurationManager {
 		triggerKind?: DebugConfigurationProviderTriggerKind,
 	): boolean;
 
-	hasDebugConfigurationProvider(debugType: string, triggerKind?: DebugConfigurationProviderTriggerKind): boolean;
-	getDynamicProviders(): Promise<{ label: string; type: string; pick: () => Promise<{ launch: ILaunch; config: IConfig; label: string } | undefined> }[]>;
-	getDynamicConfigurationsByType(type: string, token?: CancellationToken): Promise<{ launch: ILaunch; config: IConfig; label: string }[]>;
+	hasDebugConfigurationProvider(
+		debugType: string,
+		triggerKind?: DebugConfigurationProviderTriggerKind,
+	): boolean;
+	getDynamicProviders(): Promise<
+		{
+			label: string;
+			type: string;
+			pick: () => Promise<
+				{ launch: ILaunch; config: IConfig; label: string } | undefined
+			>;
+		}[]
+	>;
+	getDynamicConfigurationsByType(
+		type: string,
+		token?: CancellationToken,
+	): Promise<{ launch: ILaunch; config: IConfig; label: string }[]>;
 
-	registerDebugConfigurationProvider(debugConfigurationProvider: IDebugConfigurationProvider): IDisposable;
-	unregisterDebugConfigurationProvider(debugConfigurationProvider: IDebugConfigurationProvider): void;
+	registerDebugConfigurationProvider(
+		debugConfigurationProvider: IDebugConfigurationProvider,
+	): IDisposable;
+	unregisterDebugConfigurationProvider(
+		debugConfigurationProvider: IDebugConfigurationProvider,
+	): void;
 
-	resolveConfigurationByProviders(folderUri: uri | undefined, type: string | undefined, debugConfiguration: any, token: CancellationToken): Promise<any>;
+	resolveConfigurationByProviders(
+		folderUri: uri | undefined,
+		type: string | undefined,
+		debugConfiguration: any,
+		token: CancellationToken,
+	): Promise<any>;
 }
 export enum DebuggerString {
 	UnverifiedBreakpoints = "unverifiedBreakpoints",
@@ -1851,10 +1874,22 @@ export interface IAdapterManager {
 		sessionId: string,
 	): Promise<number | undefined>;
 
-	substituteVariables(debugType: string, folder: IWorkspaceFolder | undefined, config: IConfig): Promise<IConfig>;
-	runInTerminal(debugType: string, args: DebugProtocol.RunInTerminalRequestArguments, sessionId: string): Promise<number | undefined>;
-	getEnabledDebugger(type: string): (IDebugger & IDebuggerMetadata) | undefined;
-	guessDebugger(gettingConfigurations: boolean): Promise<IGuessedDebugger | undefined>;
+	substituteVariables(
+		debugType: string,
+		folder: IWorkspaceFolder | undefined,
+		config: IConfig,
+	): Promise<IConfig>;
+	runInTerminal(
+		debugType: string,
+		args: DebugProtocol.RunInTerminalRequestArguments,
+		sessionId: string,
+	): Promise<number | undefined>;
+	getEnabledDebugger(
+		type: string,
+	): (IDebugger & IDebuggerMetadata) | undefined;
+	guessDebugger(
+		gettingConfigurations: boolean,
+	): Promise<IGuessedDebugger | undefined>;
 
 	get onDidDebuggersExtPointRead(): Event<void>;
 }

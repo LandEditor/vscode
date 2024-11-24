@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, getActiveDocument } from '../../../base/browser/dom.js';
-import { Disposable, toDisposable } from '../../../base/common/lifecycle.js';
-import './media/decorationCssRuleExtractor.css';
+import { $, getActiveDocument } from "../../../base/browser/dom.js";
+import { Disposable, toDisposable } from "../../../base/common/lifecycle.js";
+
+import "./media/decorationCssRuleExtractor.css";
 
 /**
  * Extracts CSS rules that would be applied to certain decoration classes.
@@ -14,19 +15,22 @@ export class DecorationCssRuleExtractor extends Disposable {
 	private _container: HTMLElement;
 	private _dummyElement: HTMLSpanElement;
 
-	private _ruleCache: Map</* className */string, CSSStyleRule[]> = new Map();
+	private _ruleCache: Map</* className */ string, CSSStyleRule[]> = new Map();
 
 	constructor() {
 		super();
 
-		this._container = $('div.monaco-decoration-css-rule-extractor');
-		this._dummyElement = $('span');
+		this._container = $("div.monaco-decoration-css-rule-extractor");
+		this._dummyElement = $("span");
 		this._container.appendChild(this._dummyElement);
 
 		this._register(toDisposable(() => this._container.remove()));
 	}
 
-	getStyleRules(canvas: HTMLElement, decorationClassName: string): CSSStyleRule[] {
+	getStyleRules(
+		canvas: HTMLElement,
+		decorationClassName: string,
+	): CSSStyleRule[] {
 		// Check cache
 		const existing = this._ruleCache.get(decorationClassName);
 		if (existing) {

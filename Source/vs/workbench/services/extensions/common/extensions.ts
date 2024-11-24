@@ -660,7 +660,7 @@ export function toExtensionDescription(
 		targetPlatform: extension.targetPlatform,
 		publisherDisplayName: extension.publisherDisplayName,
 		preRelease: extension.preRelease,
-		...extension.manifest
+		...extension.manifest,
 	};
 }
 export class NullExtensionService implements IExtensionService {

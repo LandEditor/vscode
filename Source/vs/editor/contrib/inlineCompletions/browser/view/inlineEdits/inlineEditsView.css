@@ -77,7 +77,8 @@
 	}
 
 	.inline-edits-view {
-		&.toolbarDropdownVisible, .editorContainer:hover {
+		&.toolbarDropdownVisible,
+		.editorContainer:hover {
 			.toolbar {
 				display: block;
 			}
@@ -89,7 +90,9 @@
 			.toolbar {
 				display: none;
 				border-top: 1px solid rgba(69, 69, 69, 0.5);
-				background-color: var(--vscode-editorHoverWidget-statusBarBackground);
+				background-color: var(
+					--vscode-editorHoverWidget-statusBarBackground
+				);
 
 				a {
 					color: var(--vscode-foreground);
@@ -119,7 +122,6 @@
 				.inlineSuggestionStatusBarItemLabel {
 					margin-right: 2px;
 				}
-
 			}
 
 			.preview {

@@ -11,6 +11,9 @@
 }
 
 .monaco-workbench .pane-body.integrated-terminal .terminal-initial-hint a,
-.monaco-workbench .pane-body.integrated-terminal .terminal-initial-hint .detail {
+.monaco-workbench
+	.pane-body.integrated-terminal
+	.terminal-initial-hint
+	.detail {
 	font-style: italic;
 }

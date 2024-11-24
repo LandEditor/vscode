@@ -10,7 +10,7 @@
 		width: 100%;
 	}
 
-	.codicon[class*='codicon-'] {
+	.codicon[class*="codicon-"] {
 		font-size: 13px;
 		line-height: 1.4em;
 		vertical-align: bottom;
