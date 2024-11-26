@@ -116,7 +116,7 @@ export interface IProductConfiguration {
 		readonly nlsBaseUrl: string;
 	};
 
-	readonly extensionPublisherMappings?: IStringDictionary<string>;
+	readonly extensionPublisherOrgs?: readonly string[];
 
 	readonly extensionRecommendations?: IStringDictionary<IExtensionRecommendations>;
 	readonly configBasedExtensionTips?: IStringDictionary<IConfigBasedExtensionTip>;
@@ -352,13 +352,16 @@ export interface IDefaultChatAgent {
 	readonly chatWelcomeTitle: string;
 	readonly documentationUrl: string;
 	readonly privacyStatementUrl: string;
-	readonly collectionDocumentationUrl: string;
 	readonly skusDocumentationUrl: string;
+	readonly publicCodeMatchesUrl: string;
 	readonly providerId: string;
 	readonly providerName: string;
 	readonly providerScopes: string[][];
 	readonly entitlementUrl: string;
 	readonly entitlementChatEnabled: string;
-	readonly entitlementSkuLimitedUrl: string;
-	readonly entitlementSkuLimitedEnabled: string;
+	readonly entitlementSignupLimitedUrl: string;
+	readonly entitlementCanSignupLimited: string;
+	readonly entitlementSkuType: string;
+	readonly entitlementSkuTypeLimited: string;
+	readonly entitlementSkuTypeLimitedName: string;
 }

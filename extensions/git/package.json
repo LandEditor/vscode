@@ -1072,6 +1072,15 @@
 					],
 					"type": "boolean"
 				},
+				"git.blame.editorDecoration.template": {
+					"default": "${subject}, ${authorName} (${authorDateAgo})",
+					"markdownDescription": "%config.blameEditorDecoration.template%",
+					"scope": "resource",
+					"tags": [
+						"experimental"
+					],
+					"type": "string"
+				},
 				"git.blame.statusBarItem.enabled": {
 					"default": false,
 					"markdownDescription": "%config.blameStatusBarItem.enabled%",
@@ -1080,6 +1089,15 @@
 						"experimental"
 					],
 					"type": "boolean"
+				},
+				"git.blame.statusBarItem.template": {
+					"default": "$(git-commit) ${authorName} (${authorDateAgo})",
+					"markdownDescription": "%config.blameStatusBarItem.template%",
+					"scope": "resource",
+					"tags": [
+						"experimental"
+					],
+					"type": "string"
 				},
 				"git.branchPrefix": {
 					"default": "",

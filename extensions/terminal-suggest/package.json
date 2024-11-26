@@ -11,6 +11,6 @@
 	"main": "./out/terminalSuggestMain",
 	"name": "terminal-suggest",
 	"scripts": {
-		"compile": "npx gulp compile-extension:npm"
+		"compile": "npx gulp compile-extension:terminal-suggest"
 	}
 }

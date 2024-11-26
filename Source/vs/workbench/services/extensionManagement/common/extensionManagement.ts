@@ -3,33 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "../../../../base/common/event.js";
-import { IMarkdownString } from "../../../../base/common/htmlContent.js";
-import { FileAccess } from "../../../../base/common/network.js";
-import { URI } from "../../../../base/common/uri.js";
-import { localize } from "../../../../nls.js";
-import {
-	DidUninstallExtensionEvent,
-	DidUpdateExtensionMetadata,
-	IExtensionManagementService,
-	IGalleryExtension,
-	ILocalExtension,
-	InstallExtensionEvent,
-	InstallExtensionResult,
-	InstallOptions,
-	Metadata,
-	UninstallExtensionEvent,
-} from "../../../../platform/extensionManagement/common/extensionManagement.js";
-import {
-	ExtensionType,
-	IExtension,
-	IExtensionIdentifier,
-	IExtensionManifest,
-} from "../../../../platform/extensions/common/extensions.js";
-import {
-	createDecorator,
-	refineServiceDecorator,
-} from "../../../../platform/instantiation/common/instantiation.js";
+import { Event } from '../../../../base/common/event.js';
+import { createDecorator, refineServiceDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { IExtension, ExtensionType, IExtensionManifest, IExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
+import { IExtensionManagementService, IGalleryExtension, ILocalExtension, InstallOptions, InstallExtensionEvent, DidUninstallExtensionEvent, InstallExtensionResult, Metadata, UninstallExtensionEvent, DidUpdateExtensionMetadata } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import { URI } from '../../../../base/common/uri.js';
+import { FileAccess } from '../../../../base/common/network.js';
+import { IMarkdownString } from '../../../../base/common/htmlContent.js';
 
 export type DidChangeProfileEvent = {
 	readonly added: ILocalExtension[];
@@ -107,12 +87,12 @@ export type DidChangeProfileForServerEvent = DidChangeProfileEvent & {
 	server: IExtensionManagementServer;
 };
 
-export const IWorkbenchExtensionManagementService = refineServiceDecorator<
-	IProfileAwareExtensionManagementService,
-	IWorkbenchExtensionManagementService
->(IProfileAwareExtensionManagementService);
-export interface IWorkbenchExtensionManagementService
-	extends IProfileAwareExtensionManagementService {
+export interface IWorkbenchInstallOptions extends InstallOptions {
+	readonly installEverywhere?: boolean;
+}
+
+export const IWorkbenchExtensionManagementService = refineServiceDecorator<IProfileAwareExtensionManagementService, IWorkbenchExtensionManagementService>(IProfileAwareExtensionManagementService);
+export interface IWorkbenchExtensionManagementService extends IProfileAwareExtensionManagementService {
 	readonly _serviceBrand: undefined;
 
 	readonly onInstallExtension: Event<InstallExtensionOnServerEvent>;
@@ -136,15 +116,8 @@ export interface IWorkbenchExtensionManagementService
 		includeInvalid: boolean,
 	): Promise<ILocalExtension[]>;
 
-	canInstall(
-		extension: IGalleryExtension | IResourceExtension,
-	): Promise<true | IMarkdownString>;
-
-	installVSIX(
-		location: URI,
-		manifest: IExtensionManifest,
-		installOptions?: InstallOptions,
-	): Promise<ILocalExtension>;
+	installVSIX(location: URI, manifest: IExtensionManifest, installOptions?: InstallOptions): Promise<ILocalExtension>;
+	installFromGallery(gallery: IGalleryExtension, installOptions?: IWorkbenchInstallOptions): Promise<ILocalExtension>;
 	installFromLocation(location: URI): Promise<ILocalExtension>;
 	installResourceExtension(
 		extension: IResourceExtension,
@@ -161,13 +134,6 @@ export interface IWorkbenchExtensionManagementService
 		metadata: Partial<Metadata>,
 	): Promise<ILocalExtension>;
 }
-
-export const extensionsConfigurationNodeBase = {
-	id: "extensions",
-	order: 30,
-	title: localize("extensionsConfigurationTitle", "Extensions"),
-	type: "object",
-};
 
 export const enum EnablementState {
 	DisabledByTrustRequirement,

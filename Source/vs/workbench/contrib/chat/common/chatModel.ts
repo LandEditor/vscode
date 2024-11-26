@@ -105,9 +105,16 @@ export interface IChatRequestImplicitVariableEntry
 	enabled: boolean;
 }
 
-export interface ISymbolVariableEntry
-	extends Omit<IBaseChatRequestVariableEntry, "kind"> {
-	readonly kind: "symbol";
+export interface IChatRequestPasteVariableEntry extends Omit<IBaseChatRequestVariableEntry, 'kind'> {
+	readonly kind: 'paste';
+	code: string;
+	language: string;
+	fileName: string;
+	pastedLines: string;
+}
+
+export interface ISymbolVariableEntry extends Omit<IBaseChatRequestVariableEntry, 'kind'> {
+	readonly kind: 'symbol';
 	readonly isDynamic: true;
 	readonly value: Location;
 }
@@ -118,11 +125,7 @@ export interface ICommandResultVariableEntry
 	readonly isDynamic: true;
 }
 
-export type IChatRequestVariableEntry =
-	| IChatRequestImplicitVariableEntry
-	| ISymbolVariableEntry
-	| ICommandResultVariableEntry
-	| IBaseChatRequestVariableEntry;
+export type IChatRequestVariableEntry = IChatRequestImplicitVariableEntry | IChatRequestPasteVariableEntry | ISymbolVariableEntry | ICommandResultVariableEntry | IBaseChatRequestVariableEntry;
 
 export function isImplicitVariableEntry(
 	obj: IChatRequestVariableEntry,
@@ -130,9 +133,11 @@ export function isImplicitVariableEntry(
 	return obj.kind === "implicit";
 }
 
-export function isChatRequestVariableEntry(
-	obj: unknown,
-): obj is IChatRequestVariableEntry {
+export function isPasteVariableEntry(obj: IChatRequestVariableEntry): obj is IChatRequestPasteVariableEntry {
+	return obj.kind === 'paste';
+}
+
+export function isChatRequestVariableEntry(obj: unknown): obj is IChatRequestVariableEntry {
 	const entry = obj as IChatRequestVariableEntry;
 
 	return (

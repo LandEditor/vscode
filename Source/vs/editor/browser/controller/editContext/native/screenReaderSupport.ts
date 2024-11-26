@@ -2,37 +2,24 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { getActiveWindow } from "../../../../../base/browser/dom.js";
-import { FastDomNode } from "../../../../../base/browser/fastDomNode.js";
-import { localize } from "../../../../../nls.js";
-import {
-	AccessibilitySupport,
-	IAccessibilityService,
-} from "../../../../../platform/accessibility/common/accessibility.js";
-import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
-import { EditorOption } from "../../../../common/config/editorOptions.js";
-import { FontInfo } from "../../../../common/config/fontInfo.js";
-import { Position } from "../../../../common/core/position.js";
-import { Range } from "../../../../common/core/range.js";
-import { Selection } from "../../../../common/core/selection.js";
-import { EndOfLinePreference } from "../../../../common/model.js";
-import {
-	ViewConfigurationChangedEvent,
-	ViewCursorStateChangedEvent,
-} from "../../../../common/viewEvents.js";
-import { ViewContext } from "../../../../common/viewModel/viewContext.js";
-import { applyFontInfo } from "../../../config/domFontInfo.js";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "../../../view/renderingContext.js";
-import {
-	ariaLabelForScreenReaderContent,
-	ISimpleModel,
-	newlinecount,
-	PagedScreenReaderStrategy,
-	ScreenReaderContentState,
-} from "../screenReaderUtils.js";
+
+import { getActiveWindow } from '../../../../../base/browser/dom.js';
+import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
+import { localize } from '../../../../../nls.js';
+import { AccessibilitySupport, IAccessibilityService } from '../../../../../platform/accessibility/common/accessibility.js';
+import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
+import { EditorOption } from '../../../../common/config/editorOptions.js';
+import { FontInfo } from '../../../../common/config/fontInfo.js';
+import { Position } from '../../../../common/core/position.js';
+import { Range } from '../../../../common/core/range.js';
+import { Selection } from '../../../../common/core/selection.js';
+import { EndOfLinePreference } from '../../../../common/model.js';
+import { ViewConfigurationChangedEvent, ViewCursorStateChangedEvent } from '../../../../common/viewEvents.js';
+import { ViewContext } from '../../../../common/viewModel/viewContext.js';
+import { applyFontInfo } from '../../../config/domFontInfo.js';
+import { IEditorAriaOptions } from '../../../editorBrowser.js';
+import { RestrictedRenderingContext, RenderingContext } from '../../../view/renderingContext.js';
+import { ariaLabelForScreenReaderContent, ISimpleModel, newlinecount, PagedScreenReaderStrategy, ScreenReaderContentState } from '../screenReaderUtils.js';
 
 export class ScreenReaderSupport {
 	// Configuration values
@@ -139,7 +126,22 @@ export class ScreenReaderSupport {
 		this._domNode.domNode.scrollTop =
 			numberOfLinesOfContentBeforeSelection * this._lineHeight;
 	}
-	public setAriaOptions(): void {}
+
+	public setAriaOptions(options: IEditorAriaOptions): void {
+		if (options.activeDescendant) {
+			this._domNode.setAttribute('aria-haspopup', 'true');
+			this._domNode.setAttribute('aria-autocomplete', 'list');
+			this._domNode.setAttribute('aria-activedescendant', options.activeDescendant);
+		} else {
+			this._domNode.setAttribute('aria-haspopup', 'false');
+			this._domNode.setAttribute('aria-autocomplete', 'both');
+			this._domNode.removeAttribute('aria-activedescendant');
+		}
+		if (options.role) {
+			this._domNode.setAttribute('role', options.role);
+		}
+	}
+
 	public writeScreenReaderContent(): void {
 		const focusedElement = getActiveWindow().document.activeElement;
 

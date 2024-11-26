@@ -2,48 +2,36 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-/* eslint-disable local/code-no-native-private */
-import type * as vscode from "vscode";
 
-import { isNonEmptyArray } from "../../../base/common/arrays.js";
-import { VSBuffer } from "../../../base/common/buffer.js";
-import { toErrorMessage } from "../../../base/common/errorMessage.js";
-import {
-	DisposableStore,
-	toDisposable,
-} from "../../../base/common/lifecycle.js";
-import { revive } from "../../../base/common/marshalling.js";
-import { cloneAndChange } from "../../../base/common/objects.js";
-import { StopWatch } from "../../../base/common/stopwatch.js";
-import { validateConstraint } from "../../../base/common/types.js";
-import { URI } from "../../../base/common/uri.js";
-import { generateUuid } from "../../../base/common/uuid.js";
-import { IPosition, Position } from "../../../editor/common/core/position.js";
-import { IRange, Range } from "../../../editor/common/core/range.js";
-import { ISelection } from "../../../editor/common/core/selection.js";
-import * as languages from "../../../editor/common/languages.js";
-import { ICommandMetadata } from "../../../platform/commands/common/commands.js";
-import {
-	ExtensionIdentifier,
-	IExtensionDescription,
-} from "../../../platform/extensions/common/extensions.js";
-import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
-import { ILogService } from "../../../platform/log/common/log.js";
-import { TelemetryTrustedValue } from "../../../platform/telemetry/common/telemetryUtils.js";
-import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
-import {
-	ExtHostCommandsShape,
-	ICommandDto,
-	ICommandMetadataDto,
-	MainContext,
-	MainThreadCommandsShape,
-	MainThreadTelemetryShape,
-} from "./extHost.protocol.js";
-import { IExtHostRpcService } from "./extHostRpcService.js";
-import { IExtHostTelemetry } from "./extHostTelemetry.js";
-import { TestItemImpl } from "./extHostTestItem.js";
-import * as extHostTypeConverter from "./extHostTypeConverters.js";
-import * as extHostTypes from "./extHostTypes.js";
+/* eslint-disable local/code-no-native-private */
+
+import { validateConstraint } from '../../../base/common/types.js';
+import { ICommandMetadata } from '../../../platform/commands/common/commands.js';
+import * as extHostTypes from './extHostTypes.js';
+import * as extHostTypeConverter from './extHostTypeConverters.js';
+import { cloneAndChange } from '../../../base/common/objects.js';
+import { MainContext, MainThreadCommandsShape, ExtHostCommandsShape, ICommandDto, ICommandMetadataDto, MainThreadTelemetryShape } from './extHost.protocol.js';
+import { isNonEmptyArray } from '../../../base/common/arrays.js';
+import * as languages from '../../../editor/common/languages.js';
+import type * as vscode from 'vscode';
+import { ILogService } from '../../../platform/log/common/log.js';
+import { revive } from '../../../base/common/marshalling.js';
+import { IRange, Range } from '../../../editor/common/core/range.js';
+import { IPosition, Position } from '../../../editor/common/core/position.js';
+import { URI } from '../../../base/common/uri.js';
+import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js';
+import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+import { IExtHostRpcService } from './extHostRpcService.js';
+import { ISelection } from '../../../editor/common/core/selection.js';
+import { TestItemImpl } from './extHostTestItem.js';
+import { VSBuffer } from '../../../base/common/buffer.js';
+import { SerializableObjectWithBuffers } from '../../services/extensions/common/proxyIdentifier.js';
+import { toErrorMessage } from '../../../base/common/errorMessage.js';
+import { StopWatch } from '../../../base/common/stopwatch.js';
+import { ExtensionIdentifier, IExtensionDescription } from '../../../platform/extensions/common/extensions.js';
+import { TelemetryTrustedValue } from '../../../platform/telemetry/common/telemetryUtils.js';
+import { IExtHostTelemetry } from './extHostTelemetry.js';
+import { generateUuid } from '../../../base/common/uuid.js';
 
 interface CommandHandler {
 	callback: Function;
@@ -51,30 +39,31 @@ interface CommandHandler {
 	metadata?: ICommandMetadata;
 	extension?: IExtensionDescription;
 }
+
 export interface ArgumentProcessor {
-	processArgument(
-		arg: any,
-		extensionId: ExtensionIdentifier | undefined,
-	): any;
+	processArgument(arg: any, extensionId: ExtensionIdentifier | undefined): any;
 }
+
 export class ExtHostCommands implements ExtHostCommandsShape {
+
 	readonly _serviceBrand: undefined;
+
 	#proxy: MainThreadCommandsShape;
+
 	private readonly _commands = new Map<string, CommandHandler>();
 	private readonly _apiCommands = new Map<string, ApiCommand>();
 	#telemetry: MainThreadTelemetryShape;
+
 	private readonly _logService: ILogService;
 	readonly #extHostTelemetry: IExtHostTelemetry;
 	private readonly _argumentProcessors: ArgumentProcessor[];
+
 	readonly converter: CommandsConverter;
 
 	constructor(
-		@IExtHostRpcService
-		extHostRpc: IExtHostRpcService,
-		@ILogService
-		logService: ILogService,
-		@IExtHostTelemetry
-		extHostTelemetry: IExtHostTelemetry,
+		@IExtHostRpcService extHostRpc: IExtHostRpcService,
+		@ILogService logService: ILogService,
+		@IExtHostTelemetry extHostTelemetry: IExtHostTelemetry
 	) {
 		this.#proxy = extHostRpc.getProxy(MainContext.MainThreadCommands);
 		this._logService = logService;
@@ -82,24 +71,22 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 		this.#telemetry = extHostRpc.getProxy(MainContext.MainThreadTelemetry);
 		this.converter = new CommandsConverter(
 			this,
-			(id) => {
+			id => {
 				// API commands that have no return type (void) can be
 				// converted to their internal command and don't need
 				// any indirection commands
 				const candidate = this._apiCommands.get(id);
-
 				return candidate?.result === ApiCommandResult.Void
-					? candidate
-					: undefined;
+					? candidate : undefined;
 			},
-			logService,
+			logService
 		);
 		this._argumentProcessors = [
 			{
 				processArgument(a) {
 					// URI, Regex
 					return revive(a);
-				},
+				}
 			},
 			{
 				processArgument(arg) {
@@ -111,10 +98,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 						if (Position.isIPosition(obj)) {
 							return extHostTypeConverter.Position.to(obj);
 						}
-						if (
-							Range.isIRange((obj as languages.Location).range) &&
-							URI.isUri((obj as languages.Location).uri)
-						) {
+						if (Range.isIRange((obj as languages.Location).range) && URI.isUri((obj as languages.Location).uri)) {
 							return extHostTypeConverter.location.to(obj);
 						}
 						if (obj instanceof VSBuffer) {
@@ -124,45 +108,35 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 							return obj;
 						}
 					});
-				},
-			},
+				}
+			}
 		];
 	}
+
 	registerArgumentProcessor(processor: ArgumentProcessor): void {
 		this._argumentProcessors.push(processor);
 	}
+
 	registerApiCommand(apiCommand: ApiCommand): extHostTypes.Disposable {
-		const registration = this.registerCommand(
-			false,
-			apiCommand.id,
-			async (...apiArgs) => {
-				const internalArgs = apiCommand.args.map((arg, i) => {
-					if (!arg.validate(apiArgs[i])) {
-						throw new Error(
-							`Invalid argument '${arg.name}' when running '${apiCommand.id}', received: ${typeof apiArgs[i] === "object" ? JSON.stringify(apiArgs[i], null, "\t") : apiArgs[i]} `,
-						);
-					}
-					return arg.convert(apiArgs[i]);
-				});
 
-				const internalResult = await this.executeCommand(
-					apiCommand.internalId,
-					...internalArgs,
-				);
 
-				return apiCommand.result.convert(
-					internalResult,
-					apiArgs,
-					this.converter,
-				);
-			},
-			undefined,
-			{
-				description: apiCommand.description,
-				args: apiCommand.args,
-				returns: apiCommand.result.description,
-			},
-		);
+		const registration = this.registerCommand(false, apiCommand.id, async (...apiArgs) => {
+
+			const internalArgs = apiCommand.args.map((arg, i) => {
+				if (!arg.validate(apiArgs[i])) {
+					throw new Error(`Invalid argument '${arg.name}' when running '${apiCommand.id}', received: ${typeof apiArgs[i] === 'object' ? JSON.stringify(apiArgs[i], null, '\t') : apiArgs[i]} `);
+				}
+				return arg.convert(apiArgs[i]);
+			});
+
+			const internalResult = await this.executeCommand(apiCommand.internalId, ...internalArgs);
+			return apiCommand.result.convert(internalResult, apiArgs, this.converter);
+		}, undefined, {
+			description: apiCommand.description,
+			args: apiCommand.args,
+			returns: apiCommand.result.description
+		});
+
 		this._apiCommands.set(apiCommand.id, apiCommand);
 
 		return new extHostTypes.Disposable(() => {
@@ -170,27 +144,23 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			this._apiCommands.delete(apiCommand.id);
 		});
 	}
-	registerCommand(
-		global: boolean,
-		id: string,
-		callback: <T>(...args: any[]) => T | Thenable<T>,
-		thisArg?: any,
-		metadata?: ICommandMetadata,
-		extension?: IExtensionDescription,
-	): extHostTypes.Disposable {
-		this._logService.trace("ExtHostCommands#registerCommand", id);
+
+	registerCommand(global: boolean, id: string, callback: <T>(...args: any[]) => T | Thenable<T>, thisArg?: any, metadata?: ICommandMetadata, extension?: IExtensionDescription): extHostTypes.Disposable {
+		this._logService.trace('ExtHostCommands#registerCommand', id);
 
 		if (!id.trim().length) {
-			throw new Error("invalid id");
+			throw new Error('invalid id');
 		}
+
 		if (this._commands.has(id)) {
 			throw new Error(`command '${id}' already exists`);
 		}
-		this._commands.set(id, { callback, thisArg, metadata, extension });
 
+		this._commands.set(id, { callback, thisArg, metadata, extension });
 		if (global) {
 			this.#proxy.$registerCommand(id);
 		}
+
 		return new extHostTypes.Disposable(() => {
 			if (this._commands.delete(id)) {
 				if (global) {
@@ -199,28 +169,25 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			}
 		});
 	}
-	executeCommand<T>(id: string, ...args: any[]): Promise<T> {
-		this._logService.trace("ExtHostCommands#executeCommand", id);
 
+	executeCommand<T>(id: string, ...args: any[]): Promise<T> {
+		this._logService.trace('ExtHostCommands#executeCommand', id);
 		return this._doExecuteCommand(id, args, true);
 	}
-	private async _doExecuteCommand<T>(
-		id: string,
-		args: any[],
-		retry: boolean,
-	): Promise<T> {
+
+	private async _doExecuteCommand<T>(id: string, args: any[], retry: boolean): Promise<T> {
+
 		if (this._commands.has(id)) {
 			// - We stay inside the extension host and support
 			// 	 to pass any kind of parameters around.
 			// - We still emit the corresponding activation event
 			//   BUT we don't await that event
 			this.#proxy.$fireCommandActivationEvent(id);
-
 			return this._executeContributedCommand<T>(id, args, false);
+
 		} else {
 			// automagically convert some argument types
 			let hasBuffers = false;
-
 			const toArgs = cloneAndChange(args, function (value) {
 				if (value instanceof extHostTypes.Position) {
 					return extHostTypeConverter.Position.from(value);
@@ -232,15 +199,12 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 					return extHostTypeConverter.NotebookRange.from(value);
 				} else if (value instanceof ArrayBuffer) {
 					hasBuffers = true;
-
 					return VSBuffer.wrap(new Uint8Array(value));
 				} else if (value instanceof Uint8Array) {
 					hasBuffers = true;
-
 					return VSBuffer.wrap(value);
 				} else if (value instanceof VSBuffer) {
 					hasBuffers = true;
-
 					return value;
 				}
 				if (!Array.isArray(value)) {
@@ -249,23 +213,13 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			});
 
 			try {
-				const result = await this.#proxy.$executeCommand(
-					id,
-					hasBuffers
-						? new SerializableObjectWithBuffers(toArgs)
-						: toArgs,
-					retry,
-				);
-
+				const result = await this.#proxy.$executeCommand(id, hasBuffers ? new SerializableObjectWithBuffers(toArgs) : toArgs, retry);
 				return revive<any>(result);
 			} catch (e) {
 				// Rerun the command when it wasn't known, had arguments, and when retry
 				// is enabled. We do this because the command might be registered inside
 				// the extension host now and can therefore accept the arguments as-is.
-				if (
-					e instanceof Error &&
-					e.message === "$executeCommand:retry"
-				) {
+				if (e instanceof Error && e.message === '$executeCommand:retry') {
 					return this._doExecuteCommand(id, args, false);
 				} else {
 					throw e;
@@ -273,31 +227,24 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			}
 		}
 	}
-	private async _executeContributedCommand<T = unknown>(
-		id: string,
-		args: any[],
-		annotateError: boolean,
-	): Promise<T> {
-		const command = this._commands.get(id);
 
+	private async _executeContributedCommand<T = unknown>(id: string, args: any[], annotateError: boolean): Promise<T> {
+		const command = this._commands.get(id);
 		if (!command) {
-			throw new Error("Unknown command");
+			throw new Error('Unknown command');
 		}
 		const { callback, thisArg, metadata } = command;
-
 		if (metadata?.args) {
 			for (let i = 0; i < metadata.args.length; i++) {
 				try {
 					validateConstraint(args[i], metadata.args[i].constraint);
 				} catch (err) {
-					throw new Error(
-						`Running the contributed command: '${id}' failed. Illegal argument '${metadata.args[i].name}' - ${metadata.args[i].description}`,
-					);
+					throw new Error(`Running the contributed command: '${id}' failed. Illegal argument '${metadata.args[i].name}' - ${metadata.args[i].description}`);
 				}
 			}
 		}
-		const stopWatch = StopWatch.create();
 
+		const stopWatch = StopWatch.create();
 		try {
 			return await callback.apply(thisArg, args);
 		} catch (err) {
@@ -305,7 +252,6 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			// command and in that case it is better to blame the correct command
 			if (id === this.converter.delegatingCommandId) {
 				const actual = this.converter.getActualCommand(...args);
-
 				if (actual) {
 					id = actual.command;
 				}
@@ -315,35 +261,26 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			if (!annotateError) {
 				throw err;
 			}
-			if (command.extension?.identifier) {
-				const reported = this.#extHostTelemetry.onExtensionError(
-					command.extension.identifier,
-					err,
-				);
-				this._logService.trace(
-					"forwarded error to extension?",
-					reported,
-					command.extension?.identifier,
-				);
-			}
-			throw new (class CommandError extends Error {
-				readonly id = id;
-				readonly source =
-					command!.extension?.displayName ?? command!.extension?.name;
 
+			if (command.extension?.identifier) {
+				const reported = this.#extHostTelemetry.onExtensionError(command.extension.identifier, err);
+				this._logService.trace('forwarded error to extension?', reported, command.extension?.identifier);
+			}
+
+			throw new class CommandError extends Error {
+				readonly id = id;
+				readonly source = command!.extension?.displayName ?? command!.extension?.name;
 				constructor() {
 					super(toErrorMessage(err));
 				}
-			})();
-		} finally {
+			};
+		}
+		finally {
 			this._reportTelemetry(command, id, stopWatch.elapsed());
 		}
 	}
-	private _reportTelemetry(
-		command: CommandHandler,
-		id: string,
-		duration: number,
-	) {
+
+	private _reportTelemetry(command: CommandHandler, id: string, duration: number) {
 		if (!command.extension) {
 			return;
 		}
@@ -353,80 +290,46 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			duration: number;
 		};
 		type ExtensionActionTelemetryMeta = {
-			extensionId: {
-				classification: "SystemMetaData";
-				purpose: "FeatureInsight";
-				comment: "The id of the extension handling the command, informing which extensions provide most-used functionality.";
-			};
-			id: {
-				classification: "SystemMetaData";
-				purpose: "FeatureInsight";
-				comment: "The id of the command, to understand which specific extension features are most popular.";
-			};
-			duration: {
-				classification: "SystemMetaData";
-				purpose: "FeatureInsight";
-				comment: "The duration of the command execution, to detect performance issues";
-			};
-			owner: "digitarald";
-			comment: "Used to gain insight on the most popular commands used from extensions";
+			extensionId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The id of the extension handling the command, informing which extensions provide most-used functionality.' };
+			id: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The id of the command, to understand which specific extension features are most popular.' };
+			duration: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The duration of the command execution, to detect performance issues' };
+			owner: 'digitarald';
+			comment: 'Used to gain insight on the most popular commands used from extensions';
 		};
-		this.#telemetry.$publicLog2<
-			ExtensionActionTelemetry,
-			ExtensionActionTelemetryMeta
-		>("Extension:ActionExecuted", {
+		this.#telemetry.$publicLog2<ExtensionActionTelemetry, ExtensionActionTelemetryMeta>('Extension:ActionExecuted', {
 			extensionId: command.extension.identifier.value,
 			id: new TelemetryTrustedValue(id),
 			duration: duration,
 		});
 	}
+
 	$executeContributedCommand(id: string, ...args: any[]): Promise<unknown> {
-		this._logService.trace(
-			"ExtHostCommands#$executeContributedCommand",
-			id,
-		);
+		this._logService.trace('ExtHostCommands#$executeContributedCommand', id);
 
 		const cmdHandler = this._commands.get(id);
-
 		if (!cmdHandler) {
-			return Promise.reject(
-				new Error(`Contributed command '${id}' does not exist.`),
-			);
+			return Promise.reject(new Error(`Contributed command '${id}' does not exist.`));
 		} else {
-			args = args.map((arg) =>
-				this._argumentProcessors.reduce(
-					(r, p) =>
-						p.processArgument(r, cmdHandler.extension?.identifier),
-					arg,
-				),
-			);
-
+			args = args.map(arg => this._argumentProcessors.reduce((r, p) => p.processArgument(r, cmdHandler.extension?.identifier), arg));
 			return this._executeContributedCommand(id, args, true);
 		}
 	}
-	getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
-		this._logService.trace(
-			"ExtHostCommands#getCommands",
-			filterUnderscoreCommands,
-		);
 
-		return this.#proxy.$getCommands().then((result) => {
+	getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
+		this._logService.trace('ExtHostCommands#getCommands', filterUnderscoreCommands);
+
+		return this.#proxy.$getCommands().then(result => {
 			if (filterUnderscoreCommands) {
-				result = result.filter((command) => command[0] !== "_");
+				result = result.filter(command => command[0] !== '_');
 			}
 			return result;
 		});
 	}
-	$getContributedCommandMetadata(): Promise<{
-		[id: string]: string | ICommandMetadataDto;
-	}> {
-		const result: {
-			[id: string]: string | ICommandMetadata;
-		} = Object.create(null);
 
+	$getContributedCommandMetadata(): Promise<{ [id: string]: string | ICommandMetadataDto }> {
+		const result: { [id: string]: string | ICommandMetadata } = Object.create(null);
 		for (const [id, command] of this._commands) {
 			const { metadata } = command;
-
 			if (metadata) {
 				result[id] = metadata;
 			}
@@ -434,50 +337,38 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 		return Promise.resolve(result);
 	}
 }
-export interface IExtHostCommands extends ExtHostCommands {}
-export const IExtHostCommands =
-	createDecorator<IExtHostCommands>("IExtHostCommands");
-export class CommandsConverter
-	implements extHostTypeConverter.Command.ICommandsConverter
-{
+
+export interface IExtHostCommands extends ExtHostCommands { }
+export const IExtHostCommands = createDecorator<IExtHostCommands>('IExtHostCommands');
+
+export class CommandsConverter implements extHostTypeConverter.Command.ICommandsConverter {
+
 	readonly delegatingCommandId: string = `__vsc${generateUuid()}`;
 	private readonly _cache = new Map<string, vscode.Command>();
 	private _cachIdPool = 0;
+
 	// --- conversion between internal and api commands
 	constructor(
 		private readonly _commands: ExtHostCommands,
-		private readonly _lookupApiCommand: (
-			id: string,
-		) => ApiCommand | undefined,
-		private readonly _logService: ILogService,
+		private readonly _lookupApiCommand: (id: string) => ApiCommand | undefined,
+		private readonly _logService: ILogService
 	) {
-		this._commands.registerCommand(
-			true,
-			this.delegatingCommandId,
-			this._executeConvertedCommand,
-			this,
-		);
+		this._commands.registerCommand(true, this.delegatingCommandId, this._executeConvertedCommand, this);
 	}
-	toInternal(
-		command: vscode.Command,
-		disposables: DisposableStore,
-	): ICommandDto;
-	toInternal(
-		command: vscode.Command | undefined,
-		disposables: DisposableStore,
-	): ICommandDto | undefined;
-	toInternal(
-		command: vscode.Command | undefined,
-		disposables: DisposableStore,
-	): ICommandDto | undefined {
+
+	toInternal(command: vscode.Command, disposables: DisposableStore): ICommandDto;
+	toInternal(command: vscode.Command | undefined, disposables: DisposableStore): ICommandDto | undefined;
+	toInternal(command: vscode.Command | undefined, disposables: DisposableStore): ICommandDto | undefined {
+
 		if (!command) {
 			return undefined;
 		}
+
 		const result: ICommandDto = {
 			$ident: undefined,
 			id: command.command,
 			title: command.title,
-			tooltip: command.tooltip,
+			tooltip: command.tooltip
 		};
 
 		if (!command.command) {
@@ -485,196 +376,128 @@ export class CommandsConverter
 			// argument or API-command dance since this command won't run anyways
 			return result;
 		}
-		const apiCommand = this._lookupApiCommand(command.command);
 
+		const apiCommand = this._lookupApiCommand(command.command);
 		if (apiCommand) {
 			// API command with return-value can be converted inplace
 			result.id = apiCommand.internalId;
-			result.arguments = apiCommand.args.map((arg, i) =>
-				arg.convert(command.arguments && command.arguments[i]),
-			);
+			result.arguments = apiCommand.args.map((arg, i) => arg.convert(command.arguments && command.arguments[i]));
+
+
 		} else if (isNonEmptyArray(command.arguments)) {
 			// we have a contributed command with arguments. that
 			// means we don't want to send the arguments around
+
 			const id = `${command.command} /${++this._cachIdPool}`;
 			this._cache.set(id, command);
-			disposables.add(
-				toDisposable(() => {
-					this._cache.delete(id);
-					this._logService.trace("CommandsConverter#DISPOSE", id);
-				}),
-			);
+			disposables.add(toDisposable(() => {
+				this._cache.delete(id);
+				this._logService.trace('CommandsConverter#DISPOSE', id);
+			}));
 			result.$ident = id;
+
 			result.id = this.delegatingCommandId;
 			result.arguments = [id];
-			this._logService.trace(
-				"CommandsConverter#CREATE",
-				command.command,
-				id,
-			);
+
+			this._logService.trace('CommandsConverter#CREATE', command.command, id);
 		}
+
 		return result;
 	}
+
 	fromInternal(command: ICommandDto): vscode.Command | undefined {
-		if (typeof command.$ident === "string") {
+
+		if (typeof command.$ident === 'string') {
 			return this._cache.get(command.$ident);
+
 		} else {
 			return {
 				command: command.id,
 				title: command.title,
-				arguments: command.arguments,
+				arguments: command.arguments
 			};
 		}
 	}
+
+
 	getActualCommand(...args: any[]): vscode.Command | undefined {
 		return this._cache.get(args[0]);
 	}
+
 	private _executeConvertedCommand<R>(...args: any[]): Promise<R> {
 		const actualCmd = this.getActualCommand(...args);
-		this._logService.trace(
-			"CommandsConverter#EXECUTE",
-			args[0],
-			actualCmd ? actualCmd.command : "MISSING",
-		);
+		this._logService.trace('CommandsConverter#EXECUTE', args[0], actualCmd ? actualCmd.command : 'MISSING');
 
 		if (!actualCmd) {
-			return Promise.reject(
-				`Actual command not found, wanted to execute ${args[0]}`,
-			);
+			return Promise.reject(`Actual command not found, wanted to execute ${args[0]}`);
 		}
-		return this._commands.executeCommand(
-			actualCmd.command,
-			...(actualCmd.arguments || []),
-		);
+		return this._commands.executeCommand(actualCmd.command, ...(actualCmd.arguments || []));
 	}
+
 }
+
+
 export class ApiCommandArgument<V, O = V> {
-	static readonly Uri = new ApiCommandArgument<URI>(
-		"uri",
-		"Uri of a text document",
-		(v) => URI.isUri(v),
-		(v) => v,
-	);
-	static readonly Position = new ApiCommandArgument<
-		extHostTypes.Position,
-		IPosition
-	>(
-		"position",
-		"A position in a text document",
-		(v) => extHostTypes.Position.isPosition(v),
-		extHostTypeConverter.Position.from,
-	);
-	static readonly Range = new ApiCommandArgument<extHostTypes.Range, IRange>(
-		"range",
-		"A range in a text document",
-		(v) => extHostTypes.Range.isRange(v),
-		extHostTypeConverter.Range.from,
-	);
-	static readonly Selection = new ApiCommandArgument<
-		extHostTypes.Selection,
-		ISelection
-	>(
-		"selection",
-		"A selection in a text document",
-		(v) => extHostTypes.Selection.isSelection(v),
-		extHostTypeConverter.Selection.from,
-	);
-	static readonly Number = new ApiCommandArgument<number>(
-		"number",
-		"",
-		(v) => typeof v === "number",
-		(v) => v,
-	);
-	static readonly String = new ApiCommandArgument<string>(
-		"string",
-		"",
-		(v) => typeof v === "string",
-		(v) => v,
-	);
-	static readonly StringArray = ApiCommandArgument.Arr(
-		ApiCommandArgument.String,
-	);
+
+	static readonly Uri = new ApiCommandArgument<URI>('uri', 'Uri of a text document', v => URI.isUri(v), v => v);
+	static readonly Position = new ApiCommandArgument<extHostTypes.Position, IPosition>('position', 'A position in a text document', v => extHostTypes.Position.isPosition(v), extHostTypeConverter.Position.from);
+	static readonly Range = new ApiCommandArgument<extHostTypes.Range, IRange>('range', 'A range in a text document', v => extHostTypes.Range.isRange(v), extHostTypeConverter.Range.from);
+	static readonly Selection = new ApiCommandArgument<extHostTypes.Selection, ISelection>('selection', 'A selection in a text document', v => extHostTypes.Selection.isSelection(v), extHostTypeConverter.Selection.from);
+	static readonly Number = new ApiCommandArgument<number>('number', '', v => typeof v === 'number', v => v);
+	static readonly String = new ApiCommandArgument<string>('string', '', v => typeof v === 'string', v => v);
+	static readonly StringArray = ApiCommandArgument.Arr(ApiCommandArgument.String);
+
 	static Arr<T, K = T>(element: ApiCommandArgument<T, K>) {
 		return new ApiCommandArgument(
 			`${element.name}_array`,
 			`Array of ${element.name}, ${element.description}`,
-			(v: unknown) =>
-				Array.isArray(v) && v.every((e) => element.validate(e)),
-			(v: T[]) => v.map((e) => element.convert(e)),
+			(v: unknown) => Array.isArray(v) && v.every(e => element.validate(e)),
+			(v: T[]) => v.map(e => element.convert(e))
 		);
 	}
-	static readonly CallHierarchyItem = new ApiCommandArgument(
-		"item",
-		"A call hierarchy item",
-		(v) => v instanceof extHostTypes.CallHierarchyItem,
-		extHostTypeConverter.CallHierarchyItem.from,
-	);
-	static readonly TypeHierarchyItem = new ApiCommandArgument(
-		"item",
-		"A type hierarchy item",
-		(v) => v instanceof extHostTypes.TypeHierarchyItem,
-		extHostTypeConverter.TypeHierarchyItem.from,
-	);
-	static readonly TestItem = new ApiCommandArgument(
-		"testItem",
-		"A VS Code TestItem",
-		(v) => v instanceof TestItemImpl,
-		extHostTypeConverter.TestItem.from,
-	);
+
+	static readonly CallHierarchyItem = new ApiCommandArgument('item', 'A call hierarchy item', v => v instanceof extHostTypes.CallHierarchyItem, extHostTypeConverter.CallHierarchyItem.from);
+	static readonly TypeHierarchyItem = new ApiCommandArgument('item', 'A type hierarchy item', v => v instanceof extHostTypes.TypeHierarchyItem, extHostTypeConverter.TypeHierarchyItem.from);
+	static readonly TestItem = new ApiCommandArgument('testItem', 'A VS Code TestItem', v => v instanceof TestItemImpl, extHostTypeConverter.TestItem.from);
+	static readonly TestProfile = new ApiCommandArgument('testProfile', 'A VS Code test profile', v => v instanceof extHostTypes.TestRunProfileBase, extHostTypeConverter.TestRunProfile.from);
 
 	constructor(
 		readonly name: string,
 		readonly description: string,
 		readonly validate: (v: V) => boolean,
-		readonly convert: (v: V) => O,
-	) {}
+		readonly convert: (v: V) => O
+	) { }
+
 	optional(): ApiCommandArgument<V | undefined | null, O | undefined | null> {
 		return new ApiCommandArgument(
-			this.name,
-			`(optional) ${this.description}`,
-			(value) =>
-				value === undefined || value === null || this.validate(value),
-			(value) =>
-				value === undefined
-					? undefined
-					: value === null
-						? null
-						: this.convert(value),
+			this.name, `(optional) ${this.description}`,
+			value => value === undefined || value === null || this.validate(value),
+			value => value === undefined ? undefined : value === null ? null : this.convert(value)
 		);
 	}
-	with(
-		name: string | undefined,
-		description: string | undefined,
-	): ApiCommandArgument<V, O> {
-		return new ApiCommandArgument(
-			name ?? this.name,
-			description ?? this.description,
-			this.validate,
-			this.convert,
-		);
+
+	with(name: string | undefined, description: string | undefined): ApiCommandArgument<V, O> {
+		return new ApiCommandArgument(name ?? this.name, description ?? this.description, this.validate, this.convert);
 	}
 }
+
 export class ApiCommandResult<V, O = V> {
-	static readonly Void = new ApiCommandResult<void, void>(
-		"no result",
-		(v) => v,
-	);
+
+	static readonly Void = new ApiCommandResult<void, void>('no result', v => v);
 
 	constructor(
 		readonly description: string,
-		readonly convert: (
-			v: V,
-			apiArgs: any[],
-			cmdConverter: CommandsConverter,
-		) => O,
-	) {}
+		readonly convert: (v: V, apiArgs: any[], cmdConverter: CommandsConverter) => O
+	) { }
 }
+
 export class ApiCommand {
+
 	constructor(
 		readonly id: string,
 		readonly internalId: string,
 		readonly description: string,
 		readonly args: ApiCommandArgument<any, any>[],
-		readonly result: ApiCommandResult<any, any>,
-	) {}
+		readonly result: ApiCommandResult<any, any>
+	) { }
 }

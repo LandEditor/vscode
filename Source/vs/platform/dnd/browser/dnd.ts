@@ -2,29 +2,28 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { DataTransfers } from "../../../base/browser/dnd.js";
-import { DragMouseEvent } from "../../../base/browser/mouseEvent.js";
-import { mainWindow } from "../../../base/browser/window.js";
-import { coalesce } from "../../../base/common/arrays.js";
-import { DeferredPromise } from "../../../base/common/async.js";
-import { VSBuffer } from "../../../base/common/buffer.js";
-import { ResourceMap } from "../../../base/common/map.js";
-import { parse } from "../../../base/common/marshalling.js";
-import { Schemas } from "../../../base/common/network.js";
-import { isNative, isWeb } from "../../../base/common/platform.js";
-import { URI } from "../../../base/common/uri.js";
-import { localize } from "../../../nls.js";
-import { IDialogService } from "../../dialogs/common/dialogs.js";
-import { IBaseTextResourceEditorInput } from "../../editor/common/editor.js";
-import { HTMLFileSystemProvider } from "../../files/browser/htmlFileSystemProvider.js";
-import { WebFileSystemAccess } from "../../files/browser/webFileSystemAccess.js";
-import { ByteSize, IFileService } from "../../files/common/files.js";
-import {
-	IInstantiationService,
-	ServicesAccessor,
-} from "../../instantiation/common/instantiation.js";
-import { extractSelection } from "../../opener/common/opener.js";
-import { Registry } from "../../registry/common/platform.js";
+
+import { DataTransfers } from '../../../base/browser/dnd.js';
+import { mainWindow } from '../../../base/browser/window.js';
+import { DragMouseEvent } from '../../../base/browser/mouseEvent.js';
+import { coalesce } from '../../../base/common/arrays.js';
+import { DeferredPromise } from '../../../base/common/async.js';
+import { VSBuffer } from '../../../base/common/buffer.js';
+import { ResourceMap } from '../../../base/common/map.js';
+import { parse } from '../../../base/common/marshalling.js';
+import { Schemas } from '../../../base/common/network.js';
+import { isNative, isWeb } from '../../../base/common/platform.js';
+import { URI } from '../../../base/common/uri.js';
+import { localize } from '../../../nls.js';
+import { IDialogService } from '../../dialogs/common/dialogs.js';
+import { IBaseTextResourceEditorInput, ITextEditorSelection } from '../../editor/common/editor.js';
+import { HTMLFileSystemProvider } from '../../files/browser/htmlFileSystemProvider.js';
+import { WebFileSystemAccess } from '../../files/browser/webFileSystemAccess.js';
+import { ByteSize, IFileService } from '../../files/common/files.js';
+import { IInstantiationService, ServicesAccessor } from '../../instantiation/common/instantiation.js';
+import { extractSelection } from '../../opener/common/opener.js';
+import { Registry } from '../../registry/common/platform.js';
+
 
 //#region Editor / Resources DND
 export const CodeDataTransfers = {
@@ -363,8 +362,9 @@ export function containsDragType(
 }
 //#region DND contributions
 export interface IResourceStat {
-	resource: URI;
-	isDirectory?: boolean;
+	readonly resource: URI;
+	readonly isDirectory?: boolean;
+	readonly selection?: ITextEditorSelection;
 }
 export interface IDragAndDropContributionRegistry {
 	/**
@@ -475,6 +475,10 @@ export function extractSymbolDropData(
 	}
 
 	return [];
+}
+
+export function fillInSymbolsDragData(symbolsData: readonly DocumentSymbolTransferData[], e: DragEvent): void {
+	e.dataTransfer?.setData(CodeDataTransfers.SYMBOLS, JSON.stringify(symbolsData));
 }
 
 /**

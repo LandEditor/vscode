@@ -1426,11 +1426,11 @@ function parseGitChanges(repositoryRoot: string, raw: string): Change[] {
 }
 
 export interface BlameInformation {
-	readonly id: string;
-	readonly date?: number;
-	readonly message?: string;
+	readonly hash: string;
+	readonly subject?: string;
 	readonly authorName?: string;
 	readonly authorEmail?: string;
+	readonly authorDate?: number;
 	readonly ranges: {
 		readonly startLineNumber: number;
 		readonly endLineNumber: number;
@@ -1498,12 +1498,7 @@ function parseGitBlame(data: string): BlameInformation[] {
 				blameInformation.set(commitHash, existingCommit);
 			} else {
 				blameInformation.set(commitHash, {
-					id: commitHash,
-					authorName,
-					authorEmail,
-					date: authorTime,
-					message,
-					ranges: [{ startLineNumber, endLineNumber }],
+					hash: commitHash, authorName, authorEmail, authorDate: authorTime, subject: message, ranges: [{ startLineNumber, endLineNumber }]
 				});
 			}
 
