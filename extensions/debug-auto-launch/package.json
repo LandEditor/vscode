@@ -19,7 +19,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.9.1"
+		"@types/node": "22.10.0"
 	},
 	"displayName": "%displayName%",
 	"icon": "media/icon.png",
