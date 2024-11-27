@@ -18567,7 +18567,12 @@ declare module "vscode" {
 		 * @param fromTestItem The test item to request coverage information for.
 		 * @param token A cancellation token that indicates the operation should be cancelled.
 		 */
-		loadDetailedCoverageForTest?: (testRun: TestRun, fileCoverage: FileCoverage, fromTestItem: TestItem, token: CancellationToken) => Thenable<FileCoverageDetail[]>;
+		loadDetailedCoverageForTest?: (
+			testRun: TestRun,
+			fileCoverage: FileCoverage,
+			fromTestItem: TestItem,
+			token: CancellationToken,
+		) => Thenable<FileCoverageDetail[]>;
 
 		/**
 		 * Deletes the run profile.
