@@ -13,6 +13,7 @@ export interface ITOCEntry<T> {
 
 	settings?: Array<T>;
 }
+
 const defaultCommonlyUsedSettings: string[] = [
 	"files.autoSave",
 	"editor.fontSize",

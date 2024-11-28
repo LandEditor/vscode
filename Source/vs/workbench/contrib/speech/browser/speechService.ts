@@ -41,6 +41,7 @@ export interface ISpeechProviderDescriptor {
 	readonly name: string;
 	readonly description?: string;
 }
+
 const speechProvidersExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	ISpeechProviderDescriptor[]
 >({

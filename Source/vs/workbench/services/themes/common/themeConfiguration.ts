@@ -273,6 +273,7 @@ function tokenGroupSettings(description: string): IJSONSchema {
 		$ref: textmateColorGroupSchemaId,
 	};
 }
+
 const themeSpecificSettingKey = "^\\[[^\\]]*(\\]\\s*\\[[^\\]]*)*\\]$";
 
 const tokenColorSchema: IJSONSchema = {
@@ -512,6 +513,7 @@ export function updateProductIconThemeConfigurationSchemas(
 		themeSettingsConfiguration,
 	);
 }
+
 const colorSchemeToPreferred = {
 	[ColorScheme.DARK]: ThemeSettings.PREFERRED_DARK_THEME,
 	[ColorScheme.LIGHT]: ThemeSettings.PREFERRED_LIGHT_THEME,

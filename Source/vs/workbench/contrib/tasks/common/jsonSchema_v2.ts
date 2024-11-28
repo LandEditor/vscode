@@ -31,6 +31,7 @@ function fixReferences(literal: any) {
 		});
 	}
 }
+
 const shellCommand: IJSONSchema = {
 	anyOf: [
 		{
@@ -680,6 +681,7 @@ export function updateTaskDefinitions() {
 		taskDefinitions.push(schema);
 	}
 }
+
 const customize = Objects.deepClone(taskConfiguration);
 customize.properties!.customize = {
 	type: "string",

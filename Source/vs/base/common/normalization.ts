@@ -8,10 +8,12 @@ const nfcCache = new LRUCache<string, string>(10000); // bounded to 10000 elemen
 export function normalizeNFC(str: string): string {
 	return normalize(str, "NFC", nfcCache);
 }
+
 const nfdCache = new LRUCache<string, string>(10000); // bounded to 10000 elements
 export function normalizeNFD(str: string): string {
 	return normalize(str, "NFD", nfdCache);
 }
+
 const nonAsciiCharactersPattern = /[^\u0000-\u0080]/;
 function normalize(
 	str: string,

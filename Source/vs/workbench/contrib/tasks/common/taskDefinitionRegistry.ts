@@ -105,6 +105,7 @@ namespace Configuration {
 		};
 	}
 }
+
 const taskDefinitionsExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	Configuration.ITaskDefinition[]
 >({

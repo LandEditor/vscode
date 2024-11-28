@@ -112,6 +112,7 @@ class InlayHintsCache {
 	}
 }
 interface IInlayHintsCache extends InlayHintsCache {}
+
 const IInlayHintsCache = createDecorator<IInlayHintsCache>("IInlayHintsCache");
 registerSingleton(IInlayHintsCache, InlayHintsCache, InstantiationType.Delayed);
 // --- rendered label

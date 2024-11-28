@@ -75,6 +75,7 @@ export function isWhitespaceOnly(str: string) {
 export function isEOL(content: string, offset: number) {
 	return isNewlineCharacter(content.charCodeAt(offset));
 }
+
 const CR = "\r".charCodeAt(0);
 
 const NL = "\n".charCodeAt(0);

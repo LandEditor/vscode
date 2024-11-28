@@ -44,6 +44,7 @@ export interface IBundleESMTaskOpts {
 	 */
 	skipTSBoilerplateRemoval?: (entryPointName: string) => boolean;
 }
+
 const DEFAULT_FILE_HEADER = [
 	"/*!--------------------------------------------------------",
 	" * Copyright (C) Microsoft Corporation. All rights reserved.",

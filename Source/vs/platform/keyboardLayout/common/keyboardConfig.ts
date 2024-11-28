@@ -41,6 +41,7 @@ export function readKeyboardConfig(
 
 	return { dispatch, mapAltGrToCtrlAlt };
 }
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
 	ConfigExtensions.Configuration,
 );

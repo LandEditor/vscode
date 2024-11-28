@@ -39,6 +39,7 @@ function createNullCompiler(): IncrementalCompiler {
 
 	return result;
 }
+
 const _defaultOnError = (err: string) =>
 	console.log(JSON.stringify(err, null, 4));
 export function create(

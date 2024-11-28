@@ -243,6 +243,7 @@ class RuntimeStatusMarkdownRenderer
 interface ILayoutParticipant {
 	layout(height?: number, width?: number): void;
 }
+
 const runtimeStatusFeature = {
 	id: RuntimeStatusMarkdownRenderer.ID,
 	label: localize("runtime", "Runtime Status"),

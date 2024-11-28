@@ -63,6 +63,7 @@ const enum ShutdownConstants {
 	 */
 	MaximumShutdownTime = 5000,
 }
+
 const enum Constants {
 	/**
 	 * The minimum duration between kill and spawn calls on Windows/conpty as a mitigation for a
@@ -87,6 +88,7 @@ interface IWriteObject {
 	data: string;
 	isBinary: boolean;
 }
+
 const posixShellTypeMap = new Map<string, PosixShellType>([
 	["bash", PosixShellType.Bash],
 	["csh", PosixShellType.Csh],

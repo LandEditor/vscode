@@ -281,6 +281,7 @@ interface IShellFileHistoryEntry {
 	sourceResource: URI;
 	commands: string[];
 }
+
 const shellFileHistory: Map<
 	TerminalShellType | undefined,
 	IShellFileHistoryEntry | null

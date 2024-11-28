@@ -16,6 +16,7 @@ export interface IFindInputToggleOpts {
 	readonly inputActiveOptionBackground: string | undefined;
 	readonly hoverDelegate?: IHoverDelegate;
 }
+
 const NLS_CASE_SENSITIVE_TOGGLE_LABEL = nls.localize(
 	"caseDescription",
 	"Match Case",

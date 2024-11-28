@@ -45,6 +45,7 @@ function translateKernelLanguageToMonaco(language: string): string {
 	}
 	return jupyterLanguageToMonacoLanguageMapping.get(language) || language;
 }
+
 const orderOfMimeTypes = [
 	"application/vnd.*",
 	"application/vdom.*",
@@ -300,6 +301,7 @@ function translateStreamOutput(output: nbformat.IStream): NotebookCellOutput {
 
 	return new NotebookCellOutput([item], getOutputMetadata(output));
 }
+
 const cellOutputMappers = new Map<
 	nbformat.OutputType,
 	(output: any) => NotebookCellOutput

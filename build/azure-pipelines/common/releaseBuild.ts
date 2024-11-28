@@ -80,6 +80,7 @@ async function main(force: boolean): Promise<void> {
 		scripts.storedProcedure("releaseBuild").execute("", [commit]),
 	);
 }
+
 const [, , force] = process.argv;
 console.log(process.argv);
 main(/^true$/i.test(force)).then(

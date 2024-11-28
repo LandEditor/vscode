@@ -104,6 +104,7 @@ export function register(
 	});
 	updateShowReferences();
 }
+
 const copyAllCommand = async (item: ReferenceItem | FileItem | unknown) => {
 	if (item instanceof ReferenceItem) {
 		copyCommand(item.file.model);

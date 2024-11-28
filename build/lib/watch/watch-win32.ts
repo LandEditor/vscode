@@ -77,6 +77,7 @@ function watch(root: string): Stream {
 
 	return result;
 }
+
 const cache: {
 	[cwd: string]: Stream;
 } = Object.create(null);

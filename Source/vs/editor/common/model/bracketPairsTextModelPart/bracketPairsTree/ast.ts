@@ -659,6 +659,7 @@ class ImmutableArrayListAstNode extends ArrayListAstNode {
 		throw new Error("this instance is immutable");
 	}
 }
+
 const emptyArray: readonly AstNode[] = [];
 abstract class ImmutableLeafAstNode extends BaseAstNode {
 	public get listHeight() {

@@ -73,6 +73,7 @@ export class TrustedDomainService
 		return isURLDomainTrusted(resource, allTrustedDomains);
 	}
 }
+
 const rLocalhost = /^localhost(:\d+)?$/i;
 
 const r127 = /^127.0.0.1(:\d+)?$/;

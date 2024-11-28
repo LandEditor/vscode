@@ -20,6 +20,7 @@ enum DesktopEnvironment {
 	UKUI = "UKUI",
 	LXQT = "LXQT",
 }
+
 const kXdgCurrentDesktopEnvVar = "XDG_CURRENT_DESKTOP";
 
 const kKDESessionEnvVar = "KDE_SESSION_VERSION";

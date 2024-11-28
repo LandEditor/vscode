@@ -19,6 +19,7 @@ import { TerminalQuickAccessProvider } from "../../../terminalContrib/quickAcces
 const enum TerminalQuickAccessCommandId {
 	QuickOpenTerm = "workbench.action.quickOpenTerm",
 }
+
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
 	QuickAccessExtensions.Quickaccess,
 );

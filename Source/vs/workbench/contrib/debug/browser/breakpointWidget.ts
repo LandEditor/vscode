@@ -103,6 +103,7 @@ interface IPrivateBreakpointWidgetService {
 	readonly _serviceBrand: undefined;
 	close(success: boolean): void;
 }
+
 const DECORATION_KEY = "breakpointwidgetdecoration";
 function isPositionInCurlyBracketBlock(input: IActiveCodeEditor): boolean {
 	const model = input.getModel();

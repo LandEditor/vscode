@@ -44,6 +44,7 @@ export function observeHotReloadableExports(
 		o.read(reader);
 	}
 }
+
 const classes = new Map<string, ISettableObservable<unknown>>();
 export function createHotClass<T>(clazz: T): IObservable<T> {
 	if (!isHotReloadEnabled()) {

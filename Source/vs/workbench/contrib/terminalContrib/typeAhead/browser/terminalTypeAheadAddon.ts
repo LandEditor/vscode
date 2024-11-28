@@ -43,6 +43,7 @@ const enum VT {
 	DeleteChar = `\x1b[X`,
 	DeleteRestOfLine = `\x1b[K`,
 }
+
 const CSI_STYLE_RE = /^\x1b\[[0-9;]*m/;
 
 const CSI_MOVE_RE = /^\x1b\[?([0-9]*)(;[35])?O?([DC])/;
@@ -151,6 +152,7 @@ class Cursor implements ICoordinate {
 		return `${VT.Csi}${this._y + 1};${this._x + 1}H`;
 	}
 }
+
 const moveToWordBoundary = (b: IBuffer, cursor: Cursor, direction: -1 | 1) => {
 	let ateLeadingWhitespace = false;
 
@@ -356,6 +358,7 @@ class TentativeBoundary implements IPrediction {
 		return this.inner.matches(input);
 	}
 }
+
 const isTenativeCharacterPrediction = (
 	p: unknown,
 ): p is TentativeBoundary & {
@@ -1349,6 +1352,7 @@ class TypeAheadStyle implements IDisposable {
 		}
 	}
 }
+
 const compileExcludeRegexp = (programs = DEFAULT_LOCAL_ECHO_EXCLUDE) =>
 	new RegExp(
 		`\\b(${programs.map(escapeRegExpCharacters).join("|")})\\b`,

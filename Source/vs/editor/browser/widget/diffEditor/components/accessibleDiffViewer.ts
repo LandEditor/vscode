@@ -391,6 +391,7 @@ class ViewModel extends Disposable {
 		this._models.modifiedFocus();
 	}
 }
+
 const viewElementGroupLineMargin = 3;
 function computeViewElementGroups(
 	diffs: DetailedLineRangeMapping[],

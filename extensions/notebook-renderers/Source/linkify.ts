@@ -248,6 +248,7 @@ export class LinkDetector {
 		return result;
 	}
 }
+
 const linkDetector = new LinkDetector();
 export function linkify(
 	text: string,

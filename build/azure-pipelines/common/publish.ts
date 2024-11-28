@@ -674,6 +674,7 @@ class State {
 		return this.set[Symbol.iterator]();
 	}
 }
+
 const azdoFetchOptions = {
 	headers: {
 		// Pretend we're a web browser to avoid download rate limits

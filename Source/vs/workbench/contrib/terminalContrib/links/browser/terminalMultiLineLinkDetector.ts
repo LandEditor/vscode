@@ -34,6 +34,7 @@ const enum Constants {
 	 */
 	MaxResolvedLinkLength = 1024,
 }
+
 const lineNumberPrefixMatchers = [
 	// Ripgrep:
 	//   /some/file

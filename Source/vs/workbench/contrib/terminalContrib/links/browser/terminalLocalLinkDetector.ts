@@ -49,6 +49,7 @@ const enum Constants {
 	 */
 	MaxResolvedLinkLength = 1024,
 }
+
 const fallbackMatchers: RegExp[] = [
 	// Python style error: File "<path>", line <line>
 	/^ *File (?<link>"(?<path>.+)"(, line (?<line>\d+))?)/,

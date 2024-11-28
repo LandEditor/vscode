@@ -205,6 +205,7 @@ function isValidContributedKeyBinding(
 	}
 	return true;
 }
+
 const keybindingType: IJSONSchema = {
 	type: "object",
 	default: { command: "", key: "" },

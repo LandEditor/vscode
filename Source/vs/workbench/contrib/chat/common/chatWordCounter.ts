@@ -9,6 +9,7 @@ export interface IWordCountResult {
 	totalWordCount: number;
 	isFullString: boolean;
 }
+
 const r = String.raw;
 /**
  * Matches `[text](link title?)` or `[text](<link> title?)`

@@ -15,6 +15,7 @@ interface CacheEntry {
 interface CacheInfo {
 	[schemaUri: string]: CacheEntry;
 }
+
 const MEMENTO_KEY = "json-schema-cache";
 export class JSONSchemaCache {
 	private cacheInfo: CacheInfo;

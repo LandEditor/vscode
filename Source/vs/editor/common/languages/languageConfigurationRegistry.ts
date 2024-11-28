@@ -201,6 +201,7 @@ function computeConfig(
 
 	return config;
 }
+
 const customizedLanguageConfigKeys = {
 	brackets: "editor.language.brackets",
 	colorizedBracketPairs: "editor.language.colorizedBracketPairs",

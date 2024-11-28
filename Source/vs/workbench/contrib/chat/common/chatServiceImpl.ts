@@ -97,6 +97,7 @@ interface IChatTransfer {
 	chat: ISerializableChatData;
 	inputValue: string;
 }
+
 const SESSION_TRANSFER_EXPIRATION_IN_MILLISECONDS = 1000 * 60;
 
 type ChatProviderInvokedEvent = {

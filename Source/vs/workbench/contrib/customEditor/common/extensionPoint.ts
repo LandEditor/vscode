@@ -33,6 +33,7 @@ export interface ICustomEditorsExtensionPoint {
 	readonly [Fields.selector]?: readonly CustomEditorSelector[];
 	readonly [Fields.priority]?: string;
 }
+
 const CustomEditorsContribution: IJSONSchema = {
 	description: nls.localize(
 		"contributes.customEditors",

@@ -156,6 +156,7 @@ function createTerminalProfileMarkdownDescription(
 		"](https://code.visualstudio.com/docs/terminal/profiles)",
 	);
 }
+
 const terminalPlatformConfiguration: IConfigurationNode = {
 	id: "terminal",
 	order: 100,

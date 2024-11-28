@@ -82,6 +82,7 @@ export abstract class AbstractExtHostConsoleForwarder {
 		args: IArguments,
 	): void;
 }
+
 const MAX_LENGTH = 100000;
 /**
  * Prevent circular stringify and convert arguments to real array

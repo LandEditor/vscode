@@ -286,6 +286,7 @@ function createLineBreaks(
 
 	return result;
 }
+
 const enum Constants {
 	SPAN_MODULO_LIMIT = 16384,
 }

@@ -116,6 +116,7 @@ export interface ITaskRawOutput {
 	/** Gets an iterator of buffers for the range; may avoid allocation of getRange() */
 	getRangeIter(start: number, length: number): Iterable<VSBuffer>;
 }
+
 const emptyRawOutput: ITaskRawOutput = {
 	buffers: [],
 	length: 0,
@@ -254,6 +255,7 @@ interface TestResultItemWithChildren extends TestResultItem {
 	/** Children in the run */
 	children: TestResultItemWithChildren[];
 }
+
 const itemToNode = (
 	controllerId: string,
 	item: ITestItem,

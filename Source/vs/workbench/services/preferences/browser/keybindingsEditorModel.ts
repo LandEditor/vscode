@@ -69,6 +69,7 @@ export function createKeybindingCommandQuery(
 
 	return `@command:${commandId}${whenPart}`;
 }
+
 const wordFilter = or(matchesPrefix, matchesWords, matchesContiguousSubString);
 
 const COMMAND_REGEX = /@command:\s*([^\+]+)/i;

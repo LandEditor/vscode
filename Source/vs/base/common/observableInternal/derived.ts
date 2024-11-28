@@ -214,6 +214,7 @@ export function derivedDisposable<T extends IDisposable | undefined>(
 		strictEquals,
 	);
 }
+
 const enum DerivedState {
 	/** Initial state, no previous value, recomputation needed */
 	initial = 0,

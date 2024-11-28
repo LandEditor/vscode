@@ -106,6 +106,7 @@ const enum ProcessConstants {
 	 */
 	LatencyMeasuringInterval = 1000,
 }
+
 const enum ProcessType {
 	Process,
 	PsuedoTerminal,
@@ -1104,6 +1105,7 @@ class AckDataBufferer {
 		}
 	}
 }
+
 const enum SeamlessRelaunchConstants {
 	/**
 	 * How long to record data events for new terminals.

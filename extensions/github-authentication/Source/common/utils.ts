@@ -37,6 +37,7 @@ export interface PromiseAdapter<T, U> {
 		reject: (reason: any) => void,
 	): any;
 }
+
 const passthrough = (value: any, resolve: (value?: any) => void) =>
 	resolve(value);
 /**

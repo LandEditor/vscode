@@ -531,6 +531,7 @@ function snippetDownComparator(a: CompletionItem, b: CompletionItem): number {
 interface Comparator<T> {
 	(a: T, b: T): number;
 }
+
 const _snippetComparators = new Map<
 	SnippetSortOrder,
 	Comparator<CompletionItem>

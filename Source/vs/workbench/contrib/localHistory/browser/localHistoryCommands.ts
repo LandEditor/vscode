@@ -1056,6 +1056,7 @@ export async function findLocalHistoryEntry(
 		previous: previousEntry,
 	};
 }
+
 const SEP = /\//g;
 function toLocalHistoryEntryDateLabel(timestamp: number): string {
 	return `${getLocalHistoryDateFormatter().format(timestamp).replace(SEP, "-")}`; // preserving `/` will break editor labels, so replace it with a non-path symbol

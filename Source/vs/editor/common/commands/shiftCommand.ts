@@ -25,6 +25,7 @@ export interface IShiftCommandOpts {
 	useTabStops: boolean;
 	autoIndent: EditorAutoIndentStrategy;
 }
+
 const repeatCache: {
 	[str: string]: string[];
 } = Object.create(null);

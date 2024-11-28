@@ -21,6 +21,7 @@ export class CodeLineElement {
 		return !this._detailParentElements.some((x) => !x.open);
 	}
 }
+
 const getCodeLineElements = (() => {
 	let cachedElements: CodeLineElement[] | undefined;
 

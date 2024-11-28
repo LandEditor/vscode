@@ -193,6 +193,7 @@ const enum TokenType {
 	method = 11,
 	_ = 12,
 }
+
 const enum TokenModifier {
 	declaration = 0,
 	static = 1,
@@ -202,6 +203,7 @@ const enum TokenModifier {
 	local = 5,
 	_ = 6,
 }
+
 const enum TokenEncodingConsts {
 	typeOffset = 8,
 	modifierMask = 255,
@@ -217,6 +219,7 @@ function getTokenTypeFromClassification(
 function getTokenModifierFromClassification(tsClassification: number) {
 	return tsClassification & TokenEncodingConsts.modifierMask;
 }
+
 const tokenTypes: string[] = [];
 tokenTypes[TokenType.class] = "class";
 tokenTypes[TokenType.enum] = "enum";

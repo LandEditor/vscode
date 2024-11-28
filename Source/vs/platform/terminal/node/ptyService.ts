@@ -990,6 +990,7 @@ export class PtyService extends Disposable implements IPtyService {
 		return pty;
 	}
 }
+
 const enum InteractionState {
 	/** The terminal has not been interacted with. */
 	None = "None",

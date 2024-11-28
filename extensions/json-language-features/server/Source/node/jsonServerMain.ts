@@ -61,6 +61,7 @@ function getFileRequestService(): RequestService {
 		},
 	};
 }
+
 const runtime: RuntimeEnvironment = {
 	timer: {
 		setImmediate(

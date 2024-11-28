@@ -23,6 +23,7 @@ enum CharacterCodes {
 	_ = 0x5f,
 	dot = 0x2e,
 }
+
 const maxPackageNameLength = 214;
 // Validates package name using rules defined at https://docs.npmjs.com/files/package.json
 // Copied from typescript/jsTypings.ts

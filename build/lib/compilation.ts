@@ -283,6 +283,7 @@ export function watchTask(
 
 	return task;
 }
+
 const REPO_SRC_FOLDER = path.join(__dirname, "../../src");
 class MonacoGenerator {
 	private readonly _isWatch: boolean;
@@ -473,6 +474,7 @@ function generateApiProposalNames() {
 
 	return es.duplex(input, output);
 }
+
 const apiProposalNamesReporter = createReporter("api-proposal-names");
 export const compileApiProposalNamesTask = task.define(
 	"compile-api-proposal-names",

@@ -384,6 +384,7 @@ export class ShowHideCenterBase extends Action2 {
 		}
 	}
 }
+
 const mergeEditorCategory: ILocalizedString = localize2(
 	"mergeEditor",
 	"Merge Editor",

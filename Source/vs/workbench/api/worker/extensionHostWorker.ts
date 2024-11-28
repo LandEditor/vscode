@@ -54,6 +54,7 @@ declare namespace self {
 
 	let XMLHttpRequest: any;
 }
+
 const nativeClose = self.close.bind(self);
 self.close = () => console.trace(`'close' has been blocked`);
 
@@ -65,6 +66,7 @@ function shouldTransformUri(uri: string): boolean {
 	// and result in an unintended transformation
 	return /^(file|vscode-remote):/i.test(uri);
 }
+
 const nativeFetch = fetch.bind(self);
 function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 	self.fetch = async function (input, init) {

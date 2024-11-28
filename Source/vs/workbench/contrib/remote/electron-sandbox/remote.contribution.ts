@@ -316,6 +316,7 @@ class WSLContextKeyInitializer
 		}
 	}
 }
+
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(
 		WorkbenchContributionsExtensions.Workbench,

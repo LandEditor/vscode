@@ -247,9 +247,11 @@ class Settings {
 		);
 	}
 }
+
 const enum Constants {
 	MIN_DECORATION_HEIGHT = 6,
 }
+
 const enum OverviewRulerLane {
 	Left = 1,
 	Center = 2,

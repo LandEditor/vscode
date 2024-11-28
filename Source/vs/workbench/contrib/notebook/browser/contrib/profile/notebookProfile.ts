@@ -16,6 +16,7 @@ export enum NotebookProfileType {
 	jupyter = "jupyter",
 	colab = "colab",
 }
+
 const profiles = {
 	[NotebookProfileType.default]: {
 		[NotebookSetting.focusIndicator]: "gutter",

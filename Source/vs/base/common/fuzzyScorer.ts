@@ -397,6 +397,7 @@ export interface IItemScore {
 	 */
 	descriptionMatch?: IMatch[];
 }
+
 const NO_ITEM_SCORE = Object.freeze<IItemScore>({ score: 0 });
 export interface IItemAccessor<T> {
 	/**
@@ -412,6 +413,7 @@ export interface IItemAccessor<T> {
 	 */
 	getItemPath(file: T): string | undefined;
 }
+
 const PATH_IDENTITY_SCORE = 1 << 18;
 
 const LABEL_PREFIX_SCORE_THRESHOLD = 1 << 17;

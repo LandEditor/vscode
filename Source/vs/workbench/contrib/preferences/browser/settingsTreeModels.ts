@@ -1279,6 +1279,7 @@ export interface IParsedQuery {
 	featureFilters: string[];
 	languageFilter: string | undefined;
 }
+
 const tagRegex = /(^|\s)@tag:("([^"]*)"|[^"]\S*)/g;
 
 const extensionRegex = /(^|\s)@ext:("([^"]*)"|[^"]\S*)?/g;

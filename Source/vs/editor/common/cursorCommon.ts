@@ -46,6 +46,7 @@ export const enum EditOperationType {
 export interface CharacterMap {
 	[char: string]: string;
 }
+
 const autoCloseAlways = () => true;
 
 const autoCloseNever = () => false;

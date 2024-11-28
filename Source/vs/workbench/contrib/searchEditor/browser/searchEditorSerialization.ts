@@ -225,6 +225,7 @@ function cellMatchToSearchResultFormat(
 		shouldUseHeader,
 	);
 }
+
 const contentPatternToSearchConfiguration = (
 	pattern: ITextQuery,
 	includes: string,

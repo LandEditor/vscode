@@ -19,6 +19,7 @@ export interface TelemetryReporter {
 		},
 	): void;
 }
+
 const nullReporter = new (class NullTelemetryReporter
 	implements TelemetryReporter
 {

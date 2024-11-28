@@ -41,6 +41,7 @@ interface ITerminalData {
 	taskRunEnded: boolean;
 	disposeListener?: MutableDisposable<IDisposable>;
 }
+
 const TASK_TERMINAL_STATUS_ID = "task_terminal_status";
 export const ACTIVE_TASK_STATUS: ITerminalStatus = {
 	id: TASK_TERMINAL_STATUS_ID,

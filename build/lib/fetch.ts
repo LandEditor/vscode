@@ -138,6 +138,7 @@ export async function fetchUrl(
 		throw e;
 	}
 }
+
 const ghApiHeaders: Record<string, string> = {
 	Accept: "application/vnd.github.v3+json",
 	"User-Agent": "VSCode Build",
@@ -146,6 +147,7 @@ if (process.env.GITHUB_TOKEN) {
 	ghApiHeaders.Authorization =
 		"Basic " + Buffer.from(process.env.GITHUB_TOKEN).toString("base64");
 }
+
 const ghDownloadHeaders = {
 	...ghApiHeaders,
 	Accept: "application/octet-stream",

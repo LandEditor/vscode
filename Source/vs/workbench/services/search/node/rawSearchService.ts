@@ -635,6 +635,7 @@ class Cache {
 	} = Object.create(null);
 	scorerCache: FuzzyScorerCache = Object.create(null);
 }
+
 const FileMatchItemAccessor = new (class
 	implements IItemAccessor<IRawFileMatch>
 {

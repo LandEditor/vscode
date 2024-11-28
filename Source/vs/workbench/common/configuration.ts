@@ -106,6 +106,7 @@ class ConfigurationMigrationRegistry
 		this.migrations.push(...configurationMigrations);
 	}
 }
+
 const configurationMigrationRegistry = new ConfigurationMigrationRegistry();
 Registry.add(Extensions.ConfigurationMigration, configurationMigrationRegistry);
 export class ConfigurationMigrationWorkbenchContribution

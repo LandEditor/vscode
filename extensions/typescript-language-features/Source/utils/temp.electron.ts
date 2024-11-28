@@ -36,6 +36,7 @@ function makeRandomHexString(length: number): string {
 	}
 	return result;
 }
+
 const rootTempDir = lazy(() => {
 	const filename = `vscode-typescript${process.platform !== "win32" && process.getuid ? process.getuid() : ""}`;
 

@@ -83,5 +83,6 @@ class JSONContributionRegistry implements IJSONContributionRegistry {
 		return !!this.schemasById[uri];
 	}
 }
+
 const jsonContributionRegistry = new JSONContributionRegistry();
 platform.Registry.add(Extensions.JSONContribution, jsonContributionRegistry);

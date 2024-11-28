@@ -349,6 +349,7 @@ export class ExplorerViewPaneContainer extends ViewPaneContainer {
 		}
 	}
 }
+
 const viewContainerRegistry = Registry.as<IViewContainersRegistry>(
 	Extensions.ViewContainersRegistry,
 );

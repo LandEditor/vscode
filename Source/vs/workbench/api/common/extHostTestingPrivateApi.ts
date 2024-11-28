@@ -14,6 +14,7 @@ export interface IExtHostTestItemApi {
 	parent?: vscode.TestItem;
 	listener?: (evt: ExtHostTestItemEvent) => void;
 }
+
 const eventPrivateApis = new WeakMap<vscode.TestItem, IExtHostTestItemApi>();
 export const createPrivateApiFor = (
 	impl: vscode.TestItem,

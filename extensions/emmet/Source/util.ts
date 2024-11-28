@@ -374,6 +374,7 @@ export function getEmmetMode(
 	}
 	return;
 }
+
 const closeBrace = 125;
 
 const openBrace = 123;

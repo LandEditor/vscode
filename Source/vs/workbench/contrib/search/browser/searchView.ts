@@ -215,6 +215,7 @@ export enum SearchViewPosition {
 	SideBar,
 	Panel,
 }
+
 const SEARCH_CANCELLED_MESSAGE = nls.localize(
 	"searchCanceled",
 	"Search was canceled before any results could be found - ",

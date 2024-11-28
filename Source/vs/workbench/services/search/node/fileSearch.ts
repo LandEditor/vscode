@@ -43,6 +43,7 @@ interface IDirectoryTree {
 		[relativePath: string]: IDirectoryEntry[];
 	};
 }
+
 const killCmds = new Set<() => void>();
 process.on("exit", () => {
 	killCmds.forEach((cmd) => cmd());

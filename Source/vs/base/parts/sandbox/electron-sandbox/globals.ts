@@ -105,6 +105,7 @@ export interface ISandboxContext {
 	 */
 	resolveConfiguration(): Promise<ISandboxConfiguration>;
 }
+
 const vscodeGlobal = (globalThis as any).vscode;
 export const ipcRenderer: IpcRenderer = vscodeGlobal.ipcRenderer;
 export const ipcMessagePort: IpcMessagePort = vscodeGlobal.ipcMessagePort;

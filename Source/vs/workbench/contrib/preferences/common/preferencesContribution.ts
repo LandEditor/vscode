@@ -204,6 +204,7 @@ export class PreferencesContribution
 		super.dispose();
 	}
 }
+
 const registry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 registry.registerConfiguration({
 	...workbenchConfigurationNodeBase,

@@ -157,6 +157,7 @@ class WrappedCustomStackFrame implements IFrameLikeItem {
 
 	constructor(public readonly original: CustomStackFrame) {}
 }
+
 const isFrameLike = (item: unknown): item is IFrameLikeItem =>
 	item instanceof WrappedCallStackFrame ||
 	item instanceof WrappedCustomStackFrame;
@@ -354,6 +355,7 @@ interface IStackTemplateData extends IAbstractFrameRendererTemplateData {
 	editor: CodeEditorWidget;
 	toolbar: MenuWorkbenchToolBar;
 }
+
 const editorOptions: IEditorOptions = {
 	scrollBeyondLastLine: false,
 	scrollbar: {
@@ -491,6 +493,7 @@ abstract class AbstractFrameRenderer<
 		templateData.templateStore.dispose();
 	}
 }
+
 const CONTEXT_LINES = 2;
 /** Renderer for a normal stack frame where code is available. */
 class FrameCodeRenderer extends AbstractFrameRenderer<IStackTemplateData> {

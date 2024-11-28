@@ -1747,6 +1747,7 @@ namespace ConfigurationProperties {
 		return _isEmpty(value, properties);
 	}
 }
+
 const label = "Workspace";
 namespace ConfiguringTask {
 	const grunt = "grunt.";
@@ -2971,6 +2972,7 @@ class ConfigurationParser {
 		return result;
 	}
 }
+
 const uuidMaps: Map<TaskConfigSource, Map<string, UUIDMap>> = new Map();
 
 const recentUuidMaps: Map<TaskConfigSource, Map<string, UUIDMap>> = new Map();

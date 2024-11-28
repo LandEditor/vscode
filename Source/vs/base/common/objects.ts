@@ -45,6 +45,7 @@ export function deepFreeze<T>(obj: T): T {
 	}
 	return obj;
 }
+
 const _hasOwnProperty = Object.prototype.hasOwnProperty;
 export function cloneAndChange(obj: any, changer: (orig: any) => any): any {
 	return _cloneAndChange(obj, changer, new Set());

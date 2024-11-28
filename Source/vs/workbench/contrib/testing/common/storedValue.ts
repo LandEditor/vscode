@@ -15,6 +15,7 @@ export interface IStoredValueSerialization<T> {
 	deserialize(data: string): T;
 	serialize(data: T): string;
 }
+
 const defaultSerialization: IStoredValueSerialization<any> = {
 	deserialize: (d) => JSON.parse(d),
 	serialize: (d) => JSON.stringify(d),

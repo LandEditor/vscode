@@ -187,6 +187,7 @@ export class PathIterator implements IKeyIterator<string> {
 		return this._value.substring(this._from, this._to);
 	}
 }
+
 const enum UriIteratorState {
 	Scheme = 1,
 	Authority = 2,
@@ -330,6 +331,7 @@ class TernarySearchTreeNode<K, V> {
 		return this.right?.height ?? 0;
 	}
 }
+
 const enum Dir {
 	Left = -1,
 	Mid = 0,

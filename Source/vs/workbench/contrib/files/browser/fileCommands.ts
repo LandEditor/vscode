@@ -451,6 +451,7 @@ async function resourcesToClipboard(
 		await clipboardService.writeText(text);
 	}
 }
+
 const copyPathCommandHandler: ICommandHandler = async (
 	accessor,
 	resource: URI | object,

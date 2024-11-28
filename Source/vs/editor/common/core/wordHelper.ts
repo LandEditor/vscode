@@ -78,6 +78,7 @@ export interface IGetWordAtTextConfig {
 	windowSize: number;
 	timeBudget: number;
 }
+
 const _defaultConfig = new LinkedList<IGetWordAtTextConfig>();
 _defaultConfig.unshift({
 	maxLen: 1000,

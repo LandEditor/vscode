@@ -306,6 +306,7 @@ export class GettingStartedDetailsRenderer {
 		}
 	}
 }
+
 const transformUri = (src: string, base: URI) => {
 	const path = joinPath(base, src);
 

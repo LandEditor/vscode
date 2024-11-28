@@ -24,6 +24,7 @@ export interface CancellationToken {
 		disposables?: IDisposable[],
 	) => IDisposable;
 }
+
 const shortcutEvent: Event<any> = Object.freeze(
 	function (callback, context?): IDisposable {
 		const handle = setTimeout(callback.bind(context), 0);

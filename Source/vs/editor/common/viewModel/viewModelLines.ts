@@ -1811,6 +1811,7 @@ class CoordinatesConverter implements ICoordinatesConverter {
 		);
 	}
 }
+
 const enum IndentGuideRepeatOption {
 	BlockNone = 0,
 	BlockSubsequent = 1,

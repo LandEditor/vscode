@@ -211,6 +211,7 @@ export class TypeScriptVersionManager extends Disposable {
 		);
 	}
 }
+
 const LearnMorePickItem: QuickPickItem = {
 	label: vscode.l10n.t("Learn more about managing TypeScript versions"),
 	description: "",

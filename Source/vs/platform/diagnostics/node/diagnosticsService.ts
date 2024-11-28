@@ -39,6 +39,7 @@ interface ConfigFilePatterns {
 	filePattern: RegExp;
 	relativePathPattern?: RegExp;
 }
+
 const workspaceStatsCache = new Map<string, Promise<WorkspaceStats>>();
 export async function collectWorkspaceStats(
 	folder: string,

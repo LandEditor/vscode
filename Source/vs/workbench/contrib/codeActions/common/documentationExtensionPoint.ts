@@ -19,6 +19,7 @@ interface RefactoringDocumentationExtensionPoint {
 export interface DocumentationExtensionPoint {
 	readonly refactoring?: readonly RefactoringDocumentationExtensionPoint[];
 }
+
 const documentationExtensionPointSchema =
 	Object.freeze<IConfigurationPropertySchema>({
 		type: "object",

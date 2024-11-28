@@ -89,6 +89,7 @@ export interface ITestResultService {
 		extId: string,
 	): [results: ITestResult, item: TestResultItem] | undefined;
 }
+
 const isRunningTests = (service: ITestResultService) =>
 	service.results.length > 0 && service.results[0].completedAt === undefined;
 export const ITestResultService =

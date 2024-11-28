@@ -1117,6 +1117,7 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 		property.defaultValueSource = defaultSource;
 	}
 }
+
 const OVERRIDE_IDENTIFIER_PATTERN = `\\[([^\\]]+)\\]`;
 
 const OVERRIDE_IDENTIFIER_REGEX = new RegExp(OVERRIDE_IDENTIFIER_PATTERN, "g");
@@ -1171,6 +1172,7 @@ export function getDefaultValue(type: string | string[] | undefined) {
 			return null;
 	}
 }
+
 const configurationRegistry = new ConfigurationRegistry();
 Registry.add(Extensions.Configuration, configurationRegistry);
 export function validateProperty(

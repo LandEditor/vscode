@@ -672,6 +672,7 @@ class InstalledThemesPicker {
 		marketplaceThemePicker?.dispose();
 	}
 }
+
 const SelectColorThemeCommandId = "workbench.action.selectTheme";
 registerAction2(
 	class extends Action2 {
@@ -1124,6 +1125,7 @@ function toEntries(
 	}
 	return entries;
 }
+
 const configureButton: IQuickInputButton = {
 	iconClass: ThemeIcon.asClassName(manageExtensionIcon),
 	tooltip: localize("manage extension", "Manage Extension"),
@@ -1641,6 +1643,7 @@ class DefaultThemeUpdatedNotificationContribution
 		});
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	Extensions.Workbench,
 );

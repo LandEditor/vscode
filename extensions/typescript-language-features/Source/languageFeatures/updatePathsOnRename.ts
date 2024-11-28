@@ -33,6 +33,7 @@ async function isDirectory(resource: vscode.Uri): Promise<boolean> {
 		return false;
 	}
 }
+
 const enum UpdateImportsOnFileMoveSetting {
 	Prompt = "prompt",
 	Always = "always",

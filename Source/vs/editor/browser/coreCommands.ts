@@ -2656,6 +2656,7 @@ export namespace CoreNavigationCommands {
 			})(),
 		);
 }
+
 const columnSelectionCondition = ContextKeyExpr.and(
 	EditorContextKeys.textInputFocus,
 	EditorContextKeys.columnSelection,

@@ -54,6 +54,7 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 		);
 	}
 }
+
 const multiCursorModifier = new RawContextKey<string>(
 	"multiCursorModifier",
 	"altKey",

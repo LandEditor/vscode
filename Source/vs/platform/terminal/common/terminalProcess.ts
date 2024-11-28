@@ -78,6 +78,7 @@ export interface ReplayEntry {
 	rows: number;
 	data: string;
 }
+
 const enum Constants {
 	/**
 	 * Writing large amounts of data can be corrupted for some reason, after looking into this is

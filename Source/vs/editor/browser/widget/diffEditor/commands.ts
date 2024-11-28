@@ -104,6 +104,7 @@ export class ToggleUseInlineViewWhenSpaceIsLimited extends Action2 {
 		);
 	}
 }
+
 const diffEditorCategory: ILocalizedString = localize2(
 	"diffEditor",
 	"Diff Editor",
@@ -245,6 +246,7 @@ export class RevertHunkOrSelection extends Action2 {
 		return undefined;
 	}
 }
+
 const accessibleDiffViewerCategory: ILocalizedString = localize2(
 	"accessibleDiffViewer",
 	"Accessible Diff Viewer",

@@ -143,6 +143,7 @@ interface IReconnectionTaskData {
 	lastTask: string;
 	group?: string;
 }
+
 const ReconnectionType = "Task";
 class VariableResolver {
 	private static _regex = /\$\{(.*?)\}/g;

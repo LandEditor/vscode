@@ -125,6 +125,7 @@ interface IViewPaneItem {
 	pane: ViewPane;
 	disposable: IDisposable;
 }
+
 const enum DropDirection {
 	UP,
 	DOWN,

@@ -308,6 +308,7 @@ function createScrollObserver(
 
 	return widget.onDidScroll(update);
 }
+
 const multiSelectModifierSettingKey = "workbench.list.multiSelectModifier";
 
 const openModeSettingKey = "workbench.list.openMode";
@@ -2026,6 +2027,7 @@ class WorkbenchTreeInternals<TInput, T, TFilterData> {
 		this.disposables = dispose(this.disposables);
 	}
 }
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
 	ConfigurationExtensions.Configuration,
 );

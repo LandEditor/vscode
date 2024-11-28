@@ -367,6 +367,7 @@ async function guessEncodingByBuffer(
 	}
 	return toIconvLiteEncoding(guessed.encoding);
 }
+
 const JSCHARDET_TO_ICONV_ENCODINGS: {
 	[name: string]: string;
 } = {

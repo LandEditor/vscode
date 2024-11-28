@@ -129,6 +129,7 @@ export interface IDebugVisualizerService {
 		newValue: string,
 	): Promise<void>;
 }
+
 const emptyRef: IReference<DebugVisualizer[]> = {
 	object: [],
 	dispose: () => {},
@@ -395,6 +396,7 @@ export class DebugVisualizerService implements IDebugVisualizerService {
 		}
 	}
 }
+
 const toKey = (extensionId: ExtensionIdentifier, id: string) =>
 	`${ExtensionIdentifier.toKey(extensionId)}\0${id}`;
 

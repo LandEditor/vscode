@@ -62,6 +62,7 @@ export interface IUserDataSyncMachinesService {
 
 	setEnablements(enbalements: [string, boolean][]): Promise<void>;
 }
+
 const currentMachineNameKey = "sync.currentMachineName";
 
 const Safari = "Safari";

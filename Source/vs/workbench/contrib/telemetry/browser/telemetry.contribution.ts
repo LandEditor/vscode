@@ -977,6 +977,7 @@ class ConfigurationTelemetryContribution
 		}
 	}
 }
+
 const workbenchContributionRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionRegistry.registerWorkbenchContribution(

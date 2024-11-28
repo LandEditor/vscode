@@ -41,6 +41,7 @@ export { Orientation } from "../sash/sash.js";
 export interface ISplitViewStyles {
 	readonly separatorBorder: Color;
 }
+
 const defaultStyles: ISplitViewStyles = {
 	separatorBorder: Color.transparent,
 };

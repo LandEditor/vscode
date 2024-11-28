@@ -20,6 +20,7 @@ const root = path.dirname(path.dirname(__dirname));
 export interface ICancellationToken {
 	isCancellationRequested(): boolean;
 }
+
 const NoCancellationToken: ICancellationToken = {
 	isCancellationRequested: () => false,
 };

@@ -427,6 +427,7 @@ class KeyCodeStrMap {
 		return this._strToKeyCode[str.toLowerCase()] || KeyCode.Unknown;
 	}
 }
+
 const uiMap = new KeyCodeStrMap();
 
 const userSettingsUSMap = new KeyCodeStrMap();

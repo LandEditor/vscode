@@ -167,6 +167,7 @@ export function areServiceConfigurationsEqual(
 export interface ServiceConfigurationProvider {
 	loadFromWorkspace(): TypeScriptServiceConfiguration;
 }
+
 const vscodeWatcherName = "vscode";
 type vscodeWatcherName = typeof vscodeWatcherName;
 export abstract class BaseServiceConfigurationProvider

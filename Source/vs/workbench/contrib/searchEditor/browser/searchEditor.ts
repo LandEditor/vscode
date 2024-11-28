@@ -1225,6 +1225,7 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		return this.getInput()?.getName() ?? localize("searchEditor", "Search");
 	}
 }
+
 const searchEditorTextInputBorder = registerColor(
 	"searchEditor.textInputBorder",
 	inputBorder,

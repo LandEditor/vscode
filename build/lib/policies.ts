@@ -397,6 +397,7 @@ interface QType<T> {
 	Q: string;
 	value(matches: Parser.QueryMatch[]): T | undefined;
 }
+
 const IntQ: QType<number> = {
 	Q: `(number) @value`,
 	value(matches: Parser.QueryMatch[]): number | undefined {
@@ -721,6 +722,7 @@ function renderGP(policies: Policy[], translations: Translations) {
 		],
 	};
 }
+
 const Languages = {
 	"fr": "fr-fr",
 	"it": "it-it",

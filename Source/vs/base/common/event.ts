@@ -1149,6 +1149,7 @@ class UniqueContainer<T> {
 
 	constructor(public readonly value: T) {}
 }
+
 const compactionThreshold = 2;
 type ListenerContainer<T> = UniqueContainer<(data: T) => void>;
 type ListenerOrListeners<T> =

@@ -257,6 +257,7 @@ export function compareFileExtensionsUnicode(
 	}
 	return 0;
 }
+
 const FileNameMatch = /^(.*?)(\.([^.]*))?$/;
 /** Extracts the name and extension from a full filename, with optional special handling for dotfiles */
 function extractNameAndExtension(

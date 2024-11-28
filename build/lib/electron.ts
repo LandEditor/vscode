@@ -27,6 +27,7 @@ function isDocumentSuffix(str?: string): str is DarwinDocumentSuffix {
 		str === "source code"
 	);
 }
+
 const root = path.dirname(path.dirname(__dirname));
 
 const product = JSON.parse(
@@ -43,6 +44,7 @@ function createTemplate(
 		});
 	};
 }
+
 const darwinCreditsTemplate =
 	product.darwinCredits &&
 	createTemplate(
@@ -119,6 +121,7 @@ function darwinBundleDocumentTypes(
 		};
 	});
 }
+
 const { electronVersion, msBuildId } = util.getElectronVersion();
 export const config = {
 	version: electronVersion,

@@ -309,6 +309,7 @@ class CodePointHighlighter {
 function isAllowedInvisibleCharacter(character: string): boolean {
 	return character === " " || character === "\n" || character === "\t";
 }
+
 const enum SimpleHighlightReason {
 	None,
 	NonBasicASCII,

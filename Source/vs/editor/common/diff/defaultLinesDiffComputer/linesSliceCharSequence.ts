@@ -219,6 +219,7 @@ function isWordChar(charCode: number): boolean {
 		(charCode >= CharCode.Digit0 && charCode <= CharCode.Digit9)
 	);
 }
+
 const enum CharBoundaryCategory {
 	WordLower,
 	WordUpper,
@@ -230,6 +231,7 @@ const enum CharBoundaryCategory {
 	LineBreakCR,
 	LineBreakLF,
 }
+
 const score: Record<CharBoundaryCategory, number> = {
 	[CharBoundaryCategory.WordLower]: 0,
 	[CharBoundaryCategory.WordUpper]: 0,

@@ -201,6 +201,7 @@ export class MessageController implements IEditorContribution {
 		}
 	}
 }
+
 const MessageCommand = EditorCommand.bindToContribution<MessageController>(
 	MessageController.get,
 );

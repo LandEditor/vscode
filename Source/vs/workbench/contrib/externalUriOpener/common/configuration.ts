@@ -17,6 +17,7 @@ export const externalUriOpenersSettingId = "workbench.externalUriOpeners";
 export interface ExternalUriOpenersConfiguration {
 	readonly [uriGlob: string]: string;
 }
+
 const externalUriOpenerIdSchemaAddition: IJSONSchema = {
 	type: "string",
 	enum: [],

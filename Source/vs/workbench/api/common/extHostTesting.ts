@@ -1333,6 +1333,7 @@ export class TestRunCoordinator {
 		return tracker;
 	}
 }
+
 const tryGetProfileFromTestRunReq = (request: vscode.TestRunRequest) => {
 	if (!request.profile) {
 		return undefined;
@@ -1555,6 +1556,7 @@ class TestObservers {
 		return { observers: 0, tests };
 	}
 }
+
 const updateProfile = (
 	impl: TestRunProfileImpl,
 	proxy: MainThreadTestingShape,

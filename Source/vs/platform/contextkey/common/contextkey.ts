@@ -42,6 +42,7 @@ export function setConstant(key: string, value: boolean) {
 	}
 	CONSTANT_VALUES.set(key, value);
 }
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 export const enum ContextKeyExprType {
 	False = 0,

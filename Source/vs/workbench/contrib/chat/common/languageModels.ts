@@ -157,6 +157,7 @@ export interface ILanguageModelsService {
 		token: CancellationToken,
 	): Promise<number>;
 }
+
 const languageModelType: IJSONSchema = {
 	type: "object",
 	properties: {

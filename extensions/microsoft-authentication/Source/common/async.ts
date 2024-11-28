@@ -83,6 +83,7 @@ export function raceCancellationAndTimeoutError<T>(
 interface IScheduledLater extends Disposable {
 	isTriggered(): boolean;
 }
+
 const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
 	let scheduled = true;
 

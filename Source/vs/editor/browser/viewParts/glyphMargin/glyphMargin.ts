@@ -579,6 +579,7 @@ export interface IRenderInfo {
 	lineNumber: number;
 	laneIndex: number;
 }
+
 const enum GlyphRenderRequestType {
 	Decoration = 0,
 	Widget = 1,

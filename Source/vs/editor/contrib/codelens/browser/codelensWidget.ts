@@ -200,6 +200,7 @@ export class CodeLensHelper {
 		}
 	}
 }
+
 const codeLensDecorationOptions = ModelDecorationOptions.register({
 	collapseOnReplaceEdit: true,
 	description: "codelens",

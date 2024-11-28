@@ -60,6 +60,7 @@ export interface IServerChannel<TContext = string> {
 	): Promise<T>;
 	listen<T>(ctx: TContext, event: string, arg?: any): Event<T>;
 }
+
 const enum RequestType {
 	Promise = 100,
 	PromiseCancel = 101,
@@ -257,6 +258,7 @@ function readIntVQL(reader: IReader) {
 		}
 	}
 }
+
 const vqlZero = createOneByteBuffer(0);
 /**
  * @see https://en.wikipedia.org/wiki/Variable-length_quantity
@@ -320,6 +322,7 @@ function createOneByteBuffer(value: number): VSBuffer {
 
 	return result;
 }
+
 const BufferPresets = {
 	Undefined: createOneByteBuffer(DataType.Undefined),
 	String: createOneByteBuffer(DataType.String),
@@ -1598,6 +1601,7 @@ export namespace ProxyChannel {
 		);
 	}
 }
+
 const colorTables = [
 	["#2977B1", "#FC802D", "#34A13A", "#D3282F", "#9366BA"],
 	["#8B564C", "#E177C0", "#7F7F7F", "#BBBE3D", "#2EBECD"],

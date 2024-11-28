@@ -101,6 +101,7 @@ export interface HelpInformation {
 	remoteName?: string[] | string;
 	virtualWorkspace?: string;
 }
+
 const getStartedWalkthrough: IJSONSchema = {
 	type: "object",
 	required: ["id"],

@@ -145,6 +145,7 @@ interface ICompressedObjectTreeModelOptions<T, TFilterData>
 	extends IObjectTreeModelOptions<ICompressedTreeNode<T>, TFilterData> {
 	readonly compressionEnabled?: boolean;
 }
+
 const wrapIdentityProvider = <T>(
 	base: IIdentityProvider<T>,
 ): IIdentityProvider<ICompressedTreeNode<T>> => ({

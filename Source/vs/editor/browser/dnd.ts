@@ -53,6 +53,7 @@ function createFileDataTransferItemFromFile(file: File): IDataTransferItem {
 		return new Uint8Array(await file.arrayBuffer());
 	});
 }
+
 const INTERNAL_DND_MIME_TYPES = Object.freeze([
 	CodeDataTransfers.EDITORS,
 	CodeDataTransfers.FILES,

@@ -776,6 +776,7 @@ function isSameSession(
 	}
 	return a1 === a2;
 }
+
 const isSameMode = (a: TunnelMode, b: TunnelMode) => {
 	if (a.active !== b.active) {
 		return false;

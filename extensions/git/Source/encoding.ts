@@ -29,6 +29,7 @@ function detectEncodingByBOM(buffer: Buffer): string | null {
 	}
 	return null;
 }
+
 const IGNORE_ENCODINGS = ["ascii", "utf-8", "utf-16", "utf-32"];
 
 const JSCHARDET_TO_ICONV_ENCODINGS: {

@@ -104,6 +104,7 @@ function _factory(sharedObj: any) {
 	}
 	return sharedObj.MonacoPerformanceMarks;
 }
+
 const perf = _factory(globalThis);
 export const mark: (
 	name: string,

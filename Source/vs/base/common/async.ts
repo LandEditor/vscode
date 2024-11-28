@@ -346,6 +346,7 @@ export class SequencerByKey<TKey> {
 interface IScheduledLater extends IDisposable {
 	isTriggered(): boolean;
 }
+
 const timeoutDeferred = (timeout: number, fn: () => void): IScheduledLater => {
 	let scheduled = true;
 

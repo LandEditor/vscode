@@ -31,6 +31,7 @@ export class LineContext {
 		readonly characterCountDelta: number,
 	) {}
 }
+
 const enum Refilter {
 	Nothing = 0,
 	All = 1,

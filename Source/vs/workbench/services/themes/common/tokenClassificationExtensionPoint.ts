@@ -29,6 +29,7 @@ interface ITokenStyleDefaultExtensionPoint {
 		[selector: string]: string[];
 	};
 }
+
 const tokenClassificationRegistry: ITokenClassificationRegistry =
 	getTokenClassificationRegistry();
 

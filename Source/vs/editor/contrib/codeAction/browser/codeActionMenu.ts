@@ -24,6 +24,7 @@ interface ActionGroup {
 	readonly title: string;
 	readonly icon?: ThemeIcon;
 }
+
 const uncategorizedCodeActionGroup = Object.freeze<ActionGroup>({
 	kind: HierarchicalKind.Empty,
 	title: localize("codeAction.widget.id.more", "More Actions..."),

@@ -35,6 +35,7 @@ export interface CodeActionsExtensionPoint {
 	readonly [CodeActionExtensionPointFields.languages]: readonly string[];
 	readonly [CodeActionExtensionPointFields.actions]: readonly ContributedCodeAction[];
 }
+
 const codeActionsExtensionPointSchema =
 	Object.freeze<IConfigurationPropertySchema>({
 		type: "array",

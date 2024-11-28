@@ -134,6 +134,7 @@ function isWhitespace(code: number): boolean {
 		code === CharCode.CarriageReturn
 	);
 }
+
 const wordSeparators = new Set<number>();
 // These are chosen as natural word separators based on writen text.
 // It is a subset of the word separators used by the monaco editor.
@@ -148,6 +149,7 @@ function charactersMatch(codeA: number, codeB: number): boolean {
 		codeA === codeB || (isWordSeparator(codeA) && isWordSeparator(codeB))
 	);
 }
+
 const alternateCharsCache: Map<number, ArrayLike<number> | undefined> =
 	new Map();
 /**
@@ -592,6 +594,7 @@ export function createMatches(score: undefined | FuzzyScore): IMatch[] {
 	}
 	return res;
 }
+
 const _maxLen = 128;
 function initTable() {
 	const table: number[][] = [];
@@ -614,6 +617,7 @@ function initArr(maxLen: number) {
 	}
 	return row;
 }
+
 const _minWordMatchPos = initArr(2 * _maxLen); // min word position for a certain pattern position
 const _maxWordMatchPos = initArr(2 * _maxLen); // max word position for a certain pattern position
 const _diag = initTable(); // the length of a contiguous diagonal match
@@ -744,6 +748,7 @@ export function isPatternInWord(
 	}
 	return patternPos === patternLen; // pattern must be exhausted
 }
+
 const enum Arrow {
 	Diag = 1,
 	Left = 2,

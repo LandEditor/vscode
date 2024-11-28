@@ -33,6 +33,7 @@ function toIconvLiteEncoding(encodingName: string): string {
 
 	return mapped || normalizedEncodingName;
 }
+
 const JSCHARDET_TO_ICONV_ENCODINGS: {
 	[name: string]: string;
 } = {

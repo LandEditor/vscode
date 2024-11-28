@@ -123,6 +123,7 @@ function getStateMachine(): StateMachine {
 	}
 	return _stateMachine;
 }
+
 const enum CharacterClass {
 	None = 0,
 	ForceTermination = 1,

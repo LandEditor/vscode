@@ -53,6 +53,7 @@ const $ = dom.$;
 const enum CssClass {
 	ViewIsVertical = "terminal-side-view",
 }
+
 const enum WidthConstants {
 	StatusIcon = 30,
 	SplitAnnotation = 30,

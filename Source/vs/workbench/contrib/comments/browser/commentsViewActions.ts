@@ -33,6 +33,7 @@ export const enum CommentsSortOrder {
 	ResourceAscending = "resourceAscending",
 	UpdatedAtDescending = "updatedAtDescending",
 }
+
 const CONTEXT_KEY_SHOW_RESOLVED = new RawContextKey<boolean>(
 	"commentsView.showResolvedFilter",
 	true,

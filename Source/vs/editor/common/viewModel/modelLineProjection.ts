@@ -774,6 +774,7 @@ class HiddenModelLineProjection implements IModelLineProjection {
 		throw new Error("Not supported");
 	}
 }
+
 const _spaces: string[] = [""];
 function spaces(count: number): string {
 	if (count >= _spaces.length) {

@@ -56,6 +56,7 @@ function registerQuickPickCommandAndKeybindingRule(
 		secondary: getSecondary(rule.primary!, rule.secondary ?? [], options),
 	});
 }
+
 const ctrlKeyMod = isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd;
 // This function will generate all the combinations of keybindings for the given primary keybinding
 function getSecondary(

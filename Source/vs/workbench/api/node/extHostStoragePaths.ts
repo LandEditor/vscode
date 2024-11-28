@@ -86,6 +86,7 @@ async function mkdir(dir: string): Promise<void> {
 		await fs.promises.mkdir(dir, { recursive: true });
 	} catch {}
 }
+
 const MTIME_UPDATE_TIME = 1000; // 1s
 const STALE_LOCK_TIME = 10 * 60 * 1000; // 10 minutes
 class Lock extends Disposable {

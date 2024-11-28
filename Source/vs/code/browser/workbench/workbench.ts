@@ -44,6 +44,7 @@ class TransparentCrypto implements ISecretStorageCrypto {
 		return data;
 	}
 }
+
 const enum AESConstants {
 	ALGORITHM = "AES-GCM",
 	KEY_LENGTH = 256,

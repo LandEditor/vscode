@@ -25,6 +25,7 @@ export const enum NodeColor {
 	Black = 0,
 	Red = 1,
 }
+
 const enum Constants {
 	ColorMask = 0b00000001,
 	ColorMaskInverse = 0b11111110,

@@ -1994,6 +1994,7 @@ export class EditSessionsContribution
 		);
 	}
 }
+
 const infoButtonClass = ThemeIcon.asClassName(Codicon.info);
 class ContinueEditSessionItem implements IQuickPickItem {
 	public readonly buttons: IQuickInputButton[] | undefined;
@@ -2025,6 +2026,7 @@ interface ICommand {
 	category?: string;
 	remoteGroup?: string;
 }
+
 const continueEditSessionExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	ICommand[]
 >({

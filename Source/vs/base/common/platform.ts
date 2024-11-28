@@ -75,6 +75,7 @@ if (
 	// Native environment (non-sandboxed)
 	nodeProcess = process;
 }
+
 const isElectronProcess = typeof nodeProcess?.versions?.electron === "string";
 
 const isElectronRenderer =

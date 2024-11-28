@@ -19,6 +19,7 @@ export class LinkedText {
 			.join("");
 	}
 }
+
 const LINK_REGEX =
 	/\[([^\]]+)\]\(((?:https?:\/\/|command:|file:)[^\)\s]+)(?: (["'])(.+?)(\3))?\)/gi;
 export function parseLinkedText(text: string): LinkedText {

@@ -74,6 +74,7 @@ function isTrustedSVGSource(uri: Uri): boolean {
 		allowedBadgeProvidersRegex.some((r) => r.test(uri.toString()))
 	);
 }
+
 const httpsRequired = l10n.t("Images must use the HTTPS protocol.");
 
 const svgsNotValid = l10n.t("SVGs are not a valid image source.");

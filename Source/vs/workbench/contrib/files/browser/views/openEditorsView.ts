@@ -1279,6 +1279,7 @@ class OpenEditorsAccessibilityProvider
 		return element.ariaLabel;
 	}
 }
+
 const toggleEditorGroupLayoutId = "workbench.action.toggleEditorGroupLayout";
 registerAction2(
 	class extends Action2 {

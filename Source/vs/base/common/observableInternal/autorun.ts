@@ -156,6 +156,7 @@ export function autorunDelta<T>(
 		handler({ lastValue, newValue });
 	});
 }
+
 const enum AutorunState {
 	/**
 	 * A dependency could have changed.

@@ -80,6 +80,7 @@ interface IItem<T> {
 	checkedDisposable: IDisposable;
 	stale: boolean;
 }
+
 const StaticDND = {
 	CurrentDragAndDropData: undefined as IDragAndDropData | undefined,
 };
@@ -125,6 +126,7 @@ export interface IListViewOptions<T> extends IListViewOptionsUpdate {
 	readonly alwaysConsumeMouseWheel?: boolean;
 	readonly initialSize?: Dimension;
 }
+
 const DefaultOptions = {
 	useShadows: true,
 	verticalScrollMode: ScrollbarVisibility.Auto,

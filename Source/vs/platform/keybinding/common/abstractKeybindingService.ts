@@ -45,6 +45,7 @@ interface CurrentChord {
 	keypress: string;
 	label: string | null;
 }
+
 const HIGH_FREQ_COMMANDS =
 	/^(cursor|delete|undo|redo|tab|editor\.action\.clipboard)/;
 export abstract class AbstractKeybindingService

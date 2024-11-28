@@ -634,6 +634,7 @@ export class MainThreadCommentController implements ICommentController {
 		};
 	}
 }
+
 const commentsViewIcon = registerIcon(
 	"comments-view-icon",
 	Codicon.commentDiscussion,

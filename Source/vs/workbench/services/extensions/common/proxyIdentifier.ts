@@ -35,6 +35,7 @@ export class ProxyIdentifier<T> {
 		this.nid = ++ProxyIdentifier.count;
 	}
 }
+
 const identifiers: ProxyIdentifier<any>[] = [];
 export function createProxyIdentifier<T>(
 	identifier: string,

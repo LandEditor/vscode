@@ -111,6 +111,7 @@ export interface IPeekOutputRenderer extends IDisposable {
 	/** Dispose the content provider. */
 	dispose(): void;
 }
+
 const commonEditorOptions: IEditorOptions = {
 	scrollBeyondLastLine: false,
 	links: true,
@@ -777,4 +778,5 @@ export class TerminalMessagePeek
 		});
 	}
 }
+
 const isMultiline = (str: string | undefined) => !!str && str.includes("\n");

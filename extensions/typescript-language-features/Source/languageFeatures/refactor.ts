@@ -373,6 +373,7 @@ interface CodeActionKind {
 	readonly kind: vscode.CodeActionKind;
 	matches(refactor: Proto.RefactorActionInfo): boolean;
 }
+
 const Extract_Function = Object.freeze<CodeActionKind>({
 	kind: vscode.CodeActionKind.RefactorExtract.append("function"),
 	matches: (refactor) => refactor.name.startsWith("function_"),

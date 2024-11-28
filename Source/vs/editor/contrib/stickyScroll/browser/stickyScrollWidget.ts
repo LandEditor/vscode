@@ -60,6 +60,7 @@ export class StickyScrollWidgetState {
 		return new StickyScrollWidgetState([], [], 0);
 	}
 }
+
 const _ttPolicy = createTrustedTypesPolicy("stickyScrollViewLayer", {
 	createHTML: (value) => value,
 });

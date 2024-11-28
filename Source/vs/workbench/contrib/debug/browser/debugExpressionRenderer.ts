@@ -62,6 +62,7 @@ export interface IRenderVariableOptions {
 	showChanged?: boolean;
 	highlights?: IHighlight[];
 }
+
 const MAX_VALUE_RENDER_LENGTH_IN_VIEWLET = 1024;
 
 const booleanRegex = /^(true|false)$/i;
@@ -77,6 +78,7 @@ const enum Cls {
 	String = "string",
 	Number = "number",
 }
+
 const allClasses: readonly Cls[] = Object.keys({
 	[Cls.Value]: 0,
 	[Cls.Unavailable]: 0,

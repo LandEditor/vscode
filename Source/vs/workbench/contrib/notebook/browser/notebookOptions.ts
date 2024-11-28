@@ -124,6 +124,7 @@ export interface NotebookOptionsChangeEvent {
 	readonly minimalError?: boolean;
 	readonly readonly?: boolean;
 }
+
 const defaultConfigConstants = Object.freeze({
 	codeCellLeftMargin: 28,
 	cellRunGutter: 32,

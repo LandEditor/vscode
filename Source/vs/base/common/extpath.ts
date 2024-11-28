@@ -380,6 +380,7 @@ export function parseLineAndColumnAware(
 			column !== undefined ? column : line !== undefined ? 1 : undefined, // if we have a line, make sure column is also set
 	};
 }
+
 const pathChars =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 

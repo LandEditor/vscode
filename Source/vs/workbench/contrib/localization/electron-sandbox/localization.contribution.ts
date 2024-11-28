@@ -336,6 +336,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		);
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

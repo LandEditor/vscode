@@ -760,6 +760,7 @@ function sleep(ms: number): Promise<void> {
 function getConfiguration<T>(id: string): T | undefined {
 	return vscode.workspace.getConfiguration("testresolver").get<T>(id);
 }
+
 const remoteServers: number[] = [];
 async function showCandidatePort(
 	_host: string,

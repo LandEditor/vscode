@@ -74,6 +74,7 @@ interface IFindOptions {
 	initialWidth?: number;
 	enableSash?: boolean;
 }
+
 const SIMPLE_FIND_WIDGET_INITIAL_WIDTH = 310;
 
 const MATCHES_COUNT_WIDTH = 73;

@@ -18,6 +18,7 @@ function mapChildren<R>(
 		? node.children.map(f)
 		: [];
 }
+
 const openExtendsLinkCommandId = "_typescript.openExtendsLink";
 enum TsConfigLinkType {
 	Extends,

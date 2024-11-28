@@ -53,6 +53,7 @@ export interface IProfileContextProvider {
 		remoteAuthority: string | undefined,
 	): Promise<IProcessEnvironment>;
 }
+
 const generatedProfileName = "Generated";
 /*
  * Resolves terminal shell launch config and terminal profiles for the given operating system,

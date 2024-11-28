@@ -32,6 +32,7 @@ export interface IExtensionDefinition {
 		publisherDisplayName: string;
 	};
 }
+
 const root = path.dirname(path.dirname(__dirname));
 
 const productjson = JSON.parse(

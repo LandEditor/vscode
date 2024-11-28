@@ -807,6 +807,7 @@ export class SaveParticipantsContribution
 		);
 	}
 }
+
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(
 		WorkbenchContributionsExtensions.Workbench,

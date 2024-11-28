@@ -46,6 +46,7 @@ interface IFindWordResult {
 	 */
 	nextCharClass: WordCharacterClass;
 }
+
 const enum WordType {
 	None = 0,
 	Regular = 1,

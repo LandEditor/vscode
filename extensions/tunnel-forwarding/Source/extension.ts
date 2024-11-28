@@ -52,6 +52,7 @@ class Tunnel implements vscode.Tunnel {
 		this.disposeEmitter.fire();
 	}
 }
+
 const enum State {
 	Starting,
 	Active,
@@ -147,6 +148,7 @@ class Logger {
 		this.outputChannel[logLevel](message, ...args);
 	}
 }
+
 const didWarnPublicKey = "didWarnPublic";
 class TunnelProvider implements vscode.TunnelProvider {
 	private readonly tunnels = new Set<Tunnel>();

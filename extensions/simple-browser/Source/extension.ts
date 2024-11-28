@@ -11,6 +11,7 @@ declare class URL {
 	constructor(input: string, base?: string | URL);
 	hostname: string;
 }
+
 const openApiCommand = "simpleBrowser.api.open";
 
 const showCommand = "simpleBrowser.show";

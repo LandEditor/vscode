@@ -439,6 +439,7 @@ export class WorkspaceChangeExtHostRelauncher
 		}
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

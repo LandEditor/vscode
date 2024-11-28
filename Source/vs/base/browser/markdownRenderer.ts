@@ -896,6 +896,7 @@ function createRenderer(): marked.Renderer {
 
 	return renderer;
 }
+
 const plainTextRenderer = new Lazy<marked.Renderer>(createRenderer);
 
 const plainTextWithCodeBlocksRenderer = new Lazy<marked.Renderer>(() => {

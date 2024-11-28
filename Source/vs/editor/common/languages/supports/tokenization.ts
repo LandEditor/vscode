@@ -176,6 +176,7 @@ function resolveParsedTokenThemeRules(
 	}
 	return new TokenTheme(colorMap, root);
 }
+
 const colorRegExp = /^#?([0-9A-Fa-f]{6})([0-9A-Fa-f]{2})?$/;
 export class ColorMap {
 	private _lastColorId: number;
@@ -269,6 +270,7 @@ export class TokenTheme {
 		);
 	}
 }
+
 const STANDARD_TOKEN_TYPE_REGEXP = /\b(comment|string|regex|regexp)\b/;
 export function toStandardTokenType(tokenType: string): StandardTokenType {
 	const m = tokenType.match(STANDARD_TOKEN_TYPE_REGEXP);

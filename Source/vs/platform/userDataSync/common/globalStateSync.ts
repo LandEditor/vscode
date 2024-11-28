@@ -106,6 +106,7 @@ export function stringify(globalState: IGlobalState, format: boolean): string {
 		? toFormattedString(globalState, {})
 		: JSON.stringify(globalState);
 }
+
 const GLOBAL_STATE_DATA_VERSION = 1;
 /**
  * Synchronises global state that includes

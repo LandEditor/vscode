@@ -757,6 +757,7 @@ export class LanguageConfigurationFileHandler extends Disposable {
 		return result;
 	}
 }
+
 const schemaId = "vscode://schemas/language-configuration";
 
 const schema: IJSONSchema = {

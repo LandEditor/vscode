@@ -92,6 +92,7 @@ export function convertConfiguration(
 			return RenderLabel.Dynamic;
 	}
 }
+
 const ICON_ONLY_ACTION_WIDTH = 21;
 
 const TOGGLE_MORE_ACTION_WIDTH = 21;

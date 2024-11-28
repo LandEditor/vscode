@@ -92,6 +92,7 @@ export class JsonStringScanner {
 		return value;
 	}
 }
+
 const enum CharacterCodes {
 	lineFeed = 0x0a, // \n
 	carriageReturn = 0x0d, // \r

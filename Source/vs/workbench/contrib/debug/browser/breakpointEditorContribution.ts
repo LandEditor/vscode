@@ -94,6 +94,7 @@ interface IBreakpointDecoration {
 	range: Range;
 	inlineWidget?: InlineBreakpointWidget;
 }
+
 const breakpointHelperDecoration: IModelDecorationOptions = {
 	description: "breakpoint-helper-decoration",
 	glyphMarginClassName: ThemeIcon.asClassName(icons.debugBreakpointHint),

@@ -65,6 +65,7 @@ export async function hasChildProcesses(
 	// fall back to safe side
 	return Promise.resolve(true);
 }
+
 const enum ShellType {
 	cmd,
 	powershell,

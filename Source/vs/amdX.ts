@@ -242,6 +242,7 @@ class AMDModuleImporter {
 		}
 	}
 }
+
 const cache = new Map<string, Promise<any>>();
 /**
  * Utility for importing an AMD node module. This util supports AMD and ESM contexts and should be used while the ESM adoption

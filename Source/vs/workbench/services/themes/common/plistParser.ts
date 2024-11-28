@@ -13,6 +13,7 @@ const enum ChCode {
 	QUESTION_MARK = 63,
 	EXCLAMATION_MARK = 33,
 }
+
 const enum State {
 	ROOT_STATE = 0,
 	DICT_STATE = 1,

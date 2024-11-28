@@ -1181,6 +1181,7 @@ class ChatSynthesizerSessions {
 		this.activeSession = undefined;
 	}
 }
+
 const sentenceDelimiter = [".", "!", "?", ":"];
 
 const lineDelimiter = "\n";

@@ -491,6 +491,7 @@ export interface ISnippetSessionInsertOptions {
 	clipboardText: string | undefined;
 	overtypingCapturer: OvertypingCapturer | undefined;
 }
+
 const _defaultOptions: ISnippetSessionInsertOptions = {
 	overwriteBefore: 0,
 	overwriteAfter: 0,

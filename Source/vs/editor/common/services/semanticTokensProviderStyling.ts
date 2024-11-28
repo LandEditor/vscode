@@ -16,6 +16,7 @@ import { SparseMultilineTokens } from "../tokens/sparseMultilineTokens.js";
 const enum SemanticTokensProviderStylingConstants {
 	NO_STYLING = 0b01111111111111111111111111111111,
 }
+
 const ENABLE_TRACE = false;
 export class SemanticTokensProviderStyling {
 	private readonly _hashTable: HashTable;
@@ -217,6 +218,7 @@ export class SemanticTokensProviderStyling {
 		}
 	}
 }
+
 const enum SemanticColoringConstants {
 	/**
 	 * Let's aim at having 8KB buffers if possible...

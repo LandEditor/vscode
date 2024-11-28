@@ -58,6 +58,7 @@ class Folder extends TreeItem {
 		this.packages.push(packageJson);
 	}
 }
+
 const packageName = "package.json";
 class PackageJSON extends TreeItem {
 	path: string;

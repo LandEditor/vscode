@@ -23,6 +23,7 @@ class NotebookLogger {
 		);
 	}
 }
+
 const instance = new NotebookLogger();
 export function notebookDebug(...args: any[]) {
 	instance.debug(...args);

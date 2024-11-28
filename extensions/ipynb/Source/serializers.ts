@@ -488,6 +488,7 @@ export function pruneCell(cell: nbformat.ICell): nbformat.ICell {
 	}
 	return result;
 }
+
 const dummyStreamObj: nbformat.IStream = {
 	output_type: "stream",
 	name: "stdout",

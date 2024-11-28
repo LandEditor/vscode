@@ -227,6 +227,7 @@ export function validateTelemetryData(data?: any): {
 		measurements,
 	};
 }
+
 const telemetryAllowedAuthorities = new Set([
 	"ssh-remote",
 	"dev-container",

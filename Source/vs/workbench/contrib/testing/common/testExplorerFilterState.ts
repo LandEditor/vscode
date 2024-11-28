@@ -235,6 +235,7 @@ export const enum TestFilterTerm {
 	OpenedFiles = "@openedFiles",
 	Hidden = "@hidden",
 }
+
 const allTestFilterTerms: readonly TestFilterTerm[] = [
 	TestFilterTerm.Failed,
 	TestFilterTerm.Executed,

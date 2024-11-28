@@ -24,6 +24,7 @@ export interface CenteredViewState {
 	// proportional size of right margin
 	rightMarginRatio: number;
 }
+
 const defaultState: CenteredViewState = {
 	targetWidth: 900,
 	leftMarginRatio: 0.1909,

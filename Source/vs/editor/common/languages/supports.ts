@@ -105,6 +105,7 @@ export class ScopedLineTokens {
 		);
 	}
 }
+
 const enum IgnoreBracketsInTokens {
 	value = StandardTokenType.Comment |
 		StandardTokenType.String |

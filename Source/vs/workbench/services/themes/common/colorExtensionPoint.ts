@@ -34,6 +34,7 @@ interface IColorExtensionPoint {
 		highContrastLight?: string;
 	};
 }
+
 const colorRegistry: IColorRegistry = Registry.as<IColorRegistry>(
 	ColorRegistryExtensions.ColorContribution,
 );

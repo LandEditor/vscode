@@ -308,6 +308,7 @@ class ColorRegistry implements IColorRegistry {
 			.join("\n");
 	}
 }
+
 const colorRegistry = new ColorRegistry();
 platform.Registry.add(Extensions.ColorContribution, colorRegistry);
 export function registerColor(

@@ -446,6 +446,7 @@ class TabFocusMode extends Disposable {
 		);
 	}
 }
+
 const nlsSingleSelectionRange = localize(
 	"singleSelectionRange",
 	"Ln {0}, Col {1} ({2} selected)",

@@ -50,6 +50,7 @@ export interface ISnippetInsertOptions {
 	clipboardText: string | undefined;
 	overtypingCapturer: OvertypingCapturer | undefined;
 }
+
 const _defaultOptions: ISnippetInsertOptions = {
 	overwriteBefore: 0,
 	overwriteAfter: 0,

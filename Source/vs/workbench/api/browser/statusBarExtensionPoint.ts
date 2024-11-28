@@ -279,6 +279,7 @@ function isUserFriendlyStatusItemEntry(
 			isAccessibilityInformation(obj.accessibilityInformation))
 	);
 }
+
 const statusBarItemSchema: IJSONSchema = {
 	type: "object",
 	required: ["id", "text", "alignment", "name"],

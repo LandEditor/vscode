@@ -181,6 +181,7 @@ function hintDidYouMean(...meant: string[]) {
 			return undefined;
 	}
 }
+
 const hintDidYouForgetToOpenOrCloseQuote = localize(
 	"contextkey.scanner.hint.didYouForgetToOpenOrCloseQuote",
 	"Did you forget to open or close the quote?",

@@ -244,6 +244,7 @@ class BrowserWebSocket extends Disposable implements IWebSocket {
 		this.dispose();
 	}
 }
+
 const defaultWebSocketFactory = new (class implements IWebSocketFactory {
 	create(url: string, debugLabel: string): IWebSocket {
 		return new BrowserWebSocket(url, debugLabel);

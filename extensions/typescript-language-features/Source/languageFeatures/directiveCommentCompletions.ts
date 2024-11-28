@@ -12,6 +12,7 @@ interface Directive {
 	readonly value: string;
 	readonly description: string;
 }
+
 const tsDirectives: Directive[] = [
 	{
 		value: "@ts-check",

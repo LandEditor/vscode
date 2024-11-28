@@ -131,6 +131,7 @@ async function checkMachOFiles(appPath: string, arch: string) {
 
 	return invalidFiles;
 }
+
 const archToCheck = process.argv[2];
 assert(process.env["APP_PATH"], "APP_PATH not set");
 assert(

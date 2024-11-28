@@ -549,6 +549,7 @@ export const enum ConfirmResult {
 	DONT_SAVE,
 	CANCEL,
 }
+
 const MAX_CONFIRM_FILES = 10;
 export function getFileNamesMessage(
 	fileNamesOrResources: readonly (string | URI)[],

@@ -81,6 +81,7 @@ class ResourceStackElement {
 		return `[id:${this.id}] [group:${this.groupId}] [${this.isValid ? "  VALID" : "INVALID"}] ${this.actual.constructor.name} - ${this.actual}`;
 	}
 }
+
 const enum RemovedResourceReason {
 	ExternalRemoval = 0,
 	NoParallelUniverses = 1,
@@ -524,6 +525,7 @@ class EditStackSnapshot {
 		return true;
 	}
 }
+
 const missingEditStack = new ResourceEditStack("", "");
 missingEditStack.locked = true;
 export class UndoRedoService implements IUndoRedoService {

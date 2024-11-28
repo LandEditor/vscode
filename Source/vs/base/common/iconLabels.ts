@@ -18,11 +18,13 @@ export function escapeIcons(text: string): string {
 		escaped ? match : `\\${match}`,
 	);
 }
+
 const markdownEscapedIconsRegex = new RegExp(`\\\\${iconsRegex.source}`, "g");
 export function markdownEscapeEscapedIcons(text: string): string {
 	// Need to add an extra \ for escaping in markdown
 	return text.replace(markdownEscapedIconsRegex, (match) => `\\${match}`);
 }
+
 const stripIconsRegex = new RegExp(
 	`(\\s)?(\\\\)?${iconsRegex.source}(\\s)?`,
 	"g",
@@ -55,6 +57,7 @@ export interface IParsedLabelWithIcons {
 	readonly text: string;
 	readonly iconOffsets?: readonly number[];
 }
+
 const _parseIconsRegex = new RegExp(
 	`\\$\\(${ThemeIcon.iconNameCharacter}+\\)`,
 	"g",

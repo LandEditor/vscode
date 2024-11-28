@@ -66,6 +66,7 @@ class ErrorLog {
 		}
 	}
 }
+
 const errorLogsById = new Map<string, ErrorLog>();
 function getErrorLog(id: string = "") {
 	let errorLog = errorLogsById.get(id);
@@ -76,6 +77,7 @@ function getErrorLog(id: string = "") {
 	}
 	return errorLog;
 }
+
 const buildLogFolder = path.join(
 	path.dirname(path.dirname(__dirname)),
 	".build",

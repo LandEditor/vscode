@@ -329,6 +329,7 @@ export function createLineMatcher(
 		return new SingleLineMatcher(matcher, fileService);
 	}
 }
+
 const endOfLine: string =
 	Platform.OS === Platform.OperatingSystem.Windows ? "\r\n" : "\n";
 abstract class AbstractLineMatcher implements ILineMatcher {
@@ -1682,6 +1683,7 @@ export namespace Schemas {
 		),
 	};
 }
+
 const problemPatternExtPoint =
 	ExtensionsRegistry.registerExtensionPoint<Config.NamedProblemPatterns>({
 		extensionPoint: "problemPatterns",
@@ -2300,6 +2302,7 @@ export class ProblemMatcherParser extends Parser {
 		return result;
 	}
 }
+
 const problemMatchersExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	Config.INamedProblemMatcher[]
 >({

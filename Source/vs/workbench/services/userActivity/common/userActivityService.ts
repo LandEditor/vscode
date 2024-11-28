@@ -47,6 +47,7 @@ export interface IUserActivityService {
 	 */
 	markActive(opts?: IMarkActiveOptions): IDisposable;
 }
+
 const MARK_INACTIVE_DEBOUNCE = 10000;
 export const IUserActivityService = createDecorator<IUserActivityService>(
 	"IUserActivityService",

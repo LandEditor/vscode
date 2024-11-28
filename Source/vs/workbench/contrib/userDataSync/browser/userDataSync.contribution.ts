@@ -155,6 +155,7 @@ class UserDataSyncReportIssueContribution
 		}
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

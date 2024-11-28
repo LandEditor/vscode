@@ -35,6 +35,7 @@ interface IExtensionFeatureState {
 	disabled?: boolean;
 	accessData: Mutable<IExtensionFeatureAccessData>;
 }
+
 const FEATURES_STATE_KEY = "extension.features.state";
 class ExtensionFeaturesManagementService
 	extends Disposable

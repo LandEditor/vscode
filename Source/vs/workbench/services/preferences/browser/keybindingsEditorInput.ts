@@ -17,6 +17,7 @@ export interface IKeybindingsEditorSearchOptions {
 	recordKeybindings: boolean;
 	sortByPrecedence: boolean;
 }
+
 const KeybindingsEditorIcon = registerIcon(
 	"keybindings-editor-label-icon",
 	Codicon.keyboard,

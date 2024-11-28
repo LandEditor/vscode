@@ -9,6 +9,7 @@ if (process.argv.length !== 3) {
 	console.error("Usage: node listNodeModules.js OUTPUT_FILE");
 	process.exit(-1);
 }
+
 const ROOT = path.join(__dirname, "../../../");
 function findNodeModulesFiles(
 	location: string,
@@ -43,6 +44,7 @@ function findNodeModulesFiles(
 		}
 	}
 }
+
 const result: string[] = [];
 findNodeModulesFiles("", false, result);
 fs.writeFileSync(process.argv[2], result.join("\n") + "\n");

@@ -158,12 +158,14 @@ function addCodesToBuffer(codes: number): void {
 		codeBuffer[codeBufferLength++] = (codes >> 16) & 0xff;
 	}
 }
+
 const enum HangulRangeStartCode {
 	InitialConsonant = 0x1100,
 	Vowel = 0x1161,
 	FinalConsonant = 0x11a8,
 	CompatibilityJamo = 0x3131,
 }
+
 const enum AsciiCode {
 	NUL = 0,
 	A = 65,

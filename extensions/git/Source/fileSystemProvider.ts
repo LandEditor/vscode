@@ -33,6 +33,7 @@ interface CacheRow {
 	uri: Uri;
 	timestamp: number;
 }
+
 const THREE_MINUTES = 1000 * 60 * 3;
 
 const FIVE_MINUTES = 1000 * 60 * 5;

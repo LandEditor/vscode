@@ -143,6 +143,7 @@ interface PreviousRegion {
 	endAbove: number; // end line number for the region above
 	line: number; // start line of the region. Only used for marker regions.
 }
+
 const foldingRangesLimitDefault: FoldingLimitReporter = {
 	limit: MAX_FOLDING_REGIONS_FOR_INDENT_DEFAULT,
 	update: () => {},

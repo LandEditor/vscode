@@ -114,6 +114,7 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 		});
 	}
 }
+
 const quickFixExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	ITerminalCommandSelector[]
 >({

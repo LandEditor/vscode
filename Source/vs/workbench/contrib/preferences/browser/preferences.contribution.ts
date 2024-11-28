@@ -2082,6 +2082,7 @@ class SettingsEditorTitleContribution
 		);
 	}
 }
+
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 registerWorkbenchContribution2(

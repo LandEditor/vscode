@@ -15,6 +15,7 @@ export const Mimes = Object.freeze({
 interface MapExtToMediaMimes {
 	[index: string]: string;
 }
+
 const mapExtToTextMimes: MapExtToMediaMimes = {
 	".css": "text/css",
 	".csv": "text/csv",
@@ -102,6 +103,7 @@ export function getExtensionForMimeType(mimeType: string): string | undefined {
 	}
 	return undefined;
 }
+
 const _simplePattern = /^(.+)\/(.+?)(;.+)?$/;
 export function normalizeMimeType(mimeType: string): string;
 export function normalizeMimeType(

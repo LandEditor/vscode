@@ -24,6 +24,7 @@ export interface INormalizedVersion {
 	notBefore: number /* milliseconds timestamp, or 0 */;
 	isMinimum: boolean;
 }
+
 const VERSION_REGEXP = /^(\^|>=)?((\d+)|x)\.((\d+)|x)\.((\d+)|x)(\-.*)?$/;
 
 const NOT_BEFORE_REGEXP = /^-(\d{4})(\d{2})(\d{2})$/;

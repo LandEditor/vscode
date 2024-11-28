@@ -616,6 +616,7 @@ function togglePreserveCaseCommand(accessor: ServicesAccessor) {
 	const searchView = getSearchView(accessor.get(IViewsService));
 	searchView?.togglePreserveCase();
 }
+
 const focusSearchListCommand: ICommandHandler = (accessor) => {
 	const viewsService = accessor.get(IViewsService);
 	openSearchView(viewsService).then((searchView) => {

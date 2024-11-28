@@ -223,6 +223,7 @@ export class NodeSocket implements ISocket {
 		});
 	}
 }
+
 const enum Constants {
 	MinHeaderByteSize = 2,
 	/**
@@ -234,6 +235,7 @@ const enum Constants {
 	 */
 	MaxWebSocketMessageLength = 256 * 1024, // 256 KB
 }
+
 const enum ReadState {
 	PeekHeader = 1,
 	ReadHeader = 2,

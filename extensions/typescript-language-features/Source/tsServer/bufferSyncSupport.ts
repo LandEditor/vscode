@@ -37,11 +37,13 @@ function mode2ScriptKind(mode: string): ScriptKind | undefined {
 	}
 	return undefined;
 }
+
 const enum BufferState {
 	Initial,
 	Open,
 	Closed,
 }
+
 const enum BufferOperationType {
 	Close,
 	Open,

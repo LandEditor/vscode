@@ -129,6 +129,7 @@ async function getPackageInfo(
 		return { name: "", version: "", aiKey: "", main: "" };
 	}
 }
+
 const retryTimeoutInHours = 2 * 24; // 2 days
 async function getSchemaRequestService(
 	context: ExtensionContext,

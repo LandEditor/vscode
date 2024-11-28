@@ -84,6 +84,7 @@ function handleFocusEventsGroup(
 		),
 	);
 }
+
 const NavigableContainerFocusedContextKey = new RawContextKey<boolean>(
 	"navigableContainerFocused",
 	false,

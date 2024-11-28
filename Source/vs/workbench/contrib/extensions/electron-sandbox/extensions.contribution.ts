@@ -108,6 +108,7 @@ class ExtensionsContributions
 		this._register(registerAction2(CleanUpExtensionsFolderAction));
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

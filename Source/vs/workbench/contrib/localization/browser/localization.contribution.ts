@@ -11,6 +11,7 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 import { BaseLocalizationWorkbenchContribution } from "../common/localization.contribution.js";
 
 export class WebLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchContribution {}
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

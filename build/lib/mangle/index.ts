@@ -91,6 +91,7 @@ class ShortIdent {
 		return result;
 	}
 }
+
 const enum FieldType {
 	Public,
 	Protected,
@@ -328,6 +329,7 @@ function isNameTakenInFile(node: ts.Node, name: string): boolean {
 	}
 	return false;
 }
+
 const skippedExportMangledFiles = [
 	// Build
 	"css.build",

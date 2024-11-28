@@ -103,6 +103,7 @@ interface WebviewActionContext {
 	readonly webview?: string;
 	readonly [key: string]: unknown;
 }
+
 const webviewIdContext = "webviewId";
 export class WebviewElement
 	extends Disposable

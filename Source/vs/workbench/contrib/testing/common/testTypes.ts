@@ -376,6 +376,7 @@ export interface ITestRunTask {
 export interface ITestTag {
 	readonly id: string;
 }
+
 const testTagDelimiter = "\0";
 export const namespaceTestTag = (ctrlId: string, tagId: string) =>
 	ctrlId + testTagDelimiter + tagId;

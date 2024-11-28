@@ -13,6 +13,7 @@ export function isFalsyOrWhitespace(str: string | undefined): boolean {
 	}
 	return str.trim().length === 0;
 }
+
 const _formatRegexp = /{(\d+)}/g;
 /**
  * Helper to produce a string with a variable number of arguments. Insert variable segments
@@ -30,6 +31,7 @@ export function format(value: string, ...args: any[]): string {
 		return isNaN(idx) || idx < 0 || idx >= args.length ? match : args[idx];
 	});
 }
+
 const _format2Regexp = /{([^}]+)}/g;
 /**
  * Helper to create a string from a template and a string record.
@@ -750,6 +752,7 @@ export function containsRTL(str: string): boolean {
 	}
 	return CONTAINS_RTL.test(str);
 }
+
 const IS_BASIC_ASCII = /^[\t\n\r\x20-\x7E]*$/;
 /**
  * Returns true if `str` contains only basic ASCII characters in the range 32 - 126 (including 32 and 126) or \n, \r, \t
@@ -890,6 +893,7 @@ export function removeAnsiEscapeCodes(str: string): string {
 	}
 	return str;
 }
+
 const PROMPT_NON_PRINTABLE = /\\\[.*?\\\]/g;
 /**
  * Strips ANSI escape sequences from a UNIX-style prompt string (eg. `$PS1`).
@@ -1236,6 +1240,7 @@ function getOffsetBeforeLastEmojiComponent(
 function isEmojiModifier(codePoint: number): boolean {
 	return 0x1f3fb <= codePoint && codePoint <= 0x1f3ff;
 }
+
 const enum CodePoint {
 	zwj = 0x200d,
 	/**

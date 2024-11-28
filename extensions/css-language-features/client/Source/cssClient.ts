@@ -66,6 +66,7 @@ interface CSSFormatSettings {
 	preserveNewLines?: boolean;
 	maxPreserveNewLines?: number | null;
 }
+
 const cssFormatSettingKeys: (keyof CSSFormatSettings)[] = [
 	"newlineBetweenSelectors",
 	"newlineBetweenRules",

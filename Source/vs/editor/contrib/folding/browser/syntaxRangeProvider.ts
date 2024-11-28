@@ -17,6 +17,7 @@ import { FoldingRegions, MAX_LINE_NUMBER } from "./foldingRanges.js";
 export interface IFoldingRangeData extends FoldingRange {
 	rank: number;
 }
+
 const foldingContext: FoldingContext = {};
 
 const ID_SYNTAX_PROVIDER = "syntax";

@@ -51,6 +51,7 @@ function exec(
 		});
 	});
 }
+
 const buildNames: string[] = ["build", "compile", "watch"];
 function isBuildTask(name: string): boolean {
 	for (const buildName of buildNames) {
@@ -60,6 +61,7 @@ function isBuildTask(name: string): boolean {
 	}
 	return false;
 }
+
 const testNames: string[] = ["test"];
 function isTestTask(name: string): boolean {
 	for (const testName of testNames) {

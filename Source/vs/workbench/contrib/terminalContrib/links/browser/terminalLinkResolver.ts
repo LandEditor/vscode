@@ -208,6 +208,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		return (os ?? OS) === OperatingSystem.Windows ? win32 : posix;
 	}
 }
+
 const enum LinkCacheConstants {
 	/**
 	 * How long to cache links for in milliseconds, the TTL resets whenever a new value is set in

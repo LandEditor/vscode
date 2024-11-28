@@ -201,6 +201,7 @@ class TextModelSnapshot implements model.ITextSnapshot {
 		} while (true);
 	}
 }
+
 const invalidFunc = () => {
 	throw new Error(`Invalid change accessor`);
 };

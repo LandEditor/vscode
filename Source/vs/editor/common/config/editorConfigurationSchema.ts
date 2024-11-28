@@ -490,6 +490,7 @@ export function isDiffEditorConfigurationKey(key: string): boolean {
 
 	return editorConfigurationKeys[`diffEditor.${key}`] || false;
 }
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
 	Extensions.Configuration,
 );

@@ -13,6 +13,7 @@ const enum State {
 	Smart = "smart",
 	Always = "always",
 }
+
 const TEXT_STATUSBAR_LABEL = {
 	[State.Disabled]: vscode.l10n.t("Auto Attach: Disabled"),
 	[State.Always]: vscode.l10n.t("Auto Attach: Always"),
@@ -280,6 +281,7 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 
 	return await server;
 }
+
 const createServerInner = async (ipcAddress: string) => {
 	try {
 		return await createServerInstance(ipcAddress);

@@ -80,6 +80,7 @@ function renderImage(
 
 	return disposable;
 }
+
 const preservedScriptAttributes: (keyof HTMLScriptElement)[] = [
 	"type",
 	"src",

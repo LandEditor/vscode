@@ -452,6 +452,7 @@ class Lock {
 		customer.resolve(toDisposable(releaseLock));
 	}
 }
+
 const enum SortBucket {
 	Builtin = 0,
 	User = 1,

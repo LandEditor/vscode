@@ -30,6 +30,7 @@ export interface IAppInsightsCore {
 		unloadComplete: (unloadState: ITelemetryUnloadState) => void,
 	): void;
 }
+
 const endpointUrl = "https://mobile.events.data.microsoft.com/OneCollector/1.0";
 
 const endpointHealthUrl = "https://mobile.events.data.microsoft.com/ping";

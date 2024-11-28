@@ -150,6 +150,7 @@ class ThemingRegistry implements IThemingRegistry {
 		return this.themingParticipants;
 	}
 }
+
 const themingRegistry = new ThemingRegistry();
 platform.Registry.add(Extensions.ThemingContribution, themingRegistry);
 export function registerThemingParticipant(

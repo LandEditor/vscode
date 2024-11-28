@@ -245,12 +245,14 @@ export class SufTrie {
 		return lines.map((l) => indentation + l).join("\n");
 	}
 }
+
 const enum SubstitutionType {
 	capture = "capture",
 	basename = "basename",
 	dirname = "dirname",
 	extname = "extname",
 }
+
 const substitutionStringTokenizer =
 	/\$[({](capture|basename|dirname|extname)[)}]/g;
 class SubstitutionString {

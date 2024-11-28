@@ -135,6 +135,7 @@ function scrollableArrayOfString(
 
 	return element;
 }
+
 const outputLengths: Record<string, number> = {};
 function appendScrollableOutput(
 	element: HTMLElement,

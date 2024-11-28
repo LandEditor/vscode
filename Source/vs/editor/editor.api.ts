@@ -43,6 +43,7 @@ export const languages = api.languages;
 interface IMonacoEnvironment {
 	globalAPI?: boolean;
 }
+
 const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any)
 	.MonacoEnvironment;
 if (

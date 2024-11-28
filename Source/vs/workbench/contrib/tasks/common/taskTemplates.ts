@@ -10,6 +10,7 @@ export interface ITaskEntry extends IQuickPickItem {
 	autoDetect: boolean;
 	content: string;
 }
+
 const dotnetBuild: ITaskEntry = {
 	id: "dotnetCore",
 	label: ".NET Core",

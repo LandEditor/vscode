@@ -61,6 +61,7 @@ export async function shouldInsertMarkdownLinkByDefault(
 		).every((x) => x);
 	}
 }
+
 const textTokenTypes = new Set([
 	"paragraph_open",
 	"inline",
@@ -154,6 +155,7 @@ async function shouldSmartPasteForSelection(
 	}
 	return true;
 }
+
 const externalUriSchemes: ReadonlySet<string> = new Set([
 	Schemes.http,
 	Schemes.https,

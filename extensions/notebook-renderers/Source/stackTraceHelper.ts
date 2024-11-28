@@ -30,6 +30,7 @@ export function formatStackTrace(stack: string): {
 	}
 	return { formattedStack: cleaned };
 }
+
 const formatSequence = /\u001b\[.+?m/g;
 
 const fileRegex = /File\s+(?:\u001b\[.+?m)?(.+):(\d+)/;

@@ -33,6 +33,7 @@ export interface SectionHeader {
 	 */
 	shouldBeInComments: boolean;
 }
+
 const markRegex = new RegExp("\\bMARK:\\s*(.*)$", "d");
 
 const trimDashesRegex = /^-+|-+$/g;

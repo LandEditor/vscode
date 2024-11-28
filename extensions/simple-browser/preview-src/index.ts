@@ -17,6 +17,7 @@ function getSettings() {
 	}
 	throw new Error(`Could not load settings`);
 }
+
 const settings = getSettings();
 
 const iframe = document.querySelector("iframe")!;

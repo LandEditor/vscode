@@ -74,6 +74,7 @@ function _referenceResolution(scheme: string, path: string): string {
 	}
 	return path;
 }
+
 const _empty = "";
 
 const _slash = "/";
@@ -455,6 +456,7 @@ interface UriState extends UriComponents {
 	fsPath?: string;
 	_sep?: 1;
 }
+
 const _pathSepMarker = isWindows ? 1 : undefined;
 // This class exists so that URI is compatible with vscode.Uri (API).
 class Uri extends URI {
@@ -749,6 +751,7 @@ function decodeURIComponentGraceful(str: string): string {
 		}
 	}
 }
+
 const _rEncodedAsHex = /(%[0-9A-Za-z][0-9A-Za-z])+/g;
 function percentDecode(str: string): string {
 	if (!str.match(_rEncodedAsHex)) {

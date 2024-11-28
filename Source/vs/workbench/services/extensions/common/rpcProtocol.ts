@@ -45,6 +45,7 @@ function safeStringify(
 		return "null";
 	}
 }
+
 const refSymbolName = "$$ref$$";
 
 const undefinedRef = { [refSymbolName]: -1 } as const;
@@ -147,6 +148,7 @@ export interface IRPCProtocolLogger {
 		data?: any,
 	): void;
 }
+
 const noop = () => {};
 
 const _RPCProtocolSymbol = Symbol.for("rpcProtocol");
@@ -943,6 +945,7 @@ class MessageBuffer {
 		return arr;
 	}
 }
+
 const enum SerializedRequestArgumentType {
 	Simple,
 	Mixed,
@@ -1278,6 +1281,7 @@ class MessageIO {
 		return MessageBuffer.alloc(MessageType.ReplyErrEmpty, req, 0).buffer;
 	}
 }
+
 const enum MessageType {
 	RequestJSONArgs = 1,
 	RequestJSONArgsWithCancellation = 2,
@@ -1292,6 +1296,7 @@ const enum MessageType {
 	ReplyErrError = 11,
 	ReplyErrEmpty = 12,
 }
+
 const enum ArgType {
 	String = 1,
 	VSBuffer = 2,

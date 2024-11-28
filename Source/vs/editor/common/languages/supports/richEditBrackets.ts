@@ -458,6 +458,7 @@ export function createBracketOrRegExp(
 
 	return strings.createRegExp(regexStr, true, options);
 }
+
 const toReversedString = (function () {
 	function reverse(str: string): string {
 		// create a Uint16Array and then use a TextDecoder to create a string

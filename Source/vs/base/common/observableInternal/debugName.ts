@@ -114,6 +114,7 @@ function findKey(obj: object, value: object): string | undefined {
 	}
 	return undefined;
 }
+
 const countPerClassName = new Map<string, number>();
 
 const ownerId = new WeakMap<object, string>();

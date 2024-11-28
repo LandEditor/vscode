@@ -636,6 +636,7 @@ class TokenClassificationRegistry implements ITokenClassificationRegistry {
 			.join("\n");
 	}
 }
+
 const CHAR_LANGUAGE = TOKEN_CLASSIFIER_LANGUAGE_SEPARATOR.charCodeAt(0);
 
 const CHAR_MODIFIER = CLASSIFIER_MODIFIER_SEPARATOR.charCodeAt(0);
@@ -687,6 +688,7 @@ export function parseClassifierString(
 
 	return { type, modifiers, language };
 }
+
 const tokenClassificationRegistry = createDefaultTokenClassificationRegistry();
 platform.Registry.add(
 	Extensions.TokenClassificationContribution,

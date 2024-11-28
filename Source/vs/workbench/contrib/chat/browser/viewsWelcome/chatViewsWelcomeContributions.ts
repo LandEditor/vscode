@@ -23,6 +23,7 @@ interface IRawChatViewsWelcomeContribution {
 	content: string;
 	when: string;
 }
+
 const chatViewsWelcomeExtensionPoint =
 	extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<
 		IRawChatViewsWelcomeContribution[]

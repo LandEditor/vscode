@@ -625,6 +625,7 @@ export function friendlyExtHostName(
 	}
 	return `${extensionHostKindToString(kind)}`;
 }
+
 const colorTables = [
 	["#2977B1", "#FC802D", "#34A13A", "#D3282F", "#9366BA"],
 	["#8B564C", "#E177C0", "#7F7F7F", "#BBBE3D", "#2EBECD"],
@@ -823,6 +824,7 @@ interface ExtHostLatencyResult {
 interface ExtHostLatencyProvider {
 	measure(): Promise<ExtHostLatencyResult | null>;
 }
+
 const providers: ExtHostLatencyProvider[] = [];
 function registerLatencyTestProvider(
 	provider: ExtHostLatencyProvider,

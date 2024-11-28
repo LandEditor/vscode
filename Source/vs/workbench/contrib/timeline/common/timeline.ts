@@ -139,6 +139,7 @@ export interface ITimelineService {
 
 	setUri(uri: URI): void;
 }
+
 const TIMELINE_SERVICE_ID = "timeline";
 export const ITimelineService =
 	createDecorator<ITimelineService>(TIMELINE_SERVICE_ID);

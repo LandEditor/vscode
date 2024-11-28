@@ -85,6 +85,7 @@ namespace DocumentSortingRequest {
 	export const type: RequestType<DocumentSortingParams, TextEdit[], any> =
 		new RequestType("json/sort");
 }
+
 const workspaceContext = {
 	resolveRelativePath: (relativePath: string, resource: string) => {
 		const base = resource.substring(0, resource.lastIndexOf("/") + 1);

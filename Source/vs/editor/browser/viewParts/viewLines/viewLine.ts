@@ -393,6 +393,7 @@ interface IRenderedViewLine {
 
 	getColumnOfNodeOffset(spanNode: HTMLElement, offset: number): number;
 }
+
 const enum Constants {
 	/**
 	 * It seems that rounding errors occur with long lines, so the purely multiplication based
@@ -951,6 +952,7 @@ class WebKitRenderedViewLine extends RenderedViewLine {
 		return output;
 	}
 }
+
 const createRenderedLine: (
 	domNode: FastDomNode<HTMLElement> | null,
 	renderLineInput: RenderLineInput,

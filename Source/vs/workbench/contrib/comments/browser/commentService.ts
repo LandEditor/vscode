@@ -237,6 +237,7 @@ export interface ICommentService {
 	}): PendingCommentThread | undefined;
 	resourceHasCommentingRanges(resource: URI): boolean;
 }
+
 const CONTINUE_ON_COMMENTS = "comments.continueOnComments";
 export class CommentService extends Disposable implements ICommentService {
 	declare readonly _serviceBrand: undefined;

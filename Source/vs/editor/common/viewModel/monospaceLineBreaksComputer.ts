@@ -109,6 +109,7 @@ export class MonospaceLineBreaksComputerFactory
 		};
 	}
 }
+
 const enum CharacterClass {
 	NONE = 0,
 	BREAK_BEFORE = 1,

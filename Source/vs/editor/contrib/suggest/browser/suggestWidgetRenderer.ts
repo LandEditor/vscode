@@ -34,6 +34,7 @@ import { canExpandCompletionItem } from "./suggestWidgetDetails.js";
 export function getAriaId(index: number): string {
 	return `suggest-aria-id:${index}`;
 }
+
 const suggestMoreInfoIcon = registerIcon(
 	"suggest-more-info",
 	Codicon.chevronRight,

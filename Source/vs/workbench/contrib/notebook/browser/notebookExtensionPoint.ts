@@ -38,6 +38,7 @@ export interface INotebookEditorContribution {
 	}[];
 	readonly [NotebookEditorContribution.priority]?: string;
 }
+
 const NotebookRendererContribution = Object.freeze({
 	id: "id",
 	displayName: "displayName",
@@ -56,6 +57,7 @@ export interface INotebookRendererContribution {
 	readonly [NotebookRendererContribution.optionalDependencies]: readonly string[];
 	readonly [NotebookRendererContribution.requiresMessaging]: RendererMessagingSpec;
 }
+
 const NotebookPreloadContribution = Object.freeze({
 	type: "type",
 	entrypoint: "entrypoint",
@@ -66,6 +68,7 @@ interface INotebookPreloadContribution {
 	readonly [NotebookPreloadContribution.entrypoint]: string;
 	readonly [NotebookPreloadContribution.localResourceRoots]: readonly string[];
 }
+
 const notebookProviderContribution: IJSONSchema = {
 	description: nls.localize(
 		"contributes.notebook.provider",

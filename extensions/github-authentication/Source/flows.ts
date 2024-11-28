@@ -121,6 +121,7 @@ async function exchangeCodeForToken(
 		throw error;
 	}
 }
+
 const allFlows: IFlow[] = [
 	new (class UrlHandlerFlow implements IFlow {
 		label = l10n.t("url handler");

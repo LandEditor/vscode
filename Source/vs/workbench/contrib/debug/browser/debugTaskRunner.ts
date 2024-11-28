@@ -58,6 +58,7 @@ export const enum TaskRunResult {
 	Failure,
 	Success,
 }
+
 const DEBUG_TASK_ERROR_CHOICE_KEY = "debug.taskerrorchoice";
 
 const ABORT_LABEL = nls.localize("abort", "Abort");

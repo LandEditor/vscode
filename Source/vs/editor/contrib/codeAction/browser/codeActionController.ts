@@ -61,6 +61,7 @@ interface IActionShowOptions {
 	readonly includeDisabledActions?: boolean;
 	readonly fromLightbulb?: boolean;
 }
+
 const DECORATION_CLASS_NAME = "quickfix-edit-highlight";
 export class CodeActionController
 	extends Disposable

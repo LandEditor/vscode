@@ -640,6 +640,7 @@ export class TestResultsViewContent extends Disposable {
 		this.splitView.layout(width);
 	}
 }
+
 const FOLLOWUP_ANIMATION_MIN_TIME = 500;
 class FollowupActionWidget extends Disposable {
 	private readonly el = dom.h("div.testing-followup-action", []);

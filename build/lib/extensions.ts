@@ -308,6 +308,7 @@ function fromLocalNormal(extensionPath: string): Stream {
 
 	return result.pipe(createStatsStream(path.basename(extensionPath)));
 }
+
 const userAgent = "VSCode Build";
 
 const baseHeaders = {
@@ -754,6 +755,7 @@ export function translatePackageJSON(
 
 	return packageJSON;
 }
+
 const extensionsPath = path.join(root, "extensions");
 // Additional projects to run esbuild on. These typically build code for webviews
 const esbuildMediaScripts = [

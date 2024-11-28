@@ -82,6 +82,7 @@ interface IRawConfig {
 	eol?: any;
 	editor?: IRawEditorConfig;
 }
+
 const DEFAULT_EOL =
 	platform.isLinux || platform.isMacintosh
 		? DefaultEndOfLine.LF

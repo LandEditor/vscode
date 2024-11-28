@@ -168,6 +168,7 @@ function withEditor(
 
 	return result ? f(result.editor) : false;
 }
+
 const PRIORITY = 105;
 UndoCommand.addImplementation(PRIORITY, "notebook-webview", (accessor) => {
 	return withWebview(accessor, (webview) => webview.undo());

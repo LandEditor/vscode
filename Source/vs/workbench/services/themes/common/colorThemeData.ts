@@ -1206,6 +1206,7 @@ function _loadSyntaxTokens(
 			},
 		);
 }
+
 const defaultThemeColors: {
 	[baseTheme: string]: ITextMateThemingRule[];
 } = {

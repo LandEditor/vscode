@@ -797,6 +797,7 @@ function arrayEquals<T>(a: T[], b: T[]): boolean {
 	}
 	return true;
 }
+
 const encoder = new TextEncoder();
 function parseModule(
 	content: string,
@@ -1065,6 +1066,7 @@ export interface SourceMap {
 	names?: string[];
 	mappings: string | Buffer;
 }
+
 const charToInteger = Buffer.alloc(256);
 
 const integerToChar = Buffer.alloc(64);

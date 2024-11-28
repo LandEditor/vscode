@@ -117,6 +117,7 @@ class CustomDocumentStore {
 		return `${viewType}@@@${resource}`;
 	}
 }
+
 const enum CustomEditorType {
 	Text,
 	Custom,

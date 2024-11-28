@@ -37,6 +37,7 @@ interface IEditorCancellationTokens {
 	add(editor: ICodeEditor, cts: CancellationTokenSource): () => void;
 	cancel(editor: ICodeEditor): void;
 }
+
 const ctxCancellableOperation = new RawContextKey(
 	"cancellableOperation",
 	false,

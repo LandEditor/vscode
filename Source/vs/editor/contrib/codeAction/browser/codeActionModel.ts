@@ -188,6 +188,7 @@ export namespace CodeActionsState {
 	}
 	export type State = typeof Empty | Triggered;
 }
+
 const emptyCodeActionSet = Object.freeze<CodeActionSet>({
 	allActions: [],
 	validActions: [],

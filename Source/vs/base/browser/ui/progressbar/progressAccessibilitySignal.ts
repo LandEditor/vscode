@@ -6,6 +6,7 @@ import { IDisposable } from "../../../common/lifecycle.js";
 
 export interface IScopedAccessibilityProgressSignalDelegate
 	extends IDisposable {}
+
 const nullScopedAccessibilityProgressSignalFactory = () => ({
 	msLoopTime: -1,
 	msDelayTime: -1,

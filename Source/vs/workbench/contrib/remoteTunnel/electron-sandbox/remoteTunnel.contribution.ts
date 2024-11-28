@@ -1390,6 +1390,7 @@ export class RemoteTunnelWorkbenchContribution
 		});
 	}
 }
+
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
 	WorkbenchExtensions.Workbench,
 );

@@ -24,6 +24,7 @@ interface IJSONValidationExtensionPoint {
 	fileMatch: string | string[];
 	url: string;
 }
+
 const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	IJSONValidationExtensionPoint[]
 >({

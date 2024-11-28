@@ -457,6 +457,7 @@ export function decodeBase64(encoded: string) {
 	// slice is needed to account for overestimation due to padding
 	return VSBuffer.wrap(buffer).slice(0, unpadded);
 }
+
 const base64Alphabet =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 

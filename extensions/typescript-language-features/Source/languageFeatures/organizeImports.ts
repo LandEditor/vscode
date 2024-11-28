@@ -30,6 +30,7 @@ interface OrganizeImportsCommandMetadata {
 	readonly kind: vscode.CodeActionKind;
 	readonly mode: OrganizeImportsMode;
 }
+
 const organizeImportsCommand: OrganizeImportsCommandMetadata = {
 	commandIds: [], // We use the generic 'Organize imports' command
 	title: vscode.l10n.t("Organize Imports"),

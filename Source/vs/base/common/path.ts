@@ -71,6 +71,7 @@ function validateString(value: string, name: string) {
 		throw new ErrorInvalidArgType(name, "string", value);
 	}
 }
+
 const platformIsWin32 = process.platform === "win32";
 function isPathSeparator(code: number | undefined) {
 	return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;

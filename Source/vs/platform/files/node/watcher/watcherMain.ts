@@ -15,6 +15,7 @@ if (isUtilityProcess(process)) {
 } else {
 	server = new ChildProcessServer("watcher");
 }
+
 const service = new UniversalWatcher();
 server.registerChannel(
 	"watcher",

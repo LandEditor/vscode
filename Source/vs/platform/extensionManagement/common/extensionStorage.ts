@@ -65,6 +65,7 @@ export interface IExtensionStorageService {
 
 	getSourceExtensionToMigrate(target: string): string | undefined;
 }
+
 const EXTENSION_KEYS_ID_VERSION_REGEX =
 	/^extensionKeys\/([^.]+\..+)@(\d+\.\d+\.\d+(-.*)?)$/;
 export class ExtensionStorageService

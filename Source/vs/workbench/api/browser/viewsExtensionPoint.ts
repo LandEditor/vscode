@@ -70,6 +70,7 @@ export interface IUserFriendlyViewsContainerDescriptor {
 	title: string;
 	icon: string;
 }
+
 const viewsContainerSchema: IJSONSchema = {
 	type: "object",
 	properties: {
@@ -152,6 +153,7 @@ enum InitialVisibility {
 	Hidden = "hidden",
 	Collapsed = "collapsed",
 }
+
 const viewDescriptor: IJSONSchema = {
 	type: "object",
 	required: ["id", "name"],

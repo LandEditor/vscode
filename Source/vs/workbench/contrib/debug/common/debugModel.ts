@@ -828,6 +828,7 @@ export class StackFrame implements IStackFrame {
 		);
 	}
 }
+
 const KEEP_SUBTLE_FRAME_AT_TOP_REASONS: readonly string[] = [
 	"breakpoint",
 	"step",

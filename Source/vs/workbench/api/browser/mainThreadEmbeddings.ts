@@ -35,6 +35,7 @@ interface IEmbeddingsProvider {
 		}[]
 	>;
 }
+
 const IEmbeddingsService =
 	createDecorator<IEmbeddingsService>("embeddingsService");
 interface IEmbeddingsService {

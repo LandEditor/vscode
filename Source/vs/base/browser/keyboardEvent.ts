@@ -82,6 +82,7 @@ export interface IKeyboardEvent {
 	preventDefault(): void;
 	stopPropagation(): void;
 }
+
 const ctrlKeyMod = platform.isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd;
 
 const altKeyMod = KeyMod.Alt;

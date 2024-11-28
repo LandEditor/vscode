@@ -15,6 +15,7 @@ interface IWindowChainElement {
 	 */
 	readonly iframeElement: Element | null;
 }
+
 const sameOriginWindowChainCache = new WeakMap<
 	Window,
 	IWindowChainElement[] | null

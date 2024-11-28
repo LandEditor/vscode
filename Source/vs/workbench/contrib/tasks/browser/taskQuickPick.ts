@@ -67,6 +67,7 @@ export interface ITaskTwoLevelQuickPickEntry extends IQuickPickItem {
 
 	settingType?: string;
 }
+
 const SHOW_ALL: string = nls.localize(
 	"taskQuickPick.showAll",
 	"Show All Tasks...",

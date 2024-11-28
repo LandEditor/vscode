@@ -465,6 +465,7 @@ export class ContextView extends Disposable {
 		super.dispose();
 	}
 }
+
 const SHADOW_ROOT_CSS = /* css */ `
 	:host {
 		all: initial; /* 1st rule so subsequent properties are reset. */

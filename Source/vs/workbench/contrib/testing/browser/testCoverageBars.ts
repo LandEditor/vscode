@@ -203,6 +203,7 @@ export class ManagedTestCoverageBars extends Disposable {
 		}
 	}
 }
+
 const barWidth = 16;
 
 const renderBar = (

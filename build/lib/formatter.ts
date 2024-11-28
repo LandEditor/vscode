@@ -31,6 +31,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
 	getDefaultLibFileName = (options: ts.CompilerOptions) =>
 		ts.getDefaultLibFilePath(options);
 }
+
 const defaults: ts.FormatCodeSettings = {
 	baseIndentSize: 0,
 	indentSize: 4,

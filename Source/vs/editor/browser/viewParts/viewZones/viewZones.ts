@@ -38,6 +38,7 @@ interface IComputedViewZoneProps {
 	heightInPx: number;
 	minWidthInPx: number;
 }
+
 const invalidFunc = () => {
 	throw new Error(`Invalid change accessor`);
 };

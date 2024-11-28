@@ -419,6 +419,7 @@ export class TestProfileService
 		}
 	}
 }
+
 const setIsDefault = (
 	map: DefaultsMap,
 	profile: IExtendedTestRunProfile,

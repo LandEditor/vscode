@@ -100,6 +100,7 @@ export interface ITestItemCollectionOptions<T> {
 	/** Root to use for the new test collection. */
 	root: T;
 }
+
 const strictEqualComparator = <T>(a: T, b: T) => a === b;
 
 const diffableProps: {

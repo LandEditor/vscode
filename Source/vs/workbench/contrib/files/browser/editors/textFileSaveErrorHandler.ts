@@ -367,6 +367,7 @@ export class TextFileSaveErrorHandler
 		this.messages.clear();
 	}
 }
+
 const pendingResolveSaveConflictMessages: INotificationHandle[] = [];
 function clearPendingResolveSaveConflictMessages(): void {
 	while (pendingResolveSaveConflictMessages.length > 0) {

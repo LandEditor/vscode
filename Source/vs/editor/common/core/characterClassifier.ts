@@ -51,6 +51,7 @@ export class CharacterClassifier<T extends number> {
 		this._map.clear();
 	}
 }
+
 const enum Boolean {
 	False = 0,
 	True = 1,

@@ -818,6 +818,7 @@ class UnixPtyHeuristics extends Disposable {
 		);
 	}
 }
+
 const enum AdjustCommandStartMarkerConstants {
 	MaxCheckLineCount = 10,
 	Interval = 20,

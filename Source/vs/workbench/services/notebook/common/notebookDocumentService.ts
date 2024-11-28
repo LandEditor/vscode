@@ -23,6 +23,7 @@ export interface INotebookDocument {
 
 	getCellIndex(cellUri: URI): number | undefined;
 }
+
 const _lengths = ["W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f"];
 
 const _padRegexp = new RegExp(`^[${_lengths.join("")}]+`);

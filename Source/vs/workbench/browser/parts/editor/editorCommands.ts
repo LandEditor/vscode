@@ -196,6 +196,7 @@ export interface ActiveEditorMoveCopyArguments {
 	by?: "tab" | "group";
 	value?: number;
 }
+
 const isActiveEditorMoveCopyArg = function (
 	arg: ActiveEditorMoveCopyArguments,
 ): boolean {

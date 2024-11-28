@@ -132,6 +132,7 @@ export function assertAllDefined(
 	}
 	return result;
 }
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 /**
  * @returns whether the provided parameter is an empty JavaScript Object or not.

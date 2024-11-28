@@ -494,6 +494,7 @@ export class CodeCoverageDecorations
 		return undefined;
 	}
 }
+
 const countBadge = (count: number): InjectedTextOptions | undefined => {
 	if (count === 0) {
 		return undefined;

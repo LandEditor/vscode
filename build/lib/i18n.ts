@@ -512,6 +512,7 @@ export function processNlsFiles(opts: {
 		this.queue(file);
 	});
 }
+
 const editorProject: string = "vscode-editor",
 	workbenchProject: string = "vscode-workbench",
 	extensionsProject: string = "vscode-extensions",
@@ -987,6 +988,7 @@ interface I18nPack {
 		[path: string]: Record<string, string>;
 	};
 }
+
 const i18nPackVersion = "1.0.0";
 export interface TranslationPath {
 	id: string;

@@ -32,6 +32,7 @@ export interface IComputedStateAndDurationAccessor<T>
 
 	setComputedDuration(item: T, duration: number | undefined): void;
 }
+
 const isDurationAccessor = <T>(
 	accessor: IComputedStateAccessor<T>,
 ): accessor is IComputedStateAndDurationAccessor<T> =>

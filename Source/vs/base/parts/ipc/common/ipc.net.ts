@@ -260,6 +260,7 @@ export class ChunkStream {
 		return result;
 	}
 }
+
 const enum ProtocolMessageType {
 	None = 0,
 	Regular = 1,

@@ -193,6 +193,7 @@ class RemoteInvalidWorkspaceDetector
 		}
 	}
 }
+
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 registerWorkbenchContribution2(
@@ -247,6 +248,7 @@ if (enableDiagnostics) {
 	registerAction2(TriggerReconnectAction);
 	registerAction2(PauseSocketWriting);
 }
+
 const extensionKindSchema: IJSONSchema = {
 	type: "string",
 	enum: ["ui", "workspace"],

@@ -50,6 +50,7 @@ export function logOnceWebWorkerWarning(err: any): void {
 	}
 	console.warn(err.message);
 }
+
 const enum MessageType {
 	Request,
 	Reply,

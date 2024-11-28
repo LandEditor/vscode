@@ -133,6 +133,7 @@ function buildPicker(
 
 	return quickpick;
 }
+
 const triggerButtonHandler =
 	(service: ITestProfileService, resolve: (arg: undefined) => void) =>
 	(evt: IQuickPickItemButtonEvent<IQuickPickItem>) => {

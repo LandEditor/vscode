@@ -21,6 +21,7 @@ import { readScripts } from "./readScripts";
 const enum Constants {
 	ConfigKey = "debug.javascript.codelens.npmScripts",
 }
+
 const getFreshLensLocation = () =>
 	workspace.getConfiguration().get(Constants.ConfigKey);
 /**

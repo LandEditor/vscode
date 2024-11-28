@@ -182,6 +182,7 @@ export class RenderLineInput {
 		);
 	}
 }
+
 const enum CharacterMappingConstants {
 	PART_INDEX_MASK = 0b11111111111111110000000000000000,
 	CHAR_INDEX_MASK = 0b00000000000000001111111111111111,

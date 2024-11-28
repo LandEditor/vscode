@@ -508,6 +508,7 @@ class WorkspacePlatformContribution {
 		});
 	}
 }
+
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
 	ConfigurationExtensions.Configuration,
 );

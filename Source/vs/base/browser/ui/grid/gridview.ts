@@ -33,6 +33,7 @@ import "./gridview.css";
 export { Orientation } from "../sash/sash.js";
 export { LayoutPriority, Sizing } from "../splitview/splitview.js";
 export interface IGridViewStyles extends ISplitViewStyles {}
+
 const defaultStyles: IGridViewStyles = {
 	separatorBorder: Color.transparent,
 };

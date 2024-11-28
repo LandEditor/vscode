@@ -1138,6 +1138,7 @@ function appendEditorToolItem(
 	}
 	MenuRegistry.appendMenuItem(MenuId.EditorTitle, item);
 }
+
 const SPLIT_ORDER = 100000; // towards the end
 const CLOSE_ORDER = 1000000; // towards the far end
 // Editor Title Menu: Split Editor

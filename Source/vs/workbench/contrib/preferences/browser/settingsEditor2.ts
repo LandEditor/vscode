@@ -197,10 +197,12 @@ export function createGroupIterator(
 		};
 	});
 }
+
 const $ = DOM.$;
 interface IFocusEventFromScroll extends KeyboardEvent {
 	fromScroll: true;
 }
+
 const searchBoxLabel = localize("SearchSettings.AriaLabel", "Search settings");
 
 const SEARCH_TOC_BEHAVIOR_KEY = "workbench.settings.settingsSearchTocBehavior";

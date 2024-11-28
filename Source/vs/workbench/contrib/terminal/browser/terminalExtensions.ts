@@ -119,6 +119,7 @@ class TerminalContributionRegistry {
 		return this._terminalContributions.slice(0);
 	}
 }
+
 const enum Extensions {
 	TerminalContributions = "terminal.contributions",
 }

@@ -13,6 +13,7 @@ class Node<K, V> {
 		this.forward = [];
 	}
 }
+
 const NIL: undefined = undefined;
 interface Comparator<K> {
 	(a: K, b: K): number;
